@@ -10,13 +10,12 @@ class Vector : public BaseVector<dim>
 {
     using Quantity = phys::units::quantity<dim, double>;
     
+public:
     Vector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector) :
-        BaseVector<Quantity>(pCS, pQVector)
+        BaseVector<dim>(pCS, pQVector)
     {
     }
-        
-    
-public:
+
     Vector(CoordinateSystem const& cs, Quantity x, Quantity y, Quantity z) :
         BaseVector<dim>(cs, QuantityVector<dim>(x, y, z))
     {
@@ -47,7 +46,7 @@ public:
     
     auto norm() const
     {
-        return Quantity(BaseVector<dim>::qVector.eVector.norm());
+        return BaseVector<dim>::qVector.norm();
     }
     
     //~ template <typename dim2>

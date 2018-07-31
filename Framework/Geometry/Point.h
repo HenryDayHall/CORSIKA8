@@ -3,12 +3,12 @@
 
 #include "BaseVector.h"
 #include "QuantityVector.h"
+#include "Vector.h"
 #include <phys/units/quantity.hpp>
 
 class Point : public BaseVector<phys::units::length_d>
 {
     using Length = phys::units::quantity<phys::units::length_d, double>;
-    
     
 public:
     Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector) :
@@ -42,6 +42,17 @@ public:
     {
         BaseVector<phys::units::length_d>::qVector = getCoordinates(pCS);
         BaseVector<phys::units::length_d>::cs = &pCS;
+    }
+    
+    Point operator+(Vector<phys::units::length_d> const& pVec) const
+    {        
+        return Point(*BaseVector<phys::units::length_d>::cs, getCoordinates() + pVec.getComponents(*BaseVector<phys::units::length_d>::cs));
+    }
+    
+    Vector<phys::units::length_d> operator-(Point const& pB) const
+    {
+        auto& cs = *BaseVector<phys::units::length_d>::cs;
+        return Vector<phys::units::length_d>(cs, getCoordinates() - pB.getCoordinates(cs));
     }
 };
 

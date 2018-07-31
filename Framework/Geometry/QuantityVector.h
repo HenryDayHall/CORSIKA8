@@ -29,6 +29,23 @@ public:
     {
         return Quantity(phys::units::detail::magnitude_tag, eVector[index]);
     }
+    
+    Quantity norm() const
+    {
+        return Quantity(phys::units::detail::magnitude_tag, eVector.norm());
+    }
+    
+    auto operator+(QuantityVector<dim> const& pQVec) const
+    {
+        return QuantityVector<dim>(eVector + pQVec.eVector);
+    }
+    
+    auto operator-(QuantityVector<dim> const& pQVec) const
+    {
+        return QuantityVector<dim>(eVector - pQVec.eVector);
+    }
+    
+    //auto operator*(
 };
 
 template <typename dim>
