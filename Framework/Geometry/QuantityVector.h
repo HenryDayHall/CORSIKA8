@@ -11,6 +11,7 @@ class QuantityVector
 {
 protected:
     using Quantity = phys::units::quantity<dim, double>;
+    using QuantitySquared = decltype(Quantity(phys::units::detail::magnitude_tag, 0) * Quantity(phys::units::detail::magnitude_tag, 0));
     
 public:
     Eigen::Vector3d eVector;
@@ -25,14 +26,19 @@ public:
     {
     }
     
-    Quantity operator[](size_t index) const
+    auto operator[](size_t index) const
     {
         return Quantity(phys::units::detail::magnitude_tag, eVector[index]);
     }
     
-    Quantity norm() const
+    auto norm() const
     {
         return Quantity(phys::units::detail::magnitude_tag, eVector.norm());
+    }
+    
+    auto squaredNorm() const
+    {
+        return QuantitySquared(phys::units::detail::magnitude_tag, eVector.squaredNorm());
     }
     
     auto operator+(QuantityVector<dim> const& pQVec) const
