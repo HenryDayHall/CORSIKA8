@@ -1,8 +1,8 @@
-#ifndef BASEVECTOR_H_
-#define BASEVECTOR_H_
+#ifndef _include_BASEVECTOR_H_
+#define _include_BASEVECTOR_H_
 
-#include "QuantityVector.h"
-#include "CoordinateSystem.h"
+#include <Geometry/QuantityVector.h>
+#include <Geometry/CoordinateSystem.h>
 
 template <typename dim>
 class BaseVector

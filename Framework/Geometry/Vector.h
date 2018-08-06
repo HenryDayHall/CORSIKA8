@@ -1,9 +1,9 @@
-#ifndef VECTOR_H_
-#define VECTOR_H_
+#ifndef _include_VECTOR_H_
+#define _include_VECTOR_H_
 
-#include "BaseVector.h"
-#include "QuantityVector.h"
-#include <phys/units/quantity.hpp>
+#include <Geometry/BaseVector.h>
+#include <Geometry/QuantityVector.h>
+#include <Units/PhysicalUnits.h>
 
 template <typename dim>
 class Vector : public BaseVector<dim>

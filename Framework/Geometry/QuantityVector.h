@@ -1,8 +1,8 @@
-#ifndef QUANTITYVECTOR_H_
-#define QUANTITYVECTOR_H_
+#ifndef _include_QUANTITYVECTOR_H_
+#define _include_QUANTITYVECTOR_H_
 
-#include <phys/units/quantity.hpp>
-#include <phys/units/io.hpp>
+#include <Units/PhysicalUnits.h>
+
 #include <Eigen/Dense>
 #include <iostream>
 

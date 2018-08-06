@@ -1,9 +1,9 @@
-#ifndef POINT_H_
-#define POINT_H_
+#ifndef _include_POINT_H_
+#define _include_POINT_H_
 
-#include "BaseVector.h"
-#include "QuantityVector.h"
-#include <phys/units/quantity.hpp>
+#include <Geometry/BaseVector.h>
+#include <Geometry/QuantityVector.h>
+#include <Units/PhysicalUnits.h>
 
 class Point : public BaseVector<phys::units::length_d>
 {

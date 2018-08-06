@@ -1,4 +1,4 @@
-#include "CoordinateSystem.h"
+#include <Geometry/CoordinateSystem.h>
 
 EigenTransform CoordinateSystem::getTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2)
 {

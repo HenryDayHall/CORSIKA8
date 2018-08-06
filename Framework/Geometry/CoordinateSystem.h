@@ -1,9 +1,10 @@
-#ifndef COORDINATESYSTEM_H_
-#define COORDINATESYSTEM_H_
+#ifndef _include_COORDINATESYSTEM_H_
+#define _include_COORDINATESYSTEM_H_
 
-#include "QuantityVector.h"
+#include <Geometry/QuantityVector.h>
+#include <Units/PhysicalUnits.h>
+
 #include <Eigen/Dense>
-#include <phys/units/quantity.hpp>
 
 typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
 typedef Eigen::Translation<double, 3> EigenTranslation;
