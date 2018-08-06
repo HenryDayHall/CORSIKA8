@@ -4,12 +4,13 @@
    -std=c++14 ../Main/geometry_example.cc \
    ../Framework/Geometry/CoordinateSystem.cc -o geometry_example
 */
-#include <Framework/Geometry/Vector.h>
-#include <Framework/Geometry/Sphere.h>
-#include <Framework/Geometry/Point.h>
-#include <Framework/Geometry/CoordinateSystem.h>
-#include <phys/units/quantity.hpp>
-#include <phys/units/io.hpp>
+
+#include <Geometry/Vector.h>
+#include <Geometry/Sphere.h>
+#include <Geometry/Point.h>
+#include <Geometry/CoordinateSystem.h>
+#include <Units/PhysicalUnits.h>
+
 #include <iostream>
 #include <cstdlib>
 

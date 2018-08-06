@@ -1,8 +1,8 @@
-#ifndef SPHERE_H_
-#define SPHERE_H_
+#ifndef _include_SPHERE_H_
+#define _include_SPHERE_H_
 
-#include "Point.h"
-#include <phys/units/quantity.hpp>
+#include <Geometry/Point.h>
+#include <Units/units/quantity.hpp>
 
 class Sphere
 {
