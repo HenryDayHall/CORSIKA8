@@ -10,13 +10,12 @@ class Vector : public BaseVector<dim>
 {
     using Quantity = phys::units::quantity<dim, double>;
     
+public:
     Vector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector) :
-        BaseVector<Quantity>(pCS, pQVector)
+        BaseVector<dim>(pCS, pQVector)
     {
     }
-        
-    
-public:
+
     Vector(CoordinateSystem const& cs, Quantity x, Quantity y, Quantity z) :
         BaseVector<dim>(cs, QuantityVector<dim>(x, y, z))
     {
@@ -47,7 +46,29 @@ public:
     
     auto norm() const
     {
-        return Quantity(BaseVector<dim>::qVector.eVector.norm());
+        return BaseVector<dim>::qVector.norm();
+    }
+    
+    auto squaredNorm() const
+    {
+        return BaseVector<dim>::qVector.squaredNorm();
+    }
+        
+    template <typename dim2>
+    auto parallelProjectionOnto(BaseVector<dim2> const& pVec, CoordinateSystem const& pCS) const
+    {
+        auto const ourCompVec = getComponents(pCS);
+        auto const otherCompVec = pVec.getComponents(pVec);
+        auto const& a = ourCompVec.eVector;
+        auto const& b = otherCompVec.eVector;
+        
+        return Vector<dim>(pCS, (a * b) / b.squaredNorm() * b);
+    }
+    
+    template <typename dim2>
+    auto parallelProjectionOnto(BaseVector<dim2> const& pVec)
+    {
+        return parallelProjectionOnto<dim2>(pVec, *BaseVector<dim>::cs);
     }
     
     //~ template <typename dim2>
