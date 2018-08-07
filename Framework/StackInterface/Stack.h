@@ -1,7 +1,7 @@
 #ifndef _include_Stack_h__
 #define _include_Stack_h__
 
-#include <StackIterator.h> // to help application programmres
+#include <StackInterface/StackIterator.h> // to help application programmres
 
 namespace stack {
 
@@ -13,8 +13,8 @@ namespace stack {
   class Stack : public DataImpl {
 
   public:
-    using DataImpl::Capacity;
-    using DataImpl::Size;
+    using DataImpl::GetCapacity;
+    using DataImpl::GetSize;
     
     using DataImpl::Clear;
     using DataImpl::Copy;
@@ -26,15 +26,15 @@ namespace stack {
     typedef Particle iterator;
     typedef const Particle const_iterator;
     
-    iterator Begin() { return iterator(*this, 0); } 
-    iterator End() { return iterator(*this, Size()); } 
-    iterator Last() { return iterator(*this, Size()-1); } 
+    iterator begin() { return iterator(*this, 0); } 
+    iterator end() { return iterator(*this, GetSize()); } 
+    iterator last() { return iterator(*this, GetSize()-1); } 
     
-    const_iterator CBegin() const { return const_iterator(*this, 0); } 
-    const_iterator CEnd() const { return const_iterator(*this, Size()); } 
-    const_iterator CLast() const { return const_iterator(*this, Size()-1); } 
+    const_iterator cbegin() const { return const_iterator(*this, 0); } 
+    const_iterator cend() const { return const_iterator(*this, GetSize()); } 
+    const_iterator clast() const { return const_iterator(*this, GetSize()-1); } 
     
-    iterator NewParticle() { IncrementSize(); return iterator(*this, Size()-1); }
+    iterator NewParticle() { IncrementSize(); return iterator(*this, GetSize()-1); }
     void DeleteLast() { DecrementSize(); }
   };
 
