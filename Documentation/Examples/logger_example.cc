@@ -11,6 +11,7 @@ int
 main()
 {
   {
+    cout << "writing to \"another.log\"" << endl;
     ofstream logfile("another.log");
     typedef Sink<ofstream, StdBuffer> SinkFile;
     SinkFile sink(logfile, StdBuffer(10000));

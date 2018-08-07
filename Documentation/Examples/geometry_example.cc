@@ -28,14 +28,14 @@ int main()
     auto const diff = p2 - p1;
     auto const norm = diff.squaredNorm();
     
-    std::cout << diff.getComponents() << std::endl;
-    std::cout << norm << std::endl;
+    std::cout << "p2-p1 components: " << diff.getComponents() << std::endl;
+    std::cout << "p2-p1 norm^2: " << norm << std::endl;
     
     Sphere s(p1, 10_m);
-    std::cout << s.isInside(p2) << std::endl;    
+    std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;    
     
     Sphere s2(p1, 3_um);
-    std::cout << s2.isInside(p2) << std::endl;    
+    std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;    
     
     return EXIT_SUCCESS;
 }

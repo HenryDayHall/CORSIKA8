@@ -1,0 +1,25 @@
+PROJECT_NAME           = CORSIKA8
+
+OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../.. 
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+
+FILE_PATTERNS          = *.cc *.h
+RECURSIVE              = YES
+
+SOURCE_BROWSER         = YES
+# INLINE_SOURCES
+
+CLASS_DIAGRAMS         = YES
+HAVE_DOT               = YES
+CLASS_GRAPH            = YES
+UML_LOOK               = YES
+TEMPLATE_RELATIONS     = YES
+INCLUDE_GRAPH          = YES
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+GENERATE_LEGEND        = YES
+
+SEARCHENGINE           = YES
