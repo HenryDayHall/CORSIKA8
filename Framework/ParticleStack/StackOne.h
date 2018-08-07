@@ -33,12 +33,13 @@ namespace stack {
   
   
   /**
-     Definition of one most simple particle stack object.
+     Memory implementation of the most simple particle stack object.
    */
   
   class StackOneImpl
   {    
   private:
+    /// the actual memory to store particle data
     std::vector<int> fId;
     std::vector<double> fData;
     
@@ -47,14 +48,16 @@ namespace stack {
     
     int GetSize() const { return fData.size();  }
     int GetCapacity() const { return fData.size(); }
-    
-    
+        
     void SetId(const int i, const int id) { fId[i] = id; }
     void SetEnergy(const int i, const double e) { fData[i] = e; }
     
     const int GetId(const int i) const { return fId[i]; }
     const double GetEnergy(const int i) const { return fData[i]; }
-    
+
+    /**
+       Function to copy particle at location i2 in stack to i1
+     */
     void Copy(const int i1, const int i2) {
       fData[i2] = fData[i1];
       fId[i2] = fId[i1];
