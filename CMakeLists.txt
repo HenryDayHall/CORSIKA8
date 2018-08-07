@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.4.3)
 
+set (CMAKE_INSTALL_MESSAGE LAZY)
+
 set (CMAKE_CXX_STANDARD 14)
 
 project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ project")
