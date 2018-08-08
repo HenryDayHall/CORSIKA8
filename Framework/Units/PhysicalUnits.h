@@ -1,17 +1,15 @@
 #ifndef _include_PhysicalUnits_h_
 #define _include_PhysicalUnits_h_
 
-#include <Units/units/quantity.hpp>
-#include <Units/units/io.hpp>
+#include <ThirdParty/phys/units/quantity.hpp>
+#include <ThirdParty/phys/units/io.hpp>
+#include <ThirdParty/phys/units/physical_constants.hpp>
 
-#include <Units/PhysicalConstants.h>
-
-  /**
-     /file PhysicalUnits
+/**
+   /file PhysicalUnits
    
-     Define _XeV literals, alowing 10_GeV in the code.  
-
-   */
+   Define _XeV literals, alowing 10_GeV in the code.     
+*/
 
 namespace phys {
   namespace units {

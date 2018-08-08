@@ -2,7 +2,7 @@
 #define _include_SPHERE_H_
 
 #include <Geometry/Point.h>
-#include <Units/units/quantity.hpp>
+#include <Units/PhysicalUnits.h>
 
 class Sphere
 {

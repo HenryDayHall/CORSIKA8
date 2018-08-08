@@ -1,12 +1,13 @@
 
 add_library (CORSIKAunits INTERFACE)
 
-target_include_directories (CORSIKAunits INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
-                                                   $<INSTALL_INTERFACE:include/Framework>
-                                                   )
+target_include_directories (CORSIKAunits
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/ThirdParty>
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+  )
 
-install (FILES PhysicalUnits.h PhysicalConstants.h
-         DESTINATION include/Units)
+install (FILES PhysicalUnits.h DESTINATION include/Units)
 
-install (DIRECTORY units
-         DESTINATION include/Units)
