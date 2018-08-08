@@ -15,6 +15,7 @@ Cascade::Process()
   
 }
 
+template<typename Trajectory>
 void
 Cascade::Step(auto& sequence, Particle& particle)
 {

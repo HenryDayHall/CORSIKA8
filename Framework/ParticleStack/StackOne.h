@@ -17,21 +17,24 @@ namespace stack {
   template<typename _Stack>
   class ParticleReadOne : public StackIteratorInfo<_Stack, ParticleReadOne<_Stack> >
     {
-      using StackIteratorInfo<_Stack, ParticleReadOne>::Index;
-      using StackIteratorInfo<_Stack, ParticleReadOne>::Stack;
+      using StackIteratorInfo<_Stack, ParticleReadOne>::GetIndex;
+      using StackIteratorInfo<_Stack, ParticleReadOne>::GetStack;
       
     public:
-      void SetId(const int id) { Stack().SetId(Index(), id); }
-      void SetEnergy(const double e) { Stack().SetEnergy(Index(), e); }
+      void SetId(const int id) { GetStack().SetId(GetIndex(), id); }
+      void SetEnergy(const double e) { GetStack().SetEnergy(GetIndex(), e); }
       
-      int GetId() const { Stack().GetId(Index()); }
-      double GetEnergy() const { Stack().GetEnergy(Index()); }
+      int GetId() const { GetStack().GetId(GetIndex()); }
+      double GetEnergy() const { GetStack().GetEnergy(GetIndex()); }
       
       double GetPDG() const { return 0; } // ConvertToPDG(GetId()); }  
-      void SetPDG(double v) { Stack().SetId(0, 0); } //fIndex, ConvertFromPDG(v)); }
+      void SetPDG(double v) { GetStack().SetId(0, 0); } //fIndex, ConvertFromPDG(v)); }
     };
   
+
+ 
   
+
   /**
      Memory implementation of the most simple particle stack object.
    */
@@ -40,6 +43,7 @@ namespace stack {
   {    
   private:
     /// the actual memory to store particle data
+
     std::vector<int> fId;
     std::vector<double> fData;
     

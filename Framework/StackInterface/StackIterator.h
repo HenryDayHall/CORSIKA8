@@ -19,12 +19,8 @@ namespace stack {
 
      This allows to write code like
      \verbatim
-     for (auto p : theStack) { p.SetEnergy(newEnergy); }  
-     \endverbatim
-
-     It might be interesting to investigate whether auto or auto& is
-     better in the loop here...
-     
+     for (auto& p : theStack) { p.SetEnergy(newEnergy); }  
+     \endverbatim     
   */
   
   template<typename Stack, typename Particle>
@@ -71,7 +67,7 @@ namespace stack {
      Internal helper class for StackIterator. Document better...
    */
   
-  template<class _Stack, class Particle>
+  template<typename _Stack, typename Particle>
   class StackIteratorInfo {
     
     friend Particle;  
@@ -79,9 +75,9 @@ namespace stack {
     StackIteratorInfo() {}
     
   protected:
-    inline _Stack& Stack() { return static_cast<StackIterator<_Stack, Particle>*>(this)->GetStack(); }
-    inline int Index() const { return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetIndex(); }
-    inline const _Stack& Stack() const { return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetStack(); }
+    inline _Stack& GetStack() { return static_cast<StackIterator<_Stack, Particle>*>(this)->GetStack(); }
+    inline int GetIndex() const { return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetIndex(); }
+    inline const _Stack& GetStack() const { return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetStack(); }
   };
 
 } // end namespace stack

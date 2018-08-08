@@ -14,6 +14,8 @@
 #include <iostream>
 #include <cstdlib>
 
+using namespace phys::units;
+
 int main()
 {
     using namespace phys::units;
@@ -25,7 +27,7 @@ int main()
     CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});
     Point const p2(cs2, {0_m, 0_m, 0_m});
     
-    auto const diff = p2 - p1;
+    Vector<length_d> const diff = p2 - p1;
     auto const norm = diff.squaredNorm();
     
     std::cout << "p2-p1 components: " << diff.getComponents() << std::endl;

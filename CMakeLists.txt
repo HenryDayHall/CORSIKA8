@@ -11,6 +11,7 @@ project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ project")
 
 find_package (Boost 1.40 COMPONENTS program_options REQUIRED)
 find_package (Eigen3 3.3 REQUIRED)
+find_package (HDF5)
 
 add_subdirectory (Documentation)
 add_subdirectory (Framework)

@@ -6,16 +6,20 @@
 
 #include <Units/PhysicalConstants.h>
 
-// define _XeV literals
+  /**
+     /file PhysicalUnits
+   
+     Define _XeV literals, alowing 10_GeV in the code.  
 
-//namespace corsika {
-  namespace phys {
-    namespace units {
-      namespace literals {
-        QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d, magnitude(eV) )
-      }
+   */
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d, magnitude(eV) )
     }
   }
-//}
+}
 
 #endif
+

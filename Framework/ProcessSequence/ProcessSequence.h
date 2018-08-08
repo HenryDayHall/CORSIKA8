@@ -48,7 +48,7 @@ namespace processes {
     { }
     
     template<typename D>
-    inline void DoContinuous(D& d) const { A.DoContinuous(d); B.DoContinuous(d); }
+    inline void DoContinuous(D& d) const { A.DoContinuous(d); B.DoContinuous(d); } // add trajectory
     
     template<typename D>
     inline double MinStepLength(D& d) const { return min(A.MinStepLength(d), B.MinStepLength(d)); }
