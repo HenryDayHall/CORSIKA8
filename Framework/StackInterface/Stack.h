@@ -25,11 +25,13 @@ namespace stack {
   public:  
     typedef Particle iterator;
     typedef const Particle const_iterator;
-    
+
+    /// these are functions required by std containers and std loops
     iterator begin() { return iterator(*this, 0); } 
     iterator end() { return iterator(*this, GetSize()); } 
     iterator last() { return iterator(*this, GetSize()-1); } 
     
+    /// these are functions required by std containers and std loops
     const_iterator cbegin() const { return const_iterator(*this, 0); } 
     const_iterator cend() const { return const_iterator(*this, GetSize()); } 
     const_iterator clast() const { return const_iterator(*this, GetSize()-1); } 

@@ -6,11 +6,26 @@
 
 namespace stack {
 
+  // forward decl.
   template<class Stack, class Particle> class StackIteratorInfo;
 
   /**
-     The main interface to iterator over objects on a stack. 
-   */
+     \class StackIterator
+     
+     The StackIterator is the main interface to iterator over
+     particles on a stack. At the same time StackIterator is a
+     Particle object by itself, thus there is no difference between
+     type and ref_type for convenience of the physicist.
+
+     This allows to write code like
+     \verbatim
+     for (auto p : theStack) { p.SetEnergy(newEnergy); }  
+     \endverbatim
+
+     It might be interesting to investigate whether auto or auto& is
+     better in the loop here...
+     
+  */
   
   template<typename Stack, typename Particle>
   class StackIterator : public Particle
@@ -42,14 +57,18 @@ namespace stack {
     int GetIndex() const { return fIndex; }
     Stack& GetStack() { return *fData; }
     const Stack& GetStack() const { return *fData; }
-    
-    inline StackIterator<Stack,Particle>& base_ref() { return static_cast<StackIterator<Stack, Particle>&>(*this); }
-    inline const StackIterator<Stack,Particle>& base_ref() const { return static_cast<const StackIterator<Stack, Particle>&>(*this); }
+
+    // this is probably not needed rigth now:
+    //inline StackIterator<Stack,Particle>& BaseRef() { return static_cast<StackIterator<Stack, Particle>&>(*this); }
+    //inline const StackIterator<Stack,Particle>& BaseRef() const { return static_cast<const StackIterator<Stack, Particle>&>(*this); }
   };
 
   
+
   /**
-     Internal helper class for StackIterator     
+     \class StackIteratorInfo
+     
+     Internal helper class for StackIterator. Document better...
    */
   
   template<class _Stack, class Particle>

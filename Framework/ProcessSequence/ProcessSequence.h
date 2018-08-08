@@ -7,6 +7,15 @@ using namespace std;
 
 namespace processes {
 
+  /**
+     /class Base
+     
+     The structural base type of a process object in a
+     ProcessSequence. Both, the ProcessSequence and all its elements
+     are of type Base<T>
+
+   */
+  
   template <typename derived>
   struct Base 
   {
@@ -16,7 +25,15 @@ namespace processes {
     }
   };
 
+  /**
+     \class ProcessSequence
 
+     A compile time static list of processes. The compiler will
+     generate a new type based on template logic containing all the
+     elements. 
+
+     \comment Using CRTP pattern, https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
+   */
 
   template <typename T1, typename T2>
   class ProcessSequence : public Base <ProcessSequence<T1,T2> >
@@ -31,7 +48,16 @@ namespace processes {
     { }
     
     template<typename D>
-      inline void Call(D& d) const { A.Call(d); B.Call(d); }
+    inline void DoContinuous(D& d) const { A.DoContinuous(d); B.DoContinuous(d); }
+    
+    template<typename D>
+    inline double MinStepLength(D& d) const { return min(A.MinStepLength(d), B.MinStepLength(d)); }
+    
+    //template<typename D>
+    //inline Trajectory Transport(D& d, double& length) const { A.Transport(d, length); B.Transport(d, length); }
+    
+    template<typename D>
+    inline void DoDiscrete(D& d) const { A.DoDiscrete(d); B.DoDiscrete(d); }
     
   };
   

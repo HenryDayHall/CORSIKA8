@@ -46,7 +46,7 @@ namespace stack {
     inline StackIterator<Stack,Particle>& base_ref() { return static_cast<StackIterator<Stack, Particle>&>(*this); }
     inline const StackIterator<Stack,Particle>& base_ref() const { return static_cast<const StackIterator<Stack, Particle>&>(*this); }
   };
-
+  
   
   /**
      Internal helper class for StackIterator     

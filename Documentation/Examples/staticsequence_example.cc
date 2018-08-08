@@ -10,7 +10,7 @@ class Process1 : public processes::Base <Process1>
 {
 public:
   Process1() {}
-  template<typename D> void Call(D& d) const {
+  template<typename D> void DoContinuous(D& d) const {
     for (int i=0; i<10; ++i) d.p[i] += 1;
   }
 };
@@ -20,7 +20,7 @@ class Process2 : public processes::Base <Process2>
 public:
   Process2() {}
    
-  template<typename D> inline void Call(D& d) const {
+  template<typename D> inline void DoContinuous(D& d) const {
     //for (int i=0; i<10; ++i) d.p[i] *= 2;
   }
 };
@@ -30,11 +30,11 @@ class Process3 : public processes::Base <Process3>
 public:
   //Process3(const int v) :fV(v) {}
   Process3() {}
-
-  template<typename D> inline void Call(D& d) const {
+  
+  template<typename D> inline void DoContinuous(D& d) const {
     //for (int i=0; i<10; ++i) d.p[i] += fV;
   }
-
+  
 private:
   //int fV;
 };
@@ -44,10 +44,10 @@ class Process4 : public processes::Base <Process4>
 public:
   //Process4(const int v) : fV(v) {}
   Process4() {}  
-  template<typename D> inline void Call(D& d) const {
+  template<typename D> inline void DoContinuous(D& d) const {
     //for (int i=0; i<10; ++i) d.p[i] /= fV;
   }
-
+  
 private:
   //int fV;
 };
@@ -65,7 +65,7 @@ void
 modular()
 {
   data d0;
-
+  
   Process1 m1;
   Process2 m2;
   Process3 m3;
@@ -75,14 +75,14 @@ modular()
   
   const int n = 100000000;
   for (int i=0; i<n; ++i) {
-    sequence.Call(d0);    
+    sequence.DoContinuous(d0);
   }
-
+  
   double s = 0;
   for (int i=0; i<10; ++i) {
     s += d0.p[i];
   }
-
+  
   cout << scientific << " v=" << s << " n=" << n << endl;
 }
 
