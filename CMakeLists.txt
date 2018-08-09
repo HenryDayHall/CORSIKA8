@@ -7,7 +7,7 @@ set (CMAKE_INSTALL_MESSAGE LAZY)
 
 # --std=c++14
 set (CMAKE_CXX_STANDARD 14)
-
+enable_testing ()
 
 #add_custom_target (corsika_pre_build)
 #add_custom_command (TARGET corsika_pre_build PRE_BUILD COMMAND "${PROJECT_SOURCE_DIR}/pre_compile.py")
