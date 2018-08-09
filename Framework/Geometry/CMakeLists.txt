@@ -17,8 +17,15 @@ target_include_directories (CORSIKAgeometry INTERFACE ${EIGEN3_INCLUDE_DIR})
 target_include_directories (CORSIKAgeometry INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
                                                       $<INSTALL_INTERFACE:include/Framework>
                                                       )
-
+                                                    
 install (TARGETS CORSIKAgeometry
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib
          PUBLIC_HEADER DESTINATION include/Geometry)
+
+
+# code testing
+add_executable (testGeometry testGeometry.cc)
+target_link_libraries (testGeometry CORSIKAgeometry CORSIKAunits CORSIKAthirdparty) # for catch2
+add_test (NAME testGeometry COMMAND testGeometry -o report.xml -r junit)
+
