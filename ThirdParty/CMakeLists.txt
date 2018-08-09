@@ -8,3 +8,4 @@ target_include_directories (CORSIKAthirdparty
   )
 
 install (DIRECTORY phys DESTINATION include/ThirdParty/)
+install (DIRECTORY catch2 DESTINATION include/ThirdParty/)
