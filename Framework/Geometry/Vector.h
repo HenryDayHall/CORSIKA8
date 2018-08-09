@@ -71,6 +71,58 @@ public:
         return parallelProjectionOnto<dim2>(pVec, *BaseVector<dim>::cs);
     }
     
+    auto operator+(Vector<dim> const& pVec) const
+    {
+        auto const components = getComponents(*BaseVector<dim>::cs) + pVec.getComponents(*BaseVector<dim>::cs);
+        return Vector<dim>(*BaseVector<dim>::cs, components);
+    }
+    
+    auto operator-(Vector<dim> const& pVec) const
+    {
+        auto const components = getComponents() - pVec.getComponents(*BaseVector<dim>::cs);
+        return Vector<dim>(*BaseVector<dim>::cs, components);
+    }
+    
+    auto& operator*=(double const p)
+    {
+        BaseVector<dim>::qVector *= p;
+        return *this;
+    }
+    
+    template <typename ScalarDim>
+    auto operator*(phys::units::quantity<ScalarDim, double> const p) const
+    {
+        using res_dim = typename decltype(BaseVector<dim>::qVector * p)::dimension;
+        return Vector<res_dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);        
+    }
+    
+    auto operator*(double const p) const
+    {        
+        return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
+    }
+    
+    auto& operator+=(Vector<dim> const& pVec)
+    {
+        BaseVector<dim>::qVector += pVec.getComponents(*BaseVector<dim>::cs);
+        return *this;
+    }
+    
+    auto& operator-=(Vector<dim> const& pVec)
+    {
+        BaseVector<dim>::qVector -= pVec.getComponents(*BaseVector<dim>::cs);
+        return *this;
+    }
+    
+    auto& operator-() const
+    {
+        return Vector<dim>(*BaseVector<dim>::cs, - BaseVector<dim>::qVector);
+    }
+    
+    auto normalized() const
+    {
+        return (*this) * (1 / norm());
+    }
+    
     //~ template <typename dim2>
     //~ auto operator*(Vector<dim2> const& pVec)
     //~ {
