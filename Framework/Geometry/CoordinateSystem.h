@@ -46,14 +46,14 @@ public:
     
     auto rotate(QuantityVector<phys::units::length_d> axis, double angle) const
     {
-        EigenTransform const rotation{Eigen::AngleAxisd(M_PI / 6, axis.eVector.normalized())};
+        EigenTransform const rotation{Eigen::AngleAxisd(angle, axis.eVector.normalized())};
         
         return CoordinateSystem(*this, rotation);
     }
     
     auto translateAndRotate(QuantityVector<phys::units::length_d> translation, QuantityVector<phys::units::length_d> axis, double angle)
     {
-        EigenTransform const transf{Eigen::AngleAxisd(M_PI / 6, axis.eVector.normalized()) * EigenTranslation(translation.eVector)};
+        EigenTransform const transf{Eigen::AngleAxisd(angle, axis.eVector.normalized()) * EigenTranslation(translation.eVector)};
         
         return CoordinateSystem(*this, transf);
     }
