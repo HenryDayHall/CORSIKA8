@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <array>
 
 #include <ProcessSequence/ProcessSequence.h>
 
@@ -53,10 +54,9 @@ private:
 };
 
 
-class data {
+class Data {
 public:
-  double p[10];
-  data() {for (int i=0; i<10; ++i) p[i] = 0; }
+  std::array<double, 10> p{{0.}};
 };
 
 
@@ -64,7 +64,7 @@ public:
 void
 modular()
 {
-  data d0;
+  Data d0;
   
   Process1 m1;
   Process2 m2;
