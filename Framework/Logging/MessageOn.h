@@ -1,0 +1,54 @@
+#ifndef _include_MessageOn_h_
+#define _include_MessageOn_h_
+
+
+namespace logger {
+
+  /**
+     Helper class to convert all input arguments of MessageOn::Message
+     into string-concatenated version and return this as string.
+  */
+  class MessageOn {
+  protected:
+    std::string Message() { return "\n"; }
+    
+    template<typename First, typename ... Strings> std::string Message(const First& arg, const Strings&... rest) {
+      std::ostringstream ss;
+      ss << arg << Message(rest...);
+      return ss.str();
+    }
+    
+    template<typename ... Strings> std::string Message(const int& arg, const Strings&... rest) {
+      return std::to_string(arg) + Message(rest...);
+    }
+    
+    template<typename ... Strings> std::string Message(const double& arg, const Strings&... rest) {
+      return std::to_string(arg) + Message(rest...);
+    }
+    
+    template<typename ... Strings> std::string Message(char const * arg, const Strings&... rest) {
+      return std::string(arg) + Message(rest...);
+    }
+    
+    template<typename ... Strings> std::string Message(const std::string& arg, const Strings&... rest) {
+      return arg + Message(rest...);
+    }
+    
+    // ----------------------
+    // boost format
+    template<typename ... Strings> std::string Message(const boost::format& fmt, const Strings&... rest) {
+      boost::format FMT(fmt);
+      return bformat(FMT, rest...);
+    }
+    
+    template<typename Arg, typename ... Strings> std::string bformat(boost::format& fmt, const Arg& arg, const Strings&... rest) {
+      fmt % arg;
+      return bformat(fmt, rest...);
+    }
+    
+    std::string bformat(boost::format& fmt) { return fmt.str() + "\n"; }
+  };
+
+}// end namesapce
+
+#endif

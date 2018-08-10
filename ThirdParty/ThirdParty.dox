@@ -1,0 +1,28 @@
+/**
+@page ThirdParty
+@tableofcontents
+
+In the directory ThirdParty we provide simple dependencies. This
+minimizes the need to install additional software for the user. Note
+the individual copyrights and licences here!
+
+
+@section PhysUnits
+
+The PhysUnits library is an external dependency included here just for
+convenience: 
+
+Original source code from: https://github.com/martinmoene/PhysUnits-CT-Cpp11#references
+
+Licence: BSL-1.0 (https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
+
+References: https://github.com/martinmoene/PhysUnits-CT-Cpp11#references
+
+
+@section catch2
+ 
+The catch2 unit testing library is from: https://github.com/catchorg/Catch2
+Licence: BSL-1.0 (https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
+References: https://github.com/catchorg/Catch2
+
+*/

@@ -8,6 +8,6 @@ target_include_directories (CORSIKAlogging INTERFACE $<BUILD_INTERFACE:${PROJECT
                                                      $<INSTALL_INTERFACE:include/Framework>
                                                      )
 
-install (FILES Logger.h
+install (FILES Logger.h Sink.h MessageOn.h MessageOff.h NoSink.h Sink.h BufferedSink.h
          DESTINATION include/Logging)
 

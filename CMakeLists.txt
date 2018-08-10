@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.4.3)
 
-project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ PROJECT " LANGUAGES CXX)
+project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ project" LANGUAGES CXX)
 
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
