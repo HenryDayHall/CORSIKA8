@@ -55,18 +55,18 @@ public:
     }
         
     template <typename dim2>
-    auto parallelProjectionOnto(BaseVector<dim2> const& pVec, CoordinateSystem const& pCS) const
+    auto parallelProjectionOnto(Vector<dim2> const& pVec, CoordinateSystem const& pCS) const
     {
         auto const ourCompVec = getComponents(pCS);
-        auto const otherCompVec = pVec.getComponents(pVec);
+        auto const otherCompVec = pVec.getComponents(pCS);
         auto const& a = ourCompVec.eVector;
         auto const& b = otherCompVec.eVector;
         
-        return Vector<dim>(pCS, (a * b) / b.squaredNorm() * b);
+        return Vector<dim>(pCS, QuantityVector<dim>(b * ((a.dot(b)) / b.squaredNorm())));
     }
     
     template <typename dim2>
-    auto parallelProjectionOnto(BaseVector<dim2> const& pVec)
+    auto parallelProjectionOnto(Vector<dim2> const& pVec) const
     {
         return parallelProjectionOnto<dim2>(pVec, *BaseVector<dim>::cs);
     }
@@ -92,8 +92,16 @@ public:
     template <typename ScalarDim>
     auto operator*(phys::units::quantity<ScalarDim, double> const p) const
     {
-        using res_dim = typename decltype(BaseVector<dim>::qVector * p)::dimension;
-        return Vector<res_dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);        
+        using ResQuantity = decltype(BaseVector<dim>::qVector * p);
+        if constexpr (std::is_same<ResQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
+        {
+            return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
+        }
+        else
+        {
+            using res_dim = typename decltype(BaseVector<dim>::qVector * p)::dimension;
+            return Vector<res_dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);        
+        }
     }
     
     auto operator*(double const p) const

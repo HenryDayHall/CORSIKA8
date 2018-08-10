@@ -6,7 +6,7 @@ project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ PROJECT " LANGUAGES CXX)
 set (CMAKE_INSTALL_MESSAGE LAZY)
 
 # --std=c++14
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
 
 #add_custom_target (corsika_pre_build)

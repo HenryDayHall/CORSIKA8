@@ -340,7 +340,7 @@ private:
 
     enum { has_dimension = ! Dims::is_all_zero };
 
-    static_assert( has_dimension, "quantity dimensions must not all be zero" );
+    // static_assert( has_dimension, "quantity dimensions must not all be zero" );
 
 private:
     // friends:

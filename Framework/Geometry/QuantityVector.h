@@ -58,10 +58,16 @@ public:
     template <typename ScalarDim>
     auto operator*(phys::units::quantity<ScalarDim, double> const p) const
     {
-        return QuantityVector<typename phys::units::detail::Product<ScalarDim, dim, double, double>::dimension_type>(eVector * p.magnitude());
-        // TODO: this function does not work if the result is dimensionless, as
-        // dimensionless quantities are "cast" back to plain old double in PhysUnits.
-        // Either change PhysUnits, or cover this case with a template specialization?
+        using ResQuantity = phys::units::detail::Product<ScalarDim, dim, double, double>;
+        
+        if constexpr (std::is_same<ResQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
+        {
+            return QuantityVector<phys::units::dimensionless_d>(eVector * p.magnitude());
+        }
+        else
+        {
+            return QuantityVector<typename ResQuantity::dimension_type>(eVector * p.magnitude());
+        }
     }
     
     auto operator*(double const p) const
