@@ -1,12 +1,14 @@
-PROJECT_NAME           = CORSIKA8
+PROJECT_NAME           = CORSIKA
+PROJECT_NUMBER         = 8.0.0
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
 INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../.. 
+EXCLUDE_PATTERN        = "*/ThirdParty/*/*"
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = NO
 
-FILE_PATTERNS          = *.cc *.h
+FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox
 RECURSIVE              = YES
 
 SOURCE_BROWSER         = YES
