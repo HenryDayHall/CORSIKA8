@@ -8,7 +8,7 @@ set_target_properties (CORSIKAgeometry PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties (CORSIKAgeometry PROPERTIES SOVERSION 1)
 
 set_target_properties (CORSIKAgeometry PROPERTIES PUBLIC_HEADER "${GEOMETRY_HEADERS}")
-
+                                                    
 # target dependencies on other libraries (also header only)
 target_link_libraries (CORSIKAgeometry CORSIKAunits)
 
@@ -17,7 +17,7 @@ target_include_directories (CORSIKAgeometry INTERFACE ${EIGEN3_INCLUDE_DIR})
 target_include_directories (CORSIKAgeometry INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
                                                       $<INSTALL_INTERFACE:include/Framework>
                                                       )
-                                                    
+
 install (TARGETS CORSIKAgeometry
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib

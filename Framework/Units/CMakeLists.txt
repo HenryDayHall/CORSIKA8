@@ -5,7 +5,6 @@ target_include_directories (CORSIKAunits
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/ThirdParty>
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
   )
 
