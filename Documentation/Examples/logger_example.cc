@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include <boost/format.hpp>
 
@@ -13,10 +14,10 @@ main()
   {
     cout << "writing to \"another.log\"" << endl;
     ofstream logfile("another.log");
-    typedef Sink<ofstream, StdBuffer> SinkFile;
-    SinkFile sink(logfile, StdBuffer(10000));
-    logger<SinkFile, messageconst> info("\033[32m", "info", sink);
-    logger<SinkFile, messageconst> err("\033[31m", "error", sink);
+    logger::sink::SinkStream unbuffered_sink(logfile);
+    logger::sink::BufferedSinkStream sink(logfile, logger::sink::StdBuffer(10000));
+    logger::Logger<logger::MessageOn, logger::sink::BufferedSinkStream> info("\033[32m", "info", sink);
+    logger::Logger<logger::MessageOn, logger::sink::BufferedSinkStream> err("\033[31m", "error", sink);
     //logger<ostream,messageconst,StdBuffer> info(std::cout, StdBuffer(10000));
     
     /*
@@ -26,14 +27,14 @@ main()
     */
     
     for (int i=0; i<100000; ++i) {
-    LOG(info, "irgendwas"," ", string("and more")," ", boost::format("error: %i message: %s. done."), i, "stupido");
-    LOG(err, "Fehler");
+      LOG(info, "irgendwas"," ", string("and more")," ", boost::format("error: %i message: %s. done."), i, "stupido");
+      LOG(err, "Fehler");
     }
   }
-
+  
   {
-    NoSink off;
-    logger<NoSink, MessageOff> info("", "", off);
+    logger::sink::NoSink off;
+    logger::Logger<logger::MessageOff> info("", "", off);
     
     for (int i=0; i<100000; ++i) {
       LOG(info, "irgendwas", string("and more"), boost::format("error: %i message: %s. done."), i, "stupido", "a-number:", 8.99, "ENDE" );
