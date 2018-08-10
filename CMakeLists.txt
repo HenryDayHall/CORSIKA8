@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.4.3)
 
-project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ project")
+project (corsika VERSION 8.0.0 DESCRIPTION "CORSIKA C++ PROJECT " LANGUAGES CXX)
 
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
@@ -14,8 +14,8 @@ enable_testing ()
 
 # dependencies
 find_package (Boost 1.40 COMPONENTS program_options REQUIRED)
-find_package (Eigen3 3.3 REQUIRED)
-find_package (HDF5)
+find_package (Eigen3 REQUIRED)
+#find_package (HDF5) # not yet needed
 
 # order of subdirectories 
 add_subdirectory (ThirdParty)
