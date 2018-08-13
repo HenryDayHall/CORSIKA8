@@ -1,10 +1,3 @@
-/*
-  from within ngc/build/ directory:
-  g++ -O3 -I ../third_party/ -I<path to eigen> -I ../ -Wall -pedantic \
-   -std=c++14 ../Main/geometry_example.cc \
-   ../Framework/Geometry/CoordinateSystem.cc -o geometry_example
-*/
-
 #include <Geometry/Vector.h>
 #include <Geometry/Sphere.h>
 #include <Geometry/Point.h>
@@ -12,32 +5,58 @@
 #include <Units/PhysicalUnits.h>
 
 #include <iostream>
+#include <typeinfo>
 #include <cstdlib>
 
-using namespace phys::units;
+using namespace phys::units; 
+using namespace phys::units::io; // support stream << unit
+using namespace phys::units::literals; // support unit literals like 5_m;
 
 int main()
 {
-    using namespace phys::units;
-    using namespace phys::units::io;
-    using namespace phys::units::literals;
-    
+    //~ // define the root coordinate system
     CoordinateSystem root;
-    Point const p1(root, {0_m, 0_m, 0_m});
+    
+    // another CS defined by a translation relative to the root CS
     CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});
-    Point const p2(cs2, {0_m, 0_m, 0_m});
     
-    Vector<length_d> const diff = p2 - p1;
-    auto const norm = diff.squaredNorm();
+    // rotations are possible, too; parameters are axis vector and angle
+    CoordinateSystem cs3 = root.rotate({1_m, 0_m, 0_m}, 90 * degree_angle);
     
-    std::cout << "p2-p1 components: " << diff.getComponents() << std::endl;
+    // now let's define some geometrical objects:
+    Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
+    Point const p2(cs2, {0_m, 0_m, 0_m}); // the origin of cs2
+    
+    Vector<length_d> const diff = p2 - p1; // the distance between the points, basically the translation vector given above
+    auto const norm = diff.squaredNorm(); // squared length with the right dimension
+    
+    // print the components of the vector as given in the different CS
+    std::cout << "p2-p1 components in root: " << diff.getComponents(root) << std::endl;
+    std::cout << "p2-p1 components in cs2: " << diff.getComponents(cs2) << std::endl; // by definition invariant under translations
+    std::cout << "p2-p1 components in cs3: " << diff.getComponents(cs3) << std::endl; // but not under rotations
     std::cout << "p2-p1 norm^2: " << norm << std::endl;
     
-    Sphere s(p1, 10_m);
-    std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;    
+    Sphere s(p1, 10_m); // define a sphere around a point with a radius
+    //~ std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;    
     
-    Sphere s2(p1, 3_um);
-    std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;    
+    Sphere s2(p1, 3_um); // another sphere
+    //~ std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;
+    
+    
+    // let's try parallel projections:
+    auto const v1 = Vector<length_d>(root, {1_m, 1_m, 0_m});
+    auto const v2 = Vector<length_d>(root, {1_m, 0_m, 0_m});
+
+    auto const v3 = v1.parallelProjectionOnto(v2);
+    
+    auto const cross = v1.cross(v2).normalized();
+    
+    // if a CS is not given as parameter for getComponents(), the components
+    // in the "home" CS are returned
+    std::cout << v1.getComponents() << std::endl;
+    std::cout << v2.getComponents() << std::endl;
+    std::cout << v3.getComponents() << std::endl;
+    std::cout << cross.getComponents() << std::endl;
     
     return EXIT_SUCCESS;
 }
