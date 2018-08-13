@@ -70,9 +70,26 @@ public:
         }
     }
     
+    template <typename ScalarDim>
+    auto operator/(phys::units::quantity<ScalarDim, double> const p) const
+    {
+        return (*this) * (1 / p);
+    }
+    
     auto operator*(double const p) const
     {
         return QuantityVector<dim>(eVector * p);
+    }
+    
+    auto operator/(double const p) const
+    {
+        return QuantityVector<dim>(eVector / p);
+    }
+    
+    auto& operator/=(double const p) const
+    {
+        eVector /= p;
+        return *this;
     }
     
     auto& operator*=(double const p)

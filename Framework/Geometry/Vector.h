@@ -92,21 +92,32 @@ public:
     template <typename ScalarDim>
     auto operator*(phys::units::quantity<ScalarDim, double> const p) const
     {
-        using ResQuantity = decltype(BaseVector<dim>::qVector * p);
-        if constexpr (std::is_same<ResQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
+        using ProdQuantity = phys::units::detail::Product<dim, ScalarDim, double, double>;
+        
+        if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
         {
             return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
         }
         else
         {
-            using res_dim = typename decltype(BaseVector<dim>::qVector * p)::dimension;
-            return Vector<res_dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);        
+            return Vector<typename ProdQuantity::dimension_type>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);        
         }
+    }
+    
+    template <typename ScalarDim>
+    auto operator/(phys::units::quantity<ScalarDim, double> const p) const
+    {
+        return (*this) * (1 / p);
     }
     
     auto operator*(double const p) const
     {        
         return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
+    }
+    
+    auto operator/(double const p) const
+    {        
+        return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector / p);
     }
     
     auto& operator+=(Vector<dim> const& pVec)
@@ -131,12 +142,25 @@ public:
         return (*this) * (1 / norm());
     }
     
-    //~ template <typename dim2>
-    //~ auto operator*(Vector<dim2> const& pVec)
-    //~ {
-        //~ auto constexpr resulting_dim = dimension 
-        //~ return Vector<
-    //~ }
+    template <typename dim2>
+    auto cross(Vector<dim2> pV) const
+    {
+        auto const c1 = getComponents().eVector;
+        auto const c2 = pV.getComponents(*BaseVector<dim>::cs).eVector;
+        auto const bareResult = c1.cross(c2);
+        
+        using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
+        
+        if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
+        {
+            return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, bareResult);
+        }
+        else
+        {
+            return Vector<typename ProdQuantity::dimension_type>(*BaseVector<dim>::cs, bareResult);        
+        }
+    }
+    
 };
 
 #endif

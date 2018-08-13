@@ -1,6 +1,6 @@
 
 set (GEOMETRY_SOURCES CoordinateSystem.cc)
-set (GEOMETRY_HEADERS Vector.h Point.h Sphere.h CoordinateSystem.h)
+set (GEOMETRY_HEADERS Vector.h Point.h Sphere.h CoordinateSystem.h Helix.h)
 
 add_library (CORSIKAgeometry STATIC ${GEOMETRY_SOURCES})
 
