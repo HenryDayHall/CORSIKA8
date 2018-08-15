@@ -5,6 +5,8 @@
 #include <Geometry/Point.h>
 #include <Units/PhysicalUnits.h>
 
+#include <cmath>
+
 class Helix // TODO: inherit from to-be-implemented "Trajectory"
 {
     using SpeedVec = Vector<Speed>;
@@ -19,8 +21,8 @@ class Helix // TODO: inherit from to-be-implemented "Trajectory"
 public:
     Helix(Point const pR0, phys::units::quantity<phys::units::frequency_d> pOmegaC,
         SpeedVec const pvPar, SpeedVec const pvPerp) :
-        r0(pR0), omegaC(pOmegaC), vPar(pvPar), vPerp(pvPerp), uPerp(vPar.normalized().cross(vPerp)),
-        radius(pvPar.norm() / pOmegaC)
+        r0(pR0), omegaC(pOmegaC), vPar(pvPar), vPerp(pvPerp), uPerp(vPerp.cross(vPar.normalized()),
+        radius(pvPar.norm() / abs(pOmegaC))
     {
         
     }
