@@ -4,6 +4,7 @@
 #include <Units/PhysicalUnits.h>
 
 using namespace phys::units;
+using namespace phys::units::literals;
 
 TEST_CASE( "PhysicalUnits", "[Units]" ) {  
   REQUIRE( 1_m/1_m == 1 );

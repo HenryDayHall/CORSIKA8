@@ -42,13 +42,13 @@ def parse(filename):
         decay_width = float(particle.attrib.get("mWidth", 0)) # GeV
         lifetime = float(particle.attrib.get("tau0", math.inf)) # mm / c
         
-        yield (pdg_id, name, mass)
+        yield (pdg_id, name, mass, electric_charge)
                 
         # TODO: read decay channels from child elements
         
         if "antiName" in particle.attrib:
             name = particle.attrib['antiName']
-            yield (-pdg_id, name, mass)
+            yield (-pdg_id, name, mass, -electric_charge)
             
 
 def c_identifier(name):
@@ -82,7 +82,7 @@ def c_identifier(name):
 def build_pythia_db(filename):
     particle_db = OrderedDict()
     
-    for (pdg, name, mass) in parse(filename):
+    for (pdg, name, mass, electric_charge) in parse(filename):
         c_id = c_identifier(name)
         
         #~ print(name, c_id, sep='\t', file=sys.stderr)
@@ -91,6 +91,7 @@ def build_pythia_db(filename):
             "name" : name,
             "pdg" : pdg,
             "mass" : mass, # in GeV
+            "electric_charge" : electric_charge # in e/3
         }
     
     return particle_db
@@ -163,6 +164,8 @@ def gen_internal_enum(pythia_db):
 
 
 def gen_properties(pythia_db):
+    
+    # masses
     string = "static constexpr std::size_t size = {size:d};\n".format(size = len(pythia_db))
               
     string += "static constexpr std::array<double const, size> masses{{\n"
@@ -171,24 +174,34 @@ def gen_properties(pythia_db):
         string += "  {mass:f}, // {name:s}\n".format(mass = p['mass'], name = p['name'])
               
     string += ("}};\n"
+    
+    # PDG codes
                "static constexpr std::array<PDGCode const, size> pdg_codes{{\n")
                
     for p in pythia_db.values():
         string += "  {pdg:d}, // {name:s}\n".format(pdg = p['pdg'], name = p['name'])
     
     string += ("}};\n"
+    
+    # name strings
                "static const std::array<std::string const, size> names{{\n")
 
     for p in pythia_db.values():
         string += "  \"{name:s}\",\n".format(name = p['name'])
             
-    string += "}};\n"
+    string += ("}};\n"
+    
+    # electric charges
+               "static constexpr std::array<int16_t, size> electric_charges{{\n")
+               
+    for p in pythia_db.values():
+        string += "  \"{charge:d}\",\n".format(charge = p['electric_charge'])
     
     return string
 
     
 if __name__ == "__main__":
-    pythia_db = build_pythia_db("ParticleData.xml")
+    pythia_db = build_pythia_db("Tools/ParticleData.xml")
     
     for c_id, sib_info in read_sibyll("sibyll_codes.dat"):
         #~ print(c_id, sib_info)
@@ -216,7 +229,7 @@ if __name__ == "__main__":
         #~ if table != pdg:
             #~ raise Exception(p, sib_db, pdg, table)
 
-    with open("generated_particle_properties.inc", "w") as f:
+    with open("Framework/ParticleProperties/generated_particle_properties.inc", "w") as f:
         print(gen_internal_enum(pythia_db), file=f)
         print(gen_properties(pythia_db), file=f)
     

@@ -6,7 +6,6 @@
 
 class Sphere
 {
-    using Length = phys::units::quantity<phys::units::length_d, double>;
     Point center;
     Length const radius;
     

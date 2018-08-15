@@ -14,7 +14,7 @@ using namespace phys::units::literals; // support unit literals like 5_m;
 
 int main()
 {
-    //~ // define the root coordinate system
+    // define the root coordinate system
     CoordinateSystem root;
     
     // another CS defined by a translation relative to the root CS
@@ -37,10 +37,10 @@ int main()
     std::cout << "p2-p1 norm^2: " << norm << std::endl;
     
     Sphere s(p1, 10_m); // define a sphere around a point with a radius
-    //~ std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;    
+    std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;    
     
     Sphere s2(p1, 3_um); // another sphere
-    //~ std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;
+    std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;
     
     
     // let's try parallel projections:
@@ -49,14 +49,15 @@ int main()
 
     auto const v3 = v1.parallelProjectionOnto(v2);
     
-    auto const cross = v1.cross(v2).normalized();
+    // cross product
+    auto const cross = v1.cross(v2).normalized(); // normalized() returns dimensionless, normalized vectors
     
     // if a CS is not given as parameter for getComponents(), the components
     // in the "home" CS are returned
-    std::cout << v1.getComponents() << std::endl;
-    std::cout << v2.getComponents() << std::endl;
-    std::cout << v3.getComponents() << std::endl;
-    std::cout << cross.getComponents() << std::endl;
+    std::cout << "v1: " << v1.getComponents() << std::endl;
+    std::cout << "v2: " <<v2.getComponents() << std::endl;
+    std::cout << "parallel projection of v1 onto v2: " << v3.getComponents() << std::endl;
+    std::cout << "normalized cross product of v1 x v2" << cross.getComponents() << std::endl;
     
     return EXIT_SUCCESS;
 }

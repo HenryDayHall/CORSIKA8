@@ -1,3 +1,6 @@
+add_executable (helix_example helix_example.cc)
+target_link_libraries(helix_example CORSIKAgeometry CORSIKAunits)
+install (TARGETS helix_example DESTINATION share/examples)
 
 add_executable (geometry_example geometry_example.cc)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)

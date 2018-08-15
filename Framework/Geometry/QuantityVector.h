@@ -86,7 +86,7 @@ public:
         return QuantityVector<dim>(eVector / p);
     }
     
-    auto& operator/=(double const p) const
+    auto& operator/=(double const p)
     {
         eVector /= p;
         return *this;

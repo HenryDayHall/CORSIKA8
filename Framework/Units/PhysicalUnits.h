@@ -11,8 +11,8 @@
    Define _XeV literals, alowing 10_GeV in the code.     
 */
 
-using namespace phys::units::io;
-using namespace phys::units::literals;
+/*using namespace phys::units::io;
+using namespace phys::units::literals;*/
 
 namespace phys {
   namespace units {
@@ -21,6 +21,12 @@ namespace phys {
     }
   }
 }
+
+using Length = phys::units::quantity<phys::units::length_d, double>;
+using Time = phys::units::quantity<phys::units::time_interval_d, double>;
+using Speed = phys::units::quantity<phys::units::speed_d, double>;
+using Frequency = phys::units::quantity<phys::units::frequency_d, double>;
+using ElectricCharge = phys::units::quantity<phys::units::electric_charge_d, double>;
 
 #endif
 
