@@ -1,8 +1,8 @@
 #include <Units/PhysicalUnits.h>
 #include <Geometry/Vector.h>
 #include <Geometry/CoordinateSystem.h>
-#include <Geometry/Helix.h>
 #include <Geometry/Point.h>
+#include <Geometry/Helix.h>
 #include <cstdlib>
 #include <iostream>
 #include <array>
