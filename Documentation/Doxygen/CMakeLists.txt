@@ -16,7 +16,12 @@ if (DOXYGEN_FOUND)
     COMMENT "Generating API documentation with Doxygen"
     VERBATIM)
 
+  add_custom_command(TARGET doxygen POST_BUILD
+    COMMAND cd ${CMAKE_CURRENT_BINARY_DIR}/latex; pdflatex refman.tex
+    )
+  
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc OPTIONAL)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf DESTINATION share/doc OPTIONAL)
          
 else (DOXYGEN_FOUND)
   

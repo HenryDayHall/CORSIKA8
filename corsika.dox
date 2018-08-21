@@ -1,8 +1,17 @@
 /**
-@mainpage CORSIKA air shower simulations 
+@mainpage CORSIKA air shower simulations framework
 
-Source code documentation and reference guide for the CORSIKA8
-software framework for air shower simulations.
+Documentation and reference guide for the CORSIKA8 software framework
+for air shower simulations. CORSIKA is the most comprehensive
+framework for air shower simulations. CORSIKA is characterized by
+simulating particle cascades in astrophysical environments. The impact
+of stochastic and continuous processes on the cascade development is
+simulated. To boost computational efficiency different techniques are
+provided, like thinning or cascade equations. 
 
+The software makes extensive use of static design patterns and
+compiler optimization. Thus, the most fundamental configuration
+decision of the user must be performed at compile time. At runtime
+only spcific parameters can still be changed.
 
 */

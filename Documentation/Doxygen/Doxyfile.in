@@ -6,7 +6,7 @@ INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../..
 EXCLUDE_PATTERN        = "*/ThirdParty/*/*"
 
 GENERATE_HTML          = YES
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = YES
 
 FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox
 RECURSIVE              = YES
