@@ -10,7 +10,7 @@ namespace stack {
   template<class Stack, class Particle> class StackIteratorInfo;
 
   /**
-     \class StackIterator
+     @class StackIterator
      
      The StackIterator is the main interface to iterator over
      particles on a stack. At the same time StackIterator is a
@@ -20,7 +20,17 @@ namespace stack {
      This allows to write code like
      \verbatim
      for (auto& p : theStack) { p.SetEnergy(newEnergy); }  
-     \endverbatim     
+     \endverbatim
+
+     The template argument Stack determines the type of Stack object
+     the data is stored in. A pointer to the Stack object is part of
+     the StackIterator. In addition to Stack the iterator only knows
+     the index fIndex in the Stack data. 
+
+     The template argument Particles acts as a policy to provide
+     readout function of Particle data from the stack. The Particle
+     class must know how to retrieve information from the Stack data
+     for a particle entry at any index fIndex.
   */
   
   template<typename Stack, typename Particle>
@@ -62,8 +72,9 @@ namespace stack {
   
 
   /**
-     \class StackIteratorInfo
+     @class StackIteratorInfo
      
+     This is the class where custom ... 
      Internal helper class for StackIterator. Document better...
    */
   
