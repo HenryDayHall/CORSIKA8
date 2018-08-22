@@ -4,6 +4,10 @@
 #include <Geometry/QuantityVector.h>
 #include <Geometry/CoordinateSystem.h>
 
+/*!
+ * Common base class for Vector and Point. Currently it does basically nothing.
+ */
+
 template <typename dim>
 class BaseVector
 {

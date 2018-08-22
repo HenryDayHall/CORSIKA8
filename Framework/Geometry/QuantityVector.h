@@ -7,17 +7,22 @@
 #include <iostream>
 #include <utility>
 
+/*!
+ * A QuantityVector is a three-component container based on Eigen::Vector3d
+ * with a phys::units::dimension. Arithmethic operators are defined that
+ * propagate the dimensions by dimensional analysis.
+ */
+
 template <typename dim>
 class QuantityVector
 {
 protected:
-    using Quantity = phys::units::quantity<dim, double>;
-    //using QuantitySquared = decltype(std::declval<Quantity>() * std::declval<Quantity>());
+    using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity corresponding to the dimension
     
 public:
-    Eigen::Vector3d eVector;
+    Eigen::Vector3d eVector; //!< the actual container where the raw numbers are stored
     
-    typedef dim dimension;
+    typedef dim dimension; //!< should be a phys::units::dimension
 
     QuantityVector(Quantity a, Quantity b, Quantity c) :
         eVector{a.magnitude(), b.magnitude(), c.magnitude()}

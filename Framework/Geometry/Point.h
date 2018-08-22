@@ -6,10 +6,12 @@
 #include <Geometry/Vector.h>
 #include <Units/PhysicalUnits.h>
 
+/*!
+ * A Point represents a point in position space. It is defined by its
+ * coordinates with respect to some CoordinateSystem.
+ */
 class Point : public BaseVector<phys::units::length_d>
 {
-    using Length = phys::units::quantity<phys::units::length_d, double>;
-    
 public:
     Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector) :
         BaseVector<phys::units::length_d>(pCS, pQVector)
@@ -38,6 +40,10 @@ public:
         }
     }
     
+    /*!
+     * transforms the Point into another CoordinateSystem by changing its
+     * coordinates interally
+     */
     void rebase(CoordinateSystem const& pCS)
     {
         BaseVector<phys::units::length_d>::qVector = getCoordinates(pCS);
@@ -49,6 +55,9 @@ public:
         return Point(*BaseVector<phys::units::length_d>::cs, getCoordinates() + pVec.getComponents(*BaseVector<phys::units::length_d>::cs));
     }
     
+    /*!
+     * returns the distance Vector between two points
+     */
     Vector<phys::units::length_d> operator-(Point const& pB) const
     {
         auto& cs = *BaseVector<phys::units::length_d>::cs;

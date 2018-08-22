@@ -5,6 +5,16 @@
 #include <Geometry/QuantityVector.h>
 #include <Units/PhysicalUnits.h>
 
+/*!
+ * A Vector represents a 3-vector in Euclidean space. It is defined by components
+ * given in a specific CoordinateSystem. It has a physical dimension ("unit")
+ * as part of its type, so you cannot mix up e.g. electric with magnetic fields
+ * (but you could calculate their cross-product to get an energy flux vector).
+ * 
+ * When transforming coordinate systems, a Vector is subject to the rotational
+ * part only and invariant under translations.
+ */
+
 template <typename dim>
 class Vector : public BaseVector<dim>
 {
@@ -21,11 +31,19 @@ public:
     {
     }
     
+    /*!
+     * returns a QuantityVector with the components given in the "home"
+     * CoordinateSystem of the Vector
+     */
     auto getComponents() const
     {
         return BaseVector<dim>::qVector;
     }
     
+    /*!
+     * returns a QuantityVector with the components given in an arbitrary
+     * CoordinateSystem
+     */
     auto getComponents(CoordinateSystem const& pCS) const
     {
         if (&pCS == BaseVector<dim>::cs)
@@ -38,22 +56,41 @@ public:
         }
     }
     
+    /*!
+     * transforms the Vector into another CoordinateSystem by changing
+     * its components internally
+     */
     void rebase(CoordinateSystem const& pCS)
     {
         BaseVector<dim>::qVector = getComponents(pCS);        
         BaseVector<dim>::cs = &pCS;
     }
     
+    /*!
+     * returns the norm/length of the Vector. Before using this method,
+     * think about whether squaredNorm() might be cheaper for your computation.
+     */
     auto norm() const
     {
         return BaseVector<dim>::qVector.norm();
     }
     
+    /*!
+     * returns the squared norm of the Vector. Before using this method,
+     * think about whether norm() might be cheaper for your computation.
+     */
     auto squaredNorm() const
     {
         return BaseVector<dim>::qVector.squaredNorm();
     }
-        
+    
+    /*!
+     * returns a Vector \f$ \vec{v}_{\parallel} \f$ which is the parallel projection
+     * of this vector \f$ \vec{v}_1 \f$ along another Vector \f$ \vec{v}_2 \f$ given by
+     *   \f[
+     *     \vec{v}_{\parallel} = \frac{\vec{v}_1 \cdot \vec{v}_2}{\vec{v}_2^2} \vec{v}_2
+     *   \f]
+     */
     template <typename dim2>
     auto parallelProjectionOnto(Vector<dim2> const& pVec, CoordinateSystem const& pCS) const
     {
