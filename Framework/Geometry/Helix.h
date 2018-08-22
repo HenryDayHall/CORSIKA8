@@ -19,8 +19,8 @@ class Helix // TODO: inherit from to-be-implemented "Trajectory"
     Length const radius;
     
 public:
-    Helix(Point const pR0, phys::units::quantity<phys::units::frequency_d> pOmegaC,
-        SpeedVec const pvPar, SpeedVec const pvPerp) :
+    Helix(Point const& pR0, phys::units::quantity<phys::units::frequency_d> pOmegaC,
+        SpeedVec const& pvPar, SpeedVec const& pvPerp) :
         r0(pR0), omegaC(pOmegaC), vPar(pvPar), vPerp(pvPerp), uPerp(vPerp.cross(vPar.normalized())),
         radius(pvPar.norm() / abs(pOmegaC))
     {
