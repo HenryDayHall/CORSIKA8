@@ -17,7 +17,7 @@ class LineTrajectory // TODO: inherit from Trajectory
     {
     }
     
-    auto getPosition(Time t) const
+    auto GetPosition(Time t) const
     {
         return r0 + v0 * t;
     }
