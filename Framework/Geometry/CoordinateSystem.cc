@@ -1,6 +1,6 @@
 #include <Geometry/CoordinateSystem.h>
 
-EigenTransform CoordinateSystem::getTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2)
+EigenTransform CoordinateSystem::GetTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2)
 {
     CoordinateSystem const* a{&c1};
     CoordinateSystem const* b{&c2};
@@ -12,13 +12,13 @@ EigenTransform CoordinateSystem::getTransformation(CoordinateSystem const& c1, C
         
         while (a != b && a != nullptr)
         {
-            a = a->getReference();
+            a = a->GetReference();
         }
         
         if (a == b)
             break;
         
-        b = b->getReference();
+        b = b->GetReference();
     }
     
     if (a == b && a != nullptr)
@@ -38,16 +38,16 @@ EigenTransform CoordinateSystem::getTransformation(CoordinateSystem const& c1, C
     
     while (p != commonBase)
     {
-        t = p->getTransform() * t;
-        p = p->getReference();
+        t = p->GetTransform() * t;
+        p = p->GetReference();
     }
     
     p = &c2;
     
     while (p != commonBase)
     {
-        t = p->getTransform().inverse(Eigen::TransformTraits::Isometry) * t;
-        p = p->getReference();
+        t = p->GetTransform().inverse(Eigen::TransformTraits::Isometry) * t;
+        p = p->GetReference();
     }
     
     return t;

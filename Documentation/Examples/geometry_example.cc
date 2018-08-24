@@ -31,9 +31,9 @@ int main()
     auto const norm = diff.squaredNorm(); // squared length with the right dimension
     
     // print the components of the vector as given in the different CS
-    std::cout << "p2-p1 components in root: " << diff.getComponents(root) << std::endl;
-    std::cout << "p2-p1 components in cs2: " << diff.getComponents(cs2) << std::endl; // by definition invariant under translations
-    std::cout << "p2-p1 components in cs3: " << diff.getComponents(cs3) << std::endl; // but not under rotations
+    std::cout << "p2-p1 components in root: " << diff.GetComponents(root) << std::endl;
+    std::cout << "p2-p1 components in cs2: " << diff.GetComponents(cs2) << std::endl; // by definition invariant under translations
+    std::cout << "p2-p1 components in cs3: " << diff.GetComponents(cs3) << std::endl; // but not under rotations
     std::cout << "p2-p1 norm^2: " << norm << std::endl;
     
     Sphere s(p1, 10_m); // define a sphere around a point with a radius
@@ -54,10 +54,10 @@ int main()
     
     // if a CS is not given as parameter for getComponents(), the components
     // in the "home" CS are returned
-    std::cout << "v1: " << v1.getComponents() << std::endl;
-    std::cout << "v2: " <<v2.getComponents() << std::endl;
-    std::cout << "parallel projection of v1 onto v2: " << v3.getComponents() << std::endl;
-    std::cout << "normalized cross product of v1 x v2" << cross.getComponents() << std::endl;
+    std::cout << "v1: " << v1.GetComponents() << std::endl;
+    std::cout << "v2: " <<v2.GetComponents() << std::endl;
+    std::cout << "parallel projection of v1 onto v2: " << v3.GetComponents() << std::endl;
+    std::cout << "normalized cross product of v1 x v2" << cross.GetComponents() << std::endl;
     
     return EXIT_SUCCESS;
 }

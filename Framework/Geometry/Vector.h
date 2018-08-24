@@ -35,7 +35,7 @@ public:
      * returns a QuantityVector with the components given in the "home"
      * CoordinateSystem of the Vector
      */
-    auto getComponents() const
+    auto GetComponents() const
     {
         return BaseVector<dim>::qVector;
     }
@@ -44,7 +44,7 @@ public:
      * returns a QuantityVector with the components given in an arbitrary
      * CoordinateSystem
      */
-    auto getComponents(CoordinateSystem const& pCS) const
+    auto GetComponents(CoordinateSystem const& pCS) const
     {
         if (&pCS == BaseVector<dim>::cs)
         {
@@ -52,7 +52,7 @@ public:
         }
         else
         {
-            return QuantityVector<dim>(CoordinateSystem::getTransformation(*BaseVector<dim>::cs, pCS).linear() * BaseVector<dim>::qVector.eVector);
+            return QuantityVector<dim>(CoordinateSystem::GetTransformation(*BaseVector<dim>::cs, pCS).linear() * BaseVector<dim>::qVector.eVector);
         }
     }
     
@@ -62,7 +62,7 @@ public:
      */
     void rebase(CoordinateSystem const& pCS)
     {
-        BaseVector<dim>::qVector = getComponents(pCS);        
+        BaseVector<dim>::qVector = GetComponents(pCS);        
         BaseVector<dim>::cs = &pCS;
     }
     
@@ -94,8 +94,8 @@ public:
     template <typename dim2>
     auto parallelProjectionOnto(Vector<dim2> const& pVec, CoordinateSystem const& pCS) const
     {
-        auto const ourCompVec = getComponents(pCS);
-        auto const otherCompVec = pVec.getComponents(pCS);
+        auto const ourCompVec = GetComponents(pCS);
+        auto const otherCompVec = pVec.GetComponents(pCS);
         auto const& a = ourCompVec.eVector;
         auto const& b = otherCompVec.eVector;
         
@@ -110,13 +110,13 @@ public:
     
     auto operator+(Vector<dim> const& pVec) const
     {
-        auto const components = getComponents(*BaseVector<dim>::cs) + pVec.getComponents(*BaseVector<dim>::cs);
+        auto const components = GetComponents(*BaseVector<dim>::cs) + pVec.GetComponents(*BaseVector<dim>::cs);
         return Vector<dim>(*BaseVector<dim>::cs, components);
     }
     
     auto operator-(Vector<dim> const& pVec) const
     {
-        auto const components = getComponents() - pVec.getComponents(*BaseVector<dim>::cs);
+        auto const components = GetComponents() - pVec.GetComponents(*BaseVector<dim>::cs);
         return Vector<dim>(*BaseVector<dim>::cs, components);
     }
     
@@ -159,13 +159,13 @@ public:
     
     auto& operator+=(Vector<dim> const& pVec)
     {
-        BaseVector<dim>::qVector += pVec.getComponents(*BaseVector<dim>::cs);
+        BaseVector<dim>::qVector += pVec.GetComponents(*BaseVector<dim>::cs);
         return *this;
     }
     
     auto& operator-=(Vector<dim> const& pVec)
     {
-        BaseVector<dim>::qVector -= pVec.getComponents(*BaseVector<dim>::cs);
+        BaseVector<dim>::qVector -= pVec.GetComponents(*BaseVector<dim>::cs);
         return *this;
     }
     
@@ -182,8 +182,8 @@ public:
     template <typename dim2>
     auto cross(Vector<dim2> pV) const
     {
-        auto const c1 = getComponents().eVector;
-        auto const c2 = pV.getComponents(*BaseVector<dim>::cs).eVector;
+        auto const c1 = GetComponents().eVector;
+        auto const c2 = pV.GetComponents(*BaseVector<dim>::cs).eVector;
         auto const bareResult = c1.cross(c2);
         
         using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;

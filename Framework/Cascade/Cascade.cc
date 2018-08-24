@@ -2,25 +2,44 @@
 
 namespace cascade;
 
-
+template<typename Sequence, typename Trajectory>
 void
-Cascade::Process()
+Cascade::Cascade()
 {
-  Stack s;
-  if (!s.IsEmpty()) {
-
-    s
-    
-  }
-  
 }
 
-template<typename Trajectory>
+
+template<typename Sequence, typename Trajectory>
 void
-Cascade::Step(auto& sequence, Particle& particle)
+Cascade::Init()
 {
-  double nextStep = sequence.MinStepLength(particle);
-  Trajectory trajectory = sequence.Transport(particle, nextStep);
+  fStack.Init();
+  fProcesseList.Init();
+}
+
+
+template<typename Sequence, typename Trajectory>
+void
+Cascade::Run()
+{
+  if (!fStack.IsEmpty()) {
+    if (!fStack.IsEmpty()) {
+      Particle& p = fStack.GetNextParticle();
+      Step(p);
+    }
+    // do cascade equations, which can put new particles on Stack,
+    // thus, the double loop
+    // DoCascadeEquations(); //
+  }
+}
+
+
+template<typename Sequence, typename Trajectory>
+void
+Cascade::Step(Particle& particle)
+{
+  double nextStep = fProcesseList.MinStepLength(particle);
+  Trajectory trajectory = fProcesseList.Transport(particle, nextStep);
   sequence.DoContinuous(particle, trajectory);
   sequence.DoDiscrete(particle);
 }

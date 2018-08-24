@@ -32,7 +32,7 @@ int main()
     
     for (auto [t, i] = std::tuple{t0, 0}; t < t1; t += dt, ++i)
     {
-        auto const r = h.getPosition(t).getCoordinates();
+        auto const r = h.GetPosition(t).GetCoordinates();
         
         positions[i][0] = t / 1_s;
         positions[i][1] = r[0] / 1_m;

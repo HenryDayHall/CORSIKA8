@@ -23,12 +23,12 @@ public:
     {
     }
     
-    auto getCoordinates() const
+    auto GetCoordinates() const
     {
         return BaseVector<phys::units::length_d>::qVector;
     }
     
-    auto getCoordinates(CoordinateSystem const& pCS) const
+    auto GetCoordinates(CoordinateSystem const& pCS) const
     {
         if (&pCS == BaseVector<phys::units::length_d>::cs)
         {
@@ -36,7 +36,7 @@ public:
         }
         else
         {
-            return QuantityVector<phys::units::length_d>(CoordinateSystem::getTransformation(*BaseVector<phys::units::length_d>::cs, pCS) * BaseVector<phys::units::length_d>::qVector.eVector);
+            return QuantityVector<phys::units::length_d>(CoordinateSystem::GetTransformation(*BaseVector<phys::units::length_d>::cs, pCS) * BaseVector<phys::units::length_d>::qVector.eVector);
         }
     }
     
@@ -46,13 +46,13 @@ public:
      */
     void rebase(CoordinateSystem const& pCS)
     {
-        BaseVector<phys::units::length_d>::qVector = getCoordinates(pCS);
+        BaseVector<phys::units::length_d>::qVector = GetCoordinates(pCS);
         BaseVector<phys::units::length_d>::cs = &pCS;
     }
     
     Point operator+(Vector<phys::units::length_d> const& pVec) const
     {        
-        return Point(*BaseVector<phys::units::length_d>::cs, getCoordinates() + pVec.getComponents(*BaseVector<phys::units::length_d>::cs));
+        return Point(*BaseVector<phys::units::length_d>::cs, GetCoordinates() + pVec.GetComponents(*BaseVector<phys::units::length_d>::cs));
     }
     
     /*!
@@ -61,7 +61,7 @@ public:
     Vector<phys::units::length_d> operator-(Point const& pB) const
     {
         auto& cs = *BaseVector<phys::units::length_d>::cs;
-        return Vector<phys::units::length_d>(cs, getCoordinates() - pB.getCoordinates(cs));
+        return Vector<phys::units::length_d>(cs, GetCoordinates() - pB.GetCoordinates(cs));
     }
 };
 

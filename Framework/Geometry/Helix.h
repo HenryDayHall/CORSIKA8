@@ -27,12 +27,12 @@ public:
         
     }
     
-    auto getPosition(Time t) const
+    auto GetPosition(Time t) const
     {
         return r0 + vPar * t + (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }
     
-    auto getRadius() const
+    auto GetRadius() const
     {
         return radius;
     }

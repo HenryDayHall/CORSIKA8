@@ -22,7 +22,7 @@ class CoordinateSystem
     }
     
 public:
-    static EigenTransform getTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2);
+    static EigenTransform GetTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2);
 
     CoordinateSystem() : // for creating the root CS
         transf(EigenTransform::Identity())
@@ -58,12 +58,12 @@ public:
         return CoordinateSystem(*this, transf);
     }
     
-    auto const* getReference() const
+    auto const* GetReference() const
     {
         return reference;
     }
     
-    auto const& getTransform() const
+    auto const& GetTransform() const
     {
         return transf;
     }    
