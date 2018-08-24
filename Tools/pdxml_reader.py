@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+# input file paths:
+PARTICLE_DATA_XML = "./Tools/ParticleData.xml"
+SIBYLL_CODES = "./Tools/sibyll_codes.dat"
+
+# output file paths:
+GENERATED_PARTICLE_PROPERTIES_INC = "./Framework/ParticleProperties/generated_particle_properties.inc"
+GENERATED_SIBYLL_INC = "./Framework/ParticleProperties/generated_sibyll.inc"
+
+
 import sys, math, itertools, re, csv, pprint
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
@@ -201,9 +210,9 @@ def gen_properties(pythia_db):
 
     
 if __name__ == "__main__":
-    pythia_db = build_pythia_db("Tools/ParticleData.xml")
+    pythia_db = build_pythia_db(PARTICLE_DATA_XML)
     
-    for c_id, sib_info in read_sibyll("sibyll_codes.dat"):
+    for c_id, sib_info in read_sibyll(SIBYLL_CODES):
         #~ print(c_id, sib_info)
         pythia_db[c_id] = {**pythia_db[c_id], **sib_info}
         
@@ -229,11 +238,11 @@ if __name__ == "__main__":
         #~ if table != pdg:
             #~ raise Exception(p, sib_db, pdg, table)
 
-    with open("Framework/ParticleProperties/generated_particle_properties.inc", "w") as f:
+    with open(GENERATED_PARTICLE_PROPERTIES_INC, "w") as f:
         print(gen_internal_enum(pythia_db), file=f)
         print(gen_properties(pythia_db), file=f)
     
-    with open("generated_sibyll.inc", "w") as f:
+    with open(GENERATED_SIBYLL_INC, "w") as f:
         print(gen_sibyll_enum(pythia_db), file=f)
         print(gen_convert_sib_int(pythia_db), file=f)
         print(gen_convert_int_sib(pythia_db), file=f)
