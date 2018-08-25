@@ -1,0 +1,13 @@
+<chapter name="Particle Names">
+
+  <!-- For selected particles it is possible to specify the C++ class
+       names for a specific unique PDG code -->
+  
+  <particle id="0" classname="unknown"> </particle> <!-- VOID in Pythia8 -->
+  
+  <particle id="11" classname="Electron"> </particle>
+  <particle id="-11" classname="Positron"> </particle>
+  <particle id="22" classname="Gamma"> </particle>
+
+</chapter>
+

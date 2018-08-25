@@ -1,5 +1,6 @@
 <chapter name="Particle Data">
-<!-- MR: copied from Pythia 8235 -->
+
+  <!-- MR: copied from Pythia 8235 -->
 <particle id="0" name="void" spinType="0" chargeType="0" colType="0" 
           m0="0.00000"> 
 </particle> 

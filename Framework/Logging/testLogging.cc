@@ -7,16 +7,13 @@ TEST_CASE( "Logging", "[Logging]" )
 {  
   SECTION( "sectionOne" )
     {
-      REQUIRE( 1/1 == 1 );
     }
   
   SECTION( "sectionTwo" )
     {
-      REQUIRE_FALSE( 1/1 == 2 );
     }
 
   SECTION( "sectionThree" )
     {
-      REQUIRE( 1/1 == 2 );
     }
 }

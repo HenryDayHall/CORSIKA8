@@ -6,20 +6,25 @@
 using namespace phys::units;
 using namespace phys::units::literals;
 
-TEST_CASE( "PhysicalUnits", "[Units]" )
+TEST_CASE( "Geometry", "[Geometry]" )
 {  
-  SECTION( "sectionOne" )
+  SECTION( "Coordinate Systems" )
     {
-      REQUIRE( 1_m/1_m == 1 );
     }
   
-  SECTION( "sectionTwo" )
+  SECTION( "Point" )
     {
-      REQUIRE_FALSE( 1_m/1_m == 2 );
+    }
+  
+  SECTION( "Vector" )
+    {
     }
 
-  SECTION( "sectionThree" )
+  SECTION( "Helix" )
     {
-      REQUIRE( 1_s/1_s == 2 );
+    }
+
+  SECTION( "Line" )
+    {
     }
 }

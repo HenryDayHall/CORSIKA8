@@ -1,6 +1,7 @@
 
 add_subdirectory (Units)
 add_subdirectory (Geometry)
+add_subdirectory (Particles)
 add_subdirectory (Logging)
 add_subdirectory (StackInterface)
 add_subdirectory (ParticleStack)
