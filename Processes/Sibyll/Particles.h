@@ -1,0 +1,199 @@
+#ifndef _include_processes_sibyll_particles_h_
+#define _include_processes_sibyll_particles_h_
+
+#include <Particles/Particles.h>
+
+#include <map>
+
+namespace processes {
+
+  namespace sibyll {
+
+    enum class PID : int {
+        E_MINUS = 3,
+        E_PLUS = 2,
+        NU_E=15,
+          NU_E_BAR=16,
+          MU_MINUS=5,
+          MU_PLUS=4,
+          NU_MU=17,
+          NU_MU_BAR=18,
+          TAU_MINUS=91,
+          TAU_PLUS=90,
+          NU_TAU=92,
+          NU_TAU_BAR=93,
+          GAMMA=1,
+          /*etc etc etc
+      PI_0 6
+      RHO_0 27
+      K_L_0 11
+      PI_PLUS 7
+      PI_MINUS 8
+      RHO_PLUS 25
+      RHO_MINUS 26
+      ETA 23
+      OMEGA 32
+      K_S_0 12
+      K_STAR_0 30
+      K_STAR_BAR_0 31
+      K_PLUS 9
+      K_MINUS 10
+      K_STAR_PLUS 28
+      K_STAR_MINUS 29
+      D_PLUS 59
+      D_MINUS 60
+      D_STAR_PLUS 78
+      D_STAR_MINUS 79
+      D_0 71
+      D_BAR_0 72
+      D_STAR_0 80
+      D_STAR_BAR_0 81
+      D_S_PLUS 74
+      D_S_MINUS 75
+      D_STAR_S_PLUS 76
+      D_STAR_S_MINUS 77
+      ETA_C 73
+      N_0 14
+      N_BAR_0 -14
+      DELTA_0 42
+      DELTA_BAR_0 -42
+      P_PLUS 13
+      P_BAR_MINUS -13
+      DELTA_PLUS 41
+      DELTA_BAR_MINUS -41
+      DELTA_PLUS_PLUS 40
+      DELTA_BAR_MINUS_MINUS -40
+      SIGMA_MINUS 36
+      SIGMA_BAR_PLUS -36
+      LAMBDA_0 39
+      LAMBDA_BAR_0 -39
+      SIGMA_0 35
+      SIGMA_BAR_0 -35
+      SIGMA_PLUS 34
+      SIGMA_BAR_MINUS -34
+      XI_MINUS 38
+      XI_BAR_PLUS -38
+      XI_0 37
+      XI_BAR_0 -37
+      OMEGA_MINUS 49
+      OMEGA_BAR_PLUS -49
+      SIGMA_C_0 86
+      SIGMA_C_BAR_0 -86
+      SIGMA_STAR_C_0 96
+      SIGMA_STAR_C_BAR_0 -96
+      LAMBDA_C_PLUS 89
+      LAMBDA_C_BAR_MINUS -89
+      XI_C_0 88
+      XI_C_BAR_0 -88
+      SIGMA_C_PLUS 85
+      SIGMA_C_BAR_MINUS -85
+      SIGMA_STAR_C_PLUS 95
+      SIGMA_STAR_C_BAR_MINUS -95
+      SIGMA_C_PLUS_PLUS 84
+      SIGMA_C_BAR_MINUS_MINUS -84
+      SIGMA_STAR_C_PLUS_PLUS 94
+      SIGMA_STAR_C_BAR_MINUS_MINUS -94
+      XI_C_PLUS 87
+      XI_C_BAR_MINUS -87
+      OMEGA_C_0 99
+      OMEGA_C_BAR_0 -99
+      J_PSI 83
+      VOID 0
+          */
+    };
+    
+    static const std::map<sibyll::PID, ParticleProperties::InternalParticleCode> Sibyll2Corsika;
+
+    
+/*
+E_MINUS 3
+E_PLUS 2
+NU_E 15
+NU_E_BAR 16
+MU_MINUS 5
+MU_PLUS 4
+NU_MU 17
+NU_MU_BAR 18
+TAU_MINUS 91
+TAU_PLUS 90
+NU_TAU 92
+NU_TAU_BAR 93
+GAMMA 1
+PI_0 6
+RHO_0 27
+K_L_0 11
+PI_PLUS 7
+PI_MINUS 8
+RHO_PLUS 25
+RHO_MINUS 26
+ETA 23
+OMEGA 32
+K_S_0 12
+K_STAR_0 30
+K_STAR_BAR_0 31
+K_PLUS 9
+K_MINUS 10
+K_STAR_PLUS 28
+K_STAR_MINUS 29
+D_PLUS 59
+D_MINUS 60
+D_STAR_PLUS 78
+D_STAR_MINUS 79
+D_0 71
+D_BAR_0 72
+D_STAR_0 80
+D_STAR_BAR_0 81
+D_S_PLUS 74
+D_S_MINUS 75
+D_STAR_S_PLUS 76
+D_STAR_S_MINUS 77
+ETA_C 73
+N_0 14
+N_BAR_0 -14
+DELTA_0 42
+DELTA_BAR_0 -42
+P_PLUS 13
+P_BAR_MINUS -13
+DELTA_PLUS 41
+DELTA_BAR_MINUS -41
+DELTA_PLUS_PLUS 40
+DELTA_BAR_MINUS_MINUS -40
+SIGMA_MINUS 36
+SIGMA_BAR_PLUS -36
+LAMBDA_0 39
+LAMBDA_BAR_0 -39
+SIGMA_0 35
+SIGMA_BAR_0 -35
+SIGMA_PLUS 34
+SIGMA_BAR_MINUS -34
+XI_MINUS 38
+XI_BAR_PLUS -38
+XI_0 37
+XI_BAR_0 -37
+OMEGA_MINUS 49
+OMEGA_BAR_PLUS -49
+SIGMA_C_0 86
+SIGMA_C_BAR_0 -86
+SIGMA_STAR_C_0 96
+SIGMA_STAR_C_BAR_0 -96
+LAMBDA_C_PLUS 89
+LAMBDA_C_BAR_MINUS -89
+XI_C_0 88
+XI_C_BAR_0 -88
+SIGMA_C_PLUS 85
+SIGMA_C_BAR_MINUS -85
+SIGMA_STAR_C_PLUS 95
+SIGMA_STAR_C_BAR_MINUS -95
+SIGMA_C_PLUS_PLUS 84
+SIGMA_C_BAR_MINUS_MINUS -84
+SIGMA_STAR_C_PLUS_PLUS 94
+SIGMA_STAR_C_BAR_MINUS_MINUS -94
+XI_C_PLUS 87
+XI_C_BAR_MINUS -87
+OMEGA_C_0 99
+OMEGA_C_BAR_0 -99
+J_PSI 83
+VOID 0
+*/
+
+#endif
