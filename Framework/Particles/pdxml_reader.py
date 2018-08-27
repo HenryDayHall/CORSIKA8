@@ -92,7 +92,7 @@ def c_identifier(name):
 
 
     
-# ########################################################
+#########################################################
 # 
 # returns dict containing all data from pythia-xml input
 # 
@@ -203,17 +203,17 @@ def gen_classes(pythia_db):
                 break
         
         string += "\n";
-        string += "struct " + cname + "{\n"
-        string += "   static InternalParticleCode GetType() { return Type; }\n"
-        string += "   static quantity<energy_d> GetMass() { return masses[TypeIndex]; }\n"
-        string += "   static quantity<electric_charge_d> GetCharge() { return phys::units::e*electric_charge[TypeIndex]/3; }\n"
-        string += "   static std::string GetName() { return names[TypeIndex]; }\n"
-        string += "   static InternalParticleCode GetAntiParticle() { return AntiType; }\n"
-        string += "   static const InternalParticleCode Type = InternalParticleCode::" + cname + ";\n"
-        string += "   static const InternalParticleCode AntiType = InternalParticleCode::" + antiP + ";\n"
-        string += " private:\n"
-        string += "   static const uint8_t TypeIndex = static_cast<uint8_t const>(Type);\n"
-        string += "};\n"
+        string += ("struct " + cname + " {\n"
+                   "   static constexpr InternalParticleCode GetType() { return Type; }\n"
+                   "   static auto constexpr GetMass() { return masses[TypeIndex]; }\n"
+                   "   static auto constexpr GetCharge() { return phys::units::e*electric_charge[TypeIndex]/3; }\n"
+                   "   static auto const GetName() { return names[TypeIndex]; }\n"
+                   "   static auto constexpr GetAntiParticle() { return AntiType; }\n"
+                   "   static auto constexpr Type = InternalParticleCode::") + cname + ";\n" + \
+                   "   static auto constexpr AntiType = InternalParticleCode::" + antiP + ";\n" + \
+                  (" private:\n"
+                   "   static constexpr uint8_t TypeIndex = static_cast<uint8_t const>(Type);\n"
+                   "};\n")
 
     return string
 
@@ -223,16 +223,16 @@ def gen_classes(pythia_db):
 # 
 
 def inc_start():
-    string = ""
-    string += "#ifndef _include_GeneratedParticleDataTable_h_\n"
-    string += "#define _include_GeneratedParticleDataTable_h_\n\n"
-    string += "#include <array>\n"
-    string += "#include <cstdint>\n"
-    string += "#include <iostream>\n\n"
-    string += "using namespace phys::units;\n"
-    string += "using namespace phys::units::literals;\n\n"
-    string += "namespace ParticleProperties {\n\n"
-    string += "typedef int16_t PDGCode;\n\n"
+    string = (""
+              "#ifndef _include_GeneratedParticleDataTable_h_\n"
+              "#define _include_GeneratedParticleDataTable_h_\n\n"
+              "#include <array>\n"
+              "#include <cstdint>\n"
+              "#include <iostream>\n\n"
+              "using namespace phys::units;\n"
+              "using namespace phys::units::literals;\n\n"
+              "namespace ParticleProperties {\n\n"
+              "typedef int16_t PDGCode;\n\n")
     return string
 
 
@@ -254,18 +254,16 @@ def inc_end():
 
 if __name__ == "__main__":
 
-    if (len(sys.argv)!=3) :
-        print ("pdxml_reader.py Pythia8.xml ClassNames.xml")
+    if len(sys.argv) != 3:
+        print("usage: pdxml_reader.py Pythia8.xml ClassNames.xml", file=sys.stderr)
         sys.exit(0)
         
     names = class_names(sys.argv[2])
     pythia_db = build_pythia_db(sys.argv[1], names)
 
-    print ("\n       pdxml_reader.py: Automatically produce particle-properties from PYTHIA8 xml file\n")
+    print("\n       pdxml_reader.py: automatically produce particle properties from PYTHIA8 xml file\n")
     
     counter = itertools.count(0)
-    
-    not_modeled = []
     for p in pythia_db:
         pythia_db[p]['ngc_code'] = next(counter)               
     

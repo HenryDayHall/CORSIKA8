@@ -27,6 +27,7 @@ using Time = phys::units::quantity<phys::units::time_interval_d, double>;
 using Speed = phys::units::quantity<phys::units::speed_d, double>;
 using Frequency = phys::units::quantity<phys::units::frequency_d, double>;
 using ElectricCharge = phys::units::quantity<phys::units::electric_charge_d, double>;
+using Energy = phys::units::quantity<phys::units::energy_d, double>;
 
 #endif
 
