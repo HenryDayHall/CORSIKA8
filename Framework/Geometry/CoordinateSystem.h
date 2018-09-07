@@ -1,72 +1,63 @@
 #ifndef _include_COORDINATESYSTEM_H_
 #define _include_COORDINATESYSTEM_H_
 
-#include <Geometry/QuantityVector.h>
-#include <Units/PhysicalUnits.h>
+#include <fwk/PhysicalUnits.h>
+#include <fwk/QuantityVector.h>
 
 #include <Eigen/Dense>
 
 typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
 typedef Eigen::Translation<double, 3> EigenTranslation;
 
-class CoordinateSystem
-{
+namespace fwk {
+
+  class CoordinateSystem {
     CoordinateSystem const* reference = nullptr;
     EigenTransform transf;
-    
-    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf) :
-        reference(&reference),
-        transf(transf)
-    {
-        
-    }
-    
-public:
-    static EigenTransform GetTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2);
 
-    CoordinateSystem() : // for creating the root CS
-        transf(EigenTransform::Identity())
-    {
-        
+    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf)
+        : reference(&reference)
+        , transf(transf) {}
+
+  public:
+    static EigenTransform GetTransformation(CoordinateSystem const& c1,
+                                            CoordinateSystem const& c2);
+
+    CoordinateSystem()
+        : // for creating the root CS
+        transf(EigenTransform::Identity()) {}
+
+    auto& operator=(const CoordinateSystem& pCS) {
+      reference = pCS.reference;
+      transf = pCS.transf;
+      return *this;
     }
-    
-    auto& operator=(const CoordinateSystem& pCS)
-    {
-        reference = pCS.reference;
-        transf = pCS.transf;
-        return *this;
-    }    
-    
-    auto translate(QuantityVector<phys::units::length_d> vector) const
-    {
-        EigenTransform const translation{EigenTranslation(vector.eVector)};
-        
-        return CoordinateSystem(*this, translation);
+
+    auto translate(QuantityVector<phys::units::length_d> vector) const {
+      EigenTransform const translation{EigenTranslation(vector.eVector)};
+
+      return CoordinateSystem(*this, translation);
     }
-    
-    auto rotate(QuantityVector<phys::units::length_d> axis, double angle) const
-    {
-        EigenTransform const rotation{Eigen::AngleAxisd(angle, axis.eVector.normalized())};
-        
-        return CoordinateSystem(*this, rotation);
+
+    auto rotate(QuantityVector<phys::units::length_d> axis, double angle) const {
+      EigenTransform const rotation{Eigen::AngleAxisd(angle, axis.eVector.normalized())};
+
+      return CoordinateSystem(*this, rotation);
     }
-    
-    auto translateAndRotate(QuantityVector<phys::units::length_d> translation, QuantityVector<phys::units::length_d> axis, double angle)
-    {
-        EigenTransform const transf{Eigen::AngleAxisd(angle, axis.eVector.normalized()) * EigenTranslation(translation.eVector)};
-        
-        return CoordinateSystem(*this, transf);
+
+    auto translateAndRotate(QuantityVector<phys::units::length_d> translation,
+                            QuantityVector<phys::units::length_d> axis, double angle) {
+      EigenTransform const transf{Eigen::AngleAxisd(angle, axis.eVector.normalized()) *
+                                  EigenTranslation(translation.eVector)};
+
+      return CoordinateSystem(*this, transf);
     }
-    
-    auto const* GetReference() const
-    {
-        return reference;
-    }
-    
-    auto const& GetTransform() const
-    {
-        return transf;
-    }    
-};
+
+    auto const* GetReference() const { return reference; }
+
+    auto const& GetTransform() const { return transf; }
+  };
+
+} // namespace fwk
 
 #endif

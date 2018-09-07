@@ -1,139 +1,118 @@
 #ifndef _include_QUANTITYVECTOR_H_
 #define _include_QUANTITYVECTOR_H_
 
-#include <Units/PhysicalUnits.h>
+#include <fwk/PhysicalUnits.h>
 
 #include <Eigen/Dense>
+
 #include <iostream>
 #include <utility>
 
-/*!
- * A QuantityVector is a three-component container based on Eigen::Vector3d
- * with a phys::units::dimension. Arithmethic operators are defined that
- * propagate the dimensions by dimensional analysis.
- */
+namespace fwk {
 
-template <typename dim>
-class QuantityVector
-{
-protected:
-    using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity corresponding to the dimension
-    
-public:
+  /*!
+   * A QuantityVector is a three-component container based on Eigen::Vector3d
+   * with a phys::units::dimension. Arithmethic operators are defined that
+   * propagate the dimensions by dimensional analysis.
+   */
+
+  template <typename dim>
+  class QuantityVector {
+  protected:
+    using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity
+                                                         // corresponding to the dimension
+
+  public:
     Eigen::Vector3d eVector; //!< the actual container where the raw numbers are stored
-    
+
     typedef dim dimension; //!< should be a phys::units::dimension
 
-    QuantityVector(Quantity a, Quantity b, Quantity c) :
-        eVector{a.magnitude(), b.magnitude(), c.magnitude()}
-    {
+    QuantityVector(Quantity a, Quantity b, Quantity c)
+        : eVector{a.magnitude(), b.magnitude(), c.magnitude()} {}
+
+    QuantityVector(Eigen::Vector3d pBareVector)
+        : eVector(pBareVector) {}
+
+    auto operator[](size_t index) const {
+      return Quantity(phys::units::detail::magnitude_tag, eVector[index]);
     }
-    
-    QuantityVector(Eigen::Vector3d pBareVector) :
-        eVector(pBareVector)
-    {
+
+    auto norm() const {
+      return Quantity(phys::units::detail::magnitude_tag, eVector.norm());
     }
-    
-    auto operator[](size_t index) const
-    {
-        return Quantity(phys::units::detail::magnitude_tag, eVector[index]);
+
+    auto squaredNorm() const {
+      using QuantitySquared =
+          decltype(std::declval<Quantity>() * std::declval<Quantity>());
+      return QuantitySquared(phys::units::detail::magnitude_tag, eVector.squaredNorm());
     }
-    
-    auto norm() const
-    {
-        return Quantity(phys::units::detail::magnitude_tag, eVector.norm());
+
+    auto operator+(QuantityVector<dim> const& pQVec) const {
+      return QuantityVector<dim>(eVector + pQVec.eVector);
     }
-    
-    auto squaredNorm() const
-    {
-        using QuantitySquared = decltype(std::declval<Quantity>() * std::declval<Quantity>());
-        return QuantitySquared(phys::units::detail::magnitude_tag, eVector.squaredNorm());
+
+    auto operator-(QuantityVector<dim> const& pQVec) const {
+      return QuantityVector<dim>(eVector - pQVec.eVector);
     }
-    
-    auto operator+(QuantityVector<dim> const& pQVec) const
-    {
-        return QuantityVector<dim>(eVector + pQVec.eVector);
-    }
-    
-    auto operator-(QuantityVector<dim> const& pQVec) const
-    {
-        return QuantityVector<dim>(eVector - pQVec.eVector);
-    }
-    
+
     template <typename ScalarDim>
-    auto operator*(phys::units::quantity<ScalarDim, double> const p) const
-    {
-        using ResQuantity = phys::units::detail::Product<ScalarDim, dim, double, double>;
-        
-        if constexpr (std::is_same<ResQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
-        {
-            return QuantityVector<phys::units::dimensionless_d>(eVector * p.magnitude());
-        }
-        else
-        {
-            return QuantityVector<typename ResQuantity::dimension_type>(eVector * p.magnitude());
-        }
+    auto operator*(phys::units::quantity<ScalarDim, double> const p) const {
+      using ResQuantity = phys::units::detail::Product<ScalarDim, dim, double, double>;
+
+      if constexpr (std::is_same<ResQuantity, double>::value) // result dimensionless, not
+                                                              // a "Quantity" anymore
+      {
+        return QuantityVector<phys::units::dimensionless_d>(eVector * p.magnitude());
+      } else {
+        return QuantityVector<typename ResQuantity::dimension_type>(eVector *
+                                                                    p.magnitude());
+      }
     }
-    
+
     template <typename ScalarDim>
-    auto operator/(phys::units::quantity<ScalarDim, double> const p) const
-    {
-        return (*this) * (1 / p);
+    auto operator/(phys::units::quantity<ScalarDim, double> const p) const {
+      return (*this) * (1 / p);
     }
-    
-    auto operator*(double const p) const
-    {
-        return QuantityVector<dim>(eVector * p);
+
+    auto operator*(double const p) const { return QuantityVector<dim>(eVector * p); }
+
+    auto operator/(double const p) const { return QuantityVector<dim>(eVector / p); }
+
+    auto& operator/=(double const p) {
+      eVector /= p;
+      return *this;
     }
-    
-    auto operator/(double const p) const
-    {
-        return QuantityVector<dim>(eVector / p);
+
+    auto& operator*=(double const p) {
+      eVector *= p;
+      return *this;
     }
-    
-    auto& operator/=(double const p)
-    {
-        eVector /= p;
-        return *this;
+
+    auto& operator+=(QuantityVector<dim> const& pQVec) {
+      eVector += pQVec.eVector;
+      return *this;
     }
-    
-    auto& operator*=(double const p)
-    {
-        eVector *= p;
-        return *this;
+
+    auto& operator-=(QuantityVector<dim> const& pQVec) {
+      eVector -= pQVec.eVector;
+      return *this;
     }
-    
-    auto& operator+=(QuantityVector<dim> const& pQVec)
-    {
-        eVector += pQVec.eVector;
-        return *this;
-    }
-    
-    auto& operator-=(QuantityVector<dim> const& pQVec)
-    {
-        eVector -= pQVec.eVector;
-        return *this;
-    }
-    
-    auto& operator-() const
-    {
-        return QuantityVector<dim>(-eVector);
-    }
-    
-    auto normalized() const
-    {
-        return (*this) * (1 / norm());
-    }
-};
+
+    auto& operator-() const { return QuantityVector<dim>(-eVector); }
+
+    auto normalized() const { return (*this) * (1 / norm()); }
+  };
+
+} // end namespace fwk
 
 template <typename dim>
-auto& operator<<(std::ostream& os, QuantityVector<dim> qv)
-{
-    using Quantity = phys::units::quantity<dim, double>;
-    
-    os << '(' << qv.eVector(0) << ' ' << qv.eVector(1) << ' ' << qv.eVector(2)
-       << ") " << phys::units::to_unit_symbol<dim, double>(Quantity(phys::units::detail::magnitude_tag, 1));
-    return os;
+auto& operator<<(std::ostream& os, fwk::QuantityVector<dim> qv) {
+  using Quantity = phys::units::quantity<dim, double>;
+
+  os << '(' << qv.eVector(0) << ' ' << qv.eVector(1) << ' ' << qv.eVector(2) << ") "
+     << phys::units::to_unit_symbol<dim, double>(
+            Quantity(phys::units::detail::magnitude_tag, 1));
+  return os;
 }
 
 #endif

@@ -4,8 +4,8 @@
 #include <fwk/BaseVector.h>
 #include <fwk/QuantityVector.h>
 #include <fwk/Vector.h>
-#include <Units/PhysicalUnits.h>
 
+#include <fwk/PhysicalUnits.h>
 
 namespace fwk {
 
@@ -13,61 +13,51 @@ namespace fwk {
    * A Point represents a point in position space. It is defined by its
    * coordinates with respect to some CoordinateSystem.
    */
-  class Point : public BaseVector<phys::units::length_d>
-  {
+  class Point : public BaseVector<phys::units::length_d> {
   public:
-  Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector) :
-    BaseVector<phys::units::length_d>(pCS, pQVector)
-      {
-      }
-    
-  Point(CoordinateSystem const& cs, Length x, Length y, Length z) :
-        BaseVector<phys::units::length_d>(cs, {x, y, z})
-    {
-    }
-    
-    auto GetCoordinates() const
-    {
+    Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector)
+        : BaseVector<phys::units::length_d>(pCS, pQVector) {}
+
+    Point(CoordinateSystem const& cs, Length x, Length y, Length z)
+        : BaseVector<phys::units::length_d>(cs, {x, y, z}) {}
+
+    auto GetCoordinates() const { return BaseVector<phys::units::length_d>::qVector; }
+
+    auto GetCoordinates(CoordinateSystem const& pCS) const {
+      if (&pCS == BaseVector<phys::units::length_d>::cs) {
         return BaseVector<phys::units::length_d>::qVector;
+      } else {
+        return QuantityVector<phys::units::length_d>(
+            CoordinateSystem::GetTransformation(*BaseVector<phys::units::length_d>::cs,
+                                                pCS) *
+            BaseVector<phys::units::length_d>::qVector.eVector);
+      }
     }
-    
-    auto GetCoordinates(CoordinateSystem const& pCS) const
-    {
-        if (&pCS == BaseVector<phys::units::length_d>::cs)
-        {
-            return BaseVector<phys::units::length_d>::qVector;
-        }
-        else
-        {
-            return QuantityVector<phys::units::length_d>(CoordinateSystem::GetTransformation(*BaseVector<phys::units::length_d>::cs, pCS) * BaseVector<phys::units::length_d>::qVector.eVector);
-        }
-    }
-    
+
     /*!
      * transforms the Point into another CoordinateSystem by changing its
      * coordinates interally
      */
-    void rebase(CoordinateSystem const& pCS)
-    {
-        BaseVector<phys::units::length_d>::qVector = GetCoordinates(pCS);
-        BaseVector<phys::units::length_d>::cs = &pCS;
+    void rebase(CoordinateSystem const& pCS) {
+      BaseVector<phys::units::length_d>::qVector = GetCoordinates(pCS);
+      BaseVector<phys::units::length_d>::cs = &pCS;
     }
-    
-    Point operator+(Vector<phys::units::length_d> const& pVec) const
-    {        
-        return Point(*BaseVector<phys::units::length_d>::cs, GetCoordinates() + pVec.GetComponents(*BaseVector<phys::units::length_d>::cs));
+
+    Point operator+(Vector<phys::units::length_d> const& pVec) const {
+      return Point(
+          *BaseVector<phys::units::length_d>::cs,
+          GetCoordinates() + pVec.GetComponents(*BaseVector<phys::units::length_d>::cs));
     }
-    
+
     /*!
      * returns the distance Vector between two points
      */
-    Vector<phys::units::length_d> operator-(Point const& pB) const
-    {
-        auto& cs = *BaseVector<phys::units::length_d>::cs;
-        return Vector<phys::units::length_d>(cs, GetCoordinates() - pB.GetCoordinates(cs));
+    Vector<phys::units::length_d> operator-(Point const& pB) const {
+      auto& cs = *BaseVector<phys::units::length_d>::cs;
+      return Vector<phys::units::length_d>(cs, GetCoordinates() - pB.GetCoordinates(cs));
     }
-};
+  };
 
-} // end namespace
-  
+} // namespace fwk
+
 #endif
