@@ -62,16 +62,16 @@ def class_names(filename):
 # 
 # Automatically produce a string qualifying as C++ class name
 # 
-            
+# This function produces names of type "DELTA_PLUS_PLUS"
+# 
 def c_identifier(name):
     orig = name
     name = name.upper()
-    for c in "() ":
+    for c in "() /":
         name = name.replace(c, "_")
     
     name = name.replace("BAR", "_BAR")
     name = name.replace("0", "_0")
-    name = name.replace("/", "_")
     name = name.replace("*", "_STAR")
     name = name.replace("'", "_PRIME")
     name = name.replace("+", "_PLUS")
@@ -91,6 +91,70 @@ def c_identifier(name):
         raise Exception("could not generate C identifier for '{:s}'".format(orig))
 
 
+##############################################################
+# 
+# Automatically produce a string qualifying as C++ class name
+# 
+# This function produces names of type "DeltaPlusPlus"
+# 
+def c_identifier_cammel(name):
+    orig = name
+    name = name[0].upper() + name[1:].lower() # all lower case
+#    name = "".join(c.upper() if i in indices else c for i, c in enumerate(s)) # first letter upper case
+    for c in "() /": # replace funny characters
+        name = name.replace(c, "_")
+    
+    name = name.replace("bar", "Bar")
+    name = name.replace("*", "Star")
+    name = name.replace("'", "Prime")
+    name = name.replace("+", "Plus")
+    name = name.replace("-", "Minus")
+
+    # move "Bar" to end of name
+    ibar = name.find('Bar')
+    if (ibar>0 and ibar<len(name)-3) :
+        name = name[:ibar] + name[ibar+3:] + str('Bar')
+    print (str(ibar) + " " + name + " " + str(len(name)))
+        
+            
+    # cleanup "_"s
+    while True:
+        tmp = name.replace("__", "_")
+        if tmp == name:
+            break
+        else:
+            name = tmp
+    name.strip("_")
+
+    # remove all "_", if this does not by accident concatenate two number
+    istart = 0
+    while True:
+        i = name.find('_', istart)
+        if (i<1 or i>len(name)-1):
+            break
+        istart = i
+        if (name[i-1].isdigit() and name[i+1].isdigit()):
+            # there is a number on both sides
+            break
+        name = name[:i] + name[i+1:]
+        # and last, for example: make NuE out of Nue
+        if (name[i-1].islower() and name[i].islower()) :
+            if (i<len(name)-1) :
+                name = name[:i] + name[i].upper() + name[i+1:]
+            else :
+                name = name[:i] + name[i].upper()
+
+
+    print ("generate C identifier for '{:s}' name='{:s}'".format(orig, name))
+    
+    # check if name is valid C++ identifier
+    pattern = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*$')
+    if pattern.match(name):
+        return name
+    else:
+        raise Exception("could not generate C identifier for '{:s}' name='{:s}'".format(orig, name))
+
+
     
 # ########################################################
 # 
@@ -105,7 +169,7 @@ def build_pythia_db(filename, classnames):
         if (pdg in classnames):
             c_id = classnames[pdg]
         else:
-            c_id = c_identifier(name)
+            c_id = c_identifier_cammel(name) # the cammel case names
         
         #~ print(name, c_id, sep='\t', file=sys.stderr)
         #~ enums += "{:s} = {:d}, ".format(c_id, corsika_id)
