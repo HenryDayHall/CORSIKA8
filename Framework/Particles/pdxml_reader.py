@@ -205,7 +205,8 @@ def gen_classes(pythia_db):
         string += "\n";
         string += "/** @class " + cname + "\n"
         string += "*/\n\n"
-        string += "struct " + cname + "{\n"
+        string += "class " + cname + "{\n"
+        string += "  public:\n"
         string += "   static InternalParticleCode GetType() { return Type; }\n"
         string += "   static quantity<energy_d> GetMass() { return masses[TypeIndex]; }\n"
         string += "   static quantity<electric_charge_d> GetCharge() { return phys::units::e*electric_charge[TypeIndex]/3; }\n"
@@ -233,7 +234,8 @@ def inc_start():
     string += "#include <iostream>\n\n"
     string += "using namespace phys::units;\n"
     string += "using namespace phys::units::literals;\n\n"
-    string += "namespace ParticleProperties {\n\n"
+    string += "namespace fwk { \n\n"
+    string += "namespace particle { \n\n"
     string += "typedef int16_t PDGCode;\n\n"
     return string
 
@@ -244,6 +246,7 @@ def inc_start():
 
 def inc_end():
     string = ""
+    string += "\n}\n\n"
     string += "\n}\n\n"
     string += "#endif\n"
     return string

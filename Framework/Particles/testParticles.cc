@@ -3,12 +3,12 @@
 
 #include <Units/PhysicalUnits.h>
 
-#include <Particles/Particles.h>
+#include <fwk/Particles.h>
 
 using namespace phys::units;
 using namespace phys::units::literals;
 
-using namespace ParticleProperties;
+using namespace fwk::particle;
 
 TEST_CASE( "Particles", "[Particles]" )
 {  
