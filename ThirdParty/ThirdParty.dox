@@ -25,4 +25,8 @@ The catch2 unit testing library is from: https://github.com/catchorg/Catch2
 Licence: BSL-1.0 (https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
 References: https://github.com/catchorg/Catch2
 
+@section eigen3
+ 
+eigen3 ....
+
 */

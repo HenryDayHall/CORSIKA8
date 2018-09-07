@@ -1,17 +1,30 @@
 /**
 @mainpage CORSIKA air shower simulations framework
 
-Documentation and reference guide for the CORSIKA8 software framework
-for air shower simulations. CORSIKA is the most comprehensive
-framework for air shower simulations. CORSIKA is characterized by
-simulating particle cascades in astrophysical environments. The impact
-of stochastic and continuous processes on the cascade development is
-simulated. To boost computational efficiency different techniques are
-provided, like thinning or cascade equations. 
+Documentation and reference guide for the CORSIKA8 (CORSIKA version 8)
+software framework for air shower simulations. CORSIKA8 is developed
+at <a
+href="https://gitlab.ikp.kit.edu/AirShowerPhysics">https://gitlab.ikp.kit.edu</a>. If
+you got the code from somewhere else, consider to switch to the
+official development repository. If you want to report bugs, or want
+to suggest features or future development, please submit an "issue" on
+this gitlab server. 
+
+CORSIKA is the most comprehensive framework for simulating particle
+cascades in astrophysical environments, for example extensive air
+showers. The impact of stochastic and continuous processes on the
+cascade development is simulated. To boost computational efficiency
+different techniques are provided, like thinning or cascade equations.
 
 The software makes extensive use of static design patterns and
 compiler optimization. Thus, the most fundamental configuration
 decision of the user must be performed at compile time. At runtime
 only spcific parameters can still be changed.
+
+When you contribute to CORSIKA, follow the guidlines outlined here:
+
+<a
+href="https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/wikis/home">Development
+wiki text</a>
 
 */
