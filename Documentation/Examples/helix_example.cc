@@ -1,8 +1,8 @@
 #include <Units/PhysicalUnits.h>
-#include <Geometry/Vector.h>
-#include <Geometry/CoordinateSystem.h>
-#include <Geometry/Point.h>
-#include <Geometry/Helix.h>
+#include <fwk/Vector.h>
+#include <fwk/CoordinateSystem.h>
+#include <fwk/Point.h>
+#include <fwk/Helix.h>
 #include <cstdlib>
 #include <iostream>
 #include <array>
@@ -15,12 +15,12 @@ int main()
 {
     CoordinateSystem root;
     
-    Point const r0(root, {0_m, 0_m, 0_m});
+    fwk::Point const r0(root, {0_m, 0_m, 0_m});
     auto const omegaC = 2 * M_PI * 1_Hz;
-    Vector<speed_d> vPar(root, {0_m / second, 0_m / second, 10_cm / second});
-    Vector<speed_d> vPerp(root, {1_m / second, 0_m / second, 0_m / second});
+    fwk::Vector<speed_d> vPar(root, {0_m / second, 0_m / second, 10_cm / second});
+    fwk::Vector<speed_d> vPerp(root, {1_m / second, 0_m / second, 0_m / second});
     
-    Helix h(r0, omegaC, vPar, vPerp);
+    fwk::Helix h(r0, omegaC, vPar, vPerp);
     
     auto constexpr t0 = 0_s;
     auto constexpr t1 = 1_s;

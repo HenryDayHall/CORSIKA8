@@ -1,8 +1,8 @@
 #ifndef _include_VECTOR_H_
 #define _include_VECTOR_H_
 
-#include <Geometry/BaseVector.h>
-#include <Geometry/QuantityVector.h>
+#include <fwk/BaseVector.h>
+#include <fwk/QuantityVector.h>
 #include <Units/PhysicalUnits.h>
 
 /*!
@@ -15,8 +15,10 @@
  * part only and invariant under translations.
  */
 
-template <typename dim>
-class Vector : public BaseVector<dim>
+namespace fwk {
+
+  template <typename dim>
+    class Vector : public BaseVector<dim>
 {
     using Quantity = phys::units::quantity<dim, double>;
     
@@ -200,4 +202,6 @@ public:
     
 };
 
+} // end namespace
+  
 #endif

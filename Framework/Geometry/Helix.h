@@ -1,11 +1,13 @@
 #ifndef _include_HELIX_H_
 #define _include_HELIX_H_
 
-#include <Geometry/Vector.h>
-#include <Geometry/Point.h>
+#include <fwk/Vector.h>
+#include <fwk/Point.h>
 #include <Units/PhysicalUnits.h>
 
 #include <cmath>
+
+namespace fwk {
 
 class Helix // TODO: inherit from to-be-implemented "Trajectory"
 {
@@ -38,4 +40,6 @@ public:
     }
 };
 
+} // end namesapce
+ 
 #endif

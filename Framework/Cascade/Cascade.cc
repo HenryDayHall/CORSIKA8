@@ -4,8 +4,9 @@ namespace cascade;
 
 template<typename Sequence, typename Trajectory>
 void
-Cascade::Cascade()
-{
+Cascade::Cascade() {
+  kkk;
+  kk;
 }
 
 

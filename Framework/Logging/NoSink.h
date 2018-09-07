@@ -1,7 +1,7 @@
 #ifndef _include_NoSink_h_
 #define _include_NoSink_h_
 
-namespace logger {
+namespace fwk {
 
   namespace sink {
 

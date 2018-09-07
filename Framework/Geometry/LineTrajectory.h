@@ -1,9 +1,11 @@
 #ifndef _include_LINETRAJECTORY_H
 #define _include_LINETRAJECTORY_H
 
-#include <Framework/Geometry/Point.h>
-#include <Framework/Geometry/Vector.h>
+#include <fwk/Point.h>
+#include <fwk/Vector.h>
 #include <Units/PhysicalUnits.h>
+
+namesapce fwk {
 
 class LineTrajectory // TODO: inherit from Trajectory
 {
@@ -22,5 +24,7 @@ class LineTrajectory // TODO: inherit from Trajectory
         return r0 + v0 * t;
     }
 };
+
+} // end namesapce
 
 #endif

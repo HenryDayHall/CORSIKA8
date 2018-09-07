@@ -2,7 +2,7 @@
 #define _include_MessageOn_h_
 
 
-namespace logger {
+namespace fwk {
 
   /**
      Helper class to convert all input arguments of MessageOn::Message

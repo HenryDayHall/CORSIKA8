@@ -203,6 +203,8 @@ def gen_classes(pythia_db):
                 break
         
         string += "\n";
+        string += "/** @class " + cname + "\n"
+        string += "*/\n\n"
         string += "struct " + cname + "{\n"
         string += "   static InternalParticleCode GetType() { return Type; }\n"
         string += "   static quantity<energy_d> GetMass() { return masses[TypeIndex]; }\n"

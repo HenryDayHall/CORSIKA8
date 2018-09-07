@@ -2,6 +2,7 @@
 #define _include_Stack_h__
 
 #include <StackInterface/StackIterator.h> // to help application programmres
+//#include <corsika/StackIterator.h> // to help application programmres
 
 /**
    All classes around management of particles on a stack.

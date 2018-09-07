@@ -1,4 +1,4 @@
-#include <Logging/Logger.h>
+#include <fwk/Logger.h>
 
 #include <string>
 #include <iostream>
@@ -14,10 +14,10 @@ main()
   {
     cout << "writing to \"another.log\"" << endl;
     ofstream logfile("another.log");
-    logger::sink::SinkStream unbuffered_sink(logfile);
-    logger::sink::BufferedSinkStream sink(logfile, logger::sink::StdBuffer(10000));
-    logger::Logger<logger::MessageOn, logger::sink::BufferedSinkStream> info("\033[32m", "info", sink);
-    logger::Logger<logger::MessageOn, logger::sink::BufferedSinkStream> err("\033[31m", "error", sink);
+    fwk::sink::SinkStream unbuffered_sink(logfile);
+    fwk::sink::BufferedSinkStream sink(logfile, fwk::sink::StdBuffer(10000));
+    fwk::Logger<fwk::MessageOn, fwk::sink::BufferedSinkStream> info("\033[32m", "info", sink);
+    fwk::Logger<fwk::MessageOn, fwk::sink::BufferedSinkStream> err("\033[31m", "error", sink);
     //logger<ostream,messageconst,StdBuffer> info(std::cout, StdBuffer(10000));
     
     /*
@@ -33,8 +33,8 @@ main()
   }
   
   {
-    logger::sink::NoSink off;
-    logger::Logger<logger::MessageOff> info("", "", off);
+    fwk::sink::NoSink off;
+    fwk::Logger<fwk::MessageOff> info("", "", off);
     
     for (int i=0; i<100000; ++i) {
       LOG(info, "irgendwas", string("and more"), boost::format("error: %i message: %s. done."), i, "stupido", "a-number:", 8.99, "ENDE" );

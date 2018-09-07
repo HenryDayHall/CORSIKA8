@@ -1,5 +1,5 @@
 
-set (STACK_HEADERS StackOne.h)
+set (PUBLIC_HEADER_FILES StackOne.h)
 
 add_library (CORSIKAstack INTERFACE)
 
@@ -11,8 +11,22 @@ add_library (CORSIKAstack INTERFACE)
 #target_link_libraries (CORSIKAstackinterface CORSIKAunits)
 
 #target_include_directories (CORSIKAstack PRIVATE   ${EIGEN3_INCLUDE_DIR})
-target_include_directories (CORSIKAstack INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
-                                                      $<INSTALL_INTERFACE:include/Framework>
-                                                      )
+target_include_directories (
+  CORSIKAstack
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
 
-install (FILES StackOne.h DESTINATION include/Stack)
+#add_custom_command (
+#  CORSIKAstack
+#  PRE_BUILD
+#  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PUBLIC_HEADER_FILES} ${PROJECT_BINARY_DIR}/include/corsika})
+#  )
+
+install (
+  FILES
+  StackOne.h
+  DESTINATION
+  include/Stack
+  )

@@ -1,18 +1,55 @@
 
-
 add_library (CORSIKAlogging INTERFACE)
 
-target_include_directories (CORSIKAlogging INTERFACE ${PROJECT_SOURCE_DIR}/Framework)
+# namespace of library -> location of header files
+set (
+  CORSIKAlogging_NAMESPACE
+  fwk
+  )
 
-target_include_directories (CORSIKAlogging INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
-                                                     $<INSTALL_INTERFACE:include/Framework>
-                                                     )
+# header files of this library
+set (
+  CORSIKAlogging_HEADERS
+  Logger.h
+  Sink.h
+  MessageOn.h
+  MessageOff.h
+  NoSink.h
+  Sink.h
+  BufferedSink.h
+  )
 
-install (FILES Logger.h Sink.h MessageOn.h MessageOff.h NoSink.h Sink.h BufferedSink.h
-         DESTINATION include/Logging)
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAlogging ${CORSIKAlogging_NAMESPACE} ${CORSIKAlogging_HEADERS})
 
-# code testing
-add_executable (testLogging testLogging.cc)
-target_link_libraries (testLogging CORSIKAlogging CORSIKAthirdparty) # for catch2
-add_test (NAME testLogging COMMAND testLogging -o report.xml -r junit)
+# include directive for upstream code
+target_include_directories (
+  CORSIKAlogging
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include/>
+  )
+
+# install library
+install (
+  FILES ${CORSIKAlogging_HEADERS}
+  DESTINATION include/${CORSIKAlogging_NAMESPACE}
+  )
+
+# ----------------
+# code unit testing
+add_executable (
+  testLogging
+  testLogging.cc
+  )
+
+target_link_libraries (
+  testLogging
+  CORSIKAlogging
+  CORSIKAthirdparty # for catch2
+  )
+
+add_test (
+  NAME testLogging
+  COMMAND testLogging
+  )
 

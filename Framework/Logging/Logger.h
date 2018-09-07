@@ -1,3 +1,7 @@
+/**
+   @File Logger.h
+ */
+
 #ifndef _include_logger_h_
 #define _include_logger_h_
 
@@ -8,11 +12,11 @@
 
 #include <boost/format.hpp>
 
-#include <Logging/MessageOn.h>
-#include <Logging/MessageOff.h>
-#include <Logging/Sink.h>
-#include <Logging/NoSink.h>
-#include <Logging/BufferedSink.h>
+#include <fwk/MessageOn.h>
+#include <fwk/MessageOff.h>
+#include <fwk/Sink.h>
+#include <fwk/NoSink.h>
+#include <fwk/BufferedSink.h>
 
 
 using namespace std;
@@ -22,7 +26,7 @@ using namespace boost;
    Everything around logfile generation and text output.
 */
 
-namespace logger {
+namespace fwk {
   
   /**
      Defines one stream to accept messages, and to wrote those into

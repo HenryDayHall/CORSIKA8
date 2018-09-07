@@ -1,7 +1,7 @@
 #ifndef _include_Sink_h_
 #define _include_Sink_h_
 
-namespace logger {
+namespace fwk {
 
   /**
      a sink for the logger must implement the two functions

@@ -1,7 +1,7 @@
-#include <Geometry/Vector.h>
-#include <Geometry/Sphere.h>
-#include <Geometry/Point.h>
-#include <Geometry/CoordinateSystem.h>
+#include <fwk/Vector.h>
+#include <fwk/Sphere.h>
+#include <fwk/Point.h>
+#include <fwk/CoordinateSystem.h>
 #include <Units/PhysicalUnits.h>
 
 #include <iostream>
@@ -11,6 +11,8 @@
 using namespace phys::units; 
 using namespace phys::units::io; // support stream << unit
 using namespace phys::units::literals; // support unit literals like 5_m;
+
+using namespace fwk;
 
 int main()
 {

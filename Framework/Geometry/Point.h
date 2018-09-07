@@ -1,24 +1,27 @@
 #ifndef _include_POINT_H_
 #define _include_POINT_H_
 
-#include <Geometry/BaseVector.h>
-#include <Geometry/QuantityVector.h>
-#include <Geometry/Vector.h>
+#include <fwk/BaseVector.h>
+#include <fwk/QuantityVector.h>
+#include <fwk/Vector.h>
 #include <Units/PhysicalUnits.h>
 
-/*!
- * A Point represents a point in position space. It is defined by its
- * coordinates with respect to some CoordinateSystem.
- */
-class Point : public BaseVector<phys::units::length_d>
-{
-public:
-    Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector) :
-        BaseVector<phys::units::length_d>(pCS, pQVector)
-    {
-    }
 
-    Point(CoordinateSystem const& cs, Length x, Length y, Length z) :
+namespace fwk {
+
+  /*!
+   * A Point represents a point in position space. It is defined by its
+   * coordinates with respect to some CoordinateSystem.
+   */
+  class Point : public BaseVector<phys::units::length_d>
+  {
+  public:
+  Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector) :
+    BaseVector<phys::units::length_d>(pCS, pQVector)
+      {
+      }
+    
+  Point(CoordinateSystem const& cs, Length x, Length y, Length z) :
         BaseVector<phys::units::length_d>(cs, {x, y, z})
     {
     }
@@ -65,4 +68,6 @@ public:
     }
 };
 
+} // end namespace
+  
 #endif

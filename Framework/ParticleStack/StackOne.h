@@ -5,6 +5,7 @@
 #include <string>
 
 #include <StackInterface/Stack.h>
+//#include <corsika/Stack.h>
 
 
 namespace stack {
@@ -24,8 +25,8 @@ namespace stack {
       void SetId(const int id) { GetStack().SetId(GetIndex(), id); }
       void SetEnergy(const double e) { GetStack().SetEnergy(GetIndex(), e); }
       
-      int GetId() const { GetStack().GetId(GetIndex()); }
-      double GetEnergy() const { GetStack().GetEnergy(GetIndex()); }
+      int GetId() const { return  GetStack().GetId(GetIndex()); }
+      double GetEnergy() const { return GetStack().GetEnergy(GetIndex()); }
       
       double GetPDG() const { return 0; } // ConvertToPDG(GetId()); }  
       void SetPDG(double v) { GetStack().SetId(0, 0); } //fIndex, ConvertFromPDG(v)); }

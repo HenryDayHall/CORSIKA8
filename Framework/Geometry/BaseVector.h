@@ -1,8 +1,10 @@
 #ifndef _include_BASEVECTOR_H_
 #define _include_BASEVECTOR_H_
 
-#include <Geometry/QuantityVector.h>
-#include <Geometry/CoordinateSystem.h>
+#include <fwk/QuantityVector.h>
+#include <fwk/CoordinateSystem.h>
+
+namespace fwk {
 
 /*!
  * Common base class for Vector and Point. Currently it does basically nothing.
@@ -22,4 +24,6 @@ public:
     }
 };
 
+} // end namesapce
+ 
 #endif

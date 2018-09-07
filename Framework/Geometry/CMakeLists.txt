@@ -1,31 +1,68 @@
 
-set (GEOMETRY_SOURCES CoordinateSystem.cc)
-set (GEOMETRY_HEADERS Vector.h Point.h Sphere.h CoordinateSystem.h Helix.h)
+set (
+  GEOMETRY_SOURCES
+  CoordinateSystem.cc
+  )
+
+set (
+  GEOMETRY_HEADERS
+  Vector.h
+  Point.h
+  Sphere.h
+  CoordinateSystem.h
+  Helix.h
+  BaseVector.h
+  QuantityVector.h
+  )
+
+set (
+  GEOMETRY_NAMESPACE
+  fwk
+  )
 
 add_library (CORSIKAgeometry STATIC ${GEOMETRY_SOURCES})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAgeometry ${GEOMETRY_NAMESPACE} ${GEOMETRY_HEADERS})
 
-set_target_properties (CORSIKAgeometry PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties (CORSIKAgeometry PROPERTIES SOVERSION 1)
+set_target_properties (
+  CORSIKAgeometry
+  PROPERTIES
+  VERSION ${PROJECT_VERSION}
+  SOVERSION 1
+  PUBLIC_HEADER "${GEOMETRY_HEADERS}"
+  )
 
-set_target_properties (CORSIKAgeometry PROPERTIES PUBLIC_HEADER "${GEOMETRY_HEADERS}")
-                                                    
-# target dependencies on other libraries (also header only)
-target_link_libraries (CORSIKAgeometry CORSIKAunits)
+# target dependencies on other libraries (also the header onlys)
+target_link_libraries (
+  CORSIKAgeometry
+  CORSIKAunits
+  )
 
-target_include_directories (CORSIKAgeometry PRIVATE   ${EIGEN3_INCLUDE_DIR})
-target_include_directories (CORSIKAgeometry INTERFACE ${EIGEN3_INCLUDE_DIR})
-target_include_directories (CORSIKAgeometry INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
-                                                      $<INSTALL_INTERFACE:include/Framework>
-                                                      )
+target_include_directories (
+  CORSIKAgeometry
+  PRIVATE   ${EIGEN3_INCLUDE_DIR}
+  INTERFACE ${EIGEN3_INCLUDE_DIR}
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include/include>
+  )
 
-install (TARGETS CORSIKAgeometry
-         LIBRARY DESTINATION lib
-         ARCHIVE DESTINATION lib
-         PUBLIC_HEADER DESTINATION include/Geometry)
+install (
+  TARGETS CORSIKAgeometry
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include/${GEOMETRY_NAMESPACE}
+  )
 
 
-# code testing
+# --------------------
+# code unit testing
 add_executable (testGeometry testGeometry.cc)
-target_link_libraries (testGeometry CORSIKAgeometry CORSIKAunits CORSIKAthirdparty) # for catch2
-add_test (NAME testGeometry COMMAND testGeometry -o report.xml -r junit)
+
+target_link_libraries (
+  testGeometry
+  CORSIKAgeometry
+  CORSIKAunits
+  CORSIKAthirdparty # for catch2
+  )
+
+add_test (NAME testGeometry COMMAND testGeometry)
 
