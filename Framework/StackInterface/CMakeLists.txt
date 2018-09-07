@@ -1,23 +1,23 @@
 set (
-  CORSIKAstackint_HEADERS
+  CORSIKAstackinterface_HEADERS
   Stack.h
   StackIterator.h
   )
 
 set (
-  CORSIKAstackint_NAMESPACE
+  CORSIKAstackinterface_NAMESPACE
   fwk
   )
 
 add_library (
-  CORSIKAstackint
+  CORSIKAstackinterface
   INTERFACE
   )
 
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAstackint ${CORSIKAstackint_NAMESPACE} ${CORSIKAstackint_HEADERS})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAstackinterface ${CORSIKAstackinterface_NAMESPACE} ${CORSIKAstackinterface_HEADERS})
 
 target_include_directories (
-  CORSIKAstackint
+  CORSIKAstackinterface
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -25,14 +25,14 @@ target_include_directories (
 
 #add_custom_command (
 #  TARGET
-#  CORSIKAstackinterface
+#  CORSIKAstackinterfaceerface
 #  PRE_BUILD
-#  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CORSIKAstackinterface_HEADERS} ${PROJECT_BINARY_DIR}/include/corsika
+#  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CORSIKAstackinterfaceerface_HEADERS} ${PROJECT_BINARY_DIR}/include/corsika
 #  )
 
 install (
   FILES
-  ${CORSIKAstackint_HEADERS}
+  ${CORSIKAstackinterface_HEADERS}
   DESTINATION
-  include/${CORSIKAstackint_NAMESPACE}
+  include/${CORSIKAstackinterface_NAMESPACE}
   )

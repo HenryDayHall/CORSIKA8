@@ -1,14 +1,13 @@
-#include <fwk/StackOne.h>
-//#include <corsika/StackOne.h>
+#include <stack/super_stupid/SuperStupidStack.h>
 
 #include <iomanip>
 #include <iostream>
 
 using namespace std;
 
-//using namespace fwk;
+// using namespace fwk;
 
-void fill(stack::StackOne& s) {
+void fill(stack::super_stupid::SuperStupidStack& s) {
   for (int i = 0; i < 11; ++i) {
     auto p = s.NewParticle();
     p.SetId(i);
@@ -16,7 +15,7 @@ void fill(stack::StackOne& s) {
   }
 }
 
-void read(stack::StackOne& s) {
+void read(stack::super_stupid::SuperStupidStack& s) {
   cout << "found Stack with " << s.GetSize() << " particles. " << endl;
   double Etot = 0;
   for (auto p : s) { Etot += p.GetEnergy(); }
@@ -24,7 +23,7 @@ void read(stack::StackOne& s) {
 }
 
 int main() {
-  stack::StackOne s;
+  stack::super_stupid::SuperStupidStack s;
   fill(s);
   read(s);
   return 0;
