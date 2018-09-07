@@ -1,5 +1,7 @@
 /**
    @File Logger.h
+
+   Everything around logfile generation and text output.
  */
 
 #ifndef _include_logger_h_
@@ -22,13 +24,13 @@
 using namespace std;
 using namespace boost;
 
-/**
-   Everything around logfile generation and text output.
-*/
 
 namespace fwk {
   
+
   /**
+     @class Logger
+
      Defines one stream to accept messages, and to wrote those into
      TSink.  The helper class MessageOn will convert input at
      compile-time into message strings. The helper class MessageOff,
@@ -62,6 +64,19 @@ namespace fwk {
   };
 
 } // end namesapce 
+
+
+/**
+ * @def LOG(...)
+ *  
+ * This is the main interface to the logging facilities. If Logger
+ * object are defined (e.g. log1) use as 
+ * @example LOG(log1, "var1=", variable1int, "var2=", variabl2double) 
+ * for arbitrary long sequence
+ * of arguments. This may also include boost::format objects the
+ * output is concatenated, if log1 is switched off at compile time,
+ * the whole LOG command is optimized away by the compiler.
+ */
 
 #define LOG(__LOGGER,...)                                               \
   __LOGGER.Log(__LOGGER.GetName(), __FILE__,":", __LINE__, " (", __func__, ") -> ", ##__VA_ARGS__);

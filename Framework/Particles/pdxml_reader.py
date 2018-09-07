@@ -203,13 +203,20 @@ def gen_classes(pythia_db):
                 break
         
         string += "\n";
-        string += "/** @class " + cname + "\n"
+        string += "/** @class " + cname + "\n\n"
+        string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
+        string += " *  - pdg=" + str(pythia_db[cname]['pdg']) +"\n"
+        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV \n"
+        string += " *  - charge= " + str(pythia_db[cname]['electric_charge']/3) + " \n"
+        string += " *  - name=" + str(cname) + "\n"
+        string += " *  - anti=" + str(antiP) + "\n"
         string += "*/\n\n"
         string += "class " + cname + "{\n"
         string += "  public:\n"
         string += "   static InternalParticleCode GetType() { return Type; }\n"
         string += "   static quantity<energy_d> GetMass() { return masses[TypeIndex]; }\n"
         string += "   static quantity<electric_charge_d> GetCharge() { return phys::units::e*electric_charge[TypeIndex]/3; }\n"
+        string += "   static int GetChargeNumber() { return electric_charge[TypeIndex]/3; }\n"
         string += "   static std::string GetName() { return names[TypeIndex]; }\n"
         string += "   static InternalParticleCode GetAntiParticle() { return AntiType; }\n"
         string += "   static const InternalParticleCode Type = InternalParticleCode::" + cname + ";\n"
