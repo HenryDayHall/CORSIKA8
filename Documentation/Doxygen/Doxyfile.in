@@ -2,13 +2,13 @@ PROJECT_NAME           = CORSIKA
 PROJECT_NUMBER         = 8.0.0
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../.. 
-EXCLUDE_PATTERN        = "*/ThirdParty/*/*"
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../.. @CMAKE_CURRENT_BINARY_DIR@/Framework/Particles/
+EXCLUDE_PATTERNS       = */ThirdParty/*/*
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = YES
 
-FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox
+FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc
 RECURSIVE              = YES
 
 SOURCE_BROWSER         = YES
