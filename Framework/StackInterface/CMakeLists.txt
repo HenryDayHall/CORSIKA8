@@ -23,13 +23,6 @@ target_include_directories (
   $<INSTALL_INTERFACE:include>
   )
 
-#add_custom_command (
-#  TARGET
-#  CORSIKAstackinterfaceerface
-#  PRE_BUILD
-#  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CORSIKAstackinterfaceerface_HEADERS} ${PROJECT_BINARY_DIR}/include/corsika
-#  )
-
 install (
   FILES
   ${CORSIKAstackinterface_HEADERS}
