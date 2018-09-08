@@ -186,10 +186,15 @@ def build_pythia_db(filename, classnames):
 # 
 
 def gen_internal_enum(pythia_db):
-    string = "enum class InternalParticleCode : uint8_t {\n"
-    
+    string = "enum class Code : uint8_t {\n"
+
+    string += "  FirstParticle = 1, // if you want to loop over particles, you want to start with \"1\"  \n" # identifier for eventual loops...
+    last_ngc_id = 0 
     for k in filter(lambda k: "ngc_code" in pythia_db[k], pythia_db):
-        string += "  {key:s} = {code:d},\n".format(key = k, code = pythia_db[k]['ngc_code'])
+        last_ngc_id = pythia_db[k]['ngc_code']
+        string += "  {key:s} = {code:d},\n".format(key = k, code = last_ngc_id)
+
+    string += "  LastParticle = " + str(last_ngc_id+1) + ",\n" # identifier for eventual loops...
     
     string += "};"
     return string
@@ -271,14 +276,14 @@ def gen_classes(pythia_db):
         string += "*/\n\n"
         string += "class " + cname + "{\n"
         string += "  public:\n"
-        string += "   static InternalParticleCode GetType() { return Type; }\n"
+        string += "   static Code GetCode() { return Type; }\n"
         string += "   static quantity<energy_d> GetMass() { return masses[TypeIndex]; }\n"
         string += "   static quantity<electric_charge_d> GetCharge() { return phys::units::e*electric_charge[TypeIndex]/3; }\n"
         string += "   static int GetChargeNumber() { return electric_charge[TypeIndex]/3; }\n"
         string += "   static std::string GetName() { return names[TypeIndex]; }\n"
-        string += "   static InternalParticleCode GetAntiParticle() { return AntiType; }\n"
-        string += "   static const InternalParticleCode Type = InternalParticleCode::" + cname + ";\n"
-        string += "   static const InternalParticleCode AntiType = InternalParticleCode::" + antiP + ";\n"
+        string += "   static Code GetAntiParticle() { return AntiType; }\n"
+        string += "   static const Code Type = Code::" + cname + ";\n"
+        string += "   static const Code AntiType = Code::" + antiP + ";\n"
         string += " private:\n"
         string += "   static const uint8_t TypeIndex = static_cast<uint8_t const>(Type);\n"
         string += "};\n"
@@ -294,9 +299,10 @@ def inc_start():
     string = ""
     string += "#ifndef _include_GeneratedParticleDataTable_h_\n"
     string += "#define _include_GeneratedParticleDataTable_h_\n\n"
+    string += "#include <fwk/PhysicalUnits.h>\n"
     string += "#include <array>\n"
     string += "#include <cstdint>\n"
-    string += "#include <iostream>\n\n"
+#    string += "#include <iostream>\n\n"
     string += "using namespace phys::units;\n"
     string += "using namespace phys::units::literals;\n\n"
     string += "namespace fwk { \n\n"

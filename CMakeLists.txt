@@ -42,7 +42,7 @@ find_package (Eigen3 REQUIRED)
 add_subdirectory (ThirdParty)
 add_subdirectory (Framework)
 add_subdirectory (Stack)
-#add_subdirectory (Processes)
+add_subdirectory (Processes)
 add_subdirectory (Documentation)
 add_subdirectory (Main)
 

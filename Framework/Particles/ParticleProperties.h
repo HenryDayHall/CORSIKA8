@@ -30,29 +30,29 @@ namespace fwk {
      *
      * return mass of particle
      */
-    auto constexpr GetMass(InternalParticleCode const p) {
+    auto constexpr GetMass(Code const p) {
       return masses[static_cast<uint8_t const>(p)];
     }
 
-    auto constexpr GetPDG(InternalParticleCode const p) {
+    auto constexpr GetPDG(Code const p) {
       return pdg_codes[static_cast<uint8_t const>(p)];
     }
 
-    auto constexpr GetElectricChargeNumber(InternalParticleCode const p) {
+    auto constexpr GetElectricChargeNumber(Code const p) {
       return electric_charge[static_cast<uint8_t const>(p)] / 3;
     }
 
-    auto constexpr GetElectricCharge(InternalParticleCode const p) {
+    auto constexpr GetElectricCharge(Code const p) {
       return GetElectricChargeNumber(p) * (phys::units::e);
     }
 
-    auto const GetName(InternalParticleCode const p) {
+    auto const GetName(Code const p) {
       return names[static_cast<uint8_t const>(p)];
     }
 
     namespace io {
 
-      std::ostream& operator<<(std::ostream& stream, InternalParticleCode const p) {
+      std::ostream& operator<<(std::ostream& stream, Code const p) {
         stream << GetName(p);
         return stream;
       }

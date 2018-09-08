@@ -1,13 +1,14 @@
 
 add_custom_command (
-  OUTPUT ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
-  COMMAND ${PROJECT_SOURCE_DIR}/Framework/Particles/pdxml_reader.py ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleData.xml ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleClassNames.xml
-  DEPENDS
-  pdxml_reader.py
-  ParticleData.xml
-  ParticleClassNames.xml
+  OUTPUT  ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
+  COMMAND ${PROJECT_SOURCE_DIR}/Framework/Particles/pdxml_reader.py 
+          ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleData.xml
+          ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleClassNames.xml
+  DEPENDS pdxml_reader.py
+          ParticleData.xml
+          ParticleClassNames.xml
   WORKING_DIRECTORY
-  ${PROJECT_BINARY_DIR}/Framework/Particles/
+          ${PROJECT_BINARY_DIR}/Framework/Particles/
   COMMENT "Read PYTHIA8 particle data and produce C++ source code GeneratedParticleProperties.inc"
   VERBATIM
   )
@@ -15,14 +16,8 @@ add_custom_command (
 # all public header files of library, includes automatic generated file(s)
 set (
   PARTICLE_HEADERS
-  Particles.h
+  ParticleProperties.h
   ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc # this one is auto-generated
-  )
-
-# we need 2nd list with just the header files from the source code directory
-set (
-  PARTICLE_HEADERS_SOURCE
-  Particles.h
   )
 
 set (
@@ -34,10 +29,23 @@ add_library (CORSIKAparticles INTERFACE)
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAparticles ${PARTICLE_NAMESPACE} ${PARTICLE_HEADERS})
 
+# ....................................................
+# since GeneratedParticleProperties.inc is an automatically produced file in the build directory,
+# create a symbolic link into the source tree, so that it can be found and edited more easily
+# this is not needed for the build to succeed! .......
+add_custom_command (
+  OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/fwk/GeneratedParticleProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
+  COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc"
+  )
+add_custom_target (SourceDirLink DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc)
+add_dependencies (CORSIKAparticles SourceDirLink)
+# .....................................................
+
+
 target_include_directories (
   CORSIKAparticles
   INTERFACE
-  # ${EIGEN3_INCLUDE_DIR}
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>
   )
