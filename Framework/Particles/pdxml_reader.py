@@ -100,7 +100,6 @@ def c_identifier(name):
 def c_identifier_cammel(name):
     orig = name
     name = name[0].upper() + name[1:].lower() # all lower case
-#    name = "".join(c.upper() if i in indices else c for i, c in enumerate(s)) # first letter upper case
     for c in "() /": # replace funny characters
         name = name.replace(c, "_")
     
@@ -114,8 +113,6 @@ def c_identifier_cammel(name):
     ibar = name.find('Bar')
     if (ibar>0 and ibar<len(name)-3) :
         name = name[:ibar] + name[ibar+3:] + str('Bar')
-    print (str(ibar) + " " + name + " " + str(len(name)))
-        
             
     # cleanup "_"s
     while True:
@@ -144,9 +141,6 @@ def c_identifier_cammel(name):
             else :
                 name = name[:i] + name[i].upper()
 
-
-    print ("generate C identifier for '{:s}' name='{:s}'".format(orig, name))
-    
     # check if name is valid C++ identifier
     pattern = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*$')
     if pattern.match(name):
