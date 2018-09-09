@@ -43,7 +43,7 @@ namespace fwk {
     }
 
     auto constexpr GetElectricCharge(Code const p) {
-      return GetElectricChargeNumber(p) * (phys::units::e);
+      return GetElectricChargeNumber(p) * (fwk::constants::e);
     }
 
     auto const GetName(Code const p) {

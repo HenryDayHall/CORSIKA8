@@ -8,9 +8,8 @@
 #include <cstdlib>
 #include <iostream>
 
-using namespace phys::units;
-using namespace phys::units::io;       // support stream << unit
-using namespace phys::units::literals; // support unit literals like 5_m;
+using namespace fwk;
+using namespace fwk::literals; // support unit literals like 5_m;
 
 int main() {
   fwk::CoordinateSystem root;

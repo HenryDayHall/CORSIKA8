@@ -8,11 +8,8 @@
 #include <typeinfo>
 #include <cstdlib>
 
-using namespace phys::units; 
-using namespace phys::units::io; // support stream << unit
-using namespace phys::units::literals; // support unit literals like 5_m;
-
 using namespace fwk;
+using namespace fwk::literals; // support unit literals like 5_m;
 
 int main()
 {
@@ -29,7 +26,7 @@ int main()
     Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
     Point const p2(cs2, {0_m, 0_m, 0_m}); // the origin of cs2
     
-    Vector<length_d> const diff = p2 - p1; // the distance between the points, basically the translation vector given above
+    Vector<fwk::length_d> const diff = p2 - p1; // the distance between the points, basically the translation vector given above
     auto const norm = diff.squaredNorm(); // squared length with the right dimension
     
     // print the components of the vector as given in the different CS
@@ -46,8 +43,8 @@ int main()
     
     
     // let's try parallel projections:
-    auto const v1 = Vector<length_d>(root, {1_m, 1_m, 0_m});
-    auto const v2 = Vector<length_d>(root, {1_m, 0_m, 0_m});
+    auto const v1 = Vector<fwk::length_d>(root, {1_m, 1_m, 0_m});
+    auto const v2 = Vector<fwk::length_d>(root, {1_m, 0_m, 0_m});
 
     auto const v3 = v1.parallelProjectionOnto(v2);
     

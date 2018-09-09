@@ -64,13 +64,12 @@ namespace phys {
 
 namespace fwk {
 
-  using namespace phys;
+  // using namespace phys;
   using namespace phys::units;
 
+  namespace constants = phys::units::constants;
+  
 } // namespace fwk
 
 #endif // PHYS_UNITS_PHYSICAL_CONSTANTS_HPP_INCLUDED
 
-/*
- * end of file
- */
