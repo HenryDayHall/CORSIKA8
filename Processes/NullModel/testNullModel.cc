@@ -9,5 +9,4 @@ TEST_CASE("NullModel", "[processes]") {
   SECTION("bla") {}
 
   SECTION("blubb") {}
-
 }

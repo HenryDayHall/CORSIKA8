@@ -17,7 +17,7 @@ namespace corsika::process {
     };
 
   } // namespace null_model
-  
-} // namespace process
+
+} // namespace corsika::process
 
 #endif

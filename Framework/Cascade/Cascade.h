@@ -3,9 +3,9 @@
 
 namespace cascade {
 
-  template<typename Processes, typename Trajectory, typename Stack>
+  template <typename Processes, typename Trajectory, typename Stack>
   class Cascade {
-    
+
   public:
     Cascade();
 
@@ -16,9 +16,8 @@ namespace cascade {
   private:
     Stack fStack;
     Processes fProcesseList;
-    
   };
-  
-}
+
+} // namespace cascade
 
 #endif

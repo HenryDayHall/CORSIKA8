@@ -9,11 +9,12 @@ namespace corsika::logging {
    */
   class MessageOff {
   protected:
-    template<typename First, typename ... Strings> std::string Message(const First& arg, const Strings&... rest) {
+    template <typename First, typename... Strings>
+    std::string Message(const First& arg, const Strings&... rest) {
       return "";
     }
   };
 
-} // end namespace
+} // namespace corsika::logging
 
 #endif

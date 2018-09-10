@@ -8,12 +8,12 @@
 
 namespace corsika::geometry {
 
-  using corsika::units::SpeedType;
-  using corsika::units::TimeType;
+  using corsika::units::frequency_d;
   using corsika::units::FrequencyType;
   using corsika::units::quantity;
-  using corsika::units::frequency_d;
-  
+  using corsika::units::SpeedType;
+  using corsika::units::TimeType;
+
   class Helix // TODO: inherit from to-be-implemented "Trajectory"
   {
     using SpeedVec = Vector<SpeedType::dimension_type>;
@@ -26,8 +26,8 @@ namespace corsika::geometry {
     LengthType const radius;
 
   public:
-    Helix(Point const& pR0, quantity<frequency_d> pOmegaC,
-          SpeedVec const& pvPar, SpeedVec const& pvPerp)
+    Helix(Point const& pR0, quantity<frequency_d> pOmegaC, SpeedVec const& pvPar,
+          SpeedVec const& pvPerp)
         : r0(pR0)
         , omegaC(pOmegaC)
         , vPar(pvPar)
@@ -43,6 +43,6 @@ namespace corsika::geometry {
     auto GetRadius() const { return radius; }
   };
 
-} // namespace corsika
+} // namespace corsika::geometry
 
 #endif

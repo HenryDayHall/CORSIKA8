@@ -172,6 +172,6 @@ namespace corsika::geometry {
     }
   };
 
-} // namespace corsika
+} // namespace corsika::geometry
 
 #endif

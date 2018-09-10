@@ -10,7 +10,7 @@ namespace corsika::logging {
       inline void Close() {}
     };
 
-  }// end namespace
-} // end namespace
-  
+  } // namespace sink
+} // namespace corsika::logging
+
 #endif

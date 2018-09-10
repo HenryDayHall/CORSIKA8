@@ -1,5 +1,5 @@
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <iomanip>
 #include <iostream>
 
@@ -9,7 +9,6 @@ using namespace std;
 
 using namespace corsika::units;
 using namespace corsika::stack;
-
 
 void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
   for (int i = 0; i < 11; ++i) {

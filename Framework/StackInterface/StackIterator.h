@@ -111,6 +111,6 @@ namespace corsika::stack {
     }
   };
 
-} // end namespace stack
+} // namespace corsika::stack
 
 #endif

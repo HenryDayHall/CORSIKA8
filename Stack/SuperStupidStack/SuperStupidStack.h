@@ -4,18 +4,18 @@
 #include <string>
 #include <vector>
 
-#include <corsika/stack/Stack.h>
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::stack {
 
   namespace super_stupid {
 
-    using corsika::units::EnergyType;
     using corsika::particles::Code;
-    using corsika::units::operator""_GeV;//literals;
-    
+    using corsika::units::EnergyType;
+    using corsika::units::operator""_GeV; // literals;
+
     /**
      * Example of a particle object on the stack.
      */
@@ -92,5 +92,4 @@ namespace corsika::stack {
 
 } // namespace corsika::stack
 
- 
 #endif

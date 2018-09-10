@@ -8,9 +8,9 @@
 
 namespace corsika::geometry {
 
-  using corsika::units::LengthType;
   using corsika::units::length_d;
-  
+  using corsika::units::LengthType;
+
   /*!
    * A Point represents a point in position space. It is defined by its
    * coordinates with respect to some CoordinateSystem.
@@ -60,6 +60,6 @@ namespace corsika::geometry {
     }
   };
 
-} // namespace corsika
+} // namespace corsika::geometry
 
 #endif

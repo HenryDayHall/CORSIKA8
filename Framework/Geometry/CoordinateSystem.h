@@ -11,7 +11,7 @@ typedef Eigen::Translation<double, 3> EigenTranslation;
 namespace corsika::geometry {
 
   using corsika::units::length_d;
-  
+
   class CoordinateSystem {
     CoordinateSystem const* reference = nullptr;
     EigenTransform transf;
@@ -59,6 +59,6 @@ namespace corsika::geometry {
     auto const& GetTransform() const { return transf; }
   };
 
-} // namespace corsika
+} // namespace corsika::geometry
 
 #endif
