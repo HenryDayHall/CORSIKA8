@@ -14,18 +14,18 @@
 
 #include <boost/format.hpp>
 
-#include <fwk/MessageOn.h>
-#include <fwk/MessageOff.h>
-#include <fwk/Sink.h>
-#include <fwk/NoSink.h>
-#include <fwk/BufferedSink.h>
+#include <corsika/logging/MessageOn.h>
+#include <corsika/logging/MessageOff.h>
+#include <corsika/logging/Sink.h>
+#include <corsika/logging/NoSink.h>
+#include <corsika/logging/BufferedSink.h>
 
 
 using namespace std;
 using namespace boost;
 
 
-namespace fwk {
+namespace corsika::logging {
   
 
   /**

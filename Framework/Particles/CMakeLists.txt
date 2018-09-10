@@ -22,7 +22,7 @@ set (
 
 set (
   PARTICLE_NAMESPACE
-  fwk
+  corsika/particles
   )
 
 add_library (CORSIKAparticles INTERFACE)
@@ -35,7 +35,7 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAparticles ${PARTICLE_NAMESPACE} ${PART
 # this is not needed for the build to succeed! .......
 add_custom_command (
   OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/fwk/GeneratedParticleProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/GeneratedParticleProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
   COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc"
   )
 add_custom_target (SourceDirLink DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc)
@@ -54,7 +54,7 @@ install (
   FILES
   ${PARTICLE_HEADERS}
   DESTINATION
-  include/Particles
+  include/${PARTICLE_NAMESPACE}
   )
 
 # --------------------

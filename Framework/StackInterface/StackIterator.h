@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <iostream>
 
-namespace stack {
+namespace corsika::stack {
 
   // forward decl.
   template <class Stack, class Particle>

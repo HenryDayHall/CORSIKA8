@@ -2,12 +2,11 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
-#include <fwk/PhysicalUnits.h>
+#include <corsika/units/PhysicalUnits.h>
 
 #include <array>
 
-using namespace fwk;
-using namespace fwk::literals;
+using namespace corsika::units;
 
 TEST_CASE("PhysicalUnits", "[Units]") {
 
@@ -20,16 +19,16 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     auto E1 = 10_GeV;
     REQUIRE(E1 == 10_GeV);
 
-    fwk::Length l1 = 10_nm;
+    LengthType l1 = 10_nm;
 
-    fwk::Length arr0[5];
+    LengthType arr0[5];
     arr0[0] = 5_m;
 
-    fwk::Length arr1[2] = {{1_mm}, {2_cm}};
+    LengthType arr1[2] = {{1_mm}, {2_cm}};
 
-    std::array<fwk::Energy, 4> arr2; // empty array
+    std::array<EnergyType, 4> arr2; // empty array
 
-    std::array<fwk::Energy, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
+    std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
   }
 
   SECTION("Powers in literal units") {
@@ -61,7 +60,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("Formulas") {
-    const fwk::Energy E2 = 20_GeV * 2;
+    const EnergyType E2 = 20_GeV * 2;
     REQUIRE(E2 == 40_GeV);
 
     const double lgE = log10(E2 / 1_GeV);

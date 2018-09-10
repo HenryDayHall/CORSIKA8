@@ -1,7 +1,7 @@
-#include <process/sibyll/ParticleConversion.h>
-#include <fwk/ParticleProperties.h>
+#include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/particles/ParticleProperties.h>
 
-using namespace process::sibyll;
+using namespace corsika::process::sibyll;
 
 //const std::map<sibyll::PID, ParticleProperties::InternalParticleCode>
 //   process::sibyll::Sibyll2Corsika = {

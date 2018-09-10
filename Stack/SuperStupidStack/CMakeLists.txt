@@ -1,6 +1,6 @@
 
 set (SuperStupidStack_HEADERS SuperStupidStack.h)
-set (SuperStupidStack_NAMESPACE stack/super_stupid)
+set (SuperStupidStack_NAMESPACE corsika/stack/super_stupid)
 
 add_library (SuperStupidStack INTERFACE)
 

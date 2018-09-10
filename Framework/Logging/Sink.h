@@ -1,7 +1,7 @@
 #ifndef _include_Sink_h_
 #define _include_Sink_h_
 
-namespace fwk {
+namespace corsika::logging {
 
   /**
      a sink for the logger must implement the two functions

@@ -1,25 +1,25 @@
-#include <fwk/CoordinateSystem.h>
-#include <fwk/Helix.h>
-#include <fwk/PhysicalUnits.h>
-#include <fwk/Point.h>
-#include <fwk/Vector.h>
-
+#include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/Helix.h>
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <array>
 #include <cstdlib>
 #include <iostream>
 
-using namespace fwk;
-using namespace fwk::literals; // support unit literals like 5_m;
+using namespace corsika::geometry;
+using namespace corsika::units;
 
 int main() {
-  fwk::CoordinateSystem root;
 
-  fwk::Point const r0(root, {0_m, 0_m, 0_m});
+  CoordinateSystem root;
+
+  Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;
-  fwk::Vector<speed_d> vPar(root, {0_m / second, 0_m / second, 10_cm / second});
-  fwk::Vector<speed_d> vPerp(root, {1_m / second, 0_m / second, 0_m / second});
+  Vector<speed_d> vPar(root, {0_m / second, 0_m / second, 10_cm / second});
+  Vector<speed_d> vPerp(root, {1_m / second, 0_m / second, 0_m / second});
 
-  fwk::Helix h(r0, omegaC, vPar, vPerp);
+  Helix h(r0, omegaC, vPar, vPerp);
 
   auto constexpr t0 = 0_s;
   auto constexpr t1 = 1_s;

@@ -1,6 +1,6 @@
-#include <process/null_model/NullModel.h>
+#include <corsika/process/null_model/NullModel.h>
 
-using namespace process::null_model;
+using namespace corsika::process::null_model;
 
 NullModel::NullModel() {}
 

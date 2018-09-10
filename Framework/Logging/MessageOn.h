@@ -2,7 +2,7 @@
 #define _include_MessageOn_h_
 
 
-namespace fwk {
+namespace corsika::logging {
 
   /**
      Helper class to convert all input arguments of MessageOn::Message

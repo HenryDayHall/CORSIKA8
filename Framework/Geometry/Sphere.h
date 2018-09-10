@@ -1,17 +1,17 @@
 #ifndef _include_SPHERE_H_
 #define _include_SPHERE_H_
 
-#include <fwk/PhysicalUnits.h>
-#include <fwk/Point.h>
+#include <corsika/geometry/Point.h>
+#include <corsika/units/PhysicalUnits.h>
 
-namespace fwk {
+namespace corsika::geometry {
 
   class Sphere {
     Point center;
-    Length const radius;
+    LengthType const radius;
 
   public:
-    Sphere(Point const& pCenter, Length const pRadius)
+    Sphere(Point const& pCenter, LengthType const pRadius)
         : center(pCenter)
         , radius(pRadius) {}
 
@@ -20,6 +20,6 @@ namespace fwk {
     }
   };
 
-} // namespace fwk
+} // namespace corsika::geometry
 
 #endif

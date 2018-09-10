@@ -3,26 +3,21 @@
 
 #include <iostream>
 #include <typeinfo>
-using namespace std;
 
-namespace processes {
+namespace corsika::process {
 
   /**
-     /class Base
-     
+     /class BaseProcess
+
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements
-     are of type Base<T>
+     are of type BaseProcess<T>
 
    */
-  
+
   template <typename derived>
-  struct Base 
-  {
-    const derived& GetRef() const
-    {
-      return static_cast<const derived&>(*this);
-    }
+  struct BaseProcess {
+    const derived& GetRef() const { return static_cast<const derived&>(*this); }
   };
 
   /**
@@ -30,55 +25,57 @@ namespace processes {
 
      A compile time static list of processes. The compiler will
      generate a new type based on template logic containing all the
-     elements. 
+     elements.
 
-     \comment Using CRTP pattern, https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
+     \comment Using CRTP pattern,
+     https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
    */
 
   template <typename T1, typename T2>
-  class ProcessSequence : public Base <ProcessSequence<T1,T2> >
-  {
+  class ProcessSequence : public BaseProcess<ProcessSequence<T1, T2> > {
   public:
     const T1& A;
     const T2& B;
-    
-    ProcessSequence(const T1& in_A, const T2& in_B)
-      : A(in_A)
-      , B(in_B)
-    { }
-    
-    template<typename D>
-    inline void DoContinuous(D& d) const { A.DoContinuous(d); B.DoContinuous(d); } // add trajectory
-    
-    template<typename D>
-    inline double MinStepLength(D& d) const { return min(A.MinStepLength(d), B.MinStepLength(d)); }
-    
-    //template<typename D>
-    //inline Trajectory Transport(D& d, double& length) const { A.Transport(d, length); B.Transport(d, length); }
-    
-    template<typename D>
-    inline void DoDiscrete(D& d) const { A.DoDiscrete(d); B.DoDiscrete(d); }
-    
-  };
-  
 
-  
+    ProcessSequence(const T1& in_A, const T2& in_B)
+        : A(in_A)
+        , B(in_B) {}
+
+    template <typename D>
+    inline void DoContinuous(D& d) const {
+      A.DoContinuous(d);
+      B.DoContinuous(d);
+    } // add trajectory
+
+    template <typename D>
+    inline double MinStepLength(D& d) const {
+      return min(A.MinStepLength(d), B.MinStepLength(d));
+    }
+
+    // template<typename D>
+    // inline Trajectory Transport(D& d, double& length) const { A.Transport(d, length);
+    // B.Transport(d, length); }
+
+    template <typename D>
+    inline void DoDiscrete(D& d) const {
+      A.DoDiscrete(d);
+      B.DoDiscrete(d);
+    }
+  };
+
   template <typename T1, typename T2>
-  inline
-  const ProcessSequence<T1,T2>
-  operator+ (const Base<T1>& A, const Base<T2>& B)
-  {
-    return ProcessSequence<T1,T2>( A.GetRef(), B.GetRef() );
+  inline const ProcessSequence<T1, T2> operator+(const BaseProcess<T1>& A,
+                                                 const BaseProcess<T2>& B) {
+    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());
   }
-  
-  
+
   /*
     template <typename T1>
     struct depth_lhs
     {
     static const int num = 0;
     };
-    
+
 
 
     // terminating condition
@@ -89,29 +86,26 @@ namespace processes {
     static const int num = 1 + depth_lhs<T1>::num;
     };
   */
-  
-
-
 
   /*
     template <typename T1>
     struct mat_ptrs
     {
     static const int num = 0;
-    
+
     inline static void
     get_ptrs(const Process** ptrs, const T1& X)
     {
     ptrs[0] = reinterpret_cast<const Process*>(&X);
     }
     };
-    
-    
+
+
     template <typename T1, typename T2>
     struct mat_ptrs< Sequence<T1,T2> >
     {
     static const int num = 1 + mat_ptrs<T1>::num;
-    
+
     inline static void
     get_ptrs(const Process** in_ptrs, const Sequence<T1,T2>& X)
     {
@@ -122,7 +116,7 @@ namespace processes {
     }
     };
   */
-  
+
   /*
     template<typename T1, typename T2>
     const Process&
@@ -148,7 +142,6 @@ namespace processes {
     }
   */
 
-} // end namespace
-  
-#endif
+} // namespace corsika::process
 
+#endif

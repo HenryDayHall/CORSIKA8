@@ -1,7 +1,7 @@
 
 add_library (CORSIKAunits INTERFACE)
 
-set (CORSIKAunits_NAMESPACE fwk)
+set (CORSIKAunits_NAMESPACE corsika/units)
 set (
   CORSIKAunits_HEADERS
   PhysicalUnits.h

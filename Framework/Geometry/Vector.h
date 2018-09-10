@@ -1,10 +1,10 @@
 #ifndef _include_VECTOR_H_
 #define _include_VECTOR_H_
 
-#include <fwk/BaseVector.h>
-#include <fwk/QuantityVector.h>
+#include <corsika/geometry/BaseVector.h>
+#include <corsika/geometry/QuantityVector.h>
 
-#include <fwk/PhysicalUnits.h>
+#include <corsika/units/PhysicalUnits.h>
 
 /*!
  * A Vector represents a 3-vector in Euclidean space. It is defined by components
@@ -16,7 +16,7 @@
  * part only and invariant under translations.
  */
 
-namespace fwk {
+namespace corsika::geometry {
 
   template <typename dim>
   class Vector : public BaseVector<dim> {
@@ -172,6 +172,6 @@ namespace fwk {
     }
   };
 
-} // namespace fwk
+} // namespace corsika
 
 #endif

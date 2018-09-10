@@ -1,6 +1,6 @@
-#include <fwk/CoordinateSystem.h>
+#include <corsika/geometry/CoordinateSystem.h>
 
-using namespace fwk;
+using namespace corsika::geometry;
 
 EigenTransform CoordinateSystem::GetTransformation(CoordinateSystem const& c1,
                                                    CoordinateSystem const& c2) {

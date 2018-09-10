@@ -1,12 +1,12 @@
-#include <fwk/Logger.h>
-
+#include <corsika/logging/Logger.h>
+#include <boost/format.hpp>
 #include <string>
 #include <iostream>
 #include <fstream>
 
-#include <boost/format.hpp>
 
 using namespace std;
+using namespace corsika::logging;
 
 int
 main()
@@ -14,10 +14,10 @@ main()
   {
     cout << "writing to \"another.log\"" << endl;
     ofstream logfile("another.log");
-    fwk::sink::SinkStream unbuffered_sink(logfile);
-    fwk::sink::BufferedSinkStream sink(logfile, fwk::sink::StdBuffer(10000));
-    fwk::Logger<fwk::MessageOn, fwk::sink::BufferedSinkStream> info("\033[32m", "info", sink);
-    fwk::Logger<fwk::MessageOn, fwk::sink::BufferedSinkStream> err("\033[31m", "error", sink);
+    sink::SinkStream unbuffered_sink(logfile);
+    sink::BufferedSinkStream sink(logfile, sink::StdBuffer(10000));
+    Logger<MessageOn, sink::BufferedSinkStream> info("\033[32m", "info", sink);
+    Logger<MessageOn, sink::BufferedSinkStream> err("\033[31m", "error", sink);
     //logger<ostream,messageconst,StdBuffer> info(std::cout, StdBuffer(10000));
     
     /*
@@ -33,8 +33,8 @@ main()
   }
   
   {
-    fwk::sink::NoSink off;
-    fwk::Logger<fwk::MessageOff> info("", "", off);
+    sink::NoSink off;
+    Logger<MessageOff> info("", "", off);
     
     for (int i=0; i<100000; ++i) {
       LOG(info, "irgendwas", string("and more"), boost::format("error: %i message: %s. done."), i, "stupido", "a-number:", 8.99, "ENDE" );

@@ -11,7 +11,7 @@ set (
 
 set (
   MODEL_NAMESPACE
-  process/null_model
+  corsika/process/null_model
   )
 
 add_library (ProcessNullModel STATIC ${MODEL_SOURCES})

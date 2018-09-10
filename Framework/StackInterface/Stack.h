@@ -1,13 +1,13 @@
 #ifndef _include_Stack_h__
 #define _include_Stack_h__
 
-#include <fwk/StackIterator.h> // to help application programmres
+#include <corsika/stack/StackIterator.h> // include here, to help application programmres
 
 /**
    All classes around management of particles on a stack.
  */
 
-namespace stack {
+namespace corsika::stack {
 
   /**
      Interface definition of a Stack object. The Stack implements the
@@ -51,6 +51,6 @@ namespace stack {
     void DeleteLast() { DecrementSize(); }
   };
 
-} // namespace stack
+} // namespace corsika::stack
 
 #endif

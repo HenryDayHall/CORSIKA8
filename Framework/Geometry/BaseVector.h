@@ -1,29 +1,27 @@
 #ifndef _include_BASEVECTOR_H_
 #define _include_BASEVECTOR_H_
 
-#include <fwk/QuantityVector.h>
-#include <fwk/CoordinateSystem.h>
+#include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/QuantityVector.h>
 
-namespace fwk {
+namespace corsika::geometry {
 
-/*!
- * Common base class for Vector and Point. Currently it does basically nothing.
- */
+  /*!
+   * Common base class for Vector and Point. Currently it does basically nothing.
+   */
 
-template <typename dim>
-class BaseVector
-{
-protected:
+  template <typename dim>
+  class BaseVector {
+  protected:
     QuantityVector<dim> qVector;
     CoordinateSystem const* cs;
-    
-public:
-    BaseVector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector) :
-        qVector(pQVector), cs(&pCS)
-    {
-    }
-};
 
-} // end namesapce
- 
+  public:
+    BaseVector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector)
+        : qVector(pQVector)
+        , cs(&pCS) {}
+  };
+
+} // namespace corsika::geometry
+
 #endif

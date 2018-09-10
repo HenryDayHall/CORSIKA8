@@ -4,16 +4,18 @@
 #include <string>
 #include <vector>
 
-#include <fwk/ParticleProperties.h>
-#include <fwk/PhysicalUnits.h>
-#include <fwk/Stack.h>
+#include <corsika/stack/Stack.h>
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/units/PhysicalUnits.h>
 
-using namespace fwk::literals;
-
-namespace stack {
+namespace corsika::stack {
 
   namespace super_stupid {
 
+    using corsika::units::EnergyType;
+    using corsika::particles::Code;
+    using corsika::units::operator""_GeV;//literals;
+    
     /**
      * Example of a particle object on the stack.
      */
@@ -25,11 +27,11 @@ namespace stack {
       using StackIteratorInfo<_Stack, ParticleRead>::GetStack;
 
     public:
-      void SetId(const fwk::particle::Code id) { GetStack().SetId(GetIndex(), id); }
-      void SetEnergy(const fwk::Energy& e) { GetStack().SetEnergy(GetIndex(), e); }
+      void SetId(const Code id) { GetStack().SetId(GetIndex(), id); }
+      void SetEnergy(const EnergyType& e) { GetStack().SetEnergy(GetIndex(), e); }
 
-      fwk::particle::Code GetId() const { return GetStack().GetId(GetIndex()); }
-      const fwk::Energy& GetEnergy() const { return GetStack().GetEnergy(GetIndex()); }
+      Code GetId() const { return GetStack().GetId(GetIndex()); }
+      const EnergyType& GetEnergy() const { return GetStack().GetEnergy(GetIndex()); }
     };
 
     /**
@@ -48,11 +50,11 @@ namespace stack {
       int GetSize() const { return fDataId.size(); }
       int GetCapacity() const { return fDataId.size(); }
 
-      void SetId(const int i, const fwk::particle::Code id) { fDataId[i] = id; }
-      void SetEnergy(const int i, const fwk::Energy& e) { fDataE[i] = e; }
+      void SetId(const int i, const Code id) { fDataId[i] = id; }
+      void SetEnergy(const int i, const EnergyType& e) { fDataE[i] = e; }
 
-      const fwk::particle::Code GetId(const int i) const { return fDataId[i]; }
-      const fwk::Energy& GetEnergy(const int i) const { return fDataE[i]; }
+      const Code GetId(const int i) const { return fDataId[i]; }
+      const EnergyType& GetEnergy(const int i) const { return fDataE[i]; }
 
       /**
        *   Function to copy particle at location i2 in stack to i1
@@ -65,7 +67,7 @@ namespace stack {
     protected:
       void IncrementSize() {
         fDataE.push_back(0_GeV);
-        fDataId.push_back(fwk::particle::Code::unknown);
+        fDataId.push_back(Code::unknown);
       }
       void DecrementSize() {
         if (fDataE.size() > 0) {
@@ -77,8 +79,8 @@ namespace stack {
     private:
       /// the actual memory to store particle data
 
-      std::vector<fwk::particle::Code> fDataId;
-      std::vector<fwk::Energy> fDataE;
+      std::vector<Code> fDataId;
+      std::vector<EnergyType> fDataE;
 
     }; // end class SuperStupidStackImpl
 
@@ -88,6 +90,7 @@ namespace stack {
 
   } // namespace super_stupid
 
-} // namespace stack
+} // namespace corsika::stack
 
+ 
 #endif

@@ -11,7 +11,7 @@ set (
 
 set (
   MODEL_NAMESPACE
-  process/sibyll
+  corsika/process/sibyll
   )
 
 add_library (ProcessSibyll STATIC ${MODEL_SOURCES})

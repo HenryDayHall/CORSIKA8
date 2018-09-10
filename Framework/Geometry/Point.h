@@ -1,14 +1,16 @@
 #ifndef _include_POINT_H_
 #define _include_POINT_H_
 
-#include <fwk/BaseVector.h>
-#include <fwk/QuantityVector.h>
-#include <fwk/Vector.h>
+#include <corsika/geometry/BaseVector.h>
+#include <corsika/geometry/QuantityVector.h>
+#include <corsika/geometry/Vector.h>
+#include <corsika/units/PhysicalUnits.h>
 
-#include <fwk/PhysicalUnits.h>
+namespace corsika::geometry {
 
-namespace fwk {
-
+  using corsika::units::LengthType;
+  using corsika::units::length_d;
+  
   /*!
    * A Point represents a point in position space. It is defined by its
    * coordinates with respect to some CoordinateSystem.
@@ -18,7 +20,7 @@ namespace fwk {
     Point(CoordinateSystem const& pCS, QuantityVector<phys::units::length_d> pQVector)
         : BaseVector<phys::units::length_d>(pCS, pQVector) {}
 
-    Point(CoordinateSystem const& cs, Length x, Length y, Length z)
+    Point(CoordinateSystem const& cs, LengthType x, LengthType y, LengthType z)
         : BaseVector<phys::units::length_d>(cs, {x, y, z}) {}
 
     auto GetCoordinates() const { return BaseVector<phys::units::length_d>::qVector; }
@@ -58,6 +60,6 @@ namespace fwk {
     }
   };
 
-} // namespace fwk
+} // namespace corsika
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef _include_BufferedSink_h_
 #define _include_BufferedSink_h_
 
-namespace fwk {
+namespace corsika::logging {
 
   namespace sink {
     

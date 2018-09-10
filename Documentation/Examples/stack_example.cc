@@ -1,24 +1,27 @@
-#include <fwk/ParticleProperties.h>
-#include <stack/super_stupid/SuperStupidStack.h>
-
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
+#include <corsika/particles/ParticleProperties.h>
 #include <iomanip>
 #include <iostream>
 
 using namespace std;
-using namespace fwk::literals;
-// using namespace fwk::io;
+// using namespace corsika::literals;
+// using namespace corsika::io;
 
-void fill(stack::super_stupid::SuperStupidStack& s) {
+using namespace corsika::units;
+using namespace corsika::stack;
+
+
+void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
   for (int i = 0; i < 11; ++i) {
     auto p = s.NewParticle();
-    p.SetId(fwk::particle::Code::Electron);
+    p.SetId(corsika::particles::Code::Electron);
     p.SetEnergy(1.5_GeV * i);
   }
 }
 
-void read(stack::super_stupid::SuperStupidStack& s) {
+void read(corsika::stack::super_stupid::SuperStupidStack& s) {
   cout << "found Stack with " << s.GetSize() << " particles. " << endl;
-  fwk::quantity<fwk::energy_d> Etot;
+  EnergyType Etot;
   for (auto p : s) {
     Etot += p.GetEnergy();
     cout << "particle: " << p.GetId() << " with " << p.GetEnergy() / 1_GeV << " GeV"
@@ -28,7 +31,7 @@ void read(stack::super_stupid::SuperStupidStack& s) {
 }
 
 int main() {
-  stack::super_stupid::SuperStupidStack s;
+  corsika::stack::super_stupid::SuperStupidStack s;
   fill(s);
   read(s);
   return 0;

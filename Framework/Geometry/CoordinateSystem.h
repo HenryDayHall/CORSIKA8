@@ -1,16 +1,17 @@
 #ifndef _include_COORDINATESYSTEM_H_
 #define _include_COORDINATESYSTEM_H_
 
-#include <fwk/PhysicalUnits.h>
-#include <fwk/QuantityVector.h>
-
+#include <corsika/geometry/QuantityVector.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <Eigen/Dense>
 
 typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
 typedef Eigen::Translation<double, 3> EigenTranslation;
 
-namespace fwk {
+namespace corsika::geometry {
 
+  using corsika::units::length_d;
+  
   class CoordinateSystem {
     CoordinateSystem const* reference = nullptr;
     EigenTransform transf;
@@ -33,7 +34,7 @@ namespace fwk {
       return *this;
     }
 
-    auto translate(QuantityVector<phys::units::length_d> vector) const {
+    auto translate(QuantityVector<length_d> vector) const {
       EigenTransform const translation{EigenTranslation(vector.eVector)};
 
       return CoordinateSystem(*this, translation);
@@ -58,6 +59,6 @@ namespace fwk {
     auto const& GetTransform() const { return transf; }
   };
 
-} // namespace fwk
+} // namespace corsika
 
 #endif

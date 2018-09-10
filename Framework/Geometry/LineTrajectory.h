@@ -1,11 +1,11 @@
 #ifndef _include_LINETRAJECTORY_H
 #define _include_LINETRAJECTORY_H
 
-#include <fwk/Point.h>
-#include <fwk/Vector.h>
+#include <corsika/Point.h>
+#include <corsika/Vector.h>
 #include <Units/PhysicalUnits.h>
 
-namesapce fwk {
+namesapce corsika {
 
 class LineTrajectory // TODO: inherit from Trajectory
 {

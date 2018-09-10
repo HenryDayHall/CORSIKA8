@@ -1,7 +1,7 @@
 #ifndef _Physics_NullModel_NullModel_h_
 #define _Physics_NullModel_NullModel_h_
 
-namespace process {
+namespace corsika::process {
 
   namespace null_model {
 

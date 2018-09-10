@@ -6,7 +6,7 @@ set (
 
 set (
   CORSIKAstackinterface_NAMESPACE
-  fwk
+  corsika/stack
   )
 
 add_library (

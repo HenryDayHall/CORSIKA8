@@ -1,7 +1,7 @@
 #ifndef _include_MessageOff_h_
 #define _include_MessageOff_h_
 
-namespace fwk {
+namespace corsika::logging {
 
   /**
      Helper class to ignore all arguments to MessagesOn::Message and

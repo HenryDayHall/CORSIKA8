@@ -25,16 +25,16 @@
 #ifndef INCLUDE_PHYSICAL_CONSTANTS_H
 #define INCLUDE_PHYSICAL_CONSTANTS_H
 
-#include "phys/units/quantity.hpp"
+#include <phys/units/quantity.hpp>
 
-namespace phys {
 
-  namespace units {
 
-    namespace constants {
+namespace corsika::units::constants {
 
-      // acceleration of free-fall, standard
-      constexpr quantity<acceleration_d> g_sub_n{Rep(9.80665L) * meter / square(second)};
+  using namespace phys::units;
+  
+        // acceleration of free-fall, standard
+  constexpr phys::units::quantity<phys::units::acceleration_d> g_sub_n{phys::units::Rep(9.80665L) * phys::units::meter / phys::units::square(phys::units::second)};
 
       // Avogadro constant
       constexpr quantity<dimensions<0, 0, 0, 0, 0, -1> > N_sub_A{Rep(6.02214199e+23L) /
@@ -56,20 +56,8 @@ namespace phys {
 
       // etc.
 
-    } // namespace constants
-
-  } // namespace units
-
-} // namespace phys
-
-namespace fwk {
-
-  // using namespace phys;
-  using namespace phys::units;
-
-  namespace constants = phys::units::constants;
   
-} // namespace fwk
+} // namespace corsika
 
 #endif // PHYS_UNITS_PHYSICAL_CONSTANTS_HPP_INCLUDED
 

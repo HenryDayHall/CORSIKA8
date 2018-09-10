@@ -4,7 +4,7 @@ add_library (CORSIKAlogging INTERFACE)
 # namespace of library -> location of header files
 set (
   CORSIKAlogging_NAMESPACE
-  fwk
+  corsika/logging
   )
 
 # header files of this library

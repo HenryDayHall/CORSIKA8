@@ -17,7 +17,7 @@ set (
 
 set (
   GEOMETRY_NAMESPACE
-  fwk
+  corsika/geometry
   )
 
 add_library (CORSIKAgeometry STATIC ${GEOMETRY_SOURCES})

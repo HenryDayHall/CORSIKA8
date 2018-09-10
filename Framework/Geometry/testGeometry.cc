@@ -2,7 +2,7 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
-#include <fwk/PhysicalUnits.h>
+#include <corsika/units/PhysicalUnits.h>
 
 using namespace phys::units;
 using namespace phys::units::literals;

@@ -1,11 +1,11 @@
 #ifndef _include_processes_sibyll_particles_h_
 #define _include_processes_sibyll_particles_h_
 
-#include <fwk/ParticleProperties.h>
+#include <corsika/particles/ParticleProperties.h>
 
 #include <map>
 
-namespace process {
+namespace corsika::process {
 
   namespace sibyll {
 
@@ -100,16 +100,16 @@ namespace process {
       VOID = 0,
     };
 
-    static const std::map<sibyll::PID, fwk::particle::Code> Sibyll2Corsika = {
-        {PID::E_MINUS, fwk::particle::Code::Electron},
-	{PID::E_PLUS, fwk::particle::Code::Positron},
-	{PID::NU_E, fwk::particle::Code::NuE},
-	{PID::NU_E_BAR, fwk::particle::Code::NuEBar},
-	{PID::MU_MINUS, fwk::particle::Code::MuMinus},
-	{PID::MU_PLUS, fwk::particle::Code::MuPlus},
-	{PID::NU_MU, fwk::particle::Code::NuMu},
-	{PID::NU_MU_BAR, fwk::particle::Code::NuMuBar},
-	{PID::TAU_MINUS, fwk::particle::Code::TauMinus},
+    static const std::map<sibyll::PID, corsika::particles::Code> Sibyll2Corsika = {
+        {PID::E_MINUS, corsika::particles::Code::Electron},
+	{PID::E_PLUS, corsika::particles::Code::Positron},
+	{PID::NU_E, corsika::particles::Code::NuE},
+	{PID::NU_E_BAR, corsika::particles::Code::NuEBar},
+	{PID::MU_MINUS, corsika::particles::Code::MuMinus},
+	{PID::MU_PLUS, corsika::particles::Code::MuPlus},
+	{PID::NU_MU, corsika::particles::Code::NuMu},
+	{PID::NU_MU_BAR, corsika::particles::Code::NuMuBar},
+	{PID::TAU_MINUS, corsika::particles::Code::TauMinus},
 	/*
       TAU_PLUS = 90,
       NU_TAU = 92,

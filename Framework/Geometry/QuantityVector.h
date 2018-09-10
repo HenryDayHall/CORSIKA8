@@ -1,14 +1,14 @@
 #ifndef _include_QUANTITYVECTOR_H_
 #define _include_QUANTITYVECTOR_H_
 
-#include <fwk/PhysicalUnits.h>
+#include <corsika/units/PhysicalUnits.h>
 
 #include <Eigen/Dense>
 
 #include <iostream>
 #include <utility>
 
-namespace fwk {
+namespace corsika {
 
   /*!
    * A QuantityVector is a three-component container based on Eigen::Vector3d
@@ -103,10 +103,10 @@ namespace fwk {
     auto normalized() const { return (*this) * (1 / norm()); }
   };
 
-} // end namespace fwk
+} // end namespace corsika
 
 template <typename dim>
-auto& operator<<(std::ostream& os, fwk::QuantityVector<dim> qv) {
+auto& operator<<(std::ostream& os, corsika::QuantityVector<dim> qv) {
   using Quantity = phys::units::quantity<dim, double>;
 
   os << '(' << qv.eVector(0) << ' ' << qv.eVector(1) << ' ' << qv.eVector(2) << ") "
