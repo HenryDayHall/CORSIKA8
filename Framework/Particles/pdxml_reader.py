@@ -62,16 +62,16 @@ def class_names(filename):
 # 
 # Automatically produce a string qualifying as C++ class name
 # 
-            
+# This function produces names of type "DELTA_PLUS_PLUS"
+# 
 def c_identifier(name):
     orig = name
     name = name.upper()
-    for c in "() ":
+    for c in "() /":
         name = name.replace(c, "_")
     
     name = name.replace("BAR", "_BAR")
     name = name.replace("0", "_0")
-    name = name.replace("/", "_")
     name = name.replace("*", "_STAR")
     name = name.replace("'", "_PRIME")
     name = name.replace("+", "_PLUS")
@@ -91,8 +91,66 @@ def c_identifier(name):
         raise Exception("could not generate C identifier for '{:s}'".format(orig))
 
 
+##############################################################
+# 
+# Automatically produce a string qualifying as C++ class name
+# 
+# This function produces names of type "DeltaPlusPlus"
+# 
+def c_identifier_cammel(name):
+    orig = name
+    name = name[0].upper() + name[1:].lower() # all lower case
+    for c in "() /": # replace funny characters
+        name = name.replace(c, "_")
     
-#########################################################
+    name = name.replace("bar", "Bar")
+    name = name.replace("*", "Star")
+    name = name.replace("'", "Prime")
+    name = name.replace("+", "Plus")
+    name = name.replace("-", "Minus")
+
+    # move "Bar" to end of name
+    ibar = name.find('Bar')
+    if (ibar>0 and ibar<len(name)-3) :
+        name = name[:ibar] + name[ibar+3:] + str('Bar')
+            
+    # cleanup "_"s
+    while True:
+        tmp = name.replace("__", "_")
+        if tmp == name:
+            break
+        else:
+            name = tmp
+    name.strip("_")
+
+    # remove all "_", if this does not by accident concatenate two number
+    istart = 0
+    while True:
+        i = name.find('_', istart)
+        if (i<1 or i>len(name)-1):
+            break
+        istart = i
+        if (name[i-1].isdigit() and name[i+1].isdigit()):
+            # there is a number on both sides
+            break
+        name = name[:i] + name[i+1:]
+        # and last, for example: make NuE out of Nue
+        if (name[i-1].islower() and name[i].islower()) :
+            if (i<len(name)-1) :
+                name = name[:i] + name[i].upper() + name[i+1:]
+            else :
+                name = name[:i] + name[i].upper()
+
+    # check if name is valid C++ identifier
+    pattern = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*$')
+    if pattern.match(name):
+        return name
+    else:
+        raise Exception("could not generate C identifier for '{:s}' name='{:s}'".format(orig, name))
+
+
+    
+# ########################################################
 # 
 # returns dict containing all data from pythia-xml input
 # 
@@ -105,7 +163,7 @@ def build_pythia_db(filename, classnames):
         if (pdg in classnames):
             c_id = classnames[pdg]
         else:
-            c_id = c_identifier(name)
+            c_id = c_identifier_cammel(name) # the cammel case names
         
         #~ print(name, c_id, sep='\t', file=sys.stderr)
         #~ enums += "{:s} = {:d}, ".format(c_id, corsika_id)
@@ -128,10 +186,15 @@ def build_pythia_db(filename, classnames):
 # 
 
 def gen_internal_enum(pythia_db):
-    string = "enum class InternalParticleCode : uint8_t {\n"
-    
+    string = "enum class Code : uint8_t {\n"
+
+    string += "  FirstParticle = 1, // if you want to loop over particles, you want to start with \"1\"  \n" # identifier for eventual loops...
+    last_ngc_id = 0 
     for k in filter(lambda k: "ngc_code" in pythia_db[k], pythia_db):
-        string += "  {key:s} = {code:d},\n".format(key = k, code = pythia_db[k]['ngc_code'])
+        last_ngc_id = pythia_db[k]['ngc_code']
+        string += "  {key:s} = {code:d},\n".format(key = k, code = last_ngc_id)
+
+    string += "  LastParticle = " + str(last_ngc_id+1) + ",\n" # identifier for eventual loops...
     
     string += "};"
     return string
@@ -203,17 +266,27 @@ def gen_classes(pythia_db):
                 break
         
         string += "\n";
-        string += ("struct " + cname + " {\n"
-                   "   static constexpr InternalParticleCode GetType() { return Type; }\n"
-                   "   static auto constexpr GetMass() { return masses[TypeIndex]; }\n"
-                   "   static auto constexpr GetCharge() { return phys::units::e*electric_charge[TypeIndex]/3; }\n"
-                   "   static auto const GetName() { return names[TypeIndex]; }\n"
-                   "   static auto constexpr GetAntiParticle() { return AntiType; }\n"
-                   "   static auto constexpr Type = InternalParticleCode::") + cname + ";\n" + \
-                   "   static auto constexpr AntiType = InternalParticleCode::" + antiP + ";\n" + \
-                  (" private:\n"
-                   "   static constexpr uint8_t TypeIndex = static_cast<uint8_t const>(Type);\n"
-                   "};\n")
+        string += "/** @class " + cname + "\n\n"
+        string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
+        string += " *  - pdg=" + str(pythia_db[cname]['pdg']) +"\n"
+        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV \n"
+        string += " *  - charge= " + str(pythia_db[cname]['electric_charge']/3) + " \n"
+        string += " *  - name=" + str(cname) + "\n"
+        string += " *  - anti=" + str(antiP) + "\n"
+        string += "*/\n\n"
+        string += "class " + cname + "{\n"
+        string += "  public:\n"
+        string += "   static Code GetCode() { return Type; }\n"
+        string += "   static quantity<energy_d> GetMass() { return masses[TypeIndex]; }\n"
+        string += "   static quantity<electric_charge_d> GetCharge() { return corsika::units::constants::e*electric_charge[TypeIndex]/3; }\n"
+        string += "   static int GetChargeNumber() { return electric_charge[TypeIndex]/3; }\n"
+        string += "   static std::string GetName() { return names[TypeIndex]; }\n"
+        string += "   static Code GetAntiParticle() { return AntiType; }\n"
+        string += "   static const Code Type = Code::" + cname + ";\n"
+        string += "   static const Code AntiType = Code::" + antiP + ";\n"
+        string += " private:\n"
+        string += "   static const uint8_t TypeIndex = static_cast<uint8_t const>(Type);\n"
+        string += "};\n"
 
     return string
 
@@ -223,16 +296,22 @@ def gen_classes(pythia_db):
 # 
 
 def inc_start():
-    string = (""
-              "#ifndef _include_GeneratedParticleDataTable_h_\n"
-              "#define _include_GeneratedParticleDataTable_h_\n\n"
-              "#include <array>\n"
-              "#include <cstdint>\n"
-              "#include <iostream>\n\n"
-              "using namespace phys::units;\n"
-              "using namespace phys::units::literals;\n\n"
-              "namespace ParticleProperties {\n\n"
-              "typedef int16_t PDGCode;\n\n")
+    string = ""
+    string += "#ifndef _include_GeneratedParticleDataTable_h_\n"
+    string += "#define _include_GeneratedParticleDataTable_h_\n\n"
+    string += "#include <corsika/units/PhysicalUnits.h>\n"
+    string += "#include <corsika/units/PhysicalConstants.h>\n"
+    string += "#include <array>\n"
+    string += "#include <cstdint>\n"
+#    string += "#include <iostream>\n\n"
+    string += "namespace corsika { \n\n"
+#    string += "using namespace literals; \n"
+    string += "namespace particles { \n\n"
+    string += "using corsika::units::energy_d;\n"
+    string += "using corsika::units::electric_charge_d;\n"
+    string += "using corsika::units::quantity;\n"
+    string += "using corsika::units::operator\"\"_GeV;\n"
+    string += "typedef int16_t PDGCode;\n\n"
     return string
 
 
@@ -242,6 +321,7 @@ def inc_start():
 
 def inc_end():
     string = ""
+    string += "\n}\n\n"
     string += "\n}\n\n"
     string += "#endif\n"
     return string
@@ -254,16 +334,18 @@ def inc_end():
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 3:
-        print("usage: pdxml_reader.py Pythia8.xml ClassNames.xml", file=sys.stderr)
+    if (len(sys.argv)!=3) :
+        print ("pdxml_reader.py Pythia8.xml ClassNames.xml")
         sys.exit(0)
         
     names = class_names(sys.argv[2])
     pythia_db = build_pythia_db(sys.argv[1], names)
 
-    print("\n       pdxml_reader.py: automatically produce particle properties from PYTHIA8 xml file\n")
+    print ("\n       pdxml_reader.py: Automatically produce particle-properties from PYTHIA8 xml file\n")
     
     counter = itertools.count(0)
+    
+    not_modeled = []
     for p in pythia_db:
         pythia_db[p]['ngc_code'] = next(counter)               
     

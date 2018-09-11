@@ -2,22 +2,24 @@ PROJECT_NAME           = CORSIKA
 PROJECT_NUMBER         = 8.0.0
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../.. 
-EXCLUDE_PATTERN        = "*/ThirdParty/*/*"
+INPUT                  = @PROJECT_SOURCE_DIR@ @PROJECT_BINARY_DIR@/Framework
+EXCLUDE_PATTERNS       = */ThirdParty/*/*
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = YES
 
-FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox
+FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc
+EXTENSION_MAPPING      = inc=C++
 RECURSIVE              = YES
 
 SOURCE_BROWSER         = YES
 # INLINE_SOURCES
 
-CLASS_DIAGRAMS         = YES
+CLASS_DIAGRAMS         = NO
 HAVE_DOT               = YES
 CLASS_GRAPH            = YES
-UML_LOOK               = YES
+COLLABORATION_GRAPH    = NO
+UML_LOOK               = NO
 TEMPLATE_RELATIONS     = YES
 INCLUDE_GRAPH          = YES
 GRAPHICAL_HIERARCHY    = YES

@@ -1,20 +1,23 @@
 #ifndef _Physics_NullModel_NullModel_h_
 #define _Physics_NullModel_NullModel_h_
 
-namespace processes {
+namespace corsika::process {
 
-  class NullModel {
+  namespace null_model {
 
-  public:
-    NullModel();
-    ~NullModel();
-    
-    void init();
-    void run();
-    double GetStepLength();
-  };
-  
-}
+    class NullModel {
+
+    public:
+      NullModel();
+      ~NullModel();
+
+      void init();
+      void run();
+      double GetStepLength();
+    };
+
+  } // namespace null_model
+
+} // namespace corsika::process
 
 #endif
-

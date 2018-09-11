@@ -9,5 +9,14 @@
   <particle pdgID="-11" classname="Positron" />
   <particle pdgID="22" classname="Gamma" />
 
+  <particle id="130" classname="K0Long"> </particle>
+  <particle id="310" classname="K0Short"> </particle>
+
+  <particle id="2112" classname="Neutron"> </particle>
+  <particle id="-2112" classname="AntiNeutron"> </particle>
+
+  <particle id="2212" classname="Proton"> </particle>
+  <particle id="-2212" classname="AntiProton"> </particle>
+
 </chapter>
 

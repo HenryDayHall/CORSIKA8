@@ -1,66 +1,83 @@
+/**
+   @File Logger.h
+
+   Everything around logfile generation and text output.
+ */
+
 #ifndef _include_logger_h_
 #define _include_logger_h_
 
 #include <iosfwd>
-#include <string>
 #include <sstream>
+#include <string>
 #include <typeinfo>
 
 #include <boost/format.hpp>
 
-#include <Logging/MessageOn.h>
-#include <Logging/MessageOff.h>
-#include <Logging/Sink.h>
-#include <Logging/NoSink.h>
-#include <Logging/BufferedSink.h>
-
+#include <corsika/logging/BufferedSink.h>
+#include <corsika/logging/MessageOff.h>
+#include <corsika/logging/MessageOn.h>
+#include <corsika/logging/NoSink.h>
+#include <corsika/logging/Sink.h>
 
 using namespace std;
 using namespace boost;
 
-/**
-   Everything around logfile generation and text output.
-*/
+namespace corsika::logging {
 
-namespace logger {
-  
   /**
+     @class Logger
+
      Defines one stream to accept messages, and to wrote those into
      TSink.  The helper class MessageOn will convert input at
      compile-time into message strings. The helper class MessageOff,
      will just do nothing and will be optimized away at compile time.
   */
-  template<typename MSG=MessageOn, typename TSink=sink::NoSink> 
+  template <typename MSG = MessageOn, typename TSink = sink::NoSink>
   class Logger : private MSG {
-    
+
     using MSG::Message;
-    
+
   public:
     // Logger() : fName("") {}
-    Logger(const std::string color, const std::string name, TSink& sink) : fSink(sink), fName(color+"["+name+"]\033[39m ")  {} 
-    ~Logger() { fSink.Close(); }    
+    Logger(const std::string color, const std::string name, TSink& sink)
+        : fSink(sink)
+        , fName(color + "[" + name + "]\033[39m ") {}
+    ~Logger() { fSink.Close(); }
     // Logger(const Logger&) = delete;
 
     /**
        Function to add string-concatenation of all inputs to output
        sink.
      */
-    template<typename ... Strings>
+    template <typename... Strings>
     void Log(const Strings&... inputs) {
       fSink << MSG::Message(inputs...);
     }
-    
+
     const std::string& GetName() const { return fName; }
-    
+
   private:
     TSink& fSink;
     std::string fName;
   };
 
-} // end namesapce 
+} // namespace corsika::logging
 
-#define LOG(__LOGGER,...)                                               \
-  __LOGGER.Log(__LOGGER.GetName(), __FILE__,":", __LINE__, " (", __func__, ") -> ", ##__VA_ARGS__);
+/**
+ * @def LOG(...)
+ *
+ * This is the main interface to the logging facilities. If Logger
+ * object are defined (e.g. log1) use as
+ * @example LOG(log1, "var1=", variable1int, "var2=", variabl2double)
+ * for arbitrary long sequence
+ * of arguments. This may also include boost::format objects the
+ * output is concatenated, if log1 is switched off at compile time,
+ * the whole LOG command is optimized away by the compiler.
+ */
+
+#define LOG(__LOGGER, ...)                                                           \
+  __LOGGER.Log(__LOGGER.GetName(), __FILE__, ":", __LINE__, " (", __func__, ") -> ", \
+               ##__VA_ARGS__);
 
 #endif
- 

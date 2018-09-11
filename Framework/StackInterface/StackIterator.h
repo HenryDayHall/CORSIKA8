@@ -1,17 +1,18 @@
 #ifndef _include_StackIterator_h__
 #define _include_StackIterator_h__
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
-namespace stack {
+namespace corsika::stack {
 
   // forward decl.
-  template<class Stack, class Particle> class StackIteratorInfo;
+  template <class Stack, class Particle>
+  class StackIteratorInfo;
 
   /**
      @class StackIterator
-     
+
      The StackIterator is the main interface to iterator over
      particles on a stack. At the same time StackIterator is a
      Particle object by itself, thus there is no difference between
@@ -19,78 +20,97 @@ namespace stack {
 
      This allows to write code like
      \verbatim
-     for (auto& p : theStack) { p.SetEnergy(newEnergy); }  
+     for (auto& p : theStack) { p.SetEnergy(newEnergy); }
      \endverbatim
 
      The template argument Stack determines the type of Stack object
      the data is stored in. A pointer to the Stack object is part of
      the StackIterator. In addition to Stack the iterator only knows
-     the index fIndex in the Stack data. 
+     the index fIndex in the Stack data.
 
      The template argument Particles acts as a policy to provide
      readout function of Particle data from the stack. The Particle
      class must know how to retrieve information from the Stack data
      for a particle entry at any index fIndex.
   */
-  
-  template<typename Stack, typename Particle>
-  class StackIterator : public Particle
-  {
+
+  template <typename Stack, typename Particle>
+  class StackIterator : public Particle {
     friend Stack;
     friend Particle;
-    friend StackIteratorInfo<Stack,Particle>;
-    
+    friend StackIteratorInfo<Stack, Particle>;
+
   private:
     int fIndex;
-    
+
     //#warning stacks should not be copied because of this:
     Stack* fData;
-    
+
   public:
-    StackIterator() : fData(0), fIndex(0) { }
-    StackIterator(Stack& data, const int index) : fData(&data), fIndex(index) { }
-    StackIterator(const StackIterator& mit) : fData(mit.fData), fIndex(mit.fIndex) { }
-    
-    StackIterator& operator++() { ++fIndex; return *this; }
-    StackIterator operator++(int) { StackIterator tmp(*this); ++fIndex; return tmp; }
+    StackIterator()
+        : fData(0)
+        , fIndex(0) {}
+    StackIterator(Stack& data, const int index)
+        : fData(&data)
+        , fIndex(index) {}
+    StackIterator(const StackIterator& mit)
+        : fData(mit.fData)
+        , fIndex(mit.fIndex) {}
+
+    StackIterator& operator++() {
+      ++fIndex;
+      return *this;
+    }
+    StackIterator operator++(int) {
+      StackIterator tmp(*this);
+      ++fIndex;
+      return tmp;
+    }
     bool operator==(const StackIterator& rhs) { return fIndex == rhs.fIndex; }
     bool operator!=(const StackIterator& rhs) { return fIndex != rhs.fIndex; }
-    
+
     StackIterator& operator*() { return *this; }
     const StackIterator& operator*() const { return *this; }
-    
+
   protected:
     int GetIndex() const { return fIndex; }
     Stack& GetStack() { return *fData; }
     const Stack& GetStack() const { return *fData; }
 
     // this is probably not needed rigth now:
-    //inline StackIterator<Stack,Particle>& BaseRef() { return static_cast<StackIterator<Stack, Particle>&>(*this); }
-    //inline const StackIterator<Stack,Particle>& BaseRef() const { return static_cast<const StackIterator<Stack, Particle>&>(*this); }
+    // inline StackIterator<Stack,Particle>& BaseRef() { return
+    // static_cast<StackIterator<Stack, Particle>&>(*this); } inline const
+    // StackIterator<Stack,Particle>& BaseRef() const { return static_cast<const
+    // StackIterator<Stack, Particle>&>(*this); }
   };
-
-  
 
   /**
      @class StackIteratorInfo
-     
-     This is the class where custom ... 
+
+     This is the class where custom ...
      Internal helper class for StackIterator. Document better...
    */
-  
-  template<typename _Stack, typename Particle>
+
+  template <typename _Stack, typename Particle>
   class StackIteratorInfo {
-    
-    friend Particle;  
+
+    friend Particle;
+
   private:
     StackIteratorInfo() {}
-    
+
   protected:
-    inline _Stack& GetStack() { return static_cast<StackIterator<_Stack, Particle>*>(this)->GetStack(); }
-    inline int GetIndex() const { return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetIndex(); }
-    inline const _Stack& GetStack() const { return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetStack(); }
+    inline _Stack& GetStack() {
+      return static_cast<StackIterator<_Stack, Particle>*>(this)->GetStack();
+    }
+    inline int GetIndex() const {
+      return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetIndex();
+    }
+    inline const _Stack& GetStack() const {
+      return static_cast<const StackIterator<_Stack, Particle>*>(this)->GetStack();
+    }
   };
 
-} // end namespace stack
-  
+} // namespace corsika::stack
+
 #endif

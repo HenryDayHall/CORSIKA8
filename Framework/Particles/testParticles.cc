@@ -1,30 +1,24 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/units/PhysicalUnits.h>
+
+#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
+                          // cpp file
 #include <catch2/catch.hpp>
 
-#include <Units/PhysicalUnits.h>
+using namespace corsika::units;
+using namespace corsika::particles;
 
-#include <Particles/Particles.h>
+TEST_CASE("Particles", "[Particles]") {
 
-using namespace phys::units;
-using namespace phys::units::literals;
+  SECTION("Types") { REQUIRE(Electron::GetCode() == Code::Electron); }
 
-using namespace ParticleProperties;
-
-TEST_CASE( "Particles", "[Particles]" )
-{  
-  SECTION( "Types" )
-    {
-      REQUIRE( Electron::GetType()==InternalParticleCode::Electron );
-    }
-
-    SECTION( "Data" )
-    {
-      REQUIRE( Electron::GetMass()/0.511_MeV==Approx(1) );
-      REQUIRE( Electron::GetMass()/GetMass(InternalParticleCode::Electron)==Approx(1) );
-      REQUIRE( Electron::GetCharge()/phys::units::e==Approx(-1) );
-      REQUIRE( Positron::GetCharge()/phys::units::e==Approx(+1) );
-      REQUIRE( GetElectricCharge(Positron::GetAntiParticle())/phys::units::e==Approx(-1) );
-      REQUIRE( Electron::GetName() == "e-" );
-    }
-
+  SECTION("Data") {
+    REQUIRE(Electron::GetMass() / 0.511_MeV == Approx(1));
+    REQUIRE(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
+    REQUIRE(Electron::GetCharge() / constants::e == Approx(-1));
+    REQUIRE(Positron::GetCharge() / constants::e == Approx(+1));
+    REQUIRE(GetElectricCharge(Positron::GetAntiParticle()) / constants::e == Approx(-1));
+    REQUIRE(Electron::GetName() == "e-");
+  }
 }

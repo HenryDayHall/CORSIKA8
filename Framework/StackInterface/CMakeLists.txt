@@ -1,10 +1,31 @@
+set (
+  CORSIKAstackinterface_HEADERS
+  Stack.h
+  StackIterator.h
+  )
 
-add_library (CORSIKAstackinterface INTERFACE)
+set (
+  CORSIKAstackinterface_NAMESPACE
+  corsika/stack
+  )
 
-target_include_directories (CORSIKAstackinterface INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/Framework>
-                                                            $<INSTALL_INTERFACE:include/Framework>
-                                                            )
+add_library (
+  CORSIKAstackinterface
+  INTERFACE
+  )
 
-install (FILES Stack.h StackIterator.h
-         DESTINATION include/StackInterface)
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAstackinterface ${CORSIKAstackinterface_NAMESPACE} ${CORSIKAstackinterface_HEADERS})
 
+target_include_directories (
+  CORSIKAstackinterface
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
+
+install (
+  FILES
+  ${CORSIKAstackinterface_HEADERS}
+  DESTINATION
+  include/${CORSIKAstackinterface_NAMESPACE}
+  )

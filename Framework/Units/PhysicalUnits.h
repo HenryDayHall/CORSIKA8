@@ -1,33 +1,43 @@
 #ifndef _include_PhysicalUnits_h_
 #define _include_PhysicalUnits_h_
 
-#include <phys/units/quantity.hpp>
+#include <corsika/units/PhysicalConstants.h>
+
 #include <phys/units/io.hpp>
-#include <phys/units/physical_constants.hpp>
+#include <phys/units/quantity.hpp>
 
 /**
-   @file PhysicalUnits
-   
-   Define _XeV literals, alowing 10_GeV in the code.     
-*/
-
-/*using namespace phys::units::io;
-using namespace phys::units::literals;*/
+ * @file PhysicalUnits
+ *
+ * Define _XeV literals, alowing 10_GeV in the code.
+ */
 
 namespace phys {
   namespace units {
     namespace literals {
-      QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d, magnitude(eV) )
+      QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
+                                       magnitude(corsika::units::constants::eV))
     }
-  }
-}
+  } // namespace units
+} // namespace phys
 
-using Length = phys::units::quantity<phys::units::length_d, double>;
-using Time = phys::units::quantity<phys::units::time_interval_d, double>;
-using Speed = phys::units::quantity<phys::units::speed_d, double>;
-using Frequency = phys::units::quantity<phys::units::frequency_d, double>;
-using ElectricCharge = phys::units::quantity<phys::units::electric_charge_d, double>;
-using Energy = phys::units::quantity<phys::units::energy_d, double>;
+namespace corsika::units {
+
+  using namespace phys::units;
+  using namespace phys::units::literals;
+  // namespace literals = phys::units::literals;
+
+  using LengthType = phys::units::quantity<phys::units::length_d, double>;
+  using TimeType = phys::units::quantity<phys::units::time_interval_d, double>;
+  using SpeedType = phys::units::quantity<phys::units::speed_d, double>;
+  using FrequencyType = phys::units::quantity<phys::units::frequency_d, double>;
+  using ElectricChargeType =
+      phys::units::quantity<phys::units::electric_charge_d, double>;
+  using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
+
+} // end namespace corsika::units
+
+// we want to call the operator<< without namespace... I think
+using namespace phys::units::io;
 
 #endif
-

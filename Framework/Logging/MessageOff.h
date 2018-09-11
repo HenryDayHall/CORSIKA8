@@ -1,7 +1,7 @@
 #ifndef _include_MessageOff_h_
 #define _include_MessageOff_h_
 
-namespace logger {
+namespace corsika::logging {
 
   /**
      Helper class to ignore all arguments to MessagesOn::Message and
@@ -9,11 +9,12 @@ namespace logger {
    */
   class MessageOff {
   protected:
-    template<typename First, typename ... Strings> std::string Message(const First& arg, const Strings&... rest) {
+    template <typename First, typename... Strings>
+    std::string Message(const First& arg, const Strings&... rest) {
       return "";
     }
   };
 
-} // end namespace
+} // namespace corsika::logging
 
 #endif

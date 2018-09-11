@@ -1,89 +1,75 @@
 #ifndef _include_VECTOR_H_
 #define _include_VECTOR_H_
 
-#include <Geometry/BaseVector.h>
-#include <Geometry/QuantityVector.h>
-#include <Units/PhysicalUnits.h>
+#include <corsika/geometry/BaseVector.h>
+#include <corsika/geometry/QuantityVector.h>
+
+#include <corsika/units/PhysicalUnits.h>
 
 /*!
  * A Vector represents a 3-vector in Euclidean space. It is defined by components
  * given in a specific CoordinateSystem. It has a physical dimension ("unit")
  * as part of its type, so you cannot mix up e.g. electric with magnetic fields
  * (but you could calculate their cross-product to get an energy flux vector).
- * 
+ *
  * When transforming coordinate systems, a Vector is subject to the rotational
  * part only and invariant under translations.
  */
 
-template <typename dim>
-class Vector : public BaseVector<dim>
-{
-    using Quantity = phys::units::quantity<dim, double>;
-    
-public:
-    Vector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector) :
-        BaseVector<dim>(pCS, pQVector)
-    {
-    }
+namespace corsika::geometry {
 
-    Vector(CoordinateSystem const& cs, Quantity x, Quantity y, Quantity z) :
-        BaseVector<dim>(cs, QuantityVector<dim>(x, y, z))
-    {
-    }
-    
+  template <typename dim>
+  class Vector : public BaseVector<dim> {
+    using Quantity = phys::units::quantity<dim, double>;
+
+  public:
+    Vector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector)
+        : BaseVector<dim>(pCS, pQVector) {}
+
+    Vector(CoordinateSystem const& cs, Quantity x, Quantity y, Quantity z)
+        : BaseVector<dim>(cs, QuantityVector<dim>(x, y, z)) {}
+
     /*!
      * returns a QuantityVector with the components given in the "home"
      * CoordinateSystem of the Vector
      */
-    auto GetComponents() const
-    {
-        return BaseVector<dim>::qVector;
-    }
-    
+    auto GetComponents() const { return BaseVector<dim>::qVector; }
+
     /*!
      * returns a QuantityVector with the components given in an arbitrary
      * CoordinateSystem
      */
-    auto GetComponents(CoordinateSystem const& pCS) const
-    {
-        if (&pCS == BaseVector<dim>::cs)
-        {
-            return BaseVector<dim>::qVector;
-        }
-        else
-        {
-            return QuantityVector<dim>(CoordinateSystem::GetTransformation(*BaseVector<dim>::cs, pCS).linear() * BaseVector<dim>::qVector.eVector);
-        }
+    auto GetComponents(CoordinateSystem const& pCS) const {
+      if (&pCS == BaseVector<dim>::cs) {
+        return BaseVector<dim>::qVector;
+      } else {
+        return QuantityVector<dim>(
+            CoordinateSystem::GetTransformation(*BaseVector<dim>::cs, pCS).linear() *
+            BaseVector<dim>::qVector.eVector);
+      }
     }
-    
+
     /*!
      * transforms the Vector into another CoordinateSystem by changing
      * its components internally
      */
-    void rebase(CoordinateSystem const& pCS)
-    {
-        BaseVector<dim>::qVector = GetComponents(pCS);        
-        BaseVector<dim>::cs = &pCS;
+    void rebase(CoordinateSystem const& pCS) {
+      BaseVector<dim>::qVector = GetComponents(pCS);
+      BaseVector<dim>::cs = &pCS;
     }
-    
+
     /*!
      * returns the norm/length of the Vector. Before using this method,
      * think about whether squaredNorm() might be cheaper for your computation.
      */
-    auto norm() const
-    {
-        return BaseVector<dim>::qVector.norm();
-    }
-    
+    auto norm() const { return BaseVector<dim>::qVector.norm(); }
+
     /*!
      * returns the squared norm of the Vector. Before using this method,
      * think about whether norm() might be cheaper for your computation.
      */
-    auto squaredNorm() const
-    {
-        return BaseVector<dim>::qVector.squaredNorm();
-    }
-    
+    auto squaredNorm() const { return BaseVector<dim>::qVector.squaredNorm(); }
+
     /*!
      * returns a Vector \f$ \vec{v}_{\parallel} \f$ which is the parallel projection
      * of this vector \f$ \vec{v}_1 \f$ along another Vector \f$ \vec{v}_2 \f$ given by
@@ -92,112 +78,100 @@ public:
      *   \f]
      */
     template <typename dim2>
-    auto parallelProjectionOnto(Vector<dim2> const& pVec, CoordinateSystem const& pCS) const
-    {
-        auto const ourCompVec = GetComponents(pCS);
-        auto const otherCompVec = pVec.GetComponents(pCS);
-        auto const& a = ourCompVec.eVector;
-        auto const& b = otherCompVec.eVector;
-        
-        return Vector<dim>(pCS, QuantityVector<dim>(b * ((a.dot(b)) / b.squaredNorm())));
+    auto parallelProjectionOnto(Vector<dim2> const& pVec,
+                                CoordinateSystem const& pCS) const {
+      auto const ourCompVec = GetComponents(pCS);
+      auto const otherCompVec = pVec.GetComponents(pCS);
+      auto const& a = ourCompVec.eVector;
+      auto const& b = otherCompVec.eVector;
+
+      return Vector<dim>(pCS, QuantityVector<dim>(b * ((a.dot(b)) / b.squaredNorm())));
     }
-    
+
     template <typename dim2>
-    auto parallelProjectionOnto(Vector<dim2> const& pVec) const
-    {
-        return parallelProjectionOnto<dim2>(pVec, *BaseVector<dim>::cs);
+    auto parallelProjectionOnto(Vector<dim2> const& pVec) const {
+      return parallelProjectionOnto<dim2>(pVec, *BaseVector<dim>::cs);
     }
-    
-    auto operator+(Vector<dim> const& pVec) const
-    {
-        auto const components = GetComponents(*BaseVector<dim>::cs) + pVec.GetComponents(*BaseVector<dim>::cs);
-        return Vector<dim>(*BaseVector<dim>::cs, components);
+
+    auto operator+(Vector<dim> const& pVec) const {
+      auto const components =
+          GetComponents(*BaseVector<dim>::cs) + pVec.GetComponents(*BaseVector<dim>::cs);
+      return Vector<dim>(*BaseVector<dim>::cs, components);
     }
-    
-    auto operator-(Vector<dim> const& pVec) const
-    {
-        auto const components = GetComponents() - pVec.GetComponents(*BaseVector<dim>::cs);
-        return Vector<dim>(*BaseVector<dim>::cs, components);
+
+    auto operator-(Vector<dim> const& pVec) const {
+      auto const components = GetComponents() - pVec.GetComponents(*BaseVector<dim>::cs);
+      return Vector<dim>(*BaseVector<dim>::cs, components);
     }
-    
-    auto& operator*=(double const p)
-    {
-        BaseVector<dim>::qVector *= p;
-        return *this;
+
+    auto& operator*=(double const p) {
+      BaseVector<dim>::qVector *= p;
+      return *this;
     }
-    
+
     template <typename ScalarDim>
-    auto operator*(phys::units::quantity<ScalarDim, double> const p) const
-    {
-        using ProdQuantity = phys::units::detail::Product<dim, ScalarDim, double, double>;
-        
-        if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
-        {
-            return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
-        }
-        else
-        {
-            return Vector<typename ProdQuantity::dimension_type>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);        
-        }
+    auto operator*(phys::units::quantity<ScalarDim, double> const p) const {
+      using ProdQuantity = phys::units::detail::Product<dim, ScalarDim, double, double>;
+
+      if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless,
+                                                               // not a "Quantity" anymore
+      {
+        return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs,
+                                                    BaseVector<dim>::qVector * p);
+      } else {
+        return Vector<typename ProdQuantity::dimension_type>(
+            *BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
+      }
     }
-    
+
     template <typename ScalarDim>
-    auto operator/(phys::units::quantity<ScalarDim, double> const p) const
-    {
-        return (*this) * (1 / p);
+    auto operator/(phys::units::quantity<ScalarDim, double> const p) const {
+      return (*this) * (1 / p);
     }
-    
-    auto operator*(double const p) const
-    {        
-        return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
+
+    auto operator*(double const p) const {
+      return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
     }
-    
-    auto operator/(double const p) const
-    {        
-        return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector / p);
+
+    auto operator/(double const p) const {
+      return Vector<dim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector / p);
     }
-    
-    auto& operator+=(Vector<dim> const& pVec)
-    {
-        BaseVector<dim>::qVector += pVec.GetComponents(*BaseVector<dim>::cs);
-        return *this;
+
+    auto& operator+=(Vector<dim> const& pVec) {
+      BaseVector<dim>::qVector += pVec.GetComponents(*BaseVector<dim>::cs);
+      return *this;
     }
-    
-    auto& operator-=(Vector<dim> const& pVec)
-    {
-        BaseVector<dim>::qVector -= pVec.GetComponents(*BaseVector<dim>::cs);
-        return *this;
+
+    auto& operator-=(Vector<dim> const& pVec) {
+      BaseVector<dim>::qVector -= pVec.GetComponents(*BaseVector<dim>::cs);
+      return *this;
     }
-    
-    auto& operator-() const
-    {
-        return Vector<dim>(*BaseVector<dim>::cs, - BaseVector<dim>::qVector);
+
+    auto& operator-() const {
+      return Vector<dim>(*BaseVector<dim>::cs, -BaseVector<dim>::qVector);
     }
-    
-    auto normalized() const
-    {
-        return (*this) * (1 / norm());
-    }
-    
+
+    auto normalized() const { return (*this) * (1 / norm()); }
+
     template <typename dim2>
-    auto cross(Vector<dim2> pV) const
-    {
-        auto const c1 = GetComponents().eVector;
-        auto const c2 = pV.GetComponents(*BaseVector<dim>::cs).eVector;
-        auto const bareResult = c1.cross(c2);
-        
-        using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
-        
-        if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless, not a "Quantity" anymore
-        {
-            return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, bareResult);
-        }
-        else
-        {
-            return Vector<typename ProdQuantity::dimension_type>(*BaseVector<dim>::cs, bareResult);        
-        }
+    auto cross(Vector<dim2> pV) const {
+      auto const c1 = GetComponents().eVector;
+      auto const c2 = pV.GetComponents(*BaseVector<dim>::cs).eVector;
+      auto const bareResult = c1.cross(c2);
+
+      using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
+
+      if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless,
+                                                               // not a "Quantity" anymore
+      {
+        return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, bareResult);
+      } else {
+        return Vector<typename ProdQuantity::dimension_type>(*BaseVector<dim>::cs,
+                                                             bareResult);
+      }
     }
-    
-};
+  };
+
+} // namespace corsika::geometry
 
 #endif

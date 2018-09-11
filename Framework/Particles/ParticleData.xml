@@ -4716,14 +4716,15 @@
           m0="9.89860" mWidth="0.01000" mMin="9.85500" mMax="9.89500"> 
  <channel onMode="1" bRatio="1.0000000" meMode="91" products="21 21"/> 
 </particle> 
- 
+-->
+
 <particle id="13122" name="Lambda(1405)0" antiName="Lambda(1405)bar0" spinType="2" chargeType="0" colType="0" 
           m0="1.40510" mWidth="0.05000" mMin="1.32000" mMax="1.80000"> 
  <channel onMode="1" bRatio="0.3333000" products="3222 -211"/> 
  <channel onMode="1" bRatio="0.3333000" products="3112 211"/> 
  <channel onMode="1" bRatio="0.3334000" products="3212 111"/> 
 </particle> 
- 
+<!-- 
 <particle id="14122" name="Lambda_c(2593)+" antiName="Lambda_c(2593)-" spinType="2" chargeType="3" colType="0" 
           m0="2.59225" mWidth="0.00260" mMin="2.57000" mMax="2.63000"> 
  <channel onMode="1" bRatio="0.2400000" products="4222 -211"/> 
