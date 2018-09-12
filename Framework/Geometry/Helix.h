@@ -1,33 +1,38 @@
 #ifndef _include_HELIX_H_
 #define _include_HELIX_H_
 
+#include <corsika/geometry/BaseTrajectory.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <cmath>
 
 namespace corsika::geometry {
+  /*!
+   * A Helix is defined by the cyclotron frequency \f$ \omega_c \f$, the initial
+   * Point r0 and
+   * the velocity vectors \f$ \vec{v}_{\parallel} \f$ and \f$ \vec{v}_{\perp} \f$
+   * denoting the projections of the initial velocity \f$ \vec{v}_0 \f$ parallel
+   * and perpendicular to the axis \f$ \vec{B} \f$, respectively, i.e.
+   * \f{align*}{
+        \vec{v}_{\parallel} &= \frac{\vec{v}_0 \cdot \vec{B}}{\vec{B}^2} \vec{B} \\
+        \vec{v}_{\perp} &= \vec{v}_0 - \vec{v}_{\parallel}
+     \f}
+   */
 
-  using corsika::units::frequency_d;
-  using corsika::units::FrequencyType;
-  using corsika::units::quantity;
-  using corsika::units::SpeedType;
-  using corsika::units::TimeType;
-
-  class Helix // TODO: inherit from to-be-implemented "Trajectory"
-  {
-    using SpeedVec = Vector<SpeedType::dimension_type>;
+  class Helix : public BaseTrajectory {
+    using VelocityVec = Vector<corsika::units::SpeedType::dimension_type>;
 
     Point const r0;
-    FrequencyType const omegaC;
-    SpeedVec const vPar;
-    SpeedVec vPerp, uPerp;
+    corsika::units::FrequencyType const omegaC;
+    VelocityVec const vPar;
+    VelocityVec const vPerp, uPerp;
 
-    LengthType const radius;
+    corsika::units::LengthType const radius;
 
   public:
-    Helix(Point const& pR0, quantity<frequency_d> pOmegaC, SpeedVec const& pvPar,
-          SpeedVec const& pvPerp)
+    Helix(Point const& pR0, corsika::units::FrequencyType pOmegaC,
+          VelocityVec const& pvPar, VelocityVec const& pvPerp)
         : r0(pR0)
         , omegaC(pOmegaC)
         , vPar(pvPar)
@@ -35,7 +40,7 @@ namespace corsika::geometry {
         , uPerp(vPerp.cross(vPar.normalized()))
         , radius(pvPar.norm() / abs(pOmegaC)) {}
 
-    auto GetPosition(TimeType t) const {
+    Point GetPosition(corsika::units::TimeType t) const {
       return r0 + vPar * t +
              (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }

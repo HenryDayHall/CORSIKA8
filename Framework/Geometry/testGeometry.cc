@@ -2,14 +2,17 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
-#include <Geometry/CoordinateSystem.h>
-#include <Geometry/Point.h>
-#include <Geometry/Sphere.h>
+#include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/Helix.h>
+#include <corsika/geometry/LineTrajectory.h>
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Sphere.h>
+#include <corsika/geometry/Trajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <cmath>
 
-using namespace phys::units;
-using namespace phys::units::literals;
+using namespace corsika::geometry;
+using namespace corsika::units;
 
 TEST_CASE("transformations between CoordinateSystems") {
   CoordinateSystem rootCS;
@@ -17,10 +20,11 @@ TEST_CASE("transformations between CoordinateSystems") {
   REQUIRE(CoordinateSystem::GetTransformation(rootCS, rootCS)
               .isApprox(EigenTransform::Identity()));
 
-  QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
+  corsika::QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point p1(rootCS, coordinates);
 
-  QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla, 0. * tesla};
+  corsika::QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla,
+                                                              0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
 
   REQUIRE((p1.GetCoordinates() - coordinates).norm().magnitude() == Approx(0));
@@ -32,7 +36,7 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("translations") {
-    QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
+    corsika::QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
 
     CoordinateSystem translatedCS = rootCS.translate(translationVector);
 
@@ -52,13 +56,13 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("multiple translations") {
-    QuantityVector<length_d> const tv1{0_m, 5_m, 0_m};
+    corsika::QuantityVector<length_d> const tv1{0_m, 5_m, 0_m};
     CoordinateSystem cs2 = rootCS.translate(tv1);
 
-    QuantityVector<length_d> const tv2{3_m, 0_m, 0_m};
+    corsika::QuantityVector<length_d> const tv2{3_m, 0_m, 0_m};
     CoordinateSystem cs3 = rootCS.translate(tv2);
 
-    QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
+    corsika::QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
     CoordinateSystem cs4 = cs3.translate(tv3);
 
     REQUIRE(cs4.GetReference()->GetReference() == &rootCS);
@@ -70,7 +74,7 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("rotations") {
-    QuantityVector<length_d> const axis{0_m, 0_m, 1_km};
+    corsika::QuantityVector<length_d> const axis{0_m, 0_m, 1_km};
     double const angle = 90. / 180. * M_PI;
 
     CoordinateSystem rotatedCS = rootCS.rotate(axis, angle);
@@ -85,9 +89,9 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("multiple rotations") {
-    QuantityVector<length_d> const zAxis{0_m, 0_m, 1_km};
-    QuantityVector<length_d> const yAxis{0_m, 7_nm, 0_m};
-    QuantityVector<length_d> const xAxis{2_m, 0_nm, 0_m};
+    corsika::QuantityVector<length_d> const zAxis{0_m, 0_m, 1_km};
+    corsika::QuantityVector<length_d> const yAxis{0_m, 7_nm, 0_m};
+    corsika::QuantityVector<length_d> const xAxis{2_m, 0_nm, 0_m};
 
     double const angle = 90. / 180. * M_PI;
 
@@ -110,7 +114,26 @@ TEST_CASE("Sphere") {
 
   SECTION("isInside") {
     REQUIRE_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
-
     REQUIRE(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
+  }
+}
+
+TEST_CASE("Trajectories") {
+  CoordinateSystem rootCS;
+  Point r0(rootCS, {0_m, 0_m, 0_m});
+
+  SECTION("Line") {
+    Vector<SpeedType::dimension_type> v0(rootCS,
+                                         {1_m / second, 0_m / second, 0_m / second});
+
+    LineTrajectory lineTrajectory(r0, v0);
+    REQUIRE((lineTrajectory.GetPosition(2_s).GetCoordinates() -
+             corsika::QuantityVector<length_d>(2_m, 0_m, 0_m))
+                .norm()
+                .magnitude() == Approx(0));
+
+    BaseTrajectory* base = &lineTrajectory;
+    REQUIRE(lineTrajectory.GetPosition(2_s).GetCoordinates() ==
+            base->GetPosition(2_s).GetCoordinates());
   }
 }
