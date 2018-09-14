@@ -14,6 +14,9 @@
 using namespace corsika::geometry;
 using namespace corsika::units;
 
+double constexpr absMargin = 1.0e-8;
+;
+
 TEST_CASE("transformations between CoordinateSystems") {
   CoordinateSystem rootCS;
 
@@ -27,8 +30,10 @@ TEST_CASE("transformations between CoordinateSystems") {
                                                               0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
 
-  REQUIRE((p1.GetCoordinates() - coordinates).norm().magnitude() == Approx(0));
-  REQUIRE((p1.GetCoordinates(rootCS) - coordinates).norm().magnitude() == Approx(0));
+  REQUIRE((p1.GetCoordinates() - coordinates).norm().magnitude() ==
+          Approx(0).margin(absMargin));
+  REQUIRE((p1.GetCoordinates(rootCS) - coordinates).norm().magnitude() ==
+          Approx(0).margin(absMargin));
 
   SECTION("unconnected CoordinateSystems") {
     CoordinateSystem rootCS2;
@@ -43,16 +48,16 @@ TEST_CASE("transformations between CoordinateSystems") {
     REQUIRE(translatedCS.GetReference() == &rootCS);
 
     REQUIRE((p1.GetCoordinates(translatedCS) + translationVector).norm().magnitude() ==
-            Approx(0));
+            Approx(0).margin(absMargin));
 
     // Vectors are not subject to translations
     REQUIRE(
         (v1.GetComponents(rootCS) - v1.GetComponents(translatedCS)).norm().magnitude() ==
-        Approx(0));
+        Approx(0).margin(absMargin));
 
     Point p2(translatedCS, {0_m, 0_m, 0_m});
     REQUIRE(((p2 - p1).GetComponents() - translationVector).norm().magnitude() ==
-            Approx(0));
+            Approx(0).margin(absMargin));
   }
 
   SECTION("multiple translations") {
@@ -103,7 +108,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 
     auto comp1 = v1.GetComponents(rootCS);
     auto comp3 = v1.GetComponents(combined);
-    REQUIRE((comp1 - comp3).norm().magnitude() == Approx(0));
+    REQUIRE((comp1 - comp3).norm().magnitude() == Approx(0).margin(absMargin));
   }
 }
 
@@ -126,14 +131,37 @@ TEST_CASE("Trajectories") {
     Vector<SpeedType::dimension_type> v0(rootCS,
                                          {1_m / second, 0_m / second, 0_m / second});
 
-    LineTrajectory lineTrajectory(r0, v0);
-    REQUIRE((lineTrajectory.GetPosition(2_s).GetCoordinates() -
-             corsika::QuantityVector<length_d>(2_m, 0_m, 0_m))
-                .norm()
-                .magnitude() == Approx(0));
+    LineTrajectory const lineTrajectory(r0, v0);
+    CHECK((lineTrajectory.GetPosition(2_s).GetCoordinates() -
+           corsika::QuantityVector<length_d>(2_m, 0_m, 0_m))
+              .norm()
+              .magnitude() == Approx(0).margin(absMargin));
 
-    BaseTrajectory* base = &lineTrajectory;
-    REQUIRE(lineTrajectory.GetPosition(2_s).GetCoordinates() ==
-            base->GetPosition(2_s).GetCoordinates());
+    BaseTrajectory const* base = &lineTrajectory;
+    CHECK(lineTrajectory.GetPosition(2_s).GetCoordinates() ==
+          base->GetPosition(2_s).GetCoordinates());
+  }
+
+  SECTION("Helix") {
+    Vector<SpeedType::dimension_type> const vPar(
+        rootCS, {0_m / second, 0_m / second, 4_m / second}),
+        vPerp(rootCS, {1_m / second, 0_m / second, 0_m / second});
+    auto const omegaC = 2 * M_PI / 1_s;
+
+    Helix const helix(r0, omegaC, vPar, vPerp);
+
+    CHECK((helix.GetPosition(1_s).GetCoordinates() -
+           corsika::QuantityVector<length_d>(0_m, 0_m, 4_m))
+              .norm()
+              .magnitude() == Approx(0).margin(absMargin));
+
+    CHECK((helix.GetPosition(0.25_s).GetCoordinates() -
+           corsika::QuantityVector<length_d>(-1_m / (2 * M_PI), -1_m / (2 * M_PI), 1_m))
+              .norm()
+              .magnitude() == Approx(0).margin(absMargin));
+
+    BaseTrajectory const* base = &helix;
+    CHECK(helix.GetPosition(1234_s).GetCoordinates() ==
+          base->GetPosition(1234_s).GetCoordinates());
   }
 }
