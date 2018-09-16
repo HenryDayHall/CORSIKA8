@@ -35,7 +35,7 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAparticles ${PARTICLE_NAMESPACE} ${PART
 # this is not needed for the build to succeed! .......
 add_custom_command (
   OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/GeneratedParticleProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/particles/GeneratedParticleProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
   COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc"
   )
 add_custom_target (SourceDirLink DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc)
