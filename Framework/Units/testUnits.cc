@@ -62,7 +62,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   SECTION("Formulas") {
     const EnergyType E2 = 20_GeV * 2;
     REQUIRE(E2 == 40_GeV);
-    REQUIRE(E2 / 1_GeV == 40);
+    REQUIRE(E2 / 1_GeV == Approx(40));
 
     const double lgE = log10(E2 / 1_GeV);
     REQUIRE(lgE == Approx(log10(40.)));
