@@ -1,26 +1,27 @@
 #ifndef _include_LINETRAJECTORY_H
 #define _include_LINETRAJECTORY_H
 
-#include <Units/PhysicalUnits.h>
-#include <corsika/Point.h>
-#include <corsika/Vector.h>
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
+#include <corsika/units/PhysicalUnits.h>
 
-namesapce corsika {
+namespace corsika::geometry {
 
   class LineTrajectory // TODO: inherit from Trajectory
   {
-    using SpeedVec = Vector<Speed::dimension_type>;
+    using SpeedVec = Vector<corsika::units::SpeedType::dimension_type>;
 
     Point const r0;
     SpeedVec const v0;
 
+  public:
     LineTrajectory(Point const& pR0, SpeedVec const& pV0)
         : r0(r0)
         , v0(pV0) {}
 
-    auto GetPosition(Time t) const { return r0 + v0 * t; }
+    auto GetPosition(corsika::units::TimeType t) const { return r0 + v0 * t; }
   };
 
-} // end namesapce
+} // namespace corsika::geometry
 
 #endif

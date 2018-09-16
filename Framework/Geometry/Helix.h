@@ -17,12 +17,10 @@ namespace corsika::geometry {
   class Helix // TODO: inherit from to-be-implemented "Trajectory"
   {
     using SpeedVec = Vector<SpeedType::dimension_type>;
-
     Point const r0;
     FrequencyType const omegaC;
     SpeedVec const vPar;
     SpeedVec vPerp, uPerp;
-
     LengthType const radius;
 
   public:

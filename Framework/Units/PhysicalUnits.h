@@ -17,8 +17,11 @@ namespace phys {
     namespace literals {
       QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
                                        magnitude(corsika::units::constants::eV))
-    }
-  } // namespace units
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
 } // namespace phys
 
 namespace corsika::units {

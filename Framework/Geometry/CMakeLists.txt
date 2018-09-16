@@ -13,6 +13,7 @@ set (
   Helix.h
   BaseVector.h
   QuantityVector.h
+  LineTrajectory.h
   )
 
 set (

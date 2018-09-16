@@ -13,7 +13,7 @@ using namespace corsika::stack;
 void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
   for (int i = 0; i < 11; ++i) {
     auto p = s.NewParticle();
-    p.SetId(corsika::particles::Code::Electron);
+    p.SetPID(corsika::particles::Code::Electron);
     p.SetEnergy(1.5_GeV * i);
   }
 }
@@ -21,9 +21,9 @@ void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
 void read(corsika::stack::super_stupid::SuperStupidStack& s) {
   cout << "found Stack with " << s.GetSize() << " particles. " << endl;
   EnergyType Etot;
-  for (auto p : s) {
+  for (auto& p : s) {
     Etot += p.GetEnergy();
-    cout << "particle: " << p.GetId() << " with " << p.GetEnergy() / 1_GeV << " GeV"
+    cout << "particle: " << p.GetPID() << " with " << p.GetEnergy() / 1_GeV << " GeV"
          << endl;
   }
   cout << "Etot=" << Etot << " = " << Etot / 1_GeV << " GeV" << endl;

@@ -1,20 +1,20 @@
+#include <corsika/cascade/Cascade.h>
 
+using namespace corsika::cascade;
 
-namespace cascade;
-
-template <typename Sequence, typename Trajectory>
-void Cascade::Cascade() {
-  kkk;
-  kk;
+template <typename ProcessList, typename Particle, typename Trajectory, typename Stack>
+Cascade<ProcessList, Particle, Trajectory, Stack>::Cascade() {
+  //  kkk;
+  //  kk;
 }
 
-template <typename Sequence, typename Trajectory>
+template <typename ProcessList, typename Particle, typename Trajectory, typename Stack>
 void Cascade::Init() {
   fStack.Init();
   fProcesseList.Init();
 }
 
-template <typename Sequence, typename Trajectory>
+template <typename ProcessList, typename Particle, typename Trajectory, typename Stack>
 void Cascade::Run() {
   if (!fStack.IsEmpty()) {
     if (!fStack.IsEmpty()) {

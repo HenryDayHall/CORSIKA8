@@ -9,46 +9,71 @@
 
 namespace corsika::stack {
 
+  template <typename>
+  class PI; // forward decl
+
   /**
      Interface definition of a Stack object. The Stack implements the
      std-type begin/end function to allow integration in normal for
      loops etc.
    */
 
-  template <typename DataImpl, typename Particle>
-  class Stack : public DataImpl {
+  template <typename StackData, template <typename> typename PI>
+  class Stack : public StackData {
 
   public:
-    using DataImpl::GetCapacity;
-    using DataImpl::GetSize;
-
-    using DataImpl::Clear;
-    using DataImpl::Copy;
-
-    using DataImpl::DecrementSize;
-    using DataImpl::IncrementSize;
+    typedef Stack<StackData, PI> StackType;
+    typedef StackIteratorInterface<StackData, PI> StackIterator;
+    typedef const StackIterator ConstStackIterator;
+    typedef typename StackIterator::ParticleInterfaceType ParticleType;
+    friend class StackIteratorInterface<StackData, PI>;
 
   public:
-    typedef Particle iterator;
-    typedef const Particle const_iterator;
+    using StackData::GetCapacity;
+    using StackData::GetSize;
+
+    using StackData::Clear;
+    using StackData::Copy;
+
+    using StackData::DecrementSize;
+    using StackData::IncrementSize;
+
+    using StackData::Init;
+
+  public:
+    /// these are functions required by std containers and std loops
+    StackIterator begin() { return StackIterator(*this, 0); }
+    StackIterator end() { return StackIterator(*this, GetSize()); }
+    StackIterator last() { return StackIterator(*this, GetSize() - 1); }
 
     /// these are functions required by std containers and std loops
-    iterator begin() { return iterator(*this, 0); }
-    iterator end() { return iterator(*this, GetSize()); }
-    iterator last() { return iterator(*this, GetSize() - 1); }
-
-    /// these are functions required by std containers and std loops
-    const_iterator cbegin() const { return const_iterator(*this, 0); }
-    const_iterator cend() const { return const_iterator(*this, GetSize()); }
-    const_iterator clast() const { return const_iterator(*this, GetSize() - 1); }
+    ConstStackIterator cbegin() const { return ConstStackIterator(*this, 0); }
+    ConstStackIterator cend() const { return ConstStackIterator(*this, GetSize()); }
+    ConstStackIterator clast() const { return ConstStackIterator(*this, GetSize() - 1); }
 
     /// increase stack size, create new particle at end of stack
-    iterator NewParticle() {
+    StackIterator NewParticle() {
       IncrementSize();
-      return iterator(*this, GetSize() - 1);
+      return StackIterator(*this, GetSize() - 1);
     }
+    /// delete this particle
+    void Delete(StackIterator& p) {
+      if (GetSize() == 0) { /*error*/
+      }
+      if (p.GetIndex() < GetSize() - 1) Copy(GetSize() - 1, p.GetIndex());
+      DeleteLast();
+      // p.SetInvalid();
+    }
+    void Delete(ParticleType& p) { Delete(p.GetIterator()); }
     /// delete last particle on stack by decrementing stack size
     void DeleteLast() { DecrementSize(); }
+    /// check if there are no further particles on stack
+    bool IsEmpty() { return GetSize() == 0; }
+    StackIterator GetNextParticle() { return last(); }
+
+  protected:
+    StackData& GetStackData() { return static_cast<StackData&>(*this); }
+    const StackData& GetStackData() const { return static_cast<const StackData&>(*this); }
   };
 
 } // namespace corsika::stack

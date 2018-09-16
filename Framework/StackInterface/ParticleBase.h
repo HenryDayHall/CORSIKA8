@@ -1,0 +1,53 @@
+#ifndef _include_particleBase_h_
+#define _include_particleBase_h_
+
+class StackData; // forward decl
+
+namespace corsika::stack {
+
+  //  template <typename> class PI;// : public ParticleBase<StackIteratorInterface> {
+  // template <typename, template <typename> typename> class Stack; // forward decl
+
+  /**
+   \class ParticleBase
+
+   The base class to define the readout of particle properties from a
+   particle stack. Every stack must implement this readout via the
+   ParticleBase class.
+  */
+
+  template <typename StackIterator>
+  class ParticleBase {
+
+    //    friend class Stack<StackData, PI>;  // for access to GetIterator
+  public:
+    ParticleBase() {}
+
+  private:
+    ParticleBase(ParticleBase&);
+    // ParticleBase& operation=(ParticleBase& p);
+
+  public:
+    /// delete this particle on the stack. The corresponding iterator
+    /// will be invalidated by this operation
+    void Delete() { GetIterator().GetStack().Delete(GetIterator()); }
+
+    //  protected: // todo should be proteced, but don't now how to 'friend Stack'
+    /// Function to provide CRTP access to inheriting class (type)
+    StackIterator& GetIterator() { return static_cast<StackIterator&>(*this); }
+    const StackIterator& GetIterator() const {
+      return static_cast<const StackIterator&>(*this);
+    }
+
+  protected:
+    /// access to underling stack data
+    auto& GetStackData() { return GetIterator().GetStackData(); }
+    const auto& GetStackData() const { return GetIterator().GetStackData(); }
+
+    /// return the index number of the underlying iterator object
+    int GetIndex() const { return GetIterator().GetIndex(); }
+  };
+
+}; // namespace corsika::stack
+
+#endif

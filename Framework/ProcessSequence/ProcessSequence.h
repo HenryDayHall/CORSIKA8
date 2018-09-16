@@ -1,13 +1,14 @@
 #ifndef _include_ProcessSequence_h_
 #define _include_ProcessSequence_h_
 
+#include <cmath>
 #include <iostream>
 #include <typeinfo>
 
 namespace corsika::process {
 
   /**
-     /class BaseProcess
+     \class BaseProcess
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements
@@ -17,6 +18,7 @@ namespace corsika::process {
 
   template <typename derived>
   struct BaseProcess {
+    derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
   };
 
@@ -41,28 +43,35 @@ namespace corsika::process {
         : A(in_A)
         , B(in_B) {}
 
-    template <typename D>
-    inline void DoContinuous(D& d) const {
-      A.DoContinuous(d);
-      B.DoContinuous(d);
+    template <typename Particle, typename Trajectory, typename Stack>
+    inline void DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
+      A.DoContinuous(p, t, s);
+      B.DoContinuous(p, t, s);
     } // add trajectory
 
     template <typename D>
     inline double MinStepLength(D& d) const {
-      return min(A.MinStepLength(d), B.MinStepLength(d));
+      return std::min(A.MinStepLength(d), B.MinStepLength(d));
     }
 
     // template<typename D>
     // inline Trajectory Transport(D& d, double& length) const { A.Transport(d, length);
     // B.Transport(d, length); }
 
-    template <typename D>
-    inline void DoDiscrete(D& d) const {
-      A.DoDiscrete(d);
-      B.DoDiscrete(d);
+    template <typename Particle, typename Stack>
+    void DoDiscrete(Particle& p, Stack& s) const {
+      A.DoDiscrete(p, s);
+      B.DoDiscrete(p, s);
+    }
+
+    /// TODO the const_cast is not nice, think about the constness here
+    inline void Init() const {
+      const_cast<T1*>(&A)->Init();
+      const_cast<T2*>(&B)->Init();
     }
   };
 
+  /// the + operator that assembles more BaseProcess objects into a ProcessSequence
   template <typename T1, typename T2>
   inline const ProcessSequence<T1, T2> operator+(const BaseProcess<T1>& A,
                                                  const BaseProcess<T2>& B) {

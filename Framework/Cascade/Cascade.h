@@ -1,23 +1,62 @@
 #ifndef _include_Cascade_h_
 #define _include_Cascade_h_
 
-namespace cascade {
+#include <corsika/geometry/LineTrajectory.h> // to be removed
+#include <corsika/geometry/Point.h>          // to be removed
+#include <corsika/units/PhysicalUnits.h>
 
-  template <typename Processes, typename Trajectory, typename Stack>
+using namespace corsika::units;
+
+namespace corsika::cascade {
+
+  template <typename Trajectory, typename ProcessList, typename Stack>
   class Cascade {
 
-  public:
-    Cascade();
+    typedef typename Stack::ParticleType Particle;
 
-    void Init();
-    void Run();
-    void Step(Particle& particle);
+  public:
+    Cascade(ProcessList& pl, Stack& stack)
+        : fProcesseList(pl)
+        , fStack(stack) {}
+
+    void Init() {
+      fStack.Init();
+      fProcesseList.Init();
+    }
+
+    void Run() {
+      while (!fStack.IsEmpty()) {
+        while (!fStack.IsEmpty()) {
+          Particle& p = *fStack.GetNextParticle();
+          Step(p);
+        }
+        // do cascade equations, which can put new particles on Stack,
+        // thus, the double loop
+        // DoCascadeEquations(); //
+      }
+    }
+
+    void Step(Particle& particle) {
+      double nextStep = fProcesseList.MinStepLength(particle);
+      corsika::geometry::CoordinateSystem root;
+      Trajectory trajectory(
+          corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
+          corsika::geometry::Vector<corsika::units::SpeedType::dimension_type>(
+              root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
+      fProcesseList.DoContinuous(particle, trajectory, fStack);
+      // if (particle.IsMarkedToBeDeleted())
+      {
+        // std::cout << "DELETET THISSKSKJD!" << std::endl;
+        // fStack.Delete(particle);
+      }
+      fProcesseList.DoDiscrete(particle, fStack);
+    }
 
   private:
-    Stack fStack;
-    Processes fProcesseList;
+    Stack& fStack;
+    ProcessList& fProcesseList;
   };
 
-} // namespace cascade
+} // namespace corsika::cascade
 
 #endif

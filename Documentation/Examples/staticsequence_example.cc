@@ -7,21 +7,21 @@
 using namespace std;
 using namespace corsika::process;
 
-class Process1 : public corsika::process::BaseProcess<Process1> {
+class Process1 : public BaseProcess<Process1> {
 public:
   Process1() {}
-  template <typename D>
-  void DoContinuous(D& d) const {
+  template <typename D, typename T, typename S>
+  void DoContinuous(D& d, T& t, S& s) const {
     for (int i = 0; i < 10; ++i) d.p[i] += 1;
   }
 };
 
-class Process2 : public corsika::process::BaseProcess<Process2> {
+class Process2 : public BaseProcess<Process2> {
 public:
   Process2() {}
 
-  template <typename D>
-  inline void DoContinuous(D& d) const {
+  template <typename D, typename T, typename S>
+  inline void DoContinuous(D& d, T& t, S& s) const {
     // for (int i=0; i<10; ++i) d.p[i] *= 2;
   }
 };
@@ -31,8 +31,8 @@ public:
   // Process3(const int v) :fV(v) {}
   Process3() {}
 
-  template <typename D>
-  inline void DoContinuous(D& d) const {
+  template <typename D, typename T, typename S>
+  inline void DoContinuous(D& d, T& t, S& s) const {
     // for (int i=0; i<10; ++i) d.p[i] += fV;
   }
 
@@ -44,8 +44,8 @@ class Process4 : public BaseProcess<Process4> {
 public:
   // Process4(const int v) : fV(v) {}
   Process4() {}
-  template <typename D>
-  inline void DoContinuous(D& d) const {
+  template <typename D, typename T, typename S>
+  inline void DoContinuous(D& d, T& t, S& s) const {
     // for (int i=0; i<10; ++i) d.p[i] /= fV;
   }
 
@@ -53,13 +53,13 @@ private:
   // int fV;
 };
 
-class Data {
-public:
-  std::array<double, 10> p{{0.}};
+struct DummyData {
+  double p[10];
 };
+struct DummyStack {};
+struct DummyTrajectory {};
 
 void modular() {
-  Data d0;
 
   Process1 m1;
   Process2 m2;
@@ -68,13 +68,14 @@ void modular() {
 
   const auto sequence = m1 + m2 + m3 + m4;
 
+  DummyData p;
+  DummyTrajectory t;
+  DummyStack s;
+
   const int n = 100000000;
-  for (int i = 0; i < n; ++i) { sequence.DoContinuous(d0); }
+  for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }
 
-  double s = 0;
-  for (int i = 0; i < 10; ++i) { s += d0.p[i]; }
-
-  cout << scientific << " v=" << s << " n=" << n << endl;
+  cout << " done (nothing...) " << endl;
 }
 
 int main() {

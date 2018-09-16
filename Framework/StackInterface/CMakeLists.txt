@@ -2,6 +2,7 @@ set (
   CORSIKAstackinterface_HEADERS
   Stack.h
   StackIterator.h
+  ParticleBase.h
   )
 
 set (
@@ -29,3 +30,10 @@ install (
   DESTINATION
   include/${CORSIKAstackinterface_NAMESPACE}
   )
+
+
+# code testing
+add_executable (testStackInterface testStackInterface.cc)
+target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+add_test(NAME testStackInterface COMMAND testStackInterface)
+

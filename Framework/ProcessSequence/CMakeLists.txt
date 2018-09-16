@@ -1,13 +1,13 @@
 
 add_library (CORSIKAprocesssequence INTERFACE)
 
-# namespace of library -> location of header files
+#namespace of library->location of header files
 set (
   CORSIKAprocesssequence_NAMESPACE
   corsika/process
   )
 
-# header files of this library
+#header files of this library
 set (
   CORSIKAprocesssequence_HEADERS
   ProcessSequence.h
@@ -15,7 +15,7 @@ set (
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAprocesssequence ${CORSIKAprocesssequence_NAMESPACE} ${CORSIKAprocesssequence_HEADERS})
 
-# include directive for upstream code
+#include directive for upstream code
 target_include_directories (
   CORSIKAprocesssequence
   INTERFACE
@@ -23,29 +23,26 @@ target_include_directories (
   $<INSTALL_INTERFACE:include/>
   )
 
-# install library
+#install library
 install (
   FILES ${CORSIKAprocesssequence_HEADERS}
   DESTINATION include/${CORSIKAprocesssequence_NAMESPACE}
   )
 
-# ----------------
-# code unit testing
-#add_executable (
-#  testLogging
-#  testLogging.cc
-#  )
+#-- -- -- -- -- -- -- --
+#code unit testing
+add_executable (
+  testProcessSequence
+  testProcessSequence.cc
+  )
 
-#target_link_libraries (
-#  testLogging
-#  CORSIKAprocesssequence
-#  CORSIKAthirdparty # for catch2
-#  )
+target_link_libraries (
+  testProcessSequence
+  CORSIKAprocesssequence
+  CORSIKAthirdparty # for catch2
+  )
 
-#add_test (
-#  NAME testLogging
-#  COMMAND testLogging
-#  )
-
-
-  
+add_test (
+  NAME testProcessSequence
+  COMMAND testProcessSequence
+  )

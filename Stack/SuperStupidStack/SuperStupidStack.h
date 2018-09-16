@@ -1,12 +1,11 @@
 #ifndef _include_superstupidstack_h_
 #define _include_superstupidstack_h_
 
-#include <string>
-#include <vector>
-
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
+
+#include <vector>
 
 namespace corsika::stack {
 
@@ -20,18 +19,18 @@ namespace corsika::stack {
      * Example of a particle object on the stack.
      */
 
-    template <typename _Stack>
-    class ParticleRead : public StackIteratorInfo<_Stack, ParticleRead<_Stack> > {
+    template <typename StackIteratorInterface>
+    class ParticleInterface : public ParticleBase<StackIteratorInterface> {
 
-      using StackIteratorInfo<_Stack, ParticleRead>::GetIndex;
-      using StackIteratorInfo<_Stack, ParticleRead>::GetStack;
+      using ParticleBase<StackIteratorInterface>::GetStackData;
+      using ParticleBase<StackIteratorInterface>::GetIndex;
 
     public:
-      void SetId(const Code id) { GetStack().SetId(GetIndex(), id); }
-      void SetEnergy(const EnergyType& e) { GetStack().SetEnergy(GetIndex(), e); }
+      void SetPID(const Code id) { GetStackData().SetPID(GetIndex(), id); }
+      void SetEnergy(const EnergyType& e) { GetStackData().SetEnergy(GetIndex(), e); }
 
-      Code GetId() const { return GetStack().GetId(GetIndex()); }
-      const EnergyType& GetEnergy() const { return GetStack().GetEnergy(GetIndex()); }
+      Code GetPID() const { return GetStackData().GetPID(GetIndex()); }
+      EnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
     };
 
     /**
@@ -42,51 +41,63 @@ namespace corsika::stack {
     class SuperStupidStackImpl {
 
     public:
+      void Init() {}
+
       void Clear() {
         fDataE.clear();
-        fDataId.clear();
+        fDataPID.clear();
       }
 
-      int GetSize() const { return fDataId.size(); }
-      int GetCapacity() const { return fDataId.size(); }
+      int GetSize() const { return fDataPID.size(); }
+      int GetCapacity() const { return fDataPID.size(); }
 
-      void SetId(const int i, const Code id) { fDataId[i] = id; }
-      void SetEnergy(const int i, const EnergyType& e) { fDataE[i] = e; }
+      void SetPID(const int i, const Code id) { fDataPID[i] = id; }
+      void SetEnergy(const int i, const EnergyType e) { fDataE[i] = e; }
 
-      const Code GetId(const int i) const { return fDataId[i]; }
-      const EnergyType& GetEnergy(const int i) const { return fDataE[i]; }
+      Code GetPID(const int i) const { return fDataPID[i]; }
+      EnergyType GetEnergy(const int i) const { return fDataE[i]; }
 
       /**
        *   Function to copy particle at location i2 in stack to i1
        */
       void Copy(const int i1, const int i2) {
         fDataE[i2] = fDataE[i1];
-        fDataId[i2] = fDataId[i1];
+        fDataPID[i2] = fDataPID[i1];
+      }
+
+      /**
+       *   Function to copy particle at location i2 in stack to i1
+       */
+      void Swap(const int i1, const int i2) {
+        EnergyType tE = fDataE[i2];
+        Code tC = fDataPID[i2];
+        fDataE[i2] = fDataE[i1];
+        fDataPID[i2] = fDataPID[i1];
+        fDataE[i1] = tE;
+        fDataPID[i1] = tC;
       }
 
     protected:
       void IncrementSize() {
         fDataE.push_back(0_GeV);
-        fDataId.push_back(Code::unknown);
+        fDataPID.push_back(Code::unknown);
       }
       void DecrementSize() {
         if (fDataE.size() > 0) {
           fDataE.pop_back();
-          fDataId.pop_back();
+          fDataPID.pop_back();
         }
       }
 
     private:
       /// the actual memory to store particle data
 
-      std::vector<Code> fDataId;
+      std::vector<Code> fDataPID;
       std::vector<EnergyType> fDataE;
 
     }; // end class SuperStupidStackImpl
 
-    typedef StackIterator<SuperStupidStackImpl, ParticleRead<SuperStupidStackImpl> >
-        Particle;
-    typedef Stack<SuperStupidStackImpl, Particle> SuperStupidStack;
+    typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
 
   } // namespace super_stupid
 

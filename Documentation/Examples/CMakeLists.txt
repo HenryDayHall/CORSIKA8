@@ -15,6 +15,9 @@ target_link_libraries (stack_example SuperStupidStack CORSIKAunits CORSIKAloggin
 install (TARGETS stack_example DESTINATION share/examples)
 
 add_executable (staticsequence_example staticsequence_example.cc)
-target_link_libraries (staticsequence_example SuperStupidStack CORSIKAprocesssequence CORSIKAunits CORSIKAlogging)
+target_link_libraries (staticsequence_example
+  CORSIKAprocesssequence
+  CORSIKAunits
+  CORSIKAlogging)
 install (TARGETS staticsequence_example DESTINATION share/examples)
 
