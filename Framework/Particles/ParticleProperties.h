@@ -4,15 +4,16 @@
    Interface to particle properties
  */
 
-#ifndef _include_Particle_h_
-#define _include_Particle_h_
+#ifndef _include_ParticleProperties_h_
+#define _include_ParticleProperties_h_
 
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <type_traits>
 
+#include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
-#include <corsika/particles/GeneratedParticleProperties.inc>
 
 /**
  * @namespace particle
@@ -23,31 +24,50 @@
  */
 
 namespace corsika::particles {
+  enum class Code : int16_t;
 
-  /**
-   * @function GetMass
-   *
-   * return mass of particle
+  using PDGCodeType = int16_t;
+  using CodeIntType = std::underlying_type<Code>::type;
+
+  // forward declarations to be used in GeneratedParticleProperties
+  int16_t constexpr GetElectricChargeNumber(Code const);
+  corsika::units::ElectricChargeType constexpr GetElectricCharge(Code const);
+  corsika::units::MassType constexpr GetMass(Code const);
+  PDGCodeType constexpr GetPDG(Code const);
+  std::string const GetName(Code const);
+
+#include <corsika/particles/GeneratedParticleProperties.inc>
+
+  /*!
+   * returns mass of particle
    */
-  auto constexpr GetMass(Code const p) { return masses[static_cast<uint8_t const>(p)]; }
-
-  auto constexpr GetPDG(Code const p) { return pdg_codes[static_cast<uint8_t const>(p)]; }
-
-  auto constexpr GetElectricChargeNumber(Code const p) {
-    return electric_charge[static_cast<uint8_t const>(p)] / 3;
+  corsika::units::MassType constexpr GetMass(Code const p) {
+    return masses[static_cast<CodeIntType const>(p)];
   }
 
-  auto constexpr GetElectricCharge(Code const p) {
-    return GetElectricChargeNumber(p) * (corsika::units::constants::e);
+  PDGCodeType constexpr GetPDG(Code const p) {
+    return pdg_codes[static_cast<CodeIntType const>(p)];
   }
 
-  auto const GetName(Code const p) { return names[static_cast<uint8_t const>(p)]; }
+  /*!
+   * returns electric charge of particle / (e/3).
+   */
+  int16_t constexpr GetElectricChargeNumber(Code const p) {
+    return electric_charges[static_cast<CodeIntType const>(p)];
+  }
+
+  corsika::units::ElectricChargeType constexpr GetElectricCharge(Code const p) {
+    return GetElectricChargeNumber(p) * (corsika::units::constants::e / 3.);
+  }
+
+  std::string const GetName(Code const p) {
+    return names[static_cast<CodeIntType const>(p)];
+  }
 
   namespace io {
 
     std::ostream& operator<<(std::ostream& stream, Code const p) {
-      stream << GetName(p);
-      return stream;
+      return stream << GetName(p);
     }
 
   } // namespace io

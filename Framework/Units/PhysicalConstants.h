@@ -39,16 +39,17 @@ namespace corsika::units::constants {
   // Avogadro constant
   constexpr quantity<dimensions<0, 0, 0, 0, 0, -1> > N_sub_A{Rep(6.02214199e+23L) / mole};
   // electronvolt
-  constexpr quantity<energy_d> eV{Rep(1.60217733e-19L) * joule};
+  constexpr quantity<energy_d> eV{Rep(1.6021766208e-19L) * joule};
 
   // elementary charge
-  constexpr quantity<electric_charge_d> e{Rep(1.602176462e-19L) * coulomb};
+  constexpr quantity<electric_charge_d> e{Rep(1.6021766208e-19L) * coulomb};
 
   // Planck constant
   constexpr quantity<dimensions<2, 1, -1> > h{Rep(6.62606876e-34L) * joule * second};
 
   // speed of light in a vacuum
   constexpr quantity<speed_d> c{Rep(299792458L) * meter / second};
+  constexpr auto cSquared = c * c;
 
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};

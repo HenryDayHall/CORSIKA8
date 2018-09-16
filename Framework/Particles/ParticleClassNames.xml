@@ -3,20 +3,20 @@
   <!-- For selected particles it is possible to specify the C++ class
        names for a specific unique PDG code -->
   
-  <particle id="0" classname="unknown"> </particle> <!-- VOID in Pythia8 -->
+  <particle pdgID="0" classname="unknown"/> <!-- VOID in Pythia8 -->
   
-  <particle id="11" classname="Electron"> </particle>
-  <particle id="-11" classname="Positron"> </particle>
-  <particle id="22" classname="Gamma"> </particle>
+  <particle pdgID="11" classname="Electron"/>
+  <particle pdgID="-11" classname="Positron"/>
+  <particle pdgID="22" classname="Gamma"/>
 
-  <particle id="130" classname="K0Long"> </particle>
-  <particle id="310" classname="K0Short"> </particle>
+  <particle pdgID="130" classname="K0Long"/>
+  <particle pdgID="310" classname="K0Short"/>
 
-  <particle id="2112" classname="Neutron"> </particle>
-  <particle id="-2112" classname="AntiNeutron"> </particle>
+  <particle pdgID="2112" classname="Neutron"/>
+  <particle pdgID="-2112" classname="AntiNeutron"/>
 
-  <particle id="2212" classname="Proton"> </particle>
-  <particle id="-2212" classname="AntiProton"> </particle>
+  <particle pdgID="2212" classname="Proton"/>
+  <particle pdgID="-2212" classname="AntiProton"/>
 
 </chapter>
 

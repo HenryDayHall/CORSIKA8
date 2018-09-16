@@ -101,6 +101,8 @@ namespace corsika {
     auto& operator-() const { return QuantityVector<dim>(-eVector); }
 
     auto normalized() const { return (*this) * (1 / norm()); }
+
+    auto operator==(QuantityVector<dim> const& p) const { return eVector == p.eVector; }
   };
 
 } // end namespace corsika

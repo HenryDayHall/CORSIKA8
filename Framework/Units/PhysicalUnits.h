@@ -25,7 +25,6 @@ namespace phys {
 } // namespace phys
 
 namespace corsika::units {
-
   using namespace phys::units;
   using namespace phys::units::literals;
   // namespace literals = phys::units::literals;
@@ -37,6 +36,7 @@ namespace corsika::units {
   using ElectricChargeType =
       phys::units::quantity<phys::units::electric_charge_d, double>;
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
+  using MassType = phys::units::quantity<phys::units::mass_d, double>;
 
 } // end namespace corsika::units
 

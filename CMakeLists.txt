@@ -14,7 +14,7 @@ set (CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
-# --std=c++14
+# --std=c++17
 set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)

@@ -13,7 +13,9 @@ set (
   Helix.h
   BaseVector.h
   QuantityVector.h
+  BaseTrajectory.h
   LineTrajectory.h
+  Trajectory.h
   )
 
 set (
