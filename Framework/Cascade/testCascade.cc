@@ -25,7 +25,8 @@ public:
   }
 
   template <typename Particle, typename Trajectory, typename Stack>
-  void DoContinuous(Particle& p, Trajectory& t, Stack& s) const {}
+  EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {    return EProcessReturn::eOk;
+}
 
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
@@ -59,9 +60,9 @@ public:
   }
 
   template <typename Particle, typename Trajectory, typename Stack>
-  void DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
+  EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
     static int countStep = 0;
-    if (!fReport) return;
+    if (!fReport) return EProcessReturn::eOk;
     //std::cout << "generation  " << countStep << std::endl;
     int i = 0;
     EnergyType Etot = 0_GeV;
@@ -76,6 +77,7 @@ public:
     countStep++;
     //cout << "#=" << countStep << " " << s.GetSize() << " " << Etot/1_GeV << endl;
     cout << countStep << " " << s.GetSize() << " " << Etot/1_GeV << " " << fCount << endl;
+    return EProcessReturn::eOk;
   }
 
   template <typename Particle, typename Stack>

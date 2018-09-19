@@ -1,12 +1,14 @@
 #ifndef _include_ProcessSequence_h_
 #define _include_ProcessSequence_h_
 
+#include <corsika/process/ProcessReturn.h>
+
 #include <cmath>
 #include <iostream>
 #include <typeinfo>
 
-namespace corsika::process {
-
+namespace corsika::process {  
+  
   /**
      \class BaseProcess
 
@@ -44,9 +46,11 @@ namespace corsika::process {
         , B(in_B) {}
 
     template <typename Particle, typename Trajectory, typename Stack>
-    inline void DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
-      A.DoContinuous(p, t, s);
-      B.DoContinuous(p, t, s);
+    inline EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
+      EProcessReturn ret = EProcessReturn::eOk;
+      /*ret |=*/ A.DoContinuous(p, t, s);
+      /*ret |=*/ B.DoContinuous(p, t, s);
+      return ret;
     } // add trajectory
 
     template <typename D>
@@ -54,9 +58,11 @@ namespace corsika::process {
       return std::min(A.MinStepLength(d), B.MinStepLength(d));
     }
 
-    // template<typename D>
-    // inline Trajectory Transport(D& d, double& length) const { A.Transport(d, length);
-    // B.Transport(d, length); }
+    template <typename Particle, typename Trajectory>
+    inline Trajectory Transport(Particle& p, double& length) const {
+      A.Transport(p, length); // todo: maybe check (?) if there is more than one Transport process implemented?? 
+      return B.Transport(p, length); // need to do this also to decide which Trajectory to return!!!!
+    }
 
     template <typename Particle, typename Stack>
     void DoDiscrete(Particle& p, Stack& s) const {

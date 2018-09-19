@@ -4,6 +4,7 @@
 #include <corsika/geometry/LineTrajectory.h> // to be removed
 #include <corsika/geometry/Point.h>          // to be removed
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/process/ProcessReturn.h>
 
 using namespace corsika::units::si;
 
@@ -47,7 +48,7 @@ namespace corsika::cascade {
         // DoCascadeEquations(); //
       }
     }
-
+    
     void Step(Particle& particle) {
       double nextStep = fProcesseList.MinStepLength(particle);
       corsika::geometry::CoordinateSystem root;
@@ -55,13 +56,12 @@ namespace corsika::cascade {
           corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
           corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
               root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
-      fProcesseList.DoContinuous(particle, trajectory, fStack);
-      // if (particle.IsMarkedToBeDeleted())
-      {
-        // std::cout << "DELETET THISSKSKJD!" << std::endl;
-        // fStack.Delete(particle);
+      corsika::process::EProcessReturn status = fProcesseList.DoContinuous(particle, trajectory, fStack);
+      if (status==corsika::process::EProcessReturn::eParticleAbsorbed) {
+	fStack.Delete(particle);
+      } else {
+	fProcesseList.DoDiscrete(particle, fStack);
       }
-      fProcesseList.DoDiscrete(particle, fStack);
     }
 
   private:

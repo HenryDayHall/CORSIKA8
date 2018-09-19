@@ -11,6 +11,7 @@ set (
 set (
   CORSIKAprocesssequence_HEADERS
   ProcessSequence.h
+  ProcessReturn.h
   )
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAprocesssequence ${CORSIKAprocesssequence_NAMESPACE} ${CORSIKAprocesssequence_HEADERS})
