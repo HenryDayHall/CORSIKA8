@@ -8,8 +8,8 @@
 
 namespace corsika::geometry {
 
-  using corsika::units::length_d;
-  using corsika::units::LengthType;
+  using corsika::units::si::length_d;
+  using corsika::units::si::LengthType;
 
   /*!
    * A Point represents a point in position space. It is defined by its

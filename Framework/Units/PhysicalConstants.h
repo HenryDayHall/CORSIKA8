@@ -27,7 +27,7 @@
 
 #include <phys/units/quantity.hpp>
 
-namespace corsika::units::constants {
+namespace corsika::units::si::constants {
 
   using namespace phys::units;
 
@@ -56,6 +56,6 @@ namespace corsika::units::constants {
 
   // etc.
 
-} // namespace corsika::units::constants
+} // namespace corsika::units::si::constants
 
 #endif // PHYS_UNITS_PHYSICAL_CONSTANTS_HPP_INCLUDED

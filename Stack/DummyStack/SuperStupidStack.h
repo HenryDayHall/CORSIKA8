@@ -13,8 +13,8 @@ namespace corsika::stack {
   namespace super_stupid {
 
     using corsika::particles::Code;
-    using corsika::units::EnergyType;
-    using corsika::units::operator""_GeV; // literals;
+    using corsika::units::si::EnergyType;
+    using corsika::units::si::operator""_GeV; // literals;
 
     /**
      * Example of a particle object on the stack.

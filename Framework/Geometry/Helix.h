@@ -21,17 +21,17 @@ namespace corsika::geometry {
    */
 
   class Helix : public BaseTrajectory {
-    using VelocityVec = Vector<corsika::units::SpeedType::dimension_type>;
+    using VelocityVec = Vector<corsika::units::si::SpeedType::dimension_type>;
 
     Point const r0;
-    corsika::units::FrequencyType const omegaC;
+    corsika::units::si::FrequencyType const omegaC;
     VelocityVec const vPar;
     VelocityVec const vPerp, uPerp;
 
-    corsika::units::LengthType const radius;
+    corsika::units::si::LengthType const radius;
 
   public:
-    Helix(Point const& pR0, corsika::units::FrequencyType pOmegaC,
+    Helix(Point const& pR0, corsika::units::si::FrequencyType pOmegaC,
           VelocityVec const& pvPar, VelocityVec const& pvPerp)
         : r0(pR0)
         , omegaC(pOmegaC)
@@ -40,7 +40,7 @@ namespace corsika::geometry {
         , uPerp(vPerp.cross(vPar.normalized()))
         , radius(pvPar.norm() / abs(pOmegaC)) {}
 
-    Point GetPosition(corsika::units::TimeType t) const {
+    Point GetPosition(corsika::units::si::TimeType t) const {
       return r0 + vPar * t +
              (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }

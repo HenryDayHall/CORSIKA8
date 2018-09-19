@@ -8,17 +8,18 @@
 #include <iostream>
 #include <utility>
 
-namespace corsika {
+namespace corsika::geometry {
 
   /*!
    * A QuantityVector is a three-component container based on Eigen::Vector3d
-   * with a phys::units::dimension. Arithmethic operators are defined that
+   * with a phys::units::si::dimension. Arithmethic operators are defined that
    * propagate the dimensions by dimensional analysis.
    */
-
+  
   template <typename dim>
   class QuantityVector {
   protected:
+    // todo: check if we need to move "quantity" into namespace corsika::units 
     using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity
                                                          // corresponding to the dimension
 
@@ -108,7 +109,7 @@ namespace corsika {
 } // end namespace corsika
 
 template <typename dim>
-auto& operator<<(std::ostream& os, corsika::QuantityVector<dim> qv) {
+auto& operator<<(std::ostream& os, corsika::geometry::QuantityVector<dim> qv) {
   using Quantity = phys::units::quantity<dim, double>;
 
   os << '(' << qv.eVector(0) << ' ' << qv.eVector(1) << ' ' << qv.eVector(2) << ") "

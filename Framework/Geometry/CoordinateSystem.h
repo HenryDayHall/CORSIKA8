@@ -10,7 +10,7 @@ typedef Eigen::Translation<double, 3> EigenTranslation;
 
 namespace corsika::geometry {
 
-  using corsika::units::length_d;
+  using corsika::units::si::length_d;
 
   class CoordinateSystem {
     CoordinateSystem const* reference = nullptr;
