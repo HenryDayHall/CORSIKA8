@@ -11,7 +11,7 @@ namespace corsika::geometry {
     BaseTrajectory const& fTrajectory;
 
   public:
-  Trajectory(corsika::units::si::TimeType pTStart, corsika::units::si::TimeType pTEnd,
+    Trajectory(corsika::units::si::TimeType pTStart, corsika::units::si::TimeType pTEnd,
                BaseTrajectory const& pTrajectory)
         : fTStart(pTStart)
         , fTEnd(pTEnd)

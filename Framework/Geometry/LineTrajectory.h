@@ -19,7 +19,9 @@ namespace corsika::geometry {
         : r0(pR0)
         , v0(pV0) {}
 
-    Point GetPosition(corsika::units::si::TimeType t) const override { return r0 + v0 * t; }
+    Point GetPosition(corsika::units::si::TimeType t) const override {
+      return r0 + v0 * t;
+    }
   };
 
 } // namespace corsika::geometry

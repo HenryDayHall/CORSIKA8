@@ -16,7 +16,6 @@ using namespace corsika::units::si;
 
 double constexpr absMargin = 1.0e-8;
 
-
 TEST_CASE("transformations between CoordinateSystems") {
   CoordinateSystem rootCS;
 
@@ -26,8 +25,7 @@ TEST_CASE("transformations between CoordinateSystems") {
   QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point p1(rootCS, coordinates);
 
-  QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla,
-                                                              0. * tesla};
+  QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla, 0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
 
   REQUIRE((p1.GetCoordinates() - coordinates).norm().magnitude() ==

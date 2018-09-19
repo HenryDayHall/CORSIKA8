@@ -25,8 +25,9 @@ public:
   }
 
   template <typename Particle, typename Trajectory, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {    return EProcessReturn::eOk;
-}
+  EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
+    return EProcessReturn::eOk;
+  }
 
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
@@ -37,7 +38,7 @@ public:
     } else {
       p.SetEnergy(E / 2);
       s.NewParticle().SetEnergy(E / 2);
-    }    
+    }
   }
 
   void Init() { fCount = 0; }
@@ -63,7 +64,7 @@ public:
   EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
     static int countStep = 0;
     if (!fReport) return EProcessReturn::eOk;
-    //std::cout << "generation  " << countStep << std::endl;
+    // std::cout << "generation  " << countStep << std::endl;
     int i = 0;
     EnergyType Etot = 0_GeV;
     for (auto& iterP : s) {
@@ -75,8 +76,9 @@ public:
       */
     }
     countStep++;
-    //cout << "#=" << countStep << " " << s.GetSize() << " " << Etot/1_GeV << endl;
-    cout << countStep << " " << s.GetSize() << " " << Etot/1_GeV << " " << fCount << endl;
+    // cout << "#=" << countStep << " " << s.GetSize() << " " << Etot/1_GeV << endl;
+    cout << countStep << " " << s.GetSize() << " " << Etot / 1_GeV << " " << fCount
+         << endl;
     return EProcessReturn::eOk;
   }
 
@@ -91,7 +93,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   corsika::stack::super_stupid::SuperStupidStack stack;
-  
+
   corsika::cascade::Cascade<corsika::geometry::LineTrajectory, decltype(sequence),
                             decltype(stack)>
       EAS(sequence, stack);
@@ -111,8 +113,8 @@ TEST_CASE("Cascade", "[Cascade]") {
       particle.SetEnergy(E0);
       EAS.Init();
       EAS.Run();
-       
-      //cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
+
+      // cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
     }
   }
 }

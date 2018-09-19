@@ -7,8 +7,8 @@
 #include <iostream>
 #include <typeinfo>
 
-namespace corsika::process {  
-  
+namespace corsika::process {
+
   /**
      \class BaseProcess
 
@@ -48,8 +48,8 @@ namespace corsika::process {
     template <typename Particle, typename Trajectory, typename Stack>
     inline EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
       EProcessReturn ret = EProcessReturn::eOk;
-      /*ret |=*/ A.DoContinuous(p, t, s);
-      /*ret |=*/ B.DoContinuous(p, t, s);
+      /*ret |=*/A.DoContinuous(p, t, s);
+      /*ret |=*/B.DoContinuous(p, t, s);
       return ret;
     } // add trajectory
 
@@ -60,8 +60,10 @@ namespace corsika::process {
 
     template <typename Particle, typename Trajectory>
     inline Trajectory Transport(Particle& p, double& length) const {
-      A.Transport(p, length); // todo: maybe check (?) if there is more than one Transport process implemented?? 
-      return B.Transport(p, length); // need to do this also to decide which Trajectory to return!!!!
+      A.Transport(p, length); // todo: maybe check (?) if there is more than one Transport
+                              // process implemented??
+      return B.Transport(
+          p, length); // need to do this also to decide which Trajectory to return!!!!
     }
 
     template <typename Particle, typename Stack>

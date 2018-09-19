@@ -3,8 +3,8 @@
 
 #include <corsika/geometry/LineTrajectory.h> // to be removed
 #include <corsika/geometry/Point.h>          // to be removed
-#include <corsika/units/PhysicalUnits.h>
 #include <corsika/process/ProcessReturn.h>
+#include <corsika/units/PhysicalUnits.h>
 
 using namespace corsika::units::si;
 
@@ -28,19 +28,19 @@ namespace corsika::cascade {
     void Run() {
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
-          //Particle& p = *fStack.GetNextParticle();
- 	  EnergyType Emin;
-	  typename Stack::StackIterator pMin(fStack, 0);
-	  bool first = true;
-	  for (typename Stack::StackIterator ip = fStack.begin(); ip!=fStack.end(); ++ip) 
-	    {
-	      if (first || ip.GetEnergy()<Emin) {
-		first = false;
-		pMin = ip;
-		Emin = pMin.GetEnergy();
-	      }
-	    }
-	  
+          // Particle& p = *fStack.GetNextParticle();
+          EnergyType Emin;
+          typename Stack::StackIterator pMin(fStack, 0);
+          bool first = true;
+          for (typename Stack::StackIterator ip = fStack.begin(); ip != fStack.end();
+               ++ip) {
+            if (first || ip.GetEnergy() < Emin) {
+              first = false;
+              pMin = ip;
+              Emin = pMin.GetEnergy();
+            }
+          }
+
           Step(pMin);
         }
         // do cascade equations, which can put new particles on Stack,
@@ -48,7 +48,7 @@ namespace corsika::cascade {
         // DoCascadeEquations(); //
       }
     }
-    
+
     void Step(Particle& particle) {
       double nextStep = fProcesseList.MinStepLength(particle);
       corsika::geometry::CoordinateSystem root;
@@ -56,11 +56,12 @@ namespace corsika::cascade {
           corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
           corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
               root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
-      corsika::process::EProcessReturn status = fProcesseList.DoContinuous(particle, trajectory, fStack);
-      if (status==corsika::process::EProcessReturn::eParticleAbsorbed) {
-	fStack.Delete(particle);
+      corsika::process::EProcessReturn status =
+          fProcesseList.DoContinuous(particle, trajectory, fStack);
+      if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
+        fStack.Delete(particle);
       } else {
-	fProcesseList.DoDiscrete(particle, fStack);
+        fProcesseList.DoDiscrete(particle, fStack);
       }
     }
 

@@ -38,10 +38,9 @@ TEST_CASE("ParticleProperties", "[Particles]") {
 
   SECTION("PDG") {
     REQUIRE(GetPDG(Code::PiPlus) == 211);
-    REQUIRE(GetPDG(Code::DPlus) == 411); 
-    REQUIRE(GetPDG(Code::NuMu) == 14); 
-    REQUIRE(GetPDG(Code::NuE) == 12); 
-    REQUIRE(GetPDG(Code::MuMinus) == 13); 
+    REQUIRE(GetPDG(Code::DPlus) == 411);
+    REQUIRE(GetPDG(Code::NuMu) == 14);
+    REQUIRE(GetPDG(Code::NuE) == 12);
+    REQUIRE(GetPDG(Code::MuMinus) == 13);
   }
-  
 }
