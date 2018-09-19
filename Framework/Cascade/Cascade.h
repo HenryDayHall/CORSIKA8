@@ -27,8 +27,20 @@ namespace corsika::cascade {
     void Run() {
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
-          Particle& p = *fStack.GetNextParticle();
-          Step(p);
+          //Particle& p = *fStack.GetNextParticle();
+ 	  EnergyType Emin;
+	  typename Stack::StackIterator pMin(fStack, 0);
+	  bool first = true;
+	  for (typename Stack::StackIterator ip = fStack.begin(); ip!=fStack.end(); ++ip) 
+	    {
+	      if (first || ip.GetEnergy()<Emin) {
+		first = false;
+		pMin = ip;
+		Emin = pMin.GetEnergy();
+	      }
+	    }
+	  
+          Step(pMin);
         }
         // do cascade equations, which can put new particles on Stack,
         // thus, the double loop

@@ -63,9 +63,12 @@ namespace corsika::stack {
     StackIteratorInterface(const StackIteratorInterface& mit)
         : fData(mit.fData)
         , fIndex(mit.fIndex) {}
+    
+  public:
     StackIteratorInterface& operator=(const StackIteratorInterface& mit) {
       fData = mit.fData;
       fIndex = mit.fIndex;
+      return *this;
     }
 
   public:

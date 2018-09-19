@@ -13,6 +13,8 @@ using namespace corsika::units;
 #include <iostream>
 using namespace std;
 
+static int fCount = 0;
+
 class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
@@ -28,13 +30,13 @@ public:
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
     EnergyType E = p.GetEnergy();
-    if (E < 1_GeV) {
+    if (E < 85_MeV) {
       p.Delete();
       fCount++;
     } else {
       p.SetEnergy(E / 2);
       s.NewParticle().SetEnergy(E / 2);
-    }
+    }    
   }
 
   void Init() { fCount = 0; }
@@ -42,7 +44,6 @@ public:
   int GetCount() { return fCount; }
 
 private:
-  mutable int fCount = 0;
 };
 
 class ProcessReport : public corsika::process::BaseProcess<ProcessReport> {
@@ -59,17 +60,22 @@ public:
 
   template <typename Particle, typename Trajectory, typename Stack>
   void DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
+    static int countStep = 0;
     if (!fReport) return;
-    static int fCount = 0;
-    std::cout << "generation  " << fCount << std::endl;
+    //std::cout << "generation  " << countStep << std::endl;
     int i = 0;
+    EnergyType Etot = 0_GeV;
     for (auto& iterP : s) {
       EnergyType E = iterP.GetEnergy();
-      std::cout << " particle data: " << i++ << ", id=" << iterP.GetPID()
+      Etot += E;
+      /*      std::cout << " particle data: " << i++ << ", id=" << iterP.GetPID()
                 << ", E=" << double(E / 1_GeV) << " GeV "
                 << " | " << std::endl;
+      */
     }
-    fCount++;
+    countStep++;
+    //cout << "#=" << countStep << " " << s.GetSize() << " " << Etot/1_GeV << endl;
+    cout << countStep << " " << s.GetSize() << " " << Etot/1_GeV << " " << fCount << endl;
   }
 
   template <typename Particle, typename Stack>
@@ -79,25 +85,32 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  ProcessReport p0(false);
+  ProcessReport p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   corsika::stack::super_stupid::SuperStupidStack stack;
-
+  
   corsika::cascade::Cascade<corsika::geometry::LineTrajectory, decltype(sequence),
                             decltype(stack)>
       EAS(sequence, stack);
 
+  stack.Clear();
+  auto particle = stack.NewParticle();
+  EnergyType E0 = 100_GeV;
+  particle.SetEnergy(E0);
+  EAS.Init();
+  EAS.Run();
+
   SECTION("sectionTwo") {
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 0; ++i) {
       stack.Clear();
       auto particle = stack.NewParticle();
       EnergyType E0 = 100_GeV * pow(10, i);
       particle.SetEnergy(E0);
       EAS.Init();
       EAS.Run();
-
-      cout << "E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
+       
+      //cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
     }
   }
 }
