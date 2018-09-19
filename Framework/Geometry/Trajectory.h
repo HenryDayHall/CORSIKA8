@@ -7,17 +7,17 @@
 namespace corsika::geometry {
 
   class Trajectory {
-    corsika::units::TimeType const fTStart, fTEnd;
+    corsika::units::si::TimeType const fTStart, fTEnd;
     BaseTrajectory const& fTrajectory;
 
   public:
-    Trajectory(corsika::units::TimeType pTStart, corsika::units::TimeType pTEnd,
+  Trajectory(corsika::units::si::TimeType pTStart, corsika::units::si::TimeType pTEnd,
                BaseTrajectory const& pTrajectory)
         : fTStart(pTStart)
         , fTEnd(pTEnd)
         , fTrajectory(pTrajectory) {}
 
-    Point GetPosition(corsika::units::TimeType t) const {
+    Point GetPosition(corsika::units::si::TimeType t) const {
       return fTrajectory.GetPosition(t + fTStart);
     }
 

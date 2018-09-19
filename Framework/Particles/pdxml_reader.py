@@ -216,9 +216,9 @@ def gen_properties(pythia_db):
     string += "\n"
     
     # particle masses table
-    string += "static constexpr std::array<corsika::units::MassType const, size> masses = {\n"    
+    string += "static constexpr std::array<corsika::units::si::MassType const, size> masses = {\n"    
     for p in pythia_db.values():
-        string += "  {mass:f} * (1e9 * corsika::units::constants::eV / corsika::units::constants::cSquared), // {name:s}\n".format(mass = p['mass'], name = p['name'])              
+        string += "  {mass:f} * (1e9 * corsika::units::si::constants::eV / corsika::units::si::constants::cSquared), // {name:s}\n".format(mass = p['mass'], name = p['name'])              
     string += "};\n\n"
                    
     # PDG code table
@@ -279,8 +279,8 @@ def gen_classes(pythia_db):
         string += "class " + cname + " {\n"
         string += "  public:\n"
         string += "   static constexpr Code GetCode() { return Type; }\n"
-        string += "   static constexpr corsika::units::MassType GetMass() { return corsika::particles::GetMass(Type); }\n"
-        string += "   static constexpr corsika::units::ElectricChargeType GetCharge() { return corsika::particles::GetElectricCharge(Type); }\n"
+        string += "   static constexpr corsika::units::si::MassType GetMass() { return corsika::particles::GetMass(Type); }\n"
+        string += "   static constexpr corsika::units::si::ElectricChargeType GetCharge() { return corsika::particles::GetElectricCharge(Type); }\n"
         string += "   static constexpr int16_t GetChargeNumber() { return corsika::particles::GetElectricChargeNumber(Type); }\n"
         string += "   static std::string const GetName() { return corsika::particles::GetName(Type); }\n"
         string += "   static constexpr Code GetAntiParticle() { return AntiType; }\n"

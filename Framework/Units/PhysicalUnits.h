@@ -16,7 +16,7 @@ namespace phys {
   namespace units {
     namespace literals {
       QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
-                                       magnitude(corsika::units::constants::eV))
+                                       magnitude(corsika::units::si::constants::eV))
 
       // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
 
@@ -24,7 +24,7 @@ namespace phys {
   }   // namespace units
 } // namespace phys
 
-namespace corsika::units {
+namespace corsika::units::si {
   using namespace phys::units;
   using namespace phys::units::literals;
   // namespace literals = phys::units::literals;
@@ -38,7 +38,7 @@ namespace corsika::units {
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
 
-} // end namespace corsika::units
+} // end namespace corsika::units::si
 
 // we want to call the operator<< without namespace... I think
 using namespace phys::units::io;

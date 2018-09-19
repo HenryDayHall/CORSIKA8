@@ -6,7 +6,7 @@
 
 #include <array>
 
-using namespace corsika::units;
+using namespace corsika::units::si;
 
 TEST_CASE("PhysicalUnits", "[Units]") {
 

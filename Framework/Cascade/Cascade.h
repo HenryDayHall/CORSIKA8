@@ -5,7 +5,7 @@
 #include <corsika/geometry/Point.h>          // to be removed
 #include <corsika/units/PhysicalUnits.h>
 
-using namespace corsika::units;
+using namespace corsika::units::si;
 
 namespace corsika::cascade {
 
@@ -53,7 +53,7 @@ namespace corsika::cascade {
       corsika::geometry::CoordinateSystem root;
       Trajectory trajectory(
           corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
-          corsika::geometry::Vector<corsika::units::SpeedType::dimension_type>(
+          corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
               root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
       fProcesseList.DoContinuous(particle, trajectory, fStack);
       // if (particle.IsMarkedToBeDeleted())

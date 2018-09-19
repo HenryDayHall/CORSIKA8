@@ -9,7 +9,7 @@
 namespace corsika::geometry {
 
   class LineTrajectory : public BaseTrajectory {
-    using VelocityVec = Vector<corsika::units::SpeedType::dimension_type>;
+    using VelocityVec = Vector<corsika::units::si::SpeedType::dimension_type>;
 
     Point const r0;
     VelocityVec const v0;
@@ -19,7 +19,7 @@ namespace corsika::geometry {
         : r0(pR0)
         , v0(pV0) {}
 
-    Point GetPosition(corsika::units::TimeType t) const override { return r0 + v0 * t; }
+    Point GetPosition(corsika::units::si::TimeType t) const override { return r0 + v0 * t; }
   };
 
 } // namespace corsika::geometry

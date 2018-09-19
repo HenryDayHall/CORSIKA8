@@ -7,7 +7,7 @@ using namespace std;
 // using namespace corsika::literals;
 // using namespace corsika::io;
 
-using namespace corsika::units;
+using namespace corsika::units::si;
 using namespace corsika::stack;
 
 void fill(corsika::stack::super_stupid::SuperStupidStack& s) {

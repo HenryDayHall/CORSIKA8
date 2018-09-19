@@ -9,7 +9,7 @@
 #include <typeinfo>
 
 using namespace corsika::geometry;
-using namespace corsika::units;
+using namespace corsika::units::si;
 
 int main() {
   // define the root coordinate system

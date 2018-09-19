@@ -15,7 +15,7 @@ namespace corsika::geometry {
 
   public:
     //!< t for \f$ t = 0 \f$, the starting Point shall be returned.
-    virtual Point GetPosition(corsika::units::TimeType t) const = 0;
+    virtual Point GetPosition(corsika::units::si::TimeType t) const = 0;
   };
 
 } // namespace corsika::geometry

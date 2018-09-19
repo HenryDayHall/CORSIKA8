@@ -12,10 +12,10 @@
 #include <cmath>
 
 using namespace corsika::geometry;
-using namespace corsika::units;
+using namespace corsika::units::si;
 
 double constexpr absMargin = 1.0e-8;
-;
+
 
 TEST_CASE("transformations between CoordinateSystems") {
   CoordinateSystem rootCS;
@@ -23,10 +23,10 @@ TEST_CASE("transformations between CoordinateSystems") {
   REQUIRE(CoordinateSystem::GetTransformation(rootCS, rootCS)
               .isApprox(EigenTransform::Identity()));
 
-  corsika::QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
+  QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point p1(rootCS, coordinates);
 
-  corsika::QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla,
+  QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla,
                                                               0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
 
@@ -41,7 +41,7 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("translations") {
-    corsika::QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
+    QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
 
     CoordinateSystem translatedCS = rootCS.translate(translationVector);
 
@@ -61,13 +61,13 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("multiple translations") {
-    corsika::QuantityVector<length_d> const tv1{0_m, 5_m, 0_m};
+    QuantityVector<length_d> const tv1{0_m, 5_m, 0_m};
     CoordinateSystem cs2 = rootCS.translate(tv1);
 
-    corsika::QuantityVector<length_d> const tv2{3_m, 0_m, 0_m};
+    QuantityVector<length_d> const tv2{3_m, 0_m, 0_m};
     CoordinateSystem cs3 = rootCS.translate(tv2);
 
-    corsika::QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
+    QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
     CoordinateSystem cs4 = cs3.translate(tv3);
 
     REQUIRE(cs4.GetReference()->GetReference() == &rootCS);
@@ -79,7 +79,7 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("rotations") {
-    corsika::QuantityVector<length_d> const axis{0_m, 0_m, 1_km};
+    QuantityVector<length_d> const axis{0_m, 0_m, 1_km};
     double const angle = 90. / 180. * M_PI;
 
     CoordinateSystem rotatedCS = rootCS.rotate(axis, angle);
@@ -94,9 +94,9 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 
   SECTION("multiple rotations") {
-    corsika::QuantityVector<length_d> const zAxis{0_m, 0_m, 1_km};
-    corsika::QuantityVector<length_d> const yAxis{0_m, 7_nm, 0_m};
-    corsika::QuantityVector<length_d> const xAxis{2_m, 0_nm, 0_m};
+    QuantityVector<length_d> const zAxis{0_m, 0_m, 1_km};
+    QuantityVector<length_d> const yAxis{0_m, 7_nm, 0_m};
+    QuantityVector<length_d> const xAxis{2_m, 0_nm, 0_m};
 
     double const angle = 90. / 180. * M_PI;
 
@@ -133,7 +133,7 @@ TEST_CASE("Trajectories") {
 
     LineTrajectory const lineTrajectory(r0, v0);
     CHECK((lineTrajectory.GetPosition(2_s).GetCoordinates() -
-           corsika::QuantityVector<length_d>(2_m, 0_m, 0_m))
+           QuantityVector<length_d>(2_m, 0_m, 0_m))
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
@@ -151,12 +151,12 @@ TEST_CASE("Trajectories") {
     Helix const helix(r0, omegaC, vPar, vPerp);
 
     CHECK((helix.GetPosition(1_s).GetCoordinates() -
-           corsika::QuantityVector<length_d>(0_m, 0_m, 4_m))
+           QuantityVector<length_d>(0_m, 0_m, 4_m))
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
     CHECK((helix.GetPosition(0.25_s).GetCoordinates() -
-           corsika::QuantityVector<length_d>(-1_m / (2 * M_PI), -1_m / (2 * M_PI), 1_m))
+           QuantityVector<length_d>(-1_m / (2 * M_PI), -1_m / (2 * M_PI), 1_m))
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 

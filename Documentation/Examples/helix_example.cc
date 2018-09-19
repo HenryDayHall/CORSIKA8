@@ -8,7 +8,7 @@
 #include <iostream>
 
 using namespace corsika::geometry;
-using namespace corsika::units;
+using namespace corsika::units::si;
 
 int main() {
 

@@ -31,8 +31,8 @@ namespace corsika::particles {
 
   // forward declarations to be used in GeneratedParticleProperties
   int16_t constexpr GetElectricChargeNumber(Code const);
-  corsika::units::ElectricChargeType constexpr GetElectricCharge(Code const);
-  corsika::units::MassType constexpr GetMass(Code const);
+  corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const);
+  corsika::units::si::MassType constexpr GetMass(Code const);
   PDGCodeType constexpr GetPDG(Code const);
   std::string const GetName(Code const);
 
@@ -41,7 +41,7 @@ namespace corsika::particles {
   /*!
    * returns mass of particle
    */
-  corsika::units::MassType constexpr GetMass(Code const p) {
+  corsika::units::si::MassType constexpr GetMass(Code const p) {
     return masses[static_cast<CodeIntType const>(p)];
   }
 
@@ -56,8 +56,8 @@ namespace corsika::particles {
     return electric_charges[static_cast<CodeIntType const>(p)];
   }
 
-  corsika::units::ElectricChargeType constexpr GetElectricCharge(Code const p) {
-    return GetElectricChargeNumber(p) * (corsika::units::constants::e / 3.);
+  corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const p) {
+    return GetElectricChargeNumber(p) * (corsika::units::si::constants::e / 3.);
   }
 
   std::string const GetName(Code const p) {
