@@ -40,12 +40,17 @@ namespace corsika::geometry {
         , uPerp(vPerp.cross(vPar.normalized()))
         , radius(pvPar.norm() / abs(pOmegaC)) {}
 
-    Point GetPosition(corsika::units::si::TimeType t) const {
+    Point GetPosition(corsika::units::si::TimeType t) const override {
       return r0 + vPar * t +
              (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }
 
     auto GetRadius() const { return radius; }
+
+    LengthType DistanceBetween(corsika::units::si::TimeType t1,
+                               corsika::units::si::TimeType t2) const override {
+      return (vPar + vPerp).norm() * (t2 - t1);
+    }
   };
 
 } // namespace corsika::geometry

@@ -138,12 +138,17 @@ TEST_CASE("Trajectories") {
     BaseTrajectory const* base = &lineTrajectory;
     CHECK(lineTrajectory.GetPosition(2_s).GetCoordinates() ==
           base->GetPosition(2_s).GetCoordinates());
+
+    CHECK(base->DistanceBetween(1_s, 2_s) / 1_m == Approx(1));
   }
 
   SECTION("Helix") {
     Vector<SpeedType::dimension_type> const vPar(
-        rootCS, {0_m / second, 0_m / second, 4_m / second}),
-        vPerp(rootCS, {1_m / second, 0_m / second, 0_m / second});
+        rootCS, {0_m / second, 0_m / second, 4_m / second});
+
+    Vector<SpeedType::dimension_type> const vPerp(
+        rootCS, {3_m / second, 0_m / second, 0_m / second});
+
     auto const omegaC = 2 * M_PI / 1_s;
 
     Helix const helix(r0, omegaC, vPar, vPerp);
@@ -154,12 +159,14 @@ TEST_CASE("Trajectories") {
               .magnitude() == Approx(0).margin(absMargin));
 
     CHECK((helix.GetPosition(0.25_s).GetCoordinates() -
-           QuantityVector<length_d>(-1_m / (2 * M_PI), -1_m / (2 * M_PI), 1_m))
+           QuantityVector<length_d>(-3_m / (2 * M_PI), -3_m / (2 * M_PI), 1_m))
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
     BaseTrajectory const* base = &helix;
     CHECK(helix.GetPosition(1234_s).GetCoordinates() ==
           base->GetPosition(1234_s).GetCoordinates());
+
+    CHECK(base->DistanceBetween(1_s, 2_s) / 1_m == Approx(5));
   }
 }

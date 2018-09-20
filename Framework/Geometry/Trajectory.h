@@ -24,6 +24,10 @@ namespace corsika::geometry {
     Point GetPosition(double u) const {
       return GetPosition(fTEnd * u + fTStart * (1 - u));
     }
+
+    auto GetEndpoint() const { return GetPosition(fTEnd); }
+
+    auto GetStartpoint() const { return GetPosition(fTStart); }
   };
 
 } // namespace corsika::geometry
