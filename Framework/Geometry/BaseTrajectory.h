@@ -20,6 +20,7 @@ namespace corsika::geometry {
     /*!
      * returns the arc length between two points of the trajectory
      * parameterized by \arg t1 and \arg t2. Requires \arg t2 > \arg t1.
+     */
     
     virtual LengthType DistanceBetween(corsika::units::si::TimeType t1,
                                        corsika::units::si::TimeType t2) const = 0;
