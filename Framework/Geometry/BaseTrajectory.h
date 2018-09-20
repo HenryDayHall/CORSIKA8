@@ -16,12 +16,12 @@ namespace corsika::geometry {
   public:
     //!< for \f$ t = 0 \f$, the starting Point shall be returned.
     virtual Point GetPosition(corsika::units::si::TimeType) const = 0;
-    
+
     /*!
      * returns the arc length between two points of the trajectory
      * parameterized by \arg t1 and \arg t2. Requires \arg t2 > \arg t1.
      */
-    
+
     virtual LengthType DistanceBetween(corsika::units::si::TimeType t1,
                                        corsika::units::si::TimeType t2) const = 0;
   };
