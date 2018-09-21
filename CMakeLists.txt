@@ -14,6 +14,9 @@ set (CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
+# enable warnings and disallow non-standard language
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+
 # --std=c++17
 set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
