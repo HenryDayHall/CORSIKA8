@@ -23,8 +23,9 @@ std::stringstream corsika::random::RNGManager::dumpState() const {
 
   return buffer;
 }
-
+/*
 void corsika::random::RNGManager::SetSeedSeq(std::string const& pStreamName,
                                              std::seed_seq const& pSeedSeq) {
   seeds[pStreamName] = pSeedSeq;
 }
+*/

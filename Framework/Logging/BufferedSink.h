@@ -32,7 +32,7 @@ namespace corsika::logging {
       inline void Add(const std::string& s) { fBuffer << s; }
 
     private:
-      int fSize;
+      unsigned int fSize;
       std::ostringstream fBuffer;
     };
 

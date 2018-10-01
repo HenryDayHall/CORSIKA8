@@ -16,7 +16,7 @@ public:
   Process1() {}
   void Init() {} // cout << "Process1::Init" << endl; }
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& d, T& , S& ) const {
     for (int i = 0; i < 10; ++i) d.p[i] += 1 + i;
     return EProcessReturn::eOk;
   }
@@ -27,7 +27,7 @@ public:
   Process2() {}
   void Init() {} // cout << "Process2::Init" << endl; }
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& d, T& , S& ) const {
     for (int i = 0; i < 10; ++i) d.p[i] *= 0.7;
     return EProcessReturn::eOk;
   }
@@ -38,7 +38,7 @@ public:
   Process3() {}
   void Init() {} // cout << "Process3::Init" << endl; }
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& d, T& , S& ) const {
     for (int i = 0; i < 10; ++i) d.p[i] += 0.933;
     return EProcessReturn::eOk;
   }
@@ -49,7 +49,7 @@ public:
   Process4() {}
   void Init() {} // cout << "Process4::Init" << endl; }
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& d, T& , S& ) const {
     for (int i = 0; i < 10; ++i) d.p[i] /= 1.2;
     return EProcessReturn::eOk;
   }
