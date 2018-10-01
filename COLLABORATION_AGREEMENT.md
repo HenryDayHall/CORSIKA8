@@ -13,7 +13,12 @@ examples of other big scientific software projects.
 
 The CORSIKA project consists of the contributions from the scientific
 community and individuals in a best effort to deliver the best
-possible computing performance and physics output. All possible
+possible computing performance and physics output. 
+The MCnet guidelines developed by [www.montecarlonet.org](www.montecarlonet.org) 
+are copied in [MCNET_GUIDELINES](MCNET_GUIDELINES) -- they provide a very good 
+additional scope that contributors should read and follow. 
+
+All possible
 liability and licensing question are strictly handled by the adopted
 software license.
 
