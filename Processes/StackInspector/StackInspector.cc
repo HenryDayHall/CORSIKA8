@@ -1,6 +1,6 @@
 #include <corsika/process/stack_inspector/StackInspector.h>
 
-using namespace corsika::process::null_model;
+using namespace corsika::process::stack_inspector;
 
 StackInspector::StackInspector() {}
 
