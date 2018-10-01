@@ -59,24 +59,6 @@ If you want to contribute, you need to read
 [GUIDELINES](GUIDELINES.md) and comply with these rules, or help to
 improve them.
 
-## Definition and role of a "scientific author"
-The scientific authors of the CORSIKA project must be credited in any
-scientific context, for example in talks, proceedings, posters,
-journal paper or any other publication or outreach
-document. Scientific authors or contributors are listed in
-[SCIENTIFIC\_AUTHORS](SCIENTIFIC\_AUTHORS). Credit can be given by
-listing the names explicitly, or by referring to the
-SCIENTIFIC\_AUTHORS file of a specific CORSIKA release, or to a
-standard published CORSIKA reference in a refereed
-journal. Individuals are only included as scientific authors if the
-CORSIKA Projects agrees on it, and any such decision can be revisited,
-changed or revoked at any time by the CORSIKA Project. The list of
-scientific authors will change with time, reflecting the active group
-of individuals that actually contribute to a specific state/release of
-the CORSIKA project. For specific scientific publications, the list of
-scientific authors can also be extended beyond SCIENTIFIC\_AUTHORS by
-the CORSIKA Project, for example to highlight additional important
-input on physics, technology or modelling.
 
 ## Definition and working mode of the CORSIKA Project panel
 The CORSIKA Project panel makes all decisions for the CORSIKA
@@ -102,22 +84,15 @@ gitlab at
 [https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika),
 and have special responsibilities for this reason. 
 
-## Accepting new contributors, and authors
-The CORSIKA Project can accept new scientific authors to be added to
-[SCIENTIFIC\_AUTHORS](SCIENTIFIC\_AUTHORS), or remove them from
-there. Agreement to be scientific author can be linked to a temporary
-task or assignment. Not compliance with the
-[GUIDELINES](GUIDELINES.md), or inactivity, are reasons to be removed
-from the list.
-
 ## Changing to a different license, for parts, or the complete project
-The CORSIKA Project can change the license for parts or the entire project. 
+
+The CORSIKA Project panel can change the license for parts or the entire project. 
 
 ## Planning and performing releases
 
-The CORSIKA Project decides on releases of the software, and about the content of it. 
+The CORSIKA Project panel decides on releases of the software, and about the content of it. 
 
 ## Changes to the Collaboration Agreement
 
-The CORSIKA Project decides on changes to the Collaboration
+The CORSIKA Project panel decides on changes to the Collaboration
 agreement.
