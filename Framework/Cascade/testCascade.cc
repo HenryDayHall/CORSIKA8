@@ -1,6 +1,7 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/geometry/LineTrajectory.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one

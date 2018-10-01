@@ -38,7 +38,12 @@ namespace corsika::random {
      * into a std::stringstream.
      */
     std::stringstream dumpState() const;
+
+    /**
+     * set seed_seq of \a pStreamName to \a pSeedSeq
+     */
+    // void SetSeedSeq(std::string const& pStreamName, std::seed_seq& const pSeedSeq);
   };
 
-} // namespace Random
+} // namespace corsika::random
 #endif

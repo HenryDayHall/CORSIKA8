@@ -21,6 +21,8 @@ SCENARIO("random-number streams can be registered and retrieved") {
       THEN("an unknown sequence cannot be retrieved") {
         REQUIRE_THROWS(rngManager.GetRandomStream("stream_UNKNOWN"));
       }
+
+      // seeding not covered yet
     }
   }
 }

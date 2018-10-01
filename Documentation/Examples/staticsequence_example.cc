@@ -11,7 +11,7 @@ class Process1 : public BaseProcess<Process1> {
 public:
   Process1() {}
   template <typename D, typename T, typename S>
-  EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  EProcessReturn DoContinuous(D& d, T&, S&) const {
     for (int i = 0; i < 10; ++i) d.p[i] += 1;
     return EProcessReturn::eOk;
   }
@@ -22,7 +22,7 @@ public:
   Process2() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D&, T&, S&) const {
     // for (int i=0; i<10; ++i) d.p[i] *= 2;
     return EProcessReturn::eOk;
   }
@@ -34,7 +34,7 @@ public:
   Process3() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& /*d*/, T& /*t*/, S& /*s*/) const {
     // for (int i=0; i<10; ++i) d.p[i] += fV;
     return EProcessReturn::eOk;
   }
@@ -48,7 +48,7 @@ public:
   // Process4(const int v) : fV(v) {}
   Process4() {}
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& /*d*/, T& /*t*/, S& /*s*/) const {
     // for (int i=0; i<10; ++i) d.p[i] /= fV;
     return EProcessReturn::eOk;
   }
