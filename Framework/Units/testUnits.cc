@@ -20,7 +20,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(E1 == 10_GeV);
 
     LengthType l1 = 10_nm;
-    l1=l1;
+    l1 = l1;
 
     LengthType arr0[5];
     arr0[0] = 5_m;

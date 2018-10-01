@@ -42,7 +42,7 @@ namespace corsika::random {
     /**
      * set seed_seq of \a pStreamName to \a pSeedSeq
      */
-    //void SetSeedSeq(std::string const& pStreamName, std::seed_seq& const pSeedSeq);
+    // void SetSeedSeq(std::string const& pStreamName, std::seed_seq& const pSeedSeq);
   };
 
 } // namespace corsika::random

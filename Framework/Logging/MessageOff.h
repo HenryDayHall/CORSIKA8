@@ -10,7 +10,7 @@ namespace corsika::logging {
   class MessageOff {
   protected:
     template <typename First, typename... Strings>
-    std::string Message(const First& , const Strings&... ) {
+    std::string Message(const First&, const Strings&...) {
       return "";
     }
   };

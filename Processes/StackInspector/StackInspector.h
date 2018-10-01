@@ -16,7 +16,7 @@ namespace corsika::process {
       double GetStepLength();
     };
 
-  } // namespace null_model
+  } // namespace stack_inspector
 
 } // namespace corsika::process
 

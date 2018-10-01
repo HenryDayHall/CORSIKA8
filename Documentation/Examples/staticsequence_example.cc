@@ -22,7 +22,7 @@ public:
   Process2() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& , T& , S&) const {
+  inline EProcessReturn DoContinuous(D&, T&, S&) const {
     // for (int i=0; i<10; ++i) d.p[i] *= 2;
     return EProcessReturn::eOk;
   }
