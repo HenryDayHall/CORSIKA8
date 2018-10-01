@@ -34,7 +34,7 @@ namespace corsika::particles {
   corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const);
   corsika::units::si::MassType constexpr GetMass(Code const);
   PDGCodeType constexpr GetPDG(Code const);
-  std::string const GetName(Code const);
+  std::string const& GetName(Code const);
 
 #include <corsika/particles/GeneratedParticleProperties.inc>
 
@@ -60,7 +60,7 @@ namespace corsika::particles {
     return GetElectricChargeNumber(p) * (corsika::units::si::constants::e / 3.);
   }
 
-  std::string const GetName(Code const p) {
+  std::string const& GetName(Code const p) {
     return names[static_cast<CodeIntType const>(p)];
   }
 

@@ -80,7 +80,7 @@ namespace corsika::stack {
     protected:
       void IncrementSize() {
         fDataE.push_back(0_GeV);
-        fDataPID.push_back(Code::unknown);
+        fDataPID.push_back(Code::Unknown);
       }
       void DecrementSize() {
         if (fDataE.size() > 0) {

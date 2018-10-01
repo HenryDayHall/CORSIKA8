@@ -48,6 +48,6 @@ namespace corsika::stack {
     int GetIndex() const { return GetIterator().GetIndex(); }
   };
 
-}; // namespace corsika::stack
+} // namespace corsika::stack
 
 #endif

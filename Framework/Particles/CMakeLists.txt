@@ -1,6 +1,7 @@
 
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
+          ${PROJECT_BINARY_DIR}/Framework/Particles/pythia_db.pkl
   COMMAND ${PROJECT_SOURCE_DIR}/Framework/Particles/pdxml_reader.py 
           ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleData.xml
           ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleClassNames.xml
