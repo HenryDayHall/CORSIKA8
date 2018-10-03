@@ -2,14 +2,21 @@
 
 using namespace corsika::geometry;
 
-EigenTransform CoordinateSystem::GetTransformation(CoordinateSystem const& c1,
-                                                   CoordinateSystem const& c2) {
-  CoordinateSystem const* a{&c1};
-  CoordinateSystem const* b{&c2};
+/**
+ * returns the transformation matrix necessary to transform primitives with coordinates
+ * in \a pFrom to \a pTo, e.g.
+ * \f$ \vec{v}^{\text{(to)}} = \mathcal{M} \vec{v}^{\text{(from)}} \f$
+ * (\f$ \vec{v}^{(.)} \f$ denotes the coordinates/components of the component in
+ * the indicated CoordinateSystem).
+ */
+EigenTransform CoordinateSystem::GetTransformation(CoordinateSystem const& pFrom,
+                                                   CoordinateSystem const& pTo) {
+  CoordinateSystem const* a{&pFrom};
+  CoordinateSystem const* b{&pTo};
   CoordinateSystem const* commonBase{nullptr};
 
   while (a != b && b != nullptr) {
-    a = &c1;
+    a = &pFrom;
 
     while (a != b && a != nullptr) { a = a->GetReference(); }
 
@@ -26,18 +33,17 @@ EigenTransform CoordinateSystem::GetTransformation(CoordinateSystem const& c1,
   }
 
   EigenTransform t = EigenTransform::Identity();
-
-  auto* p = &c1;
+  auto* p = &pFrom;
 
   while (p != commonBase) {
     t = p->GetTransform() * t;
     p = p->GetReference();
   }
 
-  p = &c2;
+  p = &pTo;
 
   while (p != commonBase) {
-    t = p->GetTransform().inverse(Eigen::TransformTraits::Isometry) * t;
+    t = t * p->GetTransform().inverse(Eigen::TransformTraits::Isometry);
     p = p->GetReference();
   }
 
