@@ -9,6 +9,8 @@
  * a fSphere homogeneously filled with hydrogen
  */
 
+namespace corsika::environment {
+
 class HydrogenSphere {
   CoordinateSystem const& fCS;
   corsika::geometry::Sphere const fSphere;
@@ -25,7 +27,7 @@ public:
                                : corsika::particles::Code::Unknown;
   }
 
-  MassDensityType GetDensity(Point const& p) const { return density; };
+  MassDensityType GetDensity(Point const& p) const { return fSphere.isInside(p) ? density : 0_kg / (meter*meter*meter); };
 
   GetMagneticField(Point const& p) {
     QuantityVector<magnetic_flux_density_d> components{0 * corsika::units::tesla,
@@ -35,4 +37,5 @@ public:
   }
 };
 
+}
 #endif
