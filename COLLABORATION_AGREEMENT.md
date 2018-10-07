@@ -19,7 +19,7 @@ are copied in [MCNET_GUIDELINES](MCNET_GUIDELINES) -- they provide a very good
 additional scope that contributors should read and follow. 
 
 All possible
-liability and licensing question are strictly handled by the adopted
+liability and licensing question are only handled by the adopted
 software license.
 
 ## The software license of the CORSIKA project
