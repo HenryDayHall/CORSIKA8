@@ -95,8 +95,9 @@ TEST_CASE("transformations between CoordinateSystems") {
     QuantityVector<length_d> const zAxis{0_m, 0_m, 1_km};
     QuantityVector<length_d> const yAxis{0_m, 7_nm, 0_m};
     QuantityVector<length_d> const xAxis{2_m, 0_nm, 0_m};
-    
-    QuantityVector<magnetic_flux_density_d> components{1. * tesla, 2. * tesla, 3. * tesla};
+
+    QuantityVector<magnetic_flux_density_d> components{1. * tesla, 2. * tesla,
+                                                       3. * tesla};
     Vector<magnetic_flux_density_d> v1(rootCS, components);
 
     double const angle = 90. / 180. * M_PI;

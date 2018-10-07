@@ -1,5 +1,5 @@
-#ifndef _include_superstupidstack_h_
-#define _include_superstupidstack_h_
+#ifndef _include_corsika_stack_superstupidstack_h_
+#define _include_corsika_stack_superstupidstack_h_
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>

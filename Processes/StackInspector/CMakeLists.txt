@@ -29,6 +29,7 @@ set_target_properties (
 target_link_libraries (
   ProcessStackInspector
   CORSIKAunits
+  CORSIKAsetup
   )
 
 target_include_directories (
@@ -52,7 +53,6 @@ add_executable (testStackInspector testStackInspector.cc)
 
 target_link_libraries (
   testStackInspector
-  CORSIKAgeometry
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )

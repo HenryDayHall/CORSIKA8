@@ -55,3 +55,26 @@ function (CORSIKA_COPY_HEADERS_TO_NAMESPACE for_library in_namespace)
 
 endfunction (CORSIKA_COPY_HEADERS_TO_NAMESPACE)
 
+
+
+
+#
+# use: CORSIKA_ADD_FILES_ABSOLUTE varname
+#
+# add list of filenames with absolute paths (pointing to CMAKE_SOURCE_DIR) to ${varname} in PARAENT_SCOPE
+# 
+
+macro (CORSIKA_ADD_FILES_ABSOLUTE varname)
+  file (RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+  foreach (_src ${ARGN})
+    if (_relPath)
+      list (APPEND "${varname}" "${CMAKE_SOURCE_DIR}/${_relPath}/${_src}")
+    else()
+      list (APPEND "${varname}" "${CMAKE_SOURCE_DIR}/${_src}")
+    endif()
+  endforeach()
+  if (_relPath)
+    # propagate SRCS to parent directory
+    set ("${varname}" "${${varname}}" PARENT_SCOPE)
+  endif()
+endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
