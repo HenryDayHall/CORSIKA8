@@ -66,9 +66,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
 
   - Code may not introduce any compiler errors, or warnings
   - All unit tests must succeed at all times
-  - We use C++14 concepts wherever possible
-    - Class members are initialized at definition
-    - we use "= delete", "= default", etc. identifier in class functions
+  - We use C++17 concepts wherever useful and helpful
   - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
   - We never catch exceptions for error handling, there might be very few special exceptions from this. We need to discuss such cases.
   - Everything that should not change should be `const`
