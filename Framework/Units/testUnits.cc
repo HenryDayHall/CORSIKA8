@@ -27,7 +27,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("Constructors") {
-    auto E1 = 10_GeV;
+    [[maybe_unused]] auto E1 = 10_GeV;
     REQUIRE(E1 == 10_GeV);
 
     LengthType l1 = 10_nm;
@@ -36,11 +36,11 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     LengthType arr0[5];
     arr0[0] = 5_m;
 
-    LengthType arr1[2] = {{1_mm}, {2_cm}};
+    [[maybe_unused]] LengthType arr1[2] = {{1_mm}, {2_cm}};
 
     std::array<EnergyType, 4> arr2; // empty array
 
-    std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
+    [[maybe_unused]] std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
   }
 
   SECTION("Powers in literal units") {

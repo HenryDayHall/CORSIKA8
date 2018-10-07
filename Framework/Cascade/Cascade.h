@@ -12,8 +12,8 @@
 #ifndef _include_Cascade_h_
 #define _include_Cascade_h_
 
-#include <corsika/geometry/LineTrajectory.h> // to be removed
-#include <corsika/geometry/Point.h>          // to be removed
+#include <corsika/geometry/LineTrajectory.h> // to be removed. for dummy trajectory only
+#include <corsika/geometry/Point.h>          // to be removed. for dummy trajectory only
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/units/PhysicalUnits.h>
 
@@ -21,10 +21,12 @@ using namespace corsika::units::si;
 
 namespace corsika::cascade {
 
-  template <typename Trajectory, typename ProcessList, typename Stack>
+  template <typename ProcessList, typename Stack> //, typename Trajectory>
   class Cascade {
 
     typedef typename Stack::ParticleType Particle;
+
+    Cascade() = delete;
 
   public:
     Cascade(ProcessList& pl, Stack& stack)
@@ -39,34 +41,37 @@ namespace corsika::cascade {
     void Run() {
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
-          // Particle& p = *fStack.GetNextParticle();
-          EnergyType Emin;
-          typename Stack::StackIterator pMin(fStack, 0);
-          bool first = true;
-          for (typename Stack::StackIterator ip = fStack.begin(); ip != fStack.end();
-               ++ip) {
+          Particle& pNext = *fStack.GetNextParticle();
+          /*
+            EnergyType Emin;
+            typename Stack::StackIterator pNext(fStack, 0);
+            bool first = true;
+            for (typename Stack::StackIterator ip = fStack.begin(); ip != fStack.end();
+            ++ip) {
             if (first || ip.GetEnergy() < Emin) {
-              first = false;
-              pMin = ip;
-              Emin = pMin.GetEnergy();
+            first = false;
+            pNext = ip;
+            Emin = pMin.GetEnergy();
             }
-          }
-
-          Step(pMin);
+            }
+          */
+          Step(pNext);
         }
         // do cascade equations, which can put new particles on Stack,
         // thus, the double loop
         // DoCascadeEquations(); //
       }
     }
-
+    
     void Step(Particle& particle) {
-      double nextStep = fProcesseList.MinStepLength(particle);
+      [[maybe_unused]] double nextStep = fProcesseList.MinStepLength(particle);
+      // corsika::utls::ignore(nextStep);
       corsika::geometry::CoordinateSystem root;
-      Trajectory trajectory(
-          corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
-          corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
-              root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
+      corsika::geometry::LineTrajectory
+          trajectory( // trajectory is not yet used. this is a dummy.
+              corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
+              corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
+                  root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
       corsika::process::EProcessReturn status =
           fProcesseList.DoContinuous(particle, trajectory, fStack);
       if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
@@ -75,10 +80,10 @@ namespace corsika::cascade {
         fProcesseList.DoDiscrete(particle, fStack);
       }
     }
-
+    
   private:
-    Stack& fStack;
     ProcessList& fProcesseList;
+    Stack& fStack;
   };
 
 } // namespace corsika::cascade

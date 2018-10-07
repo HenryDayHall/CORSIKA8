@@ -13,19 +13,13 @@
 
 using namespace corsika::cascade;
 
-template <typename ProcessList, typename Particle, typename Trajectory, typename Stack>
-Cascade<ProcessList, Particle, Trajectory, Stack>::Cascade() {
-  //  kkk;
-  //  kk;
-}
-
-template <typename ProcessList, typename Particle, typename Trajectory, typename Stack>
+template <typename ProcessList, typename Stack> //, typename Trajectory>
 void Cascade::Init() {
   fStack.Init();
   fProcesseList.Init();
 }
 
-template <typename ProcessList, typename Particle, typename Trajectory, typename Stack>
+template <typename ProcessList, typename Stack> //, typename Trajectory>
 void Cascade::Run() {
   if (!fStack.IsEmpty()) {
     if (!fStack.IsEmpty()) {
@@ -38,10 +32,11 @@ void Cascade::Run() {
   }
 }
 
-template <typename Sequence, typename Trajectory>
+template <typename ProcessList, typename Stack> //, typename Trajectory>
 void Cascade::Step(Particle& particle) {
   double nextStep = fProcesseList.MinStepLength(particle);
-  Trajectory trajectory = fProcesseList.Transport(particle, nextStep);
+  corsika::geometry::LineTrajectory trajectory =
+      fProcesseList.Transport(particle, nextStep);
   sequence.DoContinuous(particle, trajectory);
   sequence.DoDiscrete(particle);
 }
