@@ -106,4 +106,4 @@ required all the time:
   - active in the CORSIKA Project, that means responsive to
     discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.ikp.kit.edu, of relevant *issues*,
     or in (phone) meetings
-  - the existing members of the CORSIKA Project agree
+  - the members of the CORSIKA Project panel agree
