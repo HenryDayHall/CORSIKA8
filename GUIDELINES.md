@@ -7,6 +7,21 @@ or corsika-project@lists.kit.edu to get in touch with the project.
 The CORSIKA Project decides on the [GUIDELINES](GUIDELINES.md), and can
 change them.
 
+# How to contribute
+
+  - We organize all development via `Issues` that may be feature requests,
+    ideas, or bugs fix requests. 
+  - New issues can be created, or existing issues
+    picked up. 
+  - Issues are discussed in meetings or via  corsika-devel@lists.kit.edu  within the CORSIKA Project.
+  - Issues are assigned to milestones. 
+  - The work on issues is performed in `branches` that can be best
+    created directly via the gitlab web interface. 
+  - Proposed code to close one issue (located in a specific git
+    branch) is reviewed and eventually discussed, and finally merged
+    into the master branch to close the issue.
+
+
 ## Code formatting
 
 We rely on `clang-format` for code formatting. This has the tremendous
@@ -61,7 +76,6 @@ While `clang-format` does the structural formatting, we still need to agree on n
     capital letter.
   
 
-
 ## Coding rules
 
   - Code may not introduce any compiler errors, or warnings
@@ -79,20 +93,14 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - Code must be documented with `doxygen` commands
   
 
-# How to contribute
+## Release versioning scheme
 
-  - We organize all development via `Issues` that may be feature requests,
-    ideas, or bugs fix requests. 
-  - New issues can be created, or existing issues
-    picked up. 
-  - Issues are discussed in meetings or via  corsika-devel@lists.kit.edu  within the CORSIKA Project.
-  - Issues are assigned to milestones. 
-  - The work on issues is performed in `branches` that can be best
-    created directly via the gitlab web interface. 
-  - Proposed code to close one issue (located in a specific git
-    branch) is reviewed and eventually discussed, and finally merged
-    into the master branch to close the issue.
-
+Releases of CORSIKA are thought to be the baseline for larger scale testing, and full production. 
+The releases are numbered as x.y.z, starting with x=8 form the gitlab c++ version. X will only be incremented 
+for major design or physics changes. The y index is updated for new official releases that normally contain improved or enhanced physics 
+performance, and may also contain normal interface changes to accomodate improvements. The z index can be updated frequently for
+bug fixes or new features. Changes in z will not contain interface changes, thus, code will remain fully compatible.  
+Special releases of CORSIKA can also have a tag name from git, e.g. as in the "milestone1" release.
 
 
 # How to become scientific author of the CORSIKA Project
