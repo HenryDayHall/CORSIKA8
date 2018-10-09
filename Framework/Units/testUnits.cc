@@ -1,3 +1,14 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -16,7 +27,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("Constructors") {
-    auto E1 = 10_GeV;
+    [[maybe_unused]] auto E1 = 10_GeV;
     REQUIRE(E1 == 10_GeV);
 
     LengthType l1 = 10_nm;
@@ -25,11 +36,11 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     LengthType arr0[5];
     arr0[0] = 5_m;
 
-    LengthType arr1[2] = {{1_mm}, {2_cm}};
+    [[maybe_unused]] LengthType arr1[2] = {{1_mm}, {2_cm}};
 
     std::array<EnergyType, 4> arr2; // empty array
 
-    std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
+    [[maybe_unused]] std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
   }
 
   SECTION("Powers in literal units") {

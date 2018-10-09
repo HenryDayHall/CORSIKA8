@@ -51,11 +51,13 @@ add_executable (
 
 target_link_libraries (
   testCascade
+#  CORSIKAutls
   CORSIKAcascade
+  ProcessStackInspector
+  CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAprocesssequence
-  SuperStupidStack
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
