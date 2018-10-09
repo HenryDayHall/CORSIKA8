@@ -11,17 +11,20 @@ using namespace corsika;
 
 TEST_CASE("Sibyll", "[processes]") {
 
-  SECTION("ParticleConversion") {
+  SECTION("Sibyll -> Corsika") {
     REQUIRE(corsika::particles::Electron::GetCode() ==
-            process::sibyll::Sibyll2Corsika.at(process::sibyll::PID::E_MINUS));
+            process::sibyll::ConvertFromSibyll(process::sibyll::Code::Electron));
   }
 
-  SECTION("Data") {
-    REQUIRE(corsika::particles::GetName(process::sibyll::Sibyll2Corsika.at(
-                process::sibyll::PID::E_PLUS)) == "e+");
+  SECTION("Corsika -> Sibyll") {
+    REQUIRE(process::sibyll::ConvertToSibyll(corsika::particles::Electron::GetCode()) ==
+            process::sibyll::Code::Electron);
   }
 
-  SECTION("bla") {}
+  SECTION("handledBySibyll") {
+    REQUIRE(process::sibyll::handledBySibyll(corsika::particles::Electron::GetCode()));
 
-  SECTION("blubb") {}
+    REQUIRE_FALSE(
+        process::sibyll::handledBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+  }
 }
