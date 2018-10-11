@@ -22,6 +22,11 @@ We also want to point you to the [MCnet guidelines](https://gitlab.ikp.kit.edu/A
 
 ## Installation
 
+Prerequisites: eigen3, cmake, g++, git
+```
+sudo apt-get install libeigen3-dev cmake g++ git
+```
+
 Follow these steps to download and install CORSIKA8-milestone1
 ```
 git clone git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
