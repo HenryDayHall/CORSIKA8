@@ -1,7 +1,7 @@
 #ifndef _Physics_StackInspector_StackInspector_h_
 #define _Physics_StackInspector_StackInspector_h_
 
-#include <corsika/process/ProcessSequence.h>
+#include <corsika/process/BaseProcess.h>
 
 namespace corsika::process {
 

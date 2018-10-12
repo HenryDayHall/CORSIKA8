@@ -12,6 +12,7 @@
 #ifndef _include_ProcessSequence_h_
 #define _include_ProcessSequence_h_
 
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
 #include <cmath>
@@ -19,21 +20,6 @@
 #include <typeinfo>
 
 namespace corsika::process {
-
-  /**
-     \class BaseProcess
-
-     The structural base type of a process object in a
-     ProcessSequence. Both, the ProcessSequence and all its elements
-     are of type BaseProcess<T>
-
-   */
-
-  template <typename derived>
-  struct BaseProcess {
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
-  };
 
   /**
      \class ProcessSequence
@@ -69,6 +55,7 @@ namespace corsika::process {
       return std::min(A.MinStepLength(d), B.MinStepLength(d));
     }
 
+    /*
     template <typename Particle, typename Trajectory>
     inline Trajectory Transport(Particle& p, double& length) const {
       A.Transport(p, length); // todo: maybe check (?) if there is more than one Transport
@@ -76,7 +63,8 @@ namespace corsika::process {
       return B.Transport(
           p, length); // need to do this also to decide which Trajectory to return!!!!
     }
-
+    */
+    
     template <typename Particle, typename Stack>
     void DoDiscrete(Particle& p, Stack& s) const {
       A.DoDiscrete(p, s);
