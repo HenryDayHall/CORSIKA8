@@ -42,13 +42,23 @@ def checkNote(filename):
             endNote = iLine
         iLine += 1
 
-    #if startNote>=0 and endNote>=0 and isCopyright:
-    #print filename
-    #for iLine in range(startNote, endNote+1):
-    #   print lines[iLine]
+    # now check if copyright notice is already there and identical...
+    isSame = True
+    if startNote>=0 and endNote>=0 and isCopyright:
+        noteLines = text.split('\n')        
+        for iLine in range(len(noteLines)):
+            if noteLines[iLine] != lines[startNote+iLine]:
+                isSame = False
+                print "not same: " + noteLines[iLine] + " " + lines[startNote+iLine]
 
-    os.rename(filename, filename+".bak")
+    # check if notice is the same 
+    if isSame:
+        return                
     
+    # add (new) copyright notice here:
+        
+    os.rename(filename, filename+".bak")
+
     with open(filename, "w") as file:
 
         file.write(text)
