@@ -10,6 +10,9 @@ set (
 #header files of this library
 set (
   CORSIKAprocesssequence_HEADERS
+  BaseProcess.h
+  ContinuousProcess.h
+  DiscreteProcess.h
   ProcessSequence.h
   ProcessReturn.h
   )

@@ -62,7 +62,7 @@ namespace corsika::cascade {
         // DoCascadeEquations(); //
       }
     }
-    
+
     void Step(Particle& particle) {
       [[maybe_unused]] double nextStep = fProcesseList.MinStepLength(particle);
       // corsika::utls::ignore(nextStep);
@@ -80,7 +80,7 @@ namespace corsika::cascade {
         fProcesseList.DoDiscrete(particle, fStack);
       }
     }
-    
+
   private:
     ProcessList& fProcesseList;
     Stack& fStack;
