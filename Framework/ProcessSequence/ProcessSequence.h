@@ -13,13 +13,111 @@
 #define _include_ProcessSequence_h_
 
 #include <corsika/process/BaseProcess.h>
+#include <corsika/process/ContinuousProcess.h>
+#include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
-#include <cmath>
-#include <iostream>
-#include <typeinfo>
+//#include <type_traits> // still needed ?
 
 namespace corsika::process {
+
+  /* namespace detail { */
+
+  /*   /\* template<typename TT1, typename TT2, typename Type = void> *\/ */
+  /*   /\*   struct CallHello { *\/ */
+  /*   /\* 	static void Call(const TT1&, const TT2&) { *\/ */
+  /*   /\* 	  std::cout << "normal" << std::endl; *\/ */
+  /*   /\* 	} *\/ */
+  /*   /\*   }; *\/ */
+
+  /*   /\* template<typename TT1, typename TT2> *\/ */
+  /*   /\*   struct CallHello<TT1, TT2, typename
+   * std::enable_if<std::is_base_of<ContinuousProcess<TT2>, TT2>::value>::type> *\/ */
+  /*   /\*   { *\/ */
+  /*   /\* 	static void Call(const TT1&, const TT2&) { *\/ */
+  /*   /\* 	  std::cout << "special" << std::endl; *\/ */
+  /*   /\* 	}	 *\/ */
+  /*   /\*   }; *\/ */
+
+  /*   template<typename T1, typename T2, typename Particle, typename Trajectory, typename
+   * Stack> //, typename Type = void> */
+  /*     struct DoContinuous { */
+  /* 	static EProcessReturn Call(const T1& A, const T2& B, Particle& p, Trajectory& t,
+   * Stack& s) { */
+  /* 	  EProcessReturn ret = EProcessReturn::eOk; */
+  /* 	  if constexpr (!std::is_base_of<DiscreteProcess<T1>, T1>::value)  { */
+  /* 	      A.DoContinuous(p, t, s); */
+  /* 	    } */
+  /* 	  if constexpr (!std::is_base_of<DiscreteProcess<T2>, T2>::value)  { */
+  /* 	      B.DoContinuous(p, t, s); */
+  /* 	    } */
+  /* 	  return ret; */
+  /* 	} */
+  /*     }; */
+
+  /*   /\* */
+  /*   template<typename T1, typename T2, typename Particle, typename Trajectory, typename
+   * Stack> */
+  /*     struct DoContinuous<T1,T2,Particle,Trajectory,Stack, typename
+   * std::enable_if<std::is_base_of<DiscreteProcess<T1>, T1>::value>::type> { */
+  /* 	static EProcessReturn Call(const T1& A, const T2& B, Particle& p, Trajectory& t,
+   * Stack& s) { */
+  /* 	  EProcessReturn ret = EProcessReturn::eOk; */
+  /* 	  A.DoContinuous(p, t, s); */
+  /* 	  B.DoContinuous(p, t, s); */
+  /* 	  return ret; */
+  /* 	} */
+  /*     }; */
+
+  /*       template<typename T1, typename T2, typename Particle, typename Trajectory,
+   * typename Stack> */
+  /*     struct DoContinuous<T1,T2,Particle,Trajectory,Stack, typename
+   * std::enable_if<std::is_base_of<DiscreteProcess<T2>, T2>::value>::type> { */
+  /* 	static EProcessReturn Call(const T1& A, const T2&, Particle& p, Trajectory& t,
+   * Stack& s) { */
+  /* 	  EProcessReturn ret = EProcessReturn::eOk; */
+  /* 	  A.DoContinuous(p, t, s); */
+  /* 	  B.DoContinuous(p, t, s); */
+  /* 	  return ret; */
+  /* 	} */
+  /*     }; */
+  /*   *\/ */
+
+  /*   template<typename T1, typename T2, typename Particle, typename Stack>//, typename
+   * Type = void> */
+  /*     struct DoDiscrete { */
+  /* 	static EProcessReturn Call(const T1& A, const T2& B, Particle& p, Stack& s)  { */
+  /* 	  if constexpr (!std::is_base_of<ContinuousProcess<T1>, T1>::value) { */
+  /* 	      A.DoDiscrete(p, s); */
+  /* 	    } */
+  /* 	  if constexpr (!std::is_base_of<ContinuousProcess<T2>, T2>::value) { */
+  /* 	      B.DoDiscrete(p, s); */
+  /* 	    } */
+  /* 	  return EProcessReturn::eOk; */
+  /* 	} */
+  /*     }; */
+  /*   /\* */
+  /*   template<typename T1, typename T2, typename Particle, typename Stack> */
+  /*     struct DoDiscrete<T1,T2,Particle,Stack, typename
+   * std::enable_if<std::is_base_of<ContinuousProcess<T1>, T1>::value>::type> { */
+  /*     static EProcessReturn Call(const T1&, const T2& B, Particle& p, Stack& s) { */
+  /* 	// A.DoDiscrete(p, s); */
+  /*       B.DoDiscrete(p, s); */
+  /*       return EProcessReturn::eOk; */
+  /*     } */
+  /*   }; */
+
+  /*   template<typename T1, typename T2, typename Particle, typename Stack> */
+  /*     struct DoDiscrete<T1,T2,Particle,Stack, typename
+   * std::enable_if<std::is_base_of<ContinuousProcess<T2>, T2>::value>::type> { */
+  /*     static EProcessReturn Call(const T1& A, const T2&, Particle& p, Stack& s) { */
+  /* 	A.DoDiscrete(p, s); */
+  /*       //B.DoDiscrete(p, s); */
+  /*       return EProcessReturn::eOk; */
+  /*     } */
+  /*   }; */
+  /*   *\/ */
+  /* } // end namespace detail */
 
   /**
      \class ProcessSequence
@@ -42,13 +140,20 @@ namespace corsika::process {
         : A(in_A)
         , B(in_B) {}
 
+    // example for a trait-based call:
+    // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
+
     template <typename Particle, typename Trajectory, typename Stack>
     inline EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
       EProcessReturn ret = EProcessReturn::eOk;
-      /*ret |=*/A.DoContinuous(p, t, s);
-      /*ret |=*/B.DoContinuous(p, t, s);
+      if constexpr (!std::is_base_of<DiscreteProcess<T1>, T1>::value) {
+        A.DoContinuous(p, t, s);
+      }
+      if constexpr (!std::is_base_of<DiscreteProcess<T2>, T2>::value) {
+        B.DoContinuous(p, t, s);
+      }
       return ret;
-    } // add trajectory
+    }
 
     template <typename D>
     inline double MinStepLength(D& d) const {
@@ -64,11 +169,16 @@ namespace corsika::process {
           p, length); // need to do this also to decide which Trajectory to return!!!!
     }
     */
-    
+
     template <typename Particle, typename Stack>
-    void DoDiscrete(Particle& p, Stack& s) const {
-      A.DoDiscrete(p, s);
-      B.DoDiscrete(p, s);
+    inline EProcessReturn DoDiscrete(Particle& p, Stack& s) const {
+      if constexpr (!std::is_base_of<ContinuousProcess<T1>, T1>::value) {
+        A.DoDiscrete(p, s);
+      }
+      if constexpr (!std::is_base_of<ContinuousProcess<T2>, T2>::value) {
+        B.DoDiscrete(p, s);
+      }
+      return EProcessReturn::eOk;
     }
 
     /// TODO the const_cast is not nice, think about the constness here
@@ -78,12 +188,26 @@ namespace corsika::process {
     }
   };
 
-  /// the + operator that assembles more BaseProcess objects into a ProcessSequence
-  template <typename T1, typename T2>
-  inline const ProcessSequence<T1, T2> operator+(const BaseProcess<T1>& A,
-                                                 const BaseProcess<T2>& B) {
-    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());
+  /// the +operator assembles many BaseProcess, ContinuousProcess, and
+  /// DiscreteProcess objects into a ProcessSequence, all combinatoris
+  /// must be allowed, this is why we define a macro to define all
+  /// combinations here:
+
+#define OPSEQ(C1, C2)                                                                \
+  template <typename T1, typename T2>                                                \
+  inline const ProcessSequence<T1, T2> operator+(const C1<T1>& A, const C2<T2>& B) { \
+    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());                          \
   }
+
+  OPSEQ(BaseProcess, BaseProcess)
+  OPSEQ(BaseProcess, DiscreteProcess)
+  OPSEQ(BaseProcess, ContinuousProcess)
+  OPSEQ(ContinuousProcess, BaseProcess)
+  OPSEQ(ContinuousProcess, DiscreteProcess)
+  OPSEQ(ContinuousProcess, ContinuousProcess)
+  OPSEQ(DiscreteProcess, BaseProcess)
+  OPSEQ(DiscreteProcess, DiscreteProcess)
+  OPSEQ(DiscreteProcess, ContinuousProcess)
 
   /*
     template <typename T1>

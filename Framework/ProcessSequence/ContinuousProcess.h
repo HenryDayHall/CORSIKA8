@@ -1,32 +1,23 @@
-#ifndef _include_corsika_baseprocess_h_
-#define _include_corsika_baseprocess_h_
+#ifndef _include_corsika_continuousprocess_h_
+#define _include_corsika_continuousprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 
 namespace corsika::process {
 
   /**
-     \class BaseProcess
+     \class ContinuousProcess
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements
-     are of type BaseProcess<T>
+     are of type ContinuousProcess<T>
 
    */
 
   template <typename derived>
-  struct BaseProcess {
+  struct ContinuousProcess {
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
-  };
-
-  template <typename T>
-  struct is_base {
-    static const bool value = false;
-  };
-  template <typename T>
-  struct is_base<BaseProcess<T>> {
-    static const bool value = true;
   };
 
 } // namespace corsika::process
