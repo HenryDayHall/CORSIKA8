@@ -22,7 +22,7 @@ We also want to point you to the [MCnet guidelines](https://gitlab.ikp.kit.edu/A
 
 ## Installation
 
-Prerequisites: eigen3, cmake, g++, git
+Prerequisites: eigen3, cmake, g++, git. On Ubuntu 18.04, just do:
 ```
 sudo apt-get install libeigen3-dev cmake g++ git
 ```
