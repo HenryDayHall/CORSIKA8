@@ -12,7 +12,7 @@
 #ifndef _Physics_StackInspector_StackInspector_h_
 #define _Physics_StackInspector_StackInspector_h_
 
-#include <corsika/process/BaseProcess.h>
+#include <corsika/process/ContinuousProcess.h>
 
 namespace corsika::process {
 
@@ -20,7 +20,7 @@ namespace corsika::process {
 
     template <typename Stack, typename Trajectory>
     class StackInspector
-        : public corsika::process::BaseProcess<StackInspector<Stack, Trajectory>> {
+        : public corsika::process::ContinuousProcess<StackInspector<Stack, Trajectory>> {
 
       typedef typename Stack::ParticleType Particle;
 
