@@ -28,7 +28,7 @@ using namespace corsika::units::si;
 double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("transformations between CoordinateSystems") {
-  CoordinateSystem rootCS;
+  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
 
   REQUIRE(CoordinateSystem::GetTransformation(rootCS, rootCS)
               .isApprox(EigenTransform::Identity()));
@@ -45,7 +45,7 @@ TEST_CASE("transformations between CoordinateSystems") {
           Approx(0).margin(absMargin));
 
   SECTION("unconnected CoordinateSystems") {
-    CoordinateSystem rootCS2;
+    CoordinateSystem rootCS2 = CoordinateSystem::CreateRootCS();
     REQUIRE_THROWS(CoordinateSystem::GetTransformation(rootCS, rootCS2));
   }
 
@@ -126,18 +126,18 @@ TEST_CASE("transformations between CoordinateSystems") {
 }
 
 TEST_CASE("Sphere") {
-  CoordinateSystem rootCS;
+  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
   SECTION("isInside") {
-    REQUIRE_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
-    REQUIRE(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
+    REQUIRE_FALSE(sphere.Contains(Point(rootCS, {100_m, 0_m, 0_m})));
+    REQUIRE(sphere.Contains(Point(rootCS, {2_m, 3_m, 4_m})));
   }
 }
 
 TEST_CASE("Trajectories") {
-  CoordinateSystem rootCS;
+  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {

@@ -30,14 +30,16 @@ namespace corsika::geometry {
     CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf)
         : reference(&reference)
         , transf(transf) {}
-
-  public:
-    static EigenTransform GetTransformation(CoordinateSystem const& c1,
-                                            CoordinateSystem const& c2);
-
+        
     CoordinateSystem()
         : // for creating the root CS
         transf(EigenTransform::Identity()) {}
+
+  public:
+    static auto CreateRootCS() { return CoordinateSystem(); }
+  
+    static EigenTransform GetTransformation(CoordinateSystem const& c1,
+                                            CoordinateSystem const& c2);
 
     auto& operator=(const CoordinateSystem& pCS) {
       reference = pCS.reference;
@@ -52,6 +54,10 @@ namespace corsika::geometry {
     }
 
     auto rotate(QuantityVector<phys::units::length_d> axis, double angle) const {
+      if (axis.eVector.isZero()) {
+          throw std::string("null-vector given as axis parameter");
+      }
+      
       EigenTransform const rotation{Eigen::AngleAxisd(angle, axis.eVector.normalized())};
 
       return CoordinateSystem(*this, rotation);
@@ -59,6 +65,10 @@ namespace corsika::geometry {
 
     auto translateAndRotate(QuantityVector<phys::units::length_d> translation,
                             QuantityVector<phys::units::length_d> axis, double angle) {
+      if (axis.eVector.isZero()) {
+          throw std::string("null-vector given as axis parameter");
+      }
+                                
       EigenTransform const transf{Eigen::AngleAxisd(angle, axis.eVector.normalized()) *
                                   EigenTranslation(translation.eVector)};
 

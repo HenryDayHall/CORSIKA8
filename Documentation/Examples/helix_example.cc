@@ -22,8 +22,7 @@ using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 int main() {
-
-  CoordinateSystem root;
+  auto const root = CoordinateSystem::CreateRootCS();
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;
