@@ -26,8 +26,8 @@ namespace corsika::geometry {
         : center(pCenter)
         , radius(pRadius) {}
 
-    //! returns true if the Point p is within the sphere
-    auto isInside(Point const& p) const {
+    //! returns true if the Point \a p is within the sphere
+    auto Contains(Point const& p) const {
       return radius * radius > (center - p).squaredNorm();
     }
   };

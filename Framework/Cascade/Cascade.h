@@ -66,7 +66,7 @@ namespace corsika::cascade {
     void Step(Particle& particle) {
       [[maybe_unused]] double nextStep = fProcesseList.MinStepLength(particle);
       // corsika::utls::ignore(nextStep);
-      corsika::geometry::CoordinateSystem root;
+      auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
       corsika::geometry::LineTrajectory
           trajectory( // trajectory is not yet used. this is a dummy.
               corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
