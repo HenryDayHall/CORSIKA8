@@ -66,34 +66,40 @@ public:
   void DoDiscrete(Particle& p, Stack& s) const {
     // get energy of particle from stack
     // stack is in GeV in lab. frame
-    // convert to GeV in cm. frame
+    // convert to GeV in cm. frame (assuming proton at rest as target)
     EnergyType E   = p.GetEnergy();
-    double Ecm = sqrt( 2. * E * 0.93827_GeV ) / 1_GeV ;
+    EnergyType Ecm = sqrt( 2. * E * 0.93827_GeV );
     // FOR NOW: set beam to proton
     int kBeam   = 13; //p.GetPID();
     // FOR NOW: set target to proton
     int kTarget = 1; //p.GetPID();
-    std::cout << "ProcessSplit: " << " DoDiscrete: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm << std::endl;
-    if (E < 8.5_GeV || Ecm < 10. ) {
+    std::cout << "ProcessSplit: " << " DoDiscrete: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
+    if (E < 8.5_GeV || Ecm < 10_GeV ) {
       std::cout << "ProcessSplit: " << " DoDiscrete: dropping particle.." << std::endl;
       p.Delete();
       fCount++;
     } else {
-      //p.SetEnergy(E / 2);
-      //s.NewParticle().SetEnergy(E / 2);
-      
+      // Sibyll does not know about units..
+      double sqs = Ecm / 1_GeV;
       // running sibyll
-      sibyll_( kBeam, kTarget, Ecm);
+      sibyll_( kBeam, kTarget, sqs);
+      // print final state
       int print_unit = 6;
       sib_list_( print_unit );
       
       // delete current particle
       p.Delete();
+
+      const EnergyType proton_mass = 0.93827_GeV;
+      const double gamma  = ( E + proton_mass ) / ( Ecm );
+      const double gambet =  sqrt( E * E - proton_mass * proton_mass ) / Ecm;
       
       // add particles from sibyll to stack
       for(int i=0; i<s_plist_.np; ++i){
-	
-	s.NewParticle().SetEnergy( s_plist_.p[3][i] * 1_GeV );
+	//transform to lab. frame
+	const double en_lab = gambet * s_plist_.p[2][i] + gamma * s_plist_.p[3][i];
+	// add to corsika stack
+	s.NewParticle().SetEnergy( en_lab * 1_GeV );
       }
     }
   }
