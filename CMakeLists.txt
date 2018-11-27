@@ -21,6 +21,8 @@ set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
 
+ENABLE_LANGUAGE (Fortran)
+
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
 ##set(COVERAGE_LCOV_EXCLUDES 'Documentation/*')

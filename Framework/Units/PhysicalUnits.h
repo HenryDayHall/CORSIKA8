@@ -38,6 +38,8 @@ namespace corsika::units::si {
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
 
+  using CrossSectionType = phys::units::quantity<phys::units::area_d, double>;
+  
 } // end namespace corsika::units::si
 
 // we want to call the operator<< without namespace... I think
