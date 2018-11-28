@@ -7,7 +7,7 @@ add_custom_command (
           sibyll_codes.dat          
           ${PROJECT_BINARY_DIR}/Framework/Particles/pythia_db.pkl
   WORKING_DIRECTORY
-          ${PROJECT_BINARY_DIR}/Processes/Sibyll/Particles/
+          ${PROJECT_BINARY_DIR}/Processes/Sibyll/
   COMMENT "Generate conversion tables for particle codes SIBYLL <-> CORSIKA"
   VERBATIM
   )
@@ -31,6 +31,21 @@ set (
 add_library (ProcessSibyll STATIC ${MODEL_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessSibyll ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
+# ....................................................
+# since Generated.inc is an automatically produced file in the build directory,
+# create a symbolic link into the source tree, so that it can be found and edited more easily
+# this is not needed for the build to succeed! .......
+add_custom_command (
+  OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/Generated.inc
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/process/sibyll/Generated.inc ${CMAKE_CURRENT_SOURCE_DIR}/Generated.inc
+  COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/Generated.inc"
+  )
+add_custom_target (SourceDirLink2 DEPENDS ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc)
+add_dependencies (ProcessSibyll SourceDirLink2)
+# .....................................................
+
+
+
 set_target_properties (
   ProcessSibyll
   PROPERTIES
@@ -42,7 +57,9 @@ set_target_properties (
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   ProcessSibyll
+  CORSIKAparticles
   CORSIKAunits
+  CORSIKAthirdparty
   )
 
 target_include_directories (
