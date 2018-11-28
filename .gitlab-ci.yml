@@ -1,0 +1,14 @@
+image: gcc
+
+before_script:
+  - apt-get update --yes
+  - apt-get install --yes cmake libboost-dev libeigen3-dev
+
+build:
+  stage: build
+  script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - cmake --build .
+    - ctest -V
