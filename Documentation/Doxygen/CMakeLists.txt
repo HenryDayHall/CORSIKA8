@@ -1,7 +1,11 @@
 
-find_package (Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
+find_package (Doxygen OPTIONAL_COMPONENTS dot mscgen dia)
 
 if (DOXYGEN_FOUND)
+  if (NOT DOXYGEN_DOT_EXECUTABLE)
+    message (FATAL_ERROR "Found doxygen but not 'dot' command, please install graphviz or set DOXYGEN_DOT_EXECUTABLE")
+  endif()
+
   set (DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
   set (DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
   set (DOXYGEN_GENERATE_HTML YES)
@@ -28,4 +32,3 @@ else (DOXYGEN_FOUND)
   message ("Doxygen need to be installed to generate the doxygen documentation")
   
 endif (DOXYGEN_FOUND)
-
