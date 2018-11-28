@@ -54,7 +54,6 @@ namespace corsika::units::si::constants {
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};
 
-  
   // etc.
 
 } // namespace corsika::units::si::constants

@@ -16,27 +16,13 @@ namespace phys {
   namespace units {
     namespace literals {
       QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
-                                       magnitude(corsika::units::si::constants::eV))
-
-      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
-
-    } // namespace literals
-  }   // namespace units
-} // namespace phys
-
-
-namespace phys {
-  namespace units {
-    namespace literals {
-      QUANTITY_DEFINE_SCALING_LITERALS(meter, length_d,
-                                       magnitude(corsika::units::si::constants::meter))
+                                       magnitude(corsika::units::si::constants::eV));
 
       // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
 
     } // namespace literals
   }   // namespace units
 }
-
 
 
 namespace corsika::units::si {
