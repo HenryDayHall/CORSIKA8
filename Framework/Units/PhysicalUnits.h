@@ -24,6 +24,31 @@ namespace phys {
   }   // namespace units
 } // namespace phys
 
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(barn, area_d,
+                                       magnitude(corsika::units::si::constants::barn))
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
+}
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(meter, length_d,
+                                       magnitude(corsika::units::si::constants::meter))
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
+}
+
+
 namespace corsika::units::si {
   using namespace phys::units;
   using namespace phys::units::literals;
