@@ -38,14 +38,15 @@ process::EProcessReturn StackInspector<Stack, Trajectory>::DoContinuous(Particle
   // std::cout << "generation  " << countStep << std::endl;
   [[maybe_unused]] int i = 0;
   EnergyType Etot = 0_GeV;
+
   for (auto& iterP : s) {
     EnergyType E = iterP.GetEnergy();
     Etot += E;
-    // std::cout << " particle data: " << i++ << ", id=" << iterP << " | " << std::endl;
+    std::cout << " particle data: " << i++ << ", id=" << iterP.GetPID()<< ", en=" << iterP.GetEnergy() / 1_GeV << " | " << std::endl;
   }
   countStep++;
   // cout << "#=" << countStep << " " << s.GetSize() << " " << Etot/1_GeV << endl;
-  cout << countStep << " " << s.GetSize() << " " << Etot / 1_GeV << " " << endl;
+  cout << "call: " << countStep << " stack size: " << s.GetSize() << " energy: " << Etot / 1_GeV << endl;
   return EProcessReturn::eOk;
 }
 
