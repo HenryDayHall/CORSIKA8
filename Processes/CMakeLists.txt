@@ -1,6 +1,6 @@
 
 add_subdirectory (NullModel)
-#add_subdirectory (Sibyll)
+add_subdirectory (Sibyll)
 add_subdirectory (StackInspector)
 
 #add_custom_target(CORSIKAprocesses)

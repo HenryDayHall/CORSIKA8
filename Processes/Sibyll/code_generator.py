@@ -12,12 +12,14 @@
 import pickle, sys, itertools
 
 
+
 # loads the pickled pythia_db (which is an OrderedDict)
 def load_pythiadb(filename):
     with open(filename, "rb") as f:
         pythia_db = pickle.load(f)
     return pythia_db
-    
+
+
 
 # 
 def read_sibyll_codes(filename, pythia_db):
@@ -31,21 +33,23 @@ def read_sibyll_codes(filename, pythia_db):
                 pythia_db[identifier]["sibyll_code"] = int(sib_code)
             except KeyError as e:
                 raise Exception("Identifier '{:s}' not found in pythia_db".format(identifier))
-            
+
+
 
 # generates the enum to access sibyll particles by readable names
 def generate_sibyll_enum(pythia_db):
-    output = "enum class PID : int16_t {\n"
+    output = "enum class Code : int8_t {\n"
     for identifier, d in pythia_db.items():
         if d.get('sibyll_code') != None:
             output += "  {:s} = {:d},\n".format(identifier, d['sibyll_code'])
     output += "};\n"
     return output
-            
+
+
 
 # generates the look-up table to convert corsika codes to sibyll codes
 def generate_corsika2sibyll(pythia_db):    
-    string = "std::array<PIDIntType, {:d}> constexpr corsika2sibyll = {{".format(len(pythia_db))
+    string = "std::array<SibyllCodeIntType, {:d}> constexpr corsika2sibyll = {{".format(len(pythia_db))
     for identifier, d in pythia_db.items():
         sibCode = d.get("sibyll_code", 0)
         string += "  {:d}, // {:s}\n".format(sibCode, identifier if sibCode else identifier + " (not implemented in SIBYLL)")
@@ -53,30 +57,32 @@ def generate_corsika2sibyll(pythia_db):
     return string
     
 
+
 # generates the look-up table to convert sibyll codes to corsika codes    
-def generate_sibyll2corsika(pythia_db):
-    d = {}
-    for identifier, p in pythia_db.items():
-        if 'sibyll_code' in p:
-            sib_code = p['sibyll_code']
-            corsika_code = p['ngc_code']
-            d[sib_code] = (corsika_code, identifier)
-            
-    string = "std::array<corsika::particles::CodeIntType, {:d}> sibyll2corsika = {{\n".format(len(d))
+def generate_sibyll2corsika(pythia_db) :
+    pDict = {}
+    for identifier, pData in pythia_db.items() :
+        if 'sibyll_code' in pData:
+            sib_code = pData['sibyll_code']
+            # corsika_code = pData['ngc_code']
+            #d[sib_code] = (corsika_code, identifier)
+            pDict[sib_code] = identifier
     
-    for k in range(min(d.keys()), max(d.keys())+1):
-        if k in d:
-            corsika_code = d[k][0]
-            identifier = d[k][1]
+    nPart = max(pDict.keys()) - min(pDict.keys()) + 1
+    string = "std::array<corsika::particles::Code, {:d}> sibyll2corsika = {{\n".format(nPart)
+    
+    for iPart in range(nPart) :
+        if iPart in pDict:
+            identifier = pDict[iPart]
         else:
-            corsika_code = 0
-            identifier = ""
-        string += "  {:d}, // {:s}\n".format(corsika_code, identifier)
+            identifier = "Unknown"
+        string += "  corsika::particles::Code::{:s}, \n".format(identifier)
     
     string += "};\n"
-    string += "PIDIntType constexpr minSibyll = {:d};\n".format(min(d.keys()))
+    string += "SibyllCodeIntType constexpr minSibyll = {:d};\n".format(min(pDict.keys()))
     return string
-    
+
+
 
 # generates the bitset for the flag whether Sibyll knows the particle
 def generate_handles_particle(pythia_db):
@@ -98,6 +104,7 @@ def generate_handles_particle(pythia_db):
     return string
     
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("usage: {:s} <pythia_db.pkl> <sibyll_codes.dat>".format(sys.argv[0]), file=sys.stderr)
@@ -106,7 +113,6 @@ if __name__ == "__main__":
     print("code_generator.py for SIBYLL")
     
     pythia_db = load_pythiadb(sys.argv[1])
-
     read_sibyll_codes(sys.argv[2], pythia_db)
     
     with open("Generated.inc", "w") as f:
