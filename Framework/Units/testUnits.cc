@@ -54,7 +54,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(1_mol / 1_amol == Approx(1e18));
     REQUIRE(1_K / 1_zK == Approx(1e21));
     REQUIRE(1_K / 1_yK == Approx(1e24));
-
+    //    REQUIRE(1_barn / 1_mbarn == Approx(1e3));
+    
     REQUIRE(1_A / 1_hA == Approx(1e-2));
     REQUIRE(1_m / 1_km == Approx(1e-3));
     REQUIRE(1_m / 1_Mm == Approx(1e-6));
