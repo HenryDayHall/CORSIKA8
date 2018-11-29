@@ -14,27 +14,30 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
+#include <bitset2/bitset2.hpp>
+
 #include <map>
 
 namespace corsika::process::sibyll {
+
   enum class Code : int8_t;
-  using PIDIntType = std::underlying_type<Code>::type;
+  using SibyllCodeIntType = std::underlying_type<Code>::type;
 
-#include <corsika/processes/sibyll/Generated.inc>
+#include <corsika/process/sibyll/Generated.inc>
 
-  bool handledBySibyll(corsika::particles::Code pCode) {
-    return handleable[static_cast<CodeIntType>(pCode)];
+  bool HandledBySibyll(corsika::particles::Code pCode) {
+    return handleable[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
-
+  
   Code constexpr ConvertToSibyll(corsika::particles::Code pCode) {
     //~ assert(handledBySibyll(pCode));
-    return static_cast<Code>(corsika2sibyll[static_cast<CodeIntType>(pCode)]);
+    return static_cast<Code>(corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)]);
   }
-
+  
   corsika::particles::Code constexpr ConvertFromSibyll(Code pCode) {
-    return sibyll2corsika[static_cast<PIDIntType>(pCode) - minSibyll];
+    return sibyll2corsika[static_cast<SibyllCodeIntType>(pCode) - minSibyll];
   }
-
+  
 } // namespace corsika::process::sibyll
 
 #endif

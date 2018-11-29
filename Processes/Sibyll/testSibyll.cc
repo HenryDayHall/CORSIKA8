@@ -32,9 +32,9 @@ TEST_CASE("Sibyll", "[processes]") {
   }
 
   SECTION("handledBySibyll") {
-    REQUIRE(process::sibyll::handledBySibyll(corsika::particles::Electron::GetCode()));
+    REQUIRE(process::sibyll::HandledBySibyll(corsika::particles::Electron::GetCode()));
 
     REQUIRE_FALSE(
-        process::sibyll::handledBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+        process::sibyll::HandledBySibyll(corsika::particles::XiPrimeC0::GetCode()));
   }
 }
