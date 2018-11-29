@@ -60,12 +60,15 @@ def generate_corsika2sibyll(pythia_db):
 
 # generates the look-up table to convert sibyll codes to corsika codes    
 def generate_sibyll2corsika(pythia_db) :
+    minID = 0
+    for identifier, pData in pythia_db.items() :
+        if 'sibyll_code' in pData:
+            minID = min(minID, pData['sibyll_code'])
+            
     pDict = {}
     for identifier, pData in pythia_db.items() :
         if 'sibyll_code' in pData:
-            sib_code = pData['sibyll_code']
-            # corsika_code = pData['ngc_code']
-            #d[sib_code] = (corsika_code, identifier)
+            sib_code = pData['sibyll_code'] - minID
             pDict[sib_code] = identifier
     
     nPart = max(pDict.keys()) - min(pDict.keys()) + 1
@@ -79,7 +82,7 @@ def generate_sibyll2corsika(pythia_db) :
         string += "  corsika::particles::Code::{:s}, \n".format(identifier)
     
     string += "};\n"
-    string += "SibyllCodeIntType constexpr minSibyll = {:d};\n".format(min(pDict.keys()))
+    string += "SibyllCodeIntType constexpr minSibyll = {:d};\n".format(minID)
     return string
 
 

@@ -37,7 +37,7 @@ namespace corsika::process::sibyll {
   corsika::particles::Code constexpr ConvertFromSibyll(Code pCode) {
     return sibyll2corsika[static_cast<SibyllCodeIntType>(pCode) - minSibyll];
   }
-  
+
 } // namespace corsika::process::sibyll
 
 #endif
