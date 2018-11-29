@@ -33,10 +33,20 @@ TEST_CASE("Sibyll", "[processes]") {
             13 );
   }
 
-  SECTION("KnownBySibyll") {
+  SECTION("handledBySibyll") {
     REQUIRE(process::sibyll::KnownBySibyll(corsika::particles::Electron::GetCode()));
 
     REQUIRE_FALSE(
         process::sibyll::KnownBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+  }
+
+  SECTION("cross-section type") {
+    REQUIRE(process::sibyll::CanInteract(corsika::particles::Proton::GetCode()));
+    REQUIRE(process::sibyll::CanInteract(corsika::particles::XiCPlus::GetCode()));
+
+    REQUIRE_FALSE(
+		  process::sibyll::CanInteract(corsika::particles::Electron::GetCode()));
+    REQUIRE_FALSE(
+		  process::sibyll::CanInteract(corsika::particles::SigmaC0::GetCode()));
   }
 }

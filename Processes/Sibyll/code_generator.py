@@ -28,10 +28,11 @@ def read_sibyll_codes(filename, pythia_db):
             line = line.strip()
             if line[0] == '#':
                 continue            
-            identifier, sib_code, canInteractFlag, xsctnId = line.split()
+            identifier, sib_code, canInteractFlag, xsType = line.split()
             try:
                 pythia_db[identifier]["sibyll_code"] = int(sib_code)
                 pythia_db[identifier]["sibyll_canInteract"] = int(canInteractFlag)
+                pythia_db[identifier]["xsType"] = int(xsType)
             except KeyError as e:
                 raise Exception("Identifier '{:s}' not found in pythia_db".format(identifier))
 
@@ -126,7 +127,7 @@ def generate_interacting_particle(pythia_db):
         low = numeric & 0xFFFFFFFF
         numeric = numeric >> 32
         string += "  0x{:0x},\n".format(low)
-        
+    
     string += "}}};\n"
     return string
     

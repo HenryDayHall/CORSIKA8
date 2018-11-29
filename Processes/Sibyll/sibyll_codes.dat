@@ -1,3 +1,5 @@
+# input file for particle conversion to/from SIBYLL
+# the format of this file is: "corsika-identifier" "sibyll-id" "can-interact-in-sibyll" "cross-section-type"
 Electron 3 0 0
 Positron 2 0 0
 NuE 15 0 0
