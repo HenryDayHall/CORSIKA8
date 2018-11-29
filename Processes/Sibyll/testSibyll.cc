@@ -33,11 +33,16 @@ TEST_CASE("Sibyll", "[processes]") {
             13 );
   }
 
+<<<<<<< HEAD
   SECTION("handledBySibyll") {
+=======
+  SECTION("KnownBySibyll") {
+>>>>>>> ca4ed4f568320603f81b9a4f0c19a45fb6dd1d58
     REQUIRE(process::sibyll::KnownBySibyll(corsika::particles::Electron::GetCode()));
 
     REQUIRE_FALSE(
         process::sibyll::KnownBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+<<<<<<< HEAD
   }
 
   SECTION("canInteractInSibyll") {
@@ -48,5 +53,7 @@ TEST_CASE("Sibyll", "[processes]") {
 		  process::sibyll::CanInteract(corsika::particles::Electron::GetCode()));
     REQUIRE_FALSE(
 		  process::sibyll::CanInteract(corsika::particles::SigmaC0::GetCode()));
+=======
+>>>>>>> ca4ed4f568320603f81b9a4f0c19a45fb6dd1d58
   }
 }

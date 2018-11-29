@@ -23,6 +23,14 @@ extern"C"{
   }s_plist_;
 
 
+  extern struct {
+    double  cbr[223+16+12+8];
+    int    kdec[1338+6*(16+12+8)];
+    int    lbarp[99];
+    int     idb[99];
+  }s_csydec_;
+
+  
   // additional particle stack for the mother particles of unstable particles
   // stable particles have entry zero
   extern struct { 

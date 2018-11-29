@@ -28,7 +28,11 @@ def read_sibyll_codes(filename, pythia_db):
             line = line.strip()
             if line[0] == '#':
                 continue            
+<<<<<<< HEAD
             identifier, sib_code, canInteractFlag, xsType = line.split()
+=======
+            identifier, sib_code, canInteractFlag, xsctnId = line.split()
+>>>>>>> ca4ed4f568320603f81b9a4f0c19a45fb6dd1d58
             try:
                 pythia_db[identifier]["sibyll_code"] = int(sib_code)
                 pythia_db[identifier]["sibyll_canInteract"] = int(canInteractFlag)
