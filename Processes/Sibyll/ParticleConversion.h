@@ -25,10 +25,14 @@ namespace corsika::process::sibyll {
 
 #include <corsika/process/sibyll/Generated.inc>
 
-  bool HandledBySibyll(corsika::particles::Code pCode) {
-    return handleable[static_cast<corsika::particles::CodeIntType>(pCode)];
+  bool KnownBySibyll(corsika::particles::Code pCode) {
+    return isKnown[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
-  
+
+  bool CanInteract(corsika::particles::Code pCode) {
+    return canInteract[static_cast<corsika::particles::CodeIntType>(pCode)];
+  }
+
   Code constexpr ConvertToSibyll(corsika::particles::Code pCode) {
     //~ assert(handledBySibyll(pCode));
     return static_cast<Code>(corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)]);
