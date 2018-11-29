@@ -19,6 +19,7 @@
 
 #include <corsika/random/RNGManager.h>
 #include <corsika/cascade/sibyll2.3c.h>
+#include <corsika/cascade/SibStack.h>
 
 //#include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -103,6 +104,7 @@ public:
      */
     // FOR NOW: set target to proton
     int kTarget = 1; //p.GetPID();
+  
     std::cout << "ProcessSplit: " << " DoDiscrete: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
     if (E < 8.5_GeV || Ecm < 10_GeV ) {
       std::cout << "ProcessSplit: " << " DoDiscrete: dropping particle.." << std::endl;
@@ -111,32 +113,45 @@ public:
     } else {
       // Sibyll does not know about units..
       double sqs = Ecm / 1_GeV;
-      // running sibyll
+      // running sibyll, filling stack
       sibyll_( kBeam, kTarget, sqs);
       // running decays
       //decsib_();
       // print final state
       int print_unit = 6;
       sib_list_( print_unit );
-      
+
       // delete current particle
       p.Delete();
 
+      // add particles from sibyll to stack
+      // link to sibyll stack
+      SibStack ss;
+      /*
+	get transformation between Stack-frame and SibStack-frame
+	for EAS Stack-frame is lab. frame, could be different for CRMC-mode
+	the transformation should be derived from the input momenta
+	in general transformation is rotation + boost
+      */
       const EnergyType proton_mass = 0.93827_GeV;
       const double gamma  = ( E + proton_mass ) / ( Ecm );
       const double gambet =  sqrt( E * E - proton_mass * proton_mass ) / Ecm;
-      
-      // add particles from sibyll to stack
-      for(int i=0; i<s_plist_.np; ++i){
+
+      // SibStack does not know about momentum yet so we need counter to access momentum array in Sibyll
+      int i = -1;
+      for (auto &p: ss){
+	++i;
 	//transform to lab. frame, primitve
-	const double en_lab = gambet * s_plist_.p[2][i] + gamma * s_plist_.p[3][i];
+	const double en_lab = gambet * s_plist_.p[2][i] + gamma * p.GetEnergy();	
 	// add to corsika stack
 	s.NewParticle().SetEnergy( en_lab * 1_GeV );
       }
+     
     }
   }
-
-  void Init() //{ fCount = 0; }
+  
+  
+  void Init() 
   {
     fCount = 0;
 
@@ -163,6 +178,7 @@ public:
     sibyll_ini_();
 
     // set particles stable / unstable
+
   }
   
   int GetCount() { return fCount; }
@@ -177,6 +193,7 @@ int main(){
   const auto sequence = p0 + p1;
   setup::Stack stack;
 
+  
   corsika::cascade::Cascade EAS(sequence, stack);
 
   stack.Clear();
