@@ -28,7 +28,7 @@ def read_sibyll_codes(filename, pythia_db):
             line = line.strip()
             if line[0] == '#':
                 continue            
-            identifier, sib_code, canInteractFlag = line.split()
+            identifier, sib_code, canInteractFlag, xsctnId = line.split()
             try:
                 pythia_db[identifier]["sibyll_code"] = int(sib_code)
                 pythia_db[identifier]["sibyll_canInteract"] = int(canInteractFlag)
@@ -148,3 +148,4 @@ if __name__ == "__main__":
         print(generate_corsika2sibyll(pythia_db), file=f)
         print(generate_known_particle(pythia_db), file=f)
         print(generate_sibyll2corsika(pythia_db), file=f)
+        print(generate_interacting_particle(pythia_db), file=f)

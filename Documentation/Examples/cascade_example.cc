@@ -42,19 +42,11 @@ public:
 
   template <typename Particle>
   double MinStepLength(Particle& p) const {
-    // beam particles for sibyll : 1, 2, 3 for p, pi, k
-    corsika::particles::Code c_id = p.GetPID();
-    corsika::process::sibyll::Code s_id = process::sibyll::ConvertToSibyll( p.GetPID() );
-    corsika::particles::Code p_id_2 = process::sibyll::ConvertFromSibyll( corsika::process::sibyll::Code::Proton );
-    cout << p_id_2 << endl;
-    std::cout << "MinStepLength: particle input " << "corsika id: " << c_id << std::endl;
-    auto test = static_cast<corsika::process::sibyll::SibyllCodeIntType>(s_id);
-    std::cout << "MinStepLength: particle input " << "sibyll id: |" << (int)test << "|" <<std::endl;
-											  // std::cout << "MinStepLength: particle input " << "sibyll id: " << process::sibyll::ConvertToSibyll( p.GetPID() ) << std::endl;
-    cout << p.GetPID() << " --> " << process::sibyll::ConvertToSibyllRaw( p.GetPID() ) << endl;
-    
-    int kBeam   = 1;
 
+    // beam particles for sibyll : 1, 2, 3 for p, pi, k
+    // read from cross section code table
+    int kBeam   =  1;
+    
     /* 
        the target should be defined by the Environment,
        ideally as full particle object so that the four momenta 
@@ -98,6 +90,9 @@ public:
 
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
+    cout << "DoDiscrete: " << p.GetPID() << " interaction? " << process::sibyll::CanInteract( p.GetPID() )  << endl; 
+    if( process::sibyll::CanInteract( p.GetPID() ) ){
+    
     // get energy of particle from stack
     /*
       stack is in GeV in lab. frame
@@ -107,8 +102,9 @@ public:
     */
     EnergyType E   = p.GetEnergy();
     EnergyType Ecm = sqrt( 2. * E * 0.93827_GeV );
-    // FOR NOW: set beam to proton
-    int kBeam   = 13; //p.GetPID();
+
+    int kBeam   = process::sibyll::ConvertToSibyllRaw( p.GetPID() );
+    
     /* 
        the target should be defined by the Environment,
        ideally as full particle object so that the four momenta 
@@ -156,10 +152,15 @@ public:
 	//transform to lab. frame, primitve
 	const double en_lab = gambet * s_plist_.p[2][i] + gamma * p.GetEnergy();	
 	// add to corsika stack
-	s.NewParticle().SetEnergy( en_lab * 1_GeV );
+	auto pnew = s.NewParticle();
+	pnew.SetEnergy( en_lab * 1_GeV );
+	pnew.SetPID( process::sibyll::ConvertFromSibyll( p.GetPID() ) );
+	
       }
      
     }
+    }else
+      p.Delete();
   }
   
   
@@ -183,14 +184,31 @@ public:
     // test random number generator
     std::cout << "ProcessSplit: " << " test sequence of random numbers."  << std::endl;
     int a = 0;
-    for(int i=0; i<5; ++i)
+    for(int i=0; i<8; ++i)
       std::cout << i << " " << s_rndm_(a) << std::endl;
     
     //initialize Sibyll
     sibyll_ini_();
 
     // set particles stable / unstable
+    // use stack to loop over particles
+    setup::Stack ds;
+    ds.NewParticle().SetPID( Code::Proton  );
+    ds.NewParticle().SetPID( Code::Neutron );
+    ds.NewParticle().SetPID( Code::PiPlus  );
+    ds.NewParticle().SetPID( Code::PiMinus );
+    ds.NewParticle().SetPID( Code::KPlus   );
+    ds.NewParticle().SetPID( Code::KMinus  );
+    ds.NewParticle().SetPID( Code::K0Long  );
+    ds.NewParticle().SetPID( Code::K0Short );
 
+    for( auto &p: ds){
+      int s_id = process::sibyll::ConvertToSibyllRaw( p.GetPID() );
+      // set particle stable by setting table value negative
+      cout << "ProcessSplit: Init: setting " << p.GetPID() << "(" << s_id << ")" << " stable in Sibyll .." << endl;
+      s_csydec_.idb[ s_id ] = -s_csydec_.idb[ s_id-1 ];
+      p.Delete();
+    }
   }
   
   int GetCount() { return fCount; }
