@@ -62,7 +62,7 @@ public:
     sib_sigma_hnuc_(kBeam, kTarget, beamEnergy, prodCrossSection, dummy );
     
     std::cout << "ProcessSplit: " << "MinStep: sibyll return: " << prodCrossSection << std::endl;
-    CrossSectionType sig = prodCrossSection  / 1000. * barn;
+    CrossSectionType sig = prodCrossSection * 1_mbarn;
     std::cout << "ProcessSplit: " << "MinStep: CrossSection (mb): " << sig / 1_mbarn << std::endl;
 
     const MassType nucleon_mass = 0.93827_GeV / corsika::units::si::constants::cSquared;

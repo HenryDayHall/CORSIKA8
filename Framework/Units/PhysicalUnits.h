@@ -63,7 +63,18 @@ namespace corsika::units::si {
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
 
-  using CrossSectionType = phys::units::quantity<phys::units::area_d, double>;
+  // defining momentum you suckers
+  // dimensions, i.e. composition in base SI dimensions
+  using momentum_d                     = phys::units::dimensions< 1, 1, -1 >;
+  // defining the unit of momentum, so far newton-meter, maybe go to HEP?
+  constexpr phys::units::quantity< momentum_d > newton_second   { meter * kilogram / second };
+  // defining the type
+  using MomentumType = phys::units::quantity<momentum_d, double>;
+
+  // defining cross section
+  using sigma_d      = phys::units::dimensions< 2, 0, 0 >;
+  constexpr phys::units::quantity< sigma_d  > barn       {Rep(1.e-28L) * meter * meter};
+  using CrossSectionType = phys::units::quantity<sigma_d, double>;
   
 } // end namespace corsika::units::si
 

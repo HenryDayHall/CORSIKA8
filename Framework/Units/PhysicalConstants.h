@@ -54,8 +54,9 @@ namespace corsika::units::si::constants {
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};
 
-  // barn
-  constexpr quantity<area_d> barn{Rep(1.e-28L) * meter * meter};
+  // barn moved to PhysicalUnits
+  //  constexpr quantity<area_d> barn{Rep(1.e-28L) * meter * meter};
+  
   
   // etc.
 
