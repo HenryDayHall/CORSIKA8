@@ -20,8 +20,8 @@
 
 namespace corsika::process::sibyll {
 
-  enum class Code : int8_t;
-  using SibyllCodeIntType = std::underlying_type<Code>::type;
+  enum class SibyllCode : int8_t;
+  using SibyllCodeIntType = std::underlying_type<SibyllCode>::type;
 
 #include <corsika/process/sibyll/Generated.inc>
 
@@ -33,12 +33,12 @@ namespace corsika::process::sibyll {
     return canInteract[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 
-  Code constexpr ConvertToSibyll(corsika::particles::Code pCode) {
+  SibyllCode constexpr ConvertToSibyll(corsika::particles::Code pCode) {
     //~ assert(handledBySibyll(pCode));
-    return static_cast<Code>(corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)]);
+    return static_cast<SibyllCode>(corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)]);
   }
   
-  corsika::particles::Code constexpr ConvertFromSibyll(Code pCode) {
+  corsika::particles::Code constexpr ConvertFromSibyll(SibyllCode pCode) {
     return sibyll2corsika[static_cast<SibyllCodeIntType>(pCode) - minSibyll];
   }
 
