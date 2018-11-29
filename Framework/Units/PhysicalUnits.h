@@ -24,17 +24,6 @@ namespace phys {
   }   // namespace units
 } // namespace phys
 
-namespace phys {
-  namespace units {
-    namespace literals {
-      QUANTITY_DEFINE_SCALING_LITERALS(barn, area_d,
-                                       magnitude(corsika::units::si::constants::barn))
-
-      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
-
-    } // namespace literals
-  }   // namespace units
-}
 
 namespace phys {
   namespace units {
@@ -47,6 +36,7 @@ namespace phys {
     } // namespace literals
   }   // namespace units
 }
+
 
 
 namespace corsika::units::si {
@@ -77,6 +67,30 @@ namespace corsika::units::si {
   using CrossSectionType = phys::units::quantity<sigma_d, double>;
   
 } // end namespace corsika::units::si
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
+                                       magnitude(corsika::units::si::constants::barn))
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
+}
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(newton_second, corsika::units::si::momentum_d,
+                                       magnitude(corsika::units::si::newton_second))
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
+}
 
 // we want to call the operator<< without namespace... I think
 using namespace phys::units::io;
