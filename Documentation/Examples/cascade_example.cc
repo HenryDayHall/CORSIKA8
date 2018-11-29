@@ -44,8 +44,8 @@ public:
   double MinStepLength(Particle& p) const {
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     corsika::particles::Code c_id = p.GetPID();
-    corsika::process::sibyll::Code s_id = process::sibyll::ConvertToSibyll( p.GetPID() );
-    corsika::particles::Code p_id_2 = process::sibyll::ConvertFromSibyll( corsika::process::sibyll::Code::Proton );
+    corsika::process::sibyll::SibyllCode s_id = process::sibyll::ConvertToSibyll( p.GetPID() );
+    corsika::particles::Code p_id_2 = process::sibyll::ConvertFromSibyll( corsika::process::sibyll::SibyllCode::Proton );
     cout << p_id_2 << endl;
     std::cout << "MinStepLength: particle input " << "corsika id: " << c_id << std::endl;
     auto test = static_cast<corsika::process::sibyll::SibyllCodeIntType>(s_id);
@@ -157,8 +157,7 @@ public:
 	const double en_lab = gambet * s_plist_.p[2][i] + gamma * p.GetEnergy();	
 	// add to corsika stack
 	s.NewParticle().SetEnergy( en_lab * 1_GeV );
-      }
-     
+      }     
     }
   }
   

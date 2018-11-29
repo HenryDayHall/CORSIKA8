@@ -23,20 +23,30 @@ TEST_CASE("Sibyll", "[processes]") {
 
   SECTION("Sibyll -> Corsika") {
     REQUIRE(corsika::particles::Electron::GetCode() ==
-            process::sibyll::ConvertFromSibyll(process::sibyll::Code::Electron));
+            process::sibyll::ConvertFromSibyll(process::sibyll::SibyllCode::Electron));
   }
 
   SECTION("Corsika -> Sibyll") {
     REQUIRE(process::sibyll::ConvertToSibyll(corsika::particles::Electron::GetCode()) ==
-            process::sibyll::Code::Electron);
+            process::sibyll::SibyllCode::Electron);
     REQUIRE(process::sibyll::ConvertToSibyllRaw(corsika::particles::Proton::GetCode()) ==
             13 );
   }
 
   SECTION("handledBySibyll") {
-    REQUIRE(process::sibyll::HandledBySibyll(corsika::particles::Electron::GetCode()));
+    REQUIRE(process::sibyll::KnownBySibyll(corsika::particles::Electron::GetCode()));
 
     REQUIRE_FALSE(
-        process::sibyll::HandledBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+        process::sibyll::KnownBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+  }
+
+  SECTION("canInteractInSibyll") {
+    REQUIRE(process::sibyll::CanInteract(corsika::particles::Proton::GetCode()));
+    REQUIRE(process::sibyll::CanInteract(corsika::particles::XiCPlus::GetCode()));
+
+    REQUIRE_FALSE(
+		  process::sibyll::CanInteract(corsika::particles::Electron::GetCode()));
+    REQUIRE_FALSE(
+		  process::sibyll::CanInteract(corsika::particles::SigmaC0::GetCode()));
   }
 }
