@@ -51,6 +51,8 @@ public:
     auto test = static_cast<corsika::process::sibyll::SibyllCodeIntType>(s_id);
     std::cout << "MinStepLength: particle input " << "sibyll id: |" << (int)test << "|" <<std::endl;
 											  // std::cout << "MinStepLength: particle input " << "sibyll id: " << process::sibyll::ConvertToSibyll( p.GetPID() ) << std::endl;
+    cout << p.GetPID() << " --> " << process::sibyll::ConvertToSibyllRaw( p.GetPID() ) << endl;
+    
     int kBeam   = 1;
 
     /* 
