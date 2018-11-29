@@ -10,6 +10,7 @@ set (
   CORSIKAcascade_HEADERS
   Cascade.h
   sibyll2.3c.h
+  SibStack.h
   )
 
 #set (
@@ -71,6 +72,7 @@ target_link_libraries (
   CORSIKAsibyll
   CORSIKAcascade
   ProcessStackInspector
+  CORSIKAstackinterface
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
