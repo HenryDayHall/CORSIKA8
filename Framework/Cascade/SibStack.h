@@ -6,6 +6,7 @@
 
 #include <corsika/stack/Stack.h>
 #include <corsika/cascade/sibyll2.3c.h>
+#include <corsika/process/sibyll/ParticleConversion.h>
 
 using namespace std;
 using namespace corsika::stack;
@@ -17,8 +18,8 @@ class SibStackData {
   
   void Clear() { s_plist_.np = 0; }
   
-  int GetSize() const { return s_plist_.np-1;  }
-  int GetCapacity() const { return s_plist_.np-1; }
+  int GetSize() const { return s_plist_.np;  }
+  int GetCapacity() const { return 8000; }
 
   
   void SetId(const int i, const int v) { s_plist_.llist[i]=v; }
@@ -45,6 +46,9 @@ class ParticleInterface : public ParticleBase<StackIteratorInterface> {
  public:
   void SetEnergy(const double v) { GetStackData().SetEnergy(GetIndex(), v); }
   double GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
+  void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
+  corsika::process::sibyll::SibyllCode GetPID() const { return static_cast<corsika::process::sibyll::SibyllCode> (GetStackData().GetId(GetIndex())); }
+  
 };
 
 
