@@ -29,6 +29,8 @@ TEST_CASE("Sibyll", "[processes]") {
   SECTION("Corsika -> Sibyll") {
     REQUIRE(process::sibyll::ConvertToSibyll(corsika::particles::Electron::GetCode()) ==
             process::sibyll::Code::Electron);
+    REQUIRE(process::sibyll::ConvertToSibyllRaw(corsika::particles::Proton::GetCode()) ==
+            13 );
   }
 
   SECTION("handledBySibyll") {
