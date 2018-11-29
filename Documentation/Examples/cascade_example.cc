@@ -18,10 +18,11 @@
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/random/RNGManager.h>
+
 #include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/cascade/SibStack.h>
+#include <corsika/process/sibyll/ParticleConversion.h>
 
-//#include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 using namespace corsika;
 using namespace corsika::process;
@@ -41,6 +42,11 @@ public:
   template <typename Particle>
   double MinStepLength(Particle& p) const {
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
+    Code c_id = p.GetPID();
+    //sibyll::SibyllCodeIntType s_id = process::sibyll::ConvertToSibyll( p.GetPID() );
+    std::cout << "MinStepLength: particle input " << "corsika id: " << c_id << std::endl;
+      //std::cout << "MinStepLength: particle input " << "sibyll id: " << s_id << std::endl;
+    //    std::cout << "MinStepLength: particle input " << "sibyll id: " << process::sibyll::ConvertToSibyll( p.GetPID() ) << std::endl;
     int kBeam   = 1;
 
     /* 

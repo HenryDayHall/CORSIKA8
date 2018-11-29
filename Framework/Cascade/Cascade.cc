@@ -38,5 +38,6 @@ void Cascade::Step(Particle& particle) {
   corsika::geometry::LineTrajectory trajectory =
       fProcesseList.Transport(particle, nextStep);
   sequence.DoContinuous(particle, trajectory);
+  // whats going on here? Everywhere else DoDiscrete is passed a Stack reference as well
   sequence.DoDiscrete(particle);
 }
