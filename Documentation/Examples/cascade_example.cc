@@ -30,6 +30,7 @@ using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
 
+#include <typeinfo>
 #include <iostream>
 using namespace std;
 
@@ -42,11 +43,14 @@ public:
   template <typename Particle>
   double MinStepLength(Particle& p) const {
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
-    Code c_id = p.GetPID();
-    //sibyll::SibyllCodeIntType s_id = process::sibyll::ConvertToSibyll( p.GetPID() );
+    corsika::particles::Code c_id = p.GetPID();
+    corsika::process::sibyll::Code s_id = process::sibyll::ConvertToSibyll( p.GetPID() );
+    corsika::particles::Code p_id_2 = process::sibyll::ConvertFromSibyll( corsika::process::sibyll::Code::Proton );
+    cout << p_id_2 << endl;
     std::cout << "MinStepLength: particle input " << "corsika id: " << c_id << std::endl;
-      //std::cout << "MinStepLength: particle input " << "sibyll id: " << s_id << std::endl;
-    //    std::cout << "MinStepLength: particle input " << "sibyll id: " << process::sibyll::ConvertToSibyll( p.GetPID() ) << std::endl;
+    auto test = static_cast<corsika::process::sibyll::SibyllCodeIntType>(s_id);
+    std::cout << "MinStepLength: particle input " << "sibyll id: |" << (int)test << "|" <<std::endl;
+											  // std::cout << "MinStepLength: particle input " << "sibyll id: " << process::sibyll::ConvertToSibyll( p.GetPID() ) << std::endl;
     int kBeam   = 1;
 
     /* 
