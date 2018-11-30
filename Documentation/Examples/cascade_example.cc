@@ -161,9 +161,7 @@ public:
 	auto pnew = s.NewParticle();
 	pnew.SetEnergy( en_lab * 1_GeV );
 	pnew.SetPID( process::sibyll::ConvertFromSibyll( p.GetPID() ) );
-	
       }
-     
     }
     }else
       p.Delete();
