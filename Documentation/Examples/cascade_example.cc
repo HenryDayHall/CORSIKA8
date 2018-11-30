@@ -156,7 +156,9 @@ public:
 	//transform to lab. frame, primitve
 	const double en_lab = gambet * s_plist_.p[2][i] + gamma * p.GetEnergy();	
 	// add to corsika stack
-	s.NewParticle().SetEnergy( en_lab * 1_GeV );
+	auto pnew = s.NewParticle();
+	pnew.SetEnergy( en_lab * 1_GeV );
+	pnew.SetPID( process::sibyll::ConvertFromSibyll( p.GetPID() ) );
       }     
     }
   }
