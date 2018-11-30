@@ -43,6 +43,7 @@ TEST_CASE("Sibyll", "[processes]") {
   }
 
   SECTION("canInteractInSibyll") {
+
     REQUIRE(process::sibyll::CanInteract(corsika::particles::Proton::GetCode()));
     REQUIRE(process::sibyll::CanInteract(corsika::particles::Code::XiCPlus));
 
