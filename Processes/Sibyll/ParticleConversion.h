@@ -45,6 +45,10 @@ namespace corsika::process::sibyll {
   int ConvertToSibyllRaw(corsika::particles::Code pCode){
     return  (int)static_cast<corsika::process::sibyll::SibyllCodeIntType>( corsika::process::sibyll::ConvertToSibyll( pCode ) );
   }
+
+  int GetSibyllXSCode(corsika::particles::Code pCode) {
+    return corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)];
+  }
   
 } // namespace corsika::process::sibyll
 
