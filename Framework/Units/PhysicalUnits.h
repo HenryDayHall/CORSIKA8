@@ -24,17 +24,6 @@ namespace phys {
   }   // namespace units
 } // namespace phys
 
-namespace phys {
-  namespace units {
-    namespace literals {
-      QUANTITY_DEFINE_SCALING_LITERALS(barn, area_d,
-                                       magnitude(corsika::units::si::constants::barn))
-
-      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
-
-    } // namespace literals
-  }   // namespace units
-}
 
 namespace phys {
   namespace units {
@@ -47,6 +36,7 @@ namespace phys {
     } // namespace literals
   }   // namespace units
 }
+
 
 
 namespace corsika::units::si {
@@ -63,9 +53,44 @@ namespace corsika::units::si {
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
 
-  using CrossSectionType = phys::units::quantity<phys::units::area_d, double>;
+  // defining momentum you suckers
+  // dimensions, i.e. composition in base SI dimensions
+  using momentum_d                     = phys::units::dimensions< 1, 1, -1 >;
+  // defining the unit of momentum, so far newton-meter, maybe go to HEP?
+  constexpr phys::units::quantity< momentum_d > newton_second   { meter * kilogram / second };
+  // defining the type
+  using MomentumType = phys::units::quantity<momentum_d, double>;
+
+  // defining cross section
+  using sigma_d      = phys::units::dimensions< 2, 0, 0 >;
+  constexpr phys::units::quantity< sigma_d  > barn       {Rep(1.e-28L) * meter * meter};
+  using CrossSectionType = phys::units::quantity<sigma_d, double>;
   
 } // end namespace corsika::units::si
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
+                                       magnitude(corsika::units::si::constants::barn))
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
+}
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(newton_second, corsika::units::si::momentum_d,
+                                       magnitude(corsika::units::si::newton_second))
+
+      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+
+    } // namespace literals
+  }   // namespace units
+}
 
 // we want to call the operator<< without namespace... I think
 using namespace phys::units::io;
