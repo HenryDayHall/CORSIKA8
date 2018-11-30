@@ -82,4 +82,12 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     const auto E3 = E2 + 100_GeV + pow(10, lgE) * 1_GeV;
     REQUIRE(E3 == 180_GeV);
   }
+
+  SECTION("Special") {
+
+    const LengthType farAway = std::numeric_limits<double>::infinity() * meter;
+    REQUIRE(farAway > 100000_m);
+    REQUIRE_FALSE(farAway < 1e19*meter);
+    
+  }
 }
