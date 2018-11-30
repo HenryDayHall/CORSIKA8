@@ -343,14 +343,14 @@ public:
     EnergyType E   = p.GetEnergy();
     MassType m     = corsika::particles::GetMass(p.GetPID());
     // env.GetDensity();
-    const MassDensityType density = 1.e3 * kilogram  / ( 1_cm * 1_cm * 1_cm ); 
+    const MassDensityType density = 1.25e-3 * kilogram  / ( 1_cm * 1_cm * 1_cm ); 
     
     const double gamma = E / m / constants::cSquared;
     // lifetimes not implemented yet
     TimeType t0;
     switch( p.GetPID() ){
     case Code::PiPlus :
-      t0 = 1.e-5 * 1_s;
+      t0 = 2.6e-8 * 1_s;
       break;
       
     case Code::KPlus :
