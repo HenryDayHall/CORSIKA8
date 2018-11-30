@@ -337,12 +337,42 @@ class ProcessDecay : public corsika::process::BaseProcess<ProcessDecay> {
 public:
   ProcessDecay() {}
   void Init() {}
+  
   template <typename Particle>
   double MinStepLength(Particle& p) const {
+    EnergyType E   = p.GetEnergy();
+    MassType m     = corsika::particles::GetMass(p.GetPID());
+    // env.GetDensity();
+    const MassDensityType density = 1.e3 * kilogram  / ( 1_cm * 1_cm * 1_cm ); 
+    
+    const double gamma = E / m / constants::cSquared;
+    // lifetimes not implemented yet
+    TimeType t0;
+    switch( p.GetPID() ){
+    case Code::PiPlus :
+      t0 = 1.e-5 * 1_s;
+      break;
+      
+    case Code::KPlus :
+      t0 = 1.e-5 * 1_s;
+      break;
+      
+    default:
+      t0 = 1.e8 * 1_s;
+      break;
+    }
+    cout << "ProcessDecay: MinStep: t0: " << t0 << endl;
+    cout << "ProcessDecay: MinStep: gamma: " << gamma << endl;
+    cout << "ProcessDecay: MinStep: density: " << density << endl;
+    // return as column density
+    const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
+    cout << "ProcessDecay: MinStep: x0: " << x0 << endl;
+    return x0;
   }
-   template <typename Particle, typename Stack>
+  
+  template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
-   }
+  }
   
   template <typename Particle, typename Trajectory, typename Stack>
   EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
@@ -359,7 +389,8 @@ int main() {
   tracking_line::TrackingLine<setup::Stack> tracking;
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
-  const auto sequence = p0 + p1;
+  ProcessDecay p2;
+  const auto sequence = p0 + p1 + p2;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
