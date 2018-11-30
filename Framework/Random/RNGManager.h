@@ -12,6 +12,8 @@
 #ifndef _include_RNGManager_h_
 #define _include_RNGManager_h_
 
+#include <corsika/utl/Singleton.h>
+
 #include <map>
 #include <random>
 #include <sstream>
@@ -25,10 +27,16 @@ namespace corsika::random {
 
   using RNG = std::mt19937; //!< the actual RNG type that will be used
 
-  class RNGManager {
-    std::map<std::string, RNG> rngs;
-    std::map<std::string, std::seed_seq> seeds;
+  class RNGManager : public corsika::utl::Singleton<RNGManager> {
 
+    friend class corsika::utl::Singleton<RNGManager>;
+    
+    std::map<std::string, RNG> rngs;
+    std::map<std::string, std::seed_seq> seeds;    
+
+  protected:
+    RNGManager() {}
+    
   public:
     /*!
      * This function is to be called by a module requiring a random-number

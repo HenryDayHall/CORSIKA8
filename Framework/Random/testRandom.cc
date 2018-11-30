@@ -20,7 +20,7 @@ using namespace corsika::random;
 
 SCENARIO("random-number streams can be registered and retrieved") {
   GIVEN("a RNGManager") {
-    RNGManager rngManager;
+    RNGManager& rngManager = RNGManager::GetInstance();
 
     WHEN("a sequence is registered by name") {
       rngManager.RegisterRandomStream("stream_A");
