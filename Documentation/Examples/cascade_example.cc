@@ -333,6 +333,25 @@ double s_rndm_(int&) {
   return rmng() / (double)rmng.max();
 }
 
+class ProcessDecay : public corsika::process::BaseProcess<ProcessDecay> {
+public:
+  ProcessDecay() {}
+  void Init() {}
+  template <typename Particle>
+  double MinStepLength(Particle& p) const {
+  }
+   template <typename Particle, typename Stack>
+  void DoDiscrete(Particle& p, Stack& s) const {
+   }
+  
+  template <typename Particle, typename Trajectory, typename Stack>
+  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+    return EProcessReturn::eOk;
+  }
+
+};
+
+
 int main() {
 
   // coordinate system, get global frame of reference
