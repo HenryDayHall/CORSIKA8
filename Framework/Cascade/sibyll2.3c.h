@@ -85,6 +85,7 @@ extern"C"{
   //double fpni_(double&, int&);
 
   void sib_sigma_hnuc_(int&,int&,double&,double&,double&);
+  void sib_sigma_hp_(int&,double&,double&,double&,double&,double*,double&,double&);
   
   double s_rndm_(int&);
 
