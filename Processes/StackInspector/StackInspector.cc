@@ -12,6 +12,8 @@
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/logging/Logger.h>
+
 #include <iostream>
 using namespace std;
 
@@ -31,11 +33,8 @@ process::EProcessReturn StackInspector<Stack, Trajectory>::DoContinuous(Particle
                                                                         Trajectory&,
                                                                         Stack& s) const {
 
-  // using namespace corsika::particles::io;
-
   static int countStep = 0;
   if (!fReport) return EProcessReturn::eOk;
-  // std::cout << "generation  " << countStep << std::endl;
   [[maybe_unused]] int i = 0;
   EnergyType Etot = 0_GeV;
 
@@ -54,9 +53,6 @@ template <typename Stack, typename Trajectory>
 double StackInspector<Stack, Trajectory>::MinStepLength(Particle&) const {
   return 0;
 }
-
-template <typename Stack, typename Trajectory>
-void StackInspector<Stack, Trajectory>::DoDiscrete(Particle&, Stack&) const {}
 
 template <typename Stack, typename Trajectory>
 void StackInspector<Stack, Trajectory>::Init() {}

@@ -189,7 +189,7 @@ namespace corsika::process {
   };
 
   /// the +operator assembles many BaseProcess, ContinuousProcess, and
-  /// DiscreteProcess objects into a ProcessSequence, all combinatoris
+  /// DiscreteProcess objects into a ProcessSequence, all combinatorics
   /// must be allowed, this is why we define a macro to define all
   /// combinations here:
 

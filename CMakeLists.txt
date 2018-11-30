@@ -15,7 +15,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
 # enable warnings and disallow non-standard language
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+add_definitions(-Wall -pedantic -Wextra)
 
 set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
@@ -33,16 +33,16 @@ ENABLE_LANGUAGE (Fortran)
 #  #-j ${PROCESSOR_COUNT}
 #  #     DEPENDENCIES corsika
 #  )
-   
+
 #add_custom_target (corsika_pre_build)
 #add_custom_command (TARGET corsika_pre_build PRE_BUILD COMMAND "${PROJECT_SOURCE_DIR}/pre_compile.py")
 
 # dependencies
-#find_package (Boost 1.40 COMPONENTS program_options REQUIRED)
+find_package (Boost 1.60 REQUIRED)
 find_package (Eigen3 REQUIRED)
 #find_package (HDF5) # not yet needed
 
-# order of subdirectories 
+# order of subdirectories
 add_subdirectory (ThirdParty)
 #add_subdirectory (Utilities)
 add_subdirectory (Framework)

@@ -22,9 +22,9 @@ We also want to point you to the [MCnet guidelines](https://gitlab.ikp.kit.edu/A
 
 ## Installation
 
-Prerequisites: eigen3, cmake, g++, git. On Ubuntu 18.04, just do:
+Prerequisites: eigen3, boost, cmake, g++, git. On Ubuntu 18.04, just do:
 ```
-sudo apt-get install libeigen3-dev cmake g++ git
+sudo apt-get install libeigen3-dev libboost-dev cmake g++ git
 ```
 
 Follow these steps to download and install CORSIKA8-milestone1
@@ -40,3 +40,14 @@ make install
 make test
 ```
 and if you want to see how the Heitler model works and is implemented, see `Framework/Cascade/testCascade.cc` for a starting point. 
+
+### Generating doxygen documentation
+
+To generate the documentation, you need doxygen and graphviz. On Ubuntu 18.04, do:
+```
+sudo apt-get install doxygen graphviz
+```
+Switch to the corsika build directory and do
+```
+make doxygen
+```

@@ -36,9 +36,6 @@ namespace corsika::process {
       // template <typename Particle>
       double MinStepLength(Particle&) const;
 
-      // template <typename Particle, typename Stack>
-      void DoDiscrete(Particle&, Stack&) const;
-
     private:
       bool fReport;
     };
