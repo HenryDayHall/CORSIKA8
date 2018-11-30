@@ -172,12 +172,12 @@ public:
     
     // initialize random numbers for sibyll
     // FOR NOW USE SIBYLL INTERNAL !!!
-    rnd_ini_();
+    //    rnd_ini_();
     
-    // corsika::random::RNGManager rmng;
-    // const std::string str_name = "s_rndm";
-    // rmng.RegisterRandomStream(str_name);
-
+    corsika::random::RNGManager & rmng = corsika::random::RNGManager::GetInstance();;
+    const std::string str_name = "s_rndm";
+    rmng.RegisterRandomStream(str_name);
+    
     // //    corsika::random::RNG srng;
     // auto srng = rmng.GetRandomStream("s_rndm");
 
@@ -215,6 +215,13 @@ public:
 
 private:
 };
+
+double s_rndm_(int &)
+{
+  static corsika::random::RNG& rmng = corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");;
+  return rmng()/(double)rmng.max();
+}
+
 
 int main(){
 

@@ -73,7 +73,7 @@ extern"C"{
   void dec_ini_();
 
   // subroutine to initiate random number generator
-  void rnd_ini_();
+  //void rnd_ini_();
   
   // print event
   void sib_list_(int&);
