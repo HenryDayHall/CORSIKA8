@@ -54,12 +54,16 @@ public:
      */
     // target nuclei: A < 18
     // FOR NOW: assume target is oxygen
-    int kTarget = 16;
+    int kTarget = 1;
     double beamEnergy =  p.GetEnergy() / 1_GeV; 
     std::cout << "ProcessSplit: " << "MinStep: en: " << beamEnergy << " pid:" << kBeam << std::endl;
-    double prodCrossSection,dummy;
-    
-    sib_sigma_hnuc_(kBeam, kTarget, beamEnergy, prodCrossSection, dummy );
+    double prodCrossSection,dummy,dum1,dum2,dum3,dum4;
+    double dumdif[3];
+
+    if(kTarget==1)
+      sib_sigma_hp_(kBeam, beamEnergy, dum1, dum2, prodCrossSection, dumdif,dum3, dum4 );
+    else
+      sib_sigma_hnuc_(kBeam, kTarget, beamEnergy, prodCrossSection, dummy );
     
     std::cout << "ProcessSplit: " << "MinStep: sibyll return: " << prodCrossSection << std::endl;
     CrossSectionType sig = prodCrossSection * 1_mbarn;
