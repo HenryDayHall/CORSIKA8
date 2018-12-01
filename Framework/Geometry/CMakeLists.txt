@@ -8,14 +8,14 @@ set (
   GEOMETRY_HEADERS
   Vector.h
   Point.h
+  Line.h
   Sphere.h
   CoordinateSystem.h
   Helix.h
   BaseVector.h
   QuantityVector.h
-  BaseTrajectory.h
-  LineTrajectory.h
   Trajectory.h
+  BaseTrajectory.h
   )
 
 set (

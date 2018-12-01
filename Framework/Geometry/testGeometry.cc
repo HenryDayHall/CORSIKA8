@@ -15,7 +15,7 @@
 
 #include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/Helix.h>
-#include <corsika/geometry/LineTrajectory.h>
+#include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Trajectory.h>
@@ -144,17 +144,17 @@ TEST_CASE("Trajectories") {
     Vector<SpeedType::dimension_type> v0(rootCS,
                                          {1_m / second, 0_m / second, 0_m / second});
 
-    LineTrajectory const lineTrajectory(r0, v0);
-    CHECK((lineTrajectory.GetPosition(2_s).GetCoordinates() -
+    Line const line(r0, v0);
+    CHECK((line.GetPosition(2_s).GetCoordinates() -
            QuantityVector<length_d>(2_m, 0_m, 0_m))
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    BaseTrajectory const* base = &lineTrajectory;
-    CHECK(lineTrajectory.GetPosition(2_s).GetCoordinates() ==
-          base->GetPosition(2_s).GetCoordinates());
+    Trajectory<Line> base(line, 0_s, 1_s);
+    CHECK(line.GetPosition(2_s).GetCoordinates() ==
+          base.GetPosition(2_s).GetCoordinates());
 
-    CHECK(base->DistanceBetween(1_s, 2_s) / 1_m == Approx(1));
+    CHECK(base.GetDistance(1_s, 2_s) / 1_m == Approx(1));
   }
 
   SECTION("Helix") {
@@ -178,10 +178,10 @@ TEST_CASE("Trajectories") {
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    BaseTrajectory const* base = &helix;
+    Trajectory<Helix> const base(helix, 0_s, 1_s);
     CHECK(helix.GetPosition(1234_s).GetCoordinates() ==
-          base->GetPosition(1234_s).GetCoordinates());
+          base.GetPosition(1234_s).GetCoordinates());
 
-    CHECK(base->DistanceBetween(1_s, 2_s) / 1_m == Approx(5));
+    CHECK(base.GetDistance(1_s, 2_s) / 1_m == Approx(5));
   }
 }

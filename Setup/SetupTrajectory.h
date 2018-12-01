@@ -12,11 +12,12 @@
 #ifndef _corsika_setup_setuptrajectory_h_
 #define _corsika_setup_setuptrajectory_h_
 
-#include <corsika/geometry/LineTrajectory.h>
+#include <corsika/geometry/Line.h>
+#include <corsika/geometry/Trajectory.h>
 
 namespace corsika::setup {
 
-  typedef corsika::geometry::LineTrajectory Trajectory;
+  typedef corsika::geometry::Trajectory<corsika::geometry::Line> Trajectory;
 }
 
 #endif
