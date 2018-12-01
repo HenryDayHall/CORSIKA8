@@ -33,12 +33,13 @@ namespace corsika::stack {
     using corsika::units::si::second;
     using corsika::units::si::meter;
     using corsika::units::si::joule;
+    using corsika::units::si::newton_second;
     using corsika::units::si::energy_d;
+    using corsika::units::si::momentum_d;
     using corsika::geometry::Point;
     using corsika::geometry::Vector;
 
-#warning replace this with a proper momentum vector:
-    typedef Vector<energy_d> MomentumVector; // should be momentum_d !!!
+    typedef Vector<momentum_d> MomentumVector; 
 
     /**
      * Example of a particle object on the stack.
@@ -123,7 +124,7 @@ namespace corsika::stack {
 #warning this here makes no sense: see issue #48
 	auto const dummyCS = corsika::geometry::CoordinateSystem::CreateRootCS();
 	fMomentum.push_back(MomentumVector(dummyCS,
-					   {0 * joule, 0 * joule, 0 * joule}));	
+					   {0 * newton_second, 0 * newton_second, 0 * newton_second}));	
 	fPosition.push_back(Point(dummyCS,
 				  {0 * meter, 0 * meter, 0 * meter}));
 	fTime.push_back(0 * second);
@@ -143,7 +144,7 @@ namespace corsika::stack {
 
       std::vector<Code> fDataPID;
       std::vector<EnergyType> fDataE;
-      std::vector<Vector<corsika::units::si::energy_d>> fMomentum; // should be Momentum !!!!
+      std::vector<MomentumVector> fMomentum; 
       std::vector<Point> fPosition;
       std::vector<TimeType> fTime;
 

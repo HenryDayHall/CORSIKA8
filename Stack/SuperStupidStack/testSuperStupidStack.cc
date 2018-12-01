@@ -36,7 +36,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     p.SetPID(corsika::particles::Code::Electron);
     p.SetEnergy(1.5_GeV);
     auto const dummyCS = corsika::geometry::CoordinateSystem::CreateRootCS();
-    p.SetMomentum(MomentumVector(dummyCS, {1 * joule, 1 * joule, 1 * joule}));	
+    p.SetMomentum(MomentumVector(dummyCS, {1 * newton_second, 1 * newton_second, 1 * newton_second}));	
     p.SetPosition(Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
     p.SetTime(100_s);
     
