@@ -36,16 +36,17 @@ namespace corsika::stack {
     using corsika::units::si::energy_d;
     using corsika::geometry::Point;
     using corsika::geometry::Vector;
-    
-    typedef Vector<energy_d> MomentumVector;
-    
+
+#warning replace this with a proper momentum vector:
+    typedef Vector<energy_d> MomentumVector; // should be momentum_d !!!
+
     /**
      * Example of a particle object on the stack.
      */
 
     template <typename StackIteratorInterface>
-    class ParticleInterface : public ParticleBase<StackIteratorInterface> {
-
+    class ParticleInterface : public ParticleBase<StackIteratorInterface> {    
+      
       using ParticleBase<StackIteratorInterface>::GetStackData;
       using ParticleBase<StackIteratorInterface>::GetIndex;
 
@@ -89,9 +90,9 @@ namespace corsika::stack {
       
       Code GetPID(const int i) const { return fDataPID[i]; }
       EnergyType GetEnergy(const int i) const { return fDataE[i]; }
-      MomentumVector GetMomentum(const int i) { return fMomentum[i]; }
-      Point GetPosition(const int i) { return fPosition[i]; }
-      TimeType GetTime(const int i) { return fTime[i]; }
+      MomentumVector GetMomentum(const int i) const { return fMomentum[i]; }
+      Point GetPosition(const int i) const { return fPosition[i]; }
+      TimeType GetTime(const int i) const { return fTime[i]; }
 
       /**
        *   Function to copy particle at location i2 in stack to i1

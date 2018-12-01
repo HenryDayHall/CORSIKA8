@@ -28,3 +28,24 @@ install (
   DESTINATION
   include/${SuperStupidStack_NAMESPACE}
   )
+
+# ----------------
+# code unit testing
+add_executable (
+  testSuperStupidStack
+  testSuperStupidStack.cc
+  )
+
+target_link_libraries (
+  testSuperStupidStack
+#  CORSIKAutls
+  ProcessStackInspector
+  CORSIKAgeometry
+  CORSIKAunits
+  CORSIKAthirdparty # for catch2
+  )
+
+add_test (
+  NAME testSuperStupidStack
+  COMMAND testSuperStupidStack
+  )
