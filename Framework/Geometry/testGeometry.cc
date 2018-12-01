@@ -116,8 +116,8 @@ TEST_CASE("Sphere") {
   Sphere sphere(center, 5_m);
 
   SECTION("isInside") {
-    REQUIRE_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
-    REQUIRE(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
+    REQUIRE_FALSE(sphere.Contains(Point(rootCS, {100_m, 0_m, 0_m})));
+    REQUIRE(sphere.Contains(Point(rootCS, {2_m, 3_m, 4_m})));
   }
 }
 

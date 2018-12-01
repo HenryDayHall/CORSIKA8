@@ -9,6 +9,7 @@ set (
   Vector.h
   Point.h
   Sphere.h
+  Volume.h
   CoordinateSystem.h
   Helix.h
   BaseVector.h

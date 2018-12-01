@@ -39,10 +39,10 @@ int main() {
   std::cout << "p2-p1 norm^2: " << norm << std::endl;
 
   Sphere s(p1, 10_m); // define a sphere around a point with a radius
-  std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;
+  std::cout << "p1 inside s:  " << s.Contains(p2) << std::endl;
 
   Sphere s2(p1, 3_um); // another sphere
-  std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;
+  std::cout << "p1 inside s2: " << s2.Contains(p2) << std::endl;
 
   // let's try parallel projections:
   auto const v1 = Vector<length_d>(root, {1_m, 1_m, 0_m});
