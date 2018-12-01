@@ -38,6 +38,7 @@ namespace corsika::units::si {
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
   using MassDensityType = phys::units::quantity<phys::units::mass_density_d, double>;
+  using GrammageType = phys::units::quantity<phys::units::dimensions<-2,1>, double>;
 
 } // end namespace corsika::units::si
 
