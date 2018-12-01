@@ -94,9 +94,12 @@ public:
 
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
+<<<<<<< HEAD
     cout << "DoDiscrete: " << p.GetPID() << " interaction? " << process::sibyll::CanInteract( p.GetPID() )  << endl; 
     if( process::sibyll::CanInteract( p.GetPID() ) ){
     
+=======
+>>>>>>> fa101a34281211b0c7e3293ffd9463b0bfdd8ff5
     // get energy of particle from stack
     /*
       stack is in GeV in lab. frame
@@ -106,9 +109,14 @@ public:
     */
     EnergyType E   = p.GetEnergy();
     EnergyType Ecm = sqrt( 2. * E * 0.93827_GeV );
+<<<<<<< HEAD
 
     int kBeam   = process::sibyll::ConvertToSibyllRaw( p.GetPID() );
     
+=======
+    // FOR NOW: set beam to proton
+    int kBeam   = 13; //p.GetPID();
+>>>>>>> fa101a34281211b0c7e3293ffd9463b0bfdd8ff5
     /* 
        the target should be defined by the Environment,
        ideally as full particle object so that the four momenta 
@@ -159,10 +167,15 @@ public:
 	auto pnew = s.NewParticle();
 	pnew.SetEnergy( en_lab * 1_GeV );
 	pnew.SetPID( process::sibyll::ConvertFromSibyll( p.GetPID() ) );
+<<<<<<< HEAD
       }
     }
     }else
       p.Delete();
+=======
+      }     
+    }
+>>>>>>> fa101a34281211b0c7e3293ffd9463b0bfdd8ff5
   }
   
   
@@ -186,13 +199,18 @@ public:
     // test random number generator
     std::cout << "ProcessSplit: " << " test sequence of random numbers."  << std::endl;
     int a = 0;
+<<<<<<< HEAD
     for(int i=0; i<8; ++i)
+=======
+    for(int i=0; i<5; ++i)
+>>>>>>> fa101a34281211b0c7e3293ffd9463b0bfdd8ff5
       std::cout << i << " " << s_rndm_(a) << std::endl;
     
     //initialize Sibyll
     sibyll_ini_();
 
     // set particles stable / unstable
+<<<<<<< HEAD
     // use stack to loop over particles
     setup::Stack ds;
     ds.NewParticle().SetPID( Code::Proton  );
@@ -211,6 +229,9 @@ public:
       s_csydec_.idb[ s_id ] = -s_csydec_.idb[ s_id-1 ];
       p.Delete();
     }
+=======
+
+>>>>>>> fa101a34281211b0c7e3293ffd9463b0bfdd8ff5
   }
   
   int GetCount() { return fCount; }
