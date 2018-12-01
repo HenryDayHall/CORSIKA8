@@ -17,28 +17,32 @@
 
 namespace corsika::geometry {
 
-  class Trajectory {
-    corsika::units::si::TimeType const fTStart, fTEnd;
-    BaseTrajectory const& fTrajectory;
+  template <typename T>
+  class Trajectory : public BaseTrajectory {
+
+    T fTraj;
 
   public:
-    Trajectory(corsika::units::si::TimeType pTStart, corsika::units::si::TimeType pTEnd,
-               BaseTrajectory const& pTrajectory)
-        : fTStart(pTStart)
-        , fTEnd(pTEnd)
-        , fTrajectory(pTrajectory) {}
+    Trajectory(T const& theT, corsika::units::si::TimeType pTStart,
+               corsika::units::si::TimeType pTEnd)
+        //: T(theT), fTStart(pTStart), fTEnd(pTEnd) {}
+        : BaseTrajectory(pTStart, pTEnd)
+        , fTraj(theT) {}
 
     Point GetPosition(corsika::units::si::TimeType t) const {
-      return fTrajectory.GetPosition(t + fTStart);
+      return fTraj.GetPosition(t + fTStart);
     }
 
     Point GetPosition(double u) const {
       return GetPosition(fTEnd * u + fTStart * (1 - u));
     }
+    
+    LengthType GetDistance(corsika::units::si::TimeType t1,
+			   corsika::units::si::TimeType t2) const {
+      return fTraj.DistanceBetween(t1, t2);
+    }
+     
 
-    auto GetEndpoint() const { return GetPosition(fTEnd); }
-
-    auto GetStartpoint() const { return GetPosition(fTStart); }
   };
 
 } // namespace corsika::geometry

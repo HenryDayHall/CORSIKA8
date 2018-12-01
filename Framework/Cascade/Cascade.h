@@ -12,10 +12,10 @@
 #ifndef _include_Cascade_h_
 #define _include_Cascade_h_
 
-#include <corsika/geometry/LineTrajectory.h> // to be removed. for dummy trajectory only
-#include <corsika/geometry/Point.h>          // to be removed. for dummy trajectory only
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/units/PhysicalUnits.h>
+
+#include <corsika/setup/SetupTrajectory.h>
 
 using namespace corsika::units::si;
 
@@ -62,16 +62,17 @@ namespace corsika::cascade {
         // DoCascadeEquations(); //
       }
     }
-
+    
     void Step(Particle& particle) {
       [[maybe_unused]] double nextStep = fProcesseList.MinStepLength(particle);
       // corsika::utls::ignore(nextStep);
       auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
-      corsika::geometry::LineTrajectory
+      corsika::geometry::Trajectory<corsika::geometry::Line>
           trajectory( // trajectory is not yet used. this is a dummy.
-              corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
-              corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
-                  root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second));
+		     corsika::geometry::Line(corsika::geometry::Point(root, {0_m, 0_m, 0_m}),
+					     corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
+														      root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second)),
+		     0_s, 1_s);
       corsika::process::EProcessReturn status =
           fProcesseList.DoContinuous(particle, trajectory, fStack);
       if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
