@@ -14,27 +14,42 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
+#include <bitset2/bitset2.hpp>
+
 #include <map>
 
 namespace corsika::process::sibyll {
-  enum class Code : int8_t;
-  using PIDIntType = std::underlying_type<Code>::type;
 
-#include <corsika/processes/sibyll/Generated.inc>
+  enum class SibyllCode : int8_t;
+  using SibyllCodeIntType = std::underlying_type<SibyllCode>::type;
 
-  bool handledBySibyll(corsika::particles::Code pCode) {
-    return handleable[static_cast<CodeIntType>(pCode)];
+#include <corsika/process/sibyll/Generated.inc>
+
+  bool KnownBySibyll(corsika::particles::Code pCode) {
+    return isKnown[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 
-  Code constexpr ConvertToSibyll(corsika::particles::Code pCode) {
+  bool CanInteract(corsika::particles::Code pCode) {
+    return canInteract[static_cast<corsika::particles::CodeIntType>(pCode)];
+  }
+
+  SibyllCode constexpr ConvertToSibyll(corsika::particles::Code pCode) {
     //~ assert(handledBySibyll(pCode));
-    return static_cast<Code>(corsika2sibyll[static_cast<CodeIntType>(pCode)]);
+    return static_cast<SibyllCode>(corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)]);
+  }
+  
+  corsika::particles::Code constexpr ConvertFromSibyll(SibyllCode pCode) {
+    return sibyll2corsika[static_cast<SibyllCodeIntType>(pCode) - minSibyll];
   }
 
-  corsika::particles::Code constexpr ConvertFromSibyll(Code pCode) {
-    return sibyll2corsika[static_cast<PIDIntType>(pCode) - minSibyll];
+  int ConvertToSibyllRaw(corsika::particles::Code pCode){
+    return  (int)static_cast<corsika::process::sibyll::SibyllCodeIntType>( corsika::process::sibyll::ConvertToSibyll( pCode ) );
   }
 
+  int GetSibyllXSCode(corsika::particles::Code pCode) {
+    return corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)];
+  }
+  
 } // namespace corsika::process::sibyll
 
 #endif

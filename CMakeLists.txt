@@ -15,11 +15,13 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
 # enable warnings and disallow non-standard language
-add_definitions(-Wall -pedantic -Wextra)
+add_definitions(-Wall -pedantic -Wextra -Wno-ignored-qualifiers)
 
 set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
+
+ENABLE_LANGUAGE (Fortran)
 
 # unit testing coverage, does not work yet
 #include (CodeCoverage)

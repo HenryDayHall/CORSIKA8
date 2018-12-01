@@ -17,24 +17,45 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
+#include <iostream>
+using namespace std;
 using namespace corsika;
 
 TEST_CASE("Sibyll", "[processes]") {
 
   SECTION("Sibyll -> Corsika") {
     REQUIRE(corsika::particles::Electron::GetCode() ==
-            process::sibyll::ConvertFromSibyll(process::sibyll::Code::Electron));
+            process::sibyll::ConvertFromSibyll(process::sibyll::SibyllCode::Electron));
   }
 
   SECTION("Corsika -> Sibyll") {
     REQUIRE(process::sibyll::ConvertToSibyll(corsika::particles::Electron::GetCode()) ==
-            process::sibyll::Code::Electron);
+            process::sibyll::SibyllCode::Electron);
+    REQUIRE(process::sibyll::ConvertToSibyllRaw(corsika::particles::Proton::GetCode()) ==
+            13);
   }
 
-  SECTION("handledBySibyll") {
-    REQUIRE(process::sibyll::handledBySibyll(corsika::particles::Electron::GetCode()));
+  SECTION("KnownBySibyll") {
+    REQUIRE(process::sibyll::KnownBySibyll(corsika::particles::Electron::GetCode()));
 
     REQUIRE_FALSE(
-        process::sibyll::handledBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+        process::sibyll::KnownBySibyll(corsika::particles::XiPrimeC0::GetCode()));
+  }
+
+  SECTION("canInteractInSibyll") {
+
+    REQUIRE(process::sibyll::CanInteract(corsika::particles::Proton::GetCode()));
+    REQUIRE(process::sibyll::CanInteract(corsika::particles::Code::XiCPlus));
+
+    REQUIRE_FALSE(process::sibyll::CanInteract(corsika::particles::Electron::GetCode()));
+    REQUIRE_FALSE(process::sibyll::CanInteract(corsika::particles::SigmaC0::GetCode()));
+  }
+  
+  SECTION("cross-section type") {
+
+    REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::Electron) == 0);
+    REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::K0Long) == 3);
+    REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::SigmaPlus) == 1);
+    REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::PiMinus) == 2);
   }
 }

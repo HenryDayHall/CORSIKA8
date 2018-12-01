@@ -10,23 +10,32 @@ the individual copyrights and licences here!
 @section PhysUnits
 
 The PhysUnits library is an external dependency included here just for
-convenience: 
+convenience:
 
-Original source code from: https://github.com/martinmoene/PhysUnits-CT-Cpp11#references
+Original source code from:
+https://github.com/martinmoene/PhysUnits-CT-Cpp11#references
 
-Licence: BSL-1.0 (https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
+Licence: BSL-1.0
+(https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
 
 References: https://github.com/martinmoene/PhysUnits-CT-Cpp11#references
 
 
 @section catch2
  
-The catch2 unit testing library is from: https://github.com/catchorg/Catch2
-Licence: BSL-1.0 (https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
+The catch2 unit testing library is from:
+https://github.com/catchorg/Catch2 Licence: BSL-1.0
+(https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
 References: https://github.com/catchorg/Catch2
 
 @section eigen3
  
 eigen3 ....
+
+@section bitset2
+
+see https://github.com/ClaasBontus/bitset2, this package was obtained
+from a Boost Software License 1.0.
+
 
 */
