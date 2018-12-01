@@ -29,7 +29,6 @@ def read_sibyll_codes(filename, pythia_db):
             if line[0] == '#':
                 continue            
             identifier, sib_code, canInteractFlag, xsType = line.split()
-added pid to sibstack
             try:
                 pythia_db[identifier]["sibyll_code"] = int(sib_code)
                 pythia_db[identifier]["sibyll_canInteract"] = int(canInteractFlag)

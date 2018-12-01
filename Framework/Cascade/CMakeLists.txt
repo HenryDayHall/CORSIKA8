@@ -27,7 +27,6 @@ set (
   CORSIKAsibyll_SOURCES
   sibyll2.3c.f
   gasdev.f
-#  rndm_dbl.f
   )
 add_library (CORSIKAsibyll STATIC ${CORSIKAsibyll_SOURCES})
 
