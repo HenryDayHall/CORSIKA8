@@ -10,7 +10,6 @@
  */
 
 #include <corsika/cascade/Cascade.h>
-#include <corsika/geometry/LineTrajectory.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 
