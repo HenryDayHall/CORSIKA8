@@ -12,37 +12,43 @@
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 
-#include <corsika/geometry/BaseTrajectory.h>
+//#include <corsika/geometry/BaseTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::geometry {
 
   template <typename T>
-  class Trajectory : public BaseTrajectory {
+  class Trajectory : public T { // BaseTrajectory {
 
-    T fTraj;
+    // T fTraj;
+    corsika::units::si::TimeType fTStart, fTEnd;
 
   public:
+    using T::GetPosition;
+    using T::GetDistanceBetween;
+
     Trajectory(T const& theT, corsika::units::si::TimeType pTStart,
                corsika::units::si::TimeType pTEnd)
-        //: T(theT), fTStart(pTStart), fTEnd(pTEnd) {}
-        : BaseTrajectory(pTStart, pTEnd)
-        , fTraj(theT) {}
+        : T(theT)
+        , fTStart(pTStart)
+        , fTEnd(pTEnd) {}
+    //: BaseTrajectory(pTStart, pTEnd)
+    //  , fTraj(theT) {}
 
-    Point GetPosition(corsika::units::si::TimeType t) const {
+    /*Point GetPosition(corsika::units::si::TimeType t) const {
       return fTraj.GetPosition(t + fTStart);
-    }
+      }*/
 
     Point GetPosition(double u) const {
-      return GetPosition(fTEnd * u + fTStart * (1 - u));
+      return T::GetPosition(fTEnd * u + fTStart * (1 - u));
     }
-    
+
+    /*
     LengthType GetDistance(corsika::units::si::TimeType t1,
-			   corsika::units::si::TimeType t2) const {
+                           corsika::units::si::TimeType t2) const {
       return fTraj.DistanceBetween(t1, t2);
     }
-     
-
+    */
   };
 
 } // namespace corsika::geometry

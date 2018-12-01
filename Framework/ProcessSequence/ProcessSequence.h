@@ -17,7 +17,11 @@
 #include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
+#include <corsika/setup/SetupTrajectory.h>
+
 //#include <type_traits> // still needed ?
+
+using corsika::setup::Trajectory;
 
 namespace corsika::process {
 
@@ -143,7 +147,7 @@ namespace corsika::process {
     // example for a trait-based call:
     // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
 
-    template <typename Particle, typename Trajectory, typename Stack>
+    template <typename Particle, typename Stack>
     inline EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (!std::is_base_of<DiscreteProcess<T1>, T1>::value) {
@@ -155,9 +159,10 @@ namespace corsika::process {
       return ret;
     }
 
-    template <typename D>
-    inline double MinStepLength(D& d) const {
-      return std::min(A.MinStepLength(d), B.MinStepLength(d));
+    template <typename Particle>
+      inline void MinStepLength(Particle& p, Trajectory& step) const {
+      A.MinStepLength(p, step);
+      B.MinStepLength(p, step);
     }
 
     /*

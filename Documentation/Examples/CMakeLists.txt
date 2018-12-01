@@ -18,6 +18,7 @@ add_executable (staticsequence_example staticsequence_example.cc)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence
   CORSIKAunits
+  CORSIKAgeometry
   CORSIKAlogging)
 install (TARGETS staticsequence_example DESTINATION share/examples)
 

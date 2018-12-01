@@ -34,9 +34,9 @@ namespace corsika::geometry {
       return r0 + v0 * t;
     }
     
-    LengthType DistanceBetween(corsika::units::si::TimeType t1,
-                               corsika::units::si::TimeType t2) const {
-      assert(t2 >= t1);
+    LengthType GetDistanceBetween(corsika::units::si::TimeType t1,
+				  corsika::units::si::TimeType t2) const {
+      // assert(t2 >= t1);
       return v0.norm() * (t2 - t1);
     }
   };

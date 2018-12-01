@@ -15,6 +15,7 @@
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
+using corsika::setup::Trajectory;
 
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
@@ -34,11 +35,11 @@ public:
   ProcessSplit() {}
 
   template <typename Particle>
-  double MinStepLength(Particle&) const {
-    return 0;
+  void MinStepLength(Particle&, Trajectory& ) const {
+    //return 0;
   }
 
-  template <typename Particle, typename Trajectory, typename Stack>
+  template <typename Particle, typename Stack>
   EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
     // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
@@ -58,19 +59,34 @@ public:
 
   void Init() { fCount = 0; }
 
-  int GetCount() { return fCount; }
+  int GetCount() const { return fCount; }
 
 private:
 };
 
+template<typename Stack>
+class NewtonTracking { // naja.. not yet
+  typedef typename Stack::ParticleType Particle;
+public:
+  void Init() {}
+  corsika::setup::Trajectory GetTrack(Particle& p) {
+    corsika::geometry::Vector<SpeedType::dimension_type> v = p.GetDirection();// * 1_m/1_s;
+    corsika::geometry::Line traj(p.GetPosition(), v);
+    return corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns);
+  }
+};
+
+
 TEST_CASE("Cascade", "[Cascade]") {
 
-  stack_inspector::StackInspector<setup::Stack, setup::Trajectory> p0(true);
+  NewtonTracking<setup::Stack> tracking;
+  
+  stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(sequence, stack);
+  corsika::cascade::Cascade EAS(tracking, sequence, stack);
 
   stack.Clear();
   auto particle = stack.NewParticle();

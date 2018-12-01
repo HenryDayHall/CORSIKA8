@@ -154,7 +154,7 @@ TEST_CASE("Trajectories") {
     CHECK(line.GetPosition(2_s).GetCoordinates() ==
           base.GetPosition(2_s).GetCoordinates());
 
-    CHECK(base.GetDistance(1_s, 2_s) / 1_m == Approx(1));
+    CHECK(base.GetDistanceBetween(1_s, 2_s) / 1_m == Approx(1));
   }
 
   SECTION("Helix") {
@@ -182,6 +182,6 @@ TEST_CASE("Trajectories") {
     CHECK(helix.GetPosition(1234_s).GetCoordinates() ==
           base.GetPosition(1234_s).GetCoordinates());
 
-    CHECK(base.GetDistance(1_s, 2_s) / 1_m == Approx(5));
+    CHECK(base.GetDistanceBetween(1_s, 2_s) / 1_m == Approx(5));
   }
 }

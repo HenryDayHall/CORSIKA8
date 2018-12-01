@@ -14,6 +14,8 @@
 
 #include <corsika/logging/Logger.h>
 
+#include <corsika/setup/SetupTrajectory.h>
+
 #include <iostream>
 using namespace std;
 
@@ -21,18 +23,16 @@ using namespace corsika;
 using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 
-template <typename Stack, typename Trajectory>
-StackInspector<Stack, Trajectory>::StackInspector(const bool aReport)
+template <typename Stack>
+StackInspector<Stack>::StackInspector(const bool aReport)
     : fReport(aReport) {}
 
-template <typename Stack, typename Trajectory>
-StackInspector<Stack, Trajectory>::~StackInspector() {}
+template <typename Stack>
+StackInspector<Stack>::~StackInspector() {}
 
-template <typename Stack, typename Trajectory>
-process::EProcessReturn StackInspector<Stack, Trajectory>::DoContinuous(Particle&,
-                                                                        Trajectory&,
-                                                                        Stack& s) const {
-
+template <typename Stack>
+process::EProcessReturn StackInspector<Stack>::DoContinuous(
+    Particle&, corsika::setup::Trajectory&, Stack& s) const {
   static int countStep = 0;
   if (!fReport) return EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
@@ -40,22 +40,26 @@ process::EProcessReturn StackInspector<Stack, Trajectory>::DoContinuous(Particle
   for (auto& iterP : s) {
     EnergyType E = iterP.GetEnergy();
     Etot += E;
+    cout << "i=" << setw(5) << fixed << (i++)
+	 << ", id=" << setw(30) << iterP.GetPID()
+         << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
+         //<< " pos=" << iterP.GetPosition()
+         << endl;
   }
   countStep++;
   cout << countStep << " " << s.GetSize() << " " << Etot / 1_GeV << " " << endl;
   return EProcessReturn::eOk;
 }
 
-template <typename Stack, typename Trajectory>
-double StackInspector<Stack, Trajectory>::MinStepLength(Particle&) const {
-  return 0;
+template <typename Stack>
+void StackInspector<Stack>::MinStepLength(Particle&,
+                                          corsika::setup::Trajectory&) const {
+  // return 0;
 }
 
-template <typename Stack, typename Trajectory>
-void StackInspector<Stack, Trajectory>::Init() {}
+template <typename Stack>
+void StackInspector<Stack>::Init() {}
 
 #include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
 
-template class corsika::process::stack_inspector::StackInspector<setup::Stack,
-                                                                 setup::Trajectory>;
+template class corsika::process::stack_inspector::StackInspector<setup::Stack>;

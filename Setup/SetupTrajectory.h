@@ -12,12 +12,22 @@
 #ifndef _corsika_setup_setuptrajectory_h_
 #define _corsika_setup_setuptrajectory_h_
 
+#include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Trajectory.h>
 
+#include <variant>
+
 namespace corsika::setup {
 
-  typedef corsika::geometry::Trajectory<corsika::geometry::Line> Trajectory;
-}
+  using corsika::geometry::Helix;
+  using corsika::geometry::Line;
+
+  typedef std::variant<std::monostate,
+                       corsika::geometry::Trajectory<Line>,
+                       corsika::geometry::Trajectory<Helix>>
+      Trajectory;
+
+} // namespace corsika::setup
 
 #endif

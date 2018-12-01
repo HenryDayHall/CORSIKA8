@@ -30,6 +30,7 @@ namespace corsika::stack {
     using corsika::particles::Code;
     using corsika::units::si::EnergyType;
     using corsika::units::si::TimeType;
+    using corsika::units::si::SpeedType;
     using corsika::units::si::second;
     using corsika::units::si::meter;
     using corsika::units::si::joule;
@@ -62,6 +63,12 @@ namespace corsika::stack {
       MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }
       Point GetPosition() const { return GetStackData().GetPosition(GetIndex()); }
       TimeType GetTime() const { return GetStackData().GetTime(GetIndex()); }
+      
+#warning this does not really work, nor make sense:
+      Vector<SpeedType::dimension_type> GetDirection() const {
+	auto P = GetMomentum();
+	return P/P.norm() * (corsika::units::si::meter/corsika::units::si::second); }
+    
     };
 
     /**

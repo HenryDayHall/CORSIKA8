@@ -15,7 +15,7 @@ set (
   BaseVector.h
   QuantityVector.h
   Trajectory.h
-  BaseTrajectory.h
+  # BaseTrajectory.h
   )
 
 set (

@@ -42,6 +42,7 @@ add_executable (
 
 target_link_libraries (
   testProcessSequence
+  CORSIKAgeometry
   CORSIKAprocesssequence
   CORSIKAthirdparty # for catch2
   )
