@@ -12,6 +12,7 @@ target_link_libraries (
   CORSIKAstackinterface
   CORSIKAunits
   CORSIKAparticles
+  CORSIKAgeometry
   )
 
 target_include_directories (
