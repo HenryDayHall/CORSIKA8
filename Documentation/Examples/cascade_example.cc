@@ -12,6 +12,7 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
+#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -40,7 +41,7 @@ public:
   ProcessSplit() {}
 
   template <typename Particle>
-  double MinStepLength(Particle& p) const {
+  double MinStepLength(Particle& p, setup::Trajectory&) const {
 
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
@@ -91,7 +92,7 @@ public:
     return next_step;
   }
 
-  template <typename Particle, typename Trajectory, typename Stack>
+  template <typename Particle, typename Stack>
   EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
     // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
@@ -237,12 +238,13 @@ double s_rndm_(int&) {
 
 int main() {
 
-  stack_inspector::StackInspector<setup::Stack, setup::Trajectory> p0(true);
+  tracking_line::TrackingLine<setup::Stack> tracking;
+  stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(sequence, stack);
+  corsika::cascade::Cascade EAS(tracking, sequence, stack);
 
   stack.Clear();
   auto particle = stack.NewParticle();

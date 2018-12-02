@@ -13,6 +13,7 @@
 
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
+#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 
@@ -72,26 +73,10 @@ public:
 private:
 };
 
-template <typename Stack>
-class NewtonTracking { // naja.. not yet
-  typedef typename Stack::ParticleType Particle;
-
-public:
-  void Init() {}
-  corsika::setup::Trajectory GetTrack(Particle& p) {
-    corsika::geometry::Vector<SpeedType::dimension_type> v = p.GetDirection();
-    corsika::geometry::Line traj(p.GetPosition(), v);
-    {
-      CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
-      cout << v.GetComponents(rootCS) << endl;
-    }
-    return corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 100_ns);
-  }
-};
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  NewtonTracking<setup::Stack> tracking;
+  tracking_line::TrackingLine<setup::Stack> tracking;
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
@@ -108,7 +93,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   particle.SetEnergy(E0);
   particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
   particle.SetMomentum(
-      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_MeV}));
+		       corsika::stack::super_stupid::MomentumVector(rootCS, {0*newton*second, 0*newton*second, -1*newton*second}));
   EAS.Init();
   EAS.Run();
 
