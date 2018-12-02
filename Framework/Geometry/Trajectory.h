@@ -12,37 +12,39 @@
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 
-#include <corsika/geometry/BaseTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
+
+using corsika::units::si::LengthType;
+using corsika::units::si::TimeType;
 
 namespace corsika::geometry {
 
   template <typename T>
-  class Trajectory : public BaseTrajectory {
+  class Trajectory : public T {
 
-    T fTraj;
+    corsika::units::si::TimeType fTimeLength;
 
   public:
-    Trajectory(T const& theT, corsika::units::si::TimeType pTStart,
-               corsika::units::si::TimeType pTEnd)
-        //: T(theT), fTStart(pTStart), fTEnd(pTEnd) {}
-        : BaseTrajectory(pTStart, pTEnd)
-        , fTraj(theT) {}
+    using T::GetDistanceBetween;
+    using T::GetPosition;
 
-    Point GetPosition(corsika::units::si::TimeType t) const {
+    Trajectory(T const& theT, corsika::units::si::TimeType timeLength)
+        : T(theT)
+        , fTimeLength(timeLength) {}
+
+    /*Point GetPosition(corsika::units::si::TimeType t) const {
       return fTraj.GetPosition(t + fTStart);
-    }
+      }*/
 
-    Point GetPosition(double u) const {
-      return GetPosition(fTEnd * u + fTStart * (1 - u));
-    }
-    
-    LengthType GetDistance(corsika::units::si::TimeType t1,
-			   corsika::units::si::TimeType t2) const {
-      return fTraj.DistanceBetween(t1, t2);
-    }
-     
+    Point GetPosition(const double u) const { return T::GetPosition(fTimeLength * u); }
 
+    TimeType GetDuration() const { return fTimeLength; }
+
+    LengthType GetDistance(const corsika::units::si::TimeType t) const {
+      assert(t > fTimeLength);
+      assert(t >= 0 * corsika::units::si::second);
+      return T::DistanceBetween(0, t);
+    }
   };
 
 } // namespace corsika::geometry

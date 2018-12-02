@@ -10,11 +10,19 @@
  */
 
 #include <corsika/cascade/Cascade.h>
+
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
+#include <corsika/process/tracking_line/TrackingLine.h>
+
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
+
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
+using corsika::setup::Trajectory;
 
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
@@ -23,6 +31,7 @@
 using namespace corsika;
 using namespace corsika::process;
 using namespace corsika::units;
+using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
@@ -34,13 +43,10 @@ public:
   ProcessSplit() {}
 
   template <typename Particle>
-  double MinStepLength(Particle&) const {
-    return 0;
-  }
+  void MinStepLength(Particle&, setup::Trajectory&) const {}
 
-  template <typename Particle, typename Trajectory, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
-    // corsika::utls::ignore(p);
+  template <typename Particle, typename Stack>
+  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
     return EProcessReturn::eOk;
   }
 
@@ -52,30 +58,42 @@ public:
       fCount++;
     } else {
       p.SetEnergy(E / 2);
-      s.NewParticle().SetEnergy(E / 2);
+      auto pnew = s.NewParticle();
+      // s.Copy(p, pnew);
+      pnew.SetEnergy(E / 2);
+      pnew.SetPosition(p.GetPosition());
+      pnew.SetMomentum(p.GetMomentum());
     }
   }
 
   void Init() { fCount = 0; }
 
-  int GetCount() { return fCount; }
+  int GetCount() const { return fCount; }
 
 private:
 };
 
+
 TEST_CASE("Cascade", "[Cascade]") {
 
-  stack_inspector::StackInspector<setup::Stack, setup::Trajectory> p0(true);
+  tracking_line::TrackingLine<setup::Stack> tracking;
+
+  stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(sequence, stack);
+  corsika::cascade::Cascade EAS(tracking, sequence, stack);
+
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
   stack.Clear();
   auto particle = stack.NewParticle();
   EnergyType E0 = 100_GeV;
   particle.SetEnergy(E0);
+  particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
+  particle.SetMomentum(
+		       corsika::stack::super_stupid::MomentumVector(rootCS, {0*newton*second, 0*newton*second, -1*newton*second}));
   EAS.Init();
   EAS.Run();
 

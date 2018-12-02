@@ -14,13 +14,16 @@
 
 #include <corsika/process/ContinuousProcess.h>
 
+#include <corsika/setup/SetupTrajectory.h>
+
+
 namespace corsika::process {
 
   namespace stack_inspector {
 
-    template <typename Stack, typename Trajectory>
+    template <typename Stack>
     class StackInspector
-        : public corsika::process::ContinuousProcess<StackInspector<Stack, Trajectory>> {
+        : public corsika::process::ContinuousProcess<StackInspector<Stack>> {
 
       typedef typename Stack::ParticleType Particle;
 
@@ -31,10 +34,10 @@ namespace corsika::process {
       void Init();
 
       // template <typename Particle, typename Trajectory, typename Stack>
-      EProcessReturn DoContinuous(Particle&, Trajectory&, Stack& s) const;
+      EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
 
-      // template <typename Particle>
-      double MinStepLength(Particle&) const;
+      //      template <typename Particle>
+      void MinStepLength(Particle&, corsika::setup::Trajectory&) const;
 
     private:
       bool fReport;

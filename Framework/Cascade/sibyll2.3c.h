@@ -3,94 +3,88 @@
 //----------------------------------------------
 //  C++ interface for the SIBYLL event generator
 //----------------------------------------------
-//wrapper
+// wrapper
 
+extern "C" {
 
+typedef char s_name[6];
 
+// SIBYLL particle stack (FORTRAN COMMON)
+// variables are: np : numer of particles on stack
+//                 p : 4momentum + mass of particles on stack
+//             llist : id of particles on stack
+extern struct {
+  double p[5][8000];
+  int llist[8000];
+  int np;
+} s_plist_;
 
-extern"C"{
+extern struct {
+  double cbr[223 + 16 + 12 + 8];
+  int kdec[1338 + 6 * (16 + 12 + 8)];
+  int lbarp[99];
+  int idb[99];
+} s_csydec_;
 
-  typedef char s_name[6];
+// additional particle stack for the mother particles of unstable particles
+// stable particles have entry zero
+extern struct { int llist1[8000]; } s_plist1_;
 
-  // SIBYLL particle stack (FORTRAN COMMON)
-  // variables are: np : numer of particles on stack
-  //                 p : 4momentum + mass of particles on stack
-  //             llist : id of particles on stack
-  extern struct { 
-    double p[5][8000]; 
-    int llist[8000]; 
-    int np; 
-  }s_plist_;
+// tables with particle properties
+// charge, strangeness and baryon number
+extern struct {
+  int ichp[99];
+  int istr[99];
+  int ibar[99];
+} s_chp_;
 
+// tables with particle properties
+// mass and mass squared
+extern struct {
+  double am[99];
+  double am2[99];
+} s_mass1_;
 
-  extern struct {
-    double  cbr[223+16+12+8];
-    int    kdec[1338+6*(16+12+8)];
-    int    lbarp[99];
-    int     idb[99];
-  }s_csydec_;
+// table with particle names
+extern struct { char namp[6][99]; } s_cnam_;
 
-  
-  // additional particle stack for the mother particles of unstable particles
-  // stable particles have entry zero
-  extern struct { 
-    int llist1[8000]; 
-  }s_plist1_;
+// debug info
+extern struct {
+  int ncall;
+  int ndebug;
+  int lun;
+} s_debug_;
 
+// lund random generator setup
+// extern struct {int mrlu[6]; float rrlu[100]; }ludatr_;
 
-  // tables with particle properties
-  // charge, strangeness and baryon number
-  extern struct {
-    int ichp[99]; 
-    int istr[99]; 
-    int ibar[99]; 
-  }s_chp_;
+// sibyll main subroutine
+void sibyll_(int&, int&, double&);
 
-  // tables with particle properties
-  // mass and mass squared
-  extern struct {
-    double am[99]; 
-    double am2[99]; 
-  }s_mass1_;
+// subroutine to initiate sibyll
+void sibyll_ini_();
 
-  // table with particle names
-  extern struct {char namp[6][99];}s_cnam_;
+// subroutine to SET DECAYS
+void dec_ini_();
 
-  // debug info
-  extern struct {int ncall; int ndebug; int lun; }s_debug_;
+// subroutine to initiate random number generator
+// void rnd_ini_();
 
-  // lund random generator setup
-  //extern struct {int mrlu[6]; float rrlu[100]; }ludatr_;
+// print event
+void sib_list_(int&);
 
+// decay routine
+void decsib_();
 
-  // sibyll main subroutine
-  void sibyll_(int&,int&,double&);
-    
-  // subroutine to initiate sibyll
-  void sibyll_ini_();
+// interaction length
+// double fpni_(double&, int&);
 
-  // subroutine to SET DECAYS
-  void dec_ini_();
+void sib_sigma_hnuc_(int&, int&, double&, double&, double&);
+void sib_sigma_hp_(int&, double&, double&, double&, double&, double*, double&, double&);
 
-  // subroutine to initiate random number generator
-  //void rnd_ini_();
-  
-  // print event
-  void sib_list_(int&);
+double s_rndm_(int&);
 
-  // decay routine
-  void decsib_();
-
-  // interaction length
-  //double fpni_(double&, int&);
-
-  void sib_sigma_hnuc_(int&,int&,double&,double&,double&);
-  void sib_sigma_hp_(int&,double&,double&,double&,double&,double*,double&,double&);
-  
-  double s_rndm_(int&);
-
-  // phojet random generator setup
-  void pho_rndin_(int&,int&,int&,int&);
+// phojet random generator setup
+void pho_rndin_(int&, int&, int&, int&);
 }
 #endif
-

@@ -11,11 +11,12 @@ set (
   Line.h
   Sphere.h
   CoordinateSystem.h
+  RootCoordinateSystem.h
   Helix.h
   BaseVector.h
   QuantityVector.h
   Trajectory.h
-  BaseTrajectory.h
+  # BaseTrajectory.h
   )
 
 set (

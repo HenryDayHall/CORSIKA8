@@ -9,6 +9,7 @@
  * the license.
  */
 
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <corsika/units/PhysicalUnits.h>
 
@@ -22,10 +23,8 @@ using namespace corsika::units::si;
 using namespace corsika;
 using namespace corsika::stack::super_stupid;
 
-
 #include <iostream>
 using namespace std;
-
 
 TEST_CASE("SuperStupidStack", "[stack]") {
 
@@ -33,35 +32,35 @@ TEST_CASE("SuperStupidStack", "[stack]") {
 
     SuperStupidStack s;
     auto p = s.NewParticle();
-    p.SetPID(corsika::particles::Code::Electron);
+    p.SetPID(particles::Code::Electron);
     p.SetEnergy(1.5_GeV);
-    auto const dummyCS = corsika::geometry::CoordinateSystem::CreateRootCS();
-    p.SetMomentum(MomentumVector(dummyCS, {1 * newton_second, 1 * newton_second, 1 * newton_second}));	
+    geometry::CoordinateSystem& dummyCS =
+        geometry::RootCoordinateSystem::GetInstance().GetRootCS();
+    p.SetMomentum(MomentumVector(
+        dummyCS, {1 * newton_second, 1 * newton_second, 1 * newton_second}));
     p.SetPosition(Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
     p.SetTime(100_s);
-    
+
     // read
     REQUIRE(s.GetSize() == 1);
     auto pout = s.GetNextParticle();
-    REQUIRE(pout.GetPID() == corsika::particles::Code::Electron);
+    REQUIRE(pout.GetPID() == particles::Code::Electron);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
 #warning Fix the next two lines:
-    //REQUIRE(pout.GetMomentum() == MomentumVector(dummyCS, {1 * joule, 1 * joule, 1 * joule}));
-    //REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
+    // REQUIRE(pout.GetMomentum() == MomentumVector(dummyCS, {1 * joule, 1 * joule, 1 *
+    // joule})); REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 * meter, 1 *
+    // meter}));
     REQUIRE(pout.GetTime() == 100_s);
   }
-  
+
   SECTION("write+delete") {
 
     SuperStupidStack s;
-    for (int i=0; i<99; ++i)
-      s.NewParticle();
+    for (int i = 0; i < 99; ++i) s.NewParticle();
 
     REQUIRE(s.GetSize() == 99);
 
-    for (int i=0; i<99; ++i)
-      s.GetNextParticle().Delete();
-
+    for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
 
     REQUIRE(s.GetSize() == 0);
   }
