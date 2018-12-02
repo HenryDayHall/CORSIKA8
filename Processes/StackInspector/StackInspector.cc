@@ -38,6 +38,7 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(
   if (!fReport) return EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   EnergyType Etot = 0_GeV;
+
   for (auto& iterP : s) {
     EnergyType E = iterP.GetEnergy();
     Etot += E;

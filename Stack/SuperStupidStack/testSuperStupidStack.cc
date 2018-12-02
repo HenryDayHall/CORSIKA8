@@ -37,7 +37,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     p.SetPID(particles::Code::Electron);
     p.SetEnergy(1.5_GeV);
     geometry::CoordinateSystem& dummyCS = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); 
-    p.SetMomentum(MomentumVector(dummyCS, {1 * joule, 1 * joule, 1 * joule}));	
+    p.SetMomentum(MomentumVector(dummyCS, {1 * newton_second, 1 * newton_second, 1 * newton_second}));	
     p.SetPosition(Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
     p.SetTime(100_s);
     

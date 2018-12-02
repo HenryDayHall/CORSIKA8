@@ -14,6 +14,19 @@ add_executable (stack_example stack_example.cc)
 target_link_libraries (stack_example SuperStupidStack CORSIKAunits CORSIKAlogging)
 install (TARGETS stack_example DESTINATION share/examples)
 
+add_executable (cascade_example cascade_example.cc)
+target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogging
+   CORSIKArandom
+  CORSIKAsibyll
+  CORSIKAcascade
+  ProcessStackInspector
+  CORSIKAprocesses
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAprocesssequence
+  )
+install (TARGETS cascade_example DESTINATION share/examples)
+
 add_executable (staticsequence_example staticsequence_example.cc)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence

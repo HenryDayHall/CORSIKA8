@@ -29,19 +29,20 @@ namespace corsika::stack {
 
   namespace super_stupid {
 
-    using particles::Code;
-    using units::si::EnergyType;
-    using units::si::TimeType;
-    using units::si::SpeedType;
-    using units::si::second;
-    using units::si::meter;
-    using units::si::joule;
-    using units::si::energy_d;
-    using geometry::Point;
-    using geometry::Vector;
+    using corsika::particles::Code;
+    using corsika::units::si::EnergyType;
+    using corsika::units::si::TimeType;
+    using corsika::units::si::SpeedType;
+    using corsika::units::si::second;
+    using corsika::units::si::meter;
+    using corsika::units::si::joule;
+    using corsika::units::si::newton_second;
+    using corsika::units::si::energy_d;
+    using corsika::units::si::momentum_d;
+    using corsika::geometry::Point;
+    using corsika::geometry::Vector;
 
-#warning replace this with a proper momentum vector:
-    typedef Vector<energy_d> MomentumVector; // should be momentum_d !!!
+    typedef Vector<momentum_d> MomentumVector; 
 
     /**
      * Example of a particle object on the stack.
@@ -132,7 +133,7 @@ namespace corsika::stack {
 #warning this here makes no sense: see issue #48
 	geometry::CoordinateSystem& dummyCS = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); 
 	fMomentum.push_back(MomentumVector(dummyCS,
-					   {0 * joule, 0 * joule, 0 * joule}));	
+					   {0 * newton_second, 0 * newton_second, 0 * newton_second}));	
 	fPosition.push_back(Point(dummyCS,
 				  {0 * meter, 0 * meter, 0 * meter}));
 	fTime.push_back(0 * second);
@@ -152,7 +153,7 @@ namespace corsika::stack {
 
       std::vector<Code> fDataPID;
       std::vector<EnergyType> fDataE;
-      std::vector<Vector<units::si::energy_d>> fMomentum; // should be Momentum !!!!
+      std::vector<MomentumVector> fMomentum; 
       std::vector<Point> fPosition;
       std::vector<TimeType> fTime;
 

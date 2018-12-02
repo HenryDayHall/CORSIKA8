@@ -1,88 +1,91 @@
-Electron 3
-Positron 2
-NuE 15
-NuEBar 16
-MuMinus 5
-MuPlus 4
-NuMu 17
-NuMuBar 18
-TauMinus 91
-TauPlus 90
-NuTau 92
-NuTauBar 93
-Gamma 1
-Pi0 6
-Rho0 27
-K0Long 11
-PiPlus 7
-PiMinus 8
-RhoPlus 25
-RhoMinus 26
-Eta 23
-Omega 32
-K0Short 12
-KStar0 30
-KStar0Bar 31
-KPlus 9
-KMinus 10
-KStarPlus 28
-KStarMinus 29
-DPlus 59
-DMinus 60
-DStarPlus 78
-DStarMinus 79
-D0 71
-D0Bar 72
-DStar0 80
-DStar0Bar 81
-DsPlus 74
-DsMinus 75
-DStarSPlus 76
-DStarSMinus 77
-EtaC 73
-Neutron 14
-AntiNeutron -14
-Delta0 42
-Delta0Bar -42
-Proton 13
-AntiProton -13
-DeltaPlus 41
-DeltaMinusBar -41
-DeltaPlusPlus 40
-DeltaMinusMinusBar -40
-SigmaMinus 36
-SigmaPlusBar -36
-Lambda0 39
-Lambda0Bar -39
-Sigma0 35
-Sigma0Bar -35
-SigmaPlus 34
-SigmaMinusBar -34
-XiMinus 38
-XiPlusBar -38
-Xi0 37
-Xi0Bar -37
-OmegaMinus 49
-OmegaPlusBar -49
-SigmaC0 86
-SigmaC0Bar -86
-SigmaStarC0 96
-SigmaStarC0Bar -96
-LambdaCPlus 89
-LambdaCMinusBar -89
-XiC0 88
-XiC0Bar -88
-SigmaCPlus 85
-SigmaCMinusBar -85
-SigmaStarCPlus 95
-SigmaStarCMinusBar -95
-SigmaCPlusPlus 84
-SigmaCMinusMinusBar -84
-SigmaStarCPlusPlus 94
-SigmaStarCMinusMinusBar -94
-XiCPlus 87
-XiCMinusBar -87
-OmegaC0 99
-OmegaC0Bar -99
-Jpsi 83
-#Unknown 0
+# input file for particle conversion to/from SIBYLL
+# the format of this file is: "corsika-identifier" "sibyll-id" "can-interact-in-sibyll" "cross-section-type"
+Electron 3 0 0
+Positron 2 0 0
+NuE 15 0 0
+NuEBar 16 0 0
+MuMinus 5 0 0
+MuPlus 4 0 0
+NuMu 17 0 0
+NuMuBar 18 0 0
+TauMinus 91 0 0
+TauPlus 90 0 0
+NuTau 92 0 0
+NuTauBar 93 0 0
+Gamma 1 0 0
+Pi0 6 1 2
+# rho0 could interact but sibyll has no cross section/interaction length. was used for gamma had int
+Rho0 27 0 0
+K0Long 11 1 3
+PiPlus 7 1 2
+PiMinus 8 1 2
+RhoPlus 25 0 0
+RhoMinus 26 0 0
+Eta 23 0 0
+Omega 32 0 0
+K0Short 12 1 3
+KStar0 30 0 0
+KStar0Bar 31 0 0
+KPlus 9 1 3
+KMinus 10 1 3
+KStarPlus 28 0 0
+KStarMinus 29 0 0
+DPlus 59 1 0
+DMinus 60 1 0
+DStarPlus 78 0 0
+DStarMinus 79 0 0
+D0 71 1 0
+D0Bar 72 1 0
+DStar0 80 0 0
+DStar0Bar 81 0 0
+DsPlus 74 1 0
+DsMinus 75 1 0
+DStarSPlus 76 0 0
+DStarSMinus 77 0 0
+EtaC 73 0 0
+Neutron 14 1 1
+AntiNeutron -14 1 1
+Delta0 42 0 0
+Delta0Bar -42 0 0
+Proton 13 1 1
+AntiProton -13 1 1
+DeltaPlus 41 0 0
+DeltaMinusBar -41 0 0
+DeltaPlusPlus 40 0 0
+DeltaMinusMinusBar -40 0 0
+SigmaMinus 36 1 1
+SigmaPlusBar -36 1 1
+Lambda0 39 1 1
+Lambda0Bar -39 1 1
+Sigma0 35 1 1
+Sigma0Bar -35 1 1
+SigmaPlus 34 1 1
+SigmaMinusBar -34 1 1
+XiMinus 38 1 1
+XiPlusBar -38 1 1
+Xi0 37 1 1
+Xi0Bar -37 1 1
+OmegaMinus 49 0 0
+OmegaPlusBar -49 0 0
+SigmaC0 86 0 0
+SigmaC0Bar -86 0 0
+SigmaStarC0 96 0 0
+SigmaStarC0Bar -96 0 0
+LambdaCPlus 89 1 1
+LambdaCMinusBar -89 1 1
+XiC0 88 1 1
+XiC0Bar -88 1 1
+SigmaCPlus 85 0 0
+SigmaCMinusBar -85 0 0
+SigmaStarCPlus 95 0 0
+SigmaStarCMinusBar -95 0 0
+SigmaCPlusPlus 84 0 0
+SigmaCMinusMinusBar -84 0 0
+SigmaStarCPlusPlus 94 0 0
+SigmaStarCMinusMinusBar -94 0 0
+XiCPlus 87 1 1
+XiCMinusBar -87 1 1
+OmegaC0 99 0 0
+OmegaC0Bar -99 0 0
+Jpsi 83 0 0
+#Unknown 0 0 0
