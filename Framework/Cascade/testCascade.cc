@@ -10,8 +10,14 @@
  */
 
 #include <corsika/cascade/Cascade.h>
+
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
+
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
+
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -24,6 +30,7 @@ using corsika::setup::Trajectory;
 using namespace corsika;
 using namespace corsika::process;
 using namespace corsika::units;
+using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
@@ -35,11 +42,10 @@ public:
   ProcessSplit() {}
 
   template <typename Particle>
-  void MinStepLength(Particle&, Trajectory& ) const {
-  }
+  void MinStepLength(Particle&, setup::Trajectory&) const {}
 
   template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
     return EProcessReturn::eOk;
   }
 
@@ -51,7 +57,11 @@ public:
       fCount++;
     } else {
       p.SetEnergy(E / 2);
-      s.NewParticle().SetEnergy(E / 2);
+      auto pnew = s.NewParticle();
+      // s.Copy(p, pnew);
+      pnew.SetEnergy(E / 2);
+      pnew.SetPosition(p.GetPosition());
+      pnew.SetMomentum(p.GetMomentum());
     }
   }
 
@@ -62,23 +72,28 @@ public:
 private:
 };
 
-template<typename Stack>
+template <typename Stack>
 class NewtonTracking { // naja.. not yet
   typedef typename Stack::ParticleType Particle;
+
 public:
   void Init() {}
   corsika::setup::Trajectory GetTrack(Particle& p) {
-    corsika::geometry::Vector<SpeedType::dimension_type> v = p.GetDirection();// * 1_m/1_s;
+    corsika::geometry::Vector<SpeedType::dimension_type> v =
+        p.GetDirection(); 
     corsika::geometry::Line traj(p.GetPosition(), v);
-    return corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns);
+    {
+      CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+      cout << v.GetComponents(rootCS) << endl;
+    }
+    return corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 100_ns);
   }
 };
-
 
 TEST_CASE("Cascade", "[Cascade]") {
 
   NewtonTracking<setup::Stack> tracking;
-  
+
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
@@ -86,10 +101,15 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
 
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+
   stack.Clear();
   auto particle = stack.NewParticle();
   EnergyType E0 = 100_GeV;
   particle.SetEnergy(E0);
+  particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
+  particle.SetMomentum(
+      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_MeV}));
   EAS.Init();
   EAS.Run();
 

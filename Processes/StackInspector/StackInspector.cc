@@ -46,7 +46,7 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(
     cout << "StackInspector: i=" << setw(5) << fixed << (i++)
 	 << ", id=" << setw(30) << iterP.GetPID()
          << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
-      //<< " pos=" << pos
+	 << " pos=" << pos
          << endl;
   }
   countStep++;

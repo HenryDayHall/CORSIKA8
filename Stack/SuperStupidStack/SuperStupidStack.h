@@ -69,7 +69,7 @@ namespace corsika::stack {
 #warning this does not really work, nor make sense:
       Vector<SpeedType::dimension_type> GetDirection() const {
 	auto P = GetMomentum();
-	return P/P.norm() * (units::si::meter/units::si::second); }
+	return P/P.norm() * 1e10 * (units::si::meter/units::si::second); }
     
     };
 

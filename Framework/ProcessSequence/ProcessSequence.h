@@ -19,6 +19,8 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <variant>
+
 //#include <type_traits> // still needed ?
 
 using corsika::setup::Trajectory;

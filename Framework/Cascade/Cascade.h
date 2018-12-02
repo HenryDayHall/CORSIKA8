@@ -60,20 +60,12 @@ namespace corsika::cascade {
     }
 
     void Step(Particle& particle) {
-      /*
-      [[maybe_unused]] double nextStep = fProcesseList.MinStepLength(particle);
-      // corsika::utls::ignore(nextStep);
-      auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
-      corsika::geometry::Trajectory<corsika::geometry::Line>
-          trajectory( // trajectory is not yet used. this is a dummy.
-                     corsika::geometry::Line(corsika::geometry::Point(root, {0_m, 0_m,
-      0_m}), corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>(
-                                                                                                                      root, 0 * 1_m / second, 0 * 1_m / second, 1 * 1_m / second)),
-                     0_s, 1_s);
-      */
-      // //[[maybe_unused]] double nextStep = fProcesseList.MinStepLength(particle);
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
-      fProcesseList.MinStepLength(particle, step);     
+      fProcesseList.MinStepLength(particle, step);
+
+      /// here the particle is actually moved along the trajectory to new position:
+      std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
+
       corsika::process::EProcessReturn status =
 	fProcesseList.DoContinuous(particle, step, fStack);
       if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
