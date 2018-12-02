@@ -7,6 +7,9 @@ project (
   LANGUAGES CXX
   )
 
+# as long as there still are modules using it:
+enable_language (Fortran)
+
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
 
@@ -21,7 +24,6 @@ set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
 
-ENABLE_LANGUAGE (Fortran)
 
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
