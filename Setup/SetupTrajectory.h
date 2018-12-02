@@ -33,7 +33,7 @@ namespace corsika::setup {
   /// helper visitor to modify Particle by moving along Trajectory
   template <typename Particle>
   class ParticleUpdate {
-    
+
     Particle& fP;
 
   public:
@@ -48,11 +48,13 @@ namespace corsika::setup {
   };
 
   /// helper visitor to modify Particle by moving along Trajectory
-  class GetDuration {    
+  class GetDuration {
   public:
-    corsika::units::si::TimeType operator()(std::monostate const&) { return 0*corsika::units::si::second; }
+    corsika::units::si::TimeType operator()(std::monostate const&) {
+      return 0 * corsika::units::si::second;
+    }
     template <typename T>
-      corsika::units::si::TimeType operator()(T const &trajectory) {
+    corsika::units::si::TimeType operator()(T const& trajectory) {
       return trajectory.GetDuration();
     }
   };

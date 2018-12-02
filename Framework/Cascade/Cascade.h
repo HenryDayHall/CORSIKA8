@@ -67,14 +67,14 @@ namespace corsika::cascade {
       std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
 
       corsika::process::EProcessReturn status =
-	fProcesseList.DoContinuous(particle, step, fStack);
+          fProcesseList.DoContinuous(particle, step, fStack);
       if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
         fStack.Delete(particle); // TODO: check if this is really needed
       } else {
         fProcesseList.DoDiscrete(particle, fStack);
       }
     }
-    
+
   private:
     Tracking& fTracking;
     ProcessList& fProcesseList;

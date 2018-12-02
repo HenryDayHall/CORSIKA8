@@ -50,7 +50,7 @@ TEST_CASE("Sibyll", "[processes]") {
     REQUIRE_FALSE(process::sibyll::CanInteract(corsika::particles::Electron::GetCode()));
     REQUIRE_FALSE(process::sibyll::CanInteract(corsika::particles::SigmaC0::GetCode()));
   }
-  
+
   SECTION("cross-section type") {
 
     REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::Electron) == 0);

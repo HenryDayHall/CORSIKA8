@@ -22,33 +22,29 @@ namespace corsika::geometry {
   template <typename T>
   class Trajectory : public T {
 
-    corsika::units::si::TimeType fTimeLength; 
+    corsika::units::si::TimeType fTimeLength;
 
   public:
-    using T::GetPosition;
     using T::GetDistanceBetween;
+    using T::GetPosition;
 
-    Trajectory(T const& theT, 
-               corsika::units::si::TimeType timeLength)
+    Trajectory(T const& theT, corsika::units::si::TimeType timeLength)
         : T(theT)
         , fTimeLength(timeLength) {}
 
     /*Point GetPosition(corsika::units::si::TimeType t) const {
       return fTraj.GetPosition(t + fTStart);
       }*/
-    
-    Point GetPosition(const double u) const {
-      return T::GetPosition(fTimeLength * u);
-    }
+
+    Point GetPosition(const double u) const { return T::GetPosition(fTimeLength * u); }
 
     TimeType GetDuration() const { return fTimeLength; }
-    
+
     LengthType GetDistance(const corsika::units::si::TimeType t) const {
-      assert(t>fTimeLength);
-      assert(t>=0*corsika::units::si::second);
+      assert(t > fTimeLength);
+      assert(t >= 0 * corsika::units::si::second);
       return T::DistanceBetween(0, t);
     }
-
   };
 
 } // namespace corsika::geometry

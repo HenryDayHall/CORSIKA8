@@ -9,9 +9,9 @@
  * the license.
  */
 
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/units/PhysicalUnits.h>
-#include <corsika/geometry/RootCoordinateSystem.h>
 
 #include <corsika/logging/Logger.h>
 
@@ -32,8 +32,8 @@ template <typename Stack>
 StackInspector<Stack>::~StackInspector() {}
 
 template <typename Stack>
-process::EProcessReturn StackInspector<Stack>::DoContinuous(
-    Particle&, setup::Trajectory&, Stack& s) const {
+process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Trajectory&,
+                                                            Stack& s) const {
   static int countStep = 0;
   if (!fReport) return EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
@@ -42,22 +42,21 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(
   for (auto& iterP : s) {
     EnergyType E = iterP.GetEnergy();
     Etot += E;
-    geometry::CoordinateSystem& rootCS = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); // for printout
+    geometry::CoordinateSystem& rootCS =
+        geometry::RootCoordinateSystem::GetInstance().GetRootCS(); // for printout
     auto pos = iterP.GetPosition().GetCoordinates(rootCS);
-    cout << "StackInspector: i=" << setw(5) << fixed << (i++)
-	 << ", id=" << setw(30) << iterP.GetPID()
-         << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
-	 << " pos=" << pos
-         << endl;
+    cout << "StackInspector: i=" << setw(5) << fixed << (i++) << ", id=" << setw(30)
+         << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
+         << " pos=" << pos << endl;
   }
   countStep++;
-  cout << "StackInspector: nStep=" << countStep << " stackSize=" << s.GetSize() << " Estack=" << Etot / 1_GeV << " GeV" << endl;
+  cout << "StackInspector: nStep=" << countStep << " stackSize=" << s.GetSize()
+       << " Estack=" << Etot / 1_GeV << " GeV" << endl;
   return EProcessReturn::eOk;
 }
 
 template <typename Stack>
-void StackInspector<Stack>::MinStepLength(Particle&,
-                                          setup::Trajectory&) const {
+void StackInspector<Stack>::MinStepLength(Particle&, setup::Trajectory&) const {
   // return 0;
 }
 

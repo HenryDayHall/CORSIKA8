@@ -27,9 +27,7 @@ using namespace corsika::units::si;
 using namespace std;
 using namespace corsika::process;
 
-
 static const int nData = 10;
-
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
 public:
@@ -151,16 +149,17 @@ TEST_CASE("Cascade", "[Cascade]") {
 
     DummyData p;
     DummyStack s;
-    
+
     cout << "-->init" << endl;
     sequence2.Init();
     cout << "-->docont" << endl;
 
-    //auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
-    //corsika::geometry::Point pos(root, {0_m, 0_m, 0_m});
-    //corsika::geometry::Vector<SpeedType::dimension_type> vec(root, {1_m/1_s,0_m/1_s,0_m/1_s});
-    //corsika::geometry::Line traj(pos, vec);
-    Trajectory t;//(corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns));
+    // auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
+    // corsika::geometry::Point pos(root, {0_m, 0_m, 0_m});
+    // corsika::geometry::Vector<SpeedType::dimension_type> vec(root,
+    // {1_m/1_s,0_m/1_s,0_m/1_s}); corsika::geometry::Line traj(pos, vec);
+    Trajectory
+        t; //(corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns));
 
     sequence2.DoContinuous(p, t, s);
     cout << "-->dodisc" << endl;

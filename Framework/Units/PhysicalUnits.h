@@ -16,7 +16,7 @@ namespace corsika::units::si {
   using namespace phys::units;
   using namespace phys::units::literals;
   // namespace literals = phys::units::literals;
-  
+
   /// defining momentum you suckers
   /// dimensions, i.e. composition in base SI dimensions
   using momentum_d = phys::units::dimensions<1, 1, -1>;
@@ -35,13 +35,11 @@ namespace corsika::units::si {
   using ElectricChargeType =
       phys::units::quantity<phys::units::electric_charge_d, double>;
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
-  using MassType = phys::units::quantity<phys::units::mass_d, double>;  
+  using MassType = phys::units::quantity<phys::units::mass_d, double>;
   using MomentumType = phys::units::quantity<momentum_d, double>;
   using CrossSectionType = phys::units::quantity<sigma_d, double>;
 
 } // end namespace corsika::units::si
-
-
 
 /**
  * @file PhysicalUnits

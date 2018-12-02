@@ -9,8 +9,8 @@
  * the license.
  */
 
-#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -25,7 +25,8 @@ using namespace corsika::units::si;
 
 int main() {
   // define the root coordinate system
-  geometry::CoordinateSystem& root = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); 
+  geometry::CoordinateSystem& root =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCS();
 
   // another CS defined by a translation relative to the root CS
   CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});

@@ -14,10 +14,10 @@
 #include <catch2/catch.hpp>
 
 #include <corsika/geometry/CoordinateSystem.h>
-#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -147,10 +147,10 @@ TEST_CASE("Trajectories") {
                                          {1_m / second, 0_m / second, 0_m / second});
 
     Line const line(r0, v0);
-    CHECK((line.GetPosition(2_s).GetCoordinates() -
-           QuantityVector<length_d>(2_m, 0_m, 0_m))
-              .norm()
-              .magnitude() == Approx(0).margin(absMargin));
+    CHECK(
+        (line.GetPosition(2_s).GetCoordinates() - QuantityVector<length_d>(2_m, 0_m, 0_m))
+            .norm()
+            .magnitude() == Approx(0).margin(absMargin));
 
     Trajectory<Line> base(line, 1_s);
     CHECK(line.GetPosition(2_s).GetCoordinates() ==

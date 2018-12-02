@@ -14,27 +14,27 @@
 
 // #include <utl/AugerException.h>
 
-
 namespace corsika::utl {
 
   namespace Bit {
 
-    template<typename T>
+    template <typename T>
     class Array {
     public:
-      Array(T& target) : fTarget(target) { }
+      Array(T& target)
+          : fTarget(target) {}
 
       class Bit {
       public:
-        Bit(T& target, T mask) : fTarget(target), fMask(mask) { }
+        Bit(T& target, T mask)
+            : fTarget(target)
+            , fMask(mask) {}
 
         operator bool() const { return fTarget & fMask; }
 
         bool operator~() const { return !bool(*this); }
 
-        Bit&
-        operator=(const bool value)
-        {
+        Bit& operator=(const bool value) {
           if (value)
             fTarget |= fMask;
           else
@@ -49,41 +49,38 @@ namespace corsika::utl {
         T fMask;
       };
 
-      Bit operator[](unsigned int position)
-      { return Bit(fTarget, T(1) << position); }
+      Bit operator[](unsigned int position) { return Bit(fTarget, T(1) << position); }
 
-      Bit
-      At(unsigned int position)
-      {
-        if (position >= 8*sizeof(T))
-          //throw std::exceptionOutOfBoundException("Running out of bits.");
-	  throw std::exception("Running out of bits.");
+      Bit At(unsigned int position) {
+        if (position >= 8 * sizeof(T))
+          // throw std::exceptionOutOfBoundException("Running out of bits.");
+          throw std::exception("Running out of bits.");
         return (*this)[position];
       }
 
-      template<typename M>
-      Array& Mask(const M mask, const bool value)
-      { Bit(fTarget, mask) = value; return *this; }
+      template <typename M>
+      Array& Mask(const M mask, const bool value) {
+        Bit(fTarget, mask) = value;
+        return *this;
+      }
 
-      template<typename M>
-      T Get(const M mask) { return fTarget & T(mask); }
+      template <typename M>
+      T Get(const M mask) {
+        return fTarget & T(mask);
+      }
 
     private:
       T& fTarget;
     };
 
-  }
+  } // namespace Bit
 
   // helper
-  template<typename T>
-  inline
-  Bit::Array<T>
-  AsBitArray(T& target)
-  {
+  template <typename T>
+  inline Bit::Array<T> AsBitArray(T& target) {
     return Bit::Array<T>(target);
   }
 
-}
-
+} // namespace corsika::utl
 
 #endif

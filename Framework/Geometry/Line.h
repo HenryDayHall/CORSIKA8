@@ -19,7 +19,7 @@
 namespace corsika::geometry {
 
   class Line {
-    
+
     using VelocityVec = Vector<corsika::units::si::SpeedType::dimension_type>;
 
     Point const r0;
@@ -30,12 +30,10 @@ namespace corsika::geometry {
         : r0(pR0)
         , v0(pV0) {}
 
-    Point GetPosition(corsika::units::si::TimeType t) const {
-      return r0 + v0 * t;
-    }
-    
+    Point GetPosition(corsika::units::si::TimeType t) const { return r0 + v0 * t; }
+
     LengthType GetDistanceBetween(corsika::units::si::TimeType t1,
-				  corsika::units::si::TimeType t2) const {
+                                  corsika::units::si::TimeType t2) const {
       // assert(t2 >= t1);
       return v0.norm() * (t2 - t1);
     }

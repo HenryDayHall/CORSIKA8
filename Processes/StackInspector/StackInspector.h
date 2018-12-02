@@ -16,8 +16,8 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 
-//namespace corsika::setup {
-//class BaseTrajectory;
+// namespace corsika::setup {
+// class BaseTrajectory;
 //}
 
 namespace corsika::process {

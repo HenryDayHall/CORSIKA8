@@ -162,7 +162,7 @@ namespace corsika::process {
     }
 
     template <typename Particle>
-      inline void MinStepLength(Particle& p, Trajectory& step) const {
+    inline void MinStepLength(Particle& p, Trajectory& step) const {
       A.MinStepLength(p, step);
       B.MinStepLength(p, step);
     }

@@ -79,8 +79,7 @@ class NewtonTracking { // naja.. not yet
 public:
   void Init() {}
   corsika::setup::Trajectory GetTrack(Particle& p) {
-    corsika::geometry::Vector<SpeedType::dimension_type> v =
-        p.GetDirection(); 
+    corsika::geometry::Vector<SpeedType::dimension_type> v = p.GetDirection();
     corsika::geometry::Line traj(p.GetPosition(), v);
     {
       CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();

@@ -30,13 +30,13 @@ namespace corsika::random {
   class RNGManager : public corsika::utl::Singleton<RNGManager> {
 
     friend class corsika::utl::Singleton<RNGManager>;
-    
+
     std::map<std::string, RNG> rngs;
-    std::map<std::string, std::seed_seq> seeds;    
+    std::map<std::string, std::seed_seq> seeds;
 
   protected:
     RNGManager() {}
-    
+
   public:
     /*!
      * This function is to be called by a module requiring a random-number

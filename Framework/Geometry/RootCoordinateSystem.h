@@ -14,23 +14,20 @@
 namespace corsika::geometry {
 
   class RootCoordinateSystem : public corsika::utl::Singleton<RootCoordinateSystem> {
-    
-    friend class corsika::utl::Singleton<RootCoordinateSystem>;
-    
-  protected:
-    
-    RootCoordinateSystem() {}
-    
-  public:
 
+    friend class corsika::utl::Singleton<RootCoordinateSystem>;
+
+  protected:
+    RootCoordinateSystem() {}
+
+  public:
     corsika::geometry::CoordinateSystem& GetRootCS() { return fRootCS; }
     const corsika::geometry::CoordinateSystem& GetRootCS() const { return fRootCS; }
 
   private:
     corsika::geometry::CoordinateSystem fRootCS; // THIS IS IT
-    
   };
-  
-}
+
+} // namespace corsika::geometry
 
 #endif
