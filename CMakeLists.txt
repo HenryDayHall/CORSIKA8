@@ -7,6 +7,7 @@ project (
   LANGUAGES CXX
   )
 
+# as long as there still are modules using it:
 enable_language (Fortran)
 
 # ignore many irrelevant Up-to-date messages during install
@@ -37,7 +38,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
-
 
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
