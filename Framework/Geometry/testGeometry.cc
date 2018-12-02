@@ -14,6 +14,7 @@
 #include <catch2/catch.hpp>
 
 #include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
@@ -28,7 +29,7 @@ using namespace corsika::units::si;
 double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("transformations between CoordinateSystems") {
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
   REQUIRE(CoordinateSystem::GetTransformation(rootCS, rootCS)
               .isApprox(EigenTransform::Identity()));
@@ -44,10 +45,11 @@ TEST_CASE("transformations between CoordinateSystems") {
   REQUIRE((p1.GetCoordinates(rootCS) - coordinates).norm().magnitude() ==
           Approx(0).margin(absMargin));
 
+  /*
   SECTION("unconnected CoordinateSystems") {
     CoordinateSystem rootCS2 = CoordinateSystem::CreateRootCS();
     REQUIRE_THROWS(CoordinateSystem::GetTransformation(rootCS, rootCS2));
-  }
+    }*/
 
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
@@ -126,7 +128,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 }
 
 TEST_CASE("Sphere") {
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
@@ -137,7 +139,7 @@ TEST_CASE("Sphere") {
 }
 
 TEST_CASE("Trajectories") {
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {

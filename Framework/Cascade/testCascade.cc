@@ -36,12 +36,10 @@ public:
 
   template <typename Particle>
   void MinStepLength(Particle&, Trajectory& ) const {
-    //return 0;
   }
 
   template <typename Particle, typename Stack>
   EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
-    // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
   }
 

@@ -16,27 +16,29 @@
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <corsika/geometry/CoordinateSystem.h> // remove 
+#include <corsika/geometry/RootCoordinateSystem.h> // remove 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
 
 #include <vector>
 #include <algorithm>
 
+using namespace corsika;
+
 namespace corsika::stack {
 
   namespace super_stupid {
 
-    using corsika::particles::Code;
-    using corsika::units::si::EnergyType;
-    using corsika::units::si::TimeType;
-    using corsika::units::si::SpeedType;
-    using corsika::units::si::second;
-    using corsika::units::si::meter;
-    using corsika::units::si::joule;
-    using corsika::units::si::energy_d;
-    using corsika::geometry::Point;
-    using corsika::geometry::Vector;
+    using particles::Code;
+    using units::si::EnergyType;
+    using units::si::TimeType;
+    using units::si::SpeedType;
+    using units::si::second;
+    using units::si::meter;
+    using units::si::joule;
+    using units::si::energy_d;
+    using geometry::Point;
+    using geometry::Vector;
 
 #warning replace this with a proper momentum vector:
     typedef Vector<energy_d> MomentumVector; // should be momentum_d !!!
@@ -67,7 +69,7 @@ namespace corsika::stack {
 #warning this does not really work, nor make sense:
       Vector<SpeedType::dimension_type> GetDirection() const {
 	auto P = GetMomentum();
-	return P/P.norm() * (corsika::units::si::meter/corsika::units::si::second); }
+	return P/P.norm() * (units::si::meter/units::si::second); }
     
     };
 
@@ -128,7 +130,7 @@ namespace corsika::stack {
         fDataPID.push_back(Code::Unknown);
         fDataE.push_back(0 * joule);
 #warning this here makes no sense: see issue #48
-	auto const dummyCS = corsika::geometry::CoordinateSystem::CreateRootCS();
+	geometry::CoordinateSystem& dummyCS = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); 
 	fMomentum.push_back(MomentumVector(dummyCS,
 					   {0 * joule, 0 * joule, 0 * joule}));	
 	fPosition.push_back(Point(dummyCS,
@@ -150,7 +152,7 @@ namespace corsika::stack {
 
       std::vector<Code> fDataPID;
       std::vector<EnergyType> fDataE;
-      std::vector<Vector<corsika::units::si::energy_d>> fMomentum; // should be Momentum !!!!
+      std::vector<Vector<units::si::energy_d>> fMomentum; // should be Momentum !!!!
       std::vector<Point> fPosition;
       std::vector<TimeType> fTime;
 

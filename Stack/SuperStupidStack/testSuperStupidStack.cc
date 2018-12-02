@@ -11,6 +11,7 @@
 
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/geometry/RootCoordinateSystem.h> 
 
 using namespace corsika::geometry;
 using namespace corsika::units::si;
@@ -33,9 +34,9 @@ TEST_CASE("SuperStupidStack", "[stack]") {
 
     SuperStupidStack s;
     auto p = s.NewParticle();
-    p.SetPID(corsika::particles::Code::Electron);
+    p.SetPID(particles::Code::Electron);
     p.SetEnergy(1.5_GeV);
-    auto const dummyCS = corsika::geometry::CoordinateSystem::CreateRootCS();
+    geometry::CoordinateSystem& dummyCS = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); 
     p.SetMomentum(MomentumVector(dummyCS, {1 * joule, 1 * joule, 1 * joule}));	
     p.SetPosition(Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
     p.SetTime(100_s);
@@ -43,7 +44,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     // read
     REQUIRE(s.GetSize() == 1);
     auto pout = s.GetNextParticle();
-    REQUIRE(pout.GetPID() == corsika::particles::Code::Electron);
+    REQUIRE(pout.GetPID() == particles::Code::Electron);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
 #warning Fix the next two lines:
     //REQUIRE(pout.GetMomentum() == MomentumVector(dummyCS, {1 * joule, 1 * joule, 1 * joule}));

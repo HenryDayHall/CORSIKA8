@@ -9,7 +9,7 @@
  * the license.
  */
 
-#include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
@@ -18,11 +18,12 @@
 #include <cstdlib>
 #include <iostream>
 
+using namespace corsika;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 int main() {
-  auto const root = CoordinateSystem::CreateRootCS();
+  geometry::CoordinateSystem& root = geometry::RootCoordinateSystem::GetInstance().GetRootCS(); 
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;

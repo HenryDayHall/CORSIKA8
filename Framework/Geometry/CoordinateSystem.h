@@ -21,6 +21,8 @@ typedef Eigen::Translation<double, 3> EigenTranslation;
 
 namespace corsika::geometry {
 
+  class RootCoordinateSystem;
+  
   using corsika::units::si::length_d;
 
   class CoordinateSystem {
@@ -35,8 +37,11 @@ namespace corsika::geometry {
         : // for creating the root CS
         transf(EigenTransform::Identity()) {}
 
+  protected:
+	static auto CreateCS() { return CoordinateSystem(); }
+	friend corsika::geometry::RootCoordinateSystem; /// this is the only class that can creat ONE unique root CS
+
   public:
-    static auto CreateRootCS() { return CoordinateSystem(); }
   
     static EigenTransform GetTransformation(CoordinateSystem const& c1,
                                             CoordinateSystem const& c2);

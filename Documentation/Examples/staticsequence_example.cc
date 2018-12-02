@@ -89,12 +89,7 @@ void modular() {
 
   DummyData p;
   DummyStack s;
-
-  auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
-  corsika::geometry::Point pos(root, {0_m, 0_m, 0_m});
-  corsika::geometry::Vector<SpeedType::dimension_type> vec(root, {1_m/1_s,0_m/1_s,0_m/1_s});
-  corsika::geometry::Line traj(pos, vec);
-  Trajectory t(corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns));
+  Trajectory t;
 
   const int n = 100000000;
   for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }

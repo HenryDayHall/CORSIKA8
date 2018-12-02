@@ -1,0 +1,36 @@
+#ifndef _include_corsika_geometry_rootcoordinatesystem_h_
+#define _include_corsika_geometry_rootcoordinatesystem_h_
+
+#include <corsika/utl/Singleton.h>
+
+#include <corsika/geometry/CoordinateSystem.h>
+
+/*!
+ * This is the only way to get a root-coordinate system, and it is a
+ * singleton. All other CoordinateSystems must be relative to the
+ * RootCoordinateSystem
+ */
+
+namespace corsika::geometry {
+
+  class RootCoordinateSystem : public corsika::utl::Singleton<RootCoordinateSystem> {
+    
+    friend class corsika::utl::Singleton<RootCoordinateSystem>;
+    
+  protected:
+    
+    RootCoordinateSystem() {}
+    
+  public:
+
+    corsika::geometry::CoordinateSystem& GetRootCS() { return fRootCS; }
+    const corsika::geometry::CoordinateSystem& GetRootCS() const { return fRootCS; }
+
+  private:
+    corsika::geometry::CoordinateSystem fRootCS; // THIS IS IT
+    
+  };
+  
+}
+
+#endif
