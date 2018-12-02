@@ -19,17 +19,24 @@
 
 #include <corsika/process/ProcessSequence.h>
 
+#include <corsika/setup/SetupTrajectory.h> // TODO: maybe try to break this dependency later!
+using corsika::setup::Trajectory;
+#include <corsika/units/PhysicalUnits.h>
+using namespace corsika::units::si;
+
 using namespace std;
 using namespace corsika::process;
+
+static const int nData = 10;
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
 public:
   ContinuousProcess1() {}
   void Init() { cout << "ContinuousProcess1::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
     cout << "ContinuousProcess1::DoContinuous" << endl;
-    for (int i = 0; i < 10; ++i) d.p[i] += 0.933;
+    for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
     return EProcessReturn::eOk;
   }
 
@@ -44,10 +51,10 @@ class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 public:
   ContinuousProcess2() {}
   void Init() { cout << "ContinuousProcess2::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
     cout << "ContinuousProcess2::DoContinuous" << endl;
-    for (int i = 0; i < 20; ++i) d.p[i] += 0.933;
+    for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
     return EProcessReturn::eOk;
   }
 
@@ -62,9 +69,9 @@ class Process1 : public DiscreteProcess<Process1> {
 public:
   Process1() {}
   void Init() { cout << "Process1::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
-    for (int i = 0; i < 10; ++i) d.p[i] += 1 + i;
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] += 1 + i;
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Stack>
@@ -78,9 +85,9 @@ class Process2 : public DiscreteProcess<Process2> {
 public:
   Process2() {}
   void Init() { cout << "Process2::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
-    for (int i = 0; i < 10; ++i) d.p[i] *= 0.7;
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] *= 0.7;
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Stack>
@@ -94,9 +101,9 @@ class Process3 : public DiscreteProcess<Process3> {
 public:
   Process3() {}
   void Init() { cout << "Process3::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
-    for (int i = 0; i < 10; ++i) d.p[i] += 0.933;
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Stack>
@@ -110,9 +117,9 @@ class Process4 : public BaseProcess<Process4> {
 public:
   Process4() {}
   void Init() { cout << "Process4::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
-    for (int i = 0; i < 10; ++i) d.p[i] /= 1.2;
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] /= 1.2;
     return EProcessReturn::eOk;
   }
   // inline double MinStepLength(D& d) {
@@ -120,10 +127,9 @@ public:
 };
 
 struct DummyData {
-  double p[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double p[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
 struct DummyStack {};
-struct DummyTrajectory {};
 
 TEST_CASE("Cascade", "[Cascade]") {
 
@@ -142,12 +148,19 @@ TEST_CASE("Cascade", "[Cascade]") {
     const auto sequence2 = cp1 + m2 + m3 + cp2;
 
     DummyData p;
-    DummyTrajectory t;
     DummyStack s;
 
     cout << "-->init" << endl;
     sequence2.Init();
     cout << "-->docont" << endl;
+
+    // auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
+    // corsika::geometry::Point pos(root, {0_m, 0_m, 0_m});
+    // corsika::geometry::Vector<SpeedType::dimension_type> vec(root,
+    // {1_m/1_s,0_m/1_s,0_m/1_s}); corsika::geometry::Line traj(pos, vec);
+    Trajectory
+        t; //(corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns));
+
     sequence2.DoContinuous(p, t, s);
     cout << "-->dodisc" << endl;
     sequence2.DoDiscrete(p, s);
@@ -155,11 +168,11 @@ TEST_CASE("Cascade", "[Cascade]") {
 
     sequence.Init();
 
-    const int n = 100;
-    cout << "Running loop with n=" << n << endl;
-    for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }
-
-    for (int i = 0; i < 10; i++) { cout << "data[" << i << "]=" << p.p[i] << endl; }
+    const int nLoop = 5;
+    cout << "Running loop with n=" << nLoop << endl;
+    for (int i = 0; i < nLoop; ++i) { sequence.DoContinuous(p, t, s); }
+    for (int i = 0; i < nData; i++) { cout << "data[" << i << "]=" << p.p[i] << endl; }
+    cout << "done" << endl;
   }
 
   SECTION("sectionThree") {}

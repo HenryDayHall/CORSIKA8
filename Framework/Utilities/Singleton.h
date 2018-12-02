@@ -34,25 +34,23 @@ namespace corsika::utl {
    * \ingroup stl
    */
 
-  template<typename T>
+  template <typename T>
   class Singleton {
   public:
-    static
-    T&
-    GetInstance()
-#  ifdef __MAKECINT__
-    ;
-#  else
+    static T& GetInstance()
+#ifdef __MAKECINT__
+        ;
+#else
     {
       static T instance;
       return instance;
     }
-#  endif
+#endif
 
   protected:
     // derived class can call ctor and dtor
-    Singleton() { }
-    ~Singleton() { }
+    Singleton() {}
+    ~Singleton() {}
 
   private:
     // no one should do copies
@@ -63,22 +61,18 @@ namespace corsika::utl {
 #else
 
   /// classical Gamma singleton
-  template<typename T>
+  template <typename T>
   class Singleton {
   public:
-    static
-    T&
-    GetInstance()
-    {
-      if (!fgInstance)
-        fgInstance = new T;
+    static T& GetInstance() {
+      if (!fgInstance) fgInstance = new T;
       return *fgInstance;
     }
 
   protected:
     // derived class can call ctor and dtor
-    Singleton() { }
-    ~Singleton() { }
+    Singleton() {}
+    ~Singleton() {}
 
   private:
     // no one should do copies
@@ -89,7 +83,6 @@ namespace corsika::utl {
   };
 
 #endif
-
 
   /**
    * \class LeakingSingleton Singleton.h utl/Singleton.h
@@ -123,21 +116,18 @@ namespace corsika::utl {
    * \ingroup stl
    */
 
-  template<class T>
+  template <class T>
   class LeakingSingleton {
   public:
-    static
-    T&
-    GetInstance()
-    {
+    static T& GetInstance() {
       static T* const instance = new T;
       return *instance;
     }
 
   protected:
     // derived class can call ctor and dtor
-    LeakingSingleton() { }
-    ~LeakingSingleton() { }
+    LeakingSingleton() {}
+    ~LeakingSingleton() {}
 
   private:
     // no one should do copies
@@ -145,7 +135,6 @@ namespace corsika::utl {
     LeakingSingleton& operator=(const LeakingSingleton&);
   };
 
-}
-
+} // namespace corsika::utl
 
 #endif

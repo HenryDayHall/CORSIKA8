@@ -56,8 +56,7 @@ namespace corsika::units::si::constants {
 
   // barn moved to PhysicalUnits
   //  constexpr quantity<area_d> barn{Rep(1.e-28L) * meter * meter};
-  
-  
+
   // etc.
 
 } // namespace corsika::units::si::constants
