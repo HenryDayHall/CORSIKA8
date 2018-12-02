@@ -31,9 +31,7 @@ install (
   include/${CORSIKAstackinterface_NAMESPACE}
   )
 
-
-# code testing
+#code testing
 add_executable (testStackInterface testStackInterface.cc)
-target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 add_test(NAME testStackInterface COMMAND testStackInterface)
-
+target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2

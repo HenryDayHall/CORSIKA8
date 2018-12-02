@@ -1,3 +1,14 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #ifndef _include_StackIterator_h__
 #define _include_StackIterator_h__
 
@@ -56,18 +67,18 @@ namespace corsika::stack {
   public:
     // StackIterator() : fData(0), fIndex(0) { }
     StackIteratorInterface(StackType& data, const int index)
-        : fData(&data)
-        , fIndex(index) {}
+        : fIndex(index)
+        , fData(&data) {}
 
   private:
     StackIteratorInterface(const StackIteratorInterface& mit)
-        : fData(mit.fData)
-        , fIndex(mit.fIndex) {}
+        : fIndex(mit.fIndex)
+        , fData(mit.fData) {}
 
   public:
     StackIteratorInterface& operator=(const StackIteratorInterface& mit) {
-      fData = mit.fData;
       fIndex = mit.fIndex;
+      fData = mit.fData;
       return *this;
     }
 
