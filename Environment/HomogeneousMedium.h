@@ -12,11 +12,11 @@
 #define _include_HomogeneousMedium_h_
 
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/particles/ParticleProperties.h>
-#include <corsika/units/PhysicalUnits.h>
-#include <corsika/geometry/Trajectory.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/Trajectory.h>
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/units/PhysicalUnits.h>
 
 /**
  * a homogeneous medium

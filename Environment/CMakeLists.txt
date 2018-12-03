@@ -4,6 +4,7 @@ set (
   IMediumModel.h
   NuclearComposition.h
   HomogeneousMedium.h
+  Environment.h
   )
 
 set (

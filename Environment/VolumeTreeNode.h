@@ -88,7 +88,8 @@ namespace corsika::environment {
       static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
                     "unusable type provided");
 
-      fModelProperties = std::make_unique<ModelProperties>(std::forward<Args>(args)...);
+      fModelProperties = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
+      return fModelProperties;
     }
 
     void SetModelProperties(IMPSharedPtr ptr) { fModelProperties = ptr; }
@@ -101,7 +102,7 @@ namespace corsika::environment {
       return std::make_shared<MediumType>(std::forward<Args>(args)...);
     }
 
-    // factory methods for creation of nodes
+    // factory method for creation of nodes
     template <class VolumeType, typename... Args>
     static auto CreateNode(Args&&... args) {
       static_assert(std::is_base_of_v<corsika::geometry::Volume, VolumeType>,

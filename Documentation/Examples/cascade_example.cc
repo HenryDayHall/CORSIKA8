@@ -17,6 +17,8 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <corsika/environment/Environment.h>
+
 #include <corsika/random/RNGManager.h>
 
 #include <corsika/cascade/SibStack.h>
@@ -24,14 +26,18 @@
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/units/PhysicalUnits.h>
+
+#include <iostream>
+#include <typeinfo>
+
 using namespace corsika;
 using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
+using namespace corsika::geometry;
+using namespace corsika::environment;
 
-#include <iostream>
-#include <typeinfo>
 using namespace std;
 
 static int fCount = 0;
@@ -236,9 +242,12 @@ double s_rndm_(int&) {
   return rmng() / (double)rmng.max();
 }
 
-int main() {
-
-  tracking_line::TrackingLine<setup::Stack> tracking;
+int main() {  
+  Environment env;
+  
+  auto theMedium = env.GetUniverse()::CreateNode<Sphere>({Point{env.GetCS(), 0_m, 0_m, 0_m}, 100_km});
+    
+  tracking_line::TrackingLine<setup::Stack> tracking(environment);
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
