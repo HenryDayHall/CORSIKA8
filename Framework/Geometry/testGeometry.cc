@@ -152,11 +152,12 @@ TEST_CASE("Trajectories") {
             .norm()
             .magnitude() == Approx(0).margin(absMargin));
 
-    Trajectory<Line> base(line, 1_s);
-    CHECK(line.GetPosition(2_s).GetCoordinates() ==
-          base.GetPosition(2_s).GetCoordinates());
+    auto const t = 1_s;
+    Trajectory<Line> base(line, t);
+    CHECK(line.GetPosition(t).GetCoordinates() ==
+          base.GetPosition(1.).GetCoordinates());
 
-    CHECK(base.GetDistanceBetween(1_s, 2_s) / 1_m == Approx(1));
+    CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(1));
   }
 
   SECTION("Helix") {
@@ -180,10 +181,11 @@ TEST_CASE("Trajectories") {
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    Trajectory<Helix> const base(helix, 1_s);
-    CHECK(helix.GetPosition(1234_s).GetCoordinates() ==
-          base.GetPosition(1234_s).GetCoordinates());
+    auto const t = 1234_s;
+    Trajectory<Helix> const base(helix, t);
+    CHECK(helix.GetPosition(t).GetCoordinates() ==
+          base.GetPosition(1.).GetCoordinates());
 
-    CHECK(base.GetDistanceBetween(1_s, 2_s) / 1_m == Approx(5));
+    CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(5));
   }
 }

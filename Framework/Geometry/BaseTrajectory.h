@@ -45,7 +45,7 @@ namespace corsika::geometry {
     virtual corsika::units::si::TimeType TimeFromArclength(
         corsika::units::si::LengthType) const = 0;
 
-    virtual LengthType GetDistance(corsika::units::si::TimeType t1,
+    virtual LengthType ArcLength(corsika::units::si::TimeType t1,
                                    corsika::units::si::TimeType t2) const = 0;
 
     virtual corsika::units::si::TimeType GetDuration(

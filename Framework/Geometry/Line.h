@@ -32,7 +32,7 @@ namespace corsika::geometry {
 
     Point GetPosition(corsika::units::si::TimeType t) const { return r0 + v0 * t; }
 
-    LengthType DistanceBetween(corsika::units::si::TimeType t1,
+    LengthType ArcLength(corsika::units::si::TimeType t1,
                                corsika::units::si::TimeType t2) const {
       return v0.norm() * (t2 - t1);
     }
