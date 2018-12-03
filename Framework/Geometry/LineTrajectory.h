@@ -28,6 +28,11 @@ namespace corsika::geometry {
       assert(t2 >= t1);
       return v0.norm() * (t2 - t1);
     }
+
+    corsika::units::si::TimeType TimeFromArclength(
+        corsika::units::si::LengthType t) const override {
+      return t / v0.norm();
+    }
   };
 
 } // namespace corsika::geometry

@@ -44,6 +44,7 @@ find_package (Eigen3 REQUIRED)
 # order of subdirectories 
 add_subdirectory (ThirdParty)
 add_subdirectory (Framework)
+add_subdirectory (Environment)
 add_subdirectory (Stack)
 add_subdirectory (Processes)
 add_subdirectory (Documentation)

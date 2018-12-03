@@ -47,9 +47,14 @@ namespace corsika::geometry {
 
     auto GetRadius() const { return radius; }
 
-    LengthType DistanceBetween(corsika::units::si::TimeType t1,
-                               corsika::units::si::TimeType t2) const override {
+    corsika::units::si::LengthType DistanceBetween(
+        corsika::units::si::TimeType t1, corsika::units::si::TimeType t2) const override {
       return (vPar + vPerp).norm() * (t2 - t1);
+    }
+
+    corsika::units::si::TimeType TimeFromArclength(
+        corsika::units::si::LengthType t) const override {
+      return t / (vPar + vPerp).norm();
     }
   };
 

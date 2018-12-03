@@ -6,11 +6,11 @@
 namespace corsika::geometry {
 
   class Volume {
-  
+
   public:
     //! returns true if the Point p is within the volume
     virtual bool Contains(Point const& p) const = 0;
-    
+
     virtual ~Volume() = default;
   };
 

@@ -24,6 +24,9 @@ namespace corsika::geometry {
 
     virtual LengthType DistanceBetween(corsika::units::si::TimeType t1,
                                        corsika::units::si::TimeType t2) const = 0;
+
+    virtual corsika::units::si::TimeType TimeFromArclength(
+        corsika::units::si::LengthType) const = 0;
   };
 
 } // namespace corsika::geometry
