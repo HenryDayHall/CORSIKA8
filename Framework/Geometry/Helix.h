@@ -1,7 +1,17 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #ifndef _include_HELIX_H_
 #define _include_HELIX_H_
 
-#include <corsika/geometry/BaseTrajectory.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -20,7 +30,8 @@ namespace corsika::geometry {
      \f}
    */
 
-  class Helix : public BaseTrajectory {
+  class Helix {
+
     using VelocityVec = Vector<corsika::units::si::SpeedType::dimension_type>;
 
     Point const r0;
@@ -40,7 +51,7 @@ namespace corsika::geometry {
         , uPerp(vPerp.cross(vPar.normalized()))
         , radius(pvPar.norm() / abs(pOmegaC)) {}
 
-    Point GetPosition(corsika::units::si::TimeType t) const override {
+    Point GetPosition(corsika::units::si::TimeType t) const {
       return r0 + vPar * t +
              (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }
@@ -48,12 +59,12 @@ namespace corsika::geometry {
     auto GetRadius() const { return radius; }
 
     corsika::units::si::LengthType DistanceBetween(
-        corsika::units::si::TimeType t1, corsika::units::si::TimeType t2) const override {
+      corsika::units::si::TimeType t1, corsika::units::si::TimeType t2) const {
       return (vPar + vPerp).norm() * (t2 - t1);
     }
 
     corsika::units::si::TimeType TimeFromArclength(
-        corsika::units::si::LengthType t) const override {
+        corsika::units::si::LengthType t) const {
       return t / (vPar + vPerp).norm();
     }
   };

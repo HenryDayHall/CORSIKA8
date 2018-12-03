@@ -1,18 +1,30 @@
-#include <corsika/geometry/CoordinateSystem.h>
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <array>
 #include <cstdlib>
 #include <iostream>
 
+using namespace corsika;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 int main() {
-
-  CoordinateSystem root;
+  geometry::CoordinateSystem& root =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCS();
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;

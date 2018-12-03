@@ -1,5 +1,18 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #ifndef _include_RNGManager_h_
 #define _include_RNGManager_h_
+
+#include <corsika/utl/Singleton.h>
 
 #include <map>
 #include <random>
@@ -14,9 +27,15 @@ namespace corsika::random {
 
   using RNG = std::mt19937; //!< the actual RNG type that will be used
 
-  class RNGManager {
+  class RNGManager : public corsika::utl::Singleton<RNGManager> {
+
+    friend class corsika::utl::Singleton<RNGManager>;
+
     std::map<std::string, RNG> rngs;
     std::map<std::string, std::seed_seq> seeds;
+
+  protected:
+    RNGManager() {}
 
   public:
     /*!
@@ -38,7 +57,12 @@ namespace corsika::random {
      * into a std::stringstream.
      */
     std::stringstream dumpState() const;
+
+    /**
+     * set seed_seq of \a pStreamName to \a pSeedSeq
+     */
+    // void SetSeedSeq(std::string const& pStreamName, std::seed_seq& const pSeedSeq);
   };
 
-} // namespace Random
+} // namespace corsika::random
 #endif

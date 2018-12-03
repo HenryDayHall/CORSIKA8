@@ -3,7 +3,7 @@
   <!-- For selected particles it is possible to specify the C++ class
        names for a specific unique PDG code -->
   
-  <particle pdgID="0" classname="unknown"/> <!-- VOID in Pythia8 -->
+  <particle pdgID="0" classname="Unknown"/> <!-- VOID in Pythia8 -->
   
   <particle pdgID="11" classname="Electron"/>
   <particle pdgID="-11" classname="Positron"/>

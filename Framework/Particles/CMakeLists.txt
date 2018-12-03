@@ -1,6 +1,7 @@
 
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
+          ${PROJECT_BINARY_DIR}/Framework/Particles/pythia_db.pkl
   COMMAND ${PROJECT_SOURCE_DIR}/Framework/Particles/pdxml_reader.py 
           ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleData.xml
           ${PROJECT_SOURCE_DIR}/Framework/Particles/ParticleClassNames.xml
@@ -11,6 +12,11 @@ add_custom_command (
           ${PROJECT_BINARY_DIR}/Framework/Particles/
   COMMENT "Read PYTHIA8 particle data and produce C++ source code GeneratedParticleProperties.inc"
   VERBATIM
+  )
+
+set (
+  PARTICLE_SOURCES
+  ParticleProperties.cc
   )
 
 # all public header files of library, includes automatic generated file(s)
@@ -25,7 +31,7 @@ set (
   corsika/particles
   )
 
-add_library (CORSIKAparticles INTERFACE)
+add_library (CORSIKAparticles STATIC ${PARTICLE_SOURCES})
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAparticles ${PARTICLE_NAMESPACE} ${PARTICLE_HEADERS})
 
@@ -38,14 +44,27 @@ add_custom_command (
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/particles/GeneratedParticleProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
   COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc"
   )
-add_custom_target (SourceDirLink DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc)
+add_custom_target (SourceDirLink DEPENDS ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc)
 add_dependencies (CORSIKAparticles SourceDirLink)
 # .....................................................
 
+target_link_libraries (
+  CORSIKAparticles
+  PUBLIC
+  CORSIKAunits
+  )
+
+set_target_properties (
+  CORSIKAparticles
+  PROPERTIES
+  VERSION ${PROJECT_VERSION}
+  SOVERSION 1
+  PUBLIC_HEADER "${PARTICLE_HEADERS}"
+  )
 
 target_include_directories (
   CORSIKAparticles
-  INTERFACE
+  PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>
   )

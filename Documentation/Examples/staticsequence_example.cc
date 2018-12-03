@@ -1,8 +1,24 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #include <array>
 #include <iomanip>
 #include <iostream>
 
 #include <corsika/process/ProcessSequence.h>
+
+#include <corsika/setup/SetupTrajectory.h> // TODO: try to break this dependence later
+using corsika::setup::Trajectory;
+#include <corsika/units/PhysicalUnits.h> // dito
+using namespace corsika::units::si;
 
 using namespace std;
 using namespace corsika::process;
@@ -11,7 +27,7 @@ class Process1 : public BaseProcess<Process1> {
 public:
   Process1() {}
   template <typename D, typename T, typename S>
-  EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  EProcessReturn DoContinuous(D& d, T&, S&) const {
     for (int i = 0; i < 10; ++i) d.p[i] += 1;
     return EProcessReturn::eOk;
   }
@@ -22,7 +38,7 @@ public:
   Process2() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D&, T&, S&) const {
     // for (int i=0; i<10; ++i) d.p[i] *= 2;
     return EProcessReturn::eOk;
   }
@@ -34,7 +50,7 @@ public:
   Process3() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& /*d*/, T& /*t*/, S& /*s*/) const {
     // for (int i=0; i<10; ++i) d.p[i] += fV;
     return EProcessReturn::eOk;
   }
@@ -48,7 +64,7 @@ public:
   // Process4(const int v) : fV(v) {}
   Process4() {}
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T& t, S& s) const {
+  inline EProcessReturn DoContinuous(D& /*d*/, T& /*t*/, S& /*s*/) const {
     // for (int i=0; i<10; ++i) d.p[i] /= fV;
     return EProcessReturn::eOk;
   }
@@ -61,7 +77,6 @@ struct DummyData {
   double p[10];
 };
 struct DummyStack {};
-struct DummyTrajectory {};
 
 void modular() {
 
@@ -73,8 +88,8 @@ void modular() {
   const auto sequence = m1 + m2 + m3 + m4;
 
   DummyData p;
-  DummyTrajectory t;
   DummyStack s;
+  Trajectory t;
 
   const int n = 100000000;
   for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }

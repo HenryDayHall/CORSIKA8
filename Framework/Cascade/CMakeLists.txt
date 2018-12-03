@@ -9,15 +9,32 @@ set (
 set (
   CORSIKAcascade_HEADERS
   Cascade.h
+  sibyll2.3c.h
+  SibStack.h
   )
 
 #set (
 #  CORSIKAcascade_SOURCES
+#  TrackingStep.cc
 #  Cascade.cc
 #  )
 
+set (
+  CORSIKAsibyll_NAMESPACE
+  corsika/cascade
+  )
+
+set (
+  CORSIKAsibyll_SOURCES
+  sibyll2.3c.f
+  gasdev.f
+  )
+add_library (CORSIKAsibyll STATIC ${CORSIKAsibyll_SOURCES})
+
 #add_library (CORSIKAcascade STATIC ${CORSIKAcascade_SOURCES})
 add_library (CORSIKAcascade INTERFACE)
+
+
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAcascade ${CORSIKAcascade_NAMESPACE} ${CORSIKAcascade_HEADERS})
 
@@ -51,11 +68,16 @@ add_executable (
 
 target_link_libraries (
   testCascade
+  #  CORSIKAutls
+  CORSIKArandom
+  CORSIKAsibyll
   CORSIKAcascade
+  ProcessStackInspector
+  CORSIKAstackinterface
+  CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAprocesssequence
-  SuperStupidStack
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
