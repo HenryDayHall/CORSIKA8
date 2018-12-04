@@ -10,6 +10,8 @@
 
 using namespace std;
 using namespace corsika::stack;
+using namespace corsika::units;
+using namespace corsika::geometry;
 
 class SibStackData {
   
@@ -19,14 +21,30 @@ class SibStackData {
   void Clear() { s_plist_.np = 0; }
   
   int GetSize() const { return s_plist_.np;  }
+#warning check actual capacity of sibyll stack  
   int GetCapacity() const { return 8000; }
 
   
   void SetId(const int i, const int v) { s_plist_.llist[i]=v; }
-  void SetEnergy(const int i, const double v) { s_plist_.p[3][i]=v;  }
-
+  void SetEnergy(const int i, const EnergyType v) { s_plist_.p[3][i] = v / 1_GeV;  }
+  void SetMomentum(const int i, const super_stupid::MomentumVector& v)
+  {
+    auto tmp = v.GetComponents();
+    for(int idx=0; idx<3; ++idx)      
+      s_plist_.p[idx][i] = tmp[idx] / 1_GeV * si::constants::c;    
+  }
+  
   int GetId(const int i) const { return s_plist_.llist[i]; }
-  double GetEnergy(const int i) const { return s_plist_.p[3][i]; }
+  
+  EnergyType GetEnergy(const int i) const { return s_plist_.p[3][i] * 1_GeV; }
+  
+  super_stupid::MomentumVector GetMomentum(const int i) const
+  {
+    CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+    corsika::geometry::QuantityVector<momentum_d> components{ s_plist_.p[0][i] * 1_GeV / si::constants::c , s_plist_.p[1][i] * 1_GeV / si::constants::c, s_plist_.p[2][i] * 1_GeV / si::constants::c};
+    super_stupid::MomentumVector v1(rootCS,components);
+    return v1;
+  }
   
   void Copy(const int i1, const int i2) {
     s_plist_.llist[i1] = s_plist_.llist[i2];
@@ -45,9 +63,10 @@ class ParticleInterface : public ParticleBase<StackIteratorInterface> {
   using ParticleBase<StackIteratorInterface>::GetIndex;
  public:
   void SetEnergy(const double v) { GetStackData().SetEnergy(GetIndex(), v); }
-  double GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
+  EnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
   void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
   corsika::process::sibyll::SibyllCode GetPID() const { return static_cast<corsika::process::sibyll::SibyllCode> (GetStackData().GetId(GetIndex())); }
+  super_stupid::MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }
   
 };
 
