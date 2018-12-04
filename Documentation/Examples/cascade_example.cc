@@ -339,7 +339,7 @@ public:
   void Init() {}
   
   template <typename Particle>
-  double MinStepLength(Particle& p) const {
+  double MinStepLength(Particle& p, setup::Trajectory&) const {
     EnergyType E   = p.GetEnergy();
     MassType m     = corsika::particles::GetMass(p.GetPID());
     // env.GetDensity();
@@ -374,8 +374,8 @@ public:
   void DoDiscrete(Particle& p, Stack& s) const {
   }
   
-  template <typename Particle, typename Trajectory, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+  template <typename Particle, typename Stack>
+  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
     return EProcessReturn::eOk;
   }
 

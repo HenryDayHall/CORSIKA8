@@ -53,7 +53,8 @@ namespace corsika::units::si {
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
   using MassDensityType = phys::units::quantity<phys::units::mass_density_d, double>;
   using CrossSectionType = phys::units::quantity<sigma_d, double>;
-
+  using MomentumType = phys::units::quantity<momentum_d, double>;
+  
 } // end namespace corsika::units::si
 
 /**
