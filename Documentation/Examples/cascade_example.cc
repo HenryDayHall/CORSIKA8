@@ -23,6 +23,8 @@
 #include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
+#include <corsika/process/sibyll/ProcessDecay.h>
+
 #include <corsika/units/PhysicalUnits.h>
 
 using namespace corsika;
@@ -333,54 +335,6 @@ double s_rndm_(int&) {
   return rmng() / (double)rmng.max();
 }
 
-class ProcessDecay : public corsika::process::BaseProcess<ProcessDecay> {
-public:
-  ProcessDecay() {}
-  void Init() {}
-  
-  template <typename Particle>
-  double MinStepLength(Particle& p, setup::Trajectory&) const {
-    EnergyType E   = p.GetEnergy();
-    MassType m     = corsika::particles::GetMass(p.GetPID());
-    // env.GetDensity();
-    const MassDensityType density = 1.25e-3 * kilogram  / ( 1_cm * 1_cm * 1_cm ); 
-    
-    const double gamma = E / m / constants::cSquared;
-    // lifetimes not implemented yet
-    TimeType t0;
-    switch( p.GetPID() ){
-    case Code::PiPlus :
-      t0 = 2.6e-8 * 1_s;
-      break;
-      
-    case Code::KPlus :
-      t0 = 1.e-5 * 1_s;
-      break;
-      
-    default:
-      t0 = 1.e8 * 1_s;
-      break;
-    }
-    cout << "ProcessDecay: MinStep: t0: " << t0 << endl;
-    cout << "ProcessDecay: MinStep: gamma: " << gamma << endl;
-    cout << "ProcessDecay: MinStep: density: " << density << endl;
-    // return as column density
-    const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
-    cout << "ProcessDecay: MinStep: x0: " << x0 << endl;
-    return x0;
-  }
-  
-  template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack& s) const {
-  }
-  
-  template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
-    return EProcessReturn::eOk;
-  }
-
-};
-
 
 int main() {
 
@@ -389,7 +343,7 @@ int main() {
   tracking_line::TrackingLine<setup::Stack> tracking;
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
-  ProcessDecay p2;
+  corsika::process::sibyll::ProcessDecay p2;
   const auto sequence = p0 + p1 + p2;
   setup::Stack stack;
 
