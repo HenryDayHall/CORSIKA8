@@ -53,4 +53,12 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(GetPDG(Code::NuE) == 12);
     REQUIRE(GetPDG(Code::MuMinus) == 13);
   }
+
+  SECTION("Lifetimes") {
+    REQUIRE(GetLifetime(Code::Electron) == std::numeric_limits<double>::infinity() * corsika::units::si::second);
+    REQUIRE(GetLifetime(Code::DPlus) <  GetLifetime(Code::Gamma));
+    //REQUIRE(GetLifetime(Code::RhoPlus)/corsika::units::si::second == (Approx(4.414566727909413e-24).epsilon(1e-3)));
+    //REQUIRE(GetLifetime(Code::SigmaMinusBar)/corsika::units::si::second == (Approx(8.018880848563575e-11).epsilon(1e-5)));
+    //REQUIRE(GetLifetime(Code::MuPlus)/corsika::units::si::second == (Approx(2.1970332555864364e-06).epsilon(1e-5)));
+  }
 }

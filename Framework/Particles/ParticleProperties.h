@@ -26,6 +26,7 @@
 #include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
+
 /**
  * @namespace particle
  *
@@ -35,6 +36,8 @@
  */
 
 namespace corsika::particles {
+
+  using corsika::units::si::second;
 
   enum class Code : int16_t;
 
@@ -47,6 +50,7 @@ namespace corsika::particles {
   corsika::units::si::MassType constexpr GetMass(Code const);
   PDGCodeType constexpr GetPDG(Code const);
   constexpr std::string const& GetName(Code const);
+  corsika::units::si::TimeType constexpr GetLifetime(Code const);
 
 #include <corsika/particles/GeneratedParticleProperties.inc>
 
@@ -74,6 +78,10 @@ namespace corsika::particles {
 
   constexpr std::string const& GetName(Code const p) {
     return names[static_cast<CodeIntType const>(p)];
+  }
+
+  corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
+    return lifetime[static_cast<CodeIntType const>(p)];
   }
 
   namespace io {

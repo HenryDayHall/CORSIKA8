@@ -14,27 +14,37 @@ import pickle
 def parse(filename):
     tree = ET.parse(filename)
     root = tree.getroot()
-        
+
+    GeVfm = 0.19732696312541853
+    c_speed_of_light = 29.9792458e10  # mm / s
+    
     for particle in root.iter("particle"):
         name = particle.attrib["name"]
         antiName = "Unknown"
-        # print (str(particle.attrib))
         if ("antiName" in particle.attrib):
-            antiName = particle.attrib["antiName"]            
-#            print ("found anti: " + name + " " + antiName + "\n" )
+            antiName = particle.attrib["antiName"]
         pdg_id = int(particle.attrib["id"])
-        mass = float(particle.attrib["m0"]) # GeV
-        electric_charge = int(particle.attrib["chargeType"]) # in units of e/3
+        mass = float(particle.attrib["m0"])  # GeV
+        electric_charge = int(particle.attrib["chargeType"])  # in units of e/3        
+        ctau = 0.
+        if pdg_id in (11, 12, 14, 16, 22, 2212):  # these are the stable particles !
+            ctau = float('Inf')
+        elif 'tau0' in particle.attrib:
+            ctau = float(particle.attrib['tau0'])  # mm / c
+        elif 'mWidth' in particle.attrib:
+            ctau = GeVfm / float(particle.attrib['mWidth']) * 1e-15 * 1000.0  # mm / s
+        elif pdg_id in (0, 423, 433, 4312, 4322, 5112, 5222):  # those are certainly not stable....
+            ctau = 0.
+        else:
+            print ("missing lifetime: " + str(pdg_id) + " " + str(name))
+            sys.exit(0)
         
-        decay_width = float(particle.attrib.get("mWidth", 0)) # GeV
-        lifetime = float(particle.attrib.get("tau0", math.inf)) # mm / c
-        
-        yield (pdg_id, name, mass, electric_charge, antiName)
+        yield (pdg_id, name, mass, electric_charge, antiName, ctau/c_speed_of_light)
                 
         # TODO: read decay channels from child elements
         
         if "antiName" in particle.attrib:
-            yield (-pdg_id, antiName, mass, -electric_charge, name)
+            yield (-pdg_id, antiName, mass, -electric_charge, name, ctau/c_speed_of_light)
 
 
             
@@ -161,7 +171,7 @@ def build_pythia_db(filename, classnames):
     
     counter = itertools.count(0)
     
-    for (pdg, name, mass, electric_charge, antiName) in parse(filename):
+    for (pdg, name, mass, electric_charge, antiName, lifetime) in parse(filename):
 
         c_id = "Unknown"
         if pdg in classnames:
@@ -175,6 +185,7 @@ def build_pythia_db(filename, classnames):
             "pdg" : pdg,
             "mass" : mass, # in GeV
             "electric_charge" : electric_charge, # in e/3
+            "lifetime" : lifetime,
             "ngc_code" : next(counter)
         }
     
@@ -249,6 +260,15 @@ def gen_properties(pythia_db):
 #        string += "  {anti:d},\n".format(charge = p['anti_particle'])
 #    string += "};\n"
 
+    # lifetime
+    string += "static constexpr std::array<corsika::units::si::TimeType const, size> lifetime = {\n"
+    for p in pythia_db.values():
+        if p['lifetime'] == float("Inf") :
+            string += "  std::numeric_limits<double>::infinity() * corsika::units::si::second, \n"
+        else :
+            string += "  {tau:f} * corsika::units::si::second, \n".format(tau = p['lifetime'])
+    string += "};\n"
+    
     return string
 
 
@@ -335,10 +355,12 @@ if __name__ == "__main__":
         print("usage: {:s} <Pythia8.xml> <ClassNames.xml>".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
         
+    print("\n       pdxml_reader.py: Automatically produce particle-properties from PYTHIA8 xml file\n")
+
     names = class_names(sys.argv[2])
     pythia_db = build_pythia_db(sys.argv[1], names)
 
-    print("\n       pdxml_reader.py: Automatically produce particle-properties from PYTHIA8 xml file\n")
+    print (str(pythia_db))
     
     with open("GeneratedParticleProperties.inc", "w") as f:
         print(inc_start(), file=f) 
