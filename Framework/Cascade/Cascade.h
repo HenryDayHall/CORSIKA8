@@ -19,8 +19,6 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 
-using namespace corsika::units::si;
-
 namespace corsika::cascade {
 
   template <typename Tracking, typename ProcessList, typename Stack>

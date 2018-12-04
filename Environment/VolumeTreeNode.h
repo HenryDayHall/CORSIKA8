@@ -102,17 +102,6 @@ namespace corsika::environment {
       return std::make_shared<MediumType>(std::forward<Args>(args)...);
     }
 
-    // factory method for creation of nodes
-    template <class VolumeType, typename... Args>
-    static auto CreateNode(Args&&... args) {
-      static_assert(std::is_base_of_v<corsika::geometry::Volume, VolumeType>,
-                    "unusable type provided, needs to be derived from "
-                    "\"corsika::geometry::Volume\"");
-
-      return std::make_unique<VolumeTreeNode<IModelProperties>>(
-          std::make_unique<VolumeType>(std::forward<Args>(args)...));
-    }
-
   private:
     std::vector<VTNUPtr> fChildNodes;
     std::vector<VolumeTreeNode<IModelProperties> const*> fExcludedNodes;

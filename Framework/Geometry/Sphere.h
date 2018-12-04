@@ -31,6 +31,9 @@ namespace corsika::geometry {
     bool Contains(Point const& p) const override {
       return fRadius * fRadius > (fCenter - p).squaredNorm();
     }
+
+    auto& GetCenter() const { return fCenter; }
+    auto GetRadius() const { return fRadius; }
   };
 
 } // namespace corsika::geometry

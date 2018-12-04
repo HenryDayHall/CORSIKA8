@@ -2,6 +2,7 @@
 #define _include_IMediumModel_h
 
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/units/PhysicalUnits.h>

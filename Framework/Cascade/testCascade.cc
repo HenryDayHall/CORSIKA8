@@ -9,6 +9,8 @@
  * the license.
  */
 
+#include <corsika/environment/Environment.h>
+
 #include <corsika/cascade/Cascade.h>
 
 #include <corsika/process/ProcessSequence.h>
@@ -35,6 +37,7 @@ using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
+using namespace corsika::units::si;
 
 static int fCount = 0;
 
@@ -73,10 +76,10 @@ public:
 private:
 };
 
-
 TEST_CASE("Cascade", "[Cascade]") {
+  corsika::environment::Environment env; // dummy environment
 
-  tracking_line::TrackingLine<setup::Stack> tracking;
+  tracking_line::TrackingLine<setup::Stack> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
@@ -92,8 +95,8 @@ TEST_CASE("Cascade", "[Cascade]") {
   EnergyType E0 = 100_GeV;
   particle.SetEnergy(E0);
   particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
-  particle.SetMomentum(
-		       corsika::stack::super_stupid::MomentumVector(rootCS, {0*newton*second, 0*newton*second, -1*newton*second}));
+  particle.SetMomentum(corsika::stack::super_stupid::MomentumVector(
+      rootCS, {0 * newton * second, 0 * newton * second, -1 * newton * second}));
   EAS.Init();
   EAS.Run();
 

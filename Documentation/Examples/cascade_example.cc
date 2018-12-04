@@ -23,6 +23,7 @@
 
 #include <corsika/cascade/SibStack.h>
 #include <corsika/cascade/sibyll2.3c.h>
+#include <corsika/geometry/Sphere.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/units/PhysicalUnits.h>
@@ -39,6 +40,7 @@ using namespace corsika::geometry;
 using namespace corsika::environment;
 
 using namespace std;
+using namespace corsika::units::si;
 
 static int fCount = 0;
 
@@ -47,7 +49,7 @@ public:
   ProcessSplit() {}
 
   template <typename Particle>
-  double MinStepLength(Particle& p, setup::Trajectory&) const {
+  double MinStepLength(Particle& p, corsika::setup::Trajectory&) const {
 
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
@@ -99,7 +101,7 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+  EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack&) const {
     // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
   }
@@ -242,12 +244,14 @@ double s_rndm_(int&) {
   return rmng() / (double)rmng.max();
 }
 
-int main() {  
+int main() {
   Environment env;
-  
-  auto theMedium = env.GetUniverse()::CreateNode<Sphere>({Point{env.GetCS(), 0_m, 0_m, 0_m}, 100_km});
-    
-  tracking_line::TrackingLine<setup::Stack> tracking(environment);
+  auto& universe = env.GetUniverse();
+
+  auto theMedium = Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 100_km);
+
+  tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
@@ -257,7 +261,7 @@ int main() {
 
   stack.Clear();
   auto particle = stack.NewParticle();
-  EnergyType E0 = 100_GeV;
+  EnergyType E0 = 1_EeV;
   particle.SetEnergy(E0);
   particle.SetPID(Code::Proton);
   EAS.Init();
