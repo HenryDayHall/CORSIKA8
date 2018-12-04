@@ -44,6 +44,9 @@ public:
   template <typename Particle>
   double MinStepLength(Particle& p, setup::Trajectory&) const {
 
+    // coordinate system, get global frame of reference
+    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+    
     const Code corsikaBeamId = p.GetPID();
     
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
@@ -60,13 +63,24 @@ public:
     // target nuclei: A < 18
     // FOR NOW: assume target is oxygen
     int kTarget = 16;
-    double beamEnergy =  p.GetEnergy() / 1_GeV;
-#warning boost to cm. still missing, sibyll cross section input is cm. energy!
+
+    // proton mass in units of energy
+    const EnergyType proton_mass_en = 0.93827_GeV ;
     
-    std::cout << "ProcessSplit: " << "MinStep: input en: " << beamEnergy
-      	      << " beam can interact:" << kBeam
-	      << " beam XS code:" << kBeam
-      	      << " beam pid:" << p.GetPID()
+    EnergyType Etot = p.GetEnergy() + kTarget * proton_mass_en;
+    super_stupid::MomentumVector Ptot(rootCS, {0.0_newton_second, 0.0_newton_second, 0.0_newton_second});
+    // FOR NOW: assume target is at rest
+    super_stupid::MomentumVector pTarget(rootCS, {0.0_newton_second, 0.0_newton_second, 0.0_newton_second});
+    Ptot += p.GetMomentum();
+    Ptot += pTarget;
+    // calculate cm. energy
+    EnergyType sqs = sqrt( Etot * Etot - Ptot.squaredNorm() * si::constants::cSquared );
+    double Ecm = sqs / 1_GeV;
+    
+    std::cout << "ProcessSplit: " << "MinStep: input en: " << p.GetEnergy() / 1_GeV << endl
+      	      << " beam can interact:" << kBeam<< endl
+	      << " beam XS code:" << kBeam << endl
+      	      << " beam pid:" << p.GetPID() << endl
 	      << " target mass number:" << kTarget << std::endl;
 
     double next_step;
@@ -76,9 +90,9 @@ public:
       double dumdif[3];
       
       if(kTarget==1)
-	sib_sigma_hp_(kBeam, beamEnergy, dum1, dum2, prodCrossSection, dumdif,dum3, dum4 );
+	sib_sigma_hp_(kBeam, Ecm, dum1, dum2, prodCrossSection, dumdif,dum3, dum4 );
       else
-	sib_sigma_hnuc_(kBeam, kTarget, beamEnergy, prodCrossSection, dummy );
+	sib_sigma_hnuc_(kBeam, kTarget, Ecm, prodCrossSection, dummy );
     
       std::cout << "ProcessSplit: " << "MinStep: sibyll return: " << prodCrossSection << std::endl;
       CrossSectionType sig = prodCrossSection * 1_mbarn;
@@ -291,6 +305,7 @@ public:
     ds.NewParticle().SetPID(Code::Neutron);
     ds.NewParticle().SetPID(Code::PiPlus);
     ds.NewParticle().SetPID(Code::PiMinus);
+    ds.NewParticle().SetPID(Code::Pi0);
     ds.NewParticle().SetPID(Code::KPlus);
     ds.NewParticle().SetPID(Code::KMinus);
     ds.NewParticle().SetPID(Code::K0Long);
@@ -332,7 +347,7 @@ int main() {
 
   stack.Clear();
   auto particle = stack.NewParticle();
-  EnergyType E0 = 500_GeV;
+  EnergyType E0 = 100_GeV;
   MomentumType P0 = sqrt( E0*E0 - 0.93827_GeV * 0.93827_GeV ) / si::constants::c;
   auto plab = super_stupid::MomentumVector(rootCS,
 					   0. * 1_GeV / si::constants::c,
