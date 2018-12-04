@@ -23,6 +23,8 @@ namespace corsika::environment {
     using IEnvironmentModel = corsika::setup::IEnvironmentModel;
 
     auto& GetUniverse() { return universe; }
+    auto const& GetUniverse() const { return universe; }
+
     auto const& GetCoordinateSystem() const {
       return corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCS();
     }

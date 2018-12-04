@@ -55,4 +55,13 @@ TEST_CASE("TrackingLine") {
     auto const optNoIntersection = tracking.TimeOfIntersection(traj, Sphere(Point(cs, {5_m, 0_m, 10_m}), 1_m));
     REQUIRE_FALSE(optNoIntersection.has_value());
   }
+  
+  SECTION("maximally possible propagation") {
+      auto& universe = *(env.GetUniverse());
+      
+      auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 100_km);
+      
+      universe.AddChild(std::move(theMedium));
+  }
 }

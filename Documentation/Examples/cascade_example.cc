@@ -246,10 +246,13 @@ double s_rndm_(int&) {
 
 int main() {
   Environment env;
-  auto& universe = env.GetUniverse();
+  //~ auto& universe = env.GetUniverse();
+  auto& universe = *(env.GetUniverse());
 
-  auto theMedium = Environment::CreateNode<Sphere>(
+  auto const theMedium = Environment::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 100_km);
+      
+  universe.AddChild(std::move(theMedium));
 
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);

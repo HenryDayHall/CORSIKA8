@@ -65,7 +65,7 @@ namespace corsika::environment {
       }
     }
 
-    void addChild(VTNUPtr pChild) {
+    void AddChild(VTNUPtr pChild) {
       pChild->fParentNode = this;
       fChildNodes.push_back(std::move(pChild));
       // It is a bad idea to return an iterator to the inserted element
@@ -73,11 +73,15 @@ namespace corsika::environment {
       // later and the caller won't notice.
     }
 
-    void excludeOverlapWith(VTNUPtr const& pNode) {
+    void ExcludeOverlapWith(VTNUPtr const& pNode) {
       fExcludedNodes.push_back(pNode.get());
     }
 
-    auto GetParent() const { return fParentNode; };
+    auto* GetParent() const { return fParentNode; };
+
+    auto const& GetChildNodes() const { return fChildNodes; }
+
+    auto const& GetExcludedNodes() const { return fExcludedNodes; }
 
     auto const& GetVolume() const { return *fGeoVolume; }
 

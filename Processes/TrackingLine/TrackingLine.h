@@ -11,9 +11,9 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-#include <optional>
-
+#include <algorithm>
 #include <iostream>
+#include <optional>
 
 using namespace corsika;
 
@@ -29,8 +29,7 @@ namespace corsika::process {
 
     public:
       std::optional<corsika::units::si::TimeType> TimeOfIntersection(
-          geometry::Trajectory<corsika::geometry::Line> const& traj,
-          geometry::Sphere const& sphere) {
+          corsika::geometry::Line const& traj, geometry::Sphere const& sphere) {
         using namespace corsika::units::si;
         auto const& cs = fEnvironment.GetCoordinateSystem();
         geometry::Point const origin(cs, 0_m, 0_m, 0_m);
@@ -60,12 +59,46 @@ namespace corsika::process {
       TrackingLine(corsika::environment::Environment const& pEnv)
           : fEnvironment(pEnv) {}
       void Init() {}
+
       auto GetTrack(Particle& p) {
         using namespace corsika::units::si;
         geometry::Vector<SpeedType::dimension_type> const velocity =
             p.GetMomentum() / p.GetEnergy() * corsika::units::si::constants::cSquared;
-        geometry::Line traj(p.GetPosition(), velocity);
-        return geometry::Trajectory<corsika::geometry::Line>(traj, 100_ns);
+
+        auto const currentPosition = p.GetPosition();
+        geometry::Line line(currentPosition, velocity);
+
+        auto const* currentVolumeNode =
+            fEnvironment.GetUniverse()->GetContainingNode(currentPosition);
+        auto const& children = currentVolumeNode->GetChildNodes();
+        auto const& excluded = currentVolumeNode->GetExcludedNodes();
+
+        std::vector<TimeType> intersectionTimes;
+
+        auto addIfIntersects = [&](auto& vtn) {
+          auto const& volume = vtn.GetVolume();
+          auto const& sphere = dynamic_cast<geometry::Sphere const&>(
+              volume); // for the moment we are a bit bold here and assume
+                       // everything is a sphere, crashes with exception if not
+
+          if (auto opt = TimeOfIntersection(line, sphere); opt.has_value())
+            intersectionTimes.push_back(*opt);
+        };
+
+        for (auto const& child : children) { addIfIntersects(*child); }
+
+        for (auto const* child : excluded) { addIfIntersects(*child); }
+
+        addIfIntersects(*currentVolumeNode);
+
+        auto const minIter =
+            std::min_element(intersectionTimes.cbegin(), intersectionTimes.cend());
+
+        if (minIter == intersectionTimes.cend()) {
+          throw std::string("no intersection with anything!");
+        }
+
+        return geometry::Trajectory<corsika::geometry::Line>(line, *minIter);
       }
     };
 
