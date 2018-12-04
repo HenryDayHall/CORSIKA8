@@ -17,6 +17,7 @@
 #include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -28,7 +29,7 @@ using namespace corsika::units::si;
 double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("transformations between CoordinateSystems") {
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
   REQUIRE(CoordinateSystem::GetTransformation(rootCS, rootCS)
               .isApprox(EigenTransform::Identity()));
@@ -44,10 +45,11 @@ TEST_CASE("transformations between CoordinateSystems") {
   REQUIRE((p1.GetCoordinates(rootCS) - coordinates).norm().magnitude() ==
           Approx(0).margin(absMargin));
 
+  /*
   SECTION("unconnected CoordinateSystems") {
     CoordinateSystem rootCS2 = CoordinateSystem::CreateRootCS();
     REQUIRE_THROWS(CoordinateSystem::GetTransformation(rootCS, rootCS2));
-  }
+    }*/
 
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
@@ -126,7 +128,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 }
 
 TEST_CASE("Sphere") {
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
@@ -137,7 +139,7 @@ TEST_CASE("Sphere") {
 }
 
 TEST_CASE("Trajectories") {
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {
@@ -145,16 +147,16 @@ TEST_CASE("Trajectories") {
                                          {1_m / second, 0_m / second, 0_m / second});
 
     Line const line(r0, v0);
-    CHECK((line.GetPosition(2_s).GetCoordinates() -
-           QuantityVector<length_d>(2_m, 0_m, 0_m))
-              .norm()
-              .magnitude() == Approx(0).margin(absMargin));
+    CHECK(
+        (line.GetPosition(2_s).GetCoordinates() - QuantityVector<length_d>(2_m, 0_m, 0_m))
+            .norm()
+            .magnitude() == Approx(0).margin(absMargin));
 
-    Trajectory<Line> base(line, 0_s, 1_s);
+    Trajectory<Line> base(line, 1_s);
     CHECK(line.GetPosition(2_s).GetCoordinates() ==
           base.GetPosition(2_s).GetCoordinates());
 
-    CHECK(base.GetDistance(1_s, 2_s) / 1_m == Approx(1));
+    CHECK(base.GetDistanceBetween(1_s, 2_s) / 1_m == Approx(1));
   }
 
   SECTION("Helix") {
@@ -178,10 +180,10 @@ TEST_CASE("Trajectories") {
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    Trajectory<Helix> const base(helix, 0_s, 1_s);
+    Trajectory<Helix> const base(helix, 1_s);
     CHECK(helix.GetPosition(1234_s).GetCoordinates() ==
           base.GetPosition(1234_s).GetCoordinates());
 
-    CHECK(base.GetDistance(1_s, 2_s) / 1_m == Approx(5));
+    CHECK(base.GetDistanceBetween(1_s, 2_s) / 1_m == Approx(5));
   }
 }

@@ -1,12 +1,12 @@
 #ifndef _include_sibstack_h_
 #define _include_sibstack_h_
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include <corsika/stack/Stack.h>
 #include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/stack/Stack.h>
 
 using namespace std;
 using namespace corsika::stack;
@@ -14,10 +14,10 @@ using namespace corsika::units;
 using namespace corsika::geometry;
 
 class SibStackData {
-  
- public:
+
+public:
   void Init();
-  
+
   void Clear() { s_plist_.np = 0; }
   
   int GetSize() const { return s_plist_.np;  }
@@ -40,7 +40,7 @@ class SibStackData {
   
   super_stupid::MomentumVector GetMomentum(const int i) const
   {
-    CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
     corsika::geometry::QuantityVector<momentum_d> components{ s_plist_.p[0][i] * 1_GeV / si::constants::c , s_plist_.p[1][i] * 1_GeV / si::constants::c, s_plist_.p[2][i] * 1_GeV / si::constants::c};
     super_stupid::MomentumVector v1(rootCS,components);
     return v1;
@@ -50,18 +50,20 @@ class SibStackData {
     s_plist_.llist[i1] = s_plist_.llist[i2];
     s_plist_.p[3][i1] = s_plist_.p[3][i2];
   }
-  
- protected:
+
+protected:
   void IncrementSize() { s_plist_.np++; }
-  void DecrementSize() { if ( s_plist_.np>0) { s_plist_.np--; } }
+  void DecrementSize() {
+    if (s_plist_.np > 0) { s_plist_.np--; }
+  }
 };
 
-
-template<typename StackIteratorInterface>
+template <typename StackIteratorInterface>
 class ParticleInterface : public ParticleBase<StackIteratorInterface> {
   using ParticleBase<StackIteratorInterface>::GetStackData;
   using ParticleBase<StackIteratorInterface>::GetIndex;
- public:
+
+public:
   void SetEnergy(const double v) { GetStackData().SetEnergy(GetIndex(), v); }
   EnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
   void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
@@ -69,7 +71,6 @@ class ParticleInterface : public ParticleBase<StackIteratorInterface> {
   super_stupid::MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }
   
 };
-
 
 typedef Stack<SibStackData, ParticleInterface> SibStack;
 

@@ -15,6 +15,11 @@
 
 #include <corsika/process/ProcessSequence.h>
 
+#include <corsika/setup/SetupTrajectory.h> // TODO: try to break this dependence later
+using corsika::setup::Trajectory;
+#include <corsika/units/PhysicalUnits.h> // dito
+using namespace corsika::units::si;
+
 using namespace std;
 using namespace corsika::process;
 
@@ -72,7 +77,6 @@ struct DummyData {
   double p[10];
 };
 struct DummyStack {};
-struct DummyTrajectory {};
 
 void modular() {
 
@@ -84,8 +88,8 @@ void modular() {
   const auto sequence = m1 + m2 + m3 + m4;
 
   DummyData p;
-  DummyTrajectory t;
   DummyStack s;
+  Trajectory t;
 
   const int n = 100000000;
   for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }

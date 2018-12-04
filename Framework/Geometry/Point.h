@@ -34,8 +34,11 @@ namespace corsika::geometry {
     Point(CoordinateSystem const& cs, LengthType x, LengthType y, LengthType z)
         : BaseVector<phys::units::length_d>(cs, {x, y, z}) {}
 
+    // TODO: this should be private or protected, we don NOT want to expose numbers
+    // without reference to outside:
     auto GetCoordinates() const { return BaseVector<phys::units::length_d>::qVector; }
 
+    /// this always returns a QuantityVector as triple
     auto GetCoordinates(CoordinateSystem const& pCS) const {
       if (&pCS == BaseVector<phys::units::length_d>::cs) {
         return BaseVector<phys::units::length_d>::qVector;

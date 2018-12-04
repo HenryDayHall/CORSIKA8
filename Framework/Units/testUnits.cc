@@ -32,7 +32,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     LengthType l1 = 10_nm;
     l1 = l1;
-    
+
     LengthType arr0[5];
     arr0[0] = 5_m;
 
@@ -58,7 +58,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(1_K / 1_zK == Approx(1e21));
     REQUIRE(1_K / 1_yK == Approx(1e24));
     REQUIRE(1_barn / 1_mbarn == Approx(1e3));
-    
+
     REQUIRE(1_A / 1_hA == Approx(1e-2));
     REQUIRE(1_m / 1_km == Approx(1e-3));
     REQUIRE(1_m / 1_Mm == Approx(1e-6));
@@ -82,8 +82,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     const MassType m = 1_kg;
     const SpeedType v = 1_m / 1_s;
-    REQUIRE( m*v == 1_newton_second);
-    
+    REQUIRE(m * v == 1_newton_second);
+
     const double lgE = log10(E2 / 1_GeV);
     REQUIRE(lgE == Approx(log10(40.)));
 
@@ -95,7 +95,6 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     const LengthType farAway = std::numeric_limits<double>::infinity() * meter;
     REQUIRE(farAway > 100000_m);
-    REQUIRE_FALSE(farAway < 1e19*meter);
-    
+    REQUIRE_FALSE(farAway < 1e19 * meter);
   }
 }

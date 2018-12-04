@@ -31,7 +31,7 @@ namespace corsika::geometry {
    */
 
   class Helix {
-    
+
     using VelocityVec = Vector<corsika::units::si::SpeedType::dimension_type>;
 
     Point const r0;
@@ -58,8 +58,8 @@ namespace corsika::geometry {
 
     auto GetRadius() const { return radius; }
 
-    LengthType DistanceBetween(corsika::units::si::TimeType t1,
-                               corsika::units::si::TimeType t2) const {
+    LengthType GetDistanceBetween(corsika::units::si::TimeType t1,
+                                  corsika::units::si::TimeType t2) const {
       return (vPar + vPerp).norm() * (t2 - t1);
     }
   };

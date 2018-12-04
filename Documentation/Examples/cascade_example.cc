@@ -12,14 +12,15 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
+#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/random/RNGManager.h>
 
-#include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/cascade/SibStack.h>
+#include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/units/PhysicalUnits.h>
@@ -29,9 +30,10 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
+using namespace corsika::setup;
 
-#include <typeinfo>
 #include <iostream>
+#include <typeinfo>
 using namespace std;
 
 static int fCount = 0;
@@ -41,23 +43,25 @@ public:
   ProcessSplit() {}
 
   template <typename Particle>
-  double MinStepLength(Particle& p) const {
+  double MinStepLength(Particle& p, setup::Trajectory&) const {
 
     const Code corsikaBeamId = p.GetPID();
     
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
+
     int kBeam   =  process::sibyll::GetSibyllXSCode( corsikaBeamId );   
 
     bool kInteraction = process::sibyll::CanInteract( corsikaBeamId );
     
     /* 
        the target should be defined by the Environment,
-       ideally as full particle object so that the four momenta 
+       ideally as full particle object so that the four momenta
        and the boosts can be defined..
      */
     // target nuclei: A < 18
     // FOR NOW: assume target is oxygen
+
     int kTarget = 16;
     double beamEnergy =  p.GetEnergy() / 1_GeV;
 #warning boost to cm. still missing, sibyll cross section input is cm. energy!
@@ -98,25 +102,27 @@ public:
     
     /*
       what are the units of the output? slant depth or 3space length?
-      
+
     */
-    std::cout << "ProcessSplit: " << "next step (g/cm2): " << next_step << std::endl;
+    std::cout << "ProcessSplit: "
+              << "next step (g/cm2): " << next_step << std::endl;
     return next_step;
   }
 
-  template <typename Particle, typename Trajectory, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+  template <typename Particle, typename Stack>
+  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
     // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
   }
 
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
+
     cout << "DoDiscrete: " << p.GetPID() << " interaction? " << process::sibyll::CanInteract( p.GetPID() )  << endl; 
     if( process::sibyll::CanInteract( p.GetPID() ) ){
       cout << "defining coordinates" << endl;
       // coordinate system, get global frame of reference
-      CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+      CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
       QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
       Point pOrig(rootCS, coordinates);
@@ -253,84 +259,87 @@ public:
       //cout << "tot. momentum final (GeV/c): " << Ptot_final.GetComponents() / 1_GeV * si::constants::c << endl;
     }
     }else
+
       p.Delete();
   }
-  
-  
-  void Init() 
-  {
+
+  void Init() {
     fCount = 0;
 
     // define reference frame? --> defines boosts between corsika stack and model stack.
-    
+
     // initialize random numbers for sibyll
     // FOR NOW USE SIBYLL INTERNAL !!!
     //    rnd_ini_();
-    
-    corsika::random::RNGManager & rmng = corsika::random::RNGManager::GetInstance();;
+
+    corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
+    ;
     const std::string str_name = "s_rndm";
     rmng.RegisterRandomStream(str_name);
-    
+
     // //    corsika::random::RNG srng;
     // auto srng = rmng.GetRandomStream("s_rndm");
 
     // test random number generator
-    std::cout << "ProcessSplit: " << " test sequence of random numbers."  << std::endl;
+    std::cout << "ProcessSplit: "
+              << " test sequence of random numbers." << std::endl;
     int a = 0;
-    for(int i=0; i<8; ++i)
-      std::cout << i << " " << s_rndm_(a) << std::endl;
-    
-    //initialize Sibyll
+    for (int i = 0; i < 8; ++i) std::cout << i << " " << s_rndm_(a) << std::endl;
+
+    // initialize Sibyll
     sibyll_ini_();
 
     // set particles stable / unstable
     // use stack to loop over particles
     setup::Stack ds;
-    ds.NewParticle().SetPID( Code::Proton  );
-    ds.NewParticle().SetPID( Code::Neutron );
-    ds.NewParticle().SetPID( Code::PiPlus  );
-    ds.NewParticle().SetPID( Code::PiMinus );
-    ds.NewParticle().SetPID( Code::KPlus   );
-    ds.NewParticle().SetPID( Code::KMinus  );
-    ds.NewParticle().SetPID( Code::K0Long  );
-    ds.NewParticle().SetPID( Code::K0Short );
+    ds.NewParticle().SetPID(Code::Proton);
+    ds.NewParticle().SetPID(Code::Neutron);
+    ds.NewParticle().SetPID(Code::PiPlus);
+    ds.NewParticle().SetPID(Code::PiMinus);
+    ds.NewParticle().SetPID(Code::KPlus);
+    ds.NewParticle().SetPID(Code::KMinus);
+    ds.NewParticle().SetPID(Code::K0Long);
+    ds.NewParticle().SetPID(Code::K0Short);
 
-    for( auto &p: ds){
-      int s_id = process::sibyll::ConvertToSibyllRaw( p.GetPID() );
+    for (auto& p : ds) {
+      int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
       // set particle stable by setting table value negative
-      cout << "ProcessSplit: Init: setting " << p.GetPID() << "(" << s_id << ")" << " stable in Sibyll .." << endl;
-      s_csydec_.idb[ s_id ] = -s_csydec_.idb[ s_id-1 ];
+      cout << "ProcessSplit: Init: setting " << p.GetPID() << "(" << s_id << ")"
+           << " stable in Sibyll .." << endl;
+      s_csydec_.idb[s_id] = -s_csydec_.idb[s_id - 1];
       p.Delete();
     }
   }
-  
+
   int GetCount() { return fCount; }
 
 private:
 };
 
-double s_rndm_(int &)
-{
-  static corsika::random::RNG& rmng = corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");;
-  return rmng()/(double)rmng.max();
+double s_rndm_(int&) {
+  static corsika::random::RNG& rmng =
+      corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+  ;
+  return rmng() / (double)rmng.max();
 }
 
-
-int main(){
+int main() {
 
   // coordinate system, get global frame of reference
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
   
   QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point pOrig(rootCS, coordinates);    
   
-  stack_inspector::StackInspector<setup::Stack, setup::Trajectory> p0(true);
+  //  stack_inspector::StackInspector<setup::Stack, setup::Trajectory> p0(true);
+  tracking_line::TrackingLine<setup::Stack> tracking;
+  stack_inspector::StackInspector<setup::Stack> p0(true);
+
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   setup::Stack stack;
 
-  
-  corsika::cascade::Cascade EAS(sequence, stack);
+  corsika::cascade::Cascade EAS(tracking, sequence, stack);
 
   stack.Clear();
   auto particle = stack.NewParticle();
@@ -341,10 +350,10 @@ int main(){
 					   0. * 1_GeV / si::constants::c,
 					   P0);
   particle.SetEnergy(E0);
+
   particle.SetMomentum(plab);
   particle.SetPID( Code::Proton );
   EAS.Init();
   EAS.Run();
   cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
-  
 }

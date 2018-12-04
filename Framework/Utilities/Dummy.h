@@ -4,7 +4,6 @@
 namespace corsika::utl {
 
   // void....
-  
 }
 
 #endif
