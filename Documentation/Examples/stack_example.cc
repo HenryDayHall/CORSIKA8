@@ -13,6 +13,7 @@
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <iomanip>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 // using namespace corsika::literals;
@@ -30,14 +31,18 @@ void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
 }
 
 void read(corsika::stack::super_stupid::SuperStupidStack& s) {
-  cout << "found Stack with " << s.GetSize() << " particles. " << endl;
-  EnergyType Etot;
+  assert(s.GetSize() == 11);  // stack has 11 particles
+
+  EnergyType total_energy;
+  int i = 0;
   for (auto& p : s) {
-    Etot += p.GetEnergy();
-    cout << "particle: " << p.GetPID() << " with " << p.GetEnergy() / 1_GeV << " GeV"
-         << endl;
+    total_energy += p.GetEnergy();
+    // particles are electrons with 1.5 GeV energy times i
+    assert(p.GetPID() == corsika::particles::Code::Electron);
+    assert(p.GetEnergy() == i++ * 1_GeV);
   }
-  cout << "Etot=" << Etot << " = " << Etot / 1_GeV << " GeV" << endl;
+
+  assert(total_energy == 16.5_GeV);
 }
 
 int main() {
