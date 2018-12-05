@@ -1,5 +1,7 @@
 image: gcc
 
+tag: run1
+
 before_script:
   - apt-get update --yes
   - apt-get install --yes cmake libboost-dev libeigen3-dev
