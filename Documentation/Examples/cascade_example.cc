@@ -121,7 +121,7 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
     // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
   }
@@ -132,7 +132,7 @@ public:
     if( process::sibyll::CanInteract( p.GetPID() ) ){
       cout << "defining coordinates" << endl;
       // coordinate system, get global frame of reference
-      CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+      CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
       QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
       Point pOrig(rootCS, coordinates);
@@ -336,12 +336,13 @@ double s_rndm_(int&) {
 int main() {
 
   // coordinate system, get global frame of reference
-  CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
   
   QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point pOrig(rootCS, coordinates);    
-  
-  stack_inspector::StackInspector<setup::Stack, setup::Trajectory> p0(true);
+
+  tracking_line::TrackingLine<setup::Stack> tracking;
+  stack_inspector::StackInspector<setup::Stack> p0(true);
 
   ProcessSplit p1;
   const auto sequence = p0 + p1;

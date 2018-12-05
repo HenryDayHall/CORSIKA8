@@ -40,7 +40,7 @@ public:
   
   super_stupid::MomentumVector GetMomentum(const int i) const
   {
-    CoordinateSystem rootCS = CoordinateSystem::CreateRootCS();
+    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
     corsika::geometry::QuantityVector<momentum_d> components{ s_plist_.p[0][i] * 1_GeV / si::constants::c , s_plist_.p[1][i] * 1_GeV / si::constants::c, s_plist_.p[2][i] * 1_GeV / si::constants::c};
     super_stupid::MomentumVector v1(rootCS,components);
     return v1;
