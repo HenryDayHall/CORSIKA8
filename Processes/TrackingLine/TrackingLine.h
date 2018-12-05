@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iostream>
 #include <optional>
+#include <utility>
 
 using namespace corsika;
 
@@ -28,7 +29,7 @@ namespace corsika::process {
       corsika::environment::Environment const& fEnvironment;
 
     public:
-      std::optional<corsika::units::si::TimeType> TimeOfIntersection(
+      std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>> TimeOfIntersection(
           corsika::geometry::Line const& traj, geometry::Sphere const& sphere) {
         using namespace corsika::units::si;
         auto const& cs = fEnvironment.GetCoordinateSystem();
@@ -49,8 +50,8 @@ namespace corsika::process {
         //~ std::cout << "beta: " << beta << std::endl;
 
         if (discriminant.magnitude() > 0) {
-          auto const t = (-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm());
-          return t;
+          (-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm());
+          return std::make_pair((-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm()), (-alpha + sqrt(discriminant)) / (2 * v0.squaredNorm()));
         } else {
           return {};
         }
@@ -82,7 +83,13 @@ namespace corsika::process {
                        // everything is a sphere, crashes with exception if not
 
           if (auto opt = TimeOfIntersection(line, sphere); opt.has_value())
-            intersectionTimes.push_back(*opt);
+          {
+            auto const [t1, t2] = *opt;
+            if (t1.magnitude() >= 0)
+                intersectionTimes.push_back(t1);
+            else if (t2.magnitude() >= 0)
+                intersectionTimes.push_back(t2);
+          }
         };
 
         for (auto const& child : children) { addIfIntersects(*child); }

@@ -190,7 +190,7 @@ namespace corsika::geometry {
 
       using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
 
-      return ProdQuantity(bareResult);
+      return ProdQuantity(phys::units::detail::magnitude_tag, bareResult);
     }
   };
 

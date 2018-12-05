@@ -17,13 +17,19 @@
 #include <corsika/setup/SetupEnvironment.h>
 
 namespace corsika::environment {
+  struct Universe : public corsika::geometry::Volume {
+      bool Contains(corsika::geometry::Point const&) const override {return true;}
+  };
 
   class Environment {
   public:
+    Environment() : fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
+          std::make_unique<Universe>())) {}
+  
     using IEnvironmentModel = corsika::setup::IEnvironmentModel;
 
-    auto& GetUniverse() { return universe; }
-    auto const& GetUniverse() const { return universe; }
+    auto& GetUniverse() { return fUniverse; }
+    auto const& GetUniverse() const { return fUniverse; }
 
     auto const& GetCoordinateSystem() const {
       return corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCS();
@@ -41,7 +47,7 @@ namespace corsika::environment {
     }
 
   private:
-    VolumeTreeNode<IEnvironmentModel>::VTNUPtr universe;
+    VolumeTreeNode<IEnvironmentModel>::VTNUPtr fUniverse;
   };
 
 } // namespace corsika::environment

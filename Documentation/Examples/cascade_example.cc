@@ -245,11 +245,10 @@ double s_rndm_(int&) {
 }
 
 int main() {
-  Environment env;
-  //~ auto& universe = env.GetUniverse();
+  corsika::environment::Environment env; // dummy environment  
   auto& universe = *(env.GetUniverse());
 
-  auto const theMedium = Environment::CreateNode<Sphere>(
+  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 100_km);
       
   universe.AddChild(std::move(theMedium));
