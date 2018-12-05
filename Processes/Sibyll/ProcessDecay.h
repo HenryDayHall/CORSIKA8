@@ -32,7 +32,15 @@ public:
       t0 = 2.6e-8 * 1_s;
       break;
       
+    case corsika::particles::Code::PiMinus :
+      t0 = 2.6e-8 * 1_s;
+      break;
+
     case corsika::particles::Code::KPlus :
+      t0 = 1.e-5 * 1_s;
+      break;
+
+    case corsika::particles::Code::KMinus :
       t0 = 1.e-5 * 1_s;
       break;
       
@@ -51,6 +59,7 @@ public:
   
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
+    
   }
   
   template <typename Particle, typename Stack>
