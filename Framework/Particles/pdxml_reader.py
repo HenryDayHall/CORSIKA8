@@ -275,7 +275,7 @@ def gen_classes(pythia_db):
         string += "/** @class " + cname + "\n\n"
         string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
         string += " *  - pdg=" + str(pythia_db[cname]['pdg']) +"\n"
-        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV/c² \n"
+        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV/c2 \n"
         string += " *  - charge= " + str(pythia_db[cname]['electric_charge']/3) + " \n"
         string += " *  - name=" + str(cname) + "\n"
         string += " *  - anti=" + str(antiP) + "\n"
