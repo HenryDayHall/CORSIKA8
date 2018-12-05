@@ -6,6 +6,8 @@ before_script:
 
 build:
   stage: build
+  tags:
+    - run1
   script:
     - mkdir build
     - cd build
