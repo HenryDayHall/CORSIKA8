@@ -1,6 +1,4 @@
-image: gcc
-
-tag: run1
+image: ubuntu:bionic
 
 before_script:
   - apt-get update --yes
