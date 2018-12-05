@@ -43,6 +43,35 @@ class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
 
+  void setTrackedParticlesStable() const {
+    /*
+      Sibyll is hadronic generator
+      only hadrons decay
+     */
+    // set particles unstable    
+    corsika::process::sibyll::setHadronsUnstable();
+    // make tracked particles stable
+    std::cout << "ProcessSplit: setting tracked hadrons stable.." << std::endl;
+    setup::Stack ds;
+    ds.NewParticle().SetPID(Code::PiPlus);
+    ds.NewParticle().SetPID(Code::PiMinus);
+    ds.NewParticle().SetPID(Code::KPlus);
+    ds.NewParticle().SetPID(Code::KMinus);
+    ds.NewParticle().SetPID(Code::K0Long);
+    ds.NewParticle().SetPID(Code::K0Short);
+    
+    for (auto& p : ds) {
+      int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
+      // set particle stable by setting table value negative
+      //      cout << "ProcessSplit: doDiscrete: setting " << p.GetPID() << "(" << s_id << ")"
+      //     << " stable in Sibyll .." << endl;
+      s_csydec_.idb[s_id - 1] = (-1) * abs( s_csydec_.idb[s_id - 1] ); 
+      p.Delete();
+    }
+
+  }
+  
+  
   template <typename Particle>
   double MinStepLength(Particle& p, setup::Trajectory&) const {
 
@@ -211,7 +240,8 @@ public:
       // running sibyll, filling stack
       sibyll_( kBeam, kTarget, sqs);
       // running decays
-      //decsib_();
+      setTrackedParticlesStable();
+      decsib_();
       // print final state
       int print_unit = 6;
       sib_list_( print_unit );
@@ -228,6 +258,9 @@ public:
       super_stupid::MomentumVector Ptot_final(rootCS, {0.0_newton_second, 0.0_newton_second, 0.0_newton_second});
       for (auto &psib: ss){
 	++i;
+	// skip particles that have decayed in Sibyll
+	if( abs(s_plist_.llist[ i ]) > 100 ) continue;
+	
 	//transform energy to lab. frame, primitve
 	// compute beta_vec * p_vec
 	// arbitrary Lorentz transformation based on sibyll routines
@@ -300,29 +333,10 @@ public:
     // initialize Sibyll
     sibyll_ini_();
 
-    // set particles stable / unstable
-    // use stack to loop over particles
-    setup::Stack ds;
-    ds.NewParticle().SetPID(Code::Proton);
-    ds.NewParticle().SetPID(Code::Neutron);
-    ds.NewParticle().SetPID(Code::PiPlus);
-    ds.NewParticle().SetPID(Code::PiMinus);
-    ds.NewParticle().SetPID(Code::Pi0);
-    ds.NewParticle().SetPID(Code::KPlus);
-    ds.NewParticle().SetPID(Code::KMinus);
-    ds.NewParticle().SetPID(Code::K0Long);
-    ds.NewParticle().SetPID(Code::K0Short);
-
-    for (auto& p : ds) {
-      int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
-      // set particle stable by setting table value negative
-      cout << "ProcessSplit: Init: setting " << p.GetPID() << "(" << s_id << ")"
-           << " stable in Sibyll .." << endl;
-      s_csydec_.idb[s_id] = -s_csydec_.idb[s_id - 1];
-      p.Delete();
-    }
+    setTrackedParticlesStable();
   }
 
+  
   int GetCount() { return fCount; }
 
 private:
