@@ -118,8 +118,8 @@ namespace corsika::process {
 	std::cout << "calling Sibyll decay routine.." << std::endl;
 	decsib_();
 	// print output
-	int print_unit = 6;
-	sib_list_( print_unit );
+	//int print_unit = 6;
+	//sib_list_( print_unit );
 	// copy particles from sibyll stack to corsika
 	int i = -1;
 	for (auto &psib: ss){
@@ -127,7 +127,7 @@ namespace corsika::process {
 	  // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
 	  if( abs(s_plist_.llist[ i ]) > 100 ) continue;
 	  // add to corsika stack
-	  cout << "decay product: " << process::sibyll::ConvertFromSibyll( psib.GetPID() ) << endl;
+	  //cout << "decay product: " << process::sibyll::ConvertFromSibyll( psib.GetPID() ) << endl;
 	  auto pnew = s.NewParticle();
 	  pnew.SetEnergy( psib.GetEnergy() );
 	  pnew.SetPID( process::sibyll::ConvertFromSibyll( psib.GetPID() ) );	
