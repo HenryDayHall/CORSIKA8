@@ -5,6 +5,7 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/cascade/SibStack.h>
 
 //using namespace corsika::particles;
 
@@ -104,7 +105,38 @@ namespace corsika::process {
       
       template <typename Particle, typename Stack>
       void DoDiscrete(Particle& p, Stack& s) const {
-	
+	SibStack ss;
+	ss.Clear();
+	// copy particle to sibyll stack
+	auto pin = ss.NewParticle();
+	pin.SetPID( process::sibyll::ConvertToSibyllRaw( p.GetPID() ) );
+	pin.SetEnergy( p.GetEnergy() );
+	pin.SetMomentum( p.GetMomentum() );
+	// set all particles/hadrons unstable
+	setHadronsUnstable();
+	// call sibyll decay
+	std::cout << "calling Sibyll decay routine.." << std::endl;
+	decsib_();
+	// print output
+	int print_unit = 6;
+	sib_list_( print_unit );
+	// copy particles from sibyll stack to corsika
+	int i = -1;
+	for (auto &psib: ss){
+	  ++i;
+	  // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
+	  if( abs(s_plist_.llist[ i ]) > 100 ) continue;
+	  // add to corsika stack
+	  cout << "decay product: " << process::sibyll::ConvertFromSibyll( psib.GetPID() ) << endl;
+	  auto pnew = s.NewParticle();
+	  pnew.SetEnergy( psib.GetEnergy() );
+	  pnew.SetPID( process::sibyll::ConvertFromSibyll( psib.GetPID() ) );	
+	  pnew.SetMomentum( psib.GetMomentum() );
+	}
+	// empty sibyll stack
+	ss.Clear();
+	// remove original particle from stack
+	p.Delete();
       }
   
       template <typename Particle, typename Stack>
