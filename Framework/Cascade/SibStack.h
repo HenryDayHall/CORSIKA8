@@ -6,6 +6,7 @@
 
 #include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <corsika/stack/Stack.h>
 
 using namespace std;
@@ -64,11 +65,12 @@ class ParticleInterface : public ParticleBase<StackIteratorInterface> {
   using ParticleBase<StackIteratorInterface>::GetIndex;
 
 public:
-  void SetEnergy(const double v) { GetStackData().SetEnergy(GetIndex(), v); }
+  void SetEnergy(const EnergyType v) { GetStackData().SetEnergy(GetIndex(), v ); }
   EnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
   void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
   corsika::process::sibyll::SibyllCode GetPID() const { return static_cast<corsika::process::sibyll::SibyllCode> (GetStackData().GetId(GetIndex())); }
   super_stupid::MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }
+  void SetMomentum(const super_stupid::MomentumVector& v) { GetStackData().SetMomentum(GetIndex(), v); }
   
 };
 
