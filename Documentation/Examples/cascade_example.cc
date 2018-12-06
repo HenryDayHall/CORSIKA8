@@ -30,6 +30,7 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
+using namespace corsika::setup;
 
 #include <iostream>
 #include <typeinfo>

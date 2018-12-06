@@ -134,7 +134,7 @@ namespace corsika::stack {
       void IncrementSize() {
         fDataPID.push_back(Code::Unknown);
         fDataE.push_back(0 * joule);
-#warning this here makes no sense: see issue #48
+	//#TODO this here makes no sense: see issue #48
         geometry::CoordinateSystem& dummyCS =
             geometry::RootCoordinateSystem::GetInstance().GetRootCS();
         fMomentum.push_back(MomentumVector(
