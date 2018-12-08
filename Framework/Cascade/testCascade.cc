@@ -73,7 +73,6 @@ public:
 private:
 };
 
-
 TEST_CASE("Cascade", "[Cascade]") {
 
   tracking_line::TrackingLine<setup::Stack> tracking;
@@ -92,8 +91,8 @@ TEST_CASE("Cascade", "[Cascade]") {
   EnergyType E0 = 100_GeV;
   particle.SetEnergy(E0);
   particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
-  particle.SetMomentum(
-		       corsika::stack::super_stupid::MomentumVector(rootCS, {0*newton*second, 0*newton*second, -1*newton*second}));
+  particle.SetMomentum(corsika::stack::super_stupid::MomentumVector(
+      rootCS, {0 * newton * second, 0 * newton * second, -1 * newton * second}));
   EAS.Init();
   EAS.Run();
 

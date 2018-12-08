@@ -92,19 +92,17 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(E3 == 180_GeV);
   }
 
-
   SECTION("Unit system conversion") {
-    
-    const units::hep::MassType m_hep = 3_GeV; 
-    
+
+    const units::hep::MassType m_hep = 3_GeV;
+
     REQUIRE(m_hep == 3_GeV); // hep::mass identical to si::energy
     auto type_check = m_hep / units::si::constants::cSquared;
     REQUIRE(dynamic_cast<units::si::MassType*>(&type_check)); // hep::mass*c2 is mass unit
 
     const units::hep::EnergyType e_hep = 4_GeV;
 
-    REQUIRE(sqrt(m_hep*m_hep + e_hep*e_hep) == 5_GeV);
-
+    REQUIRE(sqrt(m_hep * m_hep + e_hep * e_hep) == 5_GeV);
   }
 
   SECTION("Special") {
@@ -113,5 +111,4 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(farAway > 100000_m);
     REQUIRE_FALSE(farAway < 1e19 * meter);
   }
-
 }

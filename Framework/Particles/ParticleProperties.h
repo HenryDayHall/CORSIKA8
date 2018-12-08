@@ -26,7 +26,6 @@
 #include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
-
 /**
  * @namespace particle
  *
