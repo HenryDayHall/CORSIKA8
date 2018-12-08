@@ -1,5 +1,16 @@
-#include <corsika/geometry/CoordinateSystem.h>
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -8,12 +19,14 @@
 #include <iostream>
 #include <typeinfo>
 
+using namespace corsika;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 int main() {
   // define the root coordinate system
-  CoordinateSystem root;
+  geometry::CoordinateSystem& root =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCS();
 
   // another CS defined by a translation relative to the root CS
   CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});
@@ -39,10 +52,10 @@ int main() {
   std::cout << "p2-p1 norm^2: " << norm << std::endl;
 
   Sphere s(p1, 10_m); // define a sphere around a point with a radius
-  std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;
+  std::cout << "p1 inside s:  " << s.Contains(p2) << std::endl;
 
   Sphere s2(p1, 3_um); // another sphere
-  std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;
+  std::cout << "p1 inside s2: " << s2.Contains(p2) << std::endl;
 
   // let's try parallel projections:
   auto const v1 = Vector<length_d>(root, {1_m, 1_m, 0_m});

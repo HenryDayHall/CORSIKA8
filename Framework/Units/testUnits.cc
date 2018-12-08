@@ -1,3 +1,14 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -17,19 +28,23 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("Constructors") {
-    auto E1 = 10_GeV;
+    [[maybe_unused]] auto E1 = 10_GeV;
     REQUIRE(E1 == 10_GeV);
 
     LengthType l1 = 10_nm;
+    l1 = l1;
 
     LengthType arr0[5];
     arr0[0] = 5_m;
 
-    LengthType arr1[2] = {{1_mm}, {2_cm}};
+    [[maybe_unused]] LengthType arr1[2] = {{1_mm}, {2_cm}};
 
     std::array<EnergyType, 4> arr2; // empty array
 
-    std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
+    [[maybe_unused]] std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
+
+    [[maybe_unused]] auto p1 = 10_newton_second;
+    REQUIRE(p1 == 10_newton_second);
   }
 
   SECTION("Powers in literal units") {
@@ -43,6 +58,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(1_mol / 1_amol == Approx(1e18));
     REQUIRE(1_K / 1_zK == Approx(1e21));
     REQUIRE(1_K / 1_yK == Approx(1e24));
+    REQUIRE(1_barn / 1_mbarn == Approx(1e3));
 
     REQUIRE(1_A / 1_hA == Approx(1e-2));
     REQUIRE(1_m / 1_km == Approx(1e-3));
@@ -65,6 +81,10 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(E2 == 40_GeV);
     REQUIRE(E2 / 1_GeV == Approx(40));
 
+    const MassType m = 1_kg;
+    const SpeedType v = 1_m / 1_s;
+    REQUIRE(m * v == 1_newton_second);
+
     const double lgE = log10(E2 / 1_GeV);
     REQUIRE(lgE == Approx(log10(40.)));
 
@@ -85,6 +105,13 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     REQUIRE(sqrt(m_hep*m_hep + e_hep*e_hep) == 5_GeV);
 
+  }
+
+  SECTION("Special") {
+
+    const LengthType farAway = std::numeric_limits<double>::infinity() * meter;
+    REQUIRE(farAway > 100000_m);
+    REQUIRE_FALSE(farAway < 1e19 * meter);
   }
 
 }

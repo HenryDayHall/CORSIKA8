@@ -8,14 +8,15 @@ set (
   GEOMETRY_HEADERS
   Vector.h
   Point.h
+  Line.h
   Sphere.h
   CoordinateSystem.h
+  RootCoordinateSystem.h
   Helix.h
   BaseVector.h
   QuantityVector.h
-  BaseTrajectory.h
-  LineTrajectory.h
   Trajectory.h
+  # BaseTrajectory.h
   )
 
 set (
@@ -42,7 +43,7 @@ target_link_libraries (
 
 target_include_directories (
   CORSIKAgeometry
-  PRIVATE   ${EIGEN3_INCLUDE_DIR}
+  PUBLIC    ${EIGEN3_INCLUDE_DIR}
   INTERFACE ${EIGEN3_INCLUDE_DIR}
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>

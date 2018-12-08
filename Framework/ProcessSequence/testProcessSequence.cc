@@ -1,3 +1,14 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -8,56 +19,117 @@
 
 #include <corsika/process/ProcessSequence.h>
 
+#include <corsika/setup/SetupTrajectory.h> // TODO: maybe try to break this dependency later!
+using corsika::setup::Trajectory;
+#include <corsika/units/PhysicalUnits.h>
+using namespace corsika::units::si;
+
 using namespace std;
 using namespace corsika::process;
 
-class Process1 : public BaseProcess<Process1> {
+static const int nData = 10;
+
+class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
+public:
+  ContinuousProcess1() {}
+  void Init() { cout << "ContinuousProcess1::Init" << endl; }
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    cout << "ContinuousProcess1::DoContinuous" << endl;
+    for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
+    return EProcessReturn::eOk;
+  }
+
+  template <typename Particle, typename Stack>
+  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
+    cout << "ContinuousProcess1::DoDiscrete" << endl;
+    return EProcessReturn::eOk;
+  }
+};
+
+class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
+public:
+  ContinuousProcess2() {}
+  void Init() { cout << "ContinuousProcess2::Init" << endl; }
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    cout << "ContinuousProcess2::DoContinuous" << endl;
+    for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
+    return EProcessReturn::eOk;
+  }
+
+  template <typename Particle, typename Stack>
+  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
+    cout << "ContinuousProcess2::DoDiscrete" << endl;
+    return EProcessReturn::eOk;
+  }
+};
+
+class Process1 : public DiscreteProcess<Process1> {
 public:
   Process1() {}
-  void Init() {} // cout << "Process1::Init" << endl; }
-  template <typename D, typename T, typename S>
-  void DoContinuous(D& d, T& t, S& s) const {
-    for (int i = 0; i < 10; ++i) d.p[i] += 1 + i;
+  void Init() { cout << "Process1::Init" << endl; }
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] += 1 + i;
+    return EProcessReturn::eOk;
+  }
+  template <typename Particle, typename Stack>
+  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
+    cout << "Process1::DoDiscrete" << endl;
+    return EProcessReturn::eOk;
   }
 };
 
-class Process2 : public BaseProcess<Process2> {
+class Process2 : public DiscreteProcess<Process2> {
 public:
   Process2() {}
-  void Init() {} // cout << "Process2::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline void DoContinuous(D& d, T& t, S& s) const {
-    for (int i = 0; i < 10; ++i) d.p[i] *= 0.7;
+  void Init() { cout << "Process2::Init" << endl; }
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] *= 0.7;
+    return EProcessReturn::eOk;
+  }
+  template <typename Particle, typename Stack>
+  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
+    cout << "Process2::DoDiscrete" << endl;
+    return EProcessReturn::eOk;
   }
 };
 
-class Process3 : public BaseProcess<Process3> {
+class Process3 : public DiscreteProcess<Process3> {
 public:
   Process3() {}
-  void Init() {} // cout << "Process3::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline void DoContinuous(D& d, T& t, S& s) const {
-    for (int i = 0; i < 10; ++i) d.p[i] += 0.933;
+  void Init() { cout << "Process3::Init" << endl; }
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
+    return EProcessReturn::eOk;
+  }
+  template <typename Particle, typename Stack>
+  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
+    cout << "Process3::DoDiscrete" << endl;
+    return EProcessReturn::eOk;
   }
 };
 
 class Process4 : public BaseProcess<Process4> {
 public:
   Process4() {}
-  void Init() {} // cout << "Process4::Init" << endl; }
-  template <typename D, typename T, typename S>
-  inline void DoContinuous(D& d, T& t, S& s) const {
-    for (int i = 0; i < 10; ++i) d.p[i] /= 1.2;
+  void Init() { cout << "Process4::Init" << endl; }
+  template <typename D, typename S>
+  inline EProcessReturn DoContinuous(D& d, Trajectory&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] /= 1.2;
+    return EProcessReturn::eOk;
   }
   // inline double MinStepLength(D& d) {
   // void DoDiscrete(Particle& p, Stack& s) const {
 };
 
 struct DummyData {
-  double p[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double p[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
 struct DummyStack {};
-struct DummyTrajectory {};
 
 TEST_CASE("Cascade", "[Cascade]") {
 
@@ -70,17 +142,37 @@ TEST_CASE("Cascade", "[Cascade]") {
 
     const auto sequence = m1 + m2 + m3 + m4;
 
+    ContinuousProcess1 cp1;
+    ContinuousProcess2 cp2;
+
+    const auto sequence2 = cp1 + m2 + m3 + cp2;
+
     DummyData p;
-    DummyTrajectory t;
     DummyStack s;
+
+    cout << "-->init" << endl;
+    sequence2.Init();
+    cout << "-->docont" << endl;
+
+    // auto const root = corsika::geometry::CoordinateSystem::CreateRootCS();
+    // corsika::geometry::Point pos(root, {0_m, 0_m, 0_m});
+    // corsika::geometry::Vector<SpeedType::dimension_type> vec(root,
+    // {1_m/1_s,0_m/1_s,0_m/1_s}); corsika::geometry::Line traj(pos, vec);
+    Trajectory
+        t; //(corsika::geometry::Trajectory<corsika::geometry::Line>(traj, 0_s, 100_ns));
+
+    sequence2.DoContinuous(p, t, s);
+    cout << "-->dodisc" << endl;
+    sequence2.DoDiscrete(p, s);
+    cout << "-->done" << endl;
 
     sequence.Init();
 
-    const int n = 100;
-    INFO("Running loop with n=" << n);
-    for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }
-
-    for (int i = 0; i < 10; i++) { INFO("data[" << i << "]=" << p.p[i]); }
+    const int nLoop = 5;
+    cout << "Running loop with n=" << nLoop << endl;
+    for (int i = 0; i < nLoop; ++i) { sequence.DoContinuous(p, t, s); }
+    for (int i = 0; i < nData; i++) { cout << "data[" << i << "]=" << p.p[i] << endl; }
+    cout << "done" << endl;
   }
 
   SECTION("sectionThree") {}

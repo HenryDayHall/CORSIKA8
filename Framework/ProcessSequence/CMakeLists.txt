@@ -10,7 +10,11 @@ set (
 #header files of this library
 set (
   CORSIKAprocesssequence_HEADERS
+  BaseProcess.h
+  ContinuousProcess.h
+  DiscreteProcess.h
   ProcessSequence.h
+  ProcessReturn.h
   )
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAprocesssequence ${CORSIKAprocesssequence_NAMESPACE} ${CORSIKAprocesssequence_HEADERS})
@@ -38,6 +42,8 @@ add_executable (
 
 target_link_libraries (
   testProcessSequence
+  CORSIKAsetup
+  CORSIKAgeometry
   CORSIKAprocesssequence
   CORSIKAthirdparty # for catch2
   )

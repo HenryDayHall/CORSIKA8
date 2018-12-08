@@ -1,11 +1,22 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 /**
    @file Particles.h
 
    Interface to particle properties
  */
 
-#ifndef _include_ParticleProperties_h_
-#define _include_ParticleProperties_h_
+#ifndef _include_corsika_particles_ParticleProperties_h_
+#define _include_corsika_particles_ParticleProperties_h_
 
 #include <array>
 #include <cstdint>
@@ -14,6 +25,7 @@
 
 #include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
+
 
 /**
  * @namespace particle
@@ -24,6 +36,9 @@
  */
 
 namespace corsika::particles {
+
+  using corsika::units::si::second;
+
   enum class Code : int16_t;
 
   using PDGCodeType = int16_t;
@@ -34,7 +49,8 @@ namespace corsika::particles {
   corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const);
   corsika::units::si::MassType constexpr GetMass(Code const);
   PDGCodeType constexpr GetPDG(Code const);
-  std::string const GetName(Code const);
+  constexpr std::string const& GetName(Code const);
+  corsika::units::si::TimeType constexpr GetLifetime(Code const);
 
 #include <corsika/particles/GeneratedParticleProperties.inc>
 
@@ -60,15 +76,17 @@ namespace corsika::particles {
     return GetElectricChargeNumber(p) * (corsika::units::si::constants::e / 3.);
   }
 
-  std::string const GetName(Code const p) {
+  constexpr std::string const& GetName(Code const p) {
     return names[static_cast<CodeIntType const>(p)];
+  }
+
+  corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
+    return lifetime[static_cast<CodeIntType const>(p)];
   }
 
   namespace io {
 
-    std::ostream& operator<<(std::ostream& stream, Code const p) {
-      return stream << GetName(p);
-    }
+    std::ostream& operator<<(std::ostream& stream, Code const p);
 
   } // namespace io
 

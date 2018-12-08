@@ -1,3 +1,14 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #ifndef _include_QUANTITYVECTOR_H_
 #define _include_QUANTITYVECTOR_H_
 
@@ -15,11 +26,11 @@ namespace corsika::geometry {
    * with a phys::units::si::dimension. Arithmethic operators are defined that
    * propagate the dimensions by dimensional analysis.
    */
-  
+
   template <typename dim>
   class QuantityVector {
   protected:
-    // todo: check if we need to move "quantity" into namespace corsika::units 
+    // todo: check if we need to move "quantity" into namespace corsika::units
     using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity
                                                          // corresponding to the dimension
 
@@ -106,7 +117,7 @@ namespace corsika::geometry {
     auto operator==(QuantityVector<dim> const& p) const { return eVector == p.eVector; }
   };
 
-} // end namespace corsika
+} // namespace corsika::geometry
 
 template <typename dim>
 auto& operator<<(std::ostream& os, corsika::geometry::QuantityVector<dim> qv) {

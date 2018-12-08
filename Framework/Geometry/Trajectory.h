@@ -1,28 +1,49 @@
+
+/**
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 
-#include <corsika/geometry/BaseTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
+
+using corsika::units::si::LengthType;
+using corsika::units::si::TimeType;
 
 namespace corsika::geometry {
 
-  class Trajectory {
-    corsika::units::si::TimeType const fTStart, fTEnd;
-    BaseTrajectory const& fTrajectory;
+  template <typename T>
+  class Trajectory : public T {
+
+    corsika::units::si::TimeType fTimeLength;
 
   public:
-  Trajectory(corsika::units::si::TimeType pTStart, corsika::units::si::TimeType pTEnd,
-               BaseTrajectory const& pTrajectory)
-        : fTStart(pTStart)
-        , fTEnd(pTEnd)
-        , fTrajectory(pTrajectory) {}
+    using T::GetDistanceBetween;
+    using T::GetPosition;
 
-    Point GetPosition(corsika::units::si::TimeType t) const {
-      return fTrajectory.GetPosition(t + fTStart);
-    }
+    Trajectory(T const& theT, corsika::units::si::TimeType timeLength)
+        : T(theT)
+        , fTimeLength(timeLength) {}
 
-    Point GetPosition(double u) const {
-      return GetPosition(fTEnd * u + fTStart * (1 - u));
+    /*Point GetPosition(corsika::units::si::TimeType t) const {
+      return fTraj.GetPosition(t + fTStart);
+      }*/
+
+    Point GetPosition(const double u) const { return T::GetPosition(fTimeLength * u); }
+
+    TimeType GetDuration() const { return fTimeLength; }
+
+    LengthType GetDistance(const corsika::units::si::TimeType t) const {
+      assert(t > fTimeLength);
+      assert(t >= 0 * corsika::units::si::second);
+      return T::DistanceBetween(0, t);
     }
   };
 
