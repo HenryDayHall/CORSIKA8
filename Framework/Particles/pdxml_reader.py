@@ -231,9 +231,9 @@ def gen_properties(pythia_db):
     string += "\n"
     
     # particle masses table
-    string += "static constexpr std::array<corsika::units::si::MassType const, size> masses = {\n"    
+    string += "static constexpr std::array<corsika::units::hep::MassType const, size> masses = {\n"    
     for p in pythia_db.values():
-        string += "  {mass:f} * (1e9 * corsika::units::si::constants::eV / corsika::units::si::constants::cSquared), // {name:s}\n".format(mass = p['mass'], name = p['name'])              
+        string += "  {mass:f} * (1e9 * corsika::units::si::constants::eV), // {name:s}\n".format(mass = p['mass'], name = p['name'])              
     string += "};\n\n"
                    
     # PDG code table
@@ -295,7 +295,7 @@ def gen_classes(pythia_db):
         string += "/** @class " + cname + "\n\n"
         string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
         string += " *  - pdg=" + str(pythia_db[cname]['pdg']) +"\n"
-        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV/c2 \n"
+        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV \n"
         string += " *  - charge= " + str(pythia_db[cname]['electric_charge']/3) + " \n"
         string += " *  - name=" + str(cname) + "\n"
         string += " *  - anti=" + str(antiP) + "\n"
@@ -303,7 +303,7 @@ def gen_classes(pythia_db):
         string += "class " + cname + " {\n"
         string += "  public:\n"
         string += "   static constexpr Code GetCode() { return Type; }\n"
-        string += "   static constexpr corsika::units::si::MassType GetMass() { return corsika::particles::GetMass(Type); }\n"
+        string += "   static constexpr corsika::units::hep::MassType GetMass() { return corsika::particles::GetMass(Type); }\n"
         string += "   static constexpr corsika::units::si::ElectricChargeType GetCharge() { return corsika::particles::GetElectricCharge(Type); }\n"
         string += "   static constexpr int16_t GetChargeNumber() { return corsika::particles::GetElectricChargeNumber(Type); }\n"
         string += "   static std::string const& GetName() { return corsika::particles::GetName(Type); }\n"

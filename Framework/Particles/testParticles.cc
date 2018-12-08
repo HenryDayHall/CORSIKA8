@@ -31,7 +31,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Masses") {
-    REQUIRE(Electron::GetMass() / (511_keV / constants::cSquared) == Approx(1));
+    REQUIRE(Electron::GetMass() / (511_keV) == Approx(1));
     REQUIRE(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
   }
 
