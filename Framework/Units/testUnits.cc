@@ -6,6 +6,7 @@
 
 #include <array>
 
+using namespace corsika;
 using namespace corsika::units::si;
 
 TEST_CASE("PhysicalUnits", "[Units]") {
@@ -70,4 +71,20 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     const auto E3 = E2 + 100_GeV + pow(10, lgE) * 1_GeV;
     REQUIRE(E3 == 180_GeV);
   }
+
+
+  SECTION("Unit system conversion") {
+    
+    const units::hep::MassType m_hep = 3_GeV; 
+    
+    REQUIRE(m_hep == 3_GeV); // hep::mass identical to si::energy
+    auto type_check = m_hep / units::si::constants::cSquared;
+    REQUIRE(dynamic_cast<units::si::MassType*>(&type_check)); // hep::mass*c2 is mass unit
+
+    const units::hep::EnergyType e_hep = 4_GeV;
+
+    REQUIRE(sqrt(m_hep*m_hep + e_hep*e_hep) == 5_GeV);
+
+  }
+
 }

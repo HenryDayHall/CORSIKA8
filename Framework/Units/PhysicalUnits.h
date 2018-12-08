@@ -9,20 +9,25 @@
 /**
  * @file PhysicalUnits
  *
- * Define _XeV literals, alowing 10_GeV in the code.
+ * Add units and types we need
+ * 
+ * Define _XeV literals, etc., allowing 10_GeV in the code.
  */
 
-namespace phys {
-  namespace units {
-    namespace literals {
-      QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
-                                       magnitude(corsika::units::si::constants::eV))
+namespace corsika::units::hep {
+  using namespace phys::units;
+  using namespace phys::units::literals;
+  
+  /// defining cross section
+  using energy_hep_d = phys::units::energy_d; //dimensions<2, 0, 0>;
+  // constexpr phys::units::quantity<energy_hep_d> energy{Rep(1.e-28L) * meter * meter}; 
+  
+  using MassType = phys::units::quantity<energy_hep_d, double>;
+  using MomentumType = phys::units::quantity<energy_hep_d, double>;
+  using EnergyType = phys::units::quantity<energy_hep_d, double>;
 
-      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
+} // end namespace corsika::units::si
 
-    } // namespace literals
-  }   // namespace units
-} // namespace phys
 
 namespace corsika::units::si {
   using namespace phys::units;
@@ -39,6 +44,16 @@ namespace corsika::units::si {
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
 
 } // end namespace corsika::units::si
+
+namespace phys {
+  namespace units {
+    namespace literals {
+      QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
+                                       magnitude(corsika::units::si::constants::eV))
+    } // namespace literals
+  }   // namespace units
+} // namespace phys
+
 
 // we want to call the operator<< without namespace... I think
 using namespace phys::units::io;
