@@ -100,7 +100,10 @@ namespace corsika::process {
 	// return as column density
 	const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
 	cout << "ProcessDecay: MinStep: x0: " << x0 << endl;
-	return x0;
+	int a = 1;
+	const double x = -x0 * log(s_rndm_(a));
+	cout << "ProcessDecay: next decay: " << x << endl;	
+	return x;
       }
       
       template <typename Particle, typename Stack>
@@ -112,14 +115,16 @@ namespace corsika::process {
 	pin.SetPID( process::sibyll::ConvertToSibyllRaw( p.GetPID() ) );
 	pin.SetEnergy( p.GetEnergy() );
 	pin.SetMomentum( p.GetMomentum() );
+	// remove original particle from corsika stack
+	p.Delete();
 	// set all particles/hadrons unstable
 	setHadronsUnstable();
 	// call sibyll decay
-	std::cout << "calling Sibyll decay routine.." << std::endl;
+	std::cout << "ProcessDecay: calling Sibyll decay routine.." << std::endl;
 	decsib_();
 	// print output
-	//int print_unit = 6;
-	//sib_list_( print_unit );
+	int print_unit = 6;
+	sib_list_( print_unit );
 	// copy particles from sibyll stack to corsika
 	int i = -1;
 	for (auto &psib: ss){
@@ -135,8 +140,6 @@ namespace corsika::process {
 	}
 	// empty sibyll stack
 	ss.Clear();
-	// remove original particle from stack
-	p.Delete();
       }
   
       template <typename Particle, typename Stack>

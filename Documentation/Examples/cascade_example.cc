@@ -39,6 +39,183 @@ using namespace corsika::setup;
 using namespace std;
 
 static int fCount = 0;
+static EnergyType fEnergy = 0. * 1_GeV;
+
+// FOR NOW: global static variables for ParticleCut process
+// this is just wrong...
+static  EnergyType fEmEnergy;
+static  int fEmCount;
+
+static  EnergyType fInvEnergy;
+static  int fInvCount;
+
+
+class ProcessEMCut : public corsika::process::BaseProcess<ProcessEMCut> {
+public:
+  ProcessEMCut() {}
+  template <typename Particle>
+  bool isBelowEnergyCut( Particle &p ) const
+  {
+    // FOR NOW: center-of-mass energy hard coded
+    const EnergyType Ecm = sqrt( 2. * p.GetEnergy() * 0.93827_GeV );
+    if( p.GetEnergy() < 50_GeV || Ecm < 10_GeV )
+      return true;
+    else
+      return false;
+  }
+
+  bool isEmParticle( Code pCode ) const
+  {
+    bool is_em = false;
+    // FOR NOW: switch
+    switch( pCode ){
+    case Code::Electron :
+      is_em = true;
+      break;
+    case Code::Gamma :
+      is_em = true;
+      break;
+    default:
+      break;
+    }
+    return is_em;
+  }
+
+  void defineEmParticles() const
+  {
+    // create bool array identifying em particles    
+  }
+
+  bool isInvisible( Code pCode ) const
+  {
+    bool is_inv = false;
+    // FOR NOW: switch
+    switch( pCode ){
+    case Code::NuE :
+      is_inv = true;
+      break;
+    case Code::NuEBar :
+      is_inv = true;
+      break;
+    case Code::NuMu :
+      is_inv = true;
+      break;
+    case Code::NuMuBar :
+      is_inv = true;
+      break;
+    case Code::MuPlus :
+      is_inv = true;
+      break;
+    case Code::MuMinus :
+      is_inv = true;
+      break;
+
+    default:
+      break;
+    }
+    return is_inv;
+  }
+
+  
+  template <typename Particle>
+  double MinStepLength(Particle& p, setup::Trajectory&) const
+  {
+    const Code pid = p.GetPID();
+    if( isEmParticle( pid ) || isInvisible( pid ) ){
+      cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
+      return 0.;
+    }    else {
+      double next_step = std::numeric_limits<double>::infinity();
+      cout << "ProcessCut: MinStep: next cut: " << next_step << endl;
+      return next_step;
+    }
+  }
+
+  template <typename Particle, typename Stack>
+  EProcessReturn DoContinuous(Particle&p, setup::Trajectory&t, Stack&s) const {
+    // cout << "ProcessCut: DoContinous: " << p.GetPID() << endl;
+    // cout << " is em: " << isEmParticle( p.GetPID() ) << endl;
+    // cout << " is inv: " << isInvisible( p.GetPID() ) << endl;
+    // const Code pid = p.GetPID();
+    // if( isEmParticle( pid ) ){
+    //   cout << "removing em. particle..." << endl;
+    //   fEmEnergy += p.GetEnergy();
+    //   fEmCount  += 1;
+    //   p.Delete();
+    //   return EProcessReturn::eParticleAbsorbed;
+    // }
+    // if ( isInvisible( pid ) ){
+    //   cout << "removing inv. particle..." << endl;
+    //   fInvEnergy += p.GetEnergy();
+    //   fInvCount  += 1;
+    //   p.Delete();
+    //   return EProcessReturn::eParticleAbsorbed;
+    // }
+    return EProcessReturn::eOk;    
+  }
+
+  template <typename Particle, typename Stack>
+  void DoDiscrete(Particle& p, Stack& s) const
+  {
+    cout << "ProcessCut: DoDiscrete: " << p.GetPID() << endl;
+    const Code pid = p.GetPID();
+    if( isEmParticle( pid ) ){
+      cout << "removing em. particle..." << endl;
+      fEmEnergy += p.GetEnergy();
+      fEmCount  += 1;
+      p.Delete();
+    }
+    else if ( isInvisible( pid ) ){
+      cout << "removing inv. particle..." << endl;
+      fInvEnergy += p.GetEnergy();
+      fInvCount  += 1;
+      p.Delete();
+    }
+    else if( isBelowEnergyCut( p ) ){
+      cout << "removing low en. particle..." << endl;
+      fEnergy += p.GetEnergy();
+      fCount  += 1;
+      p.Delete();
+    }
+  }
+
+  void Init()
+  {
+    fEmEnergy  = 0. * 1_GeV;
+    fEmCount   = 0;
+    fInvEnergy = 0. * 1_GeV;
+    fInvCount  = 0;
+    fEnergy    = 0. * 1_GeV;
+    //defineEmParticles();
+  }
+
+  void ShowResults(){
+    cout << " ******************************" << endl
+	 << " ParticleCut: " << endl
+	 << " energy in em.  component (GeV): " << fEmEnergy / 1_GeV << endl
+	 << " no. of em.  particles injected: " << fEmCount << endl
+	 << " energy in inv. component (GeV): " << fInvEnergy / 1_GeV << endl
+      	 << " no. of inv. particles injected: " << fInvCount << endl
+	 << " ******************************" << endl;
+  }
+
+  EnergyType GetInvEnergy()
+  {
+    return fInvEnergy;
+  }
+
+  EnergyType GetCutEnergy()
+  {
+    return fEnergy;
+  }
+
+  EnergyType GetEmEnergy()
+  {
+    return fEmEnergy;
+  }
+
+private:
+};
 
 class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
 public:
@@ -141,14 +318,14 @@ public:
       next_step = -int_length * log(s_rndm_(a));
     }else
 #warning define infinite interaction length? then we can skip the test in DoDiscrete()
-      next_step = 1.e8;
+      next_step = std::numeric_limits<double>::infinity();
     
     /*
       what are the units of the output? slant depth or 3space length?
 
     */
     std::cout << "ProcessSplit: "
-              << "next step (g/cm2): " << next_step << std::endl;
+              << "next interaction (g/cm2): " << next_step << std::endl;
     return next_step;
   }
 
@@ -160,7 +337,7 @@ public:
 
   template <typename Particle, typename Stack>
   void DoDiscrete(Particle& p, Stack& s) const {
-    cout << "DoDiscrete: " << p.GetPID() << " interaction? " << process::sibyll::CanInteract( p.GetPID() )  << endl; 
+    cout << "ProcessSplit: " << "DoDiscrete: " << p.GetPID() << " interaction? " << process::sibyll::CanInteract( p.GetPID() )  << endl; 
     if( process::sibyll::CanInteract( p.GetPID() ) ){
       cout << "defining coordinates" << endl;
       // coordinate system, get global frame of reference
@@ -231,81 +408,82 @@ public:
     
   
       std::cout << "ProcessSplit: " << " DoDiscrete: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
-    if (E < 8.5_GeV || Ecm < 10_GeV ) {
-      std::cout << "ProcessSplit: " << " DoDiscrete: dropping particle.." << std::endl;
-      p.Delete();
-      fCount++;
-    } else {
-      // Sibyll does not know about units..
-      double sqs = Ecm / 1_GeV;
-      // running sibyll, filling stack
-      sibyll_( kBeam, kTarget, sqs);
-      // running decays
-      setTrackedParticlesStable();
-      decsib_();
-      // print final state
-      int print_unit = 6;
-      sib_list_( print_unit );
+      if (E < 8.5_GeV || Ecm < 10_GeV ) {
+	std::cout << "ProcessSplit: " << " DoDiscrete: low en. particle, skipping.." << std::endl;
+	//      	std::cout << "ProcessSplit: " << " DoDiscrete: dropping particle.." << std::endl;
+      	//fEnergy += p.GetEnergy();
+      	//p.Delete();
+      	//fCount++;
+      } else {
+	// Sibyll does not know about units..
+	double sqs = Ecm / 1_GeV;
+	// running sibyll, filling stack
+	sibyll_( kBeam, kTarget, sqs);
+	// running decays
+	setTrackedParticlesStable();
+	decsib_();
+	// print final state
+	int print_unit = 6;
+	sib_list_( print_unit );
 
-      // delete current particle
-      p.Delete();
+	// delete current particle
+	p.Delete();
 
-      // add particles from sibyll to stack
-      // link to sibyll stack
-      SibStack ss;
+	// add particles from sibyll to stack
+	// link to sibyll stack
+	SibStack ss;
 
-      // SibStack does not know about momentum yet so we need counter to access momentum array in Sibyll
-      int i = -1;
-      super_stupid::MomentumVector Ptot_final(rootCS, {0.0_newton_second, 0.0_newton_second, 0.0_newton_second});
-      for (auto &psib: ss){
-	++i;
-	// skip particles that have decayed in Sibyll
-	if( abs(s_plist_.llist[ i ]) > 100 ) continue;
+	// SibStack does not know about momentum yet so we need counter to access momentum array in Sibyll
+	int i = -1;
+	super_stupid::MomentumVector Ptot_final(rootCS, {0.0_newton_second, 0.0_newton_second, 0.0_newton_second});
+	for (auto &psib: ss){
+	  ++i;
+	  // skip particles that have decayed in Sibyll
+	  if( abs(s_plist_.llist[ i ]) > 100 ) continue;
 	
-	//transform energy to lab. frame, primitve
-	// compute beta_vec * p_vec
-	// arbitrary Lorentz transformation based on sibyll routines
-	const auto gammaBetaComponents = gambet.GetComponents();
-	const auto pSibyllComponents = psib.GetMomentum().GetComponents();	
-	EnergyType en_lab = 0. * 1_GeV;	
-	MomentumType p_lab_components[3];
-	en_lab =  psib.GetEnergy() * gamma;
-	EnergyType pnorm = 0. * 1_GeV;
-	for(int j=0; j<3; ++j)
-	  pnorm += ( pSibyllComponents[j] * gammaBetaComponents[j] * si::constants::c ) / ( gamma + 1.);
-	pnorm += psib.GetEnergy();
+	  //transform energy to lab. frame, primitve
+	  // compute beta_vec * p_vec
+	  // arbitrary Lorentz transformation based on sibyll routines
+	  const auto gammaBetaComponents = gambet.GetComponents();
+	  const auto pSibyllComponents = psib.GetMomentum().GetComponents();	
+	  EnergyType en_lab = 0. * 1_GeV;	
+	  MomentumType p_lab_components[3];
+	  en_lab =  psib.GetEnergy() * gamma;
+	  EnergyType pnorm = 0. * 1_GeV;
+	  for(int j=0; j<3; ++j)
+	    pnorm += ( pSibyllComponents[j] * gammaBetaComponents[j] * si::constants::c ) / ( gamma + 1.);
+	  pnorm += psib.GetEnergy();
 	
-	for(int j=0; j<3; ++j){
-	  p_lab_components[j] = pSibyllComponents[j] - (-1) * pnorm * gammaBetaComponents[j] /  si::constants::c;
-	  // cout << "p:" << j << " pSib (GeV/c): " << pSibyllComponents[j] / 1_GeV * si::constants::c
-	  //      << " gb: " << gammaBetaComponents[j] << endl;
-	  en_lab -= (-1) * pSibyllComponents[j] * gammaBetaComponents[j] * si::constants::c;
+	  for(int j=0; j<3; ++j){
+	    p_lab_components[j] = pSibyllComponents[j] - (-1) * pnorm * gammaBetaComponents[j] /  si::constants::c;
+	    // cout << "p:" << j << " pSib (GeV/c): " << pSibyllComponents[j] / 1_GeV * si::constants::c
+	    //      << " gb: " << gammaBetaComponents[j] << endl;
+	    en_lab -= (-1) * pSibyllComponents[j] * gammaBetaComponents[j] * si::constants::c;
+	  }
+	  //	const EnergyType en_lab = psib.GetEnergy()*gamma + gambet * psib.GetMomentum() * si::constants::c );
+	  // cout << " en cm  (GeV): " << psib.GetEnergy() / 1_GeV << endl
+	  //      << " en lab (GeV): " << en_lab / 1_GeV << endl;
+	  // cout << " pz cm  (GeV/c): " << psib.GetMomentum().GetComponents()[2] / 1_GeV * si::constants::c << endl
+	  //      << " pz lab (GeV/c): " << p_lab_components[2] / 1_GeV * si::constants::c << endl;
+	
+	  // add to corsika stack
+	  auto pnew = s.NewParticle();
+	  pnew.SetEnergy( en_lab );
+	  pnew.SetPID( process::sibyll::ConvertFromSibyll( psib.GetPID() ) );
+	  //cout << "momentum sib (cm): " << psib.GetMomentum().GetComponents() / 1_GeV * si::constants::c << endl;
+	
+	  corsika::geometry::QuantityVector<momentum_d> p_lab_c{ p_lab_components[0],
+								 p_lab_components[1],
+								 p_lab_components[2]};
+	  pnew.SetMomentum( super_stupid::MomentumVector( rootCS, p_lab_c) );
+	  //cout << "momentum sib (lab): " << pnew.GetMomentum().GetComponents() / 1_GeV * si::constants::c << endl;
+	  //cout << "s_cm  (GeV2): " << (psib.GetEnergy() * psib.GetEnergy() - psib.GetMomentum().squaredNorm() * si::constants::cSquared ) / 1_GeV / 1_GeV << endl;
+	  //cout << "s_lab (GeV2): " << (pnew.GetEnergy() * pnew.GetEnergy() - pnew.GetMomentum().squaredNorm() * si::constants::cSquared ) / 1_GeV / 1_GeV << endl;
+	  Ptot_final += pnew.GetMomentum();
 	}
-	//	const EnergyType en_lab = psib.GetEnergy()*gamma + gambet * psib.GetMomentum() * si::constants::c );
-	// cout << " en cm  (GeV): " << psib.GetEnergy() / 1_GeV << endl
-	//      << " en lab (GeV): " << en_lab / 1_GeV << endl;
-	// cout << " pz cm  (GeV/c): " << psib.GetMomentum().GetComponents()[2] / 1_GeV * si::constants::c << endl
-	//      << " pz lab (GeV/c): " << p_lab_components[2] / 1_GeV * si::constants::c << endl;
-	
-	// add to corsika stack
-	auto pnew = s.NewParticle();
-	pnew.SetEnergy( en_lab );
-	pnew.SetPID( process::sibyll::ConvertFromSibyll( psib.GetPID() ) );
-	//cout << "momentum sib (cm): " << psib.GetMomentum().GetComponents() / 1_GeV * si::constants::c << endl;
-	
-	corsika::geometry::QuantityVector<momentum_d> p_lab_c{ p_lab_components[0],
-							       p_lab_components[1],
-							       p_lab_components[2]};
-	pnew.SetMomentum( super_stupid::MomentumVector( rootCS, p_lab_c) );
-	//cout << "momentum sib (lab): " << pnew.GetMomentum().GetComponents() / 1_GeV * si::constants::c << endl;
-	//cout << "s_cm  (GeV2): " << (psib.GetEnergy() * psib.GetEnergy() - psib.GetMomentum().squaredNorm() * si::constants::cSquared ) / 1_GeV / 1_GeV << endl;
-	//cout << "s_lab (GeV2): " << (pnew.GetEnergy() * pnew.GetEnergy() - pnew.GetMomentum().squaredNorm() * si::constants::cSquared ) / 1_GeV / 1_GeV << endl;
-	Ptot_final += pnew.GetMomentum();
+	//cout << "tot. momentum final (GeV/c): " << Ptot_final.GetComponents() / 1_GeV * si::constants::c << endl;
       }
-      //cout << "tot. momentum final (GeV/c): " << Ptot_final.GetComponents() / 1_GeV * si::constants::c << endl;
-    }
-    }else
-      p.Delete();
+  }
   }
 
   void Init() {
@@ -339,7 +517,7 @@ public:
 
   
   int GetCount() { return fCount; }
-
+  EnergyType GetEnergy() { return fEnergy; }
 private:
 };
 
@@ -364,7 +542,8 @@ int main() {
 
   ProcessSplit p1;
   corsika::process::sibyll::ProcessDecay p2;
-  const auto sequence = p0 + p1 + p2;
+  ProcessEMCut p3;
+  const auto sequence = p0 + p1 + p2 + p3;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
@@ -383,5 +562,10 @@ int main() {
 
   EAS.Init();
   EAS.Run();
-  cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
+  cout << "Result: E0=" << E0 / 1_GeV << "GeV, particles below energy threshold =" << p1.GetCount() << endl;
+  cout << "total energy below threshold (GeV): " << p1.GetEnergy() / 1_GeV << std::endl;
+  p3.ShowResults();
+  cout << "total energy (GeV): "
+       << ( p3.GetCutEnergy() + p3.GetInvEnergy() + p3.GetEmEnergy() ) / 1_GeV
+       << endl;
 }
