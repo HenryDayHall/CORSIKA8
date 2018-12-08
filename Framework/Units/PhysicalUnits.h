@@ -18,9 +18,8 @@ namespace corsika::units::hep {
   using namespace phys::units;
   using namespace phys::units::literals;
   
-  /// defining cross section
-  using energy_hep_d = phys::units::energy_d; //dimensions<2, 0, 0>;
-  // constexpr phys::units::quantity<energy_hep_d> energy{Rep(1.e-28L) * meter * meter}; 
+  /// defining HEP energy, mass, momentum
+  using energy_hep_d = phys::units::energy_d;
   
   using MassType = phys::units::quantity<energy_hep_d, double>;
   using MomentumType = phys::units::quantity<energy_hep_d, double>;
