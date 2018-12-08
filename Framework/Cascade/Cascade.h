@@ -60,6 +60,8 @@ namespace corsika::cascade {
     }
 
     void Step(Particle& particle) {
+      std::cout << "+++++++++++++++++++++++++++++++" << std::endl;
+      std::cout << "Cascade: starting step.." << std::endl;
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
       fProcesseList.MinStepLength(particle, step);
 
