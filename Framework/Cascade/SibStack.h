@@ -6,6 +6,7 @@
 
 #include <corsika/cascade/sibyll2.3c.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 

@@ -32,6 +32,7 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
+using namespace corsika::setup;
 
 #include <iostream>
 #include <typeinfo>
@@ -238,8 +239,8 @@ public:
     int kBeam = process::sibyll::GetSibyllXSCode(corsikaBeamId);
 
     bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
-
-    /*
+    
+    /* 
        the target should be defined by the Environment,
        ideally as full particle object so that the four momenta
        and the boosts can be defined..
@@ -350,10 +351,10 @@ public:
 
       // get energy of particle from stack
       /*
-        stack is in GeV in lab. frame
-        convert to GeV in cm. frame
-        (assuming proton at rest as target AND
-        assuming no pT, i.e. shower frame-z is aligned with hadron-int-frame-z)
+	stack is in GeV in lab. frame
+	convert to GeV in cm. frame 
+	(assuming proton at rest as target AND 
+	assuming no pT, i.e. shower frame-z is aligned with hadron-int-frame-z)
       */
       // total energy: E_beam + E_target
       // in lab. frame: E_beam + m_target*c**2
@@ -473,6 +474,7 @@ public:
     setTrackedParticlesStable();
   }
 
+  
   int GetCount() { return fCount; }
   EnergyType GetEnergy() { return fEnergy; }
 
@@ -486,12 +488,14 @@ double s_rndm_(int&) {
   return rmng() / (double)rmng.max();
 }
 
+
 int main() {
 
   CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
   tracking_line::TrackingLine<setup::Stack> tracking;
   stack_inspector::StackInspector<setup::Stack> p0(true);
+
   ProcessSplit p1;
   corsika::process::sibyll::ProcessDecay p2;
   ProcessEMCut p3;
