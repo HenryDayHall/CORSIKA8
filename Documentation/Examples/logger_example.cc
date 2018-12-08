@@ -35,7 +35,7 @@ int main() {
       std::any
     */
 
-    for (int i = 0; i < 100000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
       LOG(info, "irgendwas", " ", string("and more"), " ",
           boost::format("error: %i message: %s. done."), i, "stupido");
       LOG(err, "Fehler");
@@ -46,7 +46,7 @@ int main() {
     sink::NoSink off;
     Logger<MessageOff> info("", "", off);
 
-    for (int i = 0; i < 100000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
       LOG(info, "irgendwas", string("and more"),
           boost::format("error: %i message: %s. done."), i, "stupido", "a-number:", 8.99,
           "ENDE");

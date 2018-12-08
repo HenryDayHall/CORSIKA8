@@ -38,8 +38,8 @@ public:
   Process2() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D&, T&, S&) const {
-    // for (int i=0; i<10; ++i) d.p[i] *= 2;
+  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+    for (int i=0; i<10; ++i) d.p[i] -= 0.1*i;
     return EProcessReturn::eOk;
   }
 };
@@ -74,7 +74,7 @@ private:
 };
 
 struct DummyData {
-  double p[10];
+  double p[10] = {0,0,0,0,0,0,0,0,0,0};
 };
 struct DummyStack {};
 
@@ -86,14 +86,19 @@ void modular() {
   Process4 m4;
 
   const auto sequence = m1 + m2 + m3 + m4;
-
+  
   DummyData p;
   DummyStack s;
   Trajectory t;
 
-  const int n = 100000000;
+  const int n = 1000;
   for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }
-
+  
+  for(int i=0; i<10; ++i) {
+    //cout << p.p[i] << endl;
+    //assert(p.p[i] == n-i*100);
+  }
+  
   cout << " done (nothing...) " << endl;
 }
 
