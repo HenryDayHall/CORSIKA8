@@ -9,8 +9,23 @@
 /**
  * @file PhysicalUnits
  *
- * Define new units and unit-types
+ * Add new units and types we need
+ *
+ * Define _XeV literals, etc., allowing 10_GeV in the code.
  */
+
+namespace corsika::units::hep {
+  using namespace phys::units;
+  using namespace phys::units::literals;
+
+  /// defining HEP energy, mass, momentum
+  using energy_hep_d = phys::units::energy_d;
+
+  using MassType = phys::units::quantity<energy_hep_d, double>;
+  using MomentumType = phys::units::quantity<energy_hep_d, double>;
+  using EnergyType = phys::units::quantity<energy_hep_d, double>;
+
+} // namespace corsika::units::hep
 
 namespace corsika::units::si {
   using namespace phys::units;
@@ -58,8 +73,6 @@ namespace phys {
 
       QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
                                        magnitude(corsika::units::si::constants::barn))
-
-      // phys::units::quantity<energy_d/mass_d> Joule2Kg = c2; // 1_Joule / 1_kg;
 
       QUANTITY_DEFINE_SCALING_LITERALS(meter, length_d,
                                        magnitude(corsika::units::si::constants::meter))

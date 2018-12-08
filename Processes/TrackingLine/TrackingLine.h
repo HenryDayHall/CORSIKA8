@@ -1,8 +1,8 @@
 #ifndef _include_corsika_processes_TrackinLine_h_
 #define _include_corsika_processes_TrackinLine_h_
 
-#include <corsika/geometry/Vector.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
 
 #include <corsika/units/PhysicalUnits.h>
 
@@ -28,7 +28,7 @@ namespace corsika::process {
       }
     };
 
-  } // namespace stack_inspector
+  } // namespace tracking_line
 
 } // namespace corsika::process
 

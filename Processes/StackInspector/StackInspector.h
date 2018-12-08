@@ -16,7 +16,6 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 
-
 namespace corsika::process {
 
   namespace stack_inspector {
