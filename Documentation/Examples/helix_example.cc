@@ -35,7 +35,7 @@ int main() {
 
   auto constexpr t0 = 0_s;
   auto constexpr t1 = 1_s;
-  auto constexpr dt = 1_us;
+  auto constexpr dt = 1_ms;
   auto constexpr n = long((t1 - t0) / dt) + 1;
 
   auto arr = std::make_unique<std::array<std::array<double, 4>, n>>();
