@@ -40,8 +40,8 @@ class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
 
-  template <typename Particle>
-  double MinStepLength(Particle& p, setup::Trajectory&) const {
+  template <typename Particle, typename Track>
+  double MinStepLength(Particle& p, Track&) const {
 
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
@@ -92,8 +92,8 @@ public:
     return next_step;
   }
 
-  template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, Trajectory&, Stack&) const {
+  template <typename Particle, typename Track, typename Stack>
+  EProcessReturn DoContinuous(Particle&, Track&, Stack&) const {
     // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
   }

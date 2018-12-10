@@ -13,7 +13,7 @@
 #define _include_corsika_discreteprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
-
+#include <corsika/setup/SetupTrajectory.h>
 #include <iostream> // debug
 
 namespace corsika::process {
@@ -30,25 +30,13 @@ namespace corsika::process {
   template <typename derived>
   struct DiscreteProcess {
 
-    // DiscreteProcess() {
-    // static_assert(mustProvide<derived>::mustProvide, "");
-    //}
-
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
 
-    // here starts the interface part
+    /// here starts the interface-definition part
     // -> enforce derived to implement DoDiscrete...
     template <typename Particle, typename Stack>
     inline EProcessReturn DoDiscrete(Particle&, Stack&) const; // {}
-
-    //  private:
-    template <typename D, typename T, typename S>
-    inline EProcessReturn DoContinuous(D& d, T&, S&) const {
-      std::cout << "yeah" << std::endl;
-      return EProcessReturn::eOk;
-    } // find out how to make this FINAL
-    // void DoContinuous;
   };
 
 } // namespace corsika::process
