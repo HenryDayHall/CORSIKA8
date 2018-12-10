@@ -89,8 +89,11 @@ namespace corsika::stack {
       void Init() {}
 
       void Clear() {
-        fDataE.clear();
         fDataPID.clear();
+        fDataE.clear();
+        fMomentum.clear();
+        fPosition.clear();
+        fTime.clear();
       }
 
       int GetSize() const { return fDataPID.size(); }

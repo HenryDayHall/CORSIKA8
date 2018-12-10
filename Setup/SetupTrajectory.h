@@ -26,9 +26,12 @@ namespace corsika::setup {
   using corsika::geometry::Line;
 
   /// definition of Trajectory base class, to be used in tracking and cascades
+  typedef corsika::geometry::Trajectory<Line> Trajectory;
+
+  /*
   typedef std::variant<std::monostate, corsika::geometry::Trajectory<Line>,
                        corsika::geometry::Trajectory<Helix>>
-      Trajectory;
+                       Trajectory;
 
   /// helper visitor to modify Particle by moving along Trajectory
   template <typename Particle>
@@ -58,7 +61,7 @@ namespace corsika::setup {
       return trajectory.GetDuration();
     }
   };
-
+  */
 } // namespace corsika::setup
 
 #endif
