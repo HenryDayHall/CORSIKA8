@@ -42,7 +42,10 @@ namespace corsika::geometry {
      * parameterized by \arg t1 and \arg t2. Requires \arg t2 > \arg t1.
      */
 
-    virtual LengthType GetDistance(corsika::units::si::TimeType t1,
+    virtual corsika::units::si::TimeType TimeFromArclength(
+        corsika::units::si::LengthType) const = 0;
+
+    virtual LengthType ArcLength(corsika::units::si::TimeType t1,
                                    corsika::units::si::TimeType t2) const = 0;
 
     virtual corsika::units::si::TimeType GetDuration(

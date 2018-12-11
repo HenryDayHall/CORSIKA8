@@ -51,6 +51,8 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::electric_charge_d, double>;
   using EnergyType = phys::units::quantity<phys::units::energy_d, double>;
   using MassType = phys::units::quantity<phys::units::mass_d, double>;
+  using MassDensityType = phys::units::quantity<phys::units::mass_density_d, double>;
+  using GrammageType = phys::units::quantity<phys::units::dimensions<-2, 1, 0>, double>;
   using MomentumType = phys::units::quantity<momentum_d, double>;
   using CrossSectionType = phys::units::quantity<sigma_d, double>;
 

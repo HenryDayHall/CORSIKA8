@@ -17,22 +17,30 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <corsika/environment/Environment.h>
+
 #include <corsika/random/RNGManager.h>
 
 #include <corsika/cascade/SibStack.h>
 #include <corsika/cascade/sibyll2.3c.h>
+#include <corsika/geometry/Sphere.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/units/PhysicalUnits.h>
+
+#include <iostream>
+#include <typeinfo>
+
 using namespace corsika;
 using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
+using namespace corsika::geometry;
+using namespace corsika::environment;
 
-#include <iostream>
-#include <typeinfo>
 using namespace std;
+using namespace corsika::units::si;
 
 static int fCount = 0;
 
@@ -42,7 +50,6 @@ public:
 
   template <typename Particle, typename Track>
   double MinStepLength(Particle& p, Track&) const {
-
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
     int kBeam = 1;
@@ -94,7 +101,6 @@ public:
 
   template <typename Particle, typename Track, typename Stack>
   EProcessReturn DoContinuous(Particle&, Track&, Stack&) const {
-    // corsika::utls::ignore(p);
     return EProcessReturn::eOk;
   }
 
@@ -237,8 +243,15 @@ double s_rndm_(int&) {
 }
 
 int main() {
+  corsika::environment::Environment env; // dummy environment  
+  auto& universe = *(env.GetUniverse());
 
-  tracking_line::TrackingLine<setup::Stack> tracking;
+  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 100_km);
+      
+  universe.AddChild(std::move(theMedium));
+
+  tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
@@ -248,7 +261,7 @@ int main() {
 
   stack.Clear();
   auto particle = stack.NewParticle();
-  EnergyType E0 = 100_GeV;
+  EnergyType E0 = 1_EeV;
   particle.SetEnergy(E0);
   particle.SetPID(Code::Proton);
   EAS.Init();

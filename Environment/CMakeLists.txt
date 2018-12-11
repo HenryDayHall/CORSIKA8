@@ -1,0 +1,52 @@
+set (
+  ENVIRONMENT_HEADERS
+  VolumeTreeNode.h
+  IMediumModel.h
+  NuclearComposition.h
+  HomogeneousMedium.h
+  Environment.h
+  )
+
+set (
+  ENVIRONMENT_NAMESPACE
+  corsika/environment
+  )
+
+add_library (CORSIKAenvironment INTERFACE)
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAenvironment ${ENVIRONMENT_NAMESPACE} ${ENVIRONMENT_HEADERS})
+
+# target dependencies on other libraries (also the header onlys)
+target_link_libraries (
+  CORSIKAenvironment
+  INTERFACE
+  CORSIKAgeometry
+  CORSIKAparticles
+  CORSIKAunits
+  )
+
+target_include_directories (
+  CORSIKAenvironment
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  )
+
+install (
+  TARGETS CORSIKAenvironment
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include/${ENVIRONMENT_NAMESPACE}
+  )
+
+# --------------------
+# code unit testing
+add_executable (testEnvironment testEnvironment.cc)
+
+target_link_libraries (
+  testEnvironment
+  CORSIKAenvironment
+  CORSIKAthirdparty # for catch2
+  )
+
+add_test (NAME testGeometry COMMAND testGeometry)
+
