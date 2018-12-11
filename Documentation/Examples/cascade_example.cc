@@ -36,7 +36,7 @@ using namespace std;
 
 static int fCount = 0;
 
-class ProcessSplit : public corsika::process::DiscreteProcess<ProcessSplit> {
+class ProcessSplit : public corsika::process::InteractionProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
 
@@ -86,13 +86,12 @@ public:
     */
     return int_length;
     //
-    //int a = 0;
-    //const double next_step = -int_length * log(s_rndm_(a));
-    //std::cout << "ProcessSplit: "
+    // int a = 0;
+    // const double next_step = -int_length * log(s_rndm_(a));
+    // std::cout << "ProcessSplit: "
     //        << "next step (g/cm2): " << next_step << std::endl;
-    //return next_step;
+    // return next_step;
   }
-
 
   template <typename Particle, typename Track, typename Stack>
   EProcessReturn DoContinuous(Particle&, Track&, Stack&) const {
@@ -101,8 +100,8 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack& s) const {
-    cout << "DoDiscrete: " << p.GetPID() << " interaction? "
+  void DoInteraction(Particle& p, Stack& s) const {
+    cout << "DoInteraction: " << p.GetPID() << " interaction? "
          << process::sibyll::CanInteract(p.GetPID()) << endl;
     if (process::sibyll::CanInteract(p.GetPID())) {
 
@@ -127,11 +126,11 @@ public:
       int kTarget = 1; // p.GetPID();
 
       std::cout << "ProcessSplit: "
-                << " DoDiscrete: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV
+                << " DoInteraction: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV
                 << std::endl;
       if (E < 8.5_GeV || Ecm < 10_GeV) {
         std::cout << "ProcessSplit: "
-                  << " DoDiscrete: dropping particle.." << std::endl;
+                  << " DoInteraction: dropping particle.." << std::endl;
         p.Delete();
         fCount++;
       } else {

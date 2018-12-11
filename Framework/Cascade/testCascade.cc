@@ -41,23 +41,17 @@ using namespace std;
 
 static int fCount = 0;
 
-class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
+class ProcessSplit : public corsika::process::ContinuousProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
-  
+
   template <typename Particle, typename T>
-  double MinStepLength(Particle&, T&) const { return 1; }
-  
-  template <typename Particle, typename T>
-  double GetInteractionLength(Particle&, T&) const { return 1; }
-  
-  template <typename Particle, typename T, typename Stack>
-  EProcessReturn DoContinuous(Particle&, T&, Stack&) const {
-    return EProcessReturn::eOk;
+  double MaxStepLength(Particle&, T&) const {
+    return 1;
   }
-  
-  template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack& s) const {
+
+  template <typename Particle, typename T, typename Stack>
+  void DoContinuous(Particle& p, T&, Stack& s) const {
     EnergyType E = p.GetEnergy();
     if (E < 85_MeV) {
       p.Delete();
@@ -89,15 +83,15 @@ TEST_CASE("Cascade", "[Cascade]") {
   rmng.RegisterRandomStream(str_name);
 
   tracking_line::TrackingLine<setup::Stack> tracking;
-  
+
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
   const auto sequence = p0 + p1;
   setup::Stack stack;
-  
+
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
   CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
-  
+
   stack.Clear();
   auto particle = stack.NewParticle();
   EnergyType E0 = 100_GeV;
@@ -109,7 +103,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   particle.SetTime(0_ns);
   EAS.Init();
   EAS.Run();
-  
+
   /*
   SECTION("sectionTwo") {
     for (int i = 0; i < 0; ++i) {
@@ -119,7 +113,7 @@ TEST_CASE("Cascade", "[Cascade]") {
       particle.SetEnergy(E0);
       EAS.Init();
       EAS.Run();
-      
+
       // cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
     }
   }

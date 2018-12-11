@@ -66,7 +66,7 @@ public:
   }
 };
 
-class Process1 : public DiscreteProcess<Process1> {
+class Process1 : public InteractionProcess<Process1> {
 public:
   Process1(const int v)
       : fV(v) {}
@@ -76,7 +76,7 @@ public:
     globalCount++;
   }
   template <typename D, typename S>
-  inline EProcessReturn DoDiscrete(D& d, S&) const {
+  inline EProcessReturn DoInteraction(D& d, S&) const {
     for (int i = 0; i < nData; ++i) d.p[i] += 1 + i;
     return EProcessReturn::eOk;
   }
@@ -84,7 +84,7 @@ public:
   int fV;
 };
 
-class Process2 : public DiscreteProcess<Process2> {
+class Process2 : public InteractionProcess<Process2> {
   int fV = 0;
 
 public:
@@ -96,8 +96,8 @@ public:
     globalCount++;
   }
   template <typename Particle, typename Stack>
-  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
-    cout << "Process2::DoDiscrete" << endl;
+  inline EProcessReturn DoInteraction(Particle&, Stack&) const {
+    cout << "Process2::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Track>
@@ -107,7 +107,7 @@ public:
   }
 };
 
-class Process3 : public DiscreteProcess<Process3> {
+class Process3 : public InteractionProcess<Process3> {
   int fV = 0;
 
 public:
@@ -119,8 +119,8 @@ public:
     globalCount++;
   }
   template <typename Particle, typename Stack>
-  inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
-    cout << "Process3::DoDiscrete" << endl;
+  inline EProcessReturn DoInteraction(Particle&, Stack&) const {
+    cout << "Process3::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Track>
@@ -148,7 +148,28 @@ public:
   }
   // inline double MinStepLength(D& d) {
   template <typename Particle, typename Stack>
-  EProcessReturn DoDiscrete(Particle&, Stack&) const {
+  EProcessReturn DoInteraction(Particle&, Stack&) const {
+    return EProcessReturn::eOk;
+  }
+};
+
+class Decay1 : public DecayProcess<Decay1> {
+  int fV = 0;
+
+public:
+  Decay1(const int v)
+      : fV(v) {}
+  void Init() {
+    cout << "Decay1::Init" << endl;
+    assert(globalCount == fV);
+    globalCount++;
+  }
+  template <typename Particle>
+  double GetLifetime(Particle&) const {
+    return 1;
+  }
+  template <typename Particle, typename Stack>
+  EProcessReturn DoDecay(Particle&, Stack&) const {
     return EProcessReturn::eOk;
   }
 };
@@ -192,7 +213,21 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     double tot_inv = sequence2.GetTotalInverseInteractionLength(s, t);
     cout << "lambda_tot=" << tot << " lambda_tot_inv=" << tot_inv << endl;
   }
-  
+
+  SECTION("lifetime") {
+    ContinuousProcess1 cp1(0);
+    Process2 m2(1);
+    Process3 m3(2);
+    Decay1 d3(2);
+
+    DummyStack s;
+
+    const auto sequence2 = cp1 + m2 + m3 + d3;
+    double tot = sequence2.GetTotalLifetime(s);
+    double tot_inv = sequence2.GetTotalInverseLifetime(s);
+    cout << "lambda_tot=" << tot << " lambda_tot_inv=" << tot_inv << endl;
+  }
+
   SECTION("sectionTwo") {
 
     ContinuousProcess1 cp1(0);
@@ -213,14 +248,14 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     sequence2.DoContinuous(p, t, s);
     cout << "-->dodisc" << endl;
-    sequence2.DoDiscrete(p, s);
+    // sequence2.DoInteraction(p, s);
     cout << "-->done" << endl;
 
     const int nLoop = 5;
     cout << "Running loop with n=" << nLoop << endl;
     for (int i = 0; i < nLoop; ++i) {
       sequence2.DoContinuous(p, t, s);
-      sequence2.DoDiscrete(p, s);
+      // sequence2.DoInteraction(p, s);
     }
     for (int i = 0; i < nData; i++) { cout << "data[" << i << "]=" << p.p[i] << endl; }
     cout << "done" << endl;
