@@ -37,6 +37,12 @@ namespace corsika::process {
     // -> enforce derived to implement DoDiscrete...
     template <typename Particle, typename Stack>
     inline EProcessReturn DoDiscrete(Particle&, Stack&) const; // {}
+
+    template <typename Particle, typename Track>
+    inline double GetInverseInteractionLength(Particle& p, Track& t) const {
+      return 1./GetRef().GetInteractionLength(p, t);
+    }
+    
   };
 
 } // namespace corsika::process

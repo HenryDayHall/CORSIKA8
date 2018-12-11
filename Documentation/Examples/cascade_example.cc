@@ -36,13 +36,12 @@ using namespace std;
 
 static int fCount = 0;
 
-class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
+class ProcessSplit : public corsika::process::DiscreteProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
 
   template <typename Particle, typename Track>
-  double MinStepLength(Particle& p, Track&) const {
-
+  double GetInteractionLength(Particle& p, Track&) const {
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
     int kBeam = 1;
@@ -81,16 +80,19 @@ public:
     std::cout << "ProcessSplit: "
               << "interaction length (g/cm2): " << int_length << std::endl;
     // add exponential sampling
-    int a = 0;
-    const double next_step = -int_length * log(s_rndm_(a));
     /*
       what are the units of the output? slant depth or 3space length?
 
     */
-    std::cout << "ProcessSplit: "
-              << "next step (g/cm2): " << next_step << std::endl;
-    return next_step;
+    return int_length;
+    //
+    //int a = 0;
+    //const double next_step = -int_length * log(s_rndm_(a));
+    //std::cout << "ProcessSplit: "
+    //        << "next step (g/cm2): " << next_step << std::endl;
+    //return next_step;
   }
+
 
   template <typename Particle, typename Track, typename Stack>
   EProcessReturn DoContinuous(Particle&, Track&, Stack&) const {

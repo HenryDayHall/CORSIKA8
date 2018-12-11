@@ -23,7 +23,8 @@ namespace corsika::process {
   enum class EProcessReturn {
     eOk = 1,
     eParticleAbsorbed = 2,
-  };
+    eInteracted = 3,
+    };
 } // namespace corsika::process
 
 #endif

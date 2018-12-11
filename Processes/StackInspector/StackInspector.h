@@ -36,7 +36,7 @@ namespace corsika::process {
       EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
 
       //      template <typename Particle>
-      void MinStepLength(Particle&, corsika::setup::Trajectory&) const;
+      double MinStepLength(Particle&, corsika::setup::Trajectory&) const;
 
     private:
       bool fReport;

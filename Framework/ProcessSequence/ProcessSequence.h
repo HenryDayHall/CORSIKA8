@@ -17,6 +17,9 @@
 #include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
+#include <limits>
+#include <cmath>
+
 //#include <corsika/setup/SetupTrajectory.h>
 // using corsika::setup::Trajectory;
 //#include <variant>
@@ -25,7 +28,7 @@
 
 namespace corsika::process {
 
-  /* namespace detail { */
+  // namespace detail {
 
   /*   /\* template<typename TT1, typename TT2, typename Type = void> *\/ */
   /*   /\*   struct CallHello { *\/ */
@@ -41,7 +44,7 @@ namespace corsika::process {
   /*   /\* 	static void Call(const TT1&, const TT2&) { *\/ */
   /*   /\* 	  std::cout << "special" << std::endl; *\/ */
   /*   /\* 	}	 *\/ */
-  /*   /\*   }; *\/ */
+  /*          }; */
 
   /*   template<typename T1, typename T2, typename Particle, typename Trajectory, typename
    * Stack> //, typename Type = void> */
@@ -121,7 +124,7 @@ namespace corsika::process {
   /*     } */
   /*   }; */
   /*   *\/ */
-  /* } // end namespace detail */
+  //} // end namespace detail
 
   /**
      \class ProcessSequence
@@ -134,8 +137,24 @@ namespace corsika::process {
      https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
    */
 
+  //template <typename T1, typename T2>
+  //class ProcessSequence : public BaseProcess<ProcessSequence<T1, T2> >;
+
+  // this is a marker to track which BaseProcess is also a ProcessSequence
+    template <typename T>
+    struct is_process_sequence {
+      static const bool value = false;
+    };
+    
+
   template <typename T1, typename T2>
   class ProcessSequence : public BaseProcess<ProcessSequence<T1, T2> > {
+    
+    /*    template <>
+      struct BaseProcess<ProcessSequence<T1, T2> >::is_process_sequence<true> {
+      static const bool value = true;
+      };*/
+    
   public:
     const T1& A;
     const T2& B;
@@ -162,20 +181,38 @@ namespace corsika::process {
     }
 
     template <typename Particle, typename Track>
-    inline void MinStepLength(Particle& p, Track& track) const {
-      A.MinStepLength(p, track);
-      B.MinStepLength(p, track);
+    inline double MinStepLength(Particle& p, Track& track) const {
+      double min_length = std::numeric_limits<double>::infinity();
+      if constexpr (!std::is_base_of<DiscreteProcess<T1>, T1>::value) {
+	  min_length = std::min(min_length, A.MinStepLength(p,track));
+	}
+      if constexpr (!std::is_base_of<DiscreteProcess<T2>, T2>::value) {
+	  min_length = std::min(min_length, B.MinStepLength(p,track));
+	}
+      return min_length;
     }
 
-    /*
     template <typename Particle, typename Track>
-    inline Track Transport(Particle& p, double& length) const {
-      A.Transport(p, length); // todo: maybe check (?) if there is more than one Transport
-                              // process implemented??
-      return B.Transport(
-          p, length); // need to do this also to decide which Track to return!!!!
+    inline double GetTotalInteractionLength(Particle& p, Track& t) const {
+      return 1. / GetInverseInteractionLength(p, t);
     }
-    */
+
+    template <typename Particle, typename Track>
+    inline double GetTotalInverseInteractionLength(Particle& p, Track& t) const {
+      return GetInverseInteractionLength(p, t);
+    }
+
+    template <typename Particle, typename Track>
+    inline double GetInverseInteractionLength(Particle& p, Track& t) const {
+      double tot = 0;
+      if constexpr (!std::is_base_of<ContinuousProcess<T1>, T1>::value) {
+        tot += A.GetInverseInteractionLength(p, t);
+      }
+      if constexpr (!std::is_base_of<ContinuousProcess<T2>, T2>::value) {
+        tot += B.GetInverseInteractionLength(p, t);
+      }
+      return tot;
+    }
 
     template <typename Particle, typename Stack>
     inline EProcessReturn DoDiscrete(Particle& p, Stack& s) const {
@@ -185,6 +222,47 @@ namespace corsika::process {
       if constexpr (!std::is_base_of<ContinuousProcess<T2>, T2>::value) {
         B.DoDiscrete(p, s);
       }
+      return EProcessReturn::eOk;
+    }
+
+    template <typename Particle, typename Stack>
+      inline EProcessReturn SelectDiscrete(Particle& p, Stack& s,
+					   const double lambda_inv_tot,
+					   const double rndm_select,
+					   double& lambda_inv_count) const {
+      if constexpr (is_process_sequence<T1>::value) {
+	  // if A is a process sequence --> check inside
+	  const EProcessReturn ret = A.SelectDiscrete(p, s, lambda_inv_count, rndm_select, lambda_inv_count);
+	  // if A did suceed, stop routine
+	  if (ret != EProcessReturn::eOk) {
+	    return ret;
+	  }
+	} else if constexpr (!std::is_base_of<ContinuousProcess<T1>, T1>::value) {
+	  // if this is not a ContinuousProcess --> evaluate probability
+	  lambda_inv_count += A.GetInverseInteractionLength(p, s);
+	  // check if we should execute THIS process and then EXIT
+	  if (rndm_select<lambda_inv_count/lambda_inv_tot) {
+	    A.DoDiscrete(p, s);
+	    return EProcessReturn::eInteracted;
+	  }
+	} // end branch A
+      
+      if constexpr (is_process_sequence<T2>::value) {
+	  // if A is a process sequence --> check inside
+	  const EProcessReturn ret = B.SelectDiscrete(p, s, lambda_inv_count, rndm_select, lambda_inv_count);
+	  // if A did suceed, stop routine
+	  if (ret != EProcessReturn::eOk) {
+	    return ret;
+	  }
+	} else if constexpr (!std::is_base_of<ContinuousProcess<T2>, T2>::value) {
+	  // if this is not a ContinuousProcess --> evaluate probability
+	  lambda_inv_count += B.GetInverseInteractionLength(p, s);
+	  // check if we should execute THIS process and then EXIT
+	  if (rndm_select<lambda_inv_count/lambda_inv_tot) {
+	    B.DoDiscrete(p, s);
+	    return EProcessReturn::eInteracted;
+	  }
+	} // end branch A
       return EProcessReturn::eOk;
     }
 
@@ -288,6 +366,12 @@ namespace corsika::process {
     return *this;
     }
   */
+
+        template<template<typename, typename> class T, typename A, typename B>
+      struct is_process_sequence< T<A,B> > 
+    {
+      static const bool value = true;
+    };
 
 } // namespace corsika::process
 

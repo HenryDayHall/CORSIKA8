@@ -100,6 +100,11 @@ public:
     cout << "Process2::DoDiscrete" << endl;
     return EProcessReturn::eOk;
   }
+  template <typename Particle, typename Track>
+  inline double GetInteractionLength(Particle&, Track&) const {
+    cout << "Process2::GetInteractionLength" << endl;
+    return 3;
+  }
 };
 
 class Process3 : public DiscreteProcess<Process3> {
@@ -117,6 +122,11 @@ public:
   inline EProcessReturn DoDiscrete(Particle&, Stack&) const {
     cout << "Process3::DoDiscrete" << endl;
     return EProcessReturn::eOk;
+  }
+  template <typename Particle, typename Track>
+  inline double GetInteractionLength(Particle&, Track&) const {
+    cout << "Process3::GetInteractionLength" << endl;
+    return 1.;
   }
 };
 
@@ -169,6 +179,20 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     // REQUIRE_THROWS(sequence_wrong.Init());
   }
 
+  SECTION("interaction length") {
+    ContinuousProcess1 cp1(0);
+    Process2 m2(1);
+    Process3 m3(2);
+
+    DummyStack s;
+    DummyTrajectory t;
+
+    const auto sequence2 = cp1 + m2 + m3;
+    double tot = sequence2.GetTotalInteractionLength(s, t);
+    double tot_inv = sequence2.GetTotalInverseInteractionLength(s, t);
+    cout << "lambda_tot=" << tot << " lambda_tot_inv=" << tot_inv << endl;
+  }
+  
   SECTION("sectionTwo") {
 
     ContinuousProcess1 cp1(0);

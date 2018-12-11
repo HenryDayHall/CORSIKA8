@@ -128,7 +128,7 @@ namespace corsika::stack {
       void Swap(const int i1, const int i2) {
         std::swap(fDataPID[i2], fDataPID[i1]);
         std::swap(fDataE[i2], fDataE[i1]);
-        std::swap(fMomentum[i2], fMomentum[i1]); // should be Momentum !!!!
+        std::swap(fMomentum[i2], fMomentum[i1]);
         std::swap(fPosition[i2], fPosition[i1]);
         std::swap(fTime[i2], fTime[i1]);
       }

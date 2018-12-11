@@ -29,14 +29,27 @@ namespace corsika::process {
   struct BaseProcess {
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
-
+    
     template <typename Particle, typename Stack>
     inline EProcessReturn DoDiscrete(Particle&, Stack&) const; // {}
-
+    
     template <typename Particle, typename Track, typename Stack>
     inline EProcessReturn DoContinuous(Particle&, Track&, Stack&) const; // {}
-  };
 
+    template <typename Particle, typename Track>
+      inline double GetInverseInteractionLength(Particle& p, Track& t) const {
+      return 1./GetRef().GetInteractionLength(p, t);
+    }
+};
+  
+  /*
+  template<template<typename, typename> class T, typename A, typename B>
+    typename BaseProcess< T<A, B> >::is_process_sequence 
+    {
+      static const bool value = true;
+    };
+  */
+  
   /*
   template <typename T>
   struct is_base {

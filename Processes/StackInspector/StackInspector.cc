@@ -17,6 +17,7 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <limits>
 #include <iostream>
 using namespace std;
 
@@ -56,8 +57,8 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
 }
 
 template <typename Stack>
-void StackInspector<Stack>::MinStepLength(Particle&, setup::Trajectory&) const {
-  // return 0;
+double StackInspector<Stack>::MinStepLength(Particle&, setup::Trajectory&) const {
+  return std::numeric_limits<double>::infinity();
 }
 
 template <typename Stack>
