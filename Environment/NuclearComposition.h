@@ -3,6 +3,7 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <numeric>
+#include <stdexcept>
 #include <vector>
 
 namespace corsika::environment {
@@ -20,7 +21,7 @@ namespace corsika::environment {
           std::accumulate(pFractions.cbegin(), pFractions.cend(), 0.f);
 
       if (!(0.999f < sumFractions && sumFractions < 1.001f)) {
-        throw std::string("element fractions do not add up to 1");
+        throw std::runtime_error("element fractions do not add up to 1");
       }
     }
 

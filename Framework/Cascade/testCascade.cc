@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -8,6 +7,8 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
+
+#include <limits>
 
 #include <corsika/environment/Environment.h>
 
@@ -80,12 +81,13 @@ private:
 TEST_CASE("Cascade", "[Cascade]") {
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
-  auto const radius = 20_km;
+  auto const radius = 1_m * std::numeric_limits<double>::infinity();
+  ;
   auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
-    Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);      
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
   universe.AddChild(std::move(theMedium));
 
-  tracking_line::TrackingLine<setup::Stack> tracking(env);  
+  tracking_line::TrackingLine<setup::Stack> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;

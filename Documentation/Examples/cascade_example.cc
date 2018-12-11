@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -18,6 +17,8 @@
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/environment/Environment.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/NuclearComposition.h>
 
 #include <corsika/random/RNGManager.h>
 
@@ -29,6 +30,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <iostream>
+#include <limits>
 #include <typeinfo>
 
 using namespace corsika;
@@ -192,9 +194,8 @@ public:
     //    rnd_ini_();
 
     corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
-    ;
-    const std::string str_name = "s_rndm";
-    rmng.RegisterRandomStream(str_name);
+
+    rmng.RegisterRandomStream("s_rndm");
 
     // //    corsika::random::RNG srng;
     // auto srng = rmng.GetRandomStream("s_rndm");
@@ -242,13 +243,25 @@ double s_rndm_(int&) {
   return rmng() / (double)rmng.max();
 }
 
+class A {};
+class B : public A {};
+
 int main() {
-  corsika::environment::Environment env; // dummy environment  
+  corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
   auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 100_km);
-      
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      1_km * std::numeric_limits<double>::infinity());
+
+  using MyHomogeneousModel =
+      corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
+  theMedium->SetModelProperties<MyHomogeneousModel>(
+      1_g / (1_m * 1_m * 1_m),
+      corsika::environment::NuclearComposition(
+          std::vector<corsika::particles::Code>{corsika::particles::Code::Proton},
+          std::vector<float>{1.}));
+
   universe.AddChild(std::move(theMedium));
 
   tracking_line::TrackingLine<setup::Stack> tracking(env);
@@ -261,7 +274,7 @@ int main() {
 
   stack.Clear();
   auto particle = stack.NewParticle();
-  EnergyType E0 = 1_EeV;
+  EnergyType E0 = 100_TeV;
   particle.SetEnergy(E0);
   particle.SetPID(Code::Proton);
   EAS.Init();

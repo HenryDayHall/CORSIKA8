@@ -18,14 +18,16 @@
 
 namespace corsika::environment {
   struct Universe : public corsika::geometry::Volume {
-      bool Contains(corsika::geometry::Point const&) const override {return true;}
+    bool Contains(corsika::geometry::Point const&) const override { return true; }
   };
 
+  // template <typename IEnvironmentModel>
   class Environment {
   public:
-    Environment() : fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
-          std::make_unique<Universe>())) {}
-  
+    Environment()
+        : fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
+              std::make_unique<Universe>())) {}
+
     using IEnvironmentModel = corsika::setup::IEnvironmentModel;
 
     auto& GetUniverse() { return fUniverse; }

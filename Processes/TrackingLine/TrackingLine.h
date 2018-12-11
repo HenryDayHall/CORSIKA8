@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <iostream>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 
 using namespace corsika;
@@ -39,8 +40,9 @@ namespace corsika::process {
       corsika::environment::Environment const& fEnvironment;
 
     public:
-      std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>> TimeOfIntersection(
-          corsika::geometry::Line const& traj, geometry::Sphere const& sphere) {
+      std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
+      TimeOfIntersection(corsika::geometry::Line const& traj,
+                         geometry::Sphere const& sphere) {
         using namespace corsika::units::si;
         auto const& cs = fEnvironment.GetCoordinateSystem();
         geometry::Point const origin(cs, 0_m, 0_m, 0_m);
@@ -61,7 +63,8 @@ namespace corsika::process {
 
         if (discriminant.magnitude() > 0) {
           (-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm());
-          return std::make_pair((-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm()), (-alpha + sqrt(discriminant)) / (2 * v0.squaredNorm()));
+          return std::make_pair((-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm()),
+                                (-alpha + sqrt(discriminant)) / (2 * v0.squaredNorm()));
         } else {
           return {};
         }
@@ -92,13 +95,12 @@ namespace corsika::process {
               volume); // for the moment we are a bit bold here and assume
                        // everything is a sphere, crashes with exception if not
 
-          if (auto opt = TimeOfIntersection(line, sphere); opt.has_value())
-          {
+          if (auto opt = TimeOfIntersection(line, sphere); opt.has_value()) {
             auto const [t1, t2] = *opt;
             if (t1.magnitude() >= 0)
-                intersectionTimes.push_back(t1);
+              intersectionTimes.push_back(t1);
             else if (t2.magnitude() >= 0)
-                intersectionTimes.push_back(t2);
+              intersectionTimes.push_back(t2);
           }
         };
 
@@ -111,11 +113,17 @@ namespace corsika::process {
         auto const minIter =
             std::min_element(intersectionTimes.cbegin(), intersectionTimes.cend());
 
+        TimeType min;
+
         if (minIter == intersectionTimes.cend()) {
-          throw std::string("no intersection with anything!");
+          min = 1_s; // todo: do sth. more reasonable as soon as tracking is able
+                     // to handle the numerics properly
+          //~ throw std::runtime_error("no intersection with anything!");
+        } else {
+          min = *minIter;
         }
 
-        return geometry::Trajectory<corsika::geometry::Line>(line, *minIter);
+        return geometry::Trajectory<corsika::geometry::Line>(line, min);
       }
     };
 

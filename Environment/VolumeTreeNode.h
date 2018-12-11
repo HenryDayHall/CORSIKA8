@@ -87,12 +87,12 @@ namespace corsika::environment {
 
     auto const& GetModelProperties() const { return *fModelProperties; }
 
-    template <typename ModelProperties, typename... Args>
+    template <typename TModelProperties, typename... Args>
     auto SetModelProperties(Args&&... args) {
-      static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
+      static_assert(std::is_base_of_v<IModelProperties, TModelProperties>,
                     "unusable type provided");
 
-      fModelProperties = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
+      fModelProperties = std::make_shared<TModelProperties>(std::forward<Args>(args)...);
       return fModelProperties;
     }
 
@@ -111,7 +111,7 @@ namespace corsika::environment {
     std::vector<VolumeTreeNode<IModelProperties> const*> fExcludedNodes;
     VolumeTreeNode<IModelProperties> const* fParentNode = nullptr;
     VolUPtr fGeoVolume;
-    std::shared_ptr<IModelProperties> fModelProperties;
+    IMPSharedPtr fModelProperties;
   };
 
 } // namespace corsika::environment

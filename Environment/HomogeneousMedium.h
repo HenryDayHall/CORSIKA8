@@ -25,7 +25,7 @@
 namespace corsika::environment {
 
   template <class T>
-  class HomogeneousMedium : T {
+  class HomogeneousMedium : public T {
     corsika::units::si::MassDensityType const fDensity;
     NuclearComposition const fNuclComp;
 
@@ -35,8 +35,8 @@ namespace corsika::environment {
         : fDensity(pDensity)
         , fNuclComp(pNuclComp){};
 
-    corsika::units::si::MassDensityType GetMassDensity([
-        [maybe_unused]] corsika::geometry::Point const& p) const override {
+    corsika::units::si::MassDensityType GetMassDensity(
+        corsika::geometry::Point const&) const override {
       return fDensity;
     }
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
