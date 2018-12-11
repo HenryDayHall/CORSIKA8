@@ -17,13 +17,11 @@
 #include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
-#include <corsika/setup/SetupTrajectory.h>
-
-#include <variant>
+//#include <corsika/setup/SetupTrajectory.h>
+// using corsika::setup::Trajectory;
+//#include <variant>
 
 //#include <type_traits> // still needed ?
-
-using corsika::setup::Trajectory;
 
 namespace corsika::process {
 
@@ -149,31 +147,33 @@ namespace corsika::process {
     // example for a trait-based call:
     // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
 
-    template <typename Particle, typename Stack>
-    inline EProcessReturn DoContinuous(Particle& p, Trajectory& t, Stack& s) const {
+    template <typename Particle, typename Track, typename Stack>
+    inline EProcessReturn DoContinuous(Particle& p, Track& t, Stack& s) const {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (!std::is_base_of<DiscreteProcess<T1>, T1>::value) {
+        // A.DoContinuous(std::forward<Particle>(p), t, std::forward<Stack>(s));
         A.DoContinuous(p, t, s);
       }
       if constexpr (!std::is_base_of<DiscreteProcess<T2>, T2>::value) {
+        // B.DoContinuous(std::forward<Particle>(p), t, std::forward<Stack>(s));
         B.DoContinuous(p, t, s);
       }
       return ret;
     }
 
-    template <typename Particle>
-    inline void MinStepLength(Particle& p, Trajectory& step) const {
-      A.MinStepLength(p, step);
-      B.MinStepLength(p, step);
+    template <typename Particle, typename Track>
+    inline void MinStepLength(Particle& p, Track& track) const {
+      A.MinStepLength(p, track);
+      B.MinStepLength(p, track);
     }
 
     /*
-    template <typename Particle, typename Trajectory>
-    inline Trajectory Transport(Particle& p, double& length) const {
+    template <typename Particle, typename Track>
+    inline Track Transport(Particle& p, double& length) const {
       A.Transport(p, length); // todo: maybe check (?) if there is more than one Transport
                               // process implemented??
       return B.Transport(
-          p, length); // need to do this also to decide which Trajectory to return!!!!
+          p, length); // need to do this also to decide which Track to return!!!!
     }
     */
 

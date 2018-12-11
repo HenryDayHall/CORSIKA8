@@ -15,20 +15,23 @@
 
 #include <corsika/process/ProcessSequence.h>
 
-#include <corsika/setup/SetupTrajectory.h> // TODO: try to break this dependence later
-using corsika::setup::Trajectory;
-#include <corsika/units/PhysicalUnits.h> // dito
-using namespace corsika::units::si;
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/Vector.h>
 
-using namespace std;
+using namespace corsika;
+using namespace corsika::units::si;
 using namespace corsika::process;
+using namespace std;
+
+const int nData = 10;
 
 class Process1 : public BaseProcess<Process1> {
 public:
   Process1() {}
   template <typename D, typename T, typename S>
   EProcessReturn DoContinuous(D& d, T&, S&) const {
-    for (int i = 0; i < 10; ++i) d.p[i] += 1;
+    for (int i = 0; i < nData; ++i) d.p[i] += 1;
     return EProcessReturn::eOk;
   }
 };
@@ -38,61 +41,64 @@ public:
   Process2() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D&, T&, S&) const {
-    // for (int i=0; i<10; ++i) d.p[i] *= 2;
+  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] -= 0.1 * i;
     return EProcessReturn::eOk;
   }
 };
 
 class Process3 : public BaseProcess<Process3> {
 public:
-  // Process3(const int v) :fV(v) {}
   Process3() {}
 
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& /*d*/, T& /*t*/, S& /*s*/) const {
-    // for (int i=0; i<10; ++i) d.p[i] += fV;
+  inline EProcessReturn DoContinuous(D&, T&, S&) const {
     return EProcessReturn::eOk;
   }
-
-private:
-  // int fV;
 };
 
 class Process4 : public BaseProcess<Process4> {
 public:
-  // Process4(const int v) : fV(v) {}
-  Process4() {}
+  Process4(const double v)
+      : fV(v) {}
   template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& /*d*/, T& /*t*/, S& /*s*/) const {
-    // for (int i=0; i<10; ++i) d.p[i] /= fV;
+  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+    for (int i = 0; i < nData; ++i) d.p[i] *= fV;
     return EProcessReturn::eOk;
   }
 
 private:
-  // int fV;
+  double fV;
 };
 
 struct DummyData {
-  double p[10];
+  double p[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
-struct DummyStack {};
+struct DummyStack {
+  void clear() {}
+};
+struct DummyTrajectory {};
 
 void modular() {
 
   Process1 m1;
   Process2 m2;
   Process3 m3;
-  Process4 m4;
+  Process4 m4(0.9);
 
   const auto sequence = m1 + m2 + m3 + m4;
 
   DummyData p;
   DummyStack s;
-  Trajectory t;
+  DummyTrajectory t;
 
-  const int n = 100000000;
+  const int n = 1000;
   for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }
+
+  for (int i = 0; i < nData; ++i) {
+    // cout << p.p[i] << endl;
+    // assert(p.p[i] == n-i*100);
+  }
 
   cout << " done (nothing...) " << endl;
 }

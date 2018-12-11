@@ -29,8 +29,15 @@ namespace corsika::process {
   struct BaseProcess {
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
+
+    template <typename Particle, typename Stack>
+    inline EProcessReturn DoDiscrete(Particle&, Stack&) const; // {}
+
+    template <typename Particle, typename Track, typename Stack>
+    inline EProcessReturn DoContinuous(Particle&, Track&, Stack&) const; // {}
   };
 
+  /*
   template <typename T>
   struct is_base {
     static const bool value = false;
@@ -39,6 +46,7 @@ namespace corsika::process {
   struct is_base<BaseProcess<T>> {
     static const bool value = true;
   };
+  */
 
 } // namespace corsika::process
 

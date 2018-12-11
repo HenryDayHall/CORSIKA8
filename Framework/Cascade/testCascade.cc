@@ -18,6 +18,7 @@
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 
 #include <corsika/setup/SetupStack.h>
