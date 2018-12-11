@@ -125,7 +125,7 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, setup::Trajectory& t, Stack& s) const {
+  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
     // cout << "ProcessCut: DoContinous: " << p.GetPID() << endl;
     // cout << " is em: " << isEmParticle( p.GetPID() ) << endl;
     // cout << " is inv: " << isInvisible( p.GetPID() ) << endl;
@@ -148,7 +148,7 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack& s) const {
+  void DoDiscrete(Particle& p, Stack&) const {
     cout << "ProcessCut: DoDiscrete: " << p.GetPID() << endl;
     const Code pid = p.GetPID();
     if (isEmParticle(pid)) {
@@ -499,7 +499,7 @@ int main() {
   ProcessSplit p1;
   corsika::process::sibyll::ProcessDecay p2;
   ProcessEMCut p3;
-  const auto sequence = p0 + p1 + p2 + p3;
+  const auto sequence = /*p0 +*/ p1 + p2 + p3;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
@@ -513,6 +513,9 @@ int main() {
   particle.SetEnergy(E0);
   particle.SetMomentum(plab);
   particle.SetPID(Code::Proton);
+  particle.SetTime(0_ns);
+  Point p(rootCS, 0_m, 0_m, 0_m);
+  particle.SetPosition(p);
   EAS.Init();
   EAS.Run();
   cout << "Result: E0=" << E0 / 1_GeV

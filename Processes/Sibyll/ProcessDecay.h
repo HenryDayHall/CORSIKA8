@@ -95,6 +95,7 @@ namespace corsika::process {
         const double gamma = E / m;
 
         TimeType t0 = GetLifetime(p.GetPID());
+	cout << "ProcessDecay: code: " << (p.GetPID()) << endl;
         cout << "ProcessDecay: MinStep: t0: " << t0 << endl;
         cout << "ProcessDecay: MinStep: gamma: " << gamma << endl;
         cout << "ProcessDecay: MinStep: density: " << density << endl;

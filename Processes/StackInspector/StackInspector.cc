@@ -26,7 +26,7 @@ using namespace corsika::process::stack_inspector;
 
 template <typename Stack>
 StackInspector<Stack>::StackInspector(const bool aReport)
-    : fReport(aReport) {}
+  : fReport(aReport), fCountStep(0) {}
 
 template <typename Stack>
 StackInspector<Stack>::~StackInspector() {}
@@ -34,7 +34,6 @@ StackInspector<Stack>::~StackInspector() {}
 template <typename Stack>
 process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Trajectory&,
                                                             Stack& s) const {
-  static int countStep = 0;
   if (!fReport) return EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   EnergyType Etot = 0_GeV;
@@ -49,8 +48,8 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
          << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
          << " pos=" << pos << endl;
   }
-  countStep++;
-  cout << "StackInspector: nStep=" << countStep << " stackSize=" << s.GetSize()
+  fCountStep++;
+  cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << s.GetSize()
        << " Estack=" << Etot / 1_GeV << " GeV" << endl;
   return EProcessReturn::eOk;
 }
@@ -61,7 +60,9 @@ void StackInspector<Stack>::MinStepLength(Particle&, setup::Trajectory&) const {
 }
 
 template <typename Stack>
-void StackInspector<Stack>::Init() {}
+void StackInspector<Stack>::Init() {
+  fCountStep = 0;
+}
 
 #include <corsika/setup/SetupStack.h>
 
