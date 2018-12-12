@@ -32,11 +32,18 @@ namespace corsika::geometry {
 
     Point GetPosition(corsika::units::si::TimeType t) const { return r0 + v0 * t; }
 
-    LengthType GetDistanceBetween(corsika::units::si::TimeType t1,
-                                  corsika::units::si::TimeType t2) const {
-      // assert(t2 >= t1);
+    LengthType ArcLength(corsika::units::si::TimeType t1,
+                         corsika::units::si::TimeType t2) const {
       return v0.norm() * (t2 - t1);
     }
+
+    corsika::units::si::TimeType TimeFromArclength(
+        corsika::units::si::LengthType t) const {
+      return t / v0.norm();
+    }
+
+    auto GetR0() const { return r0; }
+    auto GetV0() const { return v0; }
   };
 
 } // namespace corsika::geometry

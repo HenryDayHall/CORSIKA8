@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -8,6 +7,10 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
+
+#include <limits>
+
+#include <corsika/environment/Environment.h>
 
 #include <corsika/cascade/Cascade.h>
 
@@ -38,6 +41,7 @@ using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
+using namespace corsika::units::si;
 
 static int fCount = 0;
 
@@ -82,7 +86,15 @@ TEST_CASE("Cascade", "[Cascade]") {
   const std::string str_name = "s_rndm";
   rmng.RegisterRandomStream(str_name);
 
-  tracking_line::TrackingLine<setup::Stack> tracking;
+  corsika::environment::Environment env; // dummy environment
+  auto& universe = *(env.GetUniverse());
+  auto const radius = 1_m * std::numeric_limits<double>::infinity();
+  ;
+  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
+  universe.AddChild(std::move(theMedium));
+
+  tracking_line::TrackingLine<setup::Stack> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;

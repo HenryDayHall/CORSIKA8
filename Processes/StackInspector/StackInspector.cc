@@ -12,6 +12,7 @@
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/logging/Logger.h>
 
