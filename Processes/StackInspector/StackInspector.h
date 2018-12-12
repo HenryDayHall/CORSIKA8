@@ -40,6 +40,7 @@ namespace corsika::process {
 
     private:
       bool fReport;
+      mutable int fCountStep = 0;
     };
 
   } // namespace stack_inspector

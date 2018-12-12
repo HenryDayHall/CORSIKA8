@@ -20,6 +20,7 @@ set (
 set (
   MODEL_HEADERS
   ParticleConversion.h
+  ProcessDecay.h
   ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   )
 

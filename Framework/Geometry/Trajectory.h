@@ -12,8 +12,8 @@
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 
-#include <corsika/units/PhysicalUnits.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/units/PhysicalUnits.h>
 
 using corsika::units::si::LengthType;
 using corsika::units::si::TimeType;
