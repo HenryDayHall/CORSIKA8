@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -9,6 +8,10 @@
  * the license.
  */
 
+#include <limits>
+
+#include <corsika/environment/Environment.h>
+
 #include <corsika/cascade/Cascade.h>
 
 #include <corsika/process/ProcessSequence.h>
@@ -16,6 +19,8 @@
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
+
+#include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
@@ -36,23 +41,21 @@ using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
+using namespace corsika::units::si;
 
 static int fCount = 0;
 
-class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
+class ProcessSplit : public corsika::process::ContinuousProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
 
-  template <typename Particle>
-  void MinStepLength(Particle&, setup::Trajectory&) const {}
-
-  template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
-    return EProcessReturn::eOk;
+  template <typename Particle, typename T>
+  double MaxStepLength(Particle&, T&) const {
+    return 1;
   }
 
-  template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack& s) const {
+  template <typename Particle, typename T, typename Stack>
+  void DoContinuous(Particle& p, T&, Stack& s) const {
     EnergyType E = p.GetEnergy();
     if (E < 85_MeV) {
       p.Delete();
@@ -60,7 +63,9 @@ public:
     } else {
       p.SetEnergy(E / 2);
       auto pnew = s.NewParticle();
-      // s.Copy(p, pnew);
+      // s.Copy(p, pnew); fix that .... todo
+      pnew.SetPID(p.GetPID());
+      pnew.SetTime(p.GetTime());
       pnew.SetEnergy(E / 2);
       pnew.SetPosition(p.GetPosition());
       pnew.SetMomentum(p.GetMomentum());
@@ -76,7 +81,20 @@ private:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  tracking_line::TrackingLine<setup::Stack> tracking;
+  corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
+  ;
+  const std::string str_name = "s_rndm";
+  rmng.RegisterRandomStream(str_name);
+
+  corsika::environment::Environment env; // dummy environment
+  auto& universe = *(env.GetUniverse());
+  auto const radius = 1_m * std::numeric_limits<double>::infinity();
+  ;
+  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
+  universe.AddChild(std::move(theMedium));
+
+  tracking_line::TrackingLine<setup::Stack> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
@@ -84,19 +102,21 @@ TEST_CASE("Cascade", "[Cascade]") {
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
-
   CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
 
   stack.Clear();
   auto particle = stack.NewParticle();
   EnergyType E0 = 100_GeV;
+  particle.SetPID(particles::Code::Electron);
   particle.SetEnergy(E0);
   particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
   particle.SetMomentum(corsika::stack::super_stupid::MomentumVector(
       rootCS, {0 * newton * second, 0 * newton * second, -1 * newton * second}));
+  particle.SetTime(0_ns);
   EAS.Init();
   EAS.Run();
 
+  /*
   SECTION("sectionTwo") {
     for (int i = 0; i < 0; ++i) {
       stack.Clear();
@@ -109,4 +129,5 @@ TEST_CASE("Cascade", "[Cascade]") {
       // cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
     }
   }
+  */
 }

@@ -22,17 +22,16 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
+# #-- -- -- -- -- -- -- -- -- --
+# #code unit testing
+add_executable (testTrackingLine testTrackingLine.cc)
 
+target_link_libraries (
+   testTrackingLine
+   CORSIKAunits
+   CORSIKAenvironment
+   CORSIKAgeometry
+   CORSIKAthirdparty # for catch2
+)
 
-# # --------------------
-# # code unit testing
-# add_executable (testStackInspector testStackInspector.cc)
-
-# target_link_libraries (
-#   testStackInspector
-#   CORSIKAunits
-#   CORSIKAthirdparty # for catch2
-#   )
-
-# add_test (NAME testStackInspector COMMAND testStackInspector)
-
+add_test (NAME testTrackingLine COMMAND testTrackingLine)

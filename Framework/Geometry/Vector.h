@@ -181,6 +181,17 @@ namespace corsika::geometry {
                                                              bareResult);
       }
     }
+
+    template <typename dim2>
+    auto dot(Vector<dim2> pV) const {
+      auto const c1 = GetComponents().eVector;
+      auto const c2 = pV.GetComponents(*BaseVector<dim>::cs).eVector;
+      auto const bareResult = c1.dot(c2);
+
+      using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
+
+      return ProdQuantity(phys::units::detail::magnitude_tag, bareResult);
+    }
   };
 
 } // namespace corsika::geometry

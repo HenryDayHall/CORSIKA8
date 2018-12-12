@@ -10,6 +10,7 @@
  */
 
 #include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/units/PhysicalUnits.h>
 
@@ -18,6 +19,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <iostream>
+#include <limits>
 using namespace std;
 
 using namespace corsika;
@@ -26,7 +28,8 @@ using namespace corsika::process::stack_inspector;
 
 template <typename Stack>
 StackInspector<Stack>::StackInspector(const bool aReport)
-  : fReport(aReport), fCountStep(0) {}
+    : fReport(aReport)
+    , fCountStep(0) {}
 
 template <typename Stack>
 StackInspector<Stack>::~StackInspector() {}
@@ -55,8 +58,8 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
 }
 
 template <typename Stack>
-void StackInspector<Stack>::MinStepLength(Particle&, setup::Trajectory&) const {
-  // return 0;
+double StackInspector<Stack>::MaxStepLength(Particle&, setup::Trajectory&) const {
+  return std::numeric_limits<double>::infinity();
 }
 
 template <typename Stack>

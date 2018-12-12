@@ -13,23 +13,27 @@
 #define _include_SPHERE_H_
 
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/Volume.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::geometry {
 
-  class Sphere {
-    Point center;
-    LengthType const radius;
+  class Sphere : public Volume {
+    Point const fCenter;
+    LengthType const fRadius;
 
   public:
     Sphere(Point const& pCenter, LengthType const pRadius)
-        : center(pCenter)
-        , radius(pRadius) {}
+        : fCenter(pCenter)
+        , fRadius(pRadius) {}
 
-    //! returns true if the Point \a p is within the sphere
-    auto Contains(Point const& p) const {
-      return radius * radius > (center - p).squaredNorm();
+    //! returns true if the Point p is within the sphere
+    bool Contains(Point const& p) const override {
+      return fRadius * fRadius > (fCenter - p).squaredNorm();
     }
+
+    auto& GetCenter() const { return fCenter; }
+    auto GetRadius() const { return fRadius; }
   };
 
 } // namespace corsika::geometry

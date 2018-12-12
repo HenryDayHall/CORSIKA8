@@ -39,6 +39,10 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
 ##set(COVERAGE_LCOV_EXCLUDES 'Documentation/*')
@@ -62,6 +66,7 @@ find_package (Eigen3 REQUIRED)
 add_subdirectory (ThirdParty)
 #add_subdirectory (Utilities)
 add_subdirectory (Framework)
+add_subdirectory (Environment)
 add_subdirectory (Stack)
 add_subdirectory (Setup)
 add_subdirectory (Processes)

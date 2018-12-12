@@ -67,6 +67,7 @@ namespace corsika::stack {
       IncrementSize();
       return StackIterator(*this, GetSize() - 1);
     }
+    void Copy(StackIterator& a, StackIterator& b) { Copy(a.GetIndex(), b.GetIndex()); }
     /// delete this particle
     void Delete(StackIterator& p) {
       if (GetSize() == 0) { /*error*/
