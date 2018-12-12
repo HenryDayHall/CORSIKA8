@@ -11,9 +11,9 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
+#include <cassert>
 #include <iomanip>
 #include <iostream>
-#include <cassert>
 
 using namespace corsika::units::si;
 using namespace corsika::stack;
@@ -28,7 +28,7 @@ void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
 }
 
 void read(corsika::stack::super_stupid::SuperStupidStack& s) {
-  assert(s.GetSize() == 11);  // stack has 11 particles
+  assert(s.GetSize() == 11); // stack has 11 particles
 
   EnergyType total_energy;
   int i = 0;
@@ -38,7 +38,7 @@ void read(corsika::stack::super_stupid::SuperStupidStack& s) {
     assert(p.GetPID() == corsika::particles::Code::Electron);
     assert(p.GetEnergy() == 1.5_GeV * (i++));
   }
-  //assert(total_energy == 82.5_GeV);
+  // assert(total_energy == 82.5_GeV);
 }
 
 int main() {

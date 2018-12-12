@@ -13,6 +13,7 @@
 #define _include_corsika_continuousprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
+//#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::process {
 
@@ -29,6 +30,11 @@ namespace corsika::process {
   struct ContinuousProcess {
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
+
+    // here starts the interface part
+    // -> enforce derived to implement DoContinuous...
+    template <typename D, typename T, typename S>
+    inline EProcessReturn DoContinuous(D&, T&, S&) const;
   };
 
 } // namespace corsika::process

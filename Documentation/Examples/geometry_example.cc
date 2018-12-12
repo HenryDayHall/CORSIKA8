@@ -50,12 +50,12 @@ int main() {
   std::cout << "p2-p1 components in cs3: " << diff.GetComponents(cs3)
             << std::endl; // but not under rotations
   std::cout << "p2-p1 norm^2: " << norm << std::endl;
-  assert(norm == 1 * meter*meter);
-  
+  assert(norm == 1 * meter * meter);
+
   Sphere s(p1, 10_m); // define a sphere around a point with a radius
   std::cout << "p1 inside s:  " << s.Contains(p2) << std::endl;
   assert(s.Contains(p2) == 1);
-  
+
   Sphere s2(p1, 3_um); // another sphere
   std::cout << "p1 inside s2: " << s2.Contains(p2) << std::endl;
   assert(s2.Contains(p2) == 0);

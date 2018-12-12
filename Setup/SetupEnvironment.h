@@ -12,6 +12,10 @@
 #ifndef _include_corsika_setup_environment_h_
 #define _include_corsika_setup_environment_h_
 
-namespace corsika {}
+#include <corsika/environment/IMediumModel.h>
+
+namespace corsika::setup {
+    using IEnvironmentModel = corsika::environment::IMediumModel;
+}
 
 #endif

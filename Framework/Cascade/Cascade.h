@@ -19,8 +19,6 @@
 
 #include <corsika/setup/SetupTrajectory.h>
 
-using namespace corsika::units::si;
-
 namespace corsika::cascade {
 
   template <typename Tracking, typename ProcessList, typename Stack>
@@ -34,12 +32,7 @@ namespace corsika::cascade {
     Cascade(Tracking& tr, ProcessList& pl, Stack& stack)
         : fTracking(tr)
         , fProcesseList(pl)
-        , fStack(stack) {
-      // static_assert(std::is_member_function_pointer<decltype(&ProcessList::DoDiscrete)>::value,
-      //"ProcessList has not function DoDiscrete.");
-      // static_assert(std::is_member_function_pointer<decltype(&ProcessList::DoContinuous)>::value,
-      //	    "ProcessList has not function DoContinuous.");
-    }
+        , fStack(stack) {}
 
     void Init() {
       fTracking.Init();
@@ -64,7 +57,8 @@ namespace corsika::cascade {
       fProcesseList.MinStepLength(particle, step);
 
       /// here the particle is actually moved along the trajectory to new position:
-      std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
+      // std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
+      particle.SetPosition(step.GetPosition(1));
 
       corsika::process::EProcessReturn status =
           fProcesseList.DoContinuous(particle, step, fStack);

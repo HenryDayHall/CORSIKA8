@@ -10,6 +10,7 @@
  */
 
 #include <corsika/geometry/CoordinateSystem.h>
+#include <stdexcept>
 
 using namespace corsika::geometry;
 
@@ -40,7 +41,7 @@ EigenTransform CoordinateSystem::GetTransformation(CoordinateSystem const& pFrom
     commonBase = a;
 
   } else {
-    throw std::string("no connection between coordinate systems found!");
+    throw std::runtime_error("no connection between coordinate systems found!");
   }
 
   EigenTransform t = EigenTransform::Identity();

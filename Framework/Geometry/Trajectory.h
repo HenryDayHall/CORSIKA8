@@ -13,6 +13,7 @@
 #define _include_TRAJECTORY_H
 
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/geometry/Point.h>
 
 using corsika::units::si::LengthType;
 using corsika::units::si::TimeType;
@@ -25,7 +26,7 @@ namespace corsika::geometry {
     corsika::units::si::TimeType fTimeLength;
 
   public:
-    using T::GetDistanceBetween;
+    using T::ArcLength;
     using T::GetPosition;
 
     Trajectory(T const& theT, corsika::units::si::TimeType timeLength)
@@ -36,14 +37,14 @@ namespace corsika::geometry {
       return fTraj.GetPosition(t + fTStart);
       }*/
 
-    Point GetPosition(const double u) const { return T::GetPosition(fTimeLength * u); }
+    Point GetPosition(double u) const { return T::GetPosition(fTimeLength * u); }
 
     TimeType GetDuration() const { return fTimeLength; }
 
-    LengthType GetDistance(const corsika::units::si::TimeType t) const {
+    LengthType GetDistance(corsika::units::si::TimeType t) const {
       assert(t > fTimeLength);
       assert(t >= 0 * corsika::units::si::second);
-      return T::DistanceBetween(0, t);
+      return T::ArcLength(0, t);
     }
   };
 
