@@ -54,6 +54,7 @@ target_link_libraries (
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
+  CORSIKAenvironment
   CORSIKAprocesssequence
   CORSIKAunits
   CORSIKAthirdparty # for catch2
