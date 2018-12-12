@@ -7,6 +7,7 @@ project (
   LANGUAGES CXX
   )
 
+# as long as there still are modules using it:
 enable_language (Fortran)
 
 # ignore many irrelevant Up-to-date messages during install
