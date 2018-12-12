@@ -46,12 +46,12 @@ using namespace corsika::units::si;
 
 static int fCount = 0;
 
-class ProcessSplit : public corsika::process::BaseProcess<ProcessSplit> {
+class ProcessSplit : public corsika::process::InteractionProcess<ProcessSplit> {
 public:
   ProcessSplit() {}
 
   template <typename Particle, typename Track>
-  double MinStepLength(Particle& p, Track&) const {
+  double GetInteractionLength(Particle& p, Track&) const {
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
     int kBeam = 1;
@@ -90,15 +90,17 @@ public:
     std::cout << "ProcessSplit: "
               << "interaction length (g/cm2): " << int_length << std::endl;
     // add exponential sampling
-    int a = 0;
-    const double next_step = -int_length * log(s_rndm_(a));
     /*
       what are the units of the output? slant depth or 3space length?
 
     */
-    std::cout << "ProcessSplit: "
-              << "next step (g/cm2): " << next_step << std::endl;
-    return next_step;
+    return int_length;
+    //
+    // int a = 0;
+    // const double next_step = -int_length * log(s_rndm_(a));
+    // std::cout << "ProcessSplit: "
+    //        << "next step (g/cm2): " << next_step << std::endl;
+    // return next_step;
   }
 
   template <typename Particle, typename Track, typename Stack>
@@ -107,8 +109,8 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack& s) const {
-    cout << "DoDiscrete: " << p.GetPID() << " interaction? "
+  void DoInteraction(Particle& p, Stack& s) const {
+    cout << "DoInteraction: " << p.GetPID() << " interaction? "
          << process::sibyll::CanInteract(p.GetPID()) << endl;
     if (process::sibyll::CanInteract(p.GetPID())) {
 
@@ -133,11 +135,11 @@ public:
       int kTarget = 1; // p.GetPID();
 
       std::cout << "ProcessSplit: "
-                << " DoDiscrete: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV
+                << " DoInteraction: E(GeV):" << E / 1_GeV << " Ecm(GeV): " << Ecm / 1_GeV
                 << std::endl;
       if (E < 8.5_GeV || Ecm < 10_GeV) {
         std::cout << "ProcessSplit: "
-                  << " DoDiscrete: dropping particle.." << std::endl;
+                  << " DoInteraction: dropping particle.." << std::endl;
         p.Delete();
         fCount++;
       } else {
