@@ -31,6 +31,7 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogg
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
+  CORSIKAenvironment
   CORSIKAprocesssequence
   )
 #install (TARGETS cascade_example DESTINATION share/examples)

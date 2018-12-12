@@ -26,7 +26,7 @@ namespace corsika::environment {
               corsika::geometry::Point{
                   pCS, 0 * corsika::units::si::meter,
                   0 * corsika::units::si::meter, 0 * corsika::units::si::meter},
-              corsika::units::si::meter * std::numeric_limits<double>::max()) {}
+              corsika::units::si::meter * std::numeric_limits<double>::infinity()) {}
 
     bool Contains(corsika::geometry::Point const&) const override { return true; }
   };
