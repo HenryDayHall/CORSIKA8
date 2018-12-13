@@ -29,6 +29,8 @@ set_target_properties (
 target_link_libraries (
   ProcessNullModel
   CORSIKAunits
+  CORSIKAgeometry
+  CORSIKAsetup
   )
 
 target_include_directories (
@@ -52,6 +54,8 @@ add_executable (testNullModel testNullModel.cc)
 
 target_link_libraries (
   testNullModel
+  ProcessNullModel
+  CORSIKAsetup
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAthirdparty # for catch2

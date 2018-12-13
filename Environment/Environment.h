@@ -35,7 +35,7 @@ namespace corsika::environment {
   class Environment {
   public:
     Environment()
-        : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCS()},        
+        : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem()},        
         fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
               std::make_unique<Universe>(fCoordinateSystem))) {}
 

@@ -24,7 +24,7 @@ using namespace corsika::units::si;
 
 int main() {
   geometry::CoordinateSystem& root =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCS();
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;

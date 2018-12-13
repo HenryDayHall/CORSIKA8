@@ -13,11 +13,41 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
+#include <corsika/process/null_model/NullModel.h>
+
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
+
 #include <corsika/units/PhysicalUnits.h>
+
+#include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupTrajectory.h>
+
+using namespace corsika::units::si;
+using namespace corsika::process::null_model;
+using namespace corsika;
 
 TEST_CASE("NullModel", "[processes]") {
 
-  SECTION("bla") {}
+  auto const& cs = geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();    
+  geometry::Point const origin(cs, {0_m, 0_m, 0_m});    
+  geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
+								    0_m / second, 1_m / second);
+  geometry::Line line(origin, v);
+  geometry::Trajectory<geometry::Line> track(line, 10_s);
 
-  SECTION("blubb") {}
+  setup::Stack stack;
+  auto particle = stack.NewParticle();
+  
+  SECTION("interface") {
+
+    NullModel<setup::Stack> model;
+
+    model.Init();
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoContinuous(particle, track, stack);
+    [[maybe_unused]] const double length = model.MaxStepLength(particle, track);
+
+    
+  }
 }

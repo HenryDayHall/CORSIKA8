@@ -39,7 +39,7 @@ public:
   EnergyType GetEnergy(const int i) const { return s_plist_.p[3][i] * 1_GeV; }
 
   super_stupid::MomentumVector GetMomentum(const int i) const {
-    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
     corsika::geometry::QuantityVector<momentum_d> components{
         s_plist_.p[0][i] * 1_GeV / constants::c,
         s_plist_.p[1][i] * 1_GeV / constants::c,
