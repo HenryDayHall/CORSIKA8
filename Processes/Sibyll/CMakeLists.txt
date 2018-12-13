@@ -94,6 +94,9 @@ add_executable (testSibyll
 
 target_link_libraries (
   testSibyll
+  ProcessSibyll
+  CORSIKAsetup
+  CORSIKArandom
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAthirdparty # for catch2

@@ -215,7 +215,7 @@ int main() {
 
   universe.AddChild(std::move(theMedium));
 
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);

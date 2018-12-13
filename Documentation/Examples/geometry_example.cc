@@ -26,7 +26,7 @@ using namespace corsika::units::si;
 int main() {
   // define the root coordinate system
   geometry::CoordinateSystem& root =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCS();
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   // another CS defined by a translation relative to the root CS
   CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});

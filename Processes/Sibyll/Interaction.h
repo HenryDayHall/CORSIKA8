@@ -21,13 +21,7 @@ using namespace corsika::units::si;
 
 namespace corsika::process::sibyll {
 
-  // template <typename Stack, typename Track>
-  //template <typename Stack>
-  class Interaction : public corsika::process::InteractionProcess<Interaction> { // <Stack,Track>> {    
-
-    //typedef typename Stack::ParticleType Particle;
-    //typedef typename corsika::setup::Stack::ParticleType Particle;
-    //typedef corsika::setup::Trajectory Track;
+  class Interaction : public corsika::process::InteractionProcess<Interaction> { 
 
   public:
 
@@ -54,7 +48,7 @@ namespace corsika::process::sibyll {
     double GetInteractionLength(Particle& p, Track&) const {
       
     // coordinate system, get global frame of reference
-    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+    CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
     
     const particles::Code corsikaBeamId = p.GetPID();
 
@@ -142,7 +136,7 @@ namespace corsika::process::sibyll {
     if (process::sibyll::CanInteract(p.GetPID())) {
       cout << "defining coordinates" << endl;
       // coordinate system, get global frame of reference
-      CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+      CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
       QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
       Point pOrig(rootCS, coordinates);
