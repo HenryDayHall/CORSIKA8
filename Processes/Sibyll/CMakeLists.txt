@@ -1,11 +1,11 @@
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   COMMAND ${PROJECT_SOURCE_DIR}/Processes/Sibyll/code_generator.py 
-          ${PROJECT_BINARY_DIR}/Framework/Particles/pythia_db.pkl
+          ${PROJECT_BINARY_DIR}/Framework/Particles/particle_db.pkl
           ${PROJECT_SOURCE_DIR}/Processes/Sibyll/sibyll_codes.dat
   DEPENDS code_generator.py
           sibyll_codes.dat          
-          ${PROJECT_BINARY_DIR}/Framework/Particles/pythia_db.pkl
+          ${PROJECT_BINARY_DIR}/Framework/Particles/particle_db.pkl
   WORKING_DIRECTORY
           ${PROJECT_BINARY_DIR}/Processes/Sibyll/
   COMMENT "Generate conversion tables for particle codes SIBYLL <-> CORSIKA"
