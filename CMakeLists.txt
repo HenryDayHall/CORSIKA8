@@ -17,9 +17,6 @@ set (CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
-# enable warnings and disallow non-standard language
-add_definitions(-Wall -pedantic -Wextra -Wno-ignored-qualifiers)
-
 set (CMAKE_CXX_STANDARD 17)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
@@ -39,9 +36,10 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+# enable warnings and disallow non-standard language
+set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
