@@ -58,11 +58,28 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(GetLifetime(Code::Electron) ==
             std::numeric_limits<double>::infinity() * corsika::units::si::second);
     REQUIRE(GetLifetime(Code::DPlus) < GetLifetime(Code::Gamma));
-    // REQUIRE(GetLifetime(Code::RhoPlus)/corsika::units::si::second ==
-    // (Approx(4.414566727909413e-24).epsilon(1e-3)));
-    // REQUIRE(GetLifetime(Code::SigmaMinusBar)/corsika::units::si::second ==
-    // (Approx(8.018880848563575e-11).epsilon(1e-5)));
-    // REQUIRE(GetLifetime(Code::MuPlus)/corsika::units::si::second ==
-    // (Approx(2.1970332555864364e-06).epsilon(1e-5)));
+    REQUIRE(GetLifetime(Code::RhoPlus)/corsika::units::si::second ==
+	    (Approx(4.414566727909413e-24).epsilon(1e-3)));
+    REQUIRE(GetLifetime(Code::SigmaMinusBar)/corsika::units::si::second ==
+	    (Approx(8.018880848563575e-11).epsilon(1e-5)));
+    REQUIRE(GetLifetime(Code::MuPlus)/corsika::units::si::second ==
+	    (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
+
+  SECTION("Nuclei") {
+    REQUIRE(IsNucleus(Code::Gamma) == false);
+    REQUIRE(IsNucleus(Code::Argon) == true);
+    REQUIRE(IsNucleus(Code::Proton) == false);
+    REQUIRE(IsNucleus(Code::Hydrogen) == true);
+    REQUIRE(Argon::IsNucleus() == true);
+    REQUIRE(EtaC::IsNucleus() == false);
+
+    REQUIRE(GetNucleusA(Code::Hydrogen) == 1);
+    REQUIRE(GetNucleusA(Code::Tritium) == 3);
+    REQUIRE(Hydrogen::GetNucleusZ() == 1);
+    REQUIRE(Tritium::GetNucleusA() == 3);
+
+
+  }
+
 }
