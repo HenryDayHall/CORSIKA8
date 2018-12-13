@@ -53,7 +53,7 @@ static int fEmCount;
 static EnergyType fInvEnergy;
 static int fInvCount;
 
-class ProcessEMCut : public corsika::process::BaseProcess<ProcessEMCut> {
+class ProcessEMCut : public corsika::process::ContinuousProcess<ProcessEMCut> {
 public:
   ProcessEMCut() {}
   template <typename Particle>
@@ -129,7 +129,24 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
+  EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) const {
+    cout << "ProcessCut: DoContinuous: " << p.GetPID() << endl;
+    const Code pid = p.GetPID();
+    if (isEmParticle(pid)) {
+      cout << "removing em. particle..." << endl;
+      fEmEnergy += p.GetEnergy();
+      fEmCount += 1;
+      p.Delete();
+    } else if (isInvisible(pid)) {
+      cout << "removing inv. particle..." << endl;
+      fInvEnergy += p.GetEnergy();
+      fInvCount += 1;
+      p.Delete();
+    } else if (isBelowEnergyCut(p)) {
+      cout << "removing low en. particle..." << endl;
+      fEnergy += p.GetEnergy();
+      p.Delete();
+    }
     // cout << "ProcessCut: DoContinous: " << p.GetPID() << endl;
     // cout << " is em: " << isEmParticle( p.GetPID() ) << endl;
     // cout << " is inv: " << isInvisible( p.GetPID() ) << endl;
@@ -149,27 +166,6 @@ public:
     //   return EProcessReturn::eParticleAbsorbed;
     // }
     return EProcessReturn::eOk;
-  }
-
-  template <typename Particle, typename Stack>
-  void DoDiscrete(Particle& p, Stack&) const {
-    cout << "ProcessCut: DoDiscrete: " << p.GetPID() << endl;
-    const Code pid = p.GetPID();
-    if (isEmParticle(pid)) {
-      cout << "removing em. particle..." << endl;
-      fEmEnergy += p.GetEnergy();
-      fEmCount += 1;
-      p.Delete();
-    } else if (isInvisible(pid)) {
-      cout << "removing inv. particle..." << endl;
-      fInvEnergy += p.GetEnergy();
-      fInvCount += 1;
-      p.Delete();
-    } else if (isBelowEnergyCut(p)) {
-      cout << "removing low en. particle..." << endl;
-      fEnergy += p.GetEnergy();
-      p.Delete();
-    }
   }
 
   void Init() {
@@ -224,10 +220,10 @@ int main() {
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
-  corsika::process::sibyll::Interaction/*<setup::Stack>,setup::Trajectory>*/ p1;
-  corsika::process::sibyll::Decay p2;
-  ProcessEMCut p3;
-  const auto sequence = /*p0 +*/ p1 + p2 + p3;
+  corsika::process::sibyll::Interaction sibyll;
+  corsika::process::sibyll::Decay decay;
+  ProcessEMCut cut;
+  const auto sequence = /*p0 +*/ sibyll + decay + cut;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
@@ -251,7 +247,7 @@ int main() {
        << endl;
   cout << "total energy below threshold (GeV): " //<< p1.GetEnergy() / 1_GeV
        << std::endl;
-  p3.ShowResults();
+  cut.ShowResults();
   cout << "total energy (GeV): "
-       << (p3.GetCutEnergy() + p3.GetInvEnergy() + p3.GetEmEnergy()) / 1_GeV << endl;
+       << (cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy()) / 1_GeV << endl;
 }
