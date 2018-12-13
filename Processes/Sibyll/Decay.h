@@ -1,13 +1,12 @@
-#ifndef _include_ProcessDecay_h_
-#define _include_ProcessDecay_h_
+#ifndef _include_corsika_process_sibyll_decay_h_
+#define _include_corsika_process_sibyll_decay_h_
 
-#include <corsika/process/ContinuousProcess.h>
-
-#include <corsika/cascade/SibStack.h>
+#include <corsika/process/sibyll/SibStack.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/process/DecayProcess.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-// using namespace corsika::particles;
+#include <corsika/particles/ParticleProperties.h>
 
 namespace corsika::process {
 
@@ -56,11 +55,37 @@ namespace corsika::process {
       }
     }
 
-    class ProcessDecay : public corsika::process::BaseProcess<ProcessDecay> {
+    void setTrackedParticlesStable() {
+      /*
+	Sibyll is hadronic generator
+	only hadrons decay
+      */
+      // set particles unstable
+      setHadronsUnstable();
+      // make tracked particles stable
+      std::cout << "Interaction: setting tracked hadrons stable.." << std::endl;
+      setup::Stack ds;
+      ds.NewParticle().SetPID(particles::Code::PiPlus);
+      ds.NewParticle().SetPID(particles::Code::PiMinus);
+      ds.NewParticle().SetPID(particles::Code::KPlus);
+      ds.NewParticle().SetPID(particles::Code::KMinus);
+      ds.NewParticle().SetPID(particles::Code::K0Long);
+      ds.NewParticle().SetPID(particles::Code::K0Short);
+      
+      for (auto& p : ds) {
+	int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
+	// set particle stable by setting table value negative
+	s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
+	p.Delete();
+      }
+    }
+
+    class Decay : public corsika::process::DecayProcess<Decay> {
     public:
-      ProcessDecay() {}
+      Decay() {}
       void Init() {
-        // setHadronsUnstable();
+	setHadronsUnstable();
+        setTrackedParticlesStable();
       }
 
       void setAllStable() {
@@ -85,31 +110,32 @@ namespace corsika::process {
       friend void setHadronsUnstable();
 
       template <typename Particle>
-      double MinStepLength(Particle& p, setup::Trajectory&) const {
+      double GetLifetime(Particle& p) const {
         corsika::units::hep::EnergyType E = p.GetEnergy();
         corsika::units::hep::MassType m = corsika::particles::GetMass(p.GetPID());
-        // env.GetDensity();
 
-        const MassDensityType density = 1.25e-3 * kilogram / (1_cm * 1_cm * 1_cm);
+        //const MassDensityType density = 1.25e-3 * kilogram / (1_cm * 1_cm * 1_cm);
 
         const double gamma = E / m;
 
-        TimeType t0 = GetLifetime(p.GetPID());
-        cout << "ProcessDecay: code: " << (p.GetPID()) << endl;
-        cout << "ProcessDecay: MinStep: t0: " << t0 << endl;
-        cout << "ProcessDecay: MinStep: gamma: " << gamma << endl;
-        cout << "ProcessDecay: MinStep: density: " << density << endl;
+        const TimeType t0 = particles::GetLifetime(p.GetPID());
+        cout << "Decay: code: " << (p.GetPID()) << endl;
+        cout << "Decay: MinStep: t0: " << t0 << endl;
+        cout << "Decay: MinStep: gamma: " << gamma << endl;
+        // cout << "Decay: MinStep: density: " << density << endl;
         // return as column density
-        const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
-        cout << "ProcessDecay: MinStep: x0: " << x0 << endl;
-        int a = 1;
-        const double x = -x0 * log(s_rndm_(a));
-        cout << "ProcessDecay: next decay: " << x << endl;
-        return x;
+        // const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
+        // cout << "Decay: MinStep: x0: " << x0 << endl;
+	const double lifetime = gamma*t0 / 1_s;
+	cout << "Decay: MinStep: tau: " << lifetime << endl;
+        //int a = 1;
+        //const double x = -x0 * log(s_rndm_(a));
+        //cout << "Decay: next decay: " << x << endl;
+        return lifetime;
       }
 
       template <typename Particle, typename Stack>
-      void DoDiscrete(Particle& p, Stack& s) const {
+      void DoDecay(Particle& p, Stack& s) const {
         SibStack ss;
         ss.Clear();
         // copy particle to sibyll stack
@@ -122,7 +148,7 @@ namespace corsika::process {
         // set all particles/hadrons unstable
         setHadronsUnstable();
         // call sibyll decay
-        std::cout << "ProcessDecay: calling Sibyll decay routine.." << std::endl;
+        std::cout << "Decay: calling Sibyll decay routine.." << std::endl;
         decsib_();
         // print output
         int print_unit = 6;
@@ -143,11 +169,6 @@ namespace corsika::process {
         }
         // empty sibyll stack
         ss.Clear();
-      }
-
-      template <typename Particle, typename Stack>
-      EProcessReturn DoContinuous(Particle&, setup::Trajectory&, Stack&) const {
-        return EProcessReturn::eOk;
       }
     };
   } // namespace sibyll

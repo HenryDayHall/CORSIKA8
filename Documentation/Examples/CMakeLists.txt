@@ -25,7 +25,7 @@ add_executable (cascade_example cascade_example.cc)
 target_compile_options(cascade_example PRIVATE -g) # do not skip asserts
 target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogging
    CORSIKArandom
-  CORSIKAsibyll
+   ProcessSibyll
   CORSIKAcascade
   ProcessStackInspector
   CORSIKAprocesses

@@ -34,11 +34,11 @@ namespace corsika::process {
 
     /// here starts the interface-definition part
     // -> enforce derived to implement DoInteraction...
-    template <typename Particle, typename Stack>
-    inline EProcessReturn DoInteraction(Particle&, Stack&) const;
+    template <typename P, typename S>
+    inline EProcessReturn DoInteraction(P&, S&) const;
 
-    template <typename Particle, typename Track>
-    inline double GetInteractionLength(Particle& p, Track& t) const;
+    template <typename P, typename T>
+    inline double GetInteractionLength(P&, T&) const;
 
     template <typename Particle, typename Track>
     inline double GetInverseInteractionLength(Particle& p, Track& t) const {

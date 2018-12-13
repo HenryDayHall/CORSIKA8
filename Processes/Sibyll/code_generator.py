@@ -89,7 +89,7 @@ def generate_sibyll2corsika(pythia_db) :
             pDict[sib_code] = identifier
     
     nPart = max(pDict.keys()) - min(pDict.keys()) + 1
-    string += "std::array<corsika::particles::Code, {:d}> sibyll2corsika = {{\n".format(nPart)
+    string += "std::array<corsika::particles::Code, {:d}> constexpr sibyll2corsika = {{\n".format(nPart)
     
     for iPart in range(nPart) :
         if iPart in pDict:

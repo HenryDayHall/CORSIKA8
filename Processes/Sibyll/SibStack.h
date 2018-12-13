@@ -1,19 +1,20 @@
 #ifndef _include_sibstack_h_
 #define _include_sibstack_h_
 
-#include <string>
-#include <vector>
-
-#include <corsika/cascade/sibyll2.3c.h>
+#include <corsika/process/sibyll/sibyll2.3c.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
+
 using namespace std;
 using namespace corsika::stack;
-using namespace corsika::units;
+using namespace corsika::units::si;
 using namespace corsika::geometry;
 
+namespace corsika::process::sibyll {
+  
 class SibStackData {
 
 public:
@@ -30,7 +31,7 @@ public:
   void SetMomentum(const int i, const super_stupid::MomentumVector& v) {
     auto tmp = v.GetComponents();
     for (int idx = 0; idx < 3; ++idx)
-      s_plist_.p[idx][i] = tmp[idx] / 1_GeV * si::constants::c;
+      s_plist_.p[idx][i] = tmp[idx] / 1_GeV * constants::c;
   }
 
   int GetId(const int i) const { return s_plist_.llist[i]; }
@@ -40,9 +41,9 @@ public:
   super_stupid::MomentumVector GetMomentum(const int i) const {
     CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
     corsika::geometry::QuantityVector<momentum_d> components{
-        s_plist_.p[0][i] * 1_GeV / si::constants::c,
-        s_plist_.p[1][i] * 1_GeV / si::constants::c,
-        s_plist_.p[2][i] * 1_GeV / si::constants::c};
+        s_plist_.p[0][i] * 1_GeV / constants::c,
+        s_plist_.p[1][i] * 1_GeV / constants::c,
+        s_plist_.p[2][i] * 1_GeV / constants::c};
     super_stupid::MomentumVector v1(rootCS, components);
     return v1;
   }
@@ -81,5 +82,7 @@ public:
 };
 
 typedef Stack<SibStackData, ParticleInterface> SibStack;
+
+}
 
 #endif

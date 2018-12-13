@@ -33,8 +33,8 @@ namespace corsika::process {
 
     // here starts the interface part
     // -> enforce derived to implement DoContinuous...
-    template <typename D, typename T, typename S>
-    inline EProcessReturn DoContinuous(D&, T&, S&) const;
+    template <typename P, typename T, typename S>
+    inline EProcessReturn DoContinuous(P&, T&, S&) const;
   };
 
 } // namespace corsika::process

@@ -15,12 +15,18 @@ add_custom_command (
 set (
   MODEL_SOURCES
   ParticleConversion.cc
+  sibyll2.3c.f
+  sibyll2.3c.cc
+  gasdev.f
   )
 
 set (
   MODEL_HEADERS
   ParticleConversion.h
-  ProcessDecay.h
+  sibyll2.3c.h
+  SibStack.h
+  Decay.h
+  Interaction.h
   ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   )
 
@@ -61,6 +67,7 @@ target_link_libraries (
   CORSIKAparticles
   CORSIKAunits
   CORSIKAthirdparty
+  CORSIKAgeometry
   )
 
 target_include_directories (
