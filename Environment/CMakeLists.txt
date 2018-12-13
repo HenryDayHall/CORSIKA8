@@ -44,6 +44,7 @@ add_executable (testEnvironment testEnvironment.cc)
 
 target_link_libraries (
   testEnvironment
+  CORSIKAsetup
   CORSIKAenvironment
   CORSIKAthirdparty # for catch2
   )
