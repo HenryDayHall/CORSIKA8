@@ -13,11 +13,21 @@
 
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/VolumeTreeNode.h>
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/setup/SetupEnvironment.h>
+#include <limits>
 
 namespace corsika::environment {
-  struct Universe : public corsika::geometry::Volume {
+  struct Universe : public corsika::geometry::Sphere {
+    Universe(corsika::geometry::CoordinateSystem const& pCS)
+        : corsika::geometry::Sphere(
+              corsika::geometry::Point{
+                  pCS, 0 * corsika::units::si::meter,
+                  0 * corsika::units::si::meter, 0 * corsika::units::si::meter},
+              corsika::units::si::meter * std::numeric_limits<double>::infinity()) {}
+
     bool Contains(corsika::geometry::Point const&) const override { return true; }
   };
 
@@ -25,30 +35,30 @@ namespace corsika::environment {
   class Environment {
   public:
     Environment()
-        : fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
-              std::make_unique<Universe>())) {}
+        : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCS()},        
+        fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
+              std::make_unique<Universe>(fCoordinateSystem))) {}
 
     using IEnvironmentModel = corsika::setup::IEnvironmentModel;
 
     auto& GetUniverse() { return fUniverse; }
     auto const& GetUniverse() const { return fUniverse; }
 
-    auto const& GetCoordinateSystem() const {
-      return corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCS();
-    }
+    auto const& GetCoordinateSystem() const { return fCoordinateSystem; }
 
     // factory method for creation of VolumeTreeNodes
-    template <class VolumeType, typename... Args>
-    static auto CreateNode(Args&&... args) {
+    template <class VolumeType, typename... VolumeArgs>
+    static auto CreateNode(VolumeArgs&&... args) {
       static_assert(std::is_base_of_v<corsika::geometry::Volume, VolumeType>,
                     "unusable type provided, needs to be derived from "
                     "\"corsika::geometry::Volume\"");
 
       return std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
-          std::make_unique<VolumeType>(std::forward<Args>(args)...));
+          std::make_unique<VolumeType>(std::forward<VolumeArgs>(args)...));
     }
 
   private:
+    corsika::geometry::CoordinateSystem const& fCoordinateSystem;
     VolumeTreeNode<IEnvironmentModel>::VTNUPtr fUniverse;
   };
 

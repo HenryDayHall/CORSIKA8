@@ -35,7 +35,7 @@ namespace corsika::process {
 
     template <typename Stack>
     class TrackingLine { //
-      typedef typename Stack::ParticleType Particle;
+      using Particle = typename Stack::ParticleType;
 
       corsika::environment::Environment const& fEnvironment;
 

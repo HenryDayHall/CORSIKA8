@@ -80,11 +80,8 @@ private:
 };
 
 TEST_CASE("Cascade", "[Cascade]") {
-
   corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
-  ;
-  const std::string str_name = "s_rndm";
-  rmng.RegisterRandomStream(str_name);
+  rmng.RegisterRandomStream("s_rndm");
 
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
