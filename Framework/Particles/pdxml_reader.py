@@ -5,21 +5,23 @@ import xml.etree.ElementTree as ET
 from collections import OrderedDict
 import pickle
 
+GeVfm = 0.19732696312541853
+c_speed_of_light = 29.9792458e10  # mm / s
+# for nuclear masses
+mneutron = 0.9395654133 # GeV
+mproton = 0.9382720813 # GeV
+
 
 ##############################################################
 # 
 # reading xml input data, return line by line particle data
 # 
-
-def parse(filename):
+def parsePythia(filename):
     tree = ET.parse(filename)
     root = tree.getroot()
-
-    GeVfm = 0.19732696312541853
-    c_speed_of_light = 29.9792458e10  # mm / s
     
     for particle in root.iter("particle"):
-        name = particle.attrib["name"]
+        name = particle.attrib["name"]        
         antiName = "Unknown"
         if ("antiName" in particle.attrib):
             antiName = particle.attrib["antiName"]
@@ -47,12 +49,39 @@ def parse(filename):
             yield (-pdg_id, antiName, mass, -electric_charge, name, ctau/c_speed_of_light)
 
 
-            
+##############################################################
+# 
+# reading xml input data, return line by line particle data
+# 
+def parseNuclei(filename):
+    tree = ET.parse(filename)
+    root = tree.getroot()
+        
+    for particle in root.iter("particle"):
+        name = particle.attrib["name"]        
+        antiName = "Unknown"
+        if ("antiName" in particle.attrib):
+            antiName = particle.attrib["antiName"]
+        pdg_id = int(particle.attrib["id"])
+        A = int(particle.attrib["A"])
+        Z = int(particle.attrib["Z"])
+        # mass in GeV
+        if ("mass" in particle.attrib):
+            mass = particle.attrib["mass"] 
+        else:
+            mass = (A-Z)*mneutron + Z*mproton
+
+        electric_charge = Z*3  # in units of e/3        
+        ctau = float('Inf')
+        
+        yield (pdg_id, name, mass, electric_charge, antiName, ctau/c_speed_of_light, A, Z)
+                
+
+        
 ##############################################################
 # 
 # returns dict with particle codes and class names
 # 
-
 def class_names(filename):
     tree = ET.parse(filename)
     root = tree.getroot()
@@ -164,14 +193,12 @@ def c_identifier_camel(name):
 ##########################################################
 # 
 # returns dict containing all data from pythia-xml input
-# 
+#     
+def read_pythia_db(filename, particle_db, classnames):    
     
-def build_pythia_db(filename, classnames):    
-    particle_db = OrderedDict()
+    counter = itertools.count(len(particle_db))
     
-    counter = itertools.count(0)
-    
-    for (pdg, name, mass, electric_charge, antiName, lifetime) in parse(filename):
+    for (pdg, name, mass, electric_charge, antiName, lifetime) in parsePythia(filename):
 
         c_id = "Unknown"
         if pdg in classnames:
@@ -186,7 +213,41 @@ def build_pythia_db(filename, classnames):
             "mass" : mass, # in GeV
             "electric_charge" : electric_charge, # in e/3
             "lifetime" : lifetime,
-            "ngc_code" : next(counter)
+            "ngc_code" : next(counter),
+            "isNucleus" : False,
+        }
+    
+    return particle_db
+    
+
+
+##########################################################
+# 
+# returns dict containing all data from pythia-xml input
+#     
+def read_nuclei_db(filename, particle_db, classnames):    
+    
+    counter = itertools.count(len(particle_db))
+
+    for (pdg, name, mass, electric_charge, antiName, lifetime, A, Z) in parseNuclei(filename):
+        
+        c_id = "Unknown"
+        if pdg in classnames:
+            c_id = classnames[pdg]
+        else:
+            c_id = c_identifier_camel(name)
+
+        particle_db[c_id] = {
+            "name" : name,
+            "antiName" : antiName,
+            "pdg" : pdg,
+            "mass" : mass, # in GeV
+            "electric_charge" : electric_charge, # in e/3
+            "lifetime" : lifetime,
+            "ngc_code" : next(counter),
+            "A" : A,
+            "Z" : Z,
+            "isNucleus" : True,
         }
     
     return particle_db
@@ -198,14 +259,13 @@ def build_pythia_db(filename, classnames):
 # 
 # return string with enum of all internal particle codes
 # 
-
-def gen_internal_enum(pythia_db):
+def gen_internal_enum(particle_db):
     string = ("enum class Code : int16_t {\n"
               "  FirstParticle = 1, // if you want to loop over particles, you want to start with \"1\"  \n") # identifier for eventual loops...
     
     
-    for k in filter(lambda k: "ngc_code" in pythia_db[k], pythia_db):
-        last_ngc_id = pythia_db[k]['ngc_code']
+    for k in filter(lambda k: "ngc_code" in particle_db[k], particle_db):
+        last_ngc_id = particle_db[k]['ngc_code']
         string += "  {key:s} = {code:d},\n".format(key = k, code = last_ngc_id)
 
     string += ("  LastParticle = {:d},\n" # identifier for eventual loops...
@@ -223,52 +283,83 @@ def gen_internal_enum(pythia_db):
 # 
 # return string with all data arrays 
 # 
-
-def gen_properties(pythia_db):
+def gen_properties(particle_db):
 
     # number of particles, size of tables
-    string = "static constexpr std::size_t size = {size:d};\n".format(size = len(pythia_db))
+    string = "static constexpr std::size_t size = {size:d};\n".format(size = len(particle_db))
     string += "\n"
     
     # particle masses table
     string += "static constexpr std::array<corsika::units::hep::MassType const, size> masses = {\n"    
-    for p in pythia_db.values():
-        string += "  {mass:f} * (1e9 * corsika::units::si::constants::eV), // {name:s}\n".format(mass = p['mass'], name = p['name'])              
+    for p in particle_db.values():
+        string += "  {mass:e} * (1e9 * corsika::units::si::constants::eV), // {name:s}\n".format(mass = p['mass'], name = p['name'])
     string += "};\n\n"
                    
     # PDG code table
     string += "static constexpr std::array<PDGCodeType const, size> pdg_codes = {\n"
-    for p in pythia_db.values():
+    for p in particle_db.values():
         string += "  {pdg:d}, // {name:s}\n".format(pdg = p['pdg'], name = p['name'])    
     string += "};\n"
     
     # name string table
     string += "static const std::array<std::string const, size> names = {\n"
-    for p in pythia_db.values():
+    for p in particle_db.values():
         string += "  \"{name:s}\",\n".format(name = p['name'])            
     string += "};\n"
     
     # electric charges table
     string += "static constexpr std::array<int16_t, size> electric_charges = {\n"
-    for p in pythia_db.values():
+    for p in particle_db.values():
         string += "  {charge:d},\n".format(charge = p['electric_charge'])
     string += "};\n"
 
     # anti-particle table
-#    string += "static constexpr std::array<size, size> anti_particle = {\n"
-#    for p in pythia_db.values():
-#        string += "  {anti:d},\n".format(charge = p['anti_particle'])
-#    string += "};\n"
+    #    string += "static constexpr std::array<size, size> anti_particle = {\n"
+    #    for p in particle_db.values():
+    #        string += "  {anti:d},\n".format(charge = p['anti_particle'])
+    #    string += "};\n"
 
     # lifetime
-    string += "static constexpr std::array<corsika::units::si::TimeType const, size> lifetime = {\n"
-    for p in pythia_db.values():
+    #string += "static constexpr std::array<corsika::units::si::TimeType const, size> lifetime = {\n"
+    string += "static constexpr std::array<double const, size> lifetime = {\n"
+    for p in particle_db.values():
         if p['lifetime'] == float("Inf") :
-            string += "  std::numeric_limits<double>::infinity() * corsika::units::si::second, \n"
+            string += "  std::numeric_limits<double>::infinity(), \n" # * corsika::units::si::second, \n"
         else :
-            string += "  {tau:f} * corsika::units::si::second, \n".format(tau = p['lifetime'])
+            string += "  {tau:e}, \n".format(tau = p['lifetime'])
+            #string += "  {tau:e} * corsika::units::si::second, \n".format(tau = p['lifetime'])
+    string += "};\n"
+
+    
+    ### nuclear data ###
+    
+    # is nucleus flag
+    string += "static constexpr std::array<bool, size> isNucleus = {\n"
+    for p in particle_db.values():
+        value = 'false'
+        if p['isNucleus']:
+            value = 'true'
+        string += "  {val},\n".format(val = value)
+    string += "};\n"
+
+    # nucleus mass number A
+    string += "static constexpr std::array<int, size> nucleusA = {\n"
+    for p in particle_db.values():
+        A = 0
+        if p['isNucleus']:
+            A = p['A']
+        string += "  {val},\n".format(val = A)
     string += "};\n"
     
+    # nucleus charge number Z
+    string += "static constexpr std::array<int, size> nucleusZ = {\n"
+    for p in particle_db.values():
+        Z = 0
+        if p['isNucleus']:
+            Z = p['Z']
+        string += "  {val},\n".format(val = Z)
+    string += "};\n"
+
     return string
 
 
@@ -278,27 +369,29 @@ def gen_properties(pythia_db):
 # 
 # return string with a list of classes for all particles
 # 
-
-def gen_classes(pythia_db):
+def gen_classes(particle_db):
 
     string = "// list of C++ classes to access particle properties"
     
-    for cname in pythia_db:
+    for cname in particle_db:
 
         antiP = 'Unknown'
-        for cname_anti in pythia_db:
-            if (pythia_db[cname_anti]['name'] == pythia_db[cname]['antiName']):
+        for cname_anti in particle_db:
+            if (particle_db[cname_anti]['name'] == particle_db[cname]['antiName']):
                 antiP = cname_anti
                 break
         
         string += "\n";
         string += "/** @class " + cname + "\n\n"
         string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
-        string += " *  - pdg=" + str(pythia_db[cname]['pdg']) +"\n"
-        string += " *  - mass=" + str(pythia_db[cname]['mass']) + " GeV \n"
-        string += " *  - charge= " + str(pythia_db[cname]['electric_charge']/3) + " \n"
+        string += " *  - pdg=" + str(particle_db[cname]['pdg']) +"\n"
+        string += " *  - mass=" + str(particle_db[cname]['mass']) + " GeV \n"
+        string += " *  - charge= " + str(particle_db[cname]['electric_charge']/3) + " \n"
         string += " *  - name=" + str(cname) + "\n"
         string += " *  - anti=" + str(antiP) + "\n"
+        if (particle_db[cname]['isNucleus']):
+            string += " *  - nuclear A=" + str(particle_db[cname]['A']) + "\n"
+            string += " *  - nuclear Z=" + str(particle_db[cname]['Z']) + "\n"        
         string += "*/\n\n"
         string += "class " + cname + " {\n"
         string += "  public:\n"
@@ -308,6 +401,9 @@ def gen_classes(pythia_db):
         string += "   static constexpr int16_t GetChargeNumber() { return corsika::particles::GetElectricChargeNumber(Type); }\n"
         string += "   static std::string const& GetName() { return corsika::particles::GetName(Type); }\n"
         string += "   static constexpr Code GetAntiParticle() { return AntiType; }\n"
+        string += "   static constexpr bool IsNucleus() { return corsika::particles::IsNucleus(Type); }\n"
+        string += "   static constexpr int GetNucleusA() { return corsika::particles::GetNucleusA(Type); }\n"
+        string += "   static constexpr int GetNucleusZ() { return corsika::particles::GetNucleusZ(Type); }\n"
         string += "   static constexpr Code Type = Code::" + cname + ";\n"
         string += "   static constexpr Code AntiType = Code::" + antiP + ";\n"
         string += " private:\n"
@@ -320,17 +416,30 @@ def gen_classes(pythia_db):
 ###############################################################
 # 
 # 
-
 def inc_start():
     string = ('// generated by pdxml_reader.py\n'
-              '// MANUAL EDITS ON OWN RISK\n')
+              '// MANUAL EDITS ON OWN RISK. THEY WILL BE OVERWRITTEN. \n')
     return string
 
 
 ###############################################################
 # 
 # 
+def detail_start():
+    string = ('namespace detail {\n\n')
+    return string
 
+
+###############################################################
+# 
+# 
+def detail_end():
+    string = "\n}//end namespace detail\n"
+    return string
+
+###############################################################
+# 
+# 
 def inc_end():
     string = ""
     return string
@@ -338,36 +447,38 @@ def inc_end():
 
 ###################################################################
 # 
-# Serialize pythia_db into file 
+# Serialize particle_db into file 
 # 
+def serialize_particle_db(particle_db, file):
+    pickle.dump(particle_db, file)
 
-def serialize_pythia_db(pythia_db, file):
-    pickle.dump(pythia_db, file)
-
+    
 ###################################################################
 # 
 # Main function
 # 
-
 if __name__ == "__main__":
-
-    if len(sys.argv) != 3:
-        print("usage: {:s} <Pythia8.xml> <ClassNames.xml>".format(sys.argv[0]), file=sys.stderr)
+    
+    if len(sys.argv) != 4:
+        print("usage: {:s} <Pythia8.xml> <Nuclei.xml> <ClassNames.xml>".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
         
-    print("\n       pdxml_reader.py: Automatically produce particle-properties from PYTHIA8 xml file\n")
-
-    names = class_names(sys.argv[2])
-    pythia_db = build_pythia_db(sys.argv[1], names)
-
-    print (str(pythia_db))
+    print("\n       pdxml_reader.py: Automatically produce particle-properties from input files\n")
+    
+    names = class_names(sys.argv[3])
+    particle_db = OrderedDict()
+    read_pythia_db(sys.argv[1], particle_db, names)
+    read_nuclei_db(sys.argv[2], particle_db, names)
     
     with open("GeneratedParticleProperties.inc", "w") as f:
-        print(inc_start(), file=f) 
-        print(gen_internal_enum(pythia_db), file=f)
-        print(gen_properties(pythia_db), file=f)
-        print(gen_classes(pythia_db), file=f)
+        print(inc_start(), file=f)
+        print(gen_internal_enum(particle_db), file=f)
+        print(detail_start(), file=f)
+        print(gen_properties(particle_db), file=f)
+        print(detail_end(), file=f) 
+        print(gen_classes(particle_db), file=f)
         print(inc_end(), file=f) 
     
-    with open("pythia_db.pkl", "wb") as f:
-        serialize_pythia_db(pythia_db, f)
+    with open("particle_db.pkl", "wb") as f:
+        serialize_particle_db(particle_db, f)
+    
