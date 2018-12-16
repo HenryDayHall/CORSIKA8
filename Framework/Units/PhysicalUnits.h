@@ -39,8 +39,7 @@ namespace corsika::units::si {
   constexpr phys::units::quantity<momentum_d> newton_second{meter * kilogram / second};
 
   /// defining cross section
-  using sigma_d = phys::units::dimensions<2, 0, 0>;
-  constexpr phys::units::quantity<sigma_d> barn{Rep(1.e-28L) * meter * meter};
+  constexpr phys::units::quantity<area_d> barn{Rep(1.e-28L) * meter * meter};
 
   /// add the unit-types
   using LengthType = phys::units::quantity<phys::units::length_d, double>;
@@ -54,7 +53,9 @@ namespace corsika::units::si {
   using MassDensityType = phys::units::quantity<phys::units::mass_density_d, double>;
   using GrammageType = phys::units::quantity<phys::units::dimensions<-2, 1, 0>, double>;
   using MomentumType = phys::units::quantity<momentum_d, double>;
-  using CrossSectionType = phys::units::quantity<sigma_d, double>;
+  using CrossSectionType = phys::units::quantity<area_d, double>;
+  using InverseLengthType = phys::units::quantity<phys::units::dimensions<-1, 0, 0>, double>;
+  using InverseTimeType = phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
 
 } // end namespace corsika::units::si
 
@@ -76,11 +77,8 @@ namespace phys {
       QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
                                        magnitude(corsika::units::si::constants::barn))
 
-      QUANTITY_DEFINE_SCALING_LITERALS(meter, length_d,
-                                       magnitude(corsika::units::si::constants::meter))
-
-      QUANTITY_DEFINE_SCALING_LITERALS(newton_second, corsika::units::si::momentum_d,
-                                       magnitude(corsika::units::si::newton_second))
+      QUANTITY_DEFINE_SCALING_LITERALS(Ns, corsika::units::si::momentum_d,
+                                       magnitude(1_m * 1_kg / 1_s))
 
     } // namespace literals
   }   // namespace units

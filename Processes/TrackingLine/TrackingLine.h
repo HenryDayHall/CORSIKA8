@@ -41,14 +41,14 @@ namespace corsika::process {
 
     public:
       std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
-      TimeOfIntersection(corsika::geometry::Line const& traj,
+      TimeOfIntersection(corsika::geometry::Line const& line,
                          geometry::Sphere const& sphere) {
         using namespace corsika::units::si;
         auto const& cs = fEnvironment.GetCoordinateSystem();
         geometry::Point const origin(cs, 0_m, 0_m, 0_m);
 
-        auto const r0 = (traj.GetR0() - origin);
-        auto const v0 = traj.GetV0();
+        auto const r0 = (line.GetR0() - origin);
+        auto const v0 = line.GetV0();
         auto const c0 = (sphere.GetCenter() - origin);
 
         auto const alpha = r0.dot(v0) - 2 * v0.dot(c0);
@@ -74,12 +74,15 @@ namespace corsika::process {
           : fEnvironment(pEnv) {}
       void Init() {}
 
-      auto GetTrack(Particle& p) {
+      auto GetTrack(Particle const& p) {
         using namespace corsika::units::si;
+        
         geometry::Vector<SpeedType::dimension_type> const velocity =
             p.GetMomentum() / p.GetEnergy() * corsika::units::si::constants::cSquared;
 
         auto const currentPosition = p.GetPosition();
+        
+        // to do: include effect of magnetic field
         geometry::Line line(currentPosition, velocity);
 
         auto const* currentVolumeNode =
