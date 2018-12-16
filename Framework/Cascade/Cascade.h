@@ -16,6 +16,7 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/environment/Environment.h>
 
 #include <type_traits>
 
@@ -30,12 +31,12 @@ namespace corsika::cascade {
   public:
     Cascade(Tracking& tr, ProcessList& pl, Stack& stack)
         : fTracking(tr)
-        , fProcesseList(pl)
+        , fProcessSequence(pl)
         , fStack(stack) {}
 
     void Init() {
       fTracking.Init();
-      fProcesseList.Init();
+      fProcessSequence.Init();
       fStack.Init();
     }
 
@@ -58,7 +59,7 @@ namespace corsika::cascade {
 
       // determine combined total interaction length (inverse)
       InverseLengthType const total_inv_lambda =
-          fProcesseList.GetTotalInverseInteractionLength(particle, step);
+          fProcessSequence.GetTotalInverseInteractionLength(particle, step);
 
       // sample random exponential step length
       std::exponential_distribution expDist(total_inv_lambda * 1_m);
@@ -67,11 +68,11 @@ namespace corsika::cascade {
                 << ", next_interact=" << next_interact << std::endl;
 
       // determine the maximum geometric step length
-      LengthType const distance_max = fProcesseList.MaxStepLength(particle, step);
+      LengthType const distance_max = fProcessSequence.MaxStepLength(particle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // determine combined total inverse decay time
-      InverseTimeType const total_inv_lifetime = fProcesseList.GetTotalInverseLifetime(particle);
+      InverseTimeType const total_inv_lifetime = fProcessSequence.GetTotalInverseLifetime(particle);
 
       // sample random exponential decay time
       std::exponential_distribution expDistDecay(total_inv_lifetime * 1_s);
@@ -81,7 +82,7 @@ namespace corsika::cascade {
 
       // convert next_step from grammage to length [m]
       // Environment::GetDistance(step, next_step);
-      const GrammageType distance_interact = ;
+      const GrammageType distance_interact = fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition())->GetModelProperties().FromGrammage()
       // ....
 
       // convert next_decay from time to length [m]
@@ -93,14 +94,14 @@ namespace corsika::cascade {
       const double distance_decay_interact = std::min(next_decay, next_interact);
       const double distance_next = std::min(distance_decay_interact, distance_max);
 
-      /// here the particle is actually moved along the trajectory to new position:
+      // here the particle is actually moved along the trajectory to new position:
       // std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
       particle.SetPosition(step.GetPosition(1));
       // .... also update time, momentum, direction, ...
 
       // apply all continuous processes on particle + track
       corsika::process::EProcessReturn status =
-          fProcesseList.DoContinuous(particle, step, fStack);
+          fProcessSequence.DoContinuous(particle, step, fStack);
 
       if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
         // fStack.Delete(particle); // TODO: check if this is really needed
@@ -114,18 +115,18 @@ namespace corsika::cascade {
           if (distance_decay > distance_interact) {
             std::cout << "collide" << std::endl;
             const double actual_inv_length =
-                fProcesseList.GetTotalInverseInteractionLength(particle, step);
+                fProcessSequence.GetTotalInverseInteractionLength(particle, step);
             const double sample_process = rmng() / (double)rmng.max();
             double inv_lambda_count = 0;
-            fProcesseList.SelectInteraction(particle, fStack, actual_inv_length,
+            fProcessSequence.SelectInteraction(particle, fStack, actual_inv_length,
                                             sample_process, inv_lambda_count);
           } else {
             std::cout << "decay" << std::endl;
             const double actual_decay_time =
-                fProcesseList.GetTotalInverseLifetime(particle);
+                fProcessSequence.GetTotalInverseLifetime(particle);
             const double sample_process = rmng() / (double)rmng.max();
             double inv_decay_count = 0;
-            fProcesseList.SelectDecay(particle, fStack, actual_decay_time, sample_process,
+            fProcessSequence.SelectDecay(particle, fStack, actual_decay_time, sample_process,
                                       inv_decay_count);
           }
         }
@@ -134,7 +135,7 @@ namespace corsika::cascade {
 
   private:
     Tracking& fTracking;
-    ProcessList& fProcesseList;
+    ProcessList& fProcessSequence;
     Stack& fStack;
     corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =

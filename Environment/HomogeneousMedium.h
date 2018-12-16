@@ -43,15 +43,15 @@ namespace corsika::environment {
 
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& pTraj,
-        corsika::units::si::TimeType pTo) const override {
+        corsika::units::si::LengthType pTo) const override {
       using namespace corsika::units::si;
-      return pTraj.ArcLength(0_s, pTo) * fDensity;
+      pTo * fDensity;
     }
 
-    corsika::units::si::TimeType FromGrammage(
+    corsika::units::si::TimeType ArclengthFromGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& pTraj,
         corsika::units::si::GrammageType pGrammage) const override {
-      return pTraj.TimeFromArclength(pGrammage / fDensity);
+      return pGrammage / fDensity;
     }
   };
 
