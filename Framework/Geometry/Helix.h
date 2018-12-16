@@ -56,6 +56,10 @@ namespace corsika::geometry {
              (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }
 
+    Point PositionFromArclength(corsika::units::si::LengthType l) const {
+      return GetPosition(TimeFromArclength(l));
+    }
+
     auto GetRadius() const { return radius; }
 
     corsika::units::si::LengthType ArcLength(corsika::units::si::TimeType t1,
@@ -64,8 +68,8 @@ namespace corsika::geometry {
     }
 
     corsika::units::si::TimeType TimeFromArclength(
-        corsika::units::si::LengthType t) const {
-      return t / (vPar + vPerp).norm();
+        corsika::units::si::LengthType l) const {
+      return l / (vPar + vPerp).norm();
     }
   };
 

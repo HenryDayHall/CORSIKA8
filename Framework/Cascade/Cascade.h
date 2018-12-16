@@ -19,15 +19,11 @@
 
 #include <type_traits>
 
-using namespace corsika;
-using namespace corsika::units::si;
-
 namespace corsika::cascade {
 
   template <typename Tracking, typename ProcessList, typename Stack>
   class Cascade {
-
-    typedef typename Stack::ParticleType Particle;
+    using Particle = typename Stack::ParticleType;
 
     Cascade() = delete;
 
@@ -57,39 +53,35 @@ namespace corsika::cascade {
 
     void Step(Particle& particle) {
 
-      // get access to random number generator
-      static corsika::random::RNG& rmng =
-          corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-
       // determine geometric tracking
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
 
       // determine combined total interaction length (inverse)
-      const double total_inv_lambda =
+      InverseLengthType const total_inv_lambda =
           fProcesseList.GetTotalInverseInteractionLength(particle, step);
 
       // sample random exponential step length
-      const double sample_step = rmng() / (double)rmng.max();
-      const double next_interact = -log(sample_step) / total_inv_lambda;
+      std::exponential_distribution expDist(total_inv_lambda * 1_m);
+      LengthType const next_interact = 1_m * expDist(fRNG);
       std::cout << "total_inv_lambda=" << total_inv_lambda
                 << ", next_interact=" << next_interact << std::endl;
 
       // determine the maximum geometric step length
-      const double distance_max = fProcesseList.MaxStepLength(particle, step);
+      LengthType const distance_max = fProcesseList.MaxStepLength(particle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // determine combined total inverse decay time
-      const double total_inv_lifetime = fProcesseList.GetTotalInverseLifetime(particle);
+      InverseTimeType const total_inv_lifetime = fProcesseList.GetTotalInverseLifetime(particle);
 
       // sample random exponential decay time
-      const double sample_decay = rmng() / (double)rmng.max();
-      const double next_decay = -log(sample_decay) / total_inv_lifetime;
+      std::exponential_distribution expDistDecay(total_inv_lifetime * 1_s);
+      TimeType const next_decay = 1_s * expDistDecay(fRNG);
       std::cout << "total_inv_lifetime=" << total_inv_lifetime
                 << ", next_decay=" << next_decay << std::endl;
 
       // convert next_step from grammage to length [m]
       // Environment::GetDistance(step, next_step);
-      const double distance_interact = next_interact;
+      const GrammageType distance_interact = ;
       // ....
 
       // convert next_decay from time to length [m]
@@ -144,6 +136,10 @@ namespace corsika::cascade {
     Tracking& fTracking;
     ProcessList& fProcesseList;
     Stack& fStack;
+    corsika::environment::Environment const& fEnvironment;
+    corsika::random::RNG& fRNG =
+          corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+
   };
 
 } // namespace corsika::cascade
