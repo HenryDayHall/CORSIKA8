@@ -56,6 +56,7 @@ namespace corsika::units::si {
   using CrossSectionType = phys::units::quantity<area_d, double>;
   using InverseLengthType = phys::units::quantity<phys::units::dimensions<-1, 0, 0>, double>;
   using InverseTimeType = phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
+  using InverseGrammageType = phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
 
 } // end namespace corsika::units::si
 
