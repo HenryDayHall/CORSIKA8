@@ -101,9 +101,9 @@ public:
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Track>
-  inline double GetInteractionLength(Particle&, Track&) const {
+  GrammageType GetInteractionLength(Particle&, Track&) const {
     cout << "Process2::GetInteractionLength" << endl;
-    return 3;
+    return 3_g / (1_cm * 1_cm);
   }
 };
 
@@ -124,9 +124,9 @@ public:
     return EProcessReturn::eOk;
   }
   template <typename Particle, typename Track>
-  inline double GetInteractionLength(Particle&, Track&) const {
+  GrammageType GetInteractionLength(Particle&, Track&) const {
     cout << "Process3::GetInteractionLength" << endl;
-    return 1.;
+    return 1_g / (1_cm * 1_cm);
   }
 };
 
@@ -165,8 +165,8 @@ public:
     globalCount++;
   }
   template <typename Particle>
-  double GetLifetime(Particle&) const {
-    return 1;
+  TimeType GetLifetime(Particle&) const {
+    return 1_s;
   }
   template <typename Particle, typename Stack>
   EProcessReturn DoDecay(Particle&, Stack&) const {
@@ -209,9 +209,9 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     DummyTrajectory t;
 
     const auto sequence2 = cp1 + m2 + m3;
-    double tot = sequence2.GetTotalInteractionLength(s, t);
-    double tot_inv = sequence2.GetTotalInverseInteractionLength(s, t);
-    cout << "lambda_tot=" << tot << " lambda_tot_inv=" << tot_inv << endl;
+    GrammageType const tot = sequence2.GetTotalInteractionLength(s, t);
+    InverseGrammageType const tot_inv = sequence2.GetTotalInverseInteractionLength(s, t);
+    cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
   }
 
   SECTION("lifetime") {
@@ -223,9 +223,9 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     DummyStack s;
 
     const auto sequence2 = cp1 + m2 + m3 + d3;
-    double tot = sequence2.GetTotalLifetime(s);
-    double tot_inv = sequence2.GetTotalInverseLifetime(s);
-    cout << "lambda_tot=" << tot << " lambda_tot_inv=" << tot_inv << endl;
+    TimeType const tot = sequence2.GetTotalLifetime(s);
+    InverseTimeType const tot_inv = sequence2.GetTotalInverseLifetime(s);
+    cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
   }
 
   SECTION("sectionTwo") {

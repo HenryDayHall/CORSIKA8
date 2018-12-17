@@ -18,6 +18,7 @@
 //#include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessReturn.h>
+#include <corsika/units/PhysicalUnits.h>
 
 #include <cmath>
 #include <limits>
@@ -174,32 +175,41 @@ namespace corsika::process {
     }
 
     template <typename Particle, typename Track>
-    LengthType MaxStepLength(Particle& p, Track& track) const {
-      LengthType max_length = std::numeric_limits<double>::infinity() * 1_m;
+    corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const {
+      corsika::units::si::LengthType max_length =
+          std::numeric_limits<double>::infinity() * corsika::units::si::meter;
       if constexpr (std::is_base_of<ContinuousProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
-        max_length = std::min(max_length, A.MaxStepLength(p, track));
+        corsika::units::si::LengthType const len = A.MaxStepLength(p, track);
+        max_length = std::min(max_length, len);
       }
       if constexpr (std::is_base_of<ContinuousProcess<T2>, T2>::value ||
                     is_process_sequence<T2>::value) {
-        max_length = std::min(max_length, B.MaxStepLength(p, track));
+        corsika::units::si::LengthType const len = B.MaxStepLength(p, track);
+        max_length = std::min(max_length, len);
       }
       return max_length;
     }
 
     template <typename Particle, typename Track>
-    GrammageType GetTotalInteractionLength(Particle& p, Track& t) const {
+    corsika::units::si::GrammageType GetTotalInteractionLength(Particle& p,
+                                                               Track& t) const {
       return 1. / GetInverseInteractionLength(p, t);
     }
 
     template <typename Particle, typename Track>
-    InverseGrammageType GetTotalInverseInteractionLength(Particle& p, Track& t) const {
+    corsika::units::si::InverseGrammageType GetTotalInverseInteractionLength(
+        Particle& p, Track& t) const {
       return GetInverseInteractionLength(p, t);
     }
 
     template <typename Particle, typename Track>
-    InverseGrammageType GetInverseInteractionLength(Particle& p, Track& t) const {
-      InverseGrammageType tot = 0;
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(Particle& p,
+                                                                        Track& t) const {
+      using namespace corsika::units::si;
+
+      InverseGrammageType tot = 0 * meter * meter / gram;
+
       if constexpr (std::is_base_of<InteractionProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
         tot += A.GetInverseInteractionLength(p, t);
@@ -212,21 +222,20 @@ namespace corsika::process {
     }
 
     template <typename Particle, typename Stack>
-    inline EProcessReturn SelectInteraction(Particle& p, Stack& s,
-                                            InverseGrammageType lambda_inv_tot,
-                                            InverseGrammageType rndm_select,
-                                            InverseGrammageType& lambda_inv_count) const {
+    EProcessReturn SelectInteraction(
+        Particle& p, Stack& s, corsika::units::si::InverseGrammageType lambda_select,
+        corsika::units::si::InverseGrammageType& lambda_inv_count) const {
       if constexpr (is_process_sequence<T1>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            A.SelectInteraction(p, s, lambda_inv_count, rndm_select, lambda_inv_count);
+            A.SelectInteraction(p, s, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<InteractionProcess<T1>, T1>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_count += A.GetInverseInteractionLength(p, s);
         // check if we should execute THIS process and then EXIT
-        if (rndm_select * lambda_inv_tot < lambda_inv_count) { // more pedagogical: rndm_select < lambda_inv_count / lambda_inv_tot
+        if (lambda_select < lambda_inv_count) {
           A.DoInteraction(p, s);
           return EProcessReturn::eInteracted;
         }
@@ -235,14 +244,14 @@ namespace corsika::process {
       if constexpr (is_process_sequence<T2>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            B.SelectInteraction(p, s, lambda_inv_count, rndm_select, lambda_inv_count);
+            B.SelectInteraction(p, s, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<InteractionProcess<T2>, T2>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_count += B.GetInverseInteractionLength(p, s);
         // check if we should execute THIS process and then EXIT
-        if (rndm_select < lambda_inv_count / lambda_inv_tot) {
+        if (lambda_select < lambda_inv_count) {
           B.DoInteraction(p, s);
           return EProcessReturn::eInteracted;
         }
@@ -251,18 +260,21 @@ namespace corsika::process {
     }
 
     template <typename Particle>
-    TimeType GetTotalLifetime(Particle& p) const {
+    corsika::units::si::TimeType GetTotalLifetime(Particle& p) const {
       return 1. / GetInverseLifetime(p);
     }
 
     template <typename Particle>
-    InverseTimeType GetTotalInverseLifetime(Particle& p) const {
+    corsika::units::si::InverseTimeType GetTotalInverseLifetime(Particle& p) const {
       return GetInverseLifetime(p);
     }
 
     template <typename Particle>
-    InverseTimeType GetInverseLifetime(Particle& p) const {
-      InverseTimeType tot = 0;
+    corsika::units::si::InverseTimeType GetInverseLifetime(Particle& p) const {
+      using namespace corsika::units::si;
+
+      corsika::units::si::InverseTimeType tot = 0 / second;
+
       if constexpr (std::is_base_of<DecayProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
         tot += A.GetInverseLifetime(p);
@@ -276,20 +288,20 @@ namespace corsika::process {
 
     // select decay process
     template <typename Particle, typename Stack>
-    EProcessReturn SelectDecay(Particle& p, Stack& s, InverseTimeType decay_inv_tot,
-                                      InverseTimeType rndm_select,
-                                      InverseTimeType& decay_inv_count) const {
+    EProcessReturn SelectDecay(
+        Particle& p, Stack& s, corsika::units::si::InverseTimeType decay_select,
+        corsika::units::si::InverseTimeType& decay_inv_count) const {
       if constexpr (is_process_sequence<T1>::value) {
         // if A is a process sequence --> check inside
-        const EProcessReturn ret =
-            A.SelectDecay(p, s, decay_inv_count, rndm_select, decay_inv_count);
+        const EProcessReturn ret = A.SelectDecay(p, s, decay_select, decay_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<DecayProcess<T1>, T1>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_count += A.GetInverseLifetime(p);
         // check if we should execute THIS process and then EXIT
-        if (rndm_select * decay_inv_tot < decay_inv_count) { // more pedagogical: rndm_select < decay_inv_count / decay_inv_tot
+        if (decay_select < decay_inv_count) { // more pedagogical: rndm_select <
+                                              // decay_inv_count / decay_inv_tot
           A.DoDecay(p, s);
           return EProcessReturn::eDecayed;
         }
@@ -297,15 +309,14 @@ namespace corsika::process {
 
       if constexpr (is_process_sequence<T2>::value) {
         // if A is a process sequence --> check inside
-        const EProcessReturn ret =
-            B.SelectDecay(p, s, decay_inv_count, rndm_select, decay_inv_count);
+        const EProcessReturn ret = B.SelectDecay(p, s, decay_select, decay_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<DecayProcess<T2>, T2>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_count += B.GetInverseLifetime(p);
         // check if we should execute THIS process and then EXIT
-        if (rndm_select < decay_inv_count / decay_inv_tot) {
+        if (decay_select < decay_inv_count) {
           B.DoDecay(p, s);
           return EProcessReturn::eDecayed;
         }

@@ -164,11 +164,10 @@ TEST_CASE("Trajectories") {
            QuantityVector<length_d>(4_m, 0_m, 0_m))
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
-              
-    CHECK(
-        (line.GetPosition(7_s) - line.PositionFromArclength(line.ArcLength(0_s, 7_s)))
-            .norm()
-            .magnitude() == Approx(0).margin(absMargin));
+
+    CHECK((line.GetPosition(7_s) - line.PositionFromArclength(line.ArcLength(0_s, 7_s)))
+              .norm()
+              .magnitude() == Approx(0).margin(absMargin));
 
     auto const t = 1_s;
     Trajectory<Line> base(line, t);

@@ -13,8 +13,8 @@
 #define _Physics_StackInspector_StackInspector_h_
 
 #include <corsika/process/ContinuousProcess.h>
-
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
 
@@ -36,7 +36,8 @@ namespace corsika::process {
       EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
 
       //      template <typename Particle>
-      double MaxStepLength(Particle&, corsika::setup::Trajectory&) const;
+      corsika::units::si::LengthType MaxStepLength(Particle&,
+                                                   corsika::setup::Trajectory&) const;
 
     private:
       bool fReport;

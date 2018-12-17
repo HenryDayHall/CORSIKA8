@@ -45,10 +45,10 @@ namespace corsika::environment {
         corsika::geometry::Trajectory<corsika::geometry::Line> const& pTraj,
         corsika::units::si::LengthType pTo) const override {
       using namespace corsika::units::si;
-      pTo * fDensity;
+      return pTo * fDensity;
     }
 
-    corsika::units::si::TimeType ArclengthFromGrammage(
+    corsika::units::si::LengthType ArclengthFromGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& pTraj,
         corsika::units::si::GrammageType pGrammage) const override {
       return pGrammage / fDensity;

@@ -14,6 +14,7 @@
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
 
@@ -38,10 +39,10 @@ namespace corsika::process {
     inline EProcessReturn DoDecay(Particle&, Stack&) const;
 
     template <typename Particle>
-    inline double GetLifetime(Particle& p) const;
+    corsika::units::si::TimeType GetLifetime(Particle& p) const;
 
     template <typename Particle>
-    inline double GetInverseLifetime(Particle& p) const {
+    corsika::units::si::InverseTimeType GetInverseLifetime(Particle& p) const {
       return 1. / GetRef().GetLifetime(p);
     }
   };

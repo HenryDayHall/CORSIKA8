@@ -14,8 +14,8 @@
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/Sphere.h>
 #include <corsika/setup/SetupEnvironment.h>
 #include <limits>
 
@@ -23,9 +23,9 @@ namespace corsika::environment {
   struct Universe : public corsika::geometry::Sphere {
     Universe(corsika::geometry::CoordinateSystem const& pCS)
         : corsika::geometry::Sphere(
-              corsika::geometry::Point{
-                  pCS, 0 * corsika::units::si::meter,
-                  0 * corsika::units::si::meter, 0 * corsika::units::si::meter},
+              corsika::geometry::Point{pCS, 0 * corsika::units::si::meter,
+                                       0 * corsika::units::si::meter,
+                                       0 * corsika::units::si::meter},
               corsika::units::si::meter * std::numeric_limits<double>::infinity()) {}
 
     bool Contains(corsika::geometry::Point const&) const override { return true; }
@@ -35,8 +35,9 @@ namespace corsika::environment {
   class Environment {
   public:
     Environment()
-        : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCS()},        
-        fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
+        : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance()
+                                .GetRootCS()}
+        , fUniverse(std::make_unique<VolumeTreeNode<IEnvironmentModel>>(
               std::make_unique<Universe>(fCoordinateSystem))) {}
 
     using IEnvironmentModel = corsika::setup::IEnvironmentModel;

@@ -54,9 +54,12 @@ namespace corsika::units::si {
   using GrammageType = phys::units::quantity<phys::units::dimensions<-2, 1, 0>, double>;
   using MomentumType = phys::units::quantity<momentum_d, double>;
   using CrossSectionType = phys::units::quantity<area_d, double>;
-  using InverseLengthType = phys::units::quantity<phys::units::dimensions<-1, 0, 0>, double>;
-  using InverseTimeType = phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
-  using InverseGrammageType = phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
+  using InverseLengthType =
+      phys::units::quantity<phys::units::dimensions<-1, 0, 0>, double>;
+  using InverseTimeType =
+      phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
+  using InverseGrammageType =
+      phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
 
 } // end namespace corsika::units::si
 
@@ -75,7 +78,7 @@ namespace phys {
       QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
                                        magnitude(corsika::units::si::constants::eV))
 
-      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
+      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::area_d,
                                        magnitude(corsika::units::si::constants::barn))
 
       QUANTITY_DEFINE_SCALING_LITERALS(Ns, corsika::units::si::momentum_d,
