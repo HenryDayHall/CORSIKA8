@@ -18,6 +18,7 @@
 #include <corsika/random/UniformRealDistribution.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/environment/Environment.h>
 
 #include <type_traits>
 
@@ -57,6 +58,7 @@ namespace corsika::cascade {
 
     void Step(Particle& particle) {
       using namespace corsika::units::si;
+      
       // determine geometric tracking
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
 
@@ -67,6 +69,7 @@ namespace corsika::cascade {
       // sample random exponential step length in grammage
       std::exponential_distribution expDist((1_m * 1_m / 1_g) / total_inv_lambda);
       GrammageType const next_interact = (1_g / (1_m * 1_m)) * expDist(fRNG);
+
       std::cout << "total_inv_lambda=" << total_inv_lambda
                 << ", next_interact=" << next_interact << std::endl;
 
@@ -155,7 +158,12 @@ namespace corsika::cascade {
     Stack& fStack;
     corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
+<<<<<<< HEAD
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+=======
+          corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+
+>>>>>>> e9023467d9ae486f2436418f2004da612ebd02a7
   };
 
 } // namespace corsika::cascade

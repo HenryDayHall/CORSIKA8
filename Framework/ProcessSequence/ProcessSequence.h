@@ -225,6 +225,7 @@ namespace corsika::process {
     EProcessReturn SelectInteraction(
         Particle& p, Stack& s, corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) const {
+
       if constexpr (is_process_sequence<T1>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =

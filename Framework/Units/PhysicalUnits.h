@@ -60,7 +60,6 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
-
 } // end namespace corsika::units::si
 
 /**
