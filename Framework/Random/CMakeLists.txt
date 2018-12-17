@@ -7,6 +7,7 @@ set (
 set (
   CORSIKArandom_HEADERS
   RNGManager.h
+  UniformRealDistribution.h
   )
 
 set (

@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -14,7 +13,11 @@
 #include <catch2/catch.hpp>
 
 #include <corsika/random/RNGManager.h>
+#include <corsika/random/UniformRealDistribution.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <iostream>
+#include <limits>
+#include <random>
 
 using namespace corsika::random;
 
@@ -35,5 +38,48 @@ SCENARIO("random-number streams can be registered and retrieved") {
 
       // seeding not covered yet
     }
+  }
+}
+
+TEST_CASE("UniformRealDistribution") {
+  using namespace corsika::units::si;
+  std::mt19937 rng;
+
+  corsika::random::UniformRealDistribution<LengthType> dist(1_m, 2_m);
+
+  SECTION("range") {
+    corsika::random::UniformRealDistribution<LengthType> dist(1_m, 2_m);
+
+    LengthType min =
+        +1_m * std::numeric_limits<typename LengthType::value_type>::infinity();
+    LengthType max =
+        -1_m * std::numeric_limits<typename LengthType::value_type>::infinity();
+
+    for (int i{0}; i < 1'000'000; ++i) {
+      LengthType x = dist(rng);
+      min = std::min(min, x);
+      max = std::max(max, x);
+    }
+
+    CHECK(min / 1_m == Approx(1.));
+    CHECK(max / 2_m == Approx(1.));
+  }
+
+  SECTION("range") {
+    corsika::random::UniformRealDistribution<LengthType> dist(18_cm);
+
+    LengthType min =
+        +1_m * std::numeric_limits<typename LengthType::value_type>::infinity();
+    LengthType max =
+        -1_m * std::numeric_limits<typename LengthType::value_type>::infinity();
+
+    for (int i{0}; i < 1'000'000; ++i) {
+      LengthType x = dist(rng);
+      min = std::min(min, x);
+      max = std::max(max, x);
+    }
+
+    CHECK(min / 1_m == Approx(0.).margin(1e-3));
+    CHECK(max / 18_cm == Approx(1.));
   }
 }
