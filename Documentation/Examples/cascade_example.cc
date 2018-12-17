@@ -27,6 +27,8 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/random/RNGManager.h>
+
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -201,6 +203,9 @@ private:
 };
 
 int main() {
+    
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+    
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
