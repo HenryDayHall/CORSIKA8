@@ -25,7 +25,7 @@ namespace corsika::process::sibyll {
 
 #include <corsika/process/sibyll/Generated.inc>
 
-  bool constexpr  KnownBySibyll(corsika::particles::Code pCode) {
+  bool constexpr KnownBySibyll(corsika::particles::Code pCode) {
     return isKnown[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 

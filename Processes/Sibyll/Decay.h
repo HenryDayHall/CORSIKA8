@@ -1,9 +1,9 @@
 #ifndef _include_corsika_process_sibyll_decay_h_
 #define _include_corsika_process_sibyll_decay_h_
 
-#include <corsika/process/sibyll/SibStack.h>
-#include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/process/DecayProcess.h>
+#include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/process/sibyll/SibStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/particles/ParticleProperties.h>
@@ -57,8 +57,8 @@ namespace corsika::process {
 
     void setTrackedParticlesStable() {
       /*
-	Sibyll is hadronic generator
-	only hadrons decay
+        Sibyll is hadronic generator
+        only hadrons decay
       */
       // set particles unstable
       setHadronsUnstable();
@@ -71,12 +71,12 @@ namespace corsika::process {
       ds.NewParticle().SetPID(particles::Code::KMinus);
       ds.NewParticle().SetPID(particles::Code::K0Long);
       ds.NewParticle().SetPID(particles::Code::K0Short);
-      
+
       for (auto& p : ds) {
-	int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
-	// set particle stable by setting table value negative
-	s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
-	p.Delete();
+        int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
+        // set particle stable by setting table value negative
+        s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
+        p.Delete();
       }
     }
 
@@ -84,7 +84,7 @@ namespace corsika::process {
     public:
       Decay() {}
       void Init() {
-	setHadronsUnstable();
+        setHadronsUnstable();
         setTrackedParticlesStable();
       }
 
@@ -110,11 +110,11 @@ namespace corsika::process {
       friend void setHadronsUnstable();
 
       template <typename Particle>
-      double GetLifetime(Particle& p) const {
+      corsika::units::si::TimeType GetLifetime(Particle& p) const {
         corsika::units::hep::EnergyType E = p.GetEnergy();
         corsika::units::hep::MassType m = corsika::particles::GetMass(p.GetPID());
 
-        //const MassDensityType density = 1.25e-3 * kilogram / (1_cm * 1_cm * 1_cm);
+        // const MassDensityType density = 1.25e-3 * kilogram / (1_cm * 1_cm * 1_cm);
 
         const double gamma = E / m;
 
@@ -126,11 +126,11 @@ namespace corsika::process {
         // return as column density
         // const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
         // cout << "Decay: MinStep: x0: " << x0 << endl;
-	const double lifetime = gamma*t0 / 1_s;
-	cout << "Decay: MinStep: tau: " << lifetime << endl;
-        //int a = 1;
-        //const double x = -x0 * log(s_rndm_(a));
-        //cout << "Decay: next decay: " << x << endl;
+        corsika::units::si::TimeType const lifetime = gamma * t0;
+        cout << "Decay: MinStep: tau: " << lifetime << endl;
+        // int a = 1;
+        // const double x = -x0 * log(s_rndm_(a));
+        // cout << "Decay: next decay: " << x << endl;
         return lifetime;
       }
 

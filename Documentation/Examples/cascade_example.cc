@@ -200,7 +200,6 @@ public:
 private:
 };
 
-
 int main() {
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
@@ -224,13 +223,13 @@ int main() {
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
-  corsika::process::sibyll::Interaction/*<setup::Stack>,setup::Trajectory>*/ p1;
+  corsika::process::sibyll::Interaction /*<setup::Stack>,setup::Trajectory>*/ p1;
   corsika::process::sibyll::Decay p2;
   ProcessEMCut p3;
   const auto sequence = /*p0 +*/ p1 + p2 + p3;
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(tracking, sequence, stack);
+  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
 
   stack.Clear();
   auto particle = stack.NewParticle();
@@ -246,8 +245,9 @@ int main() {
   particle.SetPosition(p);
   EAS.Init();
   EAS.Run();
-  cout << "Result: E0=" << E0 / 1_GeV
-    //<< "GeV, particles below energy threshold =" << p1.GetCount()
+  cout << "Result: E0="
+       << E0 / 1_GeV
+       //<< "GeV, particles below energy threshold =" << p1.GetCount()
        << endl;
   cout << "total energy below threshold (GeV): " //<< p1.GetEnergy() / 1_GeV
        << std::endl;

@@ -361,7 +361,7 @@ namespace corsika::process {
   OPSEQ(DecayProcess, DecayProcess)
 
   template <typename A, typename B>
-    struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
+  struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
     static const bool value = true;
   };
 
