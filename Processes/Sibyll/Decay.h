@@ -5,6 +5,7 @@
 #include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/process/sibyll/SibStack.h>
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/setup/SetupStack.h>
 
 #include <corsika/particles/ParticleProperties.h>
 

@@ -31,11 +31,8 @@ namespace corsika::process {
       ~StackInspector();
 
       void Init();
-
-      // template <typename Particle, typename Trajectory, typename Stack>
       EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
-
-      //      template <typename Particle>
+      //~ template <typename Particle>
       corsika::units::si::LengthType MaxStepLength(Particle&,
                                                    corsika::setup::Trajectory&) const;
 

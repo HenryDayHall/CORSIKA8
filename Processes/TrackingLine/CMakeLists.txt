@@ -28,6 +28,10 @@ add_executable (testTrackingLine testTrackingLine.cc)
 
 target_link_libraries (
    testTrackingLine
+   ProcessTrackingLine
+   CORSIKAsetup
+   CORSIKAutilities
+   CORSIKAenvironment
    CORSIKAunits
    CORSIKAenvironment
    CORSIKAgeometry

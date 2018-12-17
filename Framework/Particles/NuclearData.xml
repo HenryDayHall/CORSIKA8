@@ -1,0 +1,27 @@
+<chapter name="Nuclear Data">
+
+<particle id="1000010010" name="hydrogen" A="1" Z="1" >
+</particle> 
+
+<particle id="1000010020" name="deuterium" A="2" Z="1" >
+</particle> 
+
+<particle id="1000010030" name="tritium" A="3" Z="1" >
+</particle> 
+
+<particle id="1000020040" name="helium" A="4" Z="2" >
+</particle> 
+
+<particle id="1000060120" name="carbon" A="12" Z="6" >
+</particle> 
+
+<particle id="1000070140" name="nitrogen" A="14" Z="7" >
+</particle> 
+
+<particle id="1000080160" name="oxygen" A="16" Z="8" >
+</particle> 
+
+<particle id="1000180400" name="argon" A="40" Z="18" >
+</particle> 
+
+</chapter>

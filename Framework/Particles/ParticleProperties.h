@@ -40,7 +40,7 @@ namespace corsika::particles {
 
   enum class Code : int16_t;
 
-  using PDGCodeType = int16_t;
+  using PDGCodeType = int32_t;
   using CodeIntType = std::underlying_type<Code>::type;
 
   // forward declarations to be used in GeneratedParticleProperties
@@ -51,24 +51,28 @@ namespace corsika::particles {
   constexpr std::string const& GetName(Code const);
   corsika::units::si::TimeType constexpr GetLifetime(Code const);
 
+  bool constexpr IsNucleus(Code const);
+  int constexpr GetNucleusA(Code const);
+  int constexpr GetNucleusZ(Code const);
+  
 #include <corsika/particles/GeneratedParticleProperties.inc>
 
   /*!
    * returns mass of particle
    */
   corsika::units::hep::MassType constexpr GetMass(Code const p) {
-    return masses[static_cast<CodeIntType const>(p)];
+    return detail::masses[static_cast<CodeIntType const>(p)];
   }
 
   PDGCodeType constexpr GetPDG(Code const p) {
-    return pdg_codes[static_cast<CodeIntType const>(p)];
+    return detail::pdg_codes[static_cast<CodeIntType const>(p)];
   }
 
   /*!
    * returns electric charge of particle / (e/3).
    */
   int16_t constexpr GetElectricChargeNumber(Code const p) {
-    return electric_charges[static_cast<CodeIntType const>(p)];
+    return detail::electric_charges[static_cast<CodeIntType const>(p)];
   }
 
   corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const p) {
@@ -76,12 +80,25 @@ namespace corsika::particles {
   }
 
   constexpr std::string const& GetName(Code const p) {
-    return names[static_cast<CodeIntType const>(p)];
+    return detail::names[static_cast<CodeIntType const>(p)];
   }
 
   corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
-    return lifetime[static_cast<CodeIntType const>(p)];
+    return detail::lifetime[static_cast<CodeIntType const>(p)] * corsika::units::si::second;
   }
+
+  bool constexpr IsNucleus(Code const p) {
+    return detail::isNucleus[static_cast<CodeIntType const>(p)];
+  }
+
+  int constexpr GetNucleusA(Code const p) {
+      return detail::nucleusA[static_cast<CodeIntType const>(p)];
+  }
+
+  int constexpr GetNucleusZ(Code const p) {
+    return detail::nucleusZ[static_cast<CodeIntType const>(p)];
+  }
+
 
   namespace io {
 

@@ -71,7 +71,7 @@ namespace corsika::stack {
       Point GetPosition() const { return GetStackData().GetPosition(GetIndex()); }
       TimeType GetTime() const { return GetStackData().GetTime(GetIndex()); }
 
-#warning this does not really work, nor make sense:
+#warning this does not really work, nor makes sense:
       Vector<SpeedType::dimension_type> GetDirection() const {
         auto P = GetMomentum();
         return P / P.norm() * 1e10 * (units::si::meter / units::si::second);
@@ -139,7 +139,7 @@ namespace corsika::stack {
         fDataE.push_back(0 * joule);
         //#TODO this here makes no sense: see issue #48
         geometry::CoordinateSystem& dummyCS =
-            geometry::RootCoordinateSystem::GetInstance().GetRootCS();
+            geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
         fMomentum.push_back(MomentumVector(
             dummyCS, {0 * newton_second, 0 * newton_second, 0 * newton_second}));
         fPosition.push_back(Point(dummyCS, {0 * meter, 0 * meter, 0 * meter}));
