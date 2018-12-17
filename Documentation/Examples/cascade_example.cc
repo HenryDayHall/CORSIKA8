@@ -118,13 +118,13 @@ public:
   }
 
   template <typename Particle>
-  double MaxStepLength(Particle& p, setup::Trajectory&) const {
+  LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
     const Code pid = p.GetPID();
     if (isEmParticle(pid) || isInvisible(pid)) {
       cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
-      return 0.;
+      return 0_m;
     } else {
-      double next_step = std::numeric_limits<double>::infinity();
+      LengthType next_step = 1_m * std::numeric_limits<double>::infinity();
       cout << "ProcessCut: MinStep: next cut: " << next_step << endl;
       return next_step;
     }
@@ -199,9 +199,9 @@ private:
 };
 
 int main() {
-    
+
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
-    
+
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
@@ -219,22 +219,17 @@ int main() {
 
   universe.AddChild(std::move(theMedium));
 
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
-<<<<<<< HEAD
-  corsika::process::sibyll::Interaction /*<setup::Stack>,setup::Trajectory>*/ p1;
-  corsika::process::sibyll::Decay p2;
-  ProcessEMCut p3;
-  const auto sequence = /*p0 +*/ p1 + p2 + p3;
-=======
   corsika::process::sibyll::Interaction sibyll;
   corsika::process::sibyll::Decay decay;
   ProcessEMCut cut;
   const auto sequence = /*p0 +*/ sibyll + decay + cut;
->>>>>>> master
+
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(env, tracking, sequence, stack);

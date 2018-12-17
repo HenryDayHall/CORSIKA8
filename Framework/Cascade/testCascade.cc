@@ -117,7 +117,8 @@ TEST_CASE("Cascade", "[Cascade]") {
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCS();
+  CoordinateSystem const& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   stack.Clear();
   auto particle = stack.NewParticle();

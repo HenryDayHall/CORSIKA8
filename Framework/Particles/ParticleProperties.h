@@ -54,7 +54,7 @@ namespace corsika::particles {
   bool constexpr IsNucleus(Code const);
   int constexpr GetNucleusA(Code const);
   int constexpr GetNucleusZ(Code const);
-  
+
 #include <corsika/particles/GeneratedParticleProperties.inc>
 
   /*!
@@ -84,7 +84,8 @@ namespace corsika::particles {
   }
 
   corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
-    return detail::lifetime[static_cast<CodeIntType const>(p)] * corsika::units::si::second;
+    return detail::lifetime[static_cast<CodeIntType const>(p)] *
+           corsika::units::si::second;
   }
 
   bool constexpr IsNucleus(Code const p) {
@@ -92,13 +93,12 @@ namespace corsika::particles {
   }
 
   int constexpr GetNucleusA(Code const p) {
-      return detail::nucleusA[static_cast<CodeIntType const>(p)];
+    return detail::nucleusA[static_cast<CodeIntType const>(p)];
   }
 
   int constexpr GetNucleusZ(Code const p) {
     return detail::nucleusZ[static_cast<CodeIntType const>(p)];
   }
-
 
   namespace io {
 
