@@ -43,8 +43,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     [[maybe_unused]] std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
 
-    [[maybe_unused]] auto p1 = 10_newton_second;
-    REQUIRE(p1 == 10_newton_second);
+    auto p1 = 10_Ns;
+    REQUIRE(p1 == 10_Ns);
   }
 
   SECTION("Powers in literal units") {
@@ -69,6 +69,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(1_A / 1_EA == Approx(1e-18));
     REQUIRE(1_K / 1_ZK == Approx(1e-21));
     REQUIRE(1_mol / 1_Ymol == Approx(1e-24));
+
+    REQUIRE(std::min(1_A, 2_A) == 1_A);
   }
 
   SECTION("Powers and units") {
@@ -83,7 +85,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     const MassType m = 1_kg;
     const SpeedType v = 1_m / 1_s;
-    REQUIRE(m * v == 1_newton_second);
+    REQUIRE(m * v == 1_Ns);
 
     const double lgE = log10(E2 / 1_GeV);
     REQUIRE(lgE == Approx(log10(40.)));

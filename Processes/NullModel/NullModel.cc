@@ -11,7 +11,6 @@
 
 #include <corsika/process/null_model/NullModel.h>
 
-
 #include <corsika/logging/Logger.h>
 #include <corsika/setup/SetupTrajectory.h>
 
@@ -31,7 +30,7 @@ NullModel<Stack>::~NullModel() {}
 
 template <typename Stack>
 process::EProcessReturn NullModel<Stack>::DoContinuous(Particle&, setup::Trajectory&,
-						       Stack& ) const {
+                                                       Stack&) const {
   return EProcessReturn::eOk;
 }
 
@@ -41,10 +40,8 @@ double NullModel<Stack>::MaxStepLength(Particle&, setup::Trajectory&) const {
 }
 
 template <typename Stack>
-void NullModel<Stack>::Init() {
-}
+void NullModel<Stack>::Init() {}
 
 #include <corsika/setup/SetupStack.h>
 
 template class process::null_model::NullModel<setup::Stack>;
-

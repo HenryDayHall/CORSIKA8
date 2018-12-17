@@ -29,7 +29,8 @@ using namespace corsika::units::si;
 double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("transformations between CoordinateSystems") {
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   REQUIRE(CoordinateSystem::GetTransformation(rootCS, rootCS)
               .isApprox(EigenTransform::Identity()));
@@ -128,7 +129,8 @@ TEST_CASE("transformations between CoordinateSystems") {
 }
 
 TEST_CASE("Sphere") {
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
@@ -147,24 +149,34 @@ TEST_CASE("Sphere") {
 }
 
 TEST_CASE("Trajectories") {
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {
     Vector<SpeedType::dimension_type> v0(rootCS,
-                                         {1_m / second, 0_m / second, 0_m / second});
+                                         {3_m / second, 0_m / second, 0_m / second});
 
     Line const line(r0, v0);
     CHECK(
-        (line.GetPosition(2_s).GetCoordinates() - QuantityVector<length_d>(2_m, 0_m, 0_m))
+        (line.GetPosition(2_s).GetCoordinates() - QuantityVector<length_d>(6_m, 0_m, 0_m))
             .norm()
             .magnitude() == Approx(0).margin(absMargin));
+
+    CHECK((line.PositionFromArclength(4_m).GetCoordinates() -
+           QuantityVector<length_d>(4_m, 0_m, 0_m))
+              .norm()
+              .magnitude() == Approx(0).margin(absMargin));
+
+    CHECK((line.GetPosition(7_s) - line.PositionFromArclength(line.ArcLength(0_s, 7_s)))
+              .norm()
+              .magnitude() == Approx(0).margin(absMargin));
 
     auto const t = 1_s;
     Trajectory<Line> base(line, t);
     CHECK(line.GetPosition(t).GetCoordinates() == base.GetPosition(1.).GetCoordinates());
 
-    CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(1));
+    CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(3));
   }
 
   SECTION("Helix") {
@@ -174,7 +186,8 @@ TEST_CASE("Trajectories") {
     Vector<SpeedType::dimension_type> const vPerp(
         rootCS, {3_m / second, 0_m / second, 0_m / second});
 
-    auto const omegaC = 2 * M_PI / 1_s;
+    auto const T = 1_s;
+    auto const omegaC = 2 * M_PI / T;
 
     Helix const helix(r0, omegaC, vPar, vPerp);
 
@@ -188,10 +201,15 @@ TEST_CASE("Trajectories") {
               .norm()
               .magnitude() == Approx(0).margin(absMargin));
 
+    CHECK(
+        (helix.GetPosition(7_s) - helix.PositionFromArclength(helix.ArcLength(0_s, 7_s)))
+            .norm()
+            .magnitude() == Approx(0).margin(absMargin));
+
     auto const t = 1234_s;
     Trajectory<Helix> const base(helix, t);
     CHECK(helix.GetPosition(t).GetCoordinates() == base.GetPosition(1.).GetCoordinates());
 
-    CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(5));
+    CHECK(base.ArcLength(0_s, 1_s) / 1_m == Approx(5));
   }
 }

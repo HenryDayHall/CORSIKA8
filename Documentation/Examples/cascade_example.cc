@@ -27,6 +27,8 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/random/RNGManager.h>
+
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -116,13 +118,13 @@ public:
   }
 
   template <typename Particle>
-  double MaxStepLength(Particle& p, setup::Trajectory&) const {
+  LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
     const Code pid = p.GetPID();
     if (isEmParticle(pid) || isInvisible(pid)) {
       cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
-      return 0.;
+      return 0_m;
     } else {
-      double next_step = std::numeric_limits<double>::infinity();
+      LengthType next_step = 1_m * std::numeric_limits<double>::infinity();
       cout << "ProcessCut: MinStep: next cut: " << next_step << endl;
       return next_step;
     }
@@ -196,8 +198,10 @@ public:
 private:
 };
 
-
 int main() {
+
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
@@ -215,7 +219,8 @@ int main() {
 
   universe.AddChild(std::move(theMedium));
 
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
@@ -224,9 +229,10 @@ int main() {
   corsika::process::sibyll::Decay decay;
   ProcessEMCut cut;
   const auto sequence = /*p0 +*/ sibyll + decay + cut;
+
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(tracking, sequence, stack);
+  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
 
   stack.Clear();
   auto particle = stack.NewParticle();
@@ -242,8 +248,9 @@ int main() {
   particle.SetPosition(p);
   EAS.Init();
   EAS.Run();
-  cout << "Result: E0=" << E0 / 1_GeV
-    //<< "GeV, particles below energy threshold =" << p1.GetCount()
+  cout << "Result: E0="
+       << E0 / 1_GeV
+       //<< "GeV, particles below energy threshold =" << p1.GetCount()
        << endl;
   cout << "total energy below threshold (GeV): " //<< p1.GetEnergy() / 1_GeV
        << std::endl;

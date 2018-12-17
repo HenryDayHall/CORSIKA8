@@ -31,7 +31,6 @@ namespace corsika::process {
       void Init();
       EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
       double MaxStepLength(Particle&, corsika::setup::Trajectory&) const;
-
     };
 
   } // namespace null_model

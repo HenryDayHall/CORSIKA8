@@ -15,9 +15,6 @@
 #include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalUnits.h>
 
-using corsika::units::si::LengthType;
-using corsika::units::si::TimeType;
-
 namespace corsika::geometry {
 
   template <typename T>
@@ -39,7 +36,7 @@ namespace corsika::geometry {
 
     Point GetPosition(double u) const { return T::GetPosition(fTimeLength * u); }
 
-    TimeType GetDuration() const { return fTimeLength; }
+    corsika::units::si::TimeType GetDuration() const { return fTimeLength; }
 
     LengthType GetDistance(corsika::units::si::TimeType t) const {
       assert(t > fTimeLength);

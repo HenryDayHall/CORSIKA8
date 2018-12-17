@@ -22,7 +22,9 @@ namespace corsika::geometry {
 
   public:
     corsika::geometry::CoordinateSystem& GetRootCoordinateSystem() { return fRootCS; }
-    const corsika::geometry::CoordinateSystem& GetRootCoordinateSystem() const { return fRootCS; }
+    const corsika::geometry::CoordinateSystem& GetRootCoordinateSystem() const {
+      return fRootCS;
+    }
 
   private:
     corsika::geometry::CoordinateSystem fRootCS; // THIS IS IT

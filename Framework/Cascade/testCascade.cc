@@ -26,6 +26,10 @@
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 
+#include <corsika/environment/Environment.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/NuclearComposition.h>
+
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 using corsika::setup::Trajectory;
@@ -43,6 +47,27 @@ using namespace corsika::geometry;
 using namespace std;
 using namespace corsika::units::si;
 
+corsika::environment::Environment MakeDummyEnv() {
+  corsika::environment::Environment env; // dummy environment
+  auto& universe = *(env.GetUniverse());
+
+  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      1_km * std::numeric_limits<double>::infinity());
+
+  using MyHomogeneousModel =
+      corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
+  theMedium->SetModelProperties<MyHomogeneousModel>(
+      1_g / (1_m * 1_m * 1_m),
+      corsika::environment::NuclearComposition(
+          std::vector<corsika::particles::Code>{corsika::particles::Code::Proton},
+          std::vector<float>{1.}));
+
+  universe.AddChild(std::move(theMedium));
+
+  return env;
+}
+
 static int fCount = 0;
 
 class ProcessSplit : public corsika::process::ContinuousProcess<ProcessSplit> {
@@ -50,8 +75,8 @@ public:
   ProcessSplit() {}
 
   template <typename Particle, typename T>
-  double MaxStepLength(Particle&, T&) const {
-    return 1;
+  LengthType MaxStepLength(Particle&, T&) const {
+    return 1_m;
   }
 
   template <typename Particle, typename T, typename Stack>
@@ -81,16 +106,9 @@ private:
 
 TEST_CASE("Cascade", "[Cascade]") {
   corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
-  rmng.RegisterRandomStream("s_rndm");
+  rmng.RegisterRandomStream("cascade");
 
-  corsika::environment::Environment env; // dummy environment
-  auto& universe = *(env.GetUniverse());
-  auto const radius = 1_m * std::numeric_limits<double>::infinity();
-  ;
-  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
-  universe.AddChild(std::move(theMedium));
-
+  auto env = MakeDummyEnv();
   tracking_line::TrackingLine<setup::Stack> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
@@ -98,8 +116,9 @@ TEST_CASE("Cascade", "[Cascade]") {
   const auto sequence = p0 + p1;
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(tracking, sequence, stack);
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
+  CoordinateSystem const& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   stack.Clear();
   auto particle = stack.NewParticle();

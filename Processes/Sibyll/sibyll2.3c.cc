@@ -2,7 +2,6 @@
 
 #include <corsika/random/RNGManager.h>
 
-
 double s_rndm_(int&) {
   static corsika::random::RNG& rmng =
       corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");

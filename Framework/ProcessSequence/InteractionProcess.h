@@ -14,6 +14,7 @@
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
 
@@ -37,11 +38,12 @@ namespace corsika::process {
     template <typename P, typename S>
     inline EProcessReturn DoInteraction(P&, S&) const;
 
-    template <typename P, typename T>
-    inline double GetInteractionLength(P&, T&) const;
+    template <typename Particle, typename Track>
+    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track& t) const;
 
     template <typename Particle, typename Track>
-    inline double GetInverseInteractionLength(Particle& p, Track& t) const {
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(Particle& p,
+                                                                        Track& t) const {
       return 1. / GetRef().GetInteractionLength(p, t);
     }
   };
