@@ -95,11 +95,12 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
-  const auto sequence = p0 + p1;
+  const auto sequence = p0 << p1;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(tracking, sequence, stack);
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   stack.Clear();
   auto particle = stack.NewParticle();

@@ -44,8 +44,8 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
   for (auto& iterP : s) {
     EnergyType E = iterP.GetEnergy();
     Etot += E;
-    geometry::CoordinateSystem& rootCS =
-        geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem(); // for printout
+    geometry::CoordinateSystem& rootCS = geometry::RootCoordinateSystem::GetInstance()
+                                             .GetRootCoordinateSystem(); // for printout
     auto pos = iterP.GetPosition().GetCoordinates(rootCS);
     cout << "StackInspector: i=" << setw(5) << fixed << (i++) << ", id=" << setw(30)
          << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "

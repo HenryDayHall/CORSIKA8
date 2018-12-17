@@ -16,8 +16,8 @@
 #include <corsika/process/stack_inspector/StackInspector.h>
 
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Vector.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/Vector.h>
 
 #include <corsika/units/PhysicalUnits.h>
 
@@ -28,28 +28,26 @@ using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 using namespace corsika;
 
-
 TEST_CASE("StackInspector", "[processes]") {
 
-  auto const& cs = geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();    
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});    
-  geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
-								    0_m / second, 1_m / second);
+  auto const& cs =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
+  geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(
+      cs, 0_m / second, 0_m / second, 1_m / second);
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
   setup::Stack stack;
   auto particle = stack.NewParticle();
-  
+
   SECTION("interface") {
 
     StackInspector<setup::Stack> model(true);
 
     model.Init();
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoContinuous(particle, track, stack);
+    [[maybe_unused]] const process::EProcessReturn ret =
+        model.DoContinuous(particle, track, stack);
     [[maybe_unused]] const double length = model.MaxStepLength(particle, track);
-    
   }
 }
-
-

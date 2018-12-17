@@ -9,8 +9,8 @@
  * the license.
  */
 
-#include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/Decay.h>
+#include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/particles/ParticleProperties.h>
@@ -58,12 +58,12 @@ TEST_CASE("Sibyll", "[processes]") {
     REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::K0Long) == 3);
     REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::SigmaPlus) == 1);
     REQUIRE(process::sibyll::GetSibyllXSCode(corsika::particles::Code::PiMinus) == 2);
-  } 
+  }
 }
 
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Vector.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/Vector.h>
 
 #include <corsika/units/PhysicalUnits.h>
 
@@ -74,24 +74,25 @@ using namespace corsika::units::si;
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
-  auto const& cs = geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();    
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});    
-  geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
-								    0_m / second, 1_m / second);
+  auto const& cs =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
+  geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(
+      cs, 0_m / second, 0_m / second, 1_m / second);
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
   setup::Stack stack;
   auto particle = stack.NewParticle();
-  
+
   SECTION("InteractionInterface") {
 
     Interaction model;
 
     model.Init();
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(particle, stack);
+    [[maybe_unused]] const process::EProcessReturn ret =
+        model.DoInteraction(particle, stack);
     [[maybe_unused]] const double length = model.GetInteractionLength(particle, track);
-    
   }
 
   SECTION("DecayInterface") {
@@ -99,10 +100,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Decay model;
 
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/ model.DoDecay(particle, stack);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
+                                                                          stack);
     [[maybe_unused]] const double length = model.GetLifetime(particle);
-    
   }
-
 }
-

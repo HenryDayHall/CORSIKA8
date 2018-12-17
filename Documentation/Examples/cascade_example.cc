@@ -196,7 +196,6 @@ public:
 private:
 };
 
-
 int main() {
   corsika::environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
@@ -215,7 +214,8 @@ int main() {
 
   universe.AddChild(std::move(theMedium));
 
-  CoordinateSystem& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& rootCS =
+      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
@@ -242,8 +242,9 @@ int main() {
   particle.SetPosition(p);
   EAS.Init();
   EAS.Run();
-  cout << "Result: E0=" << E0 / 1_GeV
-    //<< "GeV, particles below energy threshold =" << p1.GetCount()
+  cout << "Result: E0="
+       << E0 / 1_GeV
+       //<< "GeV, particles below energy threshold =" << p1.GetCount()
        << endl;
   cout << "total energy below threshold (GeV): " //<< p1.GetEnergy() / 1_GeV
        << std::endl;

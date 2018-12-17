@@ -15,18 +15,11 @@
 #include <corsika/process/BaseProcess.h>
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/process/DecayProcess.h>
-//#include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
 #include <cmath>
 #include <limits>
-
-//#include <corsika/setup/SetupTrajectory.h>
-// using corsika::setup::Trajectory;
-//#include <variant>
-
-//#include <type_traits> // still needed ?
 
 namespace corsika::process {
 
@@ -320,15 +313,15 @@ namespace corsika::process {
     }
   };
 
-  /// the + operator assembles many BaseProcess, ContinuousProcess, and
-  /// InteractionProcess objects into a ProcessSequence, all combinatorics
+  /// the << operator assembles many BaseProcess, ContinuousProcess, and
+  /// Interaction/DecayProcess objects into a ProcessSequence, all combinatorics
   /// must be allowed, this is why we define a macro to define all
   /// combinations here:
 
-#define OPSEQ(C1, C2)                                                                \
-  template <typename T1, typename T2>                                                \
-  inline const ProcessSequence<T1, T2> operator+(const C1<T1>& A, const C2<T2>& B) { \
-    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());                          \
+#define OPSEQ(C1, C2)                                                                 \
+  template <typename T1, typename T2>                                                 \
+  inline const ProcessSequence<T1, T2> operator<<(const C1<T1>& A, const C2<T2>& B) { \
+    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());                           \
   }
 
   OPSEQ(BaseProcess, BaseProcess)
@@ -348,8 +341,9 @@ namespace corsika::process {
   OPSEQ(DecayProcess, ContinuousProcess)
   OPSEQ(DecayProcess, DecayProcess)
 
+  /// marker to identify objectas ProcessSequence
   template <typename A, typename B>
-    struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
+  struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
     static const bool value = true;
   };
 
