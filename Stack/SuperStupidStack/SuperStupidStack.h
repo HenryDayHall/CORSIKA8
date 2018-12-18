@@ -74,12 +74,9 @@ namespace corsika::stack {
         return GetStackData().GetTime(GetIndex());
       }
 
-      //#warning this does not really work, nor makes sense:
       corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>
       GetDirection() const {
-        auto P = GetMomentum();
-        return P / P.norm() * 1e10 *
-               (corsika::units::si::meter / corsika::units::si::second);
+        return GetMomentum() / GetEnergy() * corsika::units::constants::c;
       }
     };
 

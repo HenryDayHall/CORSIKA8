@@ -59,7 +59,7 @@ extern struct {
 // extern struct {int mrlu[6]; float rrlu[100]; }ludatr_;
 
 // sibyll main subroutine
-void sibyll_(int&, int&, double&);
+void sibyll_(const int&, const int&, const double&);
 
 // subroutine to initiate sibyll
 void sibyll_ini_();
@@ -79,8 +79,9 @@ void decsib_();
 // interaction length
 // double fpni_(double&, int&);
 
-void sib_sigma_hnuc_(int&, int&, double&, double&, double&);
-void sib_sigma_hp_(int&, double&, double&, double&, double&, double*, double&, double&);
+void sib_sigma_hnuc_(const int&, const int&, const double&, double&, double&);
+void sib_sigma_hp_(const int&, const double&, double&, double&, double&, double*, double&,
+                   double&);
 
 double s_rndm_(int&);
 
