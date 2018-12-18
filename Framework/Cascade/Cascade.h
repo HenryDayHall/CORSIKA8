@@ -71,7 +71,7 @@ namespace corsika::cascade {
           fProcessSequence.GetTotalInverseInteractionLength(particle, step);
 
       // sample random exponential step length in grammage
-      std::exponential_distribution expDist((1_m * 1_m / 1_g) / total_inv_lambda);
+      std::exponential_distribution expDist(total_inv_lambda * (1_g / (1_m * 1_m)));
       GrammageType const next_interact = (1_g / (1_m * 1_m)) * expDist(fRNG);
 
       std::cout << "total_inv_lambda=" << total_inv_lambda
@@ -99,7 +99,6 @@ namespace corsika::cascade {
                 << ", next_decay=" << next_decay << std::endl;
 
       // convert next_decay from time to length [m]
-      // Environment::GetDistance(step, next_decay);
       LengthType const distance_decay = next_decay * particle.GetMomentum().norm() /
                                         particle.GetEnergy() *
                                         corsika::units::constants::c;
@@ -108,10 +107,11 @@ namespace corsika::cascade {
       auto const min_distance =
           std::min({distance_interact, distance_decay, distance_max});
 
+      std::cout << " move particle by : " << min_distance << std::endl;
+
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
       particle.SetPosition(step.PositionFromArclength(min_distance));
-
       // .... also update time, momentum, direction, ...
 
       // apply all continuous processes on particle + track

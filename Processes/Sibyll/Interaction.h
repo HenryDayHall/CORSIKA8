@@ -15,9 +15,11 @@ namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
+    mutable int fCount = 0;
+
   public:
     Interaction() {}
-    ~Interaction() {}
+    ~Interaction() { std::cout << "Sibyll::Interaction n=" << fCount << std::endl; }
 
     void Init() {
 
@@ -73,8 +75,8 @@ namespace corsika::process::sibyll {
       const hep::EnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
       const double Ecm = sqs / 1_GeV;
 
-      std::cout << "Interaction: "
-                << "MinStep: input en: " << p.GetEnergy() / 1_GeV << endl
+      std::cout << "Interaction: LambdaInt: \n"
+                << " input energy: " << p.GetEnergy() / 1_GeV << endl
                 << " beam can interact:" << kBeam << endl
                 << " beam XS code:" << kBeam << endl
                 << " beam pid:" << p.GetPID() << endl
@@ -137,9 +139,7 @@ namespace corsika::process::sibyll {
            << "DoInteraction: " << p.GetPID() << " interaction? "
            << process::sibyll::CanInteract(p.GetPID()) << endl;
       if (process::sibyll::CanInteract(p.GetPID())) {
-        cout << "defining coordinates" << endl;
-        // coordinate system, get global frame of reference
-        CoordinateSystem& rootCS =
+        const CoordinateSystem& rootCS =
             RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
         Point pOrig = p.GetPosition();
@@ -157,7 +157,6 @@ namespace corsika::process::sibyll {
         const int kTarget = corsika::particles::Oxygen::
             GetNucleusA(); // env.GetTargetParticle().GetPID();
 
-        cout << "defining target momentum.." << endl;
         // FOR NOW: target is always at rest
         const EnergyType Etarget = 0. * 1_GeV + corsika::particles::Proton::GetMass();
         const auto pTarget = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
@@ -207,8 +206,9 @@ namespace corsika::process::sibyll {
                     << " DoInteraction: should have dropped particle.." << std::endl;
           // p.Delete(); delete later... different process
         } else {
+          fCount++;
           // Sibyll does not know about units..
-          double sqs = Ecm / 1_GeV;
+          const double sqs = Ecm / 1_GeV;
           // running sibyll, filling stack
           sibyll_(kBeam, kTarget, sqs);
           // running decays
