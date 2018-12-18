@@ -170,10 +170,11 @@ public:
   void ShowResults() {
     cout << " ******************************" << endl
          << " ParticleCut: " << endl
-         << " energy in em.  component (GeV): " << fEmEnergy / 1_GeV << endl
-         << " no. of em.  particles injected: " << fEmCount << endl
-         << " energy in inv. component (GeV): " << fInvEnergy / 1_GeV << endl
-         << " no. of inv. particles injected: " << fInvCount << endl
+         << " energy in em.  component (GeV):  " << fEmEnergy / 1_GeV << endl
+         << " no. of em.  particles injected:  " << fEmCount << endl
+         << " energy in inv. component (GeV):  " << fInvEnergy / 1_GeV << endl
+         << " no. of inv. particles injected:  " << fInvCount << endl
+         << " energy below particle cut (GeV): " << fEnergy / 1_GeV << endl
          << " ******************************" << endl;
   }
 

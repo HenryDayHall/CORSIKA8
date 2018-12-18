@@ -28,12 +28,6 @@ namespace corsika::process::sibyll {
       corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
       rmng.RegisterRandomStream("s_rndm");
 
-      // test random number generator
-      std::cout << "Interaction: "
-                << " test sequence of random numbers." << std::endl;
-      int a = 0;
-      for (int i = 0; i < 8; ++i) std::cout << i << " " << s_rndm_(a) << std::endl;
-
       // initialize Sibyll
       sibyll_ini_();
     }
@@ -186,7 +180,7 @@ namespace corsika::process::sibyll {
         EnergyType E = p.GetEnergy();
         EnergyType Etot = E + Etarget;
         // total momentum
-        MomentumVector Ptot = p.GetMomentum(); // + pTarget;
+        MomentumVector Ptot = p.GetMomentum();
         // invariant mass, i.e. cm. energy
         EnergyType Ecm =
             sqrt(Etot * Etot - Ptot.squaredNorm()); // sqrt( 2. * E * 0.93827_GeV );
@@ -210,7 +204,7 @@ namespace corsika::process::sibyll {
                   << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
         if (E < 8.5_GeV || Ecm < 10_GeV) {
           std::cout << "Interaction: "
-                    << " DoInteraction: dropping particle.." << std::endl;
+                    << " DoInteraction: should have dropped particle.." << std::endl;
           // p.Delete(); delete later... different process
         } else {
           // Sibyll does not know about units..
