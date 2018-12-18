@@ -11,7 +11,6 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
-
 namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
@@ -117,7 +116,6 @@ namespace corsika::process::sibyll {
         return int_length;
       }
 
-      
       return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
 
       /*

@@ -12,8 +12,6 @@ namespace corsika::process::sibyll {
 
   typedef corsika::geometry::Vector<corsika::units::hep::energy_hep_d> MomentumVector;
 
-namespace corsika::process::sibyll {
-
   class SibStackData {
 
   public:
@@ -34,8 +32,7 @@ namespace corsika::process::sibyll {
       using namespace corsika::units;
       using namespace corsika::units::hep;
       auto tmp = v.GetComponents();
-      for (int idx = 0; idx < 3; ++idx)
-        s_plist_.p[idx][i] = tmp[idx] / 1_GeV;
+      for (int idx = 0; idx < 3; ++idx) s_plist_.p[idx][i] = tmp[idx] / 1_GeV;
     }
 
     int GetId(const int i) const { return s_plist_.llist[i]; }

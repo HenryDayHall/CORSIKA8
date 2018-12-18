@@ -58,13 +58,10 @@ namespace corsika::cascade {
 
     void Step(Particle& particle) {
 
+      using namespace corsika::units::si;
       using std::cout;
       using std::endl;
       using std::log;
-
-      // get access to random number generator
-      static corsika::random::RNG& rmng =
-          corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
 
       // determine geometric tracking
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
@@ -105,7 +102,7 @@ namespace corsika::cascade {
       // Environment::GetDistance(step, next_decay);
       LengthType const distance_decay = next_decay * particle.GetMomentum().norm() /
                                         particle.GetEnergy() *
-                                        corsika::units::si::constants::cSquared;
+                                        corsika::units::constants::c;
 
       // take minimum of geometry, interaction, decay for next step
       auto const min_distance =
@@ -160,10 +157,10 @@ namespace corsika::cascade {
     }
 
   private:
+    corsika::environment::Environment const& fEnvironment;
     Tracking& fTracking;
     ProcessList& fProcessSequence;
     Stack& fStack;
-    corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
   };
