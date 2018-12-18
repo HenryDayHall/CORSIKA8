@@ -15,8 +15,11 @@ namespace corsika::process {
   namespace sibyll {
 
     class Decay : public corsika::process::DecayProcess<Decay> {
+      mutable int fCount = 0;
+
     public:
       Decay() {}
+      ~Decay() { std::cout << "Sibyll::Decay n=" << fCount << std::endl; }
       void Init() {
         setHadronsUnstable();
         setTrackedParticlesStable();
@@ -128,19 +131,13 @@ namespace corsika::process {
 
         const corsika::units::si::TimeType t0 =
             corsika::particles::GetLifetime(p.GetPID());
-        cout << "Decay: code: " << p.GetPID() << endl;
-        cout << "Decay: MinStep: t0: " << t0 << endl;
-        cout << "Decay: MinStep: energy: " << E / 1_GeV << endl;
-        cout << "Decay: MinStep: gamma: " << gamma << endl;
-        // cout << "Decay: MinStep: density: " << density << endl;
-        // return as column density
-        // const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
-        // cout << "Decay: MinStep: x0: " << x0 << endl;
+        cout << "Decay: GetLifetime: \n"
+             << " code: " << p.GetPID() << endl;
+        cout << " t0: " << t0 << endl;
+        cout << " energy: " << E / 1_GeV << endl;
+        cout << " gamma: " << gamma << endl;
         corsika::units::si::TimeType const lifetime = gamma * t0;
-        cout << "Decay: MinStep: tau: " << lifetime << endl;
-        // int a = 1;
-        // const double x = -x0 * log(s_rndm_(a));
-        // cout << "Decay: next decay: " << x << endl;
+        cout << " -> tau: " << lifetime << endl;
         return lifetime;
       }
 
@@ -148,6 +145,7 @@ namespace corsika::process {
       void DoDecay(Particle& p, Stack& s) const {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
+        fCount++;
         SibStack ss;
         ss.Clear();
         // copy particle to sibyll stack

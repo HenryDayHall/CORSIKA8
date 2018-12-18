@@ -55,14 +55,17 @@ static int fEmCount;
 static EnergyType fInvEnergy;
 static int fInvCount;
 
-class ProcessEMCut : public corsika::process::ContinuousProcess<ProcessEMCut> {
+class ProcessCut : public corsika::process::ContinuousProcess<ProcessCut> {
+  EnergyType fECut;
+
 public:
-  ProcessEMCut() {}
+  ProcessCut(const EnergyType v)
+      : fECut(v) {}
   template <typename Particle>
   bool isBelowEnergyCut(Particle& p) const {
     // FOR NOW: center-of-mass energy hard coded
     const EnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
-    if (p.GetEnergy() < 50_GeV || Ecm < 10_GeV)
+    if (p.GetEnergy() < fECut || Ecm < 10_GeV)
       return true;
     else
       return false;
@@ -134,24 +137,25 @@ public:
 
   template <typename Particle, typename Stack>
   EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) const {
-    cout << "ProcessCut: DoContinuous: " << p.GetPID() << endl;
     const Code pid = p.GetPID();
+    EnergyType energy = p.GetEnergy();
+    cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy << endl;
     EProcessReturn ret = EProcessReturn::eOk;
     if (isEmParticle(pid)) {
       cout << "removing em. particle..." << endl;
-      fEmEnergy += p.GetEnergy();
+      fEmEnergy += energy;
       fEmCount += 1;
       p.Delete();
       ret = EProcessReturn::eParticleAbsorbed;
     } else if (isInvisible(pid)) {
       cout << "removing inv. particle..." << endl;
-      fInvEnergy += p.GetEnergy();
+      fInvEnergy += energy;
       fInvCount += 1;
       p.Delete();
       ret = EProcessReturn::eParticleAbsorbed;
     } else if (isBelowEnergyCut(p)) {
       cout << "removing low en. particle..." << endl;
-      fEnergy += p.GetEnergy();
+      fEnergy += energy;
       p.Delete();
       ret = EProcessReturn::eParticleAbsorbed;
     }
@@ -178,20 +182,21 @@ public:
          << " ******************************" << endl;
   }
 
-  EnergyType GetInvEnergy() { return fInvEnergy; }
-
-  EnergyType GetCutEnergy() { return fEnergy; }
-
-  EnergyType GetEmEnergy() { return fEmEnergy; }
-
-private:
+  EnergyType GetInvEnergy() const { return fInvEnergy; }
+  EnergyType GetCutEnergy() const { return fEnergy; }
+  EnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
+//
+// The example main program for a particle cascade
+//
 int main() {
 
+  // initialize random number sequence(s)
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
-  corsika::environment::Environment env; // dummy environment
+  // setup environment, geometry
+  corsika::environment::Environment env;
   auto& universe = *(env.GetUniverse());
 
   auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
@@ -201,47 +206,47 @@ int main() {
   using MyHomogeneousModel =
       corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_g / (1_m * 1_m * 1_m),
+      1_kg / (1_m * 1_m * 1_m),
       corsika::environment::NuclearComposition(
-          std::vector<corsika::particles::Code>{corsika::particles::Code::Proton},
+          std::vector<corsika::particles::Code>{corsika::particles::Code::Oxygen},
           std::vector<float>{1.}));
 
   universe.AddChild(std::move(theMedium));
 
-  CoordinateSystem& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
+  // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
-
   corsika::process::sibyll::Interaction sibyll;
   corsika::process::sibyll::Decay decay;
-  ProcessEMCut cut;
+  ProcessCut cut(8_GeV);
+
+  // assemble all processes into an ordered process list
   const auto sequence = /*p0 <<*/ sibyll << decay << cut;
 
+  // setup particle stack, and add primary particle
   setup::Stack stack;
-
-  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
-
   stack.Clear();
-  auto particle = stack.NewParticle();
-  EnergyType E0 = 100_GeV;
-  hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
-  auto plab = stack::super_stupid::MomentumVector(rootCS, 0. * 1_GeV, 0. * 1_GeV, P0);
-  particle.SetEnergy(E0);
-  particle.SetMomentum(plab);
-  particle.SetPID(Code::Proton);
-  particle.SetTime(0_ns);
-  Point p(rootCS, 0_m, 0_m, 0_m);
-  particle.SetPosition(p);
+  const EnergyType E0 = 1_TeV;
+  {
+    auto particle = stack.NewParticle();
+    particle.SetPID(Code::Proton);
+    hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
+    auto plab = stack::super_stupid::MomentumVector(rootCS, 0. * 1_GeV, 0. * 1_GeV, -P0);
+    particle.SetEnergy(E0);
+    particle.SetMomentum(plab);
+    particle.SetTime(0_ns);
+    Point p(rootCS, 0_m, 0_m, 10_km);
+    particle.SetPosition(p);
+  }
+
+  // define air shower object, run simulation
+  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
   EAS.Init();
   EAS.Run();
-  cout << "Result: E0="
-       << E0 / 1_GeV
-       //<< "GeV, particles below energy threshold =" << p1.GetCount()
-       << endl;
-  cout << "total energy below threshold (GeV): " //<< p1.GetEnergy() / 1_GeV
-       << std::endl;
+
+  cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.ShowResults();
   cout << "total energy (GeV): "
        << (cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy()) / 1_GeV << endl;
