@@ -42,14 +42,14 @@ namespace corsika::environment {
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& pTraj,
+        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
         corsika::units::si::LengthType pTo) const override {
       using namespace corsika::units::si;
       return pTo * fDensity;
     }
 
     corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& pTraj,
+        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
         corsika::units::si::GrammageType pGrammage) const override {
       return pGrammage / fDensity;
     }

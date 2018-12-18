@@ -18,15 +18,12 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
-#include <variant>
+// #include <variant>
 
 namespace corsika::setup {
 
-  using corsika::geometry::Helix;
-  using corsika::geometry::Line;
-
   /// definition of Trajectory base class, to be used in tracking and cascades
-  typedef corsika::geometry::Trajectory<Line> Trajectory;
+  typedef corsika::geometry::Trajectory<corsika::geometry::Line> Trajectory;
 
   /*
   typedef std::variant<std::monostate, corsika::geometry::Trajectory<Line>,

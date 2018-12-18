@@ -20,7 +20,7 @@
 
 #include <array>
 #include <cstdint>
-#include <iostream>
+#include <iosfwd>
 #include <type_traits>
 
 #include <corsika/units/PhysicalConstants.h>
@@ -35,8 +35,6 @@
  */
 
 namespace corsika::particles {
-
-  using corsika::units::si::second;
 
   enum class Code : int16_t;
 
@@ -76,7 +74,7 @@ namespace corsika::particles {
   }
 
   corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const p) {
-    return GetElectricChargeNumber(p) * (corsika::units::si::constants::e / 3.);
+    return GetElectricChargeNumber(p) * (corsika::units::constants::e / 3.);
   }
 
   constexpr std::string const& GetName(Code const p) {
@@ -100,15 +98,12 @@ namespace corsika::particles {
     return detail::nucleusZ[static_cast<CodeIntType const>(p)];
   }
 
-  namespace io {
+  /**
+   * the output operator for particles
+   **/
 
-    std::ostream& operator<<(std::ostream& stream, Code const p);
-
-  } // namespace io
+  std::ostream& operator<<(std::ostream& stream, corsika::particles::Code const p);
 
 } // namespace corsika::particles
-
-// to inject the operator<< into the root namespace
-using namespace corsika::particles::io;
 
 #endif

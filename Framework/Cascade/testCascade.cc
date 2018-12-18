@@ -113,7 +113,7 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
-  const auto sequence = p0 + p1;
+  const auto sequence = p0 << p1;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
@@ -126,8 +126,8 @@ TEST_CASE("Cascade", "[Cascade]") {
   particle.SetPID(particles::Code::Electron);
   particle.SetEnergy(E0);
   particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
-  particle.SetMomentum(corsika::stack::super_stupid::MomentumVector(
-      rootCS, {0 * newton * second, 0 * newton * second, -1 * newton * second}));
+  particle.SetMomentum(
+      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}));
   particle.SetTime(0_ns);
   EAS.Init();
   EAS.Run();

@@ -77,7 +77,7 @@ namespace corsika::process {
       auto GetTrack(Particle const& p) {
         using namespace corsika::units::si;
         geometry::Vector<SpeedType::dimension_type> const velocity =
-            p.GetMomentum() / p.GetEnergy() * corsika::units::si::constants::cSquared;
+            p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
 
         auto const currentPosition = p.GetPosition();
 

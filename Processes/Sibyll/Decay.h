@@ -4,6 +4,7 @@
 #include <corsika/process/DecayProcess.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/process/sibyll/SibStack.h>
+
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
@@ -13,74 +14,6 @@ namespace corsika::process {
 
   namespace sibyll {
 
-    void setHadronsUnstable() {
-      // name? also makes EM particles stable
-
-      // loop over all particles in sibyll
-      // should be changed to loop over human readable list
-      // i.e. corsika::particles::ListOfParticles()
-      std::cout << "Sibyll: setting hadrons unstable.." << std::endl;
-      // make ALL particles unstable, then set EM stable
-      for (auto& p : corsika2sibyll) {
-        // std::cout << (int)p << std::endl;
-        const int sibCode = (int)p;
-        // skip unknown and antiparticles
-        if (sibCode < 1) continue;
-        // std::cout << "Sibyll: Decay: setting " << ConvertFromSibyll(
-        // static_cast<SibyllCode> ( sibCode ) ) << " unstable" << std::endl;
-        s_csydec_.idb[sibCode - 1] = abs(s_csydec_.idb[sibCode - 1]);
-        // std::cout << "decay table value: " << s_csydec_.idb[ sibCode - 1 ] <<
-        // std::endl;
-      }
-      // set Leptons and Proton and Neutron stable
-      // use stack to loop over particles
-      setup::Stack ds;
-      ds.NewParticle().SetPID(corsika::particles::Code::Proton);
-      ds.NewParticle().SetPID(corsika::particles::Code::Neutron);
-      ds.NewParticle().SetPID(corsika::particles::Code::Electron);
-      ds.NewParticle().SetPID(corsika::particles::Code::Positron);
-      ds.NewParticle().SetPID(corsika::particles::Code::NuE);
-      ds.NewParticle().SetPID(corsika::particles::Code::NuEBar);
-      ds.NewParticle().SetPID(corsika::particles::Code::MuMinus);
-      ds.NewParticle().SetPID(corsika::particles::Code::MuPlus);
-      ds.NewParticle().SetPID(corsika::particles::Code::NuMu);
-      ds.NewParticle().SetPID(corsika::particles::Code::NuMuBar);
-
-      for (auto& p : ds) {
-        int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
-        // set particle stable by setting table value negative
-        //	cout << "Sibyll: setting " << p.GetPID() << "(" << s_id << ")"
-        //     << " stable in Sibyll .." << endl;
-        s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
-        p.Delete();
-      }
-    }
-
-    void setTrackedParticlesStable() {
-      /*
-        Sibyll is hadronic generator
-        only hadrons decay
-      */
-      // set particles unstable
-      setHadronsUnstable();
-      // make tracked particles stable
-      std::cout << "Interaction: setting tracked hadrons stable.." << std::endl;
-      setup::Stack ds;
-      ds.NewParticle().SetPID(particles::Code::PiPlus);
-      ds.NewParticle().SetPID(particles::Code::PiMinus);
-      ds.NewParticle().SetPID(particles::Code::KPlus);
-      ds.NewParticle().SetPID(particles::Code::KMinus);
-      ds.NewParticle().SetPID(particles::Code::K0Long);
-      ds.NewParticle().SetPID(particles::Code::K0Short);
-
-      for (auto& p : ds) {
-        int s_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
-        // set particle stable by setting table value negative
-        s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
-        p.Delete();
-      }
-    }
-
     class Decay : public corsika::process::DecayProcess<Decay> {
     public:
       Decay() {}
@@ -89,7 +22,32 @@ namespace corsika::process {
         setTrackedParticlesStable();
       }
 
-      void setAllStable() {
+      void setTrackedParticlesStable() const {
+        /*
+          Sibyll is hadronic generator
+          only hadrons decay
+        */
+        // set particles unstable
+        setHadronsUnstable();
+        // make tracked particles stable
+        std::cout << "Interaction: setting tracked hadrons stable.." << std::endl;
+        const std::vector<corsika::particles::Code> particleList = {
+            particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+            particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+
+        for (auto p : particleList) {
+          // set particle stable by setting table value negative
+          const int sibid = process::sibyll::ConvertToSibyllRaw(p);
+          s_csydec_.idb[sibid - 1] = (-1) * abs(s_csydec_.idb[sibid - 1]);
+        }
+      }
+
+      void setAllStable() const {
+
+        // using namespace corsika::io;
+        using std::cout;
+        using std::endl;
+
         // name? also makes EM particles stable
 
         // loop over all particles in sibyll
@@ -100,27 +58,71 @@ namespace corsika::process {
           const int sibCode = (int)p;
           // skip unknown and antiparticles
           if (sibCode < 1) continue;
-          std::cout << "Sibyll: Decay: setting "
-                    << ConvertFromSibyll(static_cast<SibyllCode>(sibCode)) << " stable"
-                    << std::endl;
+          const corsika::particles::Code pid =
+              ConvertFromSibyll(static_cast<SibyllCode>(sibCode));
+          std::cout << "Sibyll: Decay: setting " << pid << " stable" << std::endl;
           s_csydec_.idb[sibCode - 1] = -1 * abs(s_csydec_.idb[sibCode - 1]);
           std::cout << "decay table value: " << s_csydec_.idb[sibCode - 1] << std::endl;
         }
       }
 
-      friend void setHadronsUnstable();
+      void setHadronsUnstable() const {
+
+        using std::cout;
+        using std::endl;
+        // using namespace corsika::io;
+        using namespace corsika::units::si;
+
+        // name? also makes EM particles stable
+
+        // loop over all particles in sibyll
+        // should be changed to loop over human readable list
+        // i.e. corsika::particles::ListOfParticles()
+        std::cout << "Sibyll: setting hadrons unstable.." << std::endl;
+        // make ALL particles unstable, then set EM stable
+        for (auto& p : corsika2sibyll) {
+          // std::cout << (int)p << std::endl;
+          const int sibCode = (int)p;
+          // skip unknown and antiparticles
+          if (sibCode < 1) continue;
+          // std::cout << "Sibyll: Decay: setting " << ConvertFromSibyll(
+          // static_cast<SibyllCode> ( sibCode ) ) << " unstable" << std::endl;
+          s_csydec_.idb[sibCode - 1] = abs(s_csydec_.idb[sibCode - 1]);
+          // std::cout << "decay table value: " << s_csydec_.idb[ sibCode - 1 ] <<
+          // std::endl;
+        }
+        // set Leptons and Proton and Neutron stable
+        // use stack to loop over particles
+        const std::vector<corsika::particles::Code> particleList = {
+            corsika::particles::Code::Proton,   corsika::particles::Code::Neutron,
+            corsika::particles::Code::Electron, corsika::particles::Code::Positron,
+            corsika::particles::Code::NuE,      corsika::particles::Code::NuEBar,
+            corsika::particles::Code::MuMinus,  corsika::particles::Code::MuPlus,
+            corsika::particles::Code::NuMu,     corsika::particles::Code::NuMuBar};
+
+        for (auto p : particleList) {
+          // set particle stable by setting table value negative
+          //	cout << "Sibyll: setting " << p.GetPID() << "(" << s_id << ")"
+          //     << " stable in Sibyll .." << endl;
+          const int sibid = process::sibyll::ConvertToSibyllRaw(p);
+          s_csydec_.idb[sibid - 1] = (-1) * abs(s_csydec_.idb[sibid - 1]);
+        }
+      }
 
       template <typename Particle>
       corsika::units::si::TimeType GetLifetime(Particle& p) const {
+        using std::cout;
+        using std::endl;
+        using namespace corsika::units::si;
+
         corsika::units::hep::EnergyType E = p.GetEnergy();
         corsika::units::hep::MassType m = corsika::particles::GetMass(p.GetPID());
 
-        // const MassDensityType density = 1.25e-3 * kilogram / (1_cm * 1_cm * 1_cm);
-
         const double gamma = E / m;
 
-        const TimeType t0 = particles::GetLifetime(p.GetPID());
-        cout << "Decay: code: " << (p.GetPID()) << endl;
+        const corsika::units::si::TimeType t0 =
+            corsika::particles::GetLifetime(p.GetPID());
+        cout << "Decay: code: " << p.GetPID() << endl;
         cout << "Decay: MinStep: t0: " << t0 << endl;
         cout << "Decay: MinStep: gamma: " << gamma << endl;
         // cout << "Decay: MinStep: density: " << density << endl;

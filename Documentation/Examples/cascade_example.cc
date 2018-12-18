@@ -43,7 +43,7 @@ using namespace corsika::geometry;
 using namespace corsika::environment;
 
 using namespace std;
-using namespace corsika::units::si;
+using namespace corsika::units::hep;
 
 static EnergyType fEnergy = 0. * 1_GeV;
 
@@ -228,7 +228,7 @@ int main() {
   corsika::process::sibyll::Interaction sibyll;
   corsika::process::sibyll::Decay decay;
   ProcessEMCut cut;
-  const auto sequence = /*p0 +*/ sibyll + decay + cut;
+  const auto sequence = p0 << sibyll << decay << cut;
 
   setup::Stack stack;
 
@@ -237,9 +237,8 @@ int main() {
   stack.Clear();
   auto particle = stack.NewParticle();
   EnergyType E0 = 100_GeV;
-  MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV) / si::constants::c;
-  auto plab = super_stupid::MomentumVector(rootCS, 0. * 1_GeV / si::constants::c,
-                                           0. * 1_GeV / si::constants::c, P0);
+  hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
+  auto plab = stack::super_stupid::MomentumVector(rootCS, 0. * 1_GeV, 0. * 1_GeV, P0);
   particle.SetEnergy(E0);
   particle.SetMomentum(plab);
   particle.SetPID(Code::Proton);

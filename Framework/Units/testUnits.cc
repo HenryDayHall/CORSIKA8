@@ -39,7 +39,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     [[maybe_unused]] LengthType arr1[2] = {{1_mm}, {2_cm}};
 
-    std::array<EnergyType, 4> arr2; // empty array
+    [[maybe_unused]] std::array<EnergyType, 4> arr2; // empty array
 
     [[maybe_unused]] std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
 
@@ -97,9 +97,13 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   SECTION("Unit system conversion") {
 
     const units::hep::MassType m_hep = 3_GeV;
+    std::cout << m_hep << std::endl;
+
+    const units::si::MassType m_hep2 = 3_kg;
+    std::cout << m_hep2 << std::endl;
 
     REQUIRE(m_hep == 3_GeV); // hep::mass identical to si::energy
-    auto type_check = m_hep / units::si::constants::cSquared;
+    auto type_check = m_hep / units::constants::cSquared;
     REQUIRE(dynamic_cast<units::si::MassType*>(&type_check)); // hep::mass*c2 is mass unit
 
     const units::hep::EnergyType e_hep = 4_GeV;

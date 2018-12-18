@@ -26,6 +26,7 @@ namespace corsika::process {
     eInteracted = 3,
     eDecayed = 4,
   };
+
 } // namespace corsika::process
 
 #endif

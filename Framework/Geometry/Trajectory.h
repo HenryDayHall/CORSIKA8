@@ -38,7 +38,7 @@ namespace corsika::geometry {
 
     corsika::units::si::TimeType GetDuration() const { return fTimeLength; }
 
-    LengthType GetDistance(corsika::units::si::TimeType t) const {
+    corsika::units::si::LengthType GetDistance(corsika::units::si::TimeType t) const {
       assert(t > fTimeLength);
       assert(t >= 0 * corsika::units::si::second);
       return T::ArcLength(0, t);

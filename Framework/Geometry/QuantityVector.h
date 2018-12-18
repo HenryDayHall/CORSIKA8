@@ -117,16 +117,16 @@ namespace corsika::geometry {
     auto operator==(QuantityVector<dim> const& p) const { return eVector == p.eVector; }
   };
 
+  template <typename dim>
+  auto& operator<<(std::ostream& os, corsika::geometry::QuantityVector<dim> qv) {
+    using Quantity = phys::units::quantity<dim, double>;
+
+    os << '(' << qv.eVector(0) << ' ' << qv.eVector(1) << ' ' << qv.eVector(2) << ") "
+       << phys::units::to_unit_symbol<dim, double>(
+              Quantity(phys::units::detail::magnitude_tag, 1));
+    return os;
+  }
+
 } // namespace corsika::geometry
-
-template <typename dim>
-auto& operator<<(std::ostream& os, corsika::geometry::QuantityVector<dim> qv) {
-  using Quantity = phys::units::quantity<dim, double>;
-
-  os << '(' << qv.eVector(0) << ' ' << qv.eVector(1) << ' ' << qv.eVector(2) << ") "
-     << phys::units::to_unit_symbol<dim, double>(
-            Quantity(phys::units::detail::magnitude_tag, 1));
-  return os;
-}
 
 #endif

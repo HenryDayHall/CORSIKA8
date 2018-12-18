@@ -15,7 +15,6 @@
 #include <corsika/process/BaseProcess.h>
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/process/DecayProcess.h>
-//#include <corsika/process/DiscreteProcess.h>
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -23,111 +22,7 @@
 #include <cmath>
 #include <limits>
 
-//#include <corsika/setup/SetupTrajectory.h>
-// using corsika::setup::Trajectory;
-//#include <variant>
-
-//#include <type_traits> // still needed ?
-
 namespace corsika::process {
-
-  // namespace detail {
-
-  /*   /\* template<typename TT1, typename TT2, typename Type = void> *\/ */
-  /*   /\*   struct CallHello { *\/ */
-  /*   /\* 	static void Call(const TT1&, const TT2&) { *\/ */
-  /*   /\* 	  std::cout << "normal" << std::endl; *\/ */
-  /*   /\* 	} *\/ */
-  /*   /\*   }; *\/ */
-
-  /*   /\* template<typename TT1, typename TT2> *\/ */
-  /*   /\*   struct CallHello<TT1, TT2, typename
-   * std::enable_if<std::is_base_of<ContinuousProcess<TT2>, TT2>::value>::type> *\/ */
-  /*   /\*   { *\/ */
-  /*   /\* 	static void Call(const TT1&, const TT2&) { *\/ */
-  /*   /\* 	  std::cout << "special" << std::endl; *\/ */
-  /*   /\* 	}	 *\/ */
-  /*          }; */
-
-  /*   template<typename T1, typename T2, typename Particle, typename Trajectory, typename
-   * Stack> //, typename Type = void> */
-  /*     struct DoContinuous { */
-  /* 	static EProcessReturn Call(const T1& A, const T2& B, Particle& p, Trajectory& t,
-   * Stack& s) { */
-  /* 	  EProcessReturn ret = EProcessReturn::eOk; */
-  /* 	  if constexpr (!std::is_base_of<DiscreteProcess<T1>, T1>::value)  { */
-  /* 	      A.DoContinuous(p, t, s); */
-  /* 	    } */
-  /* 	  if constexpr (!std::is_base_of<DiscreteProcess<T2>, T2>::value)  { */
-  /* 	      B.DoContinuous(p, t, s); */
-  /* 	    } */
-  /* 	  return ret; */
-  /* 	} */
-  /*     }; */
-
-  /*   /\* */
-  /*   template<typename T1, typename T2, typename Particle, typename Trajectory, typename
-   * Stack> */
-  /*     struct DoContinuous<T1,T2,Particle,Trajectory,Stack, typename
-   * std::enable_if<std::is_base_of<DiscreteProcess<T1>, T1>::value>::type> { */
-  /* 	static EProcessReturn Call(const T1& A, const T2& B, Particle& p, Trajectory& t,
-   * Stack& s) { */
-  /* 	  EProcessReturn ret = EProcessReturn::eOk; */
-  /* 	  A.DoContinuous(p, t, s); */
-  /* 	  B.DoContinuous(p, t, s); */
-  /* 	  return ret; */
-  /* 	} */
-  /*     }; */
-
-  /*       template<typename T1, typename T2, typename Particle, typename Trajectory,
-   * typename Stack> */
-  /*     struct DoContinuous<T1,T2,Particle,Trajectory,Stack, typename
-   * std::enable_if<std::is_base_of<DiscreteProcess<T2>, T2>::value>::type> { */
-  /* 	static EProcessReturn Call(const T1& A, const T2&, Particle& p, Trajectory& t,
-   * Stack& s) { */
-  /* 	  EProcessReturn ret = EProcessReturn::eOk; */
-  /* 	  A.DoContinuous(p, t, s); */
-  /* 	  B.DoContinuous(p, t, s); */
-  /* 	  return ret; */
-  /* 	} */
-  /*     }; */
-  /*   *\/ */
-
-  /*   template<typename T1, typename T2, typename Particle, typename Stack>//, typename
-   * Type = void> */
-  /*     struct DoDiscrete { */
-  /* 	static EProcessReturn Call(const T1& A, const T2& B, Particle& p, Stack& s)  { */
-  /* 	  if constexpr (!std::is_base_of<ContinuousProcess<T1>, T1>::value) { */
-  /* 	      A.DoDiscrete(p, s); */
-  /* 	    } */
-  /* 	  if constexpr (!std::is_base_of<ContinuousProcess<T2>, T2>::value) { */
-  /* 	      B.DoDiscrete(p, s); */
-  /* 	    } */
-  /* 	  return EProcessReturn::eOk; */
-  /* 	} */
-  /*     }; */
-  /*   /\* */
-  /*   template<typename T1, typename T2, typename Particle, typename Stack> */
-  /*     struct DoDiscrete<T1,T2,Particle,Stack, typename
-   * std::enable_if<std::is_base_of<ContinuousProcess<T1>, T1>::value>::type> { */
-  /*     static EProcessReturn Call(const T1&, const T2& B, Particle& p, Stack& s) { */
-  /* 	// A.DoDiscrete(p, s); */
-  /*       B.DoDiscrete(p, s); */
-  /*       return EProcessReturn::eOk; */
-  /*     } */
-  /*   }; */
-
-  /*   template<typename T1, typename T2, typename Particle, typename Stack> */
-  /*     struct DoDiscrete<T1,T2,Particle,Stack, typename
-   * std::enable_if<std::is_base_of<ContinuousProcess<T2>, T2>::value>::type> { */
-  /*     static EProcessReturn Call(const T1& A, const T2&, Particle& p, Stack& s) { */
-  /* 	A.DoDiscrete(p, s); */
-  /*       //B.DoDiscrete(p, s); */
-  /*       return EProcessReturn::eOk; */
-  /*     } */
-  /*   }; */
-  /*   *\/ */
-  //} // end namespace detail
 
   /**
      \class ProcessSequence
@@ -332,15 +227,15 @@ namespace corsika::process {
     }
   };
 
-  /// the + operator assembles many BaseProcess, ContinuousProcess, and
-  /// InteractionProcess objects into a ProcessSequence, all combinatorics
+  /// the << operator assembles many BaseProcess, ContinuousProcess, and
+  /// Interaction/DecayProcess objects into a ProcessSequence, all combinatorics
   /// must be allowed, this is why we define a macro to define all
   /// combinations here:
 
-#define OPSEQ(C1, C2)                                                                \
-  template <typename T1, typename T2>                                                \
-  inline const ProcessSequence<T1, T2> operator+(const C1<T1>& A, const C2<T2>& B) { \
-    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());                          \
+#define OPSEQ(C1, C2)                                                                 \
+  template <typename T1, typename T2>                                                 \
+  inline const ProcessSequence<T1, T2> operator<<(const C1<T1>& A, const C2<T2>& B) { \
+    return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());                           \
   }
 
   OPSEQ(BaseProcess, BaseProcess)
@@ -360,6 +255,7 @@ namespace corsika::process {
   OPSEQ(DecayProcess, ContinuousProcess)
   OPSEQ(DecayProcess, DecayProcess)
 
+  /// marker to identify objectas ProcessSequence
   template <typename A, typename B>
   struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
     static const bool value = true;

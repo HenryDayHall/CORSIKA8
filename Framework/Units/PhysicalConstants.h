@@ -27,7 +27,7 @@
 
 #include <phys/units/quantity.hpp>
 
-namespace corsika::units::si::constants {
+namespace corsika::units::constants {
 
   using namespace phys::units;
 
@@ -38,11 +38,12 @@ namespace corsika::units::si::constants {
 
   // Avogadro constant
   constexpr quantity<dimensions<0, 0, 0, 0, 0, -1> > N_sub_A{Rep(6.02214199e+23L) / mole};
-  // electronvolt
-  constexpr quantity<energy_d> eV{Rep(1.6021766208e-19L) * joule};
 
   // elementary charge
   constexpr quantity<electric_charge_d> e{Rep(1.6021766208e-19L) * coulomb};
+
+  // electronvolt
+  constexpr quantity<energy_d> eV{e / coulomb * joule};
 
   // Planck constant
   constexpr quantity<dimensions<2, 1, -1> > h{Rep(6.62606876e-34L) * joule * second};
@@ -59,6 +60,6 @@ namespace corsika::units::si::constants {
 
   // etc.
 
-} // namespace corsika::units::si::constants
+} // namespace corsika::units::constants
 
 #endif // PHYS_UNITS_PHYSICAL_CONSTANTS_HPP_INCLUDED
