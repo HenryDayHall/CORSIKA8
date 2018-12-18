@@ -56,9 +56,8 @@ namespace corsika::process::sibyll {
 
       // beam particles for sibyll : 1, 2, 3 for p, pi, k
       // read from cross section code table
-      int kBeam = process::sibyll::GetSibyllXSCode(corsikaBeamId);
-
-      bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
+      const int kBeam = process::sibyll::GetSibyllXSCode(corsikaBeamId);
+      const bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
 
       /*
          the target should be defined by the Environment,
@@ -67,7 +66,7 @@ namespace corsika::process::sibyll {
        */
       // target nuclei: A < 18
       // FOR NOW: assume target is oxygen
-      int kTarget = 16;
+      const int kTarget = corsika::particles::Oxygen::GetNucleusA();
 
       hep::EnergyType Etot =
           p.GetEnergy() + kTarget * corsika::particles::Proton::GetMass();
@@ -77,8 +76,8 @@ namespace corsika::process::sibyll {
       Ptot += p.GetMomentum();
       Ptot += pTarget;
       // calculate cm. energy
-      hep::EnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
-      double Ecm = sqs / 1_GeV;
+      const hep::EnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
+      const double Ecm = sqs / 1_GeV;
 
       std::cout << "Interaction: "
                 << "MinStep: input en: " << p.GetEnergy() / 1_GeV << endl
@@ -149,8 +148,8 @@ namespace corsika::process::sibyll {
         CoordinateSystem& rootCS =
             RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
-        QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
-        Point pOrig(rootCS, coordinates);
+        Point pOrig = p.GetPosition();
+        TimeType tOrig = p.GetTime();
 
         /*
            the target should be defined by the Environment,
@@ -160,8 +159,9 @@ namespace corsika::process::sibyll {
            here we need: GetTargetMassNumber() or GetTargetPID()??
                          GetTargetMomentum() (zero in EAS)
         */
-        // FOR NOW: set target to proton
-        int kTarget = 1; // env.GetTargetParticle().GetPID();
+        // FOR NOW: set target to oxygen
+        const int kTarget = corsika::particles::Oxygen::
+            GetNucleusA(); // env.GetTargetParticle().GetPID();
 
         cout << "defining target momentum.." << endl;
         // FOR NOW: target is always at rest
@@ -171,6 +171,8 @@ namespace corsika::process::sibyll {
              << pTarget.GetComponents() / 1_GeV * constants::c << endl;
         cout << "beam momentum (GeV/c): "
              << p.GetMomentum().GetComponents() / 1_GeV * constants::c << endl;
+        cout << "position of interaction: " << pOrig.GetCoordinates() << endl;
+        cout << "time: " << tOrig << endl;
 
         // get energy of particle from stack
         /*
@@ -209,7 +211,7 @@ namespace corsika::process::sibyll {
         if (E < 8.5_GeV || Ecm < 10_GeV) {
           std::cout << "Interaction: "
                     << " DoInteraction: dropping particle.." << std::endl;
-          p.Delete();
+          // p.Delete(); delete later... different process
         } else {
           // Sibyll does not know about units..
           double sqs = Ecm / 1_GeV;
@@ -265,6 +267,8 @@ namespace corsika::process::sibyll {
             corsika::geometry::QuantityVector<energy_hep_d> p_lab_c{
                 p_lab_components[0], p_lab_components[1], p_lab_components[2]};
             pnew.SetMomentum(MomentumVector(rootCS, p_lab_c));
+            pnew.SetPosition(pOrig);
+            pnew.SetTime(tOrig);
             Ptot_final += pnew.GetMomentum();
           }
           // cout << "tot. momentum final (GeV/c): " << Ptot_final.GetComponents() / 1_GeV

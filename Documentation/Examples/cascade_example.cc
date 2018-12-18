@@ -119,8 +119,10 @@ public:
 
   template <typename Particle>
   LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
+    cout << "ProcessCut: MinStep: pid: " << p.GetPID() << endl;
+    cout << "ProcessCut: MinStep: energy (GeV): " << p.GetEnergy() / 1_GeV << endl;
     const Code pid = p.GetPID();
-    if (isEmParticle(pid) || isInvisible(pid)) {
+    if (isEmParticle(pid) || isInvisible(pid) || isBelowEnergyCut(p)) {
       cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
       return 0_m;
     } else {
@@ -134,40 +136,26 @@ public:
   EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) const {
     cout << "ProcessCut: DoContinuous: " << p.GetPID() << endl;
     const Code pid = p.GetPID();
+    EProcessReturn ret = EProcessReturn::eOk;
     if (isEmParticle(pid)) {
       cout << "removing em. particle..." << endl;
       fEmEnergy += p.GetEnergy();
       fEmCount += 1;
       p.Delete();
+      ret = EProcessReturn::eParticleAbsorbed;
     } else if (isInvisible(pid)) {
       cout << "removing inv. particle..." << endl;
       fInvEnergy += p.GetEnergy();
       fInvCount += 1;
       p.Delete();
+      ret = EProcessReturn::eParticleAbsorbed;
     } else if (isBelowEnergyCut(p)) {
       cout << "removing low en. particle..." << endl;
       fEnergy += p.GetEnergy();
       p.Delete();
+      ret = EProcessReturn::eParticleAbsorbed;
     }
-    // cout << "ProcessCut: DoContinous: " << p.GetPID() << endl;
-    // cout << " is em: " << isEmParticle( p.GetPID() ) << endl;
-    // cout << " is inv: " << isInvisible( p.GetPID() ) << endl;
-    // const Code pid = p.GetPID();
-    // if( isEmParticle( pid ) ){
-    //   cout << "removing em. particle..." << endl;
-    //   fEmEnergy += p.GetEnergy();
-    //   fEmCount  += 1;
-    //   p.Delete();
-    //   return EProcessReturn::eParticleAbsorbed;
-    // }
-    // if ( isInvisible( pid ) ){
-    //   cout << "removing inv. particle..." << endl;
-    //   fInvEnergy += p.GetEnergy();
-    //   fInvCount  += 1;
-    //   p.Delete();
-    //   return EProcessReturn::eParticleAbsorbed;
-    // }
-    return EProcessReturn::eOk;
+    return ret;
   }
 
   void Init() {
