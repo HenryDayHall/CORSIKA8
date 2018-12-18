@@ -86,7 +86,7 @@ void modular() {
   Process3 m3;
   Process4 m4(0.9);
 
-  const auto sequence = m1 + m2 + m3 + m4;
+  const auto sequence = m1 << m2 << m3 << m4;
 
   DummyData p;
   DummyStack s;

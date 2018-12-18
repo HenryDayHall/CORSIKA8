@@ -23,6 +23,7 @@
 using namespace std;
 
 using namespace corsika;
+using namespace corsika::particles;
 using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 
@@ -37,7 +38,8 @@ StackInspector<Stack>::~StackInspector() {}
 template <typename Stack>
 process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Trajectory&,
                                                             Stack& s) const {
-  if (!fReport) return EProcessReturn::eOk;
+
+  if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   EnergyType Etot = 0_GeV;
 
@@ -54,7 +56,7 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
   fCountStep++;
   cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << s.GetSize()
        << " Estack=" << Etot / 1_GeV << " GeV" << endl;
-  return EProcessReturn::eOk;
+  return process::EProcessReturn::eOk;
 }
 
 template <typename Stack>

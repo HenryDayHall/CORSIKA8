@@ -13,7 +13,6 @@
 #define _include_corsika_continuousprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
-//#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::process {
 

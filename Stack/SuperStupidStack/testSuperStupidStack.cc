@@ -36,8 +36,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     p.SetEnergy(1.5_GeV);
     geometry::CoordinateSystem& dummyCS =
         geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-    p.SetMomentum(MomentumVector(
-        dummyCS, {1 * newton_second, 1 * newton_second, 1 * newton_second}));
+    p.SetMomentum(MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}));
     p.SetPosition(Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
     p.SetTime(100_s);
 

@@ -19,7 +19,8 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <type_traits>
+#include <cmath>
+#include <iostream>
 
 namespace corsika::cascade {
 
@@ -56,7 +57,14 @@ namespace corsika::cascade {
     }
 
     void Step(Particle& particle) {
-      using namespace corsika::units::si;
+
+      using std::cout;
+      using std::endl;
+      using std::log;
+
+      // get access to random number generator
+      static corsika::random::RNG& rmng =
+          corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
 
       // determine geometric tracking
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);

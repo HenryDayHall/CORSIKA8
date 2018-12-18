@@ -30,13 +30,11 @@ namespace corsika::stack {
   template <typename StackIterator>
   class ParticleBase {
 
-    //    friend class Stack<StackData, PI>;  // for access to GetIterator
   public:
     ParticleBase() {}
 
   private:
     ParticleBase(ParticleBase&);
-    // ParticleBase& operation=(ParticleBase& p);
 
   public:
     /// delete this particle on the stack. The corresponding iterator

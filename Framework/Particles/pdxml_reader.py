@@ -292,7 +292,7 @@ def gen_properties(particle_db):
     # particle masses table
     string += "static constexpr std::array<corsika::units::hep::MassType const, size> masses = {\n"    
     for p in particle_db.values():
-        string += "  {mass:e} * (1e9 * corsika::units::si::constants::eV), // {name:s}\n".format(mass = p['mass'], name = p['name'])
+        string += "  {mass:e} * (1e9 * corsika::units::constants::eV), // {name:s}\n".format(mass = p['mass'], name = p['name'])
     string += "};\n\n"
                    
     # PDG code table

@@ -188,7 +188,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process3 m3(2);
     Process4 m4(3);
 
-    const auto sequence = m1 + m2 + m3 + m4;
+    const auto sequence = m1 << m2 << m3 << m4;
 
     globalCount = 0;
     sequence.Init();
@@ -208,7 +208,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     DummyStack s;
     DummyTrajectory t;
 
-    const auto sequence2 = cp1 + m2 + m3;
+    const auto sequence2 = cp1 << m2 << m3;
     GrammageType const tot = sequence2.GetTotalInteractionLength(s, t);
     InverseGrammageType const tot_inv = sequence2.GetTotalInverseInteractionLength(s, t);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
@@ -222,7 +222,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     DummyStack s;
 
-    const auto sequence2 = cp1 + m2 + m3 + d3;
+    const auto sequence2 = cp1 << m2 << m3 << d3;
     TimeType const tot = sequence2.GetTotalLifetime(s);
     InverseTimeType const tot_inv = sequence2.GetTotalInverseLifetime(s);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
@@ -235,7 +235,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process2 m2(1);
     Process3 m3(2);
 
-    const auto sequence2 = cp1 + m2 + m3 + cp2;
+    const auto sequence2 = cp1 << m2 << m3 << cp2;
 
     DummyData p;
     DummyStack s;

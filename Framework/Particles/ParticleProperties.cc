@@ -10,11 +10,12 @@
  */
 
 #include <corsika/particles/ParticleProperties.h>
+#include <iostream>
 
-namespace corsika::particles::io {
+namespace corsika::particles {
 
-  std::ostream& operator<<(std::ostream& stream, Code const p) {
-    return stream << GetName(p);
+  std::ostream& operator<<(std::ostream& stream, corsika::particles::Code const p) {
+    return stream << corsika::particles::GetName(p);
   }
 
-} // namespace corsika::particles::io
+} // namespace corsika::particles
