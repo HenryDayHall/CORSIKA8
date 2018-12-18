@@ -11,6 +11,7 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
+
 namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
@@ -217,6 +218,7 @@ namespace corsika::process::sibyll {
           // running sibyll, filling stack
           sibyll_(kBeam, kTarget, sqs);
           // running decays
+          // setTrackedParticlesStable();
           decsib_();
           // print final state
           int print_unit = 6;

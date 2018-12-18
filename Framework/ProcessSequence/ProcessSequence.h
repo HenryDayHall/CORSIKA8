@@ -227,8 +227,8 @@ namespace corsika::process {
     }
   };
 
-  /// the + operator assembles many BaseProcess, ContinuousProcess, and
-  /// InteractionProcess objects into a ProcessSequence, all combinatorics
+  /// the << operator assembles many BaseProcess, ContinuousProcess, and
+  /// Interaction/DecayProcess objects into a ProcessSequence, all combinatorics
   /// must be allowed, this is why we define a macro to define all
   /// combinations here:
 
@@ -255,6 +255,7 @@ namespace corsika::process {
   OPSEQ(DecayProcess, ContinuousProcess)
   OPSEQ(DecayProcess, DecayProcess)
 
+  /// marker to identify objectas ProcessSequence
   template <typename A, typename B>
   struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
     static const bool value = true;
