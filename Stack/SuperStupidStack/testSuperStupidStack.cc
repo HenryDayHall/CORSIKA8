@@ -46,8 +46,8 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     REQUIRE(pout.GetPID() == particles::Code::Electron);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
     // REQUIRE(pout.GetMomentum() == stack::super_stupid::MomentumVector(dummyCS, {1_GeV,
-    // 1_GeV, 1_GeV})); REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 * meter,
-    // 1 * meter}));
+    // 1_GeV, 1_GeV})); REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 *
+    // meter, 1 * meter}));
     REQUIRE(pout.GetTime() == 100_s);
   }
 

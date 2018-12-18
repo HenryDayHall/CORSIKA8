@@ -12,7 +12,6 @@
   on. This breaks ADL (argument-dependent lookup). Here we "fix" this:
  */
 namespace phys::units {
-  // using namespace phys::units::io;
   using phys::units::io::operator<<;
 } // namespace phys::units
 

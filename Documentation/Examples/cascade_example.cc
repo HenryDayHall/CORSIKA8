@@ -45,18 +45,15 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::hep;
 
-static EnergyType fEnergy = 0. * 1_GeV;
-
-// FOR NOW: global static variables for ParticleCut process
-// this is just wrong...
-static EnergyType fEmEnergy;
-static int fEmCount;
-
-static EnergyType fInvEnergy;
-static int fInvCount;
-
 class ProcessCut : public corsika::process::ContinuousProcess<ProcessCut> {
+
   EnergyType fECut;
+
+  mutable EnergyType fEnergy = 0_GeV;
+  mutable EnergyType fEmEnergy = 0_GeV;
+  mutable int fEmCount = 0;
+  mutable EnergyType fInvEnergy = 0_GeV;
+  mutable int fInvCount = 0;
 
 public:
   ProcessCut(const EnergyType v)
@@ -139,7 +136,8 @@ public:
   EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) const {
     const Code pid = p.GetPID();
     EnergyType energy = p.GetEnergy();
-    cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy << endl;
+    cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy
+         << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV" << endl;
     EProcessReturn ret = EProcessReturn::eOk;
     if (isEmParticle(pid)) {
       cout << "removing em. particle..." << endl;
