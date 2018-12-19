@@ -14,7 +14,6 @@
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/units/PhysicalUnits.h>
-//#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::process {
 

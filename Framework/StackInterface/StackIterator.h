@@ -14,9 +14,6 @@
 
 #include <corsika/stack/ParticleBase.h>
 
-#include <iomanip>
-#include <iostream>
-
 class StackData; // forward decl
 
 namespace corsika::stack {

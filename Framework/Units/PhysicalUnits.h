@@ -6,20 +6,34 @@
 #include <phys/units/io.hpp>
 #include <phys/units/quantity.hpp>
 
+/*
+  It is essentially a bug of the phys/units package to define the
+  operator<< not in the same namespace as the types it is working
+  on. This breaks ADL (argument-dependent lookup). Here we "fix" this:
+ */
+namespace phys::units {
+  // using namespace phys::units::io;
+  using phys::units::io::operator<<;
+} // namespace phys::units
+
 /**
  * @file PhysicalUnits
  *
- * Add new units and types we need
+ * Add new units and types we need. Units are compile-time. We support
+ * different system of units in parallel. Literals are used for
+ * optimal coding style.
  *
- * Define _XeV literals, etc., allowing 10_GeV in the code.
  */
 
 namespace corsika::units::hep {
   using namespace phys::units;
   using namespace phys::units::literals;
+  using namespace phys::units::io;
 
   /// defining HEP energy, mass, momentum
   using energy_hep_d = phys::units::energy_d;
+  constexpr phys::units::quantity<energy_hep_d> GeV{corsika::units::constants::eV};
+  // corsika::units::constants::e / phys::units::coulomb * phys::units::joule };
 
   using MassType = phys::units::quantity<energy_hep_d, double>;
   using MomentumType = phys::units::quantity<energy_hep_d, double>;
@@ -30,16 +44,20 @@ namespace corsika::units::hep {
 namespace corsika::units::si {
   using namespace phys::units;
   using namespace phys::units::literals;
-  // namespace literals = phys::units::literals;
+  using namespace phys::units::io;
+  using phys::units::io::operator<<;
 
   /// defining momentum you suckers
   /// dimensions, i.e. composition in base SI dimensions
   using momentum_d = phys::units::dimensions<1, 1, -1>;
   // defining the unit of momentum, so far newton-meter, maybe go to HEP?
-  constexpr phys::units::quantity<momentum_d> newton_second{meter * kilogram / second};
+  constexpr phys::units::quantity<momentum_d> newton_second{
+      phys::units::meter * phys::units::kilogram / phys::units::second};
 
   /// defining cross section
-  constexpr phys::units::quantity<area_d> barn{Rep(1.e-28L) * meter * meter};
+  using sigma_d = phys::units::dimensions<2, 0, 0>;
+  constexpr phys::units::quantity<sigma_d> barn{phys::units::Rep(1.e-28L) *
+                                                phys::units::meter * phys::units::meter};
 
   /// add the unit-types
   using LengthType = phys::units::quantity<phys::units::length_d, double>;
@@ -75,10 +93,16 @@ namespace phys {
   namespace units {
     namespace literals {
       QUANTITY_DEFINE_SCALING_LITERALS(eV, energy_d,
-                                       magnitude(corsika::units::si::constants::eV))
+                                       magnitude(corsika::units::constants::eV))
 
-      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::area_d,
-                                       magnitude(corsika::units::si::constants::barn))
+      //      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::area_d,
+      //                             magnitude(corsika::units::si::constants::barn))
+
+      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
+                                       magnitude(corsika::units::constants::barn))
+
+      QUANTITY_DEFINE_SCALING_LITERALS(meter, length_d,
+                                       magnitude(corsika::units::constants::meter))
 
       QUANTITY_DEFINE_SCALING_LITERALS(Ns, corsika::units::si::momentum_d,
                                        magnitude(1_m * 1_kg / 1_s))
@@ -86,8 +110,5 @@ namespace phys {
     } // namespace literals
   }   // namespace units
 } // namespace phys
-
-// we want to call the operator<< without namespace... I think
-using namespace phys::units::io;
 
 #endif

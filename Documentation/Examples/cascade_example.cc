@@ -43,7 +43,7 @@ using namespace corsika::geometry;
 using namespace corsika::environment;
 
 using namespace std;
-using namespace corsika::units::si;
+using namespace corsika::units::hep;
 
 static EnergyType fEnergy = 0. * 1_GeV;
 
@@ -119,8 +119,10 @@ public:
 
   template <typename Particle>
   LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
+    cout << "ProcessCut: MinStep: pid: " << p.GetPID() << endl;
+    cout << "ProcessCut: MinStep: energy (GeV): " << p.GetEnergy() / 1_GeV << endl;
     const Code pid = p.GetPID();
-    if (isEmParticle(pid) || isInvisible(pid)) {
+    if (isEmParticle(pid) || isInvisible(pid) || isBelowEnergyCut(p)) {
       cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
       return 0_m;
     } else {
@@ -134,40 +136,26 @@ public:
   EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) const {
     cout << "ProcessCut: DoContinuous: " << p.GetPID() << endl;
     const Code pid = p.GetPID();
+    EProcessReturn ret = EProcessReturn::eOk;
     if (isEmParticle(pid)) {
       cout << "removing em. particle..." << endl;
       fEmEnergy += p.GetEnergy();
       fEmCount += 1;
       p.Delete();
+      ret = EProcessReturn::eParticleAbsorbed;
     } else if (isInvisible(pid)) {
       cout << "removing inv. particle..." << endl;
       fInvEnergy += p.GetEnergy();
       fInvCount += 1;
       p.Delete();
+      ret = EProcessReturn::eParticleAbsorbed;
     } else if (isBelowEnergyCut(p)) {
       cout << "removing low en. particle..." << endl;
       fEnergy += p.GetEnergy();
       p.Delete();
+      ret = EProcessReturn::eParticleAbsorbed;
     }
-    // cout << "ProcessCut: DoContinous: " << p.GetPID() << endl;
-    // cout << " is em: " << isEmParticle( p.GetPID() ) << endl;
-    // cout << " is inv: " << isInvisible( p.GetPID() ) << endl;
-    // const Code pid = p.GetPID();
-    // if( isEmParticle( pid ) ){
-    //   cout << "removing em. particle..." << endl;
-    //   fEmEnergy += p.GetEnergy();
-    //   fEmCount  += 1;
-    //   p.Delete();
-    //   return EProcessReturn::eParticleAbsorbed;
-    // }
-    // if ( isInvisible( pid ) ){
-    //   cout << "removing inv. particle..." << endl;
-    //   fInvEnergy += p.GetEnergy();
-    //   fInvCount  += 1;
-    //   p.Delete();
-    //   return EProcessReturn::eParticleAbsorbed;
-    // }
-    return EProcessReturn::eOk;
+    return ret;
   }
 
   void Init() {
@@ -182,10 +170,11 @@ public:
   void ShowResults() {
     cout << " ******************************" << endl
          << " ParticleCut: " << endl
-         << " energy in em.  component (GeV): " << fEmEnergy / 1_GeV << endl
-         << " no. of em.  particles injected: " << fEmCount << endl
-         << " energy in inv. component (GeV): " << fInvEnergy / 1_GeV << endl
-         << " no. of inv. particles injected: " << fInvCount << endl
+         << " energy in em.  component (GeV):  " << fEmEnergy / 1_GeV << endl
+         << " no. of em.  particles injected:  " << fEmCount << endl
+         << " energy in inv. component (GeV):  " << fInvEnergy / 1_GeV << endl
+         << " no. of inv. particles injected:  " << fInvCount << endl
+         << " energy below particle cut (GeV): " << fEnergy / 1_GeV << endl
          << " ******************************" << endl;
   }
 
@@ -228,7 +217,7 @@ int main() {
   corsika::process::sibyll::Interaction sibyll;
   corsika::process::sibyll::Decay decay;
   ProcessEMCut cut;
-  const auto sequence = /*p0 +*/ sibyll + decay + cut;
+  const auto sequence = /*p0 <<*/ sibyll << decay << cut;
 
   setup::Stack stack;
 
@@ -237,9 +226,8 @@ int main() {
   stack.Clear();
   auto particle = stack.NewParticle();
   EnergyType E0 = 100_GeV;
-  MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV) / si::constants::c;
-  auto plab = super_stupid::MomentumVector(rootCS, 0. * 1_GeV / si::constants::c,
-                                           0. * 1_GeV / si::constants::c, P0);
+  hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
+  auto plab = stack::super_stupid::MomentumVector(rootCS, 0. * 1_GeV, 0. * 1_GeV, P0);
   particle.SetEnergy(E0);
   particle.SetMomentum(plab);
   particle.SetPID(Code::Proton);

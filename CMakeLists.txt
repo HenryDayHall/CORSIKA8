@@ -28,7 +28,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
 endif()
  
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_bluild_type}' as no other was specified.")
+  message(STATUS "Setting build type to '${default_build_type}' as no other was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
@@ -37,7 +37,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # enable warnings and disallow non-standard language
-set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
+set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers -Wno-nonportable-include-path")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 
