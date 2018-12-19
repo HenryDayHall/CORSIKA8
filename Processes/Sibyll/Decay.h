@@ -89,9 +89,8 @@ namespace corsika::process {
         // i.e. corsika::particles::ListOfParticles()
         std::cout << "Sibyll: setting hadrons unstable.." << std::endl;
         // make ALL particles unstable, then set EM stable
-        for (auto& p : corsika2sibyll) {
+        for (int sibCode : corsika2sibyll) {
           // std::cout << (int)p << std::endl;
-          const int sibCode = (int)p;
           // skip unknown and antiparticles
           if (sibCode < 1) continue;
           // std::cout << "Sibyll: Decay: setting " << ConvertFromSibyll(
@@ -131,13 +130,14 @@ namespace corsika::process {
 
         const corsika::units::si::TimeType t0 =
             corsika::particles::GetLifetime(p.GetPID());
-        cout << "Decay: GetLifetime: \n"
-             << " code: " << p.GetPID() << endl;
-        cout << " t0: " << t0 << endl;
-        cout << " energy: " << E / 1_GeV << endl;
-        cout << " gamma: " << gamma << endl;
-        corsika::units::si::TimeType const lifetime = gamma * t0;
-        cout << " -> tau: " << lifetime << endl;
+        auto const lifetime = gamma * t0;
+
+        cout << "Decay: code: " << p.GetPID() << endl;
+        cout << "Decay: MinStep: t0: " << t0 << endl;
+        cout << "Decay: MinStep: energy: " << E / 1_GeV << " GeV" << endl;
+        cout << "Decay: MinStep: gamma: " << gamma << endl;
+        cout << "Decay: MinStep: tau: " << lifetime << endl;
+
         return lifetime;
       }
 

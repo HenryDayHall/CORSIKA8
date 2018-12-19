@@ -45,15 +45,19 @@ namespace corsika::stack {
       void SetPID(const corsika::particles::Code id) {
         GetStackData().SetPID(GetIndex(), id);
       }
+
       void SetEnergy(const corsika::units::hep::EnergyType& e) {
         GetStackData().SetEnergy(GetIndex(), e);
       }
+
       void SetMomentum(const MomentumVector& v) {
         GetStackData().SetMomentum(GetIndex(), v);
       }
+
       void SetPosition(const corsika::geometry::Point& v) {
         GetStackData().SetPosition(GetIndex(), v);
       }
+
       void SetTime(const corsika::units::si::TimeType& v) {
         GetStackData().SetTime(GetIndex(), v);
       }
@@ -61,15 +65,19 @@ namespace corsika::stack {
       corsika::particles::Code GetPID() const {
         return GetStackData().GetPID(GetIndex());
       }
+
       corsika::units::hep::EnergyType GetEnergy() const {
         return GetStackData().GetEnergy(GetIndex());
       }
+
       MomentumVector GetMomentum() const {
         return GetStackData().GetMomentum(GetIndex());
       }
+
       corsika::geometry::Point GetPosition() const {
         return GetStackData().GetPosition(GetIndex());
       }
+
       corsika::units::si::TimeType GetTime() const {
         return GetStackData().GetTime(GetIndex());
       }
@@ -99,22 +107,30 @@ namespace corsika::stack {
       }
 
       int GetSize() const { return fDataPID.size(); }
+
       int GetCapacity() const { return fDataPID.size(); }
 
       void SetPID(const int i, const corsika::particles::Code id) { fDataPID[i] = id; }
+
       void SetEnergy(const int i, const corsika::units::hep::EnergyType e) {
         fDataE[i] = e;
       }
       void SetMomentum(const int i, const MomentumVector& v) { fMomentum[i] = v; }
+
       void SetPosition(const int i, const corsika::geometry::Point& v) {
         fPosition[i] = v;
       }
+
       void SetTime(const int i, const corsika::units::si::TimeType& v) { fTime[i] = v; }
 
       corsika::particles::Code GetPID(const int i) const { return fDataPID[i]; }
+
       corsika::units::hep::EnergyType GetEnergy(const int i) const { return fDataE[i]; }
+
       MomentumVector GetMomentum(const int i) const { return fMomentum[i]; }
+
       corsika::geometry::Point GetPosition(const int i) const { return fPosition[i]; }
+
       corsika::units::si::TimeType GetTime(const int i) const { return fTime[i]; }
 
       /**
@@ -156,6 +172,7 @@ namespace corsika::stack {
                             0 * corsika::units::si::meter}));
         fTime.push_back(0 * corsika::units::si::second);
       }
+
       void DecrementSize() {
         if (fDataE.size() > 0) {
           fDataPID.pop_back();

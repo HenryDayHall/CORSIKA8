@@ -60,19 +60,21 @@ namespace corsika::process {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (std::is_base_of<ContinuousProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
-        A.DoContinuous(p, t, s);
+        ret |= A.DoContinuous(p, t, s);
       }
       if constexpr (std::is_base_of<ContinuousProcess<T2>, T2>::value ||
                     is_process_sequence<T2>::value) {
-        B.DoContinuous(p, t, s);
+        ret |= B.DoContinuous(p, t, s);
       }
       return ret;
     }
 
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const {
-      corsika::units::si::LengthType max_length =
+      corsika::units::si::LengthType
+          max_length = // if no other process in the sequence implements it
           std::numeric_limits<double>::infinity() * corsika::units::si::meter;
+
       if constexpr (std::is_base_of<ContinuousProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
         corsika::units::si::LengthType const len = A.MaxStepLength(p, track);

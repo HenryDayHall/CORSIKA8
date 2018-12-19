@@ -13,6 +13,7 @@
 #define _include_corsika_continuousprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
 
@@ -32,8 +33,12 @@ namespace corsika::process {
 
     // here starts the interface part
     // -> enforce derived to implement DoContinuous...
-    template <typename P, typename T, typename S>
-    inline EProcessReturn DoContinuous(P&, T&, S&) const;
+    template <typename Particle, typename Track, typename Stack>
+    EProcessReturn DoContinuous(Particle&, Track&, Stack&) const;
+
+    // -> enforce derived to implement MaxStepLength...
+    template <typename Particle, typename Track>
+    corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const;
   };
 
 } // namespace corsika::process

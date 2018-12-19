@@ -20,12 +20,24 @@ namespace corsika::process {
      that can be accumulated easily with "|="
    */
 
-  enum class EProcessReturn {
-    eOk = 1,
-    eParticleAbsorbed = 2,
-    eInteracted = 3,
-    eDecayed = 4,
+  enum class EProcessReturn : int {
+    eOk = (1 << 0),
+    eParticleAbsorbed = (1 << 2),
+    eInteracted = (1 << 3),
+    eDecayed = (1 << 4),
   };
+
+  inline EProcessReturn operator|(EProcessReturn a, EProcessReturn b) {
+    return static_cast<EProcessReturn>(static_cast<int>(a) | static_cast<int>(b));
+  }
+
+  inline EProcessReturn& operator|=(EProcessReturn& a, EProcessReturn b) {
+    return a = a | b;
+  }
+
+  inline bool operator==(EProcessReturn a, EProcessReturn b) {
+    return (static_cast<int>(a) & static_cast<int>(b)) != 0;
+  }
 
 } // namespace corsika::process
 

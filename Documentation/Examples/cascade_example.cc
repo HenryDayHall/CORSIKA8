@@ -143,18 +143,18 @@ public:
       cout << "removing em. particle..." << endl;
       fEmEnergy += energy;
       fEmCount += 1;
-      p.Delete();
+      // p.Delete();
       ret = EProcessReturn::eParticleAbsorbed;
     } else if (isInvisible(pid)) {
       cout << "removing inv. particle..." << endl;
       fInvEnergy += energy;
       fInvCount += 1;
-      p.Delete();
+      // p.Delete();
       ret = EProcessReturn::eParticleAbsorbed;
     } else if (isBelowEnergyCut(p)) {
       cout << "removing low en. particle..." << endl;
       fEnergy += energy;
-      p.Delete();
+      // p.Delete();
       ret = EProcessReturn::eParticleAbsorbed;
     }
     return ret;
