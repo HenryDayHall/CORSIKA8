@@ -35,7 +35,7 @@ namespace corsika::process {
     // -> enforce derived to implement DoContinuous...
     template <typename Particle, typename Track, typename Stack>
     EProcessReturn DoContinuous(Particle&, Track&, Stack&) const;
-    
+
     // -> enforce derived to implement MaxStepLength...
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const;

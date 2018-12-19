@@ -120,7 +120,7 @@ namespace corsika::stack {
       void SetPosition(const int i, const corsika::geometry::Point& v) {
         fPosition[i] = v;
       }
-      
+
       void SetTime(const int i, const corsika::units::si::TimeType& v) { fTime[i] = v; }
 
       corsika::particles::Code GetPID(const int i) const { return fDataPID[i]; }

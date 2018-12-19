@@ -12,6 +12,7 @@
 #define _include_corsika_processes_TrackingLine_h_
 
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/QuantityVector.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
 
@@ -75,11 +76,18 @@ namespace corsika::process {
       void Init() {}
 
       auto GetTrack(Particle const& p) {
+        using std::cout;
+        using std::endl;
         using namespace corsika::units::si;
+        using namespace corsika::geometry;
         geometry::Vector<SpeedType::dimension_type> const velocity =
             p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
 
         auto const currentPosition = p.GetPosition();
+
+        std::cout << "TrackingLine pos: " << currentPosition.GetCoordinates()
+                  << std::endl;
+        std::cout << "TrackingLine   v: " << velocity.GetComponents() << std::endl;
 
         // to do: include effect of magnetic field
         geometry::Line line(currentPosition, velocity);
@@ -124,6 +132,8 @@ namespace corsika::process {
         } else {
           min = *minIter;
         }
+
+        std::cout << " t-intersect: " << min << std::endl;
 
         return geometry::Trajectory<corsika::geometry::Line>(line, min);
       }

@@ -80,7 +80,7 @@ public:
   }
 
   template <typename Particle, typename T, typename Stack>
-  void DoContinuous(Particle& p, T&, Stack& s) const {
+  EProcessReturn DoContinuous(Particle& p, T&, Stack& s) const {
     EnergyType E = p.GetEnergy();
     if (E < 85_MeV) {
       p.Delete();
@@ -95,6 +95,7 @@ public:
       pnew.SetPosition(p.GetPosition());
       pnew.SetMomentum(p.GetMomentum());
     }
+    return EProcessReturn::eOk;
   }
 
   void Init() { fCount = 0; }

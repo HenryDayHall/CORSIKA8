@@ -15,8 +15,11 @@ namespace corsika::process {
   namespace sibyll {
 
     class Decay : public corsika::process::DecayProcess<Decay> {
+      mutable int fCount = 0;
+
     public:
       Decay() {}
+      ~Decay() { std::cout << "Sibyll::Decay n=" << fCount << std::endl; }
       void Init() {
         setHadronsUnstable();
         setTrackedParticlesStable();
@@ -142,6 +145,7 @@ namespace corsika::process {
       void DoDecay(Particle& p, Stack& s) const {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
+        fCount++;
         SibStack ss;
         ss.Clear();
         // copy particle to sibyll stack

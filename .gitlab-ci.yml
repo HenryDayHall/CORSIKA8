@@ -16,7 +16,7 @@ build:
     - cd build
     - cmake ..
     - cmake --build .
-    - ctest -V
+    - ctest
 
 # code_quality:
 #   image: docker:stable

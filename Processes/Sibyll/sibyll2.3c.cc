@@ -6,7 +6,7 @@
 double s_rndm_(int&) {
   static corsika::random::RNG& rng =
       corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-  
+
   std::uniform_real_distribution<double> dist;
   return dist(rng);
 }
