@@ -60,11 +60,11 @@ namespace corsika::process {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (std::is_base_of<ContinuousProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
-        A.DoContinuous(p, t, s);
+        ret |= A.DoContinuous(p, t, s);
       }
       if constexpr (std::is_base_of<ContinuousProcess<T2>, T2>::value ||
                     is_process_sequence<T2>::value) {
-        B.DoContinuous(p, t, s);
+        ret |= B.DoContinuous(p, t, s);
       }
       return ret;
     }

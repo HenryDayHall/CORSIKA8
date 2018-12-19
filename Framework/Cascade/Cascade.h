@@ -119,7 +119,10 @@ namespace corsika::cascade {
           fProcessSequence.DoContinuous(particle, step, fStack);
 
       if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
-        // fStack.Delete(particle); // TODO: check if this is really needed
+        std::cout << "Cascade: delete absorbed particle " << particle.GetPID() << " "
+                  << particle.GetEnergy() / 1_GeV << "GeV" << std::endl;
+        particle.Delete();
+        return;
       } else {
 
         std::cout << "sth. happening before geometric limit ?"
