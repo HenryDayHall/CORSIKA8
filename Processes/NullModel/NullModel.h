@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -15,26 +14,29 @@
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-namespace corsika::process {
+namespace corsika::process::null_model {
 
-  namespace null_model {
+  class NullModel : public corsika::process::ContinuousProcess<NullModel> {
+    corsika::units::si::LengthType fMaxStepLength{
+        corsika::units::si::meter * std::numeric_limits<double>::infinity()};
 
-    template <typename Stack>
-    class NullModel {
+  public:
+    NullModel(corsika::units::si::LengthType maxStepLength)
+        : fMaxStepLength(maxStepLength) {}
 
-      typedef typename Stack::ParticleType Particle;
+    void Init();
 
-    public:
-      NullModel();
-      ~NullModel();
+    template <typename Particle, typename Track, typename Stack>
+    process::EProcessReturn DoContinuous(Particle&, Track&, Stack&) const {
+      return EProcessReturn::eOk;
+    }
 
-      void Init();
-      EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
-      double MaxStepLength(Particle&, corsika::setup::Trajectory&) const;
-    };
+    template <typename Particle, typename Track>
+    corsika::units::si::LengthType MaxStepLength(Particle&, Track&) const {
+      return fMaxStepLength;
+    }
+  };
 
-  } // namespace null_model
-
-} // namespace corsika::process
+} // namespace corsika::process::null_model
 
 #endif
