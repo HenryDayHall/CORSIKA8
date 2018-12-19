@@ -123,38 +123,36 @@ namespace corsika::cascade {
                   << particle.GetEnergy() / 1_GeV << "GeV" << std::endl;
         particle.Delete();
         return;
-      } else {
+      }
 
-        std::cout << "sth. happening before geometric limit ?"
-                  << ((min_distance < distance_max) ? "yes" : "no") << std::endl;
+      std::cout << "sth. happening before geometric limit ?"
+                << ((min_distance < distance_max) ? "yes" : "no") << std::endl;
 
-        if (min_distance < distance_max) { // interaction to happen within geometric limit
-          // check weather decay or interaction limits this step
+      if (min_distance < distance_max) { // interaction to happen within geometric limit
+        // check weather decay or interaction limits this step
 
-          if (min_distance == distance_interact) {
-            std::cout << "collide" << std::endl;
+        if (min_distance == distance_interact) {
+          std::cout << "collide" << std::endl;
 
-            InverseGrammageType const actual_inv_length =
-                fProcessSequence.GetTotalInverseInteractionLength(particle, step);
+          InverseGrammageType const actual_inv_length =
+              fProcessSequence.GetTotalInverseInteractionLength(particle, step);
 
-            corsika::random::UniformRealDistribution<InverseGrammageType> uniDist(
-                actual_inv_length);
-            const auto sample_process = uniDist(fRNG);
-            InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
-            fProcessSequence.SelectInteraction(particle, fStack, sample_process,
-                                               inv_lambda_count);
-          } else {
-            std::cout << "decay" << std::endl;
-            InverseTimeType const actual_decay_time =
-                fProcessSequence.GetTotalInverseLifetime(particle);
+          corsika::random::UniformRealDistribution<InverseGrammageType> uniDist(
+              actual_inv_length);
+          const auto sample_process = uniDist(fRNG);
+          InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
+          fProcessSequence.SelectInteraction(particle, fStack, sample_process,
+                                             inv_lambda_count);
+        } else {
+          std::cout << "decay" << std::endl;
+          InverseTimeType const actual_decay_time =
+              fProcessSequence.GetTotalInverseLifetime(particle);
 
-            corsika::random::UniformRealDistribution<InverseTimeType> uniDist(
-                actual_decay_time);
-            const auto sample_process = uniDist(fRNG);
-            InverseTimeType inv_decay_count = 0 / second;
-            fProcessSequence.SelectDecay(particle, fStack, sample_process,
-                                         inv_decay_count);
-          }
+          corsika::random::UniformRealDistribution<InverseTimeType> uniDist(
+              actual_decay_time);
+          const auto sample_process = uniDist(fRNG);
+          InverseTimeType inv_decay_count = 0 / second;
+          fProcessSequence.SelectDecay(particle, fStack, sample_process, inv_decay_count);
         }
       }
     }
