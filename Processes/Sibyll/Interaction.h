@@ -104,7 +104,6 @@ namespace corsika::process::sibyll {
                   << "nucleon mass " << nucleon_mass << std::endl;
         // calculate interaction length in medium
         GrammageType int_length = kTarget * nucleon_mass / sig;
-        // pick random step lenth
         std::cout << "Interaction: "
                   << "interaction length (g/cm2): " << int_length << std::endl;
 
@@ -112,17 +111,6 @@ namespace corsika::process::sibyll {
       }
 
       return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
-
-      /*
-        what are the units of the output? slant depth or 3space length?
-
-      */
-      //
-      // int a = 0;
-      // const double next_step = -int_length * log(s_rndm_(a));
-      // std::cout << "Interaction: "
-      //        << "next step (g/cm2): " << next_step << std::endl;
-      // return next_step;
     }
 
     template <typename Particle, typename Stack>
@@ -158,12 +146,11 @@ namespace corsika::process::sibyll {
             GetNucleusA(); // env.GetTargetParticle().GetPID();
 
         // FOR NOW: target is always at rest
-        const EnergyType Etarget = 0. * 1_GeV + corsika::particles::Proton::GetMass();
+        const EnergyType Etarget = 0_GeV + corsika::particles::Proton::GetMass();
         const auto pTarget = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
-        cout << "target momentum (GeV/c): "
-             << pTarget.GetComponents() / 1_GeV * constants::c << endl;
-        cout << "beam momentum (GeV/c): "
-             << p.GetMomentum().GetComponents() / 1_GeV * constants::c << endl;
+        cout << "target momentum (GeV/c): " << pTarget.GetComponents() / 1_GeV << endl;
+        cout << "beam momentum (GeV/c): " << p.GetMomentum().GetComponents() / 1_GeV
+             << endl;
         cout << "position of interaction: " << pOrig.GetCoordinates() << endl;
         cout << "time: " << tOrig << endl;
 
@@ -181,8 +168,7 @@ namespace corsika::process::sibyll {
         // total momentum
         MomentumVector Ptot = p.GetMomentum();
         // invariant mass, i.e. cm. energy
-        EnergyType Ecm =
-            sqrt(Etot * Etot - Ptot.squaredNorm()); // sqrt( 2. * E * 0.93827_GeV );
+        EnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
         /*
          get transformation between Stack-frame and SibStack-frame
          for EAS Stack-frame is lab. frame, could be different for CRMC-mode
@@ -228,7 +214,8 @@ namespace corsika::process::sibyll {
           // SibStack does not know about momentum yet so we need counter to access
           // momentum array in Sibyll
           int i = -1;
-          MomentumVector Ptot_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+          MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+          EnergyType E_final = 0_GeV, Ecm_final = 0_GeV;
           for (auto& psib : ss) {
             ++i;
             // skip particles that have decayed in Sibyll
@@ -263,10 +250,14 @@ namespace corsika::process::sibyll {
             pnew.SetMomentum(MomentumVector(rootCS, p_lab_c));
             pnew.SetPosition(pOrig);
             pnew.SetTime(tOrig);
-            Ptot_final += pnew.GetMomentum();
+            Plab_final += pnew.GetMomentum();
+            E_final += en_lab;
+            Ecm_final += psib.GetEnergy();
           }
-          // cout << "tot. momentum final (GeV/c): " << Ptot_final.GetComponents() / 1_GeV
-          // * constants::c << endl;
+          std::cout << "conservation (all GeV): E_final=" << E_final / 1_GeV
+                    << ", Ecm_final=" << Ecm_final / 1_GeV
+                    << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents()
+                    << std::endl;
         }
       }
       return process::EProcessReturn::eOk;
