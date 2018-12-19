@@ -21,11 +21,12 @@ namespace corsika::process {
       // i.e. corsika::particles::ListOfParticles()
       std::cout << "Sibyll: setting hadrons unstable.." << std::endl;
       // make ALL particles unstable, then set EM stable
-      for (auto& p : corsika2sibyll) {
+      for (auto const& p : corsika2sibyll) {
         // std::cout << (int)p << std::endl;
-        const int sibCode = (int)p;
+        const int sibCode = static_cast<int>(p);
         // skip unknown and antiparticles
-        if (sibCode < 1) continue;
+        if (sibCode < 1)
+          continue;
         // std::cout << "Sibyll: Decay: setting " << ConvertFromSibyll(
         // static_cast<SibyllCode> ( sibCode ) ) << " unstable" << std::endl;
         s_csydec_.idb[sibCode - 1] = abs(s_csydec_.idb[sibCode - 1]);
@@ -84,6 +85,7 @@ namespace corsika::process {
     class Decay : public corsika::process::DecayProcess<Decay> {
     public:
       Decay() {}
+      
       void Init() {
         setHadronsUnstable();
         setTrackedParticlesStable();
@@ -97,9 +99,11 @@ namespace corsika::process {
         // i.e. corsika::particles::ListOfParticles()
         for (auto& p : corsika2sibyll) {
           // std::cout << (int)p << std::endl;
-          const int sibCode = (int)p;
+          const int sibCode = static_cast<int>(p);
           // skip unknown and antiparticles
-          if (sibCode < 1) continue;
+          if (sibCode < 1)
+            continue;
+            
           std::cout << "Sibyll: Decay: setting "
                     << ConvertFromSibyll(static_cast<SibyllCode>(sibCode)) << " stable"
                     << std::endl;
@@ -115,23 +119,15 @@ namespace corsika::process {
         corsika::units::hep::EnergyType E = p.GetEnergy();
         corsika::units::hep::MassType m = corsika::particles::GetMass(p.GetPID());
 
-        // const MassDensityType density = 1.25e-3 * kilogram / (1_cm * 1_cm * 1_cm);
-
-        const double gamma = E / m;
-
         const TimeType t0 = particles::GetLifetime(p.GetPID());
+        const double gamma = E / m;
+        corsika::units::si::TimeType const lifetime = gamma * t0;
+        
         cout << "Decay: code: " << (p.GetPID()) << endl;
         cout << "Decay: MinStep: t0: " << t0 << endl;
         cout << "Decay: MinStep: gamma: " << gamma << endl;
-        // cout << "Decay: MinStep: density: " << density << endl;
-        // return as column density
-        // const double x0 = density * t0 * gamma * constants::c / kilogram * 1_cm * 1_cm;
-        // cout << "Decay: MinStep: x0: " << x0 << endl;
-        corsika::units::si::TimeType const lifetime = gamma * t0;
         cout << "Decay: MinStep: tau: " << lifetime << endl;
-        // int a = 1;
-        // const double x = -x0 * log(s_rndm_(a));
-        // cout << "Decay: next decay: " << x << endl;
+        
         return lifetime;
       }
 

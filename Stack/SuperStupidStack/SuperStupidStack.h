@@ -70,12 +70,6 @@ namespace corsika::stack {
       }
       Point GetPosition() const { return GetStackData().GetPosition(GetIndex()); }
       TimeType GetTime() const { return GetStackData().GetTime(GetIndex()); }
-
-#warning this does not really work, nor makes sense:
-      Vector<SpeedType::dimension_type> GetDirection() const {
-        auto P = GetMomentum();
-        return P / P.norm() * 1e10 * (units::si::meter / units::si::second);
-      }
     };
 
     /**
