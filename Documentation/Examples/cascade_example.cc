@@ -217,7 +217,7 @@ int main() {
   corsika::process::sibyll::Interaction sibyll;
   corsika::process::sibyll::Decay decay;
   ProcessEMCut cut;
-  const auto sequence = p0 << sibyll << decay << cut;
+  const auto sequence = /*p0 <<*/ sibyll << decay << cut;
 
   setup::Stack stack;
 
