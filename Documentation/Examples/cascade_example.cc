@@ -226,12 +226,12 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const EnergyType E0 = 1_TeV;
+  const hep::EnergyType E0 = 1_TeV;
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);
     hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
-    auto plab = stack::super_stupid::MomentumVector(rootCS, 0. * 1_GeV, 0. * 1_GeV, -P0);
+    auto plab = stack::super_stupid::MomentumVector(rootCS, 0_GeV, 0_GeV, -P0);
     particle.SetEnergy(E0);
     particle.SetMomentum(plab);
     particle.SetTime(0_ns);
