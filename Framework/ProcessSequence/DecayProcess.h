@@ -29,14 +29,13 @@ namespace corsika::process {
 
   template <typename derived>
   struct DecayProcess {
-
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
 
     /// here starts the interface-definition part
     // -> enforce derived to implement DoDecay...
     template <typename Particle, typename Stack>
-    inline EProcessReturn DoDecay(Particle&, Stack&) const;
+    EProcessReturn DoDecay(Particle&, Stack&) const;
 
     template <typename Particle>
     corsika::units::si::TimeType GetLifetime(Particle& p) const;

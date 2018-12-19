@@ -176,8 +176,9 @@ namespace corsika::process {
 
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const {
-      corsika::units::si::LengthType max_length =
+      corsika::units::si::LengthType max_length = // if no other process in the sequence implements it
           std::numeric_limits<double>::infinity() * corsika::units::si::meter;
+          
       if constexpr (std::is_base_of<ContinuousProcess<T1>, T1>::value ||
                     is_process_sequence<T1>::value) {
         corsika::units::si::LengthType const len = A.MaxStepLength(p, track);
