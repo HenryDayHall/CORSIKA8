@@ -71,8 +71,9 @@ namespace corsika::cascade {
           fProcessSequence.GetTotalInverseInteractionLength(particle, step);
 
       // sample random exponential step length in grammage
-      std::exponential_distribution expDist((1_m * 1_m / 1_g) / total_inv_lambda);
-      GrammageType const next_interact = (1_g / (1_m * 1_m)) * expDist(fRNG);
+      auto constexpr grammageConversion = 1_g / (1_m * 1_m);
+      std::exponential_distribution expDist(1 / (grammageConversion * total_inv_lambda));
+      GrammageType const next_interact = grammageConversion * expDist(fRNG);
 
       std::cout << "total_inv_lambda=" << total_inv_lambda
                 << ", next_interact=" << next_interact << std::endl;
