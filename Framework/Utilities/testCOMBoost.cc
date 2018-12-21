@@ -23,7 +23,7 @@ using namespace corsika::units::si;
 using corsika::units::constants::c;
 using corsika::units::constants::cSquared;
 
-double constexpr absMargin = 1e-8;
+double constexpr absMargin = 1e-6;
 
 TEST_CASE("boosts") {
   CoordinateSystem& rootCS =
@@ -76,6 +76,6 @@ TEST_CASE("boosts") {
 
   // ...should yield original values before the boosts
   CHECK(eProjectileBack / eProjectileLab == Approx(1));
-  CHECK((pProjectileBack - pProjectileLab).norm() / (1_GeV / c) ==
+  CHECK((pProjectileBack - pProjectileLab).norm() / pProjectileLab.norm() ==
         Approx(0).margin(absMargin));
 }
