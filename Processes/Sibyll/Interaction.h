@@ -64,8 +64,8 @@ namespace corsika::process::sibyll {
       // FOR NOW: assume target is oxygen
       const int kTarget = corsika::particles::Oxygen::GetNucleusA();
 
-      hep::EnergyType Etot =
-          p.GetEnergy() + kTarget * corsika::particles::Proton::GetMass();
+      const hep::MassType nucleon_mass =  0.5*(corsika::particles::Proton::GetMass()+corsika::particles::Neutron::GetMass());
+      hep::EnergyType Etot = p.GetEnergy() + nucleon_mass;
       MomentumVector Ptot(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
       // FOR NOW: assume target is at rest
       MomentumVector pTarget(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
@@ -146,7 +146,8 @@ namespace corsika::process::sibyll {
             GetNucleusA(); // env.GetTargetParticle().GetPID();
 
         // FOR NOW: target is always at rest
-        const EnergyType Etarget = 0_GeV + corsika::particles::Proton::GetMass();
+	const hep::MassType nucleon_mass =  0.5*(corsika::particles::Proton::GetMass()+corsika::particles::Neutron::GetMass());
+        const EnergyType Etarget = 0_GeV + nucleon_mass;
         const auto pTarget = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
         cout << "target momentum (GeV/c): " << pTarget.GetComponents() / 1_GeV << endl;
         cout << "beam momentum (GeV/c): " << p.GetMomentum().GetComponents() / 1_GeV

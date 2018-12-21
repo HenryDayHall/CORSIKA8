@@ -226,7 +226,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 1_TeV;
+  const hep::EnergyType E0 = 100_GeV;
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);
