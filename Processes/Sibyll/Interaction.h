@@ -220,7 +220,7 @@ namespace corsika::process::sibyll {
           for (auto& psib : ss) {
             ++i;
             // skip particles that have decayed in Sibyll
-            if (abs(s_plist_.llist[i]) > 100) continue;
+	    if( psib.HasDecayed()) continue;
 
             // transform energy to lab. frame, primitve
             // compute beta_vec * p_vec
