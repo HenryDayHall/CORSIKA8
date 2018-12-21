@@ -41,7 +41,7 @@ namespace corsika::geometry {
   protected:
     static auto CreateCS() { return CoordinateSystem(); }
     friend corsika::geometry::RootCoordinateSystem; /// this is the only class that can
-                                                    /// creat ONE unique root CS
+                                                    /// create ONE unique root CS
 
   public:
     static EigenTransform GetTransformation(CoordinateSystem const& c1,

@@ -1,14 +1,13 @@
 
 set (
   UTILITIES_SOURCES  
-  Dummy.cc
+  COMBoost.cc
   )
 
 set (
   UTILITIES_HEADERS
-  Dummy.h
+  COMBoost.h
   Bit.h
-  Test.h
   Singleton.h
   )
 
@@ -29,8 +28,11 @@ set_target_properties (
   )
 
 # target dependencies on other libraries (also the header onlys)
-#target_link_libraries (
-#  )
+target_link_libraries (
+  CORSIKAutilities
+  CORSIKAgeometry
+  CORSIKAunits
+  )
 
 target_include_directories (
   CORSIKAutilities
@@ -49,13 +51,13 @@ install (
 
 # --------------------
 # code unit testing
-# add_executable (testBit testBit.cc)
+add_executable (testCOMBoost testCOMBoost.cc)
 
-# target_link_libraries (
-#   testBit
-#   CORSIKAutilities
-#   CORSIKAthirdparty # for catch2
-#   )
+target_link_libraries (
+  testCOMBoost
+  CORSIKAutilities
+  CORSIKAthirdparty # for catch2
+  )
 
-# add_test (NAME testBit COMMAND testBit)
+add_test (NAME testCOMBoost COMMAND testCOMBoost)
 
