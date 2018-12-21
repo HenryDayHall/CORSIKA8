@@ -113,6 +113,8 @@ namespace corsika::cascade {
       // std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
       particle.SetPosition(step.PositionFromArclength(min_distance));
       // .... also update time, momentum, direction, ...
+      
+      step.LimitEndTo(min_distance);
 
       // apply all continuous processes on particle + track
       corsika::process::EProcessReturn status =
@@ -129,7 +131,7 @@ namespace corsika::cascade {
                 << ((min_distance < distance_max) ? "yes" : "no") << std::endl;
 
       if (min_distance < distance_max) { // interaction to happen within geometric limit
-        // check weather decay or interaction limits this step
+        // check whether decay or interaction limits this step
 
         if (min_distance == distance_interact) {
           std::cout << "collide" << std::endl;
