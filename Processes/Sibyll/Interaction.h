@@ -64,8 +64,8 @@ namespace corsika::process::sibyll {
       // FOR NOW: assume target is oxygen
       const int kTarget = corsika::particles::Oxygen::GetNucleusA();
 
-      hep::EnergyType Etot =
-          p.GetEnergy() + kTarget * corsika::particles::Proton::GetMass();
+      const hep::MassType nucleon_mass =  0.5*(corsika::particles::Proton::GetMass()+corsika::particles::Neutron::GetMass());
+      hep::EnergyType Etot = p.GetEnergy() + nucleon_mass;
       MomentumVector Ptot(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
       // FOR NOW: assume target is at rest
       MomentumVector pTarget(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
@@ -128,11 +128,22 @@ namespace corsika::process::sibyll {
            << process::sibyll::CanInteract(p.GetPID()) << endl;
       if (process::sibyll::CanInteract(p.GetPID())) {
         const CoordinateSystem& rootCS =
-            RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-
+	  RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+	
         Point pOrig = p.GetPosition();
         TimeType tOrig = p.GetTime();
-
+	// sibyll CS has z along particle momentum
+	// FOR NOW: hard coded z-axis for corsika frame
+	QuantityVector<length_d> const zAxis{0_m, 0_m, 1_m};
+	QuantityVector<length_d> const xAxis{1_m, 0_m, 0_m};
+	auto pt = []( MomentumVector p ){
+		    return sqrt(p.GetComponents()[0] * p.GetComponents()[0] + p.GetComponents()[1] * p.GetComponents()[1]);
+		  };
+	double theta = acos( p.GetMomentum().GetComponents()[2] / p.GetMomentum().norm());
+	cout << "ProcessSibyll: polar angle between sibyllCS and rootCS: " << theta << endl;
+	double phi = asin( p.GetMomentum().GetComponents()[0]/pt(p.GetMomentum() ) );
+	CoordinateSystem sibyllCS = rootCS.rotate(xAxis, theta);
+	
         /*
            the target should be defined by the Environment,
            ideally as full particle object so that the four momenta
@@ -143,14 +154,18 @@ namespace corsika::process::sibyll {
         */
         // FOR NOW: set target to oxygen
         const int kTarget = corsika::particles::Oxygen::
-            GetNucleusA(); // env.GetTargetParticle().GetPID();
+	  GetNucleusA(); // env.GetTargetParticle().GetPID();
 
         // FOR NOW: target is always at rest
-        const EnergyType Etarget = 0_GeV + corsika::particles::Proton::GetMass();
+	const hep::MassType nucleon_mass =  0.5*(corsika::particles::Proton::GetMass()+corsika::particles::Neutron::GetMass());
+        const EnergyType Etarget = 0_GeV + nucleon_mass;
         const auto pTarget = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
         cout << "target momentum (GeV/c): " << pTarget.GetComponents() / 1_GeV << endl;
         cout << "beam momentum (GeV/c): " << p.GetMomentum().GetComponents() / 1_GeV
              << endl;
+	cout << "beam momentum in sibyll frame (GeV/c): " << p.GetMomentum().GetComponents(sibyllCS) / 1_GeV
+             << endl;
+
         cout << "position of interaction: " << pOrig.GetCoordinates() << endl;
         cout << "time: " << tOrig << endl;
 
@@ -209,23 +224,31 @@ namespace corsika::process::sibyll {
 
           // add particles from sibyll to stack
           // link to sibyll stack
+	  // here we need to pass projectile momentum and energy to define the local sibyll frame
+	  // and the boosts to the lab. frame
           SibStack ss;
 
-          // SibStack does not know about momentum yet so we need counter to access
           // momentum array in Sibyll
-          int i = -1;
           MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
           EnergyType E_final = 0_GeV, Ecm_final = 0_GeV;
           for (auto& psib : ss) {
-            ++i;
+	    
             // skip particles that have decayed in Sibyll
-            if (abs(s_plist_.llist[i]) > 100) continue;
+	    if( psib.HasDecayed()) continue;
 
             // transform energy to lab. frame, primitve
             // compute beta_vec * p_vec
             // arbitrary Lorentz transformation based on sibyll routines
             const auto gammaBetaComponents = gambet.GetComponents();
-            const auto pSibyllComponents = psib.GetMomentum().GetComponents();
+	    // FOR NOW: fill vector in sibCS and then rotate into rootCS
+	    // can be done in SibStack by passing sibCS 
+	    // get momentum vector in sibyllCS
+            const auto pSibyllComponentsSibCS = psib.GetMomentum().GetComponents();
+	    // temporary vector in sibyllCS
+	    auto SibVector = MomentumVector( sibyllCS, pSibyllComponentsSibCS);
+	    // rotatate to rootCS
+	    const auto pSibyllComponents = SibVector.GetComponents(rootCS);
+	    // boost to lab. frame
             hep::EnergyType en_lab = 0. * 1_GeV;
             hep::MomentumType p_lab_components[3];
             en_lab = psib.GetEnergy() * gamma;
@@ -244,7 +267,6 @@ namespace corsika::process::sibyll {
             auto pnew = s.NewParticle();
             pnew.SetEnergy(en_lab);
             pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
-
             corsika::geometry::QuantityVector<energy_hep_d> p_lab_c{
                 p_lab_components[0], p_lab_components[1], p_lab_components[2]};
             pnew.SetMomentum(MomentumVector(rootCS, p_lab_c));
