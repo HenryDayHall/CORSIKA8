@@ -57,11 +57,7 @@ namespace corsika::cascade {
     }
 
     void Step(Particle& particle) {
-
       using namespace corsika::units::si;
-      using std::cout;
-      using std::endl;
-      using std::log;
 
       // determine geometric tracking
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
@@ -78,11 +74,15 @@ namespace corsika::cascade {
                 << ", next_interact=" << next_interact << std::endl;
 
       // convert next_step from grammage to length
+      auto const* currentNode =
+          fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
+
+      if (currentNode == &*fEnvironment.GetUniverse()) {
+        throw std::runtime_error("particle entered void universe");
+      }
+
       LengthType const distance_interact =
-          fEnvironment.GetUniverse()
-              ->GetContainingNode(particle.GetPosition())
-              ->GetModelProperties()
-              .ArclengthFromGrammage(step, next_interact);
+          currentNode->GetModelProperties().ArclengthFromGrammage(step, next_interact);
 
       // determine the maximum geometric step length
       LengthType const distance_max = fProcessSequence.MaxStepLength(particle, step);
@@ -113,7 +113,7 @@ namespace corsika::cascade {
       // std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
       particle.SetPosition(step.PositionFromArclength(min_distance));
       // .... also update time, momentum, direction, ...
-      
+
       step.LimitEndTo(min_distance);
 
       // apply all continuous processes on particle + track
@@ -127,7 +127,7 @@ namespace corsika::cascade {
         return;
       }
 
-      std::cout << "sth. happening before geometric limit ?"
+      std::cout << "sth. happening before geometric limit ? "
                 << ((min_distance < distance_max) ? "yes" : "no") << std::endl;
 
       if (min_distance < distance_max) { // interaction to happen within geometric limit

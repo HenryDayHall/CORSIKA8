@@ -7,7 +7,7 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
-
+ 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
@@ -191,7 +191,6 @@ public:
 // The example main program for a particle cascade
 //
 int main() {
-
   // initialize random number sequence(s)
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
@@ -229,7 +228,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_TeV;
+  const hep::EnergyType E0 = 10_TeV;
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);

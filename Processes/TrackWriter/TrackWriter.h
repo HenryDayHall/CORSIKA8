@@ -36,7 +36,7 @@ namespace corsika::process::TrackWriter {
       auto const delta = t.GetPosition(1).GetCoordinates() - start;
       auto const& name = corsika::particles::GetName(p.GetPID());
 
-      std::cerr << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
+      fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
                 << start[2] / 1_m << "   " << delta[0] / 1_m << ' ' << delta[1] / 1_m
                 << ' ' << delta[2] / 1_m << '\n';
 
@@ -50,7 +50,7 @@ namespace corsika::process::TrackWriter {
 
   private:
     std::string const fFilename;
-    std::ofstream fFile;
+    mutable std::ofstream fFile;
   };
 
 } // namespace corsika::process::TrackWriter
