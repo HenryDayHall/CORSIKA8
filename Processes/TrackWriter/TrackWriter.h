@@ -36,9 +36,9 @@ namespace corsika::process::TrackWriter {
       auto const delta = t.GetPosition(1).GetCoordinates() - start;
       auto const& name = corsika::particles::GetName(p.GetPID());
 
-      fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
-                << start[2] / 1_m << "   " << delta[0] / 1_m << ' ' << delta[1] / 1_m
-                << ' ' << delta[2] / 1_m << '\n';
+      fFile << name << "    " << p.GetEnergy() / 1_eV << ' ' << start[0] / 1_m << ' '
+            << start[1] / 1_m << ' ' << start[2] / 1_m << "   " << delta[0] / 1_m << ' '
+            << delta[1] / 1_m << ' ' << delta[2] / 1_m << '\n';
 
       return corsika::process::EProcessReturn::eOk;
     }

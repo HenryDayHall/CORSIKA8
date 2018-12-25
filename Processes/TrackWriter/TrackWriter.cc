@@ -9,5 +9,12 @@
  */
 
 #include <corsika/process/track_writer/TrackWriter.h>
+#include <string>
 
-void corsika::process::TrackWriter::TrackWriter::Init() { fFile.open(fFilename); }
+void corsika::process::TrackWriter::TrackWriter::Init() {
+  using namespace std::string_literals;
+
+  fFile.open(fFilename);
+  fFile << "# PID, E / eV, start coordinates / m, displacement vector to end / m "s
+        << '\n';
+}
