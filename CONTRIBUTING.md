@@ -4,7 +4,7 @@ The CORSIKA Project very much welcomes contributions. Here we outlined
 how you can find the right place to contribute, and how to do that.
 Connect to http://gitlab.ikp.kit.edu and corsika-devel@lists.kit.edu
 or corsika-project@lists.kit.edu to get in touch with the project.
-The CORSIKA Project decides on the [GUIDELINES](GUIDELINES.md), and can
+The CORSIKA Project decides on the [GUIDELINES](CONTRIBUTING.md), and can
 change them.
 
 # How to contribute

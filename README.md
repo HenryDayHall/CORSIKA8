@@ -14,7 +14,7 @@ only specific model parameters can still be changed.
 CORSIKA8 is released under the GPL3 license. See [license file](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE) which is part of every release and the source code. 
 
 When you contribute to CORSIKA check the guidelines outlined here:
-[coding guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/GUIDELINES.md). Code that fail the review by the CORSIKA author group must be improved before it can be merged in the official code base. After your code has been accepted and merged you become a contributor of the CORSIKA project and you should include yourself in the [AUTHORS](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/AUTHORS) file. 
+[coding guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code that fail the review by the CORSIKA author group must be improved before it can be merged in the official code base. After your code has been accepted and merged you become a contributor of the CORSIKA project and you should include yourself in the [AUTHORS](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/AUTHORS) file. 
 
 You need to read and agree to the [collaboration agreement](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The agreement can be discussed, and eventually improved. 
 
