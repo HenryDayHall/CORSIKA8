@@ -35,16 +35,20 @@ namespace corsika::process {
     /// here starts the interface-definition part
     // -> enforce derived to implement DoDecay...
     template <typename Particle, typename Stack>
-    EProcessReturn DoDecay(Particle&, Stack&) const;
+    EProcessReturn DoDecay(Particle&, Stack&);
 
     template <typename Particle>
-    corsika::units::si::TimeType GetLifetime(Particle& p) const;
+    corsika::units::si::TimeType GetLifetime(Particle& p);
 
     template <typename Particle>
-    corsika::units::si::InverseTimeType GetInverseLifetime(Particle& p) const {
+    corsika::units::si::InverseTimeType GetInverseLifetime(Particle& p) {
       return 1. / GetRef().GetLifetime(p);
     }
   };
+
+  // overwrite the default trait class, to mark DecayProcess<T> as useful process
+  template <class T>
+  std::true_type is_process_impl(const DecayProcess<T>* impl);
 
 } // namespace corsika::process
 

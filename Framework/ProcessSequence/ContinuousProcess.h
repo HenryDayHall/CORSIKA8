@@ -41,6 +41,10 @@ namespace corsika::process {
     corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const;
   };
 
+  // overwrite the default trait class, to mark BaseProcess<T> as useful process
+  template <class T>
+  std::true_type is_process_impl(const ContinuousProcess<T>* impl);
+
 } // namespace corsika::process
 
 #endif

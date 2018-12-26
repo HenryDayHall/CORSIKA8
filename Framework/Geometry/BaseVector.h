@@ -31,10 +31,8 @@ namespace corsika::geometry {
     BaseVector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector)
         : qVector(pQVector)
         , cs(&pCS) {}
-        
-    auto const& GetCoordinateSystem() const {
-        return *cs;
-    }
+
+    auto const& GetCoordinateSystem() const { return *cs; }
   };
 
 } // namespace corsika::geometry

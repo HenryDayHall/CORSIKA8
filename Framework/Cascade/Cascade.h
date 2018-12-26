@@ -63,6 +63,8 @@ namespace corsika::cascade {
       using std::endl;
       using std::log;
 
+      cout << particle.GetEnergy() / 1_GeV << endl;
+
       // determine geometric tracking
       corsika::setup::Trajectory step = fTracking.GetTrack(particle);
 
