@@ -31,14 +31,14 @@ namespace corsika::process {
       ~StackInspector();
 
       void Init();
-      EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s) const;
+      EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s);
       //~ template <typename Particle>
       corsika::units::si::LengthType MaxStepLength(Particle&,
-                                                   corsika::setup::Trajectory&) const;
+                                                   corsika::setup::Trajectory&);
 
     private:
       bool fReport;
-      mutable int fCountStep = 0;
+      int fCountStep = 0;
     };
 
   } // namespace stack_inspector

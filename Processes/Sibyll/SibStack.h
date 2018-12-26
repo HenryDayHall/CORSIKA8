@@ -80,9 +80,8 @@ namespace corsika::process::sibyll {
     corsika::units::hep::EnergyType GetEnergy() const {
       return GetStackData().GetEnergy(GetIndex());
     }
-    bool HasDecayed() const
-    {
-      return abs(GetStackData().GetId(GetIndex()))>100 ? true : false;
+    bool HasDecayed() const {
+      return abs(GetStackData().GetId(GetIndex())) > 100 ? true : false;
     }
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
     corsika::process::sibyll::SibyllCode GetPID() const {

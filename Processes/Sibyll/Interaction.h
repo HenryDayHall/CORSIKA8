@@ -35,7 +35,7 @@ namespace corsika::process::sibyll {
     }
 
     template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) const {
+    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) {
 
       using namespace corsika::units;
       using namespace corsika::units::hep;
@@ -115,7 +115,7 @@ namespace corsika::process::sibyll {
     }
 
     template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) const {
+    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) {
 
       using namespace corsika::units;
       using namespace corsika::units::hep;
@@ -137,7 +137,7 @@ namespace corsika::process::sibyll {
         // FOR NOW: hard coded z-axis for corsika frame
         QuantityVector<length_d> const zAxis{0_m, 0_m, 1_m};
         QuantityVector<length_d> const xAxis{1_m, 0_m, 0_m};
-        auto pt = [](MomentumVector p) {
+        [[maybe_unused]] auto pt = [](MomentumVector p) {
           return sqrt(p.GetComponents()[0] * p.GetComponents()[0] +
                       p.GetComponents()[1] * p.GetComponents()[1]);
         };

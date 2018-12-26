@@ -55,7 +55,7 @@ TEST_CASE("boosts") {
   // boost projecticle
   auto const [eProjectileCoM, pProjectileCoM] =
       boost.toCoM(eProjectileLab, pProjectileLab);
-      
+
   // boost target
   auto const [eTargetCoM, pTargetCoM] = boost.toCoM(eTargetLab, pTargetLab);
 

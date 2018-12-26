@@ -7,7 +7,7 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
- 
+
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
@@ -30,6 +30,9 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/random/RNGManager.h>
+
+#include <boost/type_index.hpp>
+using boost::typeindex::type_id_with_cvr;
 
 #include <iostream>
 #include <limits>
@@ -223,7 +226,10 @@ int main() {
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  const auto sequence = /*p0 <<*/ sibyll << decay << cut << trackWriter;
+  auto sequence = p0 << sibyll << decay << cut << trackWriter;
+
+  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
+  // << "\n";
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -232,13 +238,14 @@ int main() {
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);
-    hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
+    hep::MomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
     auto plab = stack::super_stupid::MomentumVector(rootCS, 0_GeV, 0_GeV, -P0);
     particle.SetEnergy(E0);
     particle.SetMomentum(plab);
     particle.SetTime(0_ns);
     Point p(rootCS, 0_m, 0_m, 0_m);
     particle.SetPosition(p);
+    cout << particle.GetEnergy() / 1_GeV << endl;
   }
 
   // define air shower object, run simulation
