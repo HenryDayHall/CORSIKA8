@@ -235,7 +235,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 9_TeV;
+  const hep::EnergyType E0 = 8_TeV;
   double theta = 45.;
   double phi = 20.;
   {
