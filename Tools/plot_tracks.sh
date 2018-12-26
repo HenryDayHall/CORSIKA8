@@ -35,3 +35,5 @@ do for [t=0:360:1] {
         splot "$track_dat" u 3:4:5:6:7:8 w vectors nohead t ""
 }
 EOF
+
+exit $?
