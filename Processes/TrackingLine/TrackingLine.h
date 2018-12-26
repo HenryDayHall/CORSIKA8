@@ -87,6 +87,9 @@ namespace corsika::process {
 
         std::cout << "TrackingLine pos: " << currentPosition.GetCoordinates()
                   << std::endl;
+        std::cout << "TrackingLine   E: " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
+        std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
+                  << " GeV " << std::endl;
         std::cout << "TrackingLine   v: " << velocity.GetComponents() << std::endl;
 
         // to do: include effect of magnetic field

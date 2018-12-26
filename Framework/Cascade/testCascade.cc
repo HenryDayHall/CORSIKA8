@@ -114,7 +114,7 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
   ProcessSplit p1;
-  const auto sequence = p0 << p1;
+  auto sequence = p0 << p1;
   setup::Stack stack;
 
   corsika::cascade::Cascade EAS(env, tracking, sequence, stack);

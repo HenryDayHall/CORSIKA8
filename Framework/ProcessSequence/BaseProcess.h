@@ -25,11 +25,20 @@ namespace corsika::process {
 
    */
 
-  template <typename derived>
+  template <typename Derived>
   struct BaseProcess {
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
+  private:
+    BaseProcess() {}
+    friend Derived;
+
+  public:
+    Derived& GetRef() { return static_cast<Derived&>(*this); }
+    const Derived& GetRef() const { return static_cast<const Derived&>(*this); }
   };
+
+  // overwrite the default trait class, to mark BaseProcess<T> as useful process
+  template <class T>
+  std::true_type is_process_impl(const BaseProcess<T>* impl);
 
 } // namespace corsika::process
 

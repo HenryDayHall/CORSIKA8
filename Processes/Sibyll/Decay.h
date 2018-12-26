@@ -10,6 +10,8 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
+#include <fenv.h>
+
 namespace corsika::process {
 
   namespace sibyll {
@@ -25,11 +27,11 @@ namespace corsika::process {
         setTrackedParticlesStable();
       }
 
-      void setTrackedParticlesStable() const {
+      void setTrackedParticlesStable() {
         /*
-          Sibyll is hadronic generator
-          only hadrons decay
-        */
+           Sibyll is hadronic generator
+           only hadrons decay
+         */
         // set particles unstable
         setHadronsUnstable();
         // make tracked particles stable
@@ -45,17 +47,17 @@ namespace corsika::process {
         }
       }
 
-      void setUnstable(const corsika::particles::Code pCode) const {
+      void setUnstable(const corsika::particles::Code pCode) {
         int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
         s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
       }
 
-      void setStable(const corsika::particles::Code pCode) const {
+      void setStable(const corsika::particles::Code pCode) {
         int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
         s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
       }
 
-      void setAllStable() const {
+      void setAllStable() {
         // name? also makes EM particles stable
 
         using std::cout;
@@ -75,7 +77,7 @@ namespace corsika::process {
         }
       }
 
-      void setHadronsUnstable() const {
+      void setHadronsUnstable() {
 
         using std::cout;
         using std::endl;
@@ -118,7 +120,7 @@ namespace corsika::process {
       }
 
       template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle& p) const {
+      corsika::units::si::TimeType GetLifetime(Particle& p) {
         using std::cout;
         using std::endl;
         using namespace corsika::units::si;
@@ -148,9 +150,12 @@ namespace corsika::process {
       }
 
       template <typename Particle, typename Stack>
-      void DoDecay(Particle& p, Stack& s) const {
+      void DoDecay(Particle& p, Stack& s) {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
+
+        feenableexcept(FE_INVALID);
+
         fCount++;
         SibStack ss;
         ss.Clear();
@@ -194,6 +199,8 @@ namespace corsika::process {
         }
         // empty sibyll stack
         ss.Clear();
+
+        fedisableexcept(FE_INVALID);
       }
     };
   } // namespace sibyll
