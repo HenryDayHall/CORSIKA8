@@ -30,7 +30,7 @@ namespace corsika::process::TrackWriter {
     void Init();
 
     template <typename Particle, typename Track, typename Stack>
-    corsika::process::EProcessReturn DoContinuous(Particle& p, Track& t, Stack&) const {
+    corsika::process::EProcessReturn DoContinuous(Particle& p, Track& t, Stack&) {
       using namespace corsika::units::si;
       auto const start = t.GetPosition(0).GetCoordinates();
       auto const delta = t.GetPosition(1).GetCoordinates() - start;
@@ -44,13 +44,13 @@ namespace corsika::process::TrackWriter {
     }
 
     template <typename Particle, typename Track>
-    corsika::units::si::LengthType MaxStepLength(Particle&, Track&) const {
+    corsika::units::si::LengthType MaxStepLength(Particle&, Track&) {
       return corsika::units::si::meter * std::numeric_limits<double>::infinity();
     }
 
   private:
     std::string const fFilename;
-    mutable std::ofstream fFile;
+    std::ofstream fFile;
   };
 
 } // namespace corsika::process::TrackWriter
