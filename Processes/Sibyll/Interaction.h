@@ -35,7 +35,7 @@ namespace corsika::process::sibyll {
     }
 
     template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) const {
+    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) {
 
       using namespace corsika::units;
       using namespace corsika::units::hep;
@@ -114,7 +114,7 @@ namespace corsika::process::sibyll {
     }
 
     template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) const {
+    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) {
 
       using namespace corsika::units;
       using namespace corsika::units::hep;

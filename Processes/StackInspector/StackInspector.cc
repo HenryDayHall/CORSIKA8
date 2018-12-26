@@ -37,7 +37,7 @@ StackInspector<Stack>::~StackInspector() {}
 
 template <typename Stack>
 process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Trajectory&,
-                                                            Stack& s) const {
+                                                            Stack& s) {
 
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
@@ -60,8 +60,8 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
 }
 
 template <typename Stack>
-corsika::units::si::LengthType StackInspector<Stack>::MaxStepLength(
-    Particle&, setup::Trajectory&) const {
+corsika::units::si::LengthType StackInspector<Stack>::MaxStepLength(Particle&,
+                                                                    setup::Trajectory&) {
   return std::numeric_limits<double>::infinity() * meter;
 }
 
