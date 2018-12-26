@@ -226,7 +226,8 @@ int main() {
   // assemble all processes into an ordered process list
   auto sequence = p0 << sibyll << decay << cut;
 
-  //cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name() << "\n";
+  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
+  // << "\n";
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
