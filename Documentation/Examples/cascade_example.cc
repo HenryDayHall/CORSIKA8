@@ -75,6 +75,9 @@ public:
       case Code::Electron:
         is_em = true;
         break;
+    case Code::Positron:
+        is_em = true;
+        break;
       case Code::Gamma:
         is_em = true;
         break;
