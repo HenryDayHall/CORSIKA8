@@ -31,7 +31,7 @@ namespace corsika::process::sibyll {
     void Clear() { s_plist_.np = 0; }
 
     int GetSize() const { return s_plist_.np; }
-#warning check actual capacity of sibyll stack
+
     int GetCapacity() const { return 8000; }
 
     void SetId(const int i, const int v) { s_plist_.llist[i] = v; }
@@ -90,6 +90,9 @@ namespace corsika::process::sibyll {
     }
     corsika::units::hep::EnergyType GetEnergy() const {
       return GetStackData().GetEnergy(GetIndex());
+    }
+    bool HasDecayed() const {
+      return abs(GetStackData().GetId(GetIndex())) > 100 ? true : false;
     }
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
     corsika::process::sibyll::SibyllCode GetPID() const {

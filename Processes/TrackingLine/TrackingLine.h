@@ -84,7 +84,8 @@ namespace corsika::process {
             p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
 
         auto const currentPosition = p.GetPosition();
-
+        std::cout << "TrackingLine pid: " << p.GetPID()
+                  << " , E = " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
         std::cout << "TrackingLine pos: " << currentPosition.GetCoordinates()
                   << std::endl;
         std::cout << "TrackingLine   E: " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;

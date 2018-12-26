@@ -9,6 +9,7 @@
  */
 
 #include <corsika/environment/Environment.h>
+#include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/process/tracking_line/TrackingLine.h>
 
@@ -47,6 +48,7 @@ struct DummyParticle {
   auto GetEnergy() const { return fEnergy; }
   auto GetMomentum() const { return fMomentum; }
   auto GetPosition() const { return fPosition; }
+  auto GetPID() const { return corsika::particles::Code::Unknown; }
 };
 
 struct DummyStack {
