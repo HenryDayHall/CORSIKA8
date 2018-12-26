@@ -25,6 +25,8 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 
+#include <corsika/process/track_writer/TrackWriter.h>
+
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/random/RNGManager.h>
@@ -195,7 +197,6 @@ public:
 // The example main program for a particle cascade
 //
 int main() {
-
   // initialize random number sequence(s)
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
@@ -225,9 +226,10 @@ int main() {
   corsika::process::sibyll::Interaction sibyll;
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(8_GeV);
+  corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = p0 << sibyll << decay << cut;
+  auto sequence = p0 << sibyll << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -235,7 +237,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 8_TeV;
+  const hep::EnergyType E0 = 10_TeV;
   double theta = 45.;
   double phi = 20.;
   {
@@ -254,7 +256,7 @@ int main() {
     particle.SetEnergy(E0);
     particle.SetMomentum(plab);
     particle.SetTime(0_ns);
-    Point p(rootCS, 0_m, 0_m, 10_km);
+    Point p(rootCS, 0_m, 0_m, 0_m);
     particle.SetPosition(p);
     cout << particle.GetEnergy() / 1_GeV << endl;
   }

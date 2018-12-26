@@ -28,6 +28,7 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogg
    ProcessSibyll
   CORSIKAcascade
   ProcessStackInspector
+  ProcessTrackWriter
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry

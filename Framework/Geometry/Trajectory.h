@@ -43,6 +43,10 @@ namespace corsika::geometry {
       assert(t >= 0 * corsika::units::si::second);
       return T::ArcLength(0, t);
     }
+
+    void LimitEndTo(corsika::units::si::LengthType limit) {
+      fTimeLength = T::TimeFromArclength(limit);
+    }
   };
 
 } // namespace corsika::geometry
