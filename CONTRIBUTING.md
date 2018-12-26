@@ -1,216 +1,117 @@
-# Contributing
+# Guidelines for code development, structure, formating etc.
 
-The CORSIKA project is committed to fostering and preserving a
-diverse, welcoming community; all participants are expected to
-respect that. 
+The CORSIKA Project very much welcomes contributions. Here we outlined
+how you can find the right place to contribute, and how to do that.
+Connect to http://gitlab.ikp.kit.edu and corsika-devel@lists.kit.edu
+or corsika-project@lists.kit.edu to get in touch with the project.
+The CORSIKA Project decides on the [GUIDELINES](CONTRIBUTING.md), and can
+change them.
 
-- [Getting Started](#getting-started)
-    - [Very first steps](#very-first-steps)
-    - [Opening issues](#opening-issues)
-    - [Participating in discussions](#participating-in-discussions)
-    - [Improving and reviewing docs](#improving-and-reviewing-docs)
-    - [Reviewing and testing changes](#reviewing-and-testing-changes)
-- [Proposing and making changes](#proposing-and-making-changes)
-	- [Finding something to work on](#finding-something-to-work-on)
-    - [Before you start](#before-you-start-work)
-    - [Before you open your PR](#before-you-open-your-pr)
-    - [Review process](#review-process)
-- [Getting more involved](#getting-more-involved)
+# How to contribute
 
-## Getting started
-
-Not sure where to start? If you haven't already, take a look at the 
-[docs](http://xi-editor.github.io/xi-editor/docs.html) to get a better
-sense of the project. Read through some issues and some open PRs, to
-get a sense for the habits of existing contributors. Drop by the #xi
-channel on [irc.mozilla.org](https://mozilla.logbot.info/xi) to follow
-ongoing discussions or ask questions. Clone the repos you're
-interested in, and make sure you can build and run the tests. If you
-can't, open an issue, and someone will try to help. Once you're up and
-running, there are a a number of ways to participate:
-
-### Opening issues
-
-If you have a question or a feature request or think you've found a bug,
-please open an issue. When opening an issue, include any details that
-might be relevant: for a bug this might be the steps required to
-reproduce; for a feature request it might be a detailed explanation of
-the behaviour you are imagining, an outline of how it would be used,
-and/or examples of how this feature is used in other editors.
-
-#### Before you open an issue
-
-Before opening an issue, **try to identify where the issue belongs**.
-Is it a problem with the frontend or with core? The frontend is 
-responsible for drawing windows and UI, and handling events; the core
-is responsible for most everything else. Issues with the frontend
-should be opened in that frontend's repository, and issues with
-core should be opened in the 
-[xi-editor](https://github.com/xi-editor/xi-editor/issues) repo.
-
-Finally, before opening an issue, **use github's search bar** to make
-sure there isn't an existing (open or closed) issue for your particular
-problem.
-
-### Participating in discussions
-
-An _explicit_ goal of xi-editor is to be an educational resource.
-Everyone is encouraged to participate in discussion issues (issues with
-the 'discussion' or 'planning' labels), and we expect people
-participating in discussions to be respectful of the fact that we all
-have different backgrounds and levels of experience. Similarly, if
-something is confusing, feel free to ask for clarification! If you're
-confused, other people probably are as well.
-
-### Improving and reviewing docs
-
-If the docs are unclear or incomplete, please open an issue or a PR to
-improve them. This is an especially valuable form of feedback from new
-contributors, who are seeing things for the first time, and will be best
-positioned to identify areas that need improvement.
-
-### Reviewing and testing changes
-
-One of the best ways to get more familiar with the project is by reading
-other people's pull requests. If there's something in a commit that you
-don't understand, this is a great time to ask for clarification. Testing
-changes is also very helpful, especially for bug fixes or feature
-additions. Check out a change and try it out; does it work? Can you find
-edge cases? Manual testing is very valuable. For more information on
-reviews, see [code review process](#review-process).
+  - We organize all development via `Issues` that may be feature requests,
+    ideas, or bugs fix requests. 
+  - New issues can be created, or existing issues
+    picked up. 
+  - Issues are discussed in meetings or via  corsika-devel@lists.kit.edu  within the CORSIKA Project.
+  - Issues are assigned to milestones. 
+  - The work on issues is performed in `branches` that can be best
+    created directly via the gitlab web interface. 
+  - Proposed code to close one issue (located in a specific git
+    branch) is reviewed and eventually discussed, and finally merged
+    into the master branch to close the issue.
 
 
-## Proposing and making changes
+## Code formatting
 
-### Finding something to work on
+We rely on `clang-format` for code formatting. This has the tremendous
+advantage that definitely all code follows the same formatting rules,
+and nobody at any point needs to invest time and effort into code
+formatting. We provide a script `do-clang-format.sh`, which can be
+very useful. But we urge everybody to integrate `clang-format` already
+on the level of your source code editor. See [the official
+page](https://clang.llvm.org/docs/ClangFormat.html) for information
+about `clang-format` and its editor integration. 
 
-If you're looking for something to work on, a good first step is to browse
-the [issues](https://github.com/xi-editor/xi-editor/issues). Specifically,
-issues that are labeled 
-[help wanted](https://github.com/xi-editor/xi-editor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) and/or
-[easy](https://github.com/xi-editor/xi-editor/issues?q=is%3Aissue+is%3Aopen+label%3Aeasy)
-are good places to start. If you can't find anything there, feel free to ask
-on IRC, or play around with the editor and try to identify something that
-_you_ think is missing.
+The definition of source code format is written down in the file
+[.clang-format](.clang-format) and can be changed, if the CORSIKA
+Project agrees on it. To see what is possible, check
+e.g. [link1](https://clangformat.com/) or
+[link2](https://zed0.co.uk/clang-format-configurator/).
 
-### Before you start work
+## Naming conventions
 
-Before starting to work on an issue, consider the following:
-    
-- _Is it a bugfix or small change?_ If you notice a small bug somewhere,
- and you believe you have a fix, feel free to open a pull request directly.
+While `clang-format` does the structural formatting, we still need to agree on naming conventions:
 
-- _Is it a feature?_ If you have an idea for a new editor feature that is
- along the lines of something that already exists (for instance, adding a
- new command to reverse the letters in a selected region) _consider_ 
- opening a short issue beforehand, describing the feature you have in mind.
- Other contributors might be able to identify possible issues or
- refinements. This isn't _necessary_, but it might end up saving you work,
- and it means you will get to close an issue when your PR gets merged,
- which feels good.
+  - Classes and structs start with capital letters
+  - Class member variables start with "f"
+  - Any static variable has a "g" prefix. A static member variable starts with "fg"
+  - Class member functions start with capital letters
+  - Any class getter begins with "Get", and setter with "Set"
+  - enums should be "enum class", and start with a capital "E", enum entries start with "e"
 
-- _Is it a major feature, affecting for instance the behaviour or appearance
- of a frontend, or the API or architecture of core?_ Before working on a 
- large change, please open a discussion/proposal issue. This should describe
- the problem you're trying to solve, and the approach you're considering; 
- think of this as a 'lite' version of Rust's 
- [RFC](https://github.com/rust-lang/rfcs) process. 
+  - We use namespaces to avoid clashes and to structure code
+    - *Everything* is part of the corsika namespace
+    - All classes and objects are encapsulated into suited sub-namespaces,
+      thus corsika::geometry, corsika::processes, corsika::units, etc.
+    - Namespace names do not use capital letters.  
+    - Every header file is copied during build and install into
+      "include/corsika/[namespace]" which also means, each header file
+      can only provide definitions for a _single_ namespace. It is one
+      main purpose of namespaces to structure the location of header
+      files.
+    - Each header file uses an include protection that includes at
+      least the namespace name, and header file name, thus, `#ifndef
+      __include_geometry_Point_h__` or `#ifnedf __geometry_Point_h__`,
+      or similar are acceptable.
+    - Header files should always be included with `<..>`, thus,
+      `#include <corsika/geometry/Point.h>` since the build system
+      will always provide the correct include directives (and files
+      anyway cannot be found in file-system paths that typically do
+      not follow the namespace naming conventions outlined
+      here).
+
+  - Header files are named after the main class (or object) they
+    define. This also means each header file name starts with a
+    capital letter.
+  
+
+## Coding rules
+
+  - Code may not introduce any compiler errors, or warnings
+  - All unit tests must succeed at all times
+  - We use C++17 concepts wherever useful and helpful
+  - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
+  - We never catch exceptions for error handling, there might be very few special exceptions from this. We need to discuss such cases.
+  - Everything that should not change should be `const`
+  - Everything that does not need to be visible to the outside of a class/struct should be `private` or `protected`
+  - We prefer the use of references, wherever useful
+  - There cannot be any pointer in the interface of any class or object
+    exposed to outside users, there might be pointers for very special cases
+    inside of classes.
+  - When you contribute new code, or extend existing code, at the same time provide unit-tests for all functionality.
+  - Code must be documented with `doxygen` commands
+  
+
+## Release versioning scheme
+
+Releases of CORSIKA are thought to be the baseline for larger scale testing, and full production. 
+The releases are numbered as x.y.z, starting with x=8 form the gitlab c++ version. X will only be incremented 
+for major design or physics changes. The y index is updated for new official releases that normally contain improved or enhanced physics 
+performance, and may also contain normal interface changes to accomodate improvements. The z index can be updated frequently for
+bug fixes or new features. Changes in z will not contain interface changes, thus, code will remain fully compatible.  
+Special releases of CORSIKA can also have a tag name from git, e.g. as in the "milestone1" release.
 
 
-### Before you open your PR
+# How to become scientific author of the CORSIKA Project
 
-Before pressing the 'Create pull request' button, 
-
-- _Run the tests_. It's easy to accidentally break something with even a small 
- change, so always run the tests locally before submitting (or updating) a PR.
- You can run all checks locally with the `xi-editor/rust/run_all_checks`. script.
-
-- _Add a message for your reviewers_. When submitting a PR, take advantage
- of the opportunity to include a message. Your goal here should be to help
- your reviewers. Are there any parts of your change that you're uncertain
- about? Are there any non-obvious explanations for some of your decisions?
- If your change changes some behaviour, how might it be tested?
-
-- ***Be your own first reviewer***. On the page where you enter your message,
- you have a final opportunity to see your PR _as it will be seen by your 
- reviewers_. This is a great opportunity to give it one last review, yourself.
- Imagine that it is someone else's work, that you're reviewing: what comments 
- would you have? If you spot a typo or a problem, you can push an update in 
- place, without losing your PR message or other state.
-
-- _Add yourself to the AUTHORS file_. If this is your first substantive pull 
-request in this repo, feel free to add yourself to the AUTHORS file.
-
-### Review process
-
-Every non-trivial pull request goes through review. Everyone is welcome to 
-participate in review; review is an excellent time to ask questions about
-code or design decisions that you don't understand.
-
-All pull requests must be approved by an appropriate reviewer before they
-are merged. For bug fixes and smaller changes, this can be anyone who has
-commit rights to the repo in question; larger changes (changes which add a
-feature, or significantly change behaviour or API) should also be approved by
-a maintainer.
-
-Before being merged, a change must pass 
-[CI](https://en.wikipedia.org/wiki/Continuous_integration).
-
-#### Responsibilites of the approving reviewer
-
-If you approve a change, it is expected that you:
-- understand what the change is trying to do, and how it is doing it
-- have manually built and tested the change, to verify it works as intended
-- believe the change generally matches the idioms, formatting rules,
-and overall coding style of the relevant repo
-- are ready and able to help resolve any problems that may be introduced by
-merging the change.
-
-If a PR is made by a contributor who has write access to the repo in question, 
-they are responsible for merging/rebasing the PR after it has been approved; 
-otherwise it will be merged by the reviewer.
-
-If a patch adds or modifies behaviour that is observable in the client, 
-the reviewer should build the patch and verify that it works as expected.
-
-### After submitting your change
-
-You've done all this, and submitted your patch. What now?
-
-_Read other PRs_. If you're waiting for a review, it's likely that other
-pull requests are waiting for review as well. This can be a good time
-to go and take a look at what other work is happening in the project;
-and if another PR has review comments, it might provide a clue to the
-type of feedback you might expect.
-
-_Patience_. As a general goal, we try to respond to all pull requests
-within a few days, and to do preliminary review within a week, but we
-don't always succeed. If you've opened a PR and haven't heard from
-anyone, feel free to comment on it, or stop by the IRC channel, to ask
-if anyone has had a chance to take a look. It's very possible that it's
-been lost in the shuffle.
-
-## Getting more involved
-
-If you are participating in the xi-editor project, you may receive
-additional privileges:
-
-_Organization membership_: If you are regularly making contributions
-to a xi project, in any of the forms outlined above, we will be happy to
-add you to the xi-editor organization, which will give you the ability
-to do things like add labels to issues and view active projects.
-
-_Contributor_: If you are regularly making substantive contributions
-to a specific xi project, we will be happy to add you as a contributor
-to the repo in question. Contributors are encouraged to review and
-approve changes, respond to issues, and generally help to maintain
-the project in question.
-
-_Maintainer_: If you are making substantive contributions to multiple
-repos over an extended period, you are regularly reviewing the work of
-other contributors, and you are actively participating in planning and
-discussion, you may, (at the  discretion of @raphlinus) be invited to
-take on the role of _maintainer_. Maintainers are responsible for
-coordinating the general direction of the project, resolving
-architectural questions, and doing the day to day work of moving the
-project forward.
+The CORSIKA Project decides on who becomes scientific author. The
+following conditions are clearly sufficient, but not all of them are
+required all the time:
+  - responsibility for a particular functionality or part
+  - follows these [GUIDELINES](GUIDELINES.md)
+  - agrees to the [COLLABORATION_AGREEMENT](COLLABORATION_AGREEMENT.md)
+  - active in the CORSIKA Project, that means responsive to
+    discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.ikp.kit.edu, of relevant *issues*,
+    or in (phone) meetings
+  - the members of the CORSIKA Project panel agree

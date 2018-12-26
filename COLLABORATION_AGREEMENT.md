@@ -61,7 +61,7 @@ particular branch, but all official releases are normally performed
 via the master branch.
 
 If you want to contribute, you need to read
-[GUIDELINES](GUIDELINES.md) and comply with these rules, or help to
+[the GUIDELINES](CONTRIBUTING.md) and comply with these rules, or help to
 improve them.
 
 
@@ -69,7 +69,7 @@ improve them.
 The CORSIKA Project panel makes all decisions for the CORSIKA
 Project. It can also change the
 [COLLABORATION\_AGREEMENT](COLLABORATION\_AGREEMENT.md), the
-[GUIDELINES](GUIDELINES.md) or any other structure or document relevant for the CORSIKA Project.
+[the GUIDELINES](CONTRIBUTING.md) or any other structure or document relevant for the CORSIKA Project.
 
 The CORSIKA Project *panel* consists (October 2018) of
    
