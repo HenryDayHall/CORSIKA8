@@ -226,12 +226,22 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_GeV;
+  const hep::EnergyType E0 = 1000_GeV;
+  double theta = 45.;
+  double phi = 20.;
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);
     hep::MomentumType P0 = sqrt(E0 * E0 - 0.93827_GeV * 0.93827_GeV);
-    auto plab = stack::super_stupid::MomentumVector(rootCS, 0_GeV, 0_GeV, -P0);
+    auto momentumComponents = [](double theta, double phi, MomentumType&ptot)
+			      {
+				return std::make_tuple( ptot*sin(theta)*cos(phi), ptot*sin(theta)*sin(phi), ptot*cos(theta) );
+			      };
+    auto const [px, py, pz] = momentumComponents( theta / 180.* M_PI, phi / 180.* M_PI, P0);
+      //    auto plab = stack::super_stupid::MomentumVector(rootCS, 0_GeV, 0_GeV, -P0);
+    auto plab = stack::super_stupid::MomentumVector(rootCS, {px, py, pz});
+    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
+    cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     particle.SetEnergy(E0);
     particle.SetMomentum(plab);
     particle.SetTime(0_ns);
