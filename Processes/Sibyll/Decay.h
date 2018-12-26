@@ -10,6 +10,8 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
+#include <fenv.h>
+
 namespace corsika::process {
 
   namespace sibyll {
@@ -145,6 +147,9 @@ namespace corsika::process {
       void DoDecay(Particle& p, Stack& s) const {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
+
+	feenableexcept(FE_INVALID);
+
         fCount++;
         SibStack ss;
         ss.Clear();
@@ -188,6 +193,8 @@ namespace corsika::process {
         }
         // empty sibyll stack
         ss.Clear();
+
+	fedisableexcept(FE_INVALID);
       }
     };
   } // namespace sibyll
