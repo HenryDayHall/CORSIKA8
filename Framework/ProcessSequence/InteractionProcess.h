@@ -36,17 +36,21 @@ namespace corsika::process {
     /// here starts the interface-definition part
     // -> enforce derived to implement DoInteraction...
     template <typename P, typename S>
-    inline EProcessReturn DoInteraction(P&, S&) const;
+    inline EProcessReturn DoInteraction(P&, S&);
 
     template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track& t) const;
+    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track& t);
 
     template <typename Particle, typename Track>
     corsika::units::si::InverseGrammageType GetInverseInteractionLength(Particle& p,
-                                                                        Track& t) const {
+                                                                        Track& t) {
       return 1. / GetRef().GetInteractionLength(p, t);
     }
   };
+
+  // overwrite the default trait class, to mark BaseProcess<T> as useful process
+  template <class T>
+  std::true_type is_process_impl(const InteractionProcess<T>* impl);
 
 } // namespace corsika::process
 
