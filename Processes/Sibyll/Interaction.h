@@ -16,10 +16,11 @@ namespace corsika::process::sibyll {
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
     mutable int fCount = 0;
-
+    mutable int fNucCount = 0;
+    
   public:
     Interaction() {}
-    ~Interaction() { std::cout << "Sibyll::Interaction n=" << fCount << std::endl; }
+    ~Interaction() { std::cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount <<std::endl;}
 
     void Init() {
 
@@ -227,7 +228,8 @@ namespace corsika::process::sibyll {
           // print final state
           int print_unit = 6;
           sib_list_(print_unit);
-
+	  fNucCount += get_nwounded()-1;
+	  
           // delete current particle
           p.Delete();
 

@@ -3,6 +3,8 @@
 #include <corsika/random/RNGManager.h>
 #include <random>
 
+int get_nwounded() { return s_chist_.nwd; }
+
 double s_rndm_(int&) {
   static corsika::random::RNG& rng =
       corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
