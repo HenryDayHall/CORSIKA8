@@ -35,7 +35,6 @@ pages:
     paths:
       - public
   only:
-    - master
     - tags
     - triggers
     - schedules
