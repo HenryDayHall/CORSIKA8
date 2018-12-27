@@ -73,12 +73,13 @@ Project. It can also change the
 
 The CORSIKA Project *panel* consists (October 2018) of
    
+  * Hans Dembinski (MPG)
   * Ralph Engel (KIT)
   * Dieter Heck (KIT)
   * Tanguy Pierog (KIT)
   * Maximilian Reininghaus (KIT)
+  * Felix Riehn (LIP)
   * Ralf Ulrich (KIT)
-  * Michael Unger (KIT)
   * Darko Veberic (KIT)
   
 and can be contacted via corsika-project@lists.kit.edu.  The chair
