@@ -30,7 +30,7 @@ pages:
     - make doxygen
     - mkdir .public
     - cp -r Documentation/Doxygen/html .public/
-    - mv .public public
+    - mv .public ../public
   artifacts:
     paths:
       - public
