@@ -24,6 +24,9 @@ pages:
   tags:
     - corsika
   script:
+    - mkdir build
+    - cd build
+    - cmake ..
     - make doxygen
     - mkdir .public
     - cp -r Documentation/Doxygen/html .public/
