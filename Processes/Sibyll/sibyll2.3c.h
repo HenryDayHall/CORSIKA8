@@ -100,9 +100,9 @@ void sib_sigma_hp_(const int&, const double&, double&, double&, double&, double*
 
 double s_rndm_(int&);
 
-int get_nwounded();  
+int get_nwounded();
 double get_sibyll_mass2(int&);
-  
+
 // phojet random generator setup
 void pho_rndin_(int&, int&, int&, int&);
 }

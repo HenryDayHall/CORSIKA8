@@ -171,7 +171,8 @@ namespace corsika::process::sibyll {
         cout << "ProcessSibyll: azimuth angle between sibyllCS and rootCS: "
              << phi / M_PI * 180. << endl;
         // double phi = asin( p.GetMomentum().GetComponents()[0]/pt(p.GetMomentum() ) );
-        CoordinateSystem sibyllCS = rootCS.rotate(zAxis, phi).rotate(yAxis, theta);
+        const CoordinateSystem tempCS = rootCS.rotate(zAxis, phi);
+        const CoordinateSystem sibyllCS = tempCS.rotate(yAxis, theta);
 
         /*
            the target should be defined by the Environment,

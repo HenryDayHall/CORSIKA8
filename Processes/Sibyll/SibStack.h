@@ -107,7 +107,7 @@ namespace corsika::process::sibyll {
     corsika::units::hep::EnergyType GetMass() const {
       return GetStackData().GetMass(GetIndex());
     }
-   
+
     bool HasDecayed() const {
       return abs(GetStackData().GetId(GetIndex())) > 100 ? true : false;
     }

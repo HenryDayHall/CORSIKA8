@@ -80,7 +80,7 @@ public:
       case Code::Electron:
         is_em = true;
         break;
-    case Code::Positron:
+      case Code::Positron:
         is_em = true;
         break;
       case Code::Gamma:
@@ -237,8 +237,8 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 10_TeV;
-  double theta = 0.;
+  const hep::EnergyType E0 = 100_TeV;
+  double theta = 45.;
   double phi = 0.;
   {
     auto particle = stack.NewParticle();
