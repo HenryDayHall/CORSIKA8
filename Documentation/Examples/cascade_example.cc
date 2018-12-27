@@ -238,15 +238,15 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const hep::EnergyType E0 = 10_TeV;
-  double theta = 45.;
-  double phi = 20.;
+  double theta = 0.;
+  double phi = 0.;
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);
     hep::MomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
     auto momentumComponents = [](double theta, double phi, MomentumType& ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
-                             ptot * cos(theta));
+                             -ptot * cos(theta));
     };
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
@@ -258,7 +258,6 @@ int main() {
     particle.SetTime(0_ns);
     Point p(rootCS, 0_m, 0_m, 0_m);
     particle.SetPosition(p);
-    cout << particle.GetEnergy() / 1_GeV << endl;
   }
 
   // define air shower object, run simulation
