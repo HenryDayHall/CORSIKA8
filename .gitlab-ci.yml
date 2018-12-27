@@ -6,6 +6,7 @@ variables:
 before_script:
   - apt-get update --yes
   - apt-get install --yes cmake libboost-dev libeigen3-dev python3 gfortran
+  - apt-get install --yes doxygen graphviz
 
 build:
   stage: build
@@ -17,6 +18,23 @@ build:
     - cmake ..
     - cmake --build .
     - ctest
+
+pages:
+  stage: documentation
+  script:
+    - make doxygen
+    - mkdir .public
+    - cp -r Documentation/Doxygen/html .public/
+    - mv .public public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+    - tags
+    - triggers
+    - schedules
+
 
 # code_quality:
 #   image: docker:stable

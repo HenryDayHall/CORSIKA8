@@ -7,13 +7,13 @@ add_test(helix_example helix_example)
 add_executable (geometry_example geometry_example.cc)
 target_compile_options(geometry_example PRIVATE -g) # do not skip asserts
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
-#install (TARGETS geometry_example DESTINATION share/examples)
+install (TARGETS geometry_example DESTINATION share/examples)
 add_test(geometry_example geometry_example)
 
 add_executable (logger_example logger_example.cc)
 target_compile_options(logger_example PRIVATE -g) # do not skip asserts
 target_link_libraries (logger_example CORSIKAunits CORSIKAlogging)
-#install (TARGETS logger_example DESTINATION share/examples)
+install (TARGETS logger_example DESTINATION share/examples)
 add_test(logger_example logger_example)
 
 add_executable (stack_example stack_example.cc)
@@ -35,7 +35,7 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogg
   CORSIKAenvironment
   CORSIKAprocesssequence
   )
-#install (TARGETS cascade_example DESTINATION share/examples)
+install (TARGETS cascade_example DESTINATION share/examples)
 add_test(cascade_example cascade_example)
 
 add_executable (staticsequence_example staticsequence_example.cc)
@@ -45,5 +45,5 @@ target_link_libraries (staticsequence_example
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAlogging)
-#install (TARGETS staticsequence_example DESTINATION share/examples)
+install (TARGETS staticsequence_example DESTINATION share/examples)
 add_test(staticsequence_example staticsequence_example)
