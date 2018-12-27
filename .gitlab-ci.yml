@@ -11,7 +11,7 @@ before_script:
 build:
   stage: build
   tags:
-    - run1
+    - corsika
   script:
     - mkdir build
     - cd build
@@ -21,6 +21,8 @@ build:
 
 pages:
   stage: build
+  tags:
+    - corsika
   script:
     - make doxygen
     - mkdir .public
