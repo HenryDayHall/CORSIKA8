@@ -20,7 +20,7 @@ build:
     - ctest
 
 pages:
-  stage: documentation
+  stage: build
   script:
     - make doxygen
     - mkdir .public
