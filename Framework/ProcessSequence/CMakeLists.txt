@@ -48,8 +48,4 @@ target_link_libraries (
   CORSIKAprocesssequence
   CORSIKAthirdparty # for catch2
   )
-
-add_test (
-  NAME testProcessSequence
-  COMMAND testProcessSequence
-  )
+CORSIKA_ADD_TEST(testProcessSequence)

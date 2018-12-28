@@ -59,8 +59,4 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-
-add_test (
-  NAME testCascade
-  COMMAND testCascade
-  )
+CORSIKA_ADD_TEST(testStackInterface)

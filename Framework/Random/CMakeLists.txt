@@ -45,6 +45,4 @@ target_link_libraries (
   CORSIKArandom
   CORSIKAthirdparty # for catch2
   )
-
-add_test (NAME testRandom COMMAND testRandom)
-
+CORSIKA_ADD_TEST(testRandom)

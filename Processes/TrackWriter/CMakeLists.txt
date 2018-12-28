@@ -60,6 +60,5 @@ install (
 #  CORSIKAunits
 #  CORSIKAthirdparty # for catch2
 #  )
-
-#add_test (NAME testNullModel COMMAND testNullModel)
+# CORSIKA_ADD_TEST(testNullModel)
 

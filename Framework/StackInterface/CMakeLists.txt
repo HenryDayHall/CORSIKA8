@@ -33,5 +33,5 @@ install (
 
 #code testing
 add_executable (testStackInterface testStackInterface.cc)
-add_test(NAME testStackInterface COMMAND testStackInterface)
 target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+CORSIKA_ADD_TEST(testStackInterface)

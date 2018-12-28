@@ -37,5 +37,4 @@ target_link_libraries (
    CORSIKAgeometry
    CORSIKAthirdparty # for catch2
 )
-
-add_test (NAME testTrackingLine COMMAND testTrackingLine)
+CORSIKA_ADD_TEST(testTrackingLine)
