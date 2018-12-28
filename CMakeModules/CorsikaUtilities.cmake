@@ -86,5 +86,6 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 #
 
 function (CORSIKA_ADD_TEST name)
-  add_test (NAME ${name} COMMAND ${name} -o junit-${name}.xml -r junit)
+  file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
+  add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
 endfunction (CORSIKA_ADD_TEST)

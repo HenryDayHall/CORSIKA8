@@ -16,7 +16,7 @@ build:
     - cd build
     - cmake ..
     - cmake --build .
-    - ctest -V >& test.log
+    - ctest -j4 -V >& test.log
     - gzip -9 test.log
   artifacts:
     paths:
@@ -24,11 +24,7 @@ build:
     when: on_failure
     reports:
       junit:
-        - */junit*.xml
-        - */*/junit*.xml
-        - */*/*/junit*.xml
-        - */*/*/*/junit*.xml
-        - */*/*/*/*/junit*.xml
+        - build/test_outputs/junit*.xml
 
 # code_quality:
 #   image: docker:stable
