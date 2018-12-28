@@ -30,6 +30,10 @@ extern struct {
   int np;
 } s_plist_;
 
+// additional information about interactions.
+// number of wounded nucleons, number of hard and soft scatterings etc.
+extern struct { int nnsof[20], nnjet[20], jdif[20], nwd, njet, nsof; } s_chist_;
+
 extern struct {
   double cbr[223 + 16 + 12 + 8];
   int kdec[1338 + 6 * (16 + 12 + 8)];
@@ -95,6 +99,9 @@ void sib_sigma_hp_(const int&, const double&, double&, double&, double&, double*
                    double&);
 
 double s_rndm_(int&);
+
+int get_nwounded();
+double get_sibyll_mass2(int&);
 
 // phojet random generator setup
 void pho_rndin_(int&, int&, int&, int&);

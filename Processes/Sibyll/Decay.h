@@ -21,6 +21,8 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
+#include <fenv.h>
+
 namespace corsika::process {
 
   namespace sibyll {
@@ -143,9 +145,19 @@ namespace corsika::process {
             corsika::particles::GetLifetime(p.GetPID());
         auto const lifetime = gamma * t0;
 
+        const auto mkin =
+            (E * E - p.GetMomentum().squaredNorm()); // delta_mass(p.GetMomentum(), E, m);
         cout << "Decay: code: " << p.GetPID() << endl;
         cout << "Decay: MinStep: t0: " << t0 << endl;
         cout << "Decay: MinStep: energy: " << E / 1_GeV << " GeV" << endl;
+        cout << "Decay: momentum: " << p.GetMomentum().GetComponents() / 1_GeV << " GeV"
+             << endl;
+        cout << "Decay: momentum: shell mass-kin. inv. mass " << mkin / 1_GeV / 1_GeV
+             << " " << m / 1_GeV * m / 1_GeV << endl;
+        // cout << "Decay: sib mass: " << s_mass1_.am2[
+        // process::sibyll::ConvertToSibyllRaw(p.GetPID()) ] << endl;
+        auto sib_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
+        cout << "Decay: sib mass: " << get_sibyll_mass2(sib_id) << endl;
         cout << "Decay: MinStep: gamma: " << gamma << endl;
         cout << "Decay: MinStep: tau: " << lifetime << endl;
 
@@ -156,6 +168,9 @@ namespace corsika::process {
       void DoDecay(Particle& p, Stack& s) {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
+
+        feenableexcept(FE_INVALID);
+
         fCount++;
         SibStack ss;
         ss.Clear();
@@ -165,6 +180,10 @@ namespace corsika::process {
         pin.SetPID(process::sibyll::ConvertToSibyllRaw(pCode));
         pin.SetEnergy(p.GetEnergy());
         pin.SetMomentum(p.GetMomentum());
+        // setting particle mass with Corsika values, may be inconsistent with sibyll
+        // internal values
+#warning setting particle mass with Corsika values, may be inconsistent with sibyll internal values
+        pin.SetMass(corsika::particles::GetMass(pCode));
         // remember position
         Point decayPoint = p.GetPosition();
         TimeType t0 = p.GetTime();
@@ -181,15 +200,12 @@ namespace corsika::process {
         // print output
         int print_unit = 6;
         sib_list_(print_unit);
+
         // copy particles from sibyll stack to corsika
-        int i = -1;
         for (auto& psib : ss) {
-          ++i;
           // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
-          if (abs(s_plist_.llist[i]) > 100) continue;
+          if (psib.HasDecayed()) continue;
           // add to corsika stack
-          // cout << "decay product: " << process::sibyll::ConvertFromSibyll(
-          // psib.GetPID() ) << endl;
           auto pnew = s.NewParticle();
           pnew.SetEnergy(psib.GetEnergy());
           pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
@@ -199,6 +215,8 @@ namespace corsika::process {
         }
         // empty sibyll stack
         ss.Clear();
+
+        fedisableexcept(FE_INVALID);
       }
     };
   } // namespace sibyll

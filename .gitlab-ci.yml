@@ -17,7 +17,13 @@ build:
     - cd build
     - cmake ..
     - cmake --build .
-    - ctest
+    - ctest -V >& test.log
+    - gzip -9 test.log
+  artifacts:
+    paths:
+      - build/test.log.gz
+    when: on_failure
+
 
 pages:
   stage: build

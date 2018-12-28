@@ -39,6 +39,11 @@ namespace corsika::process::sibyll {
       using namespace corsika::units::hep;
       s_plist_.p[3][i] = v / 1_GeV;
     }
+    void SetMass(const int i, const corsika::units::hep::MassType v) {
+      using namespace corsika::units::hep;
+      s_plist_.p[4][i] = v / 1_GeV;
+    }
+
     void SetMomentum(const int i, const MomentumVector& v) {
       using namespace corsika::units;
       using namespace corsika::units::hep;
@@ -51,6 +56,10 @@ namespace corsika::process::sibyll {
     corsika::units::hep::EnergyType GetEnergy(const int i) const {
       using namespace corsika::units::hep;
       return s_plist_.p[3][i] * 1_GeV;
+    }
+    corsika::units::hep::EnergyType GetMass(const int i) const {
+      using namespace corsika::units::hep;
+      return s_plist_.p[4][i] * 1_GeV;
     }
 
     MomentumVector GetMomentum(const int i) const {
@@ -91,6 +100,14 @@ namespace corsika::process::sibyll {
     corsika::units::hep::EnergyType GetEnergy() const {
       return GetStackData().GetEnergy(GetIndex());
     }
+
+    void SetMass(const corsika::units::hep::MassType v) {
+      GetStackData().SetMass(GetIndex(), v);
+    }
+    corsika::units::hep::EnergyType GetMass() const {
+      return GetStackData().GetMass(GetIndex());
+    }
+
     bool HasDecayed() const {
       return abs(GetStackData().GetId(GetIndex())) > 100 ? true : false;
     }

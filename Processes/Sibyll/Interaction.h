@@ -27,10 +27,14 @@ namespace corsika::process::sibyll {
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
     mutable int fCount = 0;
+    mutable int fNucCount = 0;
 
   public:
     Interaction() {}
-    ~Interaction() { std::cout << "Sibyll::Interaction n=" << fCount << std::endl; }
+    ~Interaction() {
+      std::cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount
+                << std::endl;
+    }
 
     void Init() {
 
@@ -147,15 +151,28 @@ namespace corsika::process::sibyll {
         // sibyll CS has z along particle momentum
         // FOR NOW: hard coded z-axis for corsika frame
         QuantityVector<length_d> const zAxis{0_m, 0_m, 1_m};
-        QuantityVector<length_d> const xAxis{1_m, 0_m, 0_m};
-        [[maybe_unused]] auto pt = [](MomentumVector p) {
-          return sqrt(p.GetComponents()[0] * p.GetComponents()[0] +
-                      p.GetComponents()[1] * p.GetComponents()[1]);
+        QuantityVector<length_d> const yAxis{0_m, 1_m, 0_m};
+        auto rotation_angles = [](MomentumVector const& pin) {
+          const auto p = pin.GetComponents();
+          const auto th = acos(p[2] / p.norm());
+          const auto ph = atan2(
+              p[1] / 1_GeV, p[0] / 1_GeV); // acos( p[0] / sqrt(p[0]*p[0]+p[1]*p[1] ) );
+          return std::make_tuple(th, ph);
         };
-        double theta = acos(p.GetMomentum().GetComponents()[2] / p.GetMomentum().norm());
-        cout << "ProcessSibyll: polar angle between sibyllCS and rootCS: " << theta
-             << endl;
-        CoordinateSystem sibyllCS = rootCS.rotate(xAxis, theta);
+        // auto pt = []( MomentumVector &p ){
+        // 	    return sqrt(p.GetComponents()[0] * p.GetComponents()[0] +
+        // p.GetComponents()[1] * p.GetComponents()[1]);
+        // 	  };
+        // double theta = acos( p.GetMomentum().GetComponents()[2] /
+        // p.GetMomentum().norm());
+        auto const [theta, phi] = rotation_angles(p.GetMomentum());
+        cout << "ProcessSibyll: zenith angle between sibyllCS and rootCS: "
+             << theta / M_PI * 180. << endl;
+        cout << "ProcessSibyll: azimuth angle between sibyllCS and rootCS: "
+             << phi / M_PI * 180. << endl;
+        // double phi = asin( p.GetMomentum().GetComponents()[0]/pt(p.GetMomentum() ) );
+        const CoordinateSystem tempCS = rootCS.rotate(zAxis, phi);
+        const CoordinateSystem sibyllCS = tempCS.rotate(yAxis, theta);
 
         /*
            the target should be defined by the Environment,
@@ -232,6 +249,7 @@ namespace corsika::process::sibyll {
           // print final state
           int print_unit = 6;
           sib_list_(print_unit);
+          fNucCount += get_nwounded() - 1;
 
           // delete current particle
           p.Delete();
