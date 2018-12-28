@@ -41,41 +41,46 @@ TEST_CASE("boosts") {
 
   // define projectile kinematics in lab frame
   MassType const projectileMass = 1._GeV / cSquared;
-  Vector<momentum_d> pProjectileLab{rootCS, {0_GeV / c, 1_PeV / c, 0_GeV / c}};
-  EnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+  std::vector<Vector<momentum_d>> labProjectiles{
+      {rootCS, {0_GeV / c, 1_PeV / c, 0_GeV / c}},   // standard case
+      {rootCS, {0_GeV / c, 0_GeV / c, -1_GeV / c}}}; // "special" case
 
-  // define target kinematics in lab frame
-  MassType const targetMass = 1_GeV / cSquared;
-  Vector<momentum_d> pTargetLab{rootCS, {0_Ns, 0_Ns, 0_Ns}};
-  EnergyType const eTargetLab = energy(targetMass, pTargetLab);
+  for (auto const& pProjectileLab : labProjectiles) {
+    EnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
 
-  // define boost to com frame
-  COMBoost boost(eProjectileLab, pProjectileLab, targetMass);
+    // define target kinematics in lab frame
+    MassType const targetMass = 1_GeV / cSquared;
+    Vector<momentum_d> pTargetLab{rootCS, {0_Ns, 0_Ns, 0_Ns}};
+    EnergyType const eTargetLab = energy(targetMass, pTargetLab);
 
-  // boost projecticle
-  auto const [eProjectileCoM, pProjectileCoM] =
-      boost.toCoM(eProjectileLab, pProjectileLab);
+    // define boost to com frame
+    COMBoost boost(eProjectileLab, pProjectileLab, targetMass);
 
-  // boost target
-  auto const [eTargetCoM, pTargetCoM] = boost.toCoM(eTargetLab, pTargetLab);
+    // boost projecticle
+    auto const [eProjectileCoM, pProjectileCoM] =
+        boost.toCoM(eProjectileLab, pProjectileLab);
 
-  // sum of momenta in CoM, should be 0
-  auto const sumPCoM = pProjectileCoM + pTargetCoM;
-  CHECK(sumPCoM[2] / (1_GeV / c) == Approx(0).margin(absMargin));
+    // boost target
+    auto const [eTargetCoM, pTargetCoM] = boost.toCoM(eTargetLab, pTargetLab);
 
-  // mandelstam-s should be invariant under transformation
-  CHECK(s(eProjectileLab + eTargetLab,
-          pProjectileLab.GetComponents() + pTargetLab.GetComponents()) /
-            (1_GeV / c) / (1_GeV / c) ==
-        Approx(s(eProjectileCoM + eTargetCoM, pProjectileCoM + pTargetCoM) / (1_GeV / c) /
-               (1_GeV / c)));
+    // sum of momenta in CoM, should be 0
+    auto const sumPCoM = pProjectileCoM + pTargetCoM;
+    CHECK(sumPCoM[2] / (1_GeV / c) == Approx(0).margin(absMargin));
 
-  // boost back...
-  auto const [eProjectileBack, pProjectileBack] =
-      boost.fromCoM(eProjectileCoM, pProjectileCoM);
+    // mandelstam-s should be invariant under transformation
+    CHECK(s(eProjectileLab + eTargetLab,
+            pProjectileLab.GetComponents() + pTargetLab.GetComponents()) /
+              (1_GeV / c) / (1_GeV / c) ==
+          Approx(s(eProjectileCoM + eTargetCoM, pProjectileCoM + pTargetCoM) /
+                 (1_GeV / c) / (1_GeV / c)));
 
-  // ...should yield original values before the boosts
-  CHECK(eProjectileBack / eProjectileLab == Approx(1));
-  CHECK((pProjectileBack - pProjectileLab).norm() / pProjectileLab.norm() ==
-        Approx(0).margin(absMargin));
+    // boost back...
+    auto const [eProjectileBack, pProjectileBack] =
+        boost.fromCoM(eProjectileCoM, pProjectileCoM);
+
+    // ...should yield original values before the boosts
+    CHECK(eProjectileBack / eProjectileLab == Approx(1));
+    CHECK((pProjectileBack - pProjectileLab).norm() / pProjectileLab.norm() ==
+          Approx(0).margin(absMargin));
+  }
 }

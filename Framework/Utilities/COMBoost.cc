@@ -18,17 +18,23 @@ COMBoost::COMBoost(EnergyType eProjectile, COMBoost::MomentumVector const& pProj
     : fRotation(Eigen::Matrix3d::Identity())
     , fCS(pProjectile.GetCoordinateSystem()) {
   // calculate matrix for rotating pProjectile to z-axis first
-  // TODO: handle the case when pProjectile ~ (0, 0, -1)
   auto const pProjNorm = pProjectile.norm();
   auto const a = (pProjectile / pProjNorm).GetComponents().eVector;
 
-  Eigen::Vector3d const b{0, 0, 1};
-  auto const v = a.cross(b);
+  if (a(0) == 0 && a(1) == 0) {
+    // if pProjectile ~ (0, 0, -1), the standard formula for the rotation matrix breaks
+    // down but we can easily define a suitable rotation manually. We just need some SO(3)
+    // matrix that reverses the z-axis and I like this one:
+    fRotation << 1, 0, 0, 0, -1, 0, 0, 0, -1;
+  } else {
+    Eigen::Vector3d const b{0, 0, 1};
+    auto const v = a.cross(b);
 
-  Eigen::Matrix3d vHat;
-  vHat << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
+    Eigen::Matrix3d vHat;
+    vHat << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
 
-  fRotation += vHat + vHat * vHat / (1 + a.dot(b));
+    fRotation += vHat + vHat * vHat / (1 + a.dot(b));
+  }
 
   // calculate boost
   double const x = pProjNorm * units::constants::c /
