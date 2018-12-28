@@ -20,7 +20,7 @@ build:
     - gzip -9 test.log
   artifacts:
     paths:
-      - test.log.gz
+      - build/test.log.gz
 
 # code_quality:
 #   image: docker:stable
