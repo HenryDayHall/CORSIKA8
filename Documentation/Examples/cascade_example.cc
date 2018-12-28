@@ -238,7 +238,7 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const hep::EnergyType E0 = 100_TeV;
-  double theta = 45.;
+  double theta = 0.;
   double phi = 0.;
   {
     auto particle = stack.NewParticle();

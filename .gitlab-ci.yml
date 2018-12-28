@@ -16,7 +16,11 @@ build:
     - cd build
     - cmake ..
     - cmake --build .
-    - ctest
+    - ctest -V >& test.log
+    - gzip -9 test.log
+  artifacts:
+    paths:
+      - test.log.gz
 
 # code_quality:
 #   image: docker:stable
