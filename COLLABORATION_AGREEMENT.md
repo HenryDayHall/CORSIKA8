@@ -16,7 +16,7 @@ community and individuals in a best effort to deliver the best
 possible computing performance and physics output. 
 The MCnet guidelines developed by [www.montecarlonet.org](www.montecarlonet.org) 
 are copied in [MCNET_GUIDELINES](MCNET_GUIDELINES) -- they provide a very good 
-additional scope that contributors should read and follow. 
+additional scope that contributors should read and consider. 
 
 All possible
 liability and licensing question are only handled by the adopted
@@ -29,9 +29,9 @@ license GPLv3, as copied in full in the file
 short statement of the copyright and this license. Each binary or
 source code release of CORSIKA must contain the file LICENSE. The
 code, documentation and content in the folder [ThirdParty](ThirdParty)
-is not integral part of the CORSIKA project and can be based on or
-include other licenses, which must be compatible with GPLv3. Check the
-content of this folder for details. It depends on the configuration of
+is not integral part of the CORSIKA project and can be based on, or
+include, other licenses, which must be compatible with GPLv3. Check the
+content of this folder for details and additional license information. It depends on the configuration of
 the build system to what extend this code is used to build CORSIKA.
 
 ## Who is the "copyright holder"
@@ -65,39 +65,39 @@ If you want to contribute, you need to read
 improve them.
 
 
-## Definition and working mode of the CORSIKA Project panel
+## The CORSIKA Project panel
 The CORSIKA Project panel makes all decisions for the CORSIKA
 Project. It can also change the
 [COLLABORATION\_AGREEMENT](COLLABORATION\_AGREEMENT.md), the
-[the GUIDELINES](CONTRIBUTING.md) or any other structure or document relevant for the CORSIKA Project.
+[GUIDELINES](CONTRIBUTING.md) or any other structure or document relevant for the CORSIKA Project.
 
 The CORSIKA Project *panel* consists (October 2018) of
    
+  * Hans Dembinski (MPG)
   * Ralph Engel (KIT)
   * Dieter Heck (KIT)
   * Tanguy Pierog (KIT)
   * Maximilian Reininghaus (KIT)
-  * Markus Roth (KIT)
+  * Felix Riehn (LIP)
   * Ralf Ulrich (KIT)
-  * Michael Unger (KIT)
   * Darko Veberic (KIT)
   
 and can be contacted via corsika-project@lists.kit.edu.  The chair
 person of the CORSIKA Project is Ralf Ulrich (KIT). Members of the
-CORSIKA Project *panel* are *Maintainer* of the CORSIKA Project in
+CORSIKA Project *panel* can be *Maintainer* of the CORSIKA Project in
 gitlab at
 [https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika),
-and have special responsibilities for this reason. 
+and have special responsibilities also for this reason. 
 
-## Changing to a different license, for parts, or the complete project
+### Changing to a different license, for parts, or the complete project
 
-The CORSIKA Project panel can change the license for parts or the entire project. 
+The CORSIKA Project panel can change the license for parts or the entire project in general or for individual releases.
 
-## Planning and performing releases
+### Planning and performing releases
 
 The CORSIKA Project panel decides on releases of the software, and about the content of it. 
 
-## Changes to the Collaboration Agreement
+### Changes to the Collaboration Agreement
 
 The CORSIKA Project panel decides on changes to the Collaboration
 agreement.

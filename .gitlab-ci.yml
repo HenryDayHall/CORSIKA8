@@ -6,11 +6,12 @@ variables:
 before_script:
   - apt-get update --yes
   - apt-get install --yes cmake libboost-dev libeigen3-dev python3 gfortran
+  - apt-get install --yes doxygen graphviz
 
 build:
   stage: build
   tags:
-    - run1
+    - corsika
   script:
     - mkdir build
     - cd build
@@ -25,6 +26,27 @@ build:
     reports:
       junit:
         - build/test_outputs/junit*.xml
+
+pages:
+  stage: build
+  tags:
+    - corsika
+  script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make doxygen
+    - mkdir .public
+    - cp -r Documentation/Doxygen/html .public/
+    - mv .public ../public
+  artifacts:
+    paths:
+      - public
+  only:
+    - tags
+    - triggers
+    - schedules
+
 
 # code_quality:
 #   image: docker:stable
