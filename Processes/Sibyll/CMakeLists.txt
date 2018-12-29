@@ -69,6 +69,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty
   CORSIKAgeometry
+  CORSIKAenvironment
   )
 
 target_include_directories (
