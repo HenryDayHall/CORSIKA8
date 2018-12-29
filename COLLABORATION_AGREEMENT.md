@@ -44,7 +44,8 @@ with every binary and source distribution. The copyright transfer is
 necessary to be able to effectively defend the project in case of
 litigation. The copyright holder may change, if decided by the CORSIKA
 Project. The current copyright holder is the CORSIKA Project
-corsika-project@lists.kit.edu, with the current chair person Ralf Ulrich (KIT) ralf.ulrich@kit.edu.
+corsika-project@lists.kit.edu, with the current chair person 
+Ralf Ulrich (KIT) ralf.ulrich@kit.edu.
 
 ## Definition of a "contributor"
 Contributor is a person of whom at least one merge request was

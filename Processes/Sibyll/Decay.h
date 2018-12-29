@@ -28,7 +28,7 @@ namespace corsika::process {
   namespace sibyll {
 
     class Decay : public corsika::process::DecayProcess<Decay> {
-      mutable int fCount = 0;
+      int fCount = 0;
 
     public:
       Decay() {}
@@ -182,7 +182,7 @@ namespace corsika::process {
         pin.SetMomentum(p.GetMomentum());
         // setting particle mass with Corsika values, may be inconsistent with sibyll
         // internal values
-#warning setting particle mass with Corsika values, may be inconsistent with sibyll internal values
+	// TODO: #warning setting particle mass with Corsika values, may be inconsistent with sibyll internal values
         pin.SetMass(corsika::particles::GetMass(pCode));
         // remember position
         Point decayPoint = p.GetPosition();
