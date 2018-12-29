@@ -92,11 +92,4 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-
-add_test (
-  NAME
-  testParticles
-  COMMAND
-  testParticles
-  )
-
+CORSIKA_ADD_TEST(testParticles)

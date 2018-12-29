@@ -78,3 +78,14 @@ macro (CORSIKA_ADD_FILES_ABSOLUTE varname)
     set ("${varname}" "${${varname}}" PARENT_SCOPE)
   endif()
 endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
+
+
+
+#
+# central macro to activate unit tests in cmake
+#
+
+function (CORSIKA_ADD_TEST name)
+  file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
+  add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
+endfunction (CORSIKA_ADD_TEST)

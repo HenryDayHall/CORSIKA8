@@ -69,5 +69,4 @@ target_link_libraries (
   CORSIKAthirdparty # for catch2
   )
 
-add_test (NAME testGeometry COMMAND testGeometry)
-
+CORSIKA_ADD_TEST(testGeometry)

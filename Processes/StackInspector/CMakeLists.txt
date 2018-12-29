@@ -60,6 +60,4 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-
-add_test (NAME testStackInspector COMMAND testStackInspector)
-
+CORSIKA_ADD_TEST(testStackInspector)

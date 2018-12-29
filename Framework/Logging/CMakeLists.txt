@@ -47,9 +47,5 @@ target_link_libraries (
   CORSIKAlogging
   CORSIKAthirdparty # for catch2
   )
-
-add_test (
-  NAME testLogging
-  COMMAND testLogging
-  )
+CORSIKA_ADD_TEST (testLogging)
 

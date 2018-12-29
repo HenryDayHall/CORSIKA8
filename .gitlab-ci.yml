@@ -17,13 +17,15 @@ build:
     - cd build
     - cmake ..
     - cmake --build .
-    - ctest -V >& test.log
+    - ctest -j4 -V >& test.log
     - gzip -9 test.log
   artifacts:
     paths:
       - build/test.log.gz
     when: on_failure
-
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
 
 pages:
   stage: build

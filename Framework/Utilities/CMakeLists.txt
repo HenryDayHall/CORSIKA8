@@ -58,6 +58,5 @@ target_link_libraries (
   CORSIKAutilities
   CORSIKAthirdparty # for catch2
   )
-
-add_test (NAME testCOMBoost COMMAND testCOMBoost)
+CORSIKA_ADD_TEST(testCOMBoost)
 

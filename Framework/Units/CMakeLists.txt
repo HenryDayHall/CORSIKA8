@@ -22,5 +22,4 @@ install (FILES ${CORSIKAunits_HEADERS} DESTINATION include/${CORSIKAunits_NAMESP
 # code testing
 add_executable (testUnits testUnits.cc)
 target_link_libraries (testUnits CORSIKAunits CORSIKAthirdparty) # for catch2
-add_test(NAME testUnits COMMAND testUnits)
-
+CORSIKA_ADD_TEST(testUnits)
