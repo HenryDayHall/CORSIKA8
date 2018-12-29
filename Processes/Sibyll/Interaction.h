@@ -21,6 +21,7 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/environment/Environment.h>
 
 namespace corsika::process::sibyll {
 
@@ -28,9 +29,8 @@ namespace corsika::process::sibyll {
 
     int fCount = 0;
     int fNucCount = 0;
-
   public:
-    Interaction() {}
+    Interaction(corsika::environment::Environment const& env) : fEnvironment(env) { }
     ~Interaction() {
       std::cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount
                 << std::endl;
@@ -334,6 +334,10 @@ namespace corsika::process::sibyll {
       }
       return process::EProcessReturn::eOk;
     }
+    
+  private:
+    corsika::environment::Environment const& fEnvironment;
+
   };
 
 } // namespace corsika::process::sibyll
