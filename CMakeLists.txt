@@ -38,8 +38,8 @@ endif()
 
 # enable warnings and disallow non-standard language
 set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O0") # should be -O3 but bug 118 prevents this right now
 
 # clang produces a lot of unecessary warnings without this:
 add_compile_options("$<$<CXX_COMPILER_ID:Clang>:-Wno-nonportable-include-path>") 
