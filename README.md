@@ -47,7 +47,7 @@ cd ../corsika-install
 share/examples/cascade_example
 ```
 
-Visualize output: 
+Visualize output (needs gnuplot installed): 
 ```
 bash share/tools/plot_tracks.sh tracks.dat 
 firefox tracks.dat.gif 
