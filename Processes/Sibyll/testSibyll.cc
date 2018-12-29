@@ -15,6 +15,9 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
+#include <corsika/geometry/Point.h>
+#include <corsika/units/PhysicalUnits.h>
+
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -69,8 +72,10 @@ TEST_CASE("Sibyll", "[processes]") {
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/particles/ParticleProperties.h>
 
 using namespace corsika::units::si;
+using namespace corsika::units;
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
@@ -82,13 +87,13 @@ TEST_CASE("SibyllInterface", "[processes]") {
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
-  setup::Stack stack;
-  auto particle = stack.NewParticle();
-
   SECTION("InteractionInterface") {
 
+    setup::Stack stack;
+    auto particle = stack.NewParticle();
+    
     Interaction model;
-
+    
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
         model.DoInteraction(particle, stack);
@@ -98,8 +103,22 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   SECTION("DecayInterface") {
 
+    setup::Stack stack;
+    auto particle = stack.NewParticle();
+    {
+      const hep::EnergyType E0 = 10_GeV;
+      particle.SetPID(particles::Code::Proton);
+      hep::MomentumType P0 = sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+      auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+      particle.SetEnergy(E0);
+      particle.SetMomentum(plab);
+      particle.SetTime(0_ns);
+      geometry::Point p(cs, 0_m, 0_m, 0_m);
+      particle.SetPosition(p);
+    }
+    
     Decay model;
-
+    
     model.Init();
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
                                                                           stack);

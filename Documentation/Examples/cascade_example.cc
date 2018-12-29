@@ -54,11 +54,11 @@ class ProcessCut : public corsika::process::ContinuousProcess<ProcessCut> {
 
   EnergyType fECut;
 
-  mutable EnergyType fEnergy = 0_GeV;
-  mutable EnergyType fEmEnergy = 0_GeV;
-  mutable int fEmCount = 0;
-  mutable EnergyType fInvEnergy = 0_GeV;
-  mutable int fInvCount = 0;
+  EnergyType fEnergy = 0_GeV;
+  EnergyType fEmEnergy = 0_GeV;
+  int fEmCount = 0;
+  EnergyType fInvEnergy = 0_GeV;
+  int fInvCount = 0;
 
 public:
   ProcessCut(const EnergyType v)
@@ -141,7 +141,7 @@ public:
   }
 
   template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) const {
+  EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) {
     const Code pid = p.GetPID();
     EnergyType energy = p.GetEnergy();
     cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy
@@ -237,7 +237,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_GeV;
+  const hep::EnergyType E0 = 100_TeV;
   double theta = 0.;
   double phi = 0.;
   {

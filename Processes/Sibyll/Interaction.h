@@ -26,8 +26,8 @@ namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
-    mutable int fCount = 0;
-    mutable int fNucCount = 0;
+    int fCount = 0;
+    int fNucCount = 0;
 
   public:
     Interaction() {}

@@ -2,8 +2,7 @@
 
 The CORSIKA Project very much welcomes contributions. Here we outlined
 how you can find the right place to contribute, and how to do that.
-Connect to https://gitlab.ikp.kit.edu and corsika-devel@lists.kit.edu (self-register at https://www.lists.kit.edu/sympa/subscribe/corsika-devel)
-or write to corsika-project@lists.kit.edu to get in touch with the project.
+Connect to https://gitlab.ikp.kit.edu and corsika-devel@lists.kit.edu (self-register at https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in touch with the project.
 The CORSIKA Project decides on the [GUIDELINES](CONTRIBUTING.md) and can decide to
 change/improve them.
 
@@ -13,7 +12,8 @@ change/improve them.
     ideas, discussions, or bugs fix requests. 
   - New issues can be created, or existing issues
     picked up or contributed to. 
-  - Issues are discussed in meetings or via  corsika-devel@lists.kit.edu  within the CORSIKA Project.
+  - Issues are discussed in meetings or via  corsika-devel@lists.kit.edu  
+    within the CORSIKA Project.
   - Issues are assigned to milestones. 
   - The work on issues is performed in `branches` that can be best
     created directly via the gitlab web interface. 
@@ -121,7 +121,8 @@ required all the time:
   - responsibility for a particular functionality or software/management part 
   - have read and follow these [GUIDELINES](CONTRIBUTING.md)
   - active in the CORSIKA Project, that means responsive to
-    discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.ikp.kit.edu, of relevant *Issues*,
+    discussions and problems in corsika-devel@list.kit.edu or on https//gitlab.ikp.kit.edu, 
+    of relevant *Issues*,
     or in (phone) meetings
   - agreement to the [COLLABORATION_AGREEMENT](COLLABORATION_AGREEMENT.md) is strictly required
   - the members of the CORSIKA Project panel agree
