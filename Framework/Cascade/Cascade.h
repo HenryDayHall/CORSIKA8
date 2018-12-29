@@ -47,7 +47,7 @@ namespace corsika::cascade {
     void Run() {
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
-          Particle& pNext = *fStack.GetNextParticle();
+          Particle pNext = *fStack.GetNextParticle();
           Step(pNext);
         }
         // do cascade equations, which can put new particles on Stack,
