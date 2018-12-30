@@ -22,6 +22,7 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/environment/Environment.h>
+#include <corsika/environment/NuclearComposition.h>
 
 namespace corsika::process::sibyll {
 
@@ -29,6 +30,7 @@ namespace corsika::process::sibyll {
 
     int fCount = 0;
     int fNucCount = 0;
+    int kTarget = 0;
   public:
     Interaction(corsika::environment::Environment const& env) : fEnvironment(env) { }
     ~Interaction() {
@@ -44,7 +46,7 @@ namespace corsika::process::sibyll {
 
       corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
       rmng.RegisterRandomStream("s_rndm");
-
+     
       // initialize Sibyll
       sibyll_ini_();
     }
@@ -69,26 +71,67 @@ namespace corsika::process::sibyll {
       const int kBeam = process::sibyll::GetSibyllXSCode(corsikaBeamId);
       const bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
 
+      // get target from environment
       /*
          the target should be defined by the Environment,
          ideally as full particle object so that the four momenta
          and the boosts can be defined..
        */
-      // target nuclei: A < 18
-      // FOR NOW: assume target is oxygen
-      const int kTarget = corsika::particles::Oxygen::GetNucleusA();
-
+      const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+      const auto sample_target = [](const corsika::environment::NuclearComposition& comp)
+				       {
+					 double prev =0.;
+					 std::vector<float> cumFrac;
+					 for (auto f: comp.GetFractions()){
+					   cumFrac.push_back(prev+f);
+					   prev = cumFrac.back();
+					 }
+					 int a = 1;
+					 const double r = s_rndm_(a);
+					 int i = -1;
+					 //cout << "rndm: " << r << endl;
+					 for (auto cf: cumFrac){
+					   ++i;
+					   //cout << "cf: " << cf << " " << comp.GetComponents()[i] << endl;
+					   if(r<cf) break;
+					 }
+					 return comp.GetComponents()[i];
+				       };
+      
+      const auto compo = currentNode->GetModelProperties().GetNuclearComposition();
+      for (auto tid: compo.GetComponents()){
+	cout << "Interaction: possible targets: " << tid << endl;
+      }
+      const auto tg = sample_target( compo );
+      cout << "Interaction: target selected: " << tg << endl;
+      // test if valid in sibyll
+      // FOR NOW: throw error if not, may need workaround for atmosphere, contains small argon fraction
+      if(IsNucleus(tg))
+	kTarget = GetNucleusA(tg);
+      else
+	if(tg==corsika::particles::Proton::GetCode())
+	  kTarget = 1;
+	else
+	  throw std::runtime_error("Sibyll target particle unknown. Only nuclei with A<18 or protons are allowed.");
+      
+      cout << "Interaction: kTarget: " << kTarget << endl;
+      // redundant check
+      if(kTarget>18||kTarget==0)
+	throw std::runtime_error("Sibyll target outside range. Only nuclei with A<18 are allowed.");
+      
       const HEPMassType nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
-                                              corsika::particles::Neutron::GetMass());
-      HEPEnergyType const Elab = p.GetEnergy();
-      HEPEnergyType const Etot = Elab + nucleon_mass;
-      MomentumVector Ptot(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+                                                corsika::particles::Neutron::GetMass());
+
       // FOR NOW: assume target is at rest
       MomentumVector pTarget(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+
+      // total momentum and energy
+      HEPEnergyType Elab = p.GetEnergy() + nucleon_mass;
+      MomentumVector Ptot(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
       Ptot += p.GetMomentum();
       Ptot += pTarget;
       // calculate cm. energy
-      const HEPEnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
+      const HEPEnergyType sqs = sqrt(Elab * Elab - Ptot.squaredNorm());
       const double Ecm = sqs / 1_GeV;
 
       std::cout << "Interaction: LambdaInt: \n"
@@ -172,17 +215,10 @@ namespace corsika::process::sibyll {
         const CoordinateSystem tempCS = rootCS.rotate(zAxis, phi);
         const CoordinateSystem sibyllCS = tempCS.rotate(yAxis, theta);
 
-        /*
-           the target should be defined by the Environment,
-           ideally as full particle object so that the four momenta
-           and the boosts can be defined..
 
-           here we need: GetTargetMassNumber() or GetTargetPID()??
-                         GetTargetMomentum() (zero in EAS)
-        */
-        // FOR NOW: set target to oxygen
-        const int kTarget = corsika::particles::Oxygen::
-            GetNucleusA(); // env.GetTargetParticle().GetPID();
+	// redundant check if target code is valid
+       	if(kTarget>18||kTarget==0)
+	  throw std::runtime_error("Interaction: Sibyll target outside range. Only nuclei with A<18 are allowed.");
 
         // FOR NOW: target is always at rest
         auto constexpr nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
