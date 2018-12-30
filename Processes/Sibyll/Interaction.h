@@ -127,7 +127,7 @@ namespace corsika::process::sibyll {
 	const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
 	const auto mediumComposition = currentNode->GetModelProperties().GetNuclearComposition();
 	// determine average interaction length
-	// FOR NOW: weighted sum
+	// weighted sum
 	int i =-1;
 	double avgTargetMassNumber = 0.;
 	si::CrossSectionType weightedProdCrossSection = 0_mbarn;
@@ -176,10 +176,11 @@ namespace corsika::process::sibyll {
       using std::cout;
       using std::endl;
 
+      const auto corsikaBeamId = p.GetPID();
       cout << "ProcessSibyll: "
-           << "DoInteraction: " << p.GetPID() << " interaction? "
-           << process::sibyll::CanInteract(p.GetPID()) << endl;
-      if (process::sibyll::CanInteract(p.GetPID())) {
+           << "DoInteraction: " << corsikaBeamId << " interaction? "
+           << process::sibyll::CanInteract( corsikaBeamId ) << endl;
+      if (process::sibyll::CanInteract(corsikaBeamId) ) {
         const CoordinateSystem& rootCS =
             RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
@@ -211,29 +212,6 @@ namespace corsika::process::sibyll {
         const CoordinateSystem tempCS = rootCS.rotate(zAxis, phi);
         const CoordinateSystem sibyllCS = tempCS.rotate(yAxis, theta);
 	
-	const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
-	const auto mediumComposition = currentNode->GetModelProperties().GetNuclearComposition();
-	const auto sample_target = [](const corsika::environment::NuclearComposition& comp)
-				       {
-					 
-					 std::discrete_distribution channelDist( comp.GetFractions().begin(), comp.GetFractions().end() );
-					 static corsika::random::RNG& kRNG =
-					   corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-					 const int i = channelDist(kRNG);
-					 return comp.GetComponents()[i];
-				       };
-	const auto targetId = sample_target( mediumComposition );
-	cout << "Interaction: target selected: " << targetId << endl;
-	// test if valid in sibyll
-	// FOR NOW: throw error if not, may need workaround for atmosphere, contains small argon fraction
-	int kTarget = 0;
-	if(IsNucleus(targetId))
-	  kTarget = GetNucleusA(targetId);
-	else
-	  if(targetId==corsika::particles::Proton::GetCode())
-	    kTarget = 1;
-	  else
-	    throw std::runtime_error("Sibyll target particle unknown. Only nuclei with A<18 or protons are allowed.");
 	
 
         // FOR NOW: target is always at rest
@@ -265,6 +243,48 @@ namespace corsika::process::sibyll {
         MomentumVector Ptot = p.GetMomentum();
         // invariant mass, i.e. cm. energy
         EnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
+
+	
+	// sample target mass number
+	const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
+	const auto mediumComposition = currentNode->GetModelProperties().GetNuclearComposition();
+	// get cross sections and nucleon number for target materials	
+	std::vector<si::CrossSectionType> cross_section_components;
+	// conversion map for target code, should be in ParticleConversion.h
+	std::map<corsika::particles::Code,int> corsika2sibyll_target_code;
+	for(auto targetId: mediumComposition.GetComponents() ){
+	  const auto [sigProd, nNuc] = GetCrossSection( corsikaBeamId, targetId, Ecm);	  
+	  cross_section_components.push_back( sigProd );
+	  corsika2sibyll_target_code.insert( std::pair<corsika::particles::Code,int>(targetId , nNuc)) ;
+	}	
+
+	// this routine could be moved to the environment as GetTarget( std::vector<si::CrossSectionType> )
+	const auto sample_target = [](const corsika::environment::NuclearComposition& comp, const std::vector<si::CrossSectionType> & sigma_comp )
+				       {
+					 int i=-1;
+					 si::CrossSectionType total_weighted_sigma = 0._mbarn;
+					 std::vector<float> fractions;				 
+					 for(auto w: comp.GetFractions() ){
+					   i++;
+					   cout << "fraction: " << w << endl;
+					   total_weighted_sigma +=  w * sigma_comp[i];
+					   fractions.push_back( w * sigma_comp[i] / 1_mbarn );
+					 }
+					 
+					 for(auto f: fractions){
+					   f = f / ( total_weighted_sigma / 1_mbarn );
+					   cout << "reweighted fraction: " << f << endl;
+					 }
+					 std::discrete_distribution channelDist( fractions.begin(), fractions.end() );
+					 static corsika::random::RNG& kRNG =
+					   corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+					 const int ichannel = channelDist(kRNG);
+					 return comp.GetComponents()[ichannel];
+				       };
+	const auto targetCode = sample_target( mediumComposition, cross_section_components );
+	cout << "Interaction: target selected: " << targetCode << endl;
+	const auto targetSibCode = corsika2sibyll_target_code.at( targetCode );
+	cout << "Interaction: sibyll code: " << targetSibCode << endl;
         /*
          get transformation between Stack-frame and SibStack-frame
          for EAS Stack-frame is lab. frame, could be different for CRMC-mode
@@ -298,7 +318,7 @@ namespace corsika::process::sibyll {
 	cout << "Interaction: new boost: ebeam com: " << eProjectileCoM / 1_GeV << endl
 	     << "Interaction: new boost: pbeam com: " << pProjectileCoM / ( 1_GeV / constants::c ) << endl;
 	
-        int kBeam = process::sibyll::ConvertToSibyllRaw(p.GetPID());
+        const int kBeam = process::sibyll::ConvertToSibyllRaw(corsikaBeamId);
 
         std::cout << "Interaction: "
                   << " DoInteraction: E(GeV):" << E / 1_GeV
@@ -312,7 +332,7 @@ namespace corsika::process::sibyll {
           // Sibyll does not know about units..
           const double sqs = Ecm / 1_GeV;
           // running sibyll, filling stack
-          sibyll_(kBeam, kTarget, sqs);
+          sibyll_(kBeam, targetSibCode, sqs);
           // running decays
           // setTrackedParticlesStable();
           decsib_();
