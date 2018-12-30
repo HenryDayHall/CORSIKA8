@@ -18,10 +18,6 @@
 #include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
-
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -77,6 +73,10 @@ TEST_CASE("Sibyll", "[processes]") {
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/particles/ParticleProperties.h>
+
+#include <corsika/environment/Environment.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/NuclearComposition.h>
 
 using namespace corsika::units::si;
 using namespace corsika::units;

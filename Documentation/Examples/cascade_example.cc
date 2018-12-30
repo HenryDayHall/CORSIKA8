@@ -213,8 +213,8 @@ int main() {
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       corsika::environment::NuclearComposition(
-          std::vector<corsika::particles::Code>{corsika::particles::Code::Oxygen},
-          std::vector<float>{1.}));
+					       std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,corsika::particles::Code::Oxygen,corsika::particles::Code::Proton},
+					       std::vector<float>{0.5,0.3,0.2}));
 
   universe.AddChild(std::move(theMedium));
 
@@ -237,7 +237,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_TeV;
+  const hep::EnergyType E0 = 100_GeV;
   double theta = 0.;
   double phi = 0.;
   {
