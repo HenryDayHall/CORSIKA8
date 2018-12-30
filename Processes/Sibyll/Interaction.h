@@ -50,6 +50,33 @@ namespace corsika::process::sibyll {
       sibyll_ini_();
     }
 
+    std::tuple<corsika::units::si::CrossSectionType, int> GetCrossSection(const corsika::particles::Code &BeamId, const corsika::particles::Code & TargetId, const corsika::units::hep::EnergyType& CoMenergy)
+    {
+      using namespace corsika::units::si;
+      double sigProd, dummy, dum1, dum2, dum3, dum4;
+      double dumdif[3];
+      const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
+      const double dEcm = CoMenergy / 1_GeV;
+      if(corsika::particles::IsNucleus( TargetId )){
+	const int iTarget = corsika::particles::GetNucleusA( TargetId );
+	if(iTarget>18||iTarget==0)
+	  throw std::runtime_error("Sibyll target outside range. Only nuclei with A<18 are allowed.");
+	sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy);
+	return std::make_tuple( sigProd * 1_mbarn, iTarget );
+      }
+      else
+	{
+	  if (TargetId == corsika::particles::Proton::GetCode()){
+	    sib_sigma_hp_(iBeam, dEcm, dum1, dum2, sigProd, dumdif, dum3, dum4);
+	    return std::make_tuple( sigProd * 1_mbarn, 1 );
+	  }
+	  else
+	    // no interaction in sibyll possible, return infinite cross section? or throw?
+	    sigProd = std::numeric_limits<double>::infinity();
+	  return std::make_tuple( sigProd * 1_mbarn, 0 );
+	}
+    }
+    
     template <typename Particle, typename Track>
     corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) {
 
@@ -68,7 +95,6 @@ namespace corsika::process::sibyll {
 
       // beam particles for sibyll : 1, 2, 3 for p, pi, k
       // read from cross section code table
-      const int kBeam = process::sibyll::GetSibyllXSCode(corsikaBeamId);
       const bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
       
       const hep::MassType nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
@@ -83,13 +109,11 @@ namespace corsika::process::sibyll {
       Ptot += p.GetMomentum();
       Ptot += pTarget;
       // calculate cm. energy
-      const hep::EnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
-      const double Ecm = sqs / 1_GeV;
+      const hep::EnergyType ECoM = sqrt(Etot * Etot - Ptot.squaredNorm());
 
       std::cout << "Interaction: LambdaInt: \n"
                 << " input energy: " << p.GetEnergy() / 1_GeV << endl
-                << " beam can interact:" << kBeam << endl
-                << " beam XS code:" << kBeam << endl
+                << " beam can interact:" << kInteraction << endl
                 << " beam pid:" << p.GetPID() << endl;
 
       if (kInteraction) {
@@ -107,39 +131,19 @@ namespace corsika::process::sibyll {
 	int i =-1;
 	double avgTargetMassNumber = 0.;
 	si::CrossSectionType weightedProdCrossSection = 0_mbarn;
-	int kTarget = 0;
 	// get weights of components from environment/medium
 	const auto w = mediumComposition.GetFractions();
 	// loop over components in medium
 	for (auto targetId: mediumComposition.GetComponents() ){
 	  i++;
-	  cout << "Interaction: get interaction lenght for target: " << targetId << endl;		
-	  if(IsNucleus(targetId))
-	    kTarget = GetNucleusA(targetId);
-	  else
-	    if(targetId==corsika::particles::Proton::GetCode())
-	      kTarget = 1;
-	    else
-	      throw std::runtime_error("GetInteractionLength: Sibyll target particle unknown. Only nuclei or protons are allowed.");
-	  
-	  cout << "Interaction: kTarget: " << kTarget << endl;
-	  // check if nuclei in range
-	  if(kTarget>18||kTarget==0)
-	    throw std::runtime_error("Sibyll target outside range. Only nuclei with A<18 are allowed.");
+	  cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-	  // get cross section from sibyll
-	  double sigProd, dummy, dum1, dum2, dum3, dum4;
-	  double dumdif[3];
-
-	  if (kTarget == 1)
-	    sib_sigma_hp_(kBeam, Ecm, dum1, dum2, sigProd, dumdif, dum3, dum4);
-	  else
-	    sib_sigma_hnuc_(kBeam, kTarget, Ecm, sigProd, dummy);
+	  auto const [ productionCrossSection, numberOfNucleons ] = GetCrossSection( corsikaBeamId, targetId, ECoM);
 	  
 	  std::cout << "Interaction: "
-		    << " IntLength: sibyll return: " << sigProd << std::endl;
-	  weightedProdCrossSection += w[i] * sigProd * 1_mbarn;
-	  avgTargetMassNumber += w[i] * kTarget;
+		    << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mbarn << std::endl;
+	  weightedProdCrossSection += w[i] * productionCrossSection;
+	  avgTargetMassNumber += w[i] * numberOfNucleons;
 	}
 	cout << "Interaction: "
 	     << "IntLength: weighted CrossSection (mb): " << weightedProdCrossSection / 1_mbarn
@@ -206,38 +210,27 @@ namespace corsika::process::sibyll {
         // double phi = asin( p.GetMomentum().GetComponents()[0]/pt(p.GetMomentum() ) );
         const CoordinateSystem tempCS = rootCS.rotate(zAxis, phi);
         const CoordinateSystem sibyllCS = tempCS.rotate(yAxis, theta);
-
-	const auto sample_target = [](const corsika::environment::NuclearComposition& comp)
-				       {
-					 double prev =0.;
-					 std::vector<float> cumFrac;
-					 for (auto f: comp.GetFractions()){
-					   cumFrac.push_back(prev+f);
-					   prev = cumFrac.back();
-					 }
-					 int a = 1;
-					 const double r = s_rndm_(a);
-					 int i = -1;
-					 //cout << "rndm: " << r << endl;
-					 for (auto cf: cumFrac){
-					   ++i;
-					   //cout << "cf: " << cf << " " << comp.GetComponents()[i] << endl;
-					   if(r<cf) break;
-					 }
-					 return comp.GetComponents()[i];
-				       };
+	
 	const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
 	const auto mediumComposition = currentNode->GetModelProperties().GetNuclearComposition();
-	
-	const auto tg = sample_target( mediumComposition );
-	cout << "Interaction: target selected: " << tg << endl;
+	const auto sample_target = [](const corsika::environment::NuclearComposition& comp)
+				       {
+					 
+					 std::discrete_distribution channelDist( comp.GetFractions().begin(), comp.GetFractions().end() );
+					 static corsika::random::RNG& kRNG =
+					   corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+					 const int i = channelDist(kRNG);
+					 return comp.GetComponents()[i];
+				       };
+	const auto targetId = sample_target( mediumComposition );
+	cout << "Interaction: target selected: " << targetId << endl;
 	// test if valid in sibyll
 	// FOR NOW: throw error if not, may need workaround for atmosphere, contains small argon fraction
 	int kTarget = 0;
-	if(IsNucleus(tg))
-	  kTarget = GetNucleusA(tg);
+	if(IsNucleus(targetId))
+	  kTarget = GetNucleusA(targetId);
 	else
-	  if(tg==corsika::particles::Proton::GetCode())
+	  if(targetId==corsika::particles::Proton::GetCode())
 	    kTarget = 1;
 	  else
 	    throw std::runtime_error("Sibyll target particle unknown. Only nuclei with A<18 or protons are allowed.");
