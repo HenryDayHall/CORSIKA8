@@ -208,13 +208,15 @@ int main() {
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
+  // fraction of oxygen
+  const float fox = 0.20946;
   using MyHomogeneousModel =
       corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       corsika::environment::NuclearComposition(
-					       std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,corsika::particles::Code::Oxygen,corsika::particles::Code::Proton},
-					       std::vector<float>{0.5,0.3,0.2}));
+					       std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,corsika::particles::Code::Oxygen},
+					       std::vector<float>{(float)1.-fox, fox}));
 
   universe.AddChild(std::move(theMedium));
 
@@ -237,7 +239,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_GeV;
+  const hep::EnergyType E0 = 100_TeV;
   double theta = 0.;
   double phi = 0.;
   {
