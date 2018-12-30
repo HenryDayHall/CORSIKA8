@@ -250,12 +250,9 @@ namespace corsika::process::sibyll {
 	const auto mediumComposition = currentNode->GetModelProperties().GetNuclearComposition();
 	// get cross sections and nucleon number for target materials	
 	std::vector<si::CrossSectionType> cross_section_components;
-	// conversion map for target code, should be in ParticleConversion.h
-	std::map<corsika::particles::Code,int> corsika2sibyll_target_code;
 	for(auto targetId: mediumComposition.GetComponents() ){
 	  const auto [sigProd, nNuc] = GetCrossSection( corsikaBeamId, targetId, Ecm);	  
 	  cross_section_components.push_back( sigProd );
-	  corsika2sibyll_target_code.insert( std::pair<corsika::particles::Code,int>(targetId , nNuc)) ;
 	}	
 
 	// this routine could be moved to the environment as GetTarget( std::vector<si::CrossSectionType> )
@@ -283,8 +280,20 @@ namespace corsika::process::sibyll {
 				       };
 	const auto targetCode = sample_target( mediumComposition, cross_section_components );
 	cout << "Interaction: target selected: " << targetCode << endl;
-	const auto targetSibCode = corsika2sibyll_target_code.at( targetCode );
+	/*
+	  FOR NOW: allow nuclei with A<18 or protons only. 
+	  when medium composition becomes more complex, approximations will have to be allowed
+	  air in atmosphere also contains some Argon.
+	*/
+	int targetSibCode = -1;
+	if( IsNucleus(targetCode))
+	  targetSibCode = GetNucleusA( targetCode );
+	if( targetCode == corsika::particles::Proton::GetCode())
+	  targetSibCode = 1;
 	cout << "Interaction: sibyll code: " << targetSibCode << endl;
+	if(targetSibCode>18||targetSibCode<1)
+	  throw std::runtime_error("Sibyll target outside range. Only nuclei with A<18 or protons are allowed.");
+	
         /*
          get transformation between Stack-frame and SibStack-frame
          for EAS Stack-frame is lab. frame, could be different for CRMC-mode
