@@ -248,37 +248,19 @@ namespace corsika::process::sibyll {
 	// sample target mass number
 	const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
 	const auto mediumComposition = currentNode->GetModelProperties().GetNuclearComposition();
-	// get cross sections and nucleon number for target materials	
-	std::vector<si::CrossSectionType> cross_section_components;
+	// get cross sections for target materials
+	/*
+	  Here we read the cross section from the interaction model again, 
+	  should be passed from GetInteractionLength if possible
+	 */
+#warning reading interaction cross section again, should not be necessary
+	std::vector<si::CrossSectionType> cross_section_of_components;
 	for(auto targetId: mediumComposition.GetComponents() ){
 	  const auto [sigProd, nNuc] = GetCrossSection( corsikaBeamId, targetId, Ecm);	  
-	  cross_section_components.push_back( sigProd );
+	  cross_section_of_components.push_back( sigProd );
 	}	
 
-	// this routine could be moved to the environment as GetTarget( std::vector<si::CrossSectionType> )
-	const auto sample_target = [](const corsika::environment::NuclearComposition& comp, const std::vector<si::CrossSectionType> & sigma_comp )
-				       {
-					 int i=-1;
-					 si::CrossSectionType total_weighted_sigma = 0._mbarn;
-					 std::vector<float> fractions;				 
-					 for(auto w: comp.GetFractions() ){
-					   i++;
-					   cout << "fraction: " << w << endl;
-					   total_weighted_sigma +=  w * sigma_comp[i];
-					   fractions.push_back( w * sigma_comp[i] / 1_mbarn );
-					 }
-					 
-					 for(auto f: fractions){
-					   f = f / ( total_weighted_sigma / 1_mbarn );
-					   cout << "reweighted fraction: " << f << endl;
-					 }
-					 std::discrete_distribution channelDist( fractions.begin(), fractions.end() );
-					 static corsika::random::RNG& kRNG =
-					   corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-					 const int ichannel = channelDist(kRNG);
-					 return comp.GetComponents()[ichannel];
-				       };
-	const auto targetCode = sample_target( mediumComposition, cross_section_components );
+	const auto targetCode = currentNode->GetModelProperties().GetTarget( cross_section_of_components);
 	cout << "Interaction: target selected: " << targetCode << endl;
 	/*
 	  FOR NOW: allow nuclei with A<18 or protons only. 

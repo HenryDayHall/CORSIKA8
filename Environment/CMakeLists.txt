@@ -22,6 +22,7 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKAparticles
   CORSIKAunits
+  CORSIKArandom
   )
 
 target_include_directories (

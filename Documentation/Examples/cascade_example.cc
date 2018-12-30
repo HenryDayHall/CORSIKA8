@@ -239,7 +239,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_GeV;
+  const hep::EnergyType E0 = 100_TeV;
   double theta = 0.;
   double phi = 0.;
   {
@@ -269,6 +269,8 @@ int main() {
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.ShowResults();
+  const hep::EnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   cout << "total energy (GeV): "
-       << (cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy()) / 1_GeV << endl;
+       << Efinal / 1_GeV << endl
+       << "relative difference (%): " << (Efinal / E0 - 1. ) * 100 << endl;
 }

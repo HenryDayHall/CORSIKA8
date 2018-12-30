@@ -38,6 +38,8 @@ namespace corsika::environment {
         corsika::units::si::GrammageType) const = 0;
 
     virtual NuclearComposition const& GetNuclearComposition() const = 0;
+
+    virtual corsika::particles::Code const& GetTarget( std::vector<corsika::units::si::CrossSectionType> &) const = 0;
   };
 
 } // namespace corsika::environment
