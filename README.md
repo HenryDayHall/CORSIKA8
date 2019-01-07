@@ -1,26 +1,58 @@
 # CORSIKA8 Framework for Particle Cascades in Astroparticle Physics**
 
-Documentation and reference guide for the CORSIKA8 software framework
-for air shower simulations. We aim that CORSIKA remains the most comprehensive
-framework for simulating particle cascades with stochastic and continuous processes. The purpose of CORSIKA is to 
-simulate any particle cascades in astroparticle physics or astrophysical context. A lot of emphasis is put on modularity, flexibility, completeness, validation and correctness. To boost computational efficiency different techniques are
-provided, like thinning or cascade equations. 
+The purpose of CORSIKA is to simulate any particle cascades in
+astroparticle physics or astrophysical context. A lot of emphasis is
+put on modularity, flexibility, completeness, validation and
+correctness. To boost computational efficiency different techniques
+are provided, like thinning or cascade equations. The aim is that
+CORSIKA remains the most comprehensive framework for simulating
+particle cascades with stochastic and continuous processes.
 
 The software makes extensive use of static design patterns and
 compiler optimization. Thus, the most fundamental configuration
 decision of the user must be performed at compile time. At run time
 only specific model parameters can still be changed.
 
-CORSIKA8 is released under the GPL3 license. See [license file](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE) which is part of every release and the source code. 
+CORSIKA8 is released under the GPL3 license. This does not exclude
+that specific CORSIKA8 versions can be released for specific purposes
+under different licensing. See [license
+file](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
+which is part of every release and the source code.
 
-If you use, or want to refer to, CORSIKA8 please cite ["Towards a Next Generation of CORSIKA: A Framework for the Simulation of Particle Cascades in Astroparticle Physics", Comput.Softw.Big Sci. 3 (2019) 2](https://doi.org/10.1007/s41781-018-0013-0). We kindly ask (and expect) any relevant improvement or addition to be offered or contributed to the main CORSIKA8 repository for the benefit of the whole community. 
+If you use, or want to refer to, CORSIKA8 please cite ["Towards a Next
+Generation of CORSIKA: A Framework for the Simulation of Particle
+Cascades in Astroparticle Physics", Comput.Softw.Big Sci. 3 (2019)
+2](https://doi.org/10.1007/s41781-018-0013-0). We kindly ask (and
+expect) any relevant improvement or addition to be offered or
+contributed to the main CORSIKA8 repository for the benefit of the
+whole community.
 
-When you contribute to CORSIKA check the guidelines outlined here:
-[coding guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code that fails the review by the CORSIKA author group must be improved before it can be merged in the official code base. After your code has been accepted and merged you become a contributor of the CORSIKA project and you should include yourself in the [AUTHORS](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/AUTHORS) file. 
+When you plan to contribute to CORSIKA8 check the guidelines outlined here:
+[coding
+guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code
+that fails the review by the CORSIKA author group must be improved
+before it can be merged in the official code base. After your code has
+been accepted and merged you become a contributor of the CORSIKA8
+project and you should include yourself in the
+[AUTHORS](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/AUTHORS)
+file.
 
-IMPORTANT: Before your contribute, you need to read and agree to the [collaboration agreement](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The agreement can be discussed, and eventually improved. 
+IMPORTANT: Before you contribute, you need to read and agree to the
+[collaboration
+agreement](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The
+agreement can be discussed, and eventually improved.
 
-We also want to point you to the [MCnet guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES), which are very useful also for us. 
+We also want to point you to the [MCnet
+guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES),
+which are very useful also for us.
+
+
+## Get in contact
+  * Connect to https://gitlab.ikp.kit.edu; register yourself and join the "Air Shower Physics" group
+  * Connect to corsika-devel@lists.kit.edu (self-register at
+    https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
+    touch with the project
+
 
 ## Installation
 
