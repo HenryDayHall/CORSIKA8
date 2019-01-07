@@ -39,7 +39,7 @@ endif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 # enable warnings and disallow non-standard language
 set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3") # -O2 would not trade speed for size, neither O2/3 use fast-math 
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neither O2/3 use fast-math 
 
 # clang produces a lot of unecessary warnings without this:
 add_compile_options("$<$<CXX_COMPILER_ID:Clang>:-Wno-nonportable-include-path>") 
