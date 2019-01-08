@@ -13,8 +13,8 @@
 using namespace corsika::utl;
 using namespace corsika::units::si;
 
-COMBoost::COMBoost(EnergyType eProjectile, COMBoost::MomentumVector const& pProjectile,
-                   MassType mTarget)
+COMBoost::COMBoost(HEPEnergyType eProjectile, COMBoost::MomentumVector const& pProjectile,
+                   HEPMassType mTarget)
     : fRotation(Eigen::Matrix3d::Identity())
     , fCS(pProjectile.GetCoordinateSystem()) {
   // calculate matrix for rotating pProjectile to z-axis first
@@ -37,8 +37,7 @@ COMBoost::COMBoost(EnergyType eProjectile, COMBoost::MomentumVector const& pProj
   }
 
   // calculate boost
-  double const x = pProjNorm * units::constants::c /
-                   (eProjectile + mTarget * units::constants::cSquared);
+  double const x = pProjNorm / (eProjectile + mTarget);
 
   /* Accurracy matters here, x = 1 - epsilon for ultra-relativistic boosts */
   double const coshEta = 1 / std::sqrt((1 + x) * (1 - x));
@@ -50,34 +49,34 @@ COMBoost::COMBoost(EnergyType eProjectile, COMBoost::MomentumVector const& pProj
   fInverseBoost << coshEta, -sinhEta, -sinhEta, coshEta;
 }
 
-std::tuple<EnergyType, corsika::geometry::QuantityVector<momentum_d>> COMBoost::toCoM(
-    EnergyType E, COMBoost::MomentumVector p) const {
-  corsika::geometry::QuantityVector<momentum_d> pComponents = p.GetComponents(fCS);
+std::tuple<HEPEnergyType, corsika::geometry::QuantityVector<hepmomentum_d>>
+COMBoost::toCoM(HEPEnergyType E, COMBoost::MomentumVector p) const {
+  corsika::geometry::QuantityVector<hepmomentum_d> pComponents = p.GetComponents(fCS);
   Eigen::Vector3d eVecRotated = fRotation * pComponents.eVector;
   Eigen::Vector2d lab;
 
-  lab << (E * (1 / 1_GeV)), (eVecRotated(2) * (units::constants::c / 1_GeV).magnitude());
+  lab << (E * (1 / 1_GeV)), (eVecRotated(2) * (1 / 1_GeV).magnitude());
 
   auto const boostedZ = fBoost * lab;
   auto const E_CoM = boostedZ(0) * 1_GeV;
 
-  eVecRotated(2) = boostedZ(1) * (1_GeV / units::constants::c).magnitude();
+  eVecRotated(2) = boostedZ(1) * (1_GeV).magnitude();
 
   return std::make_tuple(E_CoM,
-                         corsika::geometry::QuantityVector<momentum_d>{eVecRotated});
+                         corsika::geometry::QuantityVector<hepmomentum_d>{eVecRotated});
 }
 
-std::tuple<EnergyType, COMBoost::MomentumVector> COMBoost::fromCoM(
-    EnergyType E, corsika::geometry::QuantityVector<units::si::momentum_d> pCoM) const {
+std::tuple<HEPEnergyType, COMBoost::MomentumVector> COMBoost::fromCoM(
+    HEPEnergyType E,
+    corsika::geometry::QuantityVector<units::si::hepmomentum_d> pCoM) const {
   Eigen::Vector2d com;
-  com << (E * (1 / (units::constants::c * 1_Ns))),
-      (pCoM.eVector(2) * (1 / 1_Ns).magnitude());
+  com << (E * (1 / 1_GeV)), (pCoM.eVector(2) * (1 / 1_GeV).magnitude());
 
   auto const boostedZ = fInverseBoost * com;
-  auto const E_CoM = boostedZ(0) * (1_Ns * units::constants::c);
+  auto const E_CoM = boostedZ(0) * 1_GeV;
 
   auto pLab = pCoM;
-  pLab.eVector(2) = boostedZ(1) * (1_Ns).magnitude();
+  pLab.eVector(2) = boostedZ(1) * (1_GeV).magnitude();
   pLab.eVector = fRotation.transpose() * pLab.eVector;
 
   return std::make_tuple(E_CoM, MomentumVector(fCS, pLab));

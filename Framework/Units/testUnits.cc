@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -16,6 +15,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <array>
+#include <sstream>
 
 using namespace corsika;
 using namespace corsika::units::si;
@@ -39,12 +39,12 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     [[maybe_unused]] LengthType arr1[2] = {{1_mm}, {2_cm}};
 
-    [[maybe_unused]] std::array<EnergyType, 4> arr2; // empty array
+    [[maybe_unused]] std::array<HEPEnergyType, 4> arr2; // empty array
 
-    [[maybe_unused]] std::array<EnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
+    [[maybe_unused]] std::array<HEPEnergyType, 4> arr3 = {1_GeV, 1_eV, 5_MeV};
 
-    auto p1 = 10_Ns;
-    REQUIRE(p1 == 10_Ns);
+    auto p1 = 10_s * newton;
+    REQUIRE(p1 == 10_s * newton);
   }
 
   SECTION("Powers in literal units") {
@@ -79,13 +79,13 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("Formulas") {
-    const EnergyType E2 = 20_GeV * 2;
+    const HEPEnergyType E2 = 20_GeV * 2;
     REQUIRE(E2 == 40_GeV);
     REQUIRE(E2 / 1_GeV == Approx(40));
 
     const MassType m = 1_kg;
     const SpeedType v = 1_m / 1_s;
-    REQUIRE(m * v == 1_Ns);
+    REQUIRE(m * v == 1_s * newton);
 
     const double lgE = log10(E2 / 1_GeV);
     REQUIRE(lgE == Approx(log10(40.)));
@@ -94,21 +94,19 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(E3 == 180_GeV);
   }
 
-  SECTION("Unit system conversion") {
-
-    const units::hep::MassType m_hep = 3_GeV;
-    std::cout << m_hep << std::endl;
-
-    const units::si::MassType m_hep2 = 3_kg;
-    std::cout << m_hep2 << std::endl;
-
-    REQUIRE(m_hep == 3_GeV); // hep::mass identical to si::energy
-    auto type_check = m_hep / units::constants::cSquared;
-    REQUIRE(dynamic_cast<units::si::MassType*>(&type_check)); // hep::mass*c2 is mass unit
-
-    const units::hep::EnergyType e_hep = 4_GeV;
-
-    REQUIRE(sqrt(m_hep * m_hep + e_hep * e_hep) == 5_GeV);
+  SECTION("Output") {
+    {
+      const HEPEnergyType E = 5_eV;
+      std::stringstream stream;
+      stream << E;
+      REQUIRE(stream.str() == std::string("5 eV"));
+    }
+    {
+      const HEPEnergyType E = 5_EeV;
+      std::stringstream stream;
+      stream << E;
+      REQUIRE(stream.str() == std::string("5e+18 eV"));
+    }
   }
 
   SECTION("Special") {

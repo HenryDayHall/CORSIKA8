@@ -81,7 +81,7 @@ public:
 
   template <typename Particle, typename T, typename Stack>
   EProcessReturn DoContinuous(Particle& p, T&, Stack& s) const {
-    EnergyType E = p.GetEnergy();
+    HEPEnergyType E = p.GetEnergy();
     if (E < 85_MeV) {
       p.Delete();
       fCount++;
@@ -123,7 +123,7 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   stack.Clear();
   auto particle = stack.NewParticle();
-  EnergyType E0 = 100_GeV;
+  HEPEnergyType E0 = 100_GeV;
   particle.SetPID(particles::Code::Electron);
   particle.SetEnergy(E0);
   particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
@@ -138,7 +138,7 @@ TEST_CASE("Cascade", "[Cascade]") {
     for (int i = 0; i < 0; ++i) {
       stack.Clear();
       auto particle = stack.NewParticle();
-      EnergyType E0 = 100_GeV * pow(10, i);
+      HEPEnergyType E0 = 100_GeV * pow(10, i);
       particle.SetEnergy(E0);
       EAS.Init();
       EAS.Run();

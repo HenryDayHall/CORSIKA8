@@ -23,21 +23,22 @@ namespace corsika::utl {
     Eigen::Matrix3d fRotation;
     Eigen::Matrix2d fBoost, fInverseBoost;
     corsika::geometry::CoordinateSystem const& fCS;
-    using MomentumVector = corsika::geometry::Vector<units::si::momentum_d>;
+    using MomentumVector = corsika::geometry::Vector<units::si::hepmomentum_d>;
 
   public:
     //! construct a COMBoost given energy and momentum of projectile and mass of target
-    COMBoost(units::si::EnergyType eProjectile, MomentumVector const& pProjectile,
-             units::si::MassType mTarget);
+    COMBoost(units::si::HEPEnergyType eProjectile, MomentumVector const& pProjectile,
+             units::si::HEPMassType mTarget);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
-    std::tuple<units::si::EnergyType, geometry::QuantityVector<units::si::momentum_d>>
-    toCoM(units::si::EnergyType E, MomentumVector p) const;
+    std::tuple<units::si::HEPEnergyType,
+               geometry::QuantityVector<units::si::hepmomentum_d>>
+    toCoM(units::si::HEPEnergyType E, MomentumVector p) const;
 
     //! transforms a 4-momentum from the center-of-mass frame back to lab frame
-    std::tuple<units::si::EnergyType, MomentumVector> fromCoM(
-        units::si::EnergyType E,
-        geometry::QuantityVector<units::si::momentum_d> pCoM) const;
+    std::tuple<units::si::HEPEnergyType, MomentumVector> fromCoM(
+        units::si::HEPEnergyType E,
+        geometry::QuantityVector<units::si::hepmomentum_d> pCoM) const;
   };
 } // namespace corsika::utl
 

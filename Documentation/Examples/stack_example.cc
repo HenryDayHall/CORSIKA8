@@ -30,7 +30,7 @@ void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
 void read(corsika::stack::super_stupid::SuperStupidStack& s) {
   assert(s.GetSize() == 11); // stack has 11 particles
 
-  EnergyType total_energy;
+  HEPEnergyType total_energy;
   int i = 0;
   for (auto& p : s) {
     total_energy += p.GetEnergy();

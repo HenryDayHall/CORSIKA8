@@ -43,7 +43,7 @@ namespace corsika::units::constants {
   constexpr quantity<electric_charge_d> e{Rep(1.6021766208e-19L) * coulomb};
 
   // electronvolt
-  constexpr quantity<energy_d> eV{e / coulomb * joule};
+  // constexpr quantity<hepenergy_d> eV{e / coulomb * joule};
 
   // Planck constant
   constexpr quantity<dimensions<2, 1, -1> > h{Rep(6.62606876e-34L) * joule * second};
@@ -54,9 +54,6 @@ namespace corsika::units::constants {
 
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};
-
-  // barn moved to PhysicalUnits
-  //  constexpr quantity<area_d> barn{Rep(1.e-28L) * meter * meter};
 
   // etc.
 

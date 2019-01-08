@@ -53,7 +53,6 @@ namespace corsika::process::sibyll {
     corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) {
 
       using namespace corsika::units;
-      using namespace corsika::units::hep;
       using namespace corsika::units::si;
       using namespace corsika::geometry;
       using std::cout;
@@ -79,26 +78,27 @@ namespace corsika::process::sibyll {
       // FOR NOW: assume target is oxygen
       const int kTarget = corsika::particles::Oxygen::GetNucleusA();
 
-      const hep::MassType nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
-                                                corsika::particles::Neutron::GetMass());
-      hep::EnergyType Etot = p.GetEnergy() + nucleon_mass;
+      const HEPMassType nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
+                                              corsika::particles::Neutron::GetMass());
+      HEPEnergyType const Elab = p.GetEnergy();
+      HEPEnergyType const Etot = Elab + nucleon_mass;
       MomentumVector Ptot(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
       // FOR NOW: assume target is at rest
       MomentumVector pTarget(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
       Ptot += p.GetMomentum();
       Ptot += pTarget;
       // calculate cm. energy
-      const hep::EnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
+      const HEPEnergyType sqs = sqrt(Etot * Etot - Ptot.squaredNorm());
       const double Ecm = sqs / 1_GeV;
 
       std::cout << "Interaction: LambdaInt: \n"
-                << " input energy: " << p.GetEnergy() / 1_GeV << endl
+                << " input energy: " << Elab / 1_GeV << endl
                 << " beam can interact:" << kBeam << endl
                 << " beam XS code:" << kBeam << endl
                 << " beam pid:" << p.GetPID() << endl
                 << " target mass number:" << kTarget << std::endl;
 
-      if (kInteraction) {
+      if (kInteraction && Elab >= 8.5_GeV && sqs >= 10_GeV) {
 
         double prodCrossSection, dummy, dum1, dum2, dum3, dum4;
         double dumdif[3];
@@ -114,12 +114,10 @@ namespace corsika::process::sibyll {
         std::cout << "Interaction: "
                   << "MinStep: CrossSection (mb): " << sig / 1_mbarn << std::endl;
 
-        const si::MassType nucleon_mass =
-            0.93827_GeV / corsika::units::constants::cSquared;
         std::cout << "Interaction: "
                   << "nucleon mass " << nucleon_mass << std::endl;
         // calculate interaction length in medium
-        GrammageType int_length = kTarget * nucleon_mass / sig;
+        GrammageType int_length = kTarget * corsika::units::constants::u / sig;
         std::cout << "Interaction: "
                   << "interaction length (g/cm2): " << int_length << std::endl;
 
@@ -134,7 +132,6 @@ namespace corsika::process::sibyll {
 
       using namespace corsika::units;
       using namespace corsika::utl;
-      using namespace corsika::units::hep;
       using namespace corsika::units::si;
       using namespace corsika::geometry;
       using std::cout;
@@ -188,9 +185,9 @@ namespace corsika::process::sibyll {
             GetNucleusA(); // env.GetTargetParticle().GetPID();
 
         // FOR NOW: target is always at rest
-        const hep::MassType nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
-                                                  corsika::particles::Neutron::GetMass());
-        const EnergyType Etarget = 0_GeV + nucleon_mass;
+        auto constexpr nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
+                                         corsika::particles::Neutron::GetMass());
+        const auto Etarget = 0_GeV + nucleon_mass;
         const auto pTarget = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
         cout << "target momentum (GeV/c): " << pTarget.GetComponents() / 1_GeV << endl;
         cout << "beam momentum (GeV/c): " << p.GetMomentum().GetComponents() / 1_GeV
@@ -210,12 +207,12 @@ namespace corsika::process::sibyll {
         */
         // total energy: E_beam + E_target
         // in lab. frame: E_beam + m_target*c**2
-        EnergyType E = p.GetEnergy();
-        EnergyType Etot = E + Etarget;
+        HEPEnergyType E = p.GetEnergy();
+        HEPEnergyType Etot = E + Etarget;
         // total momentum
         MomentumVector Ptot = p.GetMomentum();
         // invariant mass, i.e. cm. energy
-        EnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
+        HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
         /*
          get transformation between Stack-frame and SibStack-frame
          for EAS Stack-frame is lab. frame, could be different for CRMC-mode
@@ -229,25 +226,25 @@ namespace corsika::process::sibyll {
         std::cout << "Interaction: "
                   << " DoDiscrete: gambet:" << gambet.GetComponents() << endl;
 
-	Vector<si::momentum_d> pProjectileLab = p.GetMomentum() / constants::c;
+	auto const pProjectileLab = p.GetMomentum();
 	//{rootCS, {0_GeV / c, 1_PeV / c, 0_GeV / c}};
-	EnergyType const eProjectileLab = p.GetEnergy();
+	HEPEnergyType const eProjectileLab = p.GetEnergy();
 	  //energy(projectileMass, pProjectileLab);
 
 	// define target kinematics in lab frame
-	si::MassType const targetMass = nucleon_mass / constants::cSquared;
+	HEPMassType const targetMass = nucleon_mass;
 	// define boost to com frame
-	COMBoost boost(eProjectileLab, pProjectileLab, targetMass);
+	COMBoost const boost(eProjectileLab, pProjectileLab, targetMass);
 
 	cout << "Interaction: new boost: ebeam lab: " << eProjectileLab / 1_GeV << endl
-	     << "Interaction: new boost: pbeam lab: " << pProjectileLab.GetComponents() / ( 1_GeV / constants::c ) << endl;
+	     << "Interaction: new boost: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV << endl;
 
 	// boost projecticle
 	auto const [eProjectileCoM, pProjectileCoM] =
 	  boost.toCoM(eProjectileLab, pProjectileLab);
 
 	cout << "Interaction: new boost: ebeam com: " << eProjectileCoM / 1_GeV << endl
-	     << "Interaction: new boost: pbeam com: " << pProjectileCoM / ( 1_GeV / constants::c ) << endl;
+	     << "Interaction: new boost: pbeam com: " << pProjectileCoM / 1_GeV << endl;
 	
         int kBeam = process::sibyll::ConvertToSibyllRaw(p.GetPID());
 
@@ -283,7 +280,7 @@ namespace corsika::process::sibyll {
 
           // momentum array in Sibyll
           MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-          EnergyType E_final = 0_GeV, Ecm_final = 0_GeV;
+          HEPEnergyType E_final = 0_GeV, Ecm_final = 0_GeV;
           for (auto& psib : ss) {
 
             // skip particles that have decayed in Sibyll
@@ -302,10 +299,10 @@ namespace corsika::process::sibyll {
             // rotatate to rootCS
             const auto pSibyllComponents = SibVector.GetComponents(rootCS);
             // boost to lab. frame
-            hep::EnergyType en_lab = 0. * 1_GeV;
-            hep::MomentumType p_lab_components[3];
+            HEPEnergyType en_lab = 0. * 1_GeV;
+            HEPMomentumType p_lab_components[3];
             en_lab = psib.GetEnergy() * gamma;
-            hep::EnergyType pnorm = 0. * 1_GeV;
+            HEPEnergyType pnorm = 0. * 1_GeV;
             for (int j = 0; j < 3; ++j)
               pnorm += (pSibyllComponents[j] * gammaBetaComponents[j]) / (gamma + 1.);
             pnorm += psib.GetEnergy();
@@ -320,7 +317,7 @@ namespace corsika::process::sibyll {
             auto pnew = s.NewParticle();
             pnew.SetEnergy(en_lab);
             pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
-            corsika::geometry::QuantityVector<energy_hep_d> p_lab_c{
+            corsika::geometry::QuantityVector<hepmomentum_d> p_lab_c{
                 p_lab_components[0], p_lab_components[1], p_lab_components[2]};
             pnew.SetMomentum(MomentumVector(rootCS, p_lab_c));
             pnew.SetPosition(pOrig);

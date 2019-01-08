@@ -17,7 +17,7 @@
 #include <catch2/catch.hpp>
 
 using namespace corsika::units;
-using namespace corsika::units::hep;
+using namespace corsika::units::si;
 using namespace corsika::particles;
 
 TEST_CASE("ParticleProperties", "[Particles]") {

@@ -33,14 +33,14 @@ using namespace corsika::geometry;
 using namespace std;
 using namespace corsika::units::si;
 
-typedef corsika::units::hep::energy_hep_d MOMENTUM;
+typedef corsika::units::si::hepmomentum_d MOMENTUM;
 
 struct DummyParticle {
-  EnergyType fEnergy;
+  HEPEnergyType fEnergy;
   Vector<MOMENTUM> fMomentum;
   Point fPosition;
 
-  DummyParticle(EnergyType pEnergy, Vector<MOMENTUM> pMomentum, Point pPosition)
+  DummyParticle(HEPEnergyType pEnergy, Vector<MOMENTUM> pMomentum, Point pPosition)
       : fEnergy(pEnergy)
       , fMomentum(pMomentum)
       , fPosition(pPosition) {}
@@ -89,7 +89,7 @@ TEST_CASE("TrackingLine") {
 
     //~ std::cout << env.GetUniverse().get() << std::endl;
 
-    DummyParticle p(1_J, Vector<MOMENTUM>(cs, 0_GeV, 0_GeV, 1_GeV),
+    DummyParticle p(1_GeV, Vector<MOMENTUM>(cs, 0_GeV, 0_GeV, 1_GeV),
                     Point(cs, 0_m, 0_m, 0_m));
 
     auto const radius = 20_m;

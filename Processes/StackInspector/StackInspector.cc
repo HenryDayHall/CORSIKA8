@@ -41,10 +41,10 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
 
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
-  EnergyType Etot = 0_GeV;
+  HEPEnergyType Etot = 0_GeV;
 
   for (auto& iterP : s) {
-    EnergyType E = iterP.GetEnergy();
+    HEPEnergyType E = iterP.GetEnergy();
     Etot += E;
     geometry::CoordinateSystem& rootCS = geometry::RootCoordinateSystem::GetInstance()
                                              .GetRootCoordinateSystem(); // for printout

@@ -136,8 +136,8 @@ namespace corsika::process {
         using std::endl;
         using namespace corsika::units::si;
 
-        corsika::units::hep::EnergyType E = p.GetEnergy();
-        corsika::units::hep::MassType m = corsika::particles::GetMass(p.GetPID());
+        corsika::units::si::HEPEnergyType E = p.GetEnergy();
+        corsika::units::si::HEPMassType m = corsika::particles::GetMass(p.GetPID());
 
         const double gamma = E / m;
 
