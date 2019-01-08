@@ -169,7 +169,10 @@ namespace corsika::process {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
 
+	// TODO: this should be done in a central, common place. Not here..
+#ifndef CORSIKA_OSX
         feenableexcept(FE_INVALID);
+#endif
 
         fCount++;
         SibStack ss;
@@ -216,7 +219,10 @@ namespace corsika::process {
         // empty sibyll stack
         ss.Clear();
 
+	// TODO: this should be done in a central, common place. Not here..
+#ifndef CORSIKA_OSX
         fedisableexcept(FE_INVALID);
+#endif
       }
     };
   } // namespace sibyll

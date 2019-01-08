@@ -34,17 +34,21 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
+endif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 
 # enable warnings and disallow non-standard language
 set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") 
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neither O2/3 use fast-math 
 
 # clang produces a lot of unecessary warnings without this:
 add_compile_options("$<$<CXX_COMPILER_ID:Clang>:-Wno-nonportable-include-path>") 
 
-  
+# check if we are on OSX:
+if (APPLE)
+  add_compile_definitions (CORSIKA_OSX)
+endif (APPLE)
+
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
 ##set(COVERAGE_LCOV_EXCLUDES 'Documentation/*')
