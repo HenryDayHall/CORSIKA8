@@ -106,9 +106,9 @@ TEST_CASE("SibyllInterface", "[processes]") {
     setup::Stack stack;
     auto particle = stack.NewParticle();
     {
-      const hep::EnergyType E0 = 10_GeV;
+      const HEPEnergyType E0 = 10_GeV;
       particle.SetPID(particles::Code::Proton);
-      hep::MomentumType P0 = sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+      HEPMomentumType P0 = sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
       auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
       particle.SetEnergy(E0);
       particle.SetMomentum(plab);

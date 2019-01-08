@@ -131,6 +131,7 @@ struct unit_info
         emit_dim( os, "K",   Dims::dim5, first );
         emit_dim( os, "mol", Dims::dim6, first );
         emit_dim( os, "cd",  Dims::dim7, first );
+        emit_dim( os, "eV",  Dims::dim8, first );
 
         return os.str();
     }

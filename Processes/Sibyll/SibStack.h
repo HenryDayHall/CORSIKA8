@@ -21,7 +21,7 @@
 
 namespace corsika::process::sibyll {
 
-  typedef corsika::geometry::Vector<corsika::units::hep::energy_hep_d> MomentumVector;
+  typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
   class SibStackData {
 
@@ -35,30 +35,29 @@ namespace corsika::process::sibyll {
     int GetCapacity() const { return 8000; }
 
     void SetId(const int i, const int v) { s_plist_.llist[i] = v; }
-    void SetEnergy(const int i, const corsika::units::hep::EnergyType v) {
-      using namespace corsika::units::hep;
+    void SetEnergy(const int i, const corsika::units::si::HEPEnergyType v) {
+      using namespace corsika::units::si;
       s_plist_.p[3][i] = v / 1_GeV;
     }
-    void SetMass(const int i, const corsika::units::hep::MassType v) {
-      using namespace corsika::units::hep;
+    void SetMass(const int i, const corsika::units::si::HEPMassType v) {
+      using namespace corsika::units::si;
       s_plist_.p[4][i] = v / 1_GeV;
     }
 
     void SetMomentum(const int i, const MomentumVector& v) {
-      using namespace corsika::units;
-      using namespace corsika::units::hep;
+      using namespace corsika::units::si;
       auto tmp = v.GetComponents();
       for (int idx = 0; idx < 3; ++idx) s_plist_.p[idx][i] = tmp[idx] / 1_GeV;
     }
 
     int GetId(const int i) const { return s_plist_.llist[i]; }
 
-    corsika::units::hep::EnergyType GetEnergy(const int i) const {
-      using namespace corsika::units::hep;
+    corsika::units::si::HEPEnergyType GetEnergy(const int i) const {
+      using namespace corsika::units::si;
       return s_plist_.p[3][i] * 1_GeV;
     }
-    corsika::units::hep::EnergyType GetMass(const int i) const {
-      using namespace corsika::units::hep;
+    corsika::units::si::HEPEnergyType GetMass(const int i) const {
+      using namespace corsika::units::si;
       return s_plist_.p[4][i] * 1_GeV;
     }
 
@@ -66,10 +65,10 @@ namespace corsika::process::sibyll {
       using corsika::geometry::CoordinateSystem;
       using corsika::geometry::QuantityVector;
       using corsika::geometry::RootCoordinateSystem;
-      using namespace corsika::units::hep;
+      using namespace corsika::units::si;
       CoordinateSystem& rootCS =
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-      QuantityVector<energy_hep_d> components = {
+      QuantityVector<hepmomentum_d> components = {
           s_plist_.p[0][i] * 1_GeV, s_plist_.p[1][i] * 1_GeV, s_plist_.p[2][i] * 1_GeV};
       MomentumVector v1(rootCS, components);
       return v1;
@@ -94,29 +93,33 @@ namespace corsika::process::sibyll {
     using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
-    void SetEnergy(const corsika::units::hep::EnergyType v) {
+    void SetEnergy(const corsika::units::si::HEPEnergyType v) {
       GetStackData().SetEnergy(GetIndex(), v);
     }
-    corsika::units::hep::EnergyType GetEnergy() const {
+
+    corsika::units::si::HEPEnergyType GetEnergy() const {
       return GetStackData().GetEnergy(GetIndex());
     }
 
-    void SetMass(const corsika::units::hep::MassType v) {
+    bool HasDecayed() const { return abs(GetStackData().GetId(GetIndex())) > 100; }
+
+    void SetMass(const corsika::units::si::HEPMassType v) {
       GetStackData().SetMass(GetIndex(), v);
     }
-    corsika::units::hep::EnergyType GetMass() const {
+
+    corsika::units::si::HEPEnergyType GetMass() const {
       return GetStackData().GetMass(GetIndex());
     }
 
-    bool HasDecayed() const {
-      return abs(GetStackData().GetId(GetIndex())) > 100 ? true : false;
-    }
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
+
     corsika::process::sibyll::SibyllCode GetPID() const {
       return static_cast<corsika::process::sibyll::SibyllCode>(
           GetStackData().GetId(GetIndex()));
     }
+
     MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }
+
     void SetMomentum(const MomentumVector& v) {
       GetStackData().SetMomentum(GetIndex(), v);
     }

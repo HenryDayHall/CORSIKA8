@@ -290,9 +290,9 @@ def gen_properties(particle_db):
     string += "\n"
     
     # particle masses table
-    string += "static constexpr std::array<corsika::units::hep::MassType const, size> masses = {\n"    
+    string += "static constexpr std::array<corsika::units::si::HEPMassType const, size> masses = {\n"    
     for p in particle_db.values():
-        string += "  {mass:e} * (1e9 * corsika::units::constants::eV), // {name:s}\n".format(mass = p['mass'], name = p['name'])
+        string += "  {mass:e} * 1e9 * corsika::units::si::electronvolt, // {name:s}\n".format(mass = p['mass'], name = p['name'])
     string += "};\n\n"
                    
     # PDG code table
@@ -343,7 +343,7 @@ def gen_properties(particle_db):
     string += "};\n"
 
     # nucleus mass number A
-    string += "static constexpr std::array<int, size> nucleusA = {\n"
+    string += "static constexpr std::array<int16_t, size> nucleusA = {\n"
     for p in particle_db.values():
         A = 0
         if p['isNucleus']:
@@ -352,7 +352,7 @@ def gen_properties(particle_db):
     string += "};\n"
     
     # nucleus charge number Z
-    string += "static constexpr std::array<int, size> nucleusZ = {\n"
+    string += "static constexpr std::array<int16_t, size> nucleusZ = {\n"
     for p in particle_db.values():
         Z = 0
         if p['isNucleus']:
@@ -396,14 +396,14 @@ def gen_classes(particle_db):
         string += "class " + cname + " {\n"
         string += "  public:\n"
         string += "   static constexpr Code GetCode() { return Type; }\n"
-        string += "   static constexpr corsika::units::hep::MassType GetMass() { return corsika::particles::GetMass(Type); }\n"
+        string += "   static constexpr corsika::units::si::HEPMassType GetMass() { return corsika::particles::GetMass(Type); }\n"
         string += "   static constexpr corsika::units::si::ElectricChargeType GetCharge() { return corsika::particles::GetElectricCharge(Type); }\n"
         string += "   static constexpr int16_t GetChargeNumber() { return corsika::particles::GetElectricChargeNumber(Type); }\n"
         string += "   static std::string const& GetName() { return corsika::particles::GetName(Type); }\n"
         string += "   static constexpr Code GetAntiParticle() { return AntiType; }\n"
         string += "   static constexpr bool IsNucleus() { return corsika::particles::IsNucleus(Type); }\n"
-        string += "   static constexpr int GetNucleusA() { return corsika::particles::GetNucleusA(Type); }\n"
-        string += "   static constexpr int GetNucleusZ() { return corsika::particles::GetNucleusZ(Type); }\n"
+        string += "   static constexpr int16_t GetNucleusA() { return corsika::particles::GetNucleusA(Type); }\n"
+        string += "   static constexpr int16_t GetNucleusZ() { return corsika::particles::GetNucleusZ(Type); }\n"
         string += "   static constexpr Code Type = Code::" + cname + ";\n"
         string += "   static constexpr Code AntiType = Code::" + antiP + ";\n"
         string += " private:\n"
@@ -463,7 +463,7 @@ if __name__ == "__main__":
         print("usage: {:s} <Pythia8.xml> <Nuclei.xml> <ClassNames.xml>".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
         
-    print("\n       pdxml_reader.py: Automatically produce particle-properties from input files\n")
+    print("\n       pdxml_reader.py: automatically produce particle properties from input files\n")
     
     names = class_names(sys.argv[3])
     particle_db = OrderedDict()

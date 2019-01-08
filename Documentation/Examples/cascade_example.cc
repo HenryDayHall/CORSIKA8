@@ -34,6 +34,7 @@
 #include <boost/type_index.hpp>
 using boost::typeindex::type_id_with_cvr;
 
+#include <fenv.h>
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -48,25 +49,26 @@ using namespace corsika::geometry;
 using namespace corsika::environment;
 
 using namespace std;
-using namespace corsika::units::hep;
+using namespace corsika::units::si;
 
 class ProcessCut : public corsika::process::ContinuousProcess<ProcessCut> {
 
-  EnergyType fECut;
+  HEPEnergyType fECut;
 
-  EnergyType fEnergy = 0_GeV;
-  EnergyType fEmEnergy = 0_GeV;
+  HEPEnergyType fEnergy = 0_GeV;
+  HEPEnergyType fEmEnergy = 0_GeV;
   int fEmCount = 0;
-  EnergyType fInvEnergy = 0_GeV;
+  HEPEnergyType fInvEnergy = 0_GeV;
   int fInvCount = 0;
 
 public:
-  ProcessCut(const EnergyType v)
-      : fECut(v) {}
+  ProcessCut(const HEPEnergyType cut)
+      : fECut(cut) {}
+
   template <typename Particle>
   bool isBelowEnergyCut(Particle& p) const {
     // FOR NOW: center-of-mass energy hard coded
-    const EnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
+    const HEPEnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
     if (p.GetEnergy() < fECut || Ecm < 10_GeV)
       return true;
     else
@@ -143,7 +145,7 @@ public:
   template <typename Particle, typename Stack>
   EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) {
     const Code pid = p.GetPID();
-    EnergyType energy = p.GetEnergy();
+    HEPEnergyType energy = p.GetEnergy();
     cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy
          << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV" << endl;
     EProcessReturn ret = EProcessReturn::eOk;
@@ -188,15 +190,16 @@ public:
          << " ******************************" << endl;
   }
 
-  EnergyType GetInvEnergy() const { return fInvEnergy; }
-  EnergyType GetCutEnergy() const { return fEnergy; }
-  EnergyType GetEmEnergy() const { return fEmEnergy; }
+  HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
+  HEPEnergyType GetCutEnergy() const { return fEnergy; }
+  HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
 //
 // The example main program for a particle cascade
 //
 int main() {
+  feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
@@ -237,14 +240,14 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const hep::EnergyType E0 = 100_TeV;
+  const HEPEnergyType E0 = 100_TeV;
   double theta = 0.;
   double phi = 0.;
   {
     auto particle = stack.NewParticle();
     particle.SetPID(Code::Proton);
-    hep::MomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
-    auto momentumComponents = [](double theta, double phi, MomentumType& ptot) {
+    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));
     };

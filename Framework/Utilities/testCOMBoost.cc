@@ -30,57 +30,52 @@ TEST_CASE("boosts") {
       RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   // relativistic energy
-  auto energy = [](MassType m, Vector<momentum_d> const& p) {
-    return sqrt(m * m * cSquared * cSquared + p.squaredNorm() * cSquared);
+  auto energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
+    return sqrt(m * m + p.squaredNorm());
   };
 
   // mandelstam-s
-  auto s = [](EnergyType E, QuantityVector<momentum_d> const& p) {
-    return E * E / cSquared - p.squaredNorm();
+  auto s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
+    return E * E - p.squaredNorm();
   };
 
   // define projectile kinematics in lab frame
-  MassType const projectileMass = 1._GeV / cSquared;
-  std::vector<Vector<momentum_d>> labProjectiles{
-      {rootCS, {0_GeV / c, 1_PeV / c, 0_GeV / c}},   // standard case
-      {rootCS, {0_GeV / c, 0_GeV / c, -1_GeV / c}}}; // "special" case
+  HEPMassType const projectileMass = 1._GeV;
+  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 1_PeV, 0_GeV}};
+  HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
 
-  for (auto const& pProjectileLab : labProjectiles) {
-    EnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+  // define target kinematics in lab frame
+  HEPMassType const targetMass = 1_GeV;
+  Vector<hepmomentum_d> pTargetLab{rootCS, {0_eV, 0_eV, 0_eV}};
+  HEPEnergyType const eTargetLab = energy(targetMass, pTargetLab);
 
-    // define target kinematics in lab frame
-    MassType const targetMass = 1_GeV / cSquared;
-    Vector<momentum_d> pTargetLab{rootCS, {0_Ns, 0_Ns, 0_Ns}};
-    EnergyType const eTargetLab = energy(targetMass, pTargetLab);
+  // define boost to com frame
+  COMBoost boost(eProjectileLab, pProjectileLab, targetMass);
 
-    // define boost to com frame
-    COMBoost boost(eProjectileLab, pProjectileLab, targetMass);
+  // boost projecticle
+  auto const [eProjectileCoM, pProjectileCoM] =
+      boost.toCoM(eProjectileLab, pProjectileLab);
 
-    // boost projecticle
-    auto const [eProjectileCoM, pProjectileCoM] =
-        boost.toCoM(eProjectileLab, pProjectileLab);
+  // boost target
+  auto const [eTargetCoM, pTargetCoM] = boost.toCoM(eTargetLab, pTargetLab);
 
-    // boost target
-    auto const [eTargetCoM, pTargetCoM] = boost.toCoM(eTargetLab, pTargetLab);
+  // sum of momenta in CoM, should be 0
+  auto const sumPCoM = pProjectileCoM + pTargetCoM;
+  CHECK(sumPCoM[2] / 1_GeV == Approx(0).margin(absMargin));
 
-    // sum of momenta in CoM, should be 0
-    auto const sumPCoM = pProjectileCoM + pTargetCoM;
-    CHECK(sumPCoM[2] / (1_GeV / c) == Approx(0).margin(absMargin));
+  // mandelstam-s should be invariant under transformation
+  CHECK(s(eProjectileLab + eTargetLab,
+          pProjectileLab.GetComponents() + pTargetLab.GetComponents()) /
+            1_GeV / 1_GeV ==
+        Approx(s(eProjectileCoM + eTargetCoM, pProjectileCoM + pTargetCoM) / 1_GeV /
+               1_GeV));
 
-    // mandelstam-s should be invariant under transformation
-    CHECK(s(eProjectileLab + eTargetLab,
-            pProjectileLab.GetComponents() + pTargetLab.GetComponents()) /
-              (1_GeV / c) / (1_GeV / c) ==
-          Approx(s(eProjectileCoM + eTargetCoM, pProjectileCoM + pTargetCoM) /
-                 (1_GeV / c) / (1_GeV / c)));
+  // boost back...
+  auto const [eProjectileBack, pProjectileBack] =
+      boost.fromCoM(eProjectileCoM, pProjectileCoM);
 
-    // boost back...
-    auto const [eProjectileBack, pProjectileBack] =
-        boost.fromCoM(eProjectileCoM, pProjectileCoM);
-
-    // ...should yield original values before the boosts
-    CHECK(eProjectileBack / eProjectileLab == Approx(1));
-    CHECK((pProjectileBack - pProjectileLab).norm() / pProjectileLab.norm() ==
-          Approx(0).margin(absMargin));
-  }
+  // ...should yield original values before the boosts
+  CHECK(eProjectileBack / eProjectileLab == Approx(1));
+  CHECK((pProjectileBack - pProjectileLab).norm() / pProjectileLab.norm() ==
+        Approx(0).margin(absMargin));
 }

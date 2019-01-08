@@ -29,7 +29,7 @@ namespace corsika::stack {
 
   namespace super_stupid {
 
-    typedef corsika::geometry::Vector<corsika::units::hep::energy_hep_d> MomentumVector;
+    typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
     /**
      * Example of a particle object on the stack.
@@ -46,7 +46,7 @@ namespace corsika::stack {
         GetStackData().SetPID(GetIndex(), id);
       }
 
-      void SetEnergy(const corsika::units::hep::EnergyType& e) {
+      void SetEnergy(const corsika::units::si::HEPEnergyType& e) {
         GetStackData().SetEnergy(GetIndex(), e);
       }
 
@@ -66,7 +66,7 @@ namespace corsika::stack {
         return GetStackData().GetPID(GetIndex());
       }
 
-      corsika::units::hep::EnergyType GetEnergy() const {
+      corsika::units::si::HEPEnergyType GetEnergy() const {
         return GetStackData().GetEnergy(GetIndex());
       }
 
@@ -82,9 +82,9 @@ namespace corsika::stack {
         return GetStackData().GetTime(GetIndex());
       }
 
-      corsika::geometry::Vector<corsika::units::si::SpeedType::dimension_type>
-      GetDirection() const {
-        return GetMomentum() / GetEnergy() * corsika::units::constants::c;
+      corsika::geometry::Vector<corsika::units::si::dimensionless_d> GetDirection()
+          const {
+        return GetMomentum() / GetEnergy();
       }
     };
 
@@ -112,7 +112,7 @@ namespace corsika::stack {
 
       void SetPID(const int i, const corsika::particles::Code id) { fDataPID[i] = id; }
 
-      void SetEnergy(const int i, const corsika::units::hep::EnergyType e) {
+      void SetEnergy(const int i, const corsika::units::si::HEPEnergyType e) {
         fDataE[i] = e;
       }
       void SetMomentum(const int i, const MomentumVector& v) { fMomentum[i] = v; }
@@ -125,7 +125,7 @@ namespace corsika::stack {
 
       corsika::particles::Code GetPID(const int i) const { return fDataPID[i]; }
 
-      corsika::units::hep::EnergyType GetEnergy(const int i) const { return fDataE[i]; }
+      corsika::units::si::HEPEnergyType GetEnergy(const int i) const { return fDataE[i]; }
 
       MomentumVector GetMomentum(const int i) const { return fMomentum[i]; }
 
@@ -160,13 +160,14 @@ namespace corsika::stack {
         using corsika::geometry::Point;
         using corsika::particles::Code;
         fDataPID.push_back(Code::Unknown);
-        fDataE.push_back(0 * corsika::units::si::joule);
+        fDataE.push_back(0 * corsika::units::si::electronvolt);
         //#TODO this here makes no sense: see issue #48
         geometry::CoordinateSystem& dummyCS =
             geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
         fMomentum.push_back(MomentumVector(
-            dummyCS, {0 * corsika::units::si::joule, 0 * corsika::units::si::joule,
-                      0 * corsika::units::si::joule}));
+            dummyCS,
+            {0 * corsika::units::si::electronvolt, 0 * corsika::units::si::electronvolt,
+             0 * corsika::units::si::electronvolt}));
         fPosition.push_back(
             Point(dummyCS, {0 * corsika::units::si::meter, 0 * corsika::units::si::meter,
                             0 * corsika::units::si::meter}));
@@ -187,7 +188,7 @@ namespace corsika::stack {
       /// the actual memory to store particle data
 
       std::vector<corsika::particles::Code> fDataPID;
-      std::vector<corsika::units::hep::EnergyType> fDataE;
+      std::vector<corsika::units::si::HEPEnergyType> fDataE;
       std::vector<MomentumVector> fMomentum;
       std::vector<corsika::geometry::Point> fPosition;
       std::vector<corsika::units::si::TimeType> fTime;
