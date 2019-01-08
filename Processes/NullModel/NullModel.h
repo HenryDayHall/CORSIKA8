@@ -17,11 +17,11 @@
 namespace corsika::process::null_model {
 
   class NullModel : public corsika::process::ContinuousProcess<NullModel> {
-    corsika::units::si::LengthType fMaxStepLength{
-        corsika::units::si::meter * std::numeric_limits<double>::infinity()};
+    corsika::units::si::LengthType const fMaxStepLength;
 
   public:
-    NullModel(corsika::units::si::LengthType maxStepLength)
+    NullModel(corsika::units::si::LengthType maxStepLength =
+                  corsika::units::si::meter * std::numeric_limits<double>::infinity())
         : fMaxStepLength(maxStepLength) {}
 
     void Init();
