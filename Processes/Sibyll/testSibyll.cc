@@ -70,9 +70,9 @@ TEST_CASE("Sibyll", "[processes]") {
 
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/particles/ParticleProperties.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
-#include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
@@ -83,12 +83,12 @@ using namespace corsika::units;
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
-    // setup environment, geometry
+  // setup environment, geometry
   corsika::environment::Environment env;
   auto& universe = *(env.GetUniverse());
 
   auto theMedium = corsika::environment::Environment::CreateNode<geometry::Sphere>(
-									 geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel =
@@ -109,14 +109,13 @@ TEST_CASE("SibyllInterface", "[processes]") {
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
-  
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
     auto particle = stack.NewParticle();
-    
+
     Interaction model(env);
-    
+
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
         model.DoInteraction(particle, stack);
@@ -131,7 +130,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     {
       const HEPEnergyType E0 = 10_GeV;
       particle.SetPID(particles::Code::Proton);
-      HEPMomentumType P0 = sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+      HEPMomentumType P0 =
+          sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
       auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
       particle.SetEnergy(E0);
       particle.SetMomentum(plab);
@@ -139,9 +139,9 @@ TEST_CASE("SibyllInterface", "[processes]") {
       geometry::Point p(cs, 0_m, 0_m, 0_m);
       particle.SetPosition(p);
     }
-    
+
     Decay model;
-    
+
     model.Init();
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
                                                                           stack);

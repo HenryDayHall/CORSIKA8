@@ -16,8 +16,8 @@
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/particles/ParticleProperties.h>
-#include <corsika/units/PhysicalUnits.h>
 #include <corsika/random/RNGManager.h>
+#include <corsika/units/PhysicalUnits.h>
 
 /**
  * a homogeneous medium
@@ -42,29 +42,30 @@ namespace corsika::environment {
     }
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    corsika::particles::Code const& GetTarget( std::vector<corsika::units::si::CrossSectionType> &sigma) const override {
+    corsika::particles::Code const& GetTarget(
+        std::vector<corsika::units::si::CrossSectionType>& sigma) const override {
       using namespace corsika::units::si;
-      int i=-1;
+      int i = -1;
       corsika::units::si::CrossSectionType total_weighted_sigma = 0._mbarn;
-      std::vector<float> fractions;				 
-      for(auto w: fNuclComp.GetFractions() ){
-	i++;
-	std::cout << "HomogeneousMedium: fraction: " << w << std::endl;
-	total_weighted_sigma +=  w * sigma[i];
-	fractions.push_back( w * sigma[i] / 1_mbarn );
+      std::vector<float> fractions;
+      for (auto w : fNuclComp.GetFractions()) {
+        i++;
+        std::cout << "HomogeneousMedium: fraction: " << w << std::endl;
+        total_weighted_sigma += w * sigma[i];
+        fractions.push_back(w * sigma[i] / 1_mbarn);
       }
-					 
-      for(auto f: fractions){
-	f = f / ( total_weighted_sigma / 1_mbarn );
-	std::cout << "HomogeneousMedium: reweighted fraction: " << f << std::endl;
+
+      for (auto f : fractions) {
+        f = f / (total_weighted_sigma / 1_mbarn);
+        std::cout << "HomogeneousMedium: reweighted fraction: " << f << std::endl;
       }
-      std::discrete_distribution channelDist( fractions.begin(), fractions.end() );
+      std::discrete_distribution channelDist(fractions.begin(), fractions.end());
       static corsika::random::RNG& kRNG =
-	corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+          corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
       const int ichannel = channelDist(kRNG);
       return fNuclComp.GetComponents()[ichannel];
     }
-    
+
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const&,
         corsika::units::si::LengthType pTo) const override {
@@ -76,7 +77,7 @@ namespace corsika::environment {
         corsika::geometry::Trajectory<corsika::geometry::Line> const&,
         corsika::units::si::GrammageType pGrammage) const override {
       return pGrammage / fDensity;
-    }    
+    }
   };
 
 } // namespace corsika::environment

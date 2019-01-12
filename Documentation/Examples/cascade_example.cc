@@ -218,8 +218,9 @@ int main() {
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       corsika::environment::NuclearComposition(
-					       std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,corsika::particles::Code::Oxygen},
-					       std::vector<float>{(float)1.-fox, fox}));
+          std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,
+                                                corsika::particles::Code::Oxygen},
+          std::vector<float>{(float)1. - fox, fox}));
 
   universe.AddChild(std::move(theMedium));
 
@@ -272,8 +273,8 @@ int main() {
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.ShowResults();
-  const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
-  cout << "total energy (GeV): "
-       << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1. ) * 100 << endl;
+  const HEPEnergyType Efinal =
+      cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
+  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
+       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
 }
