@@ -74,25 +74,48 @@ TEST_CASE("Sibyll", "[processes]") {
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/particles/ParticleProperties.h>
 
+#include <corsika/environment/Environment.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/NuclearComposition.h>
+
 using namespace corsika::units::si;
 using namespace corsika::units;
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
-  auto const& cs =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+    // setup environment, geometry
+  corsika::environment::Environment env;
+  auto& universe = *(env.GetUniverse());
+
+  auto theMedium = corsika::environment::Environment::CreateNode<geometry::Sphere>(
+									 geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      1_km * std::numeric_limits<double>::infinity());
+
+  using MyHomogeneousModel =
+      corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
+  theMedium->SetModelProperties<MyHomogeneousModel>(
+      1_kg / (1_m * 1_m * 1_m),
+      corsika::environment::NuclearComposition(
+          std::vector<corsika::particles::Code>{corsika::particles::Code::Oxygen},
+          std::vector<float>{1.}));
+
+  universe.AddChild(std::move(theMedium));
+
+  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
+
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(
       cs, 0_m / second, 0_m / second, 1_m / second);
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
+  
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
     auto particle = stack.NewParticle();
     
-    Interaction model;
+    Interaction model(env);
     
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =

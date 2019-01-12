@@ -211,13 +211,15 @@ int main() {
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
+  // fraction of oxygen
+  const float fox = 0.20946;
   using MyHomogeneousModel =
       corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       corsika::environment::NuclearComposition(
-          std::vector<corsika::particles::Code>{corsika::particles::Code::Oxygen},
-          std::vector<float>{1.}));
+					       std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,corsika::particles::Code::Oxygen},
+					       std::vector<float>{(float)1.-fox, fox}));
 
   universe.AddChild(std::move(theMedium));
 
@@ -226,7 +228,7 @@ int main() {
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
-  corsika::process::sibyll::Interaction sibyll;
+  corsika::process::sibyll::Interaction sibyll(env);
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(8_GeV);
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
@@ -270,6 +272,8 @@ int main() {
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.ShowResults();
+  const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   cout << "total energy (GeV): "
-       << (cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy()) / 1_GeV << endl;
+       << Efinal / 1_GeV << endl
+       << "relative difference (%): " << (Efinal / E0 - 1. ) * 100 << endl;
 }
