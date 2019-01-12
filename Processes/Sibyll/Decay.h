@@ -169,7 +169,7 @@ namespace corsika::process {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
 
-	// TODO: this should be done in a central, common place. Not here..
+        // TODO: this should be done in a central, common place. Not here..
 #ifndef CORSIKA_OSX
         feenableexcept(FE_INVALID);
 #endif
@@ -185,7 +185,8 @@ namespace corsika::process {
         pin.SetMomentum(p.GetMomentum());
         // setting particle mass with Corsika values, may be inconsistent with sibyll
         // internal values
-	// TODO: #warning setting particle mass with Corsika values, may be inconsistent with sibyll internal values
+        // TODO: #warning setting particle mass with Corsika values, may be inconsistent
+        // with sibyll internal values
         pin.SetMass(corsika::particles::GetMass(pCode));
         // remember position
         Point decayPoint = p.GetPosition();
@@ -219,7 +220,7 @@ namespace corsika::process {
         // empty sibyll stack
         ss.Clear();
 
-	// TODO: this should be done in a central, common place. Not here..
+        // TODO: this should be done in a central, common place. Not here..
 #ifndef CORSIKA_OSX
         fedisableexcept(FE_INVALID);
 #endif
