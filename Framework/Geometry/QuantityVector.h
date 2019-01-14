@@ -29,8 +29,7 @@ namespace corsika::geometry {
 
   template <typename dim>
   class QuantityVector {
-  protected:
-    // todo: check if we need to move "quantity" into namespace corsika::units
+  public:
     using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity
                                                          // corresponding to the dimension
 

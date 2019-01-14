@@ -438,7 +438,7 @@ namespace phys {
     typedef dimensions<0, 0, 0, 0, 1, 0, 0, 0> thermodynamic_temperature_d;
     typedef dimensions<0, 0, 0, 0, 0, 1, 0, 0> amount_of_substance_d;
     typedef dimensions<0, 0, 0, 0, 0, 0, 1, 0> luminous_intensity_d;
-    typedef dimensions<0, 0, 0, 0, 0, 0, 0, 1> hepenergy_d;
+    typedef dimensions<0, 0, 0, 0, 0, 0, 0, 1> hepenergy_d; // this is not an SI unit !
 
     // Addition operators
 
