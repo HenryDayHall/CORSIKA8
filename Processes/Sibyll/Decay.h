@@ -21,8 +21,6 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
-#include <fenv.h>
-
 namespace corsika::process {
 
   namespace sibyll {
@@ -81,7 +79,7 @@ namespace corsika::process {
         // i.e. corsika::particles::ListOfParticles()
         for (auto& p : corsika2sibyll) {
           // std::cout << (int)p << std::endl;
-          const int sibCode = (int)p;
+          const int sibCode = static_cast<int>(p);
           // skip unknown and antiparticles
           if (sibCode < 1) continue;
           s_csydec_.idb[sibCode - 1] = -1 * abs(s_csydec_.idb[sibCode - 1]);
@@ -114,7 +112,7 @@ namespace corsika::process {
         }
         // set Leptons and Proton and Neutron stable
         // use stack to loop over particles
-        const std::vector<corsika::particles::Code> particleList = {
+        constexpr corsika::particles::Code particleList[] = {
             corsika::particles::Code::Proton,   corsika::particles::Code::Neutron,
             corsika::particles::Code::Electron, corsika::particles::Code::Positron,
             corsika::particles::Code::NuE,      corsika::particles::Code::NuEBar,
@@ -131,7 +129,7 @@ namespace corsika::process {
       }
 
       template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle& p) {
+      corsika::units::si::TimeType GetLifetime(Particle const& p) {
         using std::cout;
         using std::endl;
         using namespace corsika::units::si;
@@ -169,11 +167,6 @@ namespace corsika::process {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
 
-        // TODO: this should be done in a central, common place. Not here..
-#ifndef CORSIKA_OSX
-        feenableexcept(FE_INVALID);
-#endif
-
         fCount++;
         SibStack ss;
         ss.Clear();
@@ -189,8 +182,8 @@ namespace corsika::process {
         // with sibyll internal values
         pin.SetMass(corsika::particles::GetMass(pCode));
         // remember position
-        Point decayPoint = p.GetPosition();
-        TimeType t0 = p.GetTime();
+        Point const decayPoint = p.GetPosition();
+        TimeType const t0 = p.GetTime();
         // remove original particle from corsika stack
         p.Delete();
         // set all particles/hadrons unstable
@@ -219,11 +212,6 @@ namespace corsika::process {
         }
         // empty sibyll stack
         ss.Clear();
-
-        // TODO: this should be done in a central, common place. Not here..
-#ifndef CORSIKA_OSX
-        fedisableexcept(FE_INVALID);
-#endif
       }
     };
   } // namespace sibyll

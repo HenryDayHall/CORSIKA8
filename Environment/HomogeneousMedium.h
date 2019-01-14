@@ -19,6 +19,8 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <cassert>
+
 /**
  * a homogeneous medium
  */
@@ -41,30 +43,6 @@ namespace corsika::environment {
       return fDensity;
     }
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
-
-    corsika::particles::Code const& GetTarget(
-        std::vector<corsika::units::si::CrossSectionType>& sigma) const override {
-      using namespace corsika::units::si;
-      int i = -1;
-      corsika::units::si::CrossSectionType total_weighted_sigma = 0._mbarn;
-      std::vector<float> fractions;
-      for (auto w : fNuclComp.GetFractions()) {
-        i++;
-        std::cout << "HomogeneousMedium: fraction: " << w << std::endl;
-        total_weighted_sigma += w * sigma[i];
-        fractions.push_back(w * sigma[i] / 1_mbarn);
-      }
-
-      for (auto f : fractions) {
-        f = f / (total_weighted_sigma / 1_mbarn);
-        std::cout << "HomogeneousMedium: reweighted fraction: " << f << std::endl;
-      }
-      std::discrete_distribution channelDist(fractions.begin(), fractions.end());
-      static corsika::random::RNG& kRNG =
-          corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-      const int ichannel = channelDist(kRNG);
-      return fNuclComp.GetComponents()[ichannel];
-    }
 
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const&,
