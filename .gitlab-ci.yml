@@ -18,7 +18,9 @@ build:
     - cmake ..
     - cmake --build .
     - ctest -j4 -V >& test.log
-    - gzip -9 test.log
+    - gzip -9 -S .gz test.log
+    - ls
+    - pwd
   artifacts:
     paths:
       - build/test.log.gz
