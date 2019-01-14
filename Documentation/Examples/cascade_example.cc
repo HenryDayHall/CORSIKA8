@@ -229,6 +229,8 @@ int main() {
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
+  
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   corsika::process::sibyll::Interaction sibyll(env);
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(8_GeV);

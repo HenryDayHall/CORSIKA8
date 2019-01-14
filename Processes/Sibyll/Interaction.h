@@ -45,16 +45,13 @@ namespace corsika::process::sibyll {
       using std::cout;
       using std::endl;
 
-      corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
-      rmng.RegisterRandomStream("s_rndm");
-
       // initialize Sibyll
       sibyll_ini_();
     }
 
     std::tuple<corsika::units::si::CrossSectionType, int> GetCrossSection(
-        const corsika::particles::Code& BeamId, const corsika::particles::Code& TargetId,
-        const corsika::units::si::HEPEnergyType& CoMenergy) {
+        const corsika::particles::Code BeamId, const corsika::particles::Code TargetId,
+        const corsika::units::si::HEPEnergyType CoMenergy) {
       using namespace corsika::units::si;
       double sigProd, dummy, dum1, dum2, dum3, dum4;
       double dumdif[3];
@@ -67,19 +64,18 @@ namespace corsika::process::sibyll {
               "Sibyll target outside range. Only nuclei with A<18 are allowed.");
         sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy);
         return std::make_tuple(sigProd * 1_mbarn, iTarget);
+      } else if (TargetId == corsika::particles::Proton::GetCode()) {
+        sib_sigma_hp_(iBeam, dEcm, dum1, dum2, sigProd, dumdif, dum3, dum4);
+        return std::make_tuple(sigProd * 1_mbarn, 1);
       } else {
-        if (TargetId == corsika::particles::Proton::GetCode()) {
-          sib_sigma_hp_(iBeam, dEcm, dum1, dum2, sigProd, dumdif, dum3, dum4);
-          return std::make_tuple(sigProd * 1_mbarn, 1);
-        } else
-          // no interaction in sibyll possible, return infinite cross section? or throw?
-          sigProd = std::numeric_limits<double>::infinity();
+        // no interaction in sibyll possible, return infinite cross section? or throw?
+        sigProd = std::numeric_limits<double>::infinity();
         return std::make_tuple(sigProd * 1_mbarn, 0);
       }
     }
 
     template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&) {
+    corsika::units::si::GrammageType GetInteractionLength(Particle const& p, Track&) {
 
       using namespace corsika::units;
       using namespace corsika::units::si;
@@ -105,11 +101,13 @@ namespace corsika::process::sibyll {
 
       // total momentum and energy
       HEPEnergyType Elab = p.GetEnergy() + nucleon_mass;
-      MomentumVector Ptot(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-      Ptot += p.GetMomentum();
-      Ptot += pTarget;
+      MomentumVector pTotLab(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+      pTotLab += p.GetMomentum();
+      pTotLab += pTarget;
+      auto const pTotLabNorm = pTotLab.norm();
       // calculate cm. energy
-      const HEPEnergyType ECoM = sqrt(Elab * Elab - Ptot.squaredNorm());
+      const HEPEnergyType ECoM = sqrt(
+          (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
       std::cout << "Interaction: LambdaInt: \n"
                 << " input energy: " << p.GetEnergy() / 1_GeV << endl
@@ -136,7 +134,7 @@ namespace corsika::process::sibyll {
         // get weights of components from environment/medium
         const auto w = mediumComposition.GetFractions();
         // loop over components in medium
-        for (auto targetId : mediumComposition.GetComponents()) {
+        for (auto const targetId : mediumComposition.GetComponents()) {
           i++;
           cout << "Interaction: get interaction length for target: " << targetId << endl;
 
@@ -155,7 +153,7 @@ namespace corsika::process::sibyll {
 
         // calculate interaction length in medium
 #warning check interaction length units
-        GrammageType int_length =
+        GrammageType const int_length =
             avgTargetMassNumber * corsika::units::constants::u / weightedProdCrossSection;
         std::cout << "Interaction: "
                   << "interaction length (g/cm2): "
@@ -238,7 +236,7 @@ namespace corsika::process::sibyll {
 
         // sample target mass number
         const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
-        const auto mediumComposition =
+        const auto& mediumComposition =
             currentNode->GetModelProperties().GetNuclearComposition();
         // get cross sections for target materials
         /*
@@ -246,14 +244,18 @@ namespace corsika::process::sibyll {
           should be passed from GetInteractionLength if possible
          */
 #warning reading interaction cross section again, should not be necessary
-        std::vector<si::CrossSectionType> cross_section_of_components;
-        for (auto targetId : mediumComposition.GetComponents()) {
+        auto const& compVec = mediumComposition.GetComponents();
+        std::vector<si::CrossSectionType> cross_section_of_components(
+            mediumComposition.GetComponents().size());
+
+        for (size_t i = 0; i < compVec.size(); ++i) {
+          auto const targetId = compVec[i];
           const auto [sigProd, nNuc] = GetCrossSection(corsikaBeamId, targetId, Ecm);
-          cross_section_of_components.push_back(sigProd);
+          cross_section_of_components[i] = sigProd;
         }
 
-        const auto targetCode =
-            currentNode->GetModelProperties().GetTarget(cross_section_of_components);
+        const auto targetCode = currentNode->GetModelProperties().SampleTarget(
+            cross_section_of_components, fRNG);
         cout << "Interaction: target selected: " << targetCode << endl;
         /*
           FOR NOW: allow nuclei with A<18 or protons only.
@@ -336,6 +338,8 @@ namespace corsika::process::sibyll {
 
   private:
     corsika::environment::Environment const& fEnvironment;
+    corsika::random::RNG& fRNG =
+        corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
   };
 
 } // namespace corsika::process::sibyll

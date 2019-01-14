@@ -13,6 +13,8 @@
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
+#include <corsika/random/RNGManager.h>
+
 #include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/geometry/Point.h>
@@ -108,6 +110,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
       cs, 0_m / second, 0_m / second, 1_m / second);
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
+
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
 
   SECTION("InteractionInterface") {
 
