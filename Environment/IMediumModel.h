@@ -16,8 +16,8 @@
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
-#include <random>
 #include <corsika/units/PhysicalUnits.h>
+#include <random>
 
 namespace corsika::environment {
 
@@ -39,18 +39,19 @@ namespace corsika::environment {
         corsika::units::si::GrammageType) const = 0;
 
     virtual NuclearComposition const& GetNuclearComposition() const = 0;
-    
+
     template <class TRNG>
     corsika::particles::Code SampleTarget(
-        std::vector<corsika::units::si::CrossSectionType> const& sigma, TRNG& randomStream) const {
+        std::vector<corsika::units::si::CrossSectionType> const& sigma,
+        TRNG& randomStream) const {
       using namespace corsika::units::si;
-      
+
       auto const& nuclComp = GetNuclearComposition();
       auto const& fractions = nuclComp.GetFractions();
       assert(sigma.size() == fractions.size());
-      
+
       std::vector<float> weights(fractions.size());
-      
+
       for (size_t i = 0; i < fractions.size(); ++i) {
         std::cout << "HomogeneousMedium: fraction: " << fractions[i] << std::endl;
         weights[i] = fractions[i] * sigma[i].magnitude();

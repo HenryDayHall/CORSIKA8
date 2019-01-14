@@ -162,7 +162,7 @@ TEST_CASE("four vectors") {
      it merely provides the physical/mathematical wrapper around the
      data.
    */
-  
+
   SECTION("Use as wrapper") {
 
     TimeType T = 10_m / corsika::units::constants::c;
@@ -171,22 +171,23 @@ TEST_CASE("four vectors") {
     const TimeType T_c = 10_m / corsika::units::constants::c;
     const Vector<length_d> P_c(rootCS, {10_m, 5_m, 5_m});
 
-    //FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c); // this does not compile, and it shoudn't!
+    // FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c); // this does not compile,
+    // and it shoudn't!
     FourVector<TimeType&, Vector<length_d>&> p1(T, P);
     FourVector<const TimeType&, const Vector<length_d>&> p2(T, P);
     FourVector<const TimeType&, const Vector<length_d>&> p3(T_c, P_c);
-    
+
     std::cout << type_id_with_cvr<decltype(p1)>().pretty_name() << std::endl;
     std::cout << type_id_with_cvr<decltype(p2)>().pretty_name() << std::endl;
     std::cout << type_id_with_cvr<decltype(p3)>().pretty_name() << std::endl;
 
     p1 *= 10;
-    //p2 *= 10; // this does not compile, and it shoudn't !
-    //p3 *= 10; // this does not compile, and it shoudn't !!
-    
+    // p2 *= 10; // this does not compile, and it shoudn't !
+    // p3 *= 10; // this does not compile, and it shoudn't !!
+
     const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
-    REQUIRE(p1.GetNormSqr()/(1_m * 1_m) == Approx(10.*10. * check));
-    REQUIRE(p2.GetNorm()/1_m == Approx(10*sqrt(abs(check))));
-    REQUIRE(p3.GetNorm()/1_m == Approx(sqrt(abs(check))));
+    REQUIRE(p1.GetNormSqr() / (1_m * 1_m) == Approx(10. * 10. * check));
+    REQUIRE(p2.GetNorm() / 1_m == Approx(10 * sqrt(abs(check))));
+    REQUIRE(p3.GetNorm() / 1_m == Approx(sqrt(abs(check))));
   }
 }

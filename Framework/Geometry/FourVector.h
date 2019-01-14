@@ -43,11 +43,9 @@ namespace corsika::geometry {
         "(e.g. GeV) or [E/c]=[p]");
 
   public:
-
-  FourVector(const TimeType& eT, const SpaceVecType& eS)
+    FourVector(const TimeType& eT, const SpaceVecType& eS)
         : fTimeLike(eT)
-        , fSpaceLike(eS) {
-    }
+        , fSpaceLike(eS) {}
 
     TimeType GetTime() { return fTimeLike; }
 
@@ -137,21 +135,25 @@ namespace corsika::geometry {
 
     /// the friends: math operators
     template <typename T, typename U>
-      friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type> operator+(const FourVector<T, U>&, const FourVector<T, U>&);
+    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
+    operator+(const FourVector<T, U>&, const FourVector<T, U>&);
 
     template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type> operator-(const FourVector<T, U>&, const FourVector<T, U>&);
+    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
+    operator-(const FourVector<T, U>&, const FourVector<T, U>&);
 
     template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type> operator*(const FourVector<T, U>&, const double);
+    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
+    operator*(const FourVector<T, U>&, const double);
 
     template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type> operator/(const FourVector<T, U>&, const double);
+    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
+    operator/(const FourVector<T, U>&, const double);
   };
 
   /**
       The math operator+
-   */  
+   */
   template <typename TimeType, typename SpaceVecType>
   inline FourVector<typename std::decay<TimeType>::type,
                     typename std::decay<SpaceVecType>::type>
@@ -161,7 +163,7 @@ namespace corsika::geometry {
                       typename std::decay<SpaceVecType>::type>(
         a.fTimeLike + b.fTimeLike, a.fSpaceLike + b.fSpaceLike);
   }
-  
+
   /**
      The math operator-
   */
@@ -181,11 +183,10 @@ namespace corsika::geometry {
   template <typename TimeType, typename SpaceVecType>
   inline FourVector<typename std::decay<TimeType>::type,
                     typename std::decay<SpaceVecType>::type>
-  operator*(const FourVector<TimeType, SpaceVecType>& a,
-            const double b) {
+  operator*(const FourVector<TimeType, SpaceVecType>& a, const double b) {
     return FourVector<typename std::decay<TimeType>::type,
-                      typename std::decay<SpaceVecType>::type>(
-        a.fTimeLike * b, a.fSpaceLike * b);
+                      typename std::decay<SpaceVecType>::type>(a.fTimeLike * b,
+                                                               a.fSpaceLike * b);
   }
 
   /**
@@ -194,11 +195,10 @@ namespace corsika::geometry {
   template <typename TimeType, typename SpaceVecType>
   inline FourVector<typename std::decay<TimeType>::type,
                     typename std::decay<SpaceVecType>::type>
-  operator/(const FourVector<TimeType, SpaceVecType>& a,
-            const double b) {
+  operator/(const FourVector<TimeType, SpaceVecType>& a, const double b) {
     return FourVector<typename std::decay<TimeType>::type,
-                      typename std::decay<SpaceVecType>::type>(
-        a.fTimeLike / b, a.fSpaceLike / b);
+                      typename std::decay<SpaceVecType>::type>(a.fTimeLike / b,
+                                                               a.fSpaceLike / b);
   }
 
 } // namespace corsika::geometry

@@ -95,14 +95,6 @@ namespace phys {
       QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
                                        magnitude(corsika::units::constants::barn))
 
-      /**
-       * add additional literals missing in the original library:
-       *
-       */
-
-      QUANTITY_DEFINE_SCALING_LITERALS(gram, mass_d, 1e-3)
-
-
     } // namespace literals
   }   // namespace units
 } // namespace phys
