@@ -138,7 +138,8 @@ namespace corsika::process {
 
     template <typename Particle, typename Stack>
     EProcessReturn SelectInteraction(
-        Particle& p, Stack& s, [[maybe_unused]]corsika::units::si::InverseGrammageType lambda_select,
+        Particle& p, Stack& s,
+        [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
 
       if constexpr (is_process_sequence<T1type>::value) {
@@ -204,9 +205,10 @@ namespace corsika::process {
 
     // select decay process
     template <typename Particle, typename Stack>
-    EProcessReturn SelectDecay(Particle& p, Stack& s,
-                               [[maybe_unused]] corsika::units::si::InverseTimeType decay_select,
-                               corsika::units::si::InverseTimeType& decay_inv_count) {
+    EProcessReturn SelectDecay(
+        Particle& p, Stack& s,
+        [[maybe_unused]] corsika::units::si::InverseTimeType decay_select,
+        corsika::units::si::InverseTimeType& decay_inv_count) {
       if constexpr (is_process_sequence<T1>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret = A.SelectDecay(p, s, decay_select, decay_inv_count);

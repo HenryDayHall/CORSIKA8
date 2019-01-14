@@ -26,7 +26,6 @@ using boost::typeindex::type_id_with_cvr;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
-
 TEST_CASE("four vectors") {
 
   // this is just needed as a baseline
@@ -112,7 +111,7 @@ TEST_CASE("four vectors") {
   /**
      Testing the math operators
    */
-  
+
   SECTION("Operators and comutions") {
 
     HEPEnergyType E1 = 100_GeV;
@@ -147,41 +146,47 @@ TEST_CASE("four vectors") {
 
     SECTION("scale") {
       double s = 10;
-      FourVector p3 = p1*s;
+      FourVector p3 = p1 * s;
       REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100. * s * s)));
       p3 /= 10;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100. )));
+      REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100.)));
       REQUIRE(p1.GetNorm() / 1_GeV == Approx(100.));
       REQUIRE(p2.GetNorm() / 1_GeV == Approx(10.));
     }
   }
 
-  /*
+  /**
+     The FourVector class can be used with reference template
+     arguments. In this configuration it does not hold any data
+     itself, but rather just refers to data located elsewhere. Thus,
+     it merely provides the physical/mathematical wrapper around the
+     data.
+   */
+  
   SECTION("Use as wrapper") {
 
-    TimeType T1 = 10_m / corsika::units::constants::c;
-    Vector<length_d> P1(rootCS, {10_m, 5_m, 5_m});
+    TimeType T = 10_m / corsika::units::constants::c;
+    Vector<length_d> P(rootCS, {10_m, 5_m, 5_m});
 
-    const TimeType T2 = 10_m / corsika::units::constants::c;
-    const Vector<length_d> P2(rootCS, {10_m, 5_m, 5_m});
+    const TimeType T_c = 10_m / corsika::units::constants::c;
+    const Vector<length_d> P_c(rootCS, {10_m, 5_m, 5_m});
 
-    FourVector p1(T1, P1);
-    FourVector p2(T2, P2);
-    FourVector p3(TimeType(10_m/corsika::units::constants::c), Vector<length_d>(rootCS,
-  {10_m,10_m,10_m}));
-
+    //FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c); // this does not compile, and it shoudn't!
+    FourVector<TimeType&, Vector<length_d>&> p1(T, P);
+    FourVector<const TimeType&, const Vector<length_d>&> p2(T, P);
+    FourVector<const TimeType&, const Vector<length_d>&> p3(T_c, P_c);
+    
     std::cout << type_id_with_cvr<decltype(p1)>().pretty_name() << std::endl;
     std::cout << type_id_with_cvr<decltype(p2)>().pretty_name() << std::endl;
     std::cout << type_id_with_cvr<decltype(p3)>().pretty_name() << std::endl;
 
+    p1 *= 10;
+    //p2 *= 10; // this does not compile, and it shoudn't !
+    //p3 *= 10; // this does not compile, and it shoudn't !!
+    
     const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
-    REQUIRE(p1.GetNormSqr() == check * 1_m * 1_m);
-    REQUIRE(p2.GetNormSqr() == check * 1_m * 1_m);
-    REQUIRE(p3.GetNormSqr() == check * 1_m * 1_m);
-
-    REQUIRE(p1.GetNorm() == sqrt(abs(check)) * 1_m);
-    REQUIRE(p2.GetNorm() == sqrt(abs(check)) * 1_m);
-    REQUIRE(p3.GetNorm() == sqrt(abs(check)) * 1_m);
+    REQUIRE(p1.GetNormSqr()/(1_m * 1_m) == Approx(10.*10. * check));
+    REQUIRE(p2.GetNorm()/1_m == Approx(10*sqrt(abs(check))));
+    REQUIRE(p3.GetNorm()/1_m == Approx(sqrt(abs(check))));
   }
-  */
 }

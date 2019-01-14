@@ -14,13 +14,13 @@
 
 #include <corsika/process/InteractionProcess.h>
 
+#include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/process/sibyll/SibStack.h>
 #include <corsika/process/sibyll/sibyll2.3c.h>
-#include <corsika/utl/COMBoost.h>
-#include <corsika/particles/ParticleProperties.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/utl/COMBoost.h>
 
 namespace corsika::process::sibyll {
 
@@ -186,7 +186,7 @@ namespace corsika::process::sibyll {
 
         // FOR NOW: target is always at rest
         auto constexpr nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
-                                         corsika::particles::Neutron::GetMass());
+                                             corsika::particles::Neutron::GetMass());
         const auto Etarget = 0_GeV + nucleon_mass;
         const auto pTarget = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
         cout << "target momentum (GeV/c): " << pTarget.GetComponents() / 1_GeV << endl;
@@ -226,26 +226,27 @@ namespace corsika::process::sibyll {
         std::cout << "Interaction: "
                   << " DoDiscrete: gambet:" << gambet.GetComponents() << endl;
 
-	auto const pProjectileLab = p.GetMomentum();
-	//{rootCS, {0_GeV / c, 1_PeV / c, 0_GeV / c}};
-	HEPEnergyType const eProjectileLab = p.GetEnergy();
-	  //energy(projectileMass, pProjectileLab);
+        auto const pProjectileLab = p.GetMomentum();
+        //{rootCS, {0_GeV / c, 1_PeV / c, 0_GeV / c}};
+        HEPEnergyType const eProjectileLab = p.GetEnergy();
+        // energy(projectileMass, pProjectileLab);
 
-	// define target kinematics in lab frame
-	HEPMassType const targetMass = nucleon_mass;
-	// define boost to com frame
-	COMBoost const boost(eProjectileLab, pProjectileLab, targetMass);
+        // define target kinematics in lab frame
+        HEPMassType const targetMass = nucleon_mass;
+        // define boost to com frame
+        COMBoost const boost(eProjectileLab, pProjectileLab, targetMass);
 
-	cout << "Interaction: new boost: ebeam lab: " << eProjectileLab / 1_GeV << endl
-	     << "Interaction: new boost: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV << endl;
+        cout << "Interaction: new boost: ebeam lab: " << eProjectileLab / 1_GeV << endl
+             << "Interaction: new boost: pbeam lab: "
+             << pProjectileLab.GetComponents() / 1_GeV << endl;
 
-	// boost projecticle
-	auto const [eProjectileCoM, pProjectileCoM] =
-	  boost.toCoM(eProjectileLab, pProjectileLab);
+        // boost projecticle
+        auto const [eProjectileCoM, pProjectileCoM] =
+            boost.toCoM(eProjectileLab, pProjectileLab);
 
-	cout << "Interaction: new boost: ebeam com: " << eProjectileCoM / 1_GeV << endl
-	     << "Interaction: new boost: pbeam com: " << pProjectileCoM / 1_GeV << endl;
-	
+        cout << "Interaction: new boost: ebeam com: " << eProjectileCoM / 1_GeV << endl
+             << "Interaction: new boost: pbeam com: " << pProjectileCoM / 1_GeV << endl;
+
         int kBeam = process::sibyll::ConvertToSibyllRaw(p.GetPID());
 
         std::cout << "Interaction: "
