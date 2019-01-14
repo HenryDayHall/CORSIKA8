@@ -259,39 +259,6 @@ namespace corsika::process {
     return ProcessSequence<P1, P2>(A.GetRef(), B.GetRef());
   }
 
-  /* #define OPSEQ(C1, C2) \ */
-  /*   template < \ */
-  /*       typename P1, typename P2, \ */
-  /*       typename std::enable_if<is_process<typename std::decay<P1>::type>::value &&
-   * \ */
-  /*                               is_process<typename
-   * std::decay<P2>::type>::value>::type...> \ */
-  /*   inline auto operator+(P1&& A, P2&& B)->ProcessSequence<P1, P2> { \ */
-  /*     return ProcessSequence<P1, P2>(A.GetRef(), B.GetRef()); \ */
-  /*   } */
-
-  /*   /\*template <typename T1, typename T2>				\ */
-  /* inline ProcessSequence<T1, T2> operator%(C1<T1>& A, C2<T2>& B) {	\ */
-  /* return ProcessSequence<T1, T2>(A.GetRef(), B.GetRef());	\ */
-  /* }*\/ */
-
-  /*   OPSEQ(BaseProcess, BaseProcess) */
-  /*   OPSEQ(BaseProcess, InteractionProcess) */
-  /*   OPSEQ(BaseProcess, ContinuousProcess) */
-  /*   OPSEQ(BaseProcess, DecayProcess) */
-  /*   OPSEQ(ContinuousProcess, BaseProcess) */
-  /*   OPSEQ(ContinuousProcess, InteractionProcess) */
-  /*   OPSEQ(ContinuousProcess, ContinuousProcess) */
-  /*   OPSEQ(ContinuousProcess, DecayProcess) */
-  /*   OPSEQ(InteractionProcess, BaseProcess) */
-  /*   OPSEQ(InteractionProcess, InteractionProcess) */
-  /*   OPSEQ(InteractionProcess, ContinuousProcess) */
-  /*   OPSEQ(InteractionProcess, DecayProcess) */
-  /*   OPSEQ(DecayProcess, BaseProcess) */
-  /*   OPSEQ(DecayProcess, InteractionProcess) */
-  /*   OPSEQ(DecayProcess, ContinuousProcess) */
-  /*   OPSEQ(DecayProcess, DecayProcess) */
-
   /// marker to identify objectas ProcessSequence
   template <typename A, typename B>
   struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
