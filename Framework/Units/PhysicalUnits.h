@@ -102,12 +102,12 @@ namespace phys {
 
       QUANTITY_DEFINE_SCALING_LITERALS(gram, mass_d, 1e-3)
 
-	/*
-      QUANTITY_DEFINE_LITERALS(meter, length_d)
-      QUANTITY_DEFINE_LITERALS(second, time_interval_d)
-      QUANTITY_DEFINE_LITERALS(ampere, electric_current_d)
-      QUANTITY_DEFINE_LITERALS(Kelvin, thermodynamic_temperature_d)
-	*/
+      /*
+    QUANTITY_DEFINE_LITERALS(meter, length_d)
+    QUANTITY_DEFINE_LITERALS(second, time_interval_d)
+    QUANTITY_DEFINE_LITERALS(ampere, electric_current_d)
+    QUANTITY_DEFINE_LITERALS(Kelvin, thermodynamic_temperature_d)
+      */
 
     } // namespace literals
   }   // namespace units
