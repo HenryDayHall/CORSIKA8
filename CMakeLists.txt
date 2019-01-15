@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
 set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_EXTENSIONS OFF)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
 
