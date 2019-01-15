@@ -31,10 +31,11 @@
 
 #include <corsika/random/RNGManager.h>
 
+#include <corsika/utl/CorsikaFenv.h>
+
 #include <boost/type_index.hpp>
 using boost::typeindex::type_id_with_cvr;
 
-#include <fenv.h>
 #include <iostream>
 #include <limits>
 #include <typeinfo>

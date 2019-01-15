@@ -2,13 +2,14 @@
 set (
   UTILITIES_SOURCES  
   COMBoost.cc
-  )
+  CorsikaFenv.cc)
 
 set (
   UTILITIES_HEADERS
   COMBoost.h
   Bit.h
   Singleton.h
+  CorsikaFenv.h
   )
 
 set (
@@ -58,5 +59,13 @@ target_link_libraries (
   CORSIKAutilities
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testCOMBoost)
 
+add_executable (testCorsikaFenv testCorsikaFenv.cc)
+
+target_link_libraries (
+  testCorsikaFenv
+  CORSIKAutilities
+  CORSIKAthirdparty # for catch2
+)
+CORSIKA_ADD_TEST(testCOMBoost)
+add_test(testCorsikaFenv testCorsikaFenv)
