@@ -31,6 +31,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAsetup
+  CORSIKAlogging
   )
 
 target_include_directories (
