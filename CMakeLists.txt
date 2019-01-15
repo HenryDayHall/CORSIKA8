@@ -44,11 +44,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neit
 # clang produces a lot of unecessary warnings without this:
 add_compile_options("$<$<CXX_COMPILER_ID:Clang>:-Wno-nonportable-include-path>") 
 
-# check if we are on OSX:
-if (APPLE)
-  add_compile_definitions (CORSIKA_OSX)
-endif (APPLE)
-
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
 ##set(COVERAGE_LCOV_EXCLUDES 'Documentation/*')
