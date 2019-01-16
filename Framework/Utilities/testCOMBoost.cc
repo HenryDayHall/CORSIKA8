@@ -12,7 +12,9 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
+#include <corsika/geometry/FourVector.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 #include <iostream>
@@ -43,6 +45,7 @@ TEST_CASE("boosts") {
   HEPMassType const projectileMass = 1._GeV;
   Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 1_PeV, 0_GeV}};
   HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+  const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
   // define target kinematics in lab frame
   HEPMassType const targetMass = 1_GeV;
@@ -50,32 +53,34 @@ TEST_CASE("boosts") {
   HEPEnergyType const eTargetLab = energy(targetMass, pTargetLab);
 
   // define boost to com frame
-  COMBoost boost(eProjectileLab, pProjectileLab, targetMass);
+  COMBoost boost(PprojLab, FourVector(targetMass, pTargetLab));
 
   // boost projecticle
-  auto const [eProjectileCoM, pProjectileCoM] =
-      boost.toCoM(eProjectileLab, pProjectileLab);
+  auto const PprojCoM = boost.toCoM(PprojLab);
 
   // boost target
-  auto const [eTargetCoM, pTargetCoM] = boost.toCoM(eTargetLab, pTargetLab);
+  auto const PtargCoM = boost.toCoM(FourVector(targetMass, pTargetLab));
 
   // sum of momenta in CoM, should be 0
-  auto const sumPCoM = pProjectileCoM + pTargetCoM;
-  CHECK(sumPCoM[2] / 1_GeV == Approx(0).margin(absMargin));
+  auto const sumPCoM =
+      PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
+  CHECK(sumPCoM.norm() / 1_GeV == Approx(0).margin(absMargin));
 
   // mandelstam-s should be invariant under transformation
   CHECK(s(eProjectileLab + eTargetLab,
           pProjectileLab.GetComponents() + pTargetLab.GetComponents()) /
             1_GeV / 1_GeV ==
-        Approx(s(eProjectileCoM + eTargetCoM, pProjectileCoM + pTargetCoM) / 1_GeV /
-               1_GeV));
+        Approx(s(PprojCoM.GetTimeLikeComponent() + PtargCoM.GetTimeLikeComponent(),
+                 PprojCoM.GetSpaceLikeComponents().GetComponents() +
+                     PtargCoM.GetSpaceLikeComponents().GetComponents()) /
+               1_GeV / 1_GeV));
 
   // boost back...
-  auto const [eProjectileBack, pProjectileBack] =
-      boost.fromCoM(eProjectileCoM, pProjectileCoM);
+  auto const PprojBack = boost.fromCoM(PprojCoM);
 
   // ...should yield original values before the boosts
-  CHECK(eProjectileBack / eProjectileLab == Approx(1));
-  CHECK((pProjectileBack - pProjectileLab).norm() / pProjectileLab.norm() ==
+  CHECK(PprojBack.GetTimeLikeComponent() / PprojLab.GetTimeLikeComponent() == Approx(1));
+  CHECK((PprojBack.GetSpaceLikeComponents() - PprojLab.GetSpaceLikeComponents()).norm() /
+            PprojLab.GetSpaceLikeComponents().norm() ==
         Approx(0).margin(absMargin));
 }

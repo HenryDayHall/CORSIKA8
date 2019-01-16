@@ -8,16 +8,20 @@
  * the license.
  */
 
+#include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/Vector.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 
 using namespace corsika::utl;
 using namespace corsika::units::si;
 
-COMBoost::COMBoost(HEPEnergyType eProjectile, COMBoost::MomentumVector const& pProjectile,
-                   HEPMassType mTarget)
+template <typename FourVector>
+COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const FourVector& Ptarget)
     : fRotation(Eigen::Matrix3d::Identity())
-    , fCS(pProjectile.GetCoordinateSystem()) {
+    , fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
   // calculate matrix for rotating pProjectile to z-axis first
+  auto const pProjectile = Pprojectile.GetSpaceLikeComponents();
   auto const pProjNorm = pProjectile.norm();
   auto const a = (pProjectile / pProjNorm).GetComponents().eVector;
 
@@ -37,47 +41,76 @@ COMBoost::COMBoost(HEPEnergyType eProjectile, COMBoost::MomentumVector const& pP
   }
 
   // calculate boost
-  double const x = pProjNorm / (eProjectile + mTarget);
+  double const beta =
+      pProjNorm / (Pprojectile.GetTimeLikeComponent() + Ptarget.GetTimeLikeComponent());
 
-  /* Accurracy matters here, x = 1 - epsilon for ultra-relativistic boosts */
-  double const coshEta = 1 / std::sqrt((1 + x) * (1 - x));
-  //~ double const coshEta = 1 / std::sqrt((1-x*x));
-  double const sinhEta = -x * coshEta;
+  /* Accurracy matters here, beta = 1 - epsilon for ultra-relativistic boosts */
+  double const coshEta = 1 / std::sqrt((1 + beta) * (1 - beta));
+  //~ double const coshEta = 1 / std::sqrt((1-beta*beta));
+  double const sinhEta = -beta * coshEta;
 
+  std::cout << "COMBoost (1-beta)=" << 1-beta << " gamma=" << coshEta << std::endl;
+  
   fBoost << coshEta, sinhEta, sinhEta, coshEta;
 
   fInverseBoost << coshEta, -sinhEta, -sinhEta, coshEta;
 }
 
-std::tuple<HEPEnergyType, corsika::geometry::QuantityVector<hepmomentum_d>>
-COMBoost::toCoM(HEPEnergyType E, COMBoost::MomentumVector p) const {
-  corsika::geometry::QuantityVector<hepmomentum_d> pComponents = p.GetComponents(fCS);
+template <typename FourVector>
+FourVector COMBoost<FourVector>::toCoM(const FourVector& p) const {
+  auto pComponents = p.GetSpaceLikeComponents().GetComponents(fCS);
   Eigen::Vector3d eVecRotated = fRotation * pComponents.eVector;
   Eigen::Vector2d lab;
 
-  lab << (E * (1 / 1_GeV)), (eVecRotated(2) * (1 / 1_GeV).magnitude());
+  lab << (p.GetTimeLikeComponent() * (1 / 1_GeV)),
+      (eVecRotated(2) * (1 / 1_GeV).magnitude());
 
   auto const boostedZ = fBoost * lab;
   auto const E_CoM = boostedZ(0) * 1_GeV;
 
   eVecRotated(2) = boostedZ(1) * (1_GeV).magnitude();
 
-  return std::make_tuple(E_CoM,
-                         corsika::geometry::QuantityVector<hepmomentum_d>{eVecRotated});
+  return FourVector(E_CoM, corsika::geometry::Vector<hepmomentum_d>(fCS, eVecRotated));
 }
 
-std::tuple<HEPEnergyType, COMBoost::MomentumVector> COMBoost::fromCoM(
-    HEPEnergyType E,
-    corsika::geometry::QuantityVector<units::si::hepmomentum_d> pCoM) const {
+template <typename FourVector>
+FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
   Eigen::Vector2d com;
-  com << (E * (1 / 1_GeV)), (pCoM.eVector(2) * (1 / 1_GeV).magnitude());
+  com << (p.GetTimeLikeComponent() * (1 / 1_GeV)),
+      (p.GetSpaceLikeComponents().GetComponents().eVector(2) * (1 / 1_GeV).magnitude());
 
+  std::cout << "COMBoost::fromCoM Ecm=" << p.GetTimeLikeComponent() / 1_GeV << "GeV, "
+	    << " pcm=" << p.GetSpaceLikeComponents().GetComponents() / 1_GeV << "GeV" << std::endl;
+  
   auto const boostedZ = fInverseBoost * com;
-  auto const E_CoM = boostedZ(0) * 1_GeV;
+  auto const E_lab = boostedZ(0) * 1_GeV;
 
-  auto pLab = pCoM;
+  auto pLab = p.GetSpaceLikeComponents().GetComponents();
   pLab.eVector(2) = boostedZ(1) * (1_GeV).magnitude();
   pLab.eVector = fRotation.transpose() * pLab.eVector;
 
-  return std::make_tuple(E_CoM, MomentumVector(fCS, pLab));
+  std::cout << "COMBoost::fromCoM --> Elab=" << E_lab / 1_GeV << "GeV, "
+	    << " pcm=" << pLab / 1_GeV << "GeV" << std::endl;
+
+  return FourVector(E_lab, corsika::geometry::Vector(fCS, pLab));
 }
+
+/*
+  Here we instantiate all physically meaningful versions of COMBoost
+ */
+
+#include <corsika/geometry/FourVector.h>
+
+namespace corsika::utl {
+
+  using corsika::geometry::FourVector;
+  using corsika::geometry::Vector;
+  using namespace corsika::units;
+
+  // for normal HEP energy/momentum units in [GeV]
+  template class COMBoost<FourVector<HEPEnergyType, Vector<hepmomentum_d>>>;
+  // template class COMBoost<FourVector<HEPEnergyType&, Vector<hepmomentum_d>&>>;
+
+  // template class COMBoost<FourVector<TimeType, Vector<length_d>>>;
+  // template class COMBoost<FourVector<TimeType&, Vector<length_d>&>>;
+} // namespace corsika::utl

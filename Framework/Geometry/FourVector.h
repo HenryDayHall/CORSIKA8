@@ -33,7 +33,7 @@ namespace corsika::geometry {
   public:
     using SpaceType = typename std::decay<SpaceVecType>::type::Quantity;
 
-    /// check the types and the physical units here:
+    //! check the types and the physical units here:
     static_assert(
         std::is_same<typename std::decay<TimeType>::type, SpaceType>::value ||
             std::is_same<typename std::decay<TimeType>::type,
@@ -47,7 +47,9 @@ namespace corsika::geometry {
         : fTimeLike(eT)
         , fSpaceLike(eS) {}
 
-    TimeType GetTime() { return fTimeLike; }
+    TimeType GetTimeLikeComponent() const { return fTimeLike; }
+    SpaceVecType& GetSpaceLikeComponents() { return fSpaceLike; }
+    const SpaceVecType& GetSpaceLikeComponents() const { return fSpaceLike; }
 
     auto GetNormSqr() const { return GetTimeSquared() - fSpaceLike.squaredNorm(); }
 
@@ -55,15 +57,15 @@ namespace corsika::geometry {
 
     bool IsTimelike() const {
       return GetTimeSquared() < fSpaceLike.squaredNorm();
-    } /// Norm2 < 0
+    } //! Norm2 < 0
 
     bool IsSpacelike() const {
       return GetTimeSquared() > fSpaceLike.squaredNorm();
-    } /// Norm2 > 0
+    } //! Norm2 > 0
 
     bool IsPhotonlike() const {
       return GetTimeSquared() == fSpaceLike.squaredNorm();
-    } /// Norm2 == 0
+    } //! Norm2 == 0
 
     FourVector& operator+=(const FourVector& b) {
       fTimeLike += b.fTimeLike;
@@ -129,11 +131,11 @@ namespace corsika::geometry {
     }
 
   protected:
-    /// the data members
+    //! the data members
     TimeType fTimeLike;
     SpaceVecType fSpaceLike;
 
-    /// the friends: math operators
+    //! the friends: math operators
     template <typename T, typename U>
     friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
     operator+(const FourVector<T, U>&, const FourVector<T, U>&);
