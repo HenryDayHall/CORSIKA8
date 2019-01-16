@@ -63,15 +63,15 @@ TEST_CASE("four vectors") {
 
     CHECK(p0.IsSpacelike());
     CHECK(!p0.IsTimelike());
-    CHECK(!p0.IsPhotonlike());
+    //CHECK(!p0.IsPhotonlike());
 
     CHECK(!p1.IsSpacelike());
     CHECK(p1.IsTimelike());
-    CHECK(!p1.IsPhotonlike());
+    //CHECK(!p1.IsPhotonlike());
 
     CHECK(!p2.IsSpacelike());
     CHECK(!p2.IsTimelike());
-    CHECK(p2.IsPhotonlike());
+    //CHECK(p2.IsPhotonlike());
   }
 
   /*

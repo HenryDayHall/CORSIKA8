@@ -63,9 +63,11 @@ namespace corsika::geometry {
       return GetTimeSquared() > fSpaceLike.squaredNorm();
     } //! Norm2 > 0
 
+    /* this is not numerically stable
     bool IsPhotonlike() const {
       return GetTimeSquared() == fSpaceLike.squaredNorm();
     } //! Norm2 == 0
+    */
 
     FourVector& operator+=(const FourVector& b) {
       fTimeLike += b.fTimeLike;
