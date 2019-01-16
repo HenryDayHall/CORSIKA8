@@ -12,6 +12,7 @@
 #define _include_corsika_utilties_comboost_h_
 
 #include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/units/PhysicalUnits.h>
 
 #include <Eigen/Dense>
 
@@ -29,8 +30,8 @@ namespace corsika::utl {
     corsika::geometry::CoordinateSystem const& fCS;
 
   public:
-    //! construct a COMBoost given energy and momentum of projectile and mass of target
-    COMBoost(const FourVector& Pprojectile, const FourVector& Ptarget);
+    //! construct a COMBoost given four-vector of prjectile and mass of target
+    COMBoost(const FourVector& Pprojectile, const corsika::units::si::HEPEnergyType massTarget);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     FourVector toCoM(const FourVector& p) const;

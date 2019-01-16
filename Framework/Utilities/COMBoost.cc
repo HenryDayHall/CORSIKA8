@@ -17,7 +17,7 @@ using namespace corsika::utl;
 using namespace corsika::units::si;
 
 template <typename FourVector>
-COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const FourVector& Ptarget)
+COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const HEPMassType massTarget)
     : fRotation(Eigen::Matrix3d::Identity())
     , fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
   // calculate matrix for rotating pProjectile to z-axis first
@@ -42,7 +42,7 @@ COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const FourVector& 
 
   // calculate boost
   double const beta =
-      pProjNorm / (Pprojectile.GetTimeLikeComponent() + Ptarget.GetTimeLikeComponent());
+    pProjNorm / (Pprojectile.GetTimeLikeComponent() + massTarget);
 
   /* Accurracy matters here, beta = 1 - epsilon for ultra-relativistic boosts */
   double const coshEta = 1 / std::sqrt((1 + beta) * (1 - beta));

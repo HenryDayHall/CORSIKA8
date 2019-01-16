@@ -218,7 +218,7 @@ namespace corsika::process::sibyll {
         // define target kinematics in lab frame
         // define boost to and from CoM frame
         // CoM frame definition in Sibyll projectile: +z
-        COMBoost const boost(PprojLab, PtargLab);
+        COMBoost const boost(PprojLab, nucleon_mass);
 
         // just for show:
         // boost projecticle

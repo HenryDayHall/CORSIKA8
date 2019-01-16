@@ -31,12 +31,13 @@ TEST_CASE("boosts") {
   CoordinateSystem& rootCS =
       RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
+  // helper function for energy-momentum
   // relativistic energy
   auto energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
     return sqrt(m * m + p.squaredNorm());
   };
-
-  // mandelstam-s
+  
+  // helper function for mandelstam-s
   auto s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
     return E * E - p.squaredNorm();
   };
@@ -46,6 +47,10 @@ TEST_CASE("boosts") {
   Vector<hepmomentum_d> pTargetLab{rootCS, {0_eV, 0_eV, 0_eV}};
   HEPEnergyType const eTargetLab = energy(targetMass, pTargetLab);
 
+  /*
+    General tests check the interface and basic operation
+   */
+  
   SECTION("General tests") {
 
     // define projectile kinematics in lab frame
@@ -55,7 +60,7 @@ TEST_CASE("boosts") {
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
-    COMBoost boost(PprojLab, FourVector(targetMass, pTargetLab));
+    COMBoost boost(PprojLab, targetMass);
 
     // boost projecticle
     auto const PprojCoM = boost.toCoM(PprojLab);
@@ -89,6 +94,10 @@ TEST_CASE("boosts") {
         Approx(0).margin(absMargin));
   }
 
+  /*
+    special case: projectile along -z
+   */
+
   SECTION("Test boost along z-axis") {
 
     // define projectile kinematics in lab frame
@@ -98,7 +107,7 @@ TEST_CASE("boosts") {
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
-    COMBoost boost(PprojLab, FourVector(targetMass, pTargetLab));
+    COMBoost boost(PprojLab, targetMass);
 
     // boost projecticle
     auto const PprojCoM = boost.toCoM(PprojLab);
@@ -112,6 +121,10 @@ TEST_CASE("boosts") {
     CHECK(sumPCoM.norm() / 1_GeV == Approx(0).margin(absMargin));
   }
 
+  /*
+    special case: projectile with arbitrary direction
+   */
+  
   SECTION("Test boost along tilted axis") {
 
     const HEPMomentumType P0 = 1_PeV;
@@ -131,7 +144,7 @@ TEST_CASE("boosts") {
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
-    COMBoost boost(PprojLab, FourVector(targetMass, pTargetLab));
+    COMBoost boost(PprojLab, targetMass);
 
     // boost projecticle
     auto const PprojCoM = boost.toCoM(PprojLab);
@@ -145,6 +158,10 @@ TEST_CASE("boosts") {
     CHECK(sumPCoM.norm() / 1_GeV == Approx(0).margin(absMargin));
   }
 
+  /*
+    test the ultra-high energy behaviour: E=ZeV
+   */
+  
   SECTION("High energy") {
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1_GeV;
@@ -154,7 +171,7 @@ TEST_CASE("boosts") {
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
-    COMBoost boost(PprojLab, FourVector(targetMass, pTargetLab));
+    COMBoost boost(PprojLab, targetMass);
 
     // boost projecticle
     auto const PprojCoM = boost.toCoM(PprojLab);
