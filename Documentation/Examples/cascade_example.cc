@@ -245,7 +245,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const HEPEnergyType E0 = 1000_TeV;
+  const HEPEnergyType E0 = 100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
   {
