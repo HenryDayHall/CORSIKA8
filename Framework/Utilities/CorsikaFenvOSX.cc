@@ -1,11 +1,5 @@
 /**
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
- *
- * This software is distributed under the terms of the GNU General Public
- * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
- * the license.
+ * Import public domain code
  *
  * Provide portable or fallback versions of feenableexcept() and fedisableexcept()
  * Exist by default in glibc since version 2.2, but not in the standard
@@ -19,11 +13,7 @@
 #include <corsika/utl/CorsikaFenv.h>
 #include <cfenv>
 
-#if defined(__GLIBC__)
-// do nothing functions exist
-
-#elif defined(__APPLE__) && defined(__MACH__)
-// Implementation of OS X on intel X64_86
+// Implementation for OS X on intel X64_86
 // code from https://stackoverflow.com/questions/37819235/how-do-you-enable-floating-point-exceptions-for-clang-in-os-x
 // based on http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c
 
@@ -68,23 +58,3 @@ extern "C" {
   }
 
 }
-
-#else
-// unknown environment, dummy implementations
-
-extern "C" {
-#warning No enabling/disabling of floating point exceptions
-
-  int feenableexcept(int excepts)
-  {
-    return -1;
-  }
-
-  int fedisableexcept(int excepts)
-  {
-    return -1;
-  }
-
-}
-
-#endif

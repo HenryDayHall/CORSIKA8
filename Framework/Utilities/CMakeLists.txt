@@ -1,8 +1,26 @@
+#
+# cfenv feature test - select implementation to use
+#
+try_compile (HAS_FEENABLEEXCEPT "${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/try_feenableexcept.cc")
+if (HAS_FEENABLEEXCEPT)
+  set (CORSIKA_FENV "CorsikaFenvDefault.cc")
+  set_property(DIRECTORY ${CMAKE_HOME_DIRECTORY} APPEND PROPERTY COMPILE_DEFINITIONS "HAS_FEENABLEEXCEPT")
+else ()
+  if (APPLE)
+    set (CORSIKA_FENV "CorsikaFenvOSX.cc")
+  else()
+    set (CORSIKA_FENV "CorsikaFenvFallback.cc")
+  endif()
+endif ()
 
+
+#
+# library setup
+#
 set (
   UTILITIES_SOURCES  
   COMBoost.cc
-  CorsikaFenv.cc)
+  ${CORSIKA_FENV})
 
 set (
   UTILITIES_HEADERS

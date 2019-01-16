@@ -21,7 +21,10 @@
 
 #include <cfenv>
 
-#if !defined(__GLIBC__)
+/*
+ * Same declaration of function as provided in GLIBC
+ * Repetition allowed in the case where cfenv defines the functions already, no clash.
+ */
 extern "C" {
 
   int
@@ -30,6 +33,5 @@ extern "C" {
   fedisableexcept(int excepts);
 
 }
-#endif
 
 #endif //CORSIKA_CORSIKAFENV_H
