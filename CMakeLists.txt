@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include (CorsikaUtilities) # a few cmake function
 
 set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_EXTENSIONS OFF)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
 
@@ -42,12 +43,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neither O2/3 use fast-math 
 
 # clang produces a lot of unecessary warnings without this:
-add_compile_options("$<$<CXX_COMPILER_ID:Clang>:-Wno-nonportable-include-path>") 
-
-# check if we are on OSX:
-if (APPLE)
-  add_compile_definitions (CORSIKA_OSX)
-endif (APPLE)
+add_compile_options("$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>")
 
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
@@ -65,6 +61,10 @@ endif (APPLE)
 
 # dependencies
 find_package (Boost 1.60 REQUIRED)
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+endif (Boost_FOUND)
+
 find_package (Eigen3 REQUIRED)
 #find_package (HDF5) # not yet needed
 
