@@ -22,10 +22,13 @@ COMBoost::COMBoost(HEPEnergyType eProjectile, COMBoost::MomentumVector const& pP
   auto const a = (pProjectile / pProjNorm).GetComponents().eVector;
 
   if (a(0) == 0 && a(1) == 0) {
-    // if pProjectile ~ (0, 0, -1), the standard formula for the rotation matrix breaks
-    // down but we can easily define a suitable rotation manually. We just need some SO(3)
-    // matrix that reverses the z-axis and I like this one:
-    fRotation << 1, 0, 0, 0, -1, 0, 0, 0, -1;
+    if (a(2) < 0) {
+      // if pProjectile ~ (0, 0, -1), the standard formula for the rotation matrix breaks
+      // down but we can easily define a suitable rotation manually. We just need some
+      // SO(3) matrix that reverses the z-axis and I like this one:
+
+      fRotation << 1, 0, 0, 0, -1, 0, 0, 0, -1;
+    }
   } else {
     Eigen::Vector3d const b{0, 0, 1};
     auto const v = a.cross(b);
