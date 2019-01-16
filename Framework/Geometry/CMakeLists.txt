@@ -17,7 +17,7 @@ set (
   BaseVector.h
   QuantityVector.h
   Trajectory.h
-  # BaseTrajectory.h
+  FourVector.h
   )
 
 set (
@@ -57,16 +57,22 @@ install (
   PUBLIC_HEADER DESTINATION include/${GEOMETRY_NAMESPACE}
   )
 
-
 # --------------------
 # code unit testing
 add_executable (testGeometry testGeometry.cc)
-
 target_link_libraries (
   testGeometry
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-
 CORSIKA_ADD_TEST(testGeometry)
+
+add_executable (testFourVector testFourVector.cc) 
+target_link_libraries (
+  testFourVector
+  CORSIKAgeometry
+  CORSIKAunits
+  CORSIKAthirdparty # for catch2
+  )
+CORSIKA_ADD_TEST(testFourVector)

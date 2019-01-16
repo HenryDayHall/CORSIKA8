@@ -21,7 +21,7 @@
 
 namespace corsika::environment {
   using BaseNodeType = VolumeTreeNode<corsika::setup::IEnvironmentModel>;
-    
+
   struct Universe : public corsika::geometry::Sphere {
     Universe(corsika::geometry::CoordinateSystem const& pCS)
         : corsika::geometry::Sphere(

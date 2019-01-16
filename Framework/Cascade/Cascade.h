@@ -56,7 +56,7 @@ namespace corsika::cascade {
       }
     }
 
-private:
+  private:
     void Step(Particle& particle) {
       using namespace corsika::units::si;
 

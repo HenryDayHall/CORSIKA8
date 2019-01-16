@@ -68,11 +68,14 @@ corsika::environment::Environment MakeDummyEnv() {
   return env;
 }
 
-static int fCount = 0;
-
 class ProcessSplit : public corsika::process::ContinuousProcess<ProcessSplit> {
+
+  int fCount = 0;
+  int fCalls = 0;
+  HEPEnergyType fEcrit;
+  
 public:
-  ProcessSplit() {}
+  ProcessSplit(HEPEnergyType e) : fEcrit(e) {}
 
   template <typename Particle, typename T>
   LengthType MaxStepLength(Particle&, T&) const {
@@ -80,9 +83,10 @@ public:
   }
 
   template <typename Particle, typename T, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, T&, Stack& s) const {
+  EProcessReturn DoContinuous(Particle& p, T&, Stack& s)  {
+    fCalls++;
     HEPEnergyType E = p.GetEnergy();
-    if (E < 85_MeV) {
+    if (E < fEcrit) {
       p.Delete();
       fCount++;
     } else {
@@ -98,9 +102,10 @@ public:
     return EProcessReturn::eOk;
   }
 
-  void Init() { fCount = 0; }
+  void Init() { fCount = 0; fCalls =0; }
 
   int GetCount() const { return fCount; }
+  int GetCalls() const { return fCalls; }
 
 private:
 };
@@ -113,7 +118,9 @@ TEST_CASE("Cascade", "[Cascade]") {
   tracking_line::TrackingLine<setup::Stack> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
-  ProcessSplit p1;
+
+  const HEPEnergyType Ecrit = 85_MeV;
+  ProcessSplit p1(Ecrit);
   auto sequence = p0 << p1;
   setup::Stack stack;
 
@@ -132,6 +139,9 @@ TEST_CASE("Cascade", "[Cascade]") {
   particle.SetTime(0_ns);
   EAS.Init();
   EAS.Run();
+
+  CHECK( p1.GetCount() == 2048 );
+  CHECK( p1.GetCalls() == 4095 );
 
   /*
   SECTION("sectionTwo") {

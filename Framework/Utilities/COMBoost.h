@@ -12,33 +12,32 @@
 #define _include_corsika_utilties_comboost_h_
 
 #include <corsika/geometry/CoordinateSystem.h>
-#include <corsika/geometry/QuantityVector.h>
-#include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
+
 #include <Eigen/Dense>
-#include <tuple>
 
 namespace corsika::utl {
+
+  /**
+     This utility class handles Lorentz boost between different
+     referenence frames, using FourVectors.
+   */
+
+  template <typename FourVector>
   class COMBoost {
     Eigen::Matrix3d fRotation;
     Eigen::Matrix2d fBoost, fInverseBoost;
     corsika::geometry::CoordinateSystem const& fCS;
-    using MomentumVector = corsika::geometry::Vector<units::si::hepmomentum_d>;
 
   public:
-    //! construct a COMBoost given energy and momentum of projectile and mass of target
-    COMBoost(units::si::HEPEnergyType eProjectile, MomentumVector const& pProjectile,
-             units::si::HEPMassType mTarget);
+    //! construct a COMBoost given four-vector of prjectile and mass of target
+    COMBoost(const FourVector& Pprojectile, const corsika::units::si::HEPEnergyType massTarget);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
-    std::tuple<units::si::HEPEnergyType,
-               geometry::QuantityVector<units::si::hepmomentum_d>>
-    toCoM(units::si::HEPEnergyType E, MomentumVector p) const;
+    FourVector toCoM(const FourVector& p) const;
 
     //! transforms a 4-momentum from the center-of-mass frame back to lab frame
-    std::tuple<units::si::HEPEnergyType, MomentumVector> fromCoM(
-        units::si::HEPEnergyType E,
-        geometry::QuantityVector<units::si::hepmomentum_d> pCoM) const;
+    FourVector fromCoM(const FourVector& pCoM) const;
   };
 } // namespace corsika::utl
 

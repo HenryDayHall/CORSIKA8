@@ -13,9 +13,9 @@
 #define _include_NuclearComposition_h
 
 #include <corsika/particles/ParticleProperties.h>
+#include <cassert>
 #include <numeric>
 #include <stdexcept>
-#include <cassert>
 #include <vector>
 
 namespace corsika::environment {
@@ -29,7 +29,7 @@ namespace corsika::environment {
                        std::vector<float> pFractions)
         : fNumberFractions(pFractions)
         , fComponents(pComponents) {
-            
+
       assert(pComponents.size() == pFractions.size());
       auto const sumFractions =
           std::accumulate(pFractions.cbegin(), pFractions.cend(), 0.f);

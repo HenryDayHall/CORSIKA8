@@ -31,6 +31,7 @@ namespace corsika::geometry {
 
   template <typename dim>
   class Vector : public BaseVector<dim> {
+  public:
     using Quantity = phys::units::quantity<dim, double>;
 
   public:

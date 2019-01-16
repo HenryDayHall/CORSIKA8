@@ -79,20 +79,21 @@ namespace corsika::units::si {
 /**
  * @file PhysicalUnits
  *
- * Define _XeV literals, alowing 10_GeV in the code.
- * Define _barn literal
  */
 
 namespace phys {
   namespace units {
     namespace literals {
+
+      /**
+       * Define new _XeV literals, alowing 10_GeV in the code.
+       * Define new _barn literal
+       */
+
       QUANTITY_DEFINE_SCALING_LITERALS(eV, hepenergy_d, 1)
 
       QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
                                        magnitude(corsika::units::constants::barn))
-
-      // QUANTITY_DEFINE_SCALING_LITERALS(Ns, corsika::units::si::momentum_d,
-      //                                 magnitude(1_m * 1_kg / 1_s))
 
     } // namespace literals
   }   // namespace units
