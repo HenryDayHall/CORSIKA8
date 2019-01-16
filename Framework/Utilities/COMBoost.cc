@@ -49,8 +49,8 @@ COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const FourVector& 
   //~ double const coshEta = 1 / std::sqrt((1-beta*beta));
   double const sinhEta = -beta * coshEta;
 
-  std::cout << "COMBoost (1-beta)=" << 1-beta << " gamma=" << coshEta << std::endl;
-  
+  std::cout << "COMBoost (1-beta)=" << 1 - beta << " gamma=" << coshEta << std::endl;
+
   fBoost << coshEta, sinhEta, sinhEta, coshEta;
 
   fInverseBoost << coshEta, -sinhEta, -sinhEta, coshEta;
@@ -80,8 +80,9 @@ FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
       (p.GetSpaceLikeComponents().GetComponents().eVector(2) * (1 / 1_GeV).magnitude());
 
   std::cout << "COMBoost::fromCoM Ecm=" << p.GetTimeLikeComponent() / 1_GeV << "GeV, "
-	    << " pcm=" << p.GetSpaceLikeComponents().GetComponents() / 1_GeV << "GeV" << std::endl;
-  
+            << " pcm=" << p.GetSpaceLikeComponents().GetComponents() / 1_GeV << "GeV"
+            << std::endl;
+
   auto const boostedZ = fInverseBoost * com;
   auto const E_lab = boostedZ(0) * 1_GeV;
 
@@ -90,7 +91,7 @@ FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
   pLab.eVector = fRotation.transpose() * pLab.eVector;
 
   std::cout << "COMBoost::fromCoM --> Elab=" << E_lab / 1_GeV << "GeV, "
-	    << " pcm=" << pLab / 1_GeV << "GeV" << std::endl;
+            << " pcm=" << pLab / 1_GeV << "GeV" << std::endl;
 
   return FourVector(E_lab, corsika::geometry::Vector(fCS, pLab));
 }
