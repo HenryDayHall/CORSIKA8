@@ -74,6 +74,51 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
+
+  namespace detail {
+    template <int N, typename T>
+    auto constexpr static_pow([[maybe_unused]] T x) {
+      if constexpr (N == 0) {
+        return 1;
+      } else if constexpr (N > 0) {
+        return x * static_pow<N - 1, T>(x);
+      } else {
+        return 1 / static_pow<-N, T>(x);
+      }
+    }
+  } // namespace detail
+
+  template <typename DimFrom, typename DimTo>
+  auto constexpr ConversionFactorHEPToSI() {
+    static_assert(DimFrom::dim1 == 0 && DimFrom::dim2 == 0 && DimFrom::dim3 == 0 &&
+                      DimFrom::dim4 == 0 && DimFrom::dim5 == 0 && DimFrom::dim6 == 0 &&
+                      DimFrom::dim7 == 0,
+                  "must be a pure HEP type");
+
+    static_assert(
+        DimTo::dim4 == 0 && DimTo::dim5 == 0 && DimTo::dim6 == 0 && DimTo::dim7 == 0,
+        "conversion possible only into L, M, T dimensions");
+
+    int constexpr e = DimFrom::dim8; // HEP dim.
+
+    int constexpr l = DimTo::dim1; // SI length dim.
+    int constexpr m = DimTo::dim2; // SI mass dim.
+    int constexpr t = DimTo::dim3; // SI time dim.
+
+    int constexpr p = m;
+    int constexpr q = -m - t;
+    static_assert(q == l + e - 2 * m, "HEP/SI dimension mismatch!");
+
+    using namespace detail;
+    return static_pow<-e>(corsika::units::constants::hBarC) *
+           static_pow<p>(corsika::units::constants::hBar) *
+           static_pow<q>(corsika::units::constants::c);
+  }
+
+  template <typename DimFrom, typename DimTo>
+  auto constexpr ConvertHEPToSI(quantity<DimFrom> q) {
+    return ConversionFactorHEPToSI<DimFrom, DimTo>() * q;
+  }
 } // end namespace corsika::units::si
 
 /**
