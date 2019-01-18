@@ -4,6 +4,7 @@ add_subdirectory (Sibyll)
 add_subdirectory (StackInspector)
 add_subdirectory (TrackWriter)
 add_subdirectory (TrackingLine)
+add_subdirectory (HadronicElasticModel)
 
 #add_custom_target(CORSIKAprocesses)
 add_library (CORSIKAprocesses INTERFACE)
