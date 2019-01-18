@@ -21,6 +21,8 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 
+#include <iomanip>
+
 namespace corsika::process::HadronicElasticModel {
   /**
    * A simple model for elastic hadronic interactions based on the formulas
@@ -164,7 +166,7 @@ namespace corsika::process::HadronicElasticModel {
 
       auto const sqrtS = eProjectileCoM + eTargetCoM;
       auto const s = units::si::detail::static_pow<2>(sqrtS);
-
+      
       auto const B = this->B(sqrtS);
       std::cout << B << std::endl;
 
@@ -189,19 +191,26 @@ namespace corsika::process::HadronicElasticModel {
                 << ')' << std::endl;
 
       auto const theta =
-          2 *
-          asin(sqrt(absT / (4 * pProjectileCoMSqNorm))); // would work for lab frame, too
+          2 * asin(sqrt(absT / (4 * pProjectileCoMSqNorm))); // would work for in any frame
       auto const phi = phiDist(fRNG);
 
       geometry::QuantityVector<units::si::hepmomentum_d> const scatteredMomentum{
           pProjectileCoMNorm * sin(theta) * cos(phi),
-          pProjectileCoMNorm * sin(theta) * cos(phi), pProjectileCoMNorm * cos(theta)};
-      auto const [eProjectileScattered, pProjectileScattered] =
+          pProjectileCoMNorm * sin(theta) * sin(phi), pProjectileCoMNorm * cos(theta)};
+          
+      auto const [eProjectileScatteredLab, pProjectileScatteredLab] =
           boost.fromCoM(eProjectileCoM, scatteredMomentum);
+          
+      std::cout << "xxx: " << pProjectileScatteredLab.squaredNorm() / p.GetMomentum().squaredNorm() << std::endl;
 
-      p.SetMomentum(pProjectileScattered);
-      p.SetEnergy(sqrt(pProjectileScattered.squaredNorm() +
-                       units::si::detail::static_pow<2>(targetMass)));
+      p.SetMomentum(pProjectileScatteredLab);
+      
+      // alternatives: 1. do not touch energy
+      //               2. take back-boosted energy
+      //               3. recalculate energy from momentum
+      
+      //~ p.SetEnergy(sqrt(pProjectileScatteredLab.squaredNorm() +
+                       //~ units::si::detail::static_pow<2>(corsika::particles::GetMass(p.GetPID()))));
 
       return process::EProcessReturn::eOk;
     }
