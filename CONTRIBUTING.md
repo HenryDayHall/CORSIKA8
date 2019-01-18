@@ -51,7 +51,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - Any static variable has a "g" prefix. A static member variable starts with "fg"
   - Class member functions start with capital letters
   - Any class getter begins with "Get", and setter with "Set". Logical getters start with "Is" or "Has".
-  - enums should be "enum class", and start with a capital "E", enum entries start with "e"
+  - enums should be "enum class" and start with a capital "E"
   - Function parameter names start with "v"
 
   - We use namespaces to avoid clashes and to structure code
