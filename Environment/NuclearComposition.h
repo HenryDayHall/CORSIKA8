@@ -13,9 +13,9 @@
 #define _include_NuclearComposition_h
 
 #include <corsika/particles/ParticleProperties.h>
+#include <cassert>
 #include <numeric>
 #include <stdexcept>
-#include <cassert>
 #include <vector>
 
 namespace corsika::environment {
@@ -24,12 +24,19 @@ namespace corsika::environment {
     std::vector<corsika::particles::Code> const
         fComponents; //!< particle codes of consitutents
 
+    double const fAvgMassNumber;
+
   public:
     NuclearComposition(std::vector<corsika::particles::Code> pComponents,
                        std::vector<float> pFractions)
         : fNumberFractions(pFractions)
-        , fComponents(pComponents) {
-            
+        , fComponents(pComponents)
+        , fAvgMassNumber(std::inner_product(
+              pComponents.cbegin(), pComponents.cend(), pFractions.cbegin(), 0.,
+              [](double x, double y) { return x + y; },
+              [](auto const& compID, auto const& fraction) {
+                return corsika::particles::GetNucleusA(compID) * fraction;
+              })) {
       assert(pComponents.size() == pFractions.size());
       auto const sumFractions =
           std::accumulate(pFractions.cbegin(), pFractions.cend(), 0.f);
@@ -43,6 +50,7 @@ namespace corsika::environment {
 
     auto const& GetFractions() const { return fNumberFractions; }
     auto const& GetComponents() const { return fComponents; }
+    auto const GetAverageMassNumber() const { return fAvgMassNumber; }
   };
 
 } // namespace corsika::environment
