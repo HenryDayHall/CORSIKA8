@@ -129,20 +129,14 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   SECTION("HEP/SI conversion") {
     auto const invEnergy = 1 / 197.326978_MeV; // should be convertible to length or time
 
-    LengthType const length =
-        ConvertHEPToSI<decltype(invEnergy)::dimension_type, LengthType::dimension_type>(
-            invEnergy);
+    LengthType const length = ConvertHEPToSI<LengthType::dimension_type>(invEnergy);
     REQUIRE((length / 1_fm) == Approx(1));
 
-    TimeType const time =
-        ConvertHEPToSI<decltype(invEnergy)::dimension_type, TimeType::dimension_type>(
-            invEnergy);
+    TimeType const time = ConvertHEPToSI<TimeType::dimension_type>(invEnergy);
     REQUIRE((time / (1_fm / corsika::units::constants::c)) == Approx(1));
 
     auto const protonMass = 938.272'081'3_MeV; // convertible to mass or SI energy
-    MassType protonMassSI =
-        ConvertHEPToSI<decltype(protonMass)::dimension_type, MassType::dimension_type>(
-            protonMass);
+    MassType protonMassSI = ConvertHEPToSI<MassType::dimension_type>(protonMass);
     REQUIRE((protonMassSI / 1.672'621'898e-27_kg) == Approx(1));
     REQUIRE((protonMassSI / (1.007'276 * corsika::units::constants::u)) == Approx(1));
   }

@@ -115,7 +115,7 @@ namespace corsika::units::si {
            static_pow<q>(corsika::units::constants::c);
   }
 
-  template <typename DimFrom, typename DimTo>
+  template <typename DimTo, typename DimFrom>
   auto constexpr ConvertHEPToSI(quantity<DimFrom> q) {
     return ConversionFactorHEPToSI<DimFrom, DimTo>() * q;
   }
