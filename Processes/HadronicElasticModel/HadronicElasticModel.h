@@ -36,8 +36,10 @@ namespace corsika::process::HadronicElasticModel {
       : public corsika::process::InteractionProcess<HadronicElasticInteraction> {
   private:
     corsika::units::si::CrossSectionType const fX, fY;
-    static double constexpr fEpsilon = 0.0808;
-    static double constexpr fEta = 0.4525;
+
+    static double constexpr gfEpsilon = 0.0808;
+    static double constexpr gfEta = 0.4525;
+    // Froissart-Martin is not violated up for sqrt s < 10^32 eV with these values [DL].
 
     using SquaredHEPEnergyType = decltype(corsika::units::si::HEPEnergyType() *
                                           corsika::units::si::HEPEnergyType());
@@ -47,33 +49,32 @@ namespace corsika::process::HadronicElasticModel {
             "HadronicElasticModel");
     corsika::environment::Environment const& fEnvironment;
 
-    auto B(corsika::units::si::HEPEnergyType sqrtS) const {
-      using namespace corsika::units::si;
-      auto constexpr a =
-          2.5 / (1_GeV * 1_GeV); // read off by eye from Gaisser, Engel, Resconi, fig. 4.9
-      auto constexpr b = 10 / (1_GeV * 1_GeV);
-      return a * std::log10(sqrtS / 10_GeV) + b;
+    auto B(decltype(units::si::detail::static_pow<2>(units::si::electronvolt)) s) const {
+      using namespace corsika::units::constants;
+      auto constexpr b_p = 2.3;
+      return (2 * b_p + 2 * b_p + 4 * pow(s * invGeVsq, gfEpsilon) - 4.2) * invGeVsq;
     }
 
     corsika::units::si::CrossSectionType CrossSection(SquaredHEPEnergyType s) const {
       using namespace corsika::units::si;
-      // according to Gaisser, Engel, Resconi, eq. (4.41)
-      // assuming every target behaves like a proton
-      CrossSectionType const sigmaTot = fX * pow(s * (1 / (1_GeV * 1_GeV)), fEpsilon) +
-                                        fY * pow(s * (1 / (1_GeV * 1_GeV)), -fEta);
+      using namespace corsika::units::constants;
+      // assuming every target behaves like a proton, fX and fY are universal
+      CrossSectionType const sigmaTot =
+          fX * pow(s * invGeVsq, gfEpsilon) + fY * pow(s * invGeVsq, -gfEta);
 
-      // we ignore rho because rho^2 is just ~2 %
+      // according to Schuler & Sjöstrand, PRD 49, 2257 (1994)
+      // (we ignore rho because rho^2 is just ~2 %)
       auto const sigmaElastic =
-          sigmaTot * sigmaTot /
-          (16 * M_PI * ConvertHEPToSI<CrossSectionType::dimension_type>(B(sqrt(s))));
+          units::si::detail::static_pow<2>(sigmaTot) /
+          (16 * M_PI * ConvertHEPToSI<CrossSectionType::dimension_type>(B(s)));
       return sigmaElastic;
     }
 
   public:
     HadronicElasticInteraction(corsika::environment::Environment const&,
-                               units::si::CrossSectionType x = 2.17e-5 * units::si::barn,
-                               units::si::CrossSectionType y = 5.608e-5 *
-                                                               units::si::barn);
+                               // x & y values taken from Pythia8 for pp collisions
+                               units::si::CrossSectionType x = 0.217 * units::si::barn,
+                               units::si::CrossSectionType y = 0.5608 * units::si::barn);
     void Init();
 
     template <typename Particle, typename Track>
@@ -126,6 +127,7 @@ namespace corsika::process::HadronicElasticModel {
       }
 
       using namespace units::si;
+      using namespace units::constants;
 
       const auto* currentNode =
           fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
@@ -166,8 +168,8 @@ namespace corsika::process::HadronicElasticModel {
 
       auto const sqrtS = eProjectileCoM + eTargetCoM;
       auto const s = units::si::detail::static_pow<2>(sqrtS);
-      
-      auto const B = this->B(sqrtS);
+
+      auto const B = this->B(s);
       std::cout << B << std::endl;
 
       corsika::random::ExponentialDistribution tDist(1 / B);
@@ -176,41 +178,35 @@ namespace corsika::process::HadronicElasticModel {
         auto const maxT = 4 * pProjectileCoMSqNorm;
 
         do {
-          // |t| cannot become arbitrarily large, max. given by GEN eq. (4.16), so we just
-          // throw again until we have an acceptable value note that the formula holds in
-          // any frame despite of what is stated there
+          // |t| cannot become arbitrarily large, max. given by GER eq. (4.16), so we just
+          // throw again until we have an acceptable value. Note that the formula holds in
+          // any frame despite of what is stated in the book.
           absT = tDist(fRNG);
         } while (absT >= maxT);
 
         return absT;
       }();
 
-      auto constexpr GeVsq = 1_GeV * 1_GeV;
-      std::cout << "s = " << s / GeVsq << " GeV²; absT = " << absT / GeVsq
-                << " GeV² (max./GeV² = " << 4 * projectileMomentumSquaredNorm / GeVsq
+      std::cout << "HadronicElasticInteraction: s = " << s * invGeVsq
+                << " GeV²; absT = " << absT * invGeVsq
+                << " GeV² (max./GeV² = " << 4 * invGeVsq * projectileMomentumSquaredNorm
                 << ')' << std::endl;
 
       auto const theta =
-          2 * asin(sqrt(absT / (4 * pProjectileCoMSqNorm))); // would work for in any frame
+          2 *
+          asin(sqrt(absT / (4 * pProjectileCoMSqNorm))); // would work for in any frame
       auto const phi = phiDist(fRNG);
 
       geometry::QuantityVector<units::si::hepmomentum_d> const scatteredMomentum{
           pProjectileCoMNorm * sin(theta) * cos(phi),
           pProjectileCoMNorm * sin(theta) * sin(phi), pProjectileCoMNorm * cos(theta)};
-          
+
       auto const [eProjectileScatteredLab, pProjectileScatteredLab] =
           boost.fromCoM(eProjectileCoM, scatteredMomentum);
-          
-      std::cout << "xxx: " << pProjectileScatteredLab.squaredNorm() / p.GetMomentum().squaredNorm() << std::endl;
 
       p.SetMomentum(pProjectileScatteredLab);
-      
-      // alternatives: 1. do not touch energy
-      //               2. take back-boosted energy
-      //               3. recalculate energy from momentum
-      
-      //~ p.SetEnergy(sqrt(pProjectileScatteredLab.squaredNorm() +
-                       //~ units::si::detail::static_pow<2>(corsika::particles::GetMass(p.GetPID()))));
+      p.SetEnergy(eProjectileScatteredLab); // alternatively recalculate energy from
+                                            // momentum and mass
 
       return process::EProcessReturn::eOk;
     }
