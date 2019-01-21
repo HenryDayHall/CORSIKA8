@@ -53,8 +53,11 @@ namespace corsika::units::constants {
   constexpr quantity<speed_d> c{Rep(299792458L) * meter / second};
   constexpr auto cSquared = c * c;
 
+  // hbar * c
   constexpr quantity<dimensions<1, 0, 0, 0, 0, 0, 0, 1>> hBarC{
       Rep(1.973'269'78e-7L) * electronvolt * meter}; // from RPP 2018
+
+  auto constexpr invGeVsq = 1e-18 / (electronvolt * electronvolt);
 
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};
