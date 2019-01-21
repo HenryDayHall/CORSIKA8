@@ -14,10 +14,12 @@
 
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
+#include <corsika/random/ExponentialDistribution.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <iostream>
 #include <limits>
 #include <random>
+#include <type_traits>
 
 using namespace corsika::random;
 
@@ -81,5 +83,27 @@ TEST_CASE("UniformRealDistribution") {
 
     CHECK(min / 1_m == Approx(0.).margin(1e-3));
     CHECK(max / 18_cm == Approx(1.));
+  }
+}
+
+TEST_CASE("ExponentialDistribution") {
+  using namespace corsika::units::si;
+  std::mt19937 rng;
+
+  auto const beta = 15_m;
+
+  corsika::random::ExponentialDistribution dist(beta);
+  
+  SECTION("mean") {
+    std::remove_const<decltype(beta)>::type mean = beta * 0;
+    
+    int constexpr N = 1'000'000;
+        
+    for (int i{0}; i < N; ++i) {
+      decltype(beta) x = dist(rng);
+      mean += x / N;
+    }
+    
+    CHECK(mean / beta == Approx(1).margin(1e-2));
   }
 }

@@ -10,6 +10,7 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
@@ -235,10 +236,14 @@ int main() {
   corsika::process::sibyll::Interaction sibyll(env);
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(8_GeV);
+
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
+
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = p0 << sibyll << decay << cut << trackWriter;
+  auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";

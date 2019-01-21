@@ -8,8 +8,8 @@
  * the license.
  */
 
-#ifndef _include_UniformRealDistribution_h
-#define _include_UniformRealDistribution_h
+#ifndef _include_ExponentialDistribution_h
+#define _include_ExponentialDistribution_h
 
 #include <corsika/units/PhysicalUnits.h>
 #include <random>
@@ -17,23 +17,19 @@
 namespace corsika::random {
 
   template <class TQuantity>
-  class UniformRealDistribution {
+  class ExponentialDistribution {
     using RealType = typename TQuantity::value_type;
-    std::uniform_real_distribution<RealType> dist{RealType(0.), RealType(1.)};
+    std::exponential_distribution<RealType> dist{1.};
 
-    TQuantity const a, b;
+    TQuantity const fBeta;
 
   public:
-    UniformRealDistribution(TQuantity b)
-        : a{TQuantity(phys::units::detail::magnitude_tag, 0)}
-        , b(b) {}
-    UniformRealDistribution(TQuantity a, TQuantity b)
-        : a(a)
-        , b(b) {}
+    ExponentialDistribution(TQuantity beta)
+        : fBeta(beta) {}
 
     template <class Generator>
     TQuantity operator()(Generator& g) {
-      return a + dist(g) * (b - a);
+      return fBeta * dist(g);
     }
   };
 

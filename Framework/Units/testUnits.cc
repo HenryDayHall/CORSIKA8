@@ -115,4 +115,29 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE(farAway > 100000_m);
     REQUIRE_FALSE(farAway < 1e19 * meter);
   }
+
+  SECTION("static_pow") {
+    using namespace corsika::units::si::detail;
+    double x = 235.7913;
+    REQUIRE(1 == static_pow<0, double>(x));
+    REQUIRE(x == static_pow<1, double>(x));
+    REQUIRE(x * x == static_pow<2, double>(x));
+    REQUIRE(1 / x == static_pow<-1, double>(x));
+    REQUIRE(1 / x / x == static_pow<-2, double>(x));
+  }
+
+  SECTION("HEP/SI conversion") {
+    auto const invEnergy = 1 / 197.326978_MeV; // should be convertible to length or time
+
+    LengthType const length = ConvertHEPToSI<LengthType::dimension_type>(invEnergy);
+    REQUIRE((length / 1_fm) == Approx(1));
+
+    TimeType const time = ConvertHEPToSI<TimeType::dimension_type>(invEnergy);
+    REQUIRE((time / (1_fm / corsika::units::constants::c)) == Approx(1));
+
+    auto const protonMass = 938.272'081'3_MeV; // convertible to mass or SI energy
+    MassType protonMassSI = ConvertHEPToSI<MassType::dimension_type>(protonMass);
+    REQUIRE((protonMassSI / 1.672'621'898e-27_kg) == Approx(1));
+    REQUIRE((protonMassSI / (1.007'276 * corsika::units::constants::u)) == Approx(1));
+  }
 }

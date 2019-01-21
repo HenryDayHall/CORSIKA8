@@ -37,7 +37,7 @@ namespace corsika::units::constants {
       phys::units::square(phys::units::second)};
 
   // Avogadro constant
-  constexpr quantity<dimensions<0, 0, 0, 0, 0, -1> > N_sub_A{Rep(6.02214199e+23L) / mole};
+  constexpr quantity<dimensions<0, 0, 0, 0, 0, -1>> N_sub_A{Rep(6.02214199e+23L) / mole};
 
   // elementary charge
   constexpr quantity<electric_charge_d> e{Rep(1.6021766208e-19L) * coulomb};
@@ -46,11 +46,18 @@ namespace corsika::units::constants {
   // constexpr quantity<hepenergy_d> eV{e / coulomb * joule};
 
   // Planck constant
-  constexpr quantity<dimensions<2, 1, -1> > h{Rep(6.62606876e-34L) * joule * second};
+  constexpr quantity<dimensions<2, 1, -1>> h{Rep(6.62606876e-34L) * joule * second};
+  constexpr quantity<dimensions<2, 1, -1>> hBar{h / (2 * M_PI)};
 
   // speed of light in a vacuum
   constexpr quantity<speed_d> c{Rep(299792458L) * meter / second};
   constexpr auto cSquared = c * c;
+
+  // hbar * c
+  constexpr quantity<dimensions<1, 0, 0, 0, 0, 0, 0, 1>> hBarC{
+      Rep(1.973'269'78e-7L) * electronvolt * meter}; // from RPP 2018
+
+  auto constexpr invGeVsq = 1e-18 / (electronvolt * electronvolt);
 
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};
