@@ -13,6 +13,7 @@
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/geometry/FourVector.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/random/ExponentialDistribution.h>
@@ -156,15 +157,21 @@ namespace corsika::process::HadronicElasticModel {
 
       std::uniform_real_distribution phiDist(0., 2 * M_PI);
 
-      utl::COMBoost const boost(projectileEnergy, projectileMomentum, targetMass);
-      auto const [eProjectileCoM, pProjectileCoM] =
-          boost.toCoM(projectileEnergy, projectileMomentum);
-      auto const [eTargetCoM, pTargetCoM] = boost.toCoM(
+      geometry::FourVector const projectileLab(projectileEnergy, projectileMomentum);
+      geometry::FourVector const targetLab(
           targetMass, geometry::Vector<units::si::hepmomentum_d>(
                           projectileMomentum.GetCoordinateSystem(), {0_eV, 0_eV, 0_eV}));
+      utl::COMBoost const boost(projectileLab, targetMass);
 
-      auto const pProjectileCoMSqNorm = pProjectileCoM.squaredNorm();
+      auto const projectileCoM = boost.toCoM(projectileLab);
+      auto const targetCoM = boost.toCoM(targetLab);
+
+      auto const pProjectileCoMSqNorm =
+          projectileCoM.GetSpaceLikeComponents().squaredNorm();
       auto const pProjectileCoMNorm = sqrt(pProjectileCoMSqNorm);
+
+      auto const eProjectileCoM = projectileCoM.GetTimeLikeComponent();
+      auto const eTargetCoM = targetCoM.GetTimeLikeComponent();
 
       auto const sqrtS = eProjectileCoM + eTargetCoM;
       auto const s = units::si::detail::static_pow<2>(sqrtS);
@@ -192,21 +199,23 @@ namespace corsika::process::HadronicElasticModel {
                 << " GeV² (max./GeV² = " << 4 * invGeVsq * projectileMomentumSquaredNorm
                 << ')' << std::endl;
 
-      auto const theta =
-          2 *
-          asin(sqrt(absT / (4 * pProjectileCoMSqNorm))); // would work for in any frame
+      auto const theta = 2 * asin(sqrt(absT / (4 * pProjectileCoMSqNorm)));
       auto const phi = phiDist(fRNG);
 
-      geometry::QuantityVector<units::si::hepmomentum_d> const scatteredMomentum{
-          pProjectileCoMNorm * sin(theta) * cos(phi),
-          pProjectileCoMNorm * sin(theta) * sin(phi), pProjectileCoMNorm * cos(theta)};
+      auto const projectileScatteredLab = boost.fromCoM(
+          geometry::FourVector<HEPEnergyType, geometry::Vector<hepmomentum_d>>(
+              eProjectileCoM,
+              geometry::Vector<hepmomentum_d>(projectileMomentum.GetCoordinateSystem(),
+                                              {pProjectileCoMNorm * sin(theta) * cos(phi),
+                                               pProjectileCoMNorm * sin(theta) * sin(phi),
+                                               pProjectileCoMNorm * cos(theta)})));
 
-      auto const [eProjectileScatteredLab, pProjectileScatteredLab] =
-          boost.fromCoM(eProjectileCoM, scatteredMomentum);
-
-      p.SetMomentum(pProjectileScatteredLab);
-      p.SetEnergy(eProjectileScatteredLab); // alternatively recalculate energy from
-                                            // momentum and mass
+      p.SetMomentum(projectileScatteredLab.GetSpaceLikeComponents());
+      p.SetEnergy(
+          sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() +
+               units::si::detail::static_pow<2>(corsika::particles::GetMass(
+                   p.GetPID())))); // Don't use energy from boost. It can be smaller than
+                                   // the momentum due to limited numerical accuracy.
 
       return process::EProcessReturn::eOk;
     }
