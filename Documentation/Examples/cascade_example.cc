@@ -10,9 +10,9 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
-#include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -230,20 +230,19 @@ int main() {
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
-  
+
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   corsika::process::sibyll::Interaction sibyll(env);
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(8_GeV);
-  
+
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
-  
+
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  //~ auto sequence = p0 << sibyll << decay << cut << trackWriter;
-  auto sequence = hadronicElastic << trackWriter;
+  auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -251,7 +250,7 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const HEPEnergyType E0 = 10_GeV;
+  const HEPEnergyType E0 = 1000_GeV;
   double theta = 0.;
   double phi = 0.;
   {
