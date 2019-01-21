@@ -82,8 +82,8 @@ FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
   com << (p.GetTimeLikeComponent() * (1 / 1_GeV)),
       (p.GetSpaceLikeComponents().GetComponents().eVector(2) * (1 / 1_GeV).magnitude());
 
-  std::cout << "COMBoost::fromCoM Ecm=" << p.GetTimeLikeComponent() / 1_GeV << "GeV, "
-            << " pcm=" << p.GetSpaceLikeComponents().GetComponents() / 1_GeV << "GeV"
+  std::cout << "COMBoost::fromCoM Ecm=" << p.GetTimeLikeComponent() / 1_GeV << " GeV, "
+            << " pcm=" << p.GetSpaceLikeComponents().GetComponents().squaredNorm() / 1_GeV << " GeV"
             << std::endl;
 
   auto const boostedZ = fInverseBoost * com;
@@ -94,7 +94,7 @@ FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
   pLab.eVector = fRotation.transpose() * pLab.eVector;
 
   std::cout << "COMBoost::fromCoM --> Elab=" << E_lab / 1_GeV << "GeV, "
-            << " pcm=" << pLab / 1_GeV << "GeV" << std::endl;
+            << " pcm=" << pLab.squaredNorm() / 1_GeV << "GeV" << std::endl;
 
   return FourVector(E_lab, corsika::geometry::Vector(fCS, pLab));
 }

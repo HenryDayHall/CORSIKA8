@@ -53,29 +53,35 @@ namespace corsika::process::HadronicElasticModel {
     auto B(decltype(units::si::detail::static_pow<2>(units::si::electronvolt)) s) const {
       using namespace corsika::units::constants;
       auto constexpr b_p = 2.3;
-      return (2 * b_p + 2 * b_p + 4 * pow(s * invGeVsq, gfEpsilon) - 4.2) * invGeVsq;
+      auto const result =
+          (2 * b_p + 2 * b_p + 4 * pow(s * invGeVsq, gfEpsilon) - 4.2) * invGeVsq;
+      std::cout << "B(" << s << ") = " << result / invGeVsq << " GeV¯²" << std::endl;
+      return result;
     }
 
     corsika::units::si::CrossSectionType CrossSection(SquaredHEPEnergyType s) const {
       using namespace corsika::units::si;
       using namespace corsika::units::constants;
       // assuming every target behaves like a proton, fX and fY are universal
-      CrossSectionType const sigmaTot =
+      CrossSectionType const sigmaTotal =
           fX * pow(s * invGeVsq, gfEpsilon) + fY * pow(s * invGeVsq, -gfEta);
 
       // according to Schuler & Sjöstrand, PRD 49, 2257 (1994)
       // (we ignore rho because rho^2 is just ~2 %)
       auto const sigmaElastic =
-          units::si::detail::static_pow<2>(sigmaTot) /
+          units::si::detail::static_pow<2>(sigmaTotal) /
           (16 * M_PI * ConvertHEPToSI<CrossSectionType::dimension_type>(B(s)));
+
+      std::cout << "HEM sigmaTot = " << sigmaTotal / 1_mbarn << " mb" << std::endl;
+      std::cout << "HEM sigmaElastic = " << sigmaElastic / 1_mbarn << " mb" << std::endl;
       return sigmaElastic;
     }
 
   public:
     HadronicElasticInteraction(corsika::environment::Environment const&,
-                               // x & y values taken from Pythia8 for pp collisions
-                               units::si::CrossSectionType x = 0.217 * units::si::barn,
-                               units::si::CrossSectionType y = 0.5608 * units::si::barn);
+                               // x & y values taken from DL for pp collisions
+                               units::si::CrossSectionType x = 0.0217 * units::si::barn,
+                               units::si::CrossSectionType y = 0.05608 * units::si::barn);
     void Init();
 
     template <typename Particle, typename Track>
