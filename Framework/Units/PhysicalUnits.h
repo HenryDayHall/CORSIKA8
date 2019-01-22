@@ -114,10 +114,35 @@ namespace corsika::units::si {
            static_pow<p>(corsika::units::constants::hBar) *
            static_pow<q>(corsika::units::constants::c);
   }
+  
+  template <typename DimFrom>
+  auto constexpr ConversionFactorSIToHEP() {
+    static_assert(DimFrom::dim4 == 0 && DimFrom::dim5 == 0 && DimFrom::dim6 == 0 &&
+                      DimFrom::dim7 == 0 && DimFrom::dim8 == 0,
+                  "must be pure L, M, T type");
+
+    int constexpr l = DimFrom::dim1; // SI length dim.
+    int constexpr m = DimFrom::dim2; // SI mass dim.
+    int constexpr t = DimFrom::dim3; // SI time dim.
+    
+    int constexpr p = -m;
+    int constexpr q = m + t;
+    int constexpr e = m - t - l;
+
+    using namespace detail;
+    return static_pow<e>(corsika::units::constants::hBarC) *
+           static_pow<p>(corsika::units::constants::hBar) *
+           static_pow<q>(corsika::units::constants::c);
+  }
 
   template <typename DimTo, typename DimFrom>
   auto constexpr ConvertHEPToSI(quantity<DimFrom> q) {
     return ConversionFactorHEPToSI<DimFrom, DimTo>() * q;
+  }
+
+  template <typename DimFrom>
+  auto constexpr ConvertSIToHEP(quantity<DimFrom> q) {
+    return ConversionFactorSIToHEP<DimFrom>() * q;
   }
 } // end namespace corsika::units::si
 
