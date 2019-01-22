@@ -140,4 +140,19 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE((protonMassSI / 1.672'621'898e-27_kg) == Approx(1));
     REQUIRE((protonMassSI / (1.007'276 * corsika::units::constants::u)) == Approx(1));
   }
+
+  SECTION("SI/HEP conversion") {
+    REQUIRE(ConvertSIToHEP(units::constants::c) == Approx(1));
+    REQUIRE(ConvertSIToHEP(units::constants::hBar) == Approx(1));
+
+    {
+      auto const invLength = 1 / 197.326978_fm; // should be convertible to HEPEnergy
+      HEPEnergyType const energy = ConvertSIToHEP(invLength);
+      REQUIRE(energy / 1_MeV == Approx(1));
+    }
+
+    REQUIRE(ConvertSIToHEP(6.5823e-25_s) * 1_GeV == Approx(1).epsilon(1e-4));
+
+    REQUIRE(ConvertSIToHEP(3.8938e-32 * meter * meter) * 1_GeV * 1_GeV == Approx(1).epsilon(1e-4));
+  }
 }
