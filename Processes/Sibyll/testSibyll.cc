@@ -133,7 +133,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     setup::Stack stack;
     auto particle = stack.NewParticle();
 
-    Interaction model(env);
+    NuclearInteraction model(env);
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
