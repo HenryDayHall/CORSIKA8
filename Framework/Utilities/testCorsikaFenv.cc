@@ -11,19 +11,14 @@
 #include <corsika/utl/CorsikaFenv.h>
 
 #include <cmath>
-#include <iostream>
 #include <csignal>
+#include <iostream>
 
 extern "C" {
-  static void
-  handle_fpe(int /*signo*/ ) {
-    exit(0);
-  }
+static void handle_fpe(int /*signo*/) { exit(0); }
 }
 
-
-int
-main() {
+int main() {
   feenableexcept(FE_ALL_EXCEPT);
   signal(SIGFPE, handle_fpe);
 

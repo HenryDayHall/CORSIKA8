@@ -31,7 +31,8 @@ namespace corsika::utl {
 
   public:
     //! construct a COMBoost given four-vector of prjectile and mass of target
-    COMBoost(const FourVector& Pprojectile, const corsika::units::si::HEPEnergyType massTarget);
+    COMBoost(const FourVector& Pprojectile,
+             const corsika::units::si::HEPEnergyType massTarget);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     FourVector toCoM(const FourVector& p) const;

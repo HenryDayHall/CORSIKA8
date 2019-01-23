@@ -17,7 +17,8 @@ using namespace corsika::utl;
 using namespace corsika::units::si;
 
 template <typename FourVector>
-COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const HEPMassType massTarget)
+COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile,
+                               const HEPMassType massTarget)
     : fRotation(Eigen::Matrix3d::Identity())
     , fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
   // calculate matrix for rotating pProjectile to z-axis first
@@ -44,8 +45,7 @@ COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile, const HEPMassType 
   }
 
   // calculate boost
-  double const beta =
-    pProjNorm / (Pprojectile.GetTimeLikeComponent() + massTarget);
+  double const beta = pProjNorm / (Pprojectile.GetTimeLikeComponent() + massTarget);
 
   /* Accurracy matters here, beta = 1 - epsilon for ultra-relativistic boosts */
   double const coshEta = 1 / std::sqrt((1 + beta) * (1 - beta));
@@ -83,8 +83,8 @@ FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
       (p.GetSpaceLikeComponents().GetComponents().eVector(2) * (1 / 1_GeV).magnitude());
 
   std::cout << "COMBoost::fromCoM Ecm=" << p.GetTimeLikeComponent() / 1_GeV << " GeV, "
-            << " pcm=" << p.GetSpaceLikeComponents().GetComponents().squaredNorm() / 1_GeV << " GeV"
-            << std::endl;
+            << " pcm=" << p.GetSpaceLikeComponents().GetComponents().squaredNorm() / 1_GeV
+            << " GeV" << std::endl;
 
   auto const boostedZ = fInverseBoost * com;
   auto const E_lab = boostedZ(0) * 1_GeV;

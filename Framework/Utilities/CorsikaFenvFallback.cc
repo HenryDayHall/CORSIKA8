@@ -24,14 +24,7 @@
 extern "C" {
 #warning No enabling/disabling of floating point exceptions - platform needs better implementation
 
-  int feenableexcept(int excepts)
-  {
-    return -1;
-  }
+int feenableexcept(int excepts) { return -1; }
 
-  int fedisableexcept(int excepts)
-  {
-    return -1;
-  }
-
+int fedisableexcept(int excepts) { return -1; }
 }
