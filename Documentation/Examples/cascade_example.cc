@@ -270,8 +270,6 @@ int main() {
   double phi = 0.;
   
   {
-    auto particle = stack.NewParticle();
-    particle.SetPID(beamCode);
     auto elab2plab = []( HEPEnergyType Elab, HEPMassType m){
 		       return sqrt(Elab * Elab - m * m);
 		     };
@@ -286,7 +284,7 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(Code::Proton, E0, plab, pos, 0_ns);
+    stack.AddParticle(beamCode, E0, plab, pos, 0_ns);
   }
 
   // define air shower object, run simulation

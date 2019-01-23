@@ -136,7 +136,33 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("NuclearInteractionInterface") {
 
     setup::Stack stack;
-    auto particle = stack.NewParticle();
+     const HEPEnergyType E0 = 10_GeV;
+    HEPMomentumType P0 =
+        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+    auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    geometry::Point pos(cs, 0_m, 0_m, 0_m);
+   
+    auto particle = stack.AddParticle(particles::Code::Proton, E0, plab, pos, 0_ns);
+
+    Interaction model(env);
+
+    model.Init();
+    [[maybe_unused]] const process::EProcessReturn ret =
+        model.DoInteraction(particle, stack);
+    [[maybe_unused]] const GrammageType length =
+        model.GetInteractionLength(particle, track);
+  }
+
+  SECTION("DecayInterface") {
+
+    setup::Stack stack;
+     const HEPEnergyType E0 = 10_GeV;
+    HEPMomentumType P0 =
+        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+    auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    geometry::Point pos(cs, 0_m, 0_m, 0_m);
+   
+    auto particle = stack.AddParticle(particles::Code::Proton, E0, plab, pos, 0_ns);
 
     NuclearInteraction model(env);
 

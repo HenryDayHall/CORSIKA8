@@ -46,7 +46,7 @@ namespace corsika::process::sibyll {
       using std::endl;
 
       // initialize hadronic interaction module
-      //sibyll_ini_();
+      sibyll_ini_();
       
       // initialize nuclib
       nuc_nuc_ini_();
@@ -58,17 +58,16 @@ namespace corsika::process::sibyll {
       using namespace corsika::units::si;
       double sigProd, dummy, dum1, dum2, dum3, dum4;
       double dumdif[3];
-
-      corsika::particles::Code BeamIdToUse;
-      if(corsika::particles::IsNucleus(BeamId)){
-
-	// TODO: use nuclib to calc. nuclear cross sections
-	// FOR NOW: use proton cross section for nuclei
-	BeamIdToUse = corsika::particles::Proton::GetCode();
-	std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
-      } else {
-	BeamIdToUse = BeamId;
+      
+      if(!corsika::particles::IsNucleus(BeamId)){
+	sigProd = std::numeric_limits<double>::infinity();
+	return std::make_tuple(sigProd * 1_mbarn, 1);
       }
+
+      // TODO: use nuclib to calc. nuclear cross sections
+      // FOR NOW: use proton cross section for nuclei
+      auto const BeamIdToUse = corsika::particles::Proton::GetCode();
+      std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
       
       const int iBeam = process::sibyll::GetSibyllXSCode(BeamIdToUse);
       const double dEcm = CoMenergy / 1_GeV;
@@ -183,7 +182,7 @@ namespace corsika::process::sibyll {
     }
    
     template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) {
+    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack&) {
 
       // this routine superimposes different nucleon-nucleon interactions
       // in a nucleus-nucleus interaction, based the SIBYLL routine SIBNUC 
@@ -424,33 +423,26 @@ namespace corsika::process::sibyll {
       
       // put nuclear fragments on corsika stack
       for(int j=0; j<nFragments; ++j){
-	auto pnew = s.NewParticle();
 	// here we need the nucleonNumber to corsika Id conversion
 	// A =  AFragments[j]
 	// pnew.SetPID( corsika::particles::GetCode( corsika::particles::Nucleus(A,Z) ) );
 	auto pCode = Nucleus( AFragments[j] );
-	pnew.SetPID(pCode);
 	
 	// CORSIKA 7 way
 	// spectators inherit momentum from original projectile
 	const double mass_ratio = corsika::particles::GetMass( pCode ) / corsika::particles::GetMass( corsikaProjId );
 	auto const Plab = PprojLab * mass_ratio;
-	  
-	pnew.SetEnergy(Plab.GetTimeLikeComponent());
-	pnew.SetMomentum(Plab.GetSpaceLikeComponents());
-	pnew.SetPosition(pOrig);
-	pnew.SetTime(tOrig);
 
+	p.AddSecondary(pCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig, tOrig);
+	
 	Plab_all += Plab.GetSpaceLikeComponents();
 	Elab_all += Plab.GetTimeLikeComponent();
       }
       
       // add elastic nucleons to corsika stack
       for(int j=0; j<nElasticNucleons; ++j){
-	auto pnew = s.NewParticle();
 	// TODO: sample proton or neutron
 	auto pCode = corsika::particles::Proton::GetCode();
-	pnew.SetPID( pCode );
 
 	// CORSIKA 7 way
 	// elastic nucleons inherit momentum from original projectile
@@ -458,10 +450,7 @@ namespace corsika::process::sibyll {
 	const double mass_ratio = corsika::particles::GetMass( pCode ) / corsika::particles::GetMass( corsikaProjId );
 	auto const Plab = PprojLab * mass_ratio;
 
-	pnew.SetEnergy(Plab.GetTimeLikeComponent());
-	pnew.SetMomentum(Plab.GetSpaceLikeComponents());
-	pnew.SetPosition(pOrig);
-	pnew.SetTime(tOrig);
+	p.AddSecondary(pCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig, tOrig);
 
 	Plab_all += Plab.GetSpaceLikeComponents();
 	Elab_all += Plab.GetTimeLikeComponent();
@@ -498,12 +487,7 @@ namespace corsika::process::sibyll {
 	  auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 	  
 	  // add to corsika stack
-	  auto pnew = s.NewParticle();
-	  pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
-	  pnew.SetEnergy(Plab.GetTimeLikeComponent());
-	  pnew.SetMomentum(Plab.GetSpaceLikeComponents());
-	  pnew.SetPosition(pOrig);
-	  pnew.SetTime(tOrig);
+	  auto pnew = p.AddSecondary(process::sibyll::ConvertFromSibyll(psib.GetPID()), Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig, tOrig);
 
 	  Plab_final += pnew.GetMomentum();
 	  Elab_final += pnew.GetEnergy();
