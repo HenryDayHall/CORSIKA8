@@ -11,6 +11,7 @@
 
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
+#include <corsika/process/sibyll/NuclearInteraction.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/random/RNGManager.h>
@@ -114,6 +115,20 @@ TEST_CASE("SibyllInterface", "[processes]") {
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
 
   SECTION("InteractionInterface") {
+
+    setup::Stack stack;
+    auto particle = stack.NewParticle();
+
+    Interaction model(env);
+
+    model.Init();
+    [[maybe_unused]] const process::EProcessReturn ret =
+        model.DoInteraction(particle, stack);
+    [[maybe_unused]] const GrammageType length =
+        model.GetInteractionLength(particle, track);
+  }
+
+  SECTION("NuclearInteractionInterface") {
 
     setup::Stack stack;
     auto particle = stack.NewParticle();
