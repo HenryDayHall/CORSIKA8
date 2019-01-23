@@ -114,7 +114,7 @@ namespace corsika::units::si {
            static_pow<p>(corsika::units::constants::hBar) *
            static_pow<q>(corsika::units::constants::c);
   }
-  
+
   template <typename DimFrom>
   auto constexpr ConversionFactorSIToHEP() {
     static_assert(DimFrom::dim4 == 0 && DimFrom::dim5 == 0 && DimFrom::dim6 == 0 &&
@@ -124,7 +124,7 @@ namespace corsika::units::si {
     int constexpr l = DimFrom::dim1; // SI length dim.
     int constexpr m = DimFrom::dim2; // SI mass dim.
     int constexpr t = DimFrom::dim3; // SI time dim.
-    
+
     int constexpr p = -m;
     int constexpr q = m + t;
     int constexpr e = m - t - l;

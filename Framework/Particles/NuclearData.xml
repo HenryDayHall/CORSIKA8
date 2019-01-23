@@ -36,6 +36,9 @@
 <particle id="1000080160" name="oxygen" A="16" Z="8" >
 </particle> 
 
+<particle id="1000100220" name="neon21" A="21" Z="10" >
+</particle> 
+
 <particle id="1000100220" name="neon" A="22" Z="10" >
 </particle> 
 

@@ -153,6 +153,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     REQUIRE(ConvertSIToHEP(6.5823e-25_s) * 1_GeV == Approx(1).epsilon(1e-4));
 
-    REQUIRE(ConvertSIToHEP(3.8938e-32 * meter * meter) * 1_GeV * 1_GeV == Approx(1).epsilon(1e-4));
+    REQUIRE(ConvertSIToHEP(3.8938e-32 * meter * meter) * 1_GeV * 1_GeV ==
+            Approx(1).epsilon(1e-4));
   }
 }
