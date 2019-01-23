@@ -30,8 +30,9 @@ namespace corsika::coast {
      the stack from here (docontinuous) inside corisika7. In corsika8
      you will be able to do that.
    */
-  corsika::process::EProcessReturn COASTProcess::DoContinuous(Particle& p, Track& t,
-                                                              Stack&) {
+  corsika::process::EProcessReturn COASTProcess::DoContinuous(const Particle& p,
+                                                              const Track& t,
+                                                              const Stack&) {
     using namespace corsika::units::si;
     auto const start = t.GetPosition(0).GetCoordinates();
     auto const delta = t.GetPosition(1).GetCoordinates() - start;

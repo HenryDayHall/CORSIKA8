@@ -20,6 +20,10 @@ using namespace std;
 
 namespace corsika::coast {
 
+  /**
+     Convert particle code, and check if it does exists. Throw exeption, if not!
+   */
+
   corsika::particles::Code ConvertFromCoast(CoastCode pCode) {
     if (coast2corsika.count(pCode) == 0) {
       ostringstream err;
@@ -30,7 +34,5 @@ namespace corsika::coast {
     }
     return coast2corsika.find(pCode)->second;
   }
-  //   process::sibyll::Sibyll2Corsika = {
-  //        {PID::E_MINUS, InternalParticleCode::Electron},
-  //};
+
 } // namespace corsika::coast

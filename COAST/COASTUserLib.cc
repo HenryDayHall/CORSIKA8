@@ -84,14 +84,12 @@ extern "C" void track_([[maybe_unused]] const crs::CParticle& pre,
     int    hadronicGeneration;
   */
   gCOASTStack.SetParticle(&pre, &post);
-  auto particle = gCOASTStack.GetNextParticle();
-
-  geometry::CoordinateSystem& rootCS =
+  const auto particle = gCOASTStack.GetNextParticle();
+  const geometry::CoordinateSystem& rootCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-
   geometry::Line const line(particle.GetPosition(rootCS), particle.GetVelocity(rootCS));
   const TimeType time = particle.GetTimeInterval();
-  geometry::Trajectory<geometry::Line> track(line, time);
+  const geometry::Trajectory<geometry::Line> track(line, time);
   gCorsikaProcess.DoContinuous(particle, track, gCOASTStack);
 }
 
