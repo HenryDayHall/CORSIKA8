@@ -73,9 +73,10 @@ class ProcessSplit : public corsika::process::ContinuousProcess<ProcessSplit> {
   int fCount = 0;
   int fCalls = 0;
   HEPEnergyType fEcrit;
-  
+
 public:
-  ProcessSplit(HEPEnergyType e) : fEcrit(e) {}
+  ProcessSplit(HEPEnergyType e)
+      : fEcrit(e) {}
 
   template <typename Particle, typename T>
   LengthType MaxStepLength(Particle&, T&) const {
@@ -83,7 +84,7 @@ public:
   }
 
   template <typename Particle, typename T, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, T&, Stack& s)  {
+  EProcessReturn DoContinuous(Particle& p, T&, Stack& s) {
     fCalls++;
     HEPEnergyType E = p.GetEnergy();
     if (E < fEcrit) {
@@ -102,7 +103,10 @@ public:
     return EProcessReturn::eOk;
   }
 
-  void Init() { fCount = 0; fCalls =0; }
+  void Init() {
+    fCount = 0;
+    fCalls = 0;
+  }
 
   int GetCount() const { return fCount; }
   int GetCalls() const { return fCalls; }
@@ -140,8 +144,8 @@ TEST_CASE("Cascade", "[Cascade]") {
   EAS.Init();
   EAS.Run();
 
-  CHECK( p1.GetCount() == 2048 );
-  CHECK( p1.GetCalls() == 4095 );
+  CHECK(p1.GetCount() == 2048);
+  CHECK(p1.GetCalls() == 4095);
 
   /*
   SECTION("sectionTwo") {

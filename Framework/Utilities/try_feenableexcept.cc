@@ -16,9 +16,7 @@
 
 #include <cfenv>
 
-int
-main()
-{
+int main() {
   feenableexcept(FE_ALL_EXCEPT);
   return 0;
 }

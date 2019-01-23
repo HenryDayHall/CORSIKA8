@@ -36,7 +36,7 @@ TEST_CASE("boosts") {
   auto energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
     return sqrt(m * m + p.squaredNorm());
   };
-  
+
   // helper function for mandelstam-s
   auto s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
     return E * E - p.squaredNorm();
@@ -50,7 +50,7 @@ TEST_CASE("boosts") {
   /*
     General tests check the interface and basic operation
    */
-  
+
   SECTION("General tests") {
 
     // define projectile kinematics in lab frame
@@ -124,7 +124,7 @@ TEST_CASE("boosts") {
   /*
     special case: projectile with arbitrary direction
    */
-  
+
   SECTION("Test boost along tilted axis") {
 
     const HEPMomentumType P0 = 1_PeV;
@@ -161,7 +161,7 @@ TEST_CASE("boosts") {
   /*
     test the ultra-high energy behaviour: E=ZeV
    */
-  
+
   SECTION("High energy") {
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1_GeV;

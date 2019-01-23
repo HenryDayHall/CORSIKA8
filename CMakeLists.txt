@@ -45,6 +45,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neit
 # clang produces a lot of unecessary warnings without this:
 add_compile_options("$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>")
 
+# COAST - interface
+if (WITH_COAST)
+  message(STATUS "Compiling CORSIKA8 for the use with COAST/corsika7.")
+  add_compile_options("-fPIC")
+endif()
+
+
 # unit testing coverage, does not work yet
 #include (CodeCoverage)
 ##set(COVERAGE_LCOV_EXCLUDES 'Documentation/*')
@@ -79,3 +86,6 @@ add_subdirectory (Processes)
 add_subdirectory (Documentation)
 add_subdirectory (Main)
 add_subdirectory (Tools)
+if (WITH_COAST)
+  add_subdirectory (COAST)
+endif()

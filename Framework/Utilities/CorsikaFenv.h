@@ -27,11 +27,8 @@
  */
 extern "C" {
 
-  int
-  feenableexcept(int excepts);
-  int
-  fedisableexcept(int excepts);
-
+int feenableexcept(int excepts);
+int fedisableexcept(int excepts);
 }
 
-#endif //CORSIKA_CORSIKAFENV_H
+#endif // CORSIKA_CORSIKAFENV_H
