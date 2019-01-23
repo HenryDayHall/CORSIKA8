@@ -27,6 +27,7 @@ set (
   SibStack.h
   Decay.h
   Interaction.h
+  NuclearInteraction.h
   ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   )
 
