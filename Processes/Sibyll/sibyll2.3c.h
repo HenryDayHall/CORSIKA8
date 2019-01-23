@@ -102,8 +102,6 @@ void sibyll_(const int&, const int&, const double&);
 // subroutine to initiate sibyll
 void sibyll_ini_();
 
-// subroutine to initiate nuclib  
-void nuc_nuc_ini_();
   
 // subroutine to SET DECAYS
 void dec_ini_();

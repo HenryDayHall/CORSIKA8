@@ -58,16 +58,17 @@ namespace corsika::process::sibyll {
       using namespace corsika::units::si;
       double sigProd, dummy, dum1, dum2, dum3, dum4;
       double dumdif[3];
-      
-      if(!corsika::particles::IsNucleus(BeamId)){
-	sigProd = std::numeric_limits<double>::infinity();
-	return std::make_tuple(sigProd * 1_mbarn, 1);
-      }
 
-      // TODO: use nuclib to calc. nuclear cross sections
-      // FOR NOW: use proton cross section for nuclei
-      auto const BeamIdToUse = corsika::particles::Proton::GetCode();
-      std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
+      corsika::particles::Code BeamIdToUse;
+      if(corsika::particles::IsNucleus(BeamId)){
+
+	// TODO: use nuclib to calc. nuclear cross sections
+	// FOR NOW: use proton cross section for nuclei
+	BeamIdToUse = corsika::particles::Proton::GetCode();
+	std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
+      } else {
+	BeamIdToUse = BeamId;
+      }
       
       const int iBeam = process::sibyll::GetSibyllXSCode(BeamIdToUse);
       const double dEcm = CoMenergy / 1_GeV;
