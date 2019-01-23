@@ -23,7 +23,7 @@ namespace corsika::coast {
   /**
      Convert particle code, and check if it does exists. Throw exeption, if not!
    */
-  
+
   corsika::particles::Code ConvertFromCoast(CoastCode pCode) {
     if (coast2corsika.count(pCode) == 0) {
       ostringstream err;

@@ -21,7 +21,8 @@ namespace corsika::coast {
   public:
     void Init();
 
-    corsika::process::EProcessReturn DoContinuous(Particle&, Track&, Stack&);
+    corsika::process::EProcessReturn DoContinuous(const Particle&, const Track&,
+                                                  const Stack&);
 
     corsika::units::si::LengthType MaxStepLength(Particle&, Track&) {
       return corsika::units::si::meter * std::numeric_limits<double>::infinity();

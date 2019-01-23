@@ -98,26 +98,26 @@ namespace corsika::coast {
     Tritium = 301,
     He3 = 302,
     Helium = 402,
-      Lithium = 603,
-      Beryllium = 904,
-      Boron = 1005,
-      Carbon = 1206,
+    Lithium = 603,
+    Beryllium = 904,
+    Boron = 1005,
+    Carbon = 1206,
+    Carbon13 = 1306,
     Nitrogen = 1407,
     Oxygen = 1608,
-      Neon = 2210,
-      Argon = 1838,
+    Neon = 2210,
+    Argon = 1838,
     Iron = 5628,
-      Xenon = 12854,
-      Radon = 13888,
+    Xenon = 12854,
+    Radon = 13888,
   };
 
   using CoastCodeIntType = std::underlying_type<CoastCode>::type;
 
-  
   /**
      Here we convert CORSIKA7 to CORSIKA8 codes
    */
-  
+
   const std::map<corsika::coast::CoastCode, corsika::particles::Code> coast2corsika = {
       {CoastCode::Gamma, corsika::particles::Code::Gamma},
       {CoastCode::Positron, corsika::particles::Code::Positron},
@@ -189,10 +189,11 @@ namespace corsika::coast {
       {CoastCode::Tritium, corsika::particles::Code::Tritium},
       {CoastCode::He3, corsika::particles::Code::Helium3},
       {CoastCode::Helium, corsika::particles::Code::Helium}, // 402
-      {CoastCode::Lithium, corsika::particles::Code::Lithium}, 
-      {CoastCode::Beryllium, corsika::particles::Code::Beryllium}, 
-      {CoastCode::Boron, corsika::particles::Code::Boron}, 
+      {CoastCode::Lithium, corsika::particles::Code::Lithium},
+      {CoastCode::Beryllium, corsika::particles::Code::Beryllium},
+      {CoastCode::Boron, corsika::particles::Code::Boron},
       {CoastCode::Carbon, corsika::particles::Code::Carbon},
+      {CoastCode::Carbon13, corsika::particles::Code::Carbon13},
       {CoastCode::Nitrogen, corsika::particles::Code::Nitrogen},
       {CoastCode::Oxygen, corsika::particles::Code::Oxygen},
       {CoastCode::Neon, corsika::particles::Code::Neon},
@@ -201,7 +202,7 @@ namespace corsika::coast {
       {CoastCode::Radon, corsika::particles::Code::Radon},
       {CoastCode::Iron, corsika::particles::Code::Iron}, // 5628
 
-      //{CoastCode::, corsika::particles::Code::}, 
+      //{CoastCode::, corsika::particles::Code::},
 
   };
 

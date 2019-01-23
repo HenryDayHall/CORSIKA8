@@ -53,7 +53,7 @@ namespace corsika::coast {
       using namespace corsika::units::si;
       const HEPEnergyType mass = corsika::particles::GetMass(GetPID());
       const auto P = sqrt((GetEnergy() - mass) * (GetEnergy() + mass));
-      const auto p = GetStackData().GetDirection(cs, GetIndex());
+      const auto p = GetStackData().GetDirection(cs);
       return p * P;
     }
 
@@ -73,7 +73,7 @@ namespace corsika::coast {
 
     corsika::geometry::Vector<corsika::units::si::dimensionless_d> GetDirection(
         const corsika::geometry::CoordinateSystem& cs) const {
-      return GetStackData().GetDirection(cs, GetIndex());
+      return GetStackData().GetDirection(cs);
     }
 
     corsika::units::si::TimeType GetTimeInterval() const {
@@ -126,7 +126,7 @@ namespace corsika::coast {
       return fParticle1->energy * 1_GeV;
     }
     corsika::geometry::Vector<corsika::units::si::dimensionless_d> GetDirection(
-        const corsika::geometry::CoordinateSystem& cs, const int) const {
+        const corsika::geometry::CoordinateSystem& cs) const {
       using namespace corsika::units::si;
       corsika::geometry::Point p1(
           cs, {fParticle1->x * 1_cm, fParticle1->y * 1_cm, fParticle1->z * 1_cm});
@@ -141,7 +141,7 @@ namespace corsika::coast {
         const corsika::geometry::CoordinateSystem& cs, const int) const {
       using namespace corsika::units::si;
       corsika::geometry::Vector<corsika::units::si::dimensionless_d> dir =
-          GetDirection(cs, 0);
+          GetDirection(cs);
       corsika::geometry::Point p1(
           cs, {fParticle1->x * 1_cm, fParticle1->y * 1_cm, fParticle1->z * 1_cm});
       corsika::geometry::Point p2(
@@ -159,12 +159,12 @@ namespace corsika::coast {
     }
     corsika::units::si::TimeType GetTime(const int) const {
       using namespace corsika::units::si;
-      return fParticle1->time * 1_ns;
+      return fParticle1->time * 1_s;
     }
 
     corsika::units::si::TimeType GetTimeInterval() const {
       using namespace corsika::units::si;
-      return (fParticle2->time - fParticle1->time) * 1_ns;
+      return (fParticle2->time - fParticle1->time) * 1_s;
     }
 
     /**
