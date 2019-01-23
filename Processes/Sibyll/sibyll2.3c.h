@@ -70,6 +70,22 @@ extern struct {
   int lun;
 } s_debug_;
 
+  // nuclib common, NUClear Multiple Scattering
+  /*
+      COMMON /CNUCMS/ B, BMAX, NTRY, NA, NB, NI, NAEL, NBEL
+     +         ,JJA(IAMAX), JJB(IAMAX), JJINT(IAMAX,IAMAX)
+     +         ,JJAEL(IAMAX), JJBEL(IAMAX)
+   */
+
+  extern struct {
+    double b, bmax;
+    int ntry, na, nb, ni, nael, nbel;
+    int jja[56], jjb[56], jjint[56][56], jjael[56], jjbel[56];
+  } cnucms_;
+
+
+
+  
 // lund random generator setup
 // extern struct {int mrlu[6]; float rrlu[100]; }ludatr_;
 
@@ -81,6 +97,12 @@ void sibyll_ini_();
 
 // subroutine to initiate nuclib  
 void nuc_nuc_ini_();
+
+// subroutine to sample nuclear interaction structure
+  void int_nuc_( const int&, const int&, const double&, const double&);
+
+// subroutine to sample nuclear fragments  
+  void fragm_(const int&, const int&, int&, double&, int&, int&);
   
 // subroutine to SET DECAYS
 void dec_ini_();
