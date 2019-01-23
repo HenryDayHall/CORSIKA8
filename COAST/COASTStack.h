@@ -52,8 +52,8 @@ namespace corsika::coast {
     MomentumVector GetMomentum(const corsika::geometry::CoordinateSystem& cs) const {
       using namespace corsika::units::si;
       const HEPEnergyType mass = corsika::particles::GetMass(GetPID());
-      auto P = sqrt((GetEnergy() - mass) * (GetEnergy() + mass));
-      auto p = GetStackData().GetDirection(cs, GetIndex());
+      const auto P = sqrt((GetEnergy() - mass) * (GetEnergy() + mass));
+      const auto p = GetStackData().GetDirection(cs, GetIndex());
       return p * P;
     }
 
@@ -129,9 +129,9 @@ namespace corsika::coast {
         const corsika::geometry::CoordinateSystem& cs, const int) const {
       using namespace corsika::units::si;
       corsika::geometry::Point p1(
-          cs, {fParticle1->x * 1_cm, fParticle1->y * 1_cm, fParticle1->y * 1_cm});
+          cs, {fParticle1->x * 1_cm, fParticle1->y * 1_cm, fParticle1->z * 1_cm});
       corsika::geometry::Point p2(
-          cs, {fParticle2->x * 1_cm, fParticle2->y * 1_cm, fParticle2->y * 1_cm});
+          cs, {fParticle2->x * 1_cm, fParticle2->y * 1_cm, fParticle2->z * 1_cm});
       const corsika::geometry::Vector D = p2 - p1;
       const auto magD = D.norm();
       const corsika::geometry::Vector dir = D / magD;
@@ -143,12 +143,12 @@ namespace corsika::coast {
       corsika::geometry::Vector<corsika::units::si::dimensionless_d> dir =
           GetDirection(cs, 0);
       corsika::geometry::Point p1(
-          cs, {fParticle1->x * 1_cm, fParticle1->y * 1_cm, fParticle1->y * 1_cm});
+          cs, {fParticle1->x * 1_cm, fParticle1->y * 1_cm, fParticle1->z * 1_cm});
       corsika::geometry::Point p2(
-          cs, {fParticle2->x * 1_cm, fParticle2->y * 1_cm, fParticle2->y * 1_cm});
+          cs, {fParticle2->x * 1_cm, fParticle2->y * 1_cm, fParticle2->z * 1_cm});
       const corsika::geometry::Vector D = p2 - p1;
       const LengthType magD = D.norm();
-      const TimeType deltaT = (fParticle2->time - fParticle1->time) * 1_ns;
+      const TimeType deltaT = GetTimeInterval();
       return dir * magD / deltaT;
     }
     corsika::geometry::Point GetPosition(const corsika::geometry::CoordinateSystem& cs,

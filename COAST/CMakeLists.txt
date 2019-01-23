@@ -43,9 +43,10 @@ target_link_libraries (
 target_include_directories (
   COAST
   PUBLIC
-  $ENV{COAST_DIR}/include
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
+  SYSTEM 
+  $ENV{COAST_DIR}/include
   )
 
 install (

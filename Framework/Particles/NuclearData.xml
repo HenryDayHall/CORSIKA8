@@ -12,6 +12,18 @@
 <particle id="1000020040" name="helium" A="4" Z="2" >
 </particle> 
 
+<particle id="1000020030" name="helium3" A="3" Z="2" >
+</particle> 
+
+<particle id="1000020030" name="lithium" A="6" Z="3" >
+</particle> 
+
+<particle id="1000020030" name="beryllium" A="9" Z="4" >
+</particle> 
+
+<particle id="1000020030" name="boron" A="10" Z="5" >
+</particle> 
+
 <particle id="1000060120" name="carbon" A="12" Z="6" >
 </particle> 
 
@@ -21,10 +33,22 @@
 <particle id="1000080160" name="oxygen" A="16" Z="8" >
 </particle> 
 
+<particle id="1000180400" name="neon" A="22" Z="10" >
+</particle> 
+
 <particle id="1000180400" name="argon" A="40" Z="18" >
 </particle> 
 
 <particle id="1000280560" name="iron" A="56" Z="28" >
+</particle> 
+
+<particle id="1000180400" name="xenon" A="128" Z="54" >
+</particle> 
+
+<particle id="1000180400" name="radon" A="138" Z="88" >
+</particle> 
+
+<particle id="1000280560" name="lead" A="208" Z="82" >
 </particle> 
 
 </chapter>
