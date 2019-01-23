@@ -26,6 +26,7 @@
 
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
+#include <corsika/process/sibyll/NuclearInteraction.h>
 
 #include <corsika/process/track_writer/TrackWriter.h>
 
@@ -234,7 +235,8 @@ int main() {
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  corsika::process::sibyll::Interaction sibyll(env);
+  //  corsika::process::sibyll::Interaction sibyll(env);
+  corsika::process::sibyll::NuclearInteraction sibyll(env);
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(8_GeV);
 
@@ -257,7 +259,9 @@ int main() {
   double theta = 0.;
   double phi = 0.;
   {
-    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    auto particle = stack.NewParticle();
+    particle.SetPID(Code::Helium);
+    HEPMomentumType P0 = sqrt(E0 * E0 - Helium::GetMass() * Helium::GetMass());
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));

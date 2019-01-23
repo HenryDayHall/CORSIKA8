@@ -185,6 +185,11 @@ namespace corsika::process::sibyll {
       cout << "ProcessSibyll: "
            << "DoInteraction: " << corsikaBeamId << " interaction? "
            << process::sibyll::CanInteract(corsikaBeamId) << endl;
+      if(corsika::particles::IsNucleus(corsikaBeamId)){
+	// nuclei handled by different process, skip
+	return process::EProcessReturn::eOk;
+      }
+      
       if (process::sibyll::CanInteract(corsikaBeamId)) {
         const CoordinateSystem& rootCS =
             RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
@@ -293,6 +298,7 @@ namespace corsika::process::sibyll {
           std::cout << "Interaction: "
                     << " DoInteraction: should have dropped particle.. "
                     << "THIS IS AN ERROR" << std::endl;
+	  throw std::runtime_error("energy too low for SIBYLL");
           // p.Delete(); delete later... different process
         } else {
           fCount++;

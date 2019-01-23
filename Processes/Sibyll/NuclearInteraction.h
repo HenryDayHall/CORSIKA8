@@ -58,16 +58,17 @@ namespace corsika::process::sibyll {
       using namespace corsika::units::si;
       double sigProd, dummy, dum1, dum2, dum3, dum4;
       double dumdif[3];
-      
-      if(!corsika::particles::IsNucleus(BeamId)){
-	sigProd = std::numeric_limits<double>::infinity();
-	return std::make_tuple(sigProd * 1_mbarn, 1);
-      }
 
-      // TODO: use nuclib to calc. nuclear cross sections
-      // FOR NOW: use proton cross section for nuclei
-      auto const BeamIdToUse = corsika::particles::Proton::GetCode();
-      std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
+      corsika::particles::Code BeamIdToUse;
+      if(corsika::particles::IsNucleus(BeamId)){
+
+	// TODO: use nuclib to calc. nuclear cross sections
+	// FOR NOW: use proton cross section for nuclei
+	BeamIdToUse = corsika::particles::Proton::GetCode();
+	std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
+      } else {
+	BeamIdToUse = BeamId;
+      }
       
       const int iBeam = process::sibyll::GetSibyllXSCode(BeamIdToUse);
       const double dEcm = CoMenergy / 1_GeV;
@@ -104,13 +105,13 @@ namespace corsika::process::sibyll {
 
       const particles::Code corsikaBeamId = p.GetPID();
 
-      if(!corsika::particles::IsNucleus(corsikaBeamId))
+      if(!corsika::particles::IsNucleus(corsikaBeamId)){
 	// no nuclear interaction
 	return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
-
+      }
+      
       // beam particles for sibyll : 1, 2, 3 for p, pi, k
       // read from cross section code table
-
       const HEPMassType nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
 					      corsika::particles::Neutron::GetMass());
 
@@ -192,11 +193,143 @@ namespace corsika::process::sibyll {
       using std::endl;
 
       const auto corsikaBeamId = p.GetPID();
-      const auto kNucleus = IsNucleus(corsikaBeamId);
-      if(!kNucleus)
+      cout << "NuclearInteraction: DoInteraction: called with:" << corsikaBeamId
+	   << endl;
+	      
+      if(!IsNucleus(corsikaBeamId))
 	return process::EProcessReturn::eOk;
+
+      const CoordinateSystem& rootCS =
+	RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      
+      // position and time of interaction, not used in Sibyll
+      Point pOrig = p.GetPosition();
+      TimeType tOrig = p.GetTime();
+
+      // beam nucleon number
+      const int kABeam = GetNucleusA(corsikaBeamId);
+      // TODO: verify this number !!!
+      if(kABeam>56)
+	throw std::runtime_error("Beam nucleus too large for SIBYLL!");
+      
+      // kinematics
+      // define projectile NUCLEON
+      HEPEnergyType const eProjectileLab = p.GetEnergy() / kABeam;
+      auto const pProjectileLab = p.GetMomentum() / kABeam;
+      const FourVector PprojLab(eProjectileLab, pProjectileLab);
+
+      cout << "NuclearInteraction: ebeam lab: " << eProjectileLab / 1_GeV << endl
+	   << "NuclearInteraction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
+	   << endl;
+
+      // define target
+      // always a nucleon
+      // for Sibyll is always a single nucleon
+      auto constexpr nucleon_mass = 0.5 * (corsika::particles::Proton::GetMass() +
+					   corsika::particles::Neutron::GetMass());
+      // target is always at rest
+      const auto eTargetLab = 0_GeV + nucleon_mass;
+      const auto pTargetLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
+      const FourVector PtargLab(eTargetLab, pTargetLab);
+      
+      cout << "NuclearInteraction: etarget lab: " << eTargetLab / 1_GeV << endl
+	   << "NuclearInteraction: ptarget lab: " << pTargetLab.GetComponents() / 1_GeV
+	   << endl;
+
+      // center-of-mass energy in nucleon-nucleon frame
+      auto const Ptot4 = PtargLab + PprojLab;
+      HEPEnergyType Ecm = Ptot4.GetNorm();
+      cout << "NuclearInteraction: nuc-nuc cm energy: " << Ecm / 1_GeV << endl;
+
+      const auto beamId = corsika::particles::Proton::GetCode();
+      // sample target nucleon number
+      const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
+      const auto& mediumComposition =
+	currentNode->GetModelProperties().GetNuclearComposition();
+      // get cross sections for target materials
+      /*
+	Here we read the cross section from the interaction model again,
+	should be passed from GetInteractionLength if possible
+      */
+      auto const& compVec = mediumComposition.GetComponents();
+      std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
+
+      for (size_t i = 0; i < compVec.size(); ++i) {
+	auto const targetId = compVec[i];
+	const auto [sigProd, nNuc] = GetCrossSection(beamId,targetId,Ecm);
+	cross_section_of_components[i] = sigProd;
+      }
+
+      const auto targetCode = currentNode->GetModelProperties().SampleTarget(
+									     cross_section_of_components, fRNG);
+      cout << "Interaction: target selected: " << targetCode << endl;
+      /*
+	FOR NOW: allow nuclei with A<18 or protons only.
+	when medium composition becomes more complex, approximations will have to be
+	allowed air in atmosphere also contains some Argon.
+      */
+      int kATarget = -1;
+      if (IsNucleus(targetCode)) kATarget = GetNucleusA(targetCode);
+      if (targetCode == corsika::particles::Proton::GetCode()) kATarget = 1;
+      cout << "NuclearInteraction: sibyll target code: " << kATarget << endl;
+      if (kATarget > 18 || kATarget < 1)
+	throw std::runtime_error(
+				 "Sibyll target outside range. Only nuclei with A<18 or protons are "
+				 "allowed.");
+      // end of target sampling
+
+      // superposition 
+      cout << "NuclearInteraction: sampling nuc. multiple interaction structure.. "<< endl;
+      // get nucleon-nucleon cross section
+      // (needed to determine number of scatterings)
+      double sigProd, sigEla, dum1, dum2, dum3, dum4;
+      double dumdif[3];
+      const double sqsnuc = Ecm / 1_GeV;
+      const int iBeam = 1;
+      sib_sigma_hp_(iBeam, sqsnuc, dum1, sigEla, sigProd, dumdif, dum3, dum4);	
+      
+      // sample number of interactions (output in common cnucms)
+      // nuclear multiple scattering according to glauber (r.i.p.)
+      int_nuc_( kATarget, kABeam, sigProd, sigEla);
+
+      cout << "number of wounded nucleons in target   : " << cnucms_.na << endl
+	   << "number of wounded nucleons in project. : " << cnucms_.nb << endl
+	   << "number of inel. nuc.-nuc. interactions : " << cnucms_.ni << endl
+	   << "number of elastic nucleons in target   : " << cnucms_.nael << endl
+	   << "number of elastic nucleons in project. : " << cnucms_.nbel << endl;
+      
+      throw std::runtime_error(" end now");      
+
+      // calculate fragmentation
+      // call FRAGM (IAT,IAP, NW,B, NF, IAF)
+      // fragm_(kATarget, kABeam, NBT, B, NF, IAF)
+
+      /*
+C.  INPUT: IAP = mass of incident nucleus
+C.         IAT = mass of target   nucleus
+C.         NW = number of wounded nucleons in the beam nucleus
+C.         B  = impact parameter in the interaction
+C.     
+C.  OUTPUT : NF = number of fragments  of the spectator nucleus
+C.           IAF(1:NF) = mass number of each fragment
+C.           PF(3,60) in common block /FRAGMENTS/ contains
+C.           the three momentum components (MeV/c) of each
+C.           fragment in the projectile frame
+C..............................................................
+       */
+      
+      // put spectators on intermediate stack
+      //Stack nucs;
+      
+      // add elastic nucleons to stack
+
+      // add inelastic interactions
       
 
+      // move particles to corsika stack
+      // boost
+
+      
       // add proton instead
       auto pnew = s.NewParticle();
       pnew.SetPID( corsika::particles::Proton::GetCode() );
