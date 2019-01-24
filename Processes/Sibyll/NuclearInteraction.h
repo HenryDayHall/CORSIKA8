@@ -46,7 +46,7 @@ namespace corsika::process::sibyll {
       using std::endl;
 
       // initialize hadronic interaction module
-      sibyll_ini_();
+      //sibyll_ini_();
       
       // initialize nuclib
       nuc_nuc_ini_();
@@ -184,6 +184,9 @@ namespace corsika::process::sibyll {
    
     template <typename Particle, typename Stack>
     corsika::process::EProcessReturn DoInteraction(Particle& p, Stack&) {
+
+      // this routine superimposes different nucleon-nucleon interactions
+      // in a nucleus-nucleus interaction, based the SIBYLL routine SIBNUC 
 
       // this routine superimposes different nucleon-nucleon interactions
       // in a nucleus-nucleus interaction, based the SIBYLL routine SIBNUC 
