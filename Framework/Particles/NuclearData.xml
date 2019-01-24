@@ -21,6 +21,9 @@
 <particle id="1000080160" name="oxygen" A="16" Z="8" >
 </particle> 
 
+<particle id="1000160330" name="sulphur" A="33" Z="16" >
+</particle> 
+
 <particle id="1000180400" name="argon" A="40" Z="18" >
 </particle> 
 
