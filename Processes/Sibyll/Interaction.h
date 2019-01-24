@@ -185,9 +185,10 @@ namespace corsika::process::sibyll {
       cout << "ProcessSibyll: "
            << "DoInteraction: " << corsikaBeamId << " interaction? "
            << process::sibyll::CanInteract(corsikaBeamId) << endl;
+      
       if(corsika::particles::IsNucleus(corsikaBeamId)){
-	// nuclei handled by different process, skip
-	return process::EProcessReturn::eOk;
+	// nuclei handled by different process, this should not happen
+	throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
       }
       
       if (process::sibyll::CanInteract(corsikaBeamId)) {

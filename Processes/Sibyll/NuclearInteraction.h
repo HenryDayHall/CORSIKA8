@@ -203,7 +203,6 @@ namespace corsika::process::sibyll {
       if(!IsNucleus(corsikaProjId)){
 	// this should not happen
 	throw std::runtime_error("Non nuclear projectile in NUCLIB!");
-	return process::EProcessReturn::eOk;
       }
 
       fCount++;
