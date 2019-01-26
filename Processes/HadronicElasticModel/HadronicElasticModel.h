@@ -156,8 +156,8 @@ namespace corsika::process::HadronicElasticModel {
         cross_section_of_components[i] = CrossSection(s);
       }
 
-      const auto targetCode = currentNode->GetModelProperties().SampleTarget(
-          cross_section_of_components, fRNG);
+      const auto targetCode =
+          mediumComposition.SampleTarget(cross_section_of_components, fRNG);
 
       auto const targetMass = corsika::particles::GetMass(targetCode);
 

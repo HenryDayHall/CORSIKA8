@@ -15,6 +15,7 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <cassert>
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
@@ -25,6 +26,35 @@ namespace corsika::environment {
         fComponents; //!< particle codes of consitutents
 
     double const fAvgMassNumber;
+
+    template <class AConstIterator, class BConstIterator>
+    class WeightProviderIterator {
+      AConstIterator fAIter;
+      BConstIterator fBIter;
+
+    public:
+      using value_type = double;
+      using iterator_category = std::input_iterator_tag;
+      using pointer = double*;
+      using reference = double&;
+      using difference_type = ptrdiff_t;
+
+      WeightProviderIterator(AConstIterator a, BConstIterator b)
+          : fAIter(a)
+          , fBIter(b) {}
+
+      double operator*() const { return ((*fAIter) * (*fBIter)).magnitude(); }
+
+      WeightProviderIterator& operator++() { // prefix ++
+        ++fAIter;
+        ++fBIter;
+        return *this;
+      }
+
+      auto operator==(WeightProviderIterator other) { return fAIter == other.fAIter; }
+
+      auto operator!=(WeightProviderIterator other) { return !(*this == other); }
+    };
 
   public:
     NuclearComposition(std::vector<corsika::particles::Code> pComponents,
@@ -51,6 +81,26 @@ namespace corsika::environment {
     auto const& GetFractions() const { return fNumberFractions; }
     auto const& GetComponents() const { return fComponents; }
     auto const GetAverageMassNumber() const { return fAvgMassNumber; }
+
+    template <class TRNG>
+    corsika::particles::Code SampleTarget(
+        std::vector<corsika::units::si::CrossSectionType> const& sigma,
+        TRNG& randomStream) const {
+      using namespace corsika::units::si;
+
+      assert(sigma.size() == fNumberFractions.size());
+
+      std::discrete_distribution channelDist(
+          WeightProviderIterator<decltype(fNumberFractions.begin()),
+                                 decltype(sigma.begin())>(fNumberFractions.begin(),
+                                                          sigma.begin()),
+          WeightProviderIterator<decltype(fNumberFractions.begin()),
+                                 decltype(sigma.end())>(fNumberFractions.end(),
+                                                        sigma.end()));
+
+      auto const iChannel = channelDist(randomStream);
+      return fComponents[iChannel];
+    }
   };
 
 } // namespace corsika::environment
