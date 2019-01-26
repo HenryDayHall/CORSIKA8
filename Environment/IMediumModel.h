@@ -1,4 +1,3 @@
-
 /**
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -53,7 +52,6 @@ namespace corsika::environment {
       std::vector<float> weights(fractions.size());
 
       for (size_t i = 0; i < fractions.size(); ++i) {
-        std::cout << "HomogeneousMedium: fraction: " << fractions[i] << std::endl;
         weights[i] = fractions[i] * sigma[i].magnitude();
       }
 
