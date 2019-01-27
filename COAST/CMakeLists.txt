@@ -45,7 +45,12 @@ target_include_directories (
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
-  SYSTEM 
+  )
+
+target_include_directories (
+  COAST
+  SYSTEM
+  PUBLIC
   $ENV{COAST_DIR}/include
   )
 
