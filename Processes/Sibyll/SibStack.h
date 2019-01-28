@@ -29,9 +29,7 @@ namespace corsika::process::sibyll {
     void Init();
 
     void Clear() { s_plist_.np = 0; }
-
     int GetSize() const { return s_plist_.np; }
-
     int GetCapacity() const { return 8000; }
 
     void SetId(const int i, const int v) { s_plist_.llist[i] = v; }
@@ -43,7 +41,6 @@ namespace corsika::process::sibyll {
       using namespace corsika::units::si;
       s_plist_.p[4][i] = v / 1_GeV;
     }
-
     void SetMomentum(const int i, const MomentumVector& v) {
       using namespace corsika::units::si;
       auto tmp = v.GetComponents();
@@ -51,7 +48,6 @@ namespace corsika::process::sibyll {
     }
 
     int GetId(const int i) const { return s_plist_.llist[i]; }
-
     corsika::units::si::HEPEnergyType GetEnergy(const int i) const {
       using namespace corsika::units::si;
       return s_plist_.p[3][i] * 1_GeV;
@@ -60,7 +56,6 @@ namespace corsika::process::sibyll {
       using namespace corsika::units::si;
       return s_plist_.p[4][i] * 1_GeV;
     }
-
     MomentumVector GetMomentum(const int i) const {
       using corsika::geometry::CoordinateSystem;
       using corsika::geometry::QuantityVector;
@@ -93,6 +88,27 @@ namespace corsika::process::sibyll {
     using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
+    void SetParticleData(const int vID, // corsika::process::sibyll::SibyllCode vID,
+                         const corsika::units::si::HEPEnergyType vE,
+                         const MomentumVector& vP,
+                         const corsika::units::si::HEPMassType vM) {
+      SetPID(vID);
+      SetEnergy(vE);
+      SetMomentum(vP);
+      SetMass(vM);
+    }
+
+    void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
+                         const int vID, //  corsika::process::sibyll::SibyllCode vID,
+                         const corsika::units::si::HEPEnergyType vE,
+                         const MomentumVector& vP,
+                         const corsika::units::si::HEPMassType vM) {
+      SetPID(vID);
+      SetEnergy(vE);
+      SetMomentum(vP);
+      SetMass(vM);
+    }
+
     void SetEnergy(const corsika::units::si::HEPEnergyType v) {
       GetStackData().SetEnergy(GetIndex(), v);
     }

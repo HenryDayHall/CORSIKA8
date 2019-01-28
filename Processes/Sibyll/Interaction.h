@@ -172,7 +172,7 @@ namespace corsika::process::sibyll {
      */
 
     template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) {
+    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack&) {
 
       using namespace corsika::units;
       using namespace corsika::utl;
@@ -328,12 +328,9 @@ namespace corsika::process::sibyll {
             auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
             // add to corsika stack
-            auto pnew = s.NewParticle();
-            pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
-            pnew.SetEnergy(Plab.GetTimeLikeComponent());
-            pnew.SetMomentum(Plab.GetSpaceLikeComponents());
-            pnew.SetPosition(pOrig);
-            pnew.SetTime(tOrig);
+            auto pnew = p.AddSecondary(process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                                       Plab.GetTimeLikeComponent(),
+                                       Plab.GetSpaceLikeComponents(), pOrig, tOrig);
 
             Plab_final += pnew.GetMomentum();
             Elab_final += pnew.GetEnergy();

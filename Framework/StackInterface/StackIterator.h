@@ -95,6 +95,14 @@ namespace corsika::stack {
       (**this).SetParticleData(args...);
     }
 
+    template <typename... Args>
+    StackIteratorInterface(StackType& data, const int index,
+                           StackIteratorInterface& parent, const Args... args)
+        : fIndex(index)
+        , fData(&data) {
+      (**this).SetParticleData(*parent, args...);
+    }
+
   public:
     StackIteratorInterface& operator++() {
       ++fIndex;
@@ -116,7 +124,7 @@ namespace corsika::stack {
     }
 
   protected:
-    int GetIndex() const { return fIndex; }
+    inline int GetIndex() const { return fIndex; }
     StackType& GetStack() { return *fData; }
     const StackType& GetStack() const { return *fData; }
     StackData& /*typename std::decay<StackData>::type&*/ GetStackData() {

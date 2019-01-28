@@ -46,6 +46,11 @@ namespace corsika::stack {
     /// will be invalidated by this operation
     void Delete() { GetIterator().GetStack().Delete(GetIterator()); }
 
+    template <typename... Args>
+    StackIterator AddSecondary(const Args... v) {
+      return GetStack().AddSecondary(GetIterator(), v...);
+    }
+
     //  protected: // todo should be proteced, but don't now how to 'friend Stack'
     /// Function to provide CRTP access to inheriting class (type)
     StackIterator& GetIterator() { return static_cast<StackIterator&>(*this); }

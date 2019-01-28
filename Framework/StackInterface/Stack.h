@@ -71,12 +71,14 @@ namespace corsika::stack {
 
     /// increase stack size, create new particle at end of stack
     template <typename... Args>
-    StackIterator AddParticle(Args... v) {
+    StackIterator AddParticle(const Args... v) {
       IncrementSize();
       return StackIterator(*this, GetSize() - 1, v...);
-      // auto p = StackIterator(*this, GetSize() - 1);
-      // p.SetParticleData(v...);
-      // return p;
+    }
+    template <typename... Args>
+    StackIterator AddSecondary(StackIterator& parent, const Args... v) {
+      IncrementSize();
+      return StackIterator(*this, GetSize() - 1, parent, v...);
     }
     void Copy(StackIterator& a, StackIterator& b) { Copy(a.GetIndex(), b.GetIndex()); }
     /// delete this particle
