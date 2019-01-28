@@ -60,35 +60,57 @@ namespace corsika::process::sibyll {
       double sigProd, dummy, dum1, dum2, dum3, dum4;
       double dumdif[3];
 
-      if(!corsika::particles::IsNucleus(BeamId)){
-	// return infinite cross section, no interaction
-	return std::make_tuple( std::numeric_limits<double>::infinity() * 1_mbarn, 0);
+      std::cout << "NuclearInteraction: GetCrossSection: called with: beamId= "<<BeamId
+		<< " TargetId= " << TargetId << " CoMenergy= " << CoMenergy / 1_GeV << std::endl;
+
+      if(!corsika::particles::IsNucleus(BeamId) ){
+	// ask sibyll for hadron cross section
+	// this is needed for sample target, which uses the nucleon cross section
+	// TODO: generalize to parent hadronic interaction
+	 const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
+	 const double dEcm = CoMenergy / 1_GeV;
+	 // check target, hadron or nucleus?
+	 if (corsika::particles::IsNucleus(TargetId)) {
+	   const int iTarget = corsika::particles::GetNucleusA(TargetId);
+	   if (iTarget > 18 || iTarget == 0)
+	     throw std::runtime_error(
+				      "Sibyll target outside range. Only nuclei with A<18 are allowed.");
+	   sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy);
+	   return std::make_tuple(sigProd * 1_mbarn, iTarget);
+	 } else if (TargetId == corsika::particles::Proton::GetCode()) {
+	   sib_sigma_hp_(iBeam, dEcm, dum1, dum2, sigProd, dumdif, dum3, dum4);
+	   return std::make_tuple(sigProd * 1_mbarn, 1);
+	 } else {
+	   throw std::runtime_error("GetCrossSection: no interaction in sibyll possible");
+	   // no interaction in sibyll possible, return infinite cross section? or throw?
+	   sigProd = std::numeric_limits<double>::infinity();
+	   return std::make_tuple(sigProd * 1_mbarn, 0);
+	 }
+      }
+     
+      // use nuclib to calc. nuclear cross sections
+      // TODO: for now assumes air with hard coded composition
+      // extend to arbitrary mixtures, requires smarter initialization
+      
+      const int iBeam = corsika::particles::GetNucleusA(BeamId);
+      if( iBeam > 56 || iBeam < 2){
+	//std::cout<<"NuclearInteraction: beam nucleus outside allowed range for NUCLIB!" << std::endl;
+	throw std::runtime_error("NuclearInteraction: GetCrossSection: beam nucleus outside allowed range for NUCLIB!");
       }
       
-      // TODO: use nuclib to calc. nuclear cross sections
-      // FOR NOW: use proton cross section for nuclei
-      corsika::particles::Code BeamIdToUse;
-      BeamIdToUse = corsika::particles::Proton::GetCode();
-      std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
-      
-      const int iBeam = process::sibyll::GetSibyllXSCode(BeamIdToUse);
       const double dEcm = CoMenergy / 1_GeV;
-      // check target, hadron or nucleus?
+      if(dEcm<10.)
+	throw std::runtime_error("NuclearInteraction: GetCrossSection: energy too low!");
+      
       if (corsika::particles::IsNucleus(TargetId)) {
 	const int iTarget = corsika::particles::GetNucleusA(TargetId);
 	if (iTarget > 18 || iTarget == 0)
 	  throw std::runtime_error(
 				   "Sibyll target outside range. Only nuclei with A<18 are allowed.");
-	sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy);
-	return std::make_tuple(sigProd * 1_mbarn, iTarget);
-      } else if (TargetId == corsika::particles::Proton::GetCode()) {
-	sib_sigma_hp_(iBeam, dEcm, dum1, dum2, sigProd, dumdif, dum3, dum4);
-	return std::make_tuple(sigProd * 1_mbarn, 1);
-      } else {
-	throw std::runtime_error("GetCrossSection: no interaction in sibyll possible");
-	// no interaction in sibyll possible, return infinite cross section? or throw?
-	sigProd = std::numeric_limits<double>::infinity();
-	return std::make_tuple(sigProd * 1_mbarn, 0);
+	std::cout<< "NuclearInteraction: calling signuc.." << std::endl;
+	signuc_(iBeam, dEcm, sigProd);
+	std::cout << "cross section: " << sigProd << std::endl;
+	return std::make_tuple(sigProd * 1_mbarn, iTarget);	
       }
     }
 
@@ -131,8 +153,9 @@ namespace corsika::process::sibyll {
 				      (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
       std::cout << "NuclearInteraction: LambdaInt: \n"
-		<< " input energy: " << p.GetEnergy() / 1_GeV << endl
-		<< " beam pid:" << p.GetPID() << endl;
+		<< " input energy: " << Elab / 1_GeV << endl
+		<< " input energy CoM: " << ECoM / 1_GeV << endl
+		<< " beam pid:" << corsikaBeamId << endl;
 
       if ( Elab >= 8.5_GeV && ECoM >= 10_GeV) {
 
@@ -162,7 +185,7 @@ namespace corsika::process::sibyll {
 	    GetCrossSection(corsikaBeamId, targetId, ECoM);
 
 	  std::cout << "NuclearInteraction: "
-		    << " IntLength: sibyll return (mb): "
+		    << "IntLength: sibyll return (mb): "
 		    << productionCrossSection / 1_mbarn << std::endl;
 	  weightedProdCrossSection += w[i] * productionCrossSection;
 	  avgTargetMassNumber += w[i] * numberOfNucleons;
@@ -177,7 +200,7 @@ namespace corsika::process::sibyll {
 	std::cout << "NuclearInteraction: "
 		  << "interaction length (g/cm2): "
 		  << int_length / (0.001_kg) * 1_cm * 1_cm << std::endl;
-
+	
 	return int_length;
       } else {
 	return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
@@ -206,8 +229,10 @@ namespace corsika::process::sibyll {
 	   << endl;
       
       if(!IsNucleus(corsikaProjId)){
+	cout << "WARNING: non nuclear projectile in NUCLIB!" << endl;
 	// this should not happen
-	throw std::runtime_error("Non nuclear projectile in NUCLIB!");
+	//throw std::runtime_error("Non nuclear projectile in NUCLIB!");
+	return process::EProcessReturn::eOk;
       }
 
       fCount++;
@@ -291,6 +316,7 @@ namespace corsika::process::sibyll {
       const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
       const auto& mediumComposition =
 	currentNode->GetModelProperties().GetNuclearComposition();
+      cout << "get cross sections for target materials.." << endl;
       // get cross sections for target materials
       /*
 	Here we read the cross section from the interaction model again,
@@ -298,9 +324,11 @@ namespace corsika::process::sibyll {
       */
       auto const& compVec = mediumComposition.GetComponents();
       std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
-
+      
       for (size_t i = 0; i < compVec.size(); ++i) {
 	auto const targetId = compVec[i];
+	cout << "target component: " << targetId << endl;
+	cout << "beam id: " << targetId << endl;
 	const auto [sigProd, nNuc] = GetCrossSection(beamId,targetId,EcmNN);
 	cross_section_of_components[i] = sigProd;
       }
@@ -512,10 +540,9 @@ namespace corsika::process::sibyll {
 	   << "accross all nucleon interactions: Ptot lab: " << (Plab_all / 1_GeV).GetComponents()
 	   << endl;
       
-      //throw std::runtime_error(" stop here");
-
       // delete current particle
       p.Delete();
+      //throw std::runtime_error(" stop here");
 
       return process::EProcessReturn::eOk;
     }

@@ -39,14 +39,16 @@ extern "C" {
 
   // NUCLIB
   
-// subroutine to initiate nuclib  
-void nuc_nuc_ini_();
+  // subroutine to initiate nuclib  
+  void nuc_nuc_ini_();
+  
+  // subroutine to sample nuclear interaction structure
+  void int_nuc_( const int&, const int&, const double&, const double&);
 
-// subroutine to sample nuclear interaction structure
-void int_nuc_( const int&, const int&, const double&, const double&);
+  // subroutine to sample nuclear fragments  
+  void fragm_(const int&, const int&, const int&, const double&, int&, int*);
 
-// subroutine to sample nuclear fragments  
-void fragm_(const int&, const int&, const int&, const double&, int&, int*);
+  void signuc_(const int&, const double&, double&);
   
 }
 #endif
