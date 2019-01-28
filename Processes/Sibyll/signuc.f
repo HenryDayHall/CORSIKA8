@@ -1,7 +1,7 @@
 *-- Author :    D. HECK IK FZK KARLSRUHE       06/12/1996
 C=======================================================================
 
-      SUBROUTINE SIGNUC_INI2( IA,E0,SSIGNUC )
+      SUBROUTINE SIGNUC( IA,E0,SSIGNUC )
 
 C-----------------------------------------------------------------------
 C  SIG(MA) NUC(LEUS) INI(TIALIZATION) 2
