@@ -38,10 +38,12 @@ namespace corsika::stack {
     template <typename StackIteratorInterface>
     class ParticleInterface : public ParticleBase<StackIteratorInterface> {
 
+      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStack;
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
     public:
+      /// individual setters
       void SetPID(const corsika::particles::Code id) {
         GetStackData().SetPID(GetIndex(), id);
       }
@@ -62,6 +64,7 @@ namespace corsika::stack {
         GetStackData().SetTime(GetIndex(), v);
       }
 
+      /// individual getters
       corsika::particles::Code GetPID() const {
         return GetStackData().GetPID(GetIndex());
       }
