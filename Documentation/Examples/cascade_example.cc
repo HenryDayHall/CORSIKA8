@@ -256,8 +256,6 @@ int main() {
   double theta = 0.;
   double phi = 0.;
   {
-    auto particle = stack.NewParticle();
-    particle.SetPID(Code::Proton);
     HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
@@ -268,11 +266,8 @@ int main() {
     auto plab = stack::super_stupid::MomentumVector(rootCS, {px, py, pz});
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    particle.SetEnergy(E0);
-    particle.SetMomentum(plab);
-    particle.SetTime(0_ns);
-    Point p(rootCS, 0_m, 0_m, 0_m);
-    particle.SetPosition(p);
+    Point pos(rootCS, 0_m, 0_m, 0_m);
+    stack.AddParticle(Code::Proton, E0, plab, pos, 0_ns);
   }
 
   // define air shower object, run simulation

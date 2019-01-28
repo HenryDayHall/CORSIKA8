@@ -30,16 +30,19 @@ using namespace corsika;
 
 TEST_CASE("StackInspector", "[processes]") {
 
-  auto const& cs =
+  auto const& rootCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
+  geometry::Point const origin(rootCS, {0_m, 0_m, 0_m});
   geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(
-      cs, 0_m / second, 0_m / second, 1_m / second);
+      rootCS, 0_m / second, 0_m / second, 1_m / second);
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
   setup::Stack stack;
-  auto particle = stack.NewParticle();
+  auto particle = stack.AddParticle(
+      particles::Code::Electron, 10_GeV,
+      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+      geometry::Point(rootCS, {0_m, 0_m, 10_km}), 0_ns);
 
   SECTION("interface") {
 

@@ -11,6 +11,10 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
+
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
+
 #include <cassert>
 #include <iomanip>
 #include <iostream>
@@ -20,10 +24,12 @@ using namespace corsika::stack;
 using namespace std;
 
 void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
+  const geometry::CoordinateSystem& rootCS =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   for (int i = 0; i < 11; ++i) {
-    auto p = s.NewParticle();
-    p.SetPID(corsika::particles::Code::Electron);
-    p.SetEnergy(1.5_GeV * i);
+    s.AddParticle(corsika::particles::Code::Electron, 1.5_GeV * i,
+                  stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
+                  geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns);
   }
 }
 

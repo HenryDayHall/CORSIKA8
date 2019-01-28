@@ -61,10 +61,14 @@ class TestParticleInterface : public ParticleBase<StackIteratorInterface> {
   using ParticleBase<StackIteratorInterface>::GetStack;
   using ParticleBase<StackIteratorInterface>::GetStackData;
   using ParticleBase<StackIteratorInterface>::GetIndex;
+  using ParticleBase<StackIteratorInterface>::GetIterator;
 
 public:
   // one version
-  void AddSecondary(const double v) { GetStack().AddParticle(v); }
+  StackIteratorInterface& AddSecondary(const double v) {
+    GetStack().AddParticle(v);
+    return GetIterator();
+  }
   // another version
   void AddSecondary(const double v, const double p) { GetStack().AddParticle(v + p); }
 
@@ -82,7 +86,7 @@ TEST_CASE("Stack", "[Stack]") {
   // helper function for sum over stack data
   auto sum = [](const StackTest& stack) {
     double v = 0;
-    for (const auto&& p : stack) v += p.GetData();
+    for (const auto& p : stack) v += p.GetData();
     return v;
   };
 
