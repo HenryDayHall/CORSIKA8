@@ -31,10 +31,15 @@ namespace corsika::stack {
   class ParticleBase {
 
   public:
-    ParticleBase() {}
+    ParticleBase() = default;
 
   private:
-    ParticleBase(ParticleBase&);
+    ParticleBase(ParticleBase&) = delete;
+    ParticleBase operator=(ParticleBase&) = delete;
+    ParticleBase(ParticleBase&&) = delete;
+    ParticleBase operator=(ParticleBase&&) = delete;
+    ParticleBase(const ParticleBase&) = delete;
+    ParticleBase operator=(const ParticleBase&) = delete;
 
   public:
     /// delete this particle on the stack. The corresponding iterator
@@ -52,6 +57,8 @@ namespace corsika::stack {
     /// access to underling stack data
     auto& GetStackData() { return GetIterator().GetStackData(); }
     const auto& GetStackData() const { return GetIterator().GetStackData(); }
+    auto& GetStack() { return GetIterator().GetStack(); }
+    const auto& GetStack() const { return GetIterator().GetStack(); }
 
     /// return the index number of the underlying iterator object
     int GetIndex() const { return GetIterator().GetIndex(); }

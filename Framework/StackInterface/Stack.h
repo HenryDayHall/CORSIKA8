@@ -14,6 +14,8 @@
 
 #include <corsika/stack/StackIterator.h> // include here, to help application programmres
 
+#include <stdexcept>
+
 /**
    All classes around management of particles on a stack.
  */
@@ -35,9 +37,11 @@ namespace corsika::stack {
   public:
     typedef Stack<StackData, PI> StackType;
     typedef StackIteratorInterface<StackData, PI> StackIterator;
-    typedef const StackIterator ConstStackIterator;
+    typedef ConstStackIteratorInterface<StackData, PI> ConstStackIterator;
+    // typedef const StackIterator ConstStackIterator;
     typedef typename StackIterator::ParticleInterfaceType ParticleType;
     friend class StackIteratorInterface<StackData, PI>;
+    friend class ConstStackIteratorInterface<StackData, PI>;
 
   public:
     using StackData::GetCapacity;
@@ -57,20 +61,28 @@ namespace corsika::stack {
     StackIterator end() { return StackIterator(*this, GetSize()); }
     StackIterator last() { return StackIterator(*this, GetSize() - 1); }
 
-    /// these are functions required by std containers and std loops
+    ConstStackIterator begin() const { return ConstStackIterator(*this, 0); }
+    ConstStackIterator end() const { return ConstStackIterator(*this, GetSize()); }
+    ConstStackIterator last() const { return ConstStackIterator(*this, GetSize() - 1); }
+
     ConstStackIterator cbegin() const { return ConstStackIterator(*this, 0); }
     ConstStackIterator cend() const { return ConstStackIterator(*this, GetSize()); }
     ConstStackIterator clast() const { return ConstStackIterator(*this, GetSize() - 1); }
 
     /// increase stack size, create new particle at end of stack
-    StackIterator NewParticle() {
+    template <typename... Args>
+    StackIterator AddParticle(Args... v) {
       IncrementSize();
-      return StackIterator(*this, GetSize() - 1);
+      return StackIterator(*this, GetSize() - 1, v...);
+      // auto p = StackIterator(*this, GetSize() - 1);
+      // p.SetParticleData(v...);
+      // return p;
     }
     void Copy(StackIterator& a, StackIterator& b) { Copy(a.GetIndex(), b.GetIndex()); }
     /// delete this particle
     void Delete(StackIterator& p) {
       if (GetSize() == 0) { /*error*/
+        throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
       if (p.GetIndex() < GetSize() - 1) Copy(GetSize() - 1, p.GetIndex());
       DeleteLast();
