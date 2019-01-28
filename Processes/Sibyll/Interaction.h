@@ -153,7 +153,7 @@ namespace corsika::process::sibyll {
              << weightedProdCrossSection / 1_mbarn << endl;
 
         // calculate interaction length in medium
-	//#warning check interaction length units
+        //#warning check interaction length units
         GrammageType const int_length =
             avgTargetMassNumber * corsika::units::constants::u / weightedProdCrossSection;
         std::cout << "Interaction: "
@@ -254,16 +254,16 @@ namespace corsika::process::sibyll {
           Here we read the cross section from the interaction model again,
           should be passed from GetInteractionLength if possible
          */
-	//#warning reading interaction cross section again, should not be necessary
+        //#warning reading interaction cross section again, should not be necessary
         auto const& compVec = mediumComposition.GetComponents();
         std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
 
         for (size_t i = 0; i < compVec.size(); ++i) {
           auto const targetId = compVec[i];
-          const auto [sigProd, nNuc] = GetCrossSection(corsikaBeamId, targetId, Ecm);	  
+          const auto [sigProd, nNuc] = GetCrossSection(corsikaBeamId, targetId, Ecm);
           cross_section_of_components[i] = sigProd;
-	  int ideleteme = nNuc; // to avoid not used warning in array binding
-	  ideleteme = ideleteme; // to avoid not used warning in array binding
+          int ideleteme = nNuc;  // to avoid not used warning in array binding
+          ideleteme = ideleteme; // to avoid not used warning in array binding
         }
 
         const auto targetCode = currentNode->GetModelProperties().SampleTarget(
