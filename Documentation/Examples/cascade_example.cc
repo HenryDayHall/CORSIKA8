@@ -245,7 +245,7 @@ int main() {
   corsika::process::sibyll::Interaction sibyll(env);
   corsika::process::sibyll::NuclearInteraction sibyllNuc(env);
   corsika::process::sibyll::Decay decay;
-  ProcessCut cut(8_GeV);
+  ProcessCut cut(200_GeV);
 
   // corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
@@ -263,7 +263,7 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const Code beamCode = Code::Carbon;
-  const HEPEnergyType E0 = 100_TeV;
+  const HEPEnergyType E0 = 1200_GeV;
     //      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;

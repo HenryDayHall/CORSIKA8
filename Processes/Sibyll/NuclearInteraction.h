@@ -20,6 +20,7 @@
 #include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/process/sibyll/SibStack.h>
 #include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/process/sibyll/nuclib.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
@@ -59,19 +60,20 @@ namespace corsika::process::sibyll {
       double sigProd, dummy, dum1, dum2, dum3, dum4;
       double dumdif[3];
 
-      corsika::particles::Code BeamIdToUse;
-      if(corsika::particles::IsNucleus(BeamId)){
-
-	// TODO: use nuclib to calc. nuclear cross sections
-	// FOR NOW: use proton cross section for nuclei
-	BeamIdToUse = corsika::particles::Proton::GetCode();
-	std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
-      } else {
-	BeamIdToUse = BeamId;
+      if(!corsika::particles::IsNucleus(BeamId)){
+	// return infinite cross section, no interaction
+	return std::make_tuple( std::numeric_limits<double>::infinity() * 1_mbarn, 0);
       }
+      
+      // TODO: use nuclib to calc. nuclear cross sections
+      // FOR NOW: use proton cross section for nuclei
+      corsika::particles::Code BeamIdToUse;
+      BeamIdToUse = corsika::particles::Proton::GetCode();
+      std::cout << "WARNING: replacing beam nucleus with proton!" << std::endl;
       
       const int iBeam = process::sibyll::GetSibyllXSCode(BeamIdToUse);
       const double dEcm = CoMenergy / 1_GeV;
+      // check target, hadron or nucleus?
       if (corsika::particles::IsNucleus(TargetId)) {
 	const int iTarget = corsika::particles::GetNucleusA(TargetId);
 	if (iTarget > 18 || iTarget == 0)
