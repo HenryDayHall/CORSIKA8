@@ -12,7 +12,7 @@
 #ifndef _include_Stack_h__
 #define _include_Stack_h__
 
-#include <corsika/stack/StackIterator.h> // include here, to help application programmres
+#include <corsika/stack/StackIteratorInterface.h> 
 
 #include <stdexcept>
 
@@ -22,8 +22,16 @@
 
 namespace corsika::stack {
 
+  /**
+     This is just a forward declatation for the user-defined
+     ParticleInterface, which is one of the essential template
+     parameters for the Stack.
+
+     Important: ParticleInterface must inherit from ParticleBase !
+   */
+  
   template <typename>
-  class PI; // forward decl
+  class ParticleInterface; // forward decl
 
   /**
      Interface definition of a Stack object. The Stack implements the
@@ -31,17 +39,17 @@ namespace corsika::stack {
      loops etc.
    */
 
-  template <typename StackData, template <typename> typename PI>
+  template <typename StackData, template <typename> typename ParticleInterface>
   class Stack : public StackData {
 
   public:
-    typedef Stack<StackData, PI> StackType;
-    typedef StackIteratorInterface<StackData, PI> StackIterator;
-    typedef ConstStackIteratorInterface<StackData, PI> ConstStackIterator;
+    typedef Stack<StackData, ParticleInterface> StackType;
+    typedef StackIteratorInterface<StackData, ParticleInterface> StackIterator;
+    typedef ConstStackIteratorInterface<StackData, ParticleInterface> ConstStackIterator;
     // typedef const StackIterator ConstStackIterator;
     typedef typename StackIterator::ParticleInterfaceType ParticleType;
-    friend class StackIteratorInterface<StackData, PI>;
-    friend class ConstStackIteratorInterface<StackData, PI>;
+    friend class StackIteratorInterface<StackData, ParticleInterface>;
+    friend class ConstStackIteratorInterface<StackData, ParticleInterface>;
 
   public:
     using StackData::GetCapacity;
