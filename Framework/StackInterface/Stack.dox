@@ -13,7 +13,8 @@
   
   \endverbatim
 
+  All functionality and algorithms for stack data access is located in the namespace corsika::stack
 
-  The minimal example of how to use this is shown in stack_example.cc
+  The minimal example of how to use this is shown in stack_example.cc  
 
 */

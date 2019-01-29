@@ -9,8 +9,8 @@
  * the license.
  */
 
-#ifndef _include_StackIterator_h__
-#define _include_StackIterator_h__
+#ifndef _include_StackIteratorinterface_h__
+#define _include_StackIteratorinterface_h__
 
 #include <corsika/stack/ParticleBase.h>
 
@@ -112,9 +112,9 @@ namespace corsika::stack {
     }
 
   public:
-    /** @name Iterator interface
-     */
-    ///@{
+    /** @name Iterator interface     
+	@{
+    */
     StackIteratorInterface& operator++() {
       ++fIndex;
       return *this;
