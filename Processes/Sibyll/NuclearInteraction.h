@@ -459,19 +459,18 @@ namespace corsika::process::sibyll {
       }
 
       // create dummy stack, to store nucleon projectile
-      Stack inelasticNucleons;
+      //      Stack inelasticNucleons;
       // add one nucleon per inelastic interaction
       for(int j=0; j<nInelNucleons; ++j){	
 
 	// TODO: sample neutron or proton
 	auto pCode = corsika::particles::Proton::GetCode();
-	inelasticNucleons.AddParticle( pCode, PprojNucLab.GetTimeLikeComponent(), PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig );
-      }
-      
-      // process stack of inelastic nucleons
-      for(auto& nucl : inelasticNucleons)
-	// create inelastic nucleon-nucleon interaction
-	fHadronicInteraction.DoInteraction( nucl, s);
+	// temporarily add to stack, will be removed after interaction
+	auto inelasticNucleon = p.AddSecondary( pCode, PprojNucLab.GetTimeLikeComponent(),
+						PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig );
+	// create inelastic interaction
+	fHadronicInteraction.DoInteraction( inelasticNucleon, s);
+      }	
 	      
       // delete parent particle
       p.Delete();
