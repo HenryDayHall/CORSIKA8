@@ -250,14 +250,15 @@ int main() {
   ProcessCut cut(20_GeV);
 
   // corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  // corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
+  // corsika::process::HadronicElasticModel::HadronicElasticInteraction
+  // hadronicElastic(env);
 
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  //auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
+  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
   auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
-  
+
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
 
@@ -265,15 +266,16 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const Code beamCode = Code::Proton;
-  const HEPEnergyType E0 = 100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+  const HEPEnergyType E0 =
+      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
-  
+
   {
-    auto elab2plab = []( HEPEnergyType Elab, HEPMassType m){
-		       return sqrt(Elab * Elab - m * m);
-		     };
-    HEPMomentumType P0 = elab2plab( E0, corsika::particles::GetMass( beamCode ) );
+    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+      return sqrt(Elab * Elab - m * m);
+    };
+    HEPMomentumType P0 = elab2plab(E0, corsika::particles::GetMass(beamCode));
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));

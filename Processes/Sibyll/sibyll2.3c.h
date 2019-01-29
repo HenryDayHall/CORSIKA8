@@ -70,7 +70,6 @@ extern struct {
   int lun;
 } s_debug_;
 
-  
 // lund random generator setup
 // extern struct {int mrlu[6]; float rrlu[100]; }ludatr_;
 
@@ -80,7 +79,6 @@ void sibyll_(const int&, const int&, const double&);
 // subroutine to initiate sibyll
 void sibyll_ini_();
 
-  
 // subroutine to SET DECAYS
 void dec_ini_();
 
@@ -96,7 +94,7 @@ void decsib_();
 // interaction length
 // double fpni_(double&, int&);
 
-  void sib_sigma_hnuc_(const int&, const int&, const double&, double&, double&, double&);
+void sib_sigma_hnuc_(const int&, const int&, const double&, double&, double&, double&);
 void sib_sigma_hp_(const int&, const double&, double&, double&, double&, double*, double&,
                    double&);
 
@@ -107,7 +105,5 @@ double get_sibyll_mass2(int&);
 
 // phojet random generator setup
 void pho_rndin_(int&, int&, int&, int&);
-
-  
 }
 #endif

@@ -32,7 +32,7 @@ namespace corsika::process::sibyll {
     int fCount = 0;
     int fNucCount = 0;
     bool fInitialized = false;
-    
+
   public:
     Interaction(corsika::environment::Environment const& env)
         : fEnvironment(env) {}
@@ -48,17 +48,19 @@ namespace corsika::process::sibyll {
       using std::endl;
 
       // initialize Sibyll
-      if(!fInitialized){
-	sibyll_ini_();
-	fInitialized = true;
+      if (!fInitialized) {
+        sibyll_ini_();
+        fInitialized = true;
       }
     }
 
-    bool WasInitialized(){ return fInitialized;}
-    
-    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType, int> GetCrossSection(
-        const corsika::particles::Code BeamId, const corsika::particles::Code TargetId,
-        const corsika::units::si::HEPEnergyType CoMenergy) {
+    bool WasInitialized() { return fInitialized; }
+
+    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType,
+               int>
+    GetCrossSection(const corsika::particles::Code BeamId,
+                    const corsika::particles::Code TargetId,
+                    const corsika::units::si::HEPEnergyType CoMenergy) {
       using namespace corsika::units::si;
       double sigProd, sigEla, dummy, dum1, dum3, dum4;
       double dumdif[3];
@@ -70,14 +72,14 @@ namespace corsika::process::sibyll {
         if (iTarget > 18 || iTarget == 0)
           throw std::runtime_error(
               "Sibyll target outside range. Only nuclei with A<18 are allowed.");
-        sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);        
+        sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
       } else if (TargetId == corsika::particles::Proton::GetCode()) {
         sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
-	iTarget = 1;
+        iTarget = 1;
       } else {
         // no interaction in sibyll possible, return infinite cross section? or throw?
         sigProd = std::numeric_limits<double>::infinity();
-	sigEla =  std::numeric_limits<double>::infinity();
+        sigEla = std::numeric_limits<double>::infinity();
       }
       return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn, iTarget);
     }
@@ -192,12 +194,12 @@ namespace corsika::process::sibyll {
       cout << "ProcessSibyll: "
            << "DoInteraction: " << corsikaBeamId << " interaction? "
            << process::sibyll::CanInteract(corsikaBeamId) << endl;
-      
-      if(corsika::particles::IsNucleus(corsikaBeamId)){
-	// nuclei handled by different process, this should not happen
-	throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
+
+      if (corsika::particles::IsNucleus(corsikaBeamId)) {
+        // nuclei handled by different process, this should not happen
+        throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
       }
-      
+
       if (process::sibyll::CanInteract(corsikaBeamId)) {
         const CoordinateSystem& rootCS =
             RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
@@ -273,7 +275,8 @@ namespace corsika::process::sibyll {
 
         for (size_t i = 0; i < compVec.size(); ++i) {
           auto const targetId = compVec[i];
-          const auto [sigProd, sigEla, nNuc] = GetCrossSection(corsikaBeamId, targetId, Ecm);
+          const auto [sigProd, sigEla, nNuc] =
+              GetCrossSection(corsikaBeamId, targetId, Ecm);
           cross_section_of_components[i] = sigProd;
           int ideleteme = nNuc;  // to avoid not used warning in array binding
           ideleteme = ideleteme; // to avoid not used warning in array binding
@@ -306,7 +309,7 @@ namespace corsika::process::sibyll {
           std::cout << "Interaction: "
                     << " DoInteraction: should have dropped particle.. "
                     << "THIS IS AN ERROR" << std::endl;
-	  throw std::runtime_error("energy too low for SIBYLL");
+          throw std::runtime_error("energy too low for SIBYLL");
           // p.Delete(); delete later... different process
         } else {
           fCount++;

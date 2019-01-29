@@ -12,7 +12,7 @@
 #ifndef _include_Stack_h__
 #define _include_Stack_h__
 
-#include <corsika/stack/StackIteratorInterface.h> 
+#include <corsika/stack/StackIteratorInterface.h>
 
 #include <stdexcept>
 
@@ -29,7 +29,7 @@ namespace corsika::stack {
 
      Important: ParticleInterface must inherit from ParticleBase !
    */
-  
+
   template <typename>
   class ParticleInterface; // forward decl
 

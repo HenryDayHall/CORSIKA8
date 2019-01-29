@@ -67,7 +67,7 @@ namespace corsika::stack {
 
   protected:
     /** @name Access to underlying stack data
-	@{
+        @{
     */
     auto& GetStackData() { return GetIterator().GetStackData(); }
     const auto& GetStackData() const { return GetIterator().GetStackData(); }
@@ -75,7 +75,7 @@ namespace corsika::stack {
     const auto& GetStack() const { return GetIterator().GetStack(); }
     ///@}
 
-    /** 
+    /**
      * return the index number of the underlying iterator object
      */
     int GetIndex() const { return GetIterator().GetIndex(); }
