@@ -24,7 +24,7 @@ namespace corsika::stack {
   class Stack; // forward decl
 
   /**
-     @class StackIteratorInterface 
+     @class StackIteratorInterface
 
      The StackIteratorInterface is the main interface to iterator over
      particles on a stack. At the same time StackIteratorInterface is a
@@ -71,19 +71,20 @@ namespace corsika::stack {
     StackIteratorInterface() = delete;
 
   public:
-    /** iterator must always point to data, with an index: 
-	@param data reference to the stack [rw]
-	@param index index on stack
+    /** iterator must always point to data, with an index:
+        @param data reference to the stack [rw]
+        @param index index on stack
      */
     StackIteratorInterface(StackType& data, const int index)
         : fIndex(index)
         , fData(&data) {}
 
     /** constructor that also sets new values on particle data object
-	@param data reference to the stack [rw]
-	@param index index on stack
-	@param args variadic list of data to initialize stack entry, this must be consistent 
-                    with the definition of the user-provided ParticleInterfaceType::SetParticleData(...) function
+        @param data reference to the stack [rw]
+        @param index index on stack
+        @param args variadic list of data to initialize stack entry, this must be
+       consistent with the definition of the user-provided
+       ParticleInterfaceType::SetParticleData(...) function
      */
     template <typename... Args>
     StackIteratorInterface(StackType& data, const int index, const Args... args)
@@ -93,12 +94,14 @@ namespace corsika::stack {
     }
 
     /** constructor that also sets new values on particle data object, including reference
-	to parent particle
-	@param data reference to the stack [rw]
-	@param index index on stack
-	@param reference to parent particle [rw]. This can be used for thinning, particle counting, history, etc.
-	@param args variadic list of data to initialize stack entry, this must be consistent 
-                    with the definition of the user-provided ParticleInterfaceType::SetParticleData(...) function
+        to parent particle
+        @param data reference to the stack [rw]
+        @param index index on stack
+        @param reference to parent particle [rw]. This can be used for thinning, particle
+       counting, history, etc.
+        @param args variadic list of data to initialize stack entry, this must be
+       consistent with the definition of the user-provided
+       ParticleInterfaceType::SetParticleData(...) function
     */
     template <typename... Args>
     StackIteratorInterface(StackType& data, const int index,
@@ -181,19 +184,19 @@ namespace corsika::stack {
         : fIndex(index)
         , fData(&data) {}
 
-  /**
-     @class ConstStackIteratorInterface 
+    /**
+       @class ConstStackIteratorInterface
 
-     The const counterpart of StackIteratorInterface, which is used 
-     for read-only iterator access on particle stack:
+       The const counterpart of StackIteratorInterface, which is used
+       for read-only iterator access on particle stack:
 
-     \verbatim
-     for (const auto& p : theStack) { E += p.GetEnergy(); }
-     \endverbatim
+       \verbatim
+       for (const auto& p : theStack) { E += p.GetEnergy(); }
+       \endverbatim
 
-     See documentation of StackIteratorInterface for more details.
-  */
-    
+       See documentation of StackIteratorInterface for more details.
+    */
+
   public:
     /** @name Iterator interface
      */
@@ -218,17 +221,15 @@ namespace corsika::stack {
       return static_cast<const ParticleInterfaceType&>(*this);
     }
     ///@}
-    
+
   protected:
     /** @name Stack data access
-	Only the const versions for read-only access
+        Only the const versions for read-only access
      */
     ///@{
     inline int GetIndex() const { return fIndex; }
     inline const StackType& GetStack() const { return *fData; }
-    inline const StackData& GetStackData() const {
-      return fData->GetStackData();
-    }
+    inline const StackData& GetStackData() const { return fData->GetStackData(); }
     ///@}
   }; // end class ConstStackIterator
 
