@@ -26,6 +26,7 @@
 
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
+#include <corsika/process/sibyll/NuclearInteraction.h>
 
 #include <corsika/process/track_writer/TrackWriter.h>
 
@@ -121,6 +122,14 @@ public:
         is_inv = true;
         break;
       case Code::MuMinus:
+        is_inv = true;
+        break;
+
+      case Code::Neutron:
+        is_inv = true;
+        break;
+
+      case Code::AntiNeutron:
         is_inv = true;
         break;
 
@@ -235,16 +244,20 @@ int main() {
 
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   corsika::process::sibyll::Interaction sibyll(env);
+  //  corsika::process::sibyll::NuclearInteraction sibyllNuc(env);
+  corsika::process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   corsika::process::sibyll::Decay decay;
-  ProcessCut cut(8_GeV);
+  ProcessCut cut(20_GeV);
 
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
+  // corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  // corsika::process::HadronicElasticModel::HadronicElasticInteraction
+  // hadronicElastic(env);
 
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
+  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
+  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -252,12 +265,17 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
+  const Code beamCode = Code::Proton;
   const HEPEnergyType E0 =
       100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
+
   {
-    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+      return sqrt(Elab * Elab - m * m);
+    };
+    HEPMomentumType P0 = elab2plab(E0, corsika::particles::GetMass(beamCode));
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));
@@ -265,10 +283,11 @@ int main() {
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
     auto plab = stack::super_stupid::MomentumVector(rootCS, {px, py, pz});
+    cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(Code::Proton, E0, plab, pos, 0_ns);
+    stack.AddParticle(beamCode, E0, plab, pos, 0_ns);
   }
 
   // define air shower object, run simulation

@@ -16,6 +16,8 @@ set (
   MODEL_SOURCES
   ParticleConversion.cc
   sibyll2.3c.f
+  nuclib.f
+  signuc.f
   sibyll2.3c.cc
   gasdev.f
   )
@@ -24,9 +26,11 @@ set (
   MODEL_HEADERS
   ParticleConversion.h
   sibyll2.3c.h
+  nuclib.h
   SibStack.h
   Decay.h
   Interaction.h
+  NuclearInteraction.h
   ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   )
 

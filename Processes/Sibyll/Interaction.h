@@ -31,6 +31,7 @@ namespace corsika::process::sibyll {
 
     int fCount = 0;
     int fNucCount = 0;
+    bool fInitialized = false;
 
   public:
     Interaction(corsika::environment::Environment const& env)
@@ -47,32 +48,40 @@ namespace corsika::process::sibyll {
       using std::endl;
 
       // initialize Sibyll
-      sibyll_ini_();
+      if (!fInitialized) {
+        sibyll_ini_();
+        fInitialized = true;
+      }
     }
 
-    std::tuple<corsika::units::si::CrossSectionType, int> GetCrossSection(
-        const corsika::particles::Code BeamId, const corsika::particles::Code TargetId,
-        const corsika::units::si::HEPEnergyType CoMenergy) {
+    bool WasInitialized() { return fInitialized; }
+
+    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType,
+               int>
+    GetCrossSection(const corsika::particles::Code BeamId,
+                    const corsika::particles::Code TargetId,
+                    const corsika::units::si::HEPEnergyType CoMenergy) {
       using namespace corsika::units::si;
-      double sigProd, dummy, dum1, dum2, dum3, dum4;
+      double sigProd, sigEla, dummy, dum1, dum3, dum4;
       double dumdif[3];
       const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
       const double dEcm = CoMenergy / 1_GeV;
+      int iTarget = -1;
       if (corsika::particles::IsNucleus(TargetId)) {
-        const int iTarget = corsika::particles::GetNucleusA(TargetId);
+        iTarget = corsika::particles::GetNucleusA(TargetId);
         if (iTarget > 18 || iTarget == 0)
           throw std::runtime_error(
               "Sibyll target outside range. Only nuclei with A<18 are allowed.");
-        sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy);
-        return std::make_tuple(sigProd * 1_mbarn, iTarget);
+        sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
       } else if (TargetId == corsika::particles::Proton::GetCode()) {
-        sib_sigma_hp_(iBeam, dEcm, dum1, dum2, sigProd, dumdif, dum3, dum4);
-        return std::make_tuple(sigProd * 1_mbarn, 1);
+        sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
+        iTarget = 1;
       } else {
         // no interaction in sibyll possible, return infinite cross section? or throw?
         sigProd = std::numeric_limits<double>::infinity();
-        return std::make_tuple(sigProd * 1_mbarn, 0);
+        sigEla = std::numeric_limits<double>::infinity();
       }
+      return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn, iTarget);
     }
 
     template <typename Particle, typename Track>
@@ -139,7 +148,7 @@ namespace corsika::process::sibyll {
           i++;
           cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-          auto const [productionCrossSection, numberOfNucleons] =
+          auto const [productionCrossSection, elaCrossSection, numberOfNucleons] =
               GetCrossSection(corsikaBeamId, targetId, ECoM);
 
           std::cout << "Interaction: "
@@ -185,6 +194,12 @@ namespace corsika::process::sibyll {
       cout << "ProcessSibyll: "
            << "DoInteraction: " << corsikaBeamId << " interaction? "
            << process::sibyll::CanInteract(corsikaBeamId) << endl;
+
+      if (corsika::particles::IsNucleus(corsikaBeamId)) {
+        // nuclei handled by different process, this should not happen
+        throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
+      }
+
       if (process::sibyll::CanInteract(corsikaBeamId)) {
         const CoordinateSystem& rootCS =
             RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
@@ -260,7 +275,8 @@ namespace corsika::process::sibyll {
 
         for (size_t i = 0; i < compVec.size(); ++i) {
           auto const targetId = compVec[i];
-          const auto [sigProd, nNuc] = GetCrossSection(corsikaBeamId, targetId, Ecm);
+          const auto [sigProd, sigEla, nNuc] =
+              GetCrossSection(corsikaBeamId, targetId, Ecm);
           cross_section_of_components[i] = sigProd;
           int ideleteme = nNuc;  // to avoid not used warning in array binding
           ideleteme = ideleteme; // to avoid not used warning in array binding
@@ -293,6 +309,7 @@ namespace corsika::process::sibyll {
           std::cout << "Interaction: "
                     << " DoInteraction: should have dropped particle.. "
                     << "THIS IS AN ERROR" << std::endl;
+          throw std::runtime_error("energy too low for SIBYLL");
           // p.Delete(); delete later... different process
         } else {
           fCount++;
