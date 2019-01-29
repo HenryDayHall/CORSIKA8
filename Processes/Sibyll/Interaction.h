@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -153,7 +153,7 @@ namespace corsika::process::sibyll {
              << weightedProdCrossSection / 1_mbarn << endl;
 
         // calculate interaction length in medium
-#warning check interaction length units
+        //#warning check interaction length units
         GrammageType const int_length =
             avgTargetMassNumber * corsika::units::constants::u / weightedProdCrossSection;
         std::cout << "Interaction: "
@@ -172,7 +172,7 @@ namespace corsika::process::sibyll {
      */
 
     template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s) {
+    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack&) {
 
       using namespace corsika::units;
       using namespace corsika::utl;
@@ -254,7 +254,7 @@ namespace corsika::process::sibyll {
           Here we read the cross section from the interaction model again,
           should be passed from GetInteractionLength if possible
          */
-#warning reading interaction cross section again, should not be necessary
+        //#warning reading interaction cross section again, should not be necessary
         auto const& compVec = mediumComposition.GetComponents();
         std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
 
@@ -262,6 +262,8 @@ namespace corsika::process::sibyll {
           auto const targetId = compVec[i];
           const auto [sigProd, nNuc] = GetCrossSection(corsikaBeamId, targetId, Ecm);
           cross_section_of_components[i] = sigProd;
+          int ideleteme = nNuc;  // to avoid not used warning in array binding
+          ideleteme = ideleteme; // to avoid not used warning in array binding
         }
 
         const auto targetCode = currentNode->GetModelProperties().SampleTarget(
@@ -326,12 +328,9 @@ namespace corsika::process::sibyll {
             auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
             // add to corsika stack
-            auto pnew = s.NewParticle();
-            pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
-            pnew.SetEnergy(Plab.GetTimeLikeComponent());
-            pnew.SetMomentum(Plab.GetSpaceLikeComponents());
-            pnew.SetPosition(pOrig);
-            pnew.SetTime(tOrig);
+            auto pnew = p.AddSecondary(process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                                       Plab.GetTimeLikeComponent(),
+                                       Plab.GetSpaceLikeComponents(), pOrig, tOrig);
 
             Plab_final += pnew.GetMomentum();
             Elab_final += pnew.GetEnergy();

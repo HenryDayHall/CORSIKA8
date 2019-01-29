@@ -1,5 +1,6 @@
 /**
-@mainpage CORSIKA air shower simulations framework
+
+@mainpage CORSIKA 8 air shower simulations framework
 
 Documentation and reference guide for the CORSIKA8 (CORSIKA version 8)
 software framework for air shower simulations. CORSIKA8 is developed
@@ -26,5 +27,6 @@ whole community.
 For more information, see also the 
 <a
 href="https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/README.md">central README.md file</a>.
+
 
 */

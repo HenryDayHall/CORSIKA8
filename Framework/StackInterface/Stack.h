@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -12,7 +12,9 @@
 #ifndef _include_Stack_h__
 #define _include_Stack_h__
 
-#include <corsika/stack/StackIterator.h> // include here, to help application programmres
+#include <corsika/stack/StackIteratorInterface.h> 
+
+#include <stdexcept>
 
 /**
    All classes around management of particles on a stack.
@@ -20,8 +22,16 @@
 
 namespace corsika::stack {
 
+  /**
+     This is just a forward declatation for the user-defined
+     ParticleInterface, which is one of the essential template
+     parameters for the Stack.
+
+     Important: ParticleInterface must inherit from ParticleBase !
+   */
+  
   template <typename>
-  class PI; // forward decl
+  class ParticleInterface; // forward decl
 
   /**
      Interface definition of a Stack object. The Stack implements the
@@ -29,15 +39,17 @@ namespace corsika::stack {
      loops etc.
    */
 
-  template <typename StackData, template <typename> typename PI>
+  template <typename StackData, template <typename> typename ParticleInterface>
   class Stack : public StackData {
 
   public:
-    typedef Stack<StackData, PI> StackType;
-    typedef StackIteratorInterface<StackData, PI> StackIterator;
-    typedef const StackIterator ConstStackIterator;
+    typedef Stack<StackData, ParticleInterface> StackType;
+    typedef StackIteratorInterface<StackData, ParticleInterface> StackIterator;
+    typedef ConstStackIteratorInterface<StackData, ParticleInterface> ConstStackIterator;
+    // typedef const StackIterator ConstStackIterator;
     typedef typename StackIterator::ParticleInterfaceType ParticleType;
-    friend class StackIteratorInterface<StackData, PI>;
+    friend class StackIteratorInterface<StackData, ParticleInterface>;
+    friend class ConstStackIteratorInterface<StackData, ParticleInterface>;
 
   public:
     using StackData::GetCapacity;
@@ -57,20 +69,30 @@ namespace corsika::stack {
     StackIterator end() { return StackIterator(*this, GetSize()); }
     StackIterator last() { return StackIterator(*this, GetSize() - 1); }
 
-    /// these are functions required by std containers and std loops
+    ConstStackIterator begin() const { return ConstStackIterator(*this, 0); }
+    ConstStackIterator end() const { return ConstStackIterator(*this, GetSize()); }
+    ConstStackIterator last() const { return ConstStackIterator(*this, GetSize() - 1); }
+
     ConstStackIterator cbegin() const { return ConstStackIterator(*this, 0); }
     ConstStackIterator cend() const { return ConstStackIterator(*this, GetSize()); }
     ConstStackIterator clast() const { return ConstStackIterator(*this, GetSize() - 1); }
 
     /// increase stack size, create new particle at end of stack
-    StackIterator NewParticle() {
+    template <typename... Args>
+    StackIterator AddParticle(const Args... v) {
       IncrementSize();
-      return StackIterator(*this, GetSize() - 1);
+      return StackIterator(*this, GetSize() - 1, v...);
+    }
+    template <typename... Args>
+    StackIterator AddSecondary(StackIterator& parent, const Args... v) {
+      IncrementSize();
+      return StackIterator(*this, GetSize() - 1, parent, v...);
     }
     void Copy(StackIterator& a, StackIterator& b) { Copy(a.GetIndex(), b.GetIndex()); }
     /// delete this particle
     void Delete(StackIterator& p) {
       if (GetSize() == 0) { /*error*/
+        throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
       if (p.GetIndex() < GetSize() - 1) Copy(GetSize() - 1, p.GetIndex());
       DeleteLast();

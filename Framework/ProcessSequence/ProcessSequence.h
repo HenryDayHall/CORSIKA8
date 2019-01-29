@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -62,10 +62,6 @@ namespace corsika::process {
   public:
     T1 A; // this is a reference, if possible
     T2 B; // this is a reference, if possible
-
-    // ProcessSequence(ProcessSequence<T1,T2>&& v) : A(v.A), B(v.B) {}
-    // ProcessSequence<T1,T2>& operator=(ProcessSequence<T1,T2>&& v) { A=v.A; B=v.B;
-    // return *this; }
 
     ProcessSequence(T1 in_A, T2 in_B)
         : A(in_A)
