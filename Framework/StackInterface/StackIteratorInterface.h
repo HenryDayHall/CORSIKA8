@@ -112,8 +112,8 @@ namespace corsika::stack {
     }
 
   public:
-    /** @name Iterator interface     
-	@{
+    /** @name Iterator interface
+        @{
     */
     StackIteratorInterface& operator++() {
       ++fIndex;
