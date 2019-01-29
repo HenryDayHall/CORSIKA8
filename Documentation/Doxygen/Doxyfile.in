@@ -8,7 +8,7 @@ EXCLUDE_PATTERNS       = */ThirdParty/*/*
 GENERATE_HTML          = YES
 GENERATE_LATEX         = YES
 
-FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc
+FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc *.md
 EXTENSION_MAPPING      = inc=C++
 RECURSIVE              = YES
 
