@@ -1,5 +1,5 @@
 /**
-  @page stack Description of particle stacks
+  @page Stack Description of particle stacks
 
   In the CORSIKA 8 framework particle data is always stored in
   particle stacks. A particle is, thus, always a reference (iterator)

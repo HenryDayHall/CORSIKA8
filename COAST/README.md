@@ -1,4 +1,4 @@
-# COAST interface {#COASTinterface}
+# COAST interface {#COAST}
 
 With the COAST interface of CORSIKA 8 you can write a CORSIKA 8
 "process" class and link it to CORSIKA 7. This can be very powerful to
@@ -6,7 +6,7 @@ benchmark new CORSIKA 8 physics code in the context of "old" CORSIKA 7
 simulations. 
 
 This is based on corsika7/trunk/coast/CoastOptions/example with an
-additional interface to CORSIKA 8. 
+additional interface to CORSIKA 8. See code in namespace corsika::coast for all details.
 
 We provide a step-by-step example for a "COAST user library" using CORSIKA 8
 technology. It explains the steps, how to use the COAST_USER_LIB
