@@ -27,7 +27,6 @@
 #include <corsika/units/PhysicalUnits.h>
 
 /**
- * @namespace particle
  *
  * The properties of all elementary particles is stored here. The data
  * is taken from the Pythia ParticleData.xml file.
@@ -36,10 +35,13 @@
 
 namespace corsika::particles {
 
+  /**
+   * @enum Code
+   * The Code enum is the actual place to define CORSIKA 8 particle codes.
+   */
   enum class Code : int16_t;
-
-  using PDGCodeType = int32_t;
   using CodeIntType = std::underlying_type<Code>::type;
+  using PDGCodeType = int32_t;
 
   // forward declarations to be used in GeneratedParticleProperties
   int16_t constexpr GetElectricChargeNumber(Code const);
