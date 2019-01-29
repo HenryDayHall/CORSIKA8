@@ -244,9 +244,10 @@ int main() {
 
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   corsika::process::sibyll::Interaction sibyll(env);
-  corsika::process::sibyll::NuclearInteraction sibyllNuc(env);
+  //  corsika::process::sibyll::NuclearInteraction sibyllNuc(env);
+  corsika::process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   corsika::process::sibyll::Decay decay;
-  ProcessCut cut(200_GeV);
+  ProcessCut cut(20_GeV);
 
   // corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
@@ -281,6 +282,7 @@ int main() {
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
     auto plab = stack::super_stupid::MomentumVector(rootCS, {px, py, pz});
+    cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);

@@ -5516,7 +5516,7 @@ c     external type declarations
 
 c     local type declarations
       DOUBLE PRECISION SIGT,SIGEL,SIGINEL,SIGDIF,SLOPE,RHO,
-     &     SIGPROD,SIGBDIF,S_RNDM,S,PF,PB,PD,P0,P1,P2,R
+     &     SIGPROD,SIGBDIF,SIGELA,S_RNDM,S,PF,PB,PD,P0,P1,P2,R
       DIMENSION SIGDIF(3)
       INTEGER K
       SAVE
@@ -5534,7 +5534,7 @@ c     read hadron-nucleon cross section from table
 c     distinguish between nuclear cross sections..
                IF(IAFLG.eq.0)THEN
 c     if target is nucleus calc. hadron-nucleus cross section (slow)
-                  CALL SIB_SIGMA_HNUC(L,IA,SQS,SIGprod,SIGbdif)
+                  CALL SIB_SIGMA_HNUC(L,IA,SQS,SIGprod,SIGbdif,SIGela)
                ELSE
 c     if target is air read hadron-air cross section from table
                   CALL SIB_SIGMA_HAIR(L,SQS,SIGprod,SIGbdif)
@@ -14010,7 +14010,7 @@ c     internal
       END
 C=======================================================================
 
-      SUBROUTINE SIB_SIGMA_HNUC (L,IAT,SQS,SIGprod,SIGbdif) 
+      SUBROUTINE SIB_SIGMA_HNUC (L,IAT,SQS,SIGprod,SIGbdif,SIGela) 
 
 C-----------------------------------------------------------------------
 C     calculate Hadron-nucleus cross sections
@@ -14061,7 +14061,7 @@ C--------------------------------------------------------------------
      +     SIGQSD,SIGPPT,SIGPPEL,SIGPPSD,ITG
 
 c     external
-      DOUBLE PRECISION SQS,SIGPROD,SIGBDIF
+      DOUBLE PRECISION SQS,SIGPROD,SIGBDIF,SIGELA
       INTEGER L,IAT
 
 c     internal
@@ -14092,6 +14092,8 @@ C     particle production cross section
          SIGprod = SIGT-SIGQE
 C     quasi elastic + elastic singl. diff cross section
          SIGbdif = SIGQSD
+c     elastic cross section
+         SIGela = SIGel
          if(ndebug.gt.0)THEN
             WRITE(LUN,'(1X,A,3F8.2)')
      &           'SIB_SIGMA_HNUC: SIGprod, SIGbdif, ALAM:',
