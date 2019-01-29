@@ -117,7 +117,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
-    const HEPEnergyType E0 = 10_GeV;
+    const HEPEnergyType E0 = 100_GeV;
     HEPMomentumType P0 =
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
@@ -136,7 +136,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("NuclearInteractionInterface") {
 
     setup::Stack stack;
-     const HEPEnergyType E0 = 10_GeV;
+     const HEPEnergyType E0 = 100_GeV;
     HEPMomentumType P0 =
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});

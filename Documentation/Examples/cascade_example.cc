@@ -264,9 +264,8 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Carbon;
-  const HEPEnergyType E0 = 1200_GeV;
-    //      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+  const Code beamCode = Code::Proton;
+  const HEPEnergyType E0 = 100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
   
