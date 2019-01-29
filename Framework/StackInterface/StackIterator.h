@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -24,10 +24,10 @@ namespace corsika::stack {
   class Stack; // forward decl
 
   /**
-     @class StackIterator
+     @class StackIteratorInterface 
 
-     The StackIterator is the main interface to iterator over
-     particles on a stack. At the same time StackIterator is a
+     The StackIteratorInterface is the main interface to iterator over
+     particles on a stack. At the same time StackIteratorInterface is a
      Particle object by itself, thus there is no difference between
      type and ref_type for convenience of the physicist.
 
@@ -38,7 +38,7 @@ namespace corsika::stack {
 
      The template argument Stack determines the type of Stack object
      the data is stored in. A pointer to the Stack object is part of
-     the StackIterator. In addition to Stack the iterator only knows
+     the StackIteratorInterface. In addition to Stack the iterator only knows
      the index fIndex in the Stack data.
 
      The template argument Particles acts as a policy to provide
@@ -72,14 +72,19 @@ namespace corsika::stack {
 
   public:
     /** iterator must always point to data, with an index: 
-	@param data reference to the stack
+	@param data reference to the stack [rw]
 	@param index index on stack
      */
     StackIteratorInterface(StackType& data, const int index)
         : fIndex(index)
         , fData(&data) {}
 
-    /// constructor that also sets new values on particle data object
+    /** constructor that also sets new values on particle data object
+	@param data reference to the stack [rw]
+	@param index index on stack
+	@param args variadic list of data to initialize stack entry, this must be consistent 
+                    with the definition of the user-provided ParticleInterfaceType::SetParticleData(...) function
+     */
     template <typename... Args>
     StackIteratorInterface(StackType& data, const int index, const Args... args)
         : fIndex(index)
@@ -87,8 +92,14 @@ namespace corsika::stack {
       (**this).SetParticleData(args...);
     }
 
-    /// constructor that also sets new values on particle data object, including reference
-    /// to parent particle
+    /** constructor that also sets new values on particle data object, including reference
+	to parent particle
+	@param data reference to the stack [rw]
+	@param index index on stack
+	@param reference to parent particle [rw]. This can be used for thinning, particle counting, history, etc.
+	@param args variadic list of data to initialize stack entry, this must be consistent 
+                    with the definition of the user-provided ParticleInterfaceType::SetParticleData(...) function
+    */
     template <typename... Args>
     StackIteratorInterface(StackType& data, const int index,
                            StackIteratorInterface& parent, const Args... args)
@@ -170,6 +181,19 @@ namespace corsika::stack {
         : fIndex(index)
         , fData(&data) {}
 
+  /**
+     @class ConstStackIteratorInterface 
+
+     The const counterpart of StackIteratorInterface, which is used 
+     for read-only iterator access on particle stack:
+
+     \verbatim
+     for (const auto& p : theStack) { E += p.GetEnergy(); }
+     \endverbatim
+
+     See documentation of StackIteratorInterface for more details.
+  */
+    
   public:
     /** @name Iterator interface
      */
