@@ -70,8 +70,15 @@ namespace corsika::process::sibyll {
     }
 
     void Copy(const int i1, const int i2) {
-      s_plist_.llist[i1] = s_plist_.llist[i2];
-      s_plist_.p[3][i1] = s_plist_.p[3][i2];
+      s_plist_.llist[i2] = s_plist_.llist[i1];
+      for (int i=0; i<5; ++i)
+	s_plist_.p[i][i2] = s_plist_.p[i][i1];
+    }
+
+    void Swap(const int i1, const int i2) {
+      std::swap(s_plist_.llist[i1], s_plist_.llist[i2]);
+      for (int i=0; i<5; ++i)
+	std::swap(s_plist_.p[i][i1], s_plist_.p[i][i2]);
     }
 
   protected:
