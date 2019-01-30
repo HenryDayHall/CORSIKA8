@@ -11,14 +11,18 @@
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 
+#include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/VolumeTreeNode.h>
+#include <corsika/geometry/Line.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/Vector.h>
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <catch2/catch.hpp>
-#include <random>
-#include <vector>
 
 using namespace corsika::geometry;
 using namespace corsika::environment;
@@ -31,32 +35,41 @@ TEST_CASE("HomogeneousMedium") {
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 }
 
-TEST_CASE("NuclearComposition") {
-  NuclearComposition const composition(
-      std::vector<corsika::particles::Code>{corsika::particles::Code::Proton,
-                                            corsika::particles::Code::Neutron},
-      std::vector<float>{2.f / 3.f, 1.f / 3.f});
-  SECTION("SampleTarget") {
-    std::vector<CrossSectionType> crossSections{50_mbarn, 100_mbarn};
+auto constexpr rho0 = 1_kg / 1_m / 1_m / 1_m;
 
-    std::mt19937 rng;
-
-    int proton{0}, neutron{0};
-
-    for (int i = 0; i < 1'000'000; ++i) {
-      corsika::particles::Code p = composition.SampleTarget(crossSections, rng);
-      switch (p) {
-        case corsika::particles::Code::Proton:
-          proton++;
-          break;
-        case corsika::particles::Code::Neutron:
-          neutron++;
-          break;
-        default:
-          throw std::runtime_error("");
-      }
-    }
-
-    REQUIRE(static_cast<double>(proton) / neutron == Approx(1).epsilon(1e-2));
+struct Exponential {
+  auto operator()(corsika::geometry::Point const& p) const {
+    return exp(p.GetCoordinates()[0] / 1_m) * rho0;
   }
+
+  template <int N>
+  auto Derivative(Point const& p, Vector<dimensionless_d> const& v) const {
+    return v.GetComponents()[0] * (*this)(p) /
+           corsika::units::si::detail::static_pow<N>(1_m);
+  }
+};
+
+TEST_CASE("DensityFunction") {
+  CoordinateSystem& cs = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+
+  Point const origin(cs, {0_m, 0_m, 0_m});
+
+  Vector direction(cs, QuantityVector<dimensionless_d>(1, 0, 0));
+
+  Line line(origin, Vector<SpeedType::dimension_type>(
+                        cs, {200_m / second, 0_m / second, 0_m / second}));
+
+  auto const tEnd = 5_s;
+  Trajectory<Line> const trajectory(line, tEnd);
+
+  Exponential const e;
+  REQUIRE(e.Derivative<1>(origin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
+          Approx(1));
+
+  DensityFunction const rho(e);
+  REQUIRE(rho.EvaluateAt(origin) == e(origin));
+
+  auto const exactGrammage = [](auto x) { return rho0 * exp(x / 1_m); };
+  REQUIRE(rho.IntegrateGrammage(trajectory, 5_cm) / exactGrammage(5_cm) ==
+          Approx(1).epsilon(1e-2));
 }

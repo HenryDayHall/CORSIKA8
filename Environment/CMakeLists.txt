@@ -4,6 +4,10 @@ set (
   IMediumModel.h
   NuclearComposition.h
   HomogeneousMedium.h
+  InhomogeneousMedium.h
+  HomogeneousMedium.h
+  LinearIntegrator.h
+  DensityFunction.h
   Environment.h
   )
 

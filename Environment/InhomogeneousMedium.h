@@ -8,8 +8,8 @@
  * the license.
  */
 
-#ifndef _include_HomogeneousMedium_h_
-#define _include_HomogeneousMedium_h_
+#ifndef _include_environment_InhomogeneousMedium_h_
+#define _include_environment_InhomogeneousMedium_h_
 
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
@@ -19,42 +19,40 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <cassert>
-
 /**
- * a homogeneous medium
+ * An inhomogeneous medium. The mass density distribution TDensityFunction must be a
+ * \f$C^1\f$-function.
  */
 
 namespace corsika::environment {
 
-  template <class T>
-  class HomogeneousMedium : public T {
-    corsika::units::si::MassDensityType const fDensity;
+  template <class T, class TDensityFunction>
+  class InhomogeneousMedium : public T {
     NuclearComposition const fNuclComp;
+    TDensityFunction const fDensityFunction;
 
   public:
-    HomogeneousMedium(corsika::units::si::MassDensityType pDensity,
-                      NuclearComposition pNuclComp)
-        : fDensity(pDensity)
-        , fNuclComp(pNuclComp) {}
+    template <typename... Args>
+    InhomogeneousMedium(NuclearComposition pNuclComp, Args&&... rhoArgs)
+        : fNuclComp(pNuclComp)
+        , fDensityFunction(rhoArgs...) {}
 
     corsika::units::si::MassDensityType GetMassDensity(
-        corsika::geometry::Point const&) const override {
-      return fDensity;
+        corsika::geometry::Point const& p) const override {
+      return fDensityFunction.EvaluateAt(p);
     }
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
+        corsika::geometry::Trajectory<corsika::geometry::Line> const& pLine,
         corsika::units::si::LengthType pTo) const override {
-      using namespace corsika::units::si;
-      return pTo * fDensity;
+      return fDensityFunction.IntegratedGrammage(pLine, pTo);
     }
 
     corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
+        corsika::geometry::Trajectory<corsika::geometry::Line> const& pLine,
         corsika::units::si::GrammageType pGrammage) const override {
-      return pGrammage / fDensity;
+      return fDensityFunction.ArclengthFromGrammage(pLine, pGrammage);
     }
   };
 
