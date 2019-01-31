@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _corsika_setup_setupstack_h_
 #define _corsika_setup_setupstack_h_
 

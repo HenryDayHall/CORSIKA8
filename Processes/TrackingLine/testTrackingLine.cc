@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/environment/Environment.h>
 #include <corsika/particles/ParticleProperties.h>
 

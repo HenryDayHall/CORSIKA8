@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _Physics_StackInspector_StackInspector_h_
 #define _Physics_StackInspector_StackInspector_h_
 

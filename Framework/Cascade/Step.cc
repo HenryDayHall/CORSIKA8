@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 namespace cascade;
 
 void Cascade::Step(auto& sequence, Particle& particle) {

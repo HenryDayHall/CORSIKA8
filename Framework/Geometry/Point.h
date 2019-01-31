@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_POINT_H_
 #define _include_POINT_H_
 

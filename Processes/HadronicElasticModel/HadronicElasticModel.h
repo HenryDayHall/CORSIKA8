@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_HadronicElasticInteraction_h
 #define _include_HadronicElasticInteraction_h
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/stack_inspector/StackInspector.h>

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <cfenv>
 
 int main() {

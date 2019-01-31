@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *

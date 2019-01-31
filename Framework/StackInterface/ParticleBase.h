@@ -23,21 +23,24 @@ namespace corsika::stack {
    particle stack. Every stack must implement this readout via the
    ParticleBase class.
 
-   The StackIterator template argument is derived from StackIteratorInterface, which is of type
-   <code>
-   template <typename StackData, template <typename> typename ParticleInterface>
-   class StackIteratorInterface : public ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
+   The StackIterator template argument is derived from StackIteratorInterface, which is of
+   type <code> template <typename StackData, template <typename> typename
+   ParticleInterface> class StackIteratorInterface : public
+   ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
    </code>
 
-   where StackData must refer to a Stack type, and ParticleInterface<StackIteratorInterface> is the corresponding particle readout class. 
+   where StackData must refer to a Stack type, and
+   ParticleInterface<StackIteratorInterface> is the corresponding particle readout class.
 
-   Thus, StackIteratorInterface is a CRTP class, injecting the full StackIteratorInterface machinery into the ParticleInterface (aka ParticleBase) type! 
+   Thus, StackIteratorInterface is a CRTP class, injecting the full StackIteratorInterface
+   machinery into the ParticleInterface (aka ParticleBase) type!
 
-   The declartion of a StackIteratorInterface type simultaneously declares the corresponding ParticleInterface type. 
+   The declartion of a StackIteratorInterface type simultaneously declares the
+   corresponding ParticleInterface type.
 
    Furthermore, the operator* of the StackIteratorInterface returns a
    static_cast to the ParticleInterface type, allowing a direct
-   readout of the particle data from the iterator. 
+   readout of the particle data from the iterator.
 
   */
 

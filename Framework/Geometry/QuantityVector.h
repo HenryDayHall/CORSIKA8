@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_QUANTITYVECTOR_H_
 #define _include_QUANTITYVECTOR_H_
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_VolumeTreeNode_H
 #define _include_VolumeTreeNode_H
 

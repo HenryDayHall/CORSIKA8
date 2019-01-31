@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_Environment_h
 #define _include_Environment_h
 

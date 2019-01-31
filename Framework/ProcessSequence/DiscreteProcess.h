@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_corsika_discreteprocess_h_
 #define _include_corsika_discreteprocess_h_
 

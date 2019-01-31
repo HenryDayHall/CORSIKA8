@@ -126,21 +126,33 @@ namespace corsika::stack {
       unsigned int GetSize() const { return fDataPID.size(); }
       unsigned int GetCapacity() const { return fDataPID.size(); }
 
-      void SetPID(const unsigned int i, const corsika::particles::Code id) { fDataPID[i] = id; }
+      void SetPID(const unsigned int i, const corsika::particles::Code id) {
+        fDataPID[i] = id;
+      }
       void SetEnergy(const unsigned int i, const corsika::units::si::HEPEnergyType e) {
         fDataE[i] = e;
       }
-      void SetMomentum(const unsigned int i, const MomentumVector& v) { fMomentum[i] = v; }
+      void SetMomentum(const unsigned int i, const MomentumVector& v) {
+        fMomentum[i] = v;
+      }
       void SetPosition(const unsigned int i, const corsika::geometry::Point& v) {
         fPosition[i] = v;
       }
-      void SetTime(const unsigned int i, const corsika::units::si::TimeType& v) { fTime[i] = v; }
+      void SetTime(const unsigned int i, const corsika::units::si::TimeType& v) {
+        fTime[i] = v;
+      }
 
       corsika::particles::Code GetPID(const unsigned int i) const { return fDataPID[i]; }
-      corsika::units::si::HEPEnergyType GetEnergy(const unsigned int i) const { return fDataE[i]; }
+      corsika::units::si::HEPEnergyType GetEnergy(const unsigned int i) const {
+        return fDataE[i];
+      }
       MomentumVector GetMomentum(const unsigned int i) const { return fMomentum[i]; }
-      corsika::geometry::Point GetPosition(const unsigned int i) const { return fPosition[i]; }
-      corsika::units::si::TimeType GetTime(const unsigned int i) const { return fTime[i]; }
+      corsika::geometry::Point GetPosition(const unsigned int i) const {
+        return fPosition[i];
+      }
+      corsika::units::si::TimeType GetTime(const unsigned int i) const {
+        return fTime[i];
+      }
 
       /**
        *   Function to copy particle at location i2 in stack to i1
@@ -204,7 +216,7 @@ namespace corsika::stack {
     }; // end class SuperStupidStackImpl
 
     typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
-    
+
   } // namespace super_stupid
 
 } // namespace corsika::stack

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_corsika_processes_TrackingLine_h_
 #define _include_corsika_processes_TrackingLine_h_
 

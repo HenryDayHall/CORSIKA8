@@ -33,19 +33,19 @@ namespace corsika::stack {
   template <typename>
   class ParticleInterface; // forward decl
 
-  /**     
-     The Stack class provides (and connects) the main particle data storage machinery. 
+  /**
+     The Stack class provides (and connects) the main particle data storage machinery.
 
      The StackData type is the user-provided bare data storage
      object. This can be of any complexity, from a simple struct
      (fortran common block), to a combination of different and
-     distributed data sources. 
+     distributed data sources.
 
      The user-provided ParticleInterface template type is the base
      class type of the StackIteratorInterface class (CRTP) and must
      provide all functions to read single particle data from the
-     StackData, given an 'unsigned int' index. 
-     
+     StackData, given an 'unsigned int' index.
+
      The Stack implements the
      std-type begin/end function to allow integration in normal for
      loops, ranges, etc.
@@ -56,9 +56,11 @@ namespace corsika::stack {
 
   public:
     typedef StackData StackImpl; ///< this is the type of the user-provided data structure
-    template<typename SI> using PIType = ParticleInterface<SI>;
-    //typedef ParticleInterface<StackIteratorInterface> StackParticleInterface;  ///< this is the type of the user-provided ParticleInterface
-    //typedef Stack<StackData, ParticleInterface> StackType;
+    template <typename SI>
+    using PIType = ParticleInterface<SI>;
+    // typedef ParticleInterface<StackIteratorInterface> StackParticleInterface;  ///<
+    // this is the type of the user-provided ParticleInterface typedef Stack<StackData,
+    // ParticleInterface> StackType;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
@@ -67,15 +69,13 @@ namespace corsika::stack {
      * object. Using CRTP, this also determines the type of
      * ParticleInterface template class simultaneously.
      */
-    typedef StackIteratorInterface<StackData, ParticleInterface>
-      StackIterator;
-    typedef ConstStackIteratorInterface<StackData,
-      ParticleInterface> ConstStackIterator;
+    typedef StackIteratorInterface<StackData, ParticleInterface> StackIterator;
+    typedef ConstStackIteratorInterface<StackData, ParticleInterface> ConstStackIterator;
     /**
      * this is the full type of the declared ParticleInterface: typedef typename
      */
     typedef typename StackIterator::ParticleInterfaceType ParticleType;
-    
+
     friend class StackIteratorInterface<StackData, ParticleInterface>;
     friend class ConstStackIteratorInterface<StackData, ParticleInterface>;
 
@@ -120,7 +120,9 @@ namespace corsika::stack {
       return StackIterator(*this, GetSize() - 1, parent, v...);
     }
     void Swap(StackIterator a, StackIterator b) { Swap(a.GetIndex(), b.GetIndex()); }
-    void Swap(ConstStackIterator a, ConstStackIterator b) { Swap(a.GetIndex(), b.GetIndex()); }
+    void Swap(ConstStackIterator a, ConstStackIterator b) {
+      Swap(a.GetIndex(), b.GetIndex());
+    }
     void Copy(StackIterator a, StackIterator b) { Copy(a.GetIndex(), b.GetIndex()); }
     void Copy(ConstStackIterator a, StackIterator b) { Copy(a.GetIndex(), b.GetIndex()); }
     /// delete this particle

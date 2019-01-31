@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>

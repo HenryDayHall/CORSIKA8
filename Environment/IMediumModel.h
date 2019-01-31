@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_IMediumModel_h
 #define _include_IMediumModel_h
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _Physics_NullModel_NullModel_h_
 #define _Physics_NullModel_NullModel_h_
 

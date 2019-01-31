@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef CORSIKA_CORSIKAFENV_H
 #define CORSIKA_CORSIKAFENV_H
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_dummystack_h_
 #define _include_dummystack_h_
 

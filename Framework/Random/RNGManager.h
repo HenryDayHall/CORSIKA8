@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_RNGManager_h_
 #define _include_RNGManager_h_
 

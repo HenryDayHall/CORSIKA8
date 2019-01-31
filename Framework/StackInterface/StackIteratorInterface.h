@@ -57,7 +57,7 @@ namespace corsika::stack {
         typename std::conditional<std::is_const<StackData>::value,
                                   const Stack<const StackData, ParticleInterface>&,
                                   Stack<StackData, ParticleInterface>&>::type StackType;*/
-    
+
     typedef ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
         ParticleInterfaceType;
 
@@ -127,7 +127,7 @@ namespace corsika::stack {
       return tmp;
     }
     StackIteratorInterface operator+(int delta) {
-      return StackIteratorInterface(*fData, fIndex+delta);
+      return StackIteratorInterface(*fData, fIndex + delta);
     }
     bool operator==(const StackIteratorInterface& rhs) { return fIndex == rhs.fIndex; }
     bool operator!=(const StackIteratorInterface& rhs) { return fIndex != rhs.fIndex; }
@@ -158,8 +158,6 @@ namespace corsika::stack {
     ///@}
   }; // end class StackIterator
 
-
-  
   /**
      @class ConstStackIteratorInterface
 
@@ -219,7 +217,7 @@ namespace corsika::stack {
       return tmp;
     }
     ConstStackIteratorInterface operator+(int delta) {
-      return ConstStackIteratorInterface(*fData, fIndex+delta);
+      return ConstStackIteratorInterface(*fData, fIndex + delta);
     }
     bool operator==(const ConstStackIteratorInterface& rhs) {
       return fIndex == rhs.fIndex;

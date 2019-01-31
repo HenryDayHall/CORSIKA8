@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/process/null_model/NullModel.h>
 
 void corsika::process::null_model::NullModel::Init() {}

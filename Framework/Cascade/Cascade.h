@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_corsika_cascade_Cascade_h_
 #define _include_corsika_cascade_Cascade_h_
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/random/RNGManager.h>
 
 void corsika::random::RNGManager::RegisterRandomStream(std::string const& pStreamName) {

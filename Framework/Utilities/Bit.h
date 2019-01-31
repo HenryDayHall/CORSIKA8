@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _corsika_utl_Bit_h_
 #define _corsika_utl_Bit_h_
 

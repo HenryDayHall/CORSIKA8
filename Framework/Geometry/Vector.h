@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_VECTOR_H_
 #define _include_VECTOR_H_
 

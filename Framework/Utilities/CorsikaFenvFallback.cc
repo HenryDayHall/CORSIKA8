@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/utl/CorsikaFenv.h>
 #include <cfenv>
 

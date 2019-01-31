@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/process/track_writer/TrackWriter.h>
 #include <string>
 

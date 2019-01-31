@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <corsika/units/PhysicalUnits.h>

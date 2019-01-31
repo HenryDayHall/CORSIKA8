@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_process_processsignature_h_
 #define _include_process_processsignature_h_
 

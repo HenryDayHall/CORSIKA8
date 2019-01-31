@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <limits>
 
 #include <corsika/environment/Environment.h>

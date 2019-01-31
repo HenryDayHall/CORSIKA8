@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 
 namespace corsika::process::HadronicElasticModel {

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_UniformRealDistribution_h
 #define _include_UniformRealDistribution_h
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_HomogeneousMedium_h_
 #define _include_HomogeneousMedium_h_
 

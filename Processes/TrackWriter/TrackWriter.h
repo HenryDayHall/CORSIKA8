@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _Processes_TrackWriter_h_
 #define _Processes_TrackWriter_h_
 
