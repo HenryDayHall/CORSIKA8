@@ -27,36 +27,67 @@ namespace corsika::stack {
      ParticleInterface, which is one of the essential template
      parameters for the Stack.
 
-     Important: ParticleInterface must inherit from ParticleBase !
+     <b>Important:</b> ParticleInterface must inherit from ParticleBase !
    */
 
   template <typename>
   class ParticleInterface; // forward decl
 
   /**
-     Interface definition of a Stack object. The Stack implements the
+     The Stack class provides (and connects) the main particle data storage machinery.
+
+     The StackData type is the user-provided bare data storage
+     object. This can be of any complexity, from a simple struct
+     (fortran common block), to a combination of different and
+     distributed data sources.
+
+     The user-provided ParticleInterface template type is the base
+     class type of the StackIteratorInterface class (CRTP) and must
+     provide all functions to read single particle data from the
+     StackData, given an 'unsigned int' index.
+
+     The Stack implements the
      std-type begin/end function to allow integration in normal for
-     loops etc.
+     loops, ranges, etc.
    */
 
   template <typename StackData, template <typename> typename ParticleInterface>
   class Stack : public StackData {
 
   public:
-    typedef Stack<StackData, ParticleInterface> StackType;
+    typedef StackData StackImpl; ///< this is the type of the user-provided data structure
+    template <typename SI>
+    using PIType = ParticleInterface<SI>;
+    // typedef ParticleInterface<StackIteratorInterface> StackParticleInterface;  ///<
+    // this is the type of the user-provided ParticleInterface typedef Stack<StackData,
+    // ParticleInterface> StackType;
+
+    /**
+     * Via the StackIteratorInterface and ConstStackIteratorInterface
+     * specialization, the type of the StackIterator
+     * template class is declared for a particular stack data
+     * object. Using CRTP, this also determines the type of
+     * ParticleInterface template class simultaneously.
+     */
     typedef StackIteratorInterface<StackData, ParticleInterface> StackIterator;
     typedef ConstStackIteratorInterface<StackData, ParticleInterface> ConstStackIterator;
-    // typedef const StackIterator ConstStackIterator;
+    /**
+     * this is the full type of the declared ParticleInterface: typedef typename
+     */
     typedef typename StackIterator::ParticleInterfaceType ParticleType;
+
     friend class StackIteratorInterface<StackData, ParticleInterface>;
     friend class ConstStackIteratorInterface<StackData, ParticleInterface>;
+
+  protected:
+    using StackData::Copy;
+    using StackData::Swap;
 
   public:
     using StackData::GetCapacity;
     using StackData::GetSize;
 
     using StackData::Clear;
-    using StackData::Copy;
 
     using StackData::DecrementSize;
     using StackData::IncrementSize;
@@ -88,9 +119,14 @@ namespace corsika::stack {
       IncrementSize();
       return StackIterator(*this, GetSize() - 1, parent, v...);
     }
-    void Copy(StackIterator& a, StackIterator& b) { Copy(a.GetIndex(), b.GetIndex()); }
+    void Swap(StackIterator a, StackIterator b) { Swap(a.GetIndex(), b.GetIndex()); }
+    void Swap(ConstStackIterator a, ConstStackIterator b) {
+      Swap(a.GetIndex(), b.GetIndex());
+    }
+    void Copy(StackIterator a, StackIterator b) { Copy(a.GetIndex(), b.GetIndex()); }
+    void Copy(ConstStackIterator a, StackIterator b) { Copy(a.GetIndex(), b.GetIndex()); }
     /// delete this particle
-    void Delete(StackIterator& p) {
+    void Delete(StackIterator p) {
       if (GetSize() == 0) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
@@ -98,7 +134,7 @@ namespace corsika::stack {
       DeleteLast();
       // p.SetInvalid();
     }
-    void Delete(ParticleType& p) { Delete(p.GetIterator()); }
+    void Delete(ParticleType p) { Delete(p.GetIterator()); }
     /// delete last particle on stack by decrementing stack size
     void DeleteLast() { DecrementSize(); }
     /// check if there are no further particles on stack

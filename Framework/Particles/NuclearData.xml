@@ -1,5 +1,8 @@
 <chapter name="Nuclear Data">
 
+<particle id="1000000000" name="nucleus" A="0" Z="0" >
+</particle> 
+
 <particle id="1000010010" name="hydrogen" A="1" Z="1" >
 </particle> 
 

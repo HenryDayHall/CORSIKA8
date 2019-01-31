@@ -21,6 +21,7 @@
 
 using namespace corsika::units::si;
 using namespace corsika::stack;
+using namespace corsika;
 using namespace std;
 
 void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
@@ -44,7 +45,6 @@ void read(corsika::stack::super_stupid::SuperStupidStack& s) {
     assert(p.GetPID() == corsika::particles::Code::Electron);
     assert(p.GetEnergy() == 1.5_GeV * (i++));
   }
-  // assert(total_energy == 82.5_GeV);
 }
 
 int main() {

@@ -51,11 +51,13 @@ namespace corsika::stack {
   class StackIteratorInterface
       : public ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>> {
 
+  public:
     typedef Stack<StackData, ParticleInterface> StackType;
     /*typedef
         typename std::conditional<std::is_const<StackData>::value,
                                   const Stack<const StackData, ParticleInterface>&,
                                   Stack<StackData, ParticleInterface>&>::type StackType;*/
+
     typedef ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
         ParticleInterfaceType;
 
@@ -63,7 +65,7 @@ namespace corsika::stack {
     friend class ParticleBase<StackIteratorInterface>; // for access to GetStackData
 
   private:
-    int fIndex = 0;
+    unsigned int fIndex = 0;
     StackType* fData = 0; // info: Particles and StackIterators become invalid when parent
                           // Stack is copied or deleted!
 
@@ -75,7 +77,7 @@ namespace corsika::stack {
         @param data reference to the stack [rw]
         @param index index on stack
      */
-    StackIteratorInterface(StackType& data, const int index)
+    StackIteratorInterface(StackType& data, const unsigned int index)
         : fIndex(index)
         , fData(&data) {}
 
@@ -87,7 +89,7 @@ namespace corsika::stack {
        ParticleInterfaceType::SetParticleData(...) function
      */
     template <typename... Args>
-    StackIteratorInterface(StackType& data, const int index, const Args... args)
+    StackIteratorInterface(StackType& data, const unsigned int index, const Args... args)
         : fIndex(index)
         , fData(&data) {
       (**this).SetParticleData(args...);
@@ -104,7 +106,7 @@ namespace corsika::stack {
        ParticleInterfaceType::SetParticleData(...) function
     */
     template <typename... Args>
-    StackIteratorInterface(StackType& data, const int index,
+    StackIteratorInterface(StackType& data, const unsigned int index,
                            StackIteratorInterface& parent, const Args... args)
         : fIndex(index)
         , fData(&data) {
@@ -124,6 +126,9 @@ namespace corsika::stack {
       ++fIndex;
       return tmp;
     }
+    StackIteratorInterface operator+(int delta) {
+      return StackIteratorInterface(*fData, fIndex + delta);
+    }
     bool operator==(const StackIteratorInterface& rhs) { return fIndex == rhs.fIndex; }
     bool operator!=(const StackIteratorInterface& rhs) { return fIndex != rhs.fIndex; }
     /// Convert to value type
@@ -141,7 +146,7 @@ namespace corsika::stack {
      */
     ///@{
     /// Get current particle index
-    inline int GetIndex() const { return fIndex; }
+    inline unsigned int GetIndex() const { return fIndex; }
     /// Get current particle Stack object
     inline StackType& GetStack() { return *fData; }
     /// Get current particle const Stack object
@@ -164,6 +169,7 @@ namespace corsika::stack {
       : public ParticleInterface<
             ConstStackIteratorInterface<StackData, ParticleInterface>> {
 
+  public:
     typedef Stack<StackData, ParticleInterface> StackType;
     typedef ParticleInterface<ConstStackIteratorInterface<StackData, ParticleInterface>>
         ParticleInterfaceType;
@@ -172,7 +178,7 @@ namespace corsika::stack {
     friend class ParticleBase<ConstStackIteratorInterface>; // for access to GetStackData
 
   private:
-    int fIndex = 0;
+    unsigned int fIndex = 0;
     const StackType* fData = 0; // info: Particles and StackIterators become invalid when
                                 // parent Stack is copied or deleted!
 
@@ -180,7 +186,7 @@ namespace corsika::stack {
     ConstStackIteratorInterface() = delete;
 
   public:
-    ConstStackIteratorInterface(const StackType& data, const int index)
+    ConstStackIteratorInterface(const StackType& data, const unsigned int index)
         : fIndex(index)
         , fData(&data) {}
 
@@ -210,6 +216,9 @@ namespace corsika::stack {
       ++fIndex;
       return tmp;
     }
+    ConstStackIteratorInterface operator+(int delta) {
+      return ConstStackIteratorInterface(*fData, fIndex + delta);
+    }
     bool operator==(const ConstStackIteratorInterface& rhs) {
       return fIndex == rhs.fIndex;
     }
@@ -227,7 +236,7 @@ namespace corsika::stack {
         Only the const versions for read-only access
      */
     ///@{
-    inline int GetIndex() const { return fIndex; }
+    inline unsigned int GetIndex() const { return fIndex; }
     inline const StackType& GetStack() const { return *fData; }
     inline const StackData& GetStackData() const { return fData->GetStackData(); }
     ///@}

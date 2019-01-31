@@ -20,6 +20,7 @@ target_link_libraries (
   INTERFACE
   CORSIKAgeometry
   SuperStupidStack
+  NuclearStackExtension
   )
 
 target_include_directories (
