@@ -64,7 +64,7 @@ def checkNote(filename):
     print filename + " > " + str(len(startNote)) + " " + str(startNote) + " " + str(endNote) + " " + str(isSame)
 
     # check if notice is the same, or we need to remove multiple notices...
-    if isSame or len(startNote)>1:
+    if isSame and len(startNote)<=1:
         return                
     
     # add (new) copyright notice here:
