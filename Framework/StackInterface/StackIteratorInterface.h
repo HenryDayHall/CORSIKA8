@@ -237,6 +237,7 @@ namespace corsika::stack {
      */
     ///@{
     inline unsigned int GetIndex() const { return fIndex; }
+    //    inline unsigned int GetIndex() const { return fData->GetIndexFromIterator(fIndex); }
     inline const StackType& GetStack() const { return *fData; }
     inline const StackData& GetStackData() const { return fData->GetStackData(); }
     ///@}

@@ -19,9 +19,10 @@
 #include <iomanip>
 #include <iostream>
 
+using namespace corsika;
 using namespace corsika::units::si;
 using namespace corsika::stack;
-using namespace corsika;
+using namespace corsika::geometry;
 using namespace std;
 
 void fill(corsika::stack::super_stupid::SuperStupidStack& s) {

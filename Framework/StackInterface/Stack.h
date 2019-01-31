@@ -142,6 +142,8 @@ namespace corsika::stack {
     StackIterator GetNextParticle() { return last(); }
 
   protected:
+    unsigned int GetIndexFromIterator(const unsigned int vI) const { return vI; }
+
     StackData& GetStackData() { return static_cast<StackData&>(*this); }
     const StackData& GetStackData() const { return static_cast<const StackData&>(*this); }
   };

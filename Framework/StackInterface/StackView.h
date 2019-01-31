@@ -1,6 +1,7 @@
 #ifndef _include_corsika_stack_stackview_h_
 #define _include_corsika_stack_stackview_h_
 
+#include <vector>
 
 namespace corsika::stack {
 
