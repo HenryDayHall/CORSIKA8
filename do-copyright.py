@@ -60,9 +60,7 @@ def checkNote(filename):
                 isSame = False
                 print "need update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote+iLine].rstrip('\n') + "\'"
                 break
-
-    print filename + " > " + str(len(startNote)) + " " + str(startNote) + " " + str(endNote) + " " + str(isSame)
-
+    
     # check if notice is the same, or we need to remove multiple notices...
     if isSame and len(startNote)<=1:
         return                
