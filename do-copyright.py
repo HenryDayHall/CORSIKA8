@@ -73,14 +73,17 @@ def checkNote(filename):
 
         file.write(text)
 
+        skip = False
         for iLine in range(len(lines)):
 
-            skip = False
             for iBlock in range(len(startNote)):
                 if iLine>=startNote[iBlock] and iLine<=endNote[iBlock]:
                     print "   [remove " + str(iBlock) + "] " + (lines[iLine]).strip()
                     skip = True
 
+            if lines[iLine].strip() != "": # if line after comment is empty, also remove it
+                skip = False
+                    
             if not skip:
                 file.write(lines[iLine])
         
