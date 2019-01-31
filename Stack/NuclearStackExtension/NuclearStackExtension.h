@@ -40,7 +40,6 @@ namespace corsika::stack {
         : public InnerParticleInterface<StackIteratorInterface> {
 
     public:
-      // template<typename >
       using ExtendedParticleInterface =
           NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>;
 
@@ -61,8 +60,6 @@ namespace corsika::stack {
             err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
             throw std::runtime_error(err.str());
           }
-          // SetNuclearRef(corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData().GetNucleusNextRef());
-          // // store this nucleus data ref
           SetNuclearRef(
               GetStackData().GetNucleusNextRef()); // store this nucleus data ref
           SetNuclearA(vA);
@@ -70,16 +67,11 @@ namespace corsika::stack {
         } else {
           SetNuclearRef(-1); // this is not a nucleus
         }
-        // corsika::stack::super_stupid::NuclearParticleInterface<StackIteratorInterface>::
         InnerParticleInterface<StackIteratorInterface>::
-            // InnerParticleInterface::
             SetParticleData(vDataPID, vDataE, vMomentum, vPosition, vTime);
       }
 
-      //      void SetParticleData(NuclearParticleInterface<StackIteratorInterface>&
-      //      parent,
-      void SetParticleData(InnerParticleInterface<StackIteratorInterface>& parent,
-                           // void SetParticleData(InnerParticleInterface& parent,
+      void SetParticleData(InnerParticleInterface<StackIteratorInterface>&,
                            const corsika::particles::Code vDataPID,
                            const corsika::units::si::HEPEnergyType vDataE,
                            const MomentumVector& vMomentum,
