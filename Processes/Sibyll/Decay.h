@@ -90,7 +90,6 @@ namespace corsika::process {
 
         using std::cout;
         using std::endl;
-        // using namespace corsika::io;
         using namespace corsika::units::si;
 
         // name? also makes EM particles stable

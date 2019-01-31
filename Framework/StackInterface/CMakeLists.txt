@@ -1,6 +1,7 @@
 set (
   CORSIKAstackinterface_HEADERS
   Stack.h
+  StackView.h
   StackIteratorInterface.h
   ParticleBase.h
   )
