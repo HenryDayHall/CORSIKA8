@@ -21,43 +21,50 @@ extensions = [".cc", ".h", ".test"]
 
 def checkNote(filename):
 
-    startNote = -1
-    endNote = -1
-    isCopyright = False
-    lines = []
+    startNote = []
+    endNote = []
 
+    # read input file into lines
+    lines = []
     with open(filename, "r") as file:
         for line in file.readlines():
             lines.append(line)            
         file.close()
 
-            
+    searchStatus = 0 #0:before comment block, #1 in comment block, #2 found copyright
+    blockStart = 0
     for iLine in range(len(lines)):
         line = lines[iLine]
-        if "/**" in line and startNote == -1:
-            startNote = iLine
-        if "copyright" in line.lower() and startNote>=0 and endNote==-1:
-            isCopyright = True
-        if "*/" in line and startNote>=0 and endNote==-1:
-            endNote = iLine
+        if "/*" in line and searchStatus==0:
+            searchStatus = 1
+            blockStart = iLine
+        if "copyright" in line.lower() and searchStatus>0:
+            searchStatus = 2
+        if "*/" in line:
+            searchStatus = 0
+            if searchStatus>=2:
+                startNote.append(blockStart)
+                endNote.append(iLine)
         iLine += 1
-
-    # now check if copyright notice is already there and identical...
+        
+    # now check if first copyright notices is already identical...
     isSame = False
-    if startNote>=0 and endNote>=0 and isCopyright:
+    if len(startNote)>0: 
         isSame = True
         noteLines = text.split('\n')        
         for iLine in range(len(noteLines)-2):
-            if startNote+iLine >= len(lines):
+            if startNote[0]+iLine >= len(lines):
                 isSame = False
-                break            
-            if noteLines[iLine+1].strip(" \n") != lines[startNote+iLine].strip(" \n"):
+                break
+            if noteLines[iLine+1].strip(" \n") != lines[startNote[0]+iLine].strip(" \n"):
                 isSame = False
-                print "not same: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote+iLine].rstrip('\n') + "\'"
+                print "need update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote+iLine].rstrip('\n') + "\'"
                 break
 
-    # check if notice is the same 
-    if isSame:
+    print filename + " > " + str(count) + " " + str(startNote) + " " + str(endNote) + " " + str(isSame)
+
+    # check if notice is the same, or we need to remove multiple notices...
+    if isSame or count>1:
         return                
     
     # add (new) copyright notice here:
@@ -68,12 +75,16 @@ def checkNote(filename):
 
         file.write(text)
 
-        firstLine = 0
-        if startNote>=0 and endNote>=0 and isCopyright:
-            firstLine = endNote + 2
+        for iLine in range(len(lines)):
 
-        for iLine in range(firstLine, len(lines)):
-            file.write(lines[iLine])
+            skip = False
+            for iBlock in range(len(startNote)):
+                if iLine>=startNote[iBlock] and iLine<endNote[iBlock]:
+                    print "    " + lines[iLine] + "  [remove " + str(iBlock) + "]"
+                    skip = True
+
+            if not skip:
+                file.write(lines[iLine])
         
         file.close()
 
