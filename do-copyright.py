@@ -61,10 +61,10 @@ def checkNote(filename):
                 print "need update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote+iLine].rstrip('\n') + "\'"
                 break
 
-    print filename + " > " + str(count) + " " + str(startNote) + " " + str(endNote) + " " + str(isSame)
+    print filename + " > " + str(len(startNote)) + " " + str(startNote) + " " + str(endNote) + " " + str(isSame)
 
     # check if notice is the same, or we need to remove multiple notices...
-    if isSame or count>1:
+    if isSame or len(startNote)>1:
         return                
     
     # add (new) copyright notice here:
