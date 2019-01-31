@@ -24,10 +24,9 @@ namespace corsika::environment {
     auto IntegrateGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::LengthType length) const {
-      auto const c0 = GetImplementation().fRho(line.GetPosition(0));
-      auto const c1 = GetImplementation().fRho.Derivative<1>(line.GetPosition(0),
-                                                             line.NormalizedDirection());
-
+      auto const c0 = GetImplementation().EvaluateAt(line.GetPosition(0));
+      auto const c1 = GetImplementation().fRho.FirstDerivative(
+          line.GetPosition(0), line.NormalizedDirection());
       return (c0 + 0.5 * c1 * length) * length;
     }
 
@@ -35,8 +34,8 @@ namespace corsika::environment {
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::GrammageType grammage) const {
       auto const c0 = GetImplementation().fRho(line.GetPosition(0));
-      auto const c1 = GetImplementation().fRho.Derivative<1>(line.GetPosition(0),
-                                                             line.NormalizedDirection());
+      auto const c1 = GetImplementation().fRho.FirstDerivative(
+          line.GetPosition(0), line.NormalizedDirection());
 
       return (1 - 0.5 * grammage * c1 / (c0 * c0)) * grammage / c0;
     }

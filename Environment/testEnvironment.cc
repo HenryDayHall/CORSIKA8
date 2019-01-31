@@ -47,6 +47,10 @@ struct Exponential {
     return v.GetComponents()[0] * (*this)(p) /
            corsika::units::si::detail::static_pow<N>(1_m);
   }
+
+  auto FirstDerivative(Point const& p, Vector<dimensionless_d> const& v) const {
+    return Derivative<1>(p, v);
+  }
 };
 
 TEST_CASE("DensityFunction") {
@@ -57,7 +61,7 @@ TEST_CASE("DensityFunction") {
   Vector direction(cs, QuantityVector<dimensionless_d>(1, 0, 0));
 
   Line line(origin, Vector<SpeedType::dimension_type>(
-                        cs, {200_m / second, 0_m / second, 0_m / second}));
+                        cs, {20_m / second, 0_m / second, 0_m / second}));
 
   auto const tEnd = 5_s;
   Trajectory<Line> const trajectory(line, tEnd);
@@ -69,7 +73,13 @@ TEST_CASE("DensityFunction") {
   DensityFunction const rho(e);
   REQUIRE(rho.EvaluateAt(origin) == e(origin));
 
-  auto const exactGrammage = [](auto x) { return rho0 * exp(x / 1_m); };
-  REQUIRE(rho.IntegrateGrammage(trajectory, 5_cm) / exactGrammage(5_cm) ==
-          Approx(1).epsilon(1e-2));
+  auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };
+  auto const exactLength = [](auto X) { return 1_m * log(1 + X / (rho0 * 1_m)); };
+
+  auto constexpr l = 15_cm;
+  CHECK(rho.IntegrateGrammage(trajectory, l) / exactGrammage(l) ==
+        Approx(1).epsilon(1e-2));
+  CHECK(rho.ArclengthFromGrammage(trajectory, exactGrammage(l)) /
+            exactLength(exactGrammage(l)) ==
+        Approx(1).epsilon(1e-2));
 }
