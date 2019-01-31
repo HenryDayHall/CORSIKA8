@@ -31,7 +31,7 @@ def checkNote(filename):
             lines.append(line)            
         file.close()
 
-    searchStatus = 0 #0:before comment block, #1 in comment block, #2 found copyright
+    searchStatus = 0 # 0:before comment block, #1 in comment block, #2 found copyright
     blockStart = 0
     for iLine in range(len(lines)):
         line = lines[iLine]
@@ -41,10 +41,10 @@ def checkNote(filename):
         if "copyright" in line.lower() and searchStatus>0:
             searchStatus = 2
         if "*/" in line:
-            searchStatus = 0
             if searchStatus>=2:
                 startNote.append(blockStart)
                 endNote.append(iLine)
+            searchStatus = 0
         iLine += 1
         
     # now check if first copyright notices is already identical...
