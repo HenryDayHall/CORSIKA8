@@ -45,6 +45,8 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Names") {
     REQUIRE(Electron::GetName() == "e-");
     REQUIRE(PiMinus::GetName() == "pi-");
+    REQUIRE(Nucleus::GetName() == "nucleus");
+    REQUIRE(Iron::GetName() == "iron");
   }
 
   SECTION("PDG") {

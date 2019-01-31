@@ -14,28 +14,40 @@
 
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/stack/Stack.h>
+#include <corsika/units/PhysicalUnits.h>
+
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/Vector.h>
+
+#include <algorithm>
 #include <vector>
 
 namespace corsika::stack {
 
   namespace nuclear_extension {
 
-    using corsika::stack::super_stupid::MomentumVector;
-    
-    template <typename StackIteratorInterface>
-    class ParticleInterface
-        : public corsika::stack::super_stupid::ParticleInterface<StackIteratorInterface> {
+    typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
+    /**
+     * Define ParticleInterface for NuclearStackExtension Stack derived from ParticleInterface of Inner stack class
+     */    
+    template<template <typename> typename InnerParticleInterface, typename StackIteratorInterface>
+      class NuclearParticleInterface : public InnerParticleInterface<StackIteratorInterface> {
+
+    public:
+      //template<typename >
+      using ExtendedParticleInterface = NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>;
+      
     protected:
-      //      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStack;
-      //using corsika::stack::super_stupid::ParticleInterface<StackIteratorInterface>::GetStackData;
-      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
-      using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
+      using InnerParticleInterface<StackIteratorInterface>::GetStackData;
+      using InnerParticleInterface<StackIteratorInterface>::GetIndex;
 
     public:
       void SetParticleData(const corsika::particles::Code vDataPID,
                            const corsika::units::si::HEPEnergyType vDataE,
-                           const corsika::stack::super_stupid::MomentumVector& vMomentum,
+                           const MomentumVector& vMomentum,
                            const corsika::geometry::Point& vPosition,
                            const corsika::units::si::TimeType vTime,
 			   const int vA = 0,
@@ -46,23 +58,29 @@ namespace corsika::stack {
 	    err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
 	    throw std::runtime_error(err.str());
 	  }
-	  SetNuclearRef(corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData().GetNucleusNextRef()); // store this nucleus data ref
+	  //SetNuclearRef(corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData().GetNucleusNextRef()); // store this nucleus data ref
+	  SetNuclearRef(GetStackData().GetNucleusNextRef()); // store this nucleus data ref
 	  SetNuclearA(vA);
 	  SetNuclearZ(vZ);
 	} else {
 	  SetNuclearRef(-1); // this is not a nucleus
 	}
-        corsika::stack::super_stupid::ParticleInterface<StackIteratorInterface>::SetParticleData(vDataPID,
-												 vDataE,
-												 vMomentum,
-												 vPosition,
-												 vTime);
+        //corsika::stack::super_stupid::NuclearParticleInterface<StackIteratorInterface>::
+	InnerParticleInterface<StackIteratorInterface>::
+	//InnerParticleInterface::
+	  SetParticleData(vDataPID,
+			  vDataE,
+			  vMomentum,
+			  vPosition,
+			  vTime);
       }
 
-      void SetParticleData(ParticleInterface<StackIteratorInterface>& parent,
+      //      void SetParticleData(NuclearParticleInterface<StackIteratorInterface>& parent,
+      void SetParticleData(InnerParticleInterface<StackIteratorInterface>& parent,
+			   //void SetParticleData(InnerParticleInterface& parent,
                            const corsika::particles::Code vDataPID,
                            const corsika::units::si::HEPEnergyType vDataE,
-                           const corsika::stack::super_stupid::MomentumVector& vMomentum,
+                           const MomentumVector& vMomentum,
                            const corsika::geometry::Point& vPosition,
                            const corsika::units::si::TimeType vTime,
 			   const int vA = 0,
@@ -100,33 +118,32 @@ namespace corsika::stack {
     /**
      * Memory implementation of the most simple (stupid) particle stack object.
      */
-
-    class NuclearStackExtensionImpl
-        : public corsika::stack::super_stupid::SuperStupidStackImpl {
+    template<typename InnerStackImpl>
+      class NuclearStackExtensionImpl : public InnerStackImpl {
 
     public:
-      void Init() { corsika::stack::super_stupid::SuperStupidStackImpl::Init(); }
+      void Init() { InnerStackImpl::Init(); }
 
       void Clear() {
-        corsika::stack::super_stupid::SuperStupidStackImpl::Clear();
+        InnerStackImpl::Clear();
         fNuclearRef.clear();
         fNuclearA.clear();
         fNuclearZ.clear();
       }
 
-      int GetSize() const { return fNuclearRef.size(); }
-      int GetCapacity() const { return fNuclearRef.size(); }
+      unsigned int GetSize() const { return fNuclearRef.size(); }
+      unsigned int GetCapacity() const { return fNuclearRef.size(); }
 
-      void SetNuclearA(const int i, const int vA) { fNuclearA[GetNucleusRef(i)] = vA; }
-      void SetNuclearZ(const int i, const int vZ) { fNuclearZ[GetNucleusRef(i)] = vZ; }
-      void SetNuclearRef(const int i, const int v) { fNuclearRef[i] = v; }
+      void SetNuclearA(const unsigned int i, const int vA) { fNuclearA[GetNucleusRef(i)] = vA; }
+      void SetNuclearZ(const unsigned int i, const int vZ) { fNuclearZ[GetNucleusRef(i)] = vZ; }
+      void SetNuclearRef(const unsigned int i, const int v) { fNuclearRef[i] = v; }
       
-      int GetNuclearA(const int i) const { return fNuclearA[GetNucleusRef(i)]; }
-      int GetNuclearZ(const int i) const { return fNuclearZ[GetNucleusRef(i)]; }
+      int GetNuclearA(const unsigned int i) const { return fNuclearA[GetNucleusRef(i)]; }
+      int GetNuclearZ(const unsigned int i) const { return fNuclearZ[GetNucleusRef(i)]; }
       // this function will create new storage for Nuclear Properties, and return the reference to it
       int GetNucleusNextRef() { fNuclearA.push_back(0); fNuclearZ.push_back(0); return fNuclearA.size()-1; }
 
-      int GetNucleusRef(const int i) const {
+      int GetNucleusRef(const unsigned int i) const {
 	if (fNuclearRef[i]>=0)
 	  return fNuclearRef[i];
 	std::ostringstream err;
@@ -137,8 +154,13 @@ namespace corsika::stack {
       /**
        *   Function to copy particle at location i1 in stack to i2
        */
-      void Copy(const int i1, const int i2) {
-        corsika::stack::super_stupid::SuperStupidStackImpl::Copy(i1, i2);
+      void Copy(const unsigned int i1, const unsigned int i2) {
+	if (i1>=GetSize() || i2>=GetSize()) {
+	  std::ostringstream err;
+	  err << "NuclearStackExtension: trying to access data beyond size of stack!";
+	  throw std::runtime_error(err.str());
+	}
+        InnerStackImpl::Copy(i1, i2);
 	const int ref1 = fNuclearRef[i1];
 	const int ref2 = fNuclearRef[i2];
 	if (ref2<0) {
@@ -157,8 +179,8 @@ namespace corsika::stack {
 	    fNuclearZ[ref2] = fNuclearZ[ref1];
 	  } else {
 	    // i2 is overwritten with non-nucleus i1
-	    fNuclearA.erase(fNuclearA.begin() + ref2);
-	    fNuclearZ.erase(fNuclearZ.begin() + ref2);
+	    fNuclearA.erase(fNuclearA.cbegin() + ref2);
+	    fNuclearZ.erase(fNuclearZ.cbegin() + ref2);
 	    const int n = fNuclearRef.size();
 	    for (int i=0; i<n; ++i) {
 	      if (fNuclearRef[i]>=ref2) {
@@ -172,8 +194,13 @@ namespace corsika::stack {
       /**
        *   Function to copy particle at location i2 in stack to i1
        */
-      void Swap(const int i1, const int i2) {
-        corsika::stack::super_stupid::SuperStupidStackImpl::Swap(i1, i2);
+      void Swap(const unsigned int i1, const unsigned int i2) {
+	if (i1>=GetSize() || i2>=GetSize()) {
+	  std::ostringstream err;
+	  err << "NuclearStackExtension: trying to access data beyond size of stack!";
+	  throw std::runtime_error(err.str());
+	}
+        InnerStackImpl::Swap(i1, i2);
 	const int ref1 = fNuclearRef[i1];
 	const int ref2 = fNuclearRef[i2];
 	if (ref2<0) {
@@ -196,12 +223,12 @@ namespace corsika::stack {
 
     protected:
       void IncrementSize() {
-        corsika::stack::super_stupid::SuperStupidStackImpl::IncrementSize();
+        InnerStackImpl::IncrementSize();
         fNuclearRef.push_back(-1);
       }
 
       void DecrementSize() {
-        corsika::stack::super_stupid::SuperStupidStackImpl::DecrementSize();
+        InnerStackImpl::DecrementSize();
         if (fNuclearRef.size() > 0) {
 	  const int ref = fNuclearRef.back();
 	  fNuclearRef.pop_back();
@@ -225,10 +252,40 @@ namespace corsika::stack {
       std::vector<int> fNuclearA;
       std::vector<int> fNuclearZ;
 
-    }; // end class SuperStupidStackImpl
+    }; // end class NuclearStackExtensionImpl
 
-    typedef Stack<NuclearStackExtensionImpl, ParticleInterface> NuclearStackExtension;
+    //    template<typename StackIteratorInterface>
+    // using NuclearParticleInterfaceType<StackIteratorInterface> = NuclearParticleInterface< ,StackIteratorInterface>
 
+    
+    // works, but requires stupd _PI class
+    //template<typename SS> using TEST = NuclearParticleInterface<corsika::stack::super_stupid::SuperStupidStack::PIType, SS>;
+    template <typename InnerStack, template<typename>typename _PI>
+    using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, _PI>;
+    
+    // ----
+    
+    
+    // I'm dont't manage to do this properly.......
+    /*
+    template<typename TT, typename SS> using TESTi = typename NuclearParticleInterface<TT::template PIType, SS>::ExtendedParticleInterface;
+    template<typename TT, typename SS> using TEST1 = TESTi<TT, SS>;      
+    template<typename SS> using TEST2 = TEST1<typename corsika::stack::super_stupid::SuperStupidStack, SS>;
+
+    using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, TEST2>;
+    */
+    /*
+      // .... this should be fixed ....
+
+    template <typename InnerStack, typename SS=StackIteratorInterface>
+      //using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, NuclearParticleInterface<typename InnerStack::template PIType, StackIteratorInterface>::ExtendedParticleInterface>;
+      using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, TEST1<typename corsika::stack::super_stupid::SuperStupidStack, SS> >;
+    
+    //template <typename InnerStack>
+      //  using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, TEST<typename corsika::stack::super_stupid::SuperStupidStack::PIType>>;
+    //using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, TEST>;
+    */
+    
   } // namespace nuclear_extension
 } // namespace corsika::stack
 

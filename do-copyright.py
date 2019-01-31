@@ -84,6 +84,8 @@ def next_file(x, dir_name, files):
             return
     for check in files :
         filename, file_extension = os.path.splitext(check)
+        if '#' in check or '~' in check:
+            return
         for check2 in excludeFiles :
             if check2 in check:
                 return

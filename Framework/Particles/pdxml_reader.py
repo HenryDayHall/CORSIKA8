@@ -251,7 +251,7 @@ def read_nuclei_db(filename, particle_db, classnames):
         }
     
     return particle_db
-    
+
 
 
 

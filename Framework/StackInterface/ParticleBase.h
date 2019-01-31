@@ -22,6 +22,23 @@ namespace corsika::stack {
    The base class to define the readout of particle properties from a
    particle stack. Every stack must implement this readout via the
    ParticleBase class.
+
+   The StackIterator template argument is derived from StackIteratorInterface, which is of type
+   <code>
+   template <typename StackData, template <typename> typename ParticleInterface>
+   class StackIteratorInterface : public ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
+   </code>
+
+   where StackData must refer to a Stack type, and ParticleInterface<StackIteratorInterface> is the corresponding particle readout class. 
+
+   Thus, StackIteratorInterface is a CRTP class, injecting the full StackIteratorInterface machinery into the ParticleInterface (aka ParticleBase) type! 
+
+   The declartion of a StackIteratorInterface type simultaneously declares the corresponding ParticleInterface type. 
+
+   Furthermore, the operator* of the StackIteratorInterface returns a
+   static_cast to the ParticleInterface type, allowing a direct
+   readout of the particle data from the iterator. 
+
   */
 
   template <typename StackIterator>
@@ -31,6 +48,7 @@ namespace corsika::stack {
     ParticleBase() = default;
 
   private:
+    /*
     // those copy constructors and assigments should never be implemented
     ParticleBase(ParticleBase&) = delete;
     ParticleBase operator=(ParticleBase&) = delete;
@@ -38,10 +56,11 @@ namespace corsika::stack {
     ParticleBase operator=(ParticleBase&&) = delete;
     ParticleBase(const ParticleBase&) = delete;
     ParticleBase operator=(const ParticleBase&) = delete;
-
+    */
   public:
-    /** delete this particle on the stack. The corresponding iterator
-     *  will be invalidated by this operation
+    /**
+     * Delete this particle on the stack. The corresponding iterator
+     * will be invalidated by this operation
      */
     void Delete() { GetIterator().GetStack().Delete(GetIterator()); }
 
@@ -55,7 +74,7 @@ namespace corsika::stack {
       return GetStack().AddSecondary(GetIterator(), args...);
     }
 
-    //  protected: // todo should [MAY]be proteced, but don't now how to 'friend Stack'
+    // protected: // todo should [MAY]be proteced, but don't now how to 'friend Stack'
     // Function to provide CRTP access to inheriting class (type)
     /**
      * return the corresponding StackIterator for this particle
@@ -66,7 +85,8 @@ namespace corsika::stack {
     }
 
   protected:
-    /** @name Access to underlying stack data
+    /**
+        @name Access to underlying stack data
         @{
     */
     auto& GetStackData() { return GetIterator().GetStackData(); }
@@ -78,7 +98,7 @@ namespace corsika::stack {
     /**
      * return the index number of the underlying iterator object
      */
-    int GetIndex() const { return GetIterator().GetIndex(); }
+    unsigned int GetIndex() const { return GetIterator().GetIndex(); }
   };
 
 } // namespace corsika::stack

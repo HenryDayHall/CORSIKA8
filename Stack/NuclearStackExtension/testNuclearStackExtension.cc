@@ -9,9 +9,13 @@
  * the license.
  */
 
-#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/units/PhysicalUnits.h>
+
+#include <boost/type_index.hpp>
+using boost::typeindex::type_id_with_cvr;
 
 using namespace corsika::geometry;
 using namespace corsika::units::si;
@@ -23,6 +27,13 @@ using namespace corsika::units::si;
 using namespace corsika;
 using namespace corsika::stack::nuclear_extension;
 
+// this is an auxiliary help typedef, which I don't know how to put
+// into NuclearStackExtension.h where it belongs...
+template<typename StackIter> using ExtendedParticleInterfaceType =
+  corsika::stack::nuclear_extension::NuclearParticleInterface<corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
+
+using ExtStack = NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType>;
+
 #include <iostream>
 using namespace std;
 
@@ -31,8 +42,11 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   geometry::CoordinateSystem& dummyCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
+  // cout << "ParticleType=" << type_id_with_cvr<ParticleType>().pretty_name() << endl;
+
+  
   SECTION("write non nucleus") {
-    NuclearStackExtension s;
+    NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType> s;
     s.AddParticle(particles::Code::Electron, 1.5_GeV,
                   MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
                   Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
@@ -40,7 +54,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
   
   SECTION("write nucleus") {
-    NuclearStackExtension s;
+    NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType> s;
     s.AddParticle(particles::Code::Nucleus, 1.5_GeV,
                   MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
                   Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 10);
@@ -48,14 +62,14 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("write invalid nucleus") {
-    NuclearStackExtension s;
+    ExtStack s;
     REQUIRE_THROWS(s.AddParticle(particles::Code::Nucleus, 1.5_GeV,
 				 MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
 				 Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0));
   }
 
   SECTION("read non nucleus") {
-    NuclearStackExtension s;
+    ExtStack s;
     s.AddParticle(particles::Code::Electron, 1.5_GeV,
                   MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
                   Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
@@ -66,7 +80,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
   
   SECTION("read nucleus") {
-    NuclearStackExtension s;
+    ExtStack s;
     s.AddParticle(particles::Code::Nucleus, 1.5_GeV,
                   MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
                   Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9);
@@ -79,7 +93,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("read invalid nucleus") {
-    NuclearStackExtension s;
+    ExtStack s;
     s.AddParticle(particles::Code::Electron, 1.5_GeV,
                   MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
                   Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
@@ -91,7 +105,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
   SECTION("stack fill and cleanup") {
 
-    NuclearStackExtension s;
+    ExtStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       if ((i+1)%10 == 0) {
@@ -105,17 +119,15 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
       }
     }
 
-    REQUIRE(s.GetSize() == 99);
-    
+    REQUIRE(s.GetSize() == 99);   
     for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
-
     REQUIRE(s.GetSize() == 0);
   }
 
 
   SECTION("stack operations") {
 
-    NuclearStackExtension s;
+    ExtStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       if ((i+1)%10 == 0) {
@@ -131,7 +143,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
     // copy
     {
-      s.Copy(s.begin()+9, s.begin()+10);
+      s.Copy(s.begin()+9, s.begin()+10); // nuclei to non-nuclei
       const auto& p9 = s.cbegin() + 9;
       const auto& p10 = s.cbegin() + 10;
       
@@ -147,7 +159,22 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
       REQUIRE(p10.GetNuclearA() == 9);
       REQUIRE(p10.GetNuclearZ() == 9/2);
     }
-    
+
+    // copy
+    {
+      s.Copy(s.begin()+93, s.begin()+9); // non-nuclei to nuclei
+      const auto& p93 = s.cbegin() + 93;
+      const auto& p9 = s.cbegin() + 9;
+      
+      REQUIRE(p9.GetPID() == particles::Code::Electron);
+      REQUIRE(p9.GetEnergy() == 93*1.5_GeV);
+      REQUIRE(p9.GetTime() == 100_s);
+      
+      REQUIRE(p93.GetPID() == particles::Code::Electron);
+      REQUIRE(p93.GetEnergy() == 93*1.5_GeV);
+      REQUIRE(p93.GetTime() == 100_s);
+    }
+
     // swap
     {
       s.Swap(s.begin()+11, s.begin()+10);
@@ -167,7 +194,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
     // swap two nuclei
     {
-      s.Copy(s.begin()+29, s.begin()+59);
+      s.Swap(s.begin()+29, s.begin()+59);
       const auto& p29 = s.cbegin() + 29;
       const auto& p59 = s.cbegin() + 59;
       

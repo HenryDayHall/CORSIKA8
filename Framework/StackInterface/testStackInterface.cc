@@ -29,8 +29,8 @@ public:
   // these functions are needed for the Stack interface
   void Init() {}
   void Clear() { fData.clear(); }
-  int GetSize() const { return fData.size(); }
-  int GetCapacity() const { return fData.size(); }
+  unsigned int GetSize() const { return fData.size(); }
+  unsigned int GetCapacity() const { return fData.size(); }
   void Copy(const int i1, const int i2) { fData[i2] = fData[i1]; }
   void Swap(const int i1, const int i2) {
     double tmp0 = fData[i1];
@@ -97,8 +97,8 @@ TEST_CASE("Stack", "[Stack]") {
     s.Init();
     s.Clear();
     s.IncrementSize();
-    s.Copy(0, 0);
-    s.Swap(0, 0);
+    s.Copy(s.cbegin(), s.begin());
+    s.Swap(s.begin(), s.begin());
     s.GetCapacity();
     REQUIRE(s.GetSize() == 1);
     s.DecrementSize();
