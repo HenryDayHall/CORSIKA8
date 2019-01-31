@@ -79,8 +79,8 @@ def checkNote(filename):
 
             skip = False
             for iBlock in range(len(startNote)):
-                if iLine>=startNote[iBlock] and iLine<endNote[iBlock]:
-                    print "    " + lines[iLine] + "  [remove " + str(iBlock) + "]"
+                if iLine>=startNote[iBlock] and iLine<=endNote[iBlock]:
+                    print "    " + strip(lines[iLine]) + "  [remove " + str(iBlock) + "]"
                     skip = True
 
             if not skip:
