@@ -18,10 +18,11 @@
 
 namespace corsika::environment {
 
-  template <class TDerivableRho>
-  // TODO make LinearApproximator a template parameter to facilitate exchangability
-  class DensityFunction : public LinearApproximator<DensityFunction<TDerivableRho>> {
-    friend class LinearApproximator<DensityFunction<TDerivableRho>>;
+  template <class TDerivableRho,
+            template <typename> class TApproximator = LinearApproximator>
+  class DensityFunction
+      : public TApproximator<DensityFunction<TDerivableRho, TApproximator>> {
+    friend class TApproximator<DensityFunction<TDerivableRho, TApproximator>>;
 
     TDerivableRho fRho; //!< functor for density
 
