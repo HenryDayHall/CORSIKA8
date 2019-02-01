@@ -39,6 +39,14 @@ namespace corsika::environment {
 
       return (1 - 0.5 * grammage * c1 / (c0 * c0)) * grammage / c0;
     }
+    
+    auto MaximumLength(double relError) const {
+        auto const c1 = GetImplementation().fRho.SecondDerivative(
+          line.GetPosition(0), line.NormalizedDirection());
+          
+        // todo: finish
+        return 100_m;
+    }
   };
 } // namespace corsika::environment
 
