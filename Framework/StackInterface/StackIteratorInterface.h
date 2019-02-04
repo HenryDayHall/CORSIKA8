@@ -14,14 +14,16 @@
 
 #include <corsika/stack/ParticleBase.h>
 
+#include <iostream>
 #include <type_traits>
-
-class StackData; // forward decl
 
 namespace corsika::stack {
 
-  template <typename StackData, template <typename> typename ParticleInterface>
+  template <typename StackDataType, template <typename> typename ParticleInterface>
   class Stack; // forward decl
+
+  template <typename StackDataType, template <typename> typename ParticleInterface>
+  class SecondaryView; // forward decl
 
   /**
      @class StackIteratorInterface
@@ -47,22 +49,32 @@ namespace corsika::stack {
      for a particle entry at any index fIndex.
   */
 
-  template <typename StackData, template <typename> typename ParticleInterface>
+  template <typename StackDataType, template <typename> typename ParticleInterface,
+            typename StackType = Stack<StackDataType, ParticleInterface>>
   class StackIteratorInterface
-      : public ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>> {
+      : public ParticleInterface<
+            StackIteratorInterface<StackDataType, ParticleInterface, StackType>> {
 
   public:
-    typedef Stack<StackData, ParticleInterface> StackType;
+    typedef StackDataType SD;
+    // typedef Stack<StackDataType, ParticleInterface> StackType;
     /*typedef
-        typename std::conditional<std::is_const<StackData>::value,
-                                  const Stack<const StackData, ParticleInterface>&,
-                                  Stack<StackData, ParticleInterface>&>::type StackType;*/
+        typename std::conditional<std::is_const<StackDataType>::value,
+                                  const Stack<const StackDataType, ParticleInterface>&,
+                                  Stack<StackDataType, ParticleInterface>&>::type
+       StackType;*/
 
-    typedef ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
+    typedef ParticleInterface<
+        StackIteratorInterface<StackDataType, ParticleInterface, StackType>>
         ParticleInterfaceType;
 
-    friend class Stack<StackData, ParticleInterface>;  // for access to GetIndex
-    friend class ParticleBase<StackIteratorInterface>; // for access to GetStackData
+    friend class Stack<StackDataType,
+                       ParticleInterface>; // for access to GetIndex for Stack
+    friend class Stack<StackDataType&, ParticleInterface>; // for access to GetIndex
+                                                           // SecondaryView : public Stack
+    friend class ParticleBase<StackIteratorInterface>; // for access to GetStackDataType
+    friend class SecondaryView<StackDataType,
+                               ParticleInterface>; // access for SecondaryView
 
   private:
     unsigned int fIndex = 0;
@@ -92,7 +104,8 @@ namespace corsika::stack {
     StackIteratorInterface(StackType& data, const unsigned int index, const Args... args)
         : fIndex(index)
         , fData(&data) {
-      (**this).SetParticleData(args...);
+      ParticleInterfaceType& p = **this;
+      p.SetParticleData(args...);
     }
 
     /** constructor that also sets new values on particle data object, including reference
@@ -110,7 +123,8 @@ namespace corsika::stack {
                            StackIteratorInterface& parent, const Args... args)
         : fIndex(index)
         , fData(&data) {
-      (**this).SetParticleData(*parent, args...);
+      ParticleInterfaceType& p = **this;
+      p.SetParticleData(*parent, args...);
     }
 
   public:
@@ -131,30 +145,38 @@ namespace corsika::stack {
     }
     bool operator==(const StackIteratorInterface& rhs) { return fIndex == rhs.fIndex; }
     bool operator!=(const StackIteratorInterface& rhs) { return fIndex != rhs.fIndex; }
-    /// Convert to value type
+
+  /** 
+   * Convert iterator to value type, where value type is the user-provided particle readout class
+   */
     ParticleInterfaceType& operator*() {
       return static_cast<ParticleInterfaceType&>(*this);
     }
-    /// Convert to const value type
+  /** 
+   * Convert iterator to const value type, where value type is the user-provided particle readout class
+   */
     const ParticleInterfaceType& operator*() const {
       return static_cast<const ParticleInterfaceType&>(*this);
     }
     ///@}
 
   protected:
-    /** @name Stack data access
+    /**
+     * @name Stack data access
+     * @{
      */
-    ///@{
     /// Get current particle index
     inline unsigned int GetIndex() const { return fIndex; }
     /// Get current particle Stack object
     inline StackType& GetStack() { return *fData; }
     /// Get current particle const Stack object
     inline const StackType& GetStack() const { return *fData; }
-    /// Get current user particle StackData object
-    inline StackData& GetStackData() { return fData->GetStackData(); }
-    /// Get current const user particle StackData object
-    inline const StackData& GetStackData() const { return fData->GetStackData(); }
+    /// Get current user particle StackDataType object
+    inline StackDataType& GetStackData() { return fData->GetStackData(); }
+    /// Get current const user particle StackDataType object
+    inline const StackDataType& GetStackData() const { return fData->GetStackData(); }
+    /// Get data index as mapped in Stack class
+  inline unsigned int GetIndexFromIterator() const { std::cout << "GetIndexFromIterator " << fIndex << " " << fData->GetIndexFromIterator(fIndex) << std::endl; return fData->GetIndexFromIterator(fIndex); }
     ///@}
   }; // end class StackIterator
 
@@ -164,18 +186,20 @@ namespace corsika::stack {
      This is the iterator class for const-access to stack data
    */
 
-  template <typename StackData, template <typename> typename ParticleInterface>
+  template <typename StackDataType, template <typename> typename ParticleInterface,
+            typename StackType = Stack<StackDataType, ParticleInterface>>
   class ConstStackIteratorInterface
       : public ParticleInterface<
-            ConstStackIteratorInterface<StackData, ParticleInterface>> {
+            ConstStackIteratorInterface<StackDataType, ParticleInterface, StackType>> {
 
   public:
-    typedef Stack<StackData, ParticleInterface> StackType;
-    typedef ParticleInterface<ConstStackIteratorInterface<StackData, ParticleInterface>>
+    typedef ParticleInterface<
+        ConstStackIteratorInterface<StackDataType, ParticleInterface, StackType>>
         ParticleInterfaceType;
 
-    friend class Stack<StackData, ParticleInterface>;       // for access to GetIndex
-    friend class ParticleBase<ConstStackIteratorInterface>; // for access to GetStackData
+    friend class Stack<StackDataType, ParticleInterface>;   // for access to GetIndex
+    friend class ParticleBase<ConstStackIteratorInterface>; // for access to
+                                                            // GetStackDataType
 
   private:
     unsigned int fIndex = 0;
@@ -237,9 +261,10 @@ namespace corsika::stack {
      */
     ///@{
     inline unsigned int GetIndex() const { return fIndex; }
-    //    inline unsigned int GetIndex() const { return fData->GetIndexFromIterator(fIndex); }
     inline const StackType& GetStack() const { return *fData; }
-    inline const StackData& GetStackData() const { return fData->GetStackData(); }
+    inline const StackDataType& GetStackData() const { return fData->GetStackData(); }
+    /// Get data index as mapped in Stack class
+  inline unsigned int GetIndexFromIterator() const { std::cout << "GetIndexFromIterator " << fIndex << " " << fData->GetIndexFromIterator(fIndex) << std::endl; return fData->GetIndexFromIterator(fIndex); }
     ///@}
   }; // end class ConstStackIterator
 

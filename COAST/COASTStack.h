@@ -92,11 +92,12 @@ namespace corsika::coast {
     const crs::CParticle* fParticle2 = 0;
 
   public:
-    void Init() {}
-    void SetParticle(const crs::CParticle* v1, const crs::CParticle* v2) {
+    COASTStackImpl(const crs::CParticle* v1, const crs::CParticle* v2) {
       fParticle1 = v1;
       fParticle2 = v2;
     }
+
+    void Init() {}
     void Clear() {}
 
     // there is one particle only
@@ -177,11 +178,10 @@ namespace corsika::coast {
      */
     void Swap(const int, const int) {}
 
-  protected:
-    // size cannot be increased
+    // size cannot be increased, do nothing
     void IncrementSize() {}
 
-    // size cannot be decremented
+    // size cannot be decremented, do nothing
     void DecrementSize() {}
 
   }; // end class COASTStackImpl

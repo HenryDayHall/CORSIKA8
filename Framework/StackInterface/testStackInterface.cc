@@ -9,7 +9,17 @@
  * the license.
  */
 
+#include <corsika/stack/SecondaryView.h>
 #include <corsika/stack/Stack.h>
+
+#include <boost/type_index.hpp>
+#include <type_traits>
+using boost::typeindex::type_id_with_cvr;
+
+template <typename T>
+struct ID {
+  typedef T type;
+};
 
 #include <iomanip>
 #include <iostream>
@@ -42,7 +52,6 @@ public:
   void SetData(const int i, const double v) { fData[i] = v; }
   double GetData(const int i) const { return fData[i]; }
 
-protected:
   // these functions are also needed by the Stack interface
   void IncrementSize() { fData.push_back(0.); }
   void DecrementSize() {
@@ -64,15 +73,26 @@ class TestParticleInterface : public ParticleBase<StackIteratorInterface> {
   using ParticleBase<StackIteratorInterface>::GetIterator;
 
 public:
-  // one version
-  StackIteratorInterface& AddSecondary(const double v) {
-    GetStack().AddParticle(v);
-    return GetIterator();
-  }
-  // another version
-  void AddSecondary(const double v, const double p) { GetStack().AddParticle(v + p); }
+  /* normally this function does not need to be specified here, it is
+   part of ParticleBase<StackIteratorInterface>.
 
+   However, when overloading this function again with a different
+   parameter set, as here, seems to require also the declaration of
+   the original function here...
+  */
+
+  // default version for particle-creation from input data
   void SetParticleData(const double v) { SetData(v); }
+  void SetParticleData(TestParticleInterface<StackIteratorInterface>& /*parent*/,
+                       const double v) {
+    SetData(v);
+  }
+  /// alternative set-particle data for non-standard construction from different inputs
+  void SetParticleData(const double v, const double p) { SetData(v + p); }
+  void SetParticleData(TestParticleInterface<StackIteratorInterface>& /*parent*/,
+                       const double v, const double p) {
+    SetData(v + p);
+  }
 
   void SetData(const double v) { GetStackData().SetData(GetIndex(), v); }
   double GetData() const { return GetStackData().GetData(GetIndex()); }
@@ -96,13 +116,10 @@ TEST_CASE("Stack", "[Stack]") {
     StackTest s;
     s.Init();
     s.Clear();
-    s.IncrementSize();
+    s.AddParticle(0.);
     s.Copy(s.cbegin(), s.begin());
     s.Swap(s.begin(), s.begin());
-    s.GetCapacity();
     REQUIRE(s.GetSize() == 1);
-    s.DecrementSize();
-    REQUIRE(s.GetSize() == 0);
   }
 
   SECTION("construct") {
@@ -155,5 +172,72 @@ TEST_CASE("Stack", "[Stack]") {
     double v = 0;
     for (auto& p : s) { v += p.GetData(); }
     REQUIRE(v == 9.9 + 4.4 + 3.3 + 2.2);
+  }
+
+  SECTION("get next particle") {
+    StackTest s;
+    REQUIRE(s.GetSize() == 0);
+    s.AddParticle(9.9);
+    s.AddParticle(8.8);
+    auto particle = s.GetNextParticle(); // first particle
+    REQUIRE(particle.GetData() == 8.8);
+
+    particle.Delete();
+    auto particle2 = s.GetNextParticle(); // first particle
+    REQUIRE(particle2.GetData() == 9.9);
+    particle2.Delete();
+
+    REQUIRE(s.GetSize() == 0);
+  }
+
+  SECTION("secondary view") {
+    StackTest s;
+    REQUIRE(s.GetSize() == 0);
+    s.AddParticle(9.9);
+    s.AddParticle(8.8);
+    const double sumS = 9.9 + 8.8;
+
+    auto particle = s.GetNextParticle();
+
+    typedef SecondaryView<TestStackData, TestParticleInterface> StackTestView;
+    StackTestView v(particle);
+    REQUIRE(v.GetSize() == 0);
+    //auto proj = v.GetProjectile();
+    v.AddSecondary(4.4);
+    v.AddSecondary(4.5);
+    v.AddSecondary(4.6);
+
+    REQUIRE(v.GetSize() == 3);
+    REQUIRE(s.GetSize() == 5);
+    REQUIRE(!v.IsEmpty());
+
+    auto sumView = [](const StackTestView& stack) {
+      double v = 0;
+      for (const auto& p : stack) {
+	cout << " sumView " << p.GetData() << " ";
+	v += p.GetData();
+      }
+      cout << endl;
+      return v;
+    };
+
+    REQUIRE(sum(s) == sumS + 4.4 + 4.5 + 4.6);
+    REQUIRE(sumView(v) == 4.4 + 4.5 + 4.6);
+
+    v.DeleteLast();
+    REQUIRE(v.GetSize() == 2);
+    REQUIRE(s.GetSize() == 4);
+    
+    REQUIRE(sum(s) == sumS + 4.4 + 4.5);
+    REQUIRE(sumView(v) == 4.4 + 4.5);
+
+    v.Delete(v.GetNextParticle());
+    REQUIRE(v.GetSize() == 1);
+    REQUIRE(s.GetSize() == 3);
+    
+    v.Delete(v.GetNextParticle());
+    REQUIRE(sum(s) == sumS);
+    REQUIRE(sumView(v) == 0);
+    REQUIRE(v.IsEmpty());
   }
 }
