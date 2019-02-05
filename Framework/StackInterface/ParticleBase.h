@@ -13,7 +13,6 @@
 #define _include_particleBase_h_
 
 #include <type_traits>
-#include <iostream>
 
 namespace corsika::stack {
 
@@ -92,8 +91,8 @@ namespace corsika::stack {
     /**
         @name Access to underlying stack data, these are service
         function for user classes. User code can only rely on GetIndex
-        and GetStackData to retrieve data 
-	@{
+        and GetStackData to retrieve data
+        @{
     */
     auto& GetStackData() { return GetIterator().GetStackData(); }
     const auto& GetStackData() const { return GetIterator().GetStackData(); }
@@ -103,7 +102,7 @@ namespace corsika::stack {
     /**
      * return the index number of the underlying iterator object
      */
-    unsigned int GetIndex() const { std::cout << "ParticleBase" << std::endl; return GetIterator().GetIndexFromIterator(); }
+    unsigned int GetIndex() const { return GetIterator().GetIndexFromIterator(); }
     ///@}
   };
 

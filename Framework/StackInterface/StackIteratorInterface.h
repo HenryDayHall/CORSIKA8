@@ -14,7 +14,6 @@
 
 #include <corsika/stack/ParticleBase.h>
 
-#include <iostream>
 #include <type_traits>
 
 namespace corsika::stack {
@@ -146,15 +145,17 @@ namespace corsika::stack {
     bool operator==(const StackIteratorInterface& rhs) { return fIndex == rhs.fIndex; }
     bool operator!=(const StackIteratorInterface& rhs) { return fIndex != rhs.fIndex; }
 
-  /** 
-   * Convert iterator to value type, where value type is the user-provided particle readout class
-   */
+    /**
+     * Convert iterator to value type, where value type is the user-provided particle
+     * readout class
+     */
     ParticleInterfaceType& operator*() {
       return static_cast<ParticleInterfaceType&>(*this);
     }
-  /** 
-   * Convert iterator to const value type, where value type is the user-provided particle readout class
-   */
+    /**
+     * Convert iterator to const value type, where value type is the user-provided
+     * particle readout class
+     */
     const ParticleInterfaceType& operator*() const {
       return static_cast<const ParticleInterfaceType&>(*this);
     }
@@ -176,7 +177,9 @@ namespace corsika::stack {
     /// Get current const user particle StackDataType object
     inline const StackDataType& GetStackData() const { return fData->GetStackData(); }
     /// Get data index as mapped in Stack class
-  inline unsigned int GetIndexFromIterator() const { std::cout << "GetIndexFromIterator " << fIndex << " " << fData->GetIndexFromIterator(fIndex) << std::endl; return fData->GetIndexFromIterator(fIndex); }
+    inline unsigned int GetIndexFromIterator() const {
+      return fData->GetIndexFromIterator(fIndex);
+    }
     ///@}
   }; // end class StackIterator
 
@@ -264,7 +267,9 @@ namespace corsika::stack {
     inline const StackType& GetStack() const { return *fData; }
     inline const StackDataType& GetStackData() const { return fData->GetStackData(); }
     /// Get data index as mapped in Stack class
-  inline unsigned int GetIndexFromIterator() const { std::cout << "GetIndexFromIterator " << fIndex << " " << fData->GetIndexFromIterator(fIndex) << std::endl; return fData->GetIndexFromIterator(fIndex); }
+    inline unsigned int GetIndexFromIterator() const {
+      return fData->GetIndexFromIterator(fIndex);
+    }
     ///@}
   }; // end class ConstStackIterator
 

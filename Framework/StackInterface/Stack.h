@@ -19,25 +19,21 @@
 
 #include <corsika/stack/SecondaryView.h>
 
-
 // SFINAE test
 template <typename T>
-class HasGetIndexFromIterator
-{
+class HasGetIndexFromIterator {
 private:
-    typedef char YesType[1];
-    typedef char NoType[2];
+  typedef char YesType[1];
+  typedef char NoType[2];
 
-    template <typename C> static YesType& test( decltype(&C::GetIndexFromIterator) ) ;
-    template <typename C> static NoType& test(...);
-
+  template <typename C>
+  static YesType& test(decltype(&C::GetIndexFromIterator));
+  template <typename C>
+  static NoType& test(...);
 
 public:
-    enum { value = sizeof(test<T>(0)) == sizeof(YesType) };
+  enum { value = sizeof(test<T>(0)) == sizeof(YesType) };
 };
-
-
-
 
 /**
    All classes around management of particles on a stack.
@@ -117,12 +113,12 @@ namespace corsika::stack {
      * object. Using CRTP, this also determines the type of
      * ParticleInterface template class simultaneously.
      */
-    typedef StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                   ParticleInterface, StackType>
-        StackIterator;
-    typedef ConstStackIteratorInterface<
-        typename std::remove_reference<StackDataType>::type, ParticleInterface, StackType>
-        ConstStackIterator;
+    using StackIterator =
+        StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
+                               ParticleInterface, StackType>;
+    using ConstStackIterator =
+        ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
+                                    ParticleInterface, StackType>;
 
     /**
      * this is the full type of the declared ParticleInterface: typedef typename
@@ -136,7 +132,7 @@ namespace corsika::stack {
     friend class ConstStackIteratorInterface<
         typename std::remove_reference<StackDataType>::type, ParticleInterface,
         StackType>;
-  
+
   public:
     unsigned int GetCapacity() const { return fData.GetCapacity(); }
     unsigned int GetSize() const { return fData.GetSize(); }
@@ -232,13 +228,10 @@ namespace corsika::stack {
     StackIterator GetNextParticle() { return last(); }
 
   protected:
-    
-    //typename std::enable_if<HasGetIndexFromIterator<T>::value, unsigned int>::type
-    //typename std::enable_if<std::is_base_of<decltype(*this)>, SecondaryView<StackDataType, ParticleInterface>>::value, unsigned int>::type
-    unsigned int
-    GetIndexFromIterator(const unsigned int vI) const {
-      std::cout << "Stack::GetIndexFromIterator " << vI << std::endl;
-      return vI; }
+    // typename std::enable_if<HasGetIndexFromIterator<T>::value, unsigned int>::type
+    // typename std::enable_if<std::is_base_of<decltype(*this)>,
+    // SecondaryView<StackDataType, ParticleInterface>>::value, unsigned int>::type
+    unsigned int GetIndexFromIterator(const unsigned int vI) const { return vI; }
 
     typename std::remove_reference<StackDataType>::type& GetStackData() { return fData; }
     const typename std::remove_reference<StackDataType>::type& GetStackData() const {

@@ -202,7 +202,12 @@ TEST_CASE("Stack", "[Stack]") {
     typedef SecondaryView<TestStackData, TestParticleInterface> StackTestView;
     StackTestView v(particle);
     REQUIRE(v.GetSize() == 0);
-    //auto proj = v.GetProjectile();
+
+    {
+      auto proj = v.GetProjectile();
+      REQUIRE(proj.GetData() == particle.GetData());
+    }
+
     v.AddSecondary(4.4);
     v.AddSecondary(4.5);
     v.AddSecondary(4.6);
@@ -213,11 +218,7 @@ TEST_CASE("Stack", "[Stack]") {
 
     auto sumView = [](const StackTestView& stack) {
       double v = 0;
-      for (const auto& p : stack) {
-	cout << " sumView " << p.GetData() << " ";
-	v += p.GetData();
-      }
-      cout << endl;
+      for (const auto& p : stack) { v += p.GetData(); }
       return v;
     };
 
@@ -227,17 +228,26 @@ TEST_CASE("Stack", "[Stack]") {
     v.DeleteLast();
     REQUIRE(v.GetSize() == 2);
     REQUIRE(s.GetSize() == 4);
-    
+
     REQUIRE(sum(s) == sumS + 4.4 + 4.5);
     REQUIRE(sumView(v) == 4.4 + 4.5);
 
-    v.Delete(v.GetNextParticle());
+    auto pDel = v.GetNextParticle();
+    v.Delete(pDel);
     REQUIRE(v.GetSize() == 1);
     REQUIRE(s.GetSize() == 3);
-    
+
+    REQUIRE(sum(s) == sumS + 4.4 + 4.5 - pDel.GetData());
+    REQUIRE(sumView(v) == 4.4 + 4.5 - pDel.GetData());
+
     v.Delete(v.GetNextParticle());
     REQUIRE(sum(s) == sumS);
     REQUIRE(sumView(v) == 0);
     REQUIRE(v.IsEmpty());
+
+    {
+      auto proj = v.GetProjectile();
+      REQUIRE(proj.GetData() == particle.GetData());
+    }
   }
 }
