@@ -27,6 +27,7 @@ namespace corsika::process::sibyll {
 
   public:
     void Init();
+    void Dump() const {}
 
     void Clear() { s_plist_.np = 0; }
     unsigned int GetSize() const { return s_plist_.np; }
@@ -65,8 +66,7 @@ namespace corsika::process::sibyll {
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
       QuantityVector<hepmomentum_d> components = {
           s_plist_.p[0][i] * 1_GeV, s_plist_.p[1][i] * 1_GeV, s_plist_.p[2][i] * 1_GeV};
-      MomentumVector v1(rootCS, components);
-      return v1;
+      return MomentumVector(rootCS, components);
     }
 
     void Copy(const unsigned int i1, const unsigned int i2) {
