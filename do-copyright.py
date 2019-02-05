@@ -66,7 +66,7 @@ def checkNote(filename):
         return                
     
     # add (new) copyright notice here:
-        
+    print ("File: " + filename + ", make copy to " + filename+".bak")
     os.rename(filename, filename+".bak")
 
     with open(filename, "w") as file:
