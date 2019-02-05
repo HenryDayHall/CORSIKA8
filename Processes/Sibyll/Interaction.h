@@ -56,6 +56,11 @@ namespace corsika::process::sibyll {
 
     bool WasInitialized() { return fInitialized; }
 
+    bool ValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
+      using namespace corsika::units::si;
+      return (10_GeV < ecm) && (ecm < 1_PeV);
+    }
+
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType,
                int>
     GetCrossSection(const corsika::particles::Code BeamId,
@@ -124,6 +129,7 @@ namespace corsika::process::sibyll {
                 << " beam can interact:" << kInteraction << endl
                 << " beam pid:" << p.GetPID() << endl;
 
+      // TODO: move limits into variables
       if (kInteraction && Elab >= 8.5_GeV && ECoM >= 10_GeV) {
 
         // get target from environment

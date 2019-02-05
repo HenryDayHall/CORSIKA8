@@ -114,6 +114,7 @@ namespace corsika::stack {
 
     public:
       void Init() {}
+      void Dump() const {}
 
       void Clear() {
         fDataPID.clear();
