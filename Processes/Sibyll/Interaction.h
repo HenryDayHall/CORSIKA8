@@ -150,6 +150,8 @@ namespace corsika::process::sibyll {
 
           auto const [productionCrossSection, elaCrossSection, numberOfNucleons] =
               GetCrossSection(corsikaBeamId, targetId, ECoM);
+          [[maybe_unused]] auto elaCrossSectionCopy =
+              elaCrossSection; // ONLY TO AVOID COMPILER WARNING
 
           std::cout << "Interaction: "
                     << " IntLength: sibyll return (mb): "
@@ -278,8 +280,10 @@ namespace corsika::process::sibyll {
           const auto [sigProd, sigEla, nNuc] =
               GetCrossSection(corsikaBeamId, targetId, Ecm);
           cross_section_of_components[i] = sigProd;
-          int ideleteme = nNuc;  // to avoid not used warning in array binding
-          ideleteme = ideleteme; // to avoid not used warning in array binding
+          [[maybe_unused]] int ideleteme =
+              nNuc; // to avoid not used warning in array binding
+          [[maybe_unused]] auto sigElaCopy =
+              sigEla; // to avoid not used warning in array binding
         }
 
         const auto targetCode = currentNode->GetModelProperties().SampleTarget(

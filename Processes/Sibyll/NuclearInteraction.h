@@ -176,6 +176,7 @@ namespace corsika::process::sibyll {
           // TODO: remove number of nucleons, avg target mass is available in environment
           auto const [productionCrossSection, elaCrossSection, numberOfNucleons] =
               GetCrossSection(corsikaBeamId, targetId, ECoM);
+          [[maybe_unused]] auto elaCrossSectionCopy = elaCrossSection;
 
           std::cout << "NuclearInteraction: "
                     << "IntLength: nuclib return (mb): "
@@ -322,6 +323,8 @@ namespace corsika::process::sibyll {
         cout << "beam id: " << targetId << endl;
         const auto [sigProd, sigEla, nNuc] = GetCrossSection(beamId, targetId, EcmNN);
         cross_section_of_components[i] = sigProd;
+        [[maybe_unused]] auto sigElaCopy = sigEla; // ONLY TO AVOID COMPILER WARNINGS
+        [[maybe_unused]] auto sigNucCopy = nNuc;   // ONLY TO AVOID COMPILER WARNINGS
       }
 
       const auto targetCode = currentNode->GetModelProperties().SampleTarget(
@@ -350,6 +353,7 @@ namespace corsika::process::sibyll {
       const auto protonId = corsika::particles::Proton::GetCode();
       const auto [prodCrossSection, elaCrossSection, dum] =
           fHadronicInteraction.GetCrossSection(protonId, protonId, EcmNN);
+      [[maybe_unused]] auto dumCopy = dum; // ONLY TO AVOID COMPILER WARNING
       const double sigProd = prodCrossSection / 1_mbarn;
       const double sigEla = elaCrossSection / 1_mbarn;
       // sample number of interactions (only input variables, output in common cnucms)

@@ -12,7 +12,7 @@
 #ifndef _include_particleBase_h_
 #define _include_particleBase_h_
 
-class StackData; // forward decl
+#include <type_traits>
 
 namespace corsika::stack {
 
@@ -89,19 +89,21 @@ namespace corsika::stack {
 
   protected:
     /**
-        @name Access to underlying stack data
+        @name Access to underlying stack data, these are service
+        function for user classes. User code can only rely on GetIndex
+        and GetStackData to retrieve data
         @{
     */
     auto& GetStackData() { return GetIterator().GetStackData(); }
     const auto& GetStackData() const { return GetIterator().GetStackData(); }
     auto& GetStack() { return GetIterator().GetStack(); }
     const auto& GetStack() const { return GetIterator().GetStack(); }
-    ///@}
 
     /**
      * return the index number of the underlying iterator object
      */
-    unsigned int GetIndex() const { return GetIterator().GetIndex(); }
+    unsigned int GetIndex() const { return GetIterator().GetIndexFromIterator(); }
+    ///@}
   };
 
 } // namespace corsika::stack

@@ -29,8 +29,6 @@
 #include <stdexcept>
 #include <utility>
 
-using namespace corsika;
-
 namespace corsika::process {
 
   namespace tracking_line {

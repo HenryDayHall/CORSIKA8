@@ -176,7 +176,6 @@ namespace corsika::stack {
         std::swap(fTime[i2], fTime[i1]);
       }
 
-    protected:
       void IncrementSize() {
         using corsika::geometry::Point;
         using corsika::particles::Code;

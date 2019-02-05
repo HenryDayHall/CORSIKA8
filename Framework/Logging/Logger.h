@@ -31,9 +31,6 @@
 #include <corsika/logging/NoSink.h>
 #include <corsika/logging/Sink.h>
 
-using namespace std;
-using namespace boost;
-
 namespace corsika::logging {
 
   /**

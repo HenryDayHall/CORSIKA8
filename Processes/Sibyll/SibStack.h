@@ -80,7 +80,6 @@ namespace corsika::process::sibyll {
         std::swap(s_plist_.p[i][i1], s_plist_.p[i][i2]);
     }
 
-  protected:
     void IncrementSize() { s_plist_.np++; }
     void DecrementSize() {
       if (s_plist_.np > 0) { s_plist_.np--; }

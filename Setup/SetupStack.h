@@ -17,14 +17,17 @@
 
 // this is an auxiliary help typedef, which I don't know how to put
 // into NuclearStackExtension.h where it belongs...
-template<typename StackIter> using ExtendedParticleInterfaceType =
-  corsika::stack::nuclear_extension::NuclearParticleInterface<corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
+template <typename StackIter>
+using ExtendedParticleInterfaceType =
+    corsika::stack::nuclear_extension::NuclearParticleInterface<
+        corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
 
 namespace corsika::setup {
 
-  using Stack = corsika::stack::nuclear_extension::NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType>;
+  using Stack = corsika::stack::nuclear_extension::NuclearStackExtension<
+      corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType>;
 
   // typedef corsika::stack::super_stupid::SuperStupidStack Stack;
-}
+} // namespace corsika::setup
 
 #endif

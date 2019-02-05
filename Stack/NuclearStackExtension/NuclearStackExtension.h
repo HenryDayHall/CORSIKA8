@@ -12,8 +12,6 @@
 #ifndef _include_stack_nuclearstackextension_h_
 #define _include_stack_nuclearstackextension_h_
 
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
-
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -39,9 +37,9 @@ namespace corsika::stack {
     class NuclearParticleInterface
         : public InnerParticleInterface<StackIteratorInterface> {
 
-    public:
-      using ExtendedParticleInterface =
-          NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>;
+      // public:
+      // using ExtendedParticleInterface =
+      // NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>;
 
     protected:
       using InnerParticleInterface<StackIteratorInterface>::GetStackData;
@@ -52,8 +50,8 @@ namespace corsika::stack {
                            const corsika::units::si::HEPEnergyType vDataE,
                            const MomentumVector& vMomentum,
                            const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime, const int vA = 0,
-                           const int vZ = 0) {
+                           const corsika::units::si::TimeType vTime,
+                           const unsigned short vA = 0, const unsigned short vZ = 0) {
         if (vDataPID == corsika::particles::Code::Nucleus) {
           if (vA == 0 || vZ == 0) {
             std::ostringstream err;
@@ -67,8 +65,8 @@ namespace corsika::stack {
         } else {
           SetNuclearRef(-1); // this is not a nucleus
         }
-        InnerParticleInterface<StackIteratorInterface>::
-            SetParticleData(vDataPID, vDataE, vMomentum, vPosition, vTime);
+        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
+            vDataPID, vDataE, vMomentum, vPosition, vTime);
       }
 
       void SetParticleData(InnerParticleInterface<StackIteratorInterface>&,
@@ -76,8 +74,8 @@ namespace corsika::stack {
                            const corsika::units::si::HEPEnergyType vDataE,
                            const MomentumVector& vMomentum,
                            const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime, const int vA = 0,
-                           const int vZ = 0) {
+                           const corsika::units::si::TimeType vTime,
+                           const unsigned short vA = 0, const unsigned short vZ = 0) {
         SetParticleData(vDataPID, vDataE, vMomentum, vPosition, vTime, vA, vZ);
       }
 
@@ -85,8 +83,12 @@ namespace corsika::stack {
        * @name individual setters
        * @{
        */
-      void SetNuclearA(const int vA) { GetStackData().SetNuclearA(GetIndex(), vA); }
-      void SetNuclearZ(const int vZ) { GetStackData().SetNuclearZ(GetIndex(), vZ); }
+      void SetNuclearA(const unsigned short vA) {
+        GetStackData().SetNuclearA(GetIndex(), vA);
+      }
+      void SetNuclearZ(const unsigned short vZ) {
+        GetStackData().SetNuclearZ(GetIndex(), vZ);
+      }
       /// @}
 
       /**
@@ -120,10 +122,10 @@ namespace corsika::stack {
       unsigned int GetSize() const { return fNuclearRef.size(); }
       unsigned int GetCapacity() const { return fNuclearRef.size(); }
 
-      void SetNuclearA(const unsigned int i, const int vA) {
+      void SetNuclearA(const unsigned int i, const unsigned short vA) {
         fNuclearA[GetNucleusRef(i)] = vA;
       }
-      void SetNuclearZ(const unsigned int i, const int vZ) {
+      void SetNuclearZ(const unsigned int i, const unsigned short vZ) {
         fNuclearZ[GetNucleusRef(i)] = vZ;
       }
       void SetNuclearRef(const unsigned int i, const int v) { fNuclearRef[i] = v; }
@@ -213,7 +215,6 @@ namespace corsika::stack {
         }
       }
 
-    protected:
       void IncrementSize() {
         InnerStackImpl::IncrementSize();
         fNuclearRef.push_back(-1);
@@ -239,8 +240,8 @@ namespace corsika::stack {
       /// the actual memory to store particle data
 
       std::vector<int> fNuclearRef;
-      std::vector<int> fNuclearA;
-      std::vector<int> fNuclearZ;
+      std::vector<unsigned short> fNuclearA;
+      std::vector<unsigned short> fNuclearZ;
 
     }; // end class NuclearStackExtensionImpl
 
