@@ -15,7 +15,7 @@ text = """
 """
 
 excludeDirs = ["ThirdParty", "git"]
-excludeFiles = ['PhysicalConstants.h']
+excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc']
 
 extensions = [".cc", ".h", ".test"]
 
