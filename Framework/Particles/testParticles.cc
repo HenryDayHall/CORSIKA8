@@ -34,6 +34,8 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Masses") {
     REQUIRE(Electron::GetMass() / (511_keV) == Approx(1));
     REQUIRE(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
+    
+    REQUIRE((Proton::GetMass() + Neutron::GetMass()) / corsika::units::constants::nucleonMass == Approx(2));
   }
 
   SECTION("Charges") {

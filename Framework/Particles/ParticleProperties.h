@@ -23,13 +23,12 @@
 #include <iosfwd>
 #include <type_traits>
 
-#include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
 /**
  *
  * The properties of all elementary particles is stored here. The data
- * is taken from the Pythia ParticleData.xml file.
+ * are taken from the Pythia ParticleData.xml file.
  *
  */
 
