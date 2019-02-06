@@ -4,6 +4,7 @@ import sys, math, itertools, re, csv, pprint
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 import pickle
+import io
 
 GeVfm = 0.19732696312541853
 c_speed_of_light = 29.9792458e10  # mm / s
@@ -39,7 +40,7 @@ def parsePythia(filename):
             ctau = 0.
         else:
             print ("missing lifetime: " + str(pdg_id) + " " + str(name))
-            sys.exit(0)
+            sys.exit(1)
         
         yield (pdg_id, name, mass, electric_charge, antiName, ctau/c_speed_of_light)
                 
@@ -93,42 +94,7 @@ def class_names(filename):
         pdg_id = int(particle.attrib["pdgID"])
         map[pdg_id] = name
         
-    return map 
-
-
-
-##############################################################
-# 
-# Automatically produce a string qualifying as C++ class name
-# 
-# This function produces names of type "DELTA_PLUS_PLUS"
-# 
-def c_identifier(name):
-    orig = name
-    name = name.upper()
-    for c in "() /":
-        name = name.replace(c, "_")
-    
-    name = name.replace("BAR", "_BAR")
-    name = name.replace("0", "_0")
-    name = name.replace("*", "_STAR")
-    name = name.replace("'", "_PRIME")
-    name = name.replace("+", "_PLUS")
-    name = name.replace("-", "_MINUS")
-    
-    while True:
-        tmp = name.replace("__", "_")
-        if tmp == name:
-            break
-        else:
-            name = tmp    
-
-    pattern = re.compile(r'^[A-Z_][A-Z_0-9]*$')
-    if pattern.match(name):
-        return name.strip("_")
-    else:
-        raise Exception("could not generate C identifier for '{:s}'".format(orig))
-
+    return map
 
 ##############################################################
 # 
@@ -163,7 +129,7 @@ def c_identifier_camel(name):
             name = tmp
     name.strip("_")
 
-    # remove all "_", if this does not by accident concatenate two number
+    # remove all "_", if this does not by accident concatenate two numbers
     istart = 0
     while True:
         i = name.find('_', istart)
@@ -253,6 +219,47 @@ def read_nuclei_db(filename, particle_db, classnames):
     return particle_db
 
 
+###############################################################
+# 
+# build conversion table PDG -> ngc
+# 
+def gen_conversion_PDG_ngc(particle_db):
+    # todo: find a optimum value, think about cache miss with array vs lookup time with map
+    P_MAX = 500 # the maximum PDG code that is still filled into the table
+        
+    conversionDict = dict()
+    conversionTable = [None] * (2*P_MAX + 1)
+    for cId, p in particle_db.items():
+        pdg = p['pdg']
+        
+        if abs(pdg) < P_MAX:
+            if conversionTable[pdg + P_MAX]:
+                raise Exception("table entry already occupied")
+            else:
+                conversionTable[pdg + P_MAX] = cId
+        else:
+            if pdg in conversionDict.keys():
+                raise Exception(f"map entry {pdg} already occupied")
+            else:
+                conversionDict[pdg] = cId
+    
+    output = io.StringIO()
+    def oprint(*args, **kwargs):
+        print(*args, **kwargs, file=output)
+        
+    oprint(f"static std::array<Code, {len(conversionTable)}> constexpr conversionArray {{")
+    for ngc in conversionTable:
+        oprint("    Code::{0},".format(ngc if ngc else "Unknown"))
+    oprint("};")
+    oprint()
+    
+    oprint("static std::map<PDGCode, Code> const conversionMap {")
+    for ngc in conversionDict.values():
+        oprint(f"    {{PDGCode::{ngc}, Code::{ngc}}},")
+    oprint("};")
+    oprint()
+    
+    return output.getvalue()
 
 
 ###############################################################
@@ -260,7 +267,7 @@ def read_nuclei_db(filename, particle_db, classnames):
 # return string with enum of all internal particle codes
 # 
 def gen_internal_enum(particle_db):
-    string = ("enum class Code : int16_t {\n"
+    string = ("enum class Code : CodeIntType {\n"
               "  FirstParticle = 1, // if you want to loop over particles, you want to start with \"1\"  \n") # identifier for eventual loops...
     
     
@@ -277,6 +284,20 @@ def gen_internal_enum(particle_db):
     return string
 
 
+###############################################################
+# 
+# return string with enum of all PDG particle codes
+# 
+def gen_pdg_enum(particle_db):
+    string = "enum class PDGCode : PDGCodeType {\n"
+    
+    for cId in particle_db:
+        pdgCode = particle_db[cId]['pdg']
+        string += "  {key:s} = {code:d},\n".format(key = cId, code = pdgCode)
+
+    string += " };\n"
+    
+    return string
 
 
 ###############################################################
@@ -296,9 +317,9 @@ def gen_properties(particle_db):
     string += "};\n\n"
                    
     # PDG code table
-    string += "static constexpr std::array<PDGCodeType const, size> pdg_codes = {\n"
-    for p in particle_db.values():
-        string += "  {pdg:d}, // {name:s}\n".format(pdg = p['pdg'], name = p['name'])    
+    string += "static constexpr std::array<PDGCode, size> pdg_codes = {\n"
+    for p in particle_db.keys():
+        string += f"  PDGCode::{p},\n"
     string += "};\n"
     
     # name string table
@@ -473,8 +494,10 @@ if __name__ == "__main__":
     with open("GeneratedParticleProperties.inc", "w") as f:
         print(inc_start(), file=f)
         print(gen_internal_enum(particle_db), file=f)
+        print(gen_pdg_enum(particle_db), file=f)
         print(detail_start(), file=f)
         print(gen_properties(particle_db), file=f)
+        print(gen_conversion_PDG_ngc(particle_db), file=f)
         print(detail_end(), file=f) 
         print(gen_classes(particle_db), file=f)
         print(inc_end(), file=f) 
