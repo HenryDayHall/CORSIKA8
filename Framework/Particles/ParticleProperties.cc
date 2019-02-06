@@ -27,5 +27,16 @@ namespace corsika::particles {
   std::ostream& operator<<(std::ostream& stream, corsika::particles::Code const p) {
     return stream << corsika::particles::GetName(p);
   }
+  
+  Code ConvertFromPDG(PDGCode p) {
+      static_assert(detail::conversionArray.size() % 2 == 1);
+      auto constexpr maxPDG{(detail::conversionArray.size() - 1) >> 1};
+      auto k = static_cast<PDGCodeType>(p);
+      if (abs(k) <= maxPDG) {
+          return detail::conversionArray[k + maxPDG];
+      } else {
+          return detail::conversionMap.at(p);
+      }
+  }
 
 } // namespace corsika::particles
