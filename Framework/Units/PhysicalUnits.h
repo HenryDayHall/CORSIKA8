@@ -18,28 +18,11 @@ namespace phys::units {
 /**
  * @file PhysicalUnits
  *
- * Add new units and types we need. Units are compile-time. We support
- * different system of units in parallel. Literals are used for
- * optimal coding style.
+ * Add new units and types we need. Units are compile-time. Literals are
+ * used for optimal coding style.
  *
  */
-/*
-namespace corsika::units::hep {
-  using namespace phys::units;
-  using namespace phys::units::literals;
-  using namespace phys::units::io;
 
-  /// defining HEP energy, mass, momentum
-  using energy_hep_d = phys::units::energy_d;
-  constexpr phys::units::quantity<energy_hep_d> GeV{corsika::units::constants::eV};
-  // corsika::units::constants::e / phys::units::coulomb * phys::units::joule };
-
-  using MassType = phys::units::quantity<energy_hep_d, double>;
-  using MomentumType = phys::units::quantity<energy_hep_d, double>;
-  using EnergyType = phys::units::quantity<energy_hep_d, double>;
-
-} // namespace corsika::units::hep
-*/
 namespace corsika::units::si {
   using namespace phys::units;
   using namespace phys::units::literals;

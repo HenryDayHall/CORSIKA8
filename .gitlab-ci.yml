@@ -18,8 +18,10 @@ build:
     - cmake ..
     - cmake --build .
     - ctest -j4 -V >& test.log
-    - gzip -9 -S .gz test.log
+  after_script:
+    - cd build
     - ls
+    - gzip -v -9 -S .gz test.log
     - pwd
   artifacts:
     expire_in: 1 week

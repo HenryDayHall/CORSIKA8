@@ -71,12 +71,22 @@ public:
 
   template <typename Particle>
   bool isBelowEnergyCut(Particle& p) const {
-    // FOR NOW: center-of-mass energy hard coded
-    const HEPEnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
-    if (p.GetEnergy() < fECut || Ecm < 10_GeV)
-      return true;
-    else
-      return false;
+    // nuclei
+    if (p.GetPID() == corsika::particles::Code::Nucleus) {
+      auto const ElabNuc = p.GetEnergy() / p.GetNuclearA();
+      auto const EcmNN = sqrt(2. * ElabNuc * 0.93827_GeV);
+      if (ElabNuc < fECut || EcmNN < 10_GeV)
+        return true;
+      else
+        return false;
+    } else {
+      // TODO: center-of-mass energy hard coded
+      const HEPEnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
+      if (p.GetEnergy() < fECut || Ecm < 10_GeV)
+        return true;
+      else
+        return false;
+    }
   }
 
   bool isEmParticle(Code pCode) const {
@@ -244,7 +254,6 @@ int main() {
 
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   corsika::process::sibyll::Interaction sibyll(env);
-  //  corsika::process::sibyll::NuclearInteraction sibyllNuc(env);
   corsika::process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   corsika::process::sibyll::Decay decay;
   ProcessCut cut(20_GeV);
@@ -265,9 +274,14 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Proton;
+  const Code beamCode = Code::Nucleus;
+  const int nuclA = 56;
+  const int nuclZ = int(nuclA / 2.15 + 0.7);
+  const HEPMassType mass = corsika::particles::Proton::GetMass() * nuclZ +
+                           (nuclA - nuclZ) * corsika::particles::Neutron::GetMass();
   const HEPEnergyType E0 =
-      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+      nuclA *
+      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
 
@@ -275,7 +289,7 @@ int main() {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt(Elab * Elab - m * m);
     };
-    HEPMomentumType P0 = elab2plab(E0, corsika::particles::GetMass(beamCode));
+    HEPMomentumType P0 = elab2plab(E0, mass);
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));
@@ -287,7 +301,7 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(beamCode, E0, plab, pos, 0_ns);
+    stack.AddParticle(beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ);
   }
 
   // define air shower object, run simulation

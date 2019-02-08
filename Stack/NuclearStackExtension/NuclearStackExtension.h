@@ -24,11 +24,28 @@
 
 namespace corsika::stack {
 
+  /**
+   * @namespace nuclear_extension
+   *
+   * Add A and Z data to existing stack of particle properties.
+   *
+   * Only for Code::Nucleus particles A and Z are stored, not for all
+   * normal elementary particles.
+   *
+   * Thus in your code, make sure to always check <code>
+   * particle.GetPID()==Code::Nucleus </code> before attempting to
+   * read any nuclear information.
+   *
+   *
+   */
+
   namespace nuclear_extension {
 
     typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
     /**
+     * @class NuclearParticleInterface
+     *
      * Define ParticleInterface for NuclearStackExtension Stack derived from
      * ParticleInterface of Inner stack class
      */
@@ -58,12 +75,12 @@ namespace corsika::stack {
             err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
             throw std::runtime_error(err.str());
           }
-          SetNuclearRef(
+          SetNucleusRef(
               GetStackData().GetNucleusNextRef()); // store this nucleus data ref
           SetNuclearA(vA);
           SetNuclearZ(vZ);
         } else {
-          SetNuclearRef(-1); // this is not a nucleus
+          SetNucleusRef(-1); // this is not a nucleus
         }
         InnerParticleInterface<StackIteratorInterface>::SetParticleData(
             vDataPID, vDataE, vMomentum, vPosition, vTime);
@@ -99,31 +116,40 @@ namespace corsika::stack {
       int GetNuclearZ() const { return GetStackData().GetNuclearZ(GetIndex()); }
       /// @}
 
+      // int GetNucleusRef() const { return GetStackData().GetNucleusRef(GetIndex()); }
+
     protected:
-      void SetNuclearRef(const int vR) { GetStackData().SetNuclearRef(GetIndex(), vR); }
+      void SetNucleusRef(const int vR) { GetStackData().SetNucleusRef(GetIndex(), vR); }
     };
 
     /**
-     * @class NuclearStackExtensionImpl
+     * @class NuclearStackExtension
      *
-     * Memory implementation of the extension of particle stack of
-     * type InnerStackImpl with nuclear data
+     * Memory implementation of adding nuclear inforamtion to the
+     * existing particle stack defined in class InnerStackImpl.
+     *
+     * Inside the NuclearStackExtension class there is a dedicated
+     * fNucleusRef index, where fNucleusRef[i] is referring to the
+     * correct A and Z for a specific particle index i. fNucleusRef[i]
+     * == -1 means that this is not a nucleus, and a subsequent call to
+     * GetNucleusA would produce an exception.
      */
     template <typename InnerStackImpl>
     class NuclearStackExtensionImpl : public InnerStackImpl {
 
     public:
       void Init() { InnerStackImpl::Init(); }
+      void Dump() { InnerStackImpl::Dump(); }
 
       void Clear() {
         InnerStackImpl::Clear();
-        fNuclearRef.clear();
+        fNucleusRef.clear();
         fNuclearA.clear();
         fNuclearZ.clear();
       }
 
-      unsigned int GetSize() const { return fNuclearRef.size(); }
-      unsigned int GetCapacity() const { return fNuclearRef.size(); }
+      unsigned int GetSize() const { return fNucleusRef.size(); }
+      unsigned int GetCapacity() const { return fNucleusRef.capacity(); }
 
       void SetNuclearA(const unsigned int i, const unsigned short vA) {
         fNuclearA[GetNucleusRef(i)] = vA;
@@ -131,7 +157,7 @@ namespace corsika::stack {
       void SetNuclearZ(const unsigned int i, const unsigned short vZ) {
         fNuclearZ[GetNucleusRef(i)] = vZ;
       }
-      void SetNuclearRef(const unsigned int i, const int v) { fNuclearRef[i] = v; }
+      void SetNucleusRef(const unsigned int i, const int v) { fNucleusRef[i] = v; }
 
       int GetNuclearA(const unsigned int i) const { return fNuclearA[GetNucleusRef(i)]; }
       int GetNuclearZ(const unsigned int i) const { return fNuclearZ[GetNucleusRef(i)]; }
@@ -144,7 +170,7 @@ namespace corsika::stack {
       }
 
       int GetNucleusRef(const unsigned int i) const {
-        if (fNuclearRef[i] >= 0) return fNuclearRef[i];
+        if (fNucleusRef[i] >= 0) return fNucleusRef[i];
         std::ostringstream err;
         err << "NuclearStackExtension: no nucleus at ref=" << i;
         throw std::runtime_error(err.str());
@@ -154,35 +180,41 @@ namespace corsika::stack {
        *   Function to copy particle at location i1 in stack to i2
        */
       void Copy(const unsigned int i1, const unsigned int i2) {
+        // index range check
         if (i1 >= GetSize() || i2 >= GetSize()) {
           std::ostringstream err;
           err << "NuclearStackExtension: trying to access data beyond size of stack!";
           throw std::runtime_error(err.str());
         }
+        // copy internal particle data p[i2] = p[i1]
         InnerStackImpl::Copy(i1, i2);
-        const int ref1 = fNuclearRef[i1];
-        const int ref2 = fNuclearRef[i2];
+        // check if any of p[i1] or p[i2] was a Code::Nucleus
+        const int ref1 = fNucleusRef[i1];
+        const int ref2 = fNucleusRef[i2];
         if (ref2 < 0) {
           if (ref1 >= 0) {
             // i1 is nucleus, i2 is not
-            fNuclearRef[i2] = GetNucleusNextRef();
-            fNuclearA[fNuclearRef[i2]] = fNuclearA[ref1];
-            fNuclearZ[fNuclearRef[i2]] = fNuclearZ[ref1];
+            fNucleusRef[i2] = GetNucleusNextRef();
+            fNuclearA[fNucleusRef[i2]] = fNuclearA[ref1];
+            fNuclearZ[fNucleusRef[i2]] = fNuclearZ[ref1];
           } else {
             // neither i1 nor i2 are nuclei
           }
         } else {
           if (ref1 >= 0) {
             // both are nuclei, i2 is overwritten with nucleus i1
+            // fNucleusRef stays the same, but A and Z data is overwritten
             fNuclearA[ref2] = fNuclearA[ref1];
             fNuclearZ[ref2] = fNuclearZ[ref1];
           } else {
             // i2 is overwritten with non-nucleus i1
-            fNuclearA.erase(fNuclearA.cbegin() + ref2);
-            fNuclearZ.erase(fNuclearZ.cbegin() + ref2);
-            const int n = fNuclearRef.size();
+            fNucleusRef[i2] = -1;                       // flag as non-nucleus
+            fNuclearA.erase(fNuclearA.cbegin() + ref2); // remove data for i2
+            fNuclearZ.erase(fNuclearZ.cbegin() + ref2); // remove data for i2
+            const int n = fNucleusRef.size(); // update fNucleusRef: indices above ref2
+                                              // must be decremented by 1
             for (int i = 0; i < n; ++i) {
-              if (fNuclearRef[i] >= ref2) { fNuclearRef[i] -= 1; }
+              if (fNucleusRef[i] > ref2) { fNucleusRef[i] -= 1; }
             }
           }
         }
@@ -192,48 +224,34 @@ namespace corsika::stack {
        *   Function to copy particle at location i2 in stack to i1
        */
       void Swap(const unsigned int i1, const unsigned int i2) {
+        // index range check
         if (i1 >= GetSize() || i2 >= GetSize()) {
           std::ostringstream err;
           err << "NuclearStackExtension: trying to access data beyond size of stack!";
           throw std::runtime_error(err.str());
         }
+        // swap original particle data
         InnerStackImpl::Swap(i1, i2);
-        const int ref1 = fNuclearRef[i1];
-        const int ref2 = fNuclearRef[i2];
-        if (ref2 < 0) {
-          if (ref1 >= 0) {
-            // i1 is nucleus, i2 is not
-            std::swap(fNuclearRef[i2], fNuclearRef[i1]);
-          } else {
-            // neither i1 nor i2 are nuclei
-          }
-        } else {
-          if (ref1 >= 0) {
-            // both are nuclei, i2 is overwritten with nucleus i1
-            std::swap(fNuclearRef[i2], fNuclearRef[i1]);
-          } else {
-            // i2 is overwritten with non-nucleus i1
-            std::swap(fNuclearRef[i2], fNuclearRef[i1]);
-          }
-        }
+        // swap corresponding nuclear reference data
+        std::swap(fNucleusRef[i2], fNucleusRef[i1]);
       }
 
       void IncrementSize() {
         InnerStackImpl::IncrementSize();
-        fNuclearRef.push_back(-1);
+        fNucleusRef.push_back(-1);
       }
 
       void DecrementSize() {
         InnerStackImpl::DecrementSize();
-        if (fNuclearRef.size() > 0) {
-          const int ref = fNuclearRef.back();
-          fNuclearRef.pop_back();
+        if (fNucleusRef.size() > 0) {
+          const int ref = fNucleusRef.back();
+          fNucleusRef.pop_back();
           if (ref >= 0) {
             fNuclearA.erase(fNuclearA.begin() + ref);
             fNuclearZ.erase(fNuclearZ.begin() + ref);
-            const int n = fNuclearRef.size();
+            const int n = fNucleusRef.size();
             for (int i = 0; i < n; ++i) {
-              if (fNuclearRef[i] >= ref) { fNuclearRef[i] -= 1; }
+              if (fNucleusRef[i] >= ref) { fNucleusRef[i] -= 1; }
             }
           }
         }
@@ -242,7 +260,7 @@ namespace corsika::stack {
     private:
       /// the actual memory to store particle data
 
-      std::vector<int> fNuclearRef;
+      std::vector<int> fNucleusRef;
       std::vector<unsigned short> fNuclearA;
       std::vector<unsigned short> fNuclearZ;
 
