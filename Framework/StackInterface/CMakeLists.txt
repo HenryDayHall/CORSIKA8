@@ -1,9 +1,10 @@
 set (
   CORSIKAstackinterface_HEADERS
+  ParticleBase.h
+  StackIteratorInterface.h
   Stack.h
   SecondaryView.h
-  StackIteratorInterface.h
-  ParticleBase.h
+  CombinedStack.h
   )
 
 set (
@@ -36,3 +37,11 @@ install (
 add_executable (testStackInterface testStackInterface.cc)
 target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 CORSIKA_ADD_TEST(testStackInterface)
+
+add_executable (testSecondaryView testSecondaryView.cc)
+target_link_libraries (testSecondaryView CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+CORSIKA_ADD_TEST(testSecondaryView)
+
+add_executable (testCombinedStack testCombinedStack.cc)
+target_link_libraries (testCombinedStack CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+CORSIKA_ADD_TEST(testCombinedStack)

@@ -1,0 +1,14 @@
+FORTRAN=gfortran
+#FLAGS=-r8 -C -w95
+FLAGS=
+
+all : main_f77
+
+main04.o : main04.f
+	$(FORTRAN) $(FLAGS) -c $<
+
+main_f77 : main04.o
+	$(FORTRAN) $(FLAGS) -o $@ $^
+
+clean :
+	-rm -f *.o *.mod *~ main

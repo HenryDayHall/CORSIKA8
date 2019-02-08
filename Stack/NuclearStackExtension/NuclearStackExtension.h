@@ -104,7 +104,10 @@ namespace corsika::stack {
     };
 
     /**
-     * Memory implementation of the most simple (stupid) particle stack object.
+     * @class NuclearStackExtensionImpl
+     *
+     * Memory implementation of the extension of particle stack of
+     * type InnerStackImpl with nuclear data
      */
     template <typename InnerStackImpl>
     class NuclearStackExtensionImpl : public InnerStackImpl {

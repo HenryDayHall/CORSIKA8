@@ -3,7 +3,6 @@
 
 #include <corsika/stack/Stack.h>
 
-#include <algorithm>
 #include <vector>
 
 namespace corsika::stack {
@@ -176,6 +175,11 @@ namespace corsika::stack {
     bool IsEmpty() { return GetSize() == 0; }
 
   protected:
+    /**
+     * We only want to 'see' secondaries indexed in fIndices. In this
+     * function the conversion form iterator-index to stack-index is
+     * performed.
+     */
     unsigned int GetIndexFromIterator(const unsigned int vI) const {
       if (vI == 0) return fProjectileIndex;
       return fIndices[vI - 1];

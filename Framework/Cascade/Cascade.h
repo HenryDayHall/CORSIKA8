@@ -29,6 +29,8 @@
 namespace corsika::cascade {
 
   /**
+   * \class Cascade
+   *
    * The Cascade class is constructed from template arguments making
    * it very versatile. Via the template arguments physics models are
    * plugged into the cascade simulation.
@@ -53,6 +55,7 @@ namespace corsika::cascade {
   class Cascade {
     using Particle = typename Stack::ParticleType;
 
+    // we only want fully configured objects
     Cascade() = delete;
 
   public:
