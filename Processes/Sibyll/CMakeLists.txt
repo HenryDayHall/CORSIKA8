@@ -1,3 +1,6 @@
+set(Python_ADDITIONAL_VERSIONS 3)
+find_package(PythonInterp 3 REQUIRED)
+
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   COMMAND ${PROJECT_SOURCE_DIR}/Processes/Sibyll/code_generator.py 
