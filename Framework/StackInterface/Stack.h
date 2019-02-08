@@ -49,7 +49,7 @@ namespace corsika::stack {
      <b>Important:</b> ParticleInterface must inherit from ParticleBase !
    */
 
-  template <typename>
+  template <typename>      //, bool>
   class ParticleInterface; // forward decl
 
   /**
@@ -83,7 +83,11 @@ namespace corsika::stack {
         delete; ///< since Stack can be very big, we don't want to copy it
 
   public:
-    //    template<typename = std::enable_if_t<std::is_reference<StackDataType>{}>>
+    /**
+     * if StackDataType is a reference member we *have* to initialize
+     * it in the constructor, this is typically needed for SecondaryView
+     */
+    template <typename = std::enable_if_t<std::is_reference<StackDataType>{}>>
     Stack(StackDataType vD)
         : fData(vD) {}
 
@@ -96,15 +100,13 @@ namespace corsika::stack {
               typename = std::enable_if_t<!std::is_reference<StackDataType>{}>>
     Stack(Args... args)
         : fData(args...) {}
-    // , typename std::enable_if<!std::is_reference<StackDataType>::value,
-    // std::nullptr_t>::type = nullptr)
 
   public:
     typedef StackDataType
         StackImpl; ///< this is the type of the user-provided data structure
 
-    template <typename SI>
-    using PIType = ParticleInterface<SI>;
+    template <typename SI>                //, bool IsBase>
+    using PIType = ParticleInterface<SI>; //, IsBase>;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
@@ -125,18 +127,21 @@ namespace corsika::stack {
      */
     typedef typename StackIterator::ParticleInterfaceType ParticleType;
 
+    // friends are needed since they need access to protected members
     friend class StackIteratorInterface<
         typename std::remove_reference<StackDataType>::type, ParticleInterface,
         StackType>;
-
     friend class ConstStackIteratorInterface<
         typename std::remove_reference<StackDataType>::type, ParticleInterface,
         StackType>;
 
   public:
+    /**
+     * @name Most generic proxy methods for StackDataType fData
+     * @{
+     */
     unsigned int GetCapacity() const { return fData.GetCapacity(); }
     unsigned int GetSize() const { return fData.GetSize(); }
-
     template <typename... Args>
     auto Init(Args... args) {
       return fData.Init(args...);
@@ -145,6 +150,7 @@ namespace corsika::stack {
     auto Clear(Args... args) {
       return fData.Clear(args...);
     }
+    ///@}
 
   public:
     /**
@@ -231,12 +237,23 @@ namespace corsika::stack {
     // typename std::enable_if<HasGetIndexFromIterator<T>::value, unsigned int>::type
     // typename std::enable_if<std::is_base_of<decltype(*this)>,
     // SecondaryView<StackDataType, ParticleInterface>>::value, unsigned int>::type
+    /**
+     * Function to perform eventual transformation from
+     * StackIterator::GetIndex() to index in data stored in
+     * StackDataType fData. By default (and in almost all cases) this
+     * should just be identiy. See class SecondaryView for an alternative implementation.
+     */
     unsigned int GetIndexFromIterator(const unsigned int vI) const { return vI; }
 
+    /**
+     * @name Return reference to StackDataType object fData for data access
+     * @{
+     */
     typename std::remove_reference<StackDataType>::type& GetStackData() { return fData; }
     const typename std::remove_reference<StackDataType>::type& GetStackData() const {
       return fData;
     }
+    ///@}
   };
 
 } // namespace corsika::stack

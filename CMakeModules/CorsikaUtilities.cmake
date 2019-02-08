@@ -86,6 +86,7 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 #
 
 function (CORSIKA_ADD_TEST name)
+  target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
   add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
 endfunction (CORSIKA_ADD_TEST)
