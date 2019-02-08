@@ -12,8 +12,16 @@
 #ifndef _corsika_setup_setupstack_h_
 #define _corsika_setup_setupstack_h_
 
-#include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
+// the basic particle data stack:
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
+
+// extension with nuclear data for Code::Nucleus
+#include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
+
+// extension with geometry information for tracking
+#include <corsika/stack/CombinedStack.h>
+#include <corsika/stack/CombinedStack.h>
+
 
 // this is an auxiliary help typedef, which I don't know how to put
 // into NuclearStackExtension.h where it belongs...

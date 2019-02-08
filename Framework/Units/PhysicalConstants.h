@@ -1,25 +1,12 @@
-/**
- * \file PhysicalConstants
+
+/*
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * \brief   Several physical constants.
- * \author  Michael S. Kenniston, Martin Moene
- * \date    7 September 2013
- * \since   0.4
+ * See file AUTHORS for a list of contributors.
  *
- * Copyright 2013 Universiteit Leiden. All rights reserved.
- *
- * Copyright (c) 2001 by Michael S. Kenniston.  For the most
- * recent version check www.xnet.com/~msk/quantity.  Permission is granted
- * to use this code without restriction so long as this copyright
- * notice appears in all source files.
- *
- * This code is provided as-is, with no warrantee of correctness.
- *
- * Distributed under the Boost Software License, Version 1.0. (See accompanying
- * file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- *
- *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
  */
 
 #ifndef INCLUDE_PHYSICAL_CONSTANTS_H
