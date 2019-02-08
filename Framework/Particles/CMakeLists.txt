@@ -1,3 +1,5 @@
+set(Python_ADDITIONAL_VERSIONS 3)
+find_package(PythonInterp 3 REQUIRED)
 
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
