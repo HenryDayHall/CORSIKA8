@@ -14,6 +14,8 @@ text = """
  */\n
 """
 
+Debug = 0 # 0: nothing, 1: checking, 2: filesystem
+
 excludeDirs = ["ThirdParty", "git"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc']
 
@@ -21,6 +23,10 @@ extensions = [".cc", ".h", ".test"]
 
 def checkNote(filename):
 
+    if Debug>0:
+        print ("***********************************************")
+        print ("file: " + filename )
+    
     startNote = []
     endNote = []
 
@@ -46,7 +52,13 @@ def checkNote(filename):
                 endNote.append(iLine)
             searchStatus = 0
         iLine += 1
-        
+
+    if Debug>0:
+        txt = "states: n=" + str(len(startNote))
+        for i in xrange(len(startNote)):
+            txt += ",  [" + str(startNote[i]) + "-" + str(endNote[i]) + "]"         
+        print ("stats: ") + txt
+
     # now check if first copyright notices is already identical...
     isSame = False
     if len(startNote)>0: 
@@ -58,8 +70,10 @@ def checkNote(filename):
                 break
             if noteLines[iLine+1].strip(" \n") != lines[startNote[0]+iLine].strip(" \n"):
                 isSame = False
-                print "need update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote+iLine].rstrip('\n') + "\'"
+                print "need update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'"
                 break
+    if Debug>0:
+        print ("isSame=" + str(isSame))
     
     # check if notice is the same, or we need to remove multiple notices...
     if isSame and len(startNote)<=1:
@@ -98,16 +112,25 @@ def checkNote(filename):
 def next_file(x, dir_name, files):
     for check in excludeDirs :
         if check in dir_name:
-            return
+            if Debug>1:
+                print ("exclude-dir: " + check)
+            return True
     for check in files :
+        if (os.path.isdir(check)):
+            continue
         filename, file_extension = os.path.splitext(check)
         if '#' in check or '~' in check:
-            return
+            continue
         for check2 in excludeFiles :
             if check2 in check:
-                return
+                if Debug>1:
+                    print ("exclude: " + check2)
+                continue
         if file_extension in extensions:
             checkNote(dir_name + "/" + check)
+        else:
+            if Debug>1:
+                print ("exclude-extension: " + dir_name + "/" + check)
 
 
 os.path.walk("./", next_file, 0)
