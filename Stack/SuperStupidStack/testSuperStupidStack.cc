@@ -34,16 +34,19 @@ TEST_CASE("SuperStupidStack", "[stack]") {
   SECTION("read+write") {
 
     SuperStupidStack s;
-    s.AddParticle(particles::Code::Electron, 1.5_GeV,
-                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+    s.AddParticle(std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                             corsika::stack::MomentumVector, corsika::geometry::Point,
+                             corsika::units::si::TimeType>{
+        particles::Code::Electron, 1.5_GeV,
+        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
     // read
     REQUIRE(s.GetSize() == 1);
     auto pout = s.GetNextParticle();
     REQUIRE(pout.GetPID() == particles::Code::Electron);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
-    // REQUIRE(pout.GetMomentum() == stack::super_stupid::MomentumVector(dummyCS, {1_GeV,
+    // REQUIRE(pout.GetMomentum() == stack::MomentumVector(dummyCS, {1_GeV,
     // 1_GeV, 1_GeV})); REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 *
     // meter, 1 * meter}));
     REQUIRE(pout.GetTime() == 100_s);
@@ -53,9 +56,13 @@ TEST_CASE("SuperStupidStack", "[stack]") {
 
     SuperStupidStack s;
     for (int i = 0; i < 99; ++i)
-      s.AddParticle(particles::Code::Electron, 1.5_GeV,
-                    MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                    Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+      s.AddParticle(
+          std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                     corsika::stack::MomentumVector, corsika::geometry::Point,
+                     corsika::units::si::TimeType>{
+              particles::Code::Electron, 1.5_GeV,
+              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
     REQUIRE(s.GetSize() == 99);
 

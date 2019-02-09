@@ -167,6 +167,13 @@ namespace corsika::cascade {
 
       step.LimitEndTo(min_distance);
 
+      // particle.GetNode(); // previous VolumeNode
+      particle.SetNode(
+          currentNode); // NOTE @Max : here we need to distinguish: IF particle step is
+      // limited by tracking (via fTracking.GetTrack()), THEN we need
+      // to check/update VolumeNodes. In all other cases it is
+      // guaranteed that we are still in the same volume
+
       // apply all continuous processes on particle + track
       corsika::process::EProcessReturn status =
           fProcessSequence.DoContinuous(particle, step, fStack);

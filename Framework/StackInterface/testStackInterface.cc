@@ -28,6 +28,7 @@ using boost::typeindex::type_id_with_cvr;
                           // cpp file
 #include <catch2/catch.hpp>
 
+using namespace corsika;
 using namespace corsika::stack;
 using namespace std;
 

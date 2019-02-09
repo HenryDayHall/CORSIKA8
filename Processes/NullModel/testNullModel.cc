@@ -21,8 +21,6 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
-
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
@@ -35,16 +33,19 @@ TEST_CASE("NullModel", "[processes]") {
   auto const& dummyCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   geometry::Point const origin(dummyCS, {0_m, 0_m, 0_m});
-  geometry::Vector<corsika::units::si::SpeedType::dimension_type> v(
-      dummyCS, 0_m / second, 0_m / second, 1_m / second);
+  geometry::Vector<units::si::SpeedType::dimension_type> v(dummyCS, 0_m / second,
+                                                           0_m / second, 1_m / second);
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
   setup::Stack stack;
   auto particle = stack.AddParticle(
-      particles::Code::Electron, 1.5_GeV,
-      stack::super_stupid::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-      geometry::Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+      std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                 corsika::stack::MomentumVector, corsika::geometry::Point,
+                 corsika::units::si::TimeType>{
+          particles::Code::Electron, 1.5_GeV,
+          stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          geometry::Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
   SECTION("interface") {
 

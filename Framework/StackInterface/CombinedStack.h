@@ -51,8 +51,8 @@ namespace corsika::stack {
     template <typename... Args1>
     void SetParticleData(C& p, const std::tuple<Args1...> vA) {
       // static_assert(MT<I>::has_not, "error");
-      I::SetParticleData(static_cast<I&>(p), vA);
-      T::SetParticleData(static_cast<T&>(p));
+      I::SetParticleData(static_cast<I&>(p), vA); // original stack
+      T::SetParticleData(static_cast<T&>(p));     // addon stack
     }
     template <typename... Args1, typename... Args2>
     void SetParticleData(C& p, const std::tuple<Args1...> vA,

@@ -34,8 +34,10 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Masses") {
     REQUIRE(Electron::GetMass() / (511_keV) == Approx(1));
     REQUIRE(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
-    
-    REQUIRE((Proton::GetMass() + Neutron::GetMass()) / corsika::units::constants::nucleonMass == Approx(2));
+
+    REQUIRE((Proton::GetMass() + Neutron::GetMass()) /
+                corsika::units::constants::nucleonMass ==
+            Approx(2));
   }
 
   SECTION("Charges") {
@@ -57,14 +59,14 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(GetPDG(Code::NuMu) == PDGCode::NuMu);
     REQUIRE(GetPDG(Code::NuE) == PDGCode::NuE);
     REQUIRE(GetPDG(Code::MuMinus) == PDGCode::MuMinus);
-      
+
     REQUIRE(static_cast<int>(GetPDG(Code::PiPlus)) == 211);
     REQUIRE(static_cast<int>(GetPDG(Code::DPlus)) == 411);
     REQUIRE(static_cast<int>(GetPDG(Code::NuMu)) == 14);
     REQUIRE(static_cast<int>(GetPDG(Code::NuEBar)) == -12);
     REQUIRE(static_cast<int>(GetPDG(Code::MuMinus)) == 13);
   }
-  
+
   SECTION("Conversion PDG -> internal") {
     REQUIRE(ConvertFromPDG(PDGCode::KStarMinus) == Code::KStarMinus);
     REQUIRE(ConvertFromPDG(PDGCode::MuPlus) == Code::MuPlus);

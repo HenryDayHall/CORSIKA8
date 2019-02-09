@@ -171,13 +171,17 @@ namespace corsika::process {
         ss.Clear();
         const corsika::particles::Code pCode = p.GetPID();
         // copy particle to sibyll stack
-        ss.AddParticle(process::sibyll::ConvertToSibyllRaw(pCode), p.GetEnergy(),
-                       p.GetMomentum(),
-                       // setting particle mass with Corsika values, may be inconsistent
-                       // with sibyll internal values
-                       // TODO: #warning setting particle mass with Corsika values, may be
-                       // inconsistent with sibyll internal values
-                       corsika::particles::GetMass(pCode));
+        ss.AddParticle(
+            // std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+            // corsika::stack::MomentumVector, corsika::geometry::Point,
+            // corsika::units::si::TimeType>{
+            corsika::process::sibyll::ConvertToSibyllRaw(pCode), p.GetEnergy(),
+            p.GetMomentum(),
+            // setting particle mass with Corsika values, may be inconsistent
+            // with sibyll internal values
+            // TODO: #warning setting particle mass with Corsika values, may be
+            // inconsistent with sibyll internal values
+            corsika::particles::GetMass(pCode));
         // remember position
         Point const decayPoint = p.GetPosition();
         TimeType const t0 = p.GetTime();
@@ -200,8 +204,12 @@ namespace corsika::process {
           // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
           if (psib.HasDecayed()) continue;
           // add to corsika stack
-          p.AddSecondary(process::sibyll::ConvertFromSibyll(psib.GetPID()),
-                         psib.GetEnergy(), psib.GetMomentum(), decayPoint, t0);
+          p.AddSecondary(
+              std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                         corsika::stack::MomentumVector, corsika::geometry::Point,
+                         corsika::units::si::TimeType>{
+                  corsika::process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                  psib.GetEnergy(), psib.GetMomentum(), decayPoint, t0});
         }
         // empty sibyll stack
         ss.Clear();
