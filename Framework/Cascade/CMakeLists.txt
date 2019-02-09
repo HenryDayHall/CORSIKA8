@@ -15,13 +15,6 @@ add_library (CORSIKAcascade INTERFACE)
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAcascade ${CORSIKAcascade_NAMESPACE} ${CORSIKAcascade_HEADERS})
 
-#target_link_libraries (
-#  CORSIKAcascade
-#  CORSIKAparticles
-#  CORSIKAunits
-#  CORSIKAthirdparty # for catch2
-#  )
-
 # include directive for upstream code
 target_include_directories (
   CORSIKAcascade
@@ -50,6 +43,7 @@ target_link_libraries (
   ProcessSibyll
   CORSIKAcascade
   ProcessStackInspector
+  ProcessTrackingLine
   CORSIKAstackinterface
   CORSIKAprocesses
   CORSIKAparticles

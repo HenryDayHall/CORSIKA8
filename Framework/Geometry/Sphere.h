@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_SPHERE_H_
 #define _include_SPHERE_H_
 

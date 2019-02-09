@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #include <corsika/geometry/CoordinateSystem.h>
 #include <stdexcept>
 

@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_HELIX_H_
 #define _include_HELIX_H_
 

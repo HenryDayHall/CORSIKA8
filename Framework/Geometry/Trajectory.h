@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 

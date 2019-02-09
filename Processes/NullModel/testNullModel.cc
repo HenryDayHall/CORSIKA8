@@ -39,13 +39,15 @@ TEST_CASE("NullModel", "[processes]") {
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
   setup::Stack stack;
-  auto particle = stack.AddParticle(
-      std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, corsika::geometry::Point,
-                 corsika::units::si::TimeType>{
-          particles::Code::Electron, 1.5_GeV,
-          stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          geometry::Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+  setup::Stack::ParticleType
+      // auto
+      particle = stack.AddParticle(
+          std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                     corsika::stack::MomentumVector, corsika::geometry::Point,
+                     corsika::units::si::TimeType>{
+              particles::Code::Electron, 1.5_GeV,
+              stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+              geometry::Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
   SECTION("interface") {
 

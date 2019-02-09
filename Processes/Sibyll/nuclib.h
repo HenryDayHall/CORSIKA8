@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_nuclib_interface_h_
 #define _include_nuclib_interface_h_
 

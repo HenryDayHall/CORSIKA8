@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _corsika_process_sibyll_nuclearinteraction_h_
 #define _corsika_process_sibyll_nuclearinteraction_h_
 
