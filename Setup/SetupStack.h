@@ -70,11 +70,12 @@ public:
   }
   void SetParticleData(
       GeometryDataInterface<T>& parent,
-      const std::tuple<const corsika::environment::BaseNodeType*>) { // v = {nullptr}) {
-    SetNode(parent.GetNode());
+      const std::tuple<const corsika::environment::BaseNodeType*>) { 
+    SetNode(parent.GetNode()); // copy Node from parent particle!
   }
   void SetParticleData() { SetNode(nullptr); }
-  void SetParticleData(GeometryDataInterface<T>& parent) { SetNode(parent.GetNode()); }
+  void SetParticleData(GeometryDataInterface<T>& parent) { SetNode(parent.GetNode());  // copy Node from parent particle!
+  }
   void SetNode(const corsika::environment::BaseNodeType* v) {
     GetStackData().SetNode(GetIndex(), v);
   }
