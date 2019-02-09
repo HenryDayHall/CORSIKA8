@@ -27,6 +27,7 @@ using boost::typeindex::type_id_with_cvr;
                           // cpp file
 #include <catch2/catch.hpp>
 
+using namespace corsika;
 using namespace corsika::stack;
 using namespace std;
 
@@ -64,8 +65,7 @@ private:
 // defintion of a stack-readout object, the iteractor dereference
 // operator will deliver access to these function
 template <typename T>
-class TestParticleInterface2
-    : public T { // corsika::stack::ParticleBaseAdd<T> {//public T {
+class TestParticleInterface2 : public T {
 
 public:
   using T::GetIndex;
@@ -254,8 +254,8 @@ public:
 // combined stack
 template <typename StackIter>
 using CombinedTestInterfaceType2 =
-    corsika::stack::CombinedParticleInterface<CombinedTestInterfaceType,
-                                              TestParticleInterface3, StackIter>;
+    corsika::stack::CombinedParticleInterface<StackTest::PIType, TestParticleInterface3,
+                                              StackIter>;
 
 using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
                                  CombinedTestInterfaceType2>;
@@ -270,8 +270,8 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
     auto p1 = s.AddParticle(std::tuple{9.9});
     auto p2 = s.AddParticle(std::tuple{8.8}, std::tuple{0.1});
     p2.SetData2(0.1); // not clear why this is needed, need to check
-		      // SetParticleData workflow for more complicated
-		      // settings
+                      // SetParticleData workflow for more complicated
+                      // settings
     // auto p3 = s.AddParticle( std::tuple {8.8}, std::tuple{1.}, std::tuple{0.1} );
     p1.SetData3(20.2);
     p2.SetData3(10.3);

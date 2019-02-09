@@ -61,9 +61,9 @@ namespace corsika::units::constants {
 
   // unified atomic mass unit
   constexpr quantity<mass_d> u{Rep(1.6605402e-27L) * kilogram};
-  
+
   auto constexpr nucleonMass = 0.5 * (0.93827 + 0.93957) * 1e9 * electronvolt;
-  
+
   // etc.
 
 } // namespace corsika::units::constants

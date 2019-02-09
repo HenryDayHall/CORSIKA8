@@ -355,9 +355,13 @@ namespace corsika::process::sibyll {
             auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
             // add to corsika stack
-            auto pnew = p.AddSecondary(process::sibyll::ConvertFromSibyll(psib.GetPID()),
-                                       Plab.GetTimeLikeComponent(),
-                                       Plab.GetSpaceLikeComponents(), pOrig, tOrig);
+            auto pnew =
+                p.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                          corsika::stack::MomentumVector, geometry::Point,
+                                          units::si::TimeType>{
+                    process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                    Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+                    tOrig});
 
             Plab_final += pnew.GetMomentum();
             Elab_final += pnew.GetEnergy();

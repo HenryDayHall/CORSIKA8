@@ -19,8 +19,6 @@
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
-
 #include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/geometry/Point.h>
@@ -42,34 +40,32 @@ using corsika::setup::Trajectory;
 using namespace corsika;
 using namespace corsika::process;
 using namespace corsika::units;
+using namespace corsika::units::si;
 using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
-using namespace corsika::units::si;
 
-corsika::environment::Environment MakeDummyEnv() {
-  corsika::environment::Environment env; // dummy environment
+environment::Environment MakeDummyEnv() {
+  environment::Environment env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+  auto theMedium = environment::Environment::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel =
-      corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
+  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_g / (1_m * 1_m * 1_m),
-      corsika::environment::NuclearComposition(
-          std::vector<corsika::particles::Code>{corsika::particles::Code::Proton},
-          std::vector<float>{1.}));
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Proton}, std::vector<float>{1.}));
 
   universe.AddChild(std::move(theMedium));
 
   return env;
 }
 
-class ProcessSplit : public corsika::process::ContinuousProcess<ProcessSplit> {
+class ProcessSplit : public process::ContinuousProcess<ProcessSplit> {
 
   int fCount = 0;
   int fCalls = 0;
@@ -93,7 +89,10 @@ public:
       fCount++;
     } else {
       p.SetEnergy(E / 2);
-      p.AddSecondary(p.GetPID(), E / 2, p.GetMomentum(), p.GetPosition(), p.GetTime());
+      p.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                corsika::stack::MomentumVector, geometry::Point,
+                                units::si::TimeType>{p.GetPID(), E / 2, p.GetMomentum(),
+                                                     p.GetPosition(), p.GetTime()});
     }
     return EProcessReturn::eOk;
   }
@@ -110,7 +109,7 @@ private:
 };
 
 TEST_CASE("Cascade", "[Cascade]") {
-  corsika::random::RNGManager& rmng = corsika::random::RNGManager::GetInstance();
+  random::RNGManager& rmng = random::RNGManager::GetInstance();
   rmng.RegisterRandomStream("cascade");
 
   auto env = MakeDummyEnv();
@@ -123,34 +122,21 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto sequence = p0 << p1;
   setup::Stack stack;
 
-  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
+  cascade::Cascade EAS(env, tracking, sequence, stack);
   CoordinateSystem const& rootCS =
       RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   stack.Clear();
   HEPEnergyType E0 = 100_GeV;
   stack.AddParticle(
-      particles::Code::Electron, E0,
-      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns);
+      std::tuple<particles::Code, units::si::HEPEnergyType,
+                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+          particles::Code::Electron, E0,
+          corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+          Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
   EAS.Init();
   EAS.Run();
 
   CHECK(p1.GetCount() == 2048);
   CHECK(p1.GetCalls() == 4095);
-
-  /*
-  SECTION("sectionTwo") {
-    for (int i = 0; i < 0; ++i) {
-      stack.Clear();
-      auto particle = stack.NewParticle();
-      HEPEnergyType E0 = 100_GeV * pow(10, i);
-      particle.SetEnergy(E0);
-      EAS.Init();
-      EAS.Run();
-
-      // cout << "Result: E0=" << E0 / 1_GeV << "GeV, count=" << p1.GetCount() << endl;
-    }
-  }
-  */
 }

@@ -55,7 +55,7 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-class ProcessCut : public corsika::process::ContinuousProcess<ProcessCut> {
+class ProcessCut : public process::ContinuousProcess<ProcessCut> {
 
   HEPEnergyType fECut;
 
@@ -72,7 +72,7 @@ public:
   template <typename Particle>
   bool isBelowEnergyCut(Particle& p) const {
     // nuclei
-    if (p.GetPID() == corsika::particles::Code::Nucleus) {
+    if (p.GetPID() == particles::Code::Nucleus) {
       auto const ElabNuc = p.GetEnergy() / p.GetNuclearA();
       auto const EcmNN = sqrt(2. * ElabNuc * 0.93827_GeV);
       if (ElabNuc < fECut || EcmNN < 10_GeV)
@@ -223,25 +223,24 @@ public:
 int main() {
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  corsika::environment::Environment env;
+  environment::Environment env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+  auto theMedium = environment::Environment::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
   const float fox = 0.20946;
-  using MyHomogeneousModel =
-      corsika::environment::HomogeneousMedium<corsika::environment::IMediumModel>;
+  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
-      corsika::environment::NuclearComposition(
-          std::vector<corsika::particles::Code>{corsika::particles::Code::Nitrogen,
-                                                corsika::particles::Code::Oxygen},
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Nitrogen,
+                                       particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
 
   universe.AddChild(std::move(theMedium));
@@ -252,17 +251,17 @@ int main() {
   tracking_line::TrackingLine<setup::Stack> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  corsika::process::sibyll::Interaction sibyll(env);
-  corsika::process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
-  corsika::process::sibyll::Decay decay;
+  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  process::sibyll::Interaction sibyll(env);
+  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
+  process::sibyll::Decay decay;
   ProcessCut cut(20_GeV);
 
-  // corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  // corsika::process::HadronicElasticModel::HadronicElasticInteraction
+  // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  // process::HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
-  corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
+  process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
@@ -277,8 +276,8 @@ int main() {
   const Code beamCode = Code::Nucleus;
   const int nuclA = 56;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = corsika::particles::Proton::GetMass() * nuclZ +
-                           (nuclA - nuclZ) * corsika::particles::Neutron::GetMass();
+  const HEPMassType mass = particles::Proton::GetMass() * nuclZ +
+                           (nuclA - nuclZ) * particles::Neutron::GetMass();
   const HEPEnergyType E0 =
       nuclA *
       100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
@@ -296,16 +295,19 @@ int main() {
     };
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = stack::super_stupid::MomentumVector(rootCS, {px, py, pz});
+    auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ);
+    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType, unsigned short, unsigned short>{
+        beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
   }
 
   // define air shower object, run simulation
-  corsika::cascade::Cascade EAS(env, tracking, sequence, stack);
+  cascade::Cascade EAS(env, tracking, sequence, stack);
   EAS.Init();
   EAS.Run();
 

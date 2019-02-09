@@ -90,8 +90,7 @@ namespace corsika::particles {
   }
 
   corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
-    return detail::lifetime[static_cast<CodeIntType>(p)] *
-           corsika::units::si::second;
+    return detail::lifetime[static_cast<CodeIntType>(p)] * corsika::units::si::second;
   }
 
   bool constexpr IsNucleus(Code const p) {
@@ -111,7 +110,7 @@ namespace corsika::particles {
    **/
 
   std::ostream& operator<<(std::ostream& stream, corsika::particles::Code const p);
-  
+
   Code ConvertFromPDG(PDGCode);
 } // namespace corsika::particles
 

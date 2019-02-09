@@ -17,6 +17,8 @@
 #include <boost/type_index.hpp>
 using boost::typeindex::type_id_with_cvr;
 
+using namespace corsika;
+using namespace corsika::stack::nuclear_extension;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
@@ -24,17 +26,13 @@ using namespace corsika::units::si;
                           // cpp file
 #include <catch2/catch.hpp>
 
-using namespace corsika;
-using namespace corsika::stack::nuclear_extension;
-
 // this is an auxiliary help typedef, which I don't know how to put
 // into NuclearStackExtension.h where it belongs...
 template <typename StackIter>
-using ExtendedParticleInterfaceType =
-    corsika::stack::nuclear_extension::NuclearParticleInterface<
-        corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
+using ExtendedParticleInterfaceType = stack::nuclear_extension::NuclearParticleInterface<
+    stack::super_stupid::SuperStupidStack::PIType, StackIter>;
 
-using ExtStack = NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
+using ExtStack = NuclearStackExtension<stack::super_stupid::SuperStupidStack,
                                        ExtendedParticleInterfaceType>;
 
 #include <iostream>
@@ -45,15 +43,16 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   geometry::CoordinateSystem& dummyCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
-  // cout << "ParticleType=" << type_id_with_cvr<ParticleType>().pretty_name() << endl;
-
   SECTION("write non nucleus") {
     NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
                           ExtendedParticleInterfaceType>
         s;
-    s.AddParticle(particles::Code::Electron, 1.5_GeV,
-                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+    s.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Electron, 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
     REQUIRE(s.GetSize() == 1);
   }
 
@@ -61,24 +60,34 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
                           ExtendedParticleInterfaceType>
         s;
-    s.AddParticle(particles::Code::Nucleus, 1.5_GeV,
-                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 10);
+    s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                             corsika::stack::MomentumVector, geometry::Point,
+                             units::si::TimeType, unsigned short, unsigned short>{
+        particles::Code::Nucleus, 1.5_GeV,
+        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 10});
     REQUIRE(s.GetSize() == 1);
   }
 
   SECTION("write invalid nucleus") {
     ExtStack s;
-    REQUIRE_THROWS(s.AddParticle(
-        particles::Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0));
+    REQUIRE_THROWS(
+        s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType, unsigned short, unsigned short>{
+            particles::Code::Nucleus, 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0}));
   }
 
   SECTION("read non nucleus") {
     ExtStack s;
-    s.AddParticle(particles::Code::Electron, 1.5_GeV,
-                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+    s.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Electron, 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
     const auto pout = s.GetNextParticle();
     REQUIRE(pout.GetPID() == particles::Code::Electron);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
@@ -87,9 +96,12 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
   SECTION("read nucleus") {
     ExtStack s;
-    s.AddParticle(particles::Code::Nucleus, 1.5_GeV,
-                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9);
+    s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                             corsika::stack::MomentumVector, geometry::Point,
+                             units::si::TimeType, unsigned short, unsigned short>{
+        particles::Code::Nucleus, 1.5_GeV,
+        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9});
     const auto pout = s.GetNextParticle();
     REQUIRE(pout.GetPID() == particles::Code::Nucleus);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
@@ -100,9 +112,12 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
   SECTION("read invalid nucleus") {
     ExtStack s;
-    s.AddParticle(particles::Code::Electron, 1.5_GeV,
-                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+    s.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Electron, 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
     const auto pout = s.GetNextParticle();
     REQUIRE_THROWS(pout.GetNuclearA());
     REQUIRE_THROWS(pout.GetNuclearZ());
@@ -114,13 +129,19 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {
-        s.AddParticle(particles::Code::Nucleus, 1.5_GeV,
-                      MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, i, i / 2);
+        s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType, unsigned short, unsigned short>{
+            particles::Code::Nucleus, 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, i, i / 2});
       } else {
-        s.AddParticle(particles::Code::Electron, 1.5_GeV,
-                      MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+        s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType>{
+            particles::Code::Electron, 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
       }
     }
 
@@ -135,13 +156,19 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {
-        s.AddParticle(particles::Code::Nucleus, i * 15_GeV,
-                      MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, i, i / 2);
+        s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType, unsigned short, unsigned short>{
+            particles::Code::Nucleus, i * 15_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, i, i / 2});
       } else {
-        s.AddParticle(particles::Code::Electron, i * 1.5_GeV,
-                      MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
+        s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType>{
+            particles::Code::Electron, i * 1.5_GeV,
+            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
       }
     }
 

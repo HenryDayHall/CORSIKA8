@@ -29,9 +29,12 @@ void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
   const geometry::CoordinateSystem& rootCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   for (int i = 0; i < 11; ++i) {
-    s.AddParticle(corsika::particles::Code::Electron, 1.5_GeV * i,
-                  stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
-                  geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns);
+    s.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Electron, 1.5_GeV * i,
+            corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
+            geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
   }
 }
 
@@ -43,7 +46,7 @@ void read(corsika::stack::super_stupid::SuperStupidStack& s) {
   for (auto& p : s) {
     total_energy += p.GetEnergy();
     // particles are electrons with 1.5 GeV energy times i
-    assert(p.GetPID() == corsika::particles::Code::Electron);
+    assert(p.GetPID() == particles::Code::Electron);
     assert(p.GetEnergy() == 1.5_GeV * (i++));
   }
 }

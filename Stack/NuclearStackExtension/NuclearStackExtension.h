@@ -20,6 +20,7 @@
 #include <corsika/geometry/Vector.h>
 
 #include <algorithm>
+#include <tuple>
 #include <vector>
 
 namespace corsika::stack {
@@ -39,9 +40,9 @@ namespace corsika::stack {
    *
    */
 
-  namespace nuclear_extension {
+  typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
-    typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
+  namespace nuclear_extension {
 
     /**
      * @class NuclearParticleInterface
@@ -54,46 +55,88 @@ namespace corsika::stack {
     class NuclearParticleInterface
         : public InnerParticleInterface<StackIteratorInterface> {
 
-      // public:
-      // using ExtendedParticleInterface =
-      // NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>;
-
     protected:
       using InnerParticleInterface<StackIteratorInterface>::GetStackData;
       using InnerParticleInterface<StackIteratorInterface>::GetIndex;
 
     public:
-      void SetParticleData(const corsika::particles::Code vDataPID,
-                           const corsika::units::si::HEPEnergyType vDataE,
-                           const MomentumVector& vMomentum,
-                           const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime,
-                           const unsigned short vA = 0, const unsigned short vZ = 0) {
-        if (vDataPID == corsika::particles::Code::Nucleus) {
-          if (vA == 0 || vZ == 0) {
-            std::ostringstream err;
-            err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
-            throw std::runtime_error(err.str());
-          }
-          SetNucleusRef(
-              GetStackData().GetNucleusNextRef()); // store this nucleus data ref
-          SetNuclearA(vA);
-          SetNuclearZ(vZ);
-        } else {
-          SetNucleusRef(-1); // this is not a nucleus
+      void SetParticleData(
+          const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                           corsika::stack::MomentumVector, corsika::geometry::Point,
+                           corsika::units::si::TimeType>& v) {
+        if (std::get<0>(v) == corsika::particles::Code::Nucleus) {
+          std::ostringstream err;
+          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+          throw std::runtime_error(err.str());
         }
-        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
-            vDataPID, vDataE, vMomentum, vPosition, vTime);
+        InnerParticleInterface<StackIteratorInterface>::SetParticleData(v);
+        SetNucleusRef(-1); // this is not a nucleus
       }
 
-      void SetParticleData(InnerParticleInterface<StackIteratorInterface>&,
-                           const corsika::particles::Code vDataPID,
-                           const corsika::units::si::HEPEnergyType vDataE,
-                           const MomentumVector& vMomentum,
-                           const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime,
-                           const unsigned short vA = 0, const unsigned short vZ = 0) {
-        SetParticleData(vDataPID, vDataE, vMomentum, vPosition, vTime, vA, vZ);
+      void SetParticleData(
+          const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                           corsika::stack::MomentumVector, corsika::geometry::Point,
+                           corsika::units::si::TimeType, unsigned short, unsigned short>&
+              v) {
+        const unsigned short A = std::get<5>(v);
+        const unsigned short Z = std::get<6>(v);
+        if (std::get<0>(v) != corsika::particles::Code::Nucleus || A == 0 || Z == 0) {
+          std::ostringstream err;
+          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+          throw std::runtime_error(err.str());
+        }
+        SetNucleusRef(GetStackData().GetNucleusNextRef()); // store this nucleus data ref
+        SetNuclearA(A);
+        SetNuclearZ(Z);
+        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
+            std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                       corsika::stack::MomentumVector, corsika::geometry::Point,
+                       corsika::units::si::TimeType>{std::get<0>(v), std::get<1>(v),
+                                                     std::get<2>(v), std::get<3>(v),
+                                                     std::get<4>(v)});
+      }
+
+      void SetParticleData(
+          InnerParticleInterface<StackIteratorInterface>& p,
+          const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                           corsika::stack::MomentumVector, corsika::geometry::Point,
+                           corsika::units::si::TimeType>& v) {
+        if (std::get<0>(v) == corsika::particles::Code::Nucleus) {
+          std::ostringstream err;
+          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+          throw std::runtime_error(err.str());
+        }
+        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
+            p, std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                          corsika::stack::MomentumVector, corsika::geometry::Point,
+                          corsika::units::si::TimeType>{std::get<0>(v), std::get<1>(v),
+                                                        std::get<2>(v), std::get<3>(v),
+                                                        std::get<4>(v)});
+        SetNucleusRef(-1); // this is not a nucleus
+      }
+
+      void SetParticleData(
+          InnerParticleInterface<StackIteratorInterface>& p,
+          const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                           corsika::stack::MomentumVector, corsika::geometry::Point,
+                           corsika::units::si::TimeType, unsigned short, unsigned short>&
+              v) {
+        const unsigned short A = std::get<5>(v);
+        const unsigned short Z = std::get<6>(v);
+        if (std::get<0>(v) != corsika::particles::Code::Nucleus || A == 0 || Z == 0) {
+          std::ostringstream err;
+          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+          throw std::runtime_error(err.str());
+        }
+        SetNucleusRef(GetStackData().GetNucleusNextRef()); // store this nucleus data ref
+        SetNuclearA(A);
+        SetNuclearZ(Z);
+        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
+            p, std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                          corsika::stack::MomentumVector, corsika::geometry::Point,
+                          corsika::units::si::TimeType>{std::get<0>(v), std::get<1>(v),
+                                                        std::get<2>(v), std::get<3>(v),
+                                                        std::get<4>(v)});
       }
 
       /**

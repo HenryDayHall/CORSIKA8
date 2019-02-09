@@ -25,9 +25,9 @@
 
 namespace corsika::stack {
 
-  namespace super_stupid {
+  typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
-    typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
+  namespace super_stupid {
 
     /**
      * Example of a particle object on the stack.
@@ -42,19 +42,36 @@ namespace corsika::stack {
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
     public:
-      void SetParticleData(const corsika::particles::Code vDataPID,
-                           const corsika::units::si::HEPEnergyType vDataE,
-                           const MomentumVector& vMomentum,
-                           const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime) {
-        SetPID(vDataPID);
-        SetEnergy(vDataE);
-        SetMomentum(vMomentum);
-        SetPosition(vPosition);
-        SetTime(vTime);
+      void SetParticleData(
+          const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                           MomentumVector, corsika::geometry::Point,
+                           corsika::units::si::TimeType>& v) {
+        SetPID(std::get<0>(v));
+        SetEnergy(std::get<1>(v));
+        SetMomentum(std::get<2>(v));
+        SetPosition(std::get<3>(v));
+        SetTime(std::get<4>(v));
       }
+      /*
+    void SetParticleData(const corsika::particles::Code vDataPID,
+                         const corsika::units::si::HEPEnergyType vDataE,
+                         const MomentumVector& vMomentum,
+                         const corsika::geometry::Point& vPosition,
+                         const corsika::units::si::TimeType vTime) {
+      }*/
 
-      void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
+      void SetParticleData(
+          ParticleInterface<StackIteratorInterface>&,
+          const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
+                           MomentumVector, corsika::geometry::Point,
+                           corsika::units::si::TimeType>& v) {
+        SetPID(std::get<0>(v));
+        SetEnergy(std::get<1>(v));
+        SetMomentum(std::get<2>(v));
+        SetPosition(std::get<3>(v));
+        SetTime(std::get<4>(v));
+      }
+      /*      void SetParticleData(ParticleInterface<StackIteratorInterface>&,
                            const corsika::particles::Code vDataPID,
                            const corsika::units::si::HEPEnergyType vDataE,
                            const MomentumVector& vMomentum,
@@ -65,7 +82,7 @@ namespace corsika::stack {
         SetMomentum(vMomentum);
         SetPosition(vPosition);
         SetTime(vTime);
-      }
+      }*/
 
       /// individual setters
       void SetPID(const corsika::particles::Code id) {
