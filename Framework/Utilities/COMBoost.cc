@@ -10,40 +10,52 @@
  */
 
 #include <corsika/geometry/CoordinateSystem.h>
+#include <corsika/geometry/FourVector.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 
 using namespace corsika::utl;
 using namespace corsika::units::si;
+using namespace corsika::geometry;
 
-template <typename FourVector>
-COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile,
-                               const HEPMassType massTarget)
-    : fRotation(Eigen::Matrix3d::Identity())
-    , fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
-  // calculate matrix for rotating pProjectile to z-axis first
+//! sign function without branches
+template <typename T>
+static int sgn(T val) {
+  return (T(0) < val) - (val < T(0));
+}
+
+COMBoost::COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
+                   const HEPMassType massTarget)
+    : fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
   auto const pProjectile = Pprojectile.GetSpaceLikeComponents();
   auto const pProjNorm = pProjectile.norm();
   auto const a = (pProjectile / pProjNorm).GetComponents().eVector;
+  auto const a1 = a(0), a2 = a(1);
 
-  if (a(0) == 0 && a(1) == 0) {
-    if (a(2) < 0) {
-      // if pProjectile ~ (0, 0, -1), the standard formula for the rotation matrix breaks
-      // down but we can easily define a suitable rotation manually. We just need some
-      // SO(3) matrix that reverses the z-axis and I like this one:
+  auto const s = sgn(a(2));
+  auto const c = 1 / (1 + s * a(2));
 
-      fRotation << 1, 0, 0, 0, -1, 0, 0, 0, -1;
-    }
+  Eigen::Matrix3d A, B;
+
+  if (s > 0) {
+    A << 1, 0, -a1,                     // comment to prevent clang-format
+        0, 1, -a2,                      // .
+        a1, a2, 1;                      // .
+    B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
+        -a1 * a2 * c, -a2 * a2 * c, 0,  // .
+        0, 0, -(a1 * a1 + a2 * a2) * c; // .
+
   } else {
-    Eigen::Vector3d const b{0, 0, 1};
-    auto const v = a.cross(b);
-
-    Eigen::Matrix3d vHat;
-    vHat << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
-
-    fRotation += vHat + vHat * vHat / (1 + a.dot(b));
+    A << 1, 0, a1,                      // comment to prevent clang-format
+        0, -1, -a2,                     // .
+        a1, a2, -1;                     // .
+    B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
+        +a1 * a2 * c, +a2 * a2 * c, 0,  // .
+        0, 0, (a1 * a1 + a2 * a2) * c;  // .
   }
+
+  fRotation = A + B;
 
   // calculate boost
   double const beta = pProjNorm / (Pprojectile.GetTimeLikeComponent() + massTarget);
@@ -54,68 +66,13 @@ COMBoost<FourVector>::COMBoost(const FourVector& Pprojectile,
   double const sinhEta = -beta * coshEta;
 
   std::cout << "COMBoost (1-beta)=" << 1 - beta << " gamma=" << coshEta << std::endl;
+  std::cout << "  det = " << fRotation.determinant() - 1 << std::endl;
 
   fBoost << coshEta, sinhEta, sinhEta, coshEta;
 
   fInverseBoost << coshEta, -sinhEta, -sinhEta, coshEta;
 }
 
-template <typename FourVector>
-FourVector COMBoost<FourVector>::toCoM(const FourVector& p) const {
-  auto pComponents = p.GetSpaceLikeComponents().GetComponents(fCS);
-  Eigen::Vector3d eVecRotated = fRotation * pComponents.eVector;
-  Eigen::Vector2d lab;
-
-  lab << (p.GetTimeLikeComponent() * (1 / 1_GeV)),
-      (eVecRotated(2) * (1 / 1_GeV).magnitude());
-
-  auto const boostedZ = fBoost * lab;
-  auto const E_CoM = boostedZ(0) * 1_GeV;
-
-  eVecRotated(2) = boostedZ(1) * (1_GeV).magnitude();
-
-  return FourVector(E_CoM, corsika::geometry::Vector<hepmomentum_d>(fCS, eVecRotated));
-}
-
-template <typename FourVector>
-FourVector COMBoost<FourVector>::fromCoM(const FourVector& p) const {
-  Eigen::Vector2d com;
-  com << (p.GetTimeLikeComponent() * (1 / 1_GeV)),
-      (p.GetSpaceLikeComponents().GetComponents().eVector(2) * (1 / 1_GeV).magnitude());
-
-  std::cout << "COMBoost::fromCoM Ecm=" << p.GetTimeLikeComponent() / 1_GeV << " GeV, "
-            << " pcm=" << p.GetSpaceLikeComponents().GetComponents().squaredNorm() / 1_GeV
-            << " GeV" << std::endl;
-
-  auto const boostedZ = fInverseBoost * com;
-  auto const E_lab = boostedZ(0) * 1_GeV;
-
-  auto pLab = p.GetSpaceLikeComponents().GetComponents();
-  pLab.eVector(2) = boostedZ(1) * (1_GeV).magnitude();
-  pLab.eVector = fRotation.transpose() * pLab.eVector;
-
-  std::cout << "COMBoost::fromCoM --> Elab=" << E_lab / 1_GeV << "GeV, "
-            << " pcm=" << pLab.squaredNorm() / 1_GeV << "GeV" << std::endl;
-
-  return FourVector(E_lab, corsika::geometry::Vector(fCS, pLab));
-}
-
 /*
   Here we instantiate all physically meaningful versions of COMBoost
  */
-
-#include <corsika/geometry/FourVector.h>
-
-namespace corsika::utl {
-
-  using corsika::geometry::FourVector;
-  using corsika::geometry::Vector;
-  using namespace corsika::units;
-
-  // for normal HEP energy/momentum units in [GeV]
-  template class COMBoost<FourVector<HEPEnergyType, Vector<hepmomentum_d>>>;
-  // template class COMBoost<FourVector<HEPEnergyType&, Vector<hepmomentum_d>&>>;
-
-  // template class COMBoost<FourVector<TimeType, Vector<length_d>>>;
-  // template class COMBoost<FourVector<TimeType&, Vector<length_d>&>>;
-} // namespace corsika::utl
