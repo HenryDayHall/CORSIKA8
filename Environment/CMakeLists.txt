@@ -6,7 +6,7 @@ set (
   HomogeneousMedium.h
   InhomogeneousMedium.h
   HomogeneousMedium.h
-  LinearIntegrator.h
+  LinearApproximationIntegrator.h
   DensityFunction.h
   Environment.h
   )

@@ -11,7 +11,7 @@
 #ifndef _include_environment_DensityFunction_h_
 #define _include_environment_DensityFunction_h_
 
-#include <corsika/environment/LinearIntegrator.h>
+#include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
@@ -19,10 +19,10 @@
 namespace corsika::environment {
 
   template <class TDerivableRho,
-            template <typename> class TApproximator = LinearApproximator>
+            template <typename> class TIntegrator = LinearApproximationIntegrator>
   class DensityFunction
-      : public TApproximator<DensityFunction<TDerivableRho, TApproximator>> {
-    friend class TApproximator<DensityFunction<TDerivableRho, TApproximator>>;
+      : public TIntegrator<DensityFunction<TDerivableRho, TIntegrator>> {
+    friend class TIntegrator<DensityFunction<TDerivableRho, TIntegrator>>;
 
     TDerivableRho fRho; //!< functor for density
 

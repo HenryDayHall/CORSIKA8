@@ -8,8 +8,8 @@
  * the license.
  */
 
-#ifndef _include_environment_LinearIntegrator_h_
-#define _include_environment_LinearIntegrator_h_
+#ifndef _include_environment_LinearApproximationIntegrator_h_
+#define _include_environment_LinearApproximationIntegrator_h_
 
 #include <limits>
 
@@ -19,7 +19,7 @@
 
 namespace corsika::environment {
   template <class TDerived>
-  class LinearApproximator {
+  class LinearApproximationIntegrator {
     auto const& GetImplementation() const { return *static_cast<TDerived const*>(this); }
 
   public:
@@ -43,9 +43,9 @@ namespace corsika::environment {
     }
 
     auto MaximumLength(corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-                       double relError) const {
+                       [[maybe_unused]] double relError) const {
       using namespace corsika::units::si;
-      auto const c1 = GetImplementation().fRho.SecondDerivative(
+      [[maybe_unused]] auto const c1 = GetImplementation().fRho.SecondDerivative(
           line.GetPosition(0), line.NormalizedDirection());
 
       // todo: provide a real, working implementation

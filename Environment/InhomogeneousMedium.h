@@ -20,8 +20,8 @@
 #include <corsika/units/PhysicalUnits.h>
 
 /**
- * An inhomogeneous medium. The mass density distribution TDensityFunction must be a
- * \f$C^1\f$-function.
+ * A general inhomogeneous medium. The mass density distribution TDensityFunction must be
+ * a \f$C^2\f$-function.
  */
 
 namespace corsika::environment {
@@ -46,7 +46,7 @@ namespace corsika::environment {
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& pLine,
         corsika::units::si::LengthType pTo) const override {
-      return fDensityFunction.IntegratedGrammage(pLine, pTo);
+      return fDensityFunction.IntegrateGrammage(pLine, pTo);
     }
 
     corsika::units::si::LengthType ArclengthFromGrammage(
