@@ -91,12 +91,11 @@ namespace corsika::process::HadronicElasticModel {
 
     const auto* currentNode =
         fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
-    const auto& mediumComposition =
-        currentNode->GetModelProperties().GetNuclearComposition();
-    const auto& components = mediumComposition.GetComponents();
+    const auto& composition = currentNode->GetModelProperties().GetNuclearComposition();
+    const auto& components = composition.GetComponents();
 
     std::vector<units::si::CrossSectionType> cross_section_of_components(
-        mediumComposition.GetComponents().size());
+        composition.GetComponents().size());
 
     auto const projectileMomentum = p.GetMomentum();
     auto const projectileMomentumSquaredNorm = projectileMomentum.squaredNorm();
@@ -109,8 +108,7 @@ namespace corsika::process::HadronicElasticModel {
       cross_section_of_components[i] = CrossSection(s);
     }
 
-    const auto targetCode =
-        currentNode->GetModelProperties().SampleTarget(cross_section_of_components, fRNG);
+    const auto targetCode = composition.SampleTarget(cross_section_of_components, fRNG);
 
     auto const targetMass = particles::GetMass(targetCode);
 

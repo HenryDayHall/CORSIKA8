@@ -277,7 +277,7 @@ namespace corsika::process::sibyll {
             sigEla; // to avoid not used warning in array binding
       }
 
-      const auto targetCode = currentNode->GetModelProperties().SampleTarget(
+      const auto targetCode = mediumComposition.SampleTarget(
           cross_section_of_components, fRNG);
       cout << "Interaction: target selected: " << targetCode << endl;
       /*
