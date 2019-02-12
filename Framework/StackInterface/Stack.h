@@ -67,11 +67,17 @@ namespace corsika::stack {
         delete; ///< since Stack can be very big, we don't want to copy it
 
   public:
+    // Stack() { Init(); }
+
     /**
-     * if StackDataType is a reference member we *have* to initialize
+     * if StackDataType is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
      */
-    template <typename = std::enable_if_t<std::is_reference<StackDataType>{}>>
+    template <
+        typename _StackDataType = StackDataType,
+        typename = std::enable_if<std::is_same<StackDataType, _StackDataType>::value &&
+                                      std::is_reference<_StackDataType>::value,
+                                  void>>
     Stack(StackDataType vD)
         : fData(vD) {}
 
@@ -80,8 +86,11 @@ namespace corsika::stack {
      * StackDataType user class. If the user did not provide a suited
      * constructor this will fail with an error message.
      */
-    template <typename... Args,
-              typename = std::enable_if_t<!std::is_reference<StackDataType>{}>>
+    template <
+        typename... Args, typename _StackDataType = StackDataType,
+        typename = std::enable_if<std::is_same<StackDataType, _StackDataType>::value &&
+                                      !std::is_reference<_StackDataType>::value,
+                                  void>>
     Stack(Args... args)
         : fData(args...) {}
 
@@ -223,9 +232,6 @@ namespace corsika::stack {
     StackIterator GetNextParticle() { return last(); }
 
   protected:
-    // typename std::enable_if<HasGetIndexFromIterator<T>::value, unsigned int>::type
-    // typename std::enable_if<std::is_base_of<decltype(*this)>,
-    // SecondaryView<StackDataType, ParticleInterface>>::value, unsigned int>::type
     /**
      * Function to perform eventual transformation from
      * StackIterator::GetIndex() to index in data stored in
