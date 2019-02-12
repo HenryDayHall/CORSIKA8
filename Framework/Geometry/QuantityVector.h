@@ -41,6 +41,13 @@ namespace corsika::geometry {
     QuantityVector(Quantity a, Quantity b, Quantity c)
         : eVector{a.magnitude(), b.magnitude(), c.magnitude()} {}
 
+    QuantityVector(double a, double b, double c)
+        : eVector{a, b, c} {
+      static_assert(
+          std::is_same_v<dim, phys::units::dimensionless_d>,
+          "initialization of dimensionful QuantityVector with pure numbers not allowed!");
+    }
+
     QuantityVector(Eigen::Vector3d pBareVector)
         : eVector(pBareVector) {}
 
