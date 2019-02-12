@@ -232,9 +232,6 @@ namespace corsika::stack {
     StackIterator GetNextParticle() { return last(); }
 
   protected:
-    // typename std::enable_if<HasGetIndexFromIterator<T>::value, unsigned int>::type
-    // typename std::enable_if<std::is_base_of<decltype(*this)>,
-    // SecondaryView<StackDataType, ParticleInterface>>::value, unsigned int>::type
     /**
      * Function to perform eventual transformation from
      * StackIterator::GetIndex() to index in data stored in
