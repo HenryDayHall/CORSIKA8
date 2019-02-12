@@ -16,6 +16,7 @@
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
+#include <corsika/random/ExponentialDistribution.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
@@ -115,8 +116,8 @@ namespace corsika::cascade {
           fProcessSequence.GetTotalInverseInteractionLength(particle, step);
 
       // sample random exponential step length in grammage
-      std::exponential_distribution expDist(total_inv_lambda * (1_g / (1_m * 1_m)));
-      GrammageType const next_interact = (1_g / (1_m * 1_m)) * expDist(fRNG);
+      corsika::random::ExponentialDistribution expDist(1 / total_inv_lambda);
+      GrammageType const next_interact = expDist(fRNG);
 
       std::cout << "total_inv_lambda=" << total_inv_lambda
                 << ", next_interact=" << next_interact << std::endl;
@@ -141,8 +142,8 @@ namespace corsika::cascade {
           fProcessSequence.GetTotalInverseLifetime(particle);
 
       // sample random exponential decay time
-      std::exponential_distribution expDistDecay(total_inv_lifetime * 1_s);
-      TimeType const next_decay = 1_s * expDistDecay(fRNG);
+      corsika::random::ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
+      TimeType const next_decay = expDistDecay(fRNG);
       std::cout << "total_inv_lifetime=" << total_inv_lifetime
                 << ", next_decay=" << next_decay << std::endl;
 
