@@ -1,4 +1,5 @@
-/**
+
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -84,7 +85,7 @@ public:
   }
 
   template <typename Particle, typename T, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, T&, Stack& s) {
+  EProcessReturn DoContinuous(Particle& p, T&, Stack&) {
     fCalls++;
     HEPEnergyType E = p.GetEnergy();
     if (E < fEcrit) {
@@ -92,13 +93,7 @@ public:
       fCount++;
     } else {
       p.SetEnergy(E / 2);
-      auto pnew = s.NewParticle();
-      // s.Copy(p, pnew); fix that .... todo
-      pnew.SetPID(p.GetPID());
-      pnew.SetTime(p.GetTime());
-      pnew.SetEnergy(E / 2);
-      pnew.SetPosition(p.GetPosition());
-      pnew.SetMomentum(p.GetMomentum());
+      p.AddSecondary(p.GetPID(), E / 2, p.GetMomentum(), p.GetPosition(), p.GetTime());
     }
     return EProcessReturn::eOk;
   }
@@ -133,14 +128,11 @@ TEST_CASE("Cascade", "[Cascade]") {
       RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   stack.Clear();
-  auto particle = stack.NewParticle();
   HEPEnergyType E0 = 100_GeV;
-  particle.SetPID(particles::Code::Electron);
-  particle.SetEnergy(E0);
-  particle.SetPosition(Point(rootCS, {0_m, 0_m, 10_km}));
-  particle.SetMomentum(
-      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}));
-  particle.SetTime(0_ns);
+  stack.AddParticle(
+      particles::Code::Electron, E0,
+      corsika::stack::super_stupid::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns);
   EAS.Init();
   EAS.Run();
 

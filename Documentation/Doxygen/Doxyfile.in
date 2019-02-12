@@ -1,19 +1,23 @@
-PROJECT_NAME           = CORSIKA
-PROJECT_NUMBER         = 8.0.0
+PROJECT_NAME           = CORSIKA 8
+PROJECT_NUMBER         = 0.0.0
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = YES
+GENERATE_XML           = YES
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
 INPUT                  = @PROJECT_SOURCE_DIR@ @PROJECT_BINARY_DIR@/Framework
 EXCLUDE_PATTERNS       = */ThirdParty/*/*
+FULL_PATH_NAMES        = YES
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
 
-GENERATE_HTML          = YES
-GENERATE_LATEX         = YES
-
-FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc
+FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc *.md
 EXTENSION_MAPPING      = inc=C++
 RECURSIVE              = YES
 
 SOURCE_BROWSER         = YES
 # INLINE_SOURCES
+GENERATE_TREEVIEW      = YES
 
 CLASS_DIAGRAMS         = NO
 HAVE_DOT               = YES

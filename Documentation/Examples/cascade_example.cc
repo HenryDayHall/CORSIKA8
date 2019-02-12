@@ -1,4 +1,5 @@
-/**
+
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -25,6 +26,7 @@
 
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
+#include <corsika/process/sibyll/NuclearInteraction.h>
 
 #include <corsika/process/track_writer/TrackWriter.h>
 
@@ -69,12 +71,22 @@ public:
 
   template <typename Particle>
   bool isBelowEnergyCut(Particle& p) const {
-    // FOR NOW: center-of-mass energy hard coded
-    const HEPEnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
-    if (p.GetEnergy() < fECut || Ecm < 10_GeV)
-      return true;
-    else
-      return false;
+    // nuclei
+    if (p.GetPID() == corsika::particles::Code::Nucleus) {
+      auto const ElabNuc = p.GetEnergy() / p.GetNuclearA();
+      auto const EcmNN = sqrt(2. * ElabNuc * 0.93827_GeV);
+      if (ElabNuc < fECut || EcmNN < 10_GeV)
+        return true;
+      else
+        return false;
+    } else {
+      // TODO: center-of-mass energy hard coded
+      const HEPEnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
+      if (p.GetEnergy() < fECut || Ecm < 10_GeV)
+        return true;
+      else
+        return false;
+    }
   }
 
   bool isEmParticle(Code pCode) const {
@@ -120,6 +132,14 @@ public:
         is_inv = true;
         break;
       case Code::MuMinus:
+        is_inv = true;
+        break;
+
+      case Code::Neutron:
+        is_inv = true;
+        break;
+
+      case Code::AntiNeutron:
         is_inv = true;
         break;
 
@@ -234,16 +254,19 @@ int main() {
 
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   corsika::process::sibyll::Interaction sibyll(env);
+  corsika::process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   corsika::process::sibyll::Decay decay;
-  ProcessCut cut(8_GeV);
+  ProcessCut cut(20_GeV);
 
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  corsika::process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
+  // corsika::random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  // corsika::process::HadronicElasticModel::HadronicElasticInteraction
+  // hadronicElastic(env);
 
   corsika::process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
+  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
+  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -251,14 +274,22 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
+  const Code beamCode = Code::Nucleus;
+  const int nuclA = 56;
+  const int nuclZ = int(nuclA / 2.15 + 0.7);
+  const HEPMassType mass = corsika::particles::Proton::GetMass() * nuclZ +
+                           (nuclA - nuclZ) * corsika::particles::Neutron::GetMass();
   const HEPEnergyType E0 =
-      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+      nuclA *
+      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
+
   {
-    auto particle = stack.NewParticle();
-    particle.SetPID(Code::Proton);
-    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+      return sqrt(Elab * Elab - m * m);
+    };
+    HEPMomentumType P0 = elab2plab(E0, mass);
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
       return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
                              -ptot * cos(theta));
@@ -266,13 +297,11 @@ int main() {
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
     auto plab = stack::super_stupid::MomentumVector(rootCS, {px, py, pz});
+    cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    particle.SetEnergy(E0);
-    particle.SetMomentum(plab);
-    particle.SetTime(0_ns);
-    Point p(rootCS, 0_m, 0_m, 0_m);
-    particle.SetPosition(p);
+    Point pos(rootCS, 0_m, 0_m, 0_m);
+    stack.AddParticle(beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ);
   }
 
   // define air shower object, run simulation

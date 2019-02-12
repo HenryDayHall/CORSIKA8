@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -51,7 +51,10 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
     auto pos = iterP.GetPosition().GetCoordinates(rootCS);
     cout << "StackInspector: i=" << setw(5) << fixed << (i++) << ", id=" << setw(30)
          << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
-         << " pos=" << pos << endl;
+         << " pos=" << pos;
+    // if (iterP.GetPID()==Code::Nucleus)
+    // cout << " nuc_ref=" << iterP.GetNucleusRef();
+    cout << endl;
   }
   fCountStep++;
   cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << s.GetSize()

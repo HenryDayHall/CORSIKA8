@@ -1,8 +1,9 @@
 /**
-@mainpage CORSIKA air shower simulations framework
 
-Documentation and reference guide for the CORSIKA8 (CORSIKA version 8)
-software framework for air shower simulations. CORSIKA8 is developed
+@mainpage Technical documentation of the CORSIKA 8 software framework
+
+Software documentatin and reference guide for the CORSIKA 8
+software framework for air shower simulations. CORSIKA 8 is developed
 at <a
 href="https://gitlab.ikp.kit.edu/AirShowerPhysics">https://gitlab.ikp.kit.edu</a>. If
 you got the code from somewhere else, consider to switch to the
@@ -15,16 +16,12 @@ Write to corsika-devel@lists.kit.edu, or even register yourself at
 https://www.lists.kit.edu/sympa/info/corsika-devel to get in contact
 with other developers.
 
-If you use, or want to refer to, CORSIKA8 please cite <a href="https://doi.org/10.1007/s41781-018-0013-0">"Towards a Next
-Generation of CORSIKA: A Framework for the Simulation of Particle
-Cascades in Astroparticle Physics" [Comput.Softw.Big Sci. 3 (2019)
-2]</a>. We kindly ask (and
-expect) any relevant improvement or addition to be offered or
-contributed to the main CORSIKA8 repository for the benefit of the
-whole community.
+For more information about the project, see @ref md_README. 
 
-For more information, see also the 
-<a
-href="https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/README.md">central README.md file</a>.
+## Further details:
+ 1. @subpage Stack
+ 2. @subpage Particles
+ 3. @subpage COAST
+
 
 */

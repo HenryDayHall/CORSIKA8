@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -28,17 +28,15 @@ using namespace std;
 
 TEST_CASE("SuperStupidStack", "[stack]") {
 
+  geometry::CoordinateSystem& dummyCS =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+
   SECTION("read+write") {
 
     SuperStupidStack s;
-    auto p = s.NewParticle();
-    p.SetPID(particles::Code::Electron);
-    p.SetEnergy(1.5_GeV);
-    geometry::CoordinateSystem& dummyCS =
-        geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-    p.SetMomentum(MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}));
-    p.SetPosition(Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}));
-    p.SetTime(100_s);
+    s.AddParticle(particles::Code::Electron, 1.5_GeV,
+                  MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                  Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
 
     // read
     REQUIRE(s.GetSize() == 1);
@@ -54,7 +52,10 @@ TEST_CASE("SuperStupidStack", "[stack]") {
   SECTION("write+delete") {
 
     SuperStupidStack s;
-    for (int i = 0; i < 99; ++i) s.NewParticle();
+    for (int i = 0; i < 99; ++i)
+      s.AddParticle(particles::Code::Electron, 1.5_GeV,
+                    MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                    Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s);
 
     REQUIRE(s.GetSize() == 99);
 

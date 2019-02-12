@@ -1,0 +1,20 @@
+/**
+  @page Stack Description of particle stacks
+
+  In the CORSIKA 8 framework particle data is always stored in
+  particle stacks. A particle is, thus, always a reference (iterator)
+  to an entry on a stack, e.g.
+
+  \verbatim
+  ModelStack stack;
+  stack.begin(); // returns an iterator: StackIterator, ConstStackIterator
+
+  *stack.begin(); // return a reference to ParticleInterfaceType, which is the class provided by the user to read/write particle properties
+  
+  \endverbatim
+
+  All functionality and algorithms for stack data access is located in the namespace corsika::stack
+
+  The minimal example of how to use this is shown in stack_example.cc  
+
+*/

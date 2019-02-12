@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -94,7 +94,7 @@ void decsib_();
 // interaction length
 // double fpni_(double&, int&);
 
-void sib_sigma_hnuc_(const int&, const int&, const double&, double&, double&);
+void sib_sigma_hnuc_(const int&, const int&, const double&, double&, double&, double&);
 void sib_sigma_hp_(const int&, const double&, double&, double&, double&, double*, double&,
                    double&);
 

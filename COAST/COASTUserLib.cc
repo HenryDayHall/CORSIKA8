@@ -1,3 +1,14 @@
+
+/*
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * See file AUTHORS for a list of contributors.
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #include <interface/CorsikaInterface.h>
 
 #include <corsika/coast/COASTProcess.h>
@@ -21,7 +32,6 @@ using namespace std;
 using namespace corsika;
 using namespace corsika::units::si;
 
-coast::COASTStack gCOASTStack;
 corsika::coast::COASTProcess gCorsikaProcess;
 
 /*
@@ -83,14 +93,14 @@ extern "C" void track_([[maybe_unused]] const crs::CParticle& pre,
     int    particleId;
     int    hadronicGeneration;
   */
-  gCOASTStack.SetParticle(&pre, &post);
-  const auto particle = gCOASTStack.GetNextParticle();
+  coast::COASTStack stack(&pre, &post);
+  const auto particle = stack.GetNextParticle();
   const geometry::CoordinateSystem& rootCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   geometry::Line const line(particle.GetPosition(rootCS), particle.GetVelocity(rootCS));
   const TimeType time = particle.GetTimeInterval();
   const geometry::Trajectory<geometry::Line> track(line, time);
-  gCorsikaProcess.DoContinuous(particle, track, gCOASTStack);
+  gCorsikaProcess.DoContinuous(particle, track, stack);
 }
 
 extern "C" void tabularizedatmosphere_([[maybe_unused]] const int& nPoints,

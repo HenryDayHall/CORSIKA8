@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -90,7 +90,6 @@ namespace corsika::process {
 
         using std::cout;
         using std::endl;
-        // using namespace corsika::io;
         using namespace corsika::units::si;
 
         // name? also makes EM particles stable
@@ -163,24 +162,22 @@ namespace corsika::process {
       }
 
       template <typename Particle, typename Stack>
-      void DoDecay(Particle& p, Stack& s) {
+      void DoDecay(Particle& p, Stack&) {
         using corsika::geometry::Point;
         using namespace corsika::units::si;
 
         fCount++;
         SibStack ss;
         ss.Clear();
-        // copy particle to sibyll stack
-        auto pin = ss.NewParticle();
         const corsika::particles::Code pCode = p.GetPID();
-        pin.SetPID(process::sibyll::ConvertToSibyllRaw(pCode));
-        pin.SetEnergy(p.GetEnergy());
-        pin.SetMomentum(p.GetMomentum());
-        // setting particle mass with Corsika values, may be inconsistent with sibyll
-        // internal values
-        // TODO: #warning setting particle mass with Corsika values, may be inconsistent
-        // with sibyll internal values
-        pin.SetMass(corsika::particles::GetMass(pCode));
+        // copy particle to sibyll stack
+        ss.AddParticle(process::sibyll::ConvertToSibyllRaw(pCode), p.GetEnergy(),
+                       p.GetMomentum(),
+                       // setting particle mass with Corsika values, may be inconsistent
+                       // with sibyll internal values
+                       // TODO: #warning setting particle mass with Corsika values, may be
+                       // inconsistent with sibyll internal values
+                       corsika::particles::GetMass(pCode));
         // remember position
         Point const decayPoint = p.GetPosition();
         TimeType const t0 = p.GetTime();
@@ -203,12 +200,8 @@ namespace corsika::process {
           // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
           if (psib.HasDecayed()) continue;
           // add to corsika stack
-          auto pnew = s.NewParticle();
-          pnew.SetEnergy(psib.GetEnergy());
-          pnew.SetPID(process::sibyll::ConvertFromSibyll(psib.GetPID()));
-          pnew.SetMomentum(psib.GetMomentum());
-          pnew.SetPosition(decayPoint);
-          pnew.SetTime(t0);
+          p.AddSecondary(process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                         psib.GetEnergy(), psib.GetMomentum(), decayPoint, t0);
         }
         // empty sibyll stack
         ss.Clear();

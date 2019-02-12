@@ -1,4 +1,5 @@
-/**
+
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -27,8 +28,6 @@
 #include <optional>
 #include <stdexcept>
 #include <utility>
-
-using namespace corsika;
 
 namespace corsika::process {
 

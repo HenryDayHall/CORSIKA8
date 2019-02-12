@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -30,9 +30,6 @@
 #include <corsika/logging/MessageOn.h>
 #include <corsika/logging/NoSink.h>
 #include <corsika/logging/Sink.h>
-
-using namespace std;
-using namespace boost;
 
 namespace corsika::logging {
 

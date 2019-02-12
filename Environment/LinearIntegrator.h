@@ -11,6 +11,8 @@
 #ifndef _include_environment_LinearIntegrator_h_
 #define _include_environment_LinearIntegrator_h_
 
+#include <limits>
+
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
@@ -39,13 +41,15 @@ namespace corsika::environment {
 
       return (1 - 0.5 * grammage * c1 / (c0 * c0)) * grammage / c0;
     }
-    
-    auto MaximumLength(double relError) const {
-        auto const c1 = GetImplementation().fRho.SecondDerivative(
+
+    auto MaximumLength(corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
+                       double relError) const {
+      using namespace corsika::units::si;
+      auto const c1 = GetImplementation().fRho.SecondDerivative(
           line.GetPosition(0), line.NormalizedDirection());
-          
-        // todo: finish
-        return 100_m;
+
+      // todo: provide a real, working implementation
+      return 1_m * std::numeric_limits<double>::infinity();
     }
   };
 } // namespace corsika::environment

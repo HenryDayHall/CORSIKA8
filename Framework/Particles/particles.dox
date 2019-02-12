@@ -1,0 +1,15 @@
+/**
+@page Particles Particle properties
+
+The properties of all particles are saved in static and flat
+arrays. There is a enum corsika::particles::Code to identify each
+particles, and each individual particles has its own static class,
+which can be used to retrieve its physical properties. 
+
+
+
+See namespace corsika::particles for all classes.
+
+
+
+*/

@@ -1,4 +1,4 @@
-# CORSIKA 8 Framework for Particle Cascades in Astroparticle Physics**
+# CORSIKA 8 Framework for Particle Cascades in Astroparticle Physics 
 
 The purpose of CORSIKA is to simulate any particle cascades in
 astroparticle physics or astrophysical context. A lot of emphasis is
@@ -104,3 +104,4 @@ browse with firefox:
 ```
 firefox ../corsika-install/share/doc/html/index.html
 ```
+

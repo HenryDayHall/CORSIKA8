@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -11,6 +11,7 @@
 
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
+#include <corsika/process/sibyll/NuclearInteraction.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 
 #include <corsika/random/RNGManager.h>
@@ -116,9 +117,35 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
-    auto particle = stack.NewParticle();
+    const HEPEnergyType E0 = 100_GeV;
+    HEPMomentumType P0 =
+        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+    auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    geometry::Point pos(cs, 0_m, 0_m, 0_m);
+    auto particle = stack.AddParticle(particles::Code::Proton, E0, plab, pos, 0_ns);
 
     Interaction model(env);
+
+    model.Init();
+    [[maybe_unused]] const process::EProcessReturn ret =
+        model.DoInteraction(particle, stack);
+    [[maybe_unused]] const GrammageType length =
+        model.GetInteractionLength(particle, track);
+  }
+
+  SECTION("NuclearInteractionInterface") {
+
+    setup::Stack stack;
+    const HEPEnergyType E0 = 400_GeV;
+    HEPMomentumType P0 =
+        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+    auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    geometry::Point pos(cs, 0_m, 0_m, 0_m);
+
+    auto particle = stack.AddParticle(particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2);
+
+    Interaction hmodel(env);
+    NuclearInteraction model(env, hmodel);
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
@@ -130,19 +157,12 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("DecayInterface") {
 
     setup::Stack stack;
-    auto particle = stack.NewParticle();
-    {
-      const HEPEnergyType E0 = 10_GeV;
-      particle.SetPID(particles::Code::Proton);
-      HEPMomentumType P0 =
-          sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-      auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-      particle.SetEnergy(E0);
-      particle.SetMomentum(plab);
-      particle.SetTime(0_ns);
-      geometry::Point p(cs, 0_m, 0_m, 0_m);
-      particle.SetPosition(p);
-    }
+    const HEPEnergyType E0 = 10_GeV;
+    HEPMomentumType P0 =
+        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+    auto plab = stack::super_stupid::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    geometry::Point pos(cs, 0_m, 0_m, 0_m);
+    auto particle = stack.AddParticle(particles::Code::Proton, E0, plab, pos, 0_ns);
 
     Decay model;
 

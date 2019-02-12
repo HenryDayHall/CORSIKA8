@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -22,15 +22,47 @@
 #include <cmath>
 #include <iostream>
 
+/**
+ * The cascade namespace assembles all objects needed to simulate full particles cascades.
+ */
+
 namespace corsika::cascade {
+
+  /**
+   * \class Cascade
+   *
+   * The Cascade class is constructed from template arguments making
+   * it very versatile. Via the template arguments physics models are
+   * plugged into the cascade simulation.
+   *
+   * <b>Tracking</b> must be a class according to the
+   * TrackingInterface providing the functions: <code>void
+   * Init();</code> and <code>auto GetTrack(Particle const& p)</auto>,
+   * where the latter has a return type of <code>
+   * geometry::Trajectory<corsika::geometry::Line or Helix> </code>
+   *
+   * <b>ProcessList</b> must be a ProcessSequence.
+   *            TimeOfIntersection(corsika::geometry::Line const& line,
+   *
+   * <b>Stack</b> is the storage object for particle data, i.e. with
+   * Particle class type <code>Stack::ParticleType</code>
+   *
+   *
+
+   */
 
   template <typename Tracking, typename ProcessList, typename Stack>
   class Cascade {
     using Particle = typename Stack::ParticleType;
 
+    // we only want fully configured objects
     Cascade() = delete;
 
   public:
+    /**
+     * Cascade class cannot be default constructed, but needs a valid
+     * list of physics processes for configuration at construct time.
+     */
     Cascade(corsika::environment::Environment const& env, Tracking& tr, ProcessList& pl,
             Stack& stack)
         : fEnvironment(env)
@@ -38,12 +70,20 @@ namespace corsika::cascade {
         , fProcessSequence(pl)
         , fStack(stack) {}
 
+    /**
+     * The Init function is called before the actual cascade simulations.
+     * All components of the Cascade simulation must be configured here.
+     */
     void Init() {
       fTracking.Init();
       fProcessSequence.Init();
       fStack.Init();
     }
 
+    /**
+     * The Run function is the main simulation loop, which processes
+     * particles from the Stack until the Stack is empty.
+     */
     void Run() {
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
@@ -57,6 +97,16 @@ namespace corsika::cascade {
     }
 
   private:
+    /**
+     * The Step function is executed for each particle from the
+     * stack. It will calcualte geometric transport of the particles,
+     * and apply continuous and stochastic processes to it, which may
+     * lead to energy losses, scattering, absorption, decays and the
+     * production of secondary particles.
+     *
+     * New particles produced in one step are subject to further
+     * processing, e.g. thinning, etc.
+     */
     void Step(Particle& particle) {
       using namespace corsika::units::si;
 

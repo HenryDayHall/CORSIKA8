@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -11,8 +11,17 @@
 
 #include <corsika/stack/Stack.h>
 
+#include <testTestStack.h> // simple test-stack for testing. This is
+                           // for testing only: include from
+                           // CMAKE_CURRENT_SOURCE_DIR
+
+#include <boost/type_index.hpp>
+#include <type_traits>
+using boost::typeindex::type_id_with_cvr;
+
 #include <iomanip>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
@@ -22,107 +31,96 @@
 using namespace corsika::stack;
 using namespace std;
 
-// definition of stack-data object
-class StackOneData {
-
-public:
-  // these functions are needed for the Stack interface
-  void Init() {}
-  void Clear() { fData.clear(); }
-  int GetSize() const { return fData.size(); }
-  int GetCapacity() const { return fData.size(); }
-  void Copy(const int i1, const int i2) { fData[i2] = fData[i1]; }
-  void Swap(const int i1, const int i2) {
-    double tmp0 = fData[i1];
-    fData[i1] = fData[i2];
-    fData[i2] = tmp0;
-  }
-
-  // custom data access function
-  void SetData(const int i, const double v) { fData[i] = v; }
-  double GetData(const int i) const { return fData[i]; }
-
-protected:
-  // these functions are also needed by the Stack interface
-  void IncrementSize() { fData.push_back(0.); }
-  void DecrementSize() {
-    if (fData.size() > 0) { fData.pop_back(); }
-  }
-
-  // custom private data section
-private:
-  std::vector<double> fData;
-};
-
-// defintion of a stack-readout object, the iteractor dereference
-// operator will deliver access to these function
-template <typename StackIteratorInterface>
-class ParticleInterface : public ParticleBase<StackIteratorInterface> {
-  //  using ParticleBase<StackIteratorInterface>::Delete;
-  using ParticleBase<StackIteratorInterface>::GetStackData;
-  using ParticleBase<StackIteratorInterface>::GetIndex;
-
-public:
-  void SetData(const double v) { GetStackData().SetData(GetIndex(), v); }
-  double GetData() const { return GetStackData().GetData(GetIndex()); }
-};
+typedef Stack<TestStackData, TestParticleInterface> StackTest;
+typedef StackTest::ParticleType Particle;
 
 TEST_CASE("Stack", "[Stack]") {
+
+  // helper function for sum over stack data
+  auto sum = [](const StackTest& stack) {
+    double v = 0;
+    for (const auto& p : stack) v += p.GetData();
+    return v;
+  };
 
   SECTION("StackInterface") {
 
     // construct a valid Stack object
-    typedef Stack<StackOneData, ParticleInterface> StackTest;
     StackTest s;
     s.Init();
     s.Clear();
-    s.IncrementSize();
-    s.Copy(0, 0);
-    s.Swap(0, 0);
-    s.GetCapacity();
+    s.AddParticle(std::tuple{0.});
+    s.Copy(s.cbegin(), s.begin());
+    s.Swap(s.begin(), s.begin());
     REQUIRE(s.GetSize() == 1);
-    s.DecrementSize();
-    REQUIRE(s.GetSize() == 0);
   }
 
-  SECTION("write") {
+  SECTION("construct") {
 
-    // construct a valid Stack object
-    typedef Stack<StackOneData, ParticleInterface> StackTest;
+    // construct a valid, empty Stack object
     StackTest s;
   }
 
-  SECTION("read") {
+  SECTION("write and read") {
 
-    typedef Stack<StackOneData, ParticleInterface> StackTest;
     StackTest s;
-    s.NewParticle().SetData(9.9);
-    cout << "kk" << endl;
-    double v = 0;
-    for (auto& p : s) {
-      cout << typeid(p).name() << endl;
-      v += p.GetData();
-    }
-    cout << "k222k" << endl;
-
+    s.AddParticle(std::tuple{9.9});
+    const double v = sum(s);
     REQUIRE(v == 9.9);
   }
 
-  SECTION("delete_stack") {
+  SECTION("delete from stack") {
 
-    typedef Stack<StackOneData, ParticleInterface> StackTest;
     StackTest s;
-    auto p = s.NewParticle();
+    REQUIRE(s.GetSize() == 0);
+    StackTest::StackIterator p =
+        s.AddParticle(std::tuple{0.}); // valid way to access particle data
     p.SetData(9.9);
+    REQUIRE(s.GetSize() == 1);
     s.Delete(p);
+    REQUIRE(s.GetSize() == 0);
   }
 
-  SECTION("delete_particle") {
+  SECTION("delete particle") {
 
-    typedef Stack<StackOneData, ParticleInterface> StackTest;
     StackTest s;
-    auto p = s.NewParticle();
-    p.SetData(9.9);
+    REQUIRE(s.GetSize() == 0);
+    auto p = s.AddParticle(
+        std::tuple{9.9}); // also valid way to access particle data, identical to above
+    REQUIRE(s.GetSize() == 1);
     p.Delete();
+    REQUIRE(s.GetSize() == 0);
+  }
+
+  SECTION("create secondaries") {
+
+    StackTest s;
+    REQUIRE(s.GetSize() == 0);
+    auto iter = s.AddParticle(std::tuple{9.9});
+    Particle& p = *iter; // also this is valid to access particle data
+    REQUIRE(s.GetSize() == 1);
+    p.AddSecondary(std::tuple{4.4});
+    REQUIRE(s.GetSize() == 2);
+    /*p.AddSecondary(3.3, 2.2);
+    REQUIRE(s.GetSize() == 3);
+    double v = 0;
+    for (auto& p : s) { v += p.GetData(); }
+    REQUIRE(v == 9.9 + 4.4 + 3.3 + 2.2);*/
+  }
+
+  SECTION("get next particle") {
+    StackTest s;
+    REQUIRE(s.GetSize() == 0);
+    s.AddParticle(std::tuple{9.9});
+    s.AddParticle(std::tuple{8.8});
+    auto particle = s.GetNextParticle(); // first particle
+    REQUIRE(particle.GetData() == 8.8);
+
+    particle.Delete();
+    auto particle2 = s.GetNextParticle(); // first particle
+    REQUIRE(particle2.GetData() == 9.9);
+    particle2.Delete();
+
+    REQUIRE(s.GetSize() == 0);
   }
 }

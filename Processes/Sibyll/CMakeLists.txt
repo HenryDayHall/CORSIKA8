@@ -1,3 +1,6 @@
+set(Python_ADDITIONAL_VERSIONS 3)
+find_package(PythonInterp 3 REQUIRED)
+
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   COMMAND ${PROJECT_SOURCE_DIR}/Processes/Sibyll/code_generator.py 
@@ -16,6 +19,8 @@ set (
   MODEL_SOURCES
   ParticleConversion.cc
   sibyll2.3c.f
+  nuclib.f
+  signuc.f
   sibyll2.3c.cc
   gasdev.f
   )
@@ -24,9 +29,11 @@ set (
   MODEL_HEADERS
   ParticleConversion.h
   sibyll2.3c.h
+  nuclib.h
   SibStack.h
   Decay.h
   Interaction.h
+  NuclearInteraction.h
   ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   )
 

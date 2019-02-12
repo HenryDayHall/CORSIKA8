@@ -1,5 +1,5 @@
 
-/**
+/*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
@@ -34,6 +34,8 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Masses") {
     REQUIRE(Electron::GetMass() / (511_keV) == Approx(1));
     REQUIRE(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
+    
+    REQUIRE((Proton::GetMass() + Neutron::GetMass()) / corsika::units::constants::nucleonMass == Approx(2));
   }
 
   SECTION("Charges") {
@@ -45,14 +47,28 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Names") {
     REQUIRE(Electron::GetName() == "e-");
     REQUIRE(PiMinus::GetName() == "pi-");
+    REQUIRE(Nucleus::GetName() == "nucleus");
+    REQUIRE(Iron::GetName() == "iron");
   }
 
   SECTION("PDG") {
-    REQUIRE(GetPDG(Code::PiPlus) == 211);
-    REQUIRE(GetPDG(Code::DPlus) == 411);
-    REQUIRE(GetPDG(Code::NuMu) == 14);
-    REQUIRE(GetPDG(Code::NuE) == 12);
-    REQUIRE(GetPDG(Code::MuMinus) == 13);
+    REQUIRE(GetPDG(Code::PiPlus) == PDGCode::PiPlus);
+    REQUIRE(GetPDG(Code::DPlus) == PDGCode::DPlus);
+    REQUIRE(GetPDG(Code::NuMu) == PDGCode::NuMu);
+    REQUIRE(GetPDG(Code::NuE) == PDGCode::NuE);
+    REQUIRE(GetPDG(Code::MuMinus) == PDGCode::MuMinus);
+      
+    REQUIRE(static_cast<int>(GetPDG(Code::PiPlus)) == 211);
+    REQUIRE(static_cast<int>(GetPDG(Code::DPlus)) == 411);
+    REQUIRE(static_cast<int>(GetPDG(Code::NuMu)) == 14);
+    REQUIRE(static_cast<int>(GetPDG(Code::NuEBar)) == -12);
+    REQUIRE(static_cast<int>(GetPDG(Code::MuMinus)) == 13);
+  }
+  
+  SECTION("Conversion PDG -> internal") {
+    REQUIRE(ConvertFromPDG(PDGCode::KStarMinus) == Code::KStarMinus);
+    REQUIRE(ConvertFromPDG(PDGCode::MuPlus) == Code::MuPlus);
+    REQUIRE(ConvertFromPDG(PDGCode::SigmaStarCMinusBar) == Code::SigmaStarCMinusBar);
   }
 
   SECTION("Lifetimes") {
@@ -68,12 +84,12 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Nuclei") {
-    REQUIRE(IsNucleus(Code::Gamma) == false);
-    REQUIRE(IsNucleus(Code::Argon) == true);
-    REQUIRE(IsNucleus(Code::Proton) == false);
-    REQUIRE(IsNucleus(Code::Hydrogen) == true);
-    REQUIRE(Argon::IsNucleus() == true);
-    REQUIRE(EtaC::IsNucleus() == false);
+    REQUIRE_FALSE(IsNucleus(Code::Gamma));
+    REQUIRE(IsNucleus(Code::Argon));
+    REQUIRE_FALSE(IsNucleus(Code::Proton));
+    REQUIRE(IsNucleus(Code::Hydrogen));
+    REQUIRE(Argon::IsNucleus());
+    REQUIRE_FALSE(EtaC::IsNucleus());
 
     REQUIRE(GetNucleusA(Code::Hydrogen) == 1);
     REQUIRE(GetNucleusA(Code::Tritium) == 3);
