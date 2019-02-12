@@ -67,7 +67,7 @@ namespace corsika::stack {
         delete; ///< since Stack can be very big, we don't want to copy it
 
   public:
-    //Stack() { Init(); }
+    // Stack() { Init(); }
 
     /**
      * if StackDataType is a reference member we *HAVE* to initialize
@@ -76,8 +76,8 @@ namespace corsika::stack {
     template <
         typename _StackDataType = StackDataType,
         typename = std::enable_if<std::is_same<StackDataType, _StackDataType>::value &&
-                                    std::is_reference<_StackDataType>::value,
-                                void>>
+                                      std::is_reference<_StackDataType>::value,
+                                  void>>
     Stack(StackDataType vD)
         : fData(vD) {}
 
@@ -89,8 +89,8 @@ namespace corsika::stack {
     template <
         typename... Args, typename _StackDataType = StackDataType,
         typename = std::enable_if<std::is_same<StackDataType, _StackDataType>::value &&
-                                    !std::is_reference<_StackDataType>::value,
-                                void >>
+                                      !std::is_reference<_StackDataType>::value,
+                                  void>>
     Stack(Args... args)
         : fData(args...) {}
 
