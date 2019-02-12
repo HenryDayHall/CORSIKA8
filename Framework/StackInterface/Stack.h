@@ -19,22 +19,6 @@
 
 #include <corsika/stack/SecondaryView.h>
 
-// SFINAE test
-template <typename T>
-class HasGetIndexFromIterator {
-private:
-  typedef char YesType[1];
-  typedef char NoType[2];
-
-  template <typename C>
-  static YesType& test(decltype(&C::GetIndexFromIterator));
-  template <typename C>
-  static NoType& test(...);
-
-public:
-  enum { value = sizeof(test<T>(0)) == sizeof(YesType) };
-};
-
 /**
    All classes around management of particles on a stack.
  */
@@ -123,9 +107,14 @@ namespace corsika::stack {
                                     ParticleInterface, StackType>;
 
     /**
-     * this is the full type of the declared ParticleInterface: typedef typename
+     * this is the full type of the user-declared ParticleInterface
      */
-    typedef typename StackIterator::ParticleInterfaceType ParticleType;
+    using ParticleInterfaceType = typename StackIterator::ParticleInterfaceType;
+    /**
+     * In all programming context, the object to access, copy, and
+     * transport particle data is via the StackIterator
+     */
+    using ParticleType = StackIterator;
 
     // friends are needed since they need access to protected members
     friend class StackIteratorInterface<
@@ -216,7 +205,7 @@ namespace corsika::stack {
     /**
      * delete this particle
      */
-    void Delete(ParticleType p) { Delete(p.GetIterator()); }
+    void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
 
     /**
      * delete last particle on stack by decrementing stack size

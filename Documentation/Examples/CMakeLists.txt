@@ -29,6 +29,7 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogg
   CORSIKAcascade
   ProcessStackInspector
   ProcessTrackWriter
+  ProcessTrackingLine
   ProcessHadronicElasticModel
   CORSIKAprocesses
   CORSIKAparticles

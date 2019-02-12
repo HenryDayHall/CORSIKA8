@@ -201,7 +201,7 @@ namespace corsika::cascade {
               actual_inv_length);
           const auto sample_process = uniDist(fRNG);
           InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
-          fProcessSequence.SelectInteraction(particle, fStack, sample_process,
+          fProcessSequence.SelectInteraction(particle, step, fStack, sample_process,
                                              inv_lambda_count);
         } else {
           std::cout << "decay" << std::endl;

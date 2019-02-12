@@ -13,7 +13,6 @@
 #define _Physics_NullModel_NullModel_h_
 
 #include <corsika/process/ContinuousProcess.h>
-#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::process::null_model {
 
@@ -22,20 +21,15 @@ namespace corsika::process::null_model {
 
   public:
     NullModel(corsika::units::si::LengthType maxStepLength =
-                  corsika::units::si::meter * std::numeric_limits<double>::infinity())
-        : fMaxStepLength(maxStepLength) {}
+                  corsika::units::si::meter * std::numeric_limits<double>::infinity());
 
     void Init();
 
     template <typename Particle, typename Track, typename Stack>
-    process::EProcessReturn DoContinuous(Particle&, Track&, Stack&) const {
-      return EProcessReturn::eOk;
-    }
+    process::EProcessReturn DoContinuous(Particle&, Track&, Stack&) const;
 
     template <typename Particle, typename Track>
-    corsika::units::si::LengthType MaxStepLength(Particle&, Track&) const {
-      return fMaxStepLength;
-    }
+    corsika::units::si::LengthType MaxStepLength(Particle&, Track&) const;
   };
 
 } // namespace corsika::process::null_model

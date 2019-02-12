@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_LINETRAJECTORY_H
 #define _include_LINETRAJECTORY_H
 

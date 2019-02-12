@@ -113,7 +113,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   rmng.RegisterRandomStream("cascade");
 
   auto env = MakeDummyEnv();
-  tracking_line::TrackingLine<setup::Stack> tracking(env);
+  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
 
   stack_inspector::StackInspector<setup::Stack> p0(true);
 

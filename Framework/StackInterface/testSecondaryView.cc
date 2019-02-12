@@ -32,7 +32,6 @@ using namespace corsika::stack;
 using namespace std;
 
 typedef Stack<TestStackData, TestParticleInterface> StackTest;
-typedef StackTest::ParticleType Particle;
 
 TEST_CASE("SecondaryStack", "[stack]") {
 

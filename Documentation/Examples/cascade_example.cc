@@ -248,7 +248,7 @@ int main() {
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack> tracking(env);
+  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");

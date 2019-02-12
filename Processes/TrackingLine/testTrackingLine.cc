@@ -9,10 +9,11 @@
  * the license.
  */
 
+#include <corsika/process/tracking_line/TrackingLine.h>
+#include <testTrackingLineStack.h> // test-build, and include file is obtained from CMAKE_CURRENT_SOURCE_DIR
+
 #include <corsika/environment/Environment.h>
 #include <corsika/particles/ParticleProperties.h>
-
-#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Sphere.h>
@@ -34,33 +35,11 @@ using namespace corsika::geometry;
 using namespace std;
 using namespace corsika::units::si;
 
-typedef corsika::units::si::hepmomentum_d MOMENTUM;
-
-struct DummyParticle {
-  HEPEnergyType fEnergy;
-  Vector<MOMENTUM> fMomentum;
-  Point fPosition;
-
-  DummyParticle(HEPEnergyType pEnergy, Vector<MOMENTUM> pMomentum, Point pPosition)
-      : fEnergy(pEnergy)
-      , fMomentum(pMomentum)
-      , fPosition(pPosition) {}
-
-  auto GetEnergy() const { return fEnergy; }
-  auto GetMomentum() const { return fMomentum; }
-  auto GetPosition() const { return fPosition; }
-  auto GetPID() const { return corsika::particles::Code::Unknown; }
-};
-
-struct DummyStack {
-  using ParticleType = DummyParticle;
-};
-
 TEST_CASE("TrackingLine") {
   corsika::environment::Environment env; // dummy environment
   auto const& cs = env.GetCoordinateSystem();
 
-  tracking_line::TrackingLine<DummyStack> tracking(env);
+  tracking_line::TrackingLine<DummyStack, setup::Trajectory> tracking(env);
 
   SECTION("intersection with sphere") {
     Point const origin(cs, {0_m, 0_m, 0_m});
@@ -70,7 +49,7 @@ TEST_CASE("TrackingLine") {
                                                             0_m / second, 1_m / second);
     Line line(origin, v);
 
-    geometry::Trajectory<Line> traj(line, 12345_s);
+    setup::Trajectory traj(line, 12345_s);
 
     auto const opt =
         tracking.TimeOfIntersection(traj, Sphere(Point(cs, {0_m, 0_m, 10_m}), 1_m));

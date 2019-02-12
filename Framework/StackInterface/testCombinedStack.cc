@@ -89,7 +89,6 @@ using CombinedTestInterfaceType =
                                               TestParticleInterface2, StackIter>;
 
 using StackTest = CombinedStack<TestStackData, TestStackData2, CombinedTestInterfaceType>;
-typedef StackTest::ParticleType Particle;
 
 TEST_CASE("Combined Stack", "[stack]") {
 
@@ -161,10 +160,9 @@ TEST_CASE("Combined Stack", "[stack]") {
     StackTest s;
     REQUIRE(s.GetSize() == 0);
     auto iter = s.AddParticle(std::tuple{9.9});
-    Particle& p = *iter; // also this is valid to access particle data
-    p.SetData2(2);
+    iter.SetData2(2);
     REQUIRE(s.GetSize() == 1);
-    p.AddSecondary(std::tuple{4.4});
+    iter.AddSecondary(std::tuple{4.4});
     REQUIRE(s.GetSize() == 2);
     // p.AddSecondary(3.3, 2.2, 1.);
     // REQUIRE(s.GetSize() == 3);
@@ -259,7 +257,6 @@ using CombinedTestInterfaceType2 =
 
 using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
                                  CombinedTestInterfaceType2>;
-typedef StackTest2::ParticleType Particle2;
 
 TEST_CASE("Combined Stack - multi", "[stack]") {
 

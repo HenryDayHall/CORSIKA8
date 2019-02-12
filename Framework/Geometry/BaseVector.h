@@ -9,7 +9,6 @@
  * the license.
  */
 
-
 #ifndef _include_BASEVECTOR_H_
 #define _include_BASEVECTOR_H_
 

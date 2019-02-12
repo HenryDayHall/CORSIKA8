@@ -18,6 +18,9 @@ add_custom_command (
 set (
   MODEL_SOURCES
   ParticleConversion.cc
+  Interaction.cc
+  Decay.cc
+  NuclearInteraction.cc
   sibyll2.3c.f
   nuclib.f
   signuc.f
