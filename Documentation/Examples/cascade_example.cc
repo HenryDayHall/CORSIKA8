@@ -36,9 +36,6 @@
 
 #include <corsika/utl/CorsikaFenv.h>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -266,9 +263,6 @@ int main() {
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
   auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
-
-  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
-  // << "\n";
 
   // setup particle stack, and add primary particle
   setup::Stack stack;

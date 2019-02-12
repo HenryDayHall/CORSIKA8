@@ -77,12 +77,28 @@ namespace corsika::cascade {
       fProcessSequence.Init();
       fStack.Init();
     }
+    
+    /**
+     * set the nodes for all particles on the stack according to their numerical
+     * position
+     */
+    void SetNodes() {
+        std::for_each(fStack.begin(), fStack.end(), [&](auto& p) {
+            auto const* numericalNode =
+            fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+            p.SetNode(numericalNode);
+            
+            std::cout << "initial node " << p.GetNode() << std::endl; 
+        });
+    }
 
     /**
      * The Run function is the main simulation loop, which processes
      * particles from the Stack until the Stack is empty.
      */
     void Run() {
+      SetNodes();
+      
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
           auto pNext = fStack.GetNextParticle();
