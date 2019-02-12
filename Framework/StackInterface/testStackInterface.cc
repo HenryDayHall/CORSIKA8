@@ -33,7 +33,6 @@ using namespace corsika::stack;
 using namespace std;
 
 typedef Stack<TestStackData, TestParticleInterface> StackTest;
-typedef StackTest::ParticleInterfaceType Particle;
 
 TEST_CASE("Stack", "[Stack]") {
 
@@ -48,7 +47,6 @@ TEST_CASE("Stack", "[Stack]") {
 
     // construct a valid Stack object
     StackTest s;
-    s.Init();
     s.Clear();
     s.AddParticle(std::tuple{0.});
     s.Copy(s.cbegin(), s.begin());
@@ -98,7 +96,7 @@ TEST_CASE("Stack", "[Stack]") {
     StackTest s;
     REQUIRE(s.GetSize() == 0);
     auto iter = s.AddParticle(std::tuple{9.9});
-    Particle& p = *iter; // also this is valid to access particle data
+    StackTest::ParticleInterfaceType& p = *iter; // also this is valid to access particle data
     REQUIRE(s.GetSize() == 1);
     p.AddSecondary(std::tuple{4.4});
     REQUIRE(s.GetSize() == 2);
