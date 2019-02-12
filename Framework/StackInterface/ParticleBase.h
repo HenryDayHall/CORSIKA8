@@ -48,6 +48,7 @@ namespace corsika::stack {
   class ParticleBase {
 
   public:
+    using StackIteratorType = StackIterator;
     ParticleBase() = default;
 
   private:

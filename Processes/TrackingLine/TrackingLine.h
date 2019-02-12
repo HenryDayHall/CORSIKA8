@@ -31,7 +31,7 @@ namespace corsika::process {
     template <typename Stack, typename Trajectory>
     class TrackingLine { //
 
-      using Particle = typename Stack::ParticleType;
+      using Particle = typename Stack::StackIterator;
 
       corsika::environment::Environment const& fEnvironment;
 

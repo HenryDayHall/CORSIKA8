@@ -132,24 +132,24 @@ namespace corsika::process {
       return tot;
     }
 
-    template <typename Particle, typename Stack>
+    template <typename Particle, typename Track, typename Stack>
     EProcessReturn SelectInteraction(
-        Particle& p, Stack& s,
+        Particle& vP, Track& vT, Stack& vS,
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
 
       if constexpr (is_process_sequence<T1type>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            A.SelectInteraction(p, s, lambda_select, lambda_inv_count);
+            A.SelectInteraction(vP, vT, vS, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<InteractionProcess<T1type>, T1type>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_count += A.GetInverseInteractionLength(p, s);
+        lambda_inv_count += A.GetInverseInteractionLength(vP, vT);
         // check if we should execute THIS process and then EXIT
         if (lambda_select < lambda_inv_count) {
-          A.DoInteraction(p, s);
+          A.DoInteraction(vP, vS);
           return EProcessReturn::eInteracted;
         }
       } // end branch A
@@ -157,15 +157,15 @@ namespace corsika::process {
       if constexpr (is_process_sequence<T2>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            B.SelectInteraction(p, s, lambda_select, lambda_inv_count);
+            B.SelectInteraction(vP, vT, vS, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<InteractionProcess<T2type>, T2type>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_count += B.GetInverseInteractionLength(p, s);
+        lambda_inv_count += B.GetInverseInteractionLength(vP, vT);
         // check if we should execute THIS process and then EXIT
         if (lambda_select < lambda_inv_count) {
-          B.DoInteraction(p, s);
+          B.DoInteraction(vP, vS);
           return EProcessReturn::eInteracted;
         }
       } // end branch A
