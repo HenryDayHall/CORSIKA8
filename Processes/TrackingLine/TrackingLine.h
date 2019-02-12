@@ -42,8 +42,6 @@ namespace corsika::process {
 
       TrackingLine(corsika::environment::Environment const& pEnv);
 
-      void Init();
-
       Trajectory GetTrack(Particle const& p);
     };
 

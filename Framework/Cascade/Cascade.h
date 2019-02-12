@@ -36,14 +36,12 @@ namespace corsika::cascade {
    * plugged into the cascade simulation.
    *
    * <b>Tracking</b> must be a class according to the
-   * TrackingInterface providing the functions: <code>void
-   * Init();</code> and <code>auto GetTrack(Particle const& p)</auto>,
-   * where the latter has a return type of <code>
-   * geometry::Trajectory<corsika::geometry::Line or Helix> </code>
+   * TrackingInterface providing the functions: 
+   * <code>auto GetTrack(Particle const& p)</auto>,
+   * with the return type <code>geometry::Trajectory<corsika::geometry::Line>
+   * </code>
    *
-   * <b>ProcessList</b> must be a ProcessSequence.
-   *            TimeOfIntersection(corsika::geometry::Line const& line,
-   *
+   * <b>ProcessList</b> must be a ProcessSequence.   *
    * <b>Stack</b> is the storage object for particle data, i.e. with
    * Particle class type <code>Stack::ParticleType</code>
    *
@@ -75,7 +73,6 @@ namespace corsika::cascade {
      * All components of the Cascade simulation must be configured here.
      */
     void Init() {
-      fTracking.Init();
       fProcessSequence.Init();
       fStack.Init();
     }

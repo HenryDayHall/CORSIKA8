@@ -63,9 +63,6 @@ namespace corsika::process::tracking_line {
       : fEnvironment(pEnv) {}
 
   template <class Stack, class Trajectory>
-  void TrackingLine<Stack, Trajectory>::Init() {}
-
-  template <class Stack, class Trajectory>
   Trajectory TrackingLine<Stack, Trajectory>::GetTrack(Particle const& p) {
     using std::cout;
     using std::endl;
