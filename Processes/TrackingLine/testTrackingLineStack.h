@@ -13,6 +13,7 @@
 #define _include_process_trackinling_teststack_h_
 
 #include <corsika/geometry/Point.h>
+#include <corsika/environment/Environment.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -23,18 +24,22 @@ struct DummyParticle {
   corsika::units::si::HEPEnergyType fEnergy;
   corsika::geometry::Vector<MOMENTUM> fMomentum;
   corsika::geometry::Point fPosition;
+  corsika::environment::BaseNodeType const* fNodePtr;
 
   DummyParticle(corsika::units::si::HEPEnergyType pEnergy,
                 corsika::geometry::Vector<MOMENTUM> pMomentum,
-                corsika::geometry::Point pPosition)
+                corsika::geometry::Point pPosition,
+                corsika::environment::BaseNodeType const* pNodePtr)
       : fEnergy(pEnergy)
       , fMomentum(pMomentum)
-      , fPosition(pPosition) {}
+      , fPosition(pPosition)
+      , fNodePtr(pNodePtr) {}
 
   auto GetEnergy() const { return fEnergy; }
   auto GetMomentum() const { return fMomentum; }
   auto GetPosition() const { return fPosition; }
   auto GetPID() const { return corsika::particles::Code::Unknown; }
+  auto* GetNode() const { return fNodePtr; }
 };
 
 struct DummyStack {

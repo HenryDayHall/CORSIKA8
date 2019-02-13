@@ -69,14 +69,16 @@ TEST_CASE("TrackingLine") {
 
     //~ std::cout << env.GetUniverse().get() << std::endl;
 
-    DummyParticle p(1_GeV, Vector<MOMENTUM>(cs, 0_GeV, 0_GeV, 1_GeV),
-                    Point(cs, 0_m, 0_m, 0_m));
-
     auto const radius = 20_m;
 
     auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
         Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
     universe.AddChild(std::move(theMedium));
+    
+    Point p0(cs, 0_m, 0_m, 0_m);
+    auto* const node = universe.GetContainingNode(p0);
+    DummyParticle p(1_GeV, Vector<MOMENTUM>(cs, 0_GeV, 0_GeV, 1_GeV),
+                    p0, node);
 
     Point const origin(cs, {0_m, 0_m, 0_m});
     Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
