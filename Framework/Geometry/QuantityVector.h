@@ -118,7 +118,7 @@ namespace corsika::geometry {
 
     auto& operator-() const { return QuantityVector<dim>(-eVector); }
 
-    auto normalized() const { return (*this) * (1 / norm()); }
+    auto normalized() const { return QuantityVector<dim>(eVector.normalized()); }
 
     auto operator==(QuantityVector<dim> const& p) const { return eVector == p.eVector; }
   };
