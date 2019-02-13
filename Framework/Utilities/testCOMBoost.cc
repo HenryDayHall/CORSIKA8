@@ -32,99 +32,98 @@ using corsika::units::constants::cSquared;
 double constexpr absMargin = 1e-6;
 
 CoordinateSystem const& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-      
- // helper function for energy-momentum
-  // relativistic energy
-  auto const energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
-    return sqrt(m * m + p.squaredNorm());
-  };
+    RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
-  // helper function for mandelstam-s
-  auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
-    return E * E - p.squaredNorm();
-  };
+// helper function for energy-momentum
+// relativistic energy
+auto const energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
+  return sqrt(m * m + p.squaredNorm());
+};
 
+// helper function for mandelstam-s
+auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
+  return E * E - p.squaredNorm();
+};
 
 TEST_CASE("rotation") {
-    // define projectile kinematics in lab frame
-    HEPMassType const projectileMass = 1_GeV;
-    HEPMassType const targetMass = 1.0e300_eV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, 1_GeV}};
-    HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
-    
-    Eigen::Vector3d e1, e2, e3;
-        e1 << 1, 0, 0;
-        e2 << 0, 1, 0;
-        e3 << 0, 0, 1;
+  // define projectile kinematics in lab frame
+  HEPMassType const projectileMass = 1_GeV;
+  HEPMassType const targetMass = 1.0e300_eV;
+  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, 1_GeV}};
+  HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+  const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
-    // define boost to com frame
-    SECTION("pos. z-axis") {
-        COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, 1_GeV}}}, targetMass);
-        auto const& rot = boost.GetRotationMatrix();
-        
-        CHECK((rot * e3 - e3).norm() == Approx(0).margin(absMargin));
-        CHECK((rot * e1).norm() == Approx(1));
-        CHECK((rot * e2).norm() == Approx(1));
-        CHECK((rot * e3).norm() == Approx(1));
-        CHECK(rot.determinant() == Approx(1));
-    }
-    
-    SECTION("y-axis in upper half") {
-        COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, 1_meV}}}, targetMass);
-        auto const& rot = boost.GetRotationMatrix();
-        
-        CHECK((rot * e2 - e3).norm() == Approx(0).margin(absMargin));
-        CHECK((rot * e1).norm() == Approx(1));
-        CHECK((rot * e2).norm() == Approx(1));
-        CHECK((rot * e3).norm() == Approx(1));
-        CHECK(rot.determinant() == Approx(1));
-    }
-    
-    SECTION("x-axis in upper half") {
-        COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, 1_meV}}}, targetMass);
-        auto const& rot = boost.GetRotationMatrix();
-                
-        CHECK((rot * e1 - e3).norm() == Approx(0).margin(absMargin));
-        CHECK((rot * e1).norm() == Approx(1));
-        CHECK((rot * e2).norm() == Approx(1));
-        CHECK((rot * e3).norm() == Approx(1));
-        CHECK(rot.determinant() == Approx(1));
-    }
-    
-    SECTION("neg. z-axis") {
-        COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, -1_GeV}}}, targetMass);
-        auto const& rot = boost.GetRotationMatrix();
-        
-        CHECK((rot * (-e3) - e3).norm() == Approx(0).margin(absMargin));
-        CHECK((rot * e1).norm() == Approx(1));
-        CHECK((rot * e2).norm() == Approx(1));
-        CHECK((rot * e3).norm() == Approx(1));
-        CHECK(rot.determinant() == Approx(1));
-    }
-    
-    SECTION("x-axis lower half") {
-        COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, -1_meV}}}, targetMass);
-        auto const& rot = boost.GetRotationMatrix();
-        
-        CHECK((rot * e1 - e3).norm() == Approx(0).margin(absMargin));
-        CHECK((rot * e1).norm() == Approx(1));
-        CHECK((rot * e2).norm() == Approx(1));
-        CHECK((rot * e3).norm() == Approx(1));
-        CHECK(rot.determinant() == Approx(1));
-    }
-    
-    SECTION("y-axis lower half") {
-        COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, -1_meV}}}, targetMass);
-        auto const& rot = boost.GetRotationMatrix();
-        
-        CHECK((rot * e2 - e3).norm() == Approx(0).margin(absMargin));
-        CHECK((rot * e1).norm() == Approx(1));
-        CHECK((rot * e2).norm() == Approx(1));
-        CHECK((rot * e3).norm() == Approx(1));
-        CHECK(rot.determinant() == Approx(1));
-    }
+  Eigen::Vector3d e1, e2, e3;
+  e1 << 1, 0, 0;
+  e2 << 0, 1, 0;
+  e3 << 0, 0, 1;
+
+  // define boost to com frame
+  SECTION("pos. z-axis") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, 1_GeV}}}, targetMass);
+    auto const& rot = boost.GetRotationMatrix();
+
+    CHECK((rot * e3 - e3).norm() == Approx(0).margin(absMargin));
+    CHECK((rot * e1).norm() == Approx(1));
+    CHECK((rot * e2).norm() == Approx(1));
+    CHECK((rot * e3).norm() == Approx(1));
+    CHECK(rot.determinant() == Approx(1));
+  }
+
+  SECTION("y-axis in upper half") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, 1_meV}}}, targetMass);
+    auto const& rot = boost.GetRotationMatrix();
+
+    CHECK((rot * e2 - e3).norm() == Approx(0).margin(absMargin));
+    CHECK((rot * e1).norm() == Approx(1));
+    CHECK((rot * e2).norm() == Approx(1));
+    CHECK((rot * e3).norm() == Approx(1));
+    CHECK(rot.determinant() == Approx(1));
+  }
+
+  SECTION("x-axis in upper half") {
+    COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, 1_meV}}}, targetMass);
+    auto const& rot = boost.GetRotationMatrix();
+
+    CHECK((rot * e1 - e3).norm() == Approx(0).margin(absMargin));
+    CHECK((rot * e1).norm() == Approx(1));
+    CHECK((rot * e2).norm() == Approx(1));
+    CHECK((rot * e3).norm() == Approx(1));
+    CHECK(rot.determinant() == Approx(1));
+  }
+
+  SECTION("neg. z-axis") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, -1_GeV}}}, targetMass);
+    auto const& rot = boost.GetRotationMatrix();
+
+    CHECK((rot * (-e3) - e3).norm() == Approx(0).margin(absMargin));
+    CHECK((rot * e1).norm() == Approx(1));
+    CHECK((rot * e2).norm() == Approx(1));
+    CHECK((rot * e3).norm() == Approx(1));
+    CHECK(rot.determinant() == Approx(1));
+  }
+
+  SECTION("x-axis lower half") {
+    COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, -1_meV}}}, targetMass);
+    auto const& rot = boost.GetRotationMatrix();
+
+    CHECK((rot * e1 - e3).norm() == Approx(0).margin(absMargin));
+    CHECK((rot * e1).norm() == Approx(1));
+    CHECK((rot * e2).norm() == Approx(1));
+    CHECK((rot * e3).norm() == Approx(1));
+    CHECK(rot.determinant() == Approx(1));
+  }
+
+  SECTION("y-axis lower half") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, -1_meV}}}, targetMass);
+    auto const& rot = boost.GetRotationMatrix();
+
+    CHECK((rot * e2 - e3).norm() == Approx(0).margin(absMargin));
+    CHECK((rot * e1).norm() == Approx(1));
+    CHECK((rot * e2).norm() == Approx(1));
+    CHECK((rot * e3).norm() == Approx(1));
+    CHECK(rot.determinant() == Approx(1));
+  }
 }
 
 TEST_CASE("boosts") {

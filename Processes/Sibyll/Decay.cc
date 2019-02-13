@@ -157,8 +157,6 @@ namespace corsika::process::sibyll {
     // remember position
     Point const decayPoint = p.GetPosition();
     TimeType const t0 = p.GetTime();
-    // remove original particle from corsika stack
-    p.Delete();
     // set all particles/hadrons unstable
     // setHadronsUnstable();
     setUnstable(pCode);
@@ -184,6 +182,8 @@ namespace corsika::process::sibyll {
     }
     // empty sibyll stack
     ss.Clear();
+    // remove original particle from corsika stack
+    p.Delete();
   }
 
 } // namespace corsika::process::sibyll

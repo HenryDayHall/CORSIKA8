@@ -117,13 +117,14 @@ namespace corsika::stack {
     using T::GetStackData;
 
   public:
+    /*
     template <typename... Args1, typename... Args2>
     void SetParticleData(Args1... args1, Args2... args2) {
       T::SetParticleData(args1...);
     }
-
     template <typename... Args1, typename... Args2>
     void SetParticleData(T& p, Args1... args1, Args2... args2) {}
+    */
   };
 
 } // namespace corsika::stack
