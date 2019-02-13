@@ -320,9 +320,6 @@ namespace corsika::process::sibyll {
         sib_list_(print_unit);
         fNucCount += get_nwounded() - 1;
 
-        // delete current particle
-        p.Delete();
-
         // add particles from sibyll to stack
         // link to sibyll stack
         SibStack ss;
@@ -356,6 +353,8 @@ namespace corsika::process::sibyll {
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
     }
+    // delete current particle
+    p.Delete();
     return process::EProcessReturn::eOk;
   }
 
