@@ -138,16 +138,24 @@ namespace corsika::cascade {
       std::cout << "total_inv_lambda=" << total_inv_lambda
                 << ", next_interact=" << next_interact << std::endl;
 
-      // convert next_step from grammage to length
-      auto const* currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
-
-      if (currentNode == &*fEnvironment.GetUniverse()) {
-        throw std::runtime_error("particle entered void universe");
+      auto const* currentLogicalNode = particle.GetNode();
+      
+      auto const* currentNumericalNode =
+        fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
+        
+      std::cout << "nodes: " << currentLogicalNode << " " << currentNumericalNode << std::endl;
+        
+      if (currentNumericalNode != currentLogicalNode) {
+        throw std::runtime_error("numerical and logical nodes don't match");
       }
 
+      if (currentNumericalNode == &*fEnvironment.GetUniverse()) {
+        throw std::runtime_error("particle entered void Universe");
+      }
+
+      // convert next_step from grammage to length
       LengthType const distance_interact =
-          currentNode->GetModelProperties().ArclengthFromGrammage(step, next_interact);
+          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step, next_interact);
 
       // determine the maximum geometric step length
       LengthType const distance_max = fProcessSequence.MaxStepLength(particle, step);
@@ -182,8 +190,8 @@ namespace corsika::cascade {
       step.LimitEndTo(min_distance);
 
       // particle.GetNode(); // previous VolumeNode
-      particle.SetNode(
-          currentNode); // NOTE @Max : here we need to distinguish: IF particle step is
+      //~ particle.SetNode(
+          //~ currentLogicalNode); // NOTE @Max : here we need to distinguish: IF particle step is
       // limited by tracking (via fTracking.GetTrack()), THEN we need
       // to check/update VolumeNodes. In all other cases it is
       // guaranteed that we are still in the same volume
