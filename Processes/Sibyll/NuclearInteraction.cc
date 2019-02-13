@@ -54,8 +54,92 @@ namespace corsika::process::sibyll {
     // initialize nuclib
     // TODO: make sure this does not overlap with sibyll
     nuc_nuc_ini_();
+
+    // initialize cross sections
+    InitializeNuclearCrossSections();
   }
 
+  void NuclearInteraction::InitializeNuclearCrossSections()
+  {
+    using namespace corsika::particles;
+    using namespace units::si;
+    // TODO: get composition of target volumes from environment
+    // now: hard coded list for air
+    constexpr Code target_nuclei[] = { Code::Oxygen, Code::Nitrogen };
+
+    int fNSample = 500; // number of samples in MC estimation of cross section
+
+    cout << "NuclearInteraction: initializing nuclear cross sections..." << endl;
+    
+    // loop over target components, at most 4!!
+    int k =-1;
+    for(auto &ptarg: target_nuclei){
+      ++k;
+      cout << "NuclearInteraction: init target component: " << ptarg << endl;
+      const int ib = GetNucleusA( ptarg );
+      // fill map,list or what ever
+      // TODO
+      // loop over energies, 6 log. energy bins
+      for(int i=0; i<6; ++i){
+	// hard coded energy grid, has to be aligned to definition in signuc2!!, no comment..
+	const units::si::HEPEnergyType Ecm = pow(10., 1. + 1.*i ) * 1_GeV;
+	// get p-p cross sections
+	auto const protonId = Code::Proton;
+	auto const [siginel, sigela, dum ] =
+	  fHadronicInteraction.GetCrossSection(protonId, protonId, Ecm); 
+	const double dsig = siginel / 1_mbarn;
+	const double dsigela = sigela / 1_mbarn;
+	// loop over projectiles
+	for(int j=0; j<56; ++j){
+	  const int jj = j+1;
+	  double sig_out, dsig_out, sigqe_out, dsigqe_out;
+	  // cout << "energy="<< Ecm/1_GeV << " sig_pp=" << dsig
+	  //      << " (A,B)=" << jj << "," << ib
+	  //      << " sig="<<sig_out << " err(%)=" << dsig_out/sig_out*100.
+	  //      << endl;
+	  sigma_mc_(jj,ib,dsig,dsigela,fNSample, sig_out, dsig_out, sigqe_out, dsigqe_out);
+	  // write to table
+	  cnucsignuc_.sigma[j][k][i] = sig_out;
+	  cnucsignuc_.sigqe[j][k][i] = sigqe_out;
+	}
+      }
+    }
+    cout << "NuclearInteraction: cross sections initialized!" << endl;
+    PrintCrossSectionTable(0);
+    PrintCrossSectionTable(1);
+    PrintCrossSectionTable(2);
+    throw std::runtime_error("stop here");
+  }
+
+  void NuclearInteraction::PrintCrossSectionTable(int k)
+  {
+    int nuclA  [] = {2,4,8,20,35,56};
+    cout << "en/A ";
+    for(int j=0; j<6; ++j)
+      cout << std::setw(8) << nuclA[j];
+    cout << endl;
+    
+    for(int i=0; i<6; ++i){
+      cout << " " << i << "  ";
+      for(int j=0; j<6; ++j){
+	cout << " " << std::setprecision(5) << std::setw(7) << cnucsignuc_.sigma[nuclA[j]-1][k][i];
+      }
+      cout << endl;      
+    }
+  }
+  
+  units::si::CrossSectionType NuclearInteraction::ReadCrossSectionTable(particles::Code pBeam, particles::Code pTarget, units::si::HEPEnergyType elabnuc)
+  {
+    using namespace corsika::particles;
+    using namespace units::si;
+    const int ia = GetNucleusA(pBeam);
+    const int ib = GetNucleusA(pTarget);
+    const double e0 = elabnuc/ 1_GeV;
+    double sig;
+    signuc2_(ia,ib,e0,sig);
+    return sig * 1_mbarn;
+  }
+  
   // TODO: remove number of nucleons, avg target mass is available in environment
   template <>
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>

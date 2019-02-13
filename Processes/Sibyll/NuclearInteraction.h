@@ -40,7 +40,10 @@ namespace corsika::process::sibyll {
                        corsika::process::sibyll::Interaction& hadint);
     ~NuclearInteraction();
     void Init();
-
+    void InitializeNuclearCrossSections();
+    void PrintCrossSectionTable(int);
+    corsika::units::si::CrossSectionType ReadCrossSectionTable(corsika::particles::Code, corsika::particles::Code, corsika::units::si::HEPEnergyType);
+    
     template <typename Particle>
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(Particle& p, const corsika::particles::Code TargetId);
