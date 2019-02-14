@@ -75,12 +75,14 @@ namespace corsika::geometry {
      * think about whether squaredNorm() might be cheaper for your computation.
      */
     auto norm() const { return BaseVector<dim>::qVector.norm(); }
+    auto GetNorm() const { return BaseVector<dim>::qVector.norm(); }
 
     /*!
      * returns the squared norm of the Vector. Before using this method,
      * think about whether norm() might be cheaper for your computation.
      */
     auto squaredNorm() const { return BaseVector<dim>::qVector.squaredNorm(); }
+    auto GetSquaredNorm() const { return BaseVector<dim>::qVector.squaredNorm(); }
 
     /*!
      * returns a Vector \f$ \vec{v}_{\parallel} \f$ which is the parallel projection

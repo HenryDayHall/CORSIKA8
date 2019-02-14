@@ -44,8 +44,8 @@ namespace corsika::particles {
   using PDGCodeType = std::underlying_type<PDGCode>::type;
 
   // forward declarations to be used in GeneratedParticleProperties
-  int16_t constexpr GetElectricChargeNumber(Code const);
-  corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const);
+  int16_t constexpr GetChargeNumber(Code const);
+  corsika::units::si::ElectricChargeType constexpr GetCharge(Code const);
   corsika::units::si::HEPMassType constexpr GetMass(Code const);
   PDGCode constexpr GetPDG(Code const);
   constexpr std::string const& GetName(Code const);
@@ -72,17 +72,18 @@ namespace corsika::particles {
   }
 
   /*!
-   * returns electric charge of particle / (e/3), e.g. return 3 for a proton.
+   * returns electric charge number of particle return 1 for a proton.
    */
-  int16_t constexpr GetElectricChargeNumber(Code const p) {
-    return detail::electric_charges[static_cast<CodeIntType>(p)];
+  int16_t constexpr GetChargeNumber(Code const p) {
+    // electric_charges stores charges in units of (e/3), e.g. 3 for a proton
+    return detail::electric_charges[static_cast<CodeIntType>(p)] / 3;
   }
 
   /*!
    * returns electric charge of particle, e.g. return 1.602e-19_C for a proton.
    */
-  corsika::units::si::ElectricChargeType constexpr GetElectricCharge(Code const p) {
-    return GetElectricChargeNumber(p) * (corsika::units::constants::e * (1. / 3.));
+  corsika::units::si::ElectricChargeType constexpr GetCharge(Code const p) {
+    return GetChargeNumber(p) * (corsika::units::constants::e);
   }
 
   constexpr std::string const& GetName(Code const p) {
@@ -112,6 +113,14 @@ namespace corsika::particles {
   std::ostream& operator<<(std::ostream& stream, corsika::particles::Code const p);
 
   Code ConvertFromPDG(PDGCode);
+
+  /**
+   * Get mass of nucleus
+   **/
+  corsika::units::si::HEPMassType constexpr GetNucleusMass(const int vA, const int vZ) {
+    return Proton::GetMass() * vZ + (vA - vZ) * Neutron::GetMass();
+  }
+
 } // namespace corsika::particles
 
 #endif

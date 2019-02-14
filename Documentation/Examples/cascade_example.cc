@@ -11,6 +11,7 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
@@ -262,10 +263,12 @@ int main() {
   // hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
+  process::EnergyLoss::EnergyLoss eLoss(2_MeV / 1_g * square(1_cm));
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
+  auto sequence = p0 << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
+  // auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -276,17 +279,16 @@ int main() {
   const Code beamCode = Code::Nucleus;
   const int nuclA = 56;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = particles::Proton::GetMass() * nuclZ +
-                           (nuclA - nuclZ) * particles::Neutron::GetMass();
+  const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
   const HEPEnergyType E0 =
       nuclA *
-      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt(Elab * Elab - m * m);
+      return sqrt((Elab - m) * (Elab + m));
     };
     HEPMomentumType P0 = elab2plab(E0, mass);
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
@@ -315,6 +317,9 @@ int main() {
   cut.ShowResults();
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
-  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
+       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+  cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
+       << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+  eLoss.SaveSave();
 }

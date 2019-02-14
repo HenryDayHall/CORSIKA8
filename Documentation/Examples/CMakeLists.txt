@@ -24,14 +24,16 @@ CORSIKA_ADD_TEST (stack_example)
 add_executable (cascade_example cascade_example.cc)
 target_compile_options(cascade_example PRIVATE -g) # do not skip asserts
 target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogging
-   CORSIKArandom
-   ProcessSibyll
-  CORSIKAcascade
+  CORSIKArandom
+#  CORSIKAprocesses
+  ProcessSibyll
+  ProcessEnergyLoss
   ProcessStackInspector
   ProcessTrackWriter
   ProcessTrackingLine
   ProcessHadronicElasticModel
   CORSIKAprocesses
+  CORSIKAcascade
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAenvironment
