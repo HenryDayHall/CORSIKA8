@@ -282,7 +282,7 @@ int main() {
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
   const HEPEnergyType E0 =
       nuclA *
-      100_TeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
   double theta = 0.;
   double phi = 0.;
 
