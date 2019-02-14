@@ -99,11 +99,10 @@ namespace corsika::cascade {
     void Run() {
       SetNodes();
 
-      while (!fStack.IsEmpty() && countSteps < maxSteps) {
-        while (!fStack.IsEmpty() && countSteps < maxSteps) {
+      while (!fStack.IsEmpty()) {
+        while (!fStack.IsEmpty()) {
           auto pNext = fStack.GetNextParticle();
           Step(pNext);
-          countSteps++;
         }
         // do cascade equations, which can put new particles on Stack,
         // thus, the double loop
