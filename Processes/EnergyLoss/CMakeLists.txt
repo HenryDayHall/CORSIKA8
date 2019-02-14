@@ -31,6 +31,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAparticles
   CORSIKAgeometry
+  CORSIKAenvironment
   CORSIKAsetup
   )
 
