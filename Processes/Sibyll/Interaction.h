@@ -42,8 +42,7 @@ namespace corsika::process::sibyll {
       return (10_GeV < ecm) && (ecm < 1_PeV);
     }
 
-    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType,
-               int>
+    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code BeamId,
                     const corsika::particles::Code TargetId,
                     const corsika::units::si::HEPEnergyType CoMenergy);

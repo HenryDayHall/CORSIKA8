@@ -53,7 +53,7 @@ namespace corsika::process::sibyll {
     }
   }
 
-  tuple<units::si::CrossSectionType, units::si::CrossSectionType, int>
+  tuple<units::si::CrossSectionType, units::si::CrossSectionType>
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
                                const units::si::HEPEnergyType CoMenergy) {
@@ -62,22 +62,20 @@ namespace corsika::process::sibyll {
     double dumdif[3];
     const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
     const double dEcm = CoMenergy / 1_GeV;
-    int iTarget = -1;
     if (particles::IsNucleus(TargetId)) {
-      iTarget = particles::GetNucleusA(TargetId);
+      const int iTarget = particles::GetNucleusA(TargetId);
       if (iTarget > 18 || iTarget == 0)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 are allowed.");
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
     } else if (TargetId == particles::Proton::GetCode()) {
       sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
-      iTarget = 1;
     } else {
       // no interaction in sibyll possible, return infinite cross section? or throw?
       sigProd = std::numeric_limits<double>::infinity();
       sigEla = std::numeric_limits<double>::infinity();
     }
-    return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn, iTarget);
+    return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn);
   }
 
   template <>
@@ -134,7 +132,6 @@ namespace corsika::process::sibyll {
       // determine average interaction length
       // weighted sum
       int i = -1;
-      double avgTargetMassNumber = 0.;
       si::CrossSectionType weightedProdCrossSection = 0_mbarn;
       // get weights of components from environment/medium
       const auto w = mediumComposition.GetFractions();
@@ -143,7 +140,7 @@ namespace corsika::process::sibyll {
         i++;
         cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        auto const [productionCrossSection, elaCrossSection, numberOfNucleons] =
+        auto const [productionCrossSection, elaCrossSection ] =
             GetCrossSection(corsikaBeamId, targetId, ECoM);
         [[maybe_unused]] auto elaCrossSectionCopy =
             elaCrossSection; // ONLY TO AVOID COMPILER WARNING
@@ -152,7 +149,6 @@ namespace corsika::process::sibyll {
              << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mbarn
              << endl;
         weightedProdCrossSection += w[i] * productionCrossSection;
-        avgTargetMassNumber += w[i] * numberOfNucleons;
       }
       cout << "Interaction: "
            << "IntLength: weighted CrossSection (mb): "
@@ -161,7 +157,7 @@ namespace corsika::process::sibyll {
       // calculate interaction length in medium
       //#warning check interaction length units
       GrammageType const int_length =
-          avgTargetMassNumber * units::constants::u / weightedProdCrossSection;
+          mediumComposition.GetAverageMassNumber() * units::constants::u / weightedProdCrossSection;
       cout << "Interaction: "
            << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
            << endl;
@@ -268,11 +264,9 @@ namespace corsika::process::sibyll {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        const auto [sigProd, sigEla, nNuc] =
+        const auto [sigProd, sigEla ] =
             GetCrossSection(corsikaBeamId, targetId, Ecm);
         cross_section_of_components[i] = sigProd;
-        [[maybe_unused]] int ideleteme =
-            nNuc; // to avoid not used warning in array binding
         [[maybe_unused]] auto sigElaCopy =
             sigEla; // to avoid not used warning in array binding
       }

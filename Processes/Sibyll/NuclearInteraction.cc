@@ -84,7 +84,7 @@ namespace corsika::process::sibyll {
 	const units::si::HEPEnergyType Ecm = pow(10., 1. + 1.*i ) * 1_GeV;
 	// get p-p cross sections
 	auto const protonId = Code::Proton;
-	auto const [siginel, sigela, dum ] =
+	auto const [siginel, sigela ] =
 	  fHadronicInteraction.GetCrossSection(protonId, protonId, Ecm); 
 	const double dsig = siginel / 1_mbarn;
 	const double dsigela = sigela / 1_mbarn;
@@ -425,11 +425,10 @@ namespace corsika::process::sibyll {
       auto const targetId = compVec[i];
       cout << "target component: " << targetId << endl;
       cout << "beam id: " << beamId << endl;
-      const auto [sigProd, sigEla, nNuc] =
+      const auto [sigProd, sigEla] =
           fHadronicInteraction.GetCrossSection(beamId, targetId, EcmNN);
       cross_section_of_components[i] = sigProd;
       [[maybe_unused]] auto sigElaCopy = sigEla; // ONLY TO AVOID COMPILER WARNINGS
-      [[maybe_unused]] auto sigNucCopy = nNuc;   // ONLY TO AVOID COMPILER WARNINGS
     }
 
     const auto targetCode = mediumComposition.SampleTarget(cross_section_of_components, fRNG);
@@ -454,9 +453,8 @@ namespace corsika::process::sibyll {
     // get nucleon-nucleon cross section
     // (needed to determine number of nucleon-nucleon scatterings)
     const auto protonId = particles::Proton::GetCode();
-    const auto [prodCrossSection, elaCrossSection, dum] =
+    const auto [prodCrossSection, elaCrossSection] =
         fHadronicInteraction.GetCrossSection(protonId, protonId, EcmNN);
-    [[maybe_unused]] auto dumCopy = dum; // ONLY TO AVOID COMPILER WARNING
     const double sigProd = prodCrossSection / 1_mbarn;
     const double sigEla = elaCrossSection / 1_mbarn;
     // sample number of interactions (only input variables, output in common cnucms)
