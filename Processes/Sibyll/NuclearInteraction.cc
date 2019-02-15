@@ -213,14 +213,12 @@ namespace corsika::process::sibyll {
           "projectiles should use NuclearStackExtension!");
 
     // read from cross section code table
-    const HEPMassType nucleon_mass =
-        0.5 * (particles::Proton::GetMass() + particles::Neutron::GetMass());
 
     // FOR NOW: assume target is at rest
     corsika::stack::MomentumVector pTarget(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
 
     // total momentum and energy
-    HEPEnergyType Elab = p.GetEnergy() + nucleon_mass;
+    HEPEnergyType Elab = p.GetEnergy() + constants::nucleonMass;
     int const nuclA = p.GetNuclearA();
     auto const ElabNuc = p.GetEnergy() / nuclA;
 
@@ -231,7 +229,7 @@ namespace corsika::process::sibyll {
     // calculate cm. energy
     const HEPEnergyType ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
-    auto const ECoMNN = sqrt(2. * ElabNuc * nucleon_mass);
+    auto const ECoMNN = sqrt(2. * ElabNuc * constants::nucleonMass);
     cout << "NuclearInteraction: LambdaInt: \n"
          << " input energy: " << Elab / 1_GeV << endl
          << " input energy CoM: " << ECoM / 1_GeV << endl
@@ -363,10 +361,8 @@ namespace corsika::process::sibyll {
 
     // define target
     // always a nucleon
-    auto constexpr nucleon_mass =
-        0.5 * (particles::Proton::GetMass() + particles::Neutron::GetMass());
     // target is always at rest
-    const auto eTargetNucLab = 0_GeV + nucleon_mass;
+    const auto eTargetNucLab = 0_GeV + constants::nucleonMass;
     const auto pTargetNucLab =
         corsika::stack::MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
     const FourVector PtargNucLab(eTargetNucLab, pTargetNucLab);
@@ -388,7 +384,7 @@ namespace corsika::process::sibyll {
     }
 
     // define boost to NUCLEON-NUCLEON frame
-    COMBoost const boost(PprojNucLab, nucleon_mass);
+    COMBoost const boost(PprojNucLab, constants::nucleonMass);
     // boost projecticle
     auto const PprojNucCoM = boost.toCoM(PprojNucLab);
 

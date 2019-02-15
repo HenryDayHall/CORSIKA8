@@ -95,14 +95,11 @@ namespace corsika::process::sibyll {
     // read from cross section code table
     const bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
 
-    const HEPMassType nucleon_mass =
-        0.5 * (particles::Proton::GetMass() + particles::Neutron::GetMass());
-
     // FOR NOW: assume target is at rest
     MomentumVector pTarget(rootCS, {0_GeV, 0_GeV, 0_GeV});
 
     // total momentum and energy
-    HEPEnergyType Elab = p.GetEnergy() + nucleon_mass;
+    HEPEnergyType Elab = p.GetEnergy() + constants::nucleonMass;
     MomentumVector pTotLab(rootCS, {0_GeV, 0_GeV, 0_GeV});
     pTotLab += p.GetMomentum();
     pTotLab += pTarget;
@@ -201,10 +198,8 @@ namespace corsika::process::sibyll {
 
       // define target
       // for Sibyll is always a single nucleon
-      auto constexpr nucleon_mass =
-          0.5 * (particles::Proton::GetMass() + particles::Neutron::GetMass());
       // FOR NOW: target is always at rest
-      const auto eTargetLab = 0_GeV + nucleon_mass;
+      const auto eTargetLab = 0_GeV + constants::nucleonMass;
       const auto pTargetLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
@@ -223,7 +218,7 @@ namespace corsika::process::sibyll {
       // define target kinematics in lab frame
       // define boost to and from CoM frame
       // CoM frame definition in Sibyll projectile: +z
-      COMBoost const boost(PprojLab, nucleon_mass);
+      COMBoost const boost(PprojLab, constants::nucleonMass);
 
       // just for show:
       // boost projecticle
