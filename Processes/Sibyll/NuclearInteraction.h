@@ -41,8 +41,8 @@ namespace corsika::process::sibyll {
     ~NuclearInteraction();
     void Init();
     void InitializeNuclearCrossSections();
-    void PrintCrossSectionTable(int);
-    corsika::units::si::CrossSectionType ReadCrossSectionTable(corsika::particles::Code, corsika::particles::Code, corsika::units::si::HEPEnergyType);
+    void PrintCrossSectionTable(corsika::particles::Code);
+    corsika::units::si::CrossSectionType ReadCrossSectionTable(const int, corsika::particles::Code, corsika::units::si::HEPEnergyType);
     
     template <typename Particle>
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
@@ -57,8 +57,10 @@ namespace corsika::process::sibyll {
   private:
     corsika::environment::Environment const& fEnvironment;
     corsika::process::sibyll::Interaction& fHadronicInteraction;
+    std::map<corsika::particles::Code,int> fTargetComponentsIndex;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+    const int fNSample = 500; // number of samples in MC estimation of cross section
   };
 
 } // namespace corsika::process::sibyll
