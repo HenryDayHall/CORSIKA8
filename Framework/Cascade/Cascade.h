@@ -242,6 +242,7 @@ namespace corsika::cascade {
       } else { // boundary crossing
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         particle.SetNode(nextVol);
+        fProcessSequence.DoBoundaryCrossing(particle, *currentLogicalNode, *nextVol);
       }
     }
 

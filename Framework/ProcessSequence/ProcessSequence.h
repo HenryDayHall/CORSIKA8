@@ -13,6 +13,7 @@
 #define _include_ProcessSequence_h_
 
 #include <corsika/process/BaseProcess.h>
+#include <corsika/process/BoundaryCrossingProcess.h>
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/process/DecayProcess.h>
 #include <corsika/process/InteractionProcess.h>
@@ -69,6 +70,24 @@ namespace corsika::process {
 
     // example for a trait-based call:
     // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
+
+    template <typename Particle>
+    EProcessReturn DoBoundaryCrossing(Particle& p, environment::BaseNodeType const& from,
+                                      environment::BaseNodeType const& to) {
+      EProcessReturn ret = EProcessReturn::eOk;
+
+      if constexpr (std::is_base_of<BoundaryCrossingProcess<T1type>, T1type>::value ||
+                    is_process_sequence<T1>::value) {
+        ret |= A.DoBoundaryCrossing(p, from, to);
+      }
+
+      if constexpr (std::is_base_of<BoundaryCrossingProcess<T2type>, T2type>::value ||
+                    is_process_sequence<T2>::value) {
+        ret |= B.DoBoundaryCrossing(p, from, to);
+      }
+
+      return ret;
+    }
 
     template <typename Particle, typename Track, typename Stack>
     EProcessReturn DoContinuous(Particle& p, Track& t, Stack& s) {

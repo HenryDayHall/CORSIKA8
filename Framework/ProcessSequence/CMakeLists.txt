@@ -11,6 +11,7 @@ set (
 set (
   CORSIKAprocesssequence_HEADERS
   BaseProcess.h
+  BoundaryCrossingProcess.h
   ContinuousProcess.h
   InteractionProcess.h
   DecayProcess.h
