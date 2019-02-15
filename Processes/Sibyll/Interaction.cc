@@ -61,10 +61,13 @@ namespace corsika::process::sibyll {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
     const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
+    if( !IsValidCoMEnergy(CoMenergy) ){
+      throw std::runtime_error("Interaction: GetCrossSection: CoM energy outside range for Sibyll!");
+    }
     const double dEcm = CoMenergy / 1_GeV;
     if (particles::IsNucleus(TargetId)) {
       const int iTarget = particles::GetNucleusA(TargetId);
-      if (iTarget > 18 || iTarget == 0)
+      if (iTarget > fMaxTargetMassNumber || iTarget == 0)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 are allowed.");
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
@@ -114,7 +117,8 @@ namespace corsika::process::sibyll {
          << " beam pid:" << p.GetPID() << endl;
 
     // TODO: move limits into variables
-    if (kInteraction && Elab >= 8.5_GeV && ECoM >= 10_GeV) {
+    // FR: removed && Elab >= 8.5_GeV
+    if (kInteraction && IsValidCoMEnergy(ECoM)) {
 
       // get target from environment
       /*
@@ -278,7 +282,7 @@ namespace corsika::process::sibyll {
       if (IsNucleus(targetCode)) targetSibCode = GetNucleusA(targetCode);
       if (targetCode == particles::Proton::GetCode()) targetSibCode = 1;
       cout << "Interaction: sibyll code: " << targetSibCode << endl;
-      if (targetSibCode > 18 || targetSibCode < 1)
+      if (targetSibCode > fMaxTargetMassNumber || targetSibCode < 1)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 or protons are "
             "allowed.");
@@ -289,7 +293,10 @@ namespace corsika::process::sibyll {
       cout << "Interaction: "
            << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
            << " Ecm(GeV): " << Ecm / 1_GeV << endl;
-      if (eProjectileLab < 8.5_GeV || Ecm < 10_GeV) {
+      if( Ecm > GetMaxEnergyCoM() )
+	throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
+      // FR: removed eProjectileLab < 8.5_GeV ||
+      if ( Ecm < GetMinEnergyCoM() ) {
         cout << "Interaction: "
              << " DoInteraction: should have dropped particle.. "
              << "THIS IS AN ERROR" << endl;

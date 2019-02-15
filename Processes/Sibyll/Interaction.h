@@ -37,11 +37,19 @@ namespace corsika::process::sibyll {
     void Init();
 
     bool WasInitialized() { return fInitialized; }
-    bool ValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
-      using namespace corsika::units::si;
-      return (10_GeV < ecm) && (ecm < 1_PeV);
+    bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
+      return (fMinEnergyCoM <= ecm) && (ecm <= fMaxEnergyCoM);
     }
-
+    int GetMaxTargetMassNumber() { return fMaxTargetMassNumber; }
+    corsika::units::si::HEPEnergyType GetMinEnergyCoM() { return fMinEnergyCoM; }
+    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() { return fMaxEnergyCoM; }
+    bool IsValidTarget(corsika::particles::Code TargetId)
+    {
+      return ( corsika::particles::GetNucleusA(TargetId) < fMaxTargetMassNumber )
+	&& corsika::particles::IsNucleus( TargetId );
+  }      
+    
+    
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code BeamId,
                     const corsika::particles::Code TargetId,
@@ -62,6 +70,11 @@ namespace corsika::process::sibyll {
     corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+    const corsika::units::si::HEPEnergyType fMinEnergyCoM = 
+      10. * 1e9 * corsika::units::si::electronvolt;
+    const corsika::units::si::HEPEnergyType fMaxEnergyCoM = 
+      1.e6 * 1e9 * corsika::units::si::electronvolt;
+    const int fMaxTargetMassNumber = 18;
   };
 
 } // namespace corsika::process::sibyll

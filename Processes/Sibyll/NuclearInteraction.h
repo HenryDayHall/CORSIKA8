@@ -43,7 +43,11 @@ namespace corsika::process::sibyll {
     void InitializeNuclearCrossSections();
     void PrintCrossSectionTable(corsika::particles::Code);
     corsika::units::si::CrossSectionType ReadCrossSectionTable(const int, corsika::particles::Code, corsika::units::si::HEPEnergyType);
-    
+    corsika::units::si::HEPEnergyType GetMinEnergyPerNucleonCoM() { return fMinEnergyPerNucleonCoM; }
+    corsika::units::si::HEPEnergyType GetMaxEnergyPerNucleonCoM() { return fMaxEnergyPerNucleonCoM; }
+    int GetMaxNucleusAProjectile() {return fMaxNucleusAProjectile; }
+    int GetMaxNFragments() { return fMaxNFragments; }
+    int GetNEnergyBins() { return fNEnBins; }
     template <typename Particle>
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(Particle& p, const corsika::particles::Code TargetId);
@@ -61,6 +65,15 @@ namespace corsika::process::sibyll {
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
     const int fNSample = 500; // number of samples in MC estimation of cross section
+    const int fMaxNucleusAProjectile = 56;
+    const int fNEnBins = 6;
+    const int fMaxNFragments = 60;
+    // energy limits defined by table used for cross section in signuc.f
+    // 10**1 GeV to 10**6 GeV
+    const corsika::units::si::HEPEnergyType fMinEnergyPerNucleonCoM = 
+      10. * 1e9 * corsika::units::si::electronvolt;
+    const corsika::units::si::HEPEnergyType fMaxEnergyPerNucleonCoM = 
+      1.e6 * 1e9 * corsika::units::si::electronvolt;
   };
 
 } // namespace corsika::process::sibyll
