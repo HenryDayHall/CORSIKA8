@@ -12,6 +12,7 @@
 #define _include_corsika_processes_BoundaryCrossingProcess_h_
 
 #include <corsika/environment/Environment.h>
+#include <corsika/process/ProcessReturn.h>
 
 namespace corsika::process {
   template <typename TDerived>

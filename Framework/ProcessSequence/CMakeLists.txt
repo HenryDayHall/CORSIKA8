@@ -34,6 +34,12 @@ install (
   FILES ${CORSIKAprocesssequence_HEADERS}
   DESTINATION include/${CORSIKAprocesssequence_NAMESPACE}
   )
+  
+target_link_libraries (
+  CORSIKAprocesssequence
+  INTERFACE
+  CORSIKAenvironment
+)
 
 #-- -- -- -- -- -- -- --
 #code unit testing
