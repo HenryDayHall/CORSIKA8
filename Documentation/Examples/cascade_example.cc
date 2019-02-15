@@ -214,6 +214,18 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
+struct MyBoundaryCrossingProcess
+    : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
+  template <typename Particle>
+  EProcessReturn DoBoundaryCrossing(Particle&, environment::BaseNodeType const& from,
+                                    environment::BaseNodeType const& to) {
+    std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
+    return EProcessReturn::eOk;
+  }
+
+  void Init() {}
+};
+
 //
 // The example main program for a particle cascade
 //
@@ -226,21 +238,33 @@ int main() {
   environment::Environment env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<Sphere>(
+  auto outerMedium = environment::Environment::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
   const float fox = 0.20946;
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
+  outerMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
 
-  universe.AddChild(std::move(theMedium));
+  auto innerMedium = environment::Environment::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 10_m);
+
+  innerMedium->SetModelProperties<MyHomogeneousModel>(
+      1_kg / (1_m * 1_m * 1_m),
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Nitrogen,
+                                       particles::Code::Oxygen},
+          std::vector<float>{(float)1. - fox, fox}));
+
+  outerMedium->AddChild(std::move(innerMedium));
+
+  universe.AddChild(std::move(outerMedium));
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
@@ -254,15 +278,15 @@ int main() {
   process::sibyll::Decay decay;
   ProcessCut cut(20_GeV);
 
-  // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  // process::HadronicElasticModel::HadronicElasticInteraction
-  // hadronicElastic(env);
+  random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
+  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << MyBoundaryCrossingProcess()
+                     << trackWriter;
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -272,10 +296,8 @@ int main() {
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = particles::Proton::GetMass() * nuclZ +
                            (nuclA - nuclZ) * particles::Neutron::GetMass();
-  const HEPEnergyType E0 =
-      nuclA *
-      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
-  double theta = 0.;
+  const HEPEnergyType E0 = nuclA * 100_GeV;
+  double theta = 27.234;
   double phi = 0.;
 
   {
