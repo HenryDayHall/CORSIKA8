@@ -66,6 +66,24 @@ namespace corsika::environment {
       }
     }
 
+    /**
+     * Traverses the VolumeTree pre- or post-order and calls the functor  \p func for each
+     * node. \p func takes a reference to VolumeTreeNode as argument. The return value \p
+     * func is ignored.
+     */
+    template <typename TCallable, bool preorder = true>
+    void walk(TCallable func) {
+      if constexpr (preorder) {
+        func(*this);
+        std::for_each(fChildNodes.begin(), fChildNodes.end(),
+                      [&](auto& v) { v->walk(func); });
+      } else {
+        std::for_each(fChildNodes.begin(), fChildNodes.end(),
+                      [&](auto& v) { v->walk(func); });
+        t(*this);
+      }
+    }
+
     void AddChild(VTNUPtr pChild) {
       pChild->fParentNode = this;
       fChildNodes.push_back(std::move(pChild));
@@ -87,6 +105,8 @@ namespace corsika::environment {
     auto const& GetVolume() const { return *fGeoVolume; }
 
     auto const& GetModelProperties() const { return *fModelProperties; }
+
+    IMPSharedPtr GetModelPropertiesPtr() const { return fModelProperties; }
 
     template <typename TModelProperties, typename... Args>
     auto SetModelProperties(Args&&... args) {
