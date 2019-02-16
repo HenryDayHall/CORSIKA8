@@ -245,6 +245,22 @@ int main() {
 
   universe.AddChild(std::move(theMedium));
 
+  auto const allElementsInUniverse = std::invoke([&]() {
+    std::set<particles::Code> allElementsInUniverse;
+    auto collectElements = [&](auto& vtn) {
+      if (auto const mp = vtn.GetModelPropertiesPtr();
+          mp != nullptr) { // do not query Universe it self, it has no ModelProperties
+        auto const& comp = mp->GetNuclearComposition().GetComponents();
+        std::for_each(comp.cbegin(), comp.cend(),
+                      [&](particles::Code c) { allElementsInUniverse.insert(c); });
+      }
+    };
+    universe.walk(collectElements);
+    return allElementsInUniverse;
+  });
+
+  for (auto elem : allElementsInUniverse) { std::cout << elem << std::endl; }
+
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
