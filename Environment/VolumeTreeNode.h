@@ -80,7 +80,7 @@ namespace corsika::environment {
       } else {
         std::for_each(fChildNodes.begin(), fChildNodes.end(),
                       [&](auto& v) { v->walk(func); });
-        t(*this);
+        func(*this);
       }
     }
 
