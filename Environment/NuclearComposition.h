@@ -35,15 +35,15 @@ namespace corsika::environment {
     public:
       using value_type = double;
       using iterator_category = std::input_iterator_tag;
-      using pointer = double*;
-      using reference = double&;
+      using pointer = value_type*;
+      using reference = value_type&;
       using difference_type = ptrdiff_t;
 
       WeightProviderIterator(AConstIterator a, BConstIterator b)
           : fAIter(a)
           , fBIter(b) {}
 
-      double operator*() const { return ((*fAIter) * (*fBIter)).magnitude(); }
+      value_type operator*() const { return ((*fAIter) * (*fBIter)).magnitude(); }
 
       WeightProviderIterator& operator++() { // prefix ++
         ++fAIter;
