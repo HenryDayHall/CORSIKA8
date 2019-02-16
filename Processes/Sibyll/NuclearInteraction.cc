@@ -22,6 +22,8 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <set>
+
 using std::cout;
 using std::endl;
 using std::tuple;
@@ -69,15 +71,31 @@ namespace corsika::process::sibyll {
   {
     using namespace corsika::particles;
     using namespace units::si;
-    // TODO: get composition of target volumes from environment
-    // now: hard coded list for air
-    constexpr Code target_nuclei[] = { Code::Oxygen, Code::Nitrogen };
 
+    auto& universe = *(fEnvironment.GetUniverse());
+
+    auto const allElementsInUniverse = std::invoke([&]() {
+    std::set<particles::Code> allElementsInUniverse;
+    auto collectElements = [&](auto& vtn) {
+      if (auto const mp = vtn.GetModelPropertiesPtr();
+          mp != nullptr) { // do not query Universe it self, it has no ModelProperties
+        auto const& comp = mp->GetNuclearComposition().GetComponents();
+	for (auto const c : comp)
+	   allElementsInUniverse.insert(c);
+        // std::for_each(comp.cbegin(), comp.cend(),
+        //               [&](particles::Code c) { allElementsInUniverse.insert(c); });
+      }
+    };
+    universe.walk(collectElements);
+    return allElementsInUniverse;
+						   });
+
+    
     cout << "NuclearInteraction: initializing nuclear cross sections..." << endl;
    
     // loop over target components, at most 4!!
     int k =-1;
-    for(auto &ptarg: target_nuclei){
+    for(auto &ptarg: allElementsInUniverse){
       ++k;
       cout << "NuclearInteraction: init target component: " << ptarg << endl;
       const int ib = GetNucleusA( ptarg );
@@ -109,7 +127,7 @@ namespace corsika::process::sibyll {
       }
     }
     cout << "NuclearInteraction: cross sections for " << fTargetComponentsIndex.size() << " components initialized!" << endl;
-    for(auto &ptarg: target_nuclei){
+    for(auto &ptarg: allElementsInUniverse){
       cout << "cross section table: " << ptarg << endl;
       PrintCrossSectionTable( ptarg );
     }
@@ -120,7 +138,8 @@ namespace corsika::process::sibyll {
   {
     using namespace corsika::particles;
     const int k = fTargetComponentsIndex.at( pCode );
-    Code pNuclei [] = {Code::Helium, Code::Lithium7, Code::Oxygen, Code::Neon, Code::Argon, Code::Iron};
+    Code pNuclei [] = {Code::Helium, Code::Lithium7, Code::Oxygen,
+		       Code::Neon, Code::Argon, Code::Iron};
     cout << "en/A ";
     for(auto &j: pNuclei)
       cout << std::setw(9) << j;

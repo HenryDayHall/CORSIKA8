@@ -252,8 +252,10 @@ int main() {
       if (auto const mp = vtn.GetModelPropertiesPtr();
           mp != nullptr) { // do not query Universe it self, it has no ModelProperties
         auto const& comp = mp->GetNuclearComposition().GetComponents();
-        std::for_each(comp.cbegin(), comp.cend(),
-                      [&](particles::Code c) { allElementsInUniverse.insert(c); });
+	for (auto const c : comp)
+	  allElementsInUniverse.insert(c);
+        // std::for_each(comp.cbegin(), comp.cend(),
+        //               [&](particles::Code c) { allElementsInUniverse.insert(c); });
       }
     };
     universe.walk(collectElements);
