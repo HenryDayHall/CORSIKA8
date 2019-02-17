@@ -42,7 +42,6 @@ using boost::typeindex::type_id_with_cvr;
 #include <iostream>
 #include <limits>
 #include <typeinfo>
-#include <set>
 
 using namespace corsika;
 using namespace corsika::process;
