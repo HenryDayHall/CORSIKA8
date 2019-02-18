@@ -274,3 +274,46 @@ C  ADD INELASTIC AND QUASI-ELASTIC CROSS-SECTIONS
 
       RETURN
       END
+
+
+      SUBROUTINE SIGNUC2(IA,IB,E0,SSIGNUC)
+
+C-----------------------------------------------------------------------
+C     SIG(MA) NUC(LEUS)  2
+C     INPUT: IA : projectile mass number
+C     IB : position in cross section table for target nucleus
+C          specified when tables are filled
+C     E0 : Energy per nucleon in GeV in the lab.
+C     OUTPUT: inelastic cross section
+C-----------------------------------------------------------------------
+      IMPLICIT NONE
+      DOUBLE PRECISION SIGMA,SIGQE
+      COMMON /cnucsignuc/SIGMA(6,4,56), SIGQE(6,4,56)
+      DIMENSION        AA(6)
+      DOUBLE PRECISION AA,DA,AMIN,ABEAM,S1,S2,ASQS
+      DOUBLE PRECISION E0,SSIGNUC
+      INTEGER          IA,IB,J,JE,NE 
+      DOUBLE PRECISION QUAD_INT
+      EXTERNAL         QUAD_INT
+      SAVE
+      DATA             NE /6/, AMIN /1.D0/, DA /1.D0/
+      DATA             AA /1.D0,2.D0,3.D0,4.D0,5.D0,6.D0/
+
+C ENERGY E0 IN GEV
+      ASQS  = 0.5D0*LOG10(1.876D0*E0)
+      JE    = MIN( INT( (ASQS-AMIN)/DA )+1, NE-2 )
+      ABEAM = DBLE(IA)
+C  INELASTIC CROSS-SECTION
+      S1 = QUAD_INT( ASQS, AA(JE),AA(JE+1),AA(JE+2),
+     +     SIGMA(JE,IB,IA),SIGMA(JE+1,IB,IA),
+     +     SIGMA(JE+2,IB,IA) )
+C  QUASI ELASTIC CROSS-SECTION
+      S2 = QUAD_INT( ASQS, AA(JE),AA(JE+1),AA(JE+2),
+     +     SIGQE(JE,IB,IA),SIGQE(JE+1,IB,IA),
+     +     SIGQE(JE+2,IB,IA) )
+C  ADD INELASTIC AND QUASI-ELASTIC CROSS-SECTIONS
+      SSIGNUC = S1 + S2
+
+      RETURN
+      END
+      

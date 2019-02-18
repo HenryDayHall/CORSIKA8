@@ -53,7 +53,7 @@ namespace corsika::process::sibyll {
     }
   }
 
-  tuple<units::si::CrossSectionType, units::si::CrossSectionType, int>
+  tuple<units::si::CrossSectionType, units::si::CrossSectionType>
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
                                const units::si::HEPEnergyType CoMenergy) {
@@ -61,23 +61,24 @@ namespace corsika::process::sibyll {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
     const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
+    if( !IsValidCoMEnergy(CoMenergy) ){
+      throw std::runtime_error("Interaction: GetCrossSection: CoM energy outside range for Sibyll!");
+    }
     const double dEcm = CoMenergy / 1_GeV;
-    int iTarget = -1;
     if (particles::IsNucleus(TargetId)) {
-      iTarget = particles::GetNucleusA(TargetId);
-      if (iTarget > 18 || iTarget == 0)
+      const int iTarget = particles::GetNucleusA(TargetId);
+      if (iTarget > fMaxTargetMassNumber || iTarget == 0)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 are allowed.");
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
     } else if (TargetId == particles::Proton::GetCode()) {
       sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
-      iTarget = 1;
     } else {
       // no interaction in sibyll possible, return infinite cross section? or throw?
       sigProd = std::numeric_limits<double>::infinity();
       sigEla = std::numeric_limits<double>::infinity();
     }
-    return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn, iTarget);
+    return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn);
   }
 
   template <>
@@ -97,14 +98,11 @@ namespace corsika::process::sibyll {
     // read from cross section code table
     const bool kInteraction = process::sibyll::CanInteract(corsikaBeamId);
 
-    const HEPMassType nucleon_mass =
-        0.5 * (particles::Proton::GetMass() + particles::Neutron::GetMass());
-
     // FOR NOW: assume target is at rest
     MomentumVector pTarget(rootCS, {0_GeV, 0_GeV, 0_GeV});
 
     // total momentum and energy
-    HEPEnergyType Elab = p.GetEnergy() + nucleon_mass;
+    HEPEnergyType Elab = p.GetEnergy() + constants::nucleonMass;
     MomentumVector pTotLab(rootCS, {0_GeV, 0_GeV, 0_GeV});
     pTotLab += p.GetMomentum();
     pTotLab += pTarget;
@@ -119,7 +117,8 @@ namespace corsika::process::sibyll {
          << " beam pid:" << p.GetPID() << endl;
 
     // TODO: move limits into variables
-    if (kInteraction && Elab >= 8.5_GeV && ECoM >= 10_GeV) {
+    // FR: removed && Elab >= 8.5_GeV
+    if (kInteraction && IsValidCoMEnergy(ECoM)) {
 
       // get target from environment
       /*
@@ -134,7 +133,6 @@ namespace corsika::process::sibyll {
       // determine average interaction length
       // weighted sum
       int i = -1;
-      double avgTargetMassNumber = 0.;
       si::CrossSectionType weightedProdCrossSection = 0_mbarn;
       // get weights of components from environment/medium
       const auto w = mediumComposition.GetFractions();
@@ -143,7 +141,7 @@ namespace corsika::process::sibyll {
         i++;
         cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        auto const [productionCrossSection, elaCrossSection, numberOfNucleons] =
+        auto const [productionCrossSection, elaCrossSection ] =
             GetCrossSection(corsikaBeamId, targetId, ECoM);
         [[maybe_unused]] auto elaCrossSectionCopy =
             elaCrossSection; // ONLY TO AVOID COMPILER WARNING
@@ -152,7 +150,6 @@ namespace corsika::process::sibyll {
              << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mbarn
              << endl;
         weightedProdCrossSection += w[i] * productionCrossSection;
-        avgTargetMassNumber += w[i] * numberOfNucleons;
       }
       cout << "Interaction: "
            << "IntLength: weighted CrossSection (mb): "
@@ -161,7 +158,7 @@ namespace corsika::process::sibyll {
       // calculate interaction length in medium
       //#warning check interaction length units
       GrammageType const int_length =
-          avgTargetMassNumber * units::constants::u / weightedProdCrossSection;
+          mediumComposition.GetAverageMassNumber() * units::constants::u / weightedProdCrossSection;
       cout << "Interaction: "
            << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
            << endl;
@@ -205,10 +202,8 @@ namespace corsika::process::sibyll {
 
       // define target
       // for Sibyll is always a single nucleon
-      auto constexpr nucleon_mass =
-          0.5 * (particles::Proton::GetMass() + particles::Neutron::GetMass());
       // FOR NOW: target is always at rest
-      const auto eTargetLab = 0_GeV + nucleon_mass;
+      const auto eTargetLab = 0_GeV + constants::nucleonMass;
       const auto pTargetLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
@@ -227,7 +222,7 @@ namespace corsika::process::sibyll {
       // define target kinematics in lab frame
       // define boost to and from CoM frame
       // CoM frame definition in Sibyll projectile: +z
-      COMBoost const boost(PprojLab, nucleon_mass);
+      COMBoost const boost(PprojLab, constants::nucleonMass);
 
       // just for show:
       // boost projecticle
@@ -268,11 +263,9 @@ namespace corsika::process::sibyll {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        const auto [sigProd, sigEla, nNuc] =
+        const auto [sigProd, sigEla ] =
             GetCrossSection(corsikaBeamId, targetId, Ecm);
         cross_section_of_components[i] = sigProd;
-        [[maybe_unused]] int ideleteme =
-            nNuc; // to avoid not used warning in array binding
         [[maybe_unused]] auto sigElaCopy =
             sigEla; // to avoid not used warning in array binding
       }
@@ -289,7 +282,7 @@ namespace corsika::process::sibyll {
       if (IsNucleus(targetCode)) targetSibCode = GetNucleusA(targetCode);
       if (targetCode == particles::Proton::GetCode()) targetSibCode = 1;
       cout << "Interaction: sibyll code: " << targetSibCode << endl;
-      if (targetSibCode > 18 || targetSibCode < 1)
+      if (targetSibCode > fMaxTargetMassNumber || targetSibCode < 1)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 or protons are "
             "allowed.");
@@ -300,7 +293,10 @@ namespace corsika::process::sibyll {
       cout << "Interaction: "
            << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
            << " Ecm(GeV): " << Ecm / 1_GeV << endl;
-      if (eProjectileLab < 8.5_GeV || Ecm < 10_GeV) {
+      if( Ecm > GetMaxEnergyCoM() )
+	throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
+      // FR: removed eProjectileLab < 8.5_GeV ||
+      if ( Ecm < GetMinEnergyCoM() ) {
         cout << "Interaction: "
              << " DoInteraction: should have dropped particle.. "
              << "THIS IS AN ERROR" << endl;
