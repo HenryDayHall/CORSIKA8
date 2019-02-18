@@ -1,22 +1,23 @@
-image: ubuntu:bionic
+image: corsika/devel:u-18.04
 
 variables:
   GIT_SSL_NO_VERIFY: "1"
 
-before_script:
-  - apt-get update --yes
-  - apt-get install --yes cmake libboost-dev libeigen3-dev python3 gfortran
-  - apt-get install --yes doxygen graphviz
+#before_script:
+#  - apt-get update --yes
+#  - apt-get install --yes cmake libboost-dev libeigen3-dev python3 gfortran
+#  - apt-get install --yes doxygen graphviz
 
 build:
   stage: build
   tags:
-    - corsika
+    - unam
+#    - corsika
   script:
     - mkdir build
     - cd build
     - cmake ..
-    - cmake --build .
+    - cmake --build . -- -j 4 
     - ctest -j4 -V >& test.log
   after_script:
     - cd build
@@ -35,7 +36,8 @@ build:
 pages:
   stage: build
   tags:
-    - corsika
+    - unam
+#    - corsika
   script:
     - mkdir build
     - cd build
