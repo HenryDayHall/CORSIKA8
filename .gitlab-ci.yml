@@ -3,16 +3,10 @@ image: corsika/devel:u-18.04
 variables:
   GIT_SSL_NO_VERIFY: "1"
 
-#before_script:
-#  - apt-get update --yes
-#  - apt-get install --yes cmake libboost-dev libeigen3-dev python3 gfortran
-#  - apt-get install --yes doxygen graphviz
-
 build:
   stage: build
   tags:
-    - unam
-#    - corsika
+    - corsika
   script:
     - mkdir build
     - cd build
@@ -36,8 +30,7 @@ build:
 pages:
   stage: build
   tags:
-    - unam
-#    - corsika
+    - corsika
   script:
     - mkdir build
     - cd build
