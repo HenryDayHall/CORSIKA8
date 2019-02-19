@@ -126,7 +126,7 @@ namespace corsika::stack {
           const {
         return GetMomentum() / GetEnergy();
       }
-      corsika::units::si::HEPMassType GetParticleMass() const {
+      corsika::units::si::HEPMassType GetMass() const {
         return corsika::particles::GetMass(GetPID());
       }
       int16_t GetChargeNumber() const {

@@ -115,7 +115,7 @@ namespace corsika::process::sibyll {
     using namespace units::si;
 
     HEPEnergyType E = p.GetEnergy();
-    HEPMassType m = particles::GetMass(p.GetPID());
+    HEPMassType m = p.GetMass();
 
     const double gamma = E / m;
 
