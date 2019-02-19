@@ -30,28 +30,23 @@ namespace corsika::process::tracking_line {
   std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
   TrackingLine<Stack, Trajectory>::TimeOfIntersection(corsika::geometry::Line const& line,
                                                       geometry::Sphere const& sphere) {
-    using namespace corsika::units::si;
-    auto const& cs = fEnvironment.GetCoordinateSystem();
-    geometry::Point const origin(cs, 0_m, 0_m, 0_m);
+    auto const delta = line.GetR0() - sphere.GetCenter();
+    auto const v = line.GetV0();
+    auto const R = sphere.GetRadius();
 
-    auto const r0 = (line.GetR0() - origin);
-    auto const v0 = line.GetV0();
-    auto const c0 = (sphere.GetCenter() - origin);
-
-    auto const alpha = r0.dot(v0) - 2 * v0.dot(c0);
-    auto const beta = c0.squaredNorm() + r0.squaredNorm() + 2 * c0.dot(r0) -
-                      sphere.GetRadius() * sphere.GetRadius();
-
-    auto const discriminant = alpha * alpha - 4 * beta * v0.squaredNorm();
+    auto const vDotDelta = v.dot(delta);
+    auto const discriminant =
+        vDotDelta * vDotDelta - v.squaredNorm() * (delta.squaredNorm() - R * R);
 
     //~ std::cout << "discriminant: " << discriminant << std::endl;
     //~ std::cout << "alpha: " << alpha << std::endl;
     //~ std::cout << "beta: " << beta << std::endl;
 
     if (discriminant.magnitude() > 0) {
-      (-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm());
-      return std::make_pair((-alpha - sqrt(discriminant)) / (2 * v0.squaredNorm()),
-                            (-alpha + sqrt(discriminant)) / (2 * v0.squaredNorm()));
+      auto const sqDisc = sqrt(discriminant);
+      auto const invDenom = 1 / v0.squaredNorm();
+      return std::make_pair((vDotDelta - sqDisc) * invDenom),
+                            (vDotDelta + sqDisc) * invDenom));
     } else {
       return {};
     }
