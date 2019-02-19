@@ -32,11 +32,12 @@ namespace corsika::process::tracking_line {
                                                       geometry::Sphere const& sphere) {
     auto const delta = line.GetR0() - sphere.GetCenter();
     auto const v = line.GetV0();
+    auto const vSqNorm = v.squaredNorm();
     auto const R = sphere.GetRadius();
 
     auto const vDotDelta = v.dot(delta);
     auto const discriminant =
-        vDotDelta * vDotDelta - v.squaredNorm() * (delta.squaredNorm() - R * R);
+        vDotDelta * vDotDelta - vSqNorm * (delta.squaredNorm() - R * R);
 
     //~ std::cout << "discriminant: " << discriminant << std::endl;
     //~ std::cout << "alpha: " << alpha << std::endl;
@@ -44,7 +45,7 @@ namespace corsika::process::tracking_line {
 
     if (discriminant.magnitude() > 0) {
       auto const sqDisc = sqrt(discriminant);
-      auto const invDenom = 1 / v0.squaredNorm();
+      auto const invDenom = 1 / vSqNorm;
       return std::make_pair((vDotDelta - sqDisc) * invDenom),
                             (vDotDelta + sqDisc) * invDenom));
     } else {
