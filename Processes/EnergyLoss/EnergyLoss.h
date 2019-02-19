@@ -44,6 +44,8 @@ namespace corsika::process::EnergyLoss {
     void SaveSave();
 
   private:
+    corsika::units::si::HEPEnergyType BetheBloch(corsika::setup::Stack::ParticleType& p, const corsika::units::si::GrammageType dX);
+    
     int GetXbin(corsika::setup::Stack::ParticleType& p,
                 const corsika::units::si::HEPEnergyType dE);
 
