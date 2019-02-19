@@ -61,6 +61,8 @@ namespace corsika::particles {
    * returns mass of particle in natural units
    */
   corsika::units::si::HEPMassType constexpr GetMass(Code const p) {
+    if (p == Code::Nucleus)
+      throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     return detail::masses[static_cast<CodeIntType>(p)];
   }
 
@@ -75,6 +77,8 @@ namespace corsika::particles {
    * returns electric charge number of particle return 1 for a proton.
    */
   int16_t constexpr GetChargeNumber(Code const p) {
+    if (p == Code::Nucleus)
+      throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     // electric_charges stores charges in units of (e/3), e.g. 3 for a proton
     return detail::electric_charges[static_cast<CodeIntType>(p)] / 3;
   }
@@ -83,6 +87,8 @@ namespace corsika::particles {
    * returns electric charge of particle, e.g. return 1.602e-19_C for a proton.
    */
   corsika::units::si::ElectricChargeType constexpr GetCharge(Code const p) {
+    if (p == Code::Nucleus)
+      throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     return GetChargeNumber(p) * (corsika::units::constants::e);
   }
 

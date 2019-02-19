@@ -71,7 +71,7 @@ namespace corsika::process::EnergyLoss {
     // this is the Bethe-Bloch coefficiet 4pi N_A r_e^2 m_e c^2
     auto const K = 0.307075_MeV / 1_mol * square(1_cm); 
     HEPEnergyType const E = p.GetEnergy();
-    HEPMassType const m = particles::GetMass(p.GetPID());
+    HEPMassType const m = p.GetMass();
     double const gamma = E / m;
     double const Z = p.GetChargeNumber();
     double const Z2 = pow(Z, 2);
@@ -79,14 +79,18 @@ namespace corsika::process::EnergyLoss {
     auto const m2 = m * m;
     auto const me2 = me * me;
     double const gamma2 = pow(gamma, 2);
+    cout << "gamma2=" << gamma2 << endl;
+
     double const beta2 = (gamma2-1)/gamma2; // (1-1/gamma)*(1+1/gamma);  (gamma_2-1)/gamma_2 = (1-1/gamma2);
     double const c2 = 1; // HEP convention here c=c2=1
-    double const eta2 = beta2/(1-beta2);
-
+    cout << "BetheBloch beta2=" << beta2 << " gamma2=" << gamma2 << endl;
+    double const eta2 = beta2/(1 - beta2);
     HEPMassType const Wmax = 2*me*c2*beta2*gamma2 / (1 + 2*gamma*me/m + me2/m2); 
-
+    cout << "BetheBloch Wmax=" << Wmax << endl;
+    
     // Sternheimer parameterization, high energies
     // NOTE/TODO: when Cbar is 0 it needs to be approximated from parameterization -> MISSING
+    cout << "BetheBloch p.GetMomentum().GetNorm()/m=" << p.GetMomentum().GetNorm()/m << endl;
     double const x = log10(p.GetMomentum().GetNorm()/m);    
     double delta = 0;
     if (x>=x1) {
@@ -96,7 +100,8 @@ namespace corsika::process::EnergyLoss {
     } else if (x<x0) { // AND IF CONDUCTOR (otherwise, this is 0)
       delta = delta0*pow(100,2*(x-x0));
     }
-
+    cout << "BetheBloch delta=" << delta << endl;
+    
     // with further low energies correction, accurary ~1% down to beta~0.05 (1MeV for p)
 
     // shell correction
@@ -123,20 +128,23 @@ namespace corsika::process::EnergyLoss {
   }
   
   process::EProcessReturn EnergyLoss::DoContinuous(Particle& p, Track& t, Stack&) {
+    if (p.GetChargeNumber()==0)
+      return process::EProcessReturn::eOk;
     GrammageType const dX =
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
+    cout << "EnergyLoss " << p.GetPID() << ", z=" << p.GetChargeNumber()
+         << ", dX=" << dX / 1_g * square(1_cm) << "g/cm2" << endl;
     HEPEnergyType dE = BetheBloch(p, dX);
     auto E = p.GetEnergy();
-    const auto Ekin = E - p.GetParticleMass();
+    const auto Ekin = E - p.GetMass();
     auto Enew = E + dE;
-    cout << "EnergyLoss " << p.GetPID() << ", z=" << p.GetChargeNumber()
-         << ", dX=" << dX / 1_g * square(1_cm) << "g/cm2,  dE=" << dE / 1_MeV << "MeV, "
+    cout << "EnergyLoss  dE=" << dE / 1_MeV << "MeV, "
          << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV
          << ", Enew=" << Enew / 1_GeV << "GeV" << endl;
     auto status = process::EProcessReturn::eOk;
     if (-dE > Ekin) {
       dE = -Ekin;
-      Enew = p.GetParticleMass();
+      Enew = p.GetMass();
       status = process::EProcessReturn::eParticleAbsorbed;
     }
     p.SetEnergy(Enew);
@@ -152,7 +160,7 @@ namespace corsika::process::EnergyLoss {
 
   void EnergyLoss::MomentumUpdate(corsika::setup::Stack::ParticleType& p,
                                   corsika::units::si::HEPEnergyType Enew) {
-    HEPMomentumType Pnew = elab2plab(Enew, p.GetParticleMass());
+    HEPMomentumType Pnew = elab2plab(Enew, p.GetMass());
     auto pnew = p.GetMomentum();
     p.SetMomentum(pnew * Pnew / pnew.GetNorm());
   }

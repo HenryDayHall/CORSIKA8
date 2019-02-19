@@ -162,11 +162,11 @@ namespace corsika::stack {
       /**
        * Overwrite normal GetParticleMass function with nuclear version
        */
-      corsika::units::si::HEPMassType GetParticleMass() const {
+      corsika::units::si::HEPMassType GetMass() const {
         if (InnerParticleInterface<StackIteratorInterface>::GetPID() ==
             corsika::particles::Code::Nucleus)
           return corsika::particles::GetNucleusMass(GetNuclearA(), GetNuclearZ());
-        return InnerParticleInterface<StackIteratorInterface>::GetParticleMass();
+        return InnerParticleInterface<StackIteratorInterface>::GetMass();
       }
       /**
        * Overwirte normal GetChargeNumber function with nuclear version
