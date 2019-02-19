@@ -272,7 +272,7 @@ int main() {
   // hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
-  process::EnergyLoss::EnergyLoss eLoss(2_MeV / 1_g * square(1_cm));
+  process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;

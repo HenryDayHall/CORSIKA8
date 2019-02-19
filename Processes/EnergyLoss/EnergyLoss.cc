@@ -34,9 +34,8 @@ namespace corsika::process::EnergyLoss {
     return sqrt((Elab - m) * (Elab + m));
   };
 
-  EnergyLoss::EnergyLoss(MeVgcm2 const vdEdX)
-      : fdEdX(vdEdX)
-      , fEnergyLossTot(0_GeV) {}
+  EnergyLoss::EnergyLoss()
+      : fEnergyLossTot(0_GeV) {}
 
 
   /**

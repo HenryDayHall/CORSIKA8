@@ -31,7 +31,7 @@ namespace corsika::process::EnergyLoss {
                         corsika::units::si::HEPEnergyType Enew);
 
   public:
-    EnergyLoss(MeVgcm2 const vdEdX);
+    EnergyLoss();
     void Init() {}
 
     corsika::process::EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType&,
@@ -49,7 +49,6 @@ namespace corsika::process::EnergyLoss {
     int GetXbin(corsika::setup::Stack::ParticleType& p,
                 const corsika::units::si::HEPEnergyType dE);
 
-    MeVgcm2 fdEdX;
     corsika::units::si::HEPEnergyType fEnergyLossTot;
     std::map<int, double> fSave;
   };
