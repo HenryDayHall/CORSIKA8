@@ -252,7 +252,7 @@ int main() {
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  stack_inspector::StackInspector<setup::Stack> p0(true);
+  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   const std::vector<particles::Code> trackedHadrons = {
         particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -275,9 +275,10 @@ int main() {
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = p0 << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
-  // auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
+  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut << trackWriter;
+  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
+  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
+  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -291,7 +292,7 @@ int main() {
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
   const HEPEnergyType E0 =
       nuclA *
-      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+      100_GeV; 
   double theta = 0.;
   double phi = 0.;
 
