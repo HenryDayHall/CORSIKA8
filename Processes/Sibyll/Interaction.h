@@ -37,8 +37,8 @@ namespace corsika::process::sibyll {
     void Init();
 
     void SetParticleListStable(const std::vector<particles::Code>);
-    void SetUnstable(const corsika::particles::Code );
-    void SetStable(const corsika::particles::Code );
+    void SetUnstable(const corsika::particles::Code);
+    void SetStable(const corsika::particles::Code);
 
     bool WasInitialized() { return fInitialized; }
     bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
@@ -47,13 +47,11 @@ namespace corsika::process::sibyll {
     int GetMaxTargetMassNumber() { return fMaxTargetMassNumber; }
     corsika::units::si::HEPEnergyType GetMinEnergyCoM() { return fMinEnergyCoM; }
     corsika::units::si::HEPEnergyType GetMaxEnergyCoM() { return fMaxEnergyCoM; }
-    bool IsValidTarget(corsika::particles::Code TargetId)
-    {
-      return ( corsika::particles::GetNucleusA(TargetId) < fMaxTargetMassNumber )
-	&& corsika::particles::IsNucleus( TargetId );
-  }      
-    
-    
+    bool IsValidTarget(corsika::particles::Code TargetId) {
+      return (corsika::particles::GetNucleusA(TargetId) < fMaxTargetMassNumber) &&
+             corsika::particles::IsNucleus(TargetId);
+    }
+
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code BeamId,
                     const corsika::particles::Code TargetId,
@@ -76,10 +74,10 @@ namespace corsika::process::sibyll {
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
 
     const bool fInternalDecays = true;
-    const corsika::units::si::HEPEnergyType fMinEnergyCoM = 
-      10. * 1e9 * corsika::units::si::electronvolt;
-    const corsika::units::si::HEPEnergyType fMaxEnergyCoM = 
-      1.e6 * 1e9 * corsika::units::si::electronvolt;
+    const corsika::units::si::HEPEnergyType fMinEnergyCoM =
+        10. * 1e9 * corsika::units::si::electronvolt;
+    const corsika::units::si::HEPEnergyType fMaxEnergyCoM =
+        1.e6 * 1e9 * corsika::units::si::electronvolt;
     const int fMaxTargetMassNumber = 18;
   };
 

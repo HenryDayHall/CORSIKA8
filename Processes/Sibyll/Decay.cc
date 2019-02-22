@@ -29,12 +29,12 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
-  Decay::Decay(vector<particles::Code>pParticles)
-    : fTrackedParticles(pParticles) {}
+  Decay::Decay(vector<particles::Code> pParticles)
+      : fTrackedParticles(pParticles) {}
   Decay::~Decay() { cout << "Sibyll::Decay n=" << fCount << endl; }
   void Decay::Init() {
     SetHadronsUnstable();
-    SetParticleListStable( fTrackedParticles );
+    SetParticleListStable(fTrackedParticles);
   }
 
   void Decay::SetParticleListStable(const vector<particles::Code> particleList) {
@@ -45,8 +45,7 @@ namespace corsika::process::sibyll {
     // set particles unstable
     SetHadronsUnstable();
     cout << "Interaction: setting tracked hadrons stable.." << endl;
-    for (auto p : particleList) 
-      Decay::SetStable( p );
+    for (auto p : particleList) Decay::SetStable(p);
   }
 
   void Decay::SetUnstable(const particles::Code pCode) {
@@ -177,7 +176,6 @@ namespace corsika::process::sibyll {
     ss.Clear();
     // remove original particle from corsika stack
     p.Delete();
-
   }
 
 } // namespace corsika::process::sibyll

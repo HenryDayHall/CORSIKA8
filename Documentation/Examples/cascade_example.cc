@@ -255,16 +255,15 @@ int main() {
   stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   const std::vector<particles::Code> trackedHadrons = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
-  
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   process::sibyll::Interaction sibyll(env);
   process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   process::sibyll::Decay decay(trackedHadrons);
-  //random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  //process::pythia::Decay decay(trackedHadrons);
+  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
@@ -275,9 +274,10 @@ int main() {
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut << trackWriter;
-  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
-  //auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
+  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut <<
+  // trackWriter; auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss <<
+  // cut << trackWriter;
+  // auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
   auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
@@ -290,9 +290,7 @@ int main() {
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 =
-      nuclA *
-      100_GeV; 
+  const HEPEnergyType E0 = nuclA * 100_GeV;
   double theta = 0.;
   double phi = 0.;
 
