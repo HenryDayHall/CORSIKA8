@@ -28,6 +28,8 @@
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
+#include <corsika/process/pythia/Decay.h>
+
 #include <corsika/process/track_writer/TrackWriter.h>
 
 #include <corsika/units/PhysicalUnits.h>
@@ -251,10 +253,17 @@ int main() {
   tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
+  const std::vector<particles::Code> trackedHadrons = {
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+
+  
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   process::sibyll::Interaction sibyll(env);
   process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
-  process::sibyll::Decay decay;
+  process::sibyll::Decay decay(trackedHadrons);
+  //random::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  //process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
@@ -274,7 +283,7 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const Code beamCode = Code::Nucleus;
-  const int nuclA = 56;
+  const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = particles::Proton::GetMass() * nuclZ +
                            (nuclA - nuclZ) * particles::Neutron::GetMass();

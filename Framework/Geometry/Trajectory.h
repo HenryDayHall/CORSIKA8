@@ -47,10 +47,10 @@ namespace corsika::geometry {
     void LimitEndTo(corsika::units::si::LengthType limit) {
       fTimeLength = T::TimeFromArclength(limit);
     }
-    
+
     auto NormalizedDirection() const {
-        static_assert(std::is_same_v<T, corsika::geometry::Line>);
-        return T::GetV0().normalized();
+      static_assert(std::is_same_v<T, corsika::geometry::Line>);
+      return T::GetV0().normalized();
     }
   };
 

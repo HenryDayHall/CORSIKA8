@@ -170,7 +170,11 @@ TEST_CASE("SibyllInterface", "[processes]") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
 
-    Decay model;
+    const std::vector<particles::Code> particleList = {
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+
+    Decay model(particleList);
 
     model.Init();
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
