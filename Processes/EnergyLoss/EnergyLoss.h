@@ -41,7 +41,7 @@ namespace corsika::process::EnergyLoss {
                                                  corsika::setup::Trajectory&);
 
     corsika::units::si::HEPEnergyType GetTotal() const { return fEnergyLossTot; }
-    void SaveSave();
+    void PrintProfile() const;
 
   private:
     corsika::units::si::HEPEnergyType BetheBloch(
@@ -52,7 +52,8 @@ namespace corsika::process::EnergyLoss {
                 const corsika::units::si::HEPEnergyType dE);
 
     corsika::units::si::HEPEnergyType fEnergyLossTot;
-    std::map<int, double> fSave;
+    corsika::units::si::GrammageType fdX; // profile binning
+    std::map<int, double> fProfile;       // longitudinal profile
   };
 
 } // namespace corsika::process::EnergyLoss

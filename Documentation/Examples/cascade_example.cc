@@ -290,7 +290,7 @@ int main() {
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 = nuclA * 100_GeV;
+  const HEPEnergyType E0 = nuclA * 10_TeV;
   double theta = 0.;
   double phi = 0.;
 
@@ -321,7 +321,8 @@ int main() {
   EAS.Init();
   EAS.Run();
 
-  cout << "Result: E0=" << E0 / 1_GeV << endl;
+  eLoss.PrintProfile(); // print longitudinal profile
+
   cut.ShowResults();
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
@@ -329,5 +330,4 @@ int main() {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
-  eLoss.SaveSave();
 }

@@ -35,7 +35,9 @@ namespace corsika::process::EnergyLoss {
   };
 
   EnergyLoss::EnergyLoss()
-      : fEnergyLossTot(0_GeV) {}
+      : fEnergyLossTot(0_GeV)
+      , fdX(10_g / square(1_cm)) // profile binning
+  {}
 
   /**
    *   PDG2018, passage of particles through matter
@@ -190,8 +192,6 @@ namespace corsika::process::EnergyLoss {
 
     using namespace corsika::geometry;
 
-    const GrammageType deltaX = 10_g / square(1_cm); // binning
-
     CoordinateSystem const& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
     Point pos1(rootCS, 0_m, 0_m, 0_m);
@@ -202,17 +202,21 @@ namespace corsika::process::EnergyLoss {
     GrammageType const grammage =
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
 
-    const int bin = grammage / deltaX;
+    const int bin = grammage / fdX;
 
-    if (!fSave.count(bin)) { cout << "EnergyLoss new x bin " << bin << endl; }
-    fSave[bin] += -dE / 1_GeV;
+    // fill longitudinal profile
+    if (!fProfile.count(bin)) { cout << "EnergyLoss new x bin " << bin << endl; }
+    fProfile[bin] += -dE / 1_GeV;
     return bin;
   }
 
-  void EnergyLoss::SaveSave() {
+  void EnergyLoss::PrintProfile() const {
 
-    cout << "EnergyLoss Save " << endl;
-    for (auto v : fSave) { cout << v.first << " " << v.second << endl; }
+    cout << "EnergyLoss PrintProfile  X-bin [g/cm2]  dE/dX [GeV/g/cm2]  " << endl;
+    double const deltaX = fdX / 1_g * square(1_cm);
+    for (auto v : fProfile) {
+      cout << v.first * deltaX << " " << v.second / deltaX << endl;
+    }
   }
 
 } // namespace corsika::process::EnergyLoss
