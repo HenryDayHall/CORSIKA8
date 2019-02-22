@@ -125,17 +125,9 @@ namespace corsika::geometry {
 
     template <typename ScalarDim>
     auto operator*(phys::units::quantity<ScalarDim, double> const p) const {
-      using ProdQuantity = phys::units::detail::Product<dim, ScalarDim, double, double>;
+      using ProdDim = phys::units::detail::product_d<dim, ScalarDim>;
 
-      if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless,
-                                                               // not a "Quantity" anymore
-      {
-        return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs,
-                                                    BaseVector<dim>::qVector * p);
-      } else {
-        return Vector<typename ProdQuantity::dimension_type>(
-            *BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
-      }
+      return Vector<ProdDim>(*BaseVector<dim>::cs, BaseVector<dim>::qVector * p);
     }
 
     template <typename ScalarDim>
@@ -173,16 +165,8 @@ namespace corsika::geometry {
       auto const c2 = pV.GetComponents(*BaseVector<dim>::cs).eVector;
       auto const bareResult = c1.cross(c2);
 
-      using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
-
-      if constexpr (std::is_same<ProdQuantity, double>::value) // result dimensionless,
-                                                               // not a "Quantity" anymore
-      {
-        return Vector<phys::units::dimensionless_d>(*BaseVector<dim>::cs, bareResult);
-      } else {
-        return Vector<typename ProdQuantity::dimension_type>(*BaseVector<dim>::cs,
-                                                             bareResult);
-      }
+      using ProdDim = phys::units::detail::product_d<dim, dim2>;
+      return Vector<ProdDim>(*BaseVector<dim>::cs, bareResult);
     }
 
     template <typename dim2>
@@ -191,9 +175,10 @@ namespace corsika::geometry {
       auto const c2 = pV.GetComponents(*BaseVector<dim>::cs).eVector;
       auto const bareResult = c1.dot(c2);
 
-      using ProdQuantity = phys::units::detail::Product<dim, dim2, double, double>;
+      using ProdDim = phys::units::detail::product_d<dim, dim2>;
 
-      return ProdQuantity(phys::units::detail::magnitude_tag, bareResult);
+      return phys::units::quantity<ProdDim, double>(phys::units::detail::magnitude_tag,
+                                                    bareResult);
     }
   };
 

@@ -144,8 +144,17 @@ namespace phys {
           d8 = DX::dim8 + DY::dim8
         };
 
-        typedef Collapse<dimensions<d1, d2, d3, d4, d5, d6, d7, d8>, T> type;
+        typedef dimensions<d1, d2, d3, d4, d5, d6, d7, d8> dim;
+
+        typedef Collapse<dim, T> type;
       };
+
+      /**
+       * convenience type for product dimension
+       */
+
+      template <typename DX, typename DY>
+      using product_d = typename product<DX, DY, Rep>::dim;
 
       template <typename DX, typename DY, typename X, typename Y>
       using Product = typename product<DX, DY, PromoteMul<X, Y>>::type;
@@ -166,8 +175,17 @@ namespace phys {
           d8 = DX::dim8 - DY::dim8
         };
 
-        typedef Collapse<dimensions<d1, d2, d3, d4, d5, d6, d7, d8>, T> type;
+        typedef dimensions<d1, d2, d3, d4, d5, d6, d7, d8> dim;
+
+        typedef Collapse<dim, T> type;
       };
+
+      /**
+       * convenience type for quotient dimension
+       */
+
+      template <typename DX, typename DY>
+      using quotient_d = typename quotient<DX, DY, Rep>::dim;
 
       template <typename DX, typename DY, typename X, typename Y>
       using Quotient = typename quotient<DX, DY, PromoteMul<X, Y>>::type;
@@ -188,8 +206,17 @@ namespace phys {
           d8 = -D::dim8
         };
 
-        typedef Collapse<dimensions<d1, d2, d3, d4, d5, d6, d7, d8>, T> type;
+        typedef dimensions<d1, d2, d3, d4, d5, d6, d7, d8> dim;
+
+        typedef Collapse<dim, T> type;
       };
+
+      /**
+       * convenience type for reciprocal dimension
+       */
+
+      template <typename DX, typename DY>
+      using reciprocal_d = typename reciprocal<DX, Rep>::dim;
 
       template <typename D, typename X, typename Y>
       using Reciprocal = typename reciprocal<D, PromoteMul<X, Y>>::type;
@@ -210,11 +237,20 @@ namespace phys {
           d8 = N * D::dim8
         };
 
-        typedef Collapse<dimensions<d1, d2, d3, d4, d5, d6, d7, d8>, T> type;
+        typedef dimensions<d1, d2, d3, d4, d5, d6, d7, d8> dim;
+
+        typedef Collapse<dim, T> type;
       };
 
+      /**
+       * convenience type for power dimension
+       */
+
+      template <typename DX, int N>
+      using power_d = typename power<DX, N, Rep>::dim;
+
       template <typename D, int N, typename T>
-      using Power = typename detail::power<D, N, T>::type;
+      using Power = typename power<D, N, T>::type;
 
       /**
        * root type generator.
@@ -238,8 +274,16 @@ namespace phys {
           d8 = D::dim8 / N
         };
 
-        typedef Collapse<dimensions<d1, d2, d3, d4, d5, d6, d7, d8>, T> type;
+        typedef dimensions<d1, d2, d3, d4, d5, d6, d7, d8> dim;
+
+        typedef Collapse<dim, T> type;
       };
+
+      /**
+       * convenience type for root dimension
+       */
+      template <typename D, int N>
+      using root_d = typename root<D, N, Rep>::dim;
 
       template <typename D, int N, typename T>
       using Root = typename detail::root<D, N, T>::type;
