@@ -36,6 +36,10 @@ namespace corsika::process::sibyll {
 
     void Init();
 
+    void SetParticleListStable(const std::vector<particles::Code>);
+    void SetUnstable(const corsika::particles::Code );
+    void SetStable(const corsika::particles::Code );
+
     bool WasInitialized() { return fInitialized; }
     bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
       return (fMinEnergyCoM <= ecm) && (ecm <= fMaxEnergyCoM);
@@ -70,6 +74,8 @@ namespace corsika::process::sibyll {
     corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+
+    const bool fInternalDecays = true;
     const corsika::units::si::HEPEnergyType fMinEnergyCoM = 
       10. * 1e9 * corsika::units::si::electronvolt;
     const corsika::units::si::HEPEnergyType fMaxEnergyCoM = 

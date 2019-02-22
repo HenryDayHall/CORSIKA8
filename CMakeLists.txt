@@ -72,6 +72,8 @@ if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif (Boost_FOUND)
 
+find_package (Pythia8) # optional
+  
 find_package (Eigen3 REQUIRED)
 #find_package (HDF5) # not yet needed
 

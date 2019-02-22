@@ -29,44 +29,37 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
-  Decay::Decay() {}
+  Decay::Decay(vector<particles::Code>pParticles)
+    : fTrackedParticles(pParticles) {}
   Decay::~Decay() { cout << "Sibyll::Decay n=" << fCount << endl; }
   void Decay::Init() {
-    setHadronsUnstable();
-    setTrackedParticlesStable();
+    SetHadronsUnstable();
+    SetParticleListStable( fTrackedParticles );
   }
 
-  void Decay::setTrackedParticlesStable() {
+  void Decay::SetParticleListStable(const vector<particles::Code> particleList) {
     /*
        Sibyll is hadronic generator
        only hadrons decay
      */
     // set particles unstable
-    setHadronsUnstable();
-    // make tracked particles stable
+    SetHadronsUnstable();
     cout << "Interaction: setting tracked hadrons stable.." << endl;
-    const vector<particles::Code> particleList = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
-    for (auto p : particleList) {
-      // set particle stable by setting table value negative
-      const int sibid = process::sibyll::ConvertToSibyllRaw(p);
-      s_csydec_.idb[sibid - 1] = (-1) * abs(s_csydec_.idb[sibid - 1]);
-    }
+    for (auto p : particleList) 
+      Decay::SetStable( p );
   }
 
-  void Decay::setUnstable(const particles::Code pCode) {
+  void Decay::SetUnstable(const particles::Code pCode) {
     int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
     s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Decay::setStable(const particles::Code pCode) {
+  void Decay::SetStable(const particles::Code pCode) {
     int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Decay::setAllStable() {
+  void Decay::SetAllStable() {
     // name? also makes EM particles stable
 
     cout << "Decay: setting all particles stable.." << endl;
@@ -83,7 +76,7 @@ namespace corsika::process::sibyll {
     }
   }
 
-  void Decay::setHadronsUnstable() {
+  void Decay::SetHadronsUnstable() {
 
     // name? also makes EM particles stable
 
@@ -157,16 +150,14 @@ namespace corsika::process::sibyll {
     // remember position
     Point const decayPoint = p.GetPosition();
     TimeType const t0 = p.GetTime();
-    // remove original particle from corsika stack
-    p.Delete();
     // set all particles/hadrons unstable
     // setHadronsUnstable();
-    setUnstable(pCode);
+    SetUnstable(pCode);
     // call sibyll decay
     cout << "Decay: calling Sibyll decay routine.." << endl;
     decsib_();
     // reset to stable
-    setStable(pCode);
+    SetStable(pCode);
     // print output
     int print_unit = 6;
     sib_list_(print_unit);
@@ -184,6 +175,9 @@ namespace corsika::process::sibyll {
     }
     // empty sibyll stack
     ss.Clear();
+    // remove original particle from corsika stack
+    p.Delete();
+
   }
 
 } // namespace corsika::process::sibyll

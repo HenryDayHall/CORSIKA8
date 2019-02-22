@@ -177,8 +177,10 @@ TEST_CASE("Trajectories") {
     CHECK(line.GetPosition(t).GetCoordinates() == base.GetPosition(1.).GetCoordinates());
 
     CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(3));
-    
-    CHECK((base.NormalizedDirection().GetComponents(rootCS) - QuantityVector<dimensionless_d>{1, 0, 0}).eVector.norm() == Approx(0).margin(absMargin));
+
+    CHECK((base.NormalizedDirection().GetComponents(rootCS) -
+           QuantityVector<dimensionless_d>{1, 0, 0})
+              .eVector.norm() == Approx(0).margin(absMargin));
   }
 
   SECTION("Helix") {

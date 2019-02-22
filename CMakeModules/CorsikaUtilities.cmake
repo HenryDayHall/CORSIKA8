@@ -1,4 +1,14 @@
+#
+# (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+#
+# See file AUTHORS for a list of contributors.
+#
+# This software is distributed under the terms of the GNU General Public
+# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+# the license.
+#
 
+#################################################
 #
 # takes a list of input files and prepends a path
 #
@@ -12,6 +22,7 @@ function (CORSIKA_PREPEND_PATH return prefix)
 endfunction (CORSIKA_PREPEND_PATH)
 
 
+#################################################
 #
 # use: CORSIKA_COPY_HEADERS_TO_NAMESPACE theLib theNamesapce header1.h header2.h ...
 #
@@ -58,6 +69,7 @@ endfunction (CORSIKA_COPY_HEADERS_TO_NAMESPACE)
 
 
 
+#################################################
 #
 # use: CORSIKA_ADD_FILES_ABSOLUTE varname
 #
@@ -81,6 +93,7 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 
 
 
+#################################################
 #
 # central macro to activate unit tests in cmake
 #

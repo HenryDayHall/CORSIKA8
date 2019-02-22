@@ -35,7 +35,7 @@ using Track = Trajectory;
 namespace corsika::process::sibyll {
 
   Interaction::Interaction(environment::Environment const& env)
-      : fEnvironment(env) {}
+    : fEnvironment(env) {}
 
   Interaction::~Interaction() {
     cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount << endl;
@@ -49,10 +49,46 @@ namespace corsika::process::sibyll {
     if (!fInitialized) {
       sibyll_ini_();
 
+      // any decays in sibyll? if yes need to define which particles
+      if( fInternalDecays){
+	// define which particles are passed to corsika, i.e. which particles make it into history
+	// even very shortlived particles like charm or pi0 are of interest here
+	const std::vector<particles::Code> HadronsWeWantTrackedByCorsika = {
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::Pi0,
+        particles::Code::KMinus, particles::Code::KPlus,
+	particles::Code::K0Long,  particles::Code::K0Short,
+	particles::Code::SigmaPlus, particles::Code::SigmaMinus,
+	particles::Code::Lambda0,
+	particles::Code::Xi0, particles::Code::XiMinus,
+	particles::Code::OmegaMinus,
+	particles::Code::DPlus, particles::Code::DMinus, particles::Code::D0, particles::Code::D0Bar};
+	
+	Interaction::SetParticleListStable(HadronsWeWantTrackedByCorsika);
+      }
+      
       fInitialized = true;
     }
   }
 
+  void Interaction::SetParticleListStable(const std::vector<particles::Code> particleList) {
+    for (auto p : particleList)
+      Interaction::SetStable( p );
+  }
+
+  void Interaction::SetUnstable(const particles::Code pCode) {
+    cout << "Sibyll::Interaction: setting " << pCode << " unstable.." << endl;
+    int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
+    s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
+  }
+
+  void Interaction::SetStable(const particles::Code pCode) {
+    cout << "Sibyll::Interaction: setting " << pCode << " stable.." << endl;
+    int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
+    s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
+  }
+
+  
+  
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
@@ -270,8 +306,8 @@ namespace corsika::process::sibyll {
             sigEla; // to avoid not used warning in array binding
       }
 
-      const auto targetCode = mediumComposition.SampleTarget(
-          cross_section_of_components, fRNG);
+      const auto targetCode =
+          mediumComposition.SampleTarget(cross_section_of_components, fRNG);
       cout << "Interaction: target selected: " << targetCode << endl;
       /*
         FOR NOW: allow nuclei with A<18 or protons only.
@@ -309,8 +345,7 @@ namespace corsika::process::sibyll {
         // running sibyll, filling stack
         sibyll_(kBeam, targetSibCode, sqs);
         // running decays
-        // setTrackedParticlesStable();
-        decsib_();
+        if (fInternalDecays) decsib_();
         // print final state
         int print_unit = 6;
         sib_list_(print_unit);

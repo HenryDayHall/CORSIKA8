@@ -18,14 +18,17 @@ CORSIKA_ADD_TEST (logger_example)
 
 add_executable (stack_example stack_example.cc)
 target_compile_options(stack_example PRIVATE -g) # do not skip asserts
-target_link_libraries (stack_example SuperStupidStack CORSIKAunits CORSIKAlogging)
+target_link_libraries (stack_example SuperStupidStack CORSIKAunits
+  CORSIKAlogging)
 CORSIKA_ADD_TEST (stack_example)
 
 add_executable (cascade_example cascade_example.cc)
 target_compile_options(cascade_example PRIVATE -g) # do not skip asserts
-target_link_libraries (cascade_example SuperStupidStack CORSIKAunits CORSIKAlogging
-   CORSIKArandom
-   ProcessSibyll
+target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
+  CORSIKAlogging
+  CORSIKArandom
+  ProcessSibyll
+  ProcessPythia
   CORSIKAcascade
   ProcessStackInspector
   ProcessTrackWriter
