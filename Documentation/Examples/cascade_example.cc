@@ -277,8 +277,8 @@ int main() {
   // assemble all processes into an ordered process list
   // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut << trackWriter;
   // auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
-  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
-  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << cut << trackWriter;
+  //auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
+  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
