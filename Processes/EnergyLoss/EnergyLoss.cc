@@ -41,12 +41,12 @@ namespace corsika::process::EnergyLoss {
   /**
    *   PDG2018, passage of particles through matter
    *
-   * Note, that Ieff of composite media a determined from lnI = sum
-   * a_i lnI_i where a_i is the fraction of the electron population
-   * (~Z_i) of the ith element. This can also be used for shell
+   * Note, that \f$I_{\mathrm{eff}}\f$ of composite media a determined from \f$ \ln I = \sum_i
+   * a_i \ln(I_i) \f$ where \f$ a_i \f$ is the fraction of the electron population
+   * (\f$\sim Z_i\f$) of the \f$i\f$-th element. This can also be used for shell
    * corrections or density effects.
    * 
-   * The Ieff of compounds is not bettre than a few percent, if not
+   * The \f$I_{\mathrm{eff}}\f$ of compounds is not better than a few percent, if not
    * measured explicitly.
    *
    * For shell correction, see Sec 6 of https://www.nap.edu/read/20066/chapter/8#115
