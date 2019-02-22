@@ -250,7 +250,7 @@ int main() {
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  stack_inspector::StackInspector<setup::Stack> p0(true);
+  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   process::sibyll::Interaction sibyll(env);
@@ -266,9 +266,10 @@ int main() {
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = p0 << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
-  // auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
+  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut << trackWriter;
+  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut << trackWriter;
+  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
+  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -277,12 +278,12 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const Code beamCode = Code::Nucleus;
-  const int nuclA = 56;
+  const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
   const HEPEnergyType E0 =
       nuclA *
-      100_GeV; // 1_PeV crashes with bad COMboost in second interaction (crash later)
+      100_GeV; 
   double theta = 0.;
   double phi = 0.;
 
