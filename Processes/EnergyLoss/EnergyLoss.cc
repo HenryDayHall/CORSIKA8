@@ -58,6 +58,7 @@ namespace corsika::process::EnergyLoss {
     // right now: values for nitrogen_D
     // 7 nitrogen_gas 82.0 0.49976 D E 0.0011653 0.0 1.7378 4.1323 0.15349 3.2125 10.54
     auto Ieff = 82.0_eV; 
+    auto Zmat = 7; 
     auto ZoverA = 0.49976_mol/1_g; 
     const double x0 = 1.7378;
     const double x1 = 4.1323;
@@ -79,16 +80,17 @@ namespace corsika::process::EnergyLoss {
     auto const m2 = m * m;
     auto const me2 = me * me;
     double const gamma2 = pow(gamma, 2);
-    cout << "gamma2=" << gamma2 << endl;
-
-    double const beta2 = (gamma2-1)/gamma2; // (1-1/gamma)*(1+1/gamma);  (gamma_2-1)/gamma_2 = (1-1/gamma2);
+    
+    double const beta2 = (gamma2-1)/gamma2; // 1-1/gamma2    (1-1/gamma)*(1+1/gamma);  (gamma_2-1)/gamma_2 = (1-1/gamma2);
     double const c2 = 1; // HEP convention here c=c2=1
     cout << "BetheBloch beta2=" << beta2 << " gamma2=" << gamma2 << endl;
     double const eta2 = beta2/(1 - beta2);
-    HEPMassType const Wmax = 2*me*c2*beta2*gamma2 / (1 + 2*gamma*me/m + me2/m2); 
+    HEPMassType const Wmax = 2*me*c2*beta2*gamma2 / (1 + 2*gamma*me/m + me2/m2);
+    // approx, but <<1%    HEPMassType const Wmax = 2*me*c2*beta2*gamma2;      for HEAVY PARTICLES
+    // Wmax ~ 2me v2 for non-relativistic particles
     cout << "BetheBloch Wmax=" << Wmax << endl;
     
-    // Sternheimer parameterization, high energies
+    // Sternheimer parameterization, density corrections towards high energies
     // NOTE/TODO: when Cbar is 0 it needs to be approximated from parameterization -> MISSING
     cout << "BetheBloch p.GetMomentum().GetNorm()/m=" << p.GetMomentum().GetNorm()/m << endl;
     double const x = log10(p.GetMomentum().GetNorm()/m);    
@@ -104,7 +106,7 @@ namespace corsika::process::EnergyLoss {
     
     // with further low energies correction, accurary ~1% down to beta~0.05 (1MeV for p)
 
-    // shell correction
+    // shell correction, <~100MeV
     // need more clarity about formulas and units
     const double Cadj = 0;
     /*
@@ -116,15 +118,24 @@ namespace corsika::process::EnergyLoss {
       (3.858019/eta2 - 0.1667989/(eta2*eta2) + 0.00157955/(eta2*eta2*eta2)) * 1e-9 * Iadj*Iadj*Iadj;
     */
     
-    // Bloch correction for higher-order Born approximation
-    //z2 L2
-      
-    // Barkas correction
-    //double barkass = 0;
+    // Barkas correction O(Z3) higher-order Born approximation
+    // see Appl. Phys. 85 (1999) 1249
+    double A = 1;
+    if (p.GetPID() == particles::Code::Nucleus)
+      A = p.GetNuclearA();
+    double const Erel = p.GetEnergy()/A / 1_keV;
+    double const Llow = 0.01 * Erel;
+    double const Lhigh = 1.5/pow(Erel,0.4) + 45000/Zmat * pow(Erel, 1.6);
+    double const barkas = Z * Llow*Lhigh/(Llow+Lhigh); // RU, I think the Z was missing...
 
+    // Bloch correction for O(Z4) higher-order Born approximation
+    // see Appl. Phys. 85 (1999) 1249
+    const double alpha = 1./137.035999173;
+    double const y2 = Z*Z * alpha*alpha/beta2;
+    double const bloch = -y2 * (1.202 - y2*(1.042-0.855*y2+0.343*y2*y2) );    
     
     double const aux = 2*me*c2*beta2*gamma2*Wmax / (Ieff*Ieff);    
-    return K * Z2 * ZoverA / beta2 * (0.5 * log(aux) - beta2 - Cadj/Z - delta/2) * dX;
+    return K * Z2 * ZoverA / beta2 * (0.5 * log(aux) - beta2 - Cadj/Z - delta/2 + barkas + bloch) * dX;
   }
   
   process::EProcessReturn EnergyLoss::DoContinuous(Particle& p, Track& t, Stack&) {
