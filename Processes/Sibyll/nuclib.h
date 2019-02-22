@@ -34,13 +34,12 @@ extern struct {
 */
 extern struct { double ppp[60][3]; } fragments_;
 
-  //        COMMON /cnucsignuc/SIGMA(6,4,56), SIGQE(6,4,56)
-  extern struct
-  {
-    double sigma[56][4][6];
-    double sigqe[56][4][6];
-  } cnucsignuc_;
-  
+//        COMMON /cnucsignuc/SIGMA(6,4,56), SIGQE(6,4,56)
+extern struct {
+  double sigma[56][4][6];
+  double sigqe[56][4][6];
+} cnucsignuc_;
+
 // NUCLIB
 
 // subroutine to initiate nuclib
@@ -56,6 +55,7 @@ void signuc_(const int&, const double&, double&);
 
 void signuc2_(const int&, const int&, const double&, double&);
 
-void sigma_mc_(const int&, const int&, const double&, const double&, const int&, double&, double&, double&, double&);
+void sigma_mc_(const int&, const int&, const double&, const double&, const int&, double&,
+               double&, double&, double&);
 }
 #endif

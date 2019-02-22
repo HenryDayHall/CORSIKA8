@@ -35,7 +35,7 @@ using Track = Trajectory;
 namespace corsika::process::sibyll {
 
   Interaction::Interaction(environment::Environment const& env)
-    : fEnvironment(env) {}
+      : fEnvironment(env) {}
 
   Interaction::~Interaction() {
     cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount << endl;
@@ -50,29 +50,30 @@ namespace corsika::process::sibyll {
       sibyll_ini_();
 
       // any decays in sibyll? if yes need to define which particles
-      if( fInternalDecays){
-	// define which particles are passed to corsika, i.e. which particles make it into history
-	// even very shortlived particles like charm or pi0 are of interest here
-	const std::vector<particles::Code> HadronsWeWantTrackedByCorsika = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::Pi0,
-        particles::Code::KMinus, particles::Code::KPlus,
-	particles::Code::K0Long,  particles::Code::K0Short,
-	particles::Code::SigmaPlus, particles::Code::SigmaMinus,
-	particles::Code::Lambda0,
-	particles::Code::Xi0, particles::Code::XiMinus,
-	particles::Code::OmegaMinus,
-	particles::Code::DPlus, particles::Code::DMinus, particles::Code::D0, particles::Code::D0Bar};
-	
-	Interaction::SetParticleListStable(HadronsWeWantTrackedByCorsika);
+      if (fInternalDecays) {
+        // define which particles are passed to corsika, i.e. which particles make it into
+        // history even very shortlived particles like charm or pi0 are of interest here
+        const std::vector<particles::Code> HadronsWeWantTrackedByCorsika = {
+            particles::Code::PiPlus,     particles::Code::PiMinus,
+            particles::Code::Pi0,        particles::Code::KMinus,
+            particles::Code::KPlus,      particles::Code::K0Long,
+            particles::Code::K0Short,    particles::Code::SigmaPlus,
+            particles::Code::SigmaMinus, particles::Code::Lambda0,
+            particles::Code::Xi0,        particles::Code::XiMinus,
+            particles::Code::OmegaMinus, particles::Code::DPlus,
+            particles::Code::DMinus,     particles::Code::D0,
+            particles::Code::D0Bar};
+
+        Interaction::SetParticleListStable(HadronsWeWantTrackedByCorsika);
       }
-      
+
       fInitialized = true;
     }
   }
 
-  void Interaction::SetParticleListStable(const std::vector<particles::Code> particleList) {
-    for (auto p : particleList)
-      Interaction::SetStable( p );
+  void Interaction::SetParticleListStable(
+      const std::vector<particles::Code> particleList) {
+    for (auto p : particleList) Interaction::SetStable(p);
   }
 
   void Interaction::SetUnstable(const particles::Code pCode) {
@@ -87,8 +88,6 @@ namespace corsika::process::sibyll {
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
   }
 
-  
-  
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
@@ -97,8 +96,9 @@ namespace corsika::process::sibyll {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
     const int iBeam = process::sibyll::GetSibyllXSCode(BeamId);
-    if( !IsValidCoMEnergy(CoMenergy) ){
-      throw std::runtime_error("Interaction: GetCrossSection: CoM energy outside range for Sibyll!");
+    if (!IsValidCoMEnergy(CoMenergy)) {
+      throw std::runtime_error(
+          "Interaction: GetCrossSection: CoM energy outside range for Sibyll!");
     }
     const double dEcm = CoMenergy / 1_GeV;
     if (particles::IsNucleus(TargetId)) {
@@ -177,7 +177,7 @@ namespace corsika::process::sibyll {
         i++;
         cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        auto const [productionCrossSection, elaCrossSection ] =
+        auto const [productionCrossSection, elaCrossSection] =
             GetCrossSection(corsikaBeamId, targetId, ECoM);
         [[maybe_unused]] auto elaCrossSectionCopy =
             elaCrossSection; // ONLY TO AVOID COMPILER WARNING
@@ -193,8 +193,8 @@ namespace corsika::process::sibyll {
 
       // calculate interaction length in medium
       //#warning check interaction length units
-      GrammageType const int_length =
-          mediumComposition.GetAverageMassNumber() * units::constants::u / weightedProdCrossSection;
+      GrammageType const int_length = mediumComposition.GetAverageMassNumber() *
+                                      units::constants::u / weightedProdCrossSection;
       cout << "Interaction: "
            << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
            << endl;
@@ -299,8 +299,7 @@ namespace corsika::process::sibyll {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        const auto [sigProd, sigEla ] =
-            GetCrossSection(corsikaBeamId, targetId, Ecm);
+        const auto [sigProd, sigEla] = GetCrossSection(corsikaBeamId, targetId, Ecm);
         cross_section_of_components[i] = sigProd;
         [[maybe_unused]] auto sigElaCopy =
             sigEla; // to avoid not used warning in array binding
@@ -329,10 +328,10 @@ namespace corsika::process::sibyll {
       cout << "Interaction: "
            << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
            << " Ecm(GeV): " << Ecm / 1_GeV << endl;
-      if( Ecm > GetMaxEnergyCoM() )
-	throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
+      if (Ecm > GetMaxEnergyCoM())
+        throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
       // FR: removed eProjectileLab < 8.5_GeV ||
-      if ( Ecm < GetMinEnergyCoM() ) {
+      if (Ecm < GetMinEnergyCoM()) {
         cout << "Interaction: "
              << " DoInteraction: should have dropped particle.. "
              << "THIS IS AN ERROR" << endl;

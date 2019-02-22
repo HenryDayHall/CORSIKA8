@@ -117,10 +117,22 @@ namespace corsika::stack {
       corsika::units::si::TimeType GetTime() const {
         return GetStackData().GetTime(GetIndex());
       }
+      /**
+       * @name derived quantities
+       *
+       * @{
+       */
       corsika::geometry::Vector<corsika::units::si::dimensionless_d> GetDirection()
           const {
         return GetMomentum() / GetEnergy();
       }
+      corsika::units::si::HEPMassType GetMass() const {
+        return corsika::particles::GetMass(GetPID());
+      }
+      int16_t GetChargeNumber() const {
+        return corsika::particles::GetChargeNumber(GetPID());
+      }
+      ///@}
     };
 
     /**

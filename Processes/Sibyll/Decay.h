@@ -29,8 +29,8 @@ namespace corsika::process {
       void Init();
 
       void SetParticleListStable(const std::vector<particles::Code>);
-      void SetUnstable(const corsika::particles::Code );
-      void SetStable(const corsika::particles::Code );
+      void SetUnstable(const corsika::particles::Code);
+      void SetStable(const corsika::particles::Code);
       void SetAllStable();
       void SetHadronsUnstable();
 

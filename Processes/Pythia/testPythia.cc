@@ -9,8 +9,8 @@
  * the license.
  */
 
-#include <corsika/process/pythia/Decay.h>
 #include <Pythia8/Pythia.h>
+#include <corsika/process/pythia/Decay.h>
 
 #include <corsika/random/RNGManager.h>
 
@@ -58,26 +58,23 @@ TEST_CASE("Pythia", "[processes]") {
     // loop over final state
     for (int i = 0; i < pythia.event.size(); ++i)
       if (pythia.event[i].isFinal()) {
-	cout << "particle: id=" << pythia.event[i].id() << endl;
+        cout << "particle: id=" << pythia.event[i].id() << endl;
       }
   }
 
-
   SECTION("pythia interface") {
     using namespace corsika;
-    
+
     const std::vector<particles::Code> particleList = {
         particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
         particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-    
+
     process::pythia::Decay model(particleList);
-    
+
     model.Init();
-
   }
-
 }
 
 #include <corsika/geometry/Point.h>
@@ -97,7 +94,7 @@ TEST_CASE("Pythia", "[processes]") {
 using namespace corsika;
 using namespace corsika::units::si;
 
-TEST_CASE("pytia decay"){  
+TEST_CASE("pytia decay") {
 
   // setup environment, geometry
   environment::Environment env;
@@ -126,7 +123,7 @@ TEST_CASE("pytia decay"){
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
 
   SECTION("pythia decay") {
-    
+
     setup::Stack stack;
     const HEPEnergyType E0 = 10_GeV;
     HEPMomentumType P0 =
@@ -138,20 +135,17 @@ TEST_CASE("pytia decay"){
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::PiPlus, E0, plab, pos, 0_ns});
 
-    
     const std::vector<particles::Code> particleList = {
         particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
         particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-    
+
     process::pythia::Decay model(particleList);
-    
+
     model.Init();
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
                                                                           stack);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
-    
   }
-
 }

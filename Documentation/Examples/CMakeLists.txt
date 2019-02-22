@@ -30,11 +30,13 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
   ProcessSibyll
   ProcessPythia
   CORSIKAcascade
+  ProcessEnergyLoss
   ProcessStackInspector
   ProcessTrackWriter
   ProcessTrackingLine
   ProcessHadronicElasticModel
   CORSIKAprocesses
+  CORSIKAcascade
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAenvironment

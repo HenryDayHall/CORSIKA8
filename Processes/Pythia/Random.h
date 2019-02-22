@@ -12,8 +12,8 @@
 #ifndef _include_corsika_process_pythia_random_h_
 #define _include_corsika_process_pythia_random_h_
 
-#include <corsika/random/RNGManager.h>
 #include <Pythia8/Pythia.h>
+#include <corsika/random/RNGManager.h>
 
 namespace corsika::process {
 
@@ -21,11 +21,12 @@ namespace corsika::process {
 
     class Random : public Pythia8::RndmEngine {
       double flat();
+
     private:
       corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
+          corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
     };
-    
+
   } // namespace pythia
 } // namespace corsika::process
 
