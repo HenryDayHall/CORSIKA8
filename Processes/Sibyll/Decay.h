@@ -15,6 +15,8 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/DecayProcess.h>
 
+#include <vector>
+
 namespace corsika::process {
 
   namespace sibyll {
