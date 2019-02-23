@@ -1,6 +1,5 @@
-
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -21,6 +20,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <cassert>
+#include <limits>
 
 /**
  *
@@ -76,7 +76,14 @@ namespace corsika::environment {
       if (vDotA == 0) {
         return pGrammage / GetMassDensity(line.GetR0());
       } else {
-        return fLambda / vDotA * log(pGrammage * vDotA / (fRho0 * fLambda) + 1);
+        auto const logArg = pGrammage * vDotA / (fRho0 * fLambda) + 1;
+        if (logArg > 0) {
+          return fLambda / vDotA * log(pGrammage * vDotA / (fRho0 * fLambda) + 1);
+        } else {
+          return std::numeric_limits<typename decltype(
+                     pGrammage)::value_type>::infinity() *
+                 corsika::units::si::meter;
+        }
       }
     }
   };
