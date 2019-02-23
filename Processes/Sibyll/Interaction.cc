@@ -171,7 +171,7 @@ namespace corsika::process::sibyll {
       int i = -1;
       si::CrossSectionType weightedProdCrossSection = 0_mbarn;
       // get weights of components from environment/medium
-      const auto w = mediumComposition.GetFractions();
+      const auto& w = mediumComposition.GetFractions();
       // loop over components in medium
       for (auto const targetId : mediumComposition.GetComponents()) {
         i++;
