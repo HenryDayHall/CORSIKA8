@@ -75,7 +75,19 @@ TEST_CASE("FlatExponential") {
     REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 
-  SECTION("vertical") {
+  SECTION("escape grammage") {
+    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                                 gCS, {0_m / second, 0_m / second, -5_m / second}));
+    Trajectory<Line> const trajectory(line, tEnd);
+
+    GrammageType const escapeGrammage = rho0 * lambda;
+
+    REQUIRE(trajectory.NormalizedDirection().dot(axis).magnitude() < 0);
+    REQUIRE(medium.ArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
+            std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
+  }
+
+  SECTION("inclined") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 5_m / second, 5_m / second}));
     Trajectory<Line> const trajectory(line, tEnd);
@@ -83,7 +95,6 @@ TEST_CASE("FlatExponential") {
     LengthType const length = 2 * lambda;
     GrammageType const exact =
         rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
-
     REQUIRE((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
     REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
