@@ -48,17 +48,12 @@ target_include_directories (
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
-# do it again, since we want -isystem for pythia exteranls
-target_include_directories (
-  ProcessPythia
-  SYSTEM PUBLIC
-  ${PYTHIA8_INCLUDE_DIR}
-  )
 
 target_include_directories (
   ProcessPythia
-  PRIVATE
-  ${PYTHIA8_INCLUDE_DIR}
+  SYSTEM
+  PUBLIC ${PYTHIA8_INCLUDE_DIR}
+  INTERFACE ${PYTHIA8_INCLUDE_DIR}
   )
 
 install (
