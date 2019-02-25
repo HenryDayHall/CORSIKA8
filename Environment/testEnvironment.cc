@@ -13,6 +13,7 @@
                           // cpp file
 
 #include <corsika/environment/DensityFunction.h>
+#include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
@@ -30,11 +31,73 @@ using namespace corsika::geometry;
 using namespace corsika::environment;
 using namespace corsika::particles;
 using namespace corsika::units::si;
+using namespace corsika;
+
+CoordinateSystem const& gCS =
+    RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+
+Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
 TEST_CASE("HomogeneousMedium") {
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
+}
+
+TEST_CASE("FlatExponential") {
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
+  LengthType const lambda = 3_m;
+  auto const rho0 = 1_g / units::si::detail::static_pow<3>(1_cm);
+  FlatExponential<IMediumModel> const medium(gOrigin, axis, rho0, lambda,
+                                             protonComposition);
+  auto const tEnd = 5_s;
+
+  SECTION("horizontal") {
+    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                                 gCS, {20_cm / second, 0_m / second, 0_m / second}));
+    Trajectory<Line> const trajectory(line, tEnd);
+
+    REQUIRE((medium.IntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
+    REQUIRE((medium.ArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
+  }
+
+  SECTION("vertical") {
+    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                                 gCS, {0_m / second, 0_m / second, 5_m / second}));
+    Trajectory<Line> const trajectory(line, tEnd);
+    LengthType const length = 2 * lambda;
+    GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
+
+    REQUIRE((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+  }
+
+  SECTION("escape grammage") {
+    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                                 gCS, {0_m / second, 0_m / second, -5_m / second}));
+    Trajectory<Line> const trajectory(line, tEnd);
+
+    GrammageType const escapeGrammage = rho0 * lambda;
+
+    REQUIRE(trajectory.NormalizedDirection().dot(axis).magnitude() < 0);
+    REQUIRE(medium.ArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
+            std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
+  }
+
+  SECTION("inclined") {
+    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                                 gCS, {0_m / second, 5_m / second, 5_m / second}));
+    Trajectory<Line> const trajectory(line, tEnd);
+    double const cosTheta = M_SQRT1_2;
+    LengthType const length = 2 * lambda;
+    GrammageType const exact =
+        rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
+    REQUIRE((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+  }
 }
 
 auto constexpr rho0 = 1_kg / 1_m / 1_m / 1_m;
@@ -60,15 +123,10 @@ struct Exponential {
 };
 
 TEST_CASE("InhomogeneousMedium") {
-  CoordinateSystem const& cs =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  Vector direction(gCS, QuantityVector<dimensionless_d>(1, 0, 0));
 
-  Point const origin(cs, {0_m, 0_m, 0_m});
-
-  Vector direction(cs, QuantityVector<dimensionless_d>(1, 0, 0));
-
-  Line line(origin, Vector<SpeedType::dimension_type>(
-                        cs, {20_m / second, 0_m / second, 0_m / second}));
+  Line line(gOrigin, Vector<SpeedType::dimension_type>(
+                         gCS, {20_m / second, 0_m / second, 0_m / second}));
 
   auto const tEnd = 5_s;
   Trajectory<Line> const trajectory(line, tEnd);
@@ -77,9 +135,9 @@ TEST_CASE("InhomogeneousMedium") {
   DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);
 
   SECTION("DensityFunction") {
-    REQUIRE(e.Derivative<1>(origin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
+    REQUIRE(e.Derivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
             Approx(1));
-    REQUIRE(rho.EvaluateAt(origin) == e(origin));
+    REQUIRE(rho.EvaluateAt(gOrigin) == e(gOrigin));
   }
 
   auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };

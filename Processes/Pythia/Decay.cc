@@ -8,9 +8,9 @@
  * the license.
  */
 
+#include <Pythia8/Pythia.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/pythia/Random.h>
-#include <Pythia8/Pythia.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -28,45 +28,44 @@ using Track = Trajectory;
 namespace corsika::process::pythia {
 
   Decay::Decay(vector<particles::Code> pParticles)
-	: fTrackedParticles(pParticles) {}
-  
+      : fTrackedParticles(pParticles) {}
+
   Decay::~Decay() { cout << "Pythia::Decay n=" << fCount << endl; }
-  
+
   void Decay::Init() {
-    
+
     Decay::SetParticleListStable(fTrackedParticles);
 
     // set random number generator in pythia
     Pythia8::RndmEngine* rndm = new corsika::process::pythia::Random();
-    fPythia.setRndmEnginePtr( rndm );
+    fPythia.setRndmEnginePtr(rndm);
 
     fPythia.readString("Next:numberShowInfo = 0");
     fPythia.readString("Next:numberShowProcess = 0");
     fPythia.readString("Next:numberShowEvent = 0");
 
     fPythia.readString("Print:quiet = on");
-    
+
     fPythia.readString("ProcessLevel:all = off");
     fPythia.readString("ProcessLevel:resonanceDecays = off");
 
     fPythia.particleData.readString("59:m0 = 101.00");
-    
+
     fPythia.init();
   }
 
   void Decay::SetParticleListStable(const vector<particles::Code> particleList) {
-    for (auto p : particleList)
-      Decay::SetStable( p );
+    for (auto p : particleList) Decay::SetStable(p);
   }
 
   void Decay::SetUnstable(const particles::Code pCode) {
     cout << "Pythia::Decay: setting " << pCode << " unstable.." << endl;
-    fPythia.particleData.mayDecay( static_cast<int>( particles::GetPDG(pCode) ) , true);
+    fPythia.particleData.mayDecay(static_cast<int>(particles::GetPDG(pCode)), true);
   }
 
   void Decay::SetStable(const particles::Code pCode) {
     cout << "Pythia::Decay: setting " << pCode << " stable.." << endl;
-    fPythia.particleData.mayDecay( static_cast<int>( particles::GetPDG(pCode) ) , false);
+    fPythia.particleData.mayDecay(static_cast<int>(particles::GetPDG(pCode)), false);
   }
 
   template <>
@@ -95,29 +94,29 @@ namespace corsika::process::pythia {
 
     // coordinate system, get global frame of reference
     geometry::CoordinateSystem& rootCS =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-    
+        geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+
     fCount++;
 
     // pythia stack
     Pythia8::Event& event = fPythia.event;
     event.reset();
-    
+
     // set particle unstable
-    Decay::SetUnstable( p.GetPID() );
+    Decay::SetUnstable(p.GetPID());
 
     // input particle PDG
-    auto const pdgCode = static_cast<int>( particles::GetPDG( p.GetPID() ));
+    auto const pdgCode = static_cast<int>(particles::GetPDG(p.GetPID()));
 
-    auto const pcomp =     p.GetMomentum().GetComponents();
-    double px = pcomp[0] / 1_GeV ;
-    double py = pcomp[1] / 1_GeV ;
-    double pz = pcomp[2] / 1_GeV ;
+    auto const pcomp = p.GetMomentum().GetComponents();
+    double px = pcomp[0] / 1_GeV;
+    double py = pcomp[1] / 1_GeV;
+    double pz = pcomp[2] / 1_GeV;
     double en = p.GetEnergy() / 1_GeV;
-    double m = particles::GetMass( p.GetPID() ) / 1_GeV;
+    double m = particles::GetMass(p.GetPID()) / 1_GeV;
 
     // add particle to pythia stack
-    event.append( pdgCode, 1, 0, 0, px, py, pz, en, m);
+    event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
 
     if (!fPythia.next())
       cout << "Pythia::Decay: decay failed!" << endl;
@@ -130,27 +129,27 @@ namespace corsika::process::pythia {
     // loop over final state
     for (int i = 0; i < event.size(); ++i)
       if (event[i].isFinal()) {
-	auto const pyId = particles::ConvertFromPDG(static_cast<particles::PDGCode>(event[i].id()));
-	HEPEnergyType pyEn = event[i].e() * 1_GeV;
-	MomentumVector pyP(rootCS, { event[i].px() * 1_GeV,
-				     event[i].py() * 1_GeV,
-				     event[i].pz() * 1_GeV});
-	
-	cout << "particle: id=" << pyId << " momentum=" << pyP.GetComponents() / 1_GeV
-	     << " energy=" << pyEn << endl;
-	
-	p.AddSecondary( tuple<particles::Code, units::si::HEPEnergyType,
-			corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-			  pyId, pyEn, pyP, decayPoint, t0} );
+        auto const pyId =
+            particles::ConvertFromPDG(static_cast<particles::PDGCode>(event[i].id()));
+        HEPEnergyType pyEn = event[i].e() * 1_GeV;
+        MomentumVector pyP(rootCS, {event[i].px() * 1_GeV, event[i].py() * 1_GeV,
+                                    event[i].pz() * 1_GeV});
+
+        cout << "particle: id=" << pyId << " momentum=" << pyP.GetComponents() / 1_GeV
+             << " energy=" << pyEn << endl;
+
+        p.AddSecondary(
+            tuple<particles::Code, units::si::HEPEnergyType,
+                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+                pyId, pyEn, pyP, decayPoint, t0});
       }
-    
+
     // set particle stable
-    Decay::SetStable( p.GetPID() );
+    Decay::SetStable(p.GetPID());
 
     // remove original particle from corsika stack
     p.Delete();
     //    if (fCount>10) throw std::runtime_error("stop here");
   }
 
-  
 } // namespace corsika::process::pythia
