@@ -5,12 +5,14 @@ set (
   MODEL_SOURCES
   Decay.cc
   Random.cc
+  Interaction.cc
   )
 
 set (
   MODEL_HEADERS
   Decay.h
   Random.h
+  Interaction.h
   )
 
 set (

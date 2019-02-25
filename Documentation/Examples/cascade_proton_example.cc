@@ -11,7 +11,6 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
-#include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
@@ -30,6 +29,7 @@
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
 #include <corsika/process/pythia/Decay.h>
+#include <corsika/process/pythia/Interaction.h>
 
 #include <corsika/process/track_writer/TrackWriter.h>
 
@@ -236,14 +236,12 @@ int main() {
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
-  // fraction of oxygen
-  const float fox = 0.20946;
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
-				      std::vector<particles::Code>{particles::Code::Nitrogen, particles::Code::Oxygen},
-          std::vector<float>{(float)1.-fox, fox}));
+          std::vector<particles::Code>{particles::Code::Hydrogen},
+          std::vector<float>{(float)1.}));
 
   universe.AddChild(std::move(theMedium));
 
@@ -251,19 +249,20 @@ int main() {
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
+  stack_inspector::StackInspector<setup::Stack> p0(true);
 
   const std::vector<particles::Code> trackedHadrons = {
-      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
+  
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  process::sibyll::Interaction sibyll(env);
-  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
-  process::sibyll::Decay decay(trackedHadrons);
-  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  // process::pythia::Decay decay(trackedHadrons);
+  //  process::sibyll::Interaction sibyll(env);
+  process::pythia::Interaction pythia(env);
+  //  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
+  //  process::sibyll::Decay decay(trackedHadrons);
+  process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
@@ -271,14 +270,12 @@ int main() {
   // hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
-  process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut <<
-  // trackWriter; auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss <<
-  // cut << trackWriter;
-  // auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
-  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut;
+  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
+  //  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
+  
+  auto sequence = p0 << pythia << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -286,17 +283,15 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Nucleus;
-  const int nuclA = 4;
-  const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 = nuclA * 10_TeV;
+  const Code beamCode = Code::Proton;
+  const HEPMassType mass = particles::Proton::GetMass();
+  const HEPEnergyType E0 = 100_GeV; 
   double theta = 0.;
   double phi = 0.;
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt((Elab - m) * (Elab + m));
+      return sqrt(Elab * Elab - m * m);
     };
     HEPMomentumType P0 = elab2plab(E0, mass);
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
@@ -312,8 +307,8 @@ int main() {
     Point pos(rootCS, 0_m, 0_m, 0_m);
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
+                                 units::si::TimeType>{
+        beamCode, E0, plab, pos, 0_ns});
   }
 
   // define air shower object, run simulation
@@ -321,13 +316,10 @@ int main() {
   EAS.Init();
   EAS.Run();
 
-  eLoss.PrintProfile(); // print longitudinal profile
-
+  cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.ShowResults();
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
-       << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
+       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
 }
