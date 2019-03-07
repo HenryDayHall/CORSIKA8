@@ -113,8 +113,8 @@ namespace corsika::process::sibyll {
         auto const protonId = Code::Proton;
         auto const [siginel, sigela] =
             fHadronicInteraction.GetCrossSection(protonId, protonId, Ecm);
-        const double dsig = siginel / 1_mbarn;
-        const double dsigela = sigela / 1_mbarn;
+        const double dsig = siginel / 1_mb;
+        const double dsigela = sigela / 1_mb;
         // loop over projectiles, mass numbers from 2 to fMaxNucleusAProjectile
         for (int j = 1; j < fMaxNucleusAProjectile; ++j) {
           const int jj = j + 1;
@@ -169,7 +169,7 @@ namespace corsika::process::sibyll {
     cout << "ReadCrossSectionTable: " << ia << " " << ib << " " << e0 << endl;
     signuc2_(ia, ib, e0, sig);
     cout << "ReadCrossSectionTable: sig=" << sig << endl;
-    return sig * 1_mbarn;
+    return sig * 1_mb;
   }
 
   // TODO: remove elastic cross section?
@@ -201,13 +201,13 @@ namespace corsika::process::sibyll {
 
     if (fHadronicInteraction.IsValidTarget(TargetId)) {
       auto const sigProd = ReadCrossSectionTable(iBeamA, TargetId, LabEnergyPerNuc);
-      cout << "cross section (mb): " << sigProd / 1_mbarn << endl;
-      return std::make_tuple(sigProd, 0_mbarn);
+      cout << "cross section (mb): " << sigProd / 1_mb << endl;
+      return std::make_tuple(sigProd, 0_mb);
     } else {
       throw std::runtime_error("target outside range.");
     }
-    return std::make_tuple(std::numeric_limits<double>::infinity() * 1_mbarn,
-                           std::numeric_limits<double>::infinity() * 1_mbarn);
+    return std::make_tuple(std::numeric_limits<double>::infinity() * 1_mb,
+                           std::numeric_limits<double>::infinity() * 1_mb);
   }
 
   template <>
@@ -277,7 +277,7 @@ namespace corsika::process::sibyll {
       // determine average interaction length
       // weighted sum
       int i = -1;
-      si::CrossSectionType weightedProdCrossSection = 0_mbarn;
+      si::CrossSectionType weightedProdCrossSection = 0_mb;
       // get weights of components from environment/medium
       const auto w = mediumComposition.GetFractions();
       // loop over components in medium
@@ -290,13 +290,13 @@ namespace corsika::process::sibyll {
         [[maybe_unused]] auto elaCrossSectionCopy = elaCrossSection;
 
         cout << "NuclearInteraction: "
-             << "IntLength: nuclib return (mb): " << productionCrossSection / 1_mbarn
+             << "IntLength: nuclib return (mb): " << productionCrossSection / 1_mb
              << endl;
         weightedProdCrossSection += w[i] * productionCrossSection;
       }
       cout << "NuclearInteraction: "
            << "IntLength: weighted CrossSection (mb): "
-           << weightedProdCrossSection / 1_mbarn << endl;
+           << weightedProdCrossSection / 1_mb << endl;
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.GetAverageMassNumber() *
@@ -472,8 +472,8 @@ namespace corsika::process::sibyll {
     const auto protonId = particles::Proton::GetCode();
     const auto [prodCrossSection, elaCrossSection] =
         fHadronicInteraction.GetCrossSection(protonId, protonId, EcmNN);
-    const double sigProd = prodCrossSection / 1_mbarn;
-    const double sigEla = elaCrossSection / 1_mbarn;
+    const double sigProd = prodCrossSection / 1_mb;
+    const double sigEla = elaCrossSection / 1_mb;
     // sample number of interactions (only input variables, output in common cnucms)
     // nuclear multiple scattering according to glauber (r.i.p.)
     int_nuc_(kATarget, kAProj, sigProd, sigEla);
