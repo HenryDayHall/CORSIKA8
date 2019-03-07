@@ -158,7 +158,7 @@ namespace phys {
 
       QUANTITY_DEFINE_SCALING_LITERALS(eV, hepenergy_d, 1)
 
-      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
+      QUANTITY_DEFINE_SCALING_LITERALS(b, corsika::units::si::sigma_d,
                                        magnitude(corsika::units::constants::barn))
 
     } // namespace literals

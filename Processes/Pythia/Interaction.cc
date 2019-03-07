@@ -156,14 +156,14 @@ namespace corsika::process::pythia {
 	  const double sigEla = fSigma.sigmaEl();
 	  const double sigProd = fSigma.sigmaTot() - sigEla;
 	
-	  return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn);
+	  return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
 
 	} else
 	  throw std::runtime_error("pythia cross section init failed");
 
       } else {
-	return std::make_tuple(std::numeric_limits<double>::infinity() * 1_mbarn,
-			       std::numeric_limits<double>::infinity() * 1_mbarn);
+	return std::make_tuple(std::numeric_limits<double>::infinity() * 1_mb,
+			       std::numeric_limits<double>::infinity() * 1_mb);
       }
     } else {
       throw std::runtime_error("invalid target for pythia");
@@ -221,7 +221,7 @@ namespace corsika::process::pythia {
       // determine average interaction length
       // weighted sum
       int i = -1;
-      si::CrossSectionType weightedProdCrossSection = 0_mbarn;
+      si::CrossSectionType weightedProdCrossSection = 0_mb;
       // get weights of components from environment/medium
       const auto w = mediumComposition.GetFractions();
       // loop over components in medium
@@ -235,13 +235,13 @@ namespace corsika::process::pythia {
             elaCrossSection; // ONLY TO AVOID COMPILER WARNING
 
         cout << "Interaction: IntLength: pythia return (mb): "
-	     << productionCrossSection / 1_mbarn << endl
+	     << productionCrossSection / 1_mb << endl
 	     << "Interaction: IntLength: weight : " << w[i] << endl;
 	
         weightedProdCrossSection += w[i] * productionCrossSection;
       }
       cout << "Interaction: IntLength: weighted CrossSection (mb): "
-           << weightedProdCrossSection / 1_mbarn << endl
+           << weightedProdCrossSection / 1_mb << endl
 	   << "Interaction: IntLength: average mass number: "
            <<  mediumComposition.GetAverageMassNumber() << endl;
 

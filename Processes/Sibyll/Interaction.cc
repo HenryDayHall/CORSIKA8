@@ -114,7 +114,7 @@ namespace corsika::process::sibyll {
       sigProd = std::numeric_limits<double>::infinity();
       sigEla = std::numeric_limits<double>::infinity();
     }
-    return std::make_tuple(sigProd * 1_mbarn, sigEla * 1_mbarn);
+    return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
   }
 
   template <>
@@ -169,7 +169,7 @@ namespace corsika::process::sibyll {
       // determine average interaction length
       // weighted sum
       int i = -1;
-      si::CrossSectionType weightedProdCrossSection = 0_mbarn;
+      si::CrossSectionType weightedProdCrossSection = 0_mb;
       // get weights of components from environment/medium
       const auto& w = mediumComposition.GetFractions();
       // loop over components in medium
@@ -183,13 +183,13 @@ namespace corsika::process::sibyll {
             elaCrossSection; // ONLY TO AVOID COMPILER WARNING
 
         cout << "Interaction: "
-             << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mbarn
+             << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mb
              << endl;
         weightedProdCrossSection += w[i] * productionCrossSection;
       }
       cout << "Interaction: "
            << "IntLength: weighted CrossSection (mb): "
-           << weightedProdCrossSection / 1_mbarn << endl;
+           << weightedProdCrossSection / 1_mb << endl;
 
       // calculate interaction length in medium
       //#warning check interaction length units
