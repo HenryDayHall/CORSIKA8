@@ -26,7 +26,6 @@ namespace corsika::environment {
    * This class provides the grammage/length conversion functionality for
    * (locally) flat exponential atmospheres.
    */
-  
   template <class TDerived>
   class BaseExponential {
   protected:
