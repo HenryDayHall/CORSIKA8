@@ -9,6 +9,7 @@ set (
   LinearApproximationIntegrator.h
   DensityFunction.h
   Environment.h
+  BaseExponential.h
   FlatExponential.h
   SlidingPlanarExponential.h
   )

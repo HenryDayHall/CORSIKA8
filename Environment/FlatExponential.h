@@ -11,12 +11,12 @@
 #ifndef _include_Environment_FlatExponential_h_
 #define _include_Environment_FlatExponential_h_
 
+#include <corsika/environment/BaseExponential.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/particles/ParticleProperties.h>
-#include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <cassert>
@@ -29,64 +29,39 @@
 namespace corsika::environment {
 
   template <class T>
-  class FlatExponential : public T {
-    corsika::units::si::MassDensityType const fRho0;
-    units::si::LengthType const fLambda;
-    units::si::InverseLengthType const fInvLambda;
-    NuclearComposition const fNuclComp;
+  class FlatExponential : public BaseExponential<FlatExponential<T>>, public T {
     geometry::Vector<units::si::dimensionless_d> const fAxis;
-    geometry::Point const fP0;
+    NuclearComposition const fNuclComp;
+
+    using Base = BaseExponential<FlatExponential<T>>;
 
   public:
     FlatExponential(geometry::Point const& p0,
                     geometry::Vector<units::si::dimensionless_d> const& axis,
                     units::si::MassDensityType rho, units::si::LengthType lambda,
-                    NuclearComposition pNuclComp)
-        : fRho0(rho)
-        , fLambda(lambda)
-        , fInvLambda(1 / lambda)
-        , fNuclComp(pNuclComp)
+                    NuclearComposition nuclComp)
+        : Base(p0, rho, lambda)
         , fAxis(axis)
-        , fP0(p0) {}
+        , fNuclComp(nuclComp) {}
 
     corsika::units::si::MassDensityType GetMassDensity(
         corsika::geometry::Point const& p) const override {
-      return fRho0 * exp(fInvLambda * (p - fP0).dot(fAxis));
+      return Base::fRho0 * exp(Base::fInvLambda * (p - Base::fP0).dot(fAxis));
     }
+
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::LengthType pTo) const override {
-      auto const vDotA = line.NormalizedDirection().dot(fAxis).magnitude();
-
-      if (vDotA == 0) {
-        return pTo * GetMassDensity(line.GetR0());
-      } else {
-        return GetMassDensity(line.GetR0()) * (fLambda / vDotA) *
-               (exp(vDotA * pTo / fLambda) - 1);
-      }
+      return Base::IntegratedGrammage(line, pTo, fAxis);
     }
 
     corsika::units::si::LengthType ArclengthFromGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::GrammageType pGrammage) const override {
-      auto const vDotA = line.NormalizedDirection().dot(fAxis).magnitude();
-
-      if (vDotA == 0) {
-        return pGrammage / GetMassDensity(line.GetR0());
-      } else {
-        auto const logArg = pGrammage * vDotA / (fRho0 * fLambda) + 1;
-        if (logArg > 0) {
-          return fLambda / vDotA * log(pGrammage * vDotA / (fRho0 * fLambda) + 1);
-        } else {
-          return std::numeric_limits<typename decltype(
-                     pGrammage)::value_type>::infinity() *
-                 corsika::units::si::meter;
-        }
-      }
+      return Base::ArclengthFromGrammage(line, pGrammage, fAxis);
     }
   };
-
 } // namespace corsika::environment
 #endif
