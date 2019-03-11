@@ -41,12 +41,6 @@ TEST_CASE("Sibyll", "[processes]") {
     REQUIRE(process::sibyll::ConvertToSibyllRaw(particles::Proton::GetCode()) == 13);
   }
 
-  SECTION("KnownBySibyll") {
-    REQUIRE(process::sibyll::KnownBySibyll(particles::Electron::GetCode()));
-
-    REQUIRE_FALSE(process::sibyll::KnownBySibyll(particles::XiPrimeC0::GetCode()));
-  }
-
   SECTION("canInteractInSibyll") {
 
     REQUIRE(process::sibyll::CanInteract(particles::Proton::GetCode()));
