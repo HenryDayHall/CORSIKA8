@@ -20,12 +20,12 @@
 #include <cassert>
 #include <limits>
 
-/**
- *
- */
-
 namespace corsika::environment {
 
+  /**
+   * This class provides the grammage/length conversion functionality for
+   * (locally) flat exponential atmospheres.
+   */
   template <class TDerived>
   class BaseExponential {
   protected:
@@ -36,32 +36,65 @@ namespace corsika::environment {
 
     auto const& GetImplementation() const { return *static_cast<TDerived const*>(this); }
 
+    // clang-format off
+    /**
+     * For a (normalized) axis \f$ \vec{a} \f$, the grammage along a non-orthogonal line with (normalized)
+     * direction \f$ \vec{v} \f$ is given by
+     * \f[
+     *   X = \frac{\varrho_0 \lambda}{\vec{v} \cdot \vec{a}} \left( \exp\left( \vec{v} \cdot \vec{a} \frac{l}{\lambda} \right) - 1 \right)
+     * \f], where \f$ \varrho_0 \f$ is the density at the starting point.
+     * 
+     * If \f$ \vec{v} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
+     * \f[
+     *   X = \varrho_0 l;
+     * \f]
+     */
+    // clang-format on
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::LengthType pTo,
         geometry::Vector<units::si::dimensionless_d> const& axis) const {
       auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
+      auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
 
       if (vDotA == 0) {
-        return pTo * GetImplementation().GetMassDensity(line.GetR0());
+        return pTo * rhoStart;
       } else {
-        return GetImplementation().GetMassDensity(line.GetR0()) * (fLambda / vDotA) *
-               (exp(vDotA * pTo / fLambda) - 1);
+        return rhoStart * (fLambda / vDotA) * (exp(vDotA * pTo * fInvLambda) - 1);
       }
     }
 
+    // clang-format off
+    /**
+     * For a (normalized) axis \f$ \vec{a} \f$, the length of a non-orthogonal line with (normalized)
+     * direction \f$ \vec{v} \f$ corresponding to grammage \f$ X \f$ is given by
+     * \f[
+     *   l = \begin{cases}
+     *   \frac{\lambda}{\vec{v} \cdot \vec{a}} \log\left(Y \right), & \text{if} Y :=  0 > 1 +
+     *     \vec{v} \cdot \vec{a} \frac{X}{\rho_0 \lambda} 
+     *   \infty & \text{else,}
+     *   \end{cases}
+     * \f] where \f$ \varrho_0 \f$ is the density at the starting point.
+     * 
+     * If \f$ \vec{v} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
+     * \f[
+     *   l =  \frac{X}{\varrho_0}
+     * \f]
+     */
+    // clang-format on
     corsika::units::si::LengthType ArclengthFromGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::GrammageType pGrammage,
         geometry::Vector<units::si::dimensionless_d> const& axis) const {
       auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
+      auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
 
       if (vDotA == 0) {
-        return pGrammage / GetImplementation().GetMassDensity(line.GetR0());
+        return pGrammage / rhoStart;
       } else {
-        auto const logArg = pGrammage * vDotA / (fRho0 * fLambda) + 1;
+        auto const logArg = pGrammage * fInvLambda * vDotA / rhoStart + 1;
         if (logArg > 0) {
-          return fLambda / vDotA * log(pGrammage * vDotA / (fRho0 * fLambda) + 1);
+          return fLambda / vDotA * log(logArg);
         } else {
           return std::numeric_limits<typename decltype(
                      pGrammage)::value_type>::infinity() *
