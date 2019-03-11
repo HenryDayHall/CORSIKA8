@@ -54,16 +54,14 @@ namespace corsika::environment {
     corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::LengthType pTo) const override {
-      feenableexcept(FE_INVALID);
-      auto const axis = (Base::fP0 - line.GetR0()).normalized();
+      auto const axis = (line.GetR0() - Base::fP0).normalized();
       return Base::IntegratedGrammage(line, pTo, axis);
     }
 
     corsika::units::si::LengthType ArclengthFromGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
         corsika::units::si::GrammageType pGrammage) const override {
-      feenableexcept(FE_INVALID);
-      auto const axis = (Base::fP0 - line.GetR0()).normalized();
+      auto const axis = (line.GetR0() - Base::fP0).normalized();
       return Base::ArclengthFromGrammage(line, pGrammage, axis);
     }
   };
