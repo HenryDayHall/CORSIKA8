@@ -26,10 +26,11 @@ namespace corsika::environment {
    * This class provides the grammage/length conversion functionality for
    * (locally) flat exponential atmospheres.
    */
+  
   template <class TDerived>
   class BaseExponential {
   protected:
-    corsika::units::si::MassDensityType const fRho0;
+    units::si::MassDensityType const fRho0;
     units::si::LengthType const fLambda;
     units::si::InverseLengthType const fInvLambda;
     geometry::Point const fP0;
@@ -50,9 +51,9 @@ namespace corsika::environment {
      * \f]
      */
     // clang-format on
-    corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-        corsika::units::si::LengthType pTo,
+    units::si::GrammageType IntegratedGrammage(
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::LengthType pTo,
         geometry::Vector<units::si::dimensionless_d> const& axis) const {
       auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
       auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
@@ -82,9 +83,9 @@ namespace corsika::environment {
      * \f]
      */
     // clang-format on
-    corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-        corsika::units::si::GrammageType pGrammage,
+    units::si::LengthType ArclengthFromGrammage(
+        geometry::Trajectory<corsika::geometry::Line> const& line,
+        units::si::GrammageType pGrammage,
         geometry::Vector<units::si::dimensionless_d> const& axis) const {
       auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
       auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
@@ -96,9 +97,8 @@ namespace corsika::environment {
         if (logArg > 0) {
           return fLambda / vDotA * log(logArg);
         } else {
-          return std::numeric_limits<typename decltype(
-                     pGrammage)::value_type>::infinity() *
-                 corsika::units::si::meter;
+          return std::numeric_limits<units::si::GrammageType::value_type>::infinity() *
+                 units::si::meter;
         }
       }
     }
