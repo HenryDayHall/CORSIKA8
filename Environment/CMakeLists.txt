@@ -10,6 +10,7 @@ set (
   DensityFunction.h
   Environment.h
   FlatExponential.h
+  SlidingPlanarExponential.h
   )
 
 set (
