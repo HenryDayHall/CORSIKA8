@@ -177,10 +177,8 @@ namespace corsika::process::sibyll {
         i++;
         cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        auto const [productionCrossSection, elaCrossSection] =
+        [[maybe_unused]] auto const [productionCrossSection, elaCrossSection] =
             GetCrossSection(corsikaBeamId, targetId, ECoM);
-        [[maybe_unused]] auto elaCrossSectionCopy =
-            elaCrossSection; // ONLY TO AVOID COMPILER WARNING
 
         cout << "Interaction: "
              << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mb
@@ -188,8 +186,8 @@ namespace corsika::process::sibyll {
         weightedProdCrossSection += w[i] * productionCrossSection;
       }
       cout << "Interaction: "
-           << "IntLength: weighted CrossSection (mb): "
-           << weightedProdCrossSection / 1_mb << endl;
+           << "IntLength: weighted CrossSection (mb): " << weightedProdCrossSection / 1_mb
+           << endl;
 
       // calculate interaction length in medium
       //#warning check interaction length units
