@@ -24,12 +24,20 @@
 #include <cassert>
 #include <limits>
 
-/**
- *
- */
-
 namespace corsika::environment {
 
+  // clang-format off
+  /**
+   * The SlidingPlanarExponential models mass density as
+   * \f[
+   *   \varrho(r) = \varrho_0 \exp\left( \frac{|p_0 - r|}{\lambda} \right).
+   * \f]
+   * For grammage/length conversion, the density distribution is approximated as
+   * locally flat at the starting point \f$ r_0 \f$ of the trajectory with the axis pointing
+   * from \f$ p_0 \f$ to \f$ r_0 \f$.
+   */
+   //clang-format on
+   
   template <class T>
   class SlidingPlanarExponential : public BaseExponential<SlidingPlanarExponential<T>>,
                                    public T {
