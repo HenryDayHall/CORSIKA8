@@ -11,6 +11,7 @@ set (
   Environment.h
   NameModel.h
   FlatExponential.h
+  SlidingPlanarExponential.h
   )
 
 set (
