@@ -11,18 +11,12 @@
 #ifndef _include_Environment_SlidingPlanarExponential_h_
 #define _include_Environment_SlidingPlanarExponential_h_
 
-#include <corsika/environment/FlatExponential.h>
+#include <corsika/environment/BaseExponential.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
-#include <corsika/particles/ParticleProperties.h>
-#include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
-
-#include <fenv.h>
-#include <cassert>
-#include <limits>
 
 namespace corsika::environment {
 
