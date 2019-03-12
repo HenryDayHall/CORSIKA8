@@ -20,10 +20,6 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <fenv.h>
-#include <cassert>
-#include <limits>
-
 namespace corsika::environment {
 
   // clang-format off

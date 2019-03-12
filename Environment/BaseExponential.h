@@ -17,7 +17,6 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <cassert>
 #include <limits>
 
 namespace corsika::environment {
