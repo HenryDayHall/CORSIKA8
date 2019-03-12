@@ -20,7 +20,18 @@
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::environment {
-
+  
+  //clang-format off
+  /**
+   * flat exponential density distribution with
+   * \f[
+   *  \varrho(r) = \varrho_0 \exp\left( \frac{1}{\lambda} (r - p) \cdot
+   *    \vec{a} \right).
+   * \f]
+   * \f$ \vec{a} \f$ denotes the axis and should be normalized to avoid degeneracy
+   * with the scale parameter \f$ \lambda \f$.
+   */
+  //clang-format on
   template <class T>
   class FlatExponential : public BaseExponential<FlatExponential<T>>, public T {
     geometry::Vector<units::si::dimensionless_d> const fAxis;
