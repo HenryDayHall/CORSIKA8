@@ -9,20 +9,17 @@
  * the license.
  */
 
-#ifndef _include_Environment_h
-#define _include_Environment_h
+#ifndef _include_environment_Environment_h
+#define _include_environment_Environment_h
 
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Sphere.h>
-#include <corsika/setup/SetupEnvironment.h>
 #include <limits>
 
 namespace corsika::environment {
-  using BaseNodeType = VolumeTreeNode<corsika::setup::IEnvironmentModel>;
-
   struct Universe : public corsika::geometry::Sphere {
     Universe(corsika::geometry::CoordinateSystem const& pCS)
         : corsika::geometry::Sphere(
@@ -34,16 +31,18 @@ namespace corsika::environment {
     bool Contains(corsika::geometry::Point const&) const override { return true; }
   };
 
-  // template <typename IEnvironmentModel>
+  template <typename IEnvironmentModel>
   class Environment {
   public:
+    using BaseNodeType = VolumeTreeNode<IEnvironmentModel>;
+  
     Environment()
         : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance()
                                 .GetRootCoordinateSystem()}
         , fUniverse(std::make_unique<BaseNodeType>(
               std::make_unique<Universe>(fCoordinateSystem))) {}
 
-    using IEnvironmentModel = corsika::setup::IEnvironmentModel;
+    // using IEnvironmentModel = corsika::setup::IEnvironmentModel;
 
     auto& GetUniverse() { return fUniverse; }
     auto const& GetUniverse() const { return fUniverse; }
@@ -63,8 +62,11 @@ namespace corsika::environment {
 
   private:
     corsika::geometry::CoordinateSystem const& fCoordinateSystem;
-    BaseNodeType::VTNUPtr fUniverse;
+    typename BaseNodeType::VTNUPtr fUniverse;
   };
+
+  //using SetupBaseNodeType = VolumeTreeNode<corsika::setup::IEnvironmentModel>;
+  //using SetupEnvironment = Environment<corsika::setup::IEnvironmentModel>;
 
 } // namespace corsika::environment
 

@@ -22,11 +22,11 @@ namespace corsika::process {
 
     /**
      * This method is called when a particle crosses the boundary between the nodes
-     * \arg from and \arg to.
+     * \p from and \p to.
      */
-    template <typename Particle>
-    EProcessReturn DoBoundaryCrossing(Particle&, environment::BaseNodeType const& from,
-                                      environment::BaseNodeType const& to);
+    template <typename Particle, typename VTNType>
+    EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from,
+                                      VTNType const& to);
   };
 
   template <class T>

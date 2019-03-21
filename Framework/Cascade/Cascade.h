@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <type_traits>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -53,6 +54,8 @@ namespace corsika::cascade {
   template <typename Tracking, typename ProcessList, typename Stack>
   class Cascade {
     using Particle = typename Stack::ParticleType;
+    using VolumeTreeNode = std::remove_pointer_t<decltype(((Particle*) nullptr)->GetNode())>;
+    using MediumInterface = typename VolumeTreeNode::IModelProperties;
 
     // we only want fully configured objects
     Cascade() = delete;
@@ -62,7 +65,7 @@ namespace corsika::cascade {
      * Cascade class cannot be default constructed, but needs a valid
      * list of physics processes for configuration at construct time.
      */
-    Cascade(corsika::environment::Environment const& env, Tracking& tr, ProcessList& pl,
+    Cascade(corsika::environment::Environment<MediumInterface> const& env, Tracking& tr, ProcessList& pl,
             Stack& stack)
         : fEnvironment(env)
         , fTracking(tr)
@@ -239,7 +242,7 @@ namespace corsika::cascade {
     }
 
   private:
-    corsika::environment::Environment const& fEnvironment;
+    corsika::environment::Environment<MediumInterface> const& fEnvironment;
     Tracking& fTracking;
     ProcessList& fProcessSequence;
     Stack& fStack;

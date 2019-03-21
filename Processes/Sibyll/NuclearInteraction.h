@@ -16,10 +16,6 @@
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/random/RNGManager.h>
 
-namespace corsika::environment {
-  class Environment;
-}
-
 namespace corsika::process::sibyll {
 
   class Interaction; // fwd-decl
@@ -36,8 +32,7 @@ namespace corsika::process::sibyll {
     int fNucCount = 0;
 
   public:
-    NuclearInteraction(corsika::environment::Environment const& env,
-                       corsika::process::sibyll::Interaction& hadint);
+    NuclearInteraction(corsika::process::sibyll::Interaction& hadint);
     ~NuclearInteraction();
     void Init();
 
@@ -52,7 +47,6 @@ namespace corsika::process::sibyll {
     corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s);
 
   private:
-    corsika::environment::Environment const& fEnvironment;
     corsika::process::sibyll::Interaction& fHadronicInteraction;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");

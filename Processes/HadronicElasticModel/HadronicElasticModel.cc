@@ -35,16 +35,14 @@ namespace corsika::process::HadronicElasticModel {
       environment::Environment const& env, units::si::CrossSectionType x,
       units::si::CrossSectionType y)
       : fX(x)
-      , fY(y)
-      , fEnvironment(env) {}
+      , fY(y) {}
 
   template <>
   units::si::GrammageType HadronicElasticInteraction::GetInteractionLength(
       Particle const& p, Track&) {
     using namespace units::si;
     if (p.GetPID() == particles::Code::Proton) {
-      auto const* currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+      auto const* currentNode = p.GetNode();
       auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
 

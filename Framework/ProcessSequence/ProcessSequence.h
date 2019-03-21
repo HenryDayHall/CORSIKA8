@@ -71,9 +71,9 @@ namespace corsika::process {
     // example for a trait-based call:
     // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
 
-    template <typename Particle>
-    EProcessReturn DoBoundaryCrossing(Particle& p, environment::BaseNodeType const& from,
-                                      environment::BaseNodeType const& to) {
+    template <typename Particle, typename VTNType>
+    EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
+                                      VTNType const& to) {
       EProcessReturn ret = EProcessReturn::eOk;
 
       if constexpr (std::is_base_of<BoundaryCrossingProcess<T1type>, T1type>::value ||

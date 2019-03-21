@@ -50,14 +50,12 @@ namespace corsika::process::HadronicElasticModel {
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream(
             "HadronicElasticModel");
-    corsika::environment::Environment const& fEnvironment;
 
     inveV2 B(eV2 s) const;
     corsika::units::si::CrossSectionType CrossSection(SquaredHEPEnergyType s) const;
 
   public:
-    HadronicElasticInteraction(corsika::environment::Environment const&,
-                               // x & y values taken from DL for pp collisions
+    HadronicElasticInteraction(// x & y values taken from DL for pp collisions
                                units::si::CrossSectionType x = 0.0217 * units::si::barn,
                                units::si::CrossSectionType y = 0.05608 * units::si::barn);
     void Init();

@@ -17,6 +17,7 @@
 #include <corsika/logging/Logger.h>
 
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/cascade/testCascade.h>
 
 #include <iostream>
 #include <limits>
@@ -51,7 +52,7 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
     auto pos = iterP.GetPosition().GetCoordinates(rootCS);
     cout << "StackInspector: i=" << setw(5) << fixed << (i++) << ", id=" << setw(30)
          << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
-         << " pos=" << pos;
+         << " pos=" << pos << " node = " << iterP.GetNode();
     // if (iterP.GetPID()==Code::Nucleus)
     // cout << " nuc_ref=" << iterP.GetNucleusRef();
     cout << endl;
@@ -76,3 +77,4 @@ void StackInspector<Stack>::Init() {
 #include <corsika/setup/SetupStack.h>
 
 template class process::stack_inspector::StackInspector<setup::Stack>;
+template class process::stack_inspector::StackInspector<TestCascadeStack>;

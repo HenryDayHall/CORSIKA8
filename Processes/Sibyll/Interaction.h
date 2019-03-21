@@ -18,10 +18,6 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <tuple>
 
-namespace corsika::environment {
-  class Environment;
-}
-
 namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
@@ -31,7 +27,7 @@ namespace corsika::process::sibyll {
     bool fInitialized = false;
 
   public:
-    Interaction(corsika::environment::Environment const& env);
+    Interaction();
     ~Interaction();
 
     void Init();
@@ -60,7 +56,6 @@ namespace corsika::process::sibyll {
     corsika::process::EProcessReturn DoInteraction(Particle&, Stack&);
 
   private:
-    corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
   };

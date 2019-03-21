@@ -34,10 +34,8 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
-  NuclearInteraction::NuclearInteraction(environment::Environment const& env,
-                                         process::sibyll::Interaction& hadint)
-      : fEnvironment(env)
-      , fHadronicInteraction(hadint) {}
+  NuclearInteraction::NuclearInteraction(process::sibyll::Interaction& hadint)
+      : fHadronicInteraction(hadint) {}
 
   NuclearInteraction::~NuclearInteraction() {
     cout << "Nuclib::NuclearInteraction n=" << fCount << " Nnuc=" << fNucCount << endl;
@@ -175,9 +173,8 @@ namespace corsika::process::sibyll {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      const auto currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
-      const auto mediumComposition =
+      auto const* const currentNode = p.GetNode();
+      auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
       // weighted sum
@@ -332,7 +329,7 @@ namespace corsika::process::sibyll {
     //
     // proton stand-in for nucleon
     const auto beamId = particles::Proton::GetCode();
-    const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
+    auto const* const currentNode = p.GetNode();
     const auto& mediumComposition =
         currentNode->GetModelProperties().GetNuclearComposition();
     cout << "get nucleon-nucleus cross sections for target materials.." << endl;

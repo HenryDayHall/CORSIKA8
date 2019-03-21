@@ -16,8 +16,10 @@
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <corsika/environment/NameModel.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
@@ -214,16 +216,25 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
-struct MyBoundaryCrossingProcess
-    : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
-  template <typename Particle>
-  EProcessReturn DoBoundaryCrossing(Particle&, environment::BaseNodeType const& from,
-                                    environment::BaseNodeType const& to) {
-    std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
-    return EProcessReturn::eOk;
-  }
-
-  void Init() {}
+struct MyBoundaryCrossingProcess : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
+    //~ environment::BaseNodeType const& fA, fB;
+    
+    MyBoundaryCrossingProcess() {}
+    
+    //~ MyBoundaryCrossingProcess(environment::BaseNodeType const& a, environment::BaseNodeType const& b) : fA(a), fB(b) {}
+    
+    template <typename Particle>
+    EProcessReturn DoBoundaryCrossing(Particle& p, environment::BaseNodeType const& from, environment::BaseNodeType const& to) {
+        std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
+        
+        //~ if ((&fA == &from && &fB == &to) || (&fA == &to && &fB == &from)) {
+            p.Delete();
+        //~ }
+        
+        return EProcessReturn::eOk;
+    }
+    
+    void Init() {}
 };
 
 //
@@ -244,24 +255,25 @@ int main() {
 
   // fraction of oxygen
   const float fox = 0.20946;
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  outerMedium->SetModelProperties<MyHomogeneousModel>(
+  using MyHomogeneousModel = environment::HomogeneousMedium<setup::IEnvironmentModel>;
+  outerMedium->SetModelProperties<setup::IEnvironmentModel>("outer",
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
-
+          
   auto innerMedium = environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 10_m);
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      2000_m);
 
-  innerMedium->SetModelProperties<MyHomogeneousModel>(
+  innerMedium->SetModelProperties<setup::IEnvironmentModel>("inner",
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
-
+          
   outerMedium->AddChild(std::move(innerMedium));
 
   universe.AddChild(std::move(outerMedium));
@@ -279,26 +291,26 @@ int main() {
   ProcessCut cut(20_GeV);
 
   random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
+  process::HadronicElasticModel::HadronicElasticInteraction
+  hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << MyBoundaryCrossingProcess()
-                     << trackWriter;
+  auto sequence = p0 /*<< sibyll << sibyllNuc << decay << cut*/ << hadronicElastic << MyBoundaryCrossingProcess() << trackWriter;
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Nucleus;
+  const Code beamCode = Code::Proton;
   const int nuclA = 56;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = particles::Proton::GetMass() * nuclZ +
                            (nuclA - nuclZ) * particles::Neutron::GetMass();
-  const HEPEnergyType E0 = nuclA * 100_GeV;
-  double theta = 27.234;
-  double phi = 0.;
+  const HEPEnergyType E0 = nuclA * 100_TeV;
+  double theta = 0;
+  double phi = 0;
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -316,10 +328,12 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
+    for (int l = 0; l < 100; ++l) {
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
+                                 units::si::TimeType>{
+        beamCode, E0, plab, pos, 0_ns});
+    }
   }
 
   // define air shower object, run simulation

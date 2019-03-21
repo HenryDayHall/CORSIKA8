@@ -85,10 +85,10 @@ using namespace corsika::units;
 TEST_CASE("SibyllInterface", "[processes]") {
 
   // setup environment, geometry
-  environment::Environment env;
+  environment::Environment<environment::IMediumModel> env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<geometry::Sphere>(
+  auto theMedium = environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
       geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
@@ -123,7 +123,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
 
-    Interaction model(env);
+    Interaction model;
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
@@ -147,8 +147,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
                                      units::si::TimeType, unsigned short, unsigned short>{
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
 
-    Interaction hmodel(env);
-    NuclearInteraction model(env, hmodel);
+    Interaction hmodel;
+    NuclearInteraction model(hmodel);
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =

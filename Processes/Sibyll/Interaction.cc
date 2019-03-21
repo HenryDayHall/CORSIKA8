@@ -34,8 +34,7 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
-  Interaction::Interaction(environment::Environment const& env)
-      : fEnvironment(env) {}
+  Interaction::Interaction() {}
 
   Interaction::~Interaction() {
     cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount << endl;
@@ -127,8 +126,7 @@ namespace corsika::process::sibyll {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      const auto currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+      auto const* currentNode = p.GetNode();
       const auto mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
@@ -254,8 +252,8 @@ namespace corsika::process::sibyll {
       HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
 
       // sample target mass number
-      const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
-      const auto& mediumComposition =
+      auto const* currentNode = p.GetNode();
+      auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // get cross sections for target materials
       /*
@@ -268,13 +266,9 @@ namespace corsika::process::sibyll {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        const auto [sigProd, sigEla, nNuc] =
+        [[maybe_unsused]] const auto [sigProd, sigEla, nNuc] =
             GetCrossSection(corsikaBeamId, targetId, Ecm);
         cross_section_of_components[i] = sigProd;
-        [[maybe_unused]] int ideleteme =
-            nNuc; // to avoid not used warning in array binding
-        [[maybe_unused]] auto sigElaCopy =
-            sigEla; // to avoid not used warning in array binding
       }
 
       const auto targetCode = mediumComposition.SampleTarget(

@@ -13,9 +13,12 @@
 #define _include_corsika_setup_environment_h_
 
 #include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/NameModel.h>
+#include <corsika/environment/Environment.h>
 
 namespace corsika::setup {
-  using IEnvironmentModel = corsika::environment::IMediumModel;
+  using IEnvironmentModel = environment::NameModel<environment::IMediumModel>;
+  using SetupEnvironment = environment::Environment<IEnvironmentModel>;
 }
 
 #endif

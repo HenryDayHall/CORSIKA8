@@ -10,7 +10,6 @@
  */
 
 #include <corsika/process/tracking_line/TrackingLine.h>
-
 #include <corsika/environment/Environment.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/QuantityVector.h>
@@ -26,9 +25,8 @@ using namespace corsika;
 
 namespace corsika::process::tracking_line {
 
-  template <class Stack, class Trajectory>
   std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
-  TrackingLine<Stack, Trajectory>::TimeOfIntersection(corsika::geometry::Line const& line,
+  TimeOfIntersection(corsika::geometry::Line const& line,
                                                       geometry::Sphere const& sphere) {
     auto const delta = line.GetR0() - sphere.GetCenter();
     auto const v = line.GetV0();
@@ -52,20 +50,5 @@ namespace corsika::process::tracking_line {
       return {};
     }
   }
-
-  template <class Stack, class Trajectory>
-  TrackingLine<Stack, Trajectory>::TrackingLine(
-      corsika::environment::Environment const& pEnv)
-      : fEnvironment(pEnv) {}
-
 } // namespace corsika::process::tracking_line
 
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
-using namespace corsika::setup;
-template class corsika::process::tracking_line::TrackingLine<setup::Stack,
-                                                             setup::Trajectory>;
-
-#include "testTrackingLineStack.h"
-template class corsika::process::tracking_line::TrackingLine<DummyStack,
-                                                             setup::Trajectory>;

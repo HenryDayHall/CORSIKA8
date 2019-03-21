@@ -9,6 +9,7 @@ set (
 set (
   CORSIKAcascade_HEADERS
   Cascade.h
+  testCascade.h
   )
 
 add_library (CORSIKAcascade INTERFACE)

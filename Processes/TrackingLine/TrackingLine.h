@@ -12,15 +12,20 @@
 #ifndef _include_corsika_processes_TrackingLine_h_
 #define _include_corsika_processes_TrackingLine_h_
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/VolumeTreeNode.h>
+//~ #include <corsika/environment/Environment.h>
+//~ #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/geometry/Vector.h>
+#include <corsika/geometry/Trajectory.h>
+#include <corsika/geometry/Line.h>
+#include <corsika/geometry/Sphere.h>
 #include <optional>
 #include <type_traits>
 #include <utility>
 
 namespace corsika::environment {
-  class Environment;
+  template <typename IEnvironmentModel> class Environment;
+  template <typename IEnvironmentModel> class VolumeTreeNode;
 }
 namespace corsika::geometry {
   class Line;
@@ -30,24 +35,18 @@ namespace corsika::geometry {
 namespace corsika::process {
 
   namespace tracking_line {
-
-    template <typename Stack, typename Trajectory>
-    class TrackingLine { //
-
-      using Particle = typename Stack::StackIterator;
-
-      corsika::environment::Environment const& fEnvironment;
-
-    public:
+      
       std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
       TimeOfIntersection(corsika::geometry::Line const& line,
                          geometry::Sphere const& sphere);
 
-      TrackingLine(corsika::environment::Environment const& pEnv);
+    class TrackingLine {
 
+    public:
+      TrackingLine() {};
+
+      template <typename Particle> // was Stack previously, and argument was Stack::StackIterator
       auto GetTrack(Particle const& p) {
-        using std::cout;
-        using std::endl;
         using namespace corsika::units::si;
         using namespace corsika::geometry;
         geometry::Vector<SpeedType::dimension_type> const velocity =
@@ -75,7 +74,7 @@ namespace corsika::process {
         auto const& children = currentLogicalVolumeNode->GetChildNodes();
         auto const& excluded = currentLogicalVolumeNode->GetExcludedNodes();
 
-        std::vector<std::pair<TimeType, environment::BaseNodeType const*>> intersections;
+		std::vector<std::pair<TimeType, decltype(p.GetNode())>> intersections;
 
         auto addIfIntersects = [&](auto const& vtn, auto const& nextNode) {
           static_assert(std::is_same_v<decltype(vtn), decltype(nextNode)>);
@@ -133,7 +132,7 @@ namespace corsika::process {
 
         std::cout << " t-intersect: " << min << std::endl;
 
-        return std::make_tuple(Trajectory(line, min), velocity.norm() * min,
+        return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min), velocity.norm() * min,
                                minIter->second);
       }
     };

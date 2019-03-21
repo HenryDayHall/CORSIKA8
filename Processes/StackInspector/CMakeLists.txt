@@ -28,6 +28,7 @@ set_target_properties (
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   ProcessStackInspector
+  CORSIKAcascade
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAsetup

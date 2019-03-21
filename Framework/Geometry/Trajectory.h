@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -13,6 +12,7 @@
 #define _include_TRAJECTORY_H
 
 #include <corsika/geometry/Point.h>
+#include <corsika/geometry/Line.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::geometry {

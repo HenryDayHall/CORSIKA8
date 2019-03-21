@@ -24,7 +24,7 @@ struct DummyParticle {
   corsika::units::si::HEPEnergyType fEnergy;
   corsika::geometry::Vector<MOMENTUM> fMomentum;
   corsika::geometry::Point fPosition;
-  corsika::environment::BaseNodeType const* fNodePtr;
+  corsika::environment::VolumeTreeNode<> const* fNodePtr;
 
   DummyParticle(corsika::units::si::HEPEnergyType pEnergy,
                 corsika::geometry::Vector<MOMENTUM> pMomentum,
