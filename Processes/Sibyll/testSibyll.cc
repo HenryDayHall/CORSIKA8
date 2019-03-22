@@ -88,9 +88,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
   environment::Environment<environment::IMediumModel> env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-      geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  auto theMedium =
+      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
+          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+          1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(

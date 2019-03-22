@@ -271,8 +271,8 @@ namespace corsika::process::sibyll {
         cross_section_of_components[i] = sigProd;
       }
 
-      const auto targetCode = mediumComposition.SampleTarget(
-          cross_section_of_components, fRNG);
+      const auto targetCode =
+          mediumComposition.SampleTarget(cross_section_of_components, fRNG);
       cout << "Interaction: target selected: " << targetCode << endl;
       /*
         FOR NOW: allow nuclei with A<18 or protons only.

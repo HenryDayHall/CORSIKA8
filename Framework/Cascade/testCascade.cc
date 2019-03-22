@@ -45,7 +45,6 @@ using namespace corsika::geometry;
 #include <iostream>
 using namespace std;
 
-
 auto MakeDummyEnv() {
   TestEnvironmentType env; // dummy environment
   auto& universe = *(env.GetUniverse());

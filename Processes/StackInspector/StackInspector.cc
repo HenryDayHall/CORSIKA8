@@ -16,8 +16,8 @@
 
 #include <corsika/logging/Logger.h>
 
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/cascade/testCascade.h>
+#include <corsika/setup/SetupTrajectory.h>
 
 #include <iostream>
 #include <limits>

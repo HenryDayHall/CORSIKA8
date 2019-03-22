@@ -15,13 +15,13 @@
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
-#include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupEnvironment.h>
+#include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-#include <corsika/environment/NameModel.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/NameModel.h>
 #include <corsika/environment/NuclearComposition.h>
 
 #include <corsika/geometry/Sphere.h>
@@ -216,25 +216,29 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
-struct MyBoundaryCrossingProcess : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
-    //~ environment::BaseNodeType const& fA, fB;
-    
-    MyBoundaryCrossingProcess() {}
-    
-    //~ MyBoundaryCrossingProcess(environment::BaseNodeType const& a, environment::BaseNodeType const& b) : fA(a), fB(b) {}
-    
-    template <typename Particle>
-    EProcessReturn DoBoundaryCrossing(Particle& p, environment::BaseNodeType const& from, environment::BaseNodeType const& to) {
-        std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
-        
-        //~ if ((&fA == &from && &fB == &to) || (&fA == &to && &fB == &from)) {
-            p.Delete();
-        //~ }
-        
-        return EProcessReturn::eOk;
-    }
-    
-    void Init() {}
+struct MyBoundaryCrossingProcess
+    : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
+  //~ environment::BaseNodeType const& fA, fB;
+
+  MyBoundaryCrossingProcess() {}
+
+  //~ MyBoundaryCrossingProcess(environment::BaseNodeType const& a,
+  //environment::BaseNodeType const& b) : fA(a), fB(b) {}
+
+  template <typename Particle>
+  EProcessReturn DoBoundaryCrossing(Particle& p,
+                                    typename Particle::BaseNodeType const& from,
+                                    typename Particle::BaseNodeType const& to) {
+    std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
+
+    //~ if ((&fA == &from && &fB == &to) || (&fA == &to && &fB == &from)) {
+    p.Delete();
+    //~ }
+
+    return EProcessReturn::eOk;
+  }
+
+  void Init() {}
 };
 
 //
@@ -246,34 +250,34 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  environment::Environment env;
+  using EnvType = environment::Environment<setup::IEnvironmentModel>;
+  EnvType env;
   auto& universe = *(env.GetUniverse());
 
-  auto outerMedium = environment::Environment::CreateNode<Sphere>(
+  auto outerMedium = environment::Environment<EnvType>::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
   const float fox = 0.20946;
   using MyHomogeneousModel = environment::HomogeneousMedium<setup::IEnvironmentModel>;
-  outerMedium->SetModelProperties<setup::IEnvironmentModel>("outer",
-      1_kg / (1_m * 1_m * 1_m),
+  outerMedium->SetModelProperties<setup::IEnvironmentModel>(
+      "outer", 1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
-          
-  auto innerMedium = environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      2000_m);
 
-  innerMedium->SetModelProperties<setup::IEnvironmentModel>("inner",
-      1_kg / (1_m * 1_m * 1_m),
+  auto innerMedium = environment::Environment<EnvType>::CreateNode<Sphere>(
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 2000_m);
+
+  innerMedium->SetModelProperties<setup::IEnvironmentModel>(
+      "inner", 1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
-          
+
   outerMedium->AddChild(std::move(innerMedium));
 
   universe.AddChild(std::move(outerMedium));
@@ -291,14 +295,16 @@ int main() {
   ProcessCut cut(20_GeV);
 
   random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  process::HadronicElasticModel::HadronicElasticInteraction
-  hadronicElastic(env);
+  process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = p0 /*<< sibyll << sibyllNuc << decay << cut*/ << hadronicElastic << MyBoundaryCrossingProcess() << trackWriter;
+  auto sequence =
+      p0 /*<< sibyll << sibyllNuc << decay << cut*/ << hadronicElastic
+                                                    << MyBoundaryCrossingProcess()
+                                                    << trackWriter;
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -329,10 +335,9 @@ int main() {
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
     for (int l = 0; l < 100; ++l) {
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType>{
-        beamCode, E0, plab, pos, 0_ns});
+      stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                   corsika::stack::MomentumVector, geometry::Point,
+                                   units::si::TimeType>{beamCode, E0, plab, pos, 0_ns});
     }
   }
 

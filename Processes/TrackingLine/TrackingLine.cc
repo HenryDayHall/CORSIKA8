@@ -9,12 +9,12 @@
  * the license.
  */
 
-#include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/QuantityVector.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
+#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <algorithm>
 #include <iostream>
@@ -27,7 +27,7 @@ namespace corsika::process::tracking_line {
 
   std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
   TimeOfIntersection(corsika::geometry::Line const& line,
-                                                      geometry::Sphere const& sphere) {
+                     geometry::Sphere const& sphere) {
     auto const delta = line.GetR0() - sphere.GetCenter();
     auto const v = line.GetV0();
     auto const vSqNorm = v.squaredNorm();
@@ -51,4 +51,3 @@ namespace corsika::process::tracking_line {
     }
   }
 } // namespace corsika::process::tracking_line
-

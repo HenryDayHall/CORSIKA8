@@ -24,16 +24,15 @@
 #include <iostream>
 
 using namespace corsika::setup;
-using Particle = Stack::ParticleType;
-using Track = Trajectory;
+using Particle = corsika::setup::Stack::ParticleType;
+using Track = corsika::setup::Trajectory;
 
 namespace corsika::process::HadronicElasticModel {
 
   void HadronicElasticInteraction::Init() {}
 
-  HadronicElasticInteraction::HadronicElasticInteraction(
-      environment::Environment const& env, units::si::CrossSectionType x,
-      units::si::CrossSectionType y)
+  HadronicElasticInteraction::HadronicElasticInteraction(units::si::CrossSectionType x,
+                                                         units::si::CrossSectionType y)
       : fX(x)
       , fY(y) {}
 
@@ -87,8 +86,7 @@ namespace corsika::process::HadronicElasticModel {
     using namespace units::si;
     using namespace units::constants;
 
-    const auto* currentNode =
-        fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+    const auto* currentNode = p.GetNode();
     const auto& composition = currentNode->GetModelProperties().GetNuclearComposition();
     const auto& components = composition.GetComponents();
 

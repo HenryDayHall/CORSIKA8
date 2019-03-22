@@ -19,10 +19,6 @@
 #include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
-namespace corsika::environment {
-  class Environment;
-}
-
 namespace corsika::process::HadronicElasticModel {
   /**
    * A simple model for elastic hadronic interactions based on the formulas

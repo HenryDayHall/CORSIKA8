@@ -74,7 +74,7 @@ namespace corsika::process {
         auto const& children = currentLogicalVolumeNode->GetChildNodes();
         auto const& excluded = currentLogicalVolumeNode->GetExcludedNodes();
 
-		std::vector<std::pair<TimeType, decltype(p.GetNode())>> intersections;
+        std::vector<std::pair<TimeType, decltype(p.GetNode())>> intersections;
 
         auto addIfIntersects = [&](auto const& vtn, auto const& nextNode) {
           static_assert(std::is_same_v<decltype(vtn), decltype(nextNode)>);

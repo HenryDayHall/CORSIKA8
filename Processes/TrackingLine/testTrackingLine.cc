@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -36,10 +35,10 @@ using namespace std;
 using namespace corsika::units::si;
 
 TEST_CASE("TrackingLine") {
-  corsika::environment::Environment env; // dummy environment
+  environment::Environment<environment::Empty> env; // dummy environment
   auto const& cs = env.GetCoordinateSystem();
 
-  tracking_line::TrackingLine<DummyStack, setup::Trajectory> tracking(env);
+  tracking_line::TrackingLine tracking;
 
   SECTION("intersection with sphere") {
     Point const origin(cs, {0_m, 0_m, 0_m});
@@ -52,7 +51,7 @@ TEST_CASE("TrackingLine") {
     setup::Trajectory traj(line, 12345_s);
 
     auto const opt =
-        tracking.TimeOfIntersection(traj, Sphere(Point(cs, {0_m, 0_m, 10_m}), 1_m));
+        tracking_line::TimeOfIntersection(traj, Sphere(Point(cs, {0_m, 0_m, 10_m}), 1_m));
     REQUIRE(opt.has_value());
 
     auto [t1, t2] = opt.value();
@@ -60,25 +59,29 @@ TEST_CASE("TrackingLine") {
     REQUIRE(t2 / 11_s == Approx(1));
 
     auto const optNoIntersection =
-        tracking.TimeOfIntersection(traj, Sphere(Point(cs, {5_m, 0_m, 10_m}), 1_m));
+        tracking_line::TimeOfIntersection(traj, Sphere(Point(cs, {5_m, 0_m, 10_m}), 1_m));
     REQUIRE_FALSE(optNoIntersection.has_value());
   }
 
   SECTION("maximally possible propagation") {
     auto& universe = *(env.GetUniverse());
 
-    //~ std::cout << env.GetUniverse().get() << std::endl;
-
     auto const radius = 20_m;
 
-    auto theMedium = corsika::environment::Environment::CreateNode<Sphere>(
+    auto theMedium = environment::Environment<environment::Empty>::CreateNode<Sphere>(
         Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
     universe.AddChild(std::move(theMedium));
-    
-    Point p0(cs, 0_m, 0_m, 0_m);
-    auto* const node = universe.GetContainingNode(p0);
-    DummyParticle p(1_GeV, Vector<MOMENTUM>(cs, 0_GeV, 0_GeV, 1_GeV),
-                    p0, node);
+
+    TestTrackingLineStack stack;
+    stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::MuPlus,
+            1_GeV,
+            {cs, {0_GeV, 0_GeV, 1_GeV}},
+            {cs, {0_m, 0_m, 0_km}},
+            0_ns});
+    auto p = stack.GetNextParticle();
 
     Point const origin(cs, {0_m, 0_m, 0_m});
     Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
