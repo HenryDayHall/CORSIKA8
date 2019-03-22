@@ -18,16 +18,8 @@ namespace corsika::environment {
 
   template <typename T>
   struct NameModel : public T {
-      
-    template <typename... Args>
-    NameModel(std::string const& name, Args&&... args) : T(std::forward<Args>(args)...), fName(name) {}
-
-    std::string const& GetName() const {
-        return fName;
-    }
-    
-    private:
-      std::string fName;
+    virtual std::string const& GetName() const = 0;
+    virtual ~NameModel() = default;
   };
 
 } // namespace corsika::environment

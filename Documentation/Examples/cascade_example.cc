@@ -223,7 +223,7 @@ struct MyBoundaryCrossingProcess
   MyBoundaryCrossingProcess() {}
 
   //~ MyBoundaryCrossingProcess(environment::BaseNodeType const& a,
-  //environment::BaseNodeType const& b) : fA(a), fB(b) {}
+  // environment::BaseNodeType const& b) : fA(a), fB(b) {}
 
   template <typename Particle>
   EProcessReturn DoBoundaryCrossing(Particle& p,
@@ -241,6 +241,19 @@ struct MyBoundaryCrossingProcess
   void Init() {}
 };
 
+template <class T>
+class TheNameModel : public T {
+  std::string const fName;
+
+public:
+  template <typename... Args>
+  TheNameModel(std::string const& name, Args&&... args)
+      : T(std::forward<Args>(args)...)
+      , fName(name) {}
+
+  std::string const& GetName() const override { return fName; }
+};
+
 //
 // The example main program for a particle cascade
 //
@@ -254,24 +267,25 @@ int main() {
   EnvType env;
   auto& universe = *(env.GetUniverse());
 
-  auto outerMedium = environment::Environment<EnvType>::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  auto outerMedium =
+      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+                                  1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
   const float fox = 0.20946;
-  using MyHomogeneousModel = environment::HomogeneousMedium<setup::IEnvironmentModel>;
-  outerMedium->SetModelProperties<setup::IEnvironmentModel>(
+  outerMedium->SetModelProperties<
+      TheNameModel<environment::HomogeneousMedium<setup::IEnvironmentModel>>>(
       "outer", 1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
           std::vector<float>{(float)1. - fox, fox}));
 
-  auto innerMedium = environment::Environment<EnvType>::CreateNode<Sphere>(
+  auto innerMedium = EnvType::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 2000_m);
 
-  innerMedium->SetModelProperties<setup::IEnvironmentModel>(
+  innerMedium->SetModelProperties<
+      TheNameModel<environment::HomogeneousMedium<setup::IEnvironmentModel>>>(
       "inner", 1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
@@ -285,17 +299,17 @@ int main() {
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
+  tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  process::sibyll::Interaction sibyll(env);
-  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
+  process::sibyll::Interaction sibyll;
+  process::sibyll::NuclearInteraction sibyllNuc(sibyll);
   process::sibyll::Decay decay;
   ProcessCut cut(20_GeV);
 
   random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic(env);
+  process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic;
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
