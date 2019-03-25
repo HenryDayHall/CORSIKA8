@@ -12,8 +12,6 @@
 #ifndef _include_corsika_processes_TrackingLine_h_
 #define _include_corsika_processes_TrackingLine_h_
 
-//~ #include <corsika/environment/Environment.h>
-//~ #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/geometry/Trajectory.h>
@@ -27,10 +25,6 @@ namespace corsika::environment {
   template <typename IEnvironmentModel> class Environment;
   template <typename IEnvironmentModel> class VolumeTreeNode;
 }
-namespace corsika::geometry {
-  class Line;
-  class Sphere;
-} // namespace corsika::geometry
 
 namespace corsika::process {
 
@@ -70,14 +64,16 @@ namespace corsika::process {
         //~ fEnvironment.GetUniverse()->GetContainingNode(currentPosition);
         auto const numericallyInside =
             currentLogicalVolumeNode->GetVolume().Contains(currentPosition);
+            
+        std::cout << "numericallyInside = " << (numericallyInside ? "true":"false");
 
         auto const& children = currentLogicalVolumeNode->GetChildNodes();
         auto const& excluded = currentLogicalVolumeNode->GetExcludedNodes();
 
         std::vector<std::pair<TimeType, decltype(p.GetNode())>> intersections;
 
-        auto addIfIntersects = [&](auto const& vtn, auto const& nextNode) {
-          static_assert(std::is_same_v<decltype(vtn), decltype(nextNode)>);
+		// for entering from outside
+        auto addIfIntersects = [&](auto const& vtn) {
           auto const& volume = vtn.GetVolume();
           auto const& sphere = dynamic_cast<geometry::Sphere const&>(
               volume); // for the moment we are a bit bold here and assume
@@ -88,14 +84,14 @@ namespace corsika::process {
             std::cout << "intersection times: " << t1 / 1_s << "; " << t2 / 1_s
                       << std::endl;
             if (t1.magnitude() > 0)
-              intersections.emplace_back(t1, &nextNode);
+              intersections.emplace_back(t1, &vtn);
             else if (t2.magnitude() > 0)
               throw std::runtime_error("inside other volume");
           }
         };
 
-        for (auto const& child : children) { addIfIntersects(*child, *child); }
-        for (auto const* ex : excluded) { addIfIntersects(*ex, *ex); }
+        for (auto const& child : children) { addIfIntersects(*child); }
+        for (auto const* ex : excluded) { addIfIntersects(*ex); }
 
         {
           auto const& sphere = dynamic_cast<geometry::Sphere const&>(
@@ -120,7 +116,8 @@ namespace corsika::process {
           min = minIter->first;
         }
 
-        std::cout << " t-intersect: " << min << std::endl;
+        std::cout << " t-intersect: " << min << " "  << minIter->second->GetModelProperties().GetName() << std::endl;
+        std::cout << "point of intersection: " << line.GetPosition(min).GetCoordinates() << std::endl;
 
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min), velocity.norm() * min,
                                minIter->second);

@@ -41,7 +41,7 @@ TEST_CASE("TrackingLine") {
   tracking_line::TrackingLine tracking;
 
   SECTION("intersection with sphere") {
-    Point const origin(cs, {0_m, 0_m, 0_m});
+    Point const origin(cs, {0_m, 0_m, -5_m});
     Point const center(cs, {0_m, 0_m, 10_m});
     Sphere const sphere(center, 1_m);
     Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
@@ -55,8 +55,8 @@ TEST_CASE("TrackingLine") {
     REQUIRE(opt.has_value());
 
     auto [t1, t2] = opt.value();
-    REQUIRE(t1 / 9_s == Approx(1));
-    REQUIRE(t2 / 11_s == Approx(1));
+    REQUIRE(t1 / 14_s == Approx(1));
+    REQUIRE(t2 / 16_s == Approx(1));
 
     auto const optNoIntersection =
         tracking_line::TimeOfIntersection(traj, Sphere(Point(cs, {5_m, 0_m, 10_m}), 1_m));
@@ -70,6 +70,7 @@ TEST_CASE("TrackingLine") {
 
     auto theMedium = environment::Environment<environment::Empty>::CreateNode<Sphere>(
         Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
+    auto const* theMediumPtr = theMedium.get();
     universe.AddChild(std::move(theMedium));
 
     TestTrackingLineStack stack;
@@ -82,6 +83,7 @@ TEST_CASE("TrackingLine") {
             {cs, {0_m, 0_m, 0_km}},
             0_ns});
     auto p = stack.GetNextParticle();
+    p.SetNode(theMediumPtr);
 
     Point const origin(cs, {0_m, 0_m, 0_m});
     Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,

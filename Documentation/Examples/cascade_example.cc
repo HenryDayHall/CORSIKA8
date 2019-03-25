@@ -220,10 +220,7 @@ struct MyBoundaryCrossingProcess
     : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
   //~ environment::BaseNodeType const& fA, fB;
 
-  MyBoundaryCrossingProcess() {}
-
-  //~ MyBoundaryCrossingProcess(environment::BaseNodeType const& a,
-  // environment::BaseNodeType const& b) : fA(a), fB(b) {}
+  MyBoundaryCrossingProcess(std::string const& filename) {fFile.open(filename);}
 
   template <typename Particle>
   EProcessReturn DoBoundaryCrossing(Particle& p,
@@ -232,11 +229,18 @@ struct MyBoundaryCrossingProcess
     std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
 
     //~ if ((&fA == &from && &fB == &to) || (&fA == &to && &fB == &from)) {
-    p.Delete();
+    //~ p.Delete();
     //~ }
+    
+    auto const& name = particles::GetName(p.GetPID());
+    auto const start = p.GetPosition().GetCoordinates();
+    
+    fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' ' << start[2] / 1_m << '\n';
 
     return EProcessReturn::eOk;
   }
+  
+  std::ofstream fFile;
 
   void Init() {}
 };
@@ -282,7 +286,7 @@ int main() {
           std::vector<float>{(float)1. - fox, fox}));
 
   auto innerMedium = EnvType::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, 2000_m);
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, -500_m}, 1000_m);
 
   innerMedium->SetModelProperties<
       TheNameModel<environment::HomogeneousMedium<setup::IEnvironmentModel>>>(
@@ -312,12 +316,13 @@ int main() {
   process::HadronicElasticModel::HadronicElasticInteraction hadronicElastic;
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
+  MyBoundaryCrossingProcess boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
   auto sequence =
-      p0 /*<< sibyll << sibyllNuc << decay << cut*/ << hadronicElastic
-                                                    << MyBoundaryCrossingProcess()
+      /*p0 <<*/ sibyll << sibyllNuc << decay << cut /* << hadronicElastic */
+                                                    << boundaryCrossing
                                                     << trackWriter;
 
   // setup particle stack, and add primary particle
@@ -328,10 +333,9 @@ int main() {
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = particles::Proton::GetMass() * nuclZ +
                            (nuclA - nuclZ) * particles::Neutron::GetMass();
-  const HEPEnergyType E0 = nuclA * 100_TeV;
-  double theta = 0;
+  const HEPEnergyType E0 = nuclA * 10_TeV;
   double phi = 0;
-
+  for (double theta = 0; theta < 180; theta += 20)
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt(Elab * Elab - m * m);

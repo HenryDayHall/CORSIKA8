@@ -44,8 +44,8 @@ namespace corsika::process::tracking_line {
     if (discriminant.magnitude() > 0) {
       auto const sqDisc = sqrt(discriminant);
       auto const invDenom = 1 / vSqNorm;
-      return std::make_pair((vDotDelta - sqDisc) * invDenom,
-                            (vDotDelta + sqDisc) * invDenom);
+      return std::make_pair((-vDotDelta - sqDisc) * invDenom,
+                            (-vDotDelta + sqDisc) * invDenom);
     } else {
       return {};
     }
