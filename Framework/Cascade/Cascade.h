@@ -91,7 +91,7 @@ namespace corsika::cascade {
             fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
         p.SetNode(numericalNode);
 
-        std::cout << "initial node " << p.GetNode() << std::endl;
+        std::cout << "initial node " << p.GetNode()->GetModelProperties().GetName() << std::endl;
       });
     }
 
@@ -145,13 +145,6 @@ namespace corsika::cascade {
 
       auto const* currentNumericalNode =
           fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
-
-      std::cout << "nodes: " << currentLogicalNode << " " << currentNumericalNode
-                << std::endl;
-
-      if (currentNumericalNode != currentLogicalNode) {
-        throw std::runtime_error("numerical and logical nodes don't match");
-      }
 
       if (currentNumericalNode == &*fEnvironment.GetUniverse()) {
         throw std::runtime_error("particle entered void Universe");
@@ -234,6 +227,12 @@ namespace corsika::cascade {
         } else { // step-length limitation within volume
           std::cout << "step-length limitation" << std::endl;
         }
+          std::cout << "nodes: " << currentLogicalNode->GetModelProperties().GetName() << " " << currentNumericalNode->GetModelProperties().GetName()
+                    << std::endl;
+
+          if (currentNumericalNode != currentLogicalNode) {
+            throw std::runtime_error("numerical and logical nodes don't match");
+          }
       } else { // boundary crossing
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         particle.SetNode(nextVol);

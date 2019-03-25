@@ -90,30 +90,20 @@ namespace corsika::process {
             if (t1.magnitude() > 0)
               intersections.emplace_back(t1, &nextNode);
             else if (t2.magnitude() > 0)
-              intersections.emplace_back(t2, &nextNode);
+              throw std::runtime_error("inside other volume");
           }
         };
 
         for (auto const& child : children) { addIfIntersects(*child, *child); }
-
         for (auto const* ex : excluded) { addIfIntersects(*ex, *ex); }
 
-        if (numericallyInside) {
-          addIfIntersects(
-              *currentLogicalVolumeNode,
-              *currentLogicalVolumeNode
-                   ->GetParent()); // todo: add parent node to vector, not current!
-        } else {
+        {
           auto const& sphere = dynamic_cast<geometry::Sphere const&>(
               currentLogicalVolumeNode->GetVolume());
           // for the moment we are a bit bold here and assume
           // everything is a sphere, crashes with exception if not
           auto const [t1, t2] = *TimeOfIntersection(line, sphere);
-
-          if (t1 > 0_s) {
-            assert(t2 > 0_s);
-            intersections.emplace_back(t2, currentLogicalVolumeNode->GetParent());
-          }
+          intersections.emplace_back(t2, currentLogicalVolumeNode->GetParent());
         }
 
         auto const minIter = std::min_element(

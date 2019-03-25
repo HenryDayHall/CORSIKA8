@@ -348,7 +348,7 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    for (int l = 0; l < 100; ++l) {
+    for (int l = 0; l < 1; ++l) {
       stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                    corsika::stack::MomentumVector, geometry::Point,
                                    units::si::TimeType>{beamCode, E0, plab, pos, 0_ns});
