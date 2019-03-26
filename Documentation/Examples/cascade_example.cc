@@ -220,26 +220,28 @@ struct MyBoundaryCrossingProcess
     : public BoundaryCrossingProcess<MyBoundaryCrossingProcess> {
   //~ environment::BaseNodeType const& fA, fB;
 
-  MyBoundaryCrossingProcess(std::string const& filename) {fFile.open(filename);}
+  MyBoundaryCrossingProcess(std::string const& filename) { fFile.open(filename); }
 
   template <typename Particle>
   EProcessReturn DoBoundaryCrossing(Particle& p,
                                     typename Particle::BaseNodeType const& from,
                                     typename Particle::BaseNodeType const& to) {
-    std::cout << "boundary crossing! from:" << &from << "; to: " << &to << std::endl;
+    std::cout << "boundary crossing! from: " << from.GetModelProperties().GetName()
+              << "; to: " << to.GetModelProperties().GetName() << std::endl;
 
     //~ if ((&fA == &from && &fB == &to) || (&fA == &to && &fB == &from)) {
-    //~ p.Delete();
+    p.Delete();
     //~ }
-    
+
     auto const& name = particles::GetName(p.GetPID());
     auto const start = p.GetPosition().GetCoordinates();
-    
-    fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' ' << start[2] / 1_m << '\n';
+
+    fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
+          << start[2] / 1_m << '\n';
 
     return EProcessReturn::eOk;
   }
-  
+
   std::ofstream fFile;
 
   void Init() {}
@@ -286,7 +288,7 @@ int main() {
           std::vector<float>{(float)1. - fox, fox}));
 
   auto innerMedium = EnvType::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, -500_m}, 1000_m);
+      Point{env.GetCoordinateSystem(), 0_m, 0_m, -500_m}, 5000_m);
 
   innerMedium->SetModelProperties<
       TheNameModel<environment::HomogeneousMedium<setup::IEnvironmentModel>>>(
@@ -299,6 +301,11 @@ int main() {
   outerMedium->AddChild(std::move(innerMedium));
 
   universe.AddChild(std::move(outerMedium));
+  universe.SetModelProperties<
+      TheNameModel<environment::HomogeneousMedium<setup::IEnvironmentModel>>>(
+      "Universe", 0_kg / (1_m * 1_m * 1_m),
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Proton}, std::vector<float>{1.}));
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
@@ -322,8 +329,7 @@ int main() {
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
   auto sequence =
       /*p0 <<*/ sibyll << sibyllNuc << decay << cut /* << hadronicElastic */
-                                                    << boundaryCrossing
-                                                    << trackWriter;
+                       << boundaryCrossing << trackWriter;
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -335,8 +341,7 @@ int main() {
                            (nuclA - nuclZ) * particles::Neutron::GetMass();
   const HEPEnergyType E0 = nuclA * 10_TeV;
   double phi = 0;
-  for (double theta = 0; theta < 180; theta += 20)
-  {
+  for (double theta = 0; theta < 180; theta += 20) {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt(Elab * Elab - m * m);
     };

@@ -54,7 +54,8 @@ namespace corsika::cascade {
   template <typename Tracking, typename ProcessList, typename Stack>
   class Cascade {
     using Particle = typename Stack::ParticleType;
-    using VolumeTreeNode = std::remove_pointer_t<decltype(((Particle*) nullptr)->GetNode())>;
+    using VolumeTreeNode =
+        std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>;
     using MediumInterface = typename VolumeTreeNode::IModelProperties;
 
     // we only want fully configured objects
@@ -65,8 +66,8 @@ namespace corsika::cascade {
      * Cascade class cannot be default constructed, but needs a valid
      * list of physics processes for configuration at construct time.
      */
-    Cascade(corsika::environment::Environment<MediumInterface> const& env, Tracking& tr, ProcessList& pl,
-            Stack& stack)
+    Cascade(corsika::environment::Environment<MediumInterface> const& env, Tracking& tr,
+            ProcessList& pl, Stack& stack)
         : fEnvironment(env)
         , fTracking(tr)
         , fProcessSequence(pl)
@@ -91,7 +92,8 @@ namespace corsika::cascade {
             fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
         p.SetNode(numericalNode);
 
-        std::cout << "initial node " << p.GetNode()->GetModelProperties().GetName() << std::endl;
+        std::cout << "initial node " << p.GetNode()->GetModelProperties().GetName()
+                  << std::endl;
       });
     }
 
@@ -227,12 +229,18 @@ namespace corsika::cascade {
         } else { // step-length limitation within volume
           std::cout << "step-length limitation" << std::endl;
         }
-          std::cout << "nodes: " << currentLogicalNode->GetModelProperties().GetName() << " " << currentNumericalNode->GetModelProperties().GetName()
-                    << std::endl;
+        auto const* numericalNodeAfterStep =
+            fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
 
-          if (currentNumericalNode != currentLogicalNode) {
-            throw std::runtime_error("numerical and logical nodes don't match");
-          }
+        std::cout << "nodes: " << currentLogicalNode->GetModelProperties().GetName()
+                  << " " << numericalNodeAfterStep->GetModelProperties().GetName()
+                  << std::endl;
+
+        if (numericalNodeAfterStep != currentLogicalNode) {
+          std::cout << "position " << particle.GetPosition().GetCoordinates()
+                    << std::endl;
+          throw std::runtime_error("numerical and logical nodes don't match");
+        }
       } else { // boundary crossing
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         particle.SetNode(nextVol);
