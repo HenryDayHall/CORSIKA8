@@ -43,7 +43,7 @@ namespace corsika::process {
 
       template <typename Particle> // was Stack previously, and argument was
                                    // Stack::StackIterator
-                                   auto GetTrack(Particle const& p) {
+      auto GetTrack(Particle const& p) {
         using namespace corsika::units::si;
         using namespace corsika::geometry;
         geometry::Vector<SpeedType::dimension_type> const velocity =
@@ -52,8 +52,10 @@ namespace corsika::process {
         auto const currentPosition = p.GetPosition();
         std::cout << "TrackingLine pid: " << p.GetPID()
                   << " , E = " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
-        std::cout << "TrackingLine pos: " << currentPosition.GetCoordinates() << " ["
-                  << p.GetNode()->GetModelProperties().GetName() << "]\n";
+        std::cout << "TrackingLine pos: "
+                  << currentPosition.GetCoordinates()
+                  // << " [" << p.GetNode()->GetModelProperties().GetName() << "]"
+                  << std::endl;
         std::cout << "TrackingLine   E: " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
         std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
                   << " GeV " << std::endl;
@@ -84,8 +86,10 @@ namespace corsika::process {
 
           if (auto opt = TimeOfIntersection(line, sphere); opt.has_value()) {
             auto const [t1, t2] = *opt;
-            std::cout << "intersection times: " << t1 / 1_s << "; " << t2 / 1_s << " "
-                      << vtn.GetModelProperties().GetName() << std::endl;
+            std::cout << "intersection times: " << t1 / 1_s << "; "
+                      << t2 / 1_s
+                      // << " " << vtn.GetModelProperties().GetName()
+                      << std::endl;
             if (t1.magnitude() > 0)
               intersections.emplace_back(t1, &vtn);
             else if (t2.magnitude() > 0)
@@ -119,10 +123,10 @@ namespace corsika::process {
           min = minIter->first;
         }
 
-        std::cout << " t-intersect: " << min << " "
-                  << minIter->second->GetModelProperties().GetName() << std::endl;
-        //~ std::cout << "point of intersection: " <<
-        //line.GetPosition(min).GetCoordinates() << std::endl;
+        std::cout << " t-intersect: "
+                  << min
+                  // << " " << minIter->second->GetModelProperties().GetName()
+                  << std::endl;
 
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
                                velocity.norm() * min, minIter->second);

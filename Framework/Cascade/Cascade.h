@@ -20,6 +20,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <type_traits>
@@ -91,9 +92,6 @@ namespace corsika::cascade {
         auto const* numericalNode =
             fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
         p.SetNode(numericalNode);
-
-        std::cout << "initial node " << p.GetNode()->GetModelProperties().GetName()
-                  << std::endl;
       });
     }
 
@@ -229,19 +227,15 @@ namespace corsika::cascade {
         } else { // step-length limitation within volume
           std::cout << "step-length limitation" << std::endl;
         }
-        auto const* numericalNodeAfterStep =
-            fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
 
-        std::cout << "nodes: " << currentLogicalNode->GetModelProperties().GetName()
-                  << " " << numericalNodeAfterStep->GetModelProperties().GetName()
-                  << std::endl;
+        auto const assertion = [&] {
+          auto const* numericalNodeAfterStep =
+              fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
+          return numericalNodeAfterStep == currentLogicalNode;
+        };
 
-        if (numericalNodeAfterStep != currentLogicalNode) {
-          std::cout << "position " << particle.GetPosition().GetCoordinates()
-                    << std::endl;
-          throw std::runtime_error("numerical and logical nodes don't match");
-        }
-      } else { // boundary crossing
+        assert(assertion()); // numerical and logical nodes don't match
+      } else {               // boundary crossing
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         particle.SetNode(nextVol);
         fProcessSequence.DoBoundaryCrossing(particle, *currentLogicalNode, *nextVol);
@@ -255,7 +249,7 @@ namespace corsika::cascade {
     Stack& fStack;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
-  };
+  }; // namespace corsika::cascade
 
 } // namespace corsika::cascade
 

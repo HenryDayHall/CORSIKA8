@@ -99,6 +99,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
 
+  auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
 
   const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
@@ -123,6 +124,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
+    particle.SetNode(nodePtr);
 
     Interaction model;
 
@@ -147,6 +149,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
                                      corsika::stack::MomentumVector, geometry::Point,
                                      units::si::TimeType, unsigned short, unsigned short>{
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
+    particle.SetNode(nodePtr);
 
     Interaction hmodel;
     NuclearInteraction model(hmodel);
