@@ -73,8 +73,8 @@ namespace corsika::stack {
      * args is a variadic list of input data that has to match the
      * function description in the user defined ParticleInterface::AddSecondary(...)
      */
-    template <typename... Args>
-    StackIterator AddSecondary(const Args... args) {
+    template <typename... TArgs>
+    StackIterator AddSecondary(const TArgs... args) {
       return GetStack().AddSecondary(GetIterator(), args...);
     }
 

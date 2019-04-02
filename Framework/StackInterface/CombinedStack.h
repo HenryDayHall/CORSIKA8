@@ -19,51 +19,88 @@
 namespace corsika::stack {
 
   /**
+   * @class CombinedParticleInterface
    *
+   * You may combine two StackData object, see class CombinedStackImpl
+   * below, into one Stack, using a combined StackIterator (aka
+   * CombinedParticleInterface) interface class.
+   *
+   * This allows to add specific information to a given Stack, could
+   * be special information on a subset of entries
+   * (e.g. NuclearStackExtension) or also (multi) thinning weights for
+   * all particles.
+   *
+   * Many Stacks can be combined into more complex object.
+   *
+   * The two sub-stacks must both provide their independent
+   * ParticleInterface classes.
    *
    */
-  template <template <typename> typename ParticleInterface,
-            template <typename> typename ParticleInterfaceAdd, typename StackIterator>
+  template <template <typename> typename ParticleInterfaceA,
+            template <typename> typename ParticleInterfaceB, typename StackIterator>
   class CombinedParticleInterface
-      : public ParticleInterfaceAdd<ParticleInterface<StackIterator>> {
+      : public ParticleInterfaceB<ParticleInterfaceA<StackIterator>> {
 
-    using C =
-        CombinedParticleInterface<ParticleInterface, ParticleInterfaceAdd, StackIterator>;
-    using T = ParticleInterfaceAdd<ParticleInterface<StackIterator>>;
-    using I = ParticleInterface<StackIterator>;
+    using PI_C =
+        CombinedParticleInterface<ParticleInterfaceA, ParticleInterfaceB, StackIterator>;
+    using PI_A = ParticleInterfaceA<StackIterator>;
+    using PI_B = ParticleInterfaceB<ParticleInterfaceA<StackIterator>>;
 
   protected:
-    using T::GetIndex;
-    using T::GetStackData;
+    using PI_B::GetIndex;     // choose B, A would also work
+    using PI_B::GetStackData; // choose B, A would also work
 
   public:
+    /**
+     * @name wrapper for user functions
+     * @{
+     *
+     * In this set of functions we call the user-provide
+     * ParticleInterface SetParticleData(...) methods, either with
+     * parent particle reference, or w/o.
+     *
+     * There is one implicit assumption here: if only one data tuple
+     * is provided for SetParticleData, the data is passed on to
+     * ParticleInterfaceA and the ParticleInterfaceB is
+     * default-initialized. There are many occasions where this is the
+     * desired behaviour, e.g. for thinning etc.
+     *
+     */
+
     template <typename... Args1>
     void SetParticleData(const std::tuple<Args1...> vA) {
-      I::SetParticleData(vA);
-      T::SetParticleData();
+      PI_A::SetParticleData(vA);
+      PI_B::SetParticleData();
     }
     template <typename... Args1, typename... Args2>
     void SetParticleData(const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
-      I::SetParticleData(vA);
-      T::SetParticleData(vB);
+      PI_A::SetParticleData(vA);
+      PI_B::SetParticleData(vB);
     }
 
     template <typename... Args1>
-    void SetParticleData(C& p, const std::tuple<Args1...> vA) {
+    void SetParticleData(PI_C& p, const std::tuple<Args1...> vA) {
       // static_assert(MT<I>::has_not, "error");
-      I::SetParticleData(static_cast<I&>(p), vA); // original stack
-      T::SetParticleData(static_cast<T&>(p));     // addon stack
+      PI_A::SetParticleData(static_cast<PI_A&>(p), vA); // original stack
+      PI_B::SetParticleData(static_cast<PI_B&>(p));     // addon stack
     }
     template <typename... Args1, typename... Args2>
-    void SetParticleData(C& p, const std::tuple<Args1...> vA,
+    void SetParticleData(PI_C& p, const std::tuple<Args1...> vA,
                          const std::tuple<Args2...> vB) {
-      I::SetParticleData(static_cast<I&>(p), vA);
-      T::SetParticleData(static_cast<T&>(p), vB);
+      PI_A::SetParticleData(static_cast<PI_A&>(p), vA);
+      PI_B::SetParticleData(static_cast<PI_B&>(p), vB);
     }
+    ///@}
   };
 
   /**
-   * Memory implementation of the most simple (stupid) particle stack object.
+   * @class CombinedStackImpl
+   *
+   * Memory implementation of a combined data stack.
+   *
+   * The two stack data user objects Stack1Impl and Stack2Impl are
+   * merged into one consistent Stack container object providing
+   * access to the combined number of data entries.
    */
   template <typename Stack1Impl, typename Stack2Impl>
   class CombinedStackImpl : public Stack1Impl, public Stack2Impl {
@@ -118,10 +155,16 @@ namespace corsika::stack {
       Stack2Impl::DecrementSize();
     }
 
-  private:
-    /// the actual memory to store particle data
-
   }; // end class CombinedStackImpl
+
+  /**
+   * Helper template alias `CombinedStack` to construct new combined
+   * stack from two stack data objects and a particle readout interface.
+   *
+   * Note that the Stack2Impl provides only /additional/ data to
+   * Stack1Impl. This is important (see above) since tuple data for
+   * initialization are forwarded to Stack1Impl (first).
+   */
 
   template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _PI>
   using CombinedStack = Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI>;

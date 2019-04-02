@@ -98,8 +98,8 @@ namespace corsika::stack {
     typedef StackDataType
         StackImpl; ///< this is the type of the user-provided data structure
 
-    template <typename SI>                //, bool IsBase>
-    using PIType = ParticleInterface<SI>; //, IsBase>;
+    template <typename _SI>                //, bool IsBase>
+    using PIType = ParticleInterface<_SI>; //, IsBase>;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
