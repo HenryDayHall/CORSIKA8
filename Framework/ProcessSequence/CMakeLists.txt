@@ -12,6 +12,7 @@ set (
   CORSIKAprocesssequence_HEADERS
   BaseProcess.h
   ContinuousProcess.h
+  SecondariesProcess.h
   InteractionProcess.h
   DecayProcess.h
   ProcessSequence.h

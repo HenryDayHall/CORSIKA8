@@ -39,8 +39,8 @@ public:
     assert(globalCount == fV);
     globalCount++;
   }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename T>
+  inline EProcessReturn DoContinuous(D& d, T&) const {
     cout << "ContinuousProcess1::DoContinuous" << endl;
     for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
     return EProcessReturn::eOk;
@@ -58,8 +58,8 @@ public:
     assert(globalCount == fV);
     globalCount++;
   }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename T>
+  inline EProcessReturn DoContinuous(D& d, T&) const {
     cout << "ContinuousProcess2::DoContinuous" << endl;
     for (int i = 0; i < nData; ++i) d.p[i] += 0.933;
     return EProcessReturn::eOk;
@@ -95,8 +95,8 @@ public:
     assert(globalCount == fV);
     globalCount++;
   }
-  template <typename Particle, typename Stack>
-  inline EProcessReturn DoInteraction(Particle&, Stack&) const {
+  template <typename Particle>
+  inline EProcessReturn DoInteraction(Particle&) const {
     cout << "Process2::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
@@ -118,8 +118,8 @@ public:
     assert(globalCount == fV);
     globalCount++;
   }
-  template <typename Particle, typename Stack>
-  inline EProcessReturn DoInteraction(Particle&, Stack&) const {
+  template <typename Particle>
+  inline EProcessReturn DoInteraction(Particle&) const {
     cout << "Process3::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
@@ -141,14 +141,14 @@ public:
     assert(globalCount == fV);
     globalCount++;
   }
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename T>
+  inline EProcessReturn DoContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) { d.p[i] /= 1.2; }
     return EProcessReturn::eOk;
   }
   // inline double MinStepLength(D& d) {
-  template <typename Particle, typename Stack>
-  EProcessReturn DoInteraction(Particle&, Stack&) const {
+  template <typename Particle>
+  EProcessReturn DoInteraction(Particle&) const {
     return EProcessReturn::eOk;
   }
 };
@@ -168,8 +168,8 @@ public:
   TimeType GetLifetime(Particle&) const {
     return 1_s;
   }
-  template <typename Particle, typename Stack>
-  EProcessReturn DoDecay(Particle&, Stack&) const {
+  template <typename Particle>
+  EProcessReturn DoDecay(Particle&) const {
     return EProcessReturn::eOk;
   }
 };
@@ -177,7 +177,6 @@ public:
 struct DummyData {
   double p[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
-struct DummyStack {};
 struct DummyTrajectory {};
 
 TEST_CASE("Process Sequence", "[Process Sequence]") {
@@ -205,12 +204,13 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process2 m2(1);
     Process3 m3(2);
 
-    DummyStack s;
-    DummyTrajectory t;
+    DummyData particle;
+    DummyTrajectory track;
 
     auto sequence2 = cp1 << m2 << m3;
-    GrammageType const tot = sequence2.GetTotalInteractionLength(s, t);
-    InverseGrammageType const tot_inv = sequence2.GetTotalInverseInteractionLength(s, t);
+    GrammageType const tot = sequence2.GetTotalInteractionLength(particle, track);
+    InverseGrammageType const tot_inv =
+        sequence2.GetTotalInverseInteractionLength(particle, track);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
   }
 
@@ -220,11 +220,11 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process3 m3(2);
     Decay1 d3(2);
 
-    DummyStack s;
+    DummyData particle;
 
     auto sequence2 = cp1 << m2 << m3 << d3;
-    TimeType const tot = sequence2.GetTotalLifetime(s);
-    InverseTimeType const tot_inv = sequence2.GetTotalInverseLifetime(s);
+    TimeType const tot = sequence2.GetTotalLifetime(particle);
+    InverseTimeType const tot_inv = sequence2.GetTotalInverseLifetime(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
   }
 
@@ -237,27 +237,24 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     auto sequence2 = cp1 << m2 << m3 << cp2;
 
-    DummyData p;
-    DummyStack s;
-    DummyTrajectory t;
+    DummyData particle;
+    DummyTrajectory track;
 
     cout << "-->init sequence2" << endl;
     globalCount = 0;
     sequence2.Init();
     cout << "-->docont" << endl;
 
-    sequence2.DoContinuous(p, t, s);
+    sequence2.DoContinuous(particle, track);
     cout << "-->dodisc" << endl;
-    // sequence2.DoInteraction(p, s);
     cout << "-->done" << endl;
 
     const int nLoop = 5;
     cout << "Running loop with n=" << nLoop << endl;
-    for (int i = 0; i < nLoop; ++i) {
-      sequence2.DoContinuous(p, t, s);
-      // sequence2.DoInteraction(p, s);
+    for (int i = 0; i < nLoop; ++i) { sequence2.DoContinuous(particle, track); }
+    for (int i = 0; i < nData; i++) {
+      cout << "data[" << i << "]=" << particle.p[i] << endl;
     }
-    for (int i = 0; i < nData; i++) { cout << "data[" << i << "]=" << p.p[i] << endl; }
     cout << "done" << endl;
   }
 }

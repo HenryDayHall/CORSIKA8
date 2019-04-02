@@ -33,8 +33,8 @@ namespace corsika::process {
 
     // here starts the interface part
     // -> enforce derived to implement DoContinuous...
-    template <typename Particle, typename Track, typename Stack>
-    EProcessReturn DoContinuous(Particle&, Track&, Stack&) const;
+    template <typename Particle, typename Track>
+    EProcessReturn DoContinuous(Particle&, Track&) const;
 
     // -> enforce derived to implement MaxStepLength...
     template <typename Particle, typename Track>
