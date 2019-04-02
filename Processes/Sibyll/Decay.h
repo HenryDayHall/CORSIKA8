@@ -35,10 +35,10 @@ namespace corsika::process {
       void SetHadronsUnstable();
 
       template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle const& p);
+      corsika::units::si::TimeType GetLifetime(Particle const&);
 
-      template <typename Particle, typename Stack>
-      void DoDecay(Particle& p, Stack&);
+      template <typename Projectile>
+      void DoDecay(Projectile&);
     };
   } // namespace sibyll
 } // namespace corsika::process

@@ -35,8 +35,7 @@ namespace corsika::process::EnergyLoss {
     void Init() {}
 
     corsika::process::EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType&,
-                                                  corsika::setup::Trajectory&,
-                                                  corsika::setup::Stack&);
+                                                  corsika::setup::Trajectory&);
     corsika::units::si::LengthType MaxStepLength(corsika::setup::Stack::ParticleType&,
                                                  corsika::setup::Trajectory&);
 

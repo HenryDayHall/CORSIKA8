@@ -122,12 +122,13 @@ TEST_CASE("SibyllInterface", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
+    stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
     Interaction model(env);
 
     model.Init();
-    [[maybe_unused]] const process::EProcessReturn ret =
-        model.DoInteraction(particle, stack);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length =
         model.GetInteractionLength(particle, track);
   }
@@ -146,13 +147,14 @@ TEST_CASE("SibyllInterface", "[processes]") {
                                      corsika::stack::MomentumVector, geometry::Point,
                                      units::si::TimeType, unsigned short, unsigned short>{
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
+    stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
     Interaction hmodel(env);
     NuclearInteraction model(env, hmodel);
 
     model.Init();
-    [[maybe_unused]] const process::EProcessReturn ret =
-        model.DoInteraction(particle, stack);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length =
         model.GetInteractionLength(particle, track);
   }
@@ -169,6 +171,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
+    stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
     const std::vector<particles::Code> particleList = {
         particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -177,8 +181,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Decay model(particleList);
 
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
-                                                                          stack);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
   }
 }

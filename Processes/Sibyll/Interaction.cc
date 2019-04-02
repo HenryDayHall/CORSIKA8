@@ -29,7 +29,8 @@ using std::tuple;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Particle = Stack::StackIterator; // ParticleType;
+using Particle = Stack::StackIterator;       // ParticleType;
+using Projectile = StackView::StackIterator; // ParticleType;
 using Track = Trajectory;
 
 namespace corsika::process::sibyll {
@@ -211,7 +212,7 @@ namespace corsika::process::sibyll {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(Particle& p, Stack&) {
+  process::EProcessReturn Interaction::DoInteraction(Projectile& p) {
 
     using namespace units;
     using namespace utl;
@@ -336,7 +337,6 @@ namespace corsika::process::sibyll {
              << " DoInteraction: should have dropped particle.. "
              << "THIS IS AN ERROR" << endl;
         throw std::runtime_error("energy too low for SIBYLL");
-        // p.Delete(); delete later... different process
       } else {
         fCount++;
         // Sibyll does not know about units..
@@ -349,9 +349,6 @@ namespace corsika::process::sibyll {
         int print_unit = 6;
         sib_list_(print_unit);
         fNucCount += get_nwounded() - 1;
-
-        // delete current particle
-        p.Delete();
 
         // add particles from sibyll to stack
         // link to sibyll stack
