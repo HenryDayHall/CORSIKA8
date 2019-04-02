@@ -10,6 +10,7 @@
  */
 
 #include <corsika/stack/CombinedStack.h>
+#include <corsika/stack/SecondaryView.h>
 #include <corsika/stack/Stack.h>
 
 #include <testTestStack.h> // for testing: simple stack. This is a
@@ -30,6 +31,10 @@ using boost::typeindex::type_id_with_cvr;
 using namespace corsika;
 using namespace corsika::stack;
 using namespace std;
+
+////////////////////////////////////////////////////////////
+// first level test: combine two stacks:
+//                   StackTest = (TestStackData + TestStackData2)
 
 // definition of stack-data object
 class TestStackData2 {
@@ -82,7 +87,7 @@ public:
   double GetData2() const { return GetStackData().GetData2(GetIndex()); }
 };
 
-// combined stack
+// combined stack: StackTest = (TestStackData + TestStackData2)
 template <typename StackIter>
 using CombinedTestInterfaceType =
     corsika::stack::CombinedParticleInterface<TestParticleInterface,
@@ -196,6 +201,8 @@ TEST_CASE("Combined Stack", "[stack]") {
 }
 
 ////////////////////////////////////////////////////////////
+// next level: combine three stacks:
+// combined stack: StackTest2 = ((TestStackData + TestStackData2) + TestStackData3)
 
 // definition of stack-data object
 class TestStackData3 {
@@ -228,6 +235,7 @@ private:
   std::vector<double> fData3;
 };
 
+// ---------------------------------------
 // defintion of a stack-readout object, the iteractor dereference
 // operator will deliver access to these function
 template <typename T>
@@ -248,7 +256,7 @@ public:
   double GetData3() const { return GetStackData().GetData3(GetIndex()); }
 };
 
-// double combined stack
+// double combined stack:
 // combined stack
 template <typename StackIter>
 using CombinedTestInterfaceType2 =
@@ -264,12 +272,14 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
 
     StackTest2 s;
     REQUIRE(s.GetSize() == 0);
+    // add new particle, only provide tuple data for StackTest
     auto p1 = s.AddParticle(std::tuple{9.9});
+    // add new particle, provide tuple data for both StackTest and TestStackData3
     auto p2 = s.AddParticle(std::tuple{8.8}, std::tuple{0.1});
+    // examples to explicitly change data on stack
     p2.SetData2(0.1); // not clear why this is needed, need to check
                       // SetParticleData workflow for more complicated
                       // settings
-    // auto p3 = s.AddParticle( std::tuple {8.8}, std::tuple{1.}, std::tuple{0.1} );
     p1.SetData3(20.2);
     p2.SetData3(10.3);
 
@@ -299,5 +309,51 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
     s.DeleteLast();
     s.GetNextParticle().Delete();
     REQUIRE(s.GetSize() == 0);
+  }
+}
+
+////////////////////////////////////////////////////////////
+
+// final level test, create SecondaryView on StackTest2
+
+/*
+  See Issue 161
+
+  unfortunately clang does not support this in the same way (yet) as
+  gcc, so we have to distinguish here. If clang cataches up, we could
+  remove the clang branch here and also in corsika::Cascade. The gcc
+  code is much more generic and universal.
+ */
+template <typename StackIter>
+using CombinedTestInterfaceType2 =
+    corsika::stack::CombinedParticleInterface<StackTest::PIType, TestParticleInterface3,
+                                              StackIter>;
+
+using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
+                                 CombinedTestInterfaceType2>;
+
+#if defined(__clang__)
+using StackTestView = SecondaryView<TestStackData, TestParticleInterface>;
+#elif defined(__GNUC__) || defined(__GNUG__)
+template <typename S, template <typename> typename _PIType = S::template PIType>
+struct MakeView {
+  using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
+};
+using StackTestView = MakeView<StackTest2>::type;
+#endif
+
+TEST_CASE("Combined Stack - secondary view") {
+
+  SECTION("create secondaries via secondaryview") {
+
+    StackTest2 stack;
+    auto particle = stack.AddParticle(std::tuple{9.9});
+
+    StackTestView view(particle);
+
+    auto projectile = view.GetProjectile();
+    projectile.AddSecondary(std::tuple{8.8});
+
+    REQUIRE(stack.GetSize() == 2);
   }
 }

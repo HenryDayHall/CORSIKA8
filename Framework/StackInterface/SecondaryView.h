@@ -68,10 +68,10 @@ namespace corsika::stack {
      * the constructor of the SecondaryView class
      * @{
      */
-    using InnerStackTypeV = Stack<StackDataType, ParticleInterface>;
-    typedef StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                   ParticleInterface, InnerStackTypeV>
-        StackIteratorV;
+    using InnerStackTypeValue = Stack<StackDataType, ParticleInterface>;
+    using StackIteratorValue =
+        StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
+                               ParticleInterface, InnerStackTypeValue>;
     /// @}
 
   public:
@@ -85,7 +85,8 @@ namespace corsika::stack {
     /**
      * this is the full type of the declared ParticleInterface: typedef typename
      */
-    using ParticleType = typename StackIterator::ParticleInterfaceType;
+    using ParticleType = StackIterator;
+    using ParticleInterfaceType = typename StackIterator::ParticleInterfaceType;
 
     friend class StackIteratorInterface<
         typename std::remove_reference<StackDataType>::type, ParticleInterface, ViewType>;
@@ -102,22 +103,27 @@ namespace corsika::stack {
     SecondaryView(Args... args);
 
   public:
-    SecondaryView(StackIteratorV& vP)
-        : Stack<StackDataType&, ParticleInterface>(vP.GetStackData())
-        , fProjectileIndex(vP.GetIndex()) {}
+    SecondaryView(StackIteratorValue& vI)
+        : Stack<StackDataType&, ParticleInterface>(vI.GetStackData())
+        , fProjectileIndex(vI.GetIndex()) {}
 
-    auto GetProjectile() {
+    StackIterator GetProjectile() {
       // NOTE: 0 is special marker here for PROJECTILE, see GetIndexFromIterator
       return StackIterator(*this, 0);
     }
 
     template <typename... Args>
     auto AddSecondary(const Args... v) {
+      StackIterator proj = GetProjectile();
+      return AddSecondary(proj, v...);
+    }
+
+    template <typename... Args>
+    auto AddSecondary(StackIterator& proj, const Args... v) {
       InnerStackType::GetStackData().IncrementSize();
       const unsigned int idSec = GetSize();
       const unsigned int index = InnerStackType::GetStackData().GetSize() - 1;
       fIndices.push_back(index);
-      StackIterator proj = GetProjectile();
       // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
       // GetIndexFromIterator
       return StackIterator(*this, idSec + 1, proj, v...);
@@ -164,7 +170,7 @@ namespace corsika::stack {
     /**
      * need overwrite Stack::Delete, since we want to call SecondaryView::DeleteLast
      */
-    void Delete(ParticleType p) { Delete(p.GetIterator()); }
+    void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
 
     /**
      * delete last particle on stack by decrementing stack size
