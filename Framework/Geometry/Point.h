@@ -37,6 +37,9 @@ namespace corsika::geometry {
     // TODO: this should be private or protected, we don NOT want to expose numbers
     // without reference to outside:
     auto GetCoordinates() const { return BaseVector<length_d>::qVector; }
+    auto GetX() const { return BaseVector<length_d>::qVector.GetX(); }
+    auto GetY() const { return BaseVector<length_d>::qVector.GetY(); }
+    auto GetZ() const { return BaseVector<length_d>::qVector.GetZ(); }
 
     /// this always returns a QuantityVector as triple
     auto GetCoordinates(CoordinateSystem const& pCS) const {
