@@ -55,7 +55,7 @@ TEST_CASE("NullModel", "[processes]") {
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
-        model.DoContinuous(particle, track, stack);
+        model.DoContinuous(particle, track);
     LengthType const length = model.MaxStepLength(particle, track);
 
     CHECK((length / 10_m) == Approx(1));

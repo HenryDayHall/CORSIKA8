@@ -14,21 +14,23 @@
 #include <corsika/setup/SetupTrajectory.h>
 
 using namespace corsika;
-using namespace corsika::process::null_model;
+namespace corsika::process::null_model {
 
-void corsika::process::null_model::NullModel::Init() {}
+  void NullModel::Init() {}
 
-NullModel::NullModel(units::si::LengthType maxStepLength)
-    : fMaxStepLength(maxStepLength) {}
+  NullModel::NullModel(units::si::LengthType maxStepLength)
+      : fMaxStepLength(maxStepLength) {}
 
-template <>
-process::EProcessReturn NullModel::DoContinuous(setup::Stack::ParticleType&,
-                                                setup::Trajectory&, setup::Stack&) const {
-  return process::EProcessReturn::eOk;
-}
+  template <>
+  process::EProcessReturn NullModel::DoContinuous(setup::Stack::ParticleType&,
+                                                  setup::Trajectory&) const {
+    return process::EProcessReturn::eOk;
+  }
 
-template <>
-units::si::LengthType NullModel::MaxStepLength(setup::Stack::ParticleType&,
-                                               setup::Trajectory&) const {
-  return fMaxStepLength;
-}
+  template <>
+  units::si::LengthType NullModel::MaxStepLength(setup::Stack::ParticleType&,
+                                                 setup::Trajectory&) const {
+    return fMaxStepLength;
+  }
+
+} // namespace corsika::process::null_model
