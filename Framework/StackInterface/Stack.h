@@ -33,8 +33,8 @@ namespace corsika::stack {
      <b>Important:</b> ParticleInterface must inherit from ParticleBase !
    */
 
-  template <typename>      //, bool>
-  class ParticleInterface; // forward decl
+  template <typename>      
+  class ParticleInterface; 
 
   /**
      The Stack class provides (and connects) the main particle data storage machinery.
@@ -98,8 +98,8 @@ namespace corsika::stack {
     typedef StackDataType
         StackImpl; ///< this is the type of the user-provided data structure
 
-    template <typename SI>                //, bool IsBase>
-    using PIType = ParticleInterface<SI>; //, IsBase>;
+    template <typename SI>                
+    using PIType = ParticleInterface<SI>; 
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
@@ -209,7 +209,6 @@ namespace corsika::stack {
       }
       if (p.GetIndex() < GetSize() - 1) fData.Copy(GetSize() - 1, p.GetIndex());
       DeleteLast();
-      // p.SetInvalid();
     }
     /**
      * delete this particle

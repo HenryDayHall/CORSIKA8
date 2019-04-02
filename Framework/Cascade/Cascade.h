@@ -230,14 +230,15 @@ namespace corsika::cascade {
 
         auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
-              fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
+              fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition()); 
           return numericalNodeAfterStep == currentLogicalNode;
         };
 
         assert(assertion()); // numerical and logical nodes don't match
-      } else {               // boundary crossing
+      } else {               // boundary crossing, step is limited by volume boundary
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         particle.SetNode(nextVol);
+	// DoBoundary may delete the particle (or not)
         fProcessSequence.DoBoundaryCrossing(particle, *currentLogicalNode, *nextVol);
       }
     }
