@@ -13,6 +13,7 @@ set (
   BaseProcess.h
   BoundaryCrossingProcess.h
   ContinuousProcess.h
+  SecondariesProcess.h
   InteractionProcess.h
   DecayProcess.h
   ProcessSequence.h
