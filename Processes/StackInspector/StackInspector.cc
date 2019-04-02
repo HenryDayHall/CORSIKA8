@@ -37,8 +37,8 @@ template <typename Stack>
 StackInspector<Stack>::~StackInspector() {}
 
 template <typename Stack>
-process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Trajectory&,
-                                                            Stack& s) {
+process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&,
+                                                            setup::Trajectory&) {
 
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;

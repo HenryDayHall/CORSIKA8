@@ -59,8 +59,8 @@ namespace corsika::process::HadronicElasticModel {
     template <typename Particle, typename Track>
     corsika::units::si::GrammageType GetInteractionLength(Particle const& p, Track&);
 
-    template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack&);
+    template <typename Particle>
+    corsika::process::EProcessReturn DoInteraction(Particle&);
   };
 
 } // namespace corsika::process::HadronicElasticModel

@@ -79,7 +79,7 @@ namespace corsika::process::HadronicElasticModel {
   }
 
   template <>
-  process::EProcessReturn HadronicElasticInteraction::DoInteraction(Particle& p, Stack&) {
+  process::EProcessReturn HadronicElasticInteraction::DoInteraction(Particle& p) {
     if (p.GetPID() != particles::Code::Proton) { return process::EProcessReturn::eOk; }
 
     using namespace units::si;

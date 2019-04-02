@@ -31,7 +31,8 @@ using std::vector;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Particle = Stack::StackIterator; // ParticleType;
+using Particle = Stack::ParticleType;        // StackIterator; // ParticleType;
+using Projectile = StackView::StackIterator; // StackView::ParticleType;
 using Track = Trajectory;
 
 namespace corsika::process::sibyll {
@@ -307,7 +308,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  process::EProcessReturn NuclearInteraction::DoInteraction(Particle& p, Stack& s) {
+  process::EProcessReturn NuclearInteraction::DoInteraction(Projectile& p) {
 
     // this routine superimposes different nucleon-nucleon interactions
     // in a nucleus-nucleus interaction, based the SIBYLL routine SIBNUC
@@ -594,11 +595,8 @@ namespace corsika::process::sibyll {
               PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig});
       // create inelastic interaction
       cout << "calling HadronicInteraction..." << endl;
-      fHadronicInteraction.DoInteraction(inelasticNucleon, s);
+      fHadronicInteraction.DoInteraction(inelasticNucleon);
     }
-
-    // delete parent particle
-    p.Delete();
 
     cout << "NuclearInteraction: DoInteraction: done" << endl;
 

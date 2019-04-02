@@ -55,8 +55,8 @@ namespace corsika::process::sibyll {
     template <typename Particle, typename Track>
     corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track&);
 
-    template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle& p, Stack& s);
+    template <typename Projectle>
+    corsika::process::EProcessReturn DoInteraction(Projectle& p);
 
   private:
     corsika::process::sibyll::Interaction& fHadronicInteraction;

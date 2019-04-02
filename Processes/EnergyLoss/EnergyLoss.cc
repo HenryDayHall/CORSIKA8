@@ -148,7 +148,7 @@ namespace corsika::process::EnergyLoss {
            (0.5 * log(aux) - beta2 - Cadj / Z - delta / 2 + barkas + bloch) * dX;
   }
 
-  process::EProcessReturn EnergyLoss::DoContinuous(Particle& p, Track& t, Stack&) {
+  process::EProcessReturn EnergyLoss::DoContinuous(Particle& p, Track& t) {
     if (p.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
     GrammageType const dX =
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
@@ -178,16 +178,16 @@ namespace corsika::process::EnergyLoss {
     return units::si::meter * std::numeric_limits<double>::infinity();
   }
 
-  void EnergyLoss::MomentumUpdate(corsika::setup::Stack::ParticleType& p,
+  void EnergyLoss::MomentumUpdate(corsika::setup::Stack::ParticleType& vP,
                                   corsika::units::si::HEPEnergyType Enew) {
-    HEPMomentumType Pnew = elab2plab(Enew, p.GetMass());
-    auto pnew = p.GetMomentum();
-    p.SetMomentum(pnew * Pnew / pnew.GetNorm());
+    HEPMomentumType Pnew = elab2plab(Enew, vP.GetMass());
+    auto pnew = vP.GetMomentum();
+    vP.SetMomentum(pnew * Pnew / pnew.GetNorm());
   }
 
 #include <corsika/geometry/CoordinateSystem.h>
 
-  int EnergyLoss::GetXbin(corsika::setup::Stack::ParticleType& p,
+  int EnergyLoss::GetXbin(corsika::setup::Stack::ParticleType& vP,
                           const HEPEnergyType dE) {
 
     using namespace corsika::geometry;
@@ -195,12 +195,12 @@ namespace corsika::process::EnergyLoss {
     CoordinateSystem const& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
     Point pos1(rootCS, 0_m, 0_m, 0_m);
-    Point pos2(rootCS, 0_m, 0_m, p.GetPosition().GetCoordinates()[2]);
+    Point pos2(rootCS, 0_m, 0_m, vP.GetPosition().GetCoordinates()[2]);
     Vector delta = (pos2 - pos1) / 1_s;
     Trajectory t(Line(pos1, delta), 1_s);
 
     GrammageType const grammage =
-        p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
+        vP.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
 
     const int bin = grammage / fdX;
 
