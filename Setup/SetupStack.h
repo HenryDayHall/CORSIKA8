@@ -20,8 +20,8 @@
 
 // extension with geometry information for tracking
 #include <corsika/environment/Environment.h>
-#include <corsika/stack/CombinedStack.h>
 #include <corsika/setup/SetupEnvironment.h>
+#include <corsika/stack/CombinedStack.h>
 
 #include <tuple>
 #include <utility>
@@ -33,7 +33,7 @@ class GeometryData {
 
 public:
   using BaseNodeType = typename TEnvType::BaseNodeType;
-  
+
   // these functions are needed for the Stack interface
   void Init() {}
   void Clear() { fNode.clear(); }
@@ -44,9 +44,7 @@ public:
 
   // custom data access function
   void SetNode(const int i, BaseNodeType const* v) { fNode[i] = v; }
-  auto const* GetNode(const int i) const {
-    return fNode[i];
-  }
+  auto const* GetNode(const int i) const { return fNode[i]; }
 
   // these functions are also needed by the Stack interface
   void IncrementSize() { fNode.push_back(nullptr); }
@@ -74,19 +72,16 @@ public:
   void SetParticleData(const std::tuple<BaseNodeType const*> v) {
     SetNode(std::get<0>(v));
   }
-  void SetParticleData(GeometryDataInterface& parent, const std::tuple<BaseNodeType const*>) {
+  void SetParticleData(GeometryDataInterface& parent,
+                       const std::tuple<BaseNodeType const*>) {
     SetNode(parent.GetNode()); // copy Node from parent particle!
   }
   void SetParticleData() { SetNode(nullptr); }
   void SetParticleData(GeometryDataInterface& parent) {
     SetNode(parent.GetNode()); // copy Node from parent particle!
   }
-  void SetNode(BaseNodeType const* v) {
-    GetStackData().SetNode(GetIndex(), v);
-  }
-  auto const* GetNode() const {
-    return GetStackData().GetNode(GetIndex());
-  }
+  void SetNode(BaseNodeType const* v) { GetStackData().SetNode(GetIndex(), v); }
+  auto const* GetNode() const { return GetStackData().GetNode(GetIndex()); }
 };
 
 namespace corsika::setup {
@@ -116,7 +111,8 @@ namespace corsika::setup {
                                                   SetupGeometryDataInterface, StackIter>;
 
     using StackWithGeometry =
-        corsika::stack::CombinedStack<typename ParticleDataStack::StackImpl, GeometryData<setup::SetupEnvironment>,
+        corsika::stack::CombinedStack<typename ParticleDataStack::StackImpl,
+                                      GeometryData<setup::SetupEnvironment>,
                                       StackWithGeometryInterface>;
 
   } // namespace detail

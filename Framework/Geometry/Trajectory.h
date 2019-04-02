@@ -11,8 +11,8 @@
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 
-#include <corsika/geometry/Point.h>
 #include <corsika/geometry/Line.h>
+#include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::geometry {
@@ -47,10 +47,10 @@ namespace corsika::geometry {
     void LimitEndTo(corsika::units::si::LengthType limit) {
       fTimeLength = T::TimeFromArclength(limit);
     }
-    
+
     auto NormalizedDirection() const {
-        static_assert(std::is_same_v<T, corsika::geometry::Line>);
-        return T::GetV0().normalized();
+      static_assert(std::is_same_v<T, corsika::geometry::Line>);
+      return T::GetV0().normalized();
     }
   };
 

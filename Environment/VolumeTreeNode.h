@@ -12,8 +12,8 @@
 #ifndef _include_VolumeTreeNode_H
 #define _include_VolumeTreeNode_H
 
-#include <corsika/geometry/Volume.h>
 #include <corsika/environment/IMediumModel.h>
+#include <corsika/geometry/Volume.h>
 #include <memory>
 #include <vector>
 

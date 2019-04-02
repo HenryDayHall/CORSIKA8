@@ -51,9 +51,9 @@ namespace corsika::process::HadronicElasticModel {
     corsika::units::si::CrossSectionType CrossSection(SquaredHEPEnergyType s) const;
 
   public:
-    HadronicElasticInteraction(// x & y values taken from DL for pp collisions
-                               units::si::CrossSectionType x = 0.0217 * units::si::barn,
-                               units::si::CrossSectionType y = 0.05608 * units::si::barn);
+    HadronicElasticInteraction( // x & y values taken from DL for pp collisions
+        units::si::CrossSectionType x = 0.0217 * units::si::barn,
+        units::si::CrossSectionType y = 0.05608 * units::si::barn);
     void Init();
 
     template <typename Particle, typename Track>

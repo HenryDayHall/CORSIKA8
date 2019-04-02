@@ -35,7 +35,7 @@ namespace corsika::environment {
   class Environment {
   public:
     using BaseNodeType = VolumeTreeNode<IEnvironmentModel>;
-  
+
     Environment()
         : fCoordinateSystem{corsika::geometry::RootCoordinateSystem::GetInstance()
                                 .GetRootCoordinateSystem()}
@@ -65,8 +65,8 @@ namespace corsika::environment {
     typename BaseNodeType::VTNUPtr fUniverse;
   };
 
-  //using SetupBaseNodeType = VolumeTreeNode<corsika::setup::IEnvironmentModel>;
-  //using SetupEnvironment = Environment<corsika::setup::IEnvironmentModel>;
+  // using SetupBaseNodeType = VolumeTreeNode<corsika::setup::IEnvironmentModel>;
+  // using SetupEnvironment = Environment<corsika::setup::IEnvironmentModel>;
 
 } // namespace corsika::environment
 

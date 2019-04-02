@@ -25,8 +25,7 @@ namespace corsika::process {
      * \p from and \p to.
      */
     template <typename Particle, typename VTNType>
-    EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from,
-                                      VTNType const& to);
+    EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from, VTNType const& to);
   };
 
   template <class T>
