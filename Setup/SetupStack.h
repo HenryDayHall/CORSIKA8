@@ -25,7 +25,11 @@
 #include <tuple>
 #include <vector>
 
-// definition of stack-data object to store geometry information
+/**
+ * @class GeometryData
+ *
+ * definition of stack-data object to store geometry information
+ */
 class GeometryData {
 
 public:
@@ -54,8 +58,12 @@ private:
   std::vector<const corsika::environment::BaseNodeType*> fNode;
 };
 
-// defintion of a stack-readout object, the iteractor dereference
-// operator will deliver access to these function
+/**
+ * @class GeometryDataInterface
+ *
+ * corresponding defintion of a stack-readout object, the iteractor
+ * dereference operator will deliver access to these function
+ */
 template <typename T>
 class GeometryDataInterface : public T {
 
@@ -115,6 +123,29 @@ namespace corsika::setup {
 
   // this is the REAL stack we use:
   using Stack = detail::StackWithGeometry;
+
+  /*
+    See Issue 161
+
+    unfortunately clang does not support this in the same way (yet) as
+    gcc, so we have to distinguish here. If clang cataches up, we
+    could remove the clang branch here and also in
+    corsika::Cascade. The gcc code is much more generic and
+    universal. If we could do the gcc version, we won't had to define
+    StackView globally, we could do it with MakeView whereever it is
+    actually needed. Keep an eye on this!
+  */
+#if defined(__clang__)
+  using StackView =
+      corsika::stack::SecondaryView<typename corsika::setup::Stack::StackImpl,
+                                    corsika::setup::detail::StackWithGeometryInterface>;
+#elif defined(__GNUC__) || defined(__GNUG__)
+  template <typename S, template <typename> typename _PIType = S::template PIType>
+  struct MakeView {
+    using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
+  };
+  using StackView = MakeView<corsika::setup::Stack>::type;
+#endif
 
 } // namespace corsika::setup
 
