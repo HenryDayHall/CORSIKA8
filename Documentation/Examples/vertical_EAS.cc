@@ -159,27 +159,28 @@ public:
       const Code pid = p.GetPID();
       HEPEnergyType energy = p.GetEnergy();
       cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
-	   << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV" << endl;
+           << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
+           << endl;
       if (isEmParticle(pid)) {
-	cout << "removing em. particle..." << endl;
-	fEmEnergy += energy;
-	fEmCount += 1;
-	p.Delete();
+        cout << "removing em. particle..." << endl;
+        fEmEnergy += energy;
+        fEmCount += 1;
+        p.Delete();
       } else if (isInvisible(pid)) {
-	cout << "removing inv. particle..." << endl;
-	fInvEnergy += energy;
-	fInvCount += 1;
-	p.Delete();
+        cout << "removing inv. particle..." << endl;
+        fInvEnergy += energy;
+        fInvCount += 1;
+        p.Delete();
       } else if (isBelowEnergyCut(p)) {
-	cout << "removing low en. particle..." << endl;
-	fEnergy += energy;
-	p.Delete();
-      } else if (p.GetTime()>10_ms) {
-	cout << "removing OLD particle..." << endl;
-	fEnergy += energy;
-	p.Delete();
+        cout << "removing low en. particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else if (p.GetTime() > 10_ms) {
+        cout << "removing OLD particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
       } else {
-	++p; // next entry in SecondaryView
+        ++p; // next entry in SecondaryView
       }
     }
     return EProcessReturn::eOk;
@@ -210,33 +211,29 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
-
 class ObservationLevel : public process::ContinuousProcess<ObservationLevel> {
 
   LengthType fHeight;
-  
+
 public:
   ObservationLevel(const LengthType vHeight)
-    : fHeight(vHeight) {}
+      : fHeight(vHeight) {}
 
   template <typename Particle>
   LengthType MaxStepLength(Particle&, setup::Trajectory&) const {
     return 1_m * std::numeric_limits<double>::infinity();
   }
-  
+
   template <typename TParticle, typename TTrack>
   EProcessReturn DoContinuous(TParticle&, TTrack& vT) {
-    if ((vT.GetPosition(0).GetZ()<=fHeight &&
-	 vT.GetPosition(1).GetZ()>fHeight) ||
-	(vT.GetPosition(0).GetZ()>fHeight &&
-	 vT.GetPosition(1).GetZ()<=fHeight)) {
-      cout << "OBSERVED " << endl; 
-      return EProcessReturn::eParticleAbsorbed;	  
+    if ((vT.GetPosition(0).GetZ() <= fHeight && vT.GetPosition(1).GetZ() > fHeight) ||
+        (vT.GetPosition(0).GetZ() > fHeight && vT.GetPosition(1).GetZ() <= fHeight)) {
+      cout << "OBSERVED " << endl;
+      return EProcessReturn::eParticleAbsorbed;
     }
     return EProcessReturn::eOk;
   }
   void Init() {}
-
 };
 
 //
@@ -285,7 +282,7 @@ int main() {
   // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
   ObservationLevel obsLevel(1400_m);
-  
+
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // process::HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
@@ -329,7 +326,8 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m, 112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
+    Point pos(rootCS, 0_m, 0_m,
+              112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
                                  units::si::TimeType, unsigned short, unsigned short>{

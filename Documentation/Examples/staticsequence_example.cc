@@ -88,12 +88,11 @@ void modular() {
 
   auto sequence = m1 << m2 << m3 << m4;
 
-  DummyData p;
-  DummyStack s;
-  DummyTrajectory t;
+  DummyData particle;
+  DummyTrajectory track;
 
   const int n = 1000;
-  for (int i = 0; i < n; ++i) { sequence.DoContinuous(p, t, s); }
+  for (int i = 0; i < n; ++i) { sequence.DoContinuous(particle, track); }
 
   for (int i = 0; i < nData; ++i) {
     // cout << p.p[i] << endl;

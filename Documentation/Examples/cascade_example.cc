@@ -54,7 +54,7 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-class ProcessCut : public process::ContinuousProcess<ProcessCut> {
+class ProcessCut : public process::SecondariesProcess<ProcessCut> {
 
   HEPEnergyType fECut;
 
@@ -148,47 +148,38 @@ public:
     return is_inv;
   }
 
-  template <typename Particle>
-  LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
-    cout << "ProcessCut: MinStep: pid: " << p.GetPID() << endl;
-    cout << "ProcessCut: MinStep: energy (GeV): " << p.GetEnergy() / 1_GeV << endl;
-    const Code pid = p.GetPID();
-    if (isEmParticle(pid) || isInvisible(pid) || isBelowEnergyCut(p)) {
-      cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
-      return 0_m;
-    } else {
-      LengthType next_step = 1_m * std::numeric_limits<double>::infinity();
-      cout << "ProcessCut: MinStep: next cut: " << next_step << endl;
-      return next_step;
+  template <typename TSecondaries>
+  EProcessReturn DoSecondaries(TSecondaries& vS) {
+    auto p = vS.begin();
+    while (p != vS.end()) {
+      const Code pid = p.GetPID();
+      HEPEnergyType energy = p.GetEnergy();
+      cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
+           << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
+           << endl;
+      if (isEmParticle(pid)) {
+        cout << "removing em. particle..." << endl;
+        fEmEnergy += energy;
+        fEmCount += 1;
+        p.Delete();
+      } else if (isInvisible(pid)) {
+        cout << "removing inv. particle..." << endl;
+        fInvEnergy += energy;
+        fInvCount += 1;
+        p.Delete();
+      } else if (isBelowEnergyCut(p)) {
+        cout << "removing low en. particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else if (p.GetTime() > 10_ms) {
+        cout << "removing OLD particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else {
+        ++p; // next entry in SecondaryView
+      }
     }
-  }
-
-  template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) {
-    const Code pid = p.GetPID();
-    HEPEnergyType energy = p.GetEnergy();
-    cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy
-         << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV" << endl;
-    EProcessReturn ret = EProcessReturn::eOk;
-    if (isEmParticle(pid)) {
-      cout << "removing em. particle..." << endl;
-      fEmEnergy += energy;
-      fEmCount += 1;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    } else if (isInvisible(pid)) {
-      cout << "removing inv. particle..." << endl;
-      fInvEnergy += energy;
-      fInvCount += 1;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    } else if (isBelowEnergyCut(p)) {
-      cout << "removing low en. particle..." << endl;
-      fEnergy += energy;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    }
-    return ret;
+    return EProcessReturn::eOk;
   }
 
   void Init() {
@@ -214,6 +205,31 @@ public:
   HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
   HEPEnergyType GetCutEnergy() const { return fEnergy; }
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
+};
+
+class ObservationLevel : public process::ContinuousProcess<ObservationLevel> {
+
+  LengthType fHeight;
+
+public:
+  ObservationLevel(const LengthType vHeight)
+      : fHeight(vHeight) {}
+
+  template <typename Particle>
+  LengthType MaxStepLength(Particle&, setup::Trajectory&) const {
+    return 1_m * std::numeric_limits<double>::infinity();
+  }
+
+  template <typename TParticle, typename TTrack>
+  EProcessReturn DoContinuous(TParticle&, TTrack& vT) {
+    if ((vT.GetPosition(0).GetZ() <= fHeight && vT.GetPosition(1).GetZ() > fHeight) ||
+        (vT.GetPosition(0).GetZ() > fHeight && vT.GetPosition(1).GetZ() <= fHeight)) {
+      cout << "OBSERVED " << endl;
+      return EProcessReturn::eParticleAbsorbed;
+    }
+    return EProcessReturn::eOk;
+  }
+  void Init() {}
 };
 
 //
@@ -255,7 +271,7 @@ int main() {
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
+  // stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   const std::vector<particles::Code> trackedHadrons = {
       particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -267,12 +283,13 @@ int main() {
   process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   process::sibyll::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
+  ObservationLevel obsLevel(1400_m);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << sibyllNuc << decay << cut << trackWriter;
+  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << trackWriter; // << obsLevel
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -300,7 +317,8 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m, 0_m);
+    Point pos(rootCS, 0_m, 0_m,
+              112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
                                  units::si::TimeType, unsigned short, unsigned short>{
