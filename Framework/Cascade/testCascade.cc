@@ -16,6 +16,7 @@
 #include <corsika/cascade/Cascade.h>
 
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/null_model/NullModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
@@ -74,13 +75,13 @@ public:
   ProcessSplit(HEPEnergyType e)
       : fEcrit(e) {}
 
-  template <typename Particle, typename T>
-  LengthType MaxStepLength(Particle&, T&) const {
+  template <typename Particle, typename Track>
+  LengthType MaxStepLength(Particle&, Track&) const {
     return 1_m;
   }
 
-  template <typename Particle, typename T, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, T&, Stack&) {
+  template <typename Particle, typename Track>
+  EProcessReturn DoContinuous(Particle& p, Track&) {
     fCalls++;
     HEPEnergyType E = p.GetEnergy();
     if (E < fEcrit) {
@@ -114,11 +115,12 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto env = MakeDummyEnv();
   tracking_line::TrackingLine tracking;
 
-  stack_inspector::StackInspector<TestCascadeStack> p0(true);
+  stack_inspector::StackInspector<TestCascadeStack> stackInspect(true);
+  null_model::NullModel nullModel;
 
   const HEPEnergyType Ecrit = 85_MeV;
   ProcessSplit p1(Ecrit);
-  auto sequence = p0 << p1;
+  auto sequence =  nullModel /* << stackInspect*/ << p1;
   TestCascadeStack stack;
 
   cascade::Cascade EAS(env, tracking, sequence, stack);

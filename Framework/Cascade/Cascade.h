@@ -17,8 +17,18 @@
 #include <corsika/random/ExponentialDistribution.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
-#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/stack/SecondaryView.h>
 #include <corsika/units/PhysicalUnits.h>
+
+#include <corsika/setup/SetupTrajectory.h>
+
+/*  see Issue 161, we need to include SetupStack only because we need
+    to globally define StackView. This is clearly not nice and should
+    be changed, when possible. It might be that StackView needs to be
+    templated in Cascade, but this would be even worse... so we don't
+    do that until it is really needed.
+ */
+#include <corsika/setup/SetupStack.h>
 
 #include <cassert>
 #include <cmath>
@@ -39,23 +49,22 @@ namespace corsika::cascade {
    * it very versatile. Via the template arguments physics models are
    * plugged into the cascade simulation.
    *
-   * <b>Tracking</b> must be a class according to the
+   * <b>TTracking</b> must be a class according to the
    * TrackingInterface providing the functions:
    * <code>auto GetTrack(Particle const& p)</auto>,
    * with the return type <code>geometry::Trajectory<corsika::geometry::Line>
    * </code>
    *
-   * <b>ProcessList</b> must be a ProcessSequence.   *
+   * <b>TProcessList</b> must be a ProcessSequence.   *
    * <b>Stack</b> is the storage object for particle data, i.e. with
    * Particle class type <code>Stack::ParticleType</code>
    *
    *
-
    */
 
-  template <typename Tracking, typename ProcessList, typename Stack>
+  template <typename TTracking, typename TProcessList, typename TStack>
   class Cascade {
-    using Particle = typename Stack::ParticleType;
+    using Particle = typename TStack::ParticleType;
     using VolumeTreeNode =
         std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>;
     using MediumInterface = typename VolumeTreeNode::IModelProperties;
@@ -68,8 +77,8 @@ namespace corsika::cascade {
      * Cascade class cannot be default constructed, but needs a valid
      * list of physics processes for configuration at construct time.
      */
-    Cascade(corsika::environment::Environment<MediumInterface> const& env, Tracking& tr,
-            ProcessList& pl, Stack& stack)
+    Cascade(corsika::environment::Environment<MediumInterface> const& env, TTracking& tr,
+            TProcessList& pl, TStack& stack)
         : fEnvironment(env)
         , fTracking(tr)
         , fProcessSequence(pl)
@@ -125,15 +134,16 @@ namespace corsika::cascade {
      * New particles produced in one step are subject to further
      * processing, e.g. thinning, etc.
      */
-    void Step(Particle& particle) {
+    void Step(Particle& vParticle) {
+      using namespace corsika;
       using namespace corsika::units::si;
 
       // determine geometric tracking
-      auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(particle);
+      auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
 
       // determine combined total interaction length (inverse)
       InverseGrammageType const total_inv_lambda =
-          fProcessSequence.GetTotalInverseInteractionLength(particle, step);
+          fProcessSequence.GetTotalInverseInteractionLength(vParticle, step);
 
       // sample random exponential step length in grammage
       corsika::random::ExponentialDistribution expDist(1 / total_inv_lambda);
@@ -155,12 +165,12 @@ namespace corsika::cascade {
                                                                          next_interact);
 
       // determine the maximum geometric step length
-      LengthType const distance_max = fProcessSequence.MaxStepLength(particle, step);
+      LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
-          fProcessSequence.GetTotalInverseLifetime(particle);
+          fProcessSequence.GetTotalInverseLifetime(vParticle);
 
       // sample random exponential decay time
       corsika::random::ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
@@ -169,9 +179,8 @@ namespace corsika::cascade {
                 << ", next_decay=" << next_decay << std::endl;
 
       // convert next_decay from time to length [m]
-      LengthType const distance_decay = next_decay * particle.GetMomentum().norm() /
-                                        particle.GetEnergy() *
-                                        corsika::units::constants::c;
+      LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
+                                        vParticle.GetEnergy() * units::constants::c;
 
       // take minimum of geometry, interaction, decay for next step
       auto const min_distance =
@@ -180,52 +189,68 @@ namespace corsika::cascade {
       std::cout << " move particle by : " << min_distance << std::endl;
 
       // here the particle is actually moved along the trajectory to new position:
-      // std::visit(corsika::setup::ParticleUpdate<Particle>{particle}, step);
-      particle.SetPosition(step.PositionFromArclength(min_distance));
+      // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
+      vParticle.SetPosition(step.PositionFromArclength(min_distance));
       // .... also update time, momentum, direction, ...
+      vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
 
       step.LimitEndTo(min_distance);
 
       // apply all continuous processes on particle + track
-      corsika::process::EProcessReturn status =
-          fProcessSequence.DoContinuous(particle, step, fStack);
+      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
 
-      if (status == corsika::process::EProcessReturn::eParticleAbsorbed) {
-        std::cout << "Cascade: delete absorbed particle " << particle.GetPID() << " "
-                  << particle.GetEnergy() / 1_GeV << "GeV" << std::endl;
-        particle.Delete();
+      if (status == process::EProcessReturn::eParticleAbsorbed) {
+        std::cout << "Cascade: delete absorbed particle " << vParticle.GetPID() << " "
+                  << vParticle.GetEnergy() / 1_GeV << "GeV" << std::endl;
+        vParticle.Delete();
         return;
       }
 
       std::cout << "sth. happening before geometric limit ? "
                 << ((min_distance < geomMaxLength) ? "yes" : "no") << std::endl;
 
+      /*
+        Create SecondaryView object on Stack. The data container
+        remains untouched and identical, and 'projectil' is identical
+        to 'vParticle' above this line. However,
+        projectil.AddSecondaries populate the SecondaryView, which can
+        then be used afterwards for further processing. Thus: it is
+        important to use projectle (and not vParticle) for Interaction,
+        and Decay!
+       */
+      setup::StackView secondaries(vParticle);
+      [[maybe_unused]] auto projectile = secondaries.GetProjectile();
+
+      if (min_distance < distance_max) { // interaction to happen within geometric limit
+        // check whether decay or interaction limits this step
+
       if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
         if (min_distance == distance_interact) {
           std::cout << "collide" << std::endl;
 
           InverseGrammageType const actual_inv_length =
-              fProcessSequence.GetTotalInverseInteractionLength(particle, step);
+              fProcessSequence.GetTotalInverseInteractionLength(vParticle, step);
 
-          corsika::random::UniformRealDistribution<InverseGrammageType> uniDist(
-              actual_inv_length);
+          random::UniformRealDistribution<InverseGrammageType> uniDist(actual_inv_length);
           const auto sample_process = uniDist(fRNG);
           InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
-          fProcessSequence.SelectInteraction(particle, step, fStack, sample_process,
+          fProcessSequence.SelectInteraction(vParticle, projectile, step, sample_process,
                                              inv_lambda_count);
         } else if (min_distance == distance_decay) {
           std::cout << "decay" << std::endl;
           InverseTimeType const actual_decay_time =
-              fProcessSequence.GetTotalInverseLifetime(particle);
+              fProcessSequence.GetTotalInverseLifetime(vParticle);
 
-          corsika::random::UniformRealDistribution<InverseTimeType> uniDist(
-              actual_decay_time);
+          random::UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
           const auto sample_process = uniDist(fRNG);
           InverseTimeType inv_decay_count = 0 / second;
-          fProcessSequence.SelectDecay(particle, fStack, sample_process, inv_decay_count);
+          fProcessSequence.SelectDecay(vParticle, projectile, sample_process, inv_decay_count);
         } else { // step-length limitation within volume
           std::cout << "step-length limitation" << std::endl;
         }
+	
+	fProcessSequence.DoSecondaries(secondaries);
+        vParticle.Delete(); // last thing in Step function
 
         auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
@@ -244,9 +269,9 @@ namespace corsika::cascade {
 
   private:
     corsika::environment::Environment<MediumInterface> const& fEnvironment;
-    Tracking& fTracking;
-    ProcessList& fProcessSequence;
-    Stack& fStack;
+    TTracking& fTracking;
+    TProcessList& fProcessSequence;
+    TStack& fStack;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
   }; // namespace corsika::cascade
