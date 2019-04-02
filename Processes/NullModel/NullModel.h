@@ -25,8 +25,8 @@ namespace corsika::process::null_model {
 
     void Init();
 
-    template <typename Particle, typename Track, typename Stack>
-    process::EProcessReturn DoContinuous(Particle&, Track&, Stack&) const;
+    template <typename Particle, typename Track>
+    process::EProcessReturn DoContinuous(Particle&, Track&) const;
 
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle&, Track&) const;
