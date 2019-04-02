@@ -38,9 +38,8 @@ add_executable (
 
 target_link_libraries (
   testSuperStupidStack
-#  CORSIKAutls
-  ProcessStackInspector
   CORSIKAgeometry
+  CORSIKAparticles
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )

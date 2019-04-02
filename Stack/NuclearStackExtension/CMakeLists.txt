@@ -40,8 +40,7 @@ target_link_libraries (
   testNuclearStackExtension
   SuperStupidStack
   NuclearStackExtension
-  #  CORSIKAutls
-  ProcessStackInspector
+  CORSIKAparticles
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAthirdparty # for catch2
