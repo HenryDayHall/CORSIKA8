@@ -240,6 +240,9 @@ public:
 // The example main program for a particle cascade
 //
 int main() {
+
+  const LengthType height_atmosphere = 112.8_km;
+  
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
@@ -281,7 +284,7 @@ int main() {
   // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
-  ObservationLevel obsLevel(1400_m);
+  ObservationLevel obsLevel(height_atmosphere - 2000_m);//1400_m);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // process::HadronicElasticModel::HadronicElasticInteraction
@@ -327,7 +330,7 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m,
-              112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
+              height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
                                  units::si::TimeType, unsigned short, unsigned short>{
