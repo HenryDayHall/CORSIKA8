@@ -37,11 +37,12 @@ namespace corsika::geometry {
     Point GetPosition(double u) const { return T::GetPosition(fTimeLength * u); }
 
     corsika::units::si::TimeType GetDuration() const { return fTimeLength; }
+    corsika::units::si::LengthType GetLength() const { return GetDistance(fTimeLength); }
 
     corsika::units::si::LengthType GetDistance(corsika::units::si::TimeType t) const {
-      assert(t > fTimeLength);
+      assert(t <= fTimeLength);
       assert(t >= 0 * corsika::units::si::second);
-      return T::ArcLength(0, t);
+      return T::ArcLength(0 * corsika::units::si::second, t);
     }
 
     void LimitEndTo(corsika::units::si::LengthType limit) {

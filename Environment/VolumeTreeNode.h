@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -66,6 +65,24 @@ namespace corsika::environment {
         }
       } else {
         return (*childContainsIter)->GetContainingNode(p);
+      }
+    }
+
+    /**
+     * Traverses the VolumeTree pre- or post-order and calls the functor  \p func for each
+     * node. \p func takes a reference to VolumeTreeNode as argument. The return value \p
+     * func is ignored.
+     */
+    template <typename TCallable, bool preorder = true>
+    void walk(TCallable func) {
+      if constexpr (preorder) {
+        func(*this);
+        std::for_each(fChildNodes.begin(), fChildNodes.end(),
+                      [&](auto& v) { v->walk(func); });
+      } else {
+        std::for_each(fChildNodes.begin(), fChildNodes.end(),
+                      [&](auto& v) { v->walk(func); });
+        func(*this);
       }
     }
 

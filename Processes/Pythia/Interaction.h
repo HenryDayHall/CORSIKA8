@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -9,8 +8,10 @@
  * the license.
  */
 
-#ifndef _corsika_process_sibyll_interaction_h_
-#define _corsika_process_sibyll_interaction_h_
+#ifndef _corsika_process_pythia_interaction_h_
+#define _corsika_process_pythia_interaction_h_
+
+#include <Pythia8/Pythia.h>
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
@@ -18,36 +19,36 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <tuple>
 
-namespace corsika::process::sibyll {
+namespace corsika::environment {
+  class Environment;
+}
+
+namespace corsika::process::pythia {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
     int fCount = 0;
-    int fNucCount = 0;
     bool fInitialized = false;
 
   public:
-    Interaction();
+    Interaction(corsika::environment::Environment const& env);
     ~Interaction();
 
     void Init();
 
     void SetParticleListStable(const std::vector<particles::Code>);
-    void SetUnstable(const corsika::particles::Code);
-    void SetStable(const corsika::particles::Code);
+    void SetUnstable(const corsika::particles::Code );
+    void SetStable(const corsika::particles::Code );
 
     bool WasInitialized() { return fInitialized; }
-    bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
-      return (fMinEnergyCoM <= ecm) && (ecm <= fMaxEnergyCoM);
-    }
-    int GetMaxTargetMassNumber() { return fMaxTargetMassNumber; }
-    corsika::units::si::HEPEnergyType GetMinEnergyCoM() { return fMinEnergyCoM; }
-    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() { return fMaxEnergyCoM; }
-    bool IsValidTarget(corsika::particles::Code TargetId) {
-      return (corsika::particles::GetNucleusA(TargetId) < fMaxTargetMassNumber) &&
-             corsika::particles::IsNucleus(TargetId);
+    bool ValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
+      using namespace corsika::units::si;
+      return (10_GeV < ecm) && (ecm < 1_PeV);
     }
 
+    bool CanInteract(const corsika::particles::Code);
+    void ConfigureLabFrameCollision(const corsika::particles::Code, const corsika::particles::Code,
+                    const corsika::units::si::HEPEnergyType);
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code BeamId,
                     const corsika::particles::Code TargetId,
@@ -57,7 +58,7 @@ namespace corsika::process::sibyll {
     corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&);
 
     /**
-       In this function SIBYLL is called to produce one event. The
+       In this function PYTHIA is called to produce one event. The
        event is copied (and boosted) into the shower lab frame.
      */
 
@@ -65,17 +66,14 @@ namespace corsika::process::sibyll {
     corsika::process::EProcessReturn DoInteraction(Particle&, Stack&);
 
   private:
+    corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-
+      corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
+    Pythia8::Pythia fPythia;
+    Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;
-    const corsika::units::si::HEPEnergyType fMinEnergyCoM =
-        10. * 1e9 * corsika::units::si::electronvolt;
-    const corsika::units::si::HEPEnergyType fMaxEnergyCoM =
-        1.e6 * 1e9 * corsika::units::si::electronvolt;
-    const int fMaxTargetMassNumber = 18;
   };
 
-} // namespace corsika::process::sibyll
+} // namespace corsika::process::pythia
 
 #endif

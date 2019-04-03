@@ -45,8 +45,10 @@ namespace corsika::units::si {
   using hepmomentum_d = phys::units::hepenergy_d;
   using hepmass_d = phys::units::hepenergy_d;
 
-  /// defining cross section
+  /// defining cross section as area
   using sigma_d = phys::units::area_d;
+
+  // constexpr quantity<area_d> barn{Rep(1e-28L) * square(meter)};
 
   /// add the unit-types
   using LengthType = phys::units::quantity<phys::units::length_d, double>;
@@ -156,7 +158,7 @@ namespace phys {
 
       QUANTITY_DEFINE_SCALING_LITERALS(eV, hepenergy_d, 1)
 
-      QUANTITY_DEFINE_SCALING_LITERALS(barn, corsika::units::si::sigma_d,
+      QUANTITY_DEFINE_SCALING_LITERALS(b, corsika::units::si::sigma_d,
                                        magnitude(corsika::units::constants::barn))
 
     } // namespace literals

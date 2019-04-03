@@ -159,7 +159,24 @@ namespace corsika::stack {
       int GetNuclearZ() const { return GetStackData().GetNuclearZ(GetIndex()); }
       /// @}
 
-      // int GetNucleusRef() const { return GetStackData().GetNucleusRef(GetIndex()); }
+      /**
+       * Overwrite normal GetParticleMass function with nuclear version
+       */
+      corsika::units::si::HEPMassType GetMass() const {
+        if (InnerParticleInterface<StackIteratorInterface>::GetPID() ==
+            corsika::particles::Code::Nucleus)
+          return corsika::particles::GetNucleusMass(GetNuclearA(), GetNuclearZ());
+        return InnerParticleInterface<StackIteratorInterface>::GetMass();
+      }
+      /**
+       * Overwirte normal GetChargeNumber function with nuclear version
+       **/
+      int16_t GetChargeNumber() const {
+        if (InnerParticleInterface<StackIteratorInterface>::GetPID() ==
+            corsika::particles::Code::Nucleus)
+          return GetNuclearZ();
+        return InnerParticleInterface<StackIteratorInterface>::GetChargeNumber();
+      }
 
     protected:
       void SetNucleusRef(const int vR) { GetStackData().SetNucleusRef(GetIndex(), vR); }

@@ -10,6 +10,7 @@ set (
   DensityFunction.h
   Environment.h
   NameModel.h
+  FlatExponential.h
   )
 
 set (

@@ -14,8 +14,6 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
-#include <bitset2/bitset2.hpp>
-
 #include <map>
 
 namespace corsika::process::sibyll {
@@ -24,14 +22,6 @@ namespace corsika::process::sibyll {
   using SibyllCodeIntType = std::underlying_type<SibyllCode>::type;
 
 #include <corsika/process/sibyll/Generated.inc>
-
-  bool constexpr KnownBySibyll(corsika::particles::Code pCode) {
-    return isKnown[static_cast<corsika::particles::CodeIntType>(pCode)];
-  }
-
-  bool constexpr CanInteract(corsika::particles::Code pCode) {
-    return canInteract[static_cast<corsika::particles::CodeIntType>(pCode)];
-  }
 
   SibyllCode constexpr ConvertToSibyll(corsika::particles::Code pCode) {
     return static_cast<SibyllCode>(
@@ -48,6 +38,10 @@ namespace corsika::process::sibyll {
 
   int constexpr GetSibyllXSCode(corsika::particles::Code pCode) {
     return corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)];
+  }
+
+  bool constexpr CanInteract(corsika::particles::Code pCode) {
+    return GetSibyllXSCode(pCode) != 0;
   }
 
 } // namespace corsika::process::sibyll

@@ -43,7 +43,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Charges") {
     REQUIRE(Electron::GetCharge() / constants::e == Approx(-1));
     REQUIRE(Positron::GetCharge() / constants::e == Approx(+1));
-    REQUIRE(GetElectricCharge(Positron::GetAntiParticle()) / constants::e == Approx(-1));
+    REQUIRE(GetCharge(Positron::GetAntiParticle()) / constants::e == Approx(-1));
   }
 
   SECTION("Names") {

@@ -40,8 +40,8 @@ namespace corsika::process::HadronicElasticModel {
     using SquaredHEPEnergyType = decltype(corsika::units::si::HEPEnergyType() *
                                           corsika::units::si::HEPEnergyType());
 
-    using eV2 = decltype(units::si::detail::static_pow<2>(units::si::electronvolt));
-    using inveV2 = decltype(units::si::detail::static_pow<-2>(units::si::electronvolt));
+    using eV2 = decltype(units::si::square(units::si::electronvolt));
+    using inveV2 = decltype(1 / units::si::square(units::si::electronvolt));
 
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream(

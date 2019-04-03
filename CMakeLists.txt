@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.4.3)
+cmake_minimum_required (VERSION 3.9)
 
 project (
   corsika
@@ -40,7 +40,8 @@ endif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 # enable warnings and disallow non-standard language
 set(CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neither O2/3 use fast-math 
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g") # -O2 would not trade speed for size, neither O2/3 use fast-math
+set(CMAKE_Fortran_FLAGS "-std=legacy")
 
 # clang produces a lot of unecessary warnings without this:
 add_compile_options("$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>")
@@ -72,6 +73,8 @@ if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif (Boost_FOUND)
 
+find_package (Pythia8) # optional
+  
 find_package (Eigen3 REQUIRED)
 #find_package (HDF5) # not yet needed
 

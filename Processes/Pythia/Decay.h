@@ -9,40 +9,43 @@
  * the license.
  */
 
-#ifndef _include_corsika_process_sibyll_decay_h_
-#define _include_corsika_process_sibyll_decay_h_
+#ifndef _include_corsika_process_pythia_decay_h_
+#define _include_corsika_process_pythia_decay_h_
 
+#include <Pythia8/Pythia.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/DecayProcess.h>
 
-#include <vector>
-
 namespace corsika::process {
 
-  namespace sibyll {
+  namespace pythia {
+
+    typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
     class Decay : public corsika::process::DecayProcess<Decay> {
-      std::vector<particles::Code> fTrackedParticles;
+      const std::vector<particles::Code> fTrackedParticles;
       int fCount = 0;
 
     public:
-      Decay(std::vector<particles::Code>);
+      Decay(std::vector<corsika::particles::Code>);
       ~Decay();
       void Init();
 
       void SetParticleListStable(const std::vector<particles::Code>);
       void SetUnstable(const corsika::particles::Code);
       void SetStable(const corsika::particles::Code);
-      void SetAllStable();
-      void SetHadronsUnstable();
 
       template <typename Particle>
       corsika::units::si::TimeType GetLifetime(Particle const& p);
 
       template <typename Particle, typename Stack>
       void DoDecay(Particle& p, Stack&);
+
+    private:
+      Pythia8::Pythia fPythia;
     };
-  } // namespace sibyll
+
+  } // namespace pythia
 } // namespace corsika::process
 
 #endif

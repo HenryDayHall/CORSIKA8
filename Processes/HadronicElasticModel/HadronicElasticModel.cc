@@ -53,7 +53,7 @@ namespace corsika::process::HadronicElasticModel {
       auto const projectileEnergy = p.GetEnergy();
 
       auto const avgCrossSection = [&]() {
-        CrossSectionType avgCrossSection = 0_barn;
+        CrossSectionType avgCrossSection = 0_b;
 
         for (size_t i = 0; i < fractions.size(); ++i) {
           auto const targetMass = particles::GetMass(components[i]);
@@ -62,7 +62,7 @@ namespace corsika::process::HadronicElasticModel {
           avgCrossSection += CrossSection(s) * fractions[i];
         }
 
-        std::cout << "avgCrossSection: " << avgCrossSection / 1_mbarn << " mb"
+        std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb"
                   << std::endl;
 
         return avgCrossSection;
@@ -196,8 +196,8 @@ namespace corsika::process::HadronicElasticModel {
         units::si::detail::static_pow<2>(sigmaTotal) /
         (16 * M_PI * ConvertHEPToSI<CrossSectionType::dimension_type>(B(s)));
 
-    std::cout << "HEM sigmaTot = " << sigmaTotal / 1_mbarn << " mb" << std::endl;
-    std::cout << "HEM sigmaElastic = " << sigmaElastic / 1_mbarn << " mb" << std::endl;
+    std::cout << "HEM sigmaTot = " << sigmaTotal / 1_mb << " mb" << std::endl;
+    std::cout << "HEM sigmaElastic = " << sigmaElastic / 1_mb << " mb" << std::endl;
     return sigmaElastic;
   }
 
