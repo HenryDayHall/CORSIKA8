@@ -108,7 +108,6 @@ target_link_libraries (vertical_EAS SuperStupidStack CORSIKAunits
 install (TARGETS vertical_EAS DESTINATION share/examples)
 CORSIKA_ADD_TEST (vertical_EAS)
 
-
 add_executable (staticsequence_example staticsequence_example.cc)
 target_compile_options(staticsequence_example PRIVATE -g) # do not skip asserts
 target_link_libraries (staticsequence_example

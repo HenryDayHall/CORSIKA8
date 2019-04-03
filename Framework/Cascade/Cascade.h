@@ -54,7 +54,6 @@ namespace corsika::cascade {
    * <code>auto GetTrack(Particle const& p)</auto>,
    * with the return type <code>geometry::Trajectory<corsika::geometry::Line>
    * </code>
-   *
    * <b>TProcessList</b> must be a ProcessSequence.   *
    * <b>Stack</b> is the storage object for particle data, i.e. with
    * Particle class type <code>Stack::ParticleType</code>
@@ -208,6 +207,18 @@ namespace corsika::cascade {
 
       std::cout << "sth. happening before geometric limit ? "
                 << ((min_distance < geomMaxLength) ? "yes" : "no") << std::endl;
+
+      /*
+        Create SecondaryView object on Stack. The data container
+        remains untouched and identical, and 'projectil' is identical
+        to 'vParticle' above this line. However,
+        projectil.AddSecondaries populate the SecondaryView, which can
+        then be used afterwards for further processing. Thus: it is
+        important to use projectle (and not vParticle) for Interaction,
+        and Decay!
+       */
+      setup::StackView secondaries(vParticle);
+      [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
       /*
         Create SecondaryView object on Stack. The data container

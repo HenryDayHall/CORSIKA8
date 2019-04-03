@@ -118,6 +118,20 @@ namespace corsika::process {
       return ret;
     }
 
+    template <typename TSecondaries>
+    EProcessReturn DoSecondaries(TSecondaries& vS) {
+      EProcessReturn ret = EProcessReturn::eOk;
+      if constexpr (std::is_base_of<SecondariesProcess<T1type>, T1type>::value ||
+                    is_process_sequence<T1>::value) {
+        ret |= A.DoSecondaries(vS);
+      }
+      if constexpr (std::is_base_of<SecondariesProcess<T2type>, T2type>::value ||
+                    is_process_sequence<T2>::value) {
+        ret |= B.DoSecondaries(vS);
+      }
+      return ret;
+    }
+
     template <typename TParticle, typename TTrack>
     corsika::units::si::LengthType MaxStepLength(TParticle& vP, TTrack& vTrack) {
       corsika::units::si::LengthType
