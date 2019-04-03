@@ -90,6 +90,8 @@ namespace corsika::environment {
     auto const& GetVolume() const { return *fGeoVolume; }
 
     auto const& GetModelProperties() const { return *fModelProperties; }
+    
+    auto const& HasModelProperties() const { return fModelProperties.get() != nullptr; }
 
     template <typename ModelProperties, typename... Args>
     auto SetModelProperties(Args&&... args) {

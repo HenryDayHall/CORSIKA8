@@ -143,12 +143,10 @@ namespace corsika::cascade {
 
       auto const* currentLogicalNode = particle.GetNode();
 
-      auto const* currentNumericalNode =
-          fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
-
-      if (currentNumericalNode == &*fEnvironment.GetUniverse()) {
-        throw std::runtime_error("particle entered void Universe");
-      }
+      // assert that particle stays outside void Universe if it has no
+      // model properties set
+      assert(currentLogicalNode != &*fEnvironment.GetUniverse() ||
+             fEnvironment.GetUniverse()->HasModelProperties());
 
       // convert next_step from grammage to length
       LengthType const distance_interact =
@@ -230,7 +228,7 @@ namespace corsika::cascade {
 
         auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
-              fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition()); 
+              fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
           return numericalNodeAfterStep == currentLogicalNode;
         };
 
@@ -238,7 +236,7 @@ namespace corsika::cascade {
       } else {               // boundary crossing, step is limited by volume boundary
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         particle.SetNode(nextVol);
-	// DoBoundary may delete the particle (or not)
+        // DoBoundary may delete the particle (or not)
         fProcessSequence.DoBoundaryCrossing(particle, *currentLogicalNode, *nextVol);
       }
     }

@@ -213,6 +213,35 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
+template <bool deleteParticle>
+struct MyBoundaryCrossingProcess
+    : public BoundaryCrossingProcess<MyBoundaryCrossingProcess<deleteParticle>> {
+
+  MyBoundaryCrossingProcess(std::string const& filename) { fFile.open(filename); }
+
+  template <typename Particle>
+  EProcessReturn DoBoundaryCrossing(Particle& p,
+                                    typename Particle::BaseNodeType const& from,
+                                    typename Particle::BaseNodeType const& to) {
+    std::cout << "boundary crossing! from: " << &from << "; to: " << &to << std::endl;
+
+    auto const& name = particles::GetName(p.GetPID());
+    auto const start = p.GetPosition().GetCoordinates();
+
+    fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
+          << start[2] / 1_m << '\n';
+
+    if constexpr (deleteParticle) { p.Delete(); }
+
+    return EProcessReturn::eOk;
+  }
+
+  void Init() {}
+
+private:
+  std::ofstream fFile;
+};
+
 //
 // The example main program for a particle cascade
 //
@@ -232,17 +261,15 @@ int main() {
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
-  const float fox = 0.20946;
   auto const props =
       outerMedium
           ->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
               1_kg / (1_m * 1_m * 1_m),
               environment::NuclearComposition(
-                  std::vector<particles::Code>{particles::Code::Nitrogen,
-                                               particles::Code::Oxygen},
-                  std::vector<float>{1.f - fox, fox}));
+                  std::vector<particles::Code>{particles::Code::Proton},
+                  std::vector<float>{1.f}));
 
-  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);
 
   innerMedium->SetModelProperties(props);
 
@@ -260,22 +287,26 @@ int main() {
   ProcessCut cut(20_GeV);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
+  MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << sibyllNuc << decay << cut << trackWriter;
+  auto sequence = sibyll << sibyllNuc << decay << cut << boundaryCrossing << trackWriter;
 
-  // setup particle stack, and add primary particle
+  // setup particle stack, and add primary particles
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Nucleus;
-  const int nuclA = 4;
-  const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = nuclA * particles::GetMass(Code::Proton);
-  const HEPEnergyType E0 = nuclA * 25_TeV;
-  double theta = 0.;
-  double phi = 0.;
+  const Code beamCode = Code::Proton;
+  const HEPMassType mass = particles::GetMass(Code::Proton);
+  const HEPEnergyType E0 = 50_TeV;
 
-  {
+  std::uniform_real_distribution distTheta(0., 180.);
+  std::uniform_real_distribution distPhi(0., 360.);
+  std::mt19937 rng;
+
+  for (int i = 0; i < 100; ++i) {
+    auto const theta = distTheta(rng);
+    auto const phi = distPhi(rng);
+
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
     };
@@ -291,10 +322,10 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
+    stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            beamCode, E0, plab, pos, 0_ns});
   }
 
   // define air shower object, run simulation
