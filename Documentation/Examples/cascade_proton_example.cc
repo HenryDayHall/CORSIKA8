@@ -252,10 +252,9 @@ int main() {
   stack_inspector::StackInspector<setup::Stack> p0(true);
 
   const std::vector<particles::Code> trackedHadrons = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
-  
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   //  process::sibyll::Interaction sibyll(env);
@@ -274,7 +273,7 @@ int main() {
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
   //  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
-  
+
   auto sequence = p0 << pythia << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
@@ -285,7 +284,7 @@ int main() {
   stack.Clear();
   const Code beamCode = Code::Proton;
   const HEPMassType mass = particles::Proton::GetMass();
-  const HEPEnergyType E0 = 100_GeV; 
+  const HEPEnergyType E0 = 100_GeV;
   double theta = 0.;
   double phi = 0.;
 
@@ -305,10 +304,10 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType>{
-        beamCode, E0, plab, pos, 0_ns});
+    stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            beamCode, E0, plab, pos, 0_ns});
   }
 
   // define air shower object, run simulation

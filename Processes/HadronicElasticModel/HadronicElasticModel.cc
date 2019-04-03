@@ -62,8 +62,7 @@ namespace corsika::process::HadronicElasticModel {
           avgCrossSection += CrossSection(s) * fractions[i];
         }
 
-        std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb"
-                  << std::endl;
+        std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb" << std::endl;
 
         return avgCrossSection;
       }();

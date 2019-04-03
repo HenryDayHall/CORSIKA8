@@ -290,8 +290,8 @@ namespace corsika::process::sibyll {
         weightedProdCrossSection += w[i] * productionCrossSection;
       }
       cout << "NuclearInteraction: "
-           << "IntLength: weighted CrossSection (mb): "
-           << weightedProdCrossSection / 1_mb << endl;
+           << "IntLength: weighted CrossSection (mb): " << weightedProdCrossSection / 1_mb
+           << endl;
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.GetAverageMassNumber() *

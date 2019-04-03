@@ -37,8 +37,8 @@ namespace corsika::process::pythia {
     void Init();
 
     void SetParticleListStable(const std::vector<particles::Code>);
-    void SetUnstable(const corsika::particles::Code );
-    void SetStable(const corsika::particles::Code );
+    void SetUnstable(const corsika::particles::Code);
+    void SetStable(const corsika::particles::Code);
 
     bool WasInitialized() { return fInitialized; }
     bool ValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
@@ -47,8 +47,9 @@ namespace corsika::process::pythia {
     }
 
     bool CanInteract(const corsika::particles::Code);
-    void ConfigureLabFrameCollision(const corsika::particles::Code, const corsika::particles::Code,
-                    const corsika::units::si::HEPEnergyType);
+    void ConfigureLabFrameCollision(const corsika::particles::Code,
+                                    const corsika::particles::Code,
+                                    const corsika::units::si::HEPEnergyType);
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code BeamId,
                     const corsika::particles::Code TargetId,
@@ -68,7 +69,7 @@ namespace corsika::process::pythia {
   private:
     corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
-      corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
     Pythia8::Pythia fPythia;
     Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;
