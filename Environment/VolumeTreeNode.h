@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -12,6 +11,7 @@
 #ifndef _include_VolumeTreeNode_H
 #define _include_VolumeTreeNode_H
 
+#include <corsika/environment/IMediumModel.h>
 #include <corsika/geometry/Volume.h>
 #include <memory>
 #include <vector>
@@ -20,9 +20,10 @@ namespace corsika::environment {
 
   class Empty {}; //<! intended for usage as default template argument
 
-  template <typename IModelProperties = Empty>
+  template <typename TModelProperties = Empty>
   class VolumeTreeNode {
   public:
+    using IModelProperties = TModelProperties;
     using VTNUPtr = std::unique_ptr<VolumeTreeNode<IModelProperties>>;
     using IMPSharedPtr = std::shared_ptr<IModelProperties>;
     using VolUPtr = std::unique_ptr<corsika::geometry::Volume>;
@@ -30,6 +31,7 @@ namespace corsika::environment {
     VolumeTreeNode(VolUPtr pVolume = nullptr)
         : fGeoVolume(std::move(pVolume)) {}
 
+    //! convenience function equivalent to Volume::Contains
     bool Contains(corsika::geometry::Point const& p) const {
       return fGeoVolume->Contains(p);
     }
@@ -44,7 +46,7 @@ namespace corsika::environment {
     }
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
-     * \class Point \arg p, or nullptr iff \arg p is not contained in this volume.
+     * \class Point \p p, or nullptr iff \p p is not contained in this volume.
      */
     VolumeTreeNode<IModelProperties> const* GetContainingNode(
         corsika::geometry::Point const& p) const {
@@ -106,14 +108,14 @@ namespace corsika::environment {
 
     auto const& GetModelProperties() const { return *fModelProperties; }
 
-    IMPSharedPtr GetModelPropertiesPtr() const { return fModelProperties; }
+    auto HasModelProperties() const { return fModelProperties != nullptr; }
 
-    template <typename TModelProperties, typename... Args>
+    template <typename ModelProperties, typename... Args>
     auto SetModelProperties(Args&&... args) {
-      static_assert(std::is_base_of_v<IModelProperties, TModelProperties>,
+      static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
                     "unusable type provided");
 
-      fModelProperties = std::make_shared<TModelProperties>(std::forward<Args>(args)...);
+      fModelProperties = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
       return fModelProperties;
     }
 

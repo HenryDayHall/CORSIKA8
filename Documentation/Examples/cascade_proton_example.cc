@@ -229,12 +229,13 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  environment::Environment env;
+  using EnvType = environment::Environment<setup::IEnvironmentModel>;
+  EnvType env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  auto theMedium =
+      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+                                  1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
@@ -248,18 +249,17 @@ int main() {
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  stack_inspector::StackInspector<setup::Stack> p0(true);
+  tracking_line::TrackingLine tracking;
+  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   const std::vector<particles::Code> trackedHadrons = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
-  
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   //  process::sibyll::Interaction sibyll(env);
-  process::pythia::Interaction pythia(env);
+  process::pythia::Interaction pythia;
   //  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   //  process::sibyll::Decay decay(trackedHadrons);
   process::pythia::Decay decay(trackedHadrons);
@@ -274,8 +274,8 @@ int main() {
   // assemble all processes into an ordered process list
   // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
   //  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
-  
-  auto sequence = p0 << pythia << decay << cut << trackWriter;
+
+  auto sequence = stackInspect << pythia << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
@@ -285,7 +285,7 @@ int main() {
   stack.Clear();
   const Code beamCode = Code::Proton;
   const HEPMassType mass = particles::Proton::GetMass();
-  const HEPEnergyType E0 = 100_GeV; 
+  const HEPEnergyType E0 = 100_GeV;
   double theta = 0.;
   double phi = 0.;
 
@@ -305,10 +305,10 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType>{
-        beamCode, E0, plab, pos, 0_ns});
+    stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            beamCode, E0, plab, pos, 0_ns});
   }
 
   // define air shower object, run simulation

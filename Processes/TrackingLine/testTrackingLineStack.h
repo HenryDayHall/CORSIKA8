@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -12,34 +11,26 @@
 #ifndef _include_process_trackinling_teststack_h_
 #define _include_process_trackinling_teststack_h_
 
+#include <corsika/environment/Environment.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/setup/SetupStack.h>
 #include <corsika/units/PhysicalUnits.h>
 
-typedef corsika::units::si::hepmomentum_d MOMENTUM;
+using TestEnvironmentType =
+    corsika::environment::Environment<corsika::environment::Empty>;
 
-struct DummyParticle {
-  corsika::units::si::HEPEnergyType fEnergy;
-  corsika::geometry::Vector<MOMENTUM> fMomentum;
-  corsika::geometry::Point fPosition;
+template <typename T>
+using SetupGeometryDataInterface = GeometryDataInterface<T, TestEnvironmentType>;
 
-  DummyParticle(corsika::units::si::HEPEnergyType pEnergy,
-                corsika::geometry::Vector<MOMENTUM> pMomentum,
-                corsika::geometry::Point pPosition)
-      : fEnergy(pEnergy)
-      , fMomentum(pMomentum)
-      , fPosition(pPosition) {}
-
-  auto GetEnergy() const { return fEnergy; }
-  auto GetMomentum() const { return fMomentum; }
-  auto GetPosition() const { return fPosition; }
-  auto GetPID() const { return corsika::particles::Code::Unknown; }
-};
-
-struct DummyStack {
-  using ParticleType = DummyParticle;
-  using StackIterator = DummyParticle;
-};
+// combine particle data stack with geometry information for tracking
+template <typename StackIter>
+using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
+    corsika::setup::detail::ParticleDataStack::PIType, SetupGeometryDataInterface,
+    StackIter>;
+using TestTrackingLineStack = corsika::stack::CombinedStack<
+    typename corsika::setup::detail::ParticleDataStack::StackImpl,
+    GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
 
 #endif

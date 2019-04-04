@@ -24,27 +24,24 @@
 #include <iostream>
 
 using namespace corsika::setup;
-using Particle = Stack::ParticleType;
-using Track = Trajectory;
+using Particle = corsika::setup::Stack::ParticleType;
+using Track = corsika::setup::Trajectory;
 
 namespace corsika::process::HadronicElasticModel {
 
   void HadronicElasticInteraction::Init() {}
 
-  HadronicElasticInteraction::HadronicElasticInteraction(
-      environment::Environment const& env, units::si::CrossSectionType x,
-      units::si::CrossSectionType y)
+  HadronicElasticInteraction::HadronicElasticInteraction(units::si::CrossSectionType x,
+                                                         units::si::CrossSectionType y)
       : fX(x)
-      , fY(y)
-      , fEnvironment(env) {}
+      , fY(y) {}
 
   template <>
   units::si::GrammageType HadronicElasticInteraction::GetInteractionLength(
       Particle const& p, Track&) {
     using namespace units::si;
     if (p.GetPID() == particles::Code::Proton) {
-      auto const* currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+      auto const* currentNode = p.GetNode();
       auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
 
@@ -65,8 +62,7 @@ namespace corsika::process::HadronicElasticModel {
           avgCrossSection += CrossSection(s) * fractions[i];
         }
 
-        std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb"
-                  << std::endl;
+        std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb" << std::endl;
 
         return avgCrossSection;
       }();
@@ -89,8 +85,7 @@ namespace corsika::process::HadronicElasticModel {
     using namespace units::si;
     using namespace units::constants;
 
-    const auto* currentNode =
-        fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+    const auto* currentNode = p.GetNode();
     const auto& composition = currentNode->GetModelProperties().GetNuclearComposition();
     const auto& components = composition.GetComponents();
 

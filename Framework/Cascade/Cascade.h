@@ -20,9 +20,11 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <type_traits>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -38,14 +40,12 @@ namespace corsika::cascade {
    * plugged into the cascade simulation.
    *
    * <b>Tracking</b> must be a class according to the
-   * TrackingInterface providing the functions: <code>void
-   * Init();</code> and <code>auto GetTrack(Particle const& p)</auto>,
-   * where the latter has a return type of <code>
-   * geometry::Trajectory<corsika::geometry::Line or Helix> </code>
+   * TrackingInterface providing the functions:
+   * <code>auto GetTrack(Particle const& p)</auto>,
+   * with the return type <code>geometry::Trajectory<corsika::geometry::Line>
+   * </code>
    *
-   * <b>ProcessList</b> must be a ProcessSequence.
-   *            TimeOfIntersection(corsika::geometry::Line const& line,
-   *
+   * <b>ProcessList</b> must be a ProcessSequence.   *
    * <b>Stack</b> is the storage object for particle data, i.e. with
    * Particle class type <code>Stack::ParticleType</code>
    *
@@ -56,6 +56,9 @@ namespace corsika::cascade {
   template <typename Tracking, typename ProcessList, typename Stack>
   class Cascade {
     using Particle = typename Stack::ParticleType;
+    using VolumeTreeNode =
+        std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>;
+    using MediumInterface = typename VolumeTreeNode::IModelProperties;
 
     // we only want fully configured objects
     Cascade() = delete;
@@ -65,8 +68,8 @@ namespace corsika::cascade {
      * Cascade class cannot be default constructed, but needs a valid
      * list of physics processes for configuration at construct time.
      */
-    Cascade(corsika::environment::Environment const& env, Tracking& tr, ProcessList& pl,
-            Stack& stack)
+    Cascade(corsika::environment::Environment<MediumInterface> const& env, Tracking& tr,
+            ProcessList& pl, Stack& stack)
         : fEnvironment(env)
         , fTracking(tr)
         , fProcessSequence(pl)
@@ -77,9 +80,20 @@ namespace corsika::cascade {
      * All components of the Cascade simulation must be configured here.
      */
     void Init() {
-      fTracking.Init();
       fProcessSequence.Init();
       fStack.Init();
+    }
+
+    /**
+     * set the nodes for all particles on the stack according to their numerical
+     * position
+     */
+    void SetNodes() {
+      std::for_each(fStack.begin(), fStack.end(), [&](auto& p) {
+        auto const* numericalNode =
+            fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+        p.SetNode(numericalNode);
+      });
     }
 
     /**
@@ -87,6 +101,8 @@ namespace corsika::cascade {
      * particles from the Stack until the Stack is empty.
      */
     void Run() {
+      SetNodes();
+
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
           auto pNext = fStack.GetNextParticle();
@@ -113,7 +129,7 @@ namespace corsika::cascade {
       using namespace corsika::units::si;
 
       // determine geometric tracking
-      corsika::setup::Trajectory step = fTracking.GetTrack(particle);
+      auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(particle);
 
       // determine combined total interaction length (inverse)
       InverseGrammageType const total_inv_lambda =
@@ -126,19 +142,17 @@ namespace corsika::cascade {
       std::cout << "total_inv_lambda=" << total_inv_lambda
                 << ", next_interact=" << next_interact << std::endl;
 
+      auto const* currentLogicalNode = particle.GetNode();
+
+      // assert that particle stays outside void Universe if it has no
+      // model properties set
+      assert(currentLogicalNode != &*fEnvironment.GetUniverse() ||
+             fEnvironment.GetUniverse()->HasModelProperties());
+
       // convert next_step from grammage to length
-      auto const* currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
-
-      if (currentNode == &*fEnvironment.GetUniverse()) {
-        throw std::runtime_error("particle entered void universe");
-      }
-
       LengthType const distance_interact =
-          (next_interact == std::numeric_limits<double>::infinity() * 1_g / (1_m * 1_m))
-              ? std::numeric_limits<double>::infinity() * 1_m
-              : currentNode->GetModelProperties().ArclengthFromGrammage(step,
-                                                                        next_interact);
+          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
+                                                                         next_interact);
 
       // determine the maximum geometric step length
       LengthType const distance_max = fProcessSequence.MaxStepLength(particle, step);
@@ -161,7 +175,7 @@ namespace corsika::cascade {
 
       // take minimum of geometry, interaction, decay for next step
       auto const min_distance =
-          std::min({distance_interact, distance_decay, distance_max});
+          std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
 
       std::cout << " move particle by : " << min_distance << std::endl;
 
@@ -171,13 +185,6 @@ namespace corsika::cascade {
       // .... also update time, momentum, direction, ...
 
       step.LimitEndTo(min_distance);
-
-      // particle.GetNode(); // previous VolumeNode
-      particle.SetNode(
-          currentNode); // NOTE @Max : here we need to distinguish: IF particle step is
-      // limited by tracking (via fTracking.GetTrack()), THEN we need
-      // to check/update VolumeNodes. In all other cases it is
-      // guaranteed that we are still in the same volume
 
       // apply all continuous processes on particle + track
       corsika::process::EProcessReturn status =
@@ -191,11 +198,9 @@ namespace corsika::cascade {
       }
 
       std::cout << "sth. happening before geometric limit ? "
-                << ((min_distance < distance_max) ? "yes" : "no") << std::endl;
+                << ((min_distance < geomMaxLength) ? "yes" : "no") << std::endl;
 
-      if (min_distance < distance_max) { // interaction to happen within geometric limit
-        // check whether decay or interaction limits this step
-
+      if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
         if (min_distance == distance_interact) {
           std::cout << "collide" << std::endl;
 
@@ -208,7 +213,7 @@ namespace corsika::cascade {
           InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
           fProcessSequence.SelectInteraction(particle, step, fStack, sample_process,
                                              inv_lambda_count);
-        } else {
+        } else if (min_distance == distance_decay) {
           std::cout << "decay" << std::endl;
           InverseTimeType const actual_decay_time =
               fProcessSequence.GetTotalInverseLifetime(particle);
@@ -218,18 +223,33 @@ namespace corsika::cascade {
           const auto sample_process = uniDist(fRNG);
           InverseTimeType inv_decay_count = 0 / second;
           fProcessSequence.SelectDecay(particle, fStack, sample_process, inv_decay_count);
+        } else { // step-length limitation within volume
+          std::cout << "step-length limitation" << std::endl;
         }
+
+        auto const assertion = [&] {
+          auto const* numericalNodeAfterStep =
+              fEnvironment.GetUniverse()->GetContainingNode(particle.GetPosition());
+          return numericalNodeAfterStep == currentLogicalNode;
+        };
+
+        assert(assertion()); // numerical and logical nodes don't match
+      } else {               // boundary crossing, step is limited by volume boundary
+        std::cout << "boundary crossing! next node = " << nextVol << std::endl;
+        particle.SetNode(nextVol);
+        // DoBoundary may delete the particle (or not)
+        fProcessSequence.DoBoundaryCrossing(particle, *currentLogicalNode, *nextVol);
       }
     }
 
   private:
-    corsika::environment::Environment const& fEnvironment;
+    corsika::environment::Environment<MediumInterface> const& fEnvironment;
     Tracking& fTracking;
     ProcessList& fProcessSequence;
     Stack& fStack;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
-  };
+  }; // namespace corsika::cascade
 
 } // namespace corsika::cascade
 

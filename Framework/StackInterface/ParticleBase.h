@@ -90,7 +90,7 @@ namespace corsika::stack {
 
     //  protected:
     /**
-        @name Access to underlying stack dfata, these are service
+        @name Access to underlying stack fData, these are service
         function for user classes. User code can only rely on GetIndex
         and GetStackData to retrieve data
         @{

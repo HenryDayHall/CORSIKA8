@@ -19,6 +19,13 @@ set (
 add_library (CORSIKArandom STATIC ${CORSIKArandom_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKArandom ${CORSIKArandom_NAMESPACE} ${CORSIKArandom_HEADERS})
 
+target_link_libraries (
+  CORSIKArandom
+  INTERFACE
+  CORSIKAutilities
+  CORSIKAunits
+  )
+
 target_include_directories (
   CORSIKArandom
   PUBLIC

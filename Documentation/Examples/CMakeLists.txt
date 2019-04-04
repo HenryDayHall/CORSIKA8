@@ -34,7 +34,6 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
   ProcessStackInspector
   ProcessTrackWriter
   ProcessTrackingLine
-  ProcessHadronicElasticModel
   CORSIKAprocesses
   CORSIKAcascade
   CORSIKAparticles
@@ -44,6 +43,24 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
   )
 install (TARGETS cascade_example DESTINATION share/examples)
 CORSIKA_ADD_TEST (cascade_example)
+
+add_executable (boundary_example boundary_example.cc)
+target_compile_options(boundary_example PRIVATE -g) # do not skip asserts
+target_link_libraries (boundary_example SuperStupidStack CORSIKAunits CORSIKAlogging
+   CORSIKArandom
+   ProcessSibyll
+  CORSIKAcascade
+  ProcessTrackWriter
+  ProcessTrackingLine
+  CORSIKAprocesses
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAprocesssequence
+  )
+
+install (TARGETS boundary_example DESTINATION share/examples)
+CORSIKA_ADD_TEST (boundary_example)
 
 add_executable (cascade_proton_example cascade_proton_example.cc)
 target_compile_options(cascade_proton_example PRIVATE -g) # do not skip asserts
@@ -63,6 +80,7 @@ target_link_libraries (cascade_proton_example SuperStupidStack CORSIKAunits
   CORSIKAenvironment
   CORSIKAprocesssequence
   )
+
 install (TARGETS cascade_proton_example DESTINATION share/examples)
 CORSIKA_ADD_TEST (cascade_proton_example)
 

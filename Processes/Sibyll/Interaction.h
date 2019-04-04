@@ -18,10 +18,6 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <tuple>
 
-namespace corsika::environment {
-  class Environment;
-}
-
 namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
@@ -31,23 +27,23 @@ namespace corsika::process::sibyll {
     bool fInitialized = false;
 
   public:
-    Interaction(corsika::environment::Environment const& env);
+    Interaction();
     ~Interaction();
 
     void Init();
 
-    void SetParticleListStable(const std::vector<particles::Code>);
+    void SetParticleListStable(std::vector<particles::Code> const&);
     void SetUnstable(const corsika::particles::Code);
     void SetStable(const corsika::particles::Code);
 
     bool WasInitialized() { return fInitialized; }
-    bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
+    bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) const {
       return (fMinEnergyCoM <= ecm) && (ecm <= fMaxEnergyCoM);
     }
-    int GetMaxTargetMassNumber() { return fMaxTargetMassNumber; }
-    corsika::units::si::HEPEnergyType GetMinEnergyCoM() { return fMinEnergyCoM; }
-    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() { return fMaxEnergyCoM; }
-    bool IsValidTarget(corsika::particles::Code TargetId) {
+    int GetMaxTargetMassNumber() const { return fMaxTargetMassNumber; }
+    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return fMinEnergyCoM; }
+    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return fMaxEnergyCoM; }
+    bool IsValidTarget(corsika::particles::Code TargetId) const {
       return (corsika::particles::GetNucleusA(TargetId) < fMaxTargetMassNumber) &&
              corsika::particles::IsNucleus(TargetId);
     }
@@ -55,10 +51,10 @@ namespace corsika::process::sibyll {
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code BeamId,
                     const corsika::particles::Code TargetId,
-                    const corsika::units::si::HEPEnergyType CoMenergy);
+                    const corsika::units::si::HEPEnergyType CoMenergy) const;
 
     template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&);
+    corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&) const;
 
     /**
        In this function SIBYLL is called to produce one event. The
@@ -69,7 +65,6 @@ namespace corsika::process::sibyll {
     corsika::process::EProcessReturn DoInteraction(Particle&, Stack&);
 
   private:
-    corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
 

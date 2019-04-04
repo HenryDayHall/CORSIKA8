@@ -79,12 +79,13 @@ using namespace corsika::units;
 TEST_CASE("SibyllInterface", "[processes]") {
 
   // setup environment, geometry
-  environment::Environment env;
+  environment::Environment<environment::IMediumModel> env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<geometry::Sphere>(
-      geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  auto theMedium =
+      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
+          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+          1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
@@ -92,6 +93,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
 
+  auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
 
   const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
@@ -116,8 +118,9 @@ TEST_CASE("SibyllInterface", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
+    particle.SetNode(nodePtr);
 
-    Interaction model(env);
+    Interaction model;
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =
@@ -140,9 +143,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
                                      corsika::stack::MomentumVector, geometry::Point,
                                      units::si::TimeType, unsigned short, unsigned short>{
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
+    particle.SetNode(nodePtr);
 
-    Interaction hmodel(env);
-    NuclearInteraction model(env, hmodel);
+    Interaction hmodel;
+    NuclearInteraction model(hmodel, env);
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret =

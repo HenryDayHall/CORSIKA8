@@ -11,6 +11,7 @@ set (
 set (
   CORSIKAprocesssequence_HEADERS
   BaseProcess.h
+  BoundaryCrossingProcess.h
   ContinuousProcess.h
   InteractionProcess.h
   DecayProcess.h
@@ -33,6 +34,12 @@ install (
   FILES ${CORSIKAprocesssequence_HEADERS}
   DESTINATION include/${CORSIKAprocesssequence_NAMESPACE}
   )
+  
+target_link_libraries (
+  CORSIKAprocesssequence
+  INTERFACE
+  CORSIKAenvironment
+)
 
 #-- -- -- -- -- -- -- --
 #code unit testing

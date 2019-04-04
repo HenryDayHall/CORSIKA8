@@ -11,7 +11,7 @@
 
 #include <limits>
 
-#include <corsika/environment/Environment.h>
+#include <corsika/cascade/testCascade.h>
 
 #include <corsika/cascade/Cascade.h>
 
@@ -25,7 +25,6 @@
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 
-#include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
 
@@ -46,11 +45,11 @@ using namespace corsika::geometry;
 #include <iostream>
 using namespace std;
 
-environment::Environment MakeDummyEnv() {
-  environment::Environment env; // dummy environment
+auto MakeDummyEnv() {
+  TestEnvironmentType env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<Sphere>(
+  auto theMedium = TestEnvironmentType::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
@@ -113,14 +112,14 @@ TEST_CASE("Cascade", "[Cascade]") {
   rmng.RegisterRandomStream("cascade");
 
   auto env = MakeDummyEnv();
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
+  tracking_line::TrackingLine tracking;
 
-  stack_inspector::StackInspector<setup::Stack> p0(true);
+  stack_inspector::StackInspector<TestCascadeStack> p0(true);
 
   const HEPEnergyType Ecrit = 85_MeV;
   ProcessSplit p1(Ecrit);
   auto sequence = p0 << p1;
-  setup::Stack stack;
+  TestCascadeStack stack;
 
   cascade::Cascade EAS(env, tracking, sequence, stack);
   CoordinateSystem const& rootCS =

@@ -12,10 +12,10 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
@@ -38,9 +38,6 @@
 #include <corsika/random/RNGManager.h>
 
 #include <corsika/utl/CorsikaFenv.h>
-
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
 
 #include <iostream>
 #include <limits>
@@ -229,28 +226,36 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  environment::Environment env;
+  using EnvType = environment::Environment<setup::IEnvironmentModel>;
+  EnvType env;
   auto& universe = *(env.GetUniverse());
-
-  auto theMedium = environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
-
-  // fraction of oxygen
-  const float fox = 0.20946;
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-				      std::vector<particles::Code>{particles::Code::Nitrogen, particles::Code::Oxygen},
-          std::vector<float>{(float)1.-fox, fox}));
-
-  universe.AddChild(std::move(theMedium));
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
+  auto outerMedium = EnvType::CreateNode<Sphere>(
+      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+  // fraction of oxygen
+  const float fox = 0.20946;
+  auto const props =
+      outerMedium
+          ->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
+              1_kg / (1_m * 1_m * 1_m),
+              environment::NuclearComposition(
+                  std::vector<particles::Code>{particles::Code::Nitrogen,
+                                               particles::Code::Oxygen},
+                  std::vector<float>{1.f - fox, fox}));
+
+  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+
+  innerMedium->SetModelProperties(props);
+
+  outerMedium->AddChild(std::move(innerMedium));
+
+  universe.AddChild(std::move(outerMedium));
+
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
+  tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   const std::vector<particles::Code> trackedHadrons = {
@@ -259,29 +264,16 @@ int main() {
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  process::sibyll::Interaction sibyll(env);
-  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
+  process::sibyll::Interaction sibyll;
+  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
-  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
-
-  // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  // process::HadronicElasticModel::HadronicElasticInteraction
-  // hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut <<
-  // trackWriter; auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss <<
-  // cut << trackWriter;
-  // auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
-  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut;
-
-  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
-  // << "\n";
+  auto sequence = sibyll << sibyllNuc << decay << cut << trackWriter;
 
   // setup particle stack, and add primary particle
   setup::Stack stack;

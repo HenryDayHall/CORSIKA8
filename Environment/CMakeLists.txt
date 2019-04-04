@@ -9,6 +9,7 @@ set (
   LinearApproximationIntegrator.h
   DensityFunction.h
   Environment.h
+  NameModel.h
   FlatExponential.h
   )
 

@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -12,6 +11,7 @@
 #ifndef _include_TRAJECTORY_H
 #define _include_TRAJECTORY_H
 
+#include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalUnits.h>
 

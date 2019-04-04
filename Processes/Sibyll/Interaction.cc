@@ -27,15 +27,12 @@ using std::cout;
 using std::endl;
 using std::tuple;
 
-using namespace corsika;
-using namespace corsika::setup;
-using Particle = Stack::StackIterator; // ParticleType;
-using Track = Trajectory;
+using SetupParticle = corsika::setup::Stack::StackIterator; // SetupParticleType;
+using Track = corsika::setup::Trajectory;
 
 namespace corsika::process::sibyll {
 
-  Interaction::Interaction(environment::Environment const& env)
-      : fEnvironment(env) {}
+  Interaction::Interaction() {}
 
   Interaction::~Interaction() {
     cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount << endl;
@@ -53,7 +50,7 @@ namespace corsika::process::sibyll {
       if (fInternalDecays) {
         // define which particles are passed to corsika, i.e. which particles make it into
         // history even very shortlived particles like charm or pi0 are of interest here
-        const std::vector<particles::Code> HadronsWeWantTrackedByCorsika = {
+        const std::vector<particles::Code> hadronsWeWantTrackedByCorsika = {
             particles::Code::PiPlus,     particles::Code::PiMinus,
             particles::Code::Pi0,        particles::Code::KMinus,
             particles::Code::KPlus,      particles::Code::K0Long,
@@ -64,7 +61,7 @@ namespace corsika::process::sibyll {
             particles::Code::DMinus,     particles::Code::D0,
             particles::Code::D0Bar};
 
-        Interaction::SetParticleListStable(HadronsWeWantTrackedByCorsika);
+        Interaction::SetParticleListStable(hadronsWeWantTrackedByCorsika);
       }
 
       fInitialized = true;
@@ -72,7 +69,7 @@ namespace corsika::process::sibyll {
   }
 
   void Interaction::SetParticleListStable(
-      const std::vector<particles::Code> particleList) {
+      std::vector<particles::Code> const& particleList) {
     for (auto p : particleList) Interaction::SetStable(p);
   }
 
@@ -91,7 +88,7 @@ namespace corsika::process::sibyll {
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
-                               const units::si::HEPEnergyType CoMenergy) {
+                               const units::si::HEPEnergyType CoMenergy) const {
     using namespace units::si;
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
@@ -118,7 +115,8 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(Particle& p, Track&) {
+  units::si::GrammageType Interaction::GetInteractionLength(SetupParticle& p,
+                                                            Track&) const {
 
     using namespace units;
     using namespace units::si;
@@ -162,8 +160,7 @@ namespace corsika::process::sibyll {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      const auto currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+      auto const* currentNode = p.GetNode();
       const auto mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
@@ -209,7 +206,7 @@ namespace corsika::process::sibyll {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(Particle& p, Stack&) {
+  process::EProcessReturn Interaction::DoInteraction(SetupParticle& p, setup::Stack&) {
 
     using namespace units;
     using namespace utl;
@@ -283,8 +280,8 @@ namespace corsika::process::sibyll {
       HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
 
       // sample target mass number
-      const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
-      const auto& mediumComposition =
+      auto const* currentNode = p.GetNode();
+      auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // get cross sections for target materials
       /*
@@ -297,10 +294,9 @@ namespace corsika::process::sibyll {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        const auto [sigProd, sigEla] = GetCrossSection(corsikaBeamId, targetId, Ecm);
+        [[maybe_unsused]] const auto [sigProd, sigEla] =
+            GetCrossSection(corsikaBeamId, targetId, Ecm);
         cross_section_of_components[i] = sigProd;
-        [[maybe_unused]] auto sigElaCopy =
-            sigEla; // to avoid not used warning in array binding
       }
 
       const auto targetCode =
@@ -348,9 +344,6 @@ namespace corsika::process::sibyll {
         sib_list_(print_unit);
         fNucCount += get_nwounded() - 1;
 
-        // delete current particle
-        p.Delete();
-
         // add particles from sibyll to stack
         // link to sibyll stack
         SibStack ss;
@@ -384,6 +377,8 @@ namespace corsika::process::sibyll {
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
     }
+    // delete current particle
+    p.Delete();
     return process::EProcessReturn::eOk;
   }
 
