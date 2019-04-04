@@ -45,26 +45,25 @@ namespace corsika::environment {
         : Base(p0, rho, lambda)
         , fNuclComp(nuclComp) {}
 
-    corsika::units::si::MassDensityType GetMassDensity(
-        corsika::geometry::Point const& p) const override {
+    units::si::MassDensityType GetMassDensity(geometry::Point const& p) const override {
       auto const height = (p - Base::fP0).norm();
       return Base::fRho0 * exp(Base::fInvLambda * height);
     }
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-        corsika::units::si::LengthType pTo) const override {
+    units::si::GrammageType IntegratedGrammage(
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::LengthType to) const override {
       auto const axis = (line.GetR0() - Base::fP0).normalized();
-      return Base::IntegratedGrammage(line, pTo, axis);
+      return Base::IntegratedGrammage(line, to, axis);
     }
 
-    corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-        corsika::units::si::GrammageType pGrammage) const override {
+    units::si::LengthType ArclengthFromGrammage(
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::GrammageType grammage) const override {
       auto const axis = (line.GetR0() - Base::fP0).normalized();
-      return Base::ArclengthFromGrammage(line, pGrammage, axis);
+      return Base::ArclengthFromGrammage(line, grammage, axis);
     }
   };
 

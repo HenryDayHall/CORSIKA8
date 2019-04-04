@@ -50,16 +50,15 @@ namespace corsika::environment {
      */
     // clang-format on
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
-        units::si::LengthType pTo,
+        geometry::Trajectory<geometry::Line> const& line, units::si::LengthType to,
         geometry::Vector<units::si::dimensionless_d> const& axis) const {
       auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
       auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
 
       if (vDotA == 0) {
-        return pTo * rhoStart;
+        return to * rhoStart;
       } else {
-        return rhoStart * (fLambda / vDotA) * (exp(vDotA * pTo * fInvLambda) - 1);
+        return rhoStart * (fLambda / vDotA) * (exp(vDotA * to * fInvLambda) - 1);
       }
     }
 
@@ -83,15 +82,15 @@ namespace corsika::environment {
     // clang-format on
     units::si::LengthType ArclengthFromGrammage(
         geometry::Trajectory<corsika::geometry::Line> const& line,
-        units::si::GrammageType pGrammage,
+        units::si::GrammageType grammage,
         geometry::Vector<units::si::dimensionless_d> const& axis) const {
       auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
       auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
 
       if (vDotA == 0) {
-        return pGrammage / rhoStart;
+        return grammage / rhoStart;
       } else {
-        auto const logArg = pGrammage * fInvLambda * vDotA / rhoStart + 1;
+        auto const logArg = grammage * fInvLambda * vDotA / rhoStart + 1;
         if (logArg > 0) {
           return fLambda / vDotA * log(logArg);
         } else {

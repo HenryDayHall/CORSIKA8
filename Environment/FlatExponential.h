@@ -20,7 +20,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::environment {
-  
+
   //clang-format off
   /**
    * flat exponential density distribution with
@@ -48,23 +48,22 @@ namespace corsika::environment {
         , fAxis(axis)
         , fNuclComp(nuclComp) {}
 
-    corsika::units::si::MassDensityType GetMassDensity(
-        corsika::geometry::Point const& p) const override {
+    units::si::MassDensityType GetMassDensity(geometry::Point const& p) const override {
       return Base::fRho0 * exp(Base::fInvLambda * (p - Base::fP0).dot(fAxis));
     }
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-        corsika::units::si::LengthType pTo) const override {
-      return Base::IntegratedGrammage(line, pTo, fAxis);
+    units::si::GrammageType IntegratedGrammage(
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::LengthType to) const override {
+      return Base::IntegratedGrammage(line, to, fAxis);
     }
 
-    corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const& line,
-        corsika::units::si::GrammageType pGrammage) const override {
-      return Base::ArclengthFromGrammage(line, pGrammage, fAxis);
+    units::si::LengthType ArclengthFromGrammage(
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::GrammageType grammage) const override {
+      return Base::ArclengthFromGrammage(line, grammage, fAxis);
     }
   };
 } // namespace corsika::environment
