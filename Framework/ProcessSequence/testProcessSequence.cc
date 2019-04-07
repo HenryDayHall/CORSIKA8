@@ -174,6 +174,21 @@ public:
   }
 };
 
+class Stack1 : public StackProcess<Stack1> {
+  int fCount = 0;
+
+public:
+  Stack1(const int n)
+      : StackProcess(n) {}
+  template <typename TStack>
+  EProcessReturn DoStack(TStack&) {
+    fCount++;
+    return EProcessReturn::eOk;
+  }
+  int GetCount() const { return fCount; }
+};
+
+struct DummyStack {};
 struct DummyData {
   double p[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
@@ -256,5 +271,25 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
       cout << "data[" << i << "]=" << particle.p[i] << endl;
     }
     cout << "done" << endl;
+  }
+
+  SECTION("StackProcess") {
+
+    ContinuousProcess1 cp1(0);
+    ContinuousProcess2 cp2(3);
+    Process2 m2(1);
+    Process3 m3(2);
+    Stack1 s1(1);
+    Stack1 s2(2);
+
+    auto sequence = s1 << s2;
+
+    DummyStack stack;
+
+    const int nLoop = 20;
+    for (int i = 0; i < nLoop; ++i) { sequence.DoStack(stack); }
+
+    CHECK(s1.GetCount() == 20);
+    CHECK(s2.GetCount() == 10);
   }
 }

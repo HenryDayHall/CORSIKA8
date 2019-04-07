@@ -26,7 +26,7 @@ namespace corsika::process {
       typedef typename Stack::ParticleType Particle;
 
     public:
-      StackInspector(const bool aReport);
+      StackInspector(const int nStep, const bool aReport);
       ~StackInspector();
 
       void Init();

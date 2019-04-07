@@ -28,8 +28,9 @@ using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 
 template <typename Stack>
-StackInspector<Stack>::StackInspector(const bool aReport)
-    : fReport(aReport)
+StackInspector<Stack>::StackInspector(const int nStep, const bool aReport)
+    : StackProcess<StackInspector<Stack>>(nStep)
+    , fReport(aReport)
     , fCountStep(0) {}
 
 template <typename Stack>

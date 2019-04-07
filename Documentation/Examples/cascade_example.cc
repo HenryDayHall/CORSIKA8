@@ -274,7 +274,7 @@ int main() {
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
-  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
+  stack_inspector::StackInspector<setup::Stack> stackInspect(1, true);
 
   const std::vector<particles::Code> trackedHadrons = {
       particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,

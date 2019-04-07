@@ -119,16 +119,29 @@ namespace corsika::process {
       return ret;
     }
 
+    bool CheckStep() {
+      bool ret = false;
+      if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value ||
+                    is_process_sequence<T1>::value) {
+        ret |= A.CheckStep();
+      }
+      if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value ||
+                    is_process_sequence<T2>::value) {
+        ret |= B.CheckStep();
+      }
+      return ret;
+    }
+
     template <typename TStack>
     EProcessReturn DoStack(TStack& vS) {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value ||
                     is_process_sequence<T1>::value) {
-        ret |= A.DoStack(vS);
+        if (A.CheckStep()) { ret |= A.DoStack(vS); }
       }
       if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value ||
                     is_process_sequence<T2>::value) {
-        ret |= B.DoStack(vS);
+        if (B.CheckStep()) { ret |= B.DoStack(vS); }
       }
       return ret;
     }

@@ -138,7 +138,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto env = MakeDummyEnv();
   tracking_line::TrackingLine tracking;
 
-  stack_inspector::StackInspector<TestCascadeStack> stackInspect(true);
+  stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true);
   null_model::NullModel nullModel;
 
   const GrammageType X0 = 20_g / square(1_cm);

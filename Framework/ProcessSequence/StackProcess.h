@@ -28,7 +28,12 @@ namespace corsika::process {
    */
 
   template <typename derived>
-  struct StackProcess {
+  class StackProcess {
+
+  public:
+    StackProcess() = delete;
+    StackProcess(const unsigned int nStep)
+        : fNStep(nStep) {}
 
     derived& GetRef() { return static_cast<derived&>(*this); }
     const derived& GetRef() const { return static_cast<const derived&>(*this); }
@@ -37,6 +42,19 @@ namespace corsika::process {
     // -> enforce derived to implement DoStack...
     template <typename TStack>
     inline EProcessReturn DoStack(TStack&);
+
+    bool CheckStep() { return !((++fIStep) % fNStep); }
+
+  private:
+    /**
+       @name The number of "steps" during the cascade processing after
+       which this StackProcess is going to be executed. The logic is
+       "fIStep modulo fNStep"
+       @{
+     */
+    unsigned int fNStep = 0;
+    unsigned long int fIStep = 0;
+    //! @}
   };
 
   // overwrite the default trait class, to mark BaseProcess<T> as useful process
