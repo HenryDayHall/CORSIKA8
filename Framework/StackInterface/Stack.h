@@ -13,6 +13,7 @@
 #define _include_Stack_h__
 
 #include <corsika/stack/StackIteratorInterface.h>
+// must be after StackIteratorInterface
 #include <corsika/stack/SecondaryView.h>
 
 #include <stdexcept>

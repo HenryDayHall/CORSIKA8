@@ -54,7 +54,7 @@ namespace corsika::stack {
    */
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
-  class SecondaryView : public corsika::stack::Stack<StackDataType&, ParticleInterface> {
+  class SecondaryView : public Stack<StackDataType&, ParticleInterface> {
 
     using ViewType = SecondaryView<StackDataType, ParticleInterface>;
 
