@@ -125,8 +125,8 @@ namespace corsika::process::EnergyLoss {
 
     // Barkas correction O(Z3) higher-order Born approximation
     // see Appl. Phys. 85 (1999) 1249
-    //double A = 1;
-    //if (p.GetPID() == particles::Code::Nucleus) A = p.GetNuclearA();
+    // double A = 1;
+    // if (p.GetPID() == particles::Code::Nucleus) A = p.GetNuclearA();
     // double const Erel = (p.GetEnergy()-p.GetMass()) / A / 1_keV;
     // double const Llow = 0.01 * Erel;
     // double const Lhigh = 1.5/pow(Erel, 0.4) + 45000./Zmat * pow(Erel, 1.6);

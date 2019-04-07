@@ -119,7 +119,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
-    stack::SecondaryView view(particle);
+    corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 
     Interaction model;
@@ -145,11 +145,11 @@ TEST_CASE("SibyllInterface", "[processes]") {
                                      units::si::TimeType, unsigned short, unsigned short>{
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
     particle.SetNode(nodePtr);
-    stack::SecondaryView view(particle);
+    corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 
     Interaction hmodel;
-    NuclearInteraction model(hmodel);
+    NuclearInteraction model(hmodel, env);
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
@@ -169,7 +169,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
-    stack::SecondaryView view(particle);
+    corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 
     const std::vector<particles::Code> particleList = {

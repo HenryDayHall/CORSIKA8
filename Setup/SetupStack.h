@@ -68,6 +68,8 @@ private:
  *
  * corresponding defintion of a stack-readout object, the iteractor
  * dereference operator will deliver access to these function
+// defintion of a stack-readout object, the iteractor dereference
+// operator will deliver access to these function
  */
 template <typename T, typename TEnvType>
 class GeometryDataInterface : public T {
@@ -146,11 +148,7 @@ namespace corsika::setup {
       corsika::stack::SecondaryView<typename corsika::setup::Stack::StackImpl,
                                     corsika::setup::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-  template <typename S, template <typename> typename _PIType = S::template PIType>
-  struct MakeView {
-    using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
-  };
-  using StackView = MakeView<corsika::setup::Stack>::type;
+  using StackView = corsika::stack::MakeView<corsika::setup::Stack>::type;
 #endif
 
 } // namespace corsika::setup

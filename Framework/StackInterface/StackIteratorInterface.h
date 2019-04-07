@@ -14,8 +14,6 @@
 
 #include <corsika/stack/ParticleBase.h>
 
-#include <type_traits>
-
 namespace corsika::stack {
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
@@ -91,10 +89,20 @@ namespace corsika::stack {
     StackIteratorInterface() = delete;
 
   public:
+    StackIteratorInterface(StackIteratorInterface const& vR)
+        : fIndex(vR.fIndex)
+        , fData(vR.fData) {}
+
+    StackIteratorInterface& operator=(StackIteratorInterface const& vR) {
+      fIndex = vR.fIndex;
+      fData = vR.fData;
+      return *this;
+    }
+
     /** iterator must always point to data, with an index:
-        @param data reference to the stack [rw]
-        @param index index on stack
-     */
+          @param data reference to the stack [rw]
+          @param index index on stack
+       */
     StackIteratorInterface(StackType& data, const unsigned int index)
         : fIndex(index)
         , fData(&data) {}

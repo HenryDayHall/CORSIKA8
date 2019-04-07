@@ -12,11 +12,12 @@
 #ifndef _Physics_NullModel_NullModel_h_
 #define _Physics_NullModel_NullModel_h_
 
-#include <corsika/process/ContinuousProcess.h>
+#include <corsika/process/BaseProcess.h>
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process::null_model {
 
-  class NullModel : public corsika::process::ContinuousProcess<NullModel> {
+  class NullModel : public corsika::process::BaseProcess<NullModel> {
     corsika::units::si::LengthType const fMaxStepLength;
 
   public:

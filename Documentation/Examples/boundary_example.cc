@@ -51,7 +51,7 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-class ProcessCut : public process::ContinuousProcess<ProcessCut> {
+class ProcessCut : public process::SecondariesProcess<ProcessCut> {
 
   HEPEnergyType fECut;
 
@@ -145,47 +145,38 @@ public:
     return is_inv;
   }
 
-  template <typename Particle>
-  LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
-    cout << "ProcessCut: MinStep: pid: " << p.GetPID() << endl;
-    cout << "ProcessCut: MinStep: energy (GeV): " << p.GetEnergy() / 1_GeV << endl;
-    const Code pid = p.GetPID();
-    if (isEmParticle(pid) || isInvisible(pid) || isBelowEnergyCut(p)) {
-      cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
-      return 0_m;
-    } else {
-      LengthType next_step = 1_m * std::numeric_limits<double>::infinity();
-      cout << "ProcessCut: MinStep: next cut: " << next_step << endl;
-      return next_step;
+  template <typename TSecondaries>
+  EProcessReturn DoSecondaries(TSecondaries& vS) {
+    auto p = vS.begin();
+    while (p != vS.end()) {
+      const Code pid = p.GetPID();
+      HEPEnergyType energy = p.GetEnergy();
+      cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
+           << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
+           << endl;
+      if (isEmParticle(pid)) {
+        cout << "removing em. particle..." << endl;
+        fEmEnergy += energy;
+        fEmCount += 1;
+        p.Delete();
+      } else if (isInvisible(pid)) {
+        cout << "removing inv. particle..." << endl;
+        fInvEnergy += energy;
+        fInvCount += 1;
+        p.Delete();
+      } else if (isBelowEnergyCut(p)) {
+        cout << "removing low en. particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else if (p.GetTime() > 10_ms) {
+        cout << "removing OLD particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else {
+        ++p; // next entry in SecondaryView
+      }
     }
-  }
-
-  template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) {
-    const Code pid = p.GetPID();
-    HEPEnergyType energy = p.GetEnergy();
-    cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy
-         << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV" << endl;
-    EProcessReturn ret = EProcessReturn::eOk;
-    if (isEmParticle(pid)) {
-      cout << "removing em. particle..." << endl;
-      fEmEnergy += energy;
-      fEmCount += 1;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    } else if (isInvisible(pid)) {
-      cout << "removing inv. particle..." << endl;
-      fInvEnergy += energy;
-      fInvCount += 1;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    } else if (isBelowEnergyCut(p)) {
-      cout << "removing low en. particle..." << endl;
-      fEnergy += energy;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    }
-    return ret;
+    return EProcessReturn::eOk;
   }
 
   void Init() {
@@ -251,7 +242,7 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = environment::Environment<setup::IEnvironmentModel>;
+  using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
   auto& universe = *(env.GetUniverse());
 
@@ -282,15 +273,16 @@ int main() {
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   process::sibyll::Interaction sibyll;
-  process::sibyll::NuclearInteraction sibyllNuc(sibyll);
-  process::sibyll::Decay decay;
+  process::sibyll::Decay decay{{particles::Code::PiPlus, particles::Code::PiMinus,
+                                particles::Code::KPlus, particles::Code::KMinus,
+                                particles::Code::K0Long, particles::Code::K0Short}};
   ProcessCut cut(20_GeV);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << sibyllNuc << decay << cut << boundaryCrossing << trackWriter;
+  auto sequence = sibyll << decay << cut << boundaryCrossing << trackWriter;
 
   // setup particle stack, and add primary particles
   setup::Stack stack;

@@ -39,6 +39,8 @@ namespace corsika::stack {
     protected:
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetStack;
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
+
+    public:
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
     public:

@@ -57,7 +57,6 @@ add_executable (testStackInspector testStackInspector.cc)
 target_link_libraries (
   testStackInspector
   ProcessStackInspector
-  CORSIKAsetup
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAthirdparty # for catch2

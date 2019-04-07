@@ -22,7 +22,8 @@ using std::vector;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Particle = Stack::StackIterator; // ParticleType;
+using Projectile = corsika::setup::StackView::ParticleType;
+using Particle = corsika::setup::Stack::ParticleType;
 using Track = Trajectory;
 
 namespace corsika::process::pythia {
@@ -84,13 +85,13 @@ namespace corsika::process::pythia {
   }
 
   template <>
-  void Decay::DoDecay(Particle& p, Stack&) {
+  void Decay::DoDecay(Projectile& vP) {
     using geometry::Point;
     using namespace units;
     using namespace units::si;
 
-    auto const decayPoint = p.GetPosition();
-    auto const t0 = p.GetTime();
+    auto const decayPoint = vP.GetPosition();
+    auto const t0 = vP.GetTime();
 
     // coordinate system, get global frame of reference
     geometry::CoordinateSystem& rootCS =
@@ -103,17 +104,17 @@ namespace corsika::process::pythia {
     event.reset();
 
     // set particle unstable
-    Decay::SetUnstable(p.GetPID());
+    Decay::SetUnstable(vP.GetPID());
 
     // input particle PDG
-    auto const pdgCode = static_cast<int>(particles::GetPDG(p.GetPID()));
+    auto const pdgCode = static_cast<int>(particles::GetPDG(vP.GetPID()));
 
-    auto const pcomp = p.GetMomentum().GetComponents();
+    auto const pcomp = vP.GetMomentum().GetComponents();
     double px = pcomp[0] / 1_GeV;
     double py = pcomp[1] / 1_GeV;
     double pz = pcomp[2] / 1_GeV;
-    double en = p.GetEnergy() / 1_GeV;
-    double m = particles::GetMass(p.GetPID()) / 1_GeV;
+    double en = vP.GetEnergy() / 1_GeV;
+    double m = particles::GetMass(vP.GetPID()) / 1_GeV;
 
     // add particle to pythia stack
     event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
@@ -138,17 +139,17 @@ namespace corsika::process::pythia {
         cout << "particle: id=" << pyId << " momentum=" << pyP.GetComponents() / 1_GeV
              << " energy=" << pyEn << endl;
 
-        p.AddSecondary(
+        vP.AddSecondary(
             tuple<particles::Code, units::si::HEPEnergyType,
                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
                 pyId, pyEn, pyP, decayPoint, t0});
       }
 
     // set particle stable
-    Decay::SetStable(p.GetPID());
+    Decay::SetStable(vP.GetPID());
 
     // remove original particle from corsika stack
-    p.Delete();
+    vP.Delete();
     //    if (fCount>10) throw std::runtime_error("stop here");
   }
 

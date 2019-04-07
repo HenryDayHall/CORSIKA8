@@ -13,7 +13,6 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
-#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
@@ -245,16 +244,17 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  environment::Environment env;
+  using EnvType = Environment<setup::IEnvironmentModel>;
+  EnvType env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  auto theMedium =
+      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+                                  1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
   const float fox = 0.20946;
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
@@ -267,16 +267,15 @@ int main() {
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  // stack_inspector::StackInspector<setup::Stack> stackInspect(true);
+  tracking_line::TrackingLine tracking;
 
   const std::vector<particles::Code> trackedHadrons = {
       particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
       particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  process::sibyll::Interaction sibyll(env);
-  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
+  process::sibyll::Interaction sibyll;
+  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
   // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   // process::pythia::Decay decay(trackedHadrons);
@@ -291,11 +290,8 @@ int main() {
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // auto sequence = stackInspect << sibyll << decay << hadronicElastic << cut <<
-  // trackWriter; auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss <<
   // cut << trackWriter;
   auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << obsLevel;
-  // auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";

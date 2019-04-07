@@ -335,12 +335,10 @@ using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
 #if defined(__clang__)
 using StackTestView = SecondaryView<TestStackData, TestParticleInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-template <typename S, template <typename> typename _PIType = S::template PIType>
-struct MakeView {
-  using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
-};
-using StackTestView = MakeView<StackTest2>::type;
+using StackTestView = corsika::stack::MakeView<StackTest2>::type;
 #endif
+
+using Particle2 = typename StackTest2::ParticleType;
 
 TEST_CASE("Combined Stack - secondary view") {
 
@@ -348,7 +346,7 @@ TEST_CASE("Combined Stack - secondary view") {
 
     StackTest2 stack;
     auto particle = stack.AddParticle(std::tuple{9.9});
-
+    // cout << boost::typeindex::type_id_runtime(particle).pretty_name() << endl;
     StackTestView view(particle);
 
     auto projectile = view.GetProjectile();

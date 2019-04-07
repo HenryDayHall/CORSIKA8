@@ -91,6 +91,8 @@ TEST_CASE("TrackingLine") {
     Line line(origin, v);
 
     auto const [traj, geomMaxLength, nextVol] = tracking.GetTrack(p);
+    [[maybe_unused]] auto dummy_geomMaxLength = geomMaxLength;
+    [[maybe_unused]] auto dummy_nextVol = nextVol;
 
     REQUIRE((traj.GetPosition(1.) - Point(cs, 0_m, 0_m, radius))
                 .GetComponents(cs)

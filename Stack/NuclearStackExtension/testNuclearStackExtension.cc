@@ -29,10 +29,11 @@ using namespace corsika::units::si;
 // this is an auxiliary help typedef, which I don't know how to put
 // into NuclearStackExtension.h where it belongs...
 template <typename StackIter>
-using ExtendedParticleInterfaceType = stack::nuclear_extension::NuclearParticleInterface<
-    stack::super_stupid::SuperStupidStack::PIType, StackIter>;
+using ExtendedParticleInterfaceType =
+    corsika::stack::nuclear_extension::NuclearParticleInterface<
+        corsika::stack::super_stupid::SuperStupidStack::template PIType, StackIter>;
 
-using ExtStack = NuclearStackExtension<stack::super_stupid::SuperStupidStack,
+using ExtStack = NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
                                        ExtendedParticleInterfaceType>;
 
 #include <iostream>

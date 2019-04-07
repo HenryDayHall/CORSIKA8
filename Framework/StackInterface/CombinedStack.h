@@ -41,6 +41,10 @@ namespace corsika::stack {
   class CombinedParticleInterface
       : public ParticleInterfaceB<ParticleInterfaceA<StackIterator>> {
 
+    // template<template <typename> typename _PI>
+    // template <typename StackDataType, template <typename> typename ParticleInterface>
+    // template<typename T1, template <typename> typename T2> friend class Stack<T1, T2>;
+
     using PI_C =
         CombinedParticleInterface<ParticleInterfaceA, ParticleInterfaceB, StackIterator>;
     using PI_A = ParticleInterfaceA<StackIterator>;

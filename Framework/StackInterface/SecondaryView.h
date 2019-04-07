@@ -14,6 +14,7 @@
 
 #include <corsika/stack/Stack.h>
 
+#include <stdexcept>
 #include <vector>
 
 namespace corsika::stack {
@@ -53,7 +54,7 @@ namespace corsika::stack {
    */
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
-  class SecondaryView : public Stack<StackDataType&, ParticleInterface> {
+  class SecondaryView : public corsika::stack::Stack<StackDataType&, ParticleInterface> {
 
     using ViewType = SecondaryView<StackDataType, ParticleInterface>;
 
@@ -100,9 +101,13 @@ namespace corsika::stack {
      * new stack.
      */
     template <typename... Args>
-    SecondaryView(Args... args);
+    SecondaryView(Args... args) = delete;
 
   public:
+    /**
+       SecondaryView can only be constructed passing it a valid
+       StackIterator to another Stack object
+     **/
     SecondaryView(StackIteratorValue& vI)
         : Stack<StackDataType&, ParticleInterface>(vI.GetStackData())
         , fProjectileIndex(vI.GetIndex()) {}
@@ -206,6 +211,21 @@ namespace corsika::stack {
     unsigned int fProjectileIndex;
     std::vector<unsigned int> fIndices;
   };
+
+  /*
+    See Issue 161
+
+    unfortunately clang does not support this in the same way (yet) as
+    gcc, so we have to distinguish here. If clang cataches up, we
+    could remove the #if here and elsewhere. The gcc code is much more
+    generic and universal.
+  */
+#if not defined(__clang__) && defined(__GNUC__) || defined(__GNUG__)
+  template <typename S, template <typename> typename _PIType = S::template PIType>
+  struct MakeView {
+    using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
+  };
+#endif
 
 } // namespace corsika::stack
 

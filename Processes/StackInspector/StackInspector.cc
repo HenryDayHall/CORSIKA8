@@ -16,7 +16,6 @@
 
 #include <corsika/logging/Logger.h>
 
-#include <corsika/cascade/testCascade.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <iostream>
@@ -37,14 +36,12 @@ template <typename Stack>
 StackInspector<Stack>::~StackInspector() {}
 
 template <typename Stack>
-process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&,
-                                                            setup::Trajectory&) {
-
+process::EProcessReturn StackInspector<Stack>::DoStack(Stack& vS) {
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   HEPEnergyType Etot = 0_GeV;
 
-  for (auto& iterP : s) {
+  for (auto& iterP : vS) {
     HEPEnergyType E = iterP.GetEnergy();
     Etot += E;
     geometry::CoordinateSystem& rootCS = geometry::RootCoordinateSystem::GetInstance()
@@ -53,20 +50,13 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&,
     cout << "StackInspector: i=" << setw(5) << fixed << (i++) << ", id=" << setw(30)
          << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
          << " pos=" << pos << " node = " << iterP.GetNode();
-    // if (iterP.GetPID()==Code::Nucleus)
-    // cout << " nuc_ref=" << iterP.GetNucleusRef();
+    if (iterP.GetPID() == Code::Nucleus) cout << " nuc_ref=" << iterP.GetNucleusRef();
     cout << endl;
   }
   fCountStep++;
-  cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << s.GetSize()
+  cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << vS.GetSize()
        << " Estack=" << Etot / 1_GeV << " GeV" << endl;
   return process::EProcessReturn::eOk;
-}
-
-template <typename Stack>
-corsika::units::si::LengthType StackInspector<Stack>::MaxStepLength(Particle&,
-                                                                    setup::Trajectory&) {
-  return std::numeric_limits<double>::infinity() * meter;
 }
 
 template <typename Stack>
@@ -74,6 +64,7 @@ void StackInspector<Stack>::Init() {
   fCountStep = 0;
 }
 
+#include <corsika/cascade/testCascade.h>
 #include <corsika/setup/SetupStack.h>
 
 template class process::stack_inspector::StackInspector<setup::Stack>;

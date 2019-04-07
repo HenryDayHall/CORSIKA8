@@ -19,6 +19,7 @@
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/process/SecondariesProcess.h>
+#include <corsika/process/StackProcess.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <cmath>
@@ -118,16 +119,16 @@ namespace corsika::process {
       return ret;
     }
 
-    template <typename TSecondaries>
-    EProcessReturn DoSecondaries(TSecondaries& vS) {
+    template <typename TStack>
+    EProcessReturn DoStack(TStack& vS) {
       EProcessReturn ret = EProcessReturn::eOk;
-      if constexpr (std::is_base_of<SecondariesProcess<T1type>, T1type>::value ||
+      if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value ||
                     is_process_sequence<T1>::value) {
-        ret |= A.DoSecondaries(vS);
+        ret |= A.DoStack(vS);
       }
-      if constexpr (std::is_base_of<SecondariesProcess<T2type>, T2type>::value ||
+      if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value ||
                     is_process_sequence<T2>::value) {
-        ret |= B.DoSecondaries(vS);
+        ret |= B.DoStack(vS);
       }
       return ret;
     }

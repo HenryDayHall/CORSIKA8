@@ -19,10 +19,6 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <tuple>
 
-namespace corsika::environment {
-  class Environment;
-}
-
 namespace corsika::process::pythia {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
@@ -31,12 +27,12 @@ namespace corsika::process::pythia {
     bool fInitialized = false;
 
   public:
-    Interaction(corsika::environment::Environment const& env);
+    Interaction() {}
     ~Interaction();
 
     void Init();
 
-    void SetParticleListStable(const std::vector<particles::Code>);
+    void SetParticleListStable(std::vector<particles::Code> const&);
     void SetUnstable(const corsika::particles::Code);
     void SetStable(const corsika::particles::Code);
 
@@ -55,19 +51,18 @@ namespace corsika::process::pythia {
                     const corsika::particles::Code TargetId,
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
-    template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&);
+    template <typename TParticle, typename TTrack>
+    corsika::units::si::GrammageType GetInteractionLength(TParticle&, TTrack&);
 
     /**
        In this function PYTHIA is called to produce one event. The
        event is copied (and boosted) into the shower lab frame.
      */
 
-    template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle&, Stack&);
+    template <typename TProjctile>
+    corsika::process::EProcessReturn DoInteraction(TProjctile&);
 
   private:
-    corsika::environment::Environment const& fEnvironment;
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
     Pythia8::Pythia fPythia;

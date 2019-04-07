@@ -26,15 +26,13 @@ using std::tuple;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Particle = Stack::StackIterator; // ParticleType;
+using Projectile = corsika::setup::StackView::ParticleType;
+using Particle = corsika::setup::Stack::ParticleType;
 using Track = Trajectory;
 
 namespace corsika::process::pythia {
 
   typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
-
-  Interaction::Interaction(environment::Environment const& env)
-      : fEnvironment(env) {}
 
   Interaction::~Interaction() { cout << "Pythia::Interaction n=" << fCount << endl; }
 
@@ -78,7 +76,7 @@ namespace corsika::process::pythia {
   }
 
   void Interaction::SetParticleListStable(
-      const std::vector<particles::Code> particleList) {
+      std::vector<particles::Code> const& particleList) {
     for (auto p : particleList) Interaction::SetStable(p);
   }
 
@@ -213,8 +211,7 @@ namespace corsika::process::pythia {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      const auto currentNode =
-          fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+      const auto* currentNode = p.GetNode();
       const auto mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
@@ -222,7 +219,7 @@ namespace corsika::process::pythia {
       int i = -1;
       si::CrossSectionType weightedProdCrossSection = 0_mb;
       // get weights of components from environment/medium
-      const auto w = mediumComposition.GetFractions();
+      const auto& w = mediumComposition.GetFractions();
       // loop over components in medium
       for (auto const targetId : mediumComposition.GetComponents()) {
         i++;
@@ -230,8 +227,7 @@ namespace corsika::process::pythia {
 
         auto const [productionCrossSection, elaCrossSection] =
             GetCrossSection(corsikaBeamId, targetId, ECoM);
-        [[maybe_unused]] auto elaCrossSectionCopy =
-            elaCrossSection; // ONLY TO AVOID COMPILER WARNING
+        [[maybe_unused]] const auto& dummy_elaCrossSection = elaCrossSection;
 
         cout << "Interaction: IntLength: pythia return (mb): "
              << productionCrossSection / 1_mb << endl
@@ -263,14 +259,14 @@ namespace corsika::process::pythia {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(Particle& p, Stack&) {
+  process::EProcessReturn Interaction::DoInteraction(Projectile& vP) {
 
     using namespace units;
     using namespace utl;
     using namespace units::si;
     using namespace geometry;
 
-    const auto corsikaBeamId = p.GetPID();
+    const auto corsikaBeamId = vP.GetPID();
     cout << "Pythia::Interaction: "
          << "DoInteraction: " << corsikaBeamId << " interaction? "
          << process::pythia::Interaction::CanInteract(corsikaBeamId) << endl;
@@ -286,8 +282,8 @@ namespace corsika::process::pythia {
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
       // position and time of interaction, not used in Sibyll
-      Point pOrig = p.GetPosition();
-      TimeType tOrig = p.GetTime();
+      Point pOrig = vP.GetPosition();
+      TimeType tOrig = vP.GetTime();
 
       // define target
       // FOR NOW: target is always at rest
@@ -296,8 +292,8 @@ namespace corsika::process::pythia {
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
       // define projectile
-      HEPEnergyType const eProjectileLab = p.GetEnergy();
-      auto const pProjectileLab = p.GetMomentum();
+      HEPEnergyType const eProjectileLab = vP.GetEnergy();
+      auto const pProjectileLab = vP.GetMomentum();
 
       cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
@@ -332,12 +328,12 @@ namespace corsika::process::pythia {
       cout << "Interaction: time: " << tOrig << endl;
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
-      MomentumVector Ptot = p.GetMomentum();
+      MomentumVector Ptot = vP.GetMomentum();
       // invariant mass, i.e. cm. energy
       HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
 
       // sample target mass number
-      const auto currentNode = fEnvironment.GetUniverse()->GetContainingNode(pOrig);
+      const auto* currentNode = vP.GetNode();
       const auto& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // get cross sections for target materials
@@ -352,9 +348,8 @@ namespace corsika::process::pythia {
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
         const auto [sigProd, sigEla] = GetCrossSection(corsikaBeamId, targetId, Ecm);
+        [[maybe_unused]] const auto& dummy_sigEla = sigEla;
         cross_section_of_components[i] = sigProd;
-        [[maybe_unused]] auto sigElaCopy =
-            sigEla; // to avoid not used warning in array binding
       }
 
       const auto corsikaTargetId =
@@ -392,19 +387,19 @@ namespace corsika::process::pythia {
         MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
         HEPEnergyType Elab_final = 0_GeV;
         for (int i = 0; i < event.size(); ++i) {
-          Pythia8::Particle& pp = event[i];
+          Pythia8::Particle& p8p = event[i];
           // skip particles that have decayed in pythia
-          if (!pp.isFinal()) continue;
+          if (!p8p.isFinal()) continue;
 
           auto const pyId =
-              particles::ConvertFromPDG(static_cast<particles::PDGCode>(pp.id()));
+              particles::ConvertFromPDG(static_cast<particles::PDGCode>(p8p.id()));
 
           const MomentumVector pyPlab(
-              rootCS, {pp.px() * 1_GeV, pp.py() * 1_GeV, pp.pz() * 1_GeV});
-          HEPEnergyType const pyEn = pp.e() * 1_GeV;
+              rootCS, {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
+          HEPEnergyType const pyEn = p8p.e() * 1_GeV;
 
           // add to corsika stack
-          auto pnew = p.AddSecondary(
+          auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{pyId, pyEn, pyPlab, pOrig,
                                                           tOrig});
@@ -417,7 +412,7 @@ namespace corsika::process::pythia {
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
       // delete current particle
-      p.Delete();
+      vP.Delete();
     }
     return process::EProcessReturn::eOk;
   }

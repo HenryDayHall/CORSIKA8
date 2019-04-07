@@ -9,37 +9,39 @@
  * the license.
  */
 
-#ifndef _include_corsika_baseprocess_h_
-#define _include_corsika_baseprocess_h_
+#ifndef _include_corsika_stackprocess_h_
+#define _include_corsika_stackprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
-#include <type_traits>
+#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
 
   /**
-     \class BaseProcess
+     \class StackProcess
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements
-     are of type BaseProcess<T>
+     are of type StackProcess<T>
 
    */
 
-  template <typename Derived>
-  struct BaseProcess {
-  private:
-    BaseProcess() {}
-    friend Derived;
+  template <typename derived>
+  struct StackProcess {
 
-  public:
-    Derived& GetRef() { return static_cast<Derived&>(*this); }
-    const Derived& GetRef() const { return static_cast<const Derived&>(*this); }
+    derived& GetRef() { return static_cast<derived&>(*this); }
+    const derived& GetRef() const { return static_cast<const derived&>(*this); }
+
+    /// here starts the interface-definition part
+    // -> enforce derived to implement DoStack...
+    template <typename TStack>
+    inline EProcessReturn DoStack(TStack&);
   };
 
   // overwrite the default trait class, to mark BaseProcess<T> as useful process
   template <class T>
-  std::true_type is_process_impl(const BaseProcess<T>* impl);
+  std::true_type is_process_impl(const StackProcess<T>* impl);
 
 } // namespace corsika::process
 

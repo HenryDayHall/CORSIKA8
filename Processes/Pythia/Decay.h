@@ -35,11 +35,11 @@ namespace corsika::process {
       void SetUnstable(const corsika::particles::Code);
       void SetStable(const corsika::particles::Code);
 
-      template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle const& p);
+      template <typename TParticle>
+      corsika::units::si::TimeType GetLifetime(TParticle const&);
 
-      template <typename Particle, typename Stack>
-      void DoDecay(Particle& p, Stack&);
+      template <typename TProjectile>
+      void DoDecay(TProjectile&);
 
     private:
       Pythia8::Pythia fPythia;

@@ -13,11 +13,10 @@
 #define _include_Stack_h__
 
 #include <corsika/stack/StackIteratorInterface.h>
+#include <corsika/stack/SecondaryView.h>
 
 #include <stdexcept>
 #include <type_traits>
-
-#include <corsika/stack/SecondaryView.h>
 
 /**
    All classes around management of particles on a stack.
@@ -85,6 +84,10 @@ namespace corsika::stack {
      * This constructor takes any argument and passes it on to the
      * StackDataType user class. If the user did not provide a suited
      * constructor this will fail with an error message.
+     *
+     * Furthermore, this is disabled with enable_if for SecondaryView
+     * stacks, where the inner data container is always a reference
+     * and cannot be initialized here.
      */
     template <
         typename... Args, typename _StackDataType = StackDataType,

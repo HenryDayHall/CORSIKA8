@@ -98,12 +98,15 @@ using namespace corsika::units::si;
 TEST_CASE("pythia process") {
 
   // setup environment, geometry
-  environment::Environment env;
+  environment::Environment<environment::IMediumModel> env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<geometry::Sphere>(
-      geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  geometry::CoordinateSystem const& cs = env.GetCoordinateSystem();
+
+  auto theMedium =
+      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
+          geometry::Point{cs, 0_m, 0_m, 0_m},
+          1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
@@ -112,9 +115,8 @@ TEST_CASE("pythia process") {
           std::vector<particles::Code>{particles::Code::Hydrogen},
           std::vector<float>{1.}));
 
+  auto const* nodePtr = theMedium.get(); // save the medium for later use before moving it
   universe.AddChild(std::move(theMedium));
-
-  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
 
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   geometry::Vector<units::si::SpeedType::dimension_type> v(cs, 0_m / second, 0_m / second,
@@ -143,11 +145,12 @@ TEST_CASE("pythia process") {
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
-    process::pythia::Decay model(particleList);
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
+    process::pythia::Decay model(particleList);
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
-                                                                          stack);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
   }
 
@@ -163,12 +166,13 @@ TEST_CASE("pythia process") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::PiPlus, E0, plab, pos, 0_ns});
+    particle.SetNode(nodePtr);
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
-    process::pythia::Interaction model(env);
-
+    process::pythia::Interaction model;
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoInteraction(particle,
-                                                                                stack);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length =
         model.GetInteractionLength(particle, track);
   }

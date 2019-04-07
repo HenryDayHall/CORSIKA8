@@ -15,6 +15,7 @@ set (
   ContinuousProcess.h
   SecondariesProcess.h
   InteractionProcess.h
+  StackProcess.h
   DecayProcess.h
   ProcessSequence.h
   ProcessReturn.h

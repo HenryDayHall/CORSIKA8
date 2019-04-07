@@ -12,6 +12,7 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
+#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupEnvironment.h>
@@ -40,7 +41,6 @@
 
 #include <iostream>
 #include <limits>
-#include <typeinfo>
 
 using namespace corsika;
 using namespace corsika::process;
@@ -238,7 +238,7 @@ public:
 int main() {
 
   const LengthType height_atmosphere = 112.8_km;
-  
+
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
@@ -273,8 +273,8 @@ int main() {
   universe.AddChild(std::move(outerMedium));
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  // stack_inspector::StackInspector<setup::Stack> stackInspect(true);
+  tracking_line::TrackingLine tracking;
+  stack_inspector::StackInspector<setup::Stack> stackInspect(true);
 
   const std::vector<particles::Code> trackedHadrons = {
       particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -282,17 +282,18 @@ int main() {
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  process::sibyll::Interaction sibyll(env);
-  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
+  process::sibyll::Interaction sibyll;
+  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
-  ObservationLevel obsLevel(height_atmosphere - 2000_m);//1400_m);
+  ObservationLevel obsLevel(height_atmosphere - 2000_m); // 1400_m);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << trackWriter; // << obsLevel
+  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
+                               << trackWriter;
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -301,7 +302,7 @@ int main() {
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 = nuclA * 10_TeV;
+  const HEPEnergyType E0 = nuclA * 1_TeV;
   double theta = 0.;
   double phi = 0.;
 

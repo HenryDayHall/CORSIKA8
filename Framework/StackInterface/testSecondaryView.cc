@@ -44,12 +44,10 @@ typedef Stack<TestStackData, TestParticleInterface> StackTest;
 #if defined(__clang__)
 using StackTestView = SecondaryView<TestStackData, TestParticleInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-template <typename S, template <typename> typename _PIType = S::template PIType>
-struct MakeView {
-  using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
-};
 using StackTestView = MakeView<StackTest>::type;
 #endif
+
+using Particle = typename StackTest::ParticleType;
 
 TEST_CASE("SecondaryStack", "[stack]") {
 

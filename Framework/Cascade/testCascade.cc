@@ -9,8 +9,6 @@
  * the license.
  */
 
-#include <limits>
-
 #include <corsika/cascade/testCascade.h>
 
 #include <corsika/cascade/Cascade.h>
@@ -29,10 +27,6 @@
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
 
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
-using corsika::setup::Trajectory;
-
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -44,6 +38,7 @@ using namespace corsika::units::si;
 using namespace corsika::geometry;
 
 #include <iostream>
+#include <limits>
 using namespace std;
 
 auto MakeDummyEnv() {
@@ -52,11 +47,11 @@ auto MakeDummyEnv() {
 
   auto theMedium = TestEnvironmentType::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+      100_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_g / (1_m * 1_m * 1_m),
+      1_g / (1_cm * 1_cm * 1_cm),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Proton}, std::vector<float>{1.}));
 
@@ -65,47 +60,75 @@ auto MakeDummyEnv() {
   return env;
 }
 
-class ProcessSplit : public process::ContinuousProcess<ProcessSplit> {
+class ProcessSplit : public process::InteractionProcess<ProcessSplit> {
+
+  int fCalls = 0;
+  GrammageType fX0;
+
+public:
+  ProcessSplit(GrammageType const X0)
+      : fX0(X0) {}
+
+  template <typename Particle, typename Track>
+  corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&) const {
+    return fX0;
+  }
+
+  template <typename TProjectile>
+  corsika::process::EProcessReturn DoInteraction(TProjectile& vP) {
+    fCalls++;
+    const HEPEnergyType E = vP.GetEnergy();
+    vP.AddSecondary(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
+    vP.AddSecondary(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
+    return EProcessReturn::eInteracted;
+  }
+
+  void Init() { fCalls = 0; }
+
+  int GetCalls() const { return fCalls; }
+};
+
+class ProcessCut : public process::SecondariesProcess<ProcessCut> {
 
   int fCount = 0;
   int fCalls = 0;
   HEPEnergyType fEcrit;
 
 public:
-  ProcessSplit(HEPEnergyType e)
+  ProcessCut(HEPEnergyType e)
       : fEcrit(e) {}
 
-  template <typename Particle, typename Track>
-  LengthType MaxStepLength(Particle&, Track&) const {
-    return 1_m;
-  }
-
-  template <typename Particle, typename Track>
-  EProcessReturn DoContinuous(Particle& p, Track&) {
+  template <typename TStack>
+  EProcessReturn DoSecondaries(TStack& vS) {
     fCalls++;
-    HEPEnergyType E = p.GetEnergy();
-    if (E < fEcrit) {
-      p.Delete();
-      fCount++;
-    } else {
-      p.SetEnergy(E / 2);
-      p.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                corsika::stack::MomentumVector, geometry::Point,
-                                units::si::TimeType>{p.GetPID(), E / 2, p.GetMomentum(),
-                                                     p.GetPosition(), p.GetTime()});
+    auto p = vS.begin();
+    while (p != vS.end()) {
+      HEPEnergyType E = p.GetEnergy();
+      if (E < fEcrit) {
+        p.Delete();
+        fCount++;
+      } else {
+        ++p; // next particle
+      }
     }
+    cout << "ProcessCut::DoSecondaries size=" << vS.GetSize() << " count=" << fCount
+         << endl;
     return EProcessReturn::eOk;
   }
 
   void Init() {
-    fCount = 0;
     fCalls = 0;
+    fCount = 0;
   }
 
   int GetCount() const { return fCount; }
   int GetCalls() const { return fCalls; }
-
-private:
 };
 
 TEST_CASE("Cascade", "[Cascade]") {
@@ -118,12 +141,16 @@ TEST_CASE("Cascade", "[Cascade]") {
   stack_inspector::StackInspector<TestCascadeStack> stackInspect(true);
   null_model::NullModel nullModel;
 
+  const GrammageType X0 = 20_g / square(1_cm);
   const HEPEnergyType Ecrit = 85_MeV;
-  ProcessSplit p1(Ecrit);
-  auto sequence =  nullModel /* << stackInspect*/ << p1;
+  ProcessSplit split(X0);
+  ProcessCut cut(Ecrit);
+  auto sequence = nullModel << stackInspect << split << cut;
   TestCascadeStack stack;
 
-  cascade::Cascade EAS(env, tracking, sequence, stack);
+  cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
+                   TestCascadeStackView>
+      EAS(env, tracking, sequence, stack);
   CoordinateSystem const& rootCS =
       RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
@@ -138,6 +165,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   EAS.Init();
   EAS.Run();
 
-  CHECK(p1.GetCount() == 2048);
-  CHECK(p1.GetCalls() == 4095);
+  CHECK(cut.GetCount() == 2048);
+  CHECK(cut.GetCalls() == 2047);
+  CHECK(split.GetCalls() == 2047);
 }

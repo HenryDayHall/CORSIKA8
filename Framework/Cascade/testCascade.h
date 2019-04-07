@@ -26,8 +26,20 @@ template <typename StackIter>
 using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
     corsika::setup::detail::ParticleDataStack::PIType, SetupGeometryDataInterface,
     StackIter>;
+
 using TestCascadeStack = corsika::stack::CombinedStack<
     typename corsika::setup::detail::ParticleDataStack::StackImpl,
     GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
+
+/*
+  See also Issue 161
+*/
+#if defined(__clang__)
+using TestCascadeStackView =
+    corsika::stack::SecondaryView<typename TestCascadeStack::StackImpl,
+                                  StackWithGeometryInterface>;
+#elif defined(__GNUC__) || defined(__GNUG__)
+using TestCascadeStackView = corsika::stack::MakeView<TestCascadeStack>::type;
+#endif
 
 #endif

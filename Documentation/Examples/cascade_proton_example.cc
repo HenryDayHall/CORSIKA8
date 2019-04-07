@@ -12,7 +12,6 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
-#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
@@ -58,7 +57,7 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-class ProcessCut : public process::ContinuousProcess<ProcessCut> {
+class ProcessCut : public process::SecondariesProcess<ProcessCut> {
 
   HEPEnergyType fECut;
 
@@ -152,47 +151,38 @@ public:
     return is_inv;
   }
 
-  template <typename Particle>
-  LengthType MaxStepLength(Particle& p, setup::Trajectory&) const {
-    cout << "ProcessCut: MinStep: pid: " << p.GetPID() << endl;
-    cout << "ProcessCut: MinStep: energy (GeV): " << p.GetEnergy() / 1_GeV << endl;
-    const Code pid = p.GetPID();
-    if (isEmParticle(pid) || isInvisible(pid) || isBelowEnergyCut(p)) {
-      cout << "ProcessCut: MinStep: next cut: " << 0. << endl;
-      return 0_m;
-    } else {
-      LengthType next_step = 1_m * std::numeric_limits<double>::infinity();
-      cout << "ProcessCut: MinStep: next cut: " << next_step << endl;
-      return next_step;
+  template <typename TSecondaries>
+  EProcessReturn DoSecondaries(TSecondaries& vS) {
+    auto p = vS.begin();
+    while (p != vS.end()) {
+      const Code pid = p.GetPID();
+      HEPEnergyType energy = p.GetEnergy();
+      cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
+           << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
+           << endl;
+      if (isEmParticle(pid)) {
+        cout << "removing em. particle..." << endl;
+        fEmEnergy += energy;
+        fEmCount += 1;
+        p.Delete();
+      } else if (isInvisible(pid)) {
+        cout << "removing inv. particle..." << endl;
+        fInvEnergy += energy;
+        fInvCount += 1;
+        p.Delete();
+      } else if (isBelowEnergyCut(p)) {
+        cout << "removing low en. particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else if (p.GetTime() > 10_ms) {
+        cout << "removing OLD particle..." << endl;
+        fEnergy += energy;
+        p.Delete();
+      } else {
+        ++p; // next entry in SecondaryView
+      }
     }
-  }
-
-  template <typename Particle, typename Stack>
-  EProcessReturn DoContinuous(Particle& p, setup::Trajectory&, Stack&) {
-    const Code pid = p.GetPID();
-    HEPEnergyType energy = p.GetEnergy();
-    cout << "ProcessCut: DoContinuous: " << pid << " E= " << energy
-         << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV" << endl;
-    EProcessReturn ret = EProcessReturn::eOk;
-    if (isEmParticle(pid)) {
-      cout << "removing em. particle..." << endl;
-      fEmEnergy += energy;
-      fEmCount += 1;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    } else if (isInvisible(pid)) {
-      cout << "removing inv. particle..." << endl;
-      fInvEnergy += energy;
-      fInvCount += 1;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    } else if (isBelowEnergyCut(p)) {
-      cout << "removing low en. particle..." << endl;
-      fEnergy += energy;
-      // p.Delete();
-      ret = EProcessReturn::eParticleAbsorbed;
-    }
-    return ret;
+    return EProcessReturn::eOk;
   }
 
   void Init() {
@@ -229,27 +219,26 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  environment::Environment env;
+  using EnvType = Environment<setup::IEnvironmentModel>;
+  EnvType env;
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = environment::Environment::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_km * std::numeric_limits<double>::infinity());
+  auto theMedium =
+      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+                                  1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
+  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Hydrogen},
-          std::vector<float>{(float)1.}));
+      NuclearComposition(std::vector<particles::Code>{particles::Code::Hydrogen},
+                         std::vector<float>{(float)1.}));
 
   universe.AddChild(std::move(theMedium));
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine<setup::Stack, setup::Trajectory> tracking(env);
-  stack_inspector::StackInspector<setup::Stack> p0(true);
+  tracking_line::TrackingLine tracking;
 
   const std::vector<particles::Code> trackedHadrons = {
       particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -258,7 +247,7 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   //  process::sibyll::Interaction sibyll(env);
-  process::pythia::Interaction pythia(env);
+  process::pythia::Interaction pythia;
   //  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   //  process::sibyll::Decay decay(trackedHadrons);
   process::pythia::Decay decay(trackedHadrons);
@@ -271,10 +260,8 @@ int main() {
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
-  // auto sequence = p0 << sibyll << decay << hadronicElastic << cut << trackWriter;
-  //  auto sequence = p0 << sibyll << sibyllNuc << decay << cut << trackWriter;
-
-  auto sequence = p0 << pythia << decay << cut << trackWriter;
+  // auto sequence = sibyll << decay << hadronicElastic << cut << trackWriter;
+  auto sequence = pythia << decay << cut << trackWriter;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";

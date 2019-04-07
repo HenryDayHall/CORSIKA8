@@ -31,7 +31,7 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
   ProcessPythia
   CORSIKAcascade
   ProcessEnergyLoss
-#  ProcessStackInspector
+  ProcessStackInspector
   ProcessTrackWriter
   ProcessTrackingLine
   CORSIKAprocesses
@@ -71,7 +71,6 @@ target_link_libraries (cascade_proton_example SuperStupidStack CORSIKAunits
   ProcessPythia
   CORSIKAcascade
   ProcessEnergyLoss
-#  ProcessStackInspector
   ProcessTrackWriter
   ProcessTrackingLine
   ProcessHadronicElasticModel
@@ -82,6 +81,7 @@ target_link_libraries (cascade_proton_example SuperStupidStack CORSIKAunits
   CORSIKAenvironment
   CORSIKAprocesssequence
   )
+
 install (TARGETS cascade_proton_example DESTINATION share/examples)
 CORSIKA_ADD_TEST (cascade_proton_example)
 
@@ -94,7 +94,6 @@ target_link_libraries (vertical_EAS SuperStupidStack CORSIKAunits
   ProcessPythia
   CORSIKAcascade
   ProcessEnergyLoss
-#  ProcessStackInspector
   ProcessTrackWriter
   ProcessTrackingLine
   ProcessHadronicElasticModel
@@ -106,7 +105,7 @@ target_link_libraries (vertical_EAS SuperStupidStack CORSIKAunits
   CORSIKAprocesssequence
   )
 install (TARGETS vertical_EAS DESTINATION share/examples)
-CORSIKA_ADD_TEST (vertical_EAS)
+# CORSIKA_ADD_TEST (vertical_EAS) not yet...
 
 add_executable (staticsequence_example staticsequence_example.cc)
 target_compile_options(staticsequence_example PRIVATE -g) # do not skip asserts

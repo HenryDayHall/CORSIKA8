@@ -52,7 +52,6 @@ namespace corsika::stack {
     ParticleBase() = default;
 
   private:
-    /*
     // those copy constructors and assigments should never be implemented
     ParticleBase(ParticleBase&) = delete;
     ParticleBase operator=(ParticleBase&) = delete;
@@ -60,7 +59,7 @@ namespace corsika::stack {
     ParticleBase operator=(ParticleBase&&) = delete;
     ParticleBase(const ParticleBase&) = delete;
     ParticleBase operator=(const ParticleBase&) = delete;
-    */
+
   public:
     /**
      * Delete this particle on the stack. The corresponding iterator
@@ -88,7 +87,7 @@ namespace corsika::stack {
       return static_cast<const StackIterator&>(*this);
     }
 
-    //  protected:
+  protected:
     /**
         @name Access to underlying stack fData, these are service
         function for user classes. User code can only rely on GetIndex
@@ -105,26 +104,6 @@ namespace corsika::stack {
      */
     unsigned int GetIndex() const { return GetIterator().GetIndexFromIterator(); }
     ///@}
-  };
-
-  template <typename T>
-  class ParticleBaseAdd {
-
-  public:
-    ParticleBaseAdd() = default;
-
-    using T::GetIndex;
-    using T::GetStackData;
-
-  public:
-    /*
-    template <typename... Args1, typename... Args2>
-    void SetParticleData(Args1... args1, Args2... args2) {
-      T::SetParticleData(args1...);
-    }
-    template <typename... Args1, typename... Args2>
-    void SetParticleData(T& p, Args1... args1, Args2... args2) {}
-    */
   };
 
 } // namespace corsika::stack
