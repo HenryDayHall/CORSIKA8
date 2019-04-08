@@ -2,9 +2,7 @@
 #include <corsika/random/RNGManager.h>
 #include <random>
 
-corsika::process::UrQMD::UrQMD::UrQMD() {
-    iniurqmd_();
-}
+corsika::process::UrQMD::UrQMD::UrQMD() { iniurqmd_(); }
 
 double ranf_(int*) {
   static corsika::random::RNG& rng =

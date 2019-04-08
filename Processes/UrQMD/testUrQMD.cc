@@ -16,6 +16,4 @@
 
 using namespace corsika::process::UrQMD;
 
-TEST_CASE("UrQMD") {
-   UrQMD proc;
-}
+TEST_CASE("UrQMD") { UrQMD proc; }
