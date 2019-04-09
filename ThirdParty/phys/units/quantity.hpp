@@ -473,6 +473,16 @@ namespace phys {
       friend constexpr bool operator>=(quantity<D, X> const& x, quantity<D, Y> const& y);
     };
 
+    // helper to check whether some type is a quantity
+    template <typename TNonQuantityType>
+    struct is_quantity : std::false_type {};
+
+    template <typename Dims, typename T>
+    struct is_quantity<quantity<Dims, T>> : std::true_type {};
+
+    template <typename T>
+    constexpr bool is_quantity_v = is_quantity<T>::value;
+
     // Give names to the seven fundamental dimensions of physical reality.
 
     typedef dimensions<1, 0, 0, 0, 0, 0, 0, 0> length_d;
