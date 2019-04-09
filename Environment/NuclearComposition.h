@@ -13,6 +13,8 @@
 #define _include_NuclearComposition_h
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/units/PhysicalUnits.h>
+
 #include <cassert>
 #include <numeric>
 #include <random>
@@ -73,6 +75,28 @@ namespace corsika::environment {
 
       if (!(0.999f < sumFractions && sumFractions < 1.001f)) {
         throw std::runtime_error("element fractions do not add up to 1");
+      }
+    }
+
+    template <typename TFunction>
+    auto WeightedSum(TFunction func) const {
+      using ResultQuantity = decltype(func(*fComponents.cbegin()));
+
+      auto const sum = [](auto x, auto y) { return x + y; };
+      auto const prod = [&](auto const compID, auto const fraction) {
+        return func(compID) * fraction;
+      };
+
+      if constexpr (phys::units::is_quantity_v<ResultQuantity>) {
+        return std::inner_product(
+            fComponents.cbegin(), fComponents.cend(), fNumberFractions.cbegin(),
+            ResultQuantity::zero(), // .zero() is defined for quantity types only
+            sum, prod);
+      } else {
+        return std::inner_product(
+            fComponents.cbegin(), fComponents.cend(), fNumberFractions.cbegin(),
+            ResultQuantity(0), // in other cases we have to use a bare 0
+            sum, prod);
       }
     }
 
