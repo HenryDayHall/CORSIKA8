@@ -162,35 +162,21 @@ namespace corsika::process::sibyll {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      auto const* currentNode = vP.GetNode();
-      const auto mediumComposition =
+
+      auto const* currentNode = p.GetNode();
+      const auto& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
-      // determine average interaction length
-      // weighted sum
-      int i = -1;
-      si::CrossSectionType weightedProdCrossSection = 0_mb;
-      // get weights of components from environment/medium
-      const auto& w = mediumComposition.GetFractions();
-      // loop over components in medium
-      for (auto const targetId : mediumComposition.GetComponents()) {
-        i++;
-        cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        auto const [productionCrossSection, elaCrossSection] =
-            GetCrossSection(corsikaBeamId, targetId, ECoM);
-        [[maybe_unused]] const auto& dummy_elaCX = elaCrossSection;
+      si::CrossSectionType weightedProdCrossSection = mediumComposition.WeightedSum(
+          [=](particles::Code targetID) -> si::CrossSectionType {
+            return std::get<0>(this->GetCrossSection(corsikaBeamId, targetID, ECoM));
+          });
 
-        cout << "Interaction: "
-             << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mb
-             << endl;
-        weightedProdCrossSection += w[i] * productionCrossSection;
-      }
       cout << "Interaction: "
            << "IntLength: weighted CrossSection (mb): " << weightedProdCrossSection / 1_mb
            << endl;
 
       // calculate interaction length in medium
-      //#warning check interaction length units
       GrammageType const int_length = mediumComposition.GetAverageMassNumber() *
                                       units::constants::u / weightedProdCrossSection;
       cout << "Interaction: "
