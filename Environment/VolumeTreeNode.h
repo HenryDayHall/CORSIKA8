@@ -75,15 +75,12 @@ namespace corsika::environment {
      */
     template <typename TCallable, bool preorder = true>
     void walk(TCallable func) {
-      if constexpr (preorder) {
-        func(*this);
-        std::for_each(fChildNodes.begin(), fChildNodes.end(),
-                      [&](auto& v) { v->walk(func); });
-      } else {
-        std::for_each(fChildNodes.begin(), fChildNodes.end(),
-                      [&](auto& v) { v->walk(func); });
-        func(*this);
-      }
+      if constexpr (preorder) { func(*this); }
+
+      std::for_each(fChildNodes.begin(), fChildNodes.end(),
+                    [&](auto& v) { v->walk(func); });
+
+      if constexpr (!preorder) { func(*this); };
     }
 
     void AddChild(VTNUPtr pChild) {
