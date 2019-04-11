@@ -46,7 +46,8 @@ c local
       integer iamaxu,idmaxu,iemaxu
       common /cxs_u1/ sig_u1(mxie,mxid,mxia),iamaxu,idmaxu,iemaxu
       double precision xs(3),bim(3)
-      common /cxs_u2/ xs
+c M.R.: bim added to cxs_u2
+      common /cxs_u2/ xs,bim
       integer iudebug
       data bim/6.d0,6.d0,7.d0/
       integer init
@@ -335,7 +336,7 @@ C  DEFAULT SETTINGS FOR CTOption
       CTOStrng(26)=' use z -> 1-z for diquark-pairs'
       CTOption(27)=1             ! hjd1
       CTOStrng(27)=' reference frame (1=target, 2=projectile, else=cms)'
-      CTOption(28)=0
+      CTOption(28)=1             ! M.R. 2019-04-15
       CTOStrng(28)=' propagate spectators also '
       CTOption(29)=2
       CTOStrng(29)=' no transverse momentum in clustr '

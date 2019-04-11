@@ -1,118 +1,122 @@
 #ifndef _Processes_UrQMD_UrQMD_h
 #define _Processes_UrQMD_UrQMD_h
 
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/process/InteractionProcess.h>
+#include <corsika/random/RNGManager.h>
+#include <corsika/units/PhysicalUnits.h>
+
 #include <array>
+#include <utility>
 
 namespace corsika::process::UrQMD {
-  class UrQMD {
+  class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
     UrQMD();
+
+    template <typename Particle, typename Track>
+    corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&) const;
+
+    corsika::units::si::CrossSectionType GetCrossSection(
+        corsika::particles::Code, corsika::particles::Code,
+        corsika::units::si::HEPEnergyType) const;
+
+    template <typename Particle, typename Stack>
+    corsika::process::EProcessReturn DoInteraction(Particle&, Stack&);
+
+  private:
+    corsika::random::RNG& fRNG =
+        corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
   };
 
   namespace constants {
     // from coms.f
     int constexpr nmax = 500;
-    int constexpr nspl = 500;
-    int constexpr smax = 500;
-    // from comres.f
-    int constexpr minnuc = 1;
-    int constexpr minmes = 100;
-    int constexpr maxmes = 132;
-    int constexpr numnuc = 16;
-    int constexpr numdel = 10;
-    int constexpr maxnuc = minnuc + numnuc - 1;
-    int constexpr mindel = minnuc + maxnuc;
-    int constexpr maxdel = mindel + numdel - 1;
-    int constexpr minres = minnuc + 1;
-    int constexpr maxres = maxdel;
-    int constexpr numlam = 13;
-    int constexpr numsig = 9;
-    int constexpr numcas = 6;
-    int constexpr numome = 1;
-    int constexpr minlam = mindel + numdel;
-    int constexpr maxlam = minlam + numlam - 1;
-    int constexpr minsig = minlam + numlam;
-    int constexpr maxsig = minsig + numsig - 1;
-    int constexpr mincas = minsig + numsig;
-    int constexpr maxcas = mincas + numcas - 1;
-    int constexpr minome = mincas + numcas;
-    int constexpr maxome = minome + numome - 1;
-    int constexpr minbar = minnuc;
-    int constexpr maxbar = maxome;
-    int constexpr offmeson = minmes;
-    int constexpr maxmeson = maxmes;
-    int constexpr maxbra = 11;
-    int constexpr maxbrm = 25;
-    int constexpr maxbrs1 = 10;
-    int constexpr maxbrs2 = 3;
-    int constexpr nsigs = 10;
-    int constexpr itblsz = 100;
-    int constexpr maxreac = 13;
-    int constexpr maxpsig = 12;
-
-    // from comwid.f
-    int constexpr widnsp = 120;
-    double constexpr mintab = 0.10;
-    double constexpr maxtab1 = 5.0;
-    double constexpr maxtab2 = 50.0;
-    int constexpr tabver = 9;
 
     // from options.f
     int constexpr numcto = 400;
     int constexpr numctp = 400;
-    int constexpr maxstables = 20;
-
-    // from colltab.f
-    int constexpr ncollmax = 100;
 
     // from inputs.f
     int constexpr aamax = 300;
 
-    // from newpart.f
-    int constexpr mprt = 200;
-    int constexpr oprt = 2;
-
-    // from boxinc.f
-    int constexpr bptmax = 20;
-
-    // from comnorm.f
-    int constexpr n = 400;
-
-    // from comstr.f
-    int constexpr njspin = 8;
-
-    // iso
-    int constexpr jmax = 7;
   } // namespace constants
 
-  using nmaxIntArray = std::array<int, constants::nmax>;
+  template <typename T>
+  using nmaxArray = std::array<T, constants::nmax>;
+  using nmaxIntArray = nmaxArray<int>;
+  using nmaxDoubleArray = nmaxArray<double>;
+
+  extern "C" {
+  void iniurqmd_();
+  double ranf_(int&);
+  void cascinit_(int const&, int const&, int const&);
+  double nucrad_(int const&);
+  void urqmd_(int&);
+
+  // defined in coms.f
+  extern struct {
+    int npart, nbar, nmes, ctag, nsteps, uid_cnt, ranseed, event;
+    int Ap; // projectile mass number (in case of nucleus)
+    int At; // target mass number (in case of nucleus)
+    int Zp; // projectile charge number (in case of nucleus)
+    int Zt; // target charge number (in case of nucleus)
+    int eos, dectag, NHardRes, NSoftRes, NDecRes, NElColl, NBlColl;
+  } sys_;
+
+  extern struct {
+    double time, acttime, bdist, bimp, bmin;
+    double ebeam; // lab-frame energy of projectile
+    double ecm;
+  } rsys_;
+
+  // defined in coms.f
+  extern struct {
+    nmaxIntArray spin, ncoll, charge, ityp, lstcoll, iso3, origin, strid, uid;
+  } isys_;
+
+  // defined in coor.f
+  extern struct {
+    nmaxDoubleArray r0, rx, ry, rz, p0, px, py, pz, fmass, rww, dectime;
+  } coor_;
+
+  // defined in inputs.f
+  extern struct {
+    int nevents;
+    std::array<int, 2> spityp; // particle codes of: [0]: projectile, [1]: target
+    int prspflg;               // projectile special flag
+    int trspflg; // target special flag, set to 1 unless target is nucleus > H
+    std::array<int, 2> spiso3; // particle codes of: [0]: projectile, [1]: target
+    int outsteps, bflag, srtflag, efuncflag, nsrt, npb, firstev;
+  } inputs_;
+
+  // defined in inputs.f
+  extern struct {
+    double srtmin, srtmax, pbeam, betann, betatar, betapro, pbmin, pbmax;
+  } input2_;
+
+  // defined in options.f
+  extern struct {
+    std::array<double, constants::numcto> CTOption;
+    std::array<double, constants::numctp> CTParam;
+  } options_;
+
+  extern struct {
+    int fixedseed, bf13, bf14, bf15, bf16, bf17, bf18, bf19, bf20;
+  } loptions_;
+
+  // defined in urqmdInterface.F
+  extern struct { std::array<double, 3> xs, bim; } cxs_u2_;
+  }
+
+  /**
+   * convert CORSIKA code to UrQMD code tuple
+   *
+   * In the current implementation a detour via the PDG code is made.
+   */
+  std::pair<int, int> ConvertToUrQMD(particles::Code);
+  particles::Code ConvertFromUrQMD(int vItyp, int vIso3);
+
 } // namespace corsika::process::UrQMD
-
-extern "C" {
-void iniurqmd_();
-double ranf_(int*);
-
-struct {
-  int npart, nbar, nmes, ctag, nsteps, uid_cnt, ranseed, event, Ap, At, Zp, Zt, eos,
-      dectag, NHardRes, NSoftRes, NDecRes, NElColl, NBlColl;
-} sys_;
-
-struct {
-  double time, acttime, bdist, bimp, bmin, ebeam, ecm;
-} rsys_;
-
-struct {
-  int firstseed;
-} comseed_;
-
-struct {
-  corsika::process::UrQMD::nmaxIntArray lsct;
-  int logSky, logYuk, logCb, logPau;
-} logic_;
-
-struct {
-  corsika::process::UrQMD::nmaxIntArray spin, ncoll, charge, ityp, lstcoll, iso3, origin, strid, uid;
-} isys_;
-}
 
 #endif
