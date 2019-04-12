@@ -20,17 +20,17 @@ namespace corsika::process {
 
   namespace stack_inspector {
 
-    template <typename Stack>
-    class StackInspector : public corsika::process::StackProcess<StackInspector<Stack>> {
+    template <typename TStack>
+    class StackInspector : public corsika::process::StackProcess<StackInspector<TStack>> {
 
-      typedef typename Stack::ParticleType Particle;
+      typedef typename TStack::ParticleType Particle;
 
     public:
       StackInspector(const int nStep, const bool aReport);
       ~StackInspector();
 
       void Init();
-      EProcessReturn DoStack(Stack&);
+      EProcessReturn DoStack(TStack&);
 
     private:
       bool fReport;

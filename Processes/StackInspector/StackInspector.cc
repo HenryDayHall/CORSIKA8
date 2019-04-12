@@ -27,17 +27,17 @@ using namespace corsika::particles;
 using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 
-template <typename Stack>
-StackInspector<Stack>::StackInspector(const int nStep, const bool aReport)
-    : StackProcess<StackInspector<Stack>>(nStep)
+template <typename TStack>
+StackInspector<TStack>::StackInspector(const int nStep, const bool aReport)
+    : StackProcess<StackInspector<TStack>>(nStep)
     , fReport(aReport)
     , fCountStep(0) {}
 
-template <typename Stack>
-StackInspector<Stack>::~StackInspector() {}
+template <typename TStack>
+StackInspector<TStack>::~StackInspector() {}
 
-template <typename Stack>
-process::EProcessReturn StackInspector<Stack>::DoStack(Stack& vS) {
+template <typename TStack>
+process::EProcessReturn StackInspector<TStack>::DoStack(TStack& vS) {
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   HEPEnergyType Etot = 0_GeV;
@@ -60,8 +60,8 @@ process::EProcessReturn StackInspector<Stack>::DoStack(Stack& vS) {
   return process::EProcessReturn::eOk;
 }
 
-template <typename Stack>
-void StackInspector<Stack>::Init() {
+template <typename TStack>
+void StackInspector<TStack>::Init() {
   fCountStep = 0;
 }
 
