@@ -207,30 +207,6 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
-class ObservationLevel : public process::ContinuousProcess<ObservationLevel> {
-
-  LengthType fHeight;
-
-public:
-  ObservationLevel(const LengthType vHeight)
-      : fHeight(vHeight) {}
-
-  template <typename Particle>
-  LengthType MaxStepLength(Particle&, setup::Trajectory&) const {
-    return 1_m * std::numeric_limits<double>::infinity();
-  }
-
-  template <typename TParticle, typename TTrack>
-  EProcessReturn DoContinuous(TParticle&, TTrack& vT) {
-    if ((vT.GetPosition(0).GetZ() <= fHeight && vT.GetPosition(1).GetZ() > fHeight) ||
-        (vT.GetPosition(0).GetZ() > fHeight && vT.GetPosition(1).GetZ() <= fHeight)) {
-      cout << "OBSERVED " << endl;
-      return EProcessReturn::eParticleAbsorbed;
-    }
-    return EProcessReturn::eOk;
-  }
-  void Init() {}
-};
 
 //
 // The example main program for a particle cascade
@@ -286,7 +262,6 @@ int main() {
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
-  ObservationLevel obsLevel(height_atmosphere - 2000_m); // 1400_m);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
   process::EnergyLoss::EnergyLoss eLoss;

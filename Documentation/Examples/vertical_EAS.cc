@@ -210,30 +210,6 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
-class ObservationLevel : public process::ContinuousProcess<ObservationLevel> {
-
-  LengthType fHeight;
-
-public:
-  ObservationLevel(const LengthType vHeight)
-      : fHeight(vHeight) {}
-
-  template <typename Particle>
-  LengthType MaxStepLength(Particle&, setup::Trajectory&) const {
-    return 1_m * std::numeric_limits<double>::infinity();
-  }
-
-  template <typename TParticle, typename TTrack>
-  EProcessReturn DoContinuous(TParticle&, TTrack& vT) {
-    if ((vT.GetPosition(0).GetZ() <= fHeight && vT.GetPosition(1).GetZ() > fHeight) ||
-        (vT.GetPosition(0).GetZ() > fHeight && vT.GetPosition(1).GetZ() <= fHeight)) {
-      cout << "OBSERVED " << endl;
-      return EProcessReturn::eParticleAbsorbed;
-    }
-    return EProcessReturn::eOk;
-  }
-  void Init() {}
-};
 
 //
 // The example main program for a particle cascade
@@ -280,7 +256,6 @@ int main() {
   // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
-  ObservationLevel obsLevel(1400_m);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // process::HadronicElasticModel::HadronicElasticInteraction
@@ -291,7 +266,7 @@ int main() {
 
   // assemble all processes into an ordered process list
   // cut << trackWriter;
-  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << obsLevel;
+  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";
