@@ -53,7 +53,8 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - Any class getter begins with "Get", and setter with "Set". Logical getters start with "Is" or "Has".
   - enums should be "enum class" 
   - Function parameter names start with "v"
-  - Normal variable names in code start non-capital, and they cannot start with a "prefixed" v, f, fg, or g character
+  - types in template definitions start with "T"
+  - Normal variable names in code start non-capital, and they cannot start with a "prefixed" v, T, f, fg, or g character
 
   - We use namespaces to avoid clashes and to structure code
     - *Everything* is part of the corsika namespace
