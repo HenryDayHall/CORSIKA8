@@ -51,8 +51,9 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - Any static variable has a "g" prefix. A static member variable starts with "fg"
   - Class member functions start with capital letters
   - Any class getter begins with "Get", and setter with "Set". Logical getters start with "Is" or "Has".
-  - enums should be "enum class" and start with a capital "E"
+  - enums should be "enum class" 
   - Function parameter names start with "v"
+  - Normal variable names in code start non-capital, and they cannot start with a "prefixed" v, f, fg, or g character
 
   - We use namespaces to avoid clashes and to structure code
     - *Everything* is part of the corsika namespace
@@ -92,8 +93,10 @@ While `clang-format` does the structural formatting, we still need to agree on n
     exposed to outside users, there might be pointers for very special cases
     inside of classes.
   - When you contribute new code, or extend existing code, at the same time provide unit-tests for all functionality.
-  - When you contribute new physics algorithms, in addition you also need to provide a validation module
-  - Code must be documented with `doxygen` commands
+  - When you contribute new physics algorithms, in addition you also need to provide a validation module (this is still TBD what exactly this means)
+  - Code must be documented with `doxygen` commands extensively -> MAKE THIS INVESTMENT OF YOUR TIME EARLY, IT REALLY HELPS
+  - There should not be any useless comments in code, in particular absolutely avoid to commit commented-out debug remnants
+  - Add (extensively) meaningful comments to the code (only in English)
   
 ## CMAKE formatting
 
