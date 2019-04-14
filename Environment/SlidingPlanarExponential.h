@@ -11,11 +11,13 @@
 #ifndef _include_Environment_SlidingPlanarExponential_h_
 #define _include_Environment_SlidingPlanarExponential_h_
 
-#include <corsika/environment/BaseExponential.h>
+#include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Trajectory.h>
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::environment {
@@ -40,30 +42,31 @@ namespace corsika::environment {
     using Base = BaseExponential<SlidingPlanarExponential<T>>;
 
   public:
-    SlidingPlanarExponential(geometry::Point const& p0, units::si::MassDensityType rho,
-                             units::si::LengthType lambda, NuclearComposition nuclComp)
-        : Base(p0, rho, lambda)
-        , fNuclComp(nuclComp) {}
+    SlidingPlanarExponential(geometry::Point const& vP0, units::si::MassDensityType vRho,
+                             units::si::LengthType vLambda, NuclearComposition vNuclComp)
+        : Base(vP0, vRho, vLambda)
+        , fNuclComp(vNuclComp) {}
 
-    units::si::MassDensityType GetMassDensity(geometry::Point const& p) const override {
-      auto const height = (p - Base::fP0).norm();
+    units::si::MassDensityType GetMassDensity(
+        geometry::Point const& vP) const override {
+      auto const height = (vP - Base::fP0).norm();
       return Base::fRho0 * exp(Base::fInvLambda * height);
     }
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
-        units::si::LengthType to) const override {
-      auto const axis = (line.GetR0() - Base::fP0).normalized();
-      return Base::IntegratedGrammage(line, to, axis);
+        geometry::Trajectory<geometry::Line> const& vLine,
+        units::si::LengthType vL) const override {
+      auto const axis = (vLine.GetR0() - Base::fP0).normalized();
+      return Base::IntegratedGrammage(vLine, vL, axis);
     }
 
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
-        units::si::GrammageType grammage) const override {
-      auto const axis = (line.GetR0() - Base::fP0).normalized();
-      return Base::ArclengthFromGrammage(line, grammage, axis);
+        geometry::Trajectory<geometry::Line> const& vLine,
+        units::si::GrammageType vGrammage) const override {
+      auto const axis = (vLine.GetR0() - Base::fP0).normalized();
+      return Base::ArclengthFromGrammage(vLine, vGrammage, axis);
     }
   };
 

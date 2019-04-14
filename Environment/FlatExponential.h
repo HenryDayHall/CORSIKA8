@@ -40,30 +40,30 @@ namespace corsika::environment {
     using Base = BaseExponential<FlatExponential<T>>;
 
   public:
-    FlatExponential(geometry::Point const& p0,
-                    geometry::Vector<units::si::dimensionless_d> const& axis,
-                    units::si::MassDensityType rho, units::si::LengthType lambda,
-                    NuclearComposition nuclComp)
-        : Base(p0, rho, lambda)
-        , fAxis(axis)
-        , fNuclComp(nuclComp) {}
+    FlatExponential(geometry::Point const& vP0,
+                    geometry::Vector<units::si::dimensionless_d> const& vAxis,
+                    units::si::MassDensityType vRho, units::si::LengthType vLambda,
+                    NuclearComposition vNuclComp)
+        : Base(vP0, vRho, vLambda)
+        , fAxis(vAxis)
+        , fNuclComp(vNuclComp) {}
 
-    units::si::MassDensityType GetMassDensity(geometry::Point const& p) const override {
-      return Base::fRho0 * exp(Base::fInvLambda * (p - Base::fP0).dot(fAxis));
+    units::si::MassDensityType GetMassDensity(geometry::Point const& vP) const override {
+      return Base::fRho0 * exp(Base::fInvLambda * (vP - Base::fP0).dot(fAxis));
     }
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
-        units::si::LengthType to) const override {
-      return Base::IntegratedGrammage(line, to, fAxis);
+        geometry::Trajectory<geometry::Line> const& vLine,
+        units::si::LengthType vTo) const override {
+      return Base::IntegratedGrammage(vLine, vTo, fAxis);
     }
 
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
-        units::si::GrammageType grammage) const override {
-      return Base::ArclengthFromGrammage(line, grammage, fAxis);
+        geometry::Trajectory<geometry::Line> const& vLine,
+        units::si::GrammageType vGrammage) const override {
+      return Base::ArclengthFromGrammage(vLine, vGrammage, fAxis);
     }
   };
 } // namespace corsika::environment

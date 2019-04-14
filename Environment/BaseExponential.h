@@ -38,75 +38,76 @@ namespace corsika::environment {
     // clang-format off
     /**
      * For a (normalized) axis \f$ \vec{a} \f$, the grammage along a non-orthogonal line with (normalized)
-     * direction \f$ \vec{v} \f$ is given by
+     * direction \f$ \vec{u} \f$ is given by
      * \f[
-     *   X = \frac{\varrho_0 \lambda}{\vec{v} \cdot \vec{a}} \left( \exp\left( \vec{v} \cdot \vec{a} \frac{l}{\lambda} \right) - 1 \right)
+     *   X = \frac{\varrho_0 \lambda}{\vec{u} \cdot \vec{a}} \left( \exp\left( \vec{u} \cdot \vec{a} \frac{l}{\lambda} \right) - 1 \right)
      * \f], where \f$ \varrho_0 \f$ is the density at the starting point.
      * 
-     * If \f$ \vec{v} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
+     * If \f$ \vec{u} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
      * \f[
      *   X = \varrho_0 l;
      * \f]
      */
     // clang-format on
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& line, units::si::LengthType to,
-        geometry::Vector<units::si::dimensionless_d> const& axis) const {
-      auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
-      auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
+        geometry::Trajectory<geometry::Line> const& vLine, units::si::LengthType vL,
+        geometry::Vector<units::si::dimensionless_d> const& vAxis) const {
+      auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
+      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
 
-      if (vDotA == 0) {
-        return to * rhoStart;
+      if (uDotA == 0) {
+        return vL * rhoStart;
       } else {
-        return rhoStart * (fLambda / vDotA) * (exp(vDotA * to * fInvLambda) - 1);
+        return rhoStart * (fLambda / uDotA) * (exp(uDotA * vL * fInvLambda) - 1);
       }
     }
 
     // clang-format off
     /**
      * For a (normalized) axis \f$ \vec{a} \f$, the length of a non-orthogonal line with (normalized)
-     * direction \f$ \vec{v} \f$ corresponding to grammage \f$ X \f$ is given by
+     * direction \f$ \vec{u} \f$ corresponding to grammage \f$ X \f$ is given by
      * \f[
      *   l = \begin{cases}
-     *   \frac{\lambda}{\vec{v} \cdot \vec{a}} \log\left(Y \right), & \text{if} Y :=  0 > 1 +
-     *     \vec{v} \cdot \vec{a} \frac{X}{\rho_0 \lambda} 
+     *   \frac{\lambda}{\vec{u} \cdot \vec{a}} \log\left(Y \right), & \text{if} Y :=  0 > 1 +
+     *     \vec{u} \cdot \vec{a} \frac{X}{\rho_0 \lambda} 
      *   \infty & \text{else,}
      *   \end{cases}
      * \f] where \f$ \varrho_0 \f$ is the density at the starting point.
      * 
-     * If \f$ \vec{v} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
+     * If \f$ \vec{u} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
      * \f[
      *   l =  \frac{X}{\varrho_0}
      * \f]
      */
     // clang-format on
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<corsika::geometry::Line> const& line,
-        units::si::GrammageType grammage,
-        geometry::Vector<units::si::dimensionless_d> const& axis) const {
-      auto const vDotA = line.NormalizedDirection().dot(axis).magnitude();
-      auto const rhoStart = GetImplementation().GetMassDensity(line.GetR0());
+        geometry::Trajectory<geometry::Line> const& vLine,
+        units::si::GrammageType vGrammage,
+        geometry::Vector<units::si::dimensionless_d> const& vAxis) const {
+      auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
+      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
 
-      if (vDotA == 0) {
-        return grammage / rhoStart;
+      if (uDotA == 0) {
+        return vGrammage / rhoStart;
       } else {
-        auto const logArg = grammage * fInvLambda * vDotA / rhoStart + 1;
+        auto const logArg = vGrammage * fInvLambda * uDotA / rhoStart + 1;
         if (logArg > 0) {
-          return fLambda / vDotA * log(logArg);
+          return fLambda / uDotA * log(logArg);
         } else {
-          return std::numeric_limits<units::si::GrammageType::value_type>::infinity() *
+          return std::numeric_limits<typename decltype(
+                     vGrammage)::value_type>::infinity() *
                  units::si::meter;
         }
       }
     }
 
   public:
-    BaseExponential(geometry::Point const& p0, units::si::MassDensityType rho,
-                    units::si::LengthType lambda)
-        : fRho0(rho)
-        , fLambda(lambda)
-        , fInvLambda(1 / lambda)
-        , fP0(p0) {}
+    BaseExponential(geometry::Point const& vP0, units::si::MassDensityType vRho,
+                    units::si::LengthType vLambda)
+        : fRho0(vRho)
+        , fLambda(vLambda)
+        , fInvLambda(1 / vLambda)
+        , fP0(vP0) {}
   };
 
 } // namespace corsika::environment
