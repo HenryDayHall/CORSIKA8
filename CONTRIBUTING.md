@@ -54,7 +54,9 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - enums should be "enum class" 
   - Function parameter names start with "v"
   - types in template definitions start with "T"
-  - Normal variable names in code start non-capital, and they cannot start with a "prefixed" v, T, f, fg, or g character
+  - Normal variable names in code start non-capital. To avoid confusion with these special identifiers
+    described above in case an identifier starts with `v`, `T`, `f`, `fg`, or `g`, this prefix may not be
+    followed by a capital letter. i.e. `funkyVariable` is allowed while `vLooksLikeArgument` is not.
 
   - We use namespaces to avoid clashes and to structure code
     - *Everything* is part of the corsika namespace
