@@ -14,6 +14,7 @@
 
 #include <corsika/stack/Stack.h>
 
+#include <stdexcept>
 #include <vector>
 
 namespace corsika::stack {
@@ -68,10 +69,10 @@ namespace corsika::stack {
      * the constructor of the SecondaryView class
      * @{
      */
-    using InnerStackTypeV = Stack<StackDataType, ParticleInterface>;
-    typedef StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                   ParticleInterface, InnerStackTypeV>
-        StackIteratorV;
+    using InnerStackTypeValue = Stack<StackDataType, ParticleInterface>;
+    using StackIteratorValue =
+        StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
+                               ParticleInterface, InnerStackTypeValue>;
     /// @}
 
   public:
@@ -85,7 +86,8 @@ namespace corsika::stack {
     /**
      * this is the full type of the declared ParticleInterface: typedef typename
      */
-    using ParticleType = typename StackIterator::ParticleInterfaceType;
+    using ParticleType = StackIterator;
+    using ParticleInterfaceType = typename StackIterator::ParticleInterfaceType;
 
     friend class StackIteratorInterface<
         typename std::remove_reference<StackDataType>::type, ParticleInterface, ViewType>;
@@ -99,25 +101,34 @@ namespace corsika::stack {
      * new stack.
      */
     template <typename... Args>
-    SecondaryView(Args... args);
+    SecondaryView(Args... args) = delete;
 
   public:
-    SecondaryView(StackIteratorV& vP)
-        : Stack<StackDataType&, ParticleInterface>(vP.GetStackData())
-        , fProjectileIndex(vP.GetIndex()) {}
+    /**
+       SecondaryView can only be constructed passing it a valid
+       StackIterator to another Stack object
+     **/
+    SecondaryView(StackIteratorValue& vI)
+        : Stack<StackDataType&, ParticleInterface>(vI.GetStackData())
+        , fProjectileIndex(vI.GetIndex()) {}
 
-    auto GetProjectile() {
+    StackIterator GetProjectile() {
       // NOTE: 0 is special marker here for PROJECTILE, see GetIndexFromIterator
       return StackIterator(*this, 0);
     }
 
     template <typename... Args>
     auto AddSecondary(const Args... v) {
+      StackIterator proj = GetProjectile();
+      return AddSecondary(proj, v...);
+    }
+
+    template <typename... Args>
+    auto AddSecondary(StackIterator& proj, const Args... v) {
       InnerStackType::GetStackData().IncrementSize();
       const unsigned int idSec = GetSize();
       const unsigned int index = InnerStackType::GetStackData().GetSize() - 1;
       fIndices.push_back(index);
-      StackIterator proj = GetProjectile();
       // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
       // GetIndexFromIterator
       return StackIterator(*this, idSec + 1, proj, v...);
@@ -164,7 +175,7 @@ namespace corsika::stack {
     /**
      * need overwrite Stack::Delete, since we want to call SecondaryView::DeleteLast
      */
-    void Delete(ParticleType p) { Delete(p.GetIterator()); }
+    void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
 
     /**
      * delete last particle on stack by decrementing stack size
@@ -200,6 +211,21 @@ namespace corsika::stack {
     unsigned int fProjectileIndex;
     std::vector<unsigned int> fIndices;
   };
+
+  /*
+    See Issue 161
+
+    unfortunately clang does not support this in the same way (yet) as
+    gcc, so we have to distinguish here. If clang cataches up, we
+    could remove the #if here and elsewhere. The gcc code is much more
+    generic and universal.
+  */
+#if not defined(__clang__) && defined(__GNUC__) || defined(__GNUG__)
+  template <typename S, template <typename> typename _PIType = S::template PIType>
+  struct MakeView {
+    using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType>;
+  };
+#endif
 
 } // namespace corsika::stack
 

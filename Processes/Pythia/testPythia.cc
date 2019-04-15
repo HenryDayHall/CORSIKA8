@@ -145,11 +145,12 @@ TEST_CASE("pythia process") {
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
-    process::pythia::Decay model(particleList);
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
+    process::pythia::Decay model(particleList);
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(particle,
-                                                                          stack);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
   }
 
@@ -166,11 +167,12 @@ TEST_CASE("pythia process") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::PiPlus, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
-    process::pythia::Interaction model;
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
 
+    process::pythia::Interaction model;
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoInteraction(particle,
-                                                                                stack);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length =
         model.GetInteractionLength(particle, track);
   }

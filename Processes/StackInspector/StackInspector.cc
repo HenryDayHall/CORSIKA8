@@ -16,7 +16,6 @@
 
 #include <corsika/logging/Logger.h>
 
-#include <corsika/cascade/testCascade.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <iostream>
@@ -28,23 +27,22 @@ using namespace corsika::particles;
 using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 
-template <typename Stack>
-StackInspector<Stack>::StackInspector(const bool aReport)
-    : fReport(aReport)
+template <typename TStack>
+StackInspector<TStack>::StackInspector(const int nStep, const bool aReport)
+    : StackProcess<StackInspector<TStack>>(nStep)
+    , fReport(aReport)
     , fCountStep(0) {}
 
-template <typename Stack>
-StackInspector<Stack>::~StackInspector() {}
+template <typename TStack>
+StackInspector<TStack>::~StackInspector() {}
 
-template <typename Stack>
-process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Trajectory&,
-                                                            Stack& s) {
-
+template <typename TStack>
+process::EProcessReturn StackInspector<TStack>::DoStack(TStack& vS) {
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   HEPEnergyType Etot = 0_GeV;
 
-  for (auto& iterP : s) {
+  for (auto& iterP : vS) {
     HEPEnergyType E = iterP.GetEnergy();
     Etot += E;
     geometry::CoordinateSystem& rootCS = geometry::RootCoordinateSystem::GetInstance()
@@ -53,27 +51,21 @@ process::EProcessReturn StackInspector<Stack>::DoContinuous(Particle&, setup::Tr
     cout << "StackInspector: i=" << setw(5) << fixed << (i++) << ", id=" << setw(30)
          << iterP.GetPID() << " E=" << setw(15) << scientific << (E / 1_GeV) << " GeV, "
          << " pos=" << pos << " node = " << iterP.GetNode();
-    // if (iterP.GetPID()==Code::Nucleus)
-    // cout << " nuc_ref=" << iterP.GetNucleusRef();
+    if (iterP.GetPID() == Code::Nucleus) cout << " nuc_ref=" << iterP.GetNucleusRef();
     cout << endl;
   }
   fCountStep++;
-  cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << s.GetSize()
+  cout << "StackInspector: nStep=" << fCountStep << " stackSize=" << vS.GetSize()
        << " Estack=" << Etot / 1_GeV << " GeV" << endl;
   return process::EProcessReturn::eOk;
 }
 
-template <typename Stack>
-corsika::units::si::LengthType StackInspector<Stack>::MaxStepLength(Particle&,
-                                                                    setup::Trajectory&) {
-  return std::numeric_limits<double>::infinity() * meter;
-}
-
-template <typename Stack>
-void StackInspector<Stack>::Init() {
+template <typename TStack>
+void StackInspector<TStack>::Init() {
   fCountStep = 0;
 }
 
+#include <corsika/cascade/testCascade.h>
 #include <corsika/setup/SetupStack.h>
 
 template class process::stack_inspector::StackInspector<setup::Stack>;

@@ -12,7 +12,7 @@
 #ifndef _Physics_StackInspector_StackInspector_h_
 #define _Physics_StackInspector_StackInspector_h_
 
-#include <corsika/process/ContinuousProcess.h>
+#include <corsika/process/StackProcess.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
@@ -20,20 +20,17 @@ namespace corsika::process {
 
   namespace stack_inspector {
 
-    template <typename Stack>
-    class StackInspector
-        : public corsika::process::ContinuousProcess<StackInspector<Stack>> {
+    template <typename TStack>
+    class StackInspector : public corsika::process::StackProcess<StackInspector<TStack>> {
 
-      typedef typename Stack::ParticleType Particle;
+      typedef typename TStack::ParticleType Particle;
 
     public:
-      StackInspector(const bool aReport);
+      StackInspector(const int nStep, const bool aReport);
       ~StackInspector();
 
       void Init();
-      EProcessReturn DoContinuous(Particle&, corsika::setup::Trajectory&, Stack& s);
-      corsika::units::si::LengthType MaxStepLength(Particle&,
-                                                   corsika::setup::Trajectory&);
+      EProcessReturn DoStack(TStack&);
 
     private:
       bool fReport;

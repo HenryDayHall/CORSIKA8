@@ -24,7 +24,8 @@ using std::vector;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Particle = Stack::StackIterator; // ParticleType;
+using Projectile = corsika::setup::StackView::ParticleType;
+using Particle = corsika::setup::Stack::ParticleType;
 using Track = Trajectory;
 
 namespace corsika::process::sibyll {
@@ -103,27 +104,27 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::TimeType Decay::GetLifetime(Particle const& p) {
+  units::si::TimeType Decay::GetLifetime(Particle const& vP) {
     using namespace units::si;
 
-    HEPEnergyType E = p.GetEnergy();
-    HEPMassType m = p.GetMass();
+    HEPEnergyType E = vP.GetEnergy();
+    HEPMassType m = vP.GetMass();
 
     const double gamma = E / m;
 
-    const TimeType t0 = particles::GetLifetime(p.GetPID());
+    const TimeType t0 = particles::GetLifetime(vP.GetPID());
     auto const lifetime = gamma * t0;
 
     const auto mkin =
-        (E * E - p.GetMomentum().squaredNorm()); // delta_mass(p.GetMomentum(), E, m);
-    cout << "Decay: code: " << p.GetPID() << endl;
+        (E * E - vP.GetMomentum().squaredNorm()); // delta_mass(vP.GetMomentum(), E, m);
+    cout << "Decay: code: " << vP.GetPID() << endl;
     cout << "Decay: MinStep: t0: " << t0 << endl;
     cout << "Decay: MinStep: energy: " << E / 1_GeV << " GeV" << endl;
-    cout << "Decay: momentum: " << p.GetMomentum().GetComponents() / 1_GeV << " GeV"
+    cout << "Decay: momentum: " << vP.GetMomentum().GetComponents() / 1_GeV << " GeV"
          << endl;
     cout << "Decay: momentum: shell mass-kin. inv. mass " << mkin / 1_GeV / 1_GeV << " "
          << m / 1_GeV * m / 1_GeV << endl;
-    auto sib_id = process::sibyll::ConvertToSibyllRaw(p.GetPID());
+    auto sib_id = process::sibyll::ConvertToSibyllRaw(vP.GetPID());
     cout << "Decay: sib mass: " << get_sibyll_mass2(sib_id) << endl;
     cout << "Decay: MinStep: gamma: " << gamma << endl;
     cout << "Decay: MinStep: tau: " << lifetime << endl;
@@ -132,23 +133,23 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  void Decay::DoDecay(Particle& p, Stack&) {
+  void Decay::DoDecay(Projectile& vP) {
     using geometry::Point;
     using namespace units::si;
 
     fCount++;
     SibStack ss;
     ss.Clear();
-    const particles::Code pCode = p.GetPID();
+    const particles::Code pCode = vP.GetPID();
     // copy particle to sibyll stack
-    ss.AddParticle(process::sibyll::ConvertToSibyllRaw(pCode), p.GetEnergy(),
-                   p.GetMomentum(),
+    ss.AddParticle(process::sibyll::ConvertToSibyllRaw(pCode), vP.GetEnergy(),
+                   vP.GetMomentum(),
                    // setting particle mass with Corsika values, may be inconsistent
                    // with sibyll internal values
                    particles::GetMass(pCode));
     // remember position
-    Point const decayPoint = p.GetPosition();
-    TimeType const t0 = p.GetTime();
+    Point const decayPoint = vP.GetPosition();
+    TimeType const t0 = vP.GetTime();
     // set all particles/hadrons unstable
     // setHadronsUnstable();
     SetUnstable(pCode);
@@ -166,7 +167,7 @@ namespace corsika::process::sibyll {
       // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
       if (psib.HasDecayed()) continue;
       // add to corsika stack
-      p.AddSecondary(
+      vP.AddSecondary(
           tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
                 geometry::Point, units::si::TimeType>{
               process::sibyll::ConvertFromSibyll(psib.GetPID()), psib.GetEnergy(),
@@ -174,8 +175,6 @@ namespace corsika::process::sibyll {
     }
     // empty sibyll stack
     ss.Clear();
-    // remove original particle from corsika stack
-    p.Delete();
   }
 
 } // namespace corsika::process::sibyll

@@ -29,10 +29,11 @@ using std::endl;
 using std::tuple;
 using std::vector;
 
-using corsika::setup::SetupEnvironment;
-using SetupStack = corsika::setup::Stack;
-using Particle = SetupStack::StackIterator; // ParticleType;
-using Track = corsika::setup::Trajectory;
+using namespace corsika;
+using namespace corsika::setup;
+using Particle = Stack::ParticleType;        // StackIterator; // ParticleType;
+using Projectile = StackView::StackIterator; // StackView::ParticleType;
+using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
@@ -177,15 +178,15 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
-  NuclearInteraction<SetupEnvironment>::GetCrossSection(Particle& p,
+  NuclearInteraction<SetupEnvironment>::GetCrossSection(Particle& vP,
                                                         const particles::Code TargetId) {
     using namespace units::si;
-    if (p.GetPID() != particles::Code::Nucleus)
+    if (vP.GetPID() != particles::Code::Nucleus)
       throw std::runtime_error(
           "NuclearInteraction: GetCrossSection: particle not a nucleus!");
 
-    auto const iBeamA = p.GetNuclearA();
-    HEPEnergyType LabEnergyPerNuc = p.GetEnergy() / iBeamA;
+    auto const iBeamA = vP.GetNuclearA();
+    HEPEnergyType LabEnergyPerNuc = vP.GetEnergy() / iBeamA;
     cout << "NuclearInteraction: GetCrossSection: called with: beamNuclA= " << iBeamA
          << " TargetId= " << TargetId << " LabEnergyPerNuc= " << LabEnergyPerNuc / 1_GeV
          << endl;
@@ -216,7 +217,7 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   units::si::GrammageType NuclearInteraction<SetupEnvironment>::GetInteractionLength(
-      Particle& p, Track&) {
+      Particle& vP, Track&) {
 
     using namespace units;
     using namespace units::si;
@@ -226,7 +227,7 @@ namespace corsika::process::sibyll {
     CoordinateSystem& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
-    const particles::Code corsikaBeamId = p.GetPID();
+    const particles::Code corsikaBeamId = vP.GetPID();
     if (!particles::IsNucleus(corsikaBeamId)) {
       // no nuclear interaction
       return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
@@ -243,12 +244,12 @@ namespace corsika::process::sibyll {
     corsika::stack::MomentumVector pTarget(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
 
     // total momentum and energy
-    HEPEnergyType Elab = p.GetEnergy() + constants::nucleonMass;
-    int const nuclA = p.GetNuclearA();
-    auto const ElabNuc = p.GetEnergy() / nuclA;
+    HEPEnergyType Elab = vP.GetEnergy() + constants::nucleonMass;
+    int const nuclA = vP.GetNuclearA();
+    auto const ElabNuc = vP.GetEnergy() / nuclA;
 
     corsika::stack::MomentumVector pTotLab(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-    pTotLab += p.GetMomentum();
+    pTotLab += vP.GetMomentum();
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.norm();
     // calculate cm. energy
@@ -275,7 +276,7 @@ namespace corsika::process::sibyll {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      auto const* const currentNode = p.GetNode();
+      auto const* const currentNode = vP.GetNode();
       auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
@@ -289,8 +290,9 @@ namespace corsika::process::sibyll {
         i++;
         cout << "NuclearInteraction: get interaction length for target: " << targetId
              << endl;
-        [[maybe_unused]] auto const [productionCrossSection, elaCrossSection] =
-            GetCrossSection(p, targetId);
+        auto const [productionCrossSection, elaCrossSection] =
+            GetCrossSection(vP, targetId);
+        [[maybe_unused]] auto& dummy_elaCrossSection = elaCrossSection;
 
         cout << "NuclearInteraction: "
              << "IntLength: nuclib return (mb): " << productionCrossSection / 1_mb
@@ -317,7 +319,7 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   process::EProcessReturn NuclearInteraction<SetupEnvironment>::DoInteraction(
-      Particle& p, SetupStack& s) {
+      Projectile& vP) {
 
     // this routine superimposes different nucleon-nucleon interactions
     // in a nucleus-nucleus interaction, based the SIBYLL routine SIBNUC
@@ -327,9 +329,9 @@ namespace corsika::process::sibyll {
     using namespace units::si;
     using namespace geometry;
 
-    const auto ProjId = p.GetPID();
+    const auto ProjId = vP.GetPID();
     // TODO: calculate projectile mass in nuclearStackExtension
-    //      const auto ProjMass = p.GetMass();
+    //      const auto ProjMass = vP.GetMass();
     cout << "NuclearInteraction: DoInteraction: called with:" << ProjId << endl;
 
     if (!IsNucleus(ProjId)) {
@@ -346,8 +348,8 @@ namespace corsika::process::sibyll {
           "should use NuclearStackExtension!");
 
     auto const ProjMass =
-        p.GetNuclearZ() * particles::Proton::GetMass() +
-        (p.GetNuclearA() - p.GetNuclearZ()) * particles::Neutron::GetMass();
+        vP.GetNuclearZ() * particles::Proton::GetMass() +
+        (vP.GetNuclearA() - vP.GetNuclearZ()) * particles::Neutron::GetMass();
     cout << "NuclearInteraction: projectile mass: " << ProjMass / 1_GeV << endl;
 
     fCount++;
@@ -356,21 +358,21 @@ namespace corsika::process::sibyll {
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
     // position and time of interaction, not used in NUCLIB
-    Point pOrig = p.GetPosition();
-    TimeType tOrig = p.GetTime();
+    Point pOrig = vP.GetPosition();
+    TimeType tOrig = vP.GetTime();
 
     cout << "Interaction: position of interaction: " << pOrig.GetCoordinates() << endl;
     cout << "Interaction: time: " << tOrig << endl;
 
     // projectile nucleon number
-    const int kAProj = p.GetNuclearA(); // GetNucleusA(ProjId);
+    const int kAProj = vP.GetNuclearA(); // GetNucleusA(ProjId);
     if (kAProj > GetMaxNucleusAProjectile())
       throw std::runtime_error("Projectile nucleus too large for NUCLIB!");
 
     // kinematics
     // define projectile nucleus
-    HEPEnergyType const eProjectileLab = p.GetEnergy();
-    auto const pProjectileLab = p.GetMomentum();
+    HEPEnergyType const eProjectileLab = vP.GetEnergy();
+    auto const pProjectileLab = vP.GetMomentum();
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
     cout << "NuclearInteraction: eProj lab: " << eProjectileLab / 1_GeV << endl
@@ -378,8 +380,8 @@ namespace corsika::process::sibyll {
          << endl;
 
     // define projectile nucleon
-    HEPEnergyType const eProjectileNucLab = p.GetEnergy() / kAProj;
-    auto const pProjectileNucLab = p.GetMomentum() / kAProj;
+    HEPEnergyType const eProjectileNucLab = vP.GetEnergy() / kAProj;
+    auto const pProjectileNucLab = vP.GetMomentum() / kAProj;
     const FourVector PprojNucLab(eProjectileNucLab, pProjectileNucLab);
 
     cout << "NuclearInteraction: eProjNucleon lab: " << eProjectileNucLab / 1_GeV << endl
@@ -431,7 +433,7 @@ namespace corsika::process::sibyll {
     //
     // proton stand-in for nucleon
     const auto beamId = particles::Proton::GetCode();
-    auto const* const currentNode = p.GetNode();
+    auto const* const currentNode = vP.GetNode();
     const auto& mediumComposition =
         currentNode->GetModelProperties().GetNuclearComposition();
     cout << "get nucleon-nucleus cross sections for target materials.." << endl;
@@ -556,15 +558,16 @@ namespace corsika::process::sibyll {
 
       if (nuclA == 1)
         // add nucleon
-        p.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType,
-                             stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            specCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
-            tOrig});
+        vP.AddSecondary(
+            tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
+                  geometry::Point, units::si::TimeType>{
+                specCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(),
+                pOrig, tOrig});
       else
         // add nucleus
-        p.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType,
-                             corsika::stack::MomentumVector, geometry::Point,
-                             units::si::TimeType, unsigned short, unsigned short>{
+        vP.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType,
+                              corsika::stack::MomentumVector, geometry::Point,
+                              units::si::TimeType, unsigned short, unsigned short>{
             specCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
             tOrig, nuclA, nuclZ});
     }
@@ -583,7 +586,7 @@ namespace corsika::process::sibyll {
       const double mass_ratio = particles::GetMass(elaNucCode) / ProjMass;
       auto const Plab = PprojLab * mass_ratio;
 
-      p.AddSecondary(
+      vP.AddSecondary(
           tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
                 geometry::Point, units::si::TimeType>{
               elaNucCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(),
@@ -597,18 +600,15 @@ namespace corsika::process::sibyll {
       auto pCode = particles::Proton::GetCode();
       // temporarily add to stack, will be removed after interaction in DoInteraction
       cout << "inelastic interaction no. " << j << endl;
-      auto inelasticNucleon = p.AddSecondary(
+      auto inelasticNucleon = vP.AddSecondary(
           tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
                 geometry::Point, units::si::TimeType>{
               pCode, PprojNucLab.GetTimeLikeComponent(),
               PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig});
       // create inelastic interaction
       cout << "calling HadronicInteraction..." << endl;
-      fHadronicInteraction.DoInteraction(inelasticNucleon, s);
+      fHadronicInteraction.DoInteraction(inelasticNucleon);
     }
-
-    // delete parent particle
-    p.Delete();
 
     cout << "NuclearInteraction: DoInteraction: done" << endl;
 

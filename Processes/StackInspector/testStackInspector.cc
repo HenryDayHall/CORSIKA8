@@ -21,12 +21,12 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/cascade/testCascade.h>
 
 using namespace corsika::units::si;
 using namespace corsika::process::stack_inspector;
 using namespace corsika;
+using namespace corsika::geometry;
 
 TEST_CASE("StackInspector", "[processes]") {
 
@@ -38,21 +38,21 @@ TEST_CASE("StackInspector", "[processes]") {
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
-  setup::Stack stack;
-  auto particle = stack.AddParticle(
+  TestCascadeStack stack;
+  stack.Clear();
+  HEPEnergyType E0 = 100_GeV;
+  stack.AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          particles::Code::Electron, 10_GeV,
+          particles::Code::Electron, E0,
           corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-          geometry::Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
+          Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
 
   SECTION("interface") {
 
-    StackInspector<setup::Stack> model(true);
+    StackInspector<TestCascadeStack> model(1, true);
 
     model.Init();
-    [[maybe_unused]] const process::EProcessReturn ret =
-        model.DoContinuous(particle, track, stack);
-    [[maybe_unused]] const LengthType length = model.MaxStepLength(particle, track);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoStack(stack);
   }
 }

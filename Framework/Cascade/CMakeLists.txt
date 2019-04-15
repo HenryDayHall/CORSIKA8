@@ -45,6 +45,7 @@ target_link_libraries (
   CORSIKAcascade
   ProcessStackInspector
   ProcessTrackingLine
+  ProcessNullModel
   CORSIKAstackinterface
   CORSIKAprocesses
   CORSIKAparticles

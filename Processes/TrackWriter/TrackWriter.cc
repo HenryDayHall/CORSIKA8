@@ -33,13 +33,13 @@ namespace corsika::process::TrackWriter {
   }
 
   template <>
-  process::EProcessReturn TrackWriter::DoContinuous(Particle& p, Track& t, Stack&) {
+  process::EProcessReturn TrackWriter::DoContinuous(Particle& vP, Track& vT) {
     using namespace units::si;
-    auto const start = t.GetPosition(0).GetCoordinates();
-    auto const delta = t.GetPosition(1).GetCoordinates() - start;
-    auto const& name = particles::GetName(p.GetPID());
+    auto const start = vT.GetPosition(0).GetCoordinates();
+    auto const delta = vT.GetPosition(1).GetCoordinates() - start;
+    auto const& name = particles::GetName(vP.GetPID());
 
-    fFile << name << "    " << p.GetEnergy() / 1_eV << ' ' << start[0] / 1_m << ' '
+    fFile << name << "    " << vP.GetEnergy() / 1_eV << ' ' << start[0] / 1_m << ' '
           << start[1] / 1_m << ' ' << start[2] / 1_m << "   " << delta[0] / 1_m << ' '
           << delta[1] / 1_m << ' ' << delta[2] / 1_m << '\n';
 

@@ -28,8 +28,8 @@ namespace corsika::process::TrackWriter {
 
     void Init();
 
-    template <typename Particle, typename Track, typename Stack>
-    corsika::process::EProcessReturn DoContinuous(Particle& p, Track& t, Stack&);
+    template <typename Particle, typename Track>
+    corsika::process::EProcessReturn DoContinuous(Particle&, Track&);
 
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle&, Track&);

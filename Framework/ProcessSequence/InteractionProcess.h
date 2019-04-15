@@ -35,8 +35,8 @@ namespace corsika::process {
 
     /// here starts the interface-definition part
     // -> enforce derived to implement DoInteraction...
-    template <typename P, typename S>
-    EProcessReturn DoInteraction(P&, S&);
+    template <typename Particle>
+    EProcessReturn DoInteraction(Particle&);
 
     template <typename Particle, typename Track>
     corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track& t);

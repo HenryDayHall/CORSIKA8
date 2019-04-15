@@ -33,6 +33,22 @@ using namespace std;
 
 typedef Stack<TestStackData, TestParticleInterface> StackTest;
 
+/*
+  See Issue 161
+
+  unfortunately clang does not support this in the same way (yet) as
+  gcc, so we have to distinguish here. If clang cataches up, we could
+  remove the clang branch here and also in corsika::Cascade. The gcc
+  code is much more generic and universal.
+ */
+#if defined(__clang__)
+using StackTestView = SecondaryView<TestStackData, TestParticleInterface>;
+#elif defined(__GNUC__) || defined(__GNUG__)
+using StackTestView = MakeView<StackTest>::type;
+#endif
+
+using Particle = typename StackTest::ParticleType;
+
 TEST_CASE("SecondaryStack", "[stack]") {
 
   // helper function for sum over stack data
@@ -51,55 +67,71 @@ TEST_CASE("SecondaryStack", "[stack]") {
 
     auto particle = s.GetNextParticle();
 
-    typedef SecondaryView<TestStackData, TestParticleInterface> StackTestView;
-    StackTestView v(particle);
-    REQUIRE(v.GetSize() == 0);
+    StackTestView view(particle);
+    REQUIRE(view.GetSize() == 0);
 
     {
-      auto proj = v.GetProjectile();
+      auto proj = view.GetProjectile();
       REQUIRE(proj.GetData() == particle.GetData());
+      proj.AddSecondary(std::tuple{4.4});
     }
 
-    v.AddSecondary(std::tuple{4.4});
-    v.AddSecondary(std::tuple{4.5});
-    v.AddSecondary(std::tuple{4.6});
+    view.AddSecondary(std::tuple{4.5});
+    view.AddSecondary(std::tuple{4.6});
 
-    REQUIRE(v.GetSize() == 3);
+    REQUIRE(view.GetSize() == 3);
     REQUIRE(s.GetSize() == 5);
-    REQUIRE(!v.IsEmpty());
+    REQUIRE(!view.IsEmpty());
 
     auto sumView = [](const StackTestView& stack) {
-      double v = 0;
-      for (const auto& p : stack) { v += p.GetData(); }
-      return v;
+      double value = 0;
+      for (const auto& p : stack) { value += p.GetData(); }
+      return value;
     };
 
     REQUIRE(sum(s) == sumS + 4.4 + 4.5 + 4.6);
-    REQUIRE(sumView(v) == 4.4 + 4.5 + 4.6);
+    REQUIRE(sumView(view) == 4.4 + 4.5 + 4.6);
 
-    v.DeleteLast();
-    REQUIRE(v.GetSize() == 2);
+    view.DeleteLast();
+    REQUIRE(view.GetSize() == 2);
     REQUIRE(s.GetSize() == 4);
 
     REQUIRE(sum(s) == sumS + 4.4 + 4.5);
-    REQUIRE(sumView(v) == 4.4 + 4.5);
+    REQUIRE(sumView(view) == 4.4 + 4.5);
 
-    auto pDel = v.GetNextParticle();
-    v.Delete(pDel);
-    REQUIRE(v.GetSize() == 1);
+    auto pDel = view.GetNextParticle();
+    view.Delete(pDel);
+    REQUIRE(view.GetSize() == 1);
     REQUIRE(s.GetSize() == 3);
 
     REQUIRE(sum(s) == sumS + 4.4 + 4.5 - pDel.GetData());
-    REQUIRE(sumView(v) == 4.4 + 4.5 - pDel.GetData());
+    REQUIRE(sumView(view) == 4.4 + 4.5 - pDel.GetData());
 
-    v.Delete(v.GetNextParticle());
+    view.Delete(view.GetNextParticle());
     REQUIRE(sum(s) == sumS);
-    REQUIRE(sumView(v) == 0);
-    REQUIRE(v.IsEmpty());
+    REQUIRE(sumView(view) == 0);
+    REQUIRE(view.IsEmpty());
 
     {
-      auto proj = v.GetProjectile();
+      auto proj = view.GetProjectile();
       REQUIRE(proj.GetData() == particle.GetData());
     }
+  }
+
+  SECTION("secondary view, construct from ParticleType") {
+    StackTest s;
+    REQUIRE(s.GetSize() == 0);
+    s.AddParticle(std::tuple{9.9});
+    s.AddParticle(std::tuple{8.8});
+
+    auto iterator = s.GetNextParticle();
+    typename StackTest::ParticleType& particle = iterator; // as in corsika::Cascade
+
+    StackTestView view(particle);
+    REQUIRE(view.GetSize() == 0);
+
+    view.AddSecondary(std::tuple{4.4});
+
+    REQUIRE(view.GetSize() == 1);
   }
 }

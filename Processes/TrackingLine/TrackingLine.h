@@ -105,7 +105,8 @@ namespace corsika::process {
               currentLogicalVolumeNode->GetVolume());
           // for the moment we are a bit bold here and assume
           // everything is a sphere, crashes with exception if not
-          auto const [t1, t2] = *TimeOfIntersection(line, sphere);
+          [[maybe_unused]] auto const [t1, t2] = *TimeOfIntersection(line, sphere);
+          [[maybe_unused]] auto dummy_t1 = t1;
           intersections.emplace_back(t2, currentLogicalVolumeNode->GetParent());
         }
 

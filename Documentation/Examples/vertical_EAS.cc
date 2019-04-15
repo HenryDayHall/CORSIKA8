@@ -12,10 +12,9 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/stack_inspector/StackInspector.h>
+#include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
-#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
@@ -39,8 +38,12 @@
 
 #include <corsika/utl/CorsikaFenv.h>
 
+#include <boost/type_index.hpp>
+using boost::typeindex::type_id_with_cvr;
+
 #include <iostream>
 #include <limits>
+#include <typeinfo>
 
 using namespace corsika;
 using namespace corsika::process;
@@ -212,63 +215,61 @@ public:
 // The example main program for a particle cascade
 //
 int main() {
-
-  const LengthType height_atmosphere = 112.8_km;
-
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = environment::Environment<setup::IEnvironmentModel>;
+  using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
   auto& universe = *(env.GetUniverse());
 
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
-
-  auto outerMedium = EnvType::CreateNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+  auto theMedium =
+      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+                                  1_km * std::numeric_limits<double>::infinity());
 
   // fraction of oxygen
   const float fox = 0.20946;
-  auto const props =
-      outerMedium
-          ->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
-              1_kg / (1_m * 1_m * 1_m),
-              environment::NuclearComposition(
-                  std::vector<particles::Code>{particles::Code::Nitrogen,
-                                               particles::Code::Oxygen},
-                  std::vector<float>{1.f - fox, fox}));
+  using MyHomogeneousModel = HomogeneousMedium<environment::IMediumModel>;
+  theMedium->SetModelProperties<MyHomogeneousModel>(
+      1_kg / (1_m * 1_m * 1_m),
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Nitrogen,
+                                       particles::Code::Oxygen},
+          std::vector<float>{(float)1. - fox, fox}));
 
-  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+  universe.AddChild(std::move(theMedium));
 
-  innerMedium->SetModelProperties(props);
-
-  outerMedium->AddChild(std::move(innerMedium));
-
-  universe.AddChild(std::move(outerMedium));
+  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
-  stack_inspector::StackInspector<setup::Stack> stackInspect(1, true);
 
   const std::vector<particles::Code> trackedHadrons = {
       particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
       particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
+  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
+
+  // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  // process::HadronicElasticModel::HadronicElasticInteraction
+  // hadronicElastic(env);
 
   process::TrackWriter::TrackWriter trackWriter("tracks.dat");
   process::EnergyLoss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
-                               << trackWriter;
+  // cut << trackWriter;
+  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
+
+  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
+  // << "\n";
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -277,7 +278,7 @@ int main() {
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 = nuclA * 1_TeV;
+  const HEPEnergyType E0 = nuclA * 10_TeV;
   double theta = 0.;
   double phi = 0.;
 
@@ -297,7 +298,7 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m,
-              height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
+              112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
                                  units::si::TimeType, unsigned short, unsigned short>{

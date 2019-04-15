@@ -13,6 +13,7 @@
 #define _include_corsika_baseprocess_h_
 
 #include <corsika/process/ProcessReturn.h> // for convenience
+#include <type_traits>
 
 namespace corsika::process {
 

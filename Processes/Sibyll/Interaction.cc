@@ -27,8 +27,11 @@ using std::cout;
 using std::endl;
 using std::tuple;
 
-using SetupParticle = corsika::setup::Stack::StackIterator; // SetupParticleType;
-using Track = corsika::setup::Trajectory;
+using namespace corsika;
+using namespace corsika::setup;
+using Particle = Stack::StackIterator;       // ParticleType;
+using Projectile = StackView::StackIterator; // ParticleType;
+using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
@@ -115,8 +118,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(SetupParticle& p,
-                                                            Track&) const {
+  units::si::GrammageType Interaction::GetInteractionLength(Particle& vP, Track&) const {
 
     using namespace units;
     using namespace units::si;
@@ -126,7 +128,7 @@ namespace corsika::process::sibyll {
     CoordinateSystem& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
-    const particles::Code corsikaBeamId = p.GetPID();
+    const particles::Code corsikaBeamId = vP.GetPID();
 
     // beam particles for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
@@ -136,9 +138,9 @@ namespace corsika::process::sibyll {
     MomentumVector pTarget(rootCS, {0_GeV, 0_GeV, 0_GeV});
 
     // total momentum and energy
-    HEPEnergyType Elab = p.GetEnergy() + constants::nucleonMass;
+    HEPEnergyType Elab = vP.GetEnergy() + constants::nucleonMass;
     MomentumVector pTotLab(rootCS, {0_GeV, 0_GeV, 0_GeV});
-    pTotLab += p.GetMomentum();
+    pTotLab += vP.GetMomentum();
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.norm();
     // calculate cm. energy
@@ -146,9 +148,9 @@ namespace corsika::process::sibyll {
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
     cout << "Interaction: LambdaInt: \n"
-         << " input energy: " << p.GetEnergy() / 1_GeV << endl
+         << " input energy: " << vP.GetEnergy() / 1_GeV << endl
          << " beam can interact:" << kInteraction << endl
-         << " beam pid:" << p.GetPID() << endl;
+         << " beam pid:" << vP.GetPID() << endl;
 
     // TODO: move limits into variables
     // FR: removed && Elab >= 8.5_GeV
@@ -160,7 +162,7 @@ namespace corsika::process::sibyll {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      auto const* currentNode = p.GetNode();
+      auto const* currentNode = vP.GetNode();
       const auto mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
@@ -174,8 +176,9 @@ namespace corsika::process::sibyll {
         i++;
         cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        [[maybe_unused]] auto const [productionCrossSection, elaCrossSection] =
+        auto const [productionCrossSection, elaCrossSection] =
             GetCrossSection(corsikaBeamId, targetId, ECoM);
+        [[maybe_unused]] const auto& dummy_elaCX = elaCrossSection;
 
         cout << "Interaction: "
              << " IntLength: sibyll return (mb): " << productionCrossSection / 1_mb
@@ -206,14 +209,14 @@ namespace corsika::process::sibyll {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(SetupParticle& p, setup::Stack&) {
+  process::EProcessReturn Interaction::DoInteraction(Projectile& vP) {
 
     using namespace units;
     using namespace utl;
     using namespace units::si;
     using namespace geometry;
 
-    const auto corsikaBeamId = p.GetPID();
+    const auto corsikaBeamId = vP.GetPID();
     cout << "ProcessSibyll: "
          << "DoInteraction: " << corsikaBeamId << " interaction? "
          << process::sibyll::CanInteract(corsikaBeamId) << endl;
@@ -228,8 +231,8 @@ namespace corsika::process::sibyll {
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
       // position and time of interaction, not used in Sibyll
-      Point pOrig = p.GetPosition();
-      TimeType tOrig = p.GetTime();
+      Point pOrig = vP.GetPosition();
+      TimeType tOrig = vP.GetTime();
 
       // define target
       // for Sibyll is always a single nucleon
@@ -239,8 +242,8 @@ namespace corsika::process::sibyll {
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
       // define projectile
-      HEPEnergyType const eProjectileLab = p.GetEnergy();
-      auto const pProjectileLab = p.GetMomentum();
+      HEPEnergyType const eProjectileLab = vP.GetEnergy();
+      auto const pProjectileLab = vP.GetMomentum();
 
       cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
@@ -275,12 +278,12 @@ namespace corsika::process::sibyll {
       cout << "Interaction: time: " << tOrig << endl;
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
-      MomentumVector Ptot = p.GetMomentum();
+      MomentumVector Ptot = vP.GetMomentum();
       // invariant mass, i.e. cm. energy
       HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
 
       // sample target mass number
-      auto const* currentNode = p.GetNode();
+      auto const* currentNode = vP.GetNode();
       auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // get cross sections for target materials
@@ -294,8 +297,8 @@ namespace corsika::process::sibyll {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        [[maybe_unsused]] const auto [sigProd, sigEla] =
-            GetCrossSection(corsikaBeamId, targetId, Ecm);
+        const auto [sigProd, sigEla] = GetCrossSection(corsikaBeamId, targetId, Ecm);
+        [[maybe_unused]] const auto& dummy_sigEla = sigEla;
         cross_section_of_components[i] = sigProd;
       }
 
@@ -330,7 +333,6 @@ namespace corsika::process::sibyll {
              << " DoInteraction: should have dropped particle.. "
              << "THIS IS AN ERROR" << endl;
         throw std::runtime_error("energy too low for SIBYLL");
-        // p.Delete(); delete later... different process
       } else {
         fCount++;
         // Sibyll does not know about units..
@@ -361,7 +363,7 @@ namespace corsika::process::sibyll {
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
           // add to corsika stack
-          auto pnew = p.AddSecondary(
+          auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
                   process::sibyll::ConvertFromSibyll(psib.GetPID()),
@@ -378,7 +380,7 @@ namespace corsika::process::sibyll {
       }
     }
     // delete current particle
-    p.Delete();
+    vP.Delete();
     return process::EProcessReturn::eOk;
   }
 

@@ -14,8 +14,6 @@
 
 #include <corsika/stack/ParticleBase.h>
 
-#include <type_traits>
-
 namespace corsika::stack {
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
@@ -58,20 +56,20 @@ namespace corsika::stack {
      ParticleInterface, in this example StackDataType::GetData(const unsigned int
      vIndex).
 
-     For an example see stack_example.cc, or the
+     For two examples see stack_example.cc, or the
      corsika::processes::sibyll::SibStack class
   */
 
   template <typename StackDataType, template <typename> typename ParticleInterface,
-            typename StackType =
-                Stack<StackDataType, ParticleInterface>> //, bool IsBase=true >
+            typename StackType = Stack<StackDataType, ParticleInterface>>
   class StackIteratorInterface
-      : public ParticleInterface<StackIteratorInterface<StackDataType, ParticleInterface,
-                                                        StackType>> { //,IsBase> {
+      : public ParticleInterface<
+            StackIteratorInterface<StackDataType, ParticleInterface, StackType>> {
 
   public:
-    using ParticleInterfaceType = ParticleInterface<
-        StackIteratorInterface<StackDataType, ParticleInterface, StackType>>; //,IsBase>;
+    using ParticleInterfaceType =
+        ParticleInterface<corsika::stack::StackIteratorInterface<
+            StackDataType, ParticleInterface, StackType>>;
 
     // friends are needed for access to protected methods
     friend class Stack<StackDataType,
@@ -91,10 +89,20 @@ namespace corsika::stack {
     StackIteratorInterface() = delete;
 
   public:
+    StackIteratorInterface(StackIteratorInterface const& vR)
+        : fIndex(vR.fIndex)
+        , fData(vR.fData) {}
+
+    StackIteratorInterface& operator=(StackIteratorInterface const& vR) {
+      fIndex = vR.fIndex;
+      fData = vR.fData;
+      return *this;
+    }
+
     /** iterator must always point to data, with an index:
-        @param data reference to the stack [rw]
-        @param index index on stack
-     */
+          @param data reference to the stack [rw]
+          @param index index on stack
+       */
     StackIteratorInterface(StackType& data, const unsigned int index)
         : fIndex(index)
         , fData(&data) {}
@@ -110,8 +118,7 @@ namespace corsika::stack {
     StackIteratorInterface(StackType& data, const unsigned int index, const Args... args)
         : fIndex(index)
         , fData(&data) {
-      ParticleInterfaceType& p = **this;
-      p.SetParticleData(args...);
+      (**this).SetParticleData(args...);
     }
 
     /** constructor that also sets new values on particle data object, including reference
@@ -129,9 +136,7 @@ namespace corsika::stack {
                            StackIteratorInterface& parent, const Args... args)
         : fIndex(index)
         , fData(&data) {
-      ParticleInterfaceType& p = **this;
-      ParticleInterfaceType& pa = *parent;
-      p.SetParticleData(pa, args...);
+      (**this).SetParticleData(*parent, args...);
     }
 
   public:
@@ -200,12 +205,12 @@ namespace corsika::stack {
   template <typename StackDataType, template <typename> typename ParticleInterface,
             typename StackType = Stack<StackDataType, ParticleInterface>>
   class ConstStackIteratorInterface
-      : public ParticleInterface<ConstStackIteratorInterface<
-            StackDataType, ParticleInterface, StackType>> { //,IsBase> {
+      : public ParticleInterface<
+            ConstStackIteratorInterface<StackDataType, ParticleInterface, StackType>> {
 
   public:
-    typedef ParticleInterface<ConstStackIteratorInterface<
-        StackDataType, ParticleInterface, StackType>> //,IsBase>
+    typedef ParticleInterface<
+        ConstStackIteratorInterface<StackDataType, ParticleInterface, StackType>>
         ParticleInterfaceType;
 
     friend class Stack<StackDataType, ParticleInterface>;   // for access to GetIndex

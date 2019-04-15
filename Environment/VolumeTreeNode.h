@@ -108,7 +108,7 @@ namespace corsika::environment {
 
     auto const& GetModelProperties() const { return *fModelProperties; }
 
-    auto HasModelProperties() const { return fModelProperties != nullptr; }
+    bool HasModelProperties() const { return fModelProperties.get() != nullptr; }
 
     template <typename ModelProperties, typename... Args>
     auto SetModelProperties(Args&&... args) {
