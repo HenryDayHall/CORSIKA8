@@ -32,7 +32,8 @@ int main() {
   CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});
 
   // rotations are possible, too; parameters are axis vector and angle
-  CoordinateSystem cs3 = root.rotate({1_m, 0_m, 0_m}, 90 * degree_angle);
+  CoordinateSystem cs3 =
+      root.rotate(QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
 
   // now let's define some geometrical objects:
   Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
