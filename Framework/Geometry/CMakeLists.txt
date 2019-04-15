@@ -40,6 +40,7 @@ set_target_properties (
 target_link_libraries (
   CORSIKAgeometry
   CORSIKAunits
+  CORSIKAutilities
   )
 
 target_include_directories (
