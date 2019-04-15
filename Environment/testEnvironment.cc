@@ -19,6 +19,7 @@
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
@@ -97,6 +98,41 @@ TEST_CASE("FlatExponential") {
         rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
     REQUIRE((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
     REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+  }
+}
+
+TEST_CASE("SlidingPlanarExponential") {
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  LengthType const lambda = 3_m;
+  auto const rho0 = 1_g / units::si::detail::static_pow<3>(1_cm);
+  auto const tEnd = 5_s;
+
+  SlidingPlanarExponential<IMediumModel> const medium(gOrigin, rho0, lambda,
+                                                      protonComposition);
+
+  SECTION("density") {
+    CHECK(medium.GetMassDensity({gCS, {0_m, 0_m, 3_m}}) /
+              medium.GetMassDensity({gCS, {0_m, 3_m, 0_m}}) ==
+          Approx(1));
+  }
+
+  SECTION("vertical") {
+    Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
+    FlatExponential<IMediumModel> const flat(gOrigin, axis, rho0, lambda,
+                                             protonComposition);
+    Line const line({gCS, {0_m, 0_m, 1_m}},
+                    Vector<SpeedType::dimension_type>(
+                        gCS, {0_m / second, 0_m / second, 5_m / second}));
+    Trajectory<Line> const trajectory(line, tEnd);
+
+    CHECK(medium.GetMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
+          flat.GetMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
+    CHECK(medium.IntegratedGrammage(trajectory, 2_m).magnitude() ==
+          flat.IntegratedGrammage(trajectory, 2_m).magnitude());
+    CHECK(medium.ArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude() ==
+          flat.ArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude());
   }
 }
 
