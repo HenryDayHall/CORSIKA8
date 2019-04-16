@@ -63,6 +63,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAgeometry
   CORSIKArandom
+  CORSIKAsetup
   )
 
 target_include_directories (
@@ -90,6 +91,10 @@ add_executable (testUrQMD
 target_link_libraries (
   testUrQMD
   ProcessUrQMD
+  CORSIKAsetup
+  CORSIKArandom
+  CORSIKAgeometry
+  CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
 CORSIKA_ADD_TEST(testUrQMD)

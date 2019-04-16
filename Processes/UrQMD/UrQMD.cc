@@ -17,7 +17,8 @@ using namespace corsika::units::si;
 UrQMD::UrQMD() { iniurqmd_(); }
 
 using SetupStack = corsika::setup::Stack;
-using SetupParticle = SetupStack::StackIterator;
+using SetupParticle = corsika::setup::Stack::StackIterator;
+using SetupProjectile = corsika::setup::StackView::StackIterator;
 using SetupTrack = corsika::setup::Trajectory;
 
 CrossSectionType UrQMD::GetCrossSection(
@@ -27,7 +28,6 @@ CrossSectionType UrQMD::GetCrossSection(
   return 10_mb; // TODO: implement
 }
 
-template <>
 GrammageType UrQMD::GetInteractionLength(SetupParticle& particle, SetupTrack&) const {
   auto const& mediumComposition =
       particle.GetNode()->GetModelProperties().GetNuclearComposition();
@@ -41,9 +41,7 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle& particle, SetupTrack&) c
          weightedProdCrossSection;
 }
 
-template <>
-corsika::process::EProcessReturn UrQMD::DoInteraction(SetupParticle& projectile,
-                                                      SetupStack&) {
+corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectile) {
   using namespace units::si;
 
   auto const projectileCode = projectile.GetPID();
@@ -104,7 +102,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupParticle& projectile,
     inputs_.spiso3[0] = iso3;
   }
 
-  rsys_.ebeam = (projectileEnergyLab - particles::GetMass(projectileCode)) * (1 / 1_GeV);
+  rsys_.ebeam = (projectileEnergyLab - projectile.GetMass()) * (1 / 1_GeV);
 
   // initilazation regarding target
   auto const& mediumComposition =
@@ -158,6 +156,8 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupParticle& projectile,
         std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
                    TimeType>{code, energy, momentum, projectilePosition, projectileTime});
   }
+
+  std::cout << "UrQMD generated " << sys_.npart << " secondaries!" << std::endl;
 
   if (sys_.npart > 0) // delete only in case of inelastic collision, otherwise keep
     projectile.Delete();
