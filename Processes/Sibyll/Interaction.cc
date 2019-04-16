@@ -29,8 +29,8 @@ using std::tuple;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Particle = Stack::StackIterator;       // ParticleType;
-using Projectile = StackView::StackIterator; // ParticleType;
+using SetupParticle = setup::Stack::StackIterator;
+using SetupProjectile = setup::StackView::StackIterator;
 using Track = Trajectory;
 
 namespace corsika::process::sibyll {
@@ -118,7 +118,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(Particle& vP, Track&) const {
+  units::si::GrammageType Interaction::GetInteractionLength(SetupParticle& vP, Track&) const {
 
     using namespace units;
     using namespace units::si;
@@ -163,7 +163,7 @@ namespace corsika::process::sibyll {
         and the boosts can be defined..
       */
 
-      auto const* currentNode = p.GetNode();
+      auto const* currentNode = vP.GetNode();
       const auto& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
 
@@ -195,7 +195,7 @@ namespace corsika::process::sibyll {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(Projectile& vP) {
+  process::EProcessReturn Interaction::DoInteraction(SetupProjectile& vP) {
 
     using namespace units;
     using namespace utl;
