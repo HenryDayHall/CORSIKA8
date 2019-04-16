@@ -74,6 +74,7 @@ set_target_properties (
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   ProcessSibyll
+  CORSIKAprocesssequence
   CORSIKAparticles
   CORSIKAutilities
   CORSIKAunits
