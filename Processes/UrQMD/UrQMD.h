@@ -4,6 +4,8 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/random/RNGManager.h>
+#include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <array>
@@ -13,16 +15,15 @@ namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
     UrQMD();
-
-    template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&) const;
+    corsika::units::si::GrammageType GetInteractionLength(
+        corsika::setup::Stack::StackIterator&, corsika::setup::Trajectory&) const;
 
     corsika::units::si::CrossSectionType GetCrossSection(
         corsika::particles::Code, corsika::particles::Code,
         corsika::units::si::HEPEnergyType) const;
 
-    template <typename Particle, typename Stack>
-    corsika::process::EProcessReturn DoInteraction(Particle&, Stack&);
+    corsika::process::EProcessReturn DoInteraction(
+        corsika::setup::StackView::StackIterator&);
 
   private:
     corsika::random::RNG& fRNG =
