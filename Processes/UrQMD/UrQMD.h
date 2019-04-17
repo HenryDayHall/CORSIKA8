@@ -54,6 +54,7 @@ namespace corsika::process::UrQMD {
   void cascinit_(int const&, int const&, int const&);
   double nucrad_(int const&);
   void urqmd_(int&);
+  int pdgid_(int&, int&);
 
   // defined in coms.f
   extern struct {
