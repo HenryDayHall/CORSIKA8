@@ -151,6 +151,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
             1_GeV);
 
     momentum.rebase(originalCS); // transform back into standard lab frame
+    std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
 
     projectile.AddSecondary(
         std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
@@ -161,6 +162,8 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
 
   if (sys_.npart > 0) // delete only in case of inelastic collision, otherwise keep
     projectile.Delete();
+
+  return process::EProcessReturn::eOk;
 }
 
 /**
@@ -175,59 +178,12 @@ double corsika::process::UrQMD::ranf_(int&) {
 }
 
 corsika::particles::Code corsika::process::UrQMD::ConvertFromUrQMD(int vItyp, int vIso3) {
-  static const std::map<std::pair<int, int>, int> mapUrQMDToPDG{
-      // data from github.com/afedynitch/ParticleDataTool
-      {{100, 0}, 22},      // gamma
-      {{101, 0}, 111},     // pi0
-      {{101, 2}, 211},     // pi+
-      {{101, -2}, -211},   // pi-
-      {{106, 1}, 321},     // K+
-      {{106, -1}, -321},   // K-
-      {{1, 1}, 2212},      // p
-      {{1, -1}, 2112},     // n
-      {{102, 0}, 221},     // eta
-      {{104, 2}, 213},     // rho+
-      {{104, -2}, -213},   // rho-
-      {{104, 0}, 113},     // rho0
-      {{108, 2}, 323},     // K*+
-      {{108, -2}, -323},   // K*-
-      {{108, 0}, 313},     // K*0
-      {{-108, 0}, -313},   // K*0-bar
-      {{103, 0}, 223},     // omega
-      {{109, 0}, 333},     // phi
-      {{40, 2}, 3222},     // Sigma+
-      {{40, 0}, 3212},     // Sigma0
-      {{40, -2}, 3112},    // Sigma-
-      {{49, 0}, 3322},     // Xi0
-      {{49, -1}, 3312},    // Xi-
-      {{27, 0}, 3122},     // Lambda0
-      {{17, 4}, 2224},     // Delta++
-      {{17, 2}, 2214},     // Delta+
-      {{17, 0}, 2114},     // Delta0
-      {{17, -2}, 1114},    // Delta-
-      {{41, 2}, 3224},     // Sigma*+
-      {{41, 0}, 3214},     // Sigma*0
-      {{41, -2}, 3114},    // Sigma*-
-      {{50, 0}, 3324},     // Xi*0
-      {{50, -1}, 3314},    // Xi*-
-      {{55, 0}, 3334},     // Omega-
-      {{133, 2}, 411},     // D+
-      {{133, -2}, -411},   // D-
-      {{133, 0}, 421},     // D0
-      {{-133, 0}, -421},   // D0-bar
-      {{107, 0}, 441},     // etaC
-      {{138, 1}, 431},     // Ds+
-      {{138, -1}, -431},   // Ds-
-      {{139, 1}, 433},     // Ds*+
-      {{139, -1}, -433},   // Ds*-
-      {{134, 1}, 413},     // D*+
-      {{134, -1}, -413},   // D*-
-      {{134, 0}, 10421},   // D*0
-      {{-134, 0}, -10421}, // D*0-bar
-      {{135, 0}, 443},     // jpsi
-  };
-
-  auto const pdg = static_cast<particles::PDGCode>(mapUrQMDToPDG.at({vItyp, vIso3}));
+  int const pdgInt =
+      pdgid_(vItyp, vIso3); // use the conversion function provided by UrQMD
+  if (pdgInt == 0) {        // pdgid_ returns 0 on error
+    throw std::runtime_error("UrQMD pdgid() returned 0");
+  }
+  auto const pdg = static_cast<particles::PDGCode>(pdgInt);
   return particles::ConvertFromPDG(pdg);
 }
 
