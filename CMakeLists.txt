@@ -67,11 +67,6 @@ endif()
 #add_custom_target (corsika_pre_build)
 #add_custom_command (TARGET corsika_pre_build PRE_BUILD COMMAND "${PROJECT_SOURCE_DIR}/pre_compile.py")
 
-# dependencies
-find_package (Boost 1.60 REQUIRED)
-if (Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-endif (Boost_FOUND)
 
 find_package (Pythia8) # optional
   
