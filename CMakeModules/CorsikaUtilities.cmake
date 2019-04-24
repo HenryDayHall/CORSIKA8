@@ -104,10 +104,11 @@ function (CORSIKA_ADD_TEST name)
   add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
   # set(sanitize "address,implicit-integer-truncation,implicit-conversion,integer,alignment,bool,builtin,bounds,enum,float-cast-overflow,function,pointer-overflow,return,shift,shift-base,shift-exponent,unreachable,vla-bound,vptr")
   set(sanitize "address,undefined")
-  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
-    # Apple has some security measures which interfere with the leak sanitizer, so we can't use it on OSX
-    set(sanitize "leak,${sanitize}")
-  endif()
+  ### leak sanitizer disabled for now, doesn't work on buildbot
+  # if(NOT CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+  #   # Apple has some security measures which interfere with the leak sanitizer, so we can't use it on OSX
+  #   set(sanitize "leak,${sanitize}")
+  # endif()
   target_compile_options(${name} PRIVATE -fno-omit-frame-pointer -fsanitize=${sanitize} -fno-sanitize-recover=all)
   set_target_properties(${name} PROPERTIES LINK_FLAGS "-fsanitize=${sanitize}")
 
