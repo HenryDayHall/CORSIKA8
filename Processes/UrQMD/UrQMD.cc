@@ -50,60 +50,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
   auto const& projectilePosition = projectile.GetPosition();
   auto const projectileTime = projectile.GetTime();
 
-  inputs_.nevents = 1;
-  sys_.eos = 0; // could be configurable in principle
-  inputs_.outsteps = 1;
-  sys_.nsteps = 1;
-
-  // todo: sample target
-
-  int const Atarget = 14;
-  int tableIndex = 0; // 0: nitrogen, 1: oxygen, 2: argon target
-
-  /*
-  // corsika 7
-        bmin    = 0.d0
-        CTOption(5) = 1
-        if ( iflbmax.eq.1 ) then
-          bdist       = BIM(LIT)
-        else
-          bdist=nucrad(Ap)+nucrad(At)+2*CTParam(30)
-        endif
-
-  // conex
-        CTOption(5)=1
-        if ( prspflg.eq.0 ) then
-          bdist = BIM(LT)
-        else
-          bdist = xsbmax
-        endif
-  */
-
-  // initialization regarding projectile
-  if (particles::Code::Nucleus == projectileCode) {
-    // is this everything?
-    inputs_.prspflg = 0;
-    rsys_.bdist = cxs_u2_.bim[tableIndex];
-
-    sys_.Ap = projectile.GetNuclearA();
-    sys_.Zp = projectile.GetNuclearZ();
-
-    int const id = 1;
-    cascinit_(sys_.Zp, sys_.Ap, id);
-  } else {
-    inputs_.prspflg = 1;
-    sys_.Ap = 1; // even for non-baryons this has to be set, see vanilla UrQMD.f
-    rsys_.bdist = nucrad_(Atarget) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
-
-    auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
-    // todo: conversion of K_long/short into strong eigenstates;
-    inputs_.spityp[0] = ityp;
-    inputs_.spiso3[0] = iso3;
-  }
-
-  rsys_.ebeam = (projectileEnergyLab - projectile.GetMass()) * (1 / 1_GeV);
-
-  // initilazation regarding target
+  // sample target particle
   auto const& mediumComposition =
       projectile.GetNode()->GetModelProperties().GetNuclearComposition();
   auto const componentCrossSections = std::invoke([&]() {
@@ -119,10 +66,43 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
   });
 
   auto const targetCode = mediumComposition.SampleTarget(componentCrossSections, fRNG);
+  auto const targetA = particles::GetNucleusA(targetCode);
+  auto const targetZ = particles::GetNucleusZ(targetCode);
 
+  inputs_.nevents = 1;
+  sys_.eos = 0; // could be configurable in principle
+  inputs_.outsteps = 1;
+  sys_.nsteps = 1;
+
+  // initialization regarding projectile
+  if (particles::Code::Nucleus == projectileCode) {
+    // is this everything?
+    inputs_.prspflg = 0;
+
+    sys_.Ap = projectile.GetNuclearA();
+    sys_.Zp = projectile.GetNuclearZ();
+
+    rsys_.bdist = nucrad_(targetA) + nucrad_(sys_.Ap) + 2 * options_.CTParam[30 - 1];
+
+    int const id = 1;
+    cascinit_(sys_.Zp, sys_.Ap, id);
+  } else {
+    inputs_.prspflg = 1;
+    sys_.Ap = 1; // even for non-baryons this has to be set, see vanilla UrQMD.f
+    rsys_.bdist = nucrad_(targetA) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
+
+    auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
+    // todo: conversion of K_long/short into strong eigenstates;
+    inputs_.spityp[0] = ityp;
+    inputs_.spiso3[0] = iso3;
+  }
+
+  rsys_.ebeam = (projectileEnergyLab - projectile.GetMass()) * (1 / 1_GeV);
+
+  // initilazation regarding target
   if (particles::IsNucleus(targetCode)) {
-    sys_.Zt = particles::GetNucleusZ(targetCode);
-    sys_.At = particles::GetNucleusA(targetCode);
+    sys_.Zt = targetZ;
+    sys_.At = targetA;
     inputs_.trspflg = 0; // nucleus as target
     int const id = 2;
     cascinit_(sys_.Zt, sys_.At, id);

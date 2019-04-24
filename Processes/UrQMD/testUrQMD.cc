@@ -18,6 +18,8 @@
 #include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/utl/CorsikaFenv.h>
+
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -34,7 +36,23 @@ using namespace corsika;
 using namespace corsika::process::UrQMD;
 using namespace corsika::units::si;
 
+template <typename TStack>
+auto sumCharge(TStack& stack) {
+  int totalCharge = 0;
+  int count = 0;
+  for (auto& p : stack) {
+    count++;
+    totalCharge += particles::GetChargeNumber(p.GetPID());
+    std::cout << p.GetPID() << " " << particles::GetChargeNumber(p.GetPID()) << std::endl;
+  }
+
+  std::cout << count << " particles on stack" << std::endl;
+
+  return totalCharge;
+}
+
 TEST_CASE("UrQMD") {
+  feenableexcept(FE_INVALID);
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
   UrQMD urqmd;
 
@@ -63,21 +81,48 @@ TEST_CASE("UrQMD") {
   geometry::Line line(origin, v);
   geometry::Trajectory<geometry::Line> track(line, 10_s);
 
-  auto constexpr mN = corsika::units::constants::nucleonMass;
+  const HEPEnergyType P0 = 1000_GeV;
+  auto pLab = corsika::stack::MomentumVector(cs, {P0, 0_GeV, 0_GeV});
 
-  setup::Stack stack;
-  const HEPEnergyType P0 = 50_GeV;
-  unsigned short constexpr A = 56, Z = 26;
-  HEPMomentumType E0 = sqrt(A * A * mN * mN + P0 * P0);
-  auto plab = corsika::stack::MomentumVector(cs, {P0, 0_GeV, 0_GeV});
-  auto particle =
-      stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                   corsika::stack::MomentumVector, geometry::Point,
-                                   units::si::TimeType, unsigned short, unsigned short>{
-          particles::Code::Nucleus, E0, plab, origin, 0_ns, A, Z}); // iron
-  particle.SetNode(nodePtr);
-  corsika::stack::SecondaryView view(particle);
-  auto projectile = view.GetProjectile();
+  SECTION("nucleon projectile") {
+    setup::Stack stack;
 
-  [[maybe_unused]] const process::EProcessReturn ret = urqmd.DoInteraction(projectile);
+    unsigned short constexpr A = 16, Z = 8;
+    auto constexpr mN = corsika::units::constants::nucleonMass;
+    HEPMomentumType E0 = sqrt(A * A * mN * mN + P0 * P0);
+    auto particle =
+        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                     corsika::stack::MomentumVector, geometry::Point,
+                                     units::si::TimeType, unsigned short, unsigned short>{
+            particles::Code::Nucleus, E0, pLab, origin, 0_ns, A, Z});
+
+    particle.SetNode(nodePtr);
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
+
+    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+
+    REQUIRE(sumCharge(stack) == Z + particles::GetChargeNumber(particles::Code::Oxygen));
+  }
+
+  SECTION("\"special\" projectile") {
+
+    setup::Stack stack;
+
+    auto constexpr code = particles::Code::Neutron;
+    auto constexpr mass = particles::GetMass(code);
+    HEPMomentumType E0 = sqrt(mass * mass + pLab.squaredNorm());
+    auto particle = stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            code, E0, pLab, origin, 0_ns});
+    particle.SetNode(nodePtr);
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
+
+    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+
+    REQUIRE(sumCharge(stack) == particles::GetChargeNumber(particles::Code::PiPlus) +
+                                    particles::GetChargeNumber(particles::Code::Oxygen));
+  }
 }
