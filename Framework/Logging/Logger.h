@@ -86,6 +86,6 @@ namespace corsika::logging {
 
 #define LOG(__LOGGER, ...)                                                           \
   __LOGGER.Log(__LOGGER.GetName(), __FILE__, ":", __LINE__, " (", __func__, ") -> ", \
-               ##__VA_ARGS__);
+               __VA_ARGS__);
 
 #endif
