@@ -58,7 +58,7 @@ Unpack source code somewhere, go to into the folder.
 Run these commands:
 
     ./bootstrap && ./b2 tools/bcp
-    ./dist/bin/bcp mp11 iterator core format interval optional ./dist
+    ./dist/bin/bcp mp11 iterator core format interval optional type_index ./dist
     mv ./dist/boost <CORSIKA-path>/ThirdParty/boost
 
 */
