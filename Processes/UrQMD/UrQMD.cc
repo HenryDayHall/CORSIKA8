@@ -93,7 +93,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
   } else {
     inputs_.prspflg = 1;
     sys_.Ap = 1; // even for non-baryons this has to be set, see vanilla UrQMD.f
-    rsys_.bdist = nucrad_(sys_.Ap) + nucrad_(Atarget) + 2 * options_.CTParam[30 - 1];
+    rsys_.bdist = nucrad_(Atarget) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
 
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
     // todo: conversion of K_long/short into strong eigenstates;
