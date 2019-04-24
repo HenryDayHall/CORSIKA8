@@ -12,9 +12,6 @@
 
 namespace corsika::process::pythia {
 
-  double Random::flat() {
-    std::uniform_real_distribution<double> dist;
-    return dist(fRNG);
-  }
+  double Random::flat() { return fDist(fRNG); }
 
 } // namespace corsika::process::pythia
