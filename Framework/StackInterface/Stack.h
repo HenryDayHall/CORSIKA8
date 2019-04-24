@@ -56,8 +56,7 @@ namespace corsika::stack {
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
   class Stack {
-
-    using StackType = Stack<StackDataType, ParticleInterface>;
+    using StackDataValueType = std::remove_reference_t<StackDataType>;
 
     StackDataType fData; ///< this in general holds all the data and can be quite big
 
@@ -113,11 +112,9 @@ namespace corsika::stack {
      * ParticleInterface template class simultaneously.
      */
     using StackIterator =
-        StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                               ParticleInterface, StackType>;
+        StackIteratorInterface<StackDataValueType, ParticleInterface, Stack>;
     using ConstStackIterator =
-        ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                    ParticleInterface, StackType>;
+        ConstStackIteratorInterface<StackDataValueType, ParticleInterface, Stack>;
 
     /**
      * this is the full type of the user-declared ParticleInterface
@@ -130,12 +127,9 @@ namespace corsika::stack {
     using ParticleType = StackIterator;
 
     // friends are needed since they need access to protected members
-    friend class StackIteratorInterface<
-        typename std::remove_reference<StackDataType>::type, ParticleInterface,
-        StackType>;
-    friend class ConstStackIteratorInterface<
-        typename std::remove_reference<StackDataType>::type, ParticleInterface,
-        StackType>;
+    friend class StackIteratorInterface<StackDataValueType, ParticleInterface, Stack>;
+    friend class ConstStackIteratorInterface<StackDataValueType, ParticleInterface,
+                                             Stack>;
 
   public:
     /**
@@ -247,10 +241,8 @@ namespace corsika::stack {
      * @name Return reference to StackDataType object fData for data access
      * @{
      */
-    typename std::remove_reference<StackDataType>::type& GetStackData() { return fData; }
-    const typename std::remove_reference<StackDataType>::type& GetStackData() const {
-      return fData;
-    }
+    StackDataValueType& GetStackData() { return fData; }
+    const StackDataValueType& GetStackData() const { return fData; }
     ///@}
   };
 
