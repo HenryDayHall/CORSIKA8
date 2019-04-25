@@ -24,8 +24,11 @@ References: https://github.com/martinmoene/PhysUnits-CT-Cpp11#references
 @section catch2
  
 The catch2 unit testing library is from:
-https://github.com/catchorg/Catch2 Licence: BSL-1.0
+https://github.com/catchorg/Catch2
+
+Licence: BSL-1.0
 (https://github.com/martinmoene/PhysUnits-CT-Cpp11/blob/master/LICENSE_1_0.txt)
+
 References: https://github.com/catchorg/Catch2
 
 @section eigen3
@@ -37,5 +40,25 @@ eigen3 ....
 see https://github.com/ClaasBontus/bitset2, this package was obtained
 from a Boost Software License 1.0.
 
+@section Boost
+
+A subset of header-only Boost libraries. Boost is from:
+https://www.boost.org
+
+License: BSL-1.0
+(https://www.boost.org/LICENSE_1_0.txt)
+
+The subset was generated with the bcp tool:
+https://www.boost.org/doc/libs/1_70_0/tools/bcp/doc/html/index.html
+
+Instructions on how to update Boost with this tool:
+
+Download the latest tarball from www.boost.org.
+Unpack source code somewhere, go to into the folder.
+Run these commands:
+
+    ./bootstrap && ./b2 tools/bcp
+    ./dist/bin/bcp mp11 iterator core format interval optional type_index ./dist
+    mv ./dist/boost <CORSIKA-path>/ThirdParty/boost
 
 */

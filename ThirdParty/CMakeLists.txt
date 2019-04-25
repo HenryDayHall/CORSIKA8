@@ -9,3 +9,4 @@ target_include_directories (CORSIKAthirdparty SYSTEM
 
 install (DIRECTORY phys DESTINATION include/ThirdParty/)
 install (DIRECTORY catch2 DESTINATION include/ThirdParty/)
+install (DIRECTORY boost DESTINATION include/ThirdParty/boost/)
