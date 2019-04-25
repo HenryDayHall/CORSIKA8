@@ -15,6 +15,7 @@
 #include <corsika/stack/StackIteratorInterface.h>
 // must be after StackIteratorInterface
 #include <corsika/stack/SecondaryView.h>
+#include <corsika/utl/MetaProgramming.h>
 
 #include <stdexcept>
 #include <type_traits>
@@ -72,11 +73,7 @@ namespace corsika::stack {
      * if StackDataType is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
      */
-    template <
-        typename _StackDataType = StackDataType,
-        typename = std::enable_if<std::is_same<StackDataType, _StackDataType>::value &&
-                                      std::is_reference<_StackDataType>::value,
-                                  void>>
+    template <typename _ = StackDataType, typename = utl::enable_if<std::is_reference<_>>>
     Stack(StackDataType vD)
         : fData(vD) {}
 
@@ -89,11 +86,8 @@ namespace corsika::stack {
      * stacks, where the inner data container is always a reference
      * and cannot be initialized here.
      */
-    template <
-        typename... Args, typename _StackDataType = StackDataType,
-        typename = std::enable_if<std::is_same<StackDataType, _StackDataType>::value &&
-                                      !std::is_reference<_StackDataType>::value,
-                                  void>>
+    template <typename... Args, typename _ = StackDataType,
+              typename = utl::disable_if<std::is_reference<_>>>
     Stack(Args... args)
         : fData(args...) {}
 

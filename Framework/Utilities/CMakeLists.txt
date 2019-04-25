@@ -28,6 +28,7 @@ set (
   Bit.h
   Singleton.h
   CorsikaFenv.h
+  MetaProgramming.h
   )
 
 set (
