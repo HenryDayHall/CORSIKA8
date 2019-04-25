@@ -338,11 +338,12 @@ c determine impact parameter
          if(CTOption(5).eq.0) then
             bimp=bdist
          elseif(CTOption(5).eq.1) then
+C M.R. we don't truncate bdist here, logic happens in CORSIKA
 c hjd1
 c           if(bdist.gt.(nucrad(Ap)+nucrad(At)+2*CTParam(30)))
 c    &           bdist=nucrad(Ap)+nucrad(At)+2*CTParam(30)
 c hjd1
-c ! M.R. 2019-04-24: updated sampling procedure from UrQMD 3.4
+C M.R. 2019-04-24: updated sampling procedure from UrQMD 3.4
             bimp=sqrt(bmin**2 + ranf(0) * (bdist**2 - bmin**2)) 
      
 cdh         if (bimp<bmin) goto 215

@@ -18,8 +18,9 @@ namespace corsika::process::UrQMD {
     corsika::units::si::GrammageType GetInteractionLength(
         corsika::setup::Stack::StackIterator&, corsika::setup::Trajectory&) const;
 
+    template <typename TParticle>
     corsika::units::si::CrossSectionType GetCrossSection(
-        corsika::particles::Code, corsika::particles::Code,
+        TParticle const&, corsika::particles::Code,
         corsika::units::si::HEPEnergyType) const;
 
     corsika::process::EProcessReturn DoInteraction(
@@ -55,6 +56,7 @@ namespace corsika::process::UrQMD {
   double nucrad_(int const&);
   void urqmd_(int&);
   int pdgid_(int&, int&);
+  double sigtot_(int&, int&, double&);
 
   // defined in coms.f
   extern struct {

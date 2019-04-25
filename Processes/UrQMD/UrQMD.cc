@@ -21,45 +21,83 @@ using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;
 using SetupTrack = corsika::setup::Trajectory;
 
-CrossSectionType UrQMD::GetCrossSection(
-    corsika::particles::Code projectileID, corsika::particles::Code targetID,
-    corsika::units::si::HEPEnergyType projectileEnergy) const {
+template <typename TParticle> // need template here, as this is called both with
+                              // SetupParticle as well as SetupProjectile
+                              CrossSectionType UrQMD::GetCrossSection(
+                                  TParticle const& vProjectile,
+                                  corsika::particles::Code vTargetCode,
+                                  corsika::units::si::HEPEnergyType vProjectileEnergyLab)
+                                  const {
   using namespace units::si;
-  return 10_mb; // TODO: implement
+
+  // TODO: energy cuts, return 0 for non-hadrons
+
+  auto const projectileCode = vProjectile.GetPID();
+
+  // the following is a translation of ptsigtot() into C++
+  if (projectileCode != particles::Code::Nucleus &&
+      !IsNucleus(vTargetCode)) { // both particles are "special"
+    auto const mProj = particles::GetMass(projectileCode);
+    auto const mTar = particles::GetMass(vTargetCode);
+    double sqrtS = sqrt(detail::static_pow<2>(mProj) + detail::static_pow<2>(mTar) +
+                        2 * vProjectileEnergyLab * mTar) *
+                   (1 / 1_GeV);
+
+    // we must set some UrQMD globals first...
+    auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
+    inputs_.spityp[0] = ityp;
+    inputs_.spiso3[0] = iso3;
+
+    auto const [itypTar, iso3Tar] = ConvertToUrQMD(vTargetCode);
+    inputs_.spityp[1] = itypTar;
+    inputs_.spiso3[1] = iso3Tar;
+
+    int one = 1;
+    int two = 2;
+    return sigtot_(one, two, sqrtS) * 1_mb;
+  } else {
+    int const Ap =
+        (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
+    int const At = IsNucleus(vTargetCode) ? particles::GetNucleusA(vTargetCode) : 1;
+
+    double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
+    return 10_mb * M_PI * detail::static_pow<2>(maxImpact);
+    // is a constant cross-section really reasonable?
+  }
 }
 
-GrammageType UrQMD::GetInteractionLength(SetupParticle& particle, SetupTrack&) const {
+GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle, SetupTrack&) const {
   auto const& mediumComposition =
-      particle.GetNode()->GetModelProperties().GetNuclearComposition();
+      vParticle.GetNode()->GetModelProperties().GetNuclearComposition();
   using namespace std::placeholders;
 
-  CrossSectionType const weightedProdCrossSection =
-      mediumComposition.WeightedSum(std::bind(
-          &UrQMD::GetCrossSection, this, particle.GetPID(), _1, particle.GetEnergy()));
+  CrossSectionType const weightedProdCrossSection = mediumComposition.WeightedSum(
+      std::bind(&UrQMD::GetCrossSection<decltype(vParticle)>, this, vParticle, _1,
+                vParticle.GetEnergy()));
 
   return mediumComposition.GetAverageMassNumber() * units::constants::u /
          weightedProdCrossSection;
 }
 
-corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectile) {
+corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjectile) {
   using namespace units::si;
 
-  auto const projectileCode = projectile.GetPID();
-  auto const projectileEnergyLab = projectile.GetEnergy();
-  auto const& projectileMomentumLab = projectile.GetMomentum();
-  auto const& projectilePosition = projectile.GetPosition();
-  auto const projectileTime = projectile.GetTime();
+  auto const projectileCode = vProjectile.GetPID();
+  auto const projectileEnergyLab = vProjectile.GetEnergy();
+  auto const& projectileMomentumLab = vProjectile.GetMomentum();
+  auto const& projectilePosition = vProjectile.GetPosition();
+  auto const projectileTime = vProjectile.GetTime();
 
   // sample target particle
   auto const& mediumComposition =
-      projectile.GetNode()->GetModelProperties().GetNuclearComposition();
+      vProjectile.GetNode()->GetModelProperties().GetNuclearComposition();
   auto const componentCrossSections = std::invoke([&]() {
     auto const& components = mediumComposition.GetComponents();
     std::vector<CrossSectionType> crossSections;
     crossSections.reserve(components.size());
 
     for (auto const c : components) {
-      crossSections.push_back(GetCrossSection(projectileCode, c, projectileEnergyLab));
+      crossSections.push_back(GetCrossSection(vProjectile, c, projectileEnergyLab));
     }
 
     return crossSections;
@@ -79,8 +117,8 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
     // is this everything?
     inputs_.prspflg = 0;
 
-    sys_.Ap = projectile.GetNuclearA();
-    sys_.Zp = projectile.GetNuclearZ();
+    sys_.Ap = vProjectile.GetNuclearA();
+    sys_.Zp = vProjectile.GetNuclearZ();
 
     rsys_.bdist = nucrad_(targetA) + nucrad_(sys_.Ap) + 2 * options_.CTParam[30 - 1];
 
@@ -97,7 +135,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
     inputs_.spiso3[0] = iso3;
   }
 
-  rsys_.ebeam = (projectileEnergyLab - projectile.GetMass()) * (1 / 1_GeV);
+  rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
 
   // initilazation regarding target
   if (particles::IsNucleus(targetCode)) {
@@ -113,7 +151,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
     inputs_.spiso3[1] = iso3;
   }
 
-  int iflb = 0; // flag for retrying interaction in case of elastic scattering
+  int iflb = 0; // flag for retrying interaction in case of empty event, 0 means retry
   urqmd_(iflb);
 
   // now retrieve secondaries from UrQMD
@@ -132,7 +170,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
     momentum.rebase(originalCS); // transform back into standard lab frame
     std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
 
-    projectile.AddSecondary(
+    vProjectile.AddSecondary(
         std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
                    TimeType>{code, energy, momentum, projectilePosition, projectileTime});
   }
@@ -140,7 +178,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
   std::cout << "UrQMD generated " << sys_.npart << " secondaries!" << std::endl;
 
   if (sys_.npart > 0) // delete only in case of inelastic collision, otherwise keep
-    projectile.Delete();
+    vProjectile.Delete();
 
   return process::EProcessReturn::eOk;
 }
