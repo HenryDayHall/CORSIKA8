@@ -16,7 +16,7 @@ build:
     - cmake ..
     - cmake --build . -- -j4
     - UBSAN_OPTIONS=print_stacktrace=1
-      LSAN_OPTIONS=verbosity=1:log_threads=1
+      LSAN_OPTIONS=log_threads=1
       ASAN_OPTIONS=detect_leaks=0:detect_stack_use_after_return=1 ctest -V -O test.txt
   artifacts:
     expire_in: 1 week
