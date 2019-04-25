@@ -68,12 +68,12 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testPythia
+
+CORSIKA_ADD_TEST(testPythia
+  SOURCES
   testPythia.cc
   ${MODEL_HEADERS}
-  )
-
-  
+)
 target_link_libraries (
   testPythia
   ProcessPythia
@@ -85,4 +85,3 @@ target_link_libraries (
   ${PYTHIA8_LIBRARY}
   )
 
-CORSIKA_ADD_TEST(testPythia)

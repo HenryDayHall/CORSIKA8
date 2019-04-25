@@ -38,15 +38,11 @@ install (
 
 # ----------------
 # code unit testing
-add_executable (
-  testLogging
-  testLogging.cc
-  )
 
+CORSIKA_ADD_TEST (testLogging)
 target_link_libraries (
   testLogging
   CORSIKAlogging
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST (testLogging)
 

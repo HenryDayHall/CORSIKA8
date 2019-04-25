@@ -46,11 +46,9 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testRandom testRandom.cc)
-
+CORSIKA_ADD_TEST(testRandom)
 target_link_libraries (
   testRandom
   CORSIKArandom
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testRandom)

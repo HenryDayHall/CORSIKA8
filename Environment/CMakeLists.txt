@@ -49,12 +49,10 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testEnvironment testEnvironment.cc)
-
+CORSIKA_ADD_TEST(testEnvironment)
 target_link_libraries (
   testEnvironment
   CORSIKAsetup
   CORSIKAenvironment
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testGeometry)

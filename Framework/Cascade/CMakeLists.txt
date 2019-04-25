@@ -32,11 +32,7 @@ install (
 
 # ----------------
 # code unit testing
-add_executable (
-  testCascade
-  testCascade.cc
-  )
-
+CORSIKA_ADD_TEST(testCascade)
 target_link_libraries (
   testCascade
   #  CORSIKAutls
@@ -55,4 +51,3 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testCascade)

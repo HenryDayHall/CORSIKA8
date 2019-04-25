@@ -47,11 +47,9 @@ install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
 # #-- -- -- -- -- -- -- -- -- --
 # #code unit testing
-add_executable (testTrackingLine testTrackingLine.cc)
-
+CORSIKA_ADD_TEST(testTrackingLine)
 target_link_libraries (
    testTrackingLine
    ProcessTrackingLine
    CORSIKAthirdparty # for catch2
 )
-CORSIKA_ADD_TEST(testTrackingLine)

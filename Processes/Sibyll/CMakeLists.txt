@@ -100,10 +100,11 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testSibyll
+CORSIKA_ADD_TEST(testSibyll
+  SOURCES
   testSibyll.cc
   ${MODEL_HEADERS}
-  )
+)
 
 target_link_libraries (
   testSibyll
@@ -114,4 +115,3 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testSibyll)

@@ -34,14 +34,11 @@ install (
   )
 
 #code testing
-add_executable (testStackInterface testStackInterface.cc)
-target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 CORSIKA_ADD_TEST(testStackInterface)
+target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 
-add_executable (testSecondaryView testSecondaryView.cc)
-target_link_libraries (testSecondaryView CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 CORSIKA_ADD_TEST(testSecondaryView)
+target_link_libraries (testSecondaryView CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 
-add_executable (testCombinedStack testCombinedStack.cc)
-target_link_libraries (testCombinedStack CORSIKAstackinterface CORSIKAthirdparty) # for catch2
 CORSIKA_ADD_TEST(testCombinedStack)
+target_link_libraries (testCombinedStack CORSIKAstackinterface CORSIKAthirdparty) # for catch2

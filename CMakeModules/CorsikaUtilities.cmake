@@ -98,15 +98,28 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 # central macro to activate unit tests in cmake
 #
 
-function (CORSIKA_ADD_TEST name)
+function (CORSIKA_ADD_TEST)
+  cmake_parse_arguments(PARSE_ARGV 1 _ "" "SANITIZE" "SOURCES")
+
+  set(name ${ARGV0})
+
+  if (NOT __SOURCES)
+    set(sources ${name}.cc)
+  else()
+    set(sources ${__SOURCES})
+  endif()
+
+  if (NOT __SANITIZE)
+    set(sanitize "address,undefined")
+  else()
+    set(sanitize ${__SANITIZE})
+  endif()
+
+  add_executable(${name} ${sources})
+  target_compile_options(${name} PRIVATE -g) # do not skip asserts
   target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
-  add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
-  # set(sanitize "address,implicit-integer-truncation,implicit-conversion,integer,alignment,bool,builtin,bounds,enum,float-cast-overflow,function,pointer-overflow,return,shift,shift-base,shift-exponent,unreachable,vla-bound,vptr")
-  # standard options not ideal, because we want to allow divide-by-zero for floats,
-  # but gcc-7 doesn't support all the detailed flags
-  set(sanitize "address,undefined") 
   target_compile_options(${name} PRIVATE -fno-omit-frame-pointer -fsanitize=${sanitize} -fno-sanitize-recover=all)
   set_target_properties(${name} PROPERTIES LINK_FLAGS "-fsanitize=${sanitize}")
-
+  add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
 endfunction (CORSIKA_ADD_TEST)
