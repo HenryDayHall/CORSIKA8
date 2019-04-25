@@ -17,12 +17,12 @@ c Primary initialization for UrQMD 1.31
 c-----------------------------------------------------------------------
       implicit none
 c CONEX includes
-#include "conex.h"
-#include "conex.incnex"
+c~ #include "conex.h"
+c~ #include "conex.incnex"
 #ifndef __CXCORSIKA__
-      character*500 furqdat
-      integer ifurqdat, nfurqdat
-      common/urqfname/  furqdat, ifurqdat, nfurqdat
+c~       character*500 furqdat
+c~       integer ifurqdat, nfurqdat
+c~       common/urqfname/  furqdat, ifurqdat, nfurqdat
 
       include 'boxinc.f'
       include 'inputs.f'
@@ -44,12 +44,12 @@ c local
       character adum
       double precision sig_u1,ekdummy
       integer iamaxu,idmaxu,iemaxu
-      common /cxs_u1/ sig_u1(mxie,mxid,mxia),iamaxu,idmaxu,iemaxu
-      double precision xs(3),bim(3)
-c M.R.: bim added to cxs_u2
-      common /cxs_u2/ xs,bim
+c~       common /cxs_u1/ sig_u1(mxie,mxid,mxia),iamaxu,idmaxu,iemaxu
+c~       double precision xs(3),bim(3)
+c~ c M.R.: bim added to cxs_u2
+c~       common /cxs_u2/ xs,bim
       integer iudebug
-      data bim/6.d0,6.d0,7.d0/
+c~       data bim/6.d0,6.d0,7.d0/
       integer init
       data init/0/
       SAVE
@@ -63,11 +63,11 @@ c M.R.: bim added to cxs_u2
 
 C-----------------------------------------------------------------------
 
-      IF ( isx.ge.2 ) THEN
-        IUDEBUG = isx-1
-      ELSE
-        IUDEBUG = 0
-      ENDIF
+c~       IF ( isx.ge.2 ) THEN
+c~         IUDEBUG = isx-1
+c~       ELSE
+c~         IUDEBUG = 0
+c~       ENDIF
 
       WRITE (*,*)
      $   '############################################################'
@@ -95,9 +95,9 @@ C-----------------------------------------------------------------------
      $   '############################################################'
 
 C  SET THE 'LARGE' CROSS-SECTIONS FOR ALL 3 TARGET ELEMENTS
-      DO  I = 1, 3
-        XS(I) = 10.D0 * PI * BIM(I)**2
-      ENDDO
+c~       DO  I = 1, 3
+c~         XS(I) = 10.D0 * PI * BIM(I)**2
+c~       ENDDO
 
 C  SET NMAX TO DEFAULT VALUE
       call set0
@@ -141,22 +141,22 @@ C  SUPPRESS ALL OUTPUT
       bf20 = .true.
 C  SET DEBUG OUTPUT DEPENDING ON CHOSEN DEBUG LEVEL
 C  SET THE OUTPUT OF UNITS 13, 14, 15 TO THE DEBUG OUTPUT UNIT
-      IF     ( IUDEBUG .EQ. 1 ) THEN
-        bf13 = .true.
-        bf14 = .false.
-        call uounit(14,IFCK)
-        bf15 = .true.
-      ELSEIF ( IUDEBUG .EQ. 2 ) THEN
-        bf13 = .false.
-        call uounit(13,IFCK)
-        bf14 = .true.
-        bf15 = .true.
-      ELSEIF ( IUDEBUG .GT. 2 ) THEN
-        bf13 = .true.
-        bf14 = .true.
-        bf15 = .false.
-        call uounit(15,IFCK)
-      ENDIF
+c~       IF     ( IUDEBUG .EQ. 1 ) THEN
+c~         bf13 = .true.
+c~         bf14 = .false.
+c~         call uounit(14,IFCK)
+c~         bf15 = .true.
+c~       ELSEIF ( IUDEBUG .EQ. 2 ) THEN
+c~         bf13 = .false.
+c~         call uounit(13,IFCK)
+c~         bf14 = .true.
+c~         bf15 = .true.
+c~       ELSEIF ( IUDEBUG .GT. 2 ) THEN
+c~         bf13 = .true.
+c~         bf14 = .true.
+c~         bf15 = .false.
+c~         call uounit(15,IFCK)
+c~       ENDIF
       do  i = 1, numcto
          CTOdc(i) = '  '
       enddo
@@ -391,7 +391,7 @@ C  INITIALIZES SOME ARRAYS
 
       IF ( CTOption(33) .EQ. 0  .OR.  CTOption(9) .EQ. 0 ) THEN
         call loadwtab(io)
-        IF ( IUDEBUG .GT. 0 ) WRITE(IFCK,*) 'URQINI: AFTER LOADWTAB'
+c~         IF ( IUDEBUG .GT. 0 ) WRITE(IFCK,*) 'URQINI: AFTER LOADWTAB'
       ENDIF
 
 C READ URQMD TOTAL CROSS SECTION TABLE
@@ -400,22 +400,22 @@ c   ie=1..41   E=10.0**(float(ie)/10-1.0-0.05)  (bin-middle)
 c   id=1..9    p,ap,n,an,pi+,pi-,K+,K-,KS
 c   ia=1..3    N,O,Ar
 c
-      if(ifurqdat.eq.1)then
-        OPEN(UNIT=76,FILE=furqdat(1:nfurqdat),STATUS='OLD')
-      else
-        OPEN(UNIT=76,FILE='UrQMD-1.3.1-xs.dat',STATUS='OLD')
-      endif
-      read(76,*) adum,iamaxu,idmaxu,iemaxu
-      do ia=1,iamaxu
-        do id=1,idmaxu
-          do ie=1,iemaxu
-            read(76,*) ekdummy,sig_u1(ie,id,ia)
-          enddo
-          read(76,*)
-          read(76,*)
-        enddo
-      enddo
-      close(76)
+c~       if(ifurqdat.eq.1)then
+c~         OPEN(UNIT=76,FILE=furqdat(1:nfurqdat),STATUS='OLD')
+c~       else
+c~         OPEN(UNIT=76,FILE='UrQMD-1.3.1-xs.dat',STATUS='OLD')
+c~       endif
+c~       read(76,*) adum,iamaxu,idmaxu,iemaxu
+c~       do ia=1,iamaxu
+c~         do id=1,idmaxu
+c~           do ie=1,iemaxu
+c~             read(76,*) ekdummy,sig_u1(ie,id,ia)
+c~           enddo
+c~           read(76,*)
+c~           read(76,*)
+c~         enddo
+c~       enddo
+c~       close(76)
 
 C  IN CASE OF CASCADE MODE, THE POTENTIALS NEED NOT BE CALCULATED
 
@@ -424,7 +424,7 @@ C  CALCULATE NORMALIZATION OF RESONANCES DISTRIBUTION...
 #endif
 
 
-      xsegymin=0.25d0
+c~       xsegymin=0.25d0
 
 #ifdef __CXDEBUG__
       call utisx2
