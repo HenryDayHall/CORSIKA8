@@ -109,7 +109,7 @@ TEST_CASE("UrQMD") {
 
     setup::Stack stack;
 
-    auto constexpr code = particles::Code::Neutron;
+    auto constexpr code = particles::Code::PiPlus;
     auto constexpr mass = particles::GetMass(code);
     HEPMomentumType E0 = sqrt(mass * mass + pLab.squaredNorm());
     auto particle = stack.AddParticle(
