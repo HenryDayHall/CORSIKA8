@@ -12,7 +12,9 @@ build:
     - cd build
     - cmake ..
     - cmake --build . -- -j 4 
-    - ctest -j4 -V >& test.log
+    - UBSAN_OPTIONS=print_stacktrace=1
+      LSAN_OPTIONS=verbosity=1:log_threads=1
+      ASAN_OPTIONS=detect_leaks=1:detect_stack_use_after_return=1 ctest -j4 -V -O test.log
   after_script:
     - cd build
     - ls

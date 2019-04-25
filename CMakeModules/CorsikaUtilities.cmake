@@ -101,8 +101,7 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 function (CORSIKA_ADD_TEST name)
   target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
-  add_test (NAME ${name} COMMAND LSAN_OPTIONS=verbosity=1:log_threads=1
- ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
+  add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -r junit)
   # set(sanitize "address,implicit-integer-truncation,implicit-conversion,integer,alignment,bool,builtin,bounds,enum,float-cast-overflow,function,pointer-overflow,return,shift,shift-base,shift-exponent,unreachable,vla-bound,vptr")
   set(sanitize "address,undefined")
   ### leak sanitizer disabled for now, doesn't work on buildbot
