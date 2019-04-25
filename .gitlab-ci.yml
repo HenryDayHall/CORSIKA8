@@ -14,16 +14,11 @@ build:
     - cmake --build . -- -j4
     - UBSAN_OPTIONS=print_stacktrace=1
       LSAN_OPTIONS=verbosity=1:log_threads=1
-      ASAN_OPTIONS=detect_leaks=1:detect_stack_use_after_return=1 ctest -O test.log
-  after_script:
-    - cd build
-    - ls
-    - gzip -v -9 -S .gz test.log
-    - pwd
+      ASAN_OPTIONS=detect_leaks=1:detect_stack_use_after_return=1 ctest -V -O test.log
   artifacts:
     expire_in: 1 week
     paths:
-      - build/test.log.gz
+      - build/test.log
     when: on_failure
     reports:
       junit:
