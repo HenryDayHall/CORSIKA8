@@ -41,9 +41,10 @@ auto sumCharge(TStack& stack) {
   int totalCharge = 0;
   int count = 0;
   for (auto& p : stack) {
-    count++;
+    std::cout << count++ << " ";
     totalCharge += particles::GetChargeNumber(p.GetPID());
-    std::cout << p.GetPID() << " " << particles::GetChargeNumber(p.GetPID()) << std::endl;
+    std::cout << p.GetPID() << " " << particles::GetChargeNumber(p.GetPID()) << ' '
+              << p.GetMomentum().GetComponents() << std::endl;
   }
 
   std::cout << count << " particles on stack" << std::endl;
