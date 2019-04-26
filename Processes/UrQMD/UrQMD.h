@@ -20,8 +20,7 @@ namespace corsika::process::UrQMD {
 
     template <typename TParticle>
     corsika::units::si::CrossSectionType GetCrossSection(
-        TParticle const&, corsika::particles::Code,
-        corsika::units::si::HEPEnergyType) const;
+        TParticle const&, corsika::particles::Code) const;
 
     corsika::process::EProcessReturn DoInteraction(
         corsika::setup::StackView::StackIterator&);

@@ -25,22 +25,22 @@ template <typename TParticle> // need template here, as this is called both with
                               // SetupParticle as well as SetupProjectile
                               CrossSectionType UrQMD::GetCrossSection(
                                   TParticle const& vProjectile,
-                                  corsika::particles::Code vTargetCode,
-                                  corsika::units::si::HEPEnergyType vProjectileEnergyLab)
+                                  corsika::particles::Code vTargetCode)
                                   const {
   using namespace units::si;
 
   // TODO: energy cuts, return 0 for non-hadrons
 
   auto const projectileCode = vProjectile.GetPID();
+  auto const projectileEnergyLab = vProjectile.GetEnergy();
 
   // the following is a translation of ptsigtot() into C++
   if (projectileCode != particles::Code::Nucleus &&
       !IsNucleus(vTargetCode)) { // both particles are "special"
     auto const mProj = particles::GetMass(projectileCode);
     auto const mTar = particles::GetMass(vTargetCode);
-    double sqrtS = sqrt(detail::static_pow<2>(mProj) + detail::static_pow<2>(mTar) +
-                        2 * vProjectileEnergyLab * mTar) *
+    double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) + units::si::detail::static_pow<2>(mTar) +
+                        2 * projectileEnergyLab * mTar) *
                    (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
@@ -61,7 +61,7 @@ template <typename TParticle> // need template here, as this is called both with
     int const At = IsNucleus(vTargetCode) ? particles::GetNucleusA(vTargetCode) : 1;
 
     double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
-    return 10_mb * M_PI * detail::static_pow<2>(maxImpact);
+    return 10_mb * M_PI * units::si::detail::static_pow<2>(maxImpact);
     // is a constant cross-section really reasonable?
   }
 }
@@ -72,8 +72,7 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle, SetupTrack&) 
   using namespace std::placeholders;
 
   CrossSectionType const weightedProdCrossSection = mediumComposition.WeightedSum(
-      std::bind(&UrQMD::GetCrossSection<decltype(vParticle)>, this, vParticle, _1,
-                vParticle.GetEnergy()));
+      std::bind(&UrQMD::GetCrossSection<decltype(vParticle)>, this, vParticle, _1));
 
   return mediumComposition.GetAverageMassNumber() * units::constants::u /
          weightedProdCrossSection;
@@ -97,7 +96,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     crossSections.reserve(components.size());
 
     for (auto const c : components) {
-      crossSections.push_back(GetCrossSection(vProjectile, c, projectileEnergyLab));
+      crossSections.push_back(GetCrossSection(vProjectile, c));
     }
 
     return crossSections;

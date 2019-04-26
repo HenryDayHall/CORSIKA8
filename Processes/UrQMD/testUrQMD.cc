@@ -28,6 +28,8 @@
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
 
+#include <tuple>
+
 #define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
                           // cpp file
 #include <catch2/catch.hpp>
@@ -52,15 +54,12 @@ auto sumCharge(TStack& stack) {
   return totalCharge;
 }
 
-TEST_CASE("UrQMD") {
-  feenableexcept(FE_INVALID);
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
-  UrQMD urqmd;
 
-  // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
-  auto& universe = *(env.GetUniverse());
-  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
+auto setupEnvironment(particles::Code vTargetCode) {
+      // setup environment, geometry
+  auto env = std::make_unique<environment::Environment<environment::IMediumModel>>();
+  auto& universe = *(env->GetUniverse());
+  const geometry::CoordinateSystem& cs = env->GetCoordinateSystem();
 
   auto theMedium =
       environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
@@ -71,59 +70,90 @@ TEST_CASE("UrQMD") {
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
+          std::vector<particles::Code>{vTargetCode}, std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
+  
+  return std::make_tuple(std::move(env), &cs, nodePtr);
+}
 
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
-  geometry::Vector<units::si::SpeedType::dimension_type> v(cs, 0_m / second, 0_m / second,
-                                                           1_m / second);
-  geometry::Line line(origin, v);
-  geometry::Trajectory<geometry::Line> track(line, 10_s);
-
-  const HEPEnergyType P0 = 1000_GeV;
-  auto pLab = corsika::stack::MomentumVector(cs, {P0, 0_GeV, 0_GeV});
-
-  SECTION("nucleon projectile") {
-    setup::Stack stack;
-
-    unsigned short constexpr A = 16, Z = 8;
+template <typename TNodeType>
+auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr, geometry::CoordinateSystem const& cs) {
+    auto stack = std::make_unique<setup::Stack>();
     auto constexpr mN = corsika::units::constants::nucleonMass;
-    HEPMomentumType E0 = sqrt(A * A * mN * mN + P0 * P0);
+    
+    geometry::Point const origin(cs, {0_m, 0_m, 0_m});
+    corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+    
+    HEPEnergyType const E0 = sqrt(units::si::detail::static_pow<2>(mN*vA) + pLab.squaredNorm());
     auto particle =
-        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+        stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                      corsika::stack::MomentumVector, geometry::Point,
                                      units::si::TimeType, unsigned short, unsigned short>{
-            particles::Code::Nucleus, E0, pLab, origin, 0_ns, A, Z});
+            particles::Code::Nucleus, E0, pLab, origin, 0_ns, vA, vZ});
 
-    particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
+    particle.SetNode(vNodePtr);
+    return std::make_tuple(std::move(stack), std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+}
+
+template <typename TNodeType>
+auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum, TNodeType* vNodePtr, geometry::CoordinateSystem const& cs) {
+    auto stack = std::make_unique<setup::Stack>();
+    
+    geometry::Point const origin(cs, {0_m, 0_m, 0_m});
+    corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+    
+    HEPEnergyType const E0 = sqrt(units::si::detail::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
+    auto particle =
+        stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                     corsika::stack::MomentumVector, geometry::Point,
+                                     units::si::TimeType>{
+            vProjectileType, E0, pLab, origin, 0_ns});
+
+    particle.SetNode(vNodePtr);
+    return std::make_tuple(std::move(stack), std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+}
+
+//~ int main() {
+TEST_CASE("UrQMD") {
+  feenableexcept(FE_INVALID);
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  UrQMD urqmd;
+  
+  SECTION("cross sections") {
+      auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Invalid);
+      auto const& cs = *csPtr;
+      
+      particles::Code validProjectileCodes[] = {particles::Code::PiPlus, particles::Code::PiMinus,
+          particles::Code::Proton, particles::Code::Neutron};
+          
+      for (auto code: validProjectileCodes) {
+        auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);
+        REQUIRE( stack->GetSize() == 1);
+      
+        // simple check whether the cross-section is non-vanishing
+        REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Proton) / 1_mb > 0);
+        REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Nitrogen) / 1_mb > 0);
+        REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Oxygen) / 1_mb > 0);
+        REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Nitrogen) / 1_mb > 0);
+      }
+  }
+
+  SECTION("nucleon projectile") {
+    unsigned short constexpr A = 16, Z = 8;
 
     [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(stack) == Z + particles::GetChargeNumber(particles::Code::Oxygen));
   }
 
-  SECTION("\"special\" projectile") {
+  //~ SECTION("\"special\" projectile") {
 
-    setup::Stack stack;
 
-    auto constexpr code = particles::Code::PiPlus;
-    auto constexpr mass = particles::GetMass(code);
-    HEPMomentumType E0 = sqrt(mass * mass + pLab.squaredNorm());
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            code, E0, pLab, origin, 0_ns});
-    particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
+    //~ [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
-
-    REQUIRE(sumCharge(stack) == particles::GetChargeNumber(particles::Code::PiPlus) +
-                                    particles::GetChargeNumber(particles::Code::Oxygen));
-  }
+    //~ REQUIRE(sumCharge(stack) == particles::GetChargeNumber(particles::Code::PiPlus) +
+                                    //~ particles::GetChargeNumber(particles::Code::Oxygen));
+  //~ }
 }
