@@ -176,9 +176,6 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
 
   std::cout << "UrQMD generated " << sys_.npart << " secondaries!" << std::endl;
 
-  if (sys_.npart > 0) // delete only in case of inelastic collision, otherwise keep
-    vProjectile.Delete();
-
   return process::EProcessReturn::eOk;
 }
 
@@ -206,13 +203,15 @@ corsika::particles::Code corsika::process::UrQMD::ConvertFromUrQMD(int vItyp, in
 std::pair<int, int> corsika::process::UrQMD::ConvertToUrQMD(
     corsika::particles::Code code) {
   static const std::map<int, std::pair<int, int>> mapPDGToUrQMD{
-      // data from github.com/afedynitch/ParticleDataTool
+      // data mostly from github.com/afedynitch/ParticleDataTool
       {22, {100, 0}},      // gamma
       {111, {101, 0}},     // pi0
       {211, {101, 2}},     // pi+
       {-211, {101, -2}},   // pi-
       {321, {106, 1}},     // K+
-      {-321, {106, -1}},   // K-
+      {-321, {-106, -1}},  // K-
+      {311, {106, -1}},    // K0
+      {-311, {-106, 1}},   // K0bar
       {2212, {1, 1}},      // p
       {2112, {1, -1}},     // n
       {221, {102, 0}},     // eta

@@ -216,7 +216,8 @@ cl check if we found the correct values in IDTAB
             pdgid = idtab(3,next)
          endif
       else
-         call error ('pdgid','Error in tablelookup',dble(next),3)
+! M.R 2019-04-27, error to be handled in CORSIKA instead of here
+!         call error ('pdgid','Error in tablelookup',dble(next),3)
          pdgid = 0
       endif
 
