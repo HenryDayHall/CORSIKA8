@@ -42,10 +42,8 @@ using namespace corsika::units::si;
 template <typename TStackView>
 auto sumCharge(TStackView const& view) {
   int totalCharge = 0;
-  
-  for (auto const& p : view) {
-    totalCharge += particles::GetChargeNumber(p.GetPID());
-  }
+
+  for (auto const& p : view) { totalCharge += particles::GetChargeNumber(p.GetPID()); }
 
   return totalCharge;
 }
@@ -165,7 +163,7 @@ TEST_CASE("UrQMD") {
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile =    secViewPtr     ->GetProjectile();
+    auto projectile = secViewPtr->GetProjectile();
     [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
@@ -175,14 +173,14 @@ TEST_CASE("UrQMD") {
   SECTION("\"special\" projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
     auto [stackPtr, secViewPtr] =
-        setupStack(particles::Code::PiPlus, 400_GeV, nodePtr, *csPtr);
+        setupStack(particles::Code::K0, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile = secViewPtr->GetProjectile(); 
+    auto projectile = secViewPtr->GetProjectile();
     [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
-            particles::GetChargeNumber(particles::Code::PiPlus) +
+            particles::GetChargeNumber(particles::Code::K0) +
                 particles::GetChargeNumber(particles::Code::Oxygen));
   }
 }

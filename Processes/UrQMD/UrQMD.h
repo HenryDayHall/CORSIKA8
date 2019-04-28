@@ -19,11 +19,13 @@ namespace corsika::process::UrQMD {
         corsika::setup::Stack::StackIterator&, corsika::setup::Trajectory&) const;
 
     template <typename TParticle>
-    corsika::units::si::CrossSectionType GetCrossSection(
-        TParticle const&, corsika::particles::Code) const;
+    corsika::units::si::CrossSectionType GetCrossSection(TParticle const&,
+                                                         corsika::particles::Code) const;
 
     corsika::process::EProcessReturn DoInteraction(
         corsika::setup::StackView::StackIterator&);
+
+    bool CanInteract(particles::Code) const;
 
   private:
     corsika::random::RNG& fRNG =
