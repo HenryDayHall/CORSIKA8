@@ -7,6 +7,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <random>
@@ -23,10 +24,8 @@ using SetupTrack = corsika::setup::Trajectory;
 
 template <typename TParticle> // need template here, as this is called both with
                               // SetupParticle as well as SetupProjectile
-                              CrossSectionType UrQMD::GetCrossSection(
-                                  TParticle const& vProjectile,
-                                  corsika::particles::Code vTargetCode)
-                                  const {
+CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
+                                        corsika::particles::Code vTargetCode) const {
   using namespace units::si;
 
   // TODO: energy cuts, return 0 for non-hadrons
@@ -39,9 +38,10 @@ template <typename TParticle> // need template here, as this is called both with
       !IsNucleus(vTargetCode)) { // both particles are "special"
     auto const mProj = particles::GetMass(projectileCode);
     auto const mTar = particles::GetMass(vTargetCode);
-    double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) + units::si::detail::static_pow<2>(mTar) +
-                        2 * projectileEnergyLab * mTar) *
-                   (1 / 1_GeV);
+    double sqrtS =
+        sqrt(units::si::detail::static_pow<2>(mProj) +
+             units::si::detail::static_pow<2>(mTar) + 2 * projectileEnergyLab * mTar) *
+        (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
@@ -66,7 +66,29 @@ template <typename TParticle> // need template here, as this is called both with
   }
 }
 
+bool UrQMD::CanInteract(particles::Code vCode) const {
+  // According to the manual, UrQMD can use all mesons, baryons and nucleons
+  // which are modeled also as input particles. I think it is safer to accept
+  // only the usual long-lived species as input.
+  // TODO: Charmed mesons should be added to the list, too
+
+  static particles::Code const validProjectileCodes[] = {
+      particles::Code::Nucleus, particles::Code::Proton,      particles::Code::AntiProton,
+      particles::Code::Neutron, particles::Code::AntiNeutron, particles::Code::PiPlus,
+      particles::Code::PiMinus, particles::Code::KPlus,       particles::Code::KMinus,
+      particles::Code::K0,      particles::Code::K0Bar};
+
+  return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
+                   vCode) != std::cend(validProjectileCodes);
+}
+
 GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle, SetupTrack&) const {
+  if (!CanInteract(vParticle.GetPID())) {
+    // we could do the canInteract check in GetCrossSection, too but if
+    // we do it here we have the advantage of avoiding the loop
+    return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
+  }
+
   auto const& mediumComposition =
       vParticle.GetNode()->GetModelProperties().GetNuclearComposition();
   using namespace std::placeholders;
