@@ -182,11 +182,13 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
 
   for (int i = 0; i < sys_.npart; ++i) {
     auto const code = ConvertFromUrQMD(isys_.ityp[i], isys_.iso3[i]);
-    auto const energy = coor_.p0[i] * 1_GeV;
+    // "coor_.p0[i] * 1_GeV" is likely off-shell as UrQMD doesn't preserve masses well
     auto momentum = geometry::Vector(
         zAxisFrame,
         geometry::QuantityVector<dimensionless_d>{coor_.px[i], coor_.py[i], coor_.pz[i]} *
             1_GeV);
+
+    auto const energy = sqrt(momentum.squaredNorm() + square(particles::GetMass(code)));
 
     momentum.rebase(originalCS); // transform back into standard lab frame
     std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
