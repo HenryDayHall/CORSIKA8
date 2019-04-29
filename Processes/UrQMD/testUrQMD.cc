@@ -48,6 +48,15 @@ auto sumCharge(TStackView const& view) {
   return totalCharge;
 }
 
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
+  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+
+  for (auto const& p : view) { sum += p.GetMomentum(); }
+
+  return sum;
+}
+
 auto setupEnvironment(particles::Code vTargetCode) {
   // setup environment, geometry
   auto env = std::make_unique<environment::Environment<environment::IMediumModel>>();
@@ -159,28 +168,41 @@ TEST_CASE("UrQMD") {
 
   SECTION("nucleon projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
-    unsigned short constexpr A = 4, Z = 2;
+    unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
+    auto const projectileMomentum = projectile.GetMomentum();
     [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
             Z + particles::GetChargeNumber(particles::Code::Oxygen));
+
+    auto const secMomSum =
+        sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
+    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+            Approx(0).margin(1e-2));
   }
 
   SECTION("\"special\" projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
     auto [stackPtr, secViewPtr] =
-        setupStack(particles::Code::K0, 400_GeV, nodePtr, *csPtr);
+        setupStack(particles::Code::PiPlus, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
+    auto const projectileMomentum = projectile.GetMomentum();
+
     [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
-            particles::GetChargeNumber(particles::Code::K0) +
+            particles::GetChargeNumber(particles::Code::PiPlus) +
                 particles::GetChargeNumber(particles::Code::Oxygen));
+
+    auto const secMomSum =
+        sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
+    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+            Approx(0).margin(1e-2));
   }
 }
