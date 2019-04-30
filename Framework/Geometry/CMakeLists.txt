@@ -10,6 +10,7 @@ set (
   Point.h
   Line.h
   Sphere.h
+  Plane.h
   Volume.h
   CoordinateSystem.h
   RootCoordinateSystem.h
