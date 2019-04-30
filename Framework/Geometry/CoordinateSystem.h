@@ -14,6 +14,7 @@
 
 #include <corsika/geometry/QuantityVector.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/utl/sgn.h>
 #include <Eigen/Dense>
 #include <stdexcept>
 
@@ -23,6 +24,8 @@ typedef Eigen::Translation<double, 3> EigenTranslation;
 namespace corsika::geometry {
 
   class RootCoordinateSystem;
+  template <typename T>
+  class Vector;
 
   using corsika::units::si::length_d;
 
@@ -59,7 +62,38 @@ namespace corsika::geometry {
       return CoordinateSystem(*this, translation);
     }
 
-    auto rotate(QuantityVector<phys::units::length_d> axis, double angle) const {
+    template <typename TDim>
+    auto RotateToZ(Vector<TDim> vVec) const {
+      auto const a = vVec.normalized().GetComponents(*this).eVector;
+      auto const a1 = a(0), a2 = a(1);
+
+      auto const s = utl::sgn(a(2));
+      auto const c = 1 / (1 + s * a(2));
+
+      Eigen::Matrix3d A, B;
+
+      if (s > 0) {
+        A << 1, 0, -a1,                     // comment to prevent clang-format
+            0, 1, -a2,                      // .
+            a1, a2, 1;                      // .
+        B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
+            -a1 * a2 * c, -a2 * a2 * c, 0,  // .
+            0, 0, -(a1 * a1 + a2 * a2) * c; // .
+
+      } else {
+        A << 1, 0, a1,                      // .
+            0, -1, -a2,                     // .
+            a1, a2, -1;                     // .
+        B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
+            +a1 * a2 * c, +a2 * a2 * c, 0,  // .
+            0, 0, (a1 * a1 + a2 * a2) * c;  // .
+      }
+
+      return CoordinateSystem(*this, EigenTransform(A + B));
+    }
+
+    template <typename TDim>
+    auto rotate(QuantityVector<TDim> axis, double angle) const {
       if (axis.eVector.isZero()) {
         throw std::runtime_error("null-vector given as axis parameter");
       }
@@ -69,8 +103,9 @@ namespace corsika::geometry {
       return CoordinateSystem(*this, rotation);
     }
 
+    template <typename TDim>
     auto translateAndRotate(QuantityVector<phys::units::length_d> translation,
-                            QuantityVector<phys::units::length_d> axis, double angle) {
+                            QuantityVector<TDim> axis, double angle) {
       if (axis.eVector.isZero()) {
         throw std::runtime_error("null-vector given as axis parameter");
       }

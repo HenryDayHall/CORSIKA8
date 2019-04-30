@@ -14,16 +14,11 @@
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
+#include <corsika/utl/sgn.h>
 
 using namespace corsika::utl;
 using namespace corsika::units::si;
 using namespace corsika::geometry;
-
-//! sign function without branches
-template <typename T>
-static int sgn(T val) {
-  return (T(0) < val) - (val < T(0));
-}
 
 COMBoost::COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
                    const HEPMassType massTarget)

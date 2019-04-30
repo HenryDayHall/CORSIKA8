@@ -27,6 +27,7 @@ set (
   COMBoost.h
   Bit.h
   Singleton.h
+  sgn.h
   CorsikaFenv.h
   MetaProgramming.h
   )
