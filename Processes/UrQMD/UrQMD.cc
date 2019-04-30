@@ -140,6 +140,8 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
 
     sys_.Ap = vProjectile.GetNuclearA();
     sys_.Zp = vProjectile.GetNuclearZ();
+    rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV) /
+                  vProjectile.GetNuclearA();
 
     rsys_.bdist = nucrad_(targetA) + nucrad_(sys_.Ap) + 2 * options_.CTParam[30 - 1];
 
@@ -149,14 +151,13 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     inputs_.prspflg = 1;
     sys_.Ap = 1; // even for non-baryons this has to be set, see vanilla UrQMD.f
     rsys_.bdist = nucrad_(targetA) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
+    rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
 
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
     // todo: conversion of K_long/short into strong eigenstates;
     inputs_.spityp[0] = ityp;
     inputs_.spiso3[0] = iso3;
   }
-
-  rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
 
   // initilazation regarding target
   if (particles::IsNucleus(targetCode)) {
