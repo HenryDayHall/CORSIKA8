@@ -13,6 +13,7 @@
 #define _include_corsika_processes_TrackingLine_h_
 
 #include <corsika/geometry/Line.h>
+#include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/geometry/Vector.h>
@@ -33,8 +34,10 @@ namespace corsika::process {
   namespace tracking_line {
 
     std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
-    TimeOfIntersection(corsika::geometry::Line const& line,
-                       geometry::Sphere const& sphere);
+    TimeOfIntersection(geometry::Line const&, geometry::Sphere const&);
+
+    corsika::units::si::TimeType TimeOfIntersection(geometry::Line const& line,
+                                                    geometry::Plane const&);
 
     class TrackingLine {
 
