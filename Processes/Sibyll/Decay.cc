@@ -24,9 +24,8 @@ using std::vector;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Projectile = corsika::setup::StackView::ParticleType;
-using Particle = corsika::setup::Stack::ParticleType;
-using Track = Trajectory;
+using SetupProjectile = corsika::setup::StackView::ParticleType;
+using SetupParticle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::process::sibyll {
 
@@ -104,7 +103,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::TimeType Decay::GetLifetime(Particle const& vP) {
+  units::si::TimeType Decay::GetLifetime(SetupParticle const& vP) const {
     using namespace units::si;
 
     HEPEnergyType E = vP.GetEnergy();
@@ -133,7 +132,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  void Decay::DoDecay(Projectile& vP) {
+  void Decay::DoDecay(SetupProjectile& vP) {
     using geometry::Point;
     using namespace units::si;
 
