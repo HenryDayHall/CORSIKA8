@@ -22,7 +22,7 @@ namespace corsika::process {
   namespace sibyll {
 
     class Decay : public corsika::process::DecayProcess<Decay> {
-      std::vector<particles::Code> fTrackedParticles;
+      std::vector<particles::Code> const fTrackedParticles;
       int fCount = 0;
 
     public:
@@ -36,11 +36,11 @@ namespace corsika::process {
       void SetAllStable();
       void SetHadronsUnstable();
 
-      template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle const&);
+      template <typename TParticle>
+      corsika::units::si::TimeType GetLifetime(TParticle const&) const;
 
-      template <typename Projectile>
-      void DoDecay(Projectile&);
+      template <typename TProjectile>
+      void DoDecay(TProjectile&);
     };
   } // namespace sibyll
 } // namespace corsika::process
