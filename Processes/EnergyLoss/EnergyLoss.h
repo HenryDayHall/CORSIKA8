@@ -36,15 +36,16 @@ namespace corsika::process::energy_loss {
 
     corsika::process::EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType&,
                                                   corsika::setup::Trajectory&);
-    corsika::units::si::LengthType MaxStepLength(corsika::setup::Stack::ParticleType&,
-                                                 corsika::setup::Trajectory&);
+    corsika::units::si::LengthType MaxStepLength(
+        corsika::setup::Stack::ParticleType const&,
+        corsika::setup::Trajectory const&) const;
 
     corsika::units::si::HEPEnergyType GetTotal() const { return fEnergyLossTot; }
     void PrintProfile() const;
 
   private:
-    corsika::units::si::HEPEnergyType BetheBloch(
-        corsika::setup::Stack::ParticleType& p,
+    static corsika::units::si::HEPEnergyType BetheBloch(
+        corsika::setup::Stack::ParticleType const& p,
         const corsika::units::si::GrammageType dX);
 
     int GetXbin(corsika::setup::Stack::ParticleType& p,
