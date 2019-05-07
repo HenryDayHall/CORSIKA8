@@ -22,7 +22,7 @@ using namespace corsika::setup;
 using Particle = Stack::ParticleType;
 using Track = Trajectory;
 
-namespace corsika::process::TrackWriter {
+namespace corsika::process::track_writer {
 
   void TrackWriter::Init() {
     using namespace std::string_literals;
@@ -51,4 +51,4 @@ namespace corsika::process::TrackWriter {
     return units::si::meter * std::numeric_limits<double>::infinity();
   }
 
-} // namespace corsika::process::TrackWriter
+} // namespace corsika::process::track_writer
