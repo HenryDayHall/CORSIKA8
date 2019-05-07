@@ -9,8 +9,8 @@
  * the license.
  */
 
-#ifndef _Processes_TrackWriter_h_
-#define _Processes_TrackWriter_h_
+#ifndef _Processes_track_writer_TrackWriter_h_
+#define _Processes_track_writer_TrackWriter_h_
 
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -18,7 +18,7 @@
 #include <fstream>
 #include <string>
 
-namespace corsika::process::TrackWriter {
+namespace corsika::process::track_writer {
 
   class TrackWriter : public corsika::process::ContinuousProcess<TrackWriter> {
 
@@ -39,6 +39,6 @@ namespace corsika::process::TrackWriter {
     std::ofstream fFile;
   };
 
-} // namespace corsika::process::TrackWriter
+} // namespace corsika::process::track_writer
 
 #endif
