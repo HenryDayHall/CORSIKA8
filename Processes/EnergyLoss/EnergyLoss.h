@@ -20,7 +20,7 @@
 
 #include <map>
 
-namespace corsika::process::EnergyLoss {
+namespace corsika::process::energy_loss {
 
   class EnergyLoss : public corsika::process::ContinuousProcess<EnergyLoss> {
 
@@ -55,6 +55,6 @@ namespace corsika::process::EnergyLoss {
     std::map<int, double> fProfile;       // longitudinal profile
   };
 
-} // namespace corsika::process::EnergyLoss
+} // namespace corsika::process::energy_loss
 
 #endif

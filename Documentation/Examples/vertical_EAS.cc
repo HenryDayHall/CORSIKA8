@@ -261,8 +261,8 @@ int main() {
   // process::HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
-  process::TrackWriter::TrackWriter trackWriter("tracks.dat");
-  process::EnergyLoss::EnergyLoss eLoss;
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
+  process::energy_loss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
   // cut << trackWriter;

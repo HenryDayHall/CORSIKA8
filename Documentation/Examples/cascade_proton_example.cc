@@ -257,7 +257,7 @@ int main() {
   // process::HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
-  process::TrackWriter::TrackWriter trackWriter("tracks.dat");
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
 
   // assemble all processes into an ordered process list
   // auto sequence = sibyll << decay << hadronicElastic << cut << trackWriter;

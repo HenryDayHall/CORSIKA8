@@ -28,7 +28,7 @@ using namespace corsika::setup;
 using Particle = Stack::ParticleType;
 using Track = Trajectory;
 
-namespace corsika::process::EnergyLoss {
+namespace corsika::process::energy_loss {
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
@@ -219,4 +219,4 @@ namespace corsika::process::EnergyLoss {
     }
   }
 
-} // namespace corsika::process::EnergyLoss
+} // namespace corsika::process::energy_loss
