@@ -278,7 +278,7 @@ int main() {
                                 particles::Code::K0Long, particles::Code::K0Short}};
   ProcessCut cut(20_GeV);
 
-  process::TrackWriter::TrackWriter trackWriter("tracks.dat");
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
