@@ -147,7 +147,8 @@ namespace corsika::process::energy_loss {
            (0.5 * log(aux) - beta2 - Cadj / Z - delta / 2 + barkas + bloch) * dX;
   }
 
-  process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p, SetupTrack& t) {
+  process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p,
+                                                   SetupTrack const& t) {
     if (p.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
     GrammageType const dX =
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
@@ -169,7 +170,7 @@ namespace corsika::process::energy_loss {
     p.SetEnergy(Enew);
     MomentumUpdate(p, Enew);
     fEnergyLossTot += dE;
-    GetXbin(p, dE);
+    GetXbin(p, t, dE);
     return status;
   }
 
@@ -199,17 +200,17 @@ namespace corsika::process::energy_loss {
 
 #include <corsika/geometry/CoordinateSystem.h>
 
-  int EnergyLoss::GetXbin(corsika::setup::Stack::ParticleType& vP,
+  int EnergyLoss::GetXbin(SetupParticle const& vP, SetupTrack const& vTrack,
                           const HEPEnergyType dE) {
 
     using namespace corsika::geometry;
 
     CoordinateSystem const& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-    Point pos1(rootCS, 0_m, 0_m, 0_m);
-    Point pos2(rootCS, 0_m, 0_m, vP.GetPosition().GetCoordinates()[2]);
-    Vector delta = (pos2 - pos1) / 1_s;
-    Trajectory t(Line(pos1, delta), 1_s);
+    Point const pos1(rootCS, 0_m, 0_m, 0_m);
+    Point const pos2(rootCS, 0_m, 0_m, vTrack.GetPosition(0).GetCoordinates()[2]);
+    auto const delta = (pos2 - pos1) / 1_s;
+    Trajectory const t(Line(pos1, delta), 1_s);
 
     GrammageType const grammage =
         vP.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());

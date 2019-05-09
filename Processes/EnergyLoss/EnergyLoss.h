@@ -25,35 +25,30 @@ namespace corsika::process::energy_loss {
   class EnergyLoss : public corsika::process::ContinuousProcess<EnergyLoss> {
 
     using MeVgcm2 = decltype(1e6 * units::si::electronvolt / units::si::gram *
-                             corsika::units::si::square(1e-2 * units::si::meter));
+                             units::si::square(1e-2 * units::si::meter));
 
-    void MomentumUpdate(corsika::setup::Stack::ParticleType&,
-                        corsika::units::si::HEPEnergyType Enew);
+    void MomentumUpdate(setup::Stack::ParticleType&, units::si::HEPEnergyType Enew);
 
   public:
     EnergyLoss();
     void Init() {}
+    process::EProcessReturn DoContinuous(setup::Stack::ParticleType&,
+                                         setup::Trajectory const&);
+    units::si::LengthType MaxStepLength(setup::Stack::ParticleType const&,
+                                        setup::Trajectory const&) const;
 
-    corsika::process::EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType&,
-                                                  corsika::setup::Trajectory&);
-    corsika::units::si::LengthType MaxStepLength(
-        corsika::setup::Stack::ParticleType const&,
-        corsika::setup::Trajectory const&) const;
-
-    corsika::units::si::HEPEnergyType GetTotal() const { return fEnergyLossTot; }
+    units::si::HEPEnergyType GetTotal() const { return fEnergyLossTot; }
     void PrintProfile() const;
 
   private:
-    static corsika::units::si::HEPEnergyType BetheBloch(
-        corsika::setup::Stack::ParticleType const& p,
-        const corsika::units::si::GrammageType dX);
+    static units::si::HEPEnergyType BetheBloch(setup::Stack::ParticleType const& p,
+                                               const units::si::GrammageType dX);
 
-    int GetXbin(corsika::setup::Stack::ParticleType& p,
-                const corsika::units::si::HEPEnergyType dE);
+    int GetXbin(setup::Stack::ParticleType const&, setup::Trajectory const&, units::si::HEPEnergyType);
 
-    corsika::units::si::HEPEnergyType fEnergyLossTot;
-    corsika::units::si::GrammageType fdX; // profile binning
-    std::map<int, double> fProfile;       // longitudinal profile
+    units::si::HEPEnergyType fEnergyLossTot;
+    units::si::GrammageType fdX;    // profile binning
+    std::map<int, double> fProfile; // longitudinal profile
   };
 
 } // namespace corsika::process::energy_loss
