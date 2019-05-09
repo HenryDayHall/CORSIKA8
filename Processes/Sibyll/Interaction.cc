@@ -366,8 +366,6 @@ namespace corsika::process::sibyll {
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
     }
-    // delete current particle
-    vP.Delete();
     return process::EProcessReturn::eOk;
   }
 

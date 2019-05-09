@@ -411,8 +411,6 @@ namespace corsika::process::pythia {
              << "Elab_final=" << Elab_final / 1_GeV
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
-      // delete current particle
-      vP.Delete();
     }
     return process::EProcessReturn::eOk;
   }
