@@ -34,11 +34,11 @@ namespace corsika::process {
     // here starts the interface part
     // -> enforce derived to implement DoContinuous...
     template <typename Particle, typename Track>
-    EProcessReturn DoContinuous(Particle&, Track&) const;
+    EProcessReturn DoContinuous(Particle&, Track const&) const;
 
     // -> enforce derived to implement MaxStepLength...
     template <typename Particle, typename Track>
-    corsika::units::si::LengthType MaxStepLength(Particle& p, Track& track) const;
+    units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const;
   };
 
   // overwrite the default trait class, to mark BaseProcess<T> as useful process
