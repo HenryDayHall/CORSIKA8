@@ -15,43 +15,39 @@
 #include <corsika/process/SecondariesProcess.h>
 #include <corsika/units/PhysicalUnits.h>
 
-using namespace corsika;
-using namespace corsika::units;
-using namespace corsika::units::si;
-
 namespace corsika::process {
   namespace particle_cut {
     class ParticleCut : public process::SecondariesProcess<ParticleCut> {
 
-      HEPEnergyType fECut;
+      units::si::HEPEnergyType const fECut;
 
-      HEPEnergyType fEnergy = 0_GeV;
-      HEPEnergyType fEmEnergy = 0_GeV;
+      units::si::HEPEnergyType fEnergy = 0 * units::si::electronvolt;
+      units::si::HEPEnergyType fEmEnergy = 0 * units::si::electronvolt;
       int fEmCount = 0;
-      HEPEnergyType fInvEnergy = 0_GeV;
+      units::si::HEPEnergyType fInvEnergy = 0 * units::si::electronvolt;
       int fInvCount = 0;
 
     public:
-      ParticleCut(const HEPEnergyType vCut)
+      ParticleCut(const units::si::HEPEnergyType vCut)
           : fECut(vCut) {}
 
       bool ParticleIsInvisible(particles::Code) const;
       template <typename TSecondaries>
       EProcessReturn DoSecondaries(TSecondaries&);
 
-      template <typename Particle>
-      bool ParticleIsBelowEnergyCut(Particle&) const;
+      template <typename TParticle>
+      bool ParticleIsBelowEnergyCut(TParticle const&) const;
 
       bool ParticleIsEmParticle(particles::Code) const;
 
       void Init();
       void ShowResults();
 
-      HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
-      HEPEnergyType GetCutEnergy() const { return fEnergy; }
-      HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
+      units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
+      units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
+      units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
     };
-  } // namespace particlecut
+  } // namespace particle_cut
 } // namespace corsika::process
 
 #endif
