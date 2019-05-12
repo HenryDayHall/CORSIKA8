@@ -13,6 +13,7 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/SecondariesProcess.h>
+#include <corsika/setup/SetupStack.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
@@ -32,8 +33,7 @@ namespace corsika::process {
           : fECut(vCut) {}
 
       bool ParticleIsInvisible(particles::Code) const;
-      template <typename TSecondaries>
-      EProcessReturn DoSecondaries(TSecondaries&);
+      EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
       template <typename TParticle>
       bool ParticleIsBelowEnergyCut(TParticle const&) const;
