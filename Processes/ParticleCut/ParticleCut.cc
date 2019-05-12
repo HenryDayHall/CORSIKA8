@@ -86,8 +86,7 @@ namespace corsika::process {
       return is_inv;
     }
 
-    template <typename TSecondaries>
-    EProcessReturn ParticleCut::DoSecondaries(TSecondaries& vS) {
+    EProcessReturn ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {
       auto p = vS.begin();
       while (p != vS.end()) {
         const Code pid = p.GetPID();
