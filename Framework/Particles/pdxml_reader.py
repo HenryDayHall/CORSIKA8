@@ -369,36 +369,21 @@ def gen_properties(particle_db):
     
     ### nuclear data ###
     
-    # is nucleus flag
-    string += "static constexpr std::array<bool, size> isNucleus = {\n"
-    for p in particle_db.values():
-        value = 'false'
-        if p['isNucleus']:
-            value = 'true'
-        string += "  {val},\n".format(val = value)
-    string += "};\n"
-
     # nucleus mass number A
     string += "static constexpr std::array<int16_t, size> nucleusA = {\n"
     for p in particle_db.values():
-        A = 0
-        if p['isNucleus']:
-            A = p['A']
+        A = p.get('A', 0)
         string += "  {val},\n".format(val = A)
     string += "};\n"
     
     # nucleus charge number Z
     string += "static constexpr std::array<int16_t, size> nucleusZ = {\n"
     for p in particle_db.values():
-        Z = 0
-        if p['isNucleus']:
-            Z = p['Z']
+        Z = p.get('Z', 0)
         string += "  {val},\n".format(val = Z)
     string += "};\n"
 
     return string
-
-
 
 
 ###############################################################
