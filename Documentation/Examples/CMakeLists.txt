@@ -31,6 +31,7 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
   CORSIKAcascade
   ProcessEnergyLoss
   ProcessStackInspector
+  ProcessParticleCut
   ProcessTrackWriter
   ProcessTrackingLine
   CORSIKAprocesses
@@ -50,6 +51,7 @@ target_link_libraries (boundary_example SuperStupidStack CORSIKAunits CORSIKAlog
   ProcessSibyll
   CORSIKAcascade
   ProcessTrackWriter
+  ProcessParticleCut
   ProcessTrackingLine
   CORSIKAprocesses
   CORSIKAparticles
@@ -72,6 +74,7 @@ if (Pythia8_FOUND)
     ProcessEnergyLoss
     ProcessTrackWriter
     ProcessTrackingLine
+    ProcessParticleCut
     ProcessHadronicElasticModel
     ProcessStackInspector
     CORSIKAprocesses
@@ -97,6 +100,7 @@ target_link_libraries (vertical_EAS SuperStupidStack CORSIKAunits
   ProcessTrackWriter
   ProcessTrackingLine
   ProcessHadronicElasticModel
+  ProcessParticleCut
   ProcessStackInspector
   CORSIKAprocesses
   CORSIKAcascade
