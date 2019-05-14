@@ -23,6 +23,7 @@ namespace corsika::process {
       double flat();
 
     private:
+      std::uniform_real_distribution<double> fDist;
       corsika::random::RNG& fRNG =
           corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
     };

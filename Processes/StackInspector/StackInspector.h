@@ -30,7 +30,7 @@ namespace corsika::process {
       ~StackInspector();
 
       void Init();
-      EProcessReturn DoStack(TStack&);
+      EProcessReturn DoStack(TStack const&);
 
     private:
       bool fReport;

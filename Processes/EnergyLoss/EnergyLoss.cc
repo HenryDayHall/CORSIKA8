@@ -24,9 +24,8 @@ using namespace std;
 
 using namespace corsika;
 using namespace corsika::units::si;
-using namespace corsika::setup;
-using Particle = Stack::ParticleType;
-using Track = Trajectory;
+using SetupParticle = corsika::setup::Stack::ParticleType;
+using SetupTrack = corsika::setup::Trajectory;
 
 namespace corsika::process::energy_loss {
 
@@ -53,7 +52,7 @@ namespace corsika::process::energy_loss {
    * For shell correction, see Sec 6 of https://www.nap.edu/read/20066/chapter/8#115
    *
    */
-  HEPEnergyType EnergyLoss::BetheBloch(Particle& p, GrammageType const dX) {
+  HEPEnergyType EnergyLoss::BetheBloch(SetupParticle const& p, GrammageType const dX) {
 
     // all these are material constants and have to come through Environment
     // right now: values for nitrogen_D
@@ -70,20 +69,20 @@ namespace corsika::process::energy_loss {
     // end of material constants
 
     // this is the Bethe-Bloch coefficiet 4pi N_A r_e^2 m_e c^2
-    auto const K = 0.307075_MeV / 1_mol * square(1_cm);
+    auto constexpr K = 0.307075_MeV / 1_mol * square(1_cm);
     HEPEnergyType const E = p.GetEnergy();
     HEPMassType const m = p.GetMass();
     double const gamma = E / m;
-    double const Z = p.GetChargeNumber();
-    double const Z2 = pow(Z, 2);
-    HEPMassType const me = particles::Electron::GetMass();
+    int const Z = p.GetChargeNumber();
+    int const Z2 = Z * Z;
+    HEPMassType constexpr me = particles::Electron::GetMass();
     auto const m2 = m * m;
-    auto const me2 = me * me;
-    double const gamma2 = pow(gamma, 2);
+    auto constexpr me2 = me * me;
+    double const gamma2 = gamma * gamma;
 
     double const beta2 = (gamma2 - 1) / gamma2; // 1-1/gamma2    (1-1/gamma)*(1+1/gamma);
                                                 // (gamma_2-1)/gamma_2 = (1-1/gamma2);
-    double const c2 = 1;                        // HEP convention here c=c2=1
+    double constexpr c2 = 1;                    // HEP convention here c=c2=1
     cout << "BetheBloch beta2=" << beta2 << " gamma2=" << gamma2 << endl;
     [[maybe_unused]] double const eta2 = beta2 / (1 - beta2);
     HEPMassType const Wmax =
@@ -148,7 +147,8 @@ namespace corsika::process::energy_loss {
            (0.5 * log(aux) - beta2 - Cadj / Z - delta / 2 + barkas + bloch) * dX;
   }
 
-  process::EProcessReturn EnergyLoss::DoContinuous(Particle& p, Track& t) {
+  process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p,
+                                                   SetupTrack const& t) {
     if (p.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
     GrammageType const dX =
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
@@ -170,12 +170,25 @@ namespace corsika::process::energy_loss {
     p.SetEnergy(Enew);
     MomentumUpdate(p, Enew);
     fEnergyLossTot += dE;
-    GetXbin(p, dE);
+    GetXbin(p, t, dE);
     return status;
   }
 
-  units::si::LengthType EnergyLoss::MaxStepLength(Particle&, Track&) {
-    return units::si::meter * std::numeric_limits<double>::infinity();
+  units::si::LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,
+                                                  SetupTrack const& vTrack) const {
+    if (vParticle.GetChargeNumber() == 0) {
+      return units::si::meter * std::numeric_limits<double>::infinity();
+    }
+
+    auto constexpr dX = 1_g / square(1_cm);
+    auto const dE = -BetheBloch(vParticle, dX); // dE > 0
+    //~ auto const Ekin = vParticle.GetEnergy() - vParticle.GetMass();
+    auto const maxLoss = 0.01 * vParticle.GetEnergy();
+    auto const maxGrammage = maxLoss / dE * dX;
+
+    return vParticle.GetNode()->GetModelProperties().ArclengthFromGrammage(vTrack,
+                                                                           maxGrammage) *
+           1.0001; // to make sure particle gets absorbed when DoContinuous() is called
   }
 
   void EnergyLoss::MomentumUpdate(corsika::setup::Stack::ParticleType& vP,
@@ -187,17 +200,17 @@ namespace corsika::process::energy_loss {
 
 #include <corsika/geometry/CoordinateSystem.h>
 
-  int EnergyLoss::GetXbin(corsika::setup::Stack::ParticleType& vP,
+  int EnergyLoss::GetXbin(SetupParticle const& vP, SetupTrack const& vTrack,
                           const HEPEnergyType dE) {
 
     using namespace corsika::geometry;
 
     CoordinateSystem const& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-    Point pos1(rootCS, 0_m, 0_m, 0_m);
-    Point pos2(rootCS, 0_m, 0_m, vP.GetPosition().GetCoordinates()[2]);
-    Vector delta = (pos2 - pos1) / 1_s;
-    Trajectory t(Line(pos1, delta), 1_s);
+    Point const pos1(rootCS, 0_m, 0_m, 0_m);
+    Point const pos2(rootCS, 0_m, 0_m, vTrack.GetPosition(0).GetCoordinates()[2]);
+    auto const delta = (pos2 - pos1) / 1_s;
+    Trajectory const t(Line(pos1, delta), 1_s);
 
     GrammageType const grammage =
         vP.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());

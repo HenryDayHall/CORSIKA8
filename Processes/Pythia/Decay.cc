@@ -148,9 +148,6 @@ namespace corsika::process::pythia {
     // set particle stable
     Decay::SetStable(vP.GetPID());
 
-    // remove original particle from corsika stack
-    vP.Delete();
-    //    if (fCount>10) throw std::runtime_error("stop here");
   }
 
 } // namespace corsika::process::pythia
