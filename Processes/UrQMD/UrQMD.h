@@ -15,6 +15,7 @@ namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
     UrQMD();
+    void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
         corsika::setup::Stack::StackIterator&, corsika::setup::Trajectory&) const;
 
