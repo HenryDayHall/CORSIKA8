@@ -48,7 +48,7 @@ which are very useful also for us.
 
 
 ## Get in contact
-  * Connect to https://gitlab.ikp.kit.edu; register yourself and join the "Air Shower Physics" group
+  * Connect to https://gitlab.ikp.kit.edu register yourself and join the "Air Shower Physics" group
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project
