@@ -16,19 +16,33 @@ build:
   script:
     - mkdir build
     - cd build
-    - cmake ..
-    - cmake --build . -- -j 4
-    - ctest -j4 -V >& test.log
-  after_script:
-    - cd build
-    - ls
-    - gzip -v -9 -S .gz test.log
-    - pwd
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . -- -j4
+    - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
   artifacts:
-    expire_in: 1 week
+    expire_in: 1 year
     paths:
       - build/test.log.gz
-    when: on_failure
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
+
+coverage:
+  stage: build
+  tags:
+    - corsika
+  script:
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Coverage
+    - cmake --build . -- -j4
+    - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
+    - make coverage && tar czf coverage-report.tar.gz coverage-report
+  artifacts:
+    expire_in: 1 year
+    paths:
+      - build/coverage-report.tar.gz
+      - build/test.log.gz
     reports:
       junit:
         - build/test_outputs/junit*.xml
@@ -52,22 +66,3 @@ pages:
     - tags
     - triggers
     - schedules
-
-
-# code_quality:
-#   image: docker:stable
-#   variables:
-#     DOCKER_DRIVER: overlay2
-#   allow_failure: true
-#   services:
-#     - docker:stable-dind
-#   script:
-#     - export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
-#     - docker run
-#         --env SOURCE_CODE="$PWD"
-#         --volume "$PWD":/code
-#         --volume /var/run/docker.sock:/var/run/docker.sock
-#         "registry.gitlab.com/gitlab-org/security-products/codequality:$SP_VERSION" /code
-#   artifacts:
-#     reports:
-#       codequality: gl-code-quality-report.json
