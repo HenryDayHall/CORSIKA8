@@ -37,7 +37,7 @@ coverage:
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
     - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
-    - make coverage && tar czf coverage-report.tar.gz coverage-report
+    - cmake --build . --target coverage && tar czf coverage-report.tar.gz coverage-report
   artifacts:
     expire_in: 1 year
     paths:
@@ -55,7 +55,7 @@ pages:
     - mkdir build
     - cd build
     - cmake ..
-    - make doxygen
+    - cmake --build . --target doxygen
     - mkdir .public
     - cp -r Documentation/Doxygen/html .public/
     - mv .public ../public
