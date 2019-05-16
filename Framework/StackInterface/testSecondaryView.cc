@@ -137,6 +137,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
 
   SECTION("deletion") {
     StackTest stack;
+    stack.AddParticle(std::tuple{-99.});
     stack.AddParticle(std::tuple{0.});
 
     {
@@ -149,27 +150,21 @@ TEST_CASE("SecondaryStack", "[stack]") {
       proj.AddSecondary(std::tuple{1.});
       proj.AddSecondary(std::tuple{2.});
 
-      CHECK(stack.GetSize() == 5);
+      CHECK(stack.GetSize() == 6); // -99, 0, -2, -1, 1, 2
+      CHECK(view.GetSize() == 4);  // -2, -1, 1, 2
 
       // now delete all negative entries, i.e. -1 and -2
       auto p = view.begin();
       while (p != view.end()) {
         auto data = p.GetData();
         if (data < 0) {
-          std::cout << "deleting " << data << ", ";
           p.Delete();
         } else {
           ++p;
         }
       }
-
-      // stack should contain 0, 1, 2 now
-
-      CHECK(stack.GetSize() == 3);
-
-      std::cout << std::endl;
-      for (auto& p : stack) { std::cout << p.GetData() << " | "; }
-      std::cout << std::endl;
+      CHECK(stack.GetSize() == 4); // -99, 0, 2, 1
+      CHECK(view.GetSize() == 2);  // 2, 1
     }
 
     // repeat
@@ -190,7 +185,6 @@ TEST_CASE("SecondaryStack", "[stack]") {
       while (p != view.end()) {
         auto data = p.GetData();
         if (data < 0) {
-          std::cout << "deleting " << data << ", ";
           p.Delete();
         } else {
           ++p;
@@ -201,10 +195,6 @@ TEST_CASE("SecondaryStack", "[stack]") {
       // view should contain 1, 2
 
       CHECK(stack.GetSize() == 6);
-
-      std::cout << std::endl;
-      for (auto& p : stack) { std::cout << p.GetData() << " | "; }
-      std::cout << std::endl;
     }
   }
 }
