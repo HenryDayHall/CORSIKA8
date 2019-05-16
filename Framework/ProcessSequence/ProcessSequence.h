@@ -58,7 +58,7 @@ namespace corsika::process {
   }
 
   template <typename A, typename B>
-  struct corsika::process::is_process_sequence<switch_process::SwitchProcess<A, B>>
+  struct is_process_sequence<switch_process::SwitchProcess<A, B>>
       : std::true_type {};
 
   /**

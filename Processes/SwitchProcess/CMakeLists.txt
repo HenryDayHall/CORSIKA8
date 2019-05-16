@@ -38,11 +38,13 @@ install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
 # --------------------
 # code unit testing
-#add_executable (testStackInspector testSwitchProcess.cc)
+add_executable (testSwitchProcess testSwitchProcess.cc)
 
-#target_link_libraries (
-#  testSwitchProcess
-#  ProcessSwitch
-#  CORSIKAthirdparty # for catch2
-#  )
-#CORSIKA_ADD_TEST(testStackInspector)
+target_link_libraries (
+  testSwitchProcess
+  ProcessSwitch
+  CORSIKAstackinterface
+  CORSIKAthirdparty # for catch2
+)
+
+CORSIKA_ADD_TEST(testSwitchProcess)
