@@ -47,9 +47,19 @@ namespace corsika::process {
 
   // this is a marker to track which BaseProcess is also a ProcessSequence
   template <typename T>
-  struct is_process_sequence {
-    static const bool value = false;
-  };
+  struct is_process_sequence : std::false_type {};
+
+  template <typename T>
+  bool constexpr is_process_sequence_v = is_process_sequence<T>::value;
+
+  namespace switch_process {
+    template <typename A, typename B>
+    class SwitchProcess; // fwd-decl.
+  }
+
+  template <typename A, typename B>
+  struct corsika::process::is_process_sequence<switch_process::SwitchProcess<A, B>>
+      : std::true_type {};
 
   /**
      T1 and T2 are both references if possible (lvalue), otherwise
@@ -57,10 +67,13 @@ namespace corsika::process {
      rvalue as well as lvalue Processes in the ProcessSequence.
    */
   template <typename T1, typename T2>
-  class ProcessSequence : public BaseProcess<ProcessSequence<T1, T2> > {
+  class ProcessSequence : public BaseProcess<ProcessSequence<T1, T2>> {
 
     using T1type = typename std::decay<T1>::type;
     using T2type = typename std::decay<T2>::type;
+
+    static bool constexpr t1ProcSeq = is_process_sequence_v<T1type>;
+    static bool constexpr t2ProcSeq = is_process_sequence_v<T2type>;
 
   public:
     T1 A; // this is a reference, if possible
@@ -78,13 +91,13 @@ namespace corsika::process {
                                       VTNType const& to) {
       EProcessReturn ret = EProcessReturn::eOk;
 
-      if constexpr (std::is_base_of<BoundaryCrossingProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<BoundaryCrossingProcess<T1type>, T1type> ||
+                    t1ProcSeq) {
         ret |= A.DoBoundaryCrossing(p, from, to);
       }
 
-      if constexpr (std::is_base_of<BoundaryCrossingProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<BoundaryCrossingProcess<T2type>, T2type> ||
+                    t2ProcSeq) {
         ret |= B.DoBoundaryCrossing(p, from, to);
       }
 
@@ -94,12 +107,10 @@ namespace corsika::process {
     template <typename TParticle, typename TTrack>
     EProcessReturn DoContinuous(TParticle& vP, TTrack& vT) {
       EProcessReturn ret = EProcessReturn::eOk;
-      if constexpr (std::is_base_of<ContinuousProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<ContinuousProcess<T1type>, T1type> || t1ProcSeq) {
         ret |= A.DoContinuous(vP, vT);
       }
-      if constexpr (std::is_base_of<ContinuousProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<ContinuousProcess<T2type>, T2type> || t2ProcSeq) {
         ret |= B.DoContinuous(vP, vT);
       }
       return ret;
@@ -108,12 +119,10 @@ namespace corsika::process {
     template <typename TSecondaries>
     EProcessReturn DoSecondaries(TSecondaries& vS) {
       EProcessReturn ret = EProcessReturn::eOk;
-      if constexpr (std::is_base_of<SecondariesProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<SecondariesProcess<T1type>, T1type> || t1ProcSeq) {
         ret |= A.DoSecondaries(vS);
       }
-      if constexpr (std::is_base_of<SecondariesProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<SecondariesProcess<T2type>, T2type> || t2ProcSeq) {
         ret |= B.DoSecondaries(vS);
       }
       return ret;
@@ -121,12 +130,10 @@ namespace corsika::process {
 
     bool CheckStep() {
       bool ret = false;
-      if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<StackProcess<T1type>, T1type> || t1ProcSeq) {
         ret |= A.CheckStep();
       }
-      if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<StackProcess<T2type>, T2type> || t2ProcSeq) {
         ret |= B.CheckStep();
       }
       return ret;
@@ -135,12 +142,10 @@ namespace corsika::process {
     template <typename TStack>
     EProcessReturn DoStack(TStack& vS) {
       EProcessReturn ret = EProcessReturn::eOk;
-      if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<StackProcess<T1type>, T1type> || t1ProcSeq) {
         if (A.CheckStep()) { ret |= A.DoStack(vS); }
       }
-      if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<StackProcess<T2type>, T2type> || t2ProcSeq) {
         if (B.CheckStep()) { ret |= B.DoStack(vS); }
       }
       return ret;
@@ -152,13 +157,11 @@ namespace corsika::process {
           max_length = // if no other process in the sequence implements it
           std::numeric_limits<double>::infinity() * corsika::units::si::meter;
 
-      if constexpr (std::is_base_of<ContinuousProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<ContinuousProcess<T1type>, T1type> || t1ProcSeq) {
         corsika::units::si::LengthType const len = A.MaxStepLength(vP, vTrack);
         max_length = std::min(max_length, len);
       }
-      if constexpr (std::is_base_of<ContinuousProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<ContinuousProcess<T2type>, T2type> || t2ProcSeq) {
         corsika::units::si::LengthType const len = B.MaxStepLength(vP, vTrack);
         max_length = std::min(max_length, len);
       }
@@ -182,12 +185,10 @@ namespace corsika::process {
 
       InverseGrammageType tot = 0 * meter * meter / gram;
 
-      if constexpr (std::is_base_of_v<InteractionProcess<T1type>, T1type> ||
-                    is_process_sequence_v<T1>) {
+      if constexpr (std::is_base_of_v<InteractionProcess<T1type>, T1type> || t1ProcSeq) {
         tot += A.GetInverseInteractionLength(vP);
       }
-      if constexpr (std::is_base_of_v<InteractionProcess<T2type>, T2type> ||
-                    is_process_sequence_v<T2>) {
+      if constexpr (std::is_base_of_v<InteractionProcess<T2type>, T2type> || t2ProcSeq) {
         tot += B.GetInverseInteractionLength(vP);
       }
       return tot;
@@ -199,13 +200,13 @@ namespace corsika::process {
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
 
-      if constexpr (is_process_sequence<T1type>::value) {
+      if constexpr (t1ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
             A.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
-      } else if constexpr (std::is_base_of<InteractionProcess<T1type>, T1type>::value) {
+      } else if constexpr (std::is_base_of_v<InteractionProcess<T1type>, T1type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_count += A.GetInverseInteractionLength(vP);
         // check if we should execute THIS process and then EXIT
@@ -215,13 +216,13 @@ namespace corsika::process {
         }
       } // end branch A
 
-      if constexpr (is_process_sequence<T2>::value) {
+      if constexpr (t2ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
             B.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
-      } else if constexpr (std::is_base_of<InteractionProcess<T2type>, T2type>::value) {
+      } else if constexpr (std::is_base_of_v<InteractionProcess<T2type>, T2type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_count += B.GetInverseInteractionLength(vP);
         // check if we should execute THIS process and then EXIT
@@ -249,12 +250,10 @@ namespace corsika::process {
 
       corsika::units::si::InverseTimeType tot = 0 / second;
 
-      if constexpr (std::is_base_of<DecayProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
+      if constexpr (std::is_base_of_v<DecayProcess<T1type>, T1type> || t1ProcSeq) {
         tot += A.GetInverseLifetime(p);
       }
-      if constexpr (std::is_base_of<DecayProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
+      if constexpr (std::is_base_of_v<DecayProcess<T2type>, T2type> || t2ProcSeq) {
         tot += B.GetInverseLifetime(p);
       }
       return tot;
@@ -266,12 +265,12 @@ namespace corsika::process {
         TParticle& vP, TSecondaries& vS,
         [[maybe_unused]] corsika::units::si::InverseTimeType decay_select,
         corsika::units::si::InverseTimeType& decay_inv_count) {
-      if constexpr (is_process_sequence<T1>::value) {
+      if constexpr (t1ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret = A.SelectDecay(vP, vS, decay_select, decay_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
-      } else if constexpr (std::is_base_of<DecayProcess<T1type>, T1type>::value) {
+      } else if constexpr (std::is_base_of_v<DecayProcess<T1type>, T1type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_count += A.GetInverseLifetime(vP);
         // check if we should execute THIS process and then EXIT
@@ -282,12 +281,12 @@ namespace corsika::process {
         }
       } // end branch A
 
-      if constexpr (is_process_sequence<T2>::value) {
+      if constexpr (t2ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret = B.SelectDecay(vP, vS, decay_select, decay_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
-      } else if constexpr (std::is_base_of<DecayProcess<T2type>, T2type>::value) {
+      } else if constexpr (std::is_base_of_v<DecayProcess<T2type>, T2type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_count += B.GetInverseLifetime(vP);
         // check if we should execute THIS process and then EXIT
@@ -320,9 +319,7 @@ namespace corsika::process {
 
   /// marker to identify objectas ProcessSequence
   template <typename A, typename B>
-  struct is_process_sequence<corsika::process::ProcessSequence<A, B> > {
-    static const bool value = true;
-  };
+  struct is_process_sequence<corsika::process::ProcessSequence<A, B>> : std::true_type {};
 
 } // namespace corsika::process
 

@@ -17,8 +17,7 @@ namespace corsika::process::switch_process {
    */
 
   template <class TLowEProcess, class THighEProcess>
-  class SwitchProcess
-      : public InteractionProcess<SwitchProcess<TLowEProcess, THighEProcess>> {
+  class SwitchProcess : public BaseProcess<SwitchProcess<TLowEProcess, THighEProcess>> {
     TLowEProcess& fLowEProcess;
     THighEProcess& fHighEProcess;
     units::si::HEPEnergyType const fThresholdEnergy;
@@ -33,6 +32,11 @@ namespace corsika::process::switch_process {
     void Init() {
       fLowEProcess.Init();
       fHighEProcess.Init();
+    }
+
+    template <typename TParticle>
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& p) {
+      return 1 / GetInteractionLength(p);
     }
 
     template <typename TParticle>
@@ -60,26 +64,35 @@ namespace corsika::process::switch_process {
         TParticle& vP, TSecondaries& vS,
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
-
       if (vP.GetEnergy() < fThresholdEnergy) {
         if constexpr (is_process_sequence_v<TLowEProcess>) {
           return fLowEProcess.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         } else {
-          return fLowEProcess.DoInteraction(vS);
+          lambda_inv_count += fLowEProcess.GetInverseInteractionLength(vP);
+          // check if we should execute THIS process and then EXIT
+          if (lambda_select < lambda_inv_count) {
+            fLowEProcess.DoInteraction(vS);
+            return EProcessReturn::eInteracted;
+          } else {
+            return EProcessReturn::eOk;
+          }
         }
       } else {
         if constexpr (is_process_sequence_v<THighEProcess>) {
           return fHighEProcess.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         } else {
-          return fHighEProcess.DoInteraction(vS);
+          lambda_inv_count += fHighEProcess.GetInverseInteractionLength(vP);
+          // check if we should execute THIS process and then EXIT
+          if (lambda_select < lambda_inv_count) {
+            fHighEProcess.DoInteraction(vS);
+            return EProcessReturn::eInteracted;
+          } else {
+            return EProcessReturn::eOk;
+          }
         }
       }
     }
   };
 } // namespace corsika::process::switch_process
-
-template <typename A, typename B>
-struct corsika::process::is_process_sequence<
-    corsika::process::switch_process::SwitchProcess<A, B>> : std::true_type {};
 
 #endif
