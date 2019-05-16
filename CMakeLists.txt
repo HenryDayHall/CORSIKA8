@@ -79,7 +79,7 @@ endif ()
 
 # generate coverage report
 if (CMAKE_BUILD_TYPE STREQUAL Coverage)
-  # find_package(PERL REQUIRED) does not work on the runner
+  find_package (Perl REQUIRED)
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
   set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/ThirdParty/lcov/bin")
   # collect coverage data
