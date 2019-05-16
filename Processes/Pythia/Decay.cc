@@ -147,7 +147,6 @@ namespace corsika::process::pythia {
 
     // set particle stable
     Decay::SetStable(vP.GetPID());
-
   }
 
 } // namespace corsika::process::pythia

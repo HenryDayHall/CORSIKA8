@@ -134,4 +134,67 @@ TEST_CASE("SecondaryStack", "[stack]") {
 
     REQUIRE(view.GetSize() == 1);
   }
+
+  SECTION("deletion") {
+    StackTest stack;
+    stack.AddParticle(std::tuple{-99.});
+    stack.AddParticle(std::tuple{0.});
+
+    {
+      auto particle = stack.GetNextParticle();
+      StackTestView view(particle);
+
+      auto proj = view.GetProjectile();
+      proj.AddSecondary(std::tuple{-2.});
+      proj.AddSecondary(std::tuple{-1.});
+      proj.AddSecondary(std::tuple{1.});
+      proj.AddSecondary(std::tuple{2.});
+
+      CHECK(stack.GetSize() == 6); // -99, 0, -2, -1, 1, 2
+      CHECK(view.GetSize() == 4);  // -2, -1, 1, 2
+
+      // now delete all negative entries, i.e. -1 and -2
+      auto p = view.begin();
+      while (p != view.end()) {
+        auto data = p.GetData();
+        if (data < 0) {
+          p.Delete();
+        } else {
+          ++p;
+        }
+      }
+      CHECK(stack.GetSize() == 4); // -99, 0, 2, 1 (order changes during deletion)
+      CHECK(view.GetSize() == 2);  // 2, 1
+    }
+
+    // repeat
+
+    {
+      auto particle = stack.GetNextParticle();
+      StackTestView view(particle);
+
+      // put -2,...,+2 on stack
+      auto proj = view.GetProjectile();
+      proj.AddSecondary(std::tuple{-2.});
+      proj.AddSecondary(std::tuple{-1.});
+      proj.AddSecondary(std::tuple{1.});
+      proj.AddSecondary(std::tuple{2.});
+      // stack should contain -99, 0, 2, 1, [-2, -1, 1, 2]
+
+      auto p = view.begin();
+      while (p != view.end()) {
+        auto data = p.GetData();
+        if (data < 0) {
+          p.Delete();
+        } else {
+          ++p;
+        }
+      }
+
+      // stack should contain -99, 0, 2, 1, [2, 1]
+      // view should contain 1, 2
+
+      CHECK(stack.GetSize() == 6);
+    }
+  }
 }

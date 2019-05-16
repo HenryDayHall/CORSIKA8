@@ -44,7 +44,8 @@ namespace corsika::process::energy_loss {
     static units::si::HEPEnergyType BetheBloch(setup::Stack::ParticleType const& p,
                                                const units::si::GrammageType dX);
 
-    int GetXbin(setup::Stack::ParticleType const&, setup::Trajectory const&, units::si::HEPEnergyType);
+    int GetXbin(setup::Stack::ParticleType const&, setup::Trajectory const&,
+                units::si::HEPEnergyType);
 
     units::si::HEPEnergyType fEnergyLossTot;
     units::si::GrammageType fdX;    // profile binning

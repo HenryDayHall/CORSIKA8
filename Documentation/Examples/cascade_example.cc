@@ -207,7 +207,6 @@ public:
   HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
 };
 
-
 //
 // The example main program for a particle cascade
 //
