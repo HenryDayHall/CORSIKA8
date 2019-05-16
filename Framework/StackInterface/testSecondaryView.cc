@@ -163,7 +163,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
           ++p;
         }
       }
-      CHECK(stack.GetSize() == 4); // -99, 0, 2, 1
+      CHECK(stack.GetSize() == 4); // -99, 0, 2, 1 (order changes during deletion)
       CHECK(view.GetSize() == 2);  // 2, 1
     }
 
@@ -179,7 +179,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
       proj.AddSecondary(std::tuple{-1.});
       proj.AddSecondary(std::tuple{1.});
       proj.AddSecondary(std::tuple{2.});
-      // stack should contain 0, 1, 2, [ -2, -1, 1, 2]
+      // stack should contain -99, 0, 2, 1, [-2, -1, 1, 2]
 
       auto p = view.begin();
       while (p != view.end()) {
@@ -191,7 +191,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
         }
       }
 
-      // stack should contain 0, 1, 2, 0, [1, 2]
+      // stack should contain -99, 0, 2, 1, [2, 1]
       // view should contain 1, 2
 
       CHECK(stack.GetSize() == 6);
