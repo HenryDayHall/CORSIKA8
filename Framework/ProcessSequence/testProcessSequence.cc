@@ -100,8 +100,8 @@ public:
     cout << "Process2::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
-  template <typename Particle, typename Track>
-  GrammageType GetInteractionLength(Particle&, Track&) const {
+  template <typename Particle>
+  GrammageType GetInteractionLength(Particle&) const {
     cout << "Process2::GetInteractionLength" << endl;
     return 3_g / (1_cm * 1_cm);
   }
@@ -123,8 +123,8 @@ public:
     cout << "Process3::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
-  template <typename Particle, typename Track>
-  GrammageType GetInteractionLength(Particle&, Track&) const {
+  template <typename Particle>
+  GrammageType GetInteractionLength(Particle&) const {
     cout << "Process3::GetInteractionLength" << endl;
     return 1_g / (1_cm * 1_cm);
   }
@@ -220,12 +220,11 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process3 m3(2);
 
     DummyData particle;
-    DummyTrajectory track;
 
     auto sequence2 = cp1 << m2 << m3;
-    GrammageType const tot = sequence2.GetTotalInteractionLength(particle, track);
+    GrammageType const tot = sequence2.GetTotalInteractionLength(particle);
     InverseGrammageType const tot_inv =
-        sequence2.GetTotalInverseInteractionLength(particle, track);
+        sequence2.GetTotalInverseInteractionLength(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
   }
 

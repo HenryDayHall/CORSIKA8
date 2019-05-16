@@ -217,7 +217,7 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   units::si::GrammageType NuclearInteraction<SetupEnvironment>::GetInteractionLength(
-      Particle& vP, Track&) {
+      Particle& vP) {
 
     using namespace units;
     using namespace units::si;

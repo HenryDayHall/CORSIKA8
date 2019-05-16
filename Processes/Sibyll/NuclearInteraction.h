@@ -53,11 +53,11 @@ namespace corsika::process::sibyll {
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(Particle& p, const corsika::particles::Code TargetId);
 
-    template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&);
+    template <typename Particle>
+    corsika::units::si::GrammageType GetInteractionLength(Particle&);
 
-    template <typename Projectle>
-    corsika::process::EProcessReturn DoInteraction(Projectle&);
+    template <typename Projectile>
+    corsika::process::EProcessReturn DoInteraction(Projectile&);
 
   private:
     TEnvironment const& fEnvironment;

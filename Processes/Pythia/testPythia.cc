@@ -118,14 +118,6 @@ TEST_CASE("pythia process") {
   auto const* nodePtr = theMedium.get(); // save the medium for later use before moving it
   universe.AddChild(std::move(theMedium));
 
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
-  geometry::Vector<units::si::SpeedType::dimension_type> v(cs, 0_m / second, 0_m / second,
-                                                           1_m / second);
-  geometry::Line line(origin, v);
-  geometry::Trajectory<geometry::Line> track(line, 10_s);
-
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-
   SECTION("pythia decay") {
 
     setup::Stack stack;
@@ -173,7 +165,6 @@ TEST_CASE("pythia process") {
     process::pythia::Interaction model;
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
-    [[maybe_unused]] const GrammageType length =
-        model.GetInteractionLength(particle, track);
+    [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 }

@@ -118,8 +118,8 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(SetupParticle& vP,
-                                                            Track&) const {
+  units::si::GrammageType Interaction::GetInteractionLength(
+      SetupParticle const& vP) const {
 
     using namespace units;
     using namespace units::si;

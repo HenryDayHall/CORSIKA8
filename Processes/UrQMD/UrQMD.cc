@@ -2,9 +2,6 @@
 #include <corsika/geometry/Vector.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/urqmd/UrQMD.h>
-#include <corsika/random/RNGManager.h>
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <algorithm>
@@ -20,7 +17,6 @@ UrQMD::UrQMD() { iniurqmd_(); }
 using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;
-using SetupTrack = corsika::setup::Trajectory;
 
 template <typename TParticle> // need template here, as this is called both with
                               // SetupParticle as well as SetupProjectile
@@ -82,7 +78,7 @@ bool UrQMD::CanInteract(particles::Code vCode) const {
                    vCode) != std::cend(validProjectileCodes);
 }
 
-GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle, SetupTrack&) const {
+GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle) const {
   if (!CanInteract(vParticle.GetPID())) {
     // we could do the canInteract check in GetCrossSection, too but if
     // we do it here we have the advantage of avoiding the loop

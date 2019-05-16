@@ -18,14 +18,12 @@
 #include <corsika/utl/COMBoost.h>
 
 #include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
 
 #include <iomanip>
 #include <iostream>
 
 using namespace corsika::setup;
-using Particle = corsika::setup::Stack::ParticleType;
-using Track = corsika::setup::Trajectory;
+using SetupParticle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::process::HadronicElasticModel {
 
@@ -38,7 +36,7 @@ namespace corsika::process::HadronicElasticModel {
 
   template <>
   units::si::GrammageType HadronicElasticInteraction::GetInteractionLength(
-      Particle const& p, Track&) {
+      SetupParticle const& p) {
     using namespace units::si;
     if (p.GetPID() == particles::Code::Proton) {
       auto const* currentNode = p.GetNode();
@@ -79,7 +77,7 @@ namespace corsika::process::HadronicElasticModel {
   }
 
   template <>
-  process::EProcessReturn HadronicElasticInteraction::DoInteraction(Particle& p) {
+  process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupParticle& p) {
     if (p.GetPID() != particles::Code::Proton) { return process::EProcessReturn::eOk; }
 
     using namespace units::si;

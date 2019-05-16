@@ -165,51 +165,49 @@ namespace corsika::process {
       return max_length;
     }
 
-    template <typename TParticle, typename TTrack>
-    corsika::units::si::GrammageType GetTotalInteractionLength(TParticle& vP,
-                                                               TTrack& vT) {
-      return 1. / GetInverseInteractionLength(vP, vT);
+    template <typename TParticle>
+    corsika::units::si::GrammageType GetTotalInteractionLength(TParticle& vP) {
+      return 1. / GetInverseInteractionLength(vP);
     }
 
-    template <typename TParticle, typename TTrack>
+    template <typename TParticle>
     corsika::units::si::InverseGrammageType GetTotalInverseInteractionLength(
-        TParticle& vP, TTrack& vT) {
-      return GetInverseInteractionLength(vP, vT);
+        TParticle& vP) {
+      return GetInverseInteractionLength(vP);
     }
 
-    template <typename TParticle, typename TTrack>
-    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& vP,
-                                                                        TTrack& vT) {
+    template <typename TParticle>
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& vP) {
       using namespace corsika::units::si;
 
       InverseGrammageType tot = 0 * meter * meter / gram;
 
-      if constexpr (std::is_base_of<InteractionProcess<T1type>, T1type>::value ||
-                    is_process_sequence<T1>::value) {
-        tot += A.GetInverseInteractionLength(vP, vT);
+      if constexpr (std::is_base_of_v<InteractionProcess<T1type>, T1type> ||
+                    is_process_sequence_v<T1>) {
+        tot += A.GetInverseInteractionLength(vP);
       }
-      if constexpr (std::is_base_of<InteractionProcess<T2type>, T2type>::value ||
-                    is_process_sequence<T2>::value) {
-        tot += B.GetInverseInteractionLength(vP, vT);
+      if constexpr (std::is_base_of_v<InteractionProcess<T2type>, T2type> ||
+                    is_process_sequence_v<T2>) {
+        tot += B.GetInverseInteractionLength(vP);
       }
       return tot;
     }
 
-    template <typename TParticle, typename TSecondaries, typename TTrack>
+    template <typename TParticle, typename TSecondaries>
     EProcessReturn SelectInteraction(
-        TParticle& vP, TSecondaries& vS, TTrack& vT,
+        TParticle& vP, TSecondaries& vS,
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
 
       if constexpr (is_process_sequence<T1type>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            A.SelectInteraction(vP, vS, vT, lambda_select, lambda_inv_count);
+            A.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<InteractionProcess<T1type>, T1type>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_count += A.GetInverseInteractionLength(vP, vT);
+        lambda_inv_count += A.GetInverseInteractionLength(vP);
         // check if we should execute THIS process and then EXIT
         if (lambda_select < lambda_inv_count) {
           A.DoInteraction(vS);
@@ -220,12 +218,12 @@ namespace corsika::process {
       if constexpr (is_process_sequence<T2>::value) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            B.SelectInteraction(vP, vS, vT, lambda_select, lambda_inv_count);
+            B.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         // if A did succeed, stop routine
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of<InteractionProcess<T2type>, T2type>::value) {
         // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_count += B.GetInverseInteractionLength(vP, vT);
+        lambda_inv_count += B.GetInverseInteractionLength(vP);
         // check if we should execute THIS process and then EXIT
         if (lambda_select < lambda_inv_count) {
           B.DoInteraction(vS);

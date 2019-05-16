@@ -52,8 +52,8 @@ namespace corsika::process::sibyll {
     GetCrossSection(const corsika::particles::Code, const corsika::particles::Code,
                     const corsika::units::si::HEPEnergyType) const;
 
-    template <typename TParticle, typename TTrack>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle&, TTrack&) const;
+    template <typename TParticle>
+    corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
 
     /**
        In this function SIBYLL is called to produce one event. The
