@@ -39,14 +39,14 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
   set (default_build_type "Debug")
 endif ()
 
-set (allowed_build_types "Debug;Release;MinSizeRel;RelWithDebInfo;Coverage")
+# Set the possible values of build type for cmake-gui and command line check
+set (allowed_build_types Debug Release MinSizeRel RelWithDebInfo Coverage)
+set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${allowed_build_types})
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message (STATUS "Setting build type to '${default_build_type}' as no other was specified.")
   set (CMAKE_BUILD_TYPE "${default_build_type}" CACHE
       STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${allowed_build_types})
 else (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   # Ignore capitalization when build type is selected manually and check for valid setting
   string(TOLOWER ${CMAKE_BUILD_TYPE} selected_lower)
