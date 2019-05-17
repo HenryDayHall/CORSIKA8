@@ -60,11 +60,9 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 
 # enable warnings and disallow non-standard language
 # configure the various build types here, too
+# FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
+# debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
-set (CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set (CMAKE_CXX_FLAGS_RELEASE "-O3") # -O2 would not trade speed for size, neither O2/3 use fast-math
-set (CMAKE_CXX_FLAGS_MINSIZEREL "-O2") 
-set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g") 
 set (CMAKE_Fortran_FLAGS "-std=legacy")
 
 # setup coverage build type
