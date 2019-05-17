@@ -42,30 +42,6 @@ e.g. [link1](https://clangformat.com/) or
 [link2](https://zed0.co.uk/clang-format-configurator/).
 
 
-## CMAKE formatting
-
-  - command are lower cases, e.g. ```set (...)```
-  - variables upper case, e.g. ```set (VAR1 Text)```
-
-Since cmake itself lacks structure almost entirely:
-  - put a space between command and start of parenthesis, e.g. ```command (...)``` 
-  - add two spaces for logical indent 
-  ```
-  if (condition)
-    do something
-  endif (condition)
-  ```
-- break long lines to start with new keyword in new line (indented)
-  ```
-  install (
-    FILES ${CORSIKAstackinterface_HEADERS}
-    DESTINATION include/${CORSIKAstackinterface_NAMESPACE}
-    )  
-  ```
-  - add plenty of comments to all cmake code
-  - use expressive variables and functions
-
-
 ## Naming conventions
 
 While `clang-format` does the structural formatting, we still need to agree on naming conventions:
@@ -106,7 +82,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
 
 ## Coding rules
 
-  - Code may not introduce any compiler errors, or warnings
+  - Code may not introduce any compiler errors, or warnings (latter: on current CI runners)
   - All unit tests must succeed at all times. If tests fail, code is not merged.
   - We use C++17 concepts wherever useful and helpful
   - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
@@ -121,6 +97,28 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - When you contribute new physics algorithms, in addition you also need to provide a validation module
   - Code must be documented with `doxygen` commands
   
+## CMAKE formatting
+
+  - command are lower cases, e.g. ```set (...)```
+  - variables upper case, e.g. ```set (VAR1 Text)```
+
+Since cmake itself lacks structure almost entirely:
+  - put a space between command and start of parenthesis, e.g. ```command (...)``` 
+  - add two spaces for logical indent 
+    ```
+    if (condition)
+      do something
+    endif (condition)
+    ```
+  - break long lines to start with new keyword in new line (indented)
+    ```
+    install (
+      FILES ${CORSIKAstackinterface_HEADERS}
+      DESTINATION include/${CORSIKAstackinterface_NAMESPACE}
+      )  
+    ```
+  - add plenty of comments to all cmake code
+  - use expressive variables and functions
 
 ## Release versioning scheme
 
