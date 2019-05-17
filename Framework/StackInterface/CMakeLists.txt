@@ -17,7 +17,9 @@ add_library (
   INTERFACE
   )
 
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAstackinterface ${CORSIKAstackinterface_NAMESPACE} ${CORSIKAstackinterface_HEADERS})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (
+  CORSIKAstackinterface ${CORSIKAstackinterface_NAMESPACE} ${CORSIKAstackinterface_HEADERS}
+  )
 
 target_include_directories (
   CORSIKAstackinterface
@@ -27,10 +29,8 @@ target_include_directories (
   )
 
 install (
-  FILES
-  ${CORSIKAstackinterface_HEADERS}
-  DESTINATION
-  include/${CORSIKAstackinterface_NAMESPACE}
+  FILES ${CORSIKAstackinterface_HEADERS}
+  DESTINATION include/${CORSIKAstackinterface_NAMESPACE}
   )
 
 #code testing
