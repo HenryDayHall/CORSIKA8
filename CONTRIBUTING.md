@@ -42,6 +42,30 @@ e.g. [link1](https://clangformat.com/) or
 [link2](https://zed0.co.uk/clang-format-configurator/).
 
 
+## CMAKE formatting
+
+  - command are lower cases, e.g. ```set (...)```
+  - variables upper case, e.g. ```set (VAR1 Text)```
+
+Since cmake itself lacks structure almost entirely:
+  - put a space between command and start of parenthesis, e.g. ```command (...)``` 
+  - add two spaces for logical indent 
+  ```
+  if (condition)
+    do something
+  endif (condition)
+  ```
+- break long lines to start with new keyword in new line (indented)
+  ```
+  install (
+    FILES ${CORSIKAstackinterface_HEADERS}
+    DESTINATION include/${CORSIKAstackinterface_NAMESPACE}
+    )  
+  ```
+  - add plenty of comments to all cmake code
+  - use expressive variables and functions
+
+
 ## Naming conventions
 
 While `clang-format` does the structural formatting, we still need to agree on naming conventions:
