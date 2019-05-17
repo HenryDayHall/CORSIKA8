@@ -28,8 +28,6 @@
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
-#include <corsika/process/pythia/Decay.h>
-
 #include <corsika/process/track_writer/TrackWriter.h>
 
 #include <corsika/units/PhysicalUnits.h>
@@ -252,8 +250,6 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
-  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  // process::pythia::Decay decay(trackedHadrons);
   ProcessCut cut(20_GeV);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
