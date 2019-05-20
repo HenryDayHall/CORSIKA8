@@ -1,6 +1,6 @@
 
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -8,3 +8,5 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
+
+
