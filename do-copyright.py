@@ -1,28 +1,39 @@
 #!/usr/bin/python
 
-import os.path
+import os
+import sys, getopt
+import re
 
+#
+# Note: this is a mutliline regexp:
+#
 text = """
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright YEAR CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
- */\n
+ */
 """
 
 Debug = 0 # 0: nothing, 1: checking, 2: filesystem
 
 excludeDirs = ["ThirdParty", "git"]
-excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc']
+excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h']
 
 extensions = [".cc", ".h", ".test"]
 
-def checkNote(filename):
+justCheck = True # T: only checking, F: also changing files 
+foundMissing = False
 
+###############################################
+#
+def checkNote(filename):
+    global foundMissing, justCheck
+    
     if Debug>0:
         print ("***********************************************")
         print ("file: " + filename )
@@ -63,21 +74,29 @@ def checkNote(filename):
     isSame = False
     if len(startNote)>0: 
         isSame = True
-        noteLines = text.split('\n')        
+        noteLines = text.split('\n')
         for iLine in range(len(noteLines)-2):
             if startNote[0]+iLine >= len(lines):
                 isSame = False
                 break
-            if noteLines[iLine+1].strip(" \n") != lines[startNote[0]+iLine].strip(" \n"):
+            regex = re.compile(re.escape(noteLines[iLine+1].strip(" \n")).replace('YEAR','....'))
+            if not re.match(regex, lines[startNote[0]+iLine].strip(" \n")):
                 isSame = False
-                print "need update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'"
+                foundMissing = True
+                print "needs update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'"
                 break
     if Debug>0:
-        print ("isSame=" + str(isSame))
+        print ("isSame=" + str(isSame) + " " + str(len(startNote)))
     
     # check if notice is the same, or we need to remove multiple notices...
     if isSame and len(startNote)<=1:
         return                
+
+    print ("No copyright note in file: " + filename)
+
+    if justCheck:
+        foundMissing = True
+        return
     
     # add (new) copyright notice here:
     print ("File: " + filename + ", make copy to " + filename+".bak")
@@ -109,7 +128,10 @@ def checkNote(filename):
         file.close()
 
 
-def next_file(x, dir_name, files):
+###############################################
+#
+#def next_file(x, dir_name, files):
+def next_file(dir_name, files):
     for check in excludeDirs :
         if check in dir_name:
             if Debug>1:
@@ -121,16 +143,56 @@ def next_file(x, dir_name, files):
         filename, file_extension = os.path.splitext(check)
         if '#' in check or '~' in check:
             continue
+        excludeThisFile=False
         for check2 in excludeFiles :
             if check2 in check:
                 if Debug>1:
                     print ("exclude: " + check2)
-                continue
+                excludeThisFile=True
+        if excludeThisFile:
+            continue
         if file_extension in extensions:
-            checkNote(dir_name + "/" + check)
+            checkNote(os.path.join(dir_name, check))
         else:
             if Debug>1:
-                print ("exclude-extension: " + dir_name + "/" + check)
+                print ("exclude-extension: " + os.path.join(dir_name, check))
 
+                
+###############################################
+# the main program
+def main(argv):
+   global justCheck, foundMissing, Debug
+   justCheck = True
+   Debug = 0
+   try:
+      opts, args = getopt.getopt(argv, "cIhd:", ["check", "implement", "debug="])
+   except getopt.GetoptError:
+      print 'do-copyright.py [--check] [--implement] [--debug=0]'
+      sys.exit(2)
+   for opt, arg in opts:
+      if opt == '-h':
+         print 'do-copyright.py [--check] [--implement] [--debug=0]'
+         sys.exit()
+      elif opt in ("-c", "--check"):
+         justCheck = True
+      elif opt in ("-I", "--implement"):
+         justCheck = False
+      elif opt in ("-d", "--debug"):
+         Debug = int(arg)
 
-os.path.walk("./", next_file, 0)
+   if justCheck:
+       print 'Only checking. No changes. See \'do-copyright.py -h\' for options.' 
+         
+   for root, dirs, files in os.walk('./'):
+       next_file(root, files)
+
+    
+###############################################
+# main entry point
+if __name__ == "__main__":
+   main(sys.argv[1:])
+
+   if justCheck and foundMissing:
+       sys.exit(-1) # found error
+   print "Finished"
+   sys.exit(0)
