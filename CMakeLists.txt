@@ -68,7 +68,7 @@ endif()
 #add_custom_command (TARGET corsika_pre_build PRE_BUILD COMMAND "${PROJECT_SOURCE_DIR}/pre_compile.py")
 
 # add call to ./do-copyright.py to run as unit-test-case
-add_test (NAME copyright_notices COMMAND "./do-copyright.py" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # add call to do-clang-format.sh checking to run as unit-test-case
 add_test (NAME clang_format COMMAND ./do-clang-format.sh check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
