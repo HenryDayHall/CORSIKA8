@@ -16,7 +16,7 @@ text = """
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
- */
+ */\n
 """
 
 Debug = 0 # 0: nothing, 1: checking, 2: filesystem
@@ -29,10 +29,13 @@ extensions = [".cc", ".h", ".test"]
 justCheck = True # T: only checking, F: also changing files 
 foundMissing = False
 
+forYear="YEAR" # replace this with year via command line
+
+
 ###############################################
 #
 def checkNote(filename):
-    global foundMissing, justCheck
+    global foundMissing, justCheck, forYear
     
     if Debug>0:
         print ("***********************************************")
@@ -92,8 +95,10 @@ def checkNote(filename):
     if isSame and len(startNote)<=1:
         return                
 
-    print ("No copyright note in file: " + filename)
+    if (len(startNote)==0):
+        print ("No copyright note in file: " + filename)
 
+    # either we found a file with no copyright, or with wrong copyright notice here
     if justCheck:
         foundMissing = True
         return
@@ -104,8 +109,9 @@ def checkNote(filename):
 
     with open(filename, "w") as file:
 
-        file.write(text)
-
+        textReplace = re.sub(r"Copyright YEAR ", "Copyright " + forYear + " ", text)
+        file.write(textReplace)
+        
         skip = False
         for iLine in range(len(lines)):
 
@@ -130,7 +136,9 @@ def checkNote(filename):
 
 ###############################################
 #
-#def next_file(x, dir_name, files):
+# check files: loops over list of files,
+# excludes if wished, process otherwise
+# 
 def next_file(dir_name, files):
     for check in excludeDirs :
         if check in dir_name:
@@ -161,22 +169,24 @@ def next_file(dir_name, files):
 ###############################################
 # the main program
 def main(argv):
-   global justCheck, foundMissing, Debug
+   global justCheck, foundMissing, Debug, forYear
    justCheck = True
    Debug = 0
    try:
-      opts, args = getopt.getopt(argv, "cIhd:", ["check", "implement", "debug="])
+      opts, args = getopt.getopt(argv, "cAhd:", ["check", "add=", "debug="])
    except getopt.GetoptError:
-      print 'do-copyright.py [--check] [--implement] [--debug=0]'
+      print 'do-copyright.py [--check] [--add=YEAR] [--debug=0]'
       sys.exit(2)
    for opt, arg in opts:
       if opt == '-h':
-         print 'do-copyright.py [--check] [--implement] [--debug=0]'
+         print 'do-copyright.py [--check] [--add=YEAR] [--debug=0]'
          sys.exit()
       elif opt in ("-c", "--check"):
          justCheck = True
-      elif opt in ("-I", "--implement"):
+      elif opt in ("-A", "--add"):
          justCheck = False
+         forYear = str(arg)
+         print 'Adding \'Copyright ' + forYear + '\' notice, where needed. '
       elif opt in ("-d", "--debug"):
          Debug = int(arg)
 
