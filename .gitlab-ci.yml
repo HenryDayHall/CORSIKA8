@@ -12,7 +12,7 @@ build:
     - cd build
     - cmake ..
     - cmake --build . -- -j 4 
-    - ctest -j4 -V >& test.log
+    - ctest -VV >& test.log
   after_script:
     - cd build
     - ls
