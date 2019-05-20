@@ -46,7 +46,7 @@ def checkNote(filename):
 
     # read input file into lines
     lines = []
-    with open(filename, "r") as file:
+    with open(filename, "r", encoding="utf-8") as file:
         for line in file.readlines():
             lines.append(line)            
         file.close()
