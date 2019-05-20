@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import sys, getopt
@@ -69,9 +69,9 @@ def checkNote(filename):
 
     if Debug>0:
         txt = "states: n=" + str(len(startNote))
-        for i in xrange(len(startNote)):
+        for i in range(len(startNote)):
             txt += ",  [" + str(startNote[i]) + "-" + str(endNote[i]) + "]"         
-        print ("stats: ") + txt
+        print ("stats: " + txt)
 
     # now check if first copyright notices is already identical...
     isSame = False
@@ -86,7 +86,7 @@ def checkNote(filename):
             if not re.match(regex, lines[startNote[0]+iLine].strip(" \n")):
                 isSame = False
                 foundMissing = True
-                print "needs update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'"
+                print ("needs update: " + filename + " new=\'" + noteLines[iLine+1] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
                 break
     if Debug>0:
         print ("isSame=" + str(isSame) + " " + str(len(startNote)))
@@ -118,7 +118,7 @@ def checkNote(filename):
             inBlock = False
             for iBlock in range(len(startNote)):
                 if iLine>=startNote[iBlock] and iLine<=endNote[iBlock]:
-                    print "   [remove " + str(iBlock) + "] " + (lines[iLine]).strip()
+                    print ("   [remove " + str(iBlock) + "] " + (lines[iLine]).strip())
                     inBlock = True
                     skip = True
 
@@ -175,23 +175,23 @@ def main(argv):
    try:
       opts, args = getopt.getopt(argv, "cAhd:", ["check", "add=", "debug="])
    except getopt.GetoptError:
-      print 'do-copyright.py [--check] [--add=YEAR] [--debug=0]'
+      print ('do-copyright.py [--check] [--add=YEAR] [--debug=0]')
       sys.exit(2)
    for opt, arg in opts:
       if opt == '-h':
-         print 'do-copyright.py [--check] [--add=YEAR] [--debug=0]'
+         print ('do-copyright.py [--check] [--add=YEAR] [--debug=0]')
          sys.exit()
       elif opt in ("-c", "--check"):
          justCheck = True
       elif opt in ("-A", "--add"):
          justCheck = False
          forYear = str(arg)
-         print 'Adding \'Copyright ' + forYear + '\' notice, where needed. '
+         print ('Adding \'Copyright ' + forYear + '\' notice, where needed. ')
       elif opt in ("-d", "--debug"):
          Debug = int(arg)
 
    if justCheck:
-       print 'Only checking. No changes. See \'do-copyright.py -h\' for options.' 
+       print ('Only checking. No changes. See \'do-copyright.py -h\' for options.')
          
    for root, dirs, files in os.walk('./'):
        next_file(root, files)
@@ -204,5 +204,5 @@ if __name__ == "__main__":
 
    if justCheck and foundMissing:
        sys.exit(-1) # found error
-   print "Finished"
+   print ("Finished")
    sys.exit(0)
