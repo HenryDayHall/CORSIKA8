@@ -131,13 +131,16 @@ public:
 };
 
 TEST_CASE("Cascade", "[Cascade]") {
+
+  HEPEnergyType E0 = 100_GeV;
+
   random::RNGManager& rmng = random::RNGManager::GetInstance();
   rmng.RegisterRandomStream("cascade");
 
   auto env = MakeDummyEnv();
   tracking_line::TrackingLine tracking;
 
-  stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true);
+  stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
   null_model::NullModel nullModel;
 
   const GrammageType X0 = 20_g / square(1_cm);
@@ -154,7 +157,6 @@ TEST_CASE("Cascade", "[Cascade]") {
       RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   stack.Clear();
-  HEPEnergyType E0 = 100_GeV;
   stack.AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{

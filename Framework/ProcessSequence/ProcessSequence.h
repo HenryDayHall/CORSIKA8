@@ -156,8 +156,8 @@ namespace corsika::process {
     }
 
     /**
-       Execute the StackProcess-es in the ProcessSequence 
-     */    
+       Execute the StackProcess-es in the ProcessSequence
+     */
     template <typename TStack>
     EProcessReturn DoStack(TStack& vS) {
       EProcessReturn ret = EProcessReturn::eOk;

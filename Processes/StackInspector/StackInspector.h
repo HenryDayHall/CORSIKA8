@@ -15,6 +15,8 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <chrono>
+
 namespace corsika::process {
 
   namespace stack_inspector {
@@ -24,16 +26,25 @@ namespace corsika::process {
 
       typedef typename TStack::ParticleType Particle;
 
+      using corsika::process::StackProcess<StackInspector<TStack>>::GetStep;
+
     public:
-      StackInspector(const int nStep, const bool aReport);
+      StackInspector(const int vNStep, const bool vReportStack,
+                     const corsika::units::si::HEPEnergyType vE0);
       ~StackInspector();
 
       void Init();
-      EProcessReturn DoStack(TStack const&);
+      EProcessReturn DoStack(const TStack&);
+
+      /**
+       * To set a new E0, for example when a new shower event is started
+       */
+      void SetE0(const corsika::units::si::HEPEnergyType vE0) { fE0 = vE0; }
 
     private:
-      bool fReport;
-      int fCountStep = 0;
+      bool fReportStack;
+      corsika::units::si::HEPEnergyType fE0;
+      decltype(std::chrono::system_clock::now()) fStartTime;
     };
 
   } // namespace stack_inspector
