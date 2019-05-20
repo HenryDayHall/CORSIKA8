@@ -37,7 +37,7 @@ coverage: # special pipeline for master with coverage report
     - mkdir build
     - cmake ..
     - cmake --build . -- -j 4 
-    - ctest -VV >& test.log
+    - ctest -V >& test.log
   after_script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
