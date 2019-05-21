@@ -69,8 +69,8 @@ public:
   ProcessSplit(GrammageType const X0)
       : fX0(X0) {}
 
-  template <typename Particle, typename Track>
-  corsika::units::si::GrammageType GetInteractionLength(Particle&, Track&) const {
+  template <typename Particle>
+  corsika::units::si::GrammageType GetInteractionLength(Particle const&) const {
     return fX0;
   }
 

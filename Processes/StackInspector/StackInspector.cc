@@ -37,7 +37,7 @@ template <typename TStack>
 StackInspector<TStack>::~StackInspector() {}
 
 template <typename TStack>
-process::EProcessReturn StackInspector<TStack>::DoStack(TStack& vS) {
+process::EProcessReturn StackInspector<TStack>::DoStack(TStack const& vS) {
   if (!fReport) return process::EProcessReturn::eOk;
   [[maybe_unused]] int i = 0;
   HEPEnergyType Etot = 0_GeV;

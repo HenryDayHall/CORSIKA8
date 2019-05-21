@@ -118,8 +118,8 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(SetupParticle& vP,
-                                                            Track&) const {
+  units::si::GrammageType Interaction::GetInteractionLength(
+      SetupParticle const& vP) const {
 
     using namespace units;
     using namespace units::si;
@@ -366,8 +366,6 @@ namespace corsika::process::sibyll {
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
     }
-    // delete current particle
-    vP.Delete();
     return process::EProcessReturn::eOk;
   }
 

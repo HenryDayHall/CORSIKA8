@@ -16,30 +16,26 @@
 #include <corsika/geometry/Vector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
-#include <algorithm>
-#include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
-using namespace corsika;
+using namespace corsika::geometry;
+using namespace corsika::units::si;
 
 namespace corsika::process::tracking_line {
 
-  std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
-  TimeOfIntersection(corsika::geometry::Line const& line,
-                     geometry::Sphere const& sphere) {
+  std::optional<std::pair<TimeType, TimeType>> TimeOfIntersection(Line const& line,
+                                                                  Sphere const& sphere) {
     auto const delta = line.GetR0() - sphere.GetCenter();
     auto const v = line.GetV0();
-    auto const vSqNorm = v.squaredNorm();
+    auto const vSqNorm =
+        v.squaredNorm(); // todo: get rid of this by having V0 normalized always
     auto const R = sphere.GetRadius();
 
     auto const vDotDelta = v.dot(delta);
     auto const discriminant =
         vDotDelta * vDotDelta - vSqNorm * (delta.squaredNorm() - R * R);
-
-    //~ std::cout << "discriminant: " << discriminant << std::endl;
-    //~ std::cout << "alpha: " << alpha << std::endl;
-    //~ std::cout << "beta: " << beta << std::endl;
 
     if (discriminant.magnitude() > 0) {
       auto const sqDisc = sqrt(discriminant);
@@ -48,6 +44,19 @@ namespace corsika::process::tracking_line {
                             (-vDotDelta + sqDisc) * invDenom);
     } else {
       return {};
+    }
+  }
+
+  TimeType TimeOfIntersection(Line const& vLine, Plane const& vPlane) {
+    auto const delta = vPlane.GetCenter() - vLine.GetR0();
+    auto const v = vLine.GetV0();
+    auto const n = vPlane.GetNormal();
+    auto const c = n.dot(v);
+
+    if (c.magnitude() == 0) {
+      return std::numeric_limits<TimeType::value_type>::infinity() * 1_s;
+    } else {
+      return n.dot(delta) / c;
     }
   }
 } // namespace corsika::process::tracking_line

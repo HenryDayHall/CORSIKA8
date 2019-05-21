@@ -28,10 +28,7 @@
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
-#include <corsika/process/pythia/Decay.h>
-
 #include <corsika/process/particle_cut/ParticleCut.h>
-
 #include <corsika/process/track_writer/TrackWriter.h>
 
 #include <corsika/units/PhysicalUnits.h>
@@ -58,7 +55,6 @@ using namespace corsika::environment;
 
 using namespace std;
 using namespace corsika::units::si;
-
 
 //
 // The example main program for a particle cascade
@@ -102,8 +98,6 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
-  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  // process::pythia::Decay decay(trackedHadrons);
   process::particle_cut::ParticleCut cut(20_GeV);
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // process::HadronicElasticModel::HadronicElasticInteraction

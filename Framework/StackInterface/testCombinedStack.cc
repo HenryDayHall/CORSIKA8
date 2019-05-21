@@ -333,7 +333,8 @@ using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
                                  CombinedTestInterfaceType2>;
 
 #if defined(__clang__)
-using StackTestView = SecondaryView<typename StackTest2::StackImpl, CombinedTestInterfaceType2>;
+using StackTestView =
+    SecondaryView<typename StackTest2::StackImpl, CombinedTestInterfaceType2>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using StackTestView = corsika::stack::MakeView<StackTest2>::type;
 #endif

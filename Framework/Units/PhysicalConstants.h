@@ -51,6 +51,9 @@ namespace corsika::units::constants {
 
   auto constexpr nucleonMass = 0.5 * (0.93827 + 0.93957) * 1e9 * electronvolt;
 
+  // molar gas constant
+  auto constexpr R = Rep(8.314'459'8) * joule / (mole * kelvin);
+
   // etc.
 
 } // namespace corsika::units::constants

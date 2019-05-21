@@ -153,7 +153,7 @@ namespace corsika::cascade {
 
       // determine combined total interaction length (inverse)
       InverseGrammageType const total_inv_lambda =
-          fProcessSequence.GetTotalInverseInteractionLength(vParticle, step);
+          fProcessSequence.GetTotalInverseInteractionLength(vParticle);
 
       // sample random exponential step length in grammage
       corsika::random::ExponentialDistribution expDist(1 / total_inv_lambda);
@@ -242,13 +242,14 @@ namespace corsika::cascade {
         if (min_distance == distance_interact) {
           std::cout << "collide" << std::endl;
 
-          InverseGrammageType const actual_inv_length =
-              fProcessSequence.GetTotalInverseInteractionLength(vParticle, step);
+          InverseGrammageType const current_inv_length =
+              fProcessSequence.GetTotalInverseInteractionLength(vParticle);
 
-          random::UniformRealDistribution<InverseGrammageType> uniDist(actual_inv_length);
+          random::UniformRealDistribution<InverseGrammageType> uniDist(
+              current_inv_length);
           const auto sample_process = uniDist(fRNG);
           InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
-          fProcessSequence.SelectInteraction(vParticle, projectile, step, sample_process,
+          fProcessSequence.SelectInteraction(vParticle, projectile, sample_process,
                                              inv_lambda_count);
         } else if (min_distance == distance_decay) {
           std::cout << "decay" << std::endl;

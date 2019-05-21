@@ -5,7 +5,6 @@
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <array>
@@ -15,8 +14,9 @@ namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
     UrQMD();
+    void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
-        corsika::setup::Stack::StackIterator&, corsika::setup::Trajectory&) const;
+        corsika::setup::Stack::StackIterator&) const;
 
     template <typename TParticle>
     corsika::units::si::CrossSectionType GetCrossSection(TParticle const&,

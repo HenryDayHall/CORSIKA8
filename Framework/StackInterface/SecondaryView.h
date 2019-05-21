@@ -43,14 +43,18 @@ namespace corsika::stack {
      All operations possible on a Stack object are also possible on a
      SecondaryView object. This means you can add, delete, copy, swap,
      iterate, etc.
-   */
 
-  /* INTERNAL NOTE FOR DEVELOPERS The secondary particle indices are
-     stored in a std::vector fIndices, the index of the primary projectle
-     particle is explicitly stored in fProjectileIndex. StackIterator
-     indices are refering to those numbers, where
-     StackIterator::GetIndex()==0 refers to the fProjectileIndex and
-     StackIterator::GetIndex()>0 to fIndices[i+1], see function GetIndexFromIterator.
+     *Further information about implementation (for developers):* All
+     data is stored in the original stack privided at construction
+     time. The secondary particle (view) indices are stored in an
+     extra std::vector of SecondaryView class 'fIndices' referring to
+     the original stack slot indices. The index of the primary
+     projectle particle is also explicitly stored in
+     'fProjectileIndex'. StackIterator indices
+     'i = StackIterator::GetIndex()' are referring to those numbers,
+     where 'i==0' refers to the 'fProjectileIndex', and
+     'StackIterator::GetIndex()>0' to 'fIndices[i-1]', see function
+     GetIndexFromIterator.
    */
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
@@ -125,8 +129,11 @@ namespace corsika::stack {
 
     template <typename... Args>
     auto AddSecondary(StackIterator& proj, const Args... v) {
+      // make space on stack
       InnerStackType::GetStackData().IncrementSize();
+      // get current number of secondaries on stack
       const unsigned int idSec = GetSize();
+      // determine index on (inner) stack where new particle will be located
       const unsigned int index = InnerStackType::GetStackData().GetSize() - 1;
       fIndices.push_back(index);
       // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
@@ -161,14 +168,26 @@ namespace corsika::stack {
     /// @}
 
     /**
-     * need overwrite Stack::Delete, since we want to call SecondaryView::DeleteLast
+     * need overwrite Stack::Delete, since we want to call
+     * SecondaryView::DeleteLast
+     *
+     * The particle is deleted on the underlying (internal) stack. The
+     * local references in SecondaryView in fIndices must be fixed,
+     * too.  The approach is to a) check if the particle 'p' is at the
+     * very end of the internal stack, b) if not: move it there by
+     * copying the last particle to the current particle location, c)
+     * remove the last particle.
+     *
      */
     void Delete(StackIterator p) {
       if (IsEmpty()) { /* error */
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
-      if (p.GetIndex() < GetSize() - 1)
-        InnerStackType::GetStackData().Copy(GetSize() - 1, p.GetIndex());
+      const int innerSize = InnerStackType::GetSize();
+      const int innerIndex = GetIndexFromIterator(p.GetIndex());
+      if (innerIndex < innerSize - 1)
+        InnerStackType::GetStackData().Copy(innerSize - 1,
+                                            GetIndexFromIterator(p.GetIndex()));
       DeleteLast();
     }
 
