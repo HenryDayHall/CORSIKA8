@@ -56,8 +56,8 @@ namespace corsika::process::HadronicElasticModel {
         units::si::CrossSectionType y = 0.05608 * units::si::barn);
     void Init();
 
-    template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle const& p, Track&);
+    template <typename Particle>
+    corsika::units::si::GrammageType GetInteractionLength(Particle const& p);
 
     template <typename Particle>
     corsika::process::EProcessReturn DoInteraction(Particle&);

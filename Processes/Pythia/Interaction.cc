@@ -15,7 +15,6 @@
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/FourVector.h>
 #include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/utl/COMBoost.h>
 
 #include <tuple>
@@ -28,7 +27,6 @@ using namespace corsika;
 using namespace corsika::setup;
 using Projectile = corsika::setup::StackView::ParticleType;
 using Particle = corsika::setup::Stack::ParticleType;
-using Track = Trajectory;
 
 namespace corsika::process::pythia {
 
@@ -168,7 +166,7 @@ namespace corsika::process::pythia {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(Particle& p, Track&) {
+  units::si::GrammageType Interaction::GetInteractionLength(Particle& p) {
 
     using namespace units;
     using namespace units::si;

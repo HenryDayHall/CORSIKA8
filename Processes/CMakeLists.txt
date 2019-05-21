@@ -10,6 +10,7 @@ add_subdirectory (TrackingLine)
 add_subdirectory (HadronicElasticModel)
 add_subdirectory (EnergyLoss)
 add_subdirectory (UrQMD)
+add_subdirectory (SwitchProcess)
 
 #add_custom_target(CORSIKAprocesses)
 add_library (CORSIKAprocesses INTERFACE)

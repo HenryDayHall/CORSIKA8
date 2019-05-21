@@ -51,16 +51,16 @@ namespace corsika::process::pythia {
                     const corsika::particles::Code TargetId,
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
-    template <typename TParticle, typename TTrack>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle&, TTrack&);
+    template <typename TParticle>
+    corsika::units::si::GrammageType GetInteractionLength(TParticle&);
 
     /**
        In this function PYTHIA is called to produce one event. The
        event is copied (and boosted) into the shower lab frame.
      */
 
-    template <typename TProjctile>
-    corsika::process::EProcessReturn DoInteraction(TProjctile&);
+    template <typename TProjectile>
+    corsika::process::EProcessReturn DoInteraction(TProjectile&);
 
   private:
     corsika::random::RNG& fRNG =

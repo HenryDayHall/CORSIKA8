@@ -38,13 +38,12 @@ namespace corsika::process {
     template <typename Particle>
     EProcessReturn DoInteraction(Particle&);
 
-    template <typename Particle, typename Track>
-    corsika::units::si::GrammageType GetInteractionLength(Particle& p, Track& t);
+    template <typename TParticle>
+    corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
 
-    template <typename Particle, typename Track>
-    corsika::units::si::InverseGrammageType GetInverseInteractionLength(Particle& p,
-                                                                        Track& t) {
-      return 1. / GetRef().GetInteractionLength(p, t);
+    template <typename TParticle>
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& p) {
+      return 1. / GetRef().GetInteractionLength(p);
     }
   };
 
