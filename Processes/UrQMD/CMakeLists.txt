@@ -83,11 +83,7 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testUrQMD
-  testUrQMD.cc
-  ${MODEL_HEADERS}
-  )
-
+CORSIKA_ADD_TEST(testUrQMD SOURCES testUrQMD.cc ${MODEL_HEADERS})
 target_link_libraries (
   testUrQMD
   ProcessUrQMD
@@ -97,4 +93,3 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testUrQMD)
