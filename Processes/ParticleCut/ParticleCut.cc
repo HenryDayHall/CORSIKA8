@@ -27,13 +27,11 @@ namespace corsika::process {
       auto const energyLab = vP.GetEnergy();
       // nuclei
       if (vP.GetPID() == particles::Code::Nucleus) {
+	// calculate energy per nucleon
         auto const ElabNuc = energyLab / vP.GetNuclearA();
-        auto const EcmNN = sqrt(2. * units::constants::nucleonMass * ElabNuc);
-        return (ElabNuc < fECut || EcmNN < 10_GeV);
+        return (ElabNuc < fECut);
       } else {
-        // TODO: center-of-mass energy hard coded
-        const HEPEnergyType Ecm = sqrt(2. * units::constants::nucleonMass * energyLab);
-        return (energyLab < fECut || Ecm < 10_GeV);
+        return (energyLab < fECut);
       }
     }
 
