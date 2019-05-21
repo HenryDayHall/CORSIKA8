@@ -31,6 +31,8 @@
 
 #include <corsika/process/track_writer/TrackWriter.h>
 
+#include <corsika/process/particle_cut/ParticleCut.h>
+
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/random/RNGManager.h>
@@ -51,159 +53,6 @@ using namespace corsika::environment;
 
 using namespace std;
 using namespace corsika::units::si;
-
-class ProcessCut : public process::SecondariesProcess<ProcessCut> {
-
-  HEPEnergyType fECut;
-
-  HEPEnergyType fEnergy = 0_GeV;
-  HEPEnergyType fEmEnergy = 0_GeV;
-  int fEmCount = 0;
-  HEPEnergyType fInvEnergy = 0_GeV;
-  int fInvCount = 0;
-
-public:
-  ProcessCut(const HEPEnergyType cut)
-      : fECut(cut) {}
-
-  template <typename Particle>
-  bool isBelowEnergyCut(Particle& p) const {
-    // nuclei
-    if (p.GetPID() == particles::Code::Nucleus) {
-      auto const ElabNuc = p.GetEnergy() / p.GetNuclearA();
-      auto const EcmNN = sqrt(2. * ElabNuc * 0.93827_GeV);
-      if (ElabNuc < fECut || EcmNN < 10_GeV)
-        return true;
-      else
-        return false;
-    } else {
-      // TODO: center-of-mass energy hard coded
-      const HEPEnergyType Ecm = sqrt(2. * p.GetEnergy() * 0.93827_GeV);
-      if (p.GetEnergy() < fECut || Ecm < 10_GeV)
-        return true;
-      else
-        return false;
-    }
-  }
-
-  bool isEmParticle(Code pCode) const {
-    bool is_em = false;
-    // FOR NOW: switch
-    switch (pCode) {
-      case Code::Electron:
-        is_em = true;
-        break;
-      case Code::Positron:
-        is_em = true;
-        break;
-      case Code::Gamma:
-        is_em = true;
-        break;
-      default:
-        break;
-    }
-    return is_em;
-  }
-
-  void defineEmParticles() const {
-    // create bool array identifying em particles
-  }
-
-  bool isInvisible(Code pCode) const {
-    bool is_inv = false;
-    // FOR NOW: switch
-    switch (pCode) {
-      case Code::NuE:
-        is_inv = true;
-        break;
-      case Code::NuEBar:
-        is_inv = true;
-        break;
-      case Code::NuMu:
-        is_inv = true;
-        break;
-      case Code::NuMuBar:
-        is_inv = true;
-        break;
-      case Code::MuPlus:
-        is_inv = true;
-        break;
-      case Code::MuMinus:
-        is_inv = true;
-        break;
-
-      case Code::Neutron:
-        is_inv = true;
-        break;
-
-      case Code::AntiNeutron:
-        is_inv = true;
-        break;
-
-      default:
-        break;
-    }
-    return is_inv;
-  }
-
-  template <typename TSecondaries>
-  EProcessReturn DoSecondaries(TSecondaries& vS) {
-    auto p = vS.begin();
-    while (p != vS.end()) {
-      const Code pid = p.GetPID();
-      HEPEnergyType energy = p.GetEnergy();
-      cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
-           << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
-           << endl;
-      if (isEmParticle(pid)) {
-        cout << "removing em. particle..." << endl;
-        fEmEnergy += energy;
-        fEmCount += 1;
-        p.Delete();
-      } else if (isInvisible(pid)) {
-        cout << "removing inv. particle..." << endl;
-        fInvEnergy += energy;
-        fInvCount += 1;
-        p.Delete();
-      } else if (isBelowEnergyCut(p)) {
-        cout << "removing low en. particle..." << endl;
-        fEnergy += energy;
-        p.Delete();
-      } else if (p.GetTime() > 10_ms) {
-        cout << "removing OLD particle..." << endl;
-        fEnergy += energy;
-        p.Delete();
-      } else {
-        ++p; // next entry in SecondaryView
-      }
-    }
-    return EProcessReturn::eOk;
-  }
-
-  void Init() {
-    fEmEnergy = 0. * 1_GeV;
-    fEmCount = 0;
-    fInvEnergy = 0. * 1_GeV;
-    fInvCount = 0;
-    fEnergy = 0. * 1_GeV;
-    // defineEmParticles();
-  }
-
-  void ShowResults() {
-    cout << " ******************************" << endl
-         << " ParticleCut: " << endl
-         << " energy in em.  component (GeV):  " << fEmEnergy / 1_GeV << endl
-         << " no. of em.  particles injected:  " << fEmCount << endl
-         << " energy in inv. component (GeV):  " << fInvEnergy / 1_GeV << endl
-         << " no. of inv. particles injected:  " << fInvCount << endl
-         << " energy below particle cut (GeV): " << fEnergy / 1_GeV << endl
-         << " ******************************" << endl;
-  }
-
-  HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
-  HEPEnergyType GetCutEnergy() const { return fEnergy; }
-  HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
-};
 
 //
 // The example main program for a particle cascade
@@ -257,7 +106,7 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
-  ProcessCut cut(20_GeV);
+  process::particle_cut::ParticleCut cut(20_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss;
