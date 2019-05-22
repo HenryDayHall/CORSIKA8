@@ -109,7 +109,7 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle) const {
 corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjectile) {
   using namespace units::si;
 
-  auto const projectileCode = vProjectile.GetPID();
+  auto projectileCode = vProjectile.GetPID();
   auto const projectileEnergyLab = vProjectile.GetEnergy();
   auto const& projectileMomentumLab = vProjectile.GetMomentum();
   auto const& projectilePosition = vProjectile.GetPosition();
@@ -158,6 +158,13 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     sys_.Ap = 1; // even for non-baryons this has to be set, see vanilla UrQMD.f
     rsys_.bdist = nucrad_(targetA) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
     rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
+
+    if (projectileCode == particles::Code::K0Long) {
+      std::uniform_int_distribution dist(0, 1);
+      projectileCode = (dist(fRNG) == 1) ? particles::Code::K0 : particles::Code::K0Bar;
+    } else if (projectileCode == particles::Code::K0Short) {
+      throw std::runtime_error("K0Short should not interact");
+    }
 
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
     // todo: conversion of K_long/short into strong eigenstates;
