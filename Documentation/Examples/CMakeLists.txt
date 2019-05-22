@@ -56,7 +56,7 @@ target_link_libraries (boundary_example
   )
 install (TARGETS boundary_example DESTINATION share/examples)
 
-if (PYTHIA8_FOUND)
+if (Pythia8_FOUND)
   CORSIKA_ADD_TEST (cascade_proton_example)
   target_link_libraries (cascade_proton_example
     SuperStupidStack
@@ -82,29 +82,28 @@ if (PYTHIA8_FOUND)
   install (TARGETS cascade_proton_example DESTINATION share/examples)
 endif()
 
-if (PYTHIA8_FOUND)
-  CORSIKA_ADD_TEST(vertical_EAS)
-  target_link_libraries (vertical_EAS
-    SuperStupidStack
-    CORSIKAunits
-    CORSIKAlogging
-    CORSIKArandom
-    ProcessSibyll
-    CORSIKAcascade
-    ProcessEnergyLoss
-    ProcessTrackWriter
-    ProcessTrackingLine
-    ProcessHadronicElasticModel
-    ProcessStackInspector
-    CORSIKAprocesses
-    CORSIKAcascade
-    CORSIKAparticles
-    CORSIKAgeometry
-    CORSIKAenvironment
-    CORSIKAprocesssequence
-    )
-  install (TARGETS vertical_EAS DESTINATION share/examples)
-endif()
+CORSIKA_ADD_TEST(vertical_EAS)
+target_link_libraries (vertical_EAS
+  SuperStupidStack
+  CORSIKAunits
+  CORSIKAlogging
+  CORSIKArandom
+  ProcessSibyll
+  CORSIKAcascade
+  ProcessEnergyLoss
+  ProcessTrackWriter
+  ProcessTrackingLine
+  ProcessHadronicElasticModel
+  ProcessParticleCut
+  ProcessStackInspector
+  CORSIKAprocesses
+  CORSIKAcascade
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAprocesssequence
+  )
+install (TARGETS vertical_EAS DESTINATION share/examples)
 
 CORSIKA_ADD_TEST (staticsequence_example)
 target_link_libraries (staticsequence_example
