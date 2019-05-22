@@ -51,8 +51,7 @@ install (
 
 # --------------------
 # code unit testing
-#add_executable (testNullModel testNullModel.cc)
-
+# CORSIKA_ADD_TEST(testNullModel)
 #target_link_libraries (
 #  testNullModel  ProcessNullModel
 #  CORSIKAsetup
@@ -60,5 +59,4 @@ install (
 #  CORSIKAunits
 #  CORSIKAthirdparty # for catch2
 #  )
-# CORSIKA_ADD_TEST(testNullModel)
 

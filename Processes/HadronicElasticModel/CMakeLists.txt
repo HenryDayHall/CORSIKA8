@@ -51,14 +51,12 @@ install (
 
 # --------------------
 # code unit testing
-#~ add_executable (ProcessHadronicElasticModel testProcessHadronicElasticModel.cc)
-
-#~ target_link_libraries (
-  #~ testProcessHadronicElasticModel
-  #~ ProcessHadronicElasticModel
-  #~ CORSIKAsetup
-  #~ CORSIKAgeometry
-  #~ CORSIKAunits
-  #~ CORSIKAthirdparty # for catch2
-  #~ )
-#~ CORSIKA_ADD_TEST(testNullModel)
+# CORSIKA_ADD_TEST (testProcessHadronicElasticModel)
+# target_link_libraries (
+  # testProcessHadronicElasticModel
+  # ProcessHadronicElasticModel
+  # CORSIKAsetup
+  # CORSIKAgeometry
+  # CORSIKAunits
+  # CORSIKAthirdparty # for catch2
+  # )
