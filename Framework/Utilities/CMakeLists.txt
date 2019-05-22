@@ -72,20 +72,16 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testCOMBoost testCOMBoost.cc)
-
+CORSIKA_ADD_TEST(testCOMBoost)
 target_link_libraries (
   testCOMBoost
   CORSIKAutilities
   CORSIKAthirdparty # for catch2
   )
 
-add_executable (testCorsikaFenv testCorsikaFenv.cc)
-
+CORSIKA_ADD_TEST(testCorsikaFenv)
 target_link_libraries (
   testCorsikaFenv
   CORSIKAutilities
   CORSIKAthirdparty # for catch2
 )
-CORSIKA_ADD_TEST(testCOMBoost)
-add_test(testCorsikaFenv testCorsikaFenv)

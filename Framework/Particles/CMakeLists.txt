@@ -82,16 +82,14 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (
-  testParticles
-  testParticles.cc
-  ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
-  )
-
+CORSIKA_ADD_TEST(testParticles
+  SOURCES
+    testParticles.cc
+    ${PROJECT_BINARY_DIR}/Framework/Particles/GeneratedParticleProperties.inc
+)
 target_link_libraries (
   testParticles
   CORSIKAparticles
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testParticles)

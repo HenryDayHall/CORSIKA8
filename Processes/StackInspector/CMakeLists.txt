@@ -52,8 +52,7 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testStackInspector testStackInspector.cc)
-
+CORSIKA_ADD_TEST(testStackInspector)
 target_link_libraries (
   testStackInspector
   ProcessStackInspector
@@ -61,4 +60,3 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testStackInspector)

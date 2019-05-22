@@ -48,10 +48,10 @@ install (
 
 # --------------------
 # code unit testing
-add_executable (testParticleCut
+CORSIKA_ADD_TEST(testParticleCut SOURCES
   testParticleCut.cc
   ${MODEL_HEADERS}
-  )
+)
 
 target_link_libraries (
   testParticleCut
@@ -64,4 +64,3 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testParticleCut)

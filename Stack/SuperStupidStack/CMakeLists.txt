@@ -31,11 +31,7 @@ install (
 
 # ----------------
 # code unit testing
-add_executable (
-  testSuperStupidStack
-  testSuperStupidStack.cc
-  )
-
+CORSIKA_ADD_TEST(testSuperStupidStack)
 target_link_libraries (
   testSuperStupidStack
   CORSIKAgeometry
@@ -43,4 +39,3 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testSuperStupidStack)

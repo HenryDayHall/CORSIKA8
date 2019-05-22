@@ -45,11 +45,7 @@ target_link_libraries (
 
 #-- -- -- -- -- -- -- --
 #code unit testing
-add_executable (
-  testProcessSequence
-  testProcessSequence.cc
-  )
-
+CORSIKA_ADD_TEST(testProcessSequence)
 target_link_libraries (
   testProcessSequence
   CORSIKAsetup
@@ -57,4 +53,3 @@ target_link_libraries (
   CORSIKAprocesssequence
   CORSIKAthirdparty # for catch2
   )
-CORSIKA_ADD_TEST(testProcessSequence)
