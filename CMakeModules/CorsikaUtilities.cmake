@@ -101,24 +101,30 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 # Pass the name of the test.cc file as the first
 # argument, without the ".cc" extention.
 #
-# Example: CORSIKA_ADD_TEST(testSomething)
-# (generates target testSomething from file testSomething.cc)
+# Example: CORSIKA_ADD_TEST (testSomething)
 #
-# 2) Customize sources
+# This generates target testSomething from file testSomething.cc.
+#
+# 2) Customize sources:
 # If 1) doesn't work, use the SOURCES keyword to explicitly
 # specify the sources.
 #
-# Example: CORSIKA_ADD_TEST(testSomething SOURCES source1.cc source2.cc someheader.h)
+# Example: CORSIKA_ADD_TEST (testSomething
+#              SOURCES source1.cc source2.cc someheader.h)
 #
-# 3) Customize sanitizers
+# 3) Customize sanitizers:
 # You can override which sanitizers are compiled into the
 # test, but only do this if the defaults do not work.
 #
-# Example: CORSIKA_ADD_TEST(testSomething SANITIZE undefined)
-# (only uses the sanitizer for undefined behavior)
+# Example: CORSIKA_ADD_TEST (testSomething SANITIZE undefined)
+#
+# Only uses the sanitizer for undefined behavior.
 #
 # In all cases, you can further customize the target with
 # target_link_libraries(testSomething ...) and so on.
+#
+# TEMPORARY: All sanitizers are currently globally disabled by default, to enable them,
+# set CORSIKA_SANITIZERS_ENABLED to TRUE.
 function (CORSIKA_ADD_TEST)
   cmake_parse_arguments(PARSE_ARGV 1 _ "" "SANITIZE" "SOURCES")
 

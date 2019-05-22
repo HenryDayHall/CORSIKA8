@@ -14,8 +14,11 @@ CORSIKA_ADD_TEST (stack_example)
 target_link_libraries (stack_example SuperStupidStack CORSIKAunits
   CORSIKAlogging)
 
-CORSIKA_ADD_TEST (cascade_example)
-target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
+# address sanitizer is making this example too slow, so we only do "undefined"
+CORSIKA_ADD_TEST (cascade_example SANITIZE "undefined")
+target_link_libraries (cascade_example
+  SuperStupidStack
+  CORSIKAunits
   CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
@@ -34,30 +37,11 @@ target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
   )
 install (TARGETS cascade_example DESTINATION share/examples)
 
-if (Pythia8_FOUND)
-  # address sanitizer is making this example too slow, so we only do "undefined"
-  CORSIKA_ADD_TEST (cascade_example SANITIZE "undefined")
-  target_link_libraries (cascade_example SuperStupidStack CORSIKAunits
-    CORSIKAlogging
-    CORSIKArandom
-    ProcessSibyll
-    CORSIKAcascade
-    ProcessEnergyLoss
-    ProcessStackInspector
-    ProcessTrackWriter
-    ProcessTrackingLine
-    CORSIKAprocesses
-    CORSIKAcascade
-    CORSIKAparticles
-    CORSIKAgeometry
-    CORSIKAenvironment
-    CORSIKAprocesssequence
-    )
-    install (TARGETS cascade_example DESTINATION share/examples)
-endif()
-
 CORSIKA_ADD_TEST (boundary_example)
-target_link_libraries (boundary_example SuperStupidStack CORSIKAunits CORSIKAlogging
+target_link_libraries (boundary_example
+  SuperStupidStack
+  CORSIKAunits
+  CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
   CORSIKAcascade
@@ -72,9 +56,11 @@ target_link_libraries (boundary_example SuperStupidStack CORSIKAunits CORSIKAlog
   )
 install (TARGETS boundary_example DESTINATION share/examples)
 
-if (Pythia8_FOUND)
+if (PYTHIA8_FOUND)
   CORSIKA_ADD_TEST (cascade_proton_example)
-  target_link_libraries (cascade_proton_example SuperStupidStack CORSIKAunits
+  target_link_libraries (cascade_proton_example
+    SuperStupidStack
+    CORSIKAunits
     CORSIKAlogging
     CORSIKArandom
     ProcessSibyll
@@ -96,10 +82,11 @@ if (Pythia8_FOUND)
   install (TARGETS cascade_proton_example DESTINATION share/examples)
 endif()
 
-if (Pythia8_FOUND)
-  # CORSIKA_ADD_TEST (vertical_EAS) not yet...
+if (PYTHIA8_FOUND)
   CORSIKA_ADD_TEST(vertical_EAS)
-  target_link_libraries (vertical_EAS SuperStupidStack CORSIKAunits
+  target_link_libraries (vertical_EAS
+    SuperStupidStack
+    CORSIKAunits
     CORSIKAlogging
     CORSIKArandom
     ProcessSibyll
@@ -116,7 +103,7 @@ if (Pythia8_FOUND)
     CORSIKAenvironment
     CORSIKAprocesssequence
     )
-    install (TARGETS vertical_EAS DESTINATION share/examples)
+  install (TARGETS vertical_EAS DESTINATION share/examples)
 endif()
 
 CORSIKA_ADD_TEST (staticsequence_example)
