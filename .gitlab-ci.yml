@@ -9,23 +9,23 @@ variables:
   LSAN_OPTIONS: "log_threads=1"
   ASAN_OPTIONS: "detect_leaks=0:detect_stack_use_after_return=1"
 
-build:
-  stage: build
-  tags:
-    - corsika
-  script:
-    - mkdir build
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . -- -j4
-    - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
-  artifacts:
-    expire_in: 1 year
-    paths:
-      - build/test.log.gz
-    reports:
-      junit:
-        - build/test_outputs/junit*.xml
+# build:
+#   stage: build
+#   tags:
+#     - corsika
+#   script:
+#     - mkdir build
+#     - cd build
+#     - cmake .. -DCMAKE_BUILD_TYPE=Debug
+#     - cmake --build . -- -j4
+#     - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
+#   artifacts:
+#     expire_in: 1 year
+#     paths:
+#       - build/test.log.gz
+#     reports:
+#       junit:
+#         - build/test_outputs/junit*.xml
 
 coverage:
   stage: build
