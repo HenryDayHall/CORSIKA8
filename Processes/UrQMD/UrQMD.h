@@ -38,6 +38,8 @@ namespace corsika::process::UrQMD {
     bool CanInteract(particles::Code) const;
 
   private:
+    static corsika::units::si::CrossSectionType GetCrossSection(
+        particles::Code, particles::Code, corsika::units::si::HEPEnergyType, int);
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
   };

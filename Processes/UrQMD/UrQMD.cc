@@ -28,29 +28,20 @@ using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;
 
-template <typename TParticle> // need template here, as this is called both with
-                              // SetupParticle as well as SetupProjectile
-CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
-                                        corsika::particles::Code vTargetCode) const {
-  using namespace units::si;
-
-  // TODO: energy cuts, return 0 for non-hadrons
-
-  auto const projectileCode = vProjectile.GetPID();
-  auto const projectileEnergyLab = vProjectile.GetEnergy();
-
+CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
+                                        corsika::particles::Code vTargetCode,
+                                        HEPEnergyType vLabEnergy, int vAProjectile = 1) {
   // the following is a translation of ptsigtot() into C++
-  if (projectileCode != particles::Code::Nucleus &&
+  if (vProjectileCode != particles::Code::Nucleus &&
       !IsNucleus(vTargetCode)) { // both particles are "special"
-    auto const mProj = particles::GetMass(projectileCode);
+    auto const mProj = particles::GetMass(vProjectileCode);
     auto const mTar = particles::GetMass(vTargetCode);
-    double sqrtS =
-        sqrt(units::si::detail::static_pow<2>(mProj) +
-             units::si::detail::static_pow<2>(mTar) + 2 * projectileEnergyLab * mTar) *
-        (1 / 1_GeV);
+    double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) +
+                        units::si::detail::static_pow<2>(mTar) + 2 * vLabEnergy * mTar) *
+                   (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
-    auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
+    auto const [ityp, iso3] = ConvertToUrQMD(vProjectileCode);
     inputs_.spityp[0] = ityp;
     inputs_.spiso3[0] = iso3;
 
@@ -62,14 +53,33 @@ CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
     int two = 2;
     return sigtot_(one, two, sqrtS) * 1_mb;
   } else {
-    int const Ap =
-        (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
+    int const Ap = vAProjectile;
     int const At = IsNucleus(vTargetCode) ? particles::GetNucleusA(vTargetCode) : 1;
 
     double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
     return 10_mb * M_PI * units::si::detail::static_pow<2>(maxImpact);
     // is a constant cross-section really reasonable?
   }
+}
+
+template <typename TParticle> // need template here, as this is called both with
+                              // SetupParticle as well as SetupProjectile
+CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
+                                        corsika::particles::Code vTargetCode) const {
+  // TODO: return 0 for non-hadrons?
+
+  auto const projectileCode = vProjectile.GetPID();
+  auto const projectileEnergyLab = vProjectile.GetEnergy();
+
+  if (projectileCode == particles::Code::K0Long) {
+    return 0.5 *
+           (GetCrossSection(particles::Code::K0, vTargetCode, projectileEnergyLab) +
+            GetCrossSection(particles::Code::K0Bar, vTargetCode, projectileEnergyLab));
+  }
+
+  int const Ap =
+      (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
+  return GetCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
 }
 
 bool UrQMD::CanInteract(particles::Code vCode) const {
@@ -82,7 +92,7 @@ bool UrQMD::CanInteract(particles::Code vCode) const {
       particles::Code::Nucleus, particles::Code::Proton,      particles::Code::AntiProton,
       particles::Code::Neutron, particles::Code::AntiNeutron, particles::Code::PiPlus,
       particles::Code::PiMinus, particles::Code::KPlus,       particles::Code::KMinus,
-      particles::Code::K0,      particles::Code::K0Bar};
+      particles::Code::K0,      particles::Code::K0Bar,       particles::Code::K0Long};
 
   return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
                    vCode) != std::cend(validProjectileCodes);
