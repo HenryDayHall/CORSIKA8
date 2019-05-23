@@ -61,6 +61,14 @@ namespace corsika::random {
      * set seed_seq of \a pStreamName to \a pSeedSeq
      */
     // void SetSeedSeq(std::string const& pStreamName, std::seed_seq& const pSeedSeq);
+
+    /**
+     * Set explicit seeds for all currently registered streams. The actual seed values
+     * are incremented from \a vSeed.
+     */
+    void SeedAll(uint64_t vSeed);
+
+    void SeedAll(); //!< seed all currently registered streams with "real" randomness
   };
 
 } // namespace corsika::random
