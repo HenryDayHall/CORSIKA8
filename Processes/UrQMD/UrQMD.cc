@@ -170,8 +170,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
 
     if (projectileCode == particles::Code::K0Long) {
-      std::uniform_int_distribution dist(0, 1);
-      projectileCode = (dist(fRNG) == 1) ? particles::Code::K0 : particles::Code::K0Bar;
+      projectileCode = fBooleanDist(fRNG) ? particles::Code::K0 : particles::Code::K0Bar;
     } else if (projectileCode == particles::Code::K0Short) {
       throw std::runtime_error("K0Short should not interact");
     }
@@ -205,7 +204,11 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
       originalCS.RotateToZ(projectileMomentumLab);
 
   for (int i = 0; i < sys_.npart; ++i) {
-    auto const code = ConvertFromUrQMD(isys_.ityp[i], isys_.iso3[i]);
+    auto code = ConvertFromUrQMD(isys_.ityp[i], isys_.iso3[i]);
+    if (code == particles::Code::K0 || code == particles::Code::K0Bar) {
+      code = fBooleanDist(fRNG) ? particles::Code::K0Short : particles::Code::K0Long;
+    }
+
     // "coor_.p0[i] * 1_GeV" is likely off-shell as UrQMD doesn't preserve masses well
     auto momentum = geometry::Vector(
         zAxisFrame,
