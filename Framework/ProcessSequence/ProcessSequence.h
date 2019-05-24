@@ -57,9 +57,15 @@ namespace corsika::process {
     class SwitchProcess; // fwd-decl.
   }
 
+  // to detect SwitchProcesses inside the ProcessSequence
+  template <typename T>
+  struct is_switch_process : std::false_type {};
+
   template <typename A, typename B>
-  struct is_process_sequence<switch_process::SwitchProcess<A, B>>
-      : std::true_type {};
+  struct is_switch_process<switch_process::SwitchProcess<A, B>> : std::true_type {};
+
+  template <typename T>
+  bool constexpr is_switch_process_v = is_switch_process<T>::value;
 
   /**
      T1 and T2 are both references if possible (lvalue), otherwise
@@ -74,6 +80,9 @@ namespace corsika::process {
 
     static bool constexpr t1ProcSeq = is_process_sequence_v<T1type>;
     static bool constexpr t2ProcSeq = is_process_sequence_v<T2type>;
+
+    static bool constexpr t1SwitchProc = is_switch_process_v<T1type>;
+    static bool constexpr t2SwitchProc = is_switch_process_v<T2type>;
 
   public:
     T1 A; // this is a reference, if possible
@@ -185,10 +194,12 @@ namespace corsika::process {
 
       InverseGrammageType tot = 0 * meter * meter / gram;
 
-      if constexpr (std::is_base_of_v<InteractionProcess<T1type>, T1type> || t1ProcSeq) {
+      if constexpr (std::is_base_of_v<InteractionProcess<T1type>, T1type> || t1ProcSeq ||
+                    t1SwitchProc) {
         tot += A.GetInverseInteractionLength(vP);
       }
-      if constexpr (std::is_base_of_v<InteractionProcess<T2type>, T2type> || t2ProcSeq) {
+      if constexpr (std::is_base_of_v<InteractionProcess<T2type>, T2type> || t2ProcSeq ||
+                    t2SwitchProc) {
         tot += B.GetInverseInteractionLength(vP);
       }
       return tot;
@@ -200,7 +211,7 @@ namespace corsika::process {
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
 
-      if constexpr (t1ProcSeq) {
+      if constexpr (t1ProcSeq || t1SwitchProc) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
             A.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
@@ -216,7 +227,7 @@ namespace corsika::process {
         }
       } // end branch A
 
-      if constexpr (t2ProcSeq) {
+      if constexpr (t2ProcSeq || t2SwitchProc) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
             B.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
