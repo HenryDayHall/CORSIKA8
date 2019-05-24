@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
  *

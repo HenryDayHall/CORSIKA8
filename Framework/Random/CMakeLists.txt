@@ -1,4 +1,3 @@
-
 set (
   CORSIKArandom_SOURCES
   RNGManager.cc

@@ -1,4 +1,3 @@
-
 find_package (Doxygen OPTIONAL_COMPONENTS dot mscgen dia)
 
 if (DOXYGEN_FOUND)
