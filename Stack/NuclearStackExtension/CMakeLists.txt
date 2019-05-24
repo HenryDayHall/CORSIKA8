@@ -1,4 +1,3 @@
-
 set (NuclearStackExtension_HEADERS NuclearStackExtension.h)
 set (NuclearStackExtension_NAMESPACE corsika/stack/nuclear_extension)
 

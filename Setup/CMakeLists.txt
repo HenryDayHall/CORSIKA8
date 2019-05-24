@@ -1,4 +1,3 @@
-
 set (
   SETUP_HEADERS
   SetupStack.h

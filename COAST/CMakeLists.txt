@@ -1,4 +1,3 @@
-
 set (
   COAST_HEADERS
   COASTProcess.h

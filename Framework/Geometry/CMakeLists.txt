@@ -1,4 +1,3 @@
-
 set (
   GEOMETRY_SOURCES
   CoordinateSystem.cc

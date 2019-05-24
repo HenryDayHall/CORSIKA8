@@ -1,4 +1,3 @@
-
 add_library (CORSIKAlogging INTERFACE)
 
 # namespace of library -> location of header files

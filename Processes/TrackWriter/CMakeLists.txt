@@ -1,4 +1,3 @@
-
 set (
   MODEL_SOURCES
   TrackWriter.cc

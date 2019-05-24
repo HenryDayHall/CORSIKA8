@@ -1,4 +1,3 @@
-
 add_library (CORSIKAprocesssequence INTERFACE)
 
 #namespace of library->location of header files
