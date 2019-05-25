@@ -42,16 +42,12 @@ coverage: # special pipeline for master with coverage report
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
-    - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
+    - ctest -j4 -V 
     - cmake --build . --target coverage && tar czf coverage-report.tar.gz coverage-report
   artifacts:
     expire_in: 1 year
     paths:
       - build/coverage-report.tar.gz
-      - build/test.log.gz
-    reports:
-      junit:
-        - build/test_outputs/junit*.xml
   only:
     - master
 
