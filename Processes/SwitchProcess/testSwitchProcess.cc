@@ -170,15 +170,15 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
 
     // high energy process creates 2 secondaries
     SECTION("SelectInteraction") {
-    typename SimpleStack::ParticleType theParticle =
-    stack.GetNextParticle(); // as in corsika::Cascade
-    StackTestView view(theParticle);
-    auto projectile = view.GetProjectile();
+      typename SimpleStack::ParticleType theParticle =
+          stack.GetNextParticle(); // as in corsika::Cascade
+      StackTestView view(theParticle);
+      auto projectile = view.GetProjectile();
 
-    InverseGrammageType invLambda = 0 / kgMSq;
-    switchProcess.SelectInteraction(p, projectile, 0.01 / kgMSq, invLambda);
+      InverseGrammageType invLambda = 0 / kgMSq;
+      switchProcess.SelectInteraction(p, projectile, 0.01 / kgMSq, invLambda);
 
-    REQUIRE(view.GetSize() == 2);
+      REQUIRE(view.GetSize() == 2);
     }
   }
 }
@@ -206,27 +206,27 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
     }
 
     SECTION("SelectInteraction") {
-    std::vector<int> numberOfSecondaries;
+      std::vector<int> numberOfSecondaries;
 
-    for (int i = 0; i < 1000; ++i) {
-    typename SimpleStack::ParticleType theParticle =
-    stack.GetNextParticle(); // as in corsika::Cascade
-    StackTestView view(theParticle);
-    auto projectile = view.GetProjectile();
+      for (int i = 0; i < 1000; ++i) {
+        typename SimpleStack::ParticleType theParticle =
+            stack.GetNextParticle(); // as in corsika::Cascade
+        StackTestView view(theParticle);
+        auto projectile = view.GetProjectile();
 
-    double r = i / 1000.;
-    InverseGrammageType invLambda = r * 7./4 / kgMSq;
+        double r = i / 1000.;
+        InverseGrammageType invLambda = r * 7. / 4 / kgMSq;
 
-    InverseGrammageType accumulator = 0 / kgMSq;
-    completeSeq.SelectInteraction(p, projectile, invLambda, accumulator);
+        InverseGrammageType accumulator = 0 / kgMSq;
+        completeSeq.SelectInteraction(p, projectile, invLambda, accumulator);
 
-    numberOfSecondaries.push_back(view.GetSize());
-    }
+        numberOfSecondaries.push_back(view.GetSize());
+      }
 
-    auto const mean =
-    std::accumulate(numberOfSecondaries.cbegin(), numberOfSecondaries.cend(), 0.) /
-    numberOfSecondaries.size();
-    REQUIRE(mean == Approx(12./7.).margin(0.01));
+      auto const mean =
+          std::accumulate(numberOfSecondaries.cbegin(), numberOfSecondaries.cend(), 0.) /
+          numberOfSecondaries.size();
+      REQUIRE(mean == Approx(12. / 7.).margin(0.01));
     }
   }
 
