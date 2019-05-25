@@ -34,15 +34,11 @@ coverage: # special pipeline for master with coverage report
   tags:
     - corsika
   script:
-    - mkdir build
-    - cmake ..
-    - cmake --build . -- -j 4 
-    - ctest -V >& test.log
-  after_script:
+    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
-    - ctest -j4 -V 
+    - ctest -j4 
     - cmake --build . --target coverage && tar czf coverage-report.tar.gz coverage-report
   artifacts:
     expire_in: 1 year
