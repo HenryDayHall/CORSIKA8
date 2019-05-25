@@ -478,7 +478,7 @@ C-----------------------------------------------------------------------
       CALL BLOCK_INI
       CALL NUC_GEOM_INI
       CALL SIG_AIR_INI
-      CALL DEC_INI
+c      CALL DEC_INI
 c...  charm frag. normalisation
       CALL ZNORMAL
 

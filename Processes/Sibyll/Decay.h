@@ -21,22 +21,32 @@ namespace corsika::process {
   namespace sibyll {
 
     class Decay : public corsika::process::DecayProcess<Decay> {
-      std::vector<particles::Code> const fTrackedParticles;
       int fCount = 0;
 
     public:
-      Decay(std::vector<particles::Code>);
+      Decay();
       ~Decay();
       void Init();
 
-      void SetParticleListStable(const std::vector<particles::Code>);
+      void SetStable(const std::vector<particles::Code>);
+      void SetUnstable(const std::vector<particles::Code>);
       void SetUnstable(const corsika::particles::Code);
       void SetStable(const corsika::particles::Code);
+      void SetAllUnstable();
       void SetAllStable();
+      bool IsStable(const corsika::particles::Code);
+      bool IsUnstable(const corsika::particles::Code);
+      void SetDecay(const particles::Code, const bool);
+
+      void PrintDecayConfig(const corsika::particles::Code);
       void SetHadronsUnstable();
 
       template <typename TParticle>
       corsika::units::si::TimeType GetLifetime(TParticle const&) const;
+
+      /**
+       In this function SIBYLL is called to produce to decay the input particle.
+     */
 
       template <typename TProjectile>
       void DoDecay(TProjectile&);

@@ -28,77 +28,62 @@ using SetupParticle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::process::sibyll {
 
-  Decay::Decay(vector<particles::Code> pParticles)
-      : fTrackedParticles(pParticles) {}
+  Decay::Decay() {}
   Decay::~Decay() { cout << "Sibyll::Decay n=" << fCount << endl; }
   void Decay::Init() {
-    SetHadronsUnstable();
-    SetParticleListStable(fTrackedParticles);
+    // switch off decays to avoid internal decay chains
+    SetAllStable();
   }
 
-  void Decay::SetParticleListStable(const vector<particles::Code> particleList) {
-    /*
-       Sibyll is hadronic generator
-       only hadrons decay
-     */
-    // set particles unstable
-    SetHadronsUnstable();
-    cout << "Interaction: setting tracked hadrons stable.." << endl;
-    for (auto p : particleList) Decay::SetStable(p);
+  void Decay::SetStable(const vector<particles::Code> vParticleList) {
+    for (auto p : vParticleList) Decay::SetStable(p);
   }
 
-  void Decay::SetUnstable(const particles::Code pCode) {
-    int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
+  void Decay::SetUnstable(const vector<particles::Code> vParticleList) {
+    for (auto p : vParticleList) Decay::SetUnstable(p);
+  }
+
+  bool Decay::IsStable(const particles::Code vCode) {
+    return abs(process::sibyll::ConvertToSibyllRaw(vCode)) <= 0 ? true : false;
+  }
+
+  bool Decay::IsUnstable(const particles::Code vCode) {
+    return abs(process::sibyll::ConvertToSibyllRaw(vCode)) > 0 ? true : false;
+  }
+
+  void Decay::SetDecay(const particles::Code vCode, const bool vMakeUnstable) {
+    vMakeUnstable ? SetUnstable(vCode) : SetStable(vCode);
+  }
+
+  void Decay::SetUnstable(const particles::Code vCode) {
+    cout << "Sibyll::Interaction: setting " << vCode << " unstable.." << endl;
+    const int s_id = abs(process::sibyll::ConvertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Decay::SetStable(const particles::Code pCode) {
-    int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
+  void Decay::SetStable(const particles::Code vCode) {
+    cout << "Sibyll::Interaction: setting " << vCode << " stable.." << endl;
+    const int s_id = abs(process::sibyll::ConvertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
   }
 
   void Decay::SetAllStable() {
-    // name? also makes EM particles stable
-
-    cout << "Decay: setting all particles stable.." << endl;
-
-    // loop over all particles in sibyll
-    // should be changed to loop over human readable list
-    // i.e. particles::ListOfParticles()
-    for (auto& p : corsika2sibyll) {
-      // cout << (int)p << endl;
-      const int sibCode = static_cast<int>(p);
-      // skip unknown and antiparticles
-      if (sibCode < 1) continue;
-      s_csydec_.idb[sibCode - 1] = -1 * abs(s_csydec_.idb[sibCode - 1]);
-    }
+    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
   }
 
-  void Decay::SetHadronsUnstable() {
+  void Decay::SetAllUnstable() {
+    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
+  }
 
-    // name? also makes EM particles stable
-
-    // loop over all particles in sibyll
-    // should be changed to loop over human readable list
-    // i.e. particles::ListOfParticles()
-    cout << "Sibyll: setting hadrons unstable.." << endl;
-    // make ALL particles unstable, then set EM stable
-    for (int sibCode : corsika2sibyll) {
-      if (sibCode < 1) continue;
-      s_csydec_.idb[sibCode - 1] = abs(s_csydec_.idb[sibCode - 1]);
-    }
-    // set Leptons and Proton and Neutron stable
-    // use stack to loop over particles
-    constexpr particles::Code particleList[] = {
-        particles::Code::Proton,   particles::Code::Neutron, particles::Code::Electron,
-        particles::Code::Positron, particles::Code::NuE,     particles::Code::NuEBar,
-        particles::Code::MuMinus,  particles::Code::MuPlus,  particles::Code::NuMu,
-        particles::Code::NuMuBar};
-
-    for (auto p : particleList) {
-      const int sibid = process::sibyll::ConvertToSibyllRaw(p);
-      s_csydec_.idb[sibid - 1] = (-1) * abs(s_csydec_.idb[sibid - 1]);
-    }
+  void Decay::PrintDecayConfig(const particles::Code vCode) {
+    cout << "Decay: Sibyll decay configuration:" << endl;
+    const int sibCode = process::sibyll::ConvertToSibyllRaw(vCode);
+    const int absSibCode = abs(sibCode);
+    cout << vCode << " is ";
+    if (s_csydec_.idb[absSibCode - 1] <= 0)
+      cout << "stable" << endl;
+    else
+      cout << "unstable" << endl;
   }
 
   template <>
@@ -148,12 +133,16 @@ namespace corsika::process::sibyll {
     // remember position
     Point const decayPoint = vP.GetPosition();
     TimeType const t0 = vP.GetTime();
-    // set all particles/hadrons unstable
-    // setHadronsUnstable();
+    // remember if particles is unstable
+    // auto const priorIsUnstable = IsUnstable(pCode);
+    // switch on decay for this particle
     SetUnstable(pCode);
+    PrintDecayConfig(pCode);
+
     // call sibyll decay
     cout << "Decay: calling Sibyll decay routine.." << endl;
     decsib_();
+
     // reset to stable
     SetStable(pCode);
     // print output
