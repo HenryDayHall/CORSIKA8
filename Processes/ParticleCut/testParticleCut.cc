@@ -46,7 +46,7 @@ TEST_CASE("ParticleCut", "[processes]") {
       particles::Code::Electron, particles::Code::MuPlus,  particles::Code::NuE,
       particles::Code::Neutron};
 
-  SECTION("cut invisible and em") {
+  SECTION("cut invisible") {
 
     ParticleCut cut(20_GeV);
 
@@ -73,7 +73,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    REQUIRE(view.GetSize() == 7);
+    REQUIRE(view.GetSize() == 6);
   }
 
   SECTION("cut low energy") {
@@ -92,6 +92,7 @@ TEST_CASE("ParticleCut", "[processes]") {
     // only this way the secondary view is populated
     auto projectile = view.GetProjectile();
     // add secondaries, all with energies below the threshold
+    // only cut is by species
     for (auto proType : particleList)
       projectile.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
                                          corsika::stack::MomentumVector, geometry::Point,
