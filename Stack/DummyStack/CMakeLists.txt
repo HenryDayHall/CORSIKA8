@@ -1,4 +1,3 @@
-
 set (DummyStack_HEADERS DummyStack.h)
 set (DummyStack_NAMESPACE corsika/stack/dummy)
 

@@ -1,4 +1,3 @@
-
 add_library (CORSIKAunits INTERFACE)
 
 set (CORSIKAunits_NAMESPACE corsika/units)

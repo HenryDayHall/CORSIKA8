@@ -35,6 +35,10 @@ coverage: # special pipeline for master with coverage report
     - corsika
   script:
     - mkdir build
+    - cmake ..
+    - cmake --build . -- -j 4 
+    - ctest -V >& test.log
+  after_script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4

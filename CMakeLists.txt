@@ -108,6 +108,12 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   add_custom_target(coverage DEPENDS coverage-report)
 endif ()
 
+# add call to ./do-copyright.py to run as unit-test-case
+add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+# add call to do-clang-format.sh checking to run as unit-test-case
+add_test (NAME clang_format COMMAND ./do-clang-format.sh check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 find_package (Pythia8) # optional
 find_package (Eigen3 REQUIRED)
 

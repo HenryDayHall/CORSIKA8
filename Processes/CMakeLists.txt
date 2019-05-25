@@ -1,4 +1,3 @@
-
 add_subdirectory (NullModel)
 add_subdirectory (Sibyll)
 if (PYTHIA8_FOUND)

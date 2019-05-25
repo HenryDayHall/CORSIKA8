@@ -1,4 +1,3 @@
-
 set (
   MODEL_SOURCES
   StackInspector.cc

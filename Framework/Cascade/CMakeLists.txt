@@ -1,4 +1,3 @@
-
 # namespace of library -> location of header files
 set (
   CORSIKAcascade_NAMESPACE
