@@ -58,7 +58,6 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-
 //
 // The example main program for a particle cascade
 //

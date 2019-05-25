@@ -52,7 +52,6 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-
 template <bool deleteParticle>
 struct MyBoundaryCrossingProcess
     : public BoundaryCrossingProcess<MyBoundaryCrossingProcess<deleteParticle>> {
