@@ -18,11 +18,13 @@ project (
 # as long as there still are modules using it:
 enable_language (Fortran)
 
+# TEMPORARY: this should be removed, the sanitizers should be always enabled
+option (WITH_CORSIKA_SANITIZERS_ENABLED "temporary way to globally disable sanitizers until the currently failing tests are fixed" OFF)
+option (WITH_PYTHIA "flag to switch on/off pythia support" OFF)
+option (WITH_COAST "flag to switch on/off COAST (reverse) interface" OFF)
+
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
-
-# TEMPORARY: this should be removed, the sanitizers should be always enabled
-option(CORSIKA_SANITIZERS_ENABLED "temporary way to globally disable sanitizers until the currently failing tests are fixed" OFF)
 
 # directory for local cmake modules
 set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
@@ -105,7 +107,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
     COMMAND ${LCOV_BIN_DIR}/genhtml coverage.info -o coverage-report
     DEPENDS coverage.info
     )
-  add_custom_target(coverage DEPENDS coverage-report)
+  add_custom_target (coverage DEPENDS coverage-report)
 endif ()
 
 # add call to ./do-copyright.py to run as unit-test-case
@@ -114,12 +116,13 @@ add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${C
 # add call to do-clang-format.sh checking to run as unit-test-case
 add_test (NAME clang_format COMMAND ./do-clang-format.sh check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-find_package (Pythia8) # optional
+if (WITH_PYTHIA)
+  find_package (Pythia8) # optional
+endif (WITH_PYTHIA)
 find_package (Eigen3 REQUIRED)
 
 # order of subdirectories
 add_subdirectory (ThirdParty)
-#add_subdirectory (Utilities)
 add_subdirectory (Framework)
 add_subdirectory (Environment)
 add_subdirectory (Stack)
@@ -130,4 +133,4 @@ add_subdirectory (Main)
 add_subdirectory (Tools)
 if (WITH_COAST)
   add_subdirectory (COAST)
-endif()
+endif ()

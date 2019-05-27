@@ -98,7 +98,6 @@ TEST_CASE("pythia process") {
 
   // setup environment, geometry
   environment::Environment<environment::IMediumModel> env;
-  auto& universe = *(env.GetUniverse());
 
   geometry::CoordinateSystem const& cs = env.GetCoordinateSystem();
 
@@ -115,7 +114,6 @@ TEST_CASE("pythia process") {
           std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get(); // save the medium for later use before moving it
-  universe.AddChild(std::move(theMedium));
 
   SECTION("pythia decay") {
 
@@ -141,7 +139,7 @@ TEST_CASE("pythia process") {
 
     process::pythia::Decay model(particleList);
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
+    model.DoDecay(projectile);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
   }
 

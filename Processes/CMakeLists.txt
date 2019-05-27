@@ -12,7 +12,6 @@ add_subdirectory (UrQMD)
 add_subdirectory (SwitchProcess)
 add_subdirectory (ParticleCut)
 
-#add_custom_target(CORSIKAprocesses)
 add_library (CORSIKAprocesses INTERFACE)
 add_dependencies(CORSIKAprocesses ProcessNullModel)
 add_dependencies(CORSIKAprocesses ProcessSibyll)
