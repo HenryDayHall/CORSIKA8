@@ -29,8 +29,6 @@ config-u-18_04:
     expire_in: 1 day
     paths:
        - build
-  except:
-    - master
 
 # job/stage to just prepare cmake
 config-clang-8:
@@ -46,8 +44,6 @@ config-clang-8:
     expire_in: 1 day
     paths:
        - build
-  except:
-    - master
 
 # normal pipeline for each commit
 build-u-18_04: 
