@@ -106,6 +106,17 @@ target_link_libraries (vertical_EAS
   )
 install (TARGETS vertical_EAS DESTINATION share/examples)
 
+CORSIKA_ADD_TEST(stopping_power)
+target_link_libraries (stopping_power
+  SuperStupidStack
+  CORSIKAunits
+  ProcessEnergyLoss
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  )
+
+install (TARGETS vertical_EAS DESTINATION share/examples)
 CORSIKA_ADD_TEST (staticsequence_example)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence
