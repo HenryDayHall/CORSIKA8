@@ -60,11 +60,11 @@ namespace corsika::process {
   template <typename T>
   struct is_switch_process : std::false_type {};
 
-  template <typename A, typename B>
-  struct is_switch_process<switch_process::SwitchProcess<A, B>> : std::true_type {};
-
   template <typename T>
   bool constexpr is_switch_process_v = is_switch_process<T>::value;
+
+  template <typename A, typename B>
+  struct is_process_sequence<switch_process::SwitchProcess<A, B>> : std::true_type {};
 
   /**
      T1 and T2 are both references if possible (lvalue), otherwise

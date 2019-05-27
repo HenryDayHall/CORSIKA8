@@ -1,5 +1,3 @@
-image: corsika/devel:u-18.04
-
 variables:
   GIT_SSL_NO_VERIFY: "1"
   ## Runtime options for sanitizers
@@ -9,60 +7,201 @@ variables:
   LSAN_OPTIONS: "log_threads=1"
   ASAN_OPTIONS: "detect_leaks=0:detect_stack_use_after_return=1"
 
-build: # normal pipeline for each commit, except for commits to the master
-  stage: build
+# normal multi-step pipeline for each commit
+stages:
+  - config
+  - build
+  - test
+  - release
+  - optional
+
+# job/stage to just prepare cmake
+config-u-18_04:
+  image: corsika/devel:u-18.04
+  stage: config
   tags:
     - corsika
   script:
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug
-    - cmake --build . -- -j4
-    - ctest -j4 -V >& test.log || gzip -v -9 -S .gz test.log
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
   artifacts:
-    expire_in: 1 year
+    expire_in: 1 day
     paths:
-      - build/test.log.gz
-    reports:
-      junit:
-        - build/test_outputs/junit*.xml
+       - build
   except:
     - master
 
-coverage: # special pipeline for master with coverage report
+# job/stage to just prepare cmake
+config-clang-8:
+  image: corsika/devel:clang-8
+  stage: config
+  tags:
+    - corsika
+  script:
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
+  artifacts:
+    expire_in: 1 day
+    paths:
+       - build
+  except:
+    - master
+
+# normal pipeline for each commit
+build-u-18_04: 
+  image: corsika/devel:u-18.04
+  dependencies:
+    - config-u-18_04
   stage: build
   tags:
     - corsika
   script:
-    - mkdir -p build
+    - cd build
+    - cmake --build . -- -j4
+  artifacts:
+    expire_in: 1 day
+    paths:
+       - build
+
+# normal pipeline for each commit
+build-clang-8: 
+  image: corsika/devel:clang-8
+  dependencies:
+    - config-clang-8
+  stage: build
+  tags:
+    - corsika
+  script:
+    - cd build
+    - cmake --build . -- -j4
+  artifacts:
+    expire_in: 1 day
+    paths:
+       - build
+
+test-u-18_04: 
+  image: corsika/devel:u-18.04
+  dependencies:
+    - build-u-18_04
+  stage: test
+  tags:
+    - corsika
+  script:
+    - set -o pipefail
+    - cd build
+    - ctest -VV | gzip -v -9 > test.log.gz 
+  artifacts:
+    expire_in: 3 months
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
+    paths:
+      - build/test.log.gz
+
+test-clang-8: 
+  image: corsika/devel:clang-8
+  dependencies:
+    - build-clang-8
+  stage: test
+  tags:
+    - corsika
+  script:
+    - set -o pipefail
+    - cd build
+    - ctest -VV | gzip -v -9 > test.log.gz 
+  artifacts:
+    expire_in: 3 months
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
+    paths:
+      - build/test.log.gz
+
+# normal pipeline for each commit
+release-u-18_04: 
+  image: corsika/devel:u-18.04
+  dependencies:
+    - config-u-18_04
+  stage: optional
+  tags:
+    - corsika
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . -- -j4
+    - ctest -j4 
+  when: manual    
+
+# normal pipeline for each commit
+release-clang-8: 
+  image: corsika/devel:clang-8
+  dependencies:
+    - config-clang-8
+  stage: optional
+  tags:
+    - corsika
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . -- -j4
+    - ctest -j4 
+  when: manual    
+
+coverage: # special manual job to run after normal pipeline finished 
+  image: corsika/devel:u-18.04
+  dependencies:
+    - config-u-18_04
+  stage: optional
+  tags:
+    - corsika
+  script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
-    - ctest -j4 
-    - cmake --build . --target coverage && tar czf coverage-report.tar.gz coverage-report
+    - ctest -j4 -V > test.log 
+    - cmake --build . --target coverage
+    - tar czf coverage-report.tar.gz coverage-report
+  coverage: '/functions.*\s+(\d+\%)\s/'
   artifacts:
     expire_in: 1 year
     paths:
       - build/coverage-report.tar.gz
-  only:
-    - master
+  when: manual    
+  allow_failure: true
 
-pages:
-  stage: build
+documentation:
+  image: corsika/devel:u-18.04
+  dependencies:
+    - build-u-18_04
+  stage: optional
   tags:
     - corsika
   script:
-    - mkdir build
     - cd build
-    - cmake ..
-    - cmake --build . --target doxygen
+    - cmake --build . --target doxygen -- -j4
     - mkdir .public
     - cp -r Documentation/Doxygen/html .public/
     - mv .public ../public
   artifacts:
+    expire_in: 3 months
     paths:
       - public
-  only:
-    - tags
-    - triggers
-    - schedules
+  when: manual
+  allow_failure: true
+
+sanity:
+  image: corsika/devel:u-18.04
+  dependencies:
+    - config-u-18_04
+  stage: optional
+  tags:
+    - corsika
+  script:
+    - cd build
+    - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON
+    - cmake --build . -- -j4
+  when: manual
+  allow_failure: true
+
