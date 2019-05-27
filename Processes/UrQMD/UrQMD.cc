@@ -28,29 +28,20 @@ using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;
 
-template <typename TParticle> // need template here, as this is called both with
-                              // SetupParticle as well as SetupProjectile
-CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
-                                        corsika::particles::Code vTargetCode) const {
-  using namespace units::si;
-
-  // TODO: energy cuts, return 0 for non-hadrons
-
-  auto const projectileCode = vProjectile.GetPID();
-  auto const projectileEnergyLab = vProjectile.GetEnergy();
-
+CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
+                                        corsika::particles::Code vTargetCode,
+                                        HEPEnergyType vLabEnergy, int vAProjectile = 1) {
   // the following is a translation of ptsigtot() into C++
-  if (projectileCode != particles::Code::Nucleus &&
+  if (vProjectileCode != particles::Code::Nucleus &&
       !IsNucleus(vTargetCode)) { // both particles are "special"
-    auto const mProj = particles::GetMass(projectileCode);
+    auto const mProj = particles::GetMass(vProjectileCode);
     auto const mTar = particles::GetMass(vTargetCode);
-    double sqrtS =
-        sqrt(units::si::detail::static_pow<2>(mProj) +
-             units::si::detail::static_pow<2>(mTar) + 2 * projectileEnergyLab * mTar) *
-        (1 / 1_GeV);
+    double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) +
+                        units::si::detail::static_pow<2>(mTar) + 2 * vLabEnergy * mTar) *
+                   (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
-    auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
+    auto const [ityp, iso3] = ConvertToUrQMD(vProjectileCode);
     inputs_.spityp[0] = ityp;
     inputs_.spiso3[0] = iso3;
 
@@ -62,14 +53,33 @@ CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
     int two = 2;
     return sigtot_(one, two, sqrtS) * 1_mb;
   } else {
-    int const Ap =
-        (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
+    int const Ap = vAProjectile;
     int const At = IsNucleus(vTargetCode) ? particles::GetNucleusA(vTargetCode) : 1;
 
     double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
     return 10_mb * M_PI * units::si::detail::static_pow<2>(maxImpact);
     // is a constant cross-section really reasonable?
   }
+}
+
+template <typename TParticle> // need template here, as this is called both with
+                              // SetupParticle as well as SetupProjectile
+CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
+                                        corsika::particles::Code vTargetCode) const {
+  // TODO: return 0 for non-hadrons?
+
+  auto const projectileCode = vProjectile.GetPID();
+  auto const projectileEnergyLab = vProjectile.GetEnergy();
+
+  if (projectileCode == particles::Code::K0Long) {
+    return 0.5 *
+           (GetCrossSection(particles::Code::K0, vTargetCode, projectileEnergyLab) +
+            GetCrossSection(particles::Code::K0Bar, vTargetCode, projectileEnergyLab));
+  }
+
+  int const Ap =
+      (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
+  return GetCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
 }
 
 bool UrQMD::CanInteract(particles::Code vCode) const {
@@ -82,7 +92,7 @@ bool UrQMD::CanInteract(particles::Code vCode) const {
       particles::Code::Nucleus, particles::Code::Proton,      particles::Code::AntiProton,
       particles::Code::Neutron, particles::Code::AntiNeutron, particles::Code::PiPlus,
       particles::Code::PiMinus, particles::Code::KPlus,       particles::Code::KMinus,
-      particles::Code::K0,      particles::Code::K0Bar};
+      particles::Code::K0,      particles::Code::K0Bar,       particles::Code::K0Long};
 
   return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
                    vCode) != std::cend(validProjectileCodes);
@@ -109,7 +119,7 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle) const {
 corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjectile) {
   using namespace units::si;
 
-  auto const projectileCode = vProjectile.GetPID();
+  auto projectileCode = vProjectile.GetPID();
   auto const projectileEnergyLab = vProjectile.GetEnergy();
   auto const& projectileMomentumLab = vProjectile.GetMomentum();
   auto const& projectilePosition = vProjectile.GetPosition();
@@ -159,6 +169,12 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     rsys_.bdist = nucrad_(targetA) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
     rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
 
+    if (projectileCode == particles::Code::K0Long) {
+      projectileCode = fBooleanDist(fRNG) ? particles::Code::K0 : particles::Code::K0Bar;
+    } else if (projectileCode == particles::Code::K0Short) {
+      throw std::runtime_error("K0Short should not interact");
+    }
+
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
     // todo: conversion of K_long/short into strong eigenstates;
     inputs_.spityp[0] = ityp;
@@ -188,7 +204,11 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
       originalCS.RotateToZ(projectileMomentumLab);
 
   for (int i = 0; i < sys_.npart; ++i) {
-    auto const code = ConvertFromUrQMD(isys_.ityp[i], isys_.iso3[i]);
+    auto code = ConvertFromUrQMD(isys_.ityp[i], isys_.iso3[i]);
+    if (code == particles::Code::K0 || code == particles::Code::K0Bar) {
+      code = fBooleanDist(fRNG) ? particles::Code::K0Short : particles::Code::K0Long;
+    }
+
     // "coor_.p0[i] * 1_GeV" is likely off-shell as UrQMD doesn't preserve masses well
     auto momentum = geometry::Vector(
         zAxisFrame,
@@ -245,6 +265,8 @@ std::pair<int, int> corsika::process::UrQMD::ConvertToUrQMD(
       {-311, {-106, 1}},   // K0bar
       {2212, {1, 1}},      // p
       {2112, {1, -1}},     // n
+      {-2212, {-1, -1}},   // pbar
+      {-2112, {-1, 1}},    // nbar
       {221, {102, 0}},     // eta
       {213, {104, 2}},     // rho+
       {-213, {104, -2}},   // rho-

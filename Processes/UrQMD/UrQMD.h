@@ -18,6 +18,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <array>
+#include <random>
 #include <utility>
 
 namespace corsika::process::UrQMD {
@@ -38,8 +39,12 @@ namespace corsika::process::UrQMD {
     bool CanInteract(particles::Code) const;
 
   private:
+    static corsika::units::si::CrossSectionType GetCrossSection(
+        particles::Code, particles::Code, corsika::units::si::HEPEnergyType, int);
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
+
+    std::uniform_int_distribution<int> fBooleanDist{0, 1};
   };
 
   namespace constants {

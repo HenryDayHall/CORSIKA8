@@ -144,7 +144,7 @@ TEST_CASE("UrQMD") {
     particles::Code validProjectileCodes[] = {
         particles::Code::PiPlus,  particles::Code::PiMinus, particles::Code::Proton,
         particles::Code::Neutron, particles::Code::KPlus,   particles::Code::KMinus,
-        particles::Code::K0,      particles::Code::K0Bar};
+        particles::Code::K0,      particles::Code::K0Bar,   particles::Code::K0Long};
 
     for (auto code : validProjectileCodes) {
       auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);
@@ -198,6 +198,27 @@ TEST_CASE("UrQMD") {
 
     REQUIRE(sumCharge(*secViewPtr) ==
             particles::GetChargeNumber(particles::Code::PiPlus) +
+                particles::GetChargeNumber(particles::Code::Oxygen));
+
+    auto const secMomSum =
+        sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
+    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+            Approx(0).margin(1e-2));
+  }
+
+  SECTION("K0Long projectile") {
+    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    auto [stackPtr, secViewPtr] =
+        setupStack(particles::Code::K0Long, 400_GeV, nodePtr, *csPtr);
+
+    // must be assigned to variable, cannot be used as rvalue?!
+    auto projectile = secViewPtr->GetProjectile();
+    auto const projectileMomentum = projectile.GetMomentum();
+
+    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+
+    REQUIRE(sumCharge(*secViewPtr) ==
+            particles::GetChargeNumber(particles::Code::K0Long) +
                 particles::GetChargeNumber(particles::Code::Oxygen));
 
     auto const secMomSum =
