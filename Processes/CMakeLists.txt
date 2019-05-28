@@ -10,7 +10,6 @@ endif (PYTHIA8_FOUND)
 add_subdirectory (HadronicElasticModel)
 add_subdirectory (UrQMD)
 add_subdirectory (SwitchProcess)
-add_subdirectory (ParticleCut)
 
 # continuous physics
 add_subdirectory (EnergyLoss)
@@ -19,6 +18,7 @@ add_subdirectory (TrackWriter)
 add_subdirectory (StackInspector)
 # secondaries process
 # cuts, thinning, etc.
+add_subdirectory (ParticleCut)
 
 ##########################################
 # add_custom_target(CORSIKAprocesses)
