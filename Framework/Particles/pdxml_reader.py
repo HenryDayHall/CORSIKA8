@@ -171,7 +171,11 @@ def read_pythia_db(filename, particle_db, classnames):
             c_id = classnames[pdg]
         else:
             c_id = c_identifier_camel(name) # the camel case names
-        
+
+        hadron = False
+        if abs(pdg) > 100:
+            hadron = True
+            
         particle_db[c_id] = {
             "name" : name,
             "antiName" : antiName,
@@ -181,6 +185,7 @@ def read_pythia_db(filename, particle_db, classnames):
             "lifetime" : lifetime,
             "ngc_code" : next(counter),
             "isNucleus" : False,
+            "isHadron" : hadron,
         }
     
     return particle_db
@@ -214,6 +219,7 @@ def read_nuclei_db(filename, particle_db, classnames):
             "A" : A,
             "Z" : Z,
             "isNucleus" : True,
+            "isHadron" : True,
         }
     
     return particle_db
@@ -349,6 +355,15 @@ def gen_properties(particle_db):
         else :
             string += "  {tau:e}, \n".format(tau = p['lifetime'])
             #string += "  {tau:e} * corsika::units::si::second, \n".format(tau = p['lifetime'])
+    string += "};\n"
+    
+    # is Hadron flag
+    string += "static constexpr std::array<bool, size> isHadron = {\n"
+    for p in particle_db.values():
+        value = 'false'
+        if p['isHadron']:
+            value = 'true'
+        string += "  {val},\n".format(val = value)
     string += "};\n"
 
     
