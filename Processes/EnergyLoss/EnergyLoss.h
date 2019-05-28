@@ -38,11 +38,10 @@ namespace corsika::process::energy_loss {
 
     units::si::HEPEnergyType GetTotal() const { return fEnergyLossTot; }
     void PrintProfile() const;
-
-  private:
     static units::si::HEPEnergyType BetheBloch(setup::Stack::ParticleType const& p,
                                                const units::si::GrammageType dX);
 
+  private:
     int GetXbin(setup::Stack::ParticleType const&, setup::Trajectory const&,
                 units::si::HEPEnergyType);
 
