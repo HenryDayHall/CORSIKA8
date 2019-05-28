@@ -14,6 +14,7 @@ add_subdirectory (SwitchProcess)
 # continuous physics
 add_subdirectory (EnergyLoss)
 add_subdirectory (TrackWriter)
+add_subdirectory (ObservationPlane)
 # stack processes
 add_subdirectory (StackInspector)
 # secondaries process
