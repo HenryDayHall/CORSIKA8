@@ -12,6 +12,7 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
+#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
@@ -27,8 +28,8 @@
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
-#include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/track_writer/TrackWriter.h>
+#include <corsika/process/particle_cut/ParticleCut.h>
 
 #include <corsika/units/PhysicalUnits.h>
 
@@ -86,32 +87,6 @@ int main() {
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
-
-  const std::vector<particles::Code> trackedHadrons = {
-      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  process::sibyll::Interaction sibyll;
-  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::sibyll::Decay decay(trackedHadrons);
-  process::particle_cut::ParticleCut cut(20_GeV);
-  // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  // process::HadronicElasticModel::HadronicElasticInteraction
-  // hadronicElastic(env);
-
-  process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss;
-
-  // assemble all processes into an ordered process list
-  // cut << trackWriter;
-  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut;
-
-  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
-  // << "\n";
-
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
@@ -145,6 +120,26 @@ int main() {
                                  units::si::TimeType, unsigned short, unsigned short>{
         beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
   }
+
+  // setup processes, decays and interactions
+  tracking_line::TrackingLine tracking;
+  stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
+
+  const std::vector<particles::Code> trackedHadrons = {
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+
+  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  process::sibyll::Interaction sibyll;
+  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  process::sibyll::Decay decay(trackedHadrons);
+  process::particle_cut::ParticleCut cut(20_GeV);
+
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
+  process::energy_loss::EnergyLoss eLoss;
+
+  // assemble all processes into an ordered process list
+  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << stackInspect;
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);

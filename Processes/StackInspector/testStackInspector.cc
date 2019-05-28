@@ -49,7 +49,7 @@ TEST_CASE("StackInspector", "[processes]") {
 
   SECTION("interface") {
 
-    StackInspector<TestCascadeStack> model(1, true);
+    StackInspector<TestCascadeStack> model(1, true, E0);
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoStack(stack);

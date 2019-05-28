@@ -11,14 +11,6 @@ set (
 add_library (ProcessSwitch INTERFACE)
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessSwitch ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
-set_target_properties (
-  ProcessStackInspector
-  PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
-  )
-
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   ProcessSwitch

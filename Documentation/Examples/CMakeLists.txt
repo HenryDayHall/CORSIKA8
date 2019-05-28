@@ -68,6 +68,7 @@ if (Pythia8_FOUND)
     CORSIKAcascade
     ProcessEnergyLoss
     ProcessTrackWriter
+    ProcessStackInspector
     ProcessTrackingLine
     ProcessParticleCut
     ProcessHadronicElasticModel

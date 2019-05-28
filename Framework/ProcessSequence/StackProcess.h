@@ -42,6 +42,7 @@ namespace corsika::process {
     template <typename TStack>
     inline EProcessReturn DoStack(TStack&);
 
+    int GetStep() const { return fIStep; }
     bool CheckStep() { return !((++fIStep) % fNStep); }
 
   private:

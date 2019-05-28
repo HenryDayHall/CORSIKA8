@@ -136,6 +136,14 @@ namespace corsika::process {
       return ret;
     }
 
+    /**
+       The processes of type StackProcess do have an internal counter,
+       so they can be exectuted only each N steps. Often these are
+       "maintenacne processes" that do not need to run after each
+       single step of the simulations. In the CheckStep function it is
+       tested if either A or B are StackProcess and if they are due
+       for execution.
+     */
     bool CheckStep() {
       bool ret = false;
       if constexpr (std::is_base_of_v<StackProcess<T1type>, T1type> || t1ProcSeq) {
@@ -147,6 +155,9 @@ namespace corsika::process {
       return ret;
     }
 
+    /**
+       Execute the StackProcess-es in the ProcessSequence
+     */
     template <typename TStack>
     EProcessReturn DoStack(TStack& vS) {
       EProcessReturn ret = EProcessReturn::eOk;
