@@ -119,10 +119,6 @@ namespace corsika::particles {
            c == Code::NuMuBar || c == Code::NuTauBar;
   }
 
-  bool constexpr IsNucleus(Code const p) {
-    return detail::isNucleus[static_cast<CodeIntType>(p)];
-  }
-
   int constexpr GetNucleusA(Code const p) {
     return detail::nucleusA[static_cast<CodeIntType>(p)];
   }
