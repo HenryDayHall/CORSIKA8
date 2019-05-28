@@ -132,7 +132,7 @@ int main() {
   //  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   //  process::sibyll::Decay decay(trackedHadrons);
   process::pythia::Decay decay(trackedHadrons);
-  ProcessCut cut(20_GeV);
+  process::particle_cut::ParticleCut cut(20_GeV);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // process::HadronicElasticModel::HadronicElasticInteraction

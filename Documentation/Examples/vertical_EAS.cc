@@ -28,8 +28,8 @@
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
-#include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/track_writer/TrackWriter.h>
+#include <corsika/process/particle_cut/ParticleCut.h>
 
 #include <corsika/units/PhysicalUnits.h>
 
@@ -133,23 +133,13 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
-  // random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  // process::pythia::Decay decay(trackedHadrons);
-  ProcessCut cut(20_GeV);
-
-  // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
-  // process::HadronicElasticModel::HadronicElasticInteraction
-  // hadronicElastic(env);
+  process::particle_cut::ParticleCut cut(20_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  // cut << trackWriter;
   auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << stackInspect;
-
-  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
-  // << "\n";
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);

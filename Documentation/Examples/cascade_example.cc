@@ -29,7 +29,6 @@
 #include <corsika/process/sibyll/NuclearInteraction.h>
 
 #include <corsika/process/track_writer/TrackWriter.h>
-
 #include <corsika/process/particle_cut/ParticleCut.h>
 
 #include <corsika/units/PhysicalUnits.h>
@@ -140,7 +139,7 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay(trackedHadrons);
-  ProcessCut cut(20_GeV);
+  process::particle_cut::ParticleCut cut(20_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss;
