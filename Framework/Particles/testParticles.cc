@@ -84,6 +84,47 @@ TEST_CASE("ParticleProperties", "[Particles]") {
             (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
+  SECTION("Particle groups: electromagnetic") {
+    REQUIRE(IsEM(Code::Gamma));
+    REQUIRE(IsEM(Code::Electron));
+    REQUIRE_FALSE(IsEM(Code::MuPlus));
+    REQUIRE_FALSE(IsEM(Code::NuE));
+    REQUIRE_FALSE(IsEM(Code::Proton));
+    REQUIRE_FALSE(IsEM(Code::PiPlus));
+    REQUIRE_FALSE(IsEM(Code::Oxygen));
+  }
+
+  SECTION("Particle groups: hadrons") {
+    REQUIRE_FALSE(IsHadron(Code::Gamma));
+    REQUIRE_FALSE(IsHadron(Code::Electron));
+    REQUIRE_FALSE(IsHadron(Code::MuPlus));
+    REQUIRE_FALSE(IsHadron(Code::NuE));
+    REQUIRE(IsHadron(Code::Proton));
+    REQUIRE(IsHadron(Code::PiPlus));
+    REQUIRE(IsHadron(Code::Oxygen));
+  }
+
+  SECTION("Particle groups: muons") {
+    REQUIRE_FALSE(IsMuon(Code::Gamma));
+    REQUIRE_FALSE(IsMuon(Code::Electron));
+    REQUIRE(IsMuon(Code::MuPlus));
+    REQUIRE_FALSE(IsMuon(Code::NuE));
+    REQUIRE_FALSE(IsMuon(Code::Proton));
+    REQUIRE_FALSE(IsMuon(Code::PiPlus));
+    REQUIRE_FALSE(IsMuon(Code::Oxygen));
+  }
+
+  SECTION("Particle groups: neutrinos") {
+    REQUIRE_FALSE(IsNeutrino(Code::Gamma));
+    REQUIRE_FALSE(IsNeutrino(Code::Electron));
+    REQUIRE_FALSE(IsNeutrino(Code::MuPlus));
+    REQUIRE(IsNeutrino(Code::NuE));
+    REQUIRE_FALSE(IsNeutrino(Code::Proton));
+    REQUIRE_FALSE(IsNeutrino(Code::PiPlus));
+    REQUIRE_FALSE(IsNeutrino(Code::Oxygen));
+  }
+
+
   SECTION("Nuclei") {
     REQUIRE_FALSE(IsNucleus(Code::Gamma));
     REQUIRE(IsNucleus(Code::Argon));

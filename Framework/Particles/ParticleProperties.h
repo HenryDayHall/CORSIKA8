@@ -51,6 +51,10 @@ namespace corsika::particles {
   corsika::units::si::TimeType constexpr GetLifetime(Code const);
 
   bool constexpr IsNucleus(Code const);
+  bool constexpr IsHadron(Code const);
+  bool constexpr IsEM(Code const);
+  bool constexpr IsMuon(Code const);
+  bool constexpr IsNeutrino(Code const);
   int constexpr GetNucleusA(Code const);
   int constexpr GetNucleusZ(Code const);
 
@@ -98,6 +102,21 @@ namespace corsika::particles {
 
   corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
     return detail::lifetime[static_cast<CodeIntType>(p)] * corsika::units::si::second;
+  }
+
+  bool constexpr IsHadron(Code const p) {
+    return detail::isHadron[static_cast<CodeIntType>(p)];
+  }
+
+  bool constexpr IsEM(Code c) {
+    return c == Code::Electron || c == Code::Positron || c == Code::Gamma;
+  }
+
+  bool constexpr IsMuon(Code c) { return c == Code::MuPlus || c == Code::MuMinus; }
+
+  bool constexpr IsNeutrino(Code c) {
+    return c == Code::NuE || c == Code::NuMu || c == Code::NuTau || c == Code::NuEBar ||
+           c == Code::NuMuBar || c == Code::NuTauBar;
   }
 
   bool constexpr IsNucleus(Code const p) {
