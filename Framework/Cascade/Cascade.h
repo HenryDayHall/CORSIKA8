@@ -218,19 +218,6 @@ namespace corsika::cascade {
       std::cout << "sth. happening before geometric limit ? "
                 << ((min_distance < geomMaxLength) ? "yes" : "no") << std::endl;
 
-      /*
-        Create SecondaryView object on Stack. The data container
-        remains untouched and identical, and 'projectil' is identical
-        to 'vParticle' above this line. However,
-        projectil.AddSecondaries populate the SecondaryView, which can
-        then be used afterwards for further processing. Thus: it is
-        important to use projectle (and not vParticle) for Interaction,
-        and Decay!
-       */
-
-      TStackView secondaries(vParticle);
-      [[maybe_unused]] auto projectile = secondaries.GetProjectile();
-
       if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
 
         // check whether decay or interaction limits this step the
@@ -238,38 +225,57 @@ namespace corsika::cascade {
         // secondaries, b) the projectile particle deleted (or
         // changed)
 
-        if (min_distance == distance_interact) {
-          std::cout << "collide" << std::endl;
+        TStackView secondaries(vParticle);
 
-          InverseGrammageType const current_inv_length =
-              fProcessSequence.GetTotalInverseInteractionLength(vParticle);
+        if (min_distance != distance_max) {
+          /*
+            Create SecondaryView object on Stack. The data container
+            remains untouched and identical, and 'projectil' is identical
+            to 'vParticle' above this line. However,
+            projectil.AddSecondaries populate the SecondaryView, which can
+            then be used afterwards for further processing. Thus: it is
+            important to use projectle (and not vParticle) for Interaction,
+            and Decay!
+          */
 
-          random::UniformRealDistribution<InverseGrammageType> uniDist(
-              current_inv_length);
-          const auto sample_process = uniDist(fRNG);
-          InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
-          fProcessSequence.SelectInteraction(vParticle, projectile, sample_process,
-                                             inv_lambda_count);
-        } else if (min_distance == distance_decay) {
-          std::cout << "decay" << std::endl;
-          InverseTimeType const actual_decay_time =
-              fProcessSequence.GetTotalInverseLifetime(vParticle);
+          [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
-          random::UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
-          const auto sample_process = uniDist(fRNG);
-          InverseTimeType inv_decay_count = 0 / second;
-          fProcessSequence.SelectDecay(vParticle, projectile, sample_process,
-                                       inv_decay_count);
+          if (min_distance == distance_interact) {
+            std::cout << "collide" << std::endl;
+
+            InverseGrammageType const current_inv_length =
+                fProcessSequence.GetTotalInverseInteractionLength(vParticle);
+
+            random::UniformRealDistribution<InverseGrammageType> uniDist(
+                current_inv_length);
+            const auto sample_process = uniDist(fRNG);
+            InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
+            fProcessSequence.SelectInteraction(vParticle, projectile, sample_process,
+                                               inv_lambda_count);
+          } else {
+            assert(min_distance == distance_decay);
+            std::cout << "decay" << std::endl;
+            InverseTimeType const actual_decay_time =
+                fProcessSequence.GetTotalInverseLifetime(vParticle);
+
+            random::UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
+            const auto sample_process = uniDist(fRNG);
+            InverseTimeType inv_decay_count = 0 / second;
+            fProcessSequence.SelectDecay(vParticle, projectile, sample_process,
+                                         inv_decay_count);
+          }
+
+          fProcessSequence.DoSecondaries(secondaries);
+          vParticle.Delete(); // todo: this should be reviewed. Where
+                              // exactly are particles best deleted, and
+                              // where they should NOT be
+                              // deleted... maybe Delete function should
+                              // be "protected" and not accessible to physics
+
         } else { // step-length limitation within volume
           std::cout << "step-length limitation" << std::endl;
+          fProcessSequence.DoSecondaries(secondaries);
         }
-
-        fProcessSequence.DoSecondaries(secondaries);
-        vParticle.Delete(); // todo: this should be reviewed. Where
-                            // exactly are particles best deleted, and
-                            // where they should NOT be
-                            // deleted... maybe Delete function should
-                            // be "protected" and not accessible to physics
 
         auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
