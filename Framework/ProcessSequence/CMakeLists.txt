@@ -47,6 +47,7 @@ target_link_libraries (
 CORSIKA_ADD_TEST(testProcessSequence)
 target_link_libraries (
   testProcessSequence
+  ProcessSwitch
   CORSIKAsetup
   CORSIKAgeometry
   CORSIKAprocesssequence
