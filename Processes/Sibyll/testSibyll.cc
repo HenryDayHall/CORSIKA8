@@ -158,7 +158,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     auto particle = stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
+            particles::Code::Lambda0, E0, plab, pos, 0_ns});
     corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 

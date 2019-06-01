@@ -23,6 +23,7 @@ using std::vector;
 
 using namespace corsika;
 using namespace corsika::setup;
+
 using SetupProjectile = corsika::setup::StackView::ParticleType;
 using SetupParticle = corsika::setup::Stack::ParticleType;
 
@@ -149,19 +150,26 @@ namespace corsika::process::sibyll {
     int print_unit = 6;
     sib_list_(print_unit);
 
+    int nSecondaries = 0;
+    particles::Code pCodeSecondary;
     // copy particles from sibyll stack to corsika
     for (auto& psib : ss) {
       // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
       if (psib.HasDecayed()) continue;
+      nSecondaries++;
+      pCodeSecondary = process::sibyll::ConvertFromSibyll(psib.GetPID());
       // add to corsika stack
       vP.AddSecondary(
           tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
                 geometry::Point, units::si::TimeType>{
-              process::sibyll::ConvertFromSibyll(psib.GetPID()), psib.GetEnergy(),
-              psib.GetMomentum(), decayPoint, t0});
+              pCodeSecondary, psib.GetEnergy(), psib.GetMomentum(), decayPoint, t0});
     }
     // empty sibyll stack
     ss.Clear();
+
+    // check if particle decays into itself
+    if (1 == nSecondaries && pCode == pCodeSecondary)
+      throw std::runtime_error("Sibyll::Decay: Particle decays into itself!");
   }
 
 } // namespace corsika::process::sibyll
