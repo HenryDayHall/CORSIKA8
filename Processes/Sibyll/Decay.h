@@ -50,6 +50,9 @@ namespace corsika::process {
 
       template <typename TProjectile>
       void DoDecay(TProjectile&);
+
+      template <typename TParticleView>
+      EProcessReturn DoSecondaries(TParticleView&);
     };
   } // namespace sibyll
 } // namespace corsika::process
