@@ -167,10 +167,10 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  EProcessReturn Decay::DoSecondaries(SetupView& vS) { // corsika::setup::StackView&vS){}
+  EProcessReturn CheckDecay::DoSecondaries(SetupView& vS) { // corsika::setup::StackView&vS){}
     auto pCode = vS.GetProjectile().GetPID();
     if (vS.GetSize() == 1 && pCode == vS.GetNextParticle().GetPID())
-      throw std::runtime_error("Sibyll::Decay: Particle decays into itself!");
+      throw std::runtime_error("Sibyll::CheckDecay: Particle decays into itself!");
 
     /*
       here we could also post-process the decay products and let short-lived resonances
