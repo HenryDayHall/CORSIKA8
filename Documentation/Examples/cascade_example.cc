@@ -99,7 +99,7 @@ int main() {
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
   const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 = nuclA * 100_TeV;
+  const HEPEnergyType E0 = nuclA * 1_TeV;
   double theta = 0.;
   double phi = 0.;
 
