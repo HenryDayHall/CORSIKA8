@@ -159,7 +159,7 @@ coverage: # special manual job to run after normal pipeline finished
     - ctest -j4 -V > test.log 
     - cmake --build . --target coverage
     - tar czf coverage-report.tar.gz coverage-report
-  coverage: '/functions.*\s+(\d+\%)\s/'
+  coverage: '/^.*functions\.+:\s(.*\%)\s/'
   artifacts:
     expire_in: 1 year
     paths:

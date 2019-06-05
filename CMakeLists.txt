@@ -96,7 +96,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   # remove uninteresting entries
   add_custom_command (
     OUTPUT coverage.info
-    COMMAND ${LCOV_BIN_DIR}/lcov --remove raw-coverage.info "*/usr/*" --output-file coverage2.info
+    COMMAND ${LCOV_BIN_DIR}/lcov -q --remove raw-coverage.info "*/usr/*" --output-file coverage2.info
     COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info "*/ThirdParty/*" --output-file coverage.info
     COMMAND ${CMAKE_COMMAND} -E remove coverage2.info
     DEPENDS raw-coverage.info
