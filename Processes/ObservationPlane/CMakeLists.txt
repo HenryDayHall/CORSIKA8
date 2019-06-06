@@ -34,11 +34,11 @@ install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
 # --------------------
 # code unit testing
-#CORSIKA_ADD_TEST(testObservationPlane)
-#target_link_libraries (
-#  testObservationPlane
-#  ProcessObservationPlane
-#  CORSIKAstackinterface
-#  CORSIKAthirdparty # for catch2
-#)
+CORSIKA_ADD_TEST(testObservationPlane)
+target_link_libraries (
+  testObservationPlane
+  ProcessObservationPlane
+  CORSIKAstackinterface
+  CORSIKAthirdparty # for catch2
+)
 
