@@ -76,7 +76,7 @@ int main() {
             beamCode, E0, plab, pos, 0_ns});
 
     auto const p = stack.GetNextParticle();
-    HEPEnergyType dE = eLoss.BetheBloch(p, 1_g / square(1_cm));
+    HEPEnergyType dE = eLoss.TotalEnergyLoss(p, 1_g / square(1_cm));
     file << P0 / mass << "\t" << -dE / 1_eV << std::endl;
   }
 }
