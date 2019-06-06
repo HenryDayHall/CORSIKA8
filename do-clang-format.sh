@@ -5,7 +5,7 @@ command="clang-format -style=file `find . -iregex '^.*\.\(cc\|h\)$' -not -path '
 if [ "$1" == "check" ];
 then
     `! ${command}  -output-replacements-xml | grep -qc "<replacement "` || \
-        { echo "format-check FAILED!"; exit $ERRCODE; }
+        { echo "format-check FAILED!"; exit 1; }
     echo "Congratulations: format-check succeeded"
 elif [ "$1" == "apply" ];
 then
