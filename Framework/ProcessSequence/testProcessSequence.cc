@@ -17,6 +17,7 @@
 #include <iostream>
 
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/switch_process/SwitchProcess.h>
 
 using namespace corsika;
 using namespace corsika::units::si;
@@ -290,4 +291,16 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     CHECK(s1.GetCount() == 20);
     CHECK(s2.GetCount() == 10);
   }
+}
+
+
+/*
+  Note: there is a fine-grained dedicated test-suite for SwitchProcess
+  in Processes/SwitchProcess/testSwtichProcess
+ */
+TEST_CASE("SwitchProcess") {
+  Process1 p1(0);
+  Process2 p2(0);
+  switch_process::SwitchProcess s(p1, p2, 10_GeV);
+  REQUIRE(is_switch_process_v<decltype(s)>);
 }
