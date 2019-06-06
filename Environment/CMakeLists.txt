@@ -54,5 +54,5 @@ target_link_libraries (
   testEnvironment
   CORSIKAsetup
   CORSIKAenvironment
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

@@ -48,5 +48,5 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAprocesssequence
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

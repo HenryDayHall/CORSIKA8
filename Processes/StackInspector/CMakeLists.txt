@@ -57,5 +57,5 @@ target_link_libraries (
   ProcessStackInspector
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

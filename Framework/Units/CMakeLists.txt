@@ -19,5 +19,5 @@ target_include_directories (CORSIKAunits
 install (FILES ${CORSIKAunits_HEADERS} DESTINATION include/${CORSIKAunits_NAMESPACE})
 
 # code testing
-CORSIKA_ADD_TEST(testUnits)
-target_link_libraries (testUnits CORSIKAunits CORSIKAthirdparty) # for catch2
+CORSIKA_ADD_TEST (testUnits)
+target_link_libraries (testUnits CORSIKAunits CORSIKAtesting)

@@ -81,7 +81,7 @@ target_link_libraries (
   CORSIKArandom
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   ${PYTHIA8_LIBRARY}
   )
 

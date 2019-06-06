@@ -49,5 +49,5 @@ CORSIKA_ADD_TEST(testRandom)
 target_link_libraries (
   testRandom
   CORSIKArandom
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

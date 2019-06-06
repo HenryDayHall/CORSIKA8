@@ -35,6 +35,6 @@ target_link_libraries (
   testSwitchProcess
   ProcessSwitch
   CORSIKAstackinterface
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
 )
 

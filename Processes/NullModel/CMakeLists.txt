@@ -49,12 +49,12 @@ install (
 
 # --------------------
 # code unit testing
-CORSIKA_ADD_TEST(testNullModel)
+CORSIKA_ADD_TEST (testNullModel)
 target_link_libraries (
   testNullModel
   ProcessNullModel
   CORSIKAsetup
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

@@ -23,8 +23,6 @@ using boost::typeindex::type_id_with_cvr;
 #include <iostream>
 #include <vector>
 
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
-                          // cpp file
 #include <catch2/catch.hpp>
 
 using namespace corsika;
