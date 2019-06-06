@@ -145,7 +145,8 @@ release-clang-8:
     - ctest -j4 
   when: manual    
 
-coverage: # special manual job to run after normal pipeline finished 
+# the coverage generation should either run when manually requested, OR for all changes on the master
+.coverage_job: &coverage_job
   image: corsika/devel:u-18.04
   dependencies:
     - config-u-18_04
@@ -164,8 +165,16 @@ coverage: # special manual job to run after normal pipeline finished
     expire_in: 1 year
     paths:
       - build/coverage-report.tar.gz
+
+coverage: # special manual job to run after normal pipeline finished 
+  <<: *coverage_job
   when: manual    
-  allow_failure: true
+
+coverage_master: # special job to run on master banch changes
+  <<: *coverage_job
+  only:
+    refs:
+      - master
 
 documentation:
   image: corsika/devel:u-18.04
