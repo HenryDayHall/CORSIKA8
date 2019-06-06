@@ -166,9 +166,12 @@ release-clang-8:
     paths:
       - build/coverage-report.tar.gz
 
-coverage: # special manual job to run after normal pipeline finished 
+coverage: # special manual job to run after normal pipeline on branch finished 
   <<: *coverage_job
   when: manual    
+  except:
+    refs:
+      - master
 
 coverage_master: # special job to run on master banch changes
   <<: *coverage_job
