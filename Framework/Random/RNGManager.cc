@@ -33,6 +33,20 @@ std::stringstream corsika::random::RNGManager::dumpState() const {
 
   return buffer;
 }
+
+void corsika::random::RNGManager::SeedAll(uint64_t vSeed) {
+  for (auto& entry : rngs) { entry.second.seed(vSeed++); }
+}
+
+void corsika::random::RNGManager::SeedAll() {
+  std::random_device rd;
+
+  for (auto& entry : rngs) {
+    std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
+    entry.second.seed(sseq);
+  }
+}
+
 /*
 void corsika::random::RNGManager::SetSeedSeq(std::string const& pStreamName,
                                              std::seed_seq const& pSeedSeq) {

@@ -64,9 +64,13 @@ namespace corsika::environment {
         , fComponents(pComponents)
         , fAvgMassNumber(std::inner_product(
               pComponents.cbegin(), pComponents.cend(), pFractions.cbegin(), 0.,
-              [](double x, double y) { return x + y; },
-              [](auto const& compID, auto const& fraction) {
-                return corsika::particles::GetNucleusA(compID) * fraction;
+              std::plus<double>(), [](auto const compID, auto const fraction) -> double {
+                if (particles::IsNucleus(compID)) {
+                  return particles::GetNucleusA(compID) * fraction;
+                } else {
+                  return particles::GetMass(compID) /
+                         units::si::ConvertSIToHEP(units::constants::u) * fraction;
+                }
               })) {
       assert(pComponents.size() == pFractions.size());
       auto const sumFractions =

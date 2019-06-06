@@ -93,7 +93,7 @@ namespace corsika::particles {
   corsika::units::si::ElectricChargeType constexpr GetCharge(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetCharge() of particle::Nucleus -> unspecified");
-    return GetChargeNumber(p) * (corsika::units::constants::e);
+    return GetChargeNumber(p) * corsika::units::constants::e;
   }
 
   constexpr std::string const& GetName(Code const p) {
@@ -119,10 +119,6 @@ namespace corsika::particles {
            c == Code::NuMuBar || c == Code::NuTauBar;
   }
 
-  bool constexpr IsNucleus(Code const p) {
-    return detail::isNucleus[static_cast<CodeIntType>(p)];
-  }
-
   int constexpr GetNucleusA(Code const p) {
     return detail::nucleusA[static_cast<CodeIntType>(p)];
   }
@@ -131,11 +127,13 @@ namespace corsika::particles {
     return detail::nucleusZ[static_cast<CodeIntType>(p)];
   }
 
+  bool constexpr IsNucleus(Code const p) { return GetNucleusA(p) != 0; }
+
   /**
-   * the output operator for particles
+   * the output operator for humand-readable particle codes
    **/
 
-  std::ostream& operator<<(std::ostream& stream, corsika::particles::Code const p);
+  std::ostream& operator<<(std::ostream&, corsika::particles::Code);
 
   Code ConvertFromPDG(PDGCode);
 
