@@ -44,7 +44,7 @@ config-clang-8:
        - build
 
 # normal pipeline for each commit
-build-u-18_04: 
+build-test-u-18_04: 
   image: corsika/devel:u-18.04
   dependencies:
     - config-u-18_04
@@ -68,7 +68,7 @@ build-u-18_04:
       - build/test.log.gz
 
 # normal pipeline for each commit
-build-clang-8: 
+build-test-clang-8: 
   image: corsika/devel:clang-8
   dependencies:
     - config-clang-8
