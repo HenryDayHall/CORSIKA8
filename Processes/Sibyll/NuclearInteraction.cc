@@ -236,8 +236,6 @@ namespace corsika::process::sibyll {
             "projectiles should use NuclearStackExtension!");
       else {
         // no nuclear interaction
-        cout << "NuclearInteraction::GetInteractionLength: non nuclear projectile: "
-             << corsikaBeamId << " set interaction length to inf" << endl;
         return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
       }
     }
