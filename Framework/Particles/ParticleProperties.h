@@ -120,14 +120,22 @@ namespace corsika::particles {
   }
 
   int constexpr GetNucleusA(Code const p) {
+    if (p == Code::Nucleus) {
+      throw std::runtime_error("GetNucleusA(Code::Nucleus) is impossible!");
+    }
     return detail::nucleusA[static_cast<CodeIntType>(p)];
   }
 
   int constexpr GetNucleusZ(Code const p) {
+    if (p == Code::Nucleus) {
+      throw std::runtime_error("GetNucleusZ(Code::Nucleus) is impossible!");
+    }
     return detail::nucleusZ[static_cast<CodeIntType>(p)];
   }
 
-  bool constexpr IsNucleus(Code const p) { return GetNucleusA(p) != 0; }
+  bool constexpr IsNucleus(Code const p) {
+    return (p == Code::Nucleus) || (GetNucleusA(p) != 0);
+  }
 
   /**
    * the output operator for humand-readable particle codes
