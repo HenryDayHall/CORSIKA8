@@ -57,9 +57,6 @@ build-test-u-18_04:
     - set -o pipefail
     - ctest -VV | gzip -v -9 > test.log.gz 
   artifacts:
-#    expire_in: 1 day
-#    paths:
-#       - build
     expire_in: 1 week
     reports:
       junit:
@@ -81,55 +78,14 @@ build-test-clang-8:
     - set -o pipefail
     - ctest -VV | gzip -v -9 > test.log.gz 
   artifacts:
-#    expire_in: 1 day
-#    paths:
-#       - build
     expire_in: 1 week
     reports:
       junit:
         - build/test_outputs/junit*.xml
     paths:
       - build/test.log.gz
-
-# test-u-18_04: 
-#   image: corsika/devel:u-18.04
-#   dependencies:
-#     - build-u-18_04
-#   stage: test
-#   tags:
-#     - corsika
-#   script:
-#     - cd build
-#     - set -o pipefail
-#     - ctest -VV | gzip -v -9 > test.log.gz 
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit:
-#         - build/test_outputs/junit*.xml
-#     paths:
-#       - build/test.log.gz
-
-# test-clang-8: 
-#   image: corsika/devel:clang-8
-#   dependencies:
-#     - build-clang-8
-#   stage: test
-#   tags:
-#     - corsika
-#   script:
-#     - cd build
-#     - set -o pipefail
-#     - ctest -VV | gzip -v -9 > test.log.gz 
-#   artifacts:
-#     expire_in: 1 week
-#     reports:
-#       junit:
-#         - build/test_outputs/junit*.xml
-#     paths:
-#       - build/test.log.gz
-
-# normal pipeline for each commit
+ 
+# optional release pipeline for each commit
 release-u-18_04: 
   image: corsika/devel:u-18.04
   dependencies:
@@ -141,10 +97,18 @@ release-u-18_04:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . -- -j4
-    - ctest -j4 
+    - set -o pipefail
+    - ctest -VV | gzip -v -9 > test.log.gz 
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
+    paths:
+      - build/test.log.gz
   when: manual    
 
-# normal pipeline for each commit
+# optional release pipeline for each commit
 release-clang-8: 
   image: corsika/devel:clang-8
   dependencies:
@@ -156,7 +120,15 @@ release-clang-8:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . -- -j4
-    - ctest -j4 
+    - set -o pipefail
+    - ctest -VV | gzip -v -9 > test.log.gz 
+  artifacts:
+    expire_in: 1 week
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
+    paths:
+      - build/test.log.gz
   when: manual    
 
 # the coverage generation should either run when manually requested, OR for all changes on the master
