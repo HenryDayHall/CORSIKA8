@@ -277,7 +277,7 @@ namespace corsika::cascade {
           fProcessSequence.DoSecondaries(secondaries);
         }
 
-        auto const assertion = [&] {
+        [[maybe_unused]] auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
               fEnvironment.GetUniverse()->GetContainingNode(vParticle.GetPosition());
           return numericalNodeAfterStep == currentLogicalNode;
