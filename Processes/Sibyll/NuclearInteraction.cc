@@ -227,15 +227,20 @@ namespace corsika::process::sibyll {
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
     const particles::Code corsikaBeamId = vP.GetPID();
-    if (!particles::IsNucleus(corsikaBeamId)) {
-      // no nuclear interaction
-      return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
+
+    if (corsikaBeamId != particles::Code::Nucleus) {
+      // check if target-style nucleus (enum), these are not allowed as projectile
+      if (particles::IsNucleus(corsikaBeamId))
+        throw std::runtime_error(
+            "NuclearInteraction: GetInteractionLength: Wrong nucleus type. Nuclear "
+            "projectiles should use NuclearStackExtension!");
+      else {
+        // no nuclear interaction
+        cout << "NuclearInteraction::GetInteractionLength: non nuclear projectile: "
+             << corsikaBeamId << " set interaction length to inf" << endl;
+        return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
+      }
     }
-    // check if target-style nucleus (enum)
-    if (corsikaBeamId != particles::Code::Nucleus)
-      throw std::runtime_error(
-          "NuclearInteraction: GetInteractionLength: Wrong nucleus type. Nuclear "
-          "projectiles should use NuclearStackExtension!");
 
     // read from cross section code table
 
@@ -332,13 +337,6 @@ namespace corsika::process::sibyll {
     // TODO: calculate projectile mass in nuclearStackExtension
     //      const auto ProjMass = vP.GetMass();
     cout << "NuclearInteraction: DoInteraction: called with:" << ProjId << endl;
-
-    if (!IsNucleus(ProjId)) {
-      cout << "WARNING: non nuclear projectile in NUCLIB!" << endl;
-      // this should not happen
-      // throw std::runtime_error("Non nuclear projectile in NUCLIB!");
-      return process::EProcessReturn::eOk;
-    }
 
     // check if target-style nucleus (enum)
     if (ProjId != particles::Code::Nucleus)
