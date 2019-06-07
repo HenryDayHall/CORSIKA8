@@ -10,9 +10,7 @@ variables:
 # normal multi-step pipeline for each commit
 stages:
   - config
-  - build
-  - test
-  - release
+  - build_test
   - optional
 
 # job/stage to just prepare cmake
@@ -50,70 +48,86 @@ build-u-18_04:
   image: corsika/devel:u-18.04
   dependencies:
     - config-u-18_04
-  stage: build
+  stage: build_test
   tags:
     - corsika
   script:
     - cd build
     - cmake --build . -- -j4
+    - set -o pipefail
+    - ctest -VV | gzip -v -9 > test.log.gz 
   artifacts:
-    expire_in: 1 day
+#    expire_in: 1 day
+#    paths:
+#       - build
+    expire_in: 1 week
+    reports:
+      junit:
+        - build/test_outputs/junit*.xml
     paths:
-       - build
+      - build/test.log.gz
 
 # normal pipeline for each commit
 build-clang-8: 
   image: corsika/devel:clang-8
   dependencies:
     - config-clang-8
-  stage: build
+  stage: build_test
   tags:
     - corsika
   script:
     - cd build
     - cmake --build . -- -j4
-  artifacts:
-    expire_in: 1 day
-    paths:
-       - build
-
-test-u-18_04: 
-  image: corsika/devel:u-18.04
-  dependencies:
-    - build-u-18_04
-  stage: test
-  tags:
-    - corsika
-  script:
     - set -o pipefail
-    - cd build
     - ctest -VV | gzip -v -9 > test.log.gz 
   artifacts:
-    expire_in: 3 months
+#    expire_in: 1 day
+#    paths:
+#       - build
+    expire_in: 1 week
     reports:
       junit:
         - build/test_outputs/junit*.xml
     paths:
       - build/test.log.gz
 
-test-clang-8: 
-  image: corsika/devel:clang-8
-  dependencies:
-    - build-clang-8
-  stage: test
-  tags:
-    - corsika
-  script:
-    - set -o pipefail
-    - cd build
-    - ctest -VV | gzip -v -9 > test.log.gz 
-  artifacts:
-    expire_in: 3 months
-    reports:
-      junit:
-        - build/test_outputs/junit*.xml
-    paths:
-      - build/test.log.gz
+# test-u-18_04: 
+#   image: corsika/devel:u-18.04
+#   dependencies:
+#     - build-u-18_04
+#   stage: test
+#   tags:
+#     - corsika
+#   script:
+#     - cd build
+#     - set -o pipefail
+#     - ctest -VV | gzip -v -9 > test.log.gz 
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit:
+#         - build/test_outputs/junit*.xml
+#     paths:
+#       - build/test.log.gz
+
+# test-clang-8: 
+#   image: corsika/devel:clang-8
+#   dependencies:
+#     - build-clang-8
+#   stage: test
+#   tags:
+#     - corsika
+#   script:
+#     - cd build
+#     - set -o pipefail
+#     - ctest -VV | gzip -v -9 > test.log.gz 
+#   artifacts:
+#     expire_in: 1 week
+#     reports:
+#       junit:
+#         - build/test_outputs/junit*.xml
+#     paths:
+#       - build/test.log.gz
 
 # normal pipeline for each commit
 release-u-18_04: 
@@ -182,7 +196,7 @@ coverage_master: # special job to run on master banch changes
 documentation:
   image: corsika/devel:u-18.04
   dependencies:
-    - build-u-18_04
+    - config-u-18_04
   stage: optional
   tags:
     - corsika
@@ -193,7 +207,7 @@ documentation:
     - cp -r Documentation/Doxygen/html .public/
     - mv .public ../public
   artifacts:
-    expire_in: 3 months
+    expire_in: 3 weeks
     paths:
       - public
   when: manual
