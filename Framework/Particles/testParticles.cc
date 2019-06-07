@@ -102,6 +102,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(IsHadron(Code::Proton));
     REQUIRE(IsHadron(Code::PiPlus));
     REQUIRE(IsHadron(Code::Oxygen));
+    REQUIRE(IsHadron(Code::Nucleus));
   }
 
   SECTION("Particle groups: muons") {
@@ -124,7 +125,6 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE_FALSE(IsNeutrino(Code::Oxygen));
   }
 
-
   SECTION("Nuclei") {
     REQUIRE_FALSE(IsNucleus(Code::Gamma));
     REQUIRE(IsNucleus(Code::Argon));
@@ -137,5 +137,8 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(GetNucleusA(Code::Tritium) == 3);
     REQUIRE(Hydrogen::GetNucleusZ() == 1);
     REQUIRE(Tritium::GetNucleusA() == 3);
+
+    REQUIRE_THROWS(GetNucleusA(Code::Nucleus));
+    REQUIRE_THROWS(GetNucleusZ(Code::Nucleus));
   }
 }
