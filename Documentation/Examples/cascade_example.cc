@@ -135,14 +135,13 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay;
-  process::sibyll::CheckDecay checkDecay;
   process::particle_cut::ParticleCut cut(20_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss;
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect << sibyll << sibyllNuc << decay << checkDecay << eLoss << cut
+  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
                                << trackWriter;
 
   // define air shower object, run simulation

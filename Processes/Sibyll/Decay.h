@@ -56,15 +56,8 @@ namespace corsika::process {
       EProcessReturn DoSecondaries(TParticleView&);
     };
 
-    class CheckDecay : public corsika::process::SecondariesProcess<CheckDecay> {
-    public:
-      CheckDecay() {};
-      void Init() {};
-      template <typename TSecondaryView>
-      EProcessReturn DoSecondaries(TSecondaryView&);
-    };
-
   } // namespace sibyll
+  
 } // namespace corsika::process
 
 #endif

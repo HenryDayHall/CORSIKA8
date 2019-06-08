@@ -163,12 +163,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
     auto projectile = view.GetProjectile();
 
     Decay model;
-    CheckDecay checkModel;
     
     model.Init();
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
     // run checks
-    checkModel.DoSecondaries(view);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
   }
 

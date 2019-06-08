@@ -166,21 +166,4 @@ namespace corsika::process::sibyll {
     ss.Clear();
   }
 
-  template <>
-  EProcessReturn CheckDecay::DoSecondaries(SetupView& vS) { // corsika::setup::StackView&vS){}
-    auto pCode = vS.GetProjectile().GetPID();
-    if (vS.GetSize() == 1 && pCode == vS.GetNextParticle().GetPID())
-      throw std::runtime_error("Sibyll::CheckDecay: Particle decays into itself!");
-
-    /*
-      here we could also post-process the decay products and let short-lived resonances
-      decay, etc
-
-      See Issue 196
-
-      https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/issues/196
-
-     */
-    return EProcessReturn::eOk;
-  }
 } // namespace corsika::process::sibyll
