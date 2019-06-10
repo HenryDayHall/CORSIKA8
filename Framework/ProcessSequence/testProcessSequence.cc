@@ -293,7 +293,6 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
   }
 }
 
-
 /*
   Note: there is a fine-grained dedicated test-suite for SwitchProcess
   in Processes/SwitchProcess/testSwtichProcess
