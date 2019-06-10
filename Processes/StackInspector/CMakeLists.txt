@@ -51,7 +51,7 @@ install (
 
 # --------------------
 # code unit testing
-CORSIKA_ADD_TEST(testStackInspector)
+CORSIKA_ADD_TEST (testStackInspector)
 target_link_libraries (
   testStackInspector
   ProcessStackInspector
