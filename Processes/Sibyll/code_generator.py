@@ -64,7 +64,7 @@ def generate_corsika2sibyll(particle_db):
 def generate_corsika2sibyll_xsType(particle_db):    
     string = "std::array<int, {:d}> constexpr corsika2sibyllXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
-        sibCodeXS = pData.get("sibyll_xsType", -1)
+        sibCodeXS = pData.get("sibyll_xsType", 0)
         string += "  {:d}, // {:s}\n".format(sibCodeXS, identifier if sibCodeXS else identifier + " (not implemented in SIBYLL)")
     string += "};\n"
     return string
