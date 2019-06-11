@@ -21,8 +21,6 @@ using namespace corsika::stack::nuclear_extension;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
-                          // cpp file
 #include <catch2/catch.hpp>
 
 // this is an auxiliary help typedef, which I don't know how to put

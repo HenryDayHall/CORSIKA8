@@ -91,5 +91,5 @@ target_link_libraries (
   testParticles
   CORSIKAparticles
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

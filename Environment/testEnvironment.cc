@@ -8,9 +8,6 @@
  * the license.
  */
 
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
-                          // cpp file
-
 #include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
@@ -25,6 +22,7 @@
 #include <corsika/geometry/Vector.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
+
 #include <catch2/catch.hpp>
 
 using namespace corsika::geometry;

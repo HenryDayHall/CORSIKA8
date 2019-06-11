@@ -76,12 +76,12 @@ CORSIKA_ADD_TEST(testCOMBoost)
 target_link_libraries (
   testCOMBoost
   CORSIKAutilities
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )
 
 CORSIKA_ADD_TEST(testCorsikaFenv)
 target_link_libraries (
   testCorsikaFenv
   CORSIKAutilities
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
 )

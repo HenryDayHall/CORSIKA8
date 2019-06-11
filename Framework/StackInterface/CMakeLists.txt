@@ -35,10 +35,10 @@ install (
 
 #code testing
 CORSIKA_ADD_TEST(testStackInterface)
-target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+target_link_libraries (testStackInterface CORSIKAstackinterface CORSIKAtesting)
 
 CORSIKA_ADD_TEST(testSecondaryView)
-target_link_libraries (testSecondaryView CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+target_link_libraries (testSecondaryView CORSIKAstackinterface CORSIKAtesting)
 
 CORSIKA_ADD_TEST(testCombinedStack)
-target_link_libraries (testCombinedStack CORSIKAstackinterface CORSIKAthirdparty) # for catch2
+target_link_libraries (testCombinedStack CORSIKAstackinterface CORSIKAtesting)

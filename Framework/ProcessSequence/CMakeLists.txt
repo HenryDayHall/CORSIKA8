@@ -44,12 +44,12 @@ target_link_libraries (
 
 #-- -- -- -- -- -- -- --
 #code unit testing
-CORSIKA_ADD_TEST(testProcessSequence)
+CORSIKA_ADD_TEST (testProcessSequence)
 target_link_libraries (
   testProcessSequence
   ProcessSwitch
   CORSIKAsetup
   CORSIKAgeometry
   CORSIKAprocesssequence
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

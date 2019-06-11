@@ -38,10 +38,10 @@ install (
 # ----------------
 # code unit testing
 
-CORSIKA_ADD_TEST (testLogging)
-target_link_libraries (
-  testLogging
-  CORSIKAlogging
-  CORSIKAthirdparty # for catch2
-  )
+#CORSIKA_ADD_TEST (testLogging)
+#target_link_libraries (
+#  testLogging
+#  CORSIKAlogging
+#  CORSIKAtesting
+#  )
 

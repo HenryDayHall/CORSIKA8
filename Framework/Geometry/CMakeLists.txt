@@ -71,7 +71,7 @@ target_link_libraries (
   testGeometry
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )
 
 CORSIKA_ADD_TEST(testFourVector)
@@ -79,5 +79,5 @@ target_link_libraries (
   testFourVector
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

@@ -1,3 +1,4 @@
+add_subdirectory (Testing)
 add_subdirectory (Utilities)
 add_subdirectory (Units)
 add_subdirectory (Geometry)

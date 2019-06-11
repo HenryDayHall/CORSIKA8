@@ -38,5 +38,5 @@ target_link_libraries (
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )

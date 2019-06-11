@@ -62,5 +62,5 @@ target_link_libraries (
   CORSIKAsetup
   CORSIKAgeometry
   CORSIKAenvironment
-  CORSIKAthirdparty # for catch2
+  CORSIKAtesting
   )
