@@ -47,44 +47,36 @@ namespace corsika::process::sibyll {
     // initialize Sibyll
     if (!fInitialized) {
       sibyll_ini_();
-
-      // any decays in sibyll? if yes need to define which particles
-      if (fInternalDecays) {
-        // define which particles are passed to corsika, i.e. which particles make it into
-        // history even very shortlived particles like charm or pi0 are of interest here
-        const std::vector<particles::Code> hadronsWeWantTrackedByCorsika = {
-            particles::Code::PiPlus,     particles::Code::PiMinus,
-            particles::Code::Pi0,        particles::Code::KMinus,
-            particles::Code::KPlus,      particles::Code::K0Long,
-            particles::Code::K0Short,    particles::Code::SigmaPlus,
-            particles::Code::SigmaMinus, particles::Code::Lambda0,
-            particles::Code::Xi0,        particles::Code::XiMinus,
-            particles::Code::OmegaMinus, particles::Code::DPlus,
-            particles::Code::DMinus,     particles::Code::D0,
-            particles::Code::D0Bar};
-
-        Interaction::SetParticleListStable(hadronsWeWantTrackedByCorsika);
-      }
-
       fInitialized = true;
     }
   }
 
-  void Interaction::SetParticleListStable(
-      std::vector<particles::Code> const& particleList) {
-    for (auto p : particleList) Interaction::SetStable(p);
+  void Interaction::SetStable(std::vector<particles::Code> const& vParticleList) {
+    for (auto p : vParticleList) Interaction::SetStable(p);
   }
 
-  void Interaction::SetUnstable(const particles::Code pCode) {
-    cout << "Sibyll::Interaction: setting " << pCode << " unstable.." << endl;
-    int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
+  void Interaction::SetUnstable(std::vector<particles::Code> const& vParticleList) {
+    for (auto p : vParticleList) Interaction::SetUnstable(p);
+  }
+
+  void Interaction::SetUnstable(const particles::Code vCode) {
+    cout << "Sibyll::Interaction: setting " << vCode << " unstable.." << endl;
+    const int s_id = abs(process::sibyll::ConvertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Interaction::SetStable(const particles::Code pCode) {
-    cout << "Sibyll::Interaction: setting " << pCode << " stable.." << endl;
-    int s_id = process::sibyll::ConvertToSibyllRaw(pCode);
+  void Interaction::SetStable(const particles::Code vCode) {
+    cout << "Sibyll::Interaction: setting " << vCode << " stable.." << endl;
+    const int s_id = abs(process::sibyll::ConvertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
+  }
+
+  void Interaction::SetAllStable() {
+    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
+  }
+
+  void Interaction::SetAllUnstable() {
+    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
   }
 
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
@@ -325,8 +317,16 @@ namespace corsika::process::sibyll {
         const double sqs = Ecm / 1_GeV;
         // running sibyll, filling stack
         sibyll_(kBeam, targetSibCode, sqs);
-        // running decays
-        if (fInternalDecays) decsib_();
+        if (fInternalDecays) {
+          // particles that decay internally will never appear on the corsika stack
+          // switch on all decays except for the particles we want to take part in the
+          // tracking
+          SetAllUnstable();
+          SetStable(fTrackedParticles);
+          decsib_();
+          // reset
+          SetAllStable();
+        }
         // print final state
         int print_unit = 6;
         sib_list_(print_unit);

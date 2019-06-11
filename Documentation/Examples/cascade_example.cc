@@ -130,15 +130,11 @@ int main() {
   tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  const std::vector<particles::Code> trackedHadrons = {
-      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::sibyll::Decay decay(trackedHadrons);
+  process::sibyll::Decay decay;
   process::particle_cut::ParticleCut cut(20_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
@@ -162,4 +158,8 @@ int main() {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+
+  // basic check for unit-tests
+  assert(cut.GetNumberEmParticles() == 127);
+  assert(cut.GetNumberInvParticles() == 116);
 }

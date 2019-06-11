@@ -263,6 +263,10 @@ namespace corsika::cascade {
             InverseTimeType inv_decay_count = 0 / second;
             fProcessSequence.SelectDecay(vParticle, projectile, sample_process,
                                          inv_decay_count);
+            // make sure particle actually did decay if it should have done so
+            if (secondaries.GetSize() == 1 &&
+                projectile.GetPID() == secondaries.GetNextParticle().GetPID())
+              throw std::runtime_error("Cascade::Step: Particle decays into itself!");
           }
 
           fProcessSequence.DoSecondaries(secondaries);
@@ -273,6 +277,7 @@ namespace corsika::cascade {
                               // be "protected" and not accessible to physics
 
         } else { // step-length limitation within volume
+
           std::cout << "step-length limitation" << std::endl;
           fProcessSequence.DoSecondaries(secondaries);
         }

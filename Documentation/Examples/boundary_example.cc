@@ -121,9 +121,7 @@ int main() {
 
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   process::sibyll::Interaction sibyll;
-  process::sibyll::Decay decay{{particles::Code::PiPlus, particles::Code::PiMinus,
-                                particles::Code::KPlus, particles::Code::KMinus,
-                                particles::Code::K0Long, particles::Code::K0Short}};
+  process::sibyll::Decay decay;
 
   process::particle_cut::ParticleCut cut(20_GeV);
 
@@ -180,4 +178,8 @@ int main() {
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   cout << "total energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+
+  // basic check for unit-tests
+  assert(cut.GetNumberEmParticles() == 29785);
+  assert(cut.GetNumberInvParticles() == 26697);
 }

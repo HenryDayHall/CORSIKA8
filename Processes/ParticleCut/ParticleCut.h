@@ -24,9 +24,9 @@ namespace corsika::process {
 
       units::si::HEPEnergyType fEnergy = 0 * units::si::electronvolt;
       units::si::HEPEnergyType fEmEnergy = 0 * units::si::electronvolt;
-      int fEmCount = 0;
+      unsigned int fEmCount = 0;
       units::si::HEPEnergyType fInvEnergy = 0 * units::si::electronvolt;
-      int fInvCount = 0;
+      unsigned int fInvCount = 0;
 
     public:
       ParticleCut(const units::si::HEPEnergyType vCut)
@@ -46,6 +46,8 @@ namespace corsika::process {
       units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
       units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
       units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
+      unsigned int GetNumberEmParticles() const { return fEmCount; }
+      unsigned int GetNumberInvParticles() const { return fInvCount; }
     };
   } // namespace particle_cut
 } // namespace corsika::process

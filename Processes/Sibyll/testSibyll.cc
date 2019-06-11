@@ -69,6 +69,7 @@ TEST_CASE("Sibyll", "[processes]") {
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/process/sibyll/sibyll2.3c.h>
 
 using namespace corsika::units::si;
 using namespace corsika::units;
@@ -157,18 +158,34 @@ TEST_CASE("SibyllInterface", "[processes]") {
     auto particle = stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
+            particles::Code::Lambda0, E0, plab, pos, 0_ns});
     corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 
-    const std::vector<particles::Code> particleList = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
-    Decay model(particleList);
+    Decay model;
 
     model.Init();
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
+    // run checks
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
+  }
+
+  SECTION("DecayConfiguration") {
+
+    Decay model;
+
+    const std::vector<particles::Code> particleTestList = {
+        particles::Code::PiPlus,     particles::Code::PiMinus, particles::Code::KPlus,
+        particles::Code::Lambda0Bar, particles::Code::NuE,     particles::Code::D0Bar};
+
+    for (auto& pCode : particleTestList) {
+      model.SetUnstable(pCode);
+      // get state of sibyll internal config
+      REQUIRE(0 <= s_csydec_.idb[abs(process::sibyll::ConvertToSibyllRaw(pCode)) - 1]);
+
+      model.SetStable(pCode);
+      // get state of sibyll internal config
+      REQUIRE(0 >= s_csydec_.idb[abs(process::sibyll::ConvertToSibyllRaw(pCode)) - 1]);
+    }
   }
 }
