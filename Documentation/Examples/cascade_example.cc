@@ -135,7 +135,8 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay;
-  process::particle_cut::ParticleCut cut(20_GeV);
+  // cascade with only HE model ==> HE cut
+  process::particle_cut::ParticleCut cut(80_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss;
