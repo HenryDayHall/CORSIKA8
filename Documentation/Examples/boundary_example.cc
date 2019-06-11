@@ -178,4 +178,8 @@ int main() {
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   cout << "total energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+
+  // basic check for unit-tests
+  assert(cut.GetNumberEmParticles() == 29785);
+  assert(cut.GetNumberInvParticles() == 26697);
 }

@@ -151,4 +151,8 @@ int main() {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+
+  // basic check for unit-tests
+  assert(cut.GetNumberEmParticles() == 526);
+  assert(cut.GetNumberInvParticles() == 645);
 }
