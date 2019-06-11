@@ -57,7 +57,7 @@ namespace corsika::process {
     };
 
   } // namespace sibyll
-  
+
 } // namespace corsika::process
 
 #endif
