@@ -21,7 +21,7 @@ function (_PYTHIA8_CONFIG_ option variable type doc)
   if (NOT ${_local_res_} EQUAL 0)
     message ("Error in running ${PYTHIA8_CONFIG} ${option}")
   else ()
-    set(${variable} "${_local_out_}" CACHE ${type} ${doc})
+    set (${variable} "${_local_out_}" CACHE ${type} ${doc})
   endif ()
 endfunction (_PYTHIA8_CONFIG_)
   
@@ -39,7 +39,7 @@ endfunction (_PYTHIA8_CONFIG_)
 # PYTHIA8_VERSION       version of Pythia8 if found
 #
 
-set(_SEARCH_PYTHIA8_
+set (_SEARCH_PYTHIA8_
   ${PROJECT_BINARY_DIR}/ThirdParty/pythia8-install
   ${PYTHIA8}
   $ENV{PYTHIA8}
@@ -51,23 +51,23 @@ set(_SEARCH_PYTHIA8_
   $ENV{PYTHIA8_ROOT}
   /opt/pythia8)
 
-find_program(PYTHIA8_CONFIG
+find_program (PYTHIA8_CONFIG
   NAME pythia8-config
   PATHS ${_SEARCH_PYTHIA8_}
   PATH_SUFFIXES "/bin"
   DOC "The location of the pythia8-config script")
 
 if (PYTHIA8_CONFIG)
-  set(HAVE_PYTHIA8 1 CACHE BOOL "presence of pythia8, found via pythia8-config")
+  set (HAVE_PYTHIA8 1 CACHE BOOL "presence of pythia8, found via pythia8-config")
 
-  _PYTHIA8_CONFIG_("--prefix" PYTHIA8_PREFIX PATH "location of pythia8 installation")
-  _PYTHIA8_CONFIG_("--includedir" PYTHIA8_INCLUDE_DIR PATH "pythia8 include directory")
-  _PYTHIA8_CONFIG_("--libs" PYTHIA8_LIBRARY STRING "the pythia8 libs")
-  _PYTHIA8_CONFIG_("--datadir" PYTHIA8_DATA_DIR PATH "the pythia8 data dir")
-  _PYTHIA8_CONFIG_("--cxxflags" PYTHIA8_CXXFLAGS STRING "the pythia8 cxxflags")
+  _PYTHIA8_CONFIG_ ("--prefix" PYTHIA8_PREFIX PATH "location of pythia8 installation")
+  _PYTHIA8_CONFIG_ ("--includedir" PYTHIA8_INCLUDE_DIR PATH "pythia8 include directory")
+  _PYTHIA8_CONFIG_ ("--libs" PYTHIA8_LIBRARY STRING "the pythia8 libs")
+  _PYTHIA8_CONFIG_ ("--datadir" PYTHIA8_DATA_DIR PATH "the pythia8 data dir")
+  _PYTHIA8_CONFIG_ ("--cxxflags" PYTHIA8_CXXFLAGS STRING "the pythia8 cxxflags")
 endif ()
 
 # standard cmake infrastructure:
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Pythia8 DEFAULT_MSG PYTHIA8_PREFIX PYTHIA8_INCLUDE_DIR PYTHIA8_LIBRARY)
-mark_as_advanced(PYTHIA8_DATA_DIR PYTHIA8_CXXFLAGS PYTHIA8_INCLUDE_DIR PYTHIA8_LIBRARY)
+include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args (Pythia8 DEFAULT_MSG PYTHIA8_PREFIX PYTHIA8_INCLUDE_DIR PYTHIA8_LIBRARY)
+mark_as_advanced (PYTHIA8_DATA_DIR PYTHIA8_CXXFLAGS PYTHIA8_INCLUDE_DIR PYTHIA8_LIBRARY)
