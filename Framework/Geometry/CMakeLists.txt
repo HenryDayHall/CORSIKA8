@@ -46,7 +46,7 @@ target_link_libraries (
 target_include_directories (
   CORSIKAgeometry
   SYSTEM
-  PUBLIC    ${EIGEN3_INCLUDE_DIR}
+  PUBLIC ${EIGEN3_INCLUDE_DIR}
   )
 
 target_include_directories (
