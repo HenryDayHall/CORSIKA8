@@ -40,7 +40,7 @@ namespace corsika::process::sibyll {
   }
 
   bool constexpr CanInteract(corsika::particles::Code pCode) {
-    return GetSibyllXSCode(pCode) != 0;
+    return GetSibyllXSCode(pCode) > 0;
   }
 
 } // namespace corsika::process::sibyll
