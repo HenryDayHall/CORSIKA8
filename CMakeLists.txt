@@ -85,6 +85,7 @@ endif ()
 # targets and settings needed to generate coverage reports
 if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   find_package (Perl REQUIRED)
+
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
   set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/ThirdParty/lcov/bin")
   # collect coverage data
@@ -119,7 +120,6 @@ add_test (NAME clang_format COMMAND ./do-clang-format.sh check WORKING_DIRECTORY
 if (WITH_PYTHIA)
   find_package (Pythia8) # optional
 endif (WITH_PYTHIA)
-find_package (Eigen3 REQUIRED)
 
 # order of subdirectories
 add_subdirectory (ThirdParty)
@@ -134,3 +134,25 @@ add_subdirectory (Tools)
 if (WITH_COAST)
   add_subdirectory (COAST)
 endif ()
+
+# check for Eigen3: either use ThirdParty/eigen3 or system-level installation
+if (WITH_EIGEN3)
+  string (TOLOWER ${WITH_EIGEN3} WITH_EIGEN3_LOWER)
+  if (WITH_EIGEN3_LOWER EQUAL "system")
+    find_package (Eigen3 REQUIRED)
+  else ()
+    list (APPEND CMAKE_MODULE_PATH "${WITH_EIGEN3}/cmake")
+    set (EIGEN3_INCLUDE_DIR "${WITH_EIGEN3}" CACHE PATH "eigen3 directory") 
+    find_package (Eigen3 REQUIRED)
+  endif ()
+else (WITH_EIGEN3)
+  list (APPEND CMAKE_MODULE_PATH "${LOCAL_Eigen3_VERSION}/cmake")
+  set (EIGEN3_INCLUDE_DIR "${LOCAL_Eigen3_VERSION}" CACHE PATH "eigen3 directory")
+  find_package (Eigen3 REQUIRED)
+endif (WITH_EIGEN3)
+
+# some final info output
+message ("Use eigen3 version: ${EIGEN3_VERSION} from ${EIGEN3_INCLUDE_DIR}")
+
+include (FeatureSummary)
+feature_summary (WHAT ALL)

@@ -126,30 +126,30 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 # TEMPORARY: All sanitizers are currently globally disabled by default, to enable them,
 # set CORSIKA_SANITIZERS_ENABLED to TRUE.
 function (CORSIKA_ADD_TEST)
-  cmake_parse_arguments(PARSE_ARGV 1 _ "" "SANITIZE" "SOURCES")
+  cmake_parse_arguments (PARSE_ARGV 1 _ "" "SANITIZE" "SOURCES")
 
-  set(name ${ARGV0})
+  set (name ${ARGV0})
 
   if (NOT __SOURCES)
-    set(sources ${name}.cc)
-  else()
-    set(sources ${__SOURCES})
-  endif()
+    set (sources ${name}.cc)
+  else ()
+    set (sources ${__SOURCES})
+  endif ()
 
   if (NOT __SANITIZE)
     set(sanitize "address,undefined")
-  else()
+  else ()
     set(sanitize ${__SANITIZE})
-  endif()
+  endif ()
 
-  add_executable(${name} ${sources})
-  target_compile_options(${name} PRIVATE -g) # do not skip asserts
+  add_executable (${name} ${sources})
+  target_compile_options (${name} PRIVATE -g) # do not skip asserts
   target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
   if (CORSIKA_SANITIZERS_ENABLED)
     # -O1 is suggested in clang docs to get reasonable performance
-    target_compile_options(${name} PRIVATE -O1 -fno-omit-frame-pointer -fsanitize=${sanitize} -fno-sanitize-recover=all)
-    set_target_properties(${name} PROPERTIES LINK_FLAGS "-fsanitize=${sanitize}")
-  endif()
+    target_compile_options (${name} PRIVATE -O1 -fno-omit-frame-pointer -fsanitize=${sanitize} -fno-sanitize-recover=all)
+    set_target_properties (${name} PROPERTIES LINK_FLAGS "-fsanitize=${sanitize}")
+  endif ()
   add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -s -r junit)
 endfunction (CORSIKA_ADD_TEST)
