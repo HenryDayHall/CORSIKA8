@@ -58,10 +58,13 @@ which are very useful also for us.
 
 CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-6.0.0.
 Additional software prerequisites: eigen3, boost, cmake, g++, git. 
+However, eigen3 is shipped in ThirdParty directory, so any installation 
+on the system is optional. 
 On a bare Ubuntu 18.04, just add:
 ```
-sudo apt install libeigen3-dev cmake g++ git
+sudo apt install cmake g++ git
 ```
+add ```libeigen3-dev``` if you want to use system version of eigen3.
 
 Follow these steps to download and install CORSIKA 8 milestone2
 ```
