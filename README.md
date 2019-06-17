@@ -70,7 +70,6 @@ Follow these steps to download and install CORSIKA 8 milestone2
 ```
 git clone git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
 cd corsika
-git checkout milestone2
 mkdir ../corsika-build
 cd ../corsika-build
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
