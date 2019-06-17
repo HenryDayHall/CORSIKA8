@@ -13,8 +13,6 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
-#include <bitset2/bitset2.hpp>
-
 #include <map>
 
 namespace corsika::coast {

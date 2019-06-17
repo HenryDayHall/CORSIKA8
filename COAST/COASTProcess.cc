@@ -31,7 +31,7 @@ namespace corsika::coast {
      you will be able to do that.
    */
   corsika::process::EProcessReturn COASTProcess::DoContinuous(const Particle& p,
-                                                              const Track& t,
+							      const Track& t,
                                                               const Stack&) {
     using namespace corsika::units::si;
     auto const start = t.GetPosition(0).GetCoordinates();
