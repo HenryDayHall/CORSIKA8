@@ -45,15 +45,15 @@ target_link_libraries (
 
 target_include_directories (
   CORSIKAgeometry
-  SYSTEM
-  PUBLIC ${EIGEN3_INCLUDE_DIR}
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include/include>
   )
 
 target_include_directories (
   CORSIKAgeometry
-  INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include/include>
+  SYSTEM
+  PUBLIC "${EIGEN3_INCLUDE_DIR}"
   )
 
 install (
