@@ -99,7 +99,6 @@ int main() {
   auto outerMedium = EnvType::CreateNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  // fraction of oxygen
   auto const props =
       outerMedium
           ->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
