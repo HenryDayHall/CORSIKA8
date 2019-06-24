@@ -13,7 +13,7 @@
 
 #include <corsika/particles/ParticleProperties.h>
 
-#include <map>
+#include <string>
 
 namespace corsika::process::sibyll {
 
@@ -28,7 +28,14 @@ namespace corsika::process::sibyll {
   }
 
   corsika::particles::Code constexpr ConvertFromSibyll(SibyllCode pCode) {
-    return sibyll2corsika[static_cast<SibyllCodeIntType>(pCode) - minSibyll];
+    auto const s = static_cast<SibyllCodeIntType>(pCode);
+    auto const corsikaCode = sibyll2corsika[s - minSibyll];
+    if (corsikaCode == corsika::particles::Code::Unknown) {
+      throw std::runtime_error(std::string("SIBYLL/CORSIKA conversion of ")
+                                   .append(std::to_string(s))
+                                   .append(" impossible"));
+    }
+    return corsikaCode;
   }
 
   int constexpr ConvertToSibyllRaw(corsika::particles::Code pCode) {
