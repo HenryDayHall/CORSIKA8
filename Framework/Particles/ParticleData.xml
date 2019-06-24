@@ -860,6 +860,7 @@
  <channel onMode="1" bRatio="0.0016900" products="111 111 111"/> 
  <channel onMode="1" bRatio="0.0001076" products="13 -13 22"/> 
 </particle> 
+-->
  
 <particle id="333" name="phi" spinType="3" chargeType="0" colType="0" 
           m0="1.01946" mWidth="0.00426" mMin="1.00000" mMax="1.04000"> 
@@ -878,6 +879,7 @@
  <channel onMode="1" bRatio="0.0000470" products="223 111"/> 
 </particle> 
  
+<!--
 <particle id="335" name="f'_2(1525)" spinType="5" chargeType="0" colType="0" 
           m0="1.52500" mWidth="0.07300" mMin="1.10000" mMax="2.00000"> 
  <channel onMode="1" bRatio="0.4444000" products="321 -321"/> 

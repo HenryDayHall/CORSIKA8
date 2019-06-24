@@ -45,6 +45,9 @@ TEST_CASE("Sibyll", "[processes]") {
 
     REQUIRE_FALSE(process::sibyll::CanInteract(particles::Electron::GetCode()));
     REQUIRE_FALSE(process::sibyll::CanInteract(particles::SigmaC0::GetCode()));
+
+    REQUIRE_FALSE(process::sibyll::CanInteract(particles::Nucleus::GetCode()));
+    REQUIRE_FALSE(process::sibyll::CanInteract(particles::Helium::GetCode()));
   }
 
   SECTION("cross-section type") {
