@@ -146,6 +146,20 @@ namespace corsika::process::energy_loss {
            (0.5 * log(aux) - beta2 - Cadj / Z - delta / 2 + barkas + bloch) * dX;
   }
 
+  // radiation losses according to PDG 2018, ch. 33 ref. [5]
+  HEPEnergyType EnergyLoss::RadiationLosses(SetupParticle const& vP,
+                                            GrammageType const vDX) {
+    // simple-minded hard-coded value for b(E) inspired by data from
+    // http://pdg.lbl.gov/2018/AtomicNuclearProperties/ for N and O.
+    auto constexpr b = 3.0 * 1e-6 * square(1_cm) / 1_g;
+    return -vP.GetEnergy() * b * vDX;
+  }
+
+  HEPEnergyType EnergyLoss::TotalEnergyLoss(SetupParticle const& vP,
+                                            GrammageType const vDX) {
+    return BetheBloch(vP, vDX) + RadiationLosses(vP, vDX);
+  }
+
   process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p,
                                                    SetupTrack const& t) {
     if (p.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
@@ -153,7 +167,7 @@ namespace corsika::process::energy_loss {
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
     cout << "EnergyLoss " << p.GetPID() << ", z=" << p.GetChargeNumber()
          << ", dX=" << dX / 1_g * square(1_cm) << "g/cm2" << endl;
-    HEPEnergyType dE = BetheBloch(p, dX);
+    HEPEnergyType dE = TotalEnergyLoss(p, dX);
     auto E = p.GetEnergy();
     const auto Ekin = E - p.GetMass();
     auto Enew = E + dE;
@@ -173,14 +187,14 @@ namespace corsika::process::energy_loss {
     return status;
   }
 
-  units::si::LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,
-                                                  SetupTrack const& vTrack) const {
+  LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,
+                                       SetupTrack const& vTrack) const {
     if (vParticle.GetChargeNumber() == 0) {
       return units::si::meter * std::numeric_limits<double>::infinity();
     }
 
     auto constexpr dX = 1_g / square(1_cm);
-    auto const dE = -BetheBloch(vParticle, dX); // dE > 0
+    auto const dE = -TotalEnergyLoss(vParticle, dX); // dE > 0
     //~ auto const Ekin = vParticle.GetEnergy() - vParticle.GetMass();
     auto const maxLoss = 0.01 * vParticle.GetEnergy();
     auto const maxGrammage = maxLoss / dE * dX;
