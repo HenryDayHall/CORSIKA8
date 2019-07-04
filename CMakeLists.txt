@@ -114,8 +114,8 @@ endif ()
 # add call to ./do-copyright.py to run as unit-test-case
 add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-# add call to do-clang-format.sh checking to run as unit-test-case
-add_test (NAME clang_format COMMAND ./do-clang-format.sh check WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+# add call to do-clang-format.py checking to run as unit-test-case
+add_test (NAME clang_format COMMAND ./do-clang-format.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (WITH_PYTHIA)
   find_package (Pythia8) # optional
