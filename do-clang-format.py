@@ -3,7 +3,7 @@
 Run clang-format with the style file in the CORSIKA repository.
 
 By default it finds new files and files with modifications with respect to the current master and prints
-the filenames which need clang-formatting. Returns 1 if there are files with need modifications and 0 otherwise.
+the filenames which need clang-formatting. Returns 1 if there are files which need modifications and 0 otherwise.
 """
 import argparse
 import subprocess as subp
