@@ -2,8 +2,7 @@
 """
 Run clang-format with the style file in the CORSIKA repository.
 
-By default it finds new files and files with modifications with respect to the current master and prints
-the filenames which need clang-formatting. Returns 1 if there are files which need modifications and 0 otherwise.
+By default it finds new files and files with modifications with respect to the current master and prints the filenames which need clang-formatting. Returns 1 if there are files which need modifications and 0 otherwise, so it can be used as a test.
 """
 import argparse
 import subprocess as subp
@@ -11,8 +10,10 @@ import os
 import sys
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--apply', action="store_true", help="Apply clang-format to files which need changes.")
-parser.add_argument("--all", action="store_true", help="Check all files below current path instead of new/modified.")
+parser.add_argument('--apply', action="store_true",
+    help="Apply clang-format to files which need changes.")
+parser.add_argument("--all", action="store_true",
+    help="Check all files below current path instead of new/modified.")
 
 args = parser.parse_args()
 
@@ -27,7 +28,8 @@ if args.all:
                 if not os.path.islink(filename):
                     filelist.append(filename)
     if not filelist:
-        raise SystemExit("Error: You specified --all, but file list is empty. Did you run from the build directory?")
+        raise SystemExit("Error: You specified --all, but file list is empty. "
+                         "Did you run from the build directory?")
 else:
     cmd = "git diff master --name-status"
     for line in subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n"):
@@ -36,7 +38,8 @@ else:
 
     cmd = "git ls-files --exclude-standard --others"
     filelist += subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n")
-    filelist = [x for x in filelist if "ThirdParty" not in x and (x.endswith(".h") or x.endswith(".cc"))]
+    filelist = [x for x in filelist
+                if "ThirdParty" not in x and (x.endswith(".h") or x.endswith(".cc"))]
 
 cmd = "clang-format -style=file"
 if args.apply:
