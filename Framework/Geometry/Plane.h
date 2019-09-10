@@ -26,9 +26,14 @@ namespace corsika::geometry {
   public:
     Plane(Point const& vCenter, DimLessVec const& vNormal)
         : fCenter(vCenter)
-        , fNormal(vNormal) {}
+        , fNormal(vNormal.normalized()) {}
+
     bool IsAbove(Point const& vP) const {
       return fNormal.dot(vP - fCenter) > corsika::units::si::LengthType::zero();
+    }
+
+    units::si::LengthType DistanceTo(geometry::Point const& vP) const {
+      return (fNormal * (vP - fCenter).dot(fNormal)).norm();
     }
 
     Point const& GetCenter() const { return fCenter; }

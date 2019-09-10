@@ -15,7 +15,10 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <corsika/geometry/Line.h>
+
 #include <cmath>
+#include <fstream>
 #include <iostream>
 #include <limits>
 
@@ -31,11 +34,6 @@ namespace corsika::process::energy_loss {
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
   };
-
-  EnergyLoss::EnergyLoss()
-      : fEnergyLossTot(0_GeV)
-      , fdX(10_g / square(1_cm)) // profile binning
-  {}
 
   /**
    *   PDG2018, passage of particles through matter
@@ -163,6 +161,7 @@ namespace corsika::process::energy_loss {
   process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p,
                                                    SetupTrack const& t) {
     if (p.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
+
     GrammageType const dX =
         p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
     cout << "EnergyLoss " << p.GetPID() << ", z=" << p.GetChargeNumber()
@@ -183,7 +182,7 @@ namespace corsika::process::energy_loss {
     p.SetEnergy(Enew);
     MomentumUpdate(p, Enew);
     fEnergyLossTot += dE;
-    GetXbin(p, t, dE);
+    FillProfile(p, t, dE);
     return status;
   }
 
@@ -211,37 +210,63 @@ namespace corsika::process::energy_loss {
     vP.SetMomentum(pnew * Pnew / pnew.GetNorm());
   }
 
-#include <corsika/geometry/CoordinateSystem.h>
-
-  int EnergyLoss::GetXbin(SetupParticle const& vP, SetupTrack const& vTrack,
-                          const HEPEnergyType dE) {
+  void EnergyLoss::FillProfile(SetupParticle const& vP, SetupTrack const& vTrack,
+                               const HEPEnergyType dE) {
 
     using namespace corsika::geometry;
 
-    CoordinateSystem const& rootCS =
-        RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-    Point const pos1(rootCS, 0_m, 0_m, 0_m);
-    Point const pos2(rootCS, 0_m, 0_m, vTrack.GetPosition(0).GetCoordinates()[2]);
-    auto const delta = (pos2 - pos1) / 1_s;
-    Trajectory const t(Line(pos1, delta), 1_s);
+    auto const toStart = vTrack.GetPosition(0) - fInjectionPoint;
+    auto const toEnd = vTrack.GetPosition(1) - fInjectionPoint;
 
-    GrammageType const grammage =
-        vP.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
+    auto const v1 = (toStart * 1_Hz).dot(fShowerAxisDirection);
+    auto const v2 = (toEnd * 1_Hz).dot(fShowerAxisDirection);
+    geometry::Line const lineToStartBin(fInjectionPoint, fShowerAxisDirection * v1);
+    geometry::Line const lineToEndBin(fInjectionPoint, fShowerAxisDirection * v2);
 
-    const int bin = grammage / fdX;
+    SetupTrack const trajToStartBin(lineToStartBin, 1_s);
+    SetupTrack const trajToEndBin(lineToEndBin, 1_s);
+
+    GrammageType const grammageStart =
+        vP.GetNode()->GetModelProperties().IntegratedGrammage(trajToStartBin,
+                                                              trajToStartBin.GetLength());
+    GrammageType const grammageEnd =
+        vP.GetNode()->GetModelProperties().IntegratedGrammage(trajToEndBin,
+                                                              trajToEndBin.GetLength());
+
+    const int binStart = grammageStart / fdX;
+    const int binEnd = grammageEnd / fdX;
+
+    std::cout << "energy deposit of " << -dE << " between " << grammageStart << " and "
+              << grammageEnd << std::endl;
+
+    auto energyCount = HEPEnergyType::zero();
+
+    auto fill = [&](int bin, GrammageType weight) {
+      auto const increment = -dE * weight / (grammageEnd - grammageStart);
+      fProfile[bin] += increment;
+      energyCount += increment;
+
+      std::cout << "filling bin " << bin << " with weight " << weight << ": " << increment
+                << std::endl;
+    };
 
     // fill longitudinal profile
-    if (!fProfile.count(bin)) { cout << "EnergyLoss new x bin " << bin << endl; }
-    fProfile[bin] += -dE / 1_GeV;
-    return bin;
+    fill(binStart, (1 + binStart) * fdX - grammageStart);
+    fill(binEnd, grammageEnd - binEnd * fdX);
+
+    if (binStart == binEnd) { fill(binStart, -fdX); }
+
+    for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, fdX); }
+
+    std::cout << "total energy added to histogram: " << energyCount << std::endl;
   }
 
   void EnergyLoss::PrintProfile() const {
-
-    cout << "EnergyLoss PrintProfile  X-bin [g/cm2]  dE/dX [GeV/g/cm2]  " << endl;
+    std::ofstream file("EnergyLossProfile.dat");
+    cout << "# EnergyLoss PrintProfile  X-bin [g/cm2]  dE/dX [GeV/g/cm2]  " << endl;
     double const deltaX = fdX / 1_g * square(1_cm);
     for (auto v : fProfile) {
-      cout << v.first * deltaX << " " << v.second / deltaX << endl;
+      file << v.first * deltaX << " " << v.second / (deltaX * 1_GeV) << endl;
     }
   }
 

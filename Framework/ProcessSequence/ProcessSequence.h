@@ -341,7 +341,6 @@ namespace corsika::process {
   /// marker to identify objectas ProcessSequence
   template <typename A, typename B>
   struct is_process_sequence<corsika::process::ProcessSequence<A, B>> : std::true_type {};
-
 } // namespace corsika::process
 
 #endif

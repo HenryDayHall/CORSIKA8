@@ -48,40 +48,16 @@ namespace corsika::process {
     }
 
     bool ParticleCut::ParticleIsInvisible(Code vCode) const {
-      bool is_inv = false;
-      // FOR NOW: switch
       switch (vCode) {
         case Code::NuE:
-          is_inv = true;
-          break;
         case Code::NuEBar:
-          is_inv = true;
-          break;
         case Code::NuMu:
-          is_inv = true;
-          break;
         case Code::NuMuBar:
-          is_inv = true;
-          break;
-        case Code::MuPlus:
-          is_inv = true;
-          break;
-        case Code::MuMinus:
-          is_inv = true;
-          break;
-
-        case Code::Neutron:
-          is_inv = true;
-          break;
-
-        case Code::AntiNeutron:
-          is_inv = true;
-          break;
+          return true;
 
         default:
-          break;
+          return false;
       }
-      return is_inv;
     }
 
     EProcessReturn ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {

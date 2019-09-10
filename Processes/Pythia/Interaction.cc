@@ -212,26 +212,12 @@ namespace corsika::process::pythia {
       const auto mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // determine average interaction length
-      // weighted sum
-      int i = -1;
-      si::CrossSectionType weightedProdCrossSection = 0_mb;
-      // get weights of components from environment/medium
-      const auto& w = mediumComposition.GetFractions();
-      // loop over components in medium
-      for (auto const targetId : mediumComposition.GetComponents()) {
-        i++;
-        cout << "Interaction: get interaction length for target: " << targetId << endl;
 
-        auto const [productionCrossSection, elaCrossSection] =
-            GetCrossSection(corsikaBeamId, targetId, ECoM);
-        [[maybe_unused]] const auto& dummy_elaCrossSection = elaCrossSection;
+      auto const weightedProdCrossSection =
+          mediumComposition.WeightedSum([=](auto vTargetID) {
+            return std::get<0>(this->GetCrossSection(corsikaBeamId, vTargetID, ECoM));
+          });
 
-        cout << "Interaction: IntLength: pythia return (mb): "
-             << productionCrossSection / 1_mb << endl
-             << "Interaction: IntLength: weight : " << w[i] << endl;
-
-        weightedProdCrossSection += w[i] * productionCrossSection;
-      }
       cout << "Interaction: IntLength: weighted CrossSection (mb): "
            << weightedProdCrossSection / 1_mb << endl
            << "Interaction: IntLength: average mass number: "

@@ -46,7 +46,7 @@ TEST_CASE("ParticleCut", "[processes]") {
       particles::Code::Electron, particles::Code::MuPlus,  particles::Code::NuE,
       particles::Code::Neutron};
 
-  SECTION("cut invisible") {
+  SECTION("cut on particle type") {
 
     ParticleCut cut(20_GeV);
 
@@ -73,7 +73,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    REQUIRE(view.GetSize() == 6);
+    REQUIRE(view.GetSize() == 8);
   }
 
   SECTION("cut low energy") {

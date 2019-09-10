@@ -103,6 +103,10 @@ int main() {
   double theta = 0.;
   double phi = 0.;
 
+  Point const injectionPos(
+      rootCS, 0_m, 0_m,
+      height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
+
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
@@ -118,12 +122,10 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m,
-              height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
                                  units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
+        beamCode, E0, plab, injectionPos, 0_ns, nuclA, nuclZ});
   }
 
   // setup processes, decays and interactions
@@ -139,7 +141,8 @@ int main() {
   process::particle_cut::ParticleCut cut(80_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss;
+  process::energy_loss::EnergyLoss eLoss(
+      injectionPos, geometry::Vector<dimensionless_d>(rootCS, {0, 0, -1}));
 
   // assemble all processes into an ordered process list
   auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut

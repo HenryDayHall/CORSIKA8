@@ -40,7 +40,13 @@ int main() {
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  process::energy_loss::EnergyLoss eLoss;
+  Point const injectionPos(
+      rootCS, 0_m, 0_m,
+      112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
+
+  Vector<dimensionless_d> showerAxis(rootCS, {0, 0, -1});
+
+  process::energy_loss::EnergyLoss eLoss(injectionPos, showerAxis);
 
   setup::Stack stack;
 
@@ -68,12 +74,11 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m,
-              112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
+
     stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            beamCode, E0, plab, pos, 0_ns});
+            beamCode, E0, plab, injectionPos, 0_ns});
 
     auto const p = stack.GetNextParticle();
     HEPEnergyType dE = eLoss.TotalEnergyLoss(p, 1_g / square(1_cm));

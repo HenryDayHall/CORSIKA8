@@ -15,6 +15,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <cassert>
+#include <functional>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -85,7 +86,6 @@ namespace corsika::environment {
     auto WeightedSum(TFunction func) const {
       using ResultQuantity = decltype(func(*fComponents.cbegin()));
 
-      auto const sum = [](auto x, auto y) { return x + y; };
       auto const prod = [&](auto const compID, auto const fraction) {
         return func(compID) * fraction;
       };
@@ -94,12 +94,12 @@ namespace corsika::environment {
         return std::inner_product(
             fComponents.cbegin(), fComponents.cend(), fNumberFractions.cbegin(),
             ResultQuantity::zero(), // .zero() is defined for quantity types only
-            sum, prod);
+            std::plus<ResultQuantity>(), prod);
       } else {
         return std::inner_product(
             fComponents.cbegin(), fComponents.cend(), fNumberFractions.cbegin(),
             ResultQuantity(0), // in other cases we have to use a bare 0
-            sum, prod);
+            std::plus<ResultQuantity>(), prod);
       }
     }
 
