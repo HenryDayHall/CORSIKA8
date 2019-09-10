@@ -27,7 +27,7 @@ namespace corsika::environment {
         corsika::geometry::Point const&) const = 0;
 
     // todo: think about the mixin inheritance of the trajectory vs the BaseTrajectory
-    // approach for now, only lines are supported
+    // approach; for now, only lines are supported
     virtual corsika::units::si::GrammageType IntegratedGrammage(
         corsika::geometry::Trajectory<corsika::geometry::Line> const&,
         corsika::units::si::LengthType) const = 0;

@@ -90,11 +90,14 @@ target_link_libraries (vertical_EAS
   CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
+  ProcessPythia
+  ProcessUrQMD
+  ProcessSwitch
   CORSIKAcascade
   ProcessEnergyLoss
+  ProcessObservationPlane
   ProcessTrackWriter
   ProcessTrackingLine
-  ProcessHadronicElasticModel
   ProcessParticleCut
   ProcessStackInspector
   CORSIKAprocesses

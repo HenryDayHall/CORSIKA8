@@ -53,6 +53,8 @@ namespace corsika::environment {
     units::si::GrammageType IntegratedGrammage(
         geometry::Trajectory<geometry::Line> const& vLine, units::si::LengthType vL,
         geometry::Vector<units::si::dimensionless_d> const& vAxis) const {
+      if (vL == units::si::LengthType::zero()) { return units::si::GrammageType::zero(); }
+
       auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
       auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
 

@@ -338,6 +338,7 @@ cdh        write(*,*)'(W) No collision in event ',event
 c~              stop
            endif
            if (noc.ge.50000) then
+             print *,'UrQMD terminating...'
              call exit(2) ! think of a better way to hand over the error
                           ! to C++
            endif

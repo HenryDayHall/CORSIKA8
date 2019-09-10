@@ -10,23 +10,30 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
-#include <corsika/process/stack_inspector/StackInspector.h>
+#include <corsika/process/observation_plane/ObservationPlane.h>
+#include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/switch_process/SwitchProcess.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/NuclearComposition.h>
 
+#include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 
-#include <corsika/process/sibyll/Decay.h>
+//~ #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
+
+#include <corsika/process/pythia/Decay.h>
+
+#include <corsika/process/urqmd/UrQMD.h>
 
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/track_writer/TrackWriter.h>
@@ -37,9 +44,7 @@
 
 #include <corsika/utl/CorsikaFenv.h>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -56,88 +61,125 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-//
-// The example main program for a particle cascade
-//
+void registerRandomStreams() {
+  random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+
+  random::RNGManager::GetInstance().SeedAll();
+}
+
 int main() {
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  registerRandomStreams();
 
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
+  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium =
-      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-                                  1_km * std::numeric_limits<double>::infinity());
+  auto theMedium = EnvType::CreateNode<Sphere>(
+      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  // fraction of oxygen
-  const float fox = 0.20946;
-  using MyHomogeneousModel = HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
+  auto constexpr temperature = 295_K; // AIRES default temperature for isothermal model
+  auto constexpr lambda =
+      -constants::R * temperature / (constants::g_sub_n * 28.966_g / mole);
+  // 1036 g/cm² taken from AIRES code
+  auto constexpr rho0 = -1036_g / square(1_cm) / lambda;
+  using FlatExp = environment::FlatExponential<environment::IMediumModel>;
+  theMedium->SetModelProperties<FlatExp>(
+      Point{rootCS, 0_m, 0_m, 0_m}, Vector<dimensionless_d>{rootCS, {0., 0., 1.}}, rho0,
+      lambda,
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Nitrogen,
                                        particles::Code::Oxygen},
-          std::vector<float>{(float)1. - fox, fox}));
-
-  universe.AddChild(std::move(theMedium));
-
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
+          std::vector<float>{
+              0.7847f,
+              1.f - 0.7847f})); // values taken from AIRES manual, Ar removed for now
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Nucleus;
-  const int nuclA = 4;
-  const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
-  const HEPEnergyType E0 = nuclA * 10_TeV;
+  const Code beamCode = Code::Proton;
+  auto const mass = particles::GetMass(beamCode);
+  const HEPEnergyType E0 = 0.1_PeV;
   double theta = 0.;
   double phi = 0.;
 
-  {
-    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt((Elab - m) * (Elab + m));
-    };
-    HEPMomentumType P0 = elab2plab(E0, mass);
-    auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
-      return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
-                             -ptot * cos(theta));
-    };
-    auto const [px, py, pz] =
-        momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
-    cout << "input particle: " << beamCode << endl;
-    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-    cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m,
-              112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, pos, 0_ns, nuclA, nuclZ});
-  }
+  Point const injectionPos(
+      rootCS, 0_m, 0_m, 112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
+
+  //  {
+  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+    return sqrt((Elab - m) * (Elab + m));
+  };
+  HEPMomentumType P0 = elab2plab(E0, mass);
+  auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
+    return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
+                           -ptot * cos(theta));
+  };
+  auto const [px, py, pz] =
+      momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
+  auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
+  cout << "input particle: " << beamCode << endl;
+  cout << "input angles: theta=" << theta << " phi=" << phi << endl;
+  cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
+
+  stack.AddParticle(
+      std::tuple<particles::Code, units::si::HEPEnergyType,
+                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+          beamCode, E0, plab, injectionPos, 0_ns});
+  //  }
+
+  Line const line(injectionPos, plab.normalized() * 1_m * 1_Hz);
+  auto const velocity = line.GetV0().norm();
+
+  auto const observationHeight = 1.425_km;
+
+  setup::Trajectory const showerAxis(line, (112.8_km - observationHeight) / velocity);
+
+  auto const grammage = theMedium->GetModelProperties().IntegratedGrammage(
+      showerAxis, (112.8_km - observationHeight));
+  std::cout << "Grammage to ground: " << grammage / (1_g / square(1_cm)) << " g/cm²"
+            << std::endl;
+
+  universe.AddChild(std::move(theMedium));
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
-  stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  const std::vector<particles::Code> trackedHadrons = {
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
+
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::sibyll::Decay decay;
-  process::particle_cut::ParticleCut cut(20_GeV);
+  //~ process::sibyll::Decay decay(trackedHadrons);
+
+  process::pythia::Decay decay(trackedHadrons);
+  process::particle_cut::ParticleCut cut(5_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss;
+  process::energy_loss::EnergyLoss eLoss(showerAxis);
+
+  Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
+                       Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
+  process::observation_plane::ObservationPlane observationLevel(obsPlane,
+                                                                "particles.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << sibyllNuc << decay << eLoss << cut << stackInspect;
+
+  process::UrQMD::UrQMD urqmd;
+
+  auto sibyllSequence = sibyll << sibyllNuc;
+  process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
+  auto sequence = switchProcess << decay << eLoss << cut << observationLevel
+                                << trackWriter;
 
   // define air shower object, run simulation
+  tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
   EAS.Init();
   EAS.Run();
@@ -151,4 +193,7 @@ int main() {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+
+  std::ofstream finish("finished");
+  finish << "run completed without error" << std::endl;
 }

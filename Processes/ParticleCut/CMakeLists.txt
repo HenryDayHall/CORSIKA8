@@ -29,6 +29,7 @@ target_link_libraries (
   ProcessParticleCut
   CORSIKAunits
   CORSIKAparticles
+  CORSIKAprocesssequence
   CORSIKAsetup
   )
 
