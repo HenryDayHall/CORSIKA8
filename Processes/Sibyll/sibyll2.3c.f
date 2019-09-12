@@ -425,7 +425,7 @@ C.  important information for the generation of events
 C.
 C     PARAMETER (NS_max = 20, NH_max = 80)
 C     COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-C    &    SSIGN(61,3),SSIGNSD(61,3) ALINT(61,3), ASQSMIN, ASQSMAX, DASQS, NSQS
+C    &    SSIGN(61,3,3),SSIGNSD(61,3,3) ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
 C.
 C.  NSQS = number of energy points  (61 is current version)
 C.  ASQSMIN = log_10 [sqrt(s) GeV]   minimum value
@@ -436,8 +436,10 @@ C.
 C.  SSIG(J,1) inelastic cross section for pp interaction
 C.            at energy: sqrt(s)(GeV) = 10**[ASQSMIN+DASQS*(J-1)]
 C.  SSIG(J,2)  inelastic cross section for pi-p interaction
-C.  SSIGN(J,1) inelastic cross section for p-Air interaction
-C.  SSIGN(J,2) inelastic cross section for pi-Air interaction
+C.  SSIGN(J,1,1) inelastic cross section for p-Air interaction
+C.  SSIGN(J,2,1) inelastic cross section for pi-Air interaction
+C.  SSIGN(J,1,2) inelastic cross section for p-Nitrogen interaction
+C.  SSIGN(J,2,2) inelastic cross section for pi-Nitrogen interaction
 C.
 C.  PJETC(n_s,n_j,J,1) Cumulative  probability distribution
 C.                 for the production of n_s soft interactions and
@@ -10886,12 +10888,12 @@ c      COMMON /S_DEBUG/ Ncall, Ndebug, Lun
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
       DOUBLE PRECISION STR_mass_val, STR_mass_val_hyp, STR_mass_sea
       COMMON /S_CUTOFF/ STR_mass_val, STR_mass_val_hyp, STR_mass_sea
 
@@ -10993,12 +10995,12 @@ C-----------------------------------------------------------------------
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
       DOUBLE PRECISION SSIG_TOT,SSIG_SD1,SSIG_SD2,SSIG_DD,SSIG_B,
      &     SSIG_RHO
       COMMON /S_CCSIG2/ SSIG_TOT(61,3),SSIG_SD1(61,3),SSIG_SD2(61,3),
@@ -11187,12 +11189,12 @@ C-----------------------------------------------------------------------
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
       DIMENSION PJ(2),PS(2),PW(2)
 
       SAVE
@@ -11207,15 +11209,15 @@ C-----------------------------------------------------------------------
 10    FORMAT(//,' Table of cross sections, and average number',
      &         ' of minijets and wounded nucleons ')
 15    FORMAT('        [sqrt(s) in GeV, cross sections in mbarn]. ')
-16    FORMAT(' sqrt(s) sig(pp) sig(pA) <n_s> <n_j> <n_w>',
-     &    ' sig(pip) sig(piA) <n_s> <n_j> <n_w>')
+16    FORMAT(' sqrt(s) sig(pp) sig(pAir) <n_s> <n_j> <n_w>',
+     &    ' sig(pip) sig(piAir) <n_s> <n_j> <n_w>')
 18    FORMAT(1X,77('-') )
         DO J=1,61,1
          SQS = 10.D0**(ASQSMIN + DASQS*DBLE(J-1))
 
          DO K=1,2
 
-           PW(K) = ATARGET*SSIG(J,K)/SSIGN(J,K)
+           PW(K) = ATARGET*SSIG(J,K)/SSIGN(J,K,1)
 
            PJ(K) = 0.D0
            PS(K) = 0.D0
@@ -11235,8 +11237,8 @@ C-----------------------------------------------------------------------
 
          ENDDO
 
-         WRITE(LUN,20) SQS,SSIG(J,1),SSIGN(J,1),PS(1),PJ(1),PW(1)
-     &                      ,SSIG(J,2),SSIGN(J,2),PS(2),PJ(2),PW(2)
+         WRITE(LUN,20) SQS,SSIG(J,1),SSIGN(J,1,1),PS(1),PJ(1),PW(1)
+     &                      ,SSIG(J,2),SSIGN(J,2,1),PS(2),PJ(2),PW(2)
 
         ENDDO
 
@@ -11252,7 +11254,8 @@ C=======================================================================
       SUBROUTINE SIG_AIR_INI 
 
 C-----------------------------------------------------------------------
-C...Initialize the cross section and interaction lengths on air
+C...  Initialize the cross section and interaction lengths on air, 
+C.    nitrogen and oxygen      
 C.  (this version initializes p-air, pi-air, and K-air cross sections)
 C.
 C.  also calculates the low mass beam diffraction cross section in hAir \FR
@@ -11264,12 +11267,12 @@ C-----------------------------------------------------------------------
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
       COMMON /GLAUB_SCR/ XI_MAX , ALAM(61)
 
       INTEGER NCALL, NDEBUG, LUN
@@ -11280,15 +11283,15 @@ C-----------------------------------------------------------------------
       INTEGER IPAR
       COMMON /S_CFLAFR/ PAR(NPAR_max), IPAR(NIPAR_max)
       DIMENSION SIGDIF(3)
-
+      DIMENSION ITARGC(3)
+      CHARACTER*3 TARGN
+      DIMENSION TARGN(3)
       SAVE
       DATA AVOG /6.0221367D-04/
       DATA ATARGET /14.514D0/
+      DATA ITARGC /0,14,16/
+      DATA TARGN /'air','nit','oxy'/
 
-
-c      PRINT *,'inel. screening in hadron - nucleus interactions'
-c      ALAM = 0.5
-c      PRINT *,'const. coupling: ', ALAM
       IF ( IPAR(12).GT.0 ) THEN
          if (ndebug.gt.0) then
            WRITE(LUN,*) ' SIG_AIR_INI:'
@@ -11298,61 +11301,81 @@ c      PRINT *,'const. coupling: ', ALAM
          if (ndebug.gt.0)WRITE(LUN,*)' low mass Xi_max: ' , XI_MAX
       ENDIF
 
+C...target loop (air, N, O)      
+      DO IK=1,3
+         IAT = ITARGC(IK)
+         WRITE(6,*) 'SIG_AIR_INI: initializing target: (i,A)',
+     &    ik, IAT, TARGN(IK) , '..'
 C...particle loop (p, pi, K)
-      DO K=1,3
+         DO K=1,3
          
-        if (NDEBUG .gt. 0 ) then
-           WRITE(LUN,'(/,1X,A,A)') 
-     &        'Table: J, sqs,    SIGtot,     SIGprod,    SIG_SD,',
-     &        '     Lambda  '
-           WRITE(LUN,*) 
-     &        '-------------------------------------------------',
-     &        '-------------'
-         endif
-        DO J=1,NSQS
+            if (NDEBUG .gt. 0 ) then
+               WRITE(6,'(/,1X,A,A)') 
+     &          'Table: J, IK, sqs,    SIGtot,     SIGprod,    SIG_SD,',
+     &'     Lambda  '
+               WRITE(6,*) 
+     &              '-------------------------------------------------',
+     &              '-------------'
+            endif
+            DO J=1,NSQS
 
-           ASQS = ASQSMIN + DASQS*DBLE(J-1)
-           SQS = 10.D0**ASQS
+               ASQS = ASQSMIN + DASQS*DBLE(J-1)
+               SQS = 10.D0**ASQS
 
-           IF (K.EQ.1) THEN
+               IF (K.EQ.1) THEN
 c     Goulianos param. from GAP-2012-056, Mx**2s = 0.02
 c     against PDG elastic cross section
-              CALL SIB_HADCS1(K,SQS,SIGT1,SIGEL1,SIGINEL1,SLOPE1,RHO1)
-              SIGEFF = 0.68D0*(1.D0+36.D0/SQS**2)*
-     &             dlog(0.6D0+XI_MAX/1.5D0*SQS**2)
-              ALAM(J) = dSQRT(SIGEFF/SIGEL1)
-           ENDIF
-
-c           CALL SIB_HADCSL(k,SQS,
-c     &          SIGT,SIGEL,SIGINEL,SIGDIF,SLOPE,RHO)
-
-           CALL SIB_SIGMA_HP(K,SQS,SIGT,SIGEL,SIGINEL,SIGDIF,SLOPE,RHO)
-           CALL SIG_H_AIR
-     &          (SIGT, SLOPE, RHO, ALAM(J),
-     &          SSIGT, SSIGEL, SSIGQE, SSIGSD, SSIGQSD)
-
-           if (ndebug .gt. 0 ) WRITE(LUN,'(1X,I2,1P,5E12.3)') 
-     &          K,SQS,SSIGT,SSIGT-SSIGQE,SSIGQSD,ALAM(J)
-C  particle production cross section
-           SSIGN(J,K) = SSIGT-SSIGQE
-           SSIGNSD(J,K) = SSIGQSD
-           ALINT(J,K) = 1.D0/(AVOG*SSIGn(j,K)/ATARGET)
-        ENDDO
+                  CALL SIB_HADCS1
+     &             (K,SQS,SIGT1,SIGEL1,SIGINEL1,SLOPE1,RHO1)
+                  SIGEFF = 0.68D0*(1.D0+36.D0/SQS**2)*
+     &                 dlog(0.6D0+XI_MAX/1.5D0*SQS**2)
+                  ALAM(J) = dSQRT(SIGEFF/SIGEL1)
+               ENDIF
+               CALL SIB_SIGMA_HP(K,SQS,
+     &              SIGT,SIGEL,SIGINEL,SIGDIF,SLOPE,RHO)
+               IF(IK.eq.1)THEN
+c     fixed O-N mixture
+                  CALL SIG_H_AIR
+     &                 (SIGT, SLOPE, RHO, ALAM(J),
+     &                 SSIGT, SSIGEL, SSIGQE, SSIGSD, SSIGQSD)
+               ELSE
+                  CALL SIG_H_NUC
+     &                 (IAT, SIGT, SLOPE, RHO, ALAM(J),
+     &                 SSIGT, SSIGEL, SSIGQE, SSIGSD, SSIGQSD)
+               ENDIF
+               if (ndebug .gt. 0 ) WRITE(6,'(1X,I2,1P,5E12.3)') 
+     &              K,SQS,SSIGT,SSIGT-SSIGQE,SSIGQSD,ALAM(J)
+C     particle production cross section
+               SSIGN(J,K,IK) = SSIGT-SSIGQE
+c     diffractive cross section               
+               SSIGNSD(J,K,IK) = SSIGQSD
+c     elastic cross section
+               SSIGNEL(J,K,IK) = SSIGEL
+c     interaction length
+               IF(IK.eq.1)then
+                  ALINT(J,K,IK) = 1.D0/(AVOG*SSIGn(j,K,IK)/ATARGET)
+               else
+                  ALINT(J,K,IK) = 1.D0/(AVOG*SSIGn(j,K,IK)/IAT)
+               endif
+            ENDDO
+         ENDDO
+     
+         if (ndebug .gt. 0 ) then
+            WRITE(6,'(/,1X,A)') 
+     &           ' SIG_AIR_INI: NUCLIB interaction lengths [g/cm**2]'
+            WRITE(6,*) 'target:', TARGN(IK)
+            WRITE(6,'(1X,A)') 
+     &           '     sqs,       p-targ,      pi-targ,     K-targ'
+            DO J=1,NSQS
+               ASQS = ASQSMIN + DASQS*DBLE(J-1)
+               SQS = 10.D0**ASQS
+               WRITE(6,'(1X,1P,4E12.3)') 
+     &              SQS,ALINT(J,1,IK),ALINT(J,2,IK),ALINT(J,3,IK)
+            ENDDO
+         endif
       ENDDO
-
-      if (ndebug .gt. 0 ) then
-        WRITE(LUN,'(/,1X,A)') 
-     &          ' SIG_AIR_INI: NUCLIB interaction lengths [g/cm**2]'
-        WRITE(LUN,'(1X,A)') 
-     &      '     sqs,       p-air,      pi-air,     K-air'
-        DO J=1,NSQS
-         ASQS = ASQSMIN + DASQS*DBLE(J-1)
-         SQS = 10.D0**ASQS
-         WRITE(LUN,'(1X,1P,4E12.3)') 
-     &        SQS,ALINT(J,1),ALINT(J,2),ALINT(J,3)
-        ENDDO
-      endif
       END
+      
 C=======================================================================
 
       SUBROUTINE SAMPLE_TARGET(NW,XCHG,KRMNT,XJET,Irec,IREJ)
@@ -11871,6 +11894,54 @@ C......................................................................
       SIGQE = (1.D0-FOX)*SIGQE1 + FOX*SIGQE2
       SIGSD = (1.D0-FOX)*SIGSD1 + FOX*SIGSD2
       SIGQSD = (1.D0-FOX)*SIGQSD1 + FOX*SIGQSD2
+      RETURN
+      END
+C=======================================================================
+
+      SUBROUTINE SIG_H_NUC
+     +     (IAT,SSIG,SLOPE,ALPHA,ALAM,SIGT,SIGEL,SIGQE,SIGSD,SIGQSD)
+
+C-----------------------------------------------------------------------
+C**********************************************************************
+C...Subroutine to compute hadron-nucleus cross sections
+C.  according to:
+C.  R.J. Glauber and G.Matthiae  Nucl.Phys. B21, 135, (1970)
+C.
+C.  INPUT :  IAT   nucleon number in target nucleus
+C.           SSIG  (mbarn) total pp cross section
+C.           SLOPE (GeV**-2)  elastic scattering slope for pp
+C.           ALPHA    real/imaginary part of the forward pp elastic
+C.                                               scattering amplitude
+C.  OUTPUT : SIGT  = Total cross section
+C.           SIGEL = Elastic cross section
+C.           SIGQEL  = Elastic + Quasi elastic cross section
+C.           SIGSD   = single diff. cross section (beam) 
+C.           SIGQSD  = Elastic + Quasi elastic SD cross section (beam)
+C.
+C......................................................................
+      IMPLICIT NONE
+      INTEGER IAT
+      DOUBLE PRECISION SSIG,SLOPE,ALPHA,ALAM      
+      DOUBLE PRECISION SIG1,SIGEL1,SIGQE1,SIGSD1,SIGQSD1
+      DOUBLE PRECISION SIGT,SIGEL,SIGQE,SIGSD,SIGQSD
+      INTEGER NCALL, NDEBUG, LUN
+      COMMON /S_DEBUG/ NCALL, NDEBUG, LUN
+      SAVE
+      IF(IAT.eq.0.or.IAT.gt.18) THEN
+         WRITE(LUN,'(//,1X,A)') 
+     &        ' SIG_H_NUC: number of target nucleons too large!',
+     &        ' (1<=IAT<=18)'
+         SIGT = -1.D0
+         STOP
+      ENDIF
+
+      CALL GLAUBER2
+     +  (IAT,SSIG,SLOPE,ALPHA,ALAM,SIG1,SIGEL1,SIGQE1,SIGSD1,SIGQSD1)
+      SIGT  = SIG1   
+      SIGEL = SIGEL1 
+      SIGQE = SIGQE1 
+      SIGSD = SIGSD1 
+      SIGQSD = SIGQSD1
       RETURN
       END
 
@@ -13785,12 +13856,12 @@ c     external types
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
       DOUBLE PRECISION SSIG_TOT,SSIG_SD1,SSIG_SD2,SSIG_DD,SSIG_B,
      &     SSIG_RHO
       COMMON /S_CCSIG2/ SSIG_TOT(61,3),SSIG_SD1(61,3),SSIG_SD2(61,3),
@@ -13892,12 +13963,12 @@ c     external types
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
       DOUBLE PRECISION SSIG_TOT,SSIG_SD1,SSIG_SD2,SSIG_DD,SSIG_B,
      &     SSIG_RHO
       COMMON /S_CCSIG2/ SSIG_TOT(61,3),SSIG_SD1(61,3),SSIG_SD2(61,3),
@@ -13970,12 +14041,12 @@ Cf2py double precision, intent(out) :: SIGprod,SIGbdif
       INTEGER NS_max, NH_max
       PARAMETER (NS_max = 20, NH_max = 80)
       
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
 
 c     external
       DOUBLE PRECISION SQS,SIGPROD,SIGBDIF
@@ -14004,8 +14075,8 @@ c     internal
         J1 = max(J1,1)
       endif
       T = (AL-1.D0)*10.D0 - DBLE(J1-1)
-      SIGprod = SSIGN(J1,L)*(1.D0-T) + SSIGN(J1+1,L)*T
-      SIGbdif = SSIGNSD(J1,L)*(1.D0-T) + SSIGNSD(J1+1,L)*T
+      SIGprod = SSIGN(J1,L,1)*(1.D0-T) + SSIGN(J1+1,L,1)*T
+      SIGbdif = SSIGNSD(J1,L,1)*(1.D0-T) + SSIGNSD(J1+1,L,1)*T
 
       END
 C=======================================================================
@@ -14024,6 +14095,7 @@ C                  SQS   sqrt(s)
 C
 C     output:      SIGprod    particle production cross section (mb)
 C                  SIGbdif    q.ela and ela beam diff. cross section
+C                  SIGela     elastic cross section
 C-----------------------------------------------------------------------
 Cf2py integer, intent(in) :: L,IAT
 Cf2py double precision, intent(in) :: SQS
@@ -14035,12 +14107,12 @@ Cf2py double precision, intent(out) :: SIGprod,SIGbdif
       
       INTEGER NCALL, NDEBUG, LUN
       COMMON /S_DEBUG/ NCALL, NDEBUG, LUN
-      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,ALINT,ASQSMIN,ASQSMAX,
-     &     DASQS
+      DOUBLE PRECISION SSIG,PJETC,SSIGN,SSIGNSD,SSIGNEL,ALINT,ASQSMIN,
+     &     ASQSMAX,DASQS
       INTEGER NSQS
       COMMON /S_CCSIG/ SSIG(61,3), PJETC(0:NS_max,0:NH_max,61,2),
-     &     SSIGN(61,3), SSIGNSD(61,3), ALINT(61,3),
-     &     ASQSMIN, ASQSMAX, DASQS, NSQS
+     &     SSIGN(61,3,3), SSIGNSD(61,3,3), SSIGNEL(61,3,3), 
+     &     ALINT(61,3,3), ASQSMIN, ASQSMAX, DASQS, NSQS
 
 C--------------------------------------------------------------------
 C     SIBYLL utility common blocks containing constants       \FR'14
@@ -14065,17 +14137,40 @@ c     external
       INTEGER L,IAT
 
 c     internal
-      DOUBLE PRECISION ALAM
-      INTEGER IPARM,ICSMOD
+      DOUBLE PRECISION ALAM,T,AL
+      INTEGER IPARM,ICSMOD,IK,J1
       SAVE
-
       IF(NSQS.LE.0) THEN
         WRITE(LUN,'(//,1X,A)') 
      &    ' SIB_SIGMA_HNUC: interpolation table not initialized.'
         STOP
       ENDIF
-
-      IF(IAT.ge.0.and.IAT.lt.19)THEN
+      IF(IAT.eq.0.or.IAT.eq.14.or.IAT.eq.16)THEN
+c     read cross section from table
+         IF(IAT.eq.0) THEN
+            IK=1
+         ELSEIF(IAT.eq.14)THEN
+            IK=2
+         ELSE
+            IK=3
+         ENDIF            
+         AL = LOG10(SQS)
+         J1 = INT((AL - 1.D0)*10.D0 + 1)
+         if((j1.lt.1).or.(j1.gt.NSQS)) then
+            if (ndebug .gt. 0) 
+     &           write (LUN,'(1x,a,i3,1p,e12.3)') 
+     &           ' SIB_SIGMA_HNUC: energy out of range ',L,sqs
+         endif
+         if((j1.lt.1).or.(j1.ge.NSQS)) then
+            J1 = min(J1,NSQS-1)
+            J1 = max(J1,1)
+         endif
+         T = (AL-1.D0)*10.D0 - DBLE(J1-1)
+         SIGprod = SSIGN(J1,L,IK)*(1.D0-T) + SSIGN(J1+1,L,IK)*T
+         SIGbdif = SSIGNSD(J1,L,IK)*(1.D0-T) + SSIGNSD(J1+1,L,IK)*T
+         SIGela  = SSIGNEL(J1,L,IK)*(1.D0-T) + SSIGNEL(J1+1,L,IK)*T
+      ELSEIF(IAT.lt.19)THEN
+c     calculate cross section         
          IF(ndebug.gt.0)THEN
             WRITE(LUN,'(1X,A,2I4,F8.2)')
      &           'SIB_SIGMA_HNUC: L,IAT,SQS:',L,IAT,SQS
