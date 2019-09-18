@@ -54,11 +54,11 @@ namespace corsika::geometry {
       return Quantity(phys::units::detail::magnitude_tag, eVector[index]);
     }
 
-    auto GetX() const { return Quantity(phys::units::detail::magnitude_tag, eVector[0]); }
+    auto GetX() const { return (*this)[0]; }
 
-    auto GetY() const { return Quantity(phys::units::detail::magnitude_tag, eVector[1]); }
+    auto GetY() const { return (*this)[1]; }
 
-    auto GetZ() const { return Quantity(phys::units::detail::magnitude_tag, eVector[2]); }
+    auto GetZ() const { return (*this)[2]; }
 
     auto norm() const {
       return Quantity(phys::units::detail::magnitude_tag, eVector.norm());
