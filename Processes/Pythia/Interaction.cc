@@ -150,7 +150,7 @@ namespace corsika::process::pythia {
           const double sigEla = fSigma.sigmaEl();
           const double sigProd = fSigma.sigmaTot() - sigEla;
 
-          return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
+          return std::make_tuple(sigProd * (1_fm * 1_fm), sigEla * (1_fm * 1_fm));
 
         } else
           throw std::runtime_error("pythia cross section init failed");
