@@ -1,7 +1,7 @@
 # general
 add_subdirectory (NullModel)
 # tracking
-add_subdirectory (TrackingLine) 
+add_subdirectory (TrackingLine)
 # hadron interaction models
 add_subdirectory (Sibyll)
 add_subdirectory (QGSJetII)
@@ -13,6 +13,8 @@ if (CONEX_FOUND)
 endif (CONEX_FOUND)
 add_subdirectory (HadronicElasticModel)
 add_subdirectory (UrQMD)
+add_subdirectory (SwitchProcess)
+add_subdirectory (Proposal)
 
 # continuous physics
 add_subdirectory (EnergyLoss)
@@ -34,6 +36,7 @@ add_subdirectory (SwitchProcess)
 add_library (CORSIKAprocesses INTERFACE)
 add_dependencies(CORSIKAprocesses ProcessNullModel)
 add_dependencies(CORSIKAprocesses ProcessSibyll)
+add_dependencies(CORSIKAprocesses ProcessProposal)
 if (Pythia8_FOUND)
   add_dependencies(CORSIKAprocesses ProcessPythia)
 endif (Pythia8_FOUND)

@@ -66,12 +66,13 @@ namespace corsika::process {
       C8LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV", pid,
                               energy / 1_GeV,
                               (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV));
-      if (ParticleIsEmParticle(pid)) {
-        C8LOG_DEBUG("removing em. particle...");
-        fEmEnergy += energy;
-        fEmCount += 1;
-        return true;
-      } else if (ParticleIsInvisible(pid)) {
+      /* if (ParticleIsEmParticle(pid)) { */
+      /*   C8LOG_DEBUG("removing em. particle..."); */
+      /*   fEmEnergy += energy; */
+      /*   fEmCount += 1; */
+      /*   return true; */
+      /* } else */
+      if (ParticleIsInvisible(pid)) {
         C8LOG_DEBUG("removing inv. particle...");
         fInvEnergy += energy;
         fInvCount += 1;
