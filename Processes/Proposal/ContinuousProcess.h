@@ -8,23 +8,26 @@
  * the license.
  */
 
-#ifndef _corsika_process_proposal_interaction_h_
-#define _corsika_process_proposalythia_interaction_h_
+// #ifndef _corsika_process_proposal_interaction_h_
+// #define _corsika_process_proposalythia_interaction_h_
 
-#include <PROPOSAL/PROPOSAL.h>
-
-
-namespace corsika::process::proposal {
-
-  class Interaction : public corsika::process::ContinuousProcess<Continuous> {
-  private:
+// #include <PROPOSAL/PROPOSAL.h>
+// #include <corsika/process/ContinuousProcess.h>
 
 
-  public:
-    template <typename Particle, typename Track>
-    EProcessReturn DoContinuous(Particle&, Track const&) const;
+// namespace corsika::process::proposal {
 
-    template <typename Particle, typename Track>
-    units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const;
-  }
-} // namespace corsika::process
+//   class ContinuousProcess : public corsika::process::ContinuousProcess<Continuous> {
+//   private:
+
+
+//   public:
+//     template <typename Particle, typename Track>
+//     EProcessReturn DoContinuous(Particle&, Track const&) const;
+
+//     template <typename Particle, typename Track>
+//     units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const;
+//   }
+// } // namespace corsika::process
+
+// #endif

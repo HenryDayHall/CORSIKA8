@@ -11,21 +11,36 @@
 #ifndef _corsika_process_proposal_interaction_h_
 #define _corsika_process_proposalythia_interaction_h_
 
-#include <PROPOSAL/PROPOSAL.h>
+#include "PROPOSAL/PROPOSAL.h"
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/process/InteractionProcess.h>
+#include <corsika/environment/Environment.h>
+#include <corsika/process/particle_cut/ParticleCut.h>
 
+using namespace corsika::environment;
+using namespace corsika::process::particle_cut;
 
 namespace corsika::process::proposal {
 
-  class Interaction : public corsika::process::InteractionProcess<Interaction> {
-  private:
+  template <class TEnvironment>
+  class Interaction : public corsika::process::InteractionProcess<Interaction<TEnvironment>> {
 
+  private:
+    TEnvironment const& fEnvironment;
+    ParticleCut const& pCut;
 
   public:
-    template <typename Particle>
-    EProcessReturn DoInteraction(Particle&);
+    Interaction(TEnvironment const& env, ParticleCut const& cut);
 
-    template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
+    // ~Interaction;
 
-  }
+    // template <typename Particle>
+    // corsika::process::EProcessReturn DoInteraction(Particle&);
+
+    // template <typename TParticle>
+    // corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
+
+  };
+
 } // namespace corsika::process
+#endif

@@ -19,6 +19,7 @@ target_link_libraries (boundary_example
   CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
+  ProcessProposal
   CORSIKAcascade
   ProcessTrackWriter
   ProcessParticleCut

@@ -23,6 +23,8 @@
 
 #include <corsika/geometry/Sphere.h>
 
+#include <corsika/process/proposal/Interaction.h>
+
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
@@ -140,6 +142,7 @@ int main() {
   process::sibyll::Decay decay;
   // cascade with only HE model ==> HE cut
   process::particle_cut::ParticleCut cut(80_GeV);
+  process::proposal::Interaction proposal(env, cut);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss{showerAxis};
