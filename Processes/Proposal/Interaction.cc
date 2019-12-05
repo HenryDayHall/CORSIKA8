@@ -3,16 +3,22 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/IMediumModel.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <set>
 #include <map>
 #include <memory>
+#include <limits>
+#include <random>
 
 
 namespace corsika::process::proposal {
 
 using namespace corsika::setup;
 using namespace corsika::environment;
+using namespace corsika::units::si;
 using namespace corsika;
+
+using SetupParticle = setup::Stack::StackIterator;
 
 template <>
 Interaction<SetupEnvironment>::Interaction(SetupEnvironment const& env, ParticleCut const& cut)
@@ -118,25 +124,120 @@ Interaction<SetupEnvironment>::Interaction(SetupEnvironment const& env, Particle
 	interpolation_def.just_use_readonly_path = false;
 
 	// std::map<particles::Code, double> corsika_particle_to_utility_map;
-	std::map<particles::Code, std::unique_ptr<const PROPOSAL::UtilityInterpolantInteraction>> corsika_particle_to_utility_map;
 
 
     std::cout << "go PROPOSAL !!!" << std::endl;
 	for(auto const& medium:composition_medium_map){
-		corsika_particle_to_utility_map[Code::MuMinus] = std::make_unique<const PROPOSAL::UtilityInterpolantInteraction>(
+		corsika_particle_to_utility_map[Code::MuMinus] = std::make_unique<PROPOSAL::UtilityInterpolantInteraction>(
 			PROPOSAL::UtilityInterpolantInteraction(PROPOSAL::Utility(PROPOSAL::MuMinusDef::Get(), medium.second, loss_cut, utility_def, interpolation_def),
 													interpolation_def)
 		);
+		corsika_particle_to_displacement_map[Code::MuMinus] = std::make_unique<PROPOSAL::UtilityInterpolantDisplacement>(
+			PROPOSAL::UtilityInterpolantDisplacement(PROPOSAL::Utility(PROPOSAL::MuMinusDef::Get(), medium.second, loss_cut, utility_def, interpolation_def),
+										interpolation_def)
+		);
 	}
     std::cout << "PROPOSAL done." << std::endl;
+
 }
 
 // Interaction::~Interaction {}
 
 // template <>
-// corsika::process::EProcessReturn Interaction::DoInteraction(Particle&) {}
-
 // template <>
-// corsika::units::si::GrammageType Interaction::GetInteractionLength(TParticle& p) {}
+// corsika::process::EProcessReturn Interaction<SetupEnvironment>::DoInteraction(SetupParticle const& vP) {
+
+//     // double rndi = dist(rng);
+//     // double rndiMin = corsika_particle_to_utility_map[pcode]->Calculate(initial_energy, p_low, 0);
+
+//     // if (rndd >= rnddMin || rnddMin <= 0) {
+//     //     // return particle_.GetLow();
+//     //     return process::EProcessReturn::eOk;
+//     // } else {
+//     //     return corsika_particle_to_utility_map[pcode]->GetUpperLimit(initial_energy, rndi) ;
+//     // }
+
+//     return process::EProcessReturn::eOk;
+// }
+
+template <>
+template <>
+corsika::units::si::GrammageType Interaction<SetupEnvironment>::GetInteractionLength(SetupParticle const& vP) {
+        std::uniform_real_distribution<double> distribution(0., 1.);
+        double rndi = distribution(fRNG);
+        double particle_energy = vP.GetEnergy()  / 1_GeV * 1000;
+        double rndiMin = corsika_particle_to_utility_map[vP.GetPID()]->Calculate(particle_energy, 0, 0);
+
+        if (rndi >= rndiMin || rndiMin <= 0) {
+            return 1 * 1_g / 1_cm / 1_cm;
+        }
+        double final_energy = corsika_particle_to_utility_map[vP.GetPID()]->GetUpperLimit(particle_energy, rndi) ;
+        return corsika_particle_to_displacement_map[vP.GetPID()]->Calculate(
+                    particle_energy,
+                    final_energy,
+                    std::numeric_limits<double>::max(),
+                    PROPOSAL::Vector3D(),
+                    PROPOSAL::Vector3D()
+                ) * 1_g / 1_cm / 1_cm;
+}
+
+template <>
+template <>
+process::EProcessReturn Interaction<SetupEnvironment>::DoInteraction(SetupParticle& vP) {
+    std::uniform_real_distribution<double> distribution(0., 1.);
+    double rnd1 = distribution(fRNG);
+    double rnd2 = distribution(fRNG);
+    double rnd3 = distribution(fRNG);
+    double particle_energy = vP.GetEnergy()  / 1_GeV * 1000;
+
+	corsika::stack::MomentumVector Ptot = vP.GetMomentum();
+    corsika::geometry::QuantityVector q_momentum = Ptot.GetComponents();
+	PROPOSAL::Vector3D initial_direction(q_momentum[0] / 1_GeV, q_momentum[1] / 1_GeV, q_momentum[2] / 1_GeV);
+	initial_direction.normalise();
+	initial_direction.CalculateSphericalCoordinates();
+	std::pair<double, PROPOSAL::DynamicData::Type> energy_loss;
+	energy_loss = corsika_particle_to_utility_map[vP.GetPID()]->GetUtility().StochasticLoss(particle_energy, rnd1, rnd2, rnd3);
+
+	// std::vector<CrossSection*> cross_sections = utility_.GetCrosssections();
+	// for (unsigned int i = 0; i < cross_sections.size(); i++) {
+	// 	if (cross_sections[i]->GetTypeId() == energy_loss.second)
+	// 	{
+	// 		deflection_angles = cross_sections[i]->StochasticDeflection(particle_energy, energy_loss.first);
+	// 		// calculate produced particles, get an empty list if no particles
+            // // are produced in interaction
+	// 		products = cross_sections[i]->CalculateProducedParticles(particle_energy, energy_loss.first, particle_.GetDirection());
+	// 	}
+	// }
+
+	// auto pnew = vP.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
+	// 							geometry::Point, units::si::TimeType>
+	// 							{
+	// 							  process::sibyll::ConvertFromSibyll(psib.GetPID()),
+	// 							  Plab.GetTimeLikeComponent(),
+	// 							  Plab.GetSpaceLikeComponents(),
+	// 							  pOrig,
+	// 							  tOrig
+	// 							}
+	// 			);
+
+	// // position and time of interaction, not used in PROPOSAL
+	// Point pOrig = vP.GetPosition();
+	// TimeType tOrig = vP.GetTime();
+
+	// // add to corsika stack
+	// auto pnew = vP.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
+	// 							geometry::Point, units::si::TimeType>
+	// 							{
+	// 							  process::sibyll::ConvertFromSibyll(psib.GetPID()),
+	// 							  energy_lost,
+                  				  // Plab.GetTimeLikeComponent(),
+	// 							  Plab.GetSpaceLikeComponents(),
+	// 							  pOrig,
+	// 							  tOrig
+	// 							}
+	// 			);
+
+	return process::EProcessReturn::eOk;
+}
 
 } // corsika::process::proposal
