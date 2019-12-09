@@ -1,3 +1,4 @@
+
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -9,7 +10,8 @@
 #include <memory>
 #include <limits>
 #include <random>
-
+#include <tuple>
+#include <corsika/utl/COMBoost.h>
 
 namespace corsika::process::proposal {
 
@@ -169,7 +171,7 @@ corsika::units::si::GrammageType Interaction<SetupEnvironment>::GetInteractionLe
         double rndiMin = corsika_particle_to_utility_map[vP.GetPID()]->Calculate(particle_energy, 0, 0);
 
         if (rndi >= rndiMin || rndiMin <= 0) {
-            return 1 * 1_g / 1_cm / 1_cm;
+            return  std::numeric_limits<double>::max() * 1_g / 1_cm / 1_cm;
         }
         double final_energy = corsika_particle_to_utility_map[vP.GetPID()]->GetUpperLimit(particle_energy, rndi) ;
         return corsika_particle_to_displacement_map[vP.GetPID()]->Calculate(
@@ -190,6 +192,8 @@ process::EProcessReturn Interaction<SetupEnvironment>::DoInteraction(SetupPartic
     double rnd3 = distribution(fRNG);
     double particle_energy = vP.GetEnergy()  / 1_GeV * 1000;
 
+	corsika::geometry::Point pOrig = vP.GetPosition();
+	corsika::units::si::TimeType tOrig = vP.GetTime();
 	corsika::stack::MomentumVector Ptot = vP.GetMomentum();
     corsika::geometry::QuantityVector q_momentum = Ptot.GetComponents();
 	PROPOSAL::Vector3D initial_direction(q_momentum[0] / 1_GeV, q_momentum[1] / 1_GeV, q_momentum[2] / 1_GeV);
@@ -198,31 +202,46 @@ process::EProcessReturn Interaction<SetupEnvironment>::DoInteraction(SetupPartic
 	std::pair<double, PROPOSAL::DynamicData::Type> energy_loss;
 	energy_loss = corsika_particle_to_utility_map[vP.GetPID()]->GetUtility().StochasticLoss(particle_energy, rnd1, rnd2, rnd3);
 
-	// std::vector<CrossSection*> cross_sections = utility_.GetCrosssections();
-	// for (unsigned int i = 0; i < cross_sections.size(); i++) {
-	// 	if (cross_sections[i]->GetTypeId() == energy_loss.second)
-	// 	{
-	// 		deflection_angles = cross_sections[i]->StochasticDeflection(particle_energy, energy_loss.first);
-	// 		// calculate produced particles, get an empty list if no particles
-            // // are produced in interaction
-	// 		products = cross_sections[i]->CalculateProducedParticles(particle_energy, energy_loss.first, particle_.GetDirection());
-	// 	}
-	// }
+	std::vector<PROPOSAL::CrossSection*> cross_sections = corsika_particle_to_utility_map[vP.GetPID()]->GetUtility().GetCrosssections();
+    std::pair<std::vector<PROPOSAL::Particle*>, bool> products;
+	for (unsigned int i = 0; i < cross_sections.size(); i++) {
+		if (cross_sections[i]->GetTypeId() == energy_loss.second)
+		{
+			// calculate produced particles, get an empty list if no particles
+            // are produced in interaction
+			products = cross_sections[i]->CalculateProducedParticles(particle_energy, energy_loss.first, initial_direction);
+            break;
+		}
+	}
+    double particle_energy_after_loss = particle_energy - energy_loss.first;
+    if (particle_energy_after_loss == 0.)
+    {
+        PROPOSAL::Vector3D particle_direction = initial_direction * particle_energy_after_loss;
 
-	// auto pnew = vP.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
-	// 							geometry::Point, units::si::TimeType>
-	// 							{
-	// 							  process::sibyll::ConvertFromSibyll(psib.GetPID()),
-	// 							  Plab.GetTimeLikeComponent(),
-	// 							  Plab.GetSpaceLikeComponents(),
-	// 							  pOrig,
-	// 							  tOrig
-	// 							}
-	// 			);
-
+        corsika::geometry::QuantityVector q_vec(
+            particle_direction.GetX() * 1_MeV,
+            particle_direction.GetY() * 1_MeV,
+            particle_direction.GetZ() * 1_MeV);
+        // vp.GetCoordinateSystem();
+        const corsika::geometry::CoordinateSystem& rootCS = corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+        corsika::stack::MomentumVector p_particle(rootCS, q_vec);
+        // std::cout << p_particle.GetTimeLikeComponent() << " and " << particle_energy_after_loss << std::endl;
+        units::si::HEPEnergyType const converted_particle_energy = particle_energy * 1_GeV;
+        HEPEnergyType const eCoM = particle_energy * 1_GeV ;
+        //auto const Plab = boost.fromCoM(FourVector(eCoM, p_particle));
+	auto pnew = vP.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
+								geometry::Point, units::si::TimeType>
+                                {
+                                 //convert_proposal_particle_name_to_corsika_code[PROPOSAL::MuMinusDef::Get().name],
+                                 vP.GetPID(),
+                                 eCoM,
+                                 p_particle,
+                                 pOrig,
+                                 tOrig
+                                 }
+				);
+    }
 	// // position and time of interaction, not used in PROPOSAL
-	// Point pOrig = vP.GetPosition();
-	// TimeType tOrig = vP.GetTime();
 
 	// // add to corsika stack
 	// auto pnew = vP.AddSecondary(tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,

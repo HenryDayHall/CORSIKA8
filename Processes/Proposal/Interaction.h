@@ -41,6 +41,33 @@ namespace corsika::process::proposal {
 
     corsika::random::RNG& fRNG = corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
 
+    std::map<std::string, particles::Code> const convert_proposal_particle_name_to_corsika_code = {
+        {"Gamma", particles::Code::Gamma},
+        {"EMinus", particles::Code::Electron},
+        {"EPlus", particles::Code::Positron},
+        {"MuMinu", particles::Code::MuMinus},
+        {"MuPlus", particles::Code::MuPlus},
+        {"TauPlus", particles::Code::TauPlus},
+        {"TauMinus",particles::Code::TauMinus},
+    };
+
+    std::map<particles::Code, PROPOSAL::ParticleDef> const convert_corsika_code_to_proposal_particle_def = {
+        {particles::Code::Gamma, PROPOSAL::GammaDef::Get()},
+        {particles::Code::Electron, PROPOSAL::EMinusDef::Get()},
+        {particles::Code::Positron, PROPOSAL::EPlusDef::Get()},
+        {particles::Code::MuMinus, PROPOSAL::MuMinusDef::Get()},
+        {particles::Code::MuPlus, PROPOSAL::MuPlusDef::Get()},
+        {particles::Code::TauPlus, PROPOSAL::TauPlusDef::Get()},
+        {particles::Code::TauMinus, PROPOSAL::TauMinusDef::Get()},
+    };
+
+    // fTrackedParticles[proposal_particle.GetName()] return  particle::Code
+
+    bool IsTracked(particles::Code pcode) {
+        for (auto i : convert_corsika_code_to_proposal_particle_def) if (i.first==pcode) return true;
+        return false;
+    };
+
 
   public:
     Interaction(TEnvironment const& env, ParticleCut const& cut);
