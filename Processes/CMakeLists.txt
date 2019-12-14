@@ -4,6 +4,7 @@ add_subdirectory (NullModel)
 add_subdirectory (TrackingLine) 
 # hadron interaction models
 add_subdirectory (Sibyll)
+add_subdirectory (QGSJetII)
 if (PYTHIA8_FOUND)
   add_subdirectory (Pythia)
 endif (PYTHIA8_FOUND)
