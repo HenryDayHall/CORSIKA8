@@ -49,7 +49,7 @@ namespace corsika::process::qgsjetII {
   }
 
   Interaction::~Interaction() {
-    cout << "QgsjetII::Interaction n=" << fCount << endl;
+    cout << "QgsjetII::Interaction n=" << count_ << endl;
   }
 
   void Interaction::Init() {
@@ -57,11 +57,11 @@ namespace corsika::process::qgsjetII {
     using random::RNGManager;
 
     // initialize QgsjetII
-    if (!fInitialized) {
+    if (!initialized_) {
       qgset_();
       datadir DIR(data_path_);
       qgaini_(DIR.data);
-      fInitialized = true;
+      initialized_ = true;
     }
   }
 
@@ -85,7 +85,7 @@ namespace corsika::process::qgsjetII {
       int iTarget = 1;
       if (particles::IsNucleus(TargetId)) {
 	iTarget = Atarget;
-	if (iTarget > fMaxMassNumber || iTarget <= 0) {
+	if (iTarget > maxMassNumber_ || iTarget <= 0) {
 	  std::ostringstream txt;
 	  txt << "QgsjetII target outside range. iTarget=" << iTarget;
 	  throw std::runtime_error(txt.str().c_str());
@@ -94,7 +94,7 @@ namespace corsika::process::qgsjetII {
       int iProjectile = 1;
       if (particles::IsNucleus(BeamId)) {
 	iProjectile = Abeam;
-	if (iProjectile > fMaxMassNumber || iProjectile <= 0)
+	if (iProjectile > maxMassNumber_ || iProjectile <= 0)
 	  throw std::runtime_error(
 				   "QgsjetII target outside range. ");
       }
@@ -286,14 +286,14 @@ namespace corsika::process::qgsjetII {
       if (particles::IsNucleus(targetCode)) targetQgsCode = particles::GetNucleusA(targetCode);
       if (targetCode == particles::Proton::GetCode()) targetQgsCode = 1;
       cout << "Interaction: target qgsjetII code/A: " << targetQgsCode << endl;
-      if (targetQgsCode > fMaxMassNumber || targetQgsCode < 1)
+      if (targetQgsCode > maxMassNumber_ || targetQgsCode < 1)
         throw std::runtime_error(
 				 "QgsjetII target outside range.");
       
       int projQgsCode = 1;
       if (particles::IsNucleus(corsikaBeamId)) projQgsCode = vP.GetNuclearA();
       cout << "Interaction: projectile qgsjetII code/A: " << projQgsCode << " " << corsikaBeamId << endl;
-      if (projQgsCode > fMaxMassNumber || projQgsCode < 1)
+      if (projQgsCode > maxMassNumber_ || projQgsCode < 1)
         throw std::runtime_error(
 				 "QgsjetII target outside range.");
 
@@ -327,7 +327,7 @@ namespace corsika::process::qgsjetII {
              << "THIS IS AN ERROR" << endl;
         throw std::runtime_error("energy too low for QGSJETII");
       } else {
-        fCount++;
+        count_++;
 	auto Elab = eProjectileLab/projQgsCode; 
         qgini_(Elab/1_GeV, kBeam, projQgsCode, targetQgsCode);
         qgini_(Elab/1_GeV, kBeam, projQgsCode, targetQgsCode);	
@@ -358,8 +358,8 @@ namespace corsika::process::qgsjetII {
 					    idFragm,
 					      PlabRot.GetTimeLikeComponent(), PlabRot.GetSpaceLikeComponents(),
 					      pOrig, tOrig});
-	      Plab_final += PlabRot.GetSpaceLikeComponents();
-	      Elab_final += Elab;
+	      Plab_final += pnew.GetMomentum();
+	      Elab_final += pnew.GetEnergy();
 	    }
 	    break;
 	  case 2: // deuterium
@@ -392,8 +392,8 @@ namespace corsika::process::qgsjetII {
 					  idFragm,
 					    PlabRot.GetTimeLikeComponent(), PlabRot.GetSpaceLikeComponents(),
 					    pOrig, tOrig, A, Z});
-	    Plab_final += PlabRot.GetSpaceLikeComponents();
-	    Elab_final += Elab*A;
+	    Plab_final += pnew.GetMomentum();
+	    Elab_final += pnew.GetEnergy();
 	  }
 	}
 

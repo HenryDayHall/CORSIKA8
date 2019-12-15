@@ -24,8 +24,8 @@ namespace corsika::process::qgsjetII {
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
     std::string data_path_;
-    int fCount = 0;
-    bool fInitialized = false;
+    int count_ = 0;
+    bool initialized_ = false;
 
   public:
     Interaction(const std::string& dataPath="");
@@ -33,15 +33,15 @@ namespace corsika::process::qgsjetII {
 
     void Init();
 
-    bool WasInitialized() { return fInitialized; }
+    bool WasInitialized() { return initialized_; }
     bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) const {
-      return (fMinEnergyCoM <= ecm) && (ecm <= fMaxEnergyCoM);
+      return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
-    int GetMaxTargetMassNumber() const { return fMaxMassNumber; }
-    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return fMinEnergyCoM; }
-    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return fMaxEnergyCoM; }
+    int GetMaxTargetMassNumber() const { return maxMassNumber_; }
+    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
+    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
     bool IsValidTarget(corsika::particles::Code TargetId) const {
-      return (corsika::particles::GetNucleusA(TargetId) < fMaxMassNumber) &&
+      return (corsika::particles::GetNucleusA(TargetId) < maxMassNumber_) &&
              corsika::particles::IsNucleus(TargetId);
     }
 
@@ -77,11 +77,11 @@ namespace corsika::process::qgsjetII {
         particles::Code::DMinus,     particles::Code::D0,
         particles::Code::MuMinus,    particles::Code::MuPlus,
         particles::Code::D0Bar};
-    const corsika::units::si::HEPEnergyType fMinEnergyCoM =
+    const corsika::units::si::HEPEnergyType minEnergyCoM_ =
         10. * 1e9 * corsika::units::si::electronvolt;
-    const corsika::units::si::HEPEnergyType fMaxEnergyCoM =
+    const corsika::units::si::HEPEnergyType maxEnergyCoM_ =
         1.e6 * 1e9 * corsika::units::si::electronvolt;
-    const int fMaxMassNumber = 208;
+    const int maxMassNumber_ = 208;
   };
 
 } // namespace corsika::process::qgsjetII
