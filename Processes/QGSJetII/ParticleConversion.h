@@ -43,13 +43,12 @@ namespace corsika::process::qgsjetII {
   }
 
   int constexpr GetQgsjetIIXSCode(corsika::particles::Code pCode) {
-    if (pCode==corsika::particles::Code::Nucleus) 
-      return 2;
+    if (pCode == corsika::particles::Code::Nucleus) return 2;
     return corsika2qgsjetIIXStype[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 
   bool constexpr CanInteract(corsika::particles::Code pCode) {
-    return (GetQgsjetIIXSCode(pCode) > 0) && (ConvertToQgsjetIIRaw(pCode)<=5);
+    return (GetQgsjetIIXSCode(pCode) > 0) && (ConvertToQgsjetIIRaw(pCode) <= 5);
   }
 
 } // namespace corsika::process::qgsjetII

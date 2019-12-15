@@ -25,15 +25,18 @@ namespace corsika::process::qgsjetII {
   public:
     void Init();
     void Dump() const {}
-    
-    void Clear() { qgarr13_.nsf = 0; qgarr55_.nwt = 0; }
+
+    void Clear() {
+      qgarr13_.nsf = 0;
+      qgarr55_.nwt = 0;
+    }
     unsigned int GetSize() const { return qgarr13_.nsf; }
     unsigned int GetCapacity() const { return iapmax; }
 
     static unsigned int GetWoundedNucleonsTarget() { return qgarr55_.nwt; }
     static unsigned int GetWoundedNucleonsProjectile() { return qgarr55_.nwp; }
-    
-    int GetFragmentSize(const unsigned int i) const  { return qgarr13_.iaf[i]; }
+
+    int GetFragmentSize(const unsigned int i) const { return qgarr13_.iaf[i]; }
     void SetFragmentSize(const unsigned int i, const int v) { qgarr13_.iaf[i] = v; }
 
     void Copy(const unsigned int i1, const unsigned int i2) {
@@ -57,26 +60,20 @@ namespace corsika::process::qgsjetII {
     using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
-    void SetParticleData(const int vSize) {
-      SetFragmentSize(vSize);
-    }
+    void SetParticleData(const int vSize) { SetFragmentSize(vSize); }
 
     void SetParticleData(FragmentsInterface<StackIteratorInterface>& /*parent*/,
                          const int vSize) {
       SetFragmentSize(vSize);
     }
 
-    void SetFragmentSize(const int v) {
-      GetStackData().SetFragmentSize(GetIndex(), v);
-    }
-    
-    double GetFragmentSize() const {
-      return GetStackData().GetFragmentSize(GetIndex());
-    }
+    void SetFragmentSize(const int v) { GetStackData().SetFragmentSize(GetIndex(), v); }
 
+    double GetFragmentSize() const { return GetStackData().GetFragmentSize(GetIndex()); }
   };
 
-  typedef corsika::stack::Stack<QGSJetIIFragmentsStackData, FragmentsInterface> QGSJetIIFragmentsStack;
+  typedef corsika::stack::Stack<QGSJetIIFragmentsStackData, FragmentsInterface>
+      QGSJetIIFragmentsStack;
 
 } // end namespace corsika::process::qgsjetII
 

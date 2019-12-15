@@ -12,4 +12,3 @@
 #include <corsika/process/qgsjetII/ParticleConversion.h>
 
 using namespace corsika::process::qgsjetII;
-

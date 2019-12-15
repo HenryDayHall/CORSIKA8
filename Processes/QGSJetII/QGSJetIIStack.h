@@ -28,7 +28,11 @@ namespace corsika::process::qgsjetII {
     void Init();
     void Dump() const {}
 
-    void Clear() { qgarr12_.nsp = 0; qgarr13_.nsf = 0; qgarr55_.nwt = 0; }
+    void Clear() {
+      qgarr12_.nsp = 0;
+      qgarr13_.nsf = 0;
+      qgarr55_.nwt = 0;
+    }
     unsigned int GetSize() const { return qgarr12_.nsp; }
     unsigned int GetCapacity() const { return nptmax; }
 
@@ -58,15 +62,15 @@ namespace corsika::process::qgsjetII {
       using namespace corsika::units::si;
       CoordinateSystem& rootCS =
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-      QuantityVector<hepmomentum_d> components = {
-          qgarr14_.esp[i][2] * 1_GeV, qgarr14_.esp[i][3] * 1_GeV, qgarr14_.esp[i][1] * 1_GeV};
+      QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
+                                                  qgarr14_.esp[i][3] * 1_GeV,
+                                                  qgarr14_.esp[i][1] * 1_GeV};
       return MomentumVector(rootCS, components);
     }
 
     void Copy(const unsigned int i1, const unsigned int i2) {
       qgarr14_.ich[i2] = qgarr14_.ich[i1];
-      for (unsigned int i = 0; i < 4; ++i)
-	qgarr14_.esp[i2][i] = qgarr14_.esp[i1][i];      
+      for (unsigned int i = 0; i < 4; ++i) qgarr14_.esp[i2][i] = qgarr14_.esp[i1][i];
     }
 
     void Swap(const unsigned int i1, const unsigned int i2) {

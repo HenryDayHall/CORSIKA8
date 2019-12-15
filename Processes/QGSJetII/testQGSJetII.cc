@@ -26,8 +26,8 @@ using namespace corsika::process::qgsjetII;
 TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("QgsjetII -> Corsika") {
-    REQUIRE(particles::PiPlus::GetCode() ==
-            process::qgsjetII::ConvertFromQgsjetII(process::qgsjetII::QgsjetIICode::PiPlus));
+    REQUIRE(particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(
+                                                process::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
@@ -41,7 +41,7 @@ TEST_CASE("QgsjetII", "[processes]") {
     REQUIRE(process::qgsjetII::CanInteract(particles::Proton::GetCode()));
     REQUIRE(process::qgsjetII::CanInteract(particles::Code::KPlus));
     REQUIRE(process::qgsjetII::CanInteract(particles::Nucleus::GetCode()));
-    //REQUIRE(process::qgsjetII::CanInteract(particles::Helium::GetCode()));
+    // REQUIRE(process::qgsjetII::CanInteract(particles::Helium::GetCode()));
 
     REQUIRE_FALSE(process::qgsjetII::CanInteract(particles::EtaC::GetCode()));
     REQUIRE_FALSE(process::qgsjetII::CanInteract(particles::SigmaC0::GetCode()));
@@ -106,10 +106,11 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-	corsika::stack::MomentumVector, geometry::Point, units::si::TimeType, unsigned int, unsigned int>{
-	particles::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
+    auto particle =
+        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                     corsika::stack::MomentumVector, geometry::Point,
+                                     units::si::TimeType, unsigned int, unsigned int>{
+            particles::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
     // corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
     //	  particles::Code::PiPlus, E0, plab, pos, 0_ns});
 

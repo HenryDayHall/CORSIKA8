@@ -16,8 +16,8 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <tuple>
 #include <string>
+#include <tuple>
 
 namespace corsika::process::qgsjetII {
 
@@ -28,7 +28,7 @@ namespace corsika::process::qgsjetII {
     bool initialized_ = false;
 
   public:
-    Interaction(const std::string& dataPath="");
+    Interaction(const std::string& dataPath = "");
     ~Interaction();
 
     void Init();
@@ -47,9 +47,8 @@ namespace corsika::process::qgsjetII {
 
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
     GetCrossSection(const corsika::particles::Code, const corsika::particles::Code,
-                    const corsika::units::si::HEPEnergyType,
-		    const unsigned int Abeam=0, 
-		    const unsigned int Atarget=0) const;
+                    const corsika::units::si::HEPEnergyType, const unsigned int Abeam = 0,
+                    const unsigned int Atarget = 0) const;
 
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
