@@ -172,9 +172,10 @@ def read_pythia_db(filename, particle_db, classnames):
         else:
             c_id = c_identifier_camel(name) # the camel case names
 
-        hadron = False
-        if abs(pdg) > 100:
-            hadron = True
+        hadron =abs(pdg) > 100
+
+        if c_id in particle_db.keys():
+            raise RuntimeError("particle '{:s}' already known (new PDG id {:d}, stored PDG id: {:d})".format(c_id, pdg, particle_db[c_id]['pdg']))
             
         particle_db[c_id] = {
             "name" : name,
