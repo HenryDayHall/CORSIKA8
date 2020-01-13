@@ -8,6 +8,7 @@
  * the license.
  */
 
+#include <corsika/environment/Convenience.h>
 #include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
@@ -195,4 +196,36 @@ TEST_CASE("InhomogeneousMedium") {
     REQUIRE(rho.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
             inhMedium.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
   }
+}
+
+TEST_CASE("LayeredSphericalAtmosphereBuilder") {
+  LayeredSphericalAtmosphereBuilder builder(gOrigin);
+  builder.setNuclearComposition(
+      {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
+
+  builder.addLinearLayer(1_km, 10_km);
+  builder.addLinearLayer(2_km, 20_km);
+  builder.addLinearLayer(3_km, 30_km);
+
+  REQUIRE(builder.size() == 3);
+
+  auto const builtEnv = builder.assemble();
+  auto const& univ = builtEnv.GetUniverse();
+
+  REQUIRE(builder.size() == 0);
+
+  auto constexpr R = LayeredSphericalAtmosphereBuilder::earthRadius;
+
+  REQUIRE(univ->GetChildNodes().size() == 1);
+
+  REQUIRE(univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 35_km)) == univ.get());
+  REQUIRE(dynamic_cast<Sphere const&>(
+              univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 8_km))->GetVolume())
+              .GetRadius() == R + 10_km);
+  REQUIRE(dynamic_cast<Sphere const&>(
+              univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 12_km))->GetVolume())
+              .GetRadius() == R + 20_km);
+  REQUIRE(dynamic_cast<Sphere const&>(
+              univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->GetVolume())
+              .GetRadius() == R + 30_km);
 }

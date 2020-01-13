@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -8,42 +8,47 @@
  * the license.
  */
 
+#include <corsika/environment/Environment.h>
+#include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/environment/FlatExponential.h>
-#include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/VolumeTreeNode.h>
-#include <corsika/particles/ParticleProperties.h>
+#include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <memory>
+#include <stack>
 
 namespace corsika::environment {
 
-class LayeredAtmosphereBuilder {
-    std::unique_ptr<NuclearComposition> nuclearComposition_;
+  class LayeredSphericalAtmosphereBuilder {
+    std::unique_ptr<NuclearComposition> composition_;
     geometry::Point center_;
-    units::si::LengthType previousRadius_{LengthType::zero()};
-    static auto constexpr earthRadius_ = 6371_km;
-    
-public:
-    LayeredAtmosphereBuilder(corsika::geometry::Point center) : center_(center) {}
-    
-    void setNuclearComposition(NuclearComposition composition) {
-        nuclearComposition_ = std::make_unique<NuclearComposition>(composition);
-    }
-    
-    void addLayer(units::si::GrammageType a, units::si::GrammageType b, units::si::LengthType c, units::si::LengthType thickness) {
-        auto const radius = previousRadius_ + thickness;
-        
-        std::make_unique<BaseNodeType>(
-          std::make_unique<geometry::Sphere>(center_, radius);
-          
-        previousRadius_ = radiusl
-    }
-    
-    auto const assemble() {
-        // get the outmost VolumeTreeNode
-    }
-};
+    units::si::LengthType previousRadius_{units::si::LengthType::zero()};
+    units::si::LengthType seaLevel_;
 
-}
+    std::stack<VolumeTreeNode<environment::IMediumModel>::VTNUPtr>
+        layers_; // innermost layer first
+
+    void checkRadius(units::si::LengthType) const;
+
+  public:
+    static auto constexpr earthRadius = 6'371'000 * units::si::meter;
+
+    LayeredSphericalAtmosphereBuilder(corsika::geometry::Point center,
+                                      units::si::LengthType seaLevel = earthRadius)
+        : center_(center)
+        , seaLevel_(seaLevel) {}
+
+    void setNuclearComposition(NuclearComposition);
+
+    void addExponentialLayer(units::si::GrammageType, units::si::LengthType,
+                             units::si::LengthType);
+
+    auto size() const { return layers_.size(); }
+
+    void addLinearLayer(units::si::LengthType, units::si::LengthType);
+
+    Environment<IMediumModel> assemble();
+  };
+
+} // namespace corsika::environment
