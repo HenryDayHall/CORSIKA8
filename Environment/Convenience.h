@@ -48,6 +48,7 @@ namespace corsika::environment {
 
     void addLinearLayer(units::si::LengthType, units::si::LengthType);
 
+    void assemble(Environment<IMediumModel>&);
     Environment<IMediumModel> assemble();
   };
 

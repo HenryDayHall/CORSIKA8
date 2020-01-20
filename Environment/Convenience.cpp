@@ -36,10 +36,11 @@ void LayeredSphericalAtmosphereBuilder::addExponentialLayer(
   auto node = std::make_unique<VolumeTreeNode<IMediumModel>>(
       std::make_unique<geometry::Sphere>(center_, radius));
 
-  auto const rho0 = b / c * exp(seaLevel_ / c);
+  auto const rho0 = b / c;
+  std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
 
-  node->SetModelProperties<SlidingPlanarExponential<IMediumModel>>(center_, rho0, -c,
-                                                                   *composition_);
+  node->SetModelProperties<SlidingPlanarExponential<IMediumModel>>(
+      center_, rho0, -c, *composition_, seaLevel_);
 
   layers_.push(std::move(node));
 }
@@ -55,6 +56,8 @@ void LayeredSphericalAtmosphereBuilder::addLinearLayer(
   units::si::GrammageType constexpr b = 1 * 1_g / (1_cm * 1_cm);
   auto const rho0 = b / c;
 
+  std::cout << "rho0 = " << rho0;
+
   auto node = std::make_unique<VolumeTreeNode<environment::IMediumModel>>(
       std::make_unique<geometry::Sphere>(center_, radius));
   node->SetModelProperties<HomogeneousMedium<IMediumModel>>(rho0, *composition_);
@@ -63,9 +66,13 @@ void LayeredSphericalAtmosphereBuilder::addLinearLayer(
 }
 
 Environment<IMediumModel> LayeredSphericalAtmosphereBuilder::assemble() {
-  Environment<IMediumModel> environment_;
+  Environment<IMediumModel> env;
+  assemble(env);
+  return env;
+}
 
-  auto& universe = environment_.GetUniverse();
+void LayeredSphericalAtmosphereBuilder::assemble(Environment<IMediumModel>& env) {
+  auto& universe = env.GetUniverse();
   auto* outmost = universe.get();
 
   while (!layers_.empty()) {
@@ -75,6 +82,4 @@ Environment<IMediumModel> LayeredSphericalAtmosphereBuilder::assemble() {
     layers_.pop();
     outmost = tmp;
   }
-
-  return environment_;
 }

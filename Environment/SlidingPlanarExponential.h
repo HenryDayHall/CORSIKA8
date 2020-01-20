@@ -38,36 +38,38 @@ namespace corsika::environment {
   template <class T>
   class SlidingPlanarExponential : public BaseExponential<SlidingPlanarExponential<T>>,
                                    public T {
-    NuclearComposition const fNuclComp;
+    NuclearComposition const nuclComp_;
+    units::si::LengthType const referenceHeight_;
 
     using Base = BaseExponential<SlidingPlanarExponential<T>>;
 
   public:
-    SlidingPlanarExponential(geometry::Point const& vP0, units::si::MassDensityType vRho,
-                             units::si::LengthType vLambda, NuclearComposition vNuclComp)
-        : Base(vP0, vRho, vLambda)
-        , fNuclComp(vNuclComp) {}
+    SlidingPlanarExponential(geometry::Point const& p0, units::si::MassDensityType rho0,
+                             units::si::LengthType lambda, NuclearComposition nuclComp, units::si::LengthType referenceHeight = units::si::LengthType::zero())
+        : Base(p0, rho0, lambda)
+        , nuclComp_(nuclComp),
+        referenceHeight_(referenceHeight) {}
 
     units::si::MassDensityType GetMassDensity(
-        geometry::Point const& vP) const override {
-      auto const height = (vP - Base::fP0).norm();
+        geometry::Point const& p) const override {
+      auto const height = (p - Base::fP0).norm() - referenceHeight_;
       return Base::fRho0 * exp(Base::fInvLambda * height);
     }
 
-    NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
+    NuclearComposition const& GetNuclearComposition() const override { return nuclComp_; }
 
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& vLine,
-        units::si::LengthType vL) const override {
-      auto const axis = (vLine.GetR0() - Base::fP0).normalized();
-      return Base::IntegratedGrammage(vLine, vL, axis);
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::LengthType l) const override {
+      auto const axis = (line.GetR0() - Base::fP0).normalized();
+      return Base::IntegratedGrammage(line, l, axis);
     }
 
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<geometry::Line> const& vLine,
-        units::si::GrammageType vGrammage) const override {
-      auto const axis = (vLine.GetR0() - Base::fP0).normalized();
-      return Base::ArclengthFromGrammage(vLine, vGrammage, axis);
+        geometry::Trajectory<geometry::Line> const& line,
+        units::si::GrammageType grammage) const override {
+      auto const axis = (line.GetR0() - Base::fP0).normalized();
+      return Base::ArclengthFromGrammage(line, grammage, axis);
     }
   };
 
