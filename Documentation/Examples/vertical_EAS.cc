@@ -20,6 +20,7 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <corsika/environment/Convenience.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/NuclearComposition.h>
@@ -79,26 +80,19 @@ int main() {
   using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
-  auto& universe = *(env.GetUniverse());
 
-  auto theMedium = EnvType::CreateNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+  environment::LayeredSphericalAtmosphereBuilder builder(Point{rootCS, 0_m, 0_m, 0_m});
+  builder.setNuclearComposition(
+      {{particles::Code::Nitrogen, particles::Code::Oxygen},
+       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-  auto constexpr temperature = 295_K; // AIRES default temperature for isothermal model
-  auto constexpr lambda =
-      -constants::R * temperature / (constants::g_sub_n * 28.966_g / mole);
-  // 1036 g/cm² taken from AIRES code
-  auto constexpr rho0 = -1036_g / square(1_cm) / lambda;
-  using FlatExp = environment::FlatExponential<environment::IMediumModel>;
-  theMedium->SetModelProperties<FlatExp>(
-      Point{rootCS, 0_m, 0_m, 0_m}, Vector<dimensionless_d>{rootCS, {0., 0., 1.}}, rho0,
-      lambda,
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Nitrogen,
-                                       particles::Code::Oxygen},
-          std::vector<float>{
-              0.7847f,
-              1.f - 0.7847f})); // values taken from AIRES manual, Ar removed for now
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km);
+
+  builder.assemble(env);
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -110,7 +104,9 @@ int main() {
   double phi = 0.;
 
   Point const injectionPos(
-      rootCS, 0_m, 0_m, 112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
+      rootCS, 0_m, 0_m,
+      112.8_km * 0.999 +
+          builder.earthRadius); // this is the CORSIKA 7 start of atmosphere/universe
 
   //  {
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -137,16 +133,9 @@ int main() {
   Line const line(injectionPos, plab.normalized() * 1_m * 1_Hz);
   auto const velocity = line.GetV0().norm();
 
-  auto const observationHeight = 1.425_km;
+  auto const observationHeight = 1.425_km + builder.earthRadius;
 
   setup::Trajectory const showerAxis(line, (112.8_km - observationHeight) / velocity);
-
-  auto const grammage = theMedium->GetModelProperties().IntegratedGrammage(
-      showerAxis, (112.8_km - observationHeight));
-  std::cout << "Grammage to ground: " << grammage / (1_g / square(1_cm)) << " g/cm²"
-            << std::endl;
-
-  universe.AddChild(std::move(theMedium));
 
   // setup processes, decays and interactions
 
