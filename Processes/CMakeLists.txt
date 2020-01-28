@@ -10,7 +10,6 @@ if (PYTHIA8_FOUND)
 endif (PYTHIA8_FOUND)
 add_subdirectory (HadronicElasticModel)
 add_subdirectory (UrQMD)
-add_subdirectory (SwitchProcess)
 
 # continuous physics
 add_subdirectory (EnergyLoss)
@@ -21,6 +20,10 @@ add_subdirectory (StackInspector)
 # secondaries process
 # cuts, thinning, etc.
 add_subdirectory (ParticleCut)
+
+# meta-processes
+add_subdirectory (InteractionCounter)
+add_subdirectory (SwitchProcess)
 
 ##########################################
 # add_custom_target(CORSIKAprocesses)

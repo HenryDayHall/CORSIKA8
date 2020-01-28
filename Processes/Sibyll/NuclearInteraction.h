@@ -50,10 +50,10 @@ namespace corsika::process::sibyll {
 
     template <typename Particle>
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(Particle& p, const corsika::particles::Code TargetId);
+    GetCrossSection(Particle const& p, const corsika::particles::Code TargetId);
 
     template <typename Particle>
-    corsika::units::si::GrammageType GetInteractionLength(Particle&);
+    corsika::units::si::GrammageType GetInteractionLength(Particle const&);
 
     template <typename Projectile>
     corsika::process::EProcessReturn DoInteraction(Projectile&);

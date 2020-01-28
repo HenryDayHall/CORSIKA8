@@ -12,6 +12,7 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
+#include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/switch_process/SwitchProcess.h>
@@ -48,6 +49,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <typeinfo>
 
 using namespace corsika;
@@ -64,6 +66,7 @@ using namespace corsika::units::si;
 
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  random::RNGManager::GetInstance().RegisterRandomStream("qgran");
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
@@ -71,7 +74,11 @@ void registerRandomStreams() {
   random::RNGManager::GetInstance().SeedAll();
 }
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc != 4) {
+    std::cerr << "must provide A, Z, energy" << std::endl;
+    return 1;
+  }
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   registerRandomStreams();
@@ -97,15 +104,17 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Proton;
-  auto const mass = particles::GetMass(beamCode);
-  const HEPEnergyType E0 = 0.1_PeV;
+  const Code beamCode = Code::Nucleus;
+  unsigned short const A = std::stoi(std::string(argv[1]));
+  unsigned short Z = std::stoi(std::string(argv[2]));
+  auto const mass = particles::GetNucleusMass(A, Z);
+  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
   double phi = 0.;
 
   Point const injectionPos(
       rootCS, 0_m, 0_m,
-      112.8_km * 0.999 +
+      112.7_km +
           builder.earthRadius); // this is the CORSIKA 7 start of atmosphere/universe
 
   //  {
@@ -124,23 +133,33 @@ int main() {
   cout << "input angles: theta=" << theta << " phi=" << phi << endl;
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
 
-  stack.AddParticle(
-      std::tuple<particles::Code, units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          beamCode, E0, plab, injectionPos, 0_ns});
-  //  }
+  if (A != 1) {
+    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                 corsika::stack::MomentumVector, geometry::Point,
+                                 units::si::TimeType, unsigned short, unsigned short>{
+        beamCode, E0, plab, injectionPos, 0_ns, A, Z});
+
+  } else {
+    stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Proton, E0, plab, injectionPos, 0_ns});
+  }
 
   Line const line(injectionPos, plab.normalized() * 1_m * 1_Hz);
   auto const velocity = line.GetV0().norm();
 
-  auto const observationHeight = 1.425_km + builder.earthRadius;
+  auto const observationHeight = 1.4_km + builder.earthRadius;
 
-  setup::Trajectory const showerAxis(line, (112.8_km - observationHeight) / velocity);
+  setup::Trajectory const showerAxis(line, (112.7_km - observationHeight) / velocity);
 
   // setup processes, decays and interactions
 
   process::sibyll::Interaction sibyll;
+  process::interaction_counter::InteractionCounter sibyllCounted(sibyll);
+  
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  process::interaction_counter::InteractionCounter sibyllNucCounted(sibyllNuc);
 
   process::pythia::Decay decayPythia;
 
@@ -166,30 +185,31 @@ int main() {
   });
   decaySibyll.PrintDecayConfig();
 
-  process::particle_cut::ParticleCut cut(5_GeV);
+  process::particle_cut::ParticleCut cut(100_GeV);
 
-  process::track_writer::TrackWriter trackWriter("tracks.dat");
+  // process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss(showerAxis);
 
   Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
                        Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  process::observation_plane::ObservationPlane observationLevel(obsPlane, "/dev/null");
 
   // assemble all processes into an ordered process list
 
   process::UrQMD::UrQMD urqmd;
 
-  auto sibyllSequence = sibyll << sibyllNuc;
+  auto sibyllSequence = sibyllNucCounted << sibyllCounted;
   process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
-  auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel
-                                << trackWriter;
+  auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
+                                // << trackWriter;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
   EAS.Init();
+//  EAS.SetNodes();
+//  EAS.forceInteraction();
   EAS.Run();
 
   eLoss.PrintProfile(); // print longitudinal profile
@@ -201,6 +221,13 @@ int main() {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+       
+  auto const cms_hists = *std::get<0>(sibyllCounted.CMSHists()) + *std::get<0>(sibyllNucCounted.CMSHists());
+  auto const lab_hists = *std::get<0>(sibyllCounted.labHists()) + *std::get<0>(sibyllNucCounted.labHists());
+  
+  process::interaction_counter::saveHist(cms_hists, *std::get<1>(sibyllNucCounted.CMSHists()), "intcount_hist_cms.txt", "center-of-mass system");
+  process::interaction_counter::saveHist(lab_hists, *std::get<1>(sibyllNucCounted.labHists()), "intcount_hist_lab.txt", "lab system");
+  
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;
