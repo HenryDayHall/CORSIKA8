@@ -62,7 +62,7 @@ namespace corsika::process::qgsjetII {
 
   private:
     corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("qgran");
     // FOR NOW keep trackedParticles private, could be configurable
     std::vector<particles::Code> const fTrackedParticles = {
         particles::Code::PiPlus,     particles::Code::PiMinus,

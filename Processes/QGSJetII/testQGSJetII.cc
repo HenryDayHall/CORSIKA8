@@ -96,7 +96,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
   const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
 
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  random::RNGManager::GetInstance().RegisterRandomStream("qgran");
 
   SECTION("InteractionInterface") {
 
