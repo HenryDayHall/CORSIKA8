@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -64,7 +64,7 @@ namespace corsika::process::qgsjetII {
     }
   }
 
-  tuple<units::si::CrossSectionType, units::si::CrossSectionType>
+  units::si::CrossSectionType
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
                                const units::si::HEPEnergyType CoMenergy,
@@ -106,7 +106,7 @@ namespace corsika::process::qgsjetII {
       sigProd = qgsect_(dEcm, iBeam, iProjectile, iTarget);
     }
 
-    return std::make_tuple(sigProd * 1_mb, 0_mb);
+    return sigProd * 1_mb;
   }
 
   template <>

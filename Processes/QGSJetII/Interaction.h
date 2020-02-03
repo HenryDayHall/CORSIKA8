@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -17,7 +17,6 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <string>
-#include <tuple>
 
 namespace corsika::process::qgsjetII {
 
@@ -45,7 +44,7 @@ namespace corsika::process::qgsjetII {
              corsika::particles::IsNucleus(TargetId);
     }
 
-    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
+    corsika::units::si::CrossSectionType
     GetCrossSection(const corsika::particles::Code, const corsika::particles::Code,
                     const corsika::units::si::HEPEnergyType, const unsigned int Abeam = 0,
                     const unsigned int Atarget = 0) const;
