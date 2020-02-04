@@ -39,10 +39,10 @@ namespace corsika::process::qgsjetII {
              corsika::particles::IsNucleus(TargetId);
     }
 
-    corsika::units::si::CrossSectionType
-    GetCrossSection(const corsika::particles::Code, const corsika::particles::Code,
-                    const corsika::units::si::HEPEnergyType, const unsigned int Abeam = 0,
-                    const unsigned int Atarget = 0) const;
+    corsika::units::si::CrossSectionType GetCrossSection(
+        const corsika::particles::Code, const corsika::particles::Code,
+        const corsika::units::si::HEPEnergyType, const unsigned int Abeam = 0,
+        const unsigned int Atarget = 0) const;
 
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
