@@ -122,10 +122,6 @@ namespace corsika::process::qgsjetII {
 
     // total momentum and energy
     HEPEnergyType Elab = vP.GetEnergy();
-    MomentumVector pTotLab(rootCS, {0_GeV, 0_GeV, 0_GeV});
-    pTotLab += vP.GetMomentum();
-    pTotLab += pTarget;
-    auto const pTotLabNorm = pTotLab.norm();
 
     cout << "Interaction: LambdaInt: \n"
          << " input energy: " << vP.GetEnergy() / 1_GeV << endl
