@@ -33,12 +33,7 @@ namespace corsika::process::qgsjetII {
     void Init();
 
     bool WasInitialized() { return initialized_; }
-    bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) const {
-      return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
-    }
     int GetMaxTargetMassNumber() const { return maxMassNumber_; }
-    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
-    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
     bool IsValidTarget(corsika::particles::Code TargetId) const {
       return (corsika::particles::GetNucleusA(TargetId) < maxMassNumber_) &&
              corsika::particles::IsNucleus(TargetId);
@@ -63,22 +58,6 @@ namespace corsika::process::qgsjetII {
   private:
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("qgran");
-    // FOR NOW keep trackedParticles private, could be configurable
-    std::vector<particles::Code> const fTrackedParticles = {
-        particles::Code::PiPlus,     particles::Code::PiMinus,
-        particles::Code::Pi0,        particles::Code::KMinus,
-        particles::Code::KPlus,      particles::Code::K0Long,
-        particles::Code::K0Short,    particles::Code::SigmaPlus,
-        particles::Code::SigmaMinus, particles::Code::Lambda0,
-        particles::Code::Xi0,        particles::Code::XiMinus,
-        particles::Code::OmegaMinus, particles::Code::DPlus,
-        particles::Code::DMinus,     particles::Code::D0,
-        particles::Code::MuMinus,    particles::Code::MuPlus,
-        particles::Code::D0Bar};
-    const corsika::units::si::HEPEnergyType minEnergyCoM_ =
-        10. * 1e9 * corsika::units::si::electronvolt;
-    const corsika::units::si::HEPEnergyType maxEnergyCoM_ =
-        1.e6 * 1e9 * corsika::units::si::electronvolt;
     const int maxMassNumber_ = 208;
   };
 

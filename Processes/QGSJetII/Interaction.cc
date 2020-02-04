@@ -67,7 +67,7 @@ namespace corsika::process::qgsjetII {
   units::si::CrossSectionType
   Interaction::GetCrossSection(const particles::Code BeamId,
                                const particles::Code TargetId,
-                               const units::si::HEPEnergyType CoMenergy,
+                               const units::si::HEPEnergyType Elab,
                                const unsigned int Abeam,
                                const unsigned int Atarget) const {
     using namespace units::si;
@@ -76,13 +76,6 @@ namespace corsika::process::qgsjetII {
     if (process::qgsjetII::CanInteract(BeamId)) {
 
       const int iBeam = process::qgsjetII::GetQgsjetIIXSCode(BeamId);
-      if (!IsValidCoMEnergy(CoMenergy)) {
-        ostringstream txt;
-        txt << "Interaction: GetCrossSection: CoM energy outside range for QgsjetII! "
-               "CoMenergy="
-            << CoMenergy;
-        throw std::runtime_error(txt.str().c_str());
-      }
       int iTarget = 1;
       if (particles::IsNucleus(TargetId)) {
         iTarget = Atarget;
@@ -99,11 +92,10 @@ namespace corsika::process::qgsjetII {
           throw std::runtime_error("QgsjetII target outside range. ");
       }
 
-      const double dEcm = CoMenergy / 1_GeV / iProjectile; // CoM energy (per nucleon)
-
-      cout << "QgsjetII::GetCrossSection " << dEcm << " " << iBeam << " " << iProjectile
-           << " " << iTarget << endl;
-      sigProd = qgsect_(dEcm, iBeam, iProjectile, iTarget);
+      cout << "QgsjetII::GetCrossSection Elab=" << Elab << " iBeam=" << iBeam << " iProjectile=" << iProjectile
+           << " iTarget=" << iTarget << endl;
+      sigProd = qgsect_(Elab/1_GeV, iBeam, iProjectile, iTarget);
+      cout << "QgsjetII::GetCrossSection sigProd=" << sigProd << endl;
     }
 
     return sigProd * 1_mb;
@@ -136,15 +128,13 @@ namespace corsika::process::qgsjetII {
     pTotLab += vP.GetMomentum();
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.norm();
-    // calculate cm. energy
-    const HEPEnergyType ECoM = sqrt((Elab + pTotLabNorm) * (Elab - pTotLabNorm));
 
     cout << "Interaction: LambdaInt: \n"
          << " input energy: " << vP.GetEnergy() / 1_GeV << endl
          << " beam can interact:" << kInteraction << endl
          << " beam pid:" << vP.GetPID() << endl;
 
-    if (kInteraction && IsValidCoMEnergy(ECoM)) {
+    if (kInteraction) {
 
       int Abeam = 0;
       if (particles::IsNucleus(vP.GetPID())) Abeam = vP.GetNuclearA();
@@ -165,8 +155,7 @@ namespace corsika::process::qgsjetII {
             int Atarget = 0;
             if (corsika::particles::IsNucleus(targetID))
               Atarget = particles::GetNucleusA(targetID);
-            return std::get<0>(
-                GetCrossSection(corsikaBeamId, targetID, ECoM, Abeam, Atarget));
+            return GetCrossSection(corsikaBeamId, targetID, Elab, Abeam, Atarget);
           });
 
       cout << "Interaction: "
@@ -245,11 +234,6 @@ namespace corsika::process::qgsjetII {
       cout << "Interaction: position of interaction: " << pOrig.GetCoordinates() << endl;
       cout << "Interaction: time: " << tOrig << endl;
 
-      HEPEnergyType Etot = eProjectileLab + eTargetLab;
-      MomentumVector Ptot = vP.GetMomentum();
-      // invariant mass, i.e. cm. energy
-      HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
-
       // sample target mass number
       auto const* currentNode = vP.GetNode();
       auto const& mediumComposition =
@@ -259,7 +243,6 @@ namespace corsika::process::qgsjetII {
         Here we read the cross section from the interaction model again,
         should be passed from GetInteractionLength if possible
        */
-      //#warning reading interaction cross section again, should not be necessary
       auto const& compVec = mediumComposition.GetComponents();
       std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
 
@@ -268,9 +251,8 @@ namespace corsika::process::qgsjetII {
         int Atarget = 0;
         if (corsika::particles::IsNucleus(targetId))
           Atarget = particles::GetNucleusA(targetId);
-        const auto [sigProd, sigEla] =
-            GetCrossSection(corsikaBeamId, targetId, Ecm, Abeam, Atarget);
-        [[maybe_unused]] const auto& dummy_sigEla = sigEla;
+        const auto sigProd =
+            GetCrossSection(corsikaBeamId, targetId, eProjectileLab, Abeam, Atarget);
         cross_section_of_components[i] = sigProd;
       }
 
@@ -317,73 +299,64 @@ namespace corsika::process::qgsjetII {
 
       cout << "Interaction: "
            << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
-           << " Ecm(GeV): " << Ecm / 1_GeV << endl;
-      if (Ecm > GetMaxEnergyCoM())
-        throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
-      // FR: removed eProjectileLab < 8.5_GeV ||
-      if (Ecm < GetMinEnergyCoM()) {
-        cout << "Interaction: "
-             << " DoInteraction: should have dropped particle.. "
-             << "THIS IS AN ERROR" << endl;
-        throw std::runtime_error("energy too low for QGSJETII");
-      } else {
-        count_++;
-        auto Elab = eProjectileLab / projQgsCode;
-        qgini_(Elab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
-        qgini_(Elab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
-        qgconf_();
+	   << endl;
+      count_++;
+      qgini_(eProjectileLab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
+      // this is from CRMC, is this REALLY needed ???
+      qgini_(eProjectileLab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
+      qgconf_();
 
-        // bookkeeping
-        MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-        HEPEnergyType Elab_final = 0_GeV;
+      // bookkeeping
+      MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+      HEPEnergyType Elab_final = 0_GeV;
 
-        // fragments
-        QGSJetIIFragmentsStack qfs;
-        for (auto& fragm : qfs) {
-          particles::Code idFragm = particles::Code::Nucleus;
-          int A = fragm.GetFragmentSize();
-          int Z = 0;
-          switch (A) {
-            case 1: { // proton/neutron
-              idFragm = particles::Code::Proton;
-              MomentumVector Plab_nucleon(rootCS,
-                                          {0.0_GeV, 0.0_GeV,
-                                           sqrt((Elab + particles::Proton::GetMass()) *
-                                                (Elab - particles::Proton::GetMass()))});
-              auto const PlabRot = boost.fromCoM(FourVector(Elab, Plab_nucleon));
-              cout << "secondary fragment>" //<< static_cast<int>(psec.GetPID())
-                   << " " << idFragm << " Elab=" << Elab << " " << endl;
-              auto pnew = vP.AddSecondary(
-                  tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
-                        geometry::Point, units::si::TimeType>{
-                      idFragm, PlabRot.GetTimeLikeComponent(),
-                      PlabRot.GetSpaceLikeComponents(), pOrig, tOrig});
-              Plab_final += pnew.GetMomentum();
-              Elab_final += pnew.GetEnergy();
-            } break;
-            case 2: // deuterium
-              Z = 1;
-              break;
-            case 3: // tritium
-              Z = 1;
-              break;
-            case 4: // helium
-              Z = 2;
-              break;
+      // fragments
+      QGSJetIIFragmentsStack qfs;
+      for (auto& fragm : qfs) {
+	particles::Code idFragm = particles::Code::Nucleus;
+	int A = fragm.GetFragmentSize();
+	int Z = 0;
+	switch (A) {
+	case 1: { // proton/neutron
+	  idFragm = particles::Code::Proton;
+	  MomentumVector Plab_nucleon(rootCS,
+				      {0.0_GeV, 0.0_GeV,
+					  sqrt((eProjectileLab + particles::Proton::GetMass()) *
+					       (eProjectileLab - particles::Proton::GetMass()))});
+	  auto const PlabRot = boost.fromCoM(FourVector(eProjectileLab, Plab_nucleon));
+	  cout << "secondary fragment>" //<< static_cast<int>(psec.GetPID())
+	       << " " << idFragm << " eProjectileLab=" << eProjectileLab << " " << endl;
+	  auto pnew = vP.AddSecondary(
+				      tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
+				      geometry::Point, units::si::TimeType>{
+					idFragm, PlabRot.GetTimeLikeComponent(),
+					  PlabRot.GetSpaceLikeComponents(), pOrig, tOrig});
+	  Plab_final += pnew.GetMomentum();
+	  Elab_final += pnew.GetEnergy();
+	} break;
+	case 2: // deuterium
+	  Z = 1;
+	  break;
+	case 3: // tritium
+	  Z = 1;
+	  break;
+	case 4: // helium
+	  Z = 2;
+	  break;
             default: // nucleus
-            {
-              Z = int(A / 2.15 + 0.7);
+	      {
+		Z = int(A / 2.15 + 0.7);
             }
           }
 
           if (idFragm == particles::Code::Nucleus) {
             MomentumVector Plab_nucleus(rootCS,
                                         {0.0_GeV, 0.0_GeV,
-                                         sqrt((Elab + constants::nucleonMass * A) *
-                                              (Elab - constants::nucleonMass * A))});
-            auto const PlabRot = boost.fromCoM(FourVector(Elab * A, Plab_nucleus));
-            cout << "secondary fragment>" //<< static_cast<int>(psec.GetPID())
-                 << " " << idFragm << " Elab=" << Elab << " A=" << A << " Z=" << Z
+                                         sqrt((eProjectileLab + constants::nucleonMass * A) *
+                                              (eProjectileLab - constants::nucleonMass * A))});
+            auto const PlabRot = boost.fromCoM(FourVector(eProjectileLab * A, Plab_nucleus));
+            cout << "secondary fragment>" 
+                 << " " << idFragm << " eProjectileLab=" << eProjectileLab << " A=" << A << " Z=" << Z
                  << endl;
             auto pnew = vP.AddSecondary(
                 tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
@@ -400,15 +373,10 @@ namespace corsika::process::qgsjetII {
         QGSJetIIStack qs;
         for (auto& psec : qs) {
 
-          // // skip particles that have decayed in QgsjetII
-          // if (psec.HasDecayed()) continue;
-
           auto const Plab = psec.GetMomentum();
           auto const Elab = psec.GetEnergy();
 
           // transform energy to lab. frame
-          // auto const pCoM = psec.GetMomentum();
-          // HEPEnergyType const eCoM = psec.GetEnergy();
           auto const PlabRot = boost.fromCoM(FourVector(Elab, Plab));
 
           cout << "secondary hadron>" //<< static_cast<int>(psec.GetPID())
@@ -421,12 +389,10 @@ namespace corsika::process::qgsjetII {
                     geometry::Point, units::si::TimeType>{
                   process::qgsjetII::ConvertFromQgsjetII(psec.GetPID()),
                   PlabRot.GetTimeLikeComponent(), PlabRot.GetSpaceLikeComponents(),
-                  // Elab, Plab,
                   pOrig, tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();
-          // Ecm_final += psec.GetEnergy();
         }
         cout << "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/ << endl
              << "Elab_final=" << Elab_final / 1_GeV
@@ -436,9 +402,8 @@ namespace corsika::process::qgsjetII {
              << ", N_wounded,proj="
              << QGSJetIIFragmentsStackData::GetWoundedNucleonsProjectile()
              << ", N_fragm,proj=" << qfs.GetSize() << endl;
-      }
     }
     return process::EProcessReturn::eOk;
   }
-
+  
 } // namespace corsika::process::qgsjetII
