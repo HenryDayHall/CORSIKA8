@@ -28,11 +28,11 @@ namespace corsika::process::qgsjetII {
   }
 
   corsika::particles::Code constexpr ConvertFromQgsjetII(QgsjetIICode pCode) {
-    auto const s = static_cast<QgsjetIICodeIntType>(pCode);
-    auto const corsikaCode = qgsjetII2corsika[s - minQgsjetII];
+    auto const pCodeInt = static_cast<QgsjetIICodeIntType>(pCode);
+    auto const corsikaCode = qgsjetII2corsika[pCodeInt - minQgsjetII];
     if (corsikaCode == corsika::particles::Code::Unknown) {
-      throw std::runtime_error(std::string("QGSJETII/CORSIKA conversion of ")
-                                   .append(std::to_string(s))
+      throw std::runtime_error(std::string("QGSJETII/CORSIKA conversion of pCodeInt=")
+                                   .append(std::to_string(pCodeInt))
                                    .append(" impossible"));
     }
     return corsikaCode;
