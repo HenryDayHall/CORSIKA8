@@ -75,6 +75,7 @@ namespace corsika::process::sibyll {
         particles::Code::Pi0,        particles::Code::KMinus,
         particles::Code::KPlus,      particles::Code::K0Long,
         particles::Code::K0Short,    particles::Code::SigmaPlus,
+        particles::Code::Sigma0,     particles::Code::Sigma0Bar,
         particles::Code::SigmaMinus, particles::Code::Lambda0,
         particles::Code::Xi0,        particles::Code::XiMinus,
         particles::Code::OmegaMinus, particles::Code::DPlus,
