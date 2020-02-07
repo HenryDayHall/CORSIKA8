@@ -1,4 +1,9 @@
 set (
+  ENVIRONMENT_SOURCES
+  LayeredSphericalAtmosphereBuilder.cc
+)
+
+set (
   ENVIRONMENT_HEADERS
   VolumeTreeNode.h
   IMediumModel.h
@@ -13,6 +18,7 @@ set (
   BaseExponential.h
   FlatExponential.h
   SlidingPlanarExponential.h
+  LayeredSphericalAtmosphereBuilder.h
   )
 
 set (
@@ -20,13 +26,20 @@ set (
   corsika/environment
   )
 
-add_library (CORSIKAenvironment INTERFACE)
+add_library (CORSIKAenvironment STATIC ${ENVIRONMENT_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAenvironment ${ENVIRONMENT_NAMESPACE} ${ENVIRONMENT_HEADERS})
+
+set_target_properties (
+  CORSIKAgeometry
+  PROPERTIES
+  VERSION ${PROJECT_VERSION}
+  SOVERSION 1
+  PUBLIC_HEADER "${ENVIRONMENT_HEADERS}"
+  )
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   CORSIKAenvironment
-  INTERFACE
   CORSIKAgeometry
   CORSIKAparticles
   CORSIKAunits
@@ -35,7 +48,7 @@ target_link_libraries (
 
 target_include_directories (
   CORSIKAenvironment
-  INTERFACE
+  PUBLIC
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>
   )
