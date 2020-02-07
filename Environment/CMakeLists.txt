@@ -1,6 +1,6 @@
 set (
   ENVIRONMENT_SOURCES
-  Convenience.cpp
+  LayeredSphericalAtmosphereBuilder.cc
 )
 
 set (
@@ -18,7 +18,7 @@ set (
   BaseExponential.h
   FlatExponential.h
   SlidingPlanarExponential.h
-  Convenience.h
+  LayeredSphericalAtmosphereBuilder.h
   )
 
 set (

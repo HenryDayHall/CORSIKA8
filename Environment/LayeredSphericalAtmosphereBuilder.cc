@@ -8,7 +8,7 @@
  * the license.
  */
 
-#include <corsika/environment/Convenience.h>
+#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
