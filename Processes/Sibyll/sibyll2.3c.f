@@ -7,7 +7,7 @@ C         SSSSSS    IIIIIII  BBBBB       YY       LLLLLLL  LLLLLLL
 C=======================================================================
 C  Code for SIBYLL:  hadronic interaction Monte Carlo event generator
 C=======================================================================
-C   Version 2.3c02 (Jun-01-2017, modified Dec-11-2017)
+C   Version 2.3c03 (Jun-01-2017, modified Aug-22-2019)
 C
 C     with CHARM production
 C
@@ -32,6 +32,8 @@ C                friehn@lip.pt
 C                stanev@bartol.udel.edu
 C     
 C     last changes relative to Sibyll 2.3c:
+C     * added cross section tables for hadron-nitrogen and hadron-oxygen
+C       (changed S_CCSIG common)
 C     * no remnant in high mass diff. events (pi0-had scattering)
 C     * repaired had-nuc. cross section routine for kaon beams
 C       routine remains inactive in ordinary calls.
@@ -469,7 +471,7 @@ C-----------------------------------------------------------------------
      *     /,' ','| F. RIEHN et al., Proc. 35th Int. Cosmic Ray Conf.|',
      *     /,' ','|           Bexco, Busan, Korea, cont. 301 (2017)  |',
      *     /,' ','|                                                  |',
-     *     /,' ','| last modifications: F. Riehn (12/11/2017)        |',
+     *     /,' ','| last modifications: F. Riehn (08/22/2019)        |',
      *     /,' ','====================================================',
      *     /)
 
@@ -480,7 +482,7 @@ C-----------------------------------------------------------------------
       CALL BLOCK_INI
       CALL NUC_GEOM_INI
       CALL SIG_AIR_INI
-c      CALL DEC_INI
+
 c...  charm frag. normalisation
       CALL ZNORMAL
 
@@ -4453,8 +4455,11 @@ C--------------------------------------------------------------------
       DOUBLE PRECISION FACN
       DIMENSION FACN(3:10)
       COMMON /SIB_FAC/ FACN
+
+      DOUBLE PRECISION EPS100
       SAVE
- 
+      DATA EPS100 /1.D-100/
+      
       DO J=0,NH_max
         DO I=0,NS_max
           P_int(I,J) = 0.D0
@@ -4535,16 +4540,20 @@ C--------------------------------------------------------------------
          chi2_hard_12 = (1.D0-al1+ga1)*(1.D0-al2-ga2)*chi2_hard
          chi2_hard_21 = (1.D0-al1-ga1)*(1.D0-al2+ga2)*chi2_hard
           
+         ef_11 = max(-0.5D0*(chi2_soft_11+chi2_hard_11),log(EPS100))
+         ef_22 = max(-0.5D0*(chi2_soft_22+chi2_hard_22),log(EPS100))
+         ef_12 = max(-0.5D0*(chi2_soft_12+chi2_hard_12),log(EPS100))
+         ef_21 = max(-0.5D0*(chi2_soft_21+chi2_hard_21),log(EPS100))
+         
+         ef_11 = dexp(ef_11)
+         ef_22 = dexp(ef_22)
+         ef_12 = dexp(ef_12)
+         ef_21 = dexp(ef_21)
 
-         ef_11 = dexp(-0.5D0*(chi2_soft_11+chi2_hard_11))
-         ef_22 = dexp(-0.5D0*(chi2_soft_22+chi2_hard_22))
-         ef_12 = dexp(-0.5D0*(chi2_soft_12+chi2_hard_12))
-         ef_21 = dexp(-0.5D0*(chi2_soft_21+chi2_hard_21))
-
-         esf_11  = ef_11**2
-         esf_22  = ef_22**2
-         esf_12  = ef_12**2
-         esf_21  = ef_21**2
+         esf_11  = max(ef_11,EPS100)**2
+         esf_22  = max(ef_22,EPS100)**2
+         esf_12  = max(ef_12,EPS100)**2
+         esf_21  = max(ef_21,EPS100)**2
 
          F_ine = B*(1.D0 - fe_11*esf_11 - fe_12*esf_12 
      &                   - fe_21*esf_21 - fe_22*esf_22)
@@ -4578,24 +4587,24 @@ C--------------------------------------------------------------------
          soft_rec_22 = 1.D0/chi2_soft_22
          soft_rec_12 = 1.D0/chi2_soft_12
          soft_rec_21 = 1.D0/chi2_soft_21
-         chi2_hard_11 = max(chi2_hard_11,EPS10)
-         chi2_hard_22 = max(chi2_hard_22,EPS10)
-         chi2_hard_12 = max(chi2_hard_12,EPS10)
-         chi2_hard_21 = max(chi2_hard_21,EPS10)
+         chi2_hard_11 = max(chi2_hard_11,EPS100)
+         chi2_hard_22 = max(chi2_hard_22,EPS100)
+         chi2_hard_12 = max(chi2_hard_12,EPS100)
+         chi2_hard_21 = max(chi2_hard_21,EPS100)
          DO I=0,I0MAX
-           soft_rec_11 = soft_rec_11*chi2_soft_11
-           soft_rec_22 = soft_rec_22*chi2_soft_22
-           soft_rec_12 = soft_rec_12*chi2_soft_12
-           soft_rec_21 = soft_rec_21*chi2_soft_21
-           hard_rec_11 = 1.D0/chi2_hard_11
-           hard_rec_22 = 1.D0/chi2_hard_22
-           hard_rec_12 = 1.D0/chi2_hard_12
-           hard_rec_21 = 1.D0/chi2_hard_21
+           soft_rec_11 = max(soft_rec_11*chi2_soft_11,EPS100)
+           soft_rec_22 = max(soft_rec_22*chi2_soft_22,EPS100)
+           soft_rec_12 = max(soft_rec_12*chi2_soft_12,EPS100)
+           soft_rec_21 = max(soft_rec_21*chi2_soft_21,EPS100)
+           hard_rec_11 = max(1.D0/chi2_hard_11,EPS100)
+           hard_rec_22 = max(1.D0/chi2_hard_22,EPS100)
+           hard_rec_12 = max(1.D0/chi2_hard_12,EPS100)
+           hard_rec_21 = max(1.D0/chi2_hard_21,EPS100)
            DO J=0,J0MAX
-             hard_rec_11 = hard_rec_11*chi2_hard_11
-             hard_rec_22 = hard_rec_22*chi2_hard_22
-             hard_rec_12 = hard_rec_12*chi2_hard_12
-             hard_rec_21 = hard_rec_21*chi2_hard_21
+             hard_rec_11 = max(hard_rec_11*chi2_hard_11,EPS100)
+             hard_rec_22 = max(hard_rec_22*chi2_hard_22,EPS100)
+             hard_rec_12 = max(hard_rec_12*chi2_hard_12,EPS100)
+             hard_rec_21 = max(hard_rec_21*chi2_hard_21,EPS100)
              P_int(I,J) = P_int(I,J) 
      &                + fe_11*soft_rec_11*hard_rec_11*fac_11
      &                + fe_22*soft_rec_22*hard_rec_22*fac_22
@@ -5535,7 +5544,7 @@ c     read hadron-nucleon cross section from table
             IF(IPAR(12).eq.3)THEN
 c     distinguish between nuclear cross sections..
                IF(IAFLG.eq.0)THEN
-c     if target is nucleus calc. hadron-nucleus cross section (slow)
+c     if target is nucleus calc. hadron-nucleus cross section
                   CALL SIB_SIGMA_HNUC(L,IA,SQS,SIGprod,SIGbdif,SIGela)
                ELSE
 c     if target is air read hadron-air cross section from table
@@ -11209,8 +11218,8 @@ C-----------------------------------------------------------------------
 10    FORMAT(//,' Table of cross sections, and average number',
      &         ' of minijets and wounded nucleons ')
 15    FORMAT('        [sqrt(s) in GeV, cross sections in mbarn]. ')
-16    FORMAT(' sqrt(s) sig(pp) sig(pAir) <n_s> <n_j> <n_w>',
-     &    ' sig(pip) sig(piAir) <n_s> <n_j> <n_w>')
+16    FORMAT(' sqrt(s) sig(pp) sig(pA) <n_s> <n_j> <n_w>',
+     &    ' sig(pip) sig(piA) <n_s> <n_j> <n_w>')
 18    FORMAT(1X,77('-') )
         DO J=1,61,1
          SQS = 10.D0**(ASQSMIN + DASQS*DBLE(J-1))
@@ -11251,7 +11260,7 @@ C-----------------------------------------------------------------------
 
 C=======================================================================
 
-      SUBROUTINE SIG_AIR_INI 
+            SUBROUTINE SIG_AIR_INI 
 
 C-----------------------------------------------------------------------
 C...  Initialize the cross section and interaction lengths on air, 
@@ -11375,7 +11384,6 @@ c     interaction length
          endif
       ENDDO
       END
-      
 C=======================================================================
 
       SUBROUTINE SAMPLE_TARGET(NW,XCHG,KRMNT,XJET,Irec,IREJ)
@@ -11870,6 +11878,7 @@ C.  INPUT :  SSIG  (mbarn) total pp cross section
 C.           SLOPE (GeV**-2)  elastic scattering slope for pp
 C.           ALPHA    real/imaginary part of the forward pp elastic
 C.                                               scattering amplitude
+C.           ALAM  coupling to inel. intermediat states
 C.  OUTPUT : SIGT  = Total cross section
 C.           SIGEL = Elastic cross section
 C.           SIGQEL  = Elastic + Quasi elastic cross section
@@ -11896,6 +11905,7 @@ C......................................................................
       SIGQSD = (1.D0-FOX)*SIGQSD1 + FOX*SIGQSD2
       RETURN
       END
+
 C=======================================================================
 
       SUBROUTINE SIG_H_NUC
@@ -11946,7 +11956,7 @@ C......................................................................
       END
 
 C=======================================================================
-
+      
       SUBROUTINE GLAUBER2
      +     (JA,SSIG,SLOPE,ALPHA,ALAM,SIGT,SIGEL,SIGQEL,SIGSD,SIGQSD)
 
@@ -14080,7 +14090,6 @@ c     internal
 
       END
 C=======================================================================
-
       SUBROUTINE SIB_SIGMA_HNUC (L,IAT,SQS,SIGprod,SIGbdif,SIGela) 
 
 C-----------------------------------------------------------------------
@@ -17831,8 +17840,7 @@ c     Knuth shuffle..
       KF2=KPL(2)*10+KPL(3)     
       END
             
-C=======================================================================
-      
+
       SUBROUTINE TRANSFONSHELL(ECM,XM1in,XM2in,XMAX,IMOD,P1,P2,LBAD)
 
 C-----------------------------------------------------------------------
