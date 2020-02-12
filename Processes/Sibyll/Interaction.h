@@ -21,9 +21,9 @@ namespace corsika::process::sibyll {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
-    int fCount = 0;
-    int fNucCount = 0;
-    bool fInitialized = false;
+    int count_ = 0;
+    int nucCount_ = 0;
+    bool initialized_ = false;
 
   public:
     Interaction();
@@ -39,15 +39,15 @@ namespace corsika::process::sibyll {
     void SetAllUnstable();
     void SetAllStable();
 
-    bool WasInitialized() { return fInitialized; }
+    bool WasInitialized() { return initialized_; }
     bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) const {
-      return (fMinEnergyCoM <= ecm) && (ecm <= fMaxEnergyCoM);
+      return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
-    int GetMaxTargetMassNumber() const { return fMaxTargetMassNumber; }
-    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return fMinEnergyCoM; }
-    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return fMaxEnergyCoM; }
+    int GetMaxTargetMassNumber() const { return maxTargetMassNumber_; }
+    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
+    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
     bool IsValidTarget(corsika::particles::Code TargetId) const {
-      return (corsika::particles::GetNucleusA(TargetId) < fMaxTargetMassNumber) &&
+      return (corsika::particles::GetNucleusA(TargetId) < maxTargetMassNumber_) &&
              corsika::particles::IsNucleus(TargetId);
     }
 
@@ -67,10 +67,10 @@ namespace corsika::process::sibyll {
     corsika::process::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::random::RNG& fRNG =
+    corsika::random::RNG& RNG_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
     // FOR NOW keep trackedParticles private, could be configurable
-    std::vector<particles::Code> const fTrackedParticles = {
+    std::vector<particles::Code> const trackedParticles_ = {
         particles::Code::PiPlus,     particles::Code::PiMinus,
         particles::Code::Pi0,        particles::Code::KMinus,
         particles::Code::KPlus,      particles::Code::K0Long,
@@ -82,12 +82,12 @@ namespace corsika::process::sibyll {
         particles::Code::DMinus,     particles::Code::D0,
         particles::Code::MuMinus,    particles::Code::MuPlus,
         particles::Code::D0Bar};
-    const bool fInternalDecays = true;
-    const corsika::units::si::HEPEnergyType fMinEnergyCoM =
+    const bool internalDecays_ = true;
+    const corsika::units::si::HEPEnergyType minEnergyCoM_ =
         10. * 1e9 * corsika::units::si::electronvolt;
-    const corsika::units::si::HEPEnergyType fMaxEnergyCoM =
+    const corsika::units::si::HEPEnergyType maxEnergyCoM_ =
         1.e6 * 1e9 * corsika::units::si::electronvolt;
-    const int fMaxTargetMassNumber = 18;
+    const int maxTargetMassNumber_ = 18;
   };
 
 } // namespace corsika::process::sibyll

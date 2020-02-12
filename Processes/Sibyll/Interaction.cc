@@ -37,7 +37,7 @@ namespace corsika::process::sibyll {
   Interaction::Interaction() {}
 
   Interaction::~Interaction() {
-    cout << "Sibyll::Interaction n=" << fCount << " Nnuc=" << fNucCount << endl;
+    cout << "Sibyll::Interaction n=" << count_ << " Nnuc=" << nucCount_ << endl;
   }
 
   void Interaction::Init() {
@@ -45,9 +45,9 @@ namespace corsika::process::sibyll {
     using random::RNGManager;
 
     // initialize Sibyll
-    if (!fInitialized) {
+    if (!initialized_) {
       sibyll_ini_();
-      fInitialized = true;
+      initialized_ = true;
     }
   }
 
@@ -94,7 +94,7 @@ namespace corsika::process::sibyll {
     const double dEcm = CoMenergy / 1_GeV;
     if (particles::IsNucleus(TargetId)) {
       const int iTarget = particles::GetNucleusA(TargetId);
-      if (iTarget > fMaxTargetMassNumber || iTarget == 0)
+      if (iTarget > maxTargetMassNumber_ || iTarget == 0)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 are allowed.");
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
@@ -281,7 +281,7 @@ namespace corsika::process::sibyll {
       }
 
       const auto targetCode =
-          mediumComposition.SampleTarget(cross_section_of_components, fRNG);
+          mediumComposition.SampleTarget(cross_section_of_components, RNG_);
       cout << "Interaction: target selected: " << targetCode << endl;
       /*
         FOR NOW: allow nuclei with A<18 or protons only.
@@ -292,7 +292,7 @@ namespace corsika::process::sibyll {
       if (IsNucleus(targetCode)) targetSibCode = GetNucleusA(targetCode);
       if (targetCode == particles::Proton::GetCode()) targetSibCode = 1;
       cout << "Interaction: sibyll code: " << targetSibCode << endl;
-      if (targetSibCode > fMaxTargetMassNumber || targetSibCode < 1)
+      if (targetSibCode > maxTargetMassNumber_ || targetSibCode < 1)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 or protons are "
             "allowed.");
@@ -312,17 +312,17 @@ namespace corsika::process::sibyll {
              << "THIS IS AN ERROR" << endl;
         throw std::runtime_error("energy too low for SIBYLL");
       } else {
-        fCount++;
+        count_++;
         // Sibyll does not know about units..
         const double sqs = Ecm / 1_GeV;
         // running sibyll, filling stack
         sibyll_(kBeam, targetSibCode, sqs);
-        if (fInternalDecays) {
+        if (internalDecays_) {
           // particles that decay internally will never appear on the corsika stack
           // switch on all decays except for the particles we want to take part in the
           // tracking
           SetAllUnstable();
-          SetStable(fTrackedParticles);
+          SetStable(trackedParticles_);
           decsib_();
           // reset
           SetAllStable();
@@ -330,7 +330,7 @@ namespace corsika::process::sibyll {
         // print final state
         int print_unit = 6;
         sib_list_(print_unit);
-        fNucCount += get_nwounded() - 1;
+        nucCount_ += get_nwounded() - 1;
 
         // add particles from sibyll to stack
         // link to sibyll stack
