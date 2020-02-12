@@ -39,19 +39,19 @@ namespace corsika::process::sibyll {
   template <>
   NuclearInteraction<SetupEnvironment>::NuclearInteraction(
       process::sibyll::Interaction& hadint, SetupEnvironment const& env)
-      : fEnvironment(env)
-      , fHadronicInteraction(hadint) {}
+      : environment_(env)
+      , hadronicInteraction_(hadint) {}
 
   template <>
   NuclearInteraction<SetupEnvironment>::~NuclearInteraction() {
-    cout << "Nuclib::NuclearInteraction n=" << fCount << " Nnuc=" << fNucCount << endl;
+    cout << "Nuclib::NuclearInteraction n=" << count_ << " Nnuc=" << nucCount_ << endl;
   }
 
   template <>
   void NuclearInteraction<SetupEnvironment>::PrintCrossSectionTable(
       corsika::particles::Code pCode) {
     using namespace corsika::particles;
-    const int k = fTargetComponentsIndex.at(pCode);
+    const int k = targetComponentsIndex_.at(pCode);
     Code pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
                       Code::Neon,   Code::Argon,    Code::Iron};
     cout << "en/A ";
@@ -75,7 +75,7 @@ namespace corsika::process::sibyll {
     using namespace corsika::particles;
     using namespace units::si;
 
-    auto& universe = *(fEnvironment.GetUniverse());
+    auto& universe = *(environment_.GetUniverse());
 
     auto const allElementsInUniverse = std::invoke([&]() {
       std::set<particles::Code> allElementsInUniverse;
@@ -98,13 +98,13 @@ namespace corsika::process::sibyll {
       ++k;
       cout << "NuclearInteraction: init target component: " << ptarg << endl;
       const int ib = GetNucleusA(ptarg);
-      if (!fHadronicInteraction.IsValidTarget(ptarg)) {
+      if (!hadronicInteraction_.IsValidTarget(ptarg)) {
         cout << "NuclearInteraction::InitializeNuclearCrossSections: target nucleus? id="
              << ptarg << endl;
         throw std::runtime_error(
             " target can not be handled by hadronic interaction model! ");
       }
-      fTargetComponentsIndex.insert(std::pair<Code, int>(ptarg, k));
+      targetComponentsIndex_.insert(std::pair<Code, int>(ptarg, k));
       // loop over energies, fNEnBins log. energy bins
       for (int i = 0; i < GetNEnergyBins(); ++i) {
         // hard coded energy grid, has to be aligned to definition in signuc2!!, no
@@ -113,14 +113,14 @@ namespace corsika::process::sibyll {
         // get p-p cross sections
         auto const protonId = Code::Proton;
         auto const [siginel, sigela] =
-            fHadronicInteraction.GetCrossSection(protonId, protonId, Ecm);
+            hadronicInteraction_.GetCrossSection(protonId, protonId, Ecm);
         const double dsig = siginel / 1_mb;
         const double dsigela = sigela / 1_mb;
         // loop over projectiles, mass numbers from 2 to fMaxNucleusAProjectile
-        for (int j = 1; j < gMaxNucleusAProjectile; ++j) {
+        for (int j = 1; j < gMaxNucleusAProjectile_; ++j) {
           const int jj = j + 1;
           double sig_out, dsig_out, sigqe_out, dsigqe_out;
-          sigma_mc_(jj, ib, dsig, dsigela, gNSample, sig_out, dsig_out, sigqe_out,
+          sigma_mc_(jj, ib, dsig, dsigela, gNSample_, sig_out, dsig_out, sigqe_out,
                     dsigqe_out);
           // write to table
           cnucsignuc_.sigma[j][k][i] = sig_out;
@@ -128,7 +128,7 @@ namespace corsika::process::sibyll {
         }
       }
     }
-    cout << "NuclearInteraction: cross sections for " << fTargetComponentsIndex.size()
+    cout << "NuclearInteraction: cross sections for " << targetComponentsIndex_.size()
          << " components initialized!" << endl;
     for (auto& ptarg : allElementsInUniverse) {
       cout << "cross section table: " << ptarg << endl;
@@ -140,11 +140,11 @@ namespace corsika::process::sibyll {
   void NuclearInteraction<SetupEnvironment>::Init() {
     // initialize hadronic interaction module
     // TODO: safe to run multiple initializations?
-    if (!fHadronicInteraction.WasInitialized()) fHadronicInteraction.Init();
+    if (!hadronicInteraction_.WasInitialized()) hadronicInteraction_.Init();
 
     // check compatibility of energy ranges, someone could try to use low-energy model..
-    if (!fHadronicInteraction.IsValidCoMEnergy(GetMinEnergyPerNucleonCoM()) ||
-        !fHadronicInteraction.IsValidCoMEnergy(GetMaxEnergyPerNucleonCoM()))
+    if (!hadronicInteraction_.IsValidCoMEnergy(GetMinEnergyPerNucleonCoM()) ||
+        !hadronicInteraction_.IsValidCoMEnergy(GetMaxEnergyPerNucleonCoM()))
       throw std::runtime_error(
           "NuclearInteraction: hadronic interaction model incompatible!");
 
@@ -161,7 +161,7 @@ namespace corsika::process::sibyll {
       const int ia, particles::Code pTarget, units::si::HEPEnergyType elabnuc) {
     using namespace corsika::particles;
     using namespace units::si;
-    const int ib = fTargetComponentsIndex.at(pTarget) + 1; // table index in fortran
+    const int ib = targetComponentsIndex_.at(pTarget) + 1; // table index in fortran
     auto const ECoMNuc = sqrt(2. * corsika::units::constants::nucleonMass * elabnuc);
     if (ECoMNuc < GetMinEnergyPerNucleonCoM() || ECoMNuc > GetMaxEnergyPerNucleonCoM())
       throw std::runtime_error("NuclearInteraction: energy outside tabulated range!");
@@ -202,7 +202,7 @@ namespace corsika::process::sibyll {
           "NUCLIB!");
     }
 
-    if (fHadronicInteraction.IsValidTarget(TargetId)) {
+    if (hadronicInteraction_.IsValidTarget(TargetId)) {
       auto const sigProd = ReadCrossSectionTable(iBeamA, TargetId, LabEnergyPerNuc);
       cout << "cross section (mb): " << sigProd / 1_mb << endl;
       return std::make_tuple(sigProd, 0_mb);
@@ -269,8 +269,8 @@ namespace corsika::process::sibyll {
 
     // energy limits
     // TODO: values depend on hadronic interaction model !! this is sibyll specific
-    if (ElabNuc >= 8.5_GeV && ECoMNN >= gMinEnergyPerNucleonCoM &&
-        ECoMNN < gMaxEnergyPerNucleonCoM) {
+    if (ElabNuc >= 8.5_GeV && ECoMNN >= gMinEnergyPerNucleonCoM_ &&
+        ECoMNN < gMaxEnergyPerNucleonCoM_) {
 
       // get target from environment
       /*
@@ -347,7 +347,7 @@ namespace corsika::process::sibyll {
         (vP.GetNuclearA() - vP.GetNuclearZ()) * particles::Neutron::GetMass();
     cout << "NuclearInteraction: projectile mass: " << ProjMass / 1_GeV << endl;
 
-    fCount++;
+    count_++;
 
     const CoordinateSystem& rootCS =
         RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
@@ -360,7 +360,7 @@ namespace corsika::process::sibyll {
     cout << "Interaction: time: " << tOrig << endl;
 
     // projectile nucleon number
-    const int kAProj = vP.GetNuclearA(); // GetNucleusA(ProjId);
+    const int kAProj = vP.GetNuclearA();
     if (kAProj > GetMaxNucleusAProjectile())
       throw std::runtime_error("Projectile nucleus too large for NUCLIB!");
 
@@ -400,7 +400,7 @@ namespace corsika::process::sibyll {
     HEPEnergyType EcmNN = PtotNN4.GetNorm();
     cout << "NuclearInteraction: nuc-nuc cm energy: " << EcmNN / 1_GeV << endl;
 
-    if (!fHadronicInteraction.IsValidCoMEnergy(EcmNN)) {
+    if (!hadronicInteraction_.IsValidCoMEnergy(EcmNN)) {
       cout << "NuclearInteraction: nuc-nuc. CoM energy too low for hadronic "
               "interaction model!"
            << endl;
@@ -446,13 +446,13 @@ namespace corsika::process::sibyll {
       cout << "target component: " << targetId << endl;
       cout << "beam id: " << beamId << endl;
       const auto [sigProd, sigEla] =
-          fHadronicInteraction.GetCrossSection(beamId, targetId, EcmNN);
+          hadronicInteraction_.GetCrossSection(beamId, targetId, EcmNN);
       cross_section_of_components[i] = sigProd;
       [[maybe_unused]] auto sigElaCopy = sigEla; // ONLY TO AVOID COMPILER WARNINGS
     }
 
     const auto targetCode =
-        mediumComposition.SampleTarget(cross_section_of_components, fRNG);
+        mediumComposition.SampleTarget(cross_section_of_components, RNG_);
     cout << "Interaction: target selected: " << targetCode << endl;
     /*
       FOR NOW: allow nuclei with A<18 or protons only.
@@ -463,7 +463,7 @@ namespace corsika::process::sibyll {
     if (IsNucleus(targetCode)) kATarget = GetNucleusA(targetCode);
     if (targetCode == particles::Proton::GetCode()) kATarget = 1;
     cout << "NuclearInteraction: nuclib target code: " << kATarget << endl;
-    if (!fHadronicInteraction.IsValidTarget(targetCode))
+    if (!hadronicInteraction_.IsValidTarget(targetCode))
       throw std::runtime_error("target outside range. ");
     // end of target sampling
 
@@ -473,7 +473,7 @@ namespace corsika::process::sibyll {
     // (needed to determine number of nucleon-nucleon scatterings)
     const auto protonId = particles::Proton::GetCode();
     const auto [prodCrossSection, elaCrossSection] =
-        fHadronicInteraction.GetCrossSection(protonId, protonId, EcmNN);
+        hadronicInteraction_.GetCrossSection(protonId, protonId, EcmNN);
     const double sigProd = prodCrossSection / 1_mb;
     const double sigEla = elaCrossSection / 1_mb;
     // sample number of interactions (only input variables, output in common cnucms)
@@ -602,7 +602,7 @@ namespace corsika::process::sibyll {
               PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig});
       // create inelastic interaction
       cout << "calling HadronicInteraction..." << endl;
-      fHadronicInteraction.DoInteraction(inelasticNucleon);
+      hadronicInteraction_.DoInteraction(inelasticNucleon);
     }
 
     cout << "NuclearInteraction: DoInteraction: done" << endl;

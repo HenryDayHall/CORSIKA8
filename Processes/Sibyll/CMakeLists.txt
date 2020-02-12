@@ -57,8 +57,8 @@ add_custom_command (
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/process/sibyll/Generated.inc ${CMAKE_CURRENT_SOURCE_DIR}/Generated.inc
   COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/Generated.inc"
   )
-add_custom_target (SourceDirLink2 DEPENDS ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc)
-add_dependencies (ProcessSibyll SourceDirLink2)
+add_custom_target (SourceDirLinkSib DEPENDS ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc)
+add_dependencies (ProcessSibyll SourceDirLinkSib)
 # .....................................................
 
 

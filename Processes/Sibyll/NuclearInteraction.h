@@ -27,8 +27,8 @@ namespace corsika::process::sibyll {
   class NuclearInteraction
       : public corsika::process::InteractionProcess<NuclearInteraction<TEnvironment>> {
 
-    int fCount = 0;
-    int fNucCount = 0;
+    int count_ = 0;
+    int nucCount_ = 0;
 
   public:
     NuclearInteraction(corsika::process::sibyll::Interaction&, TEnvironment const&);
@@ -39,14 +39,14 @@ namespace corsika::process::sibyll {
     corsika::units::si::CrossSectionType ReadCrossSectionTable(
         const int, corsika::particles::Code, corsika::units::si::HEPEnergyType);
     corsika::units::si::HEPEnergyType GetMinEnergyPerNucleonCoM() {
-      return gMinEnergyPerNucleonCoM;
+      return gMinEnergyPerNucleonCoM_;
     }
     corsika::units::si::HEPEnergyType GetMaxEnergyPerNucleonCoM() {
-      return gMaxEnergyPerNucleonCoM;
+      return gMaxEnergyPerNucleonCoM_;
     }
-    int constexpr GetMaxNucleusAProjectile() { return gMaxNucleusAProjectile; }
-    int constexpr GetMaxNFragments() { return gMaxNFragments; }
-    int constexpr GetNEnergyBins() { return gNEnBins; }
+    int constexpr GetMaxNucleusAProjectile() { return gMaxNucleusAProjectile_; }
+    int constexpr GetMaxNFragments() { return gMaxNFragments_; }
+    int constexpr GetNEnergyBins() { return gNEnBins_; }
 
     template <typename Particle>
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
@@ -59,21 +59,21 @@ namespace corsika::process::sibyll {
     corsika::process::EProcessReturn DoInteraction(Projectile&);
 
   private:
-    TEnvironment const& fEnvironment;
-    corsika::process::sibyll::Interaction& fHadronicInteraction;
-    std::map<corsika::particles::Code, int> fTargetComponentsIndex;
-    corsika::random::RNG& fRNG =
+    TEnvironment const& environment_;
+    corsika::process::sibyll::Interaction& hadronicInteraction_;
+    std::map<corsika::particles::Code, int> targetComponentsIndex_;
+    corsika::random::RNG& RNG_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-    static constexpr int gNSample =
+    static constexpr int gNSample_ =
         500; // number of samples in MC estimation of cross section
-    static constexpr int gMaxNucleusAProjectile = 56;
-    static constexpr int gNEnBins = 6;
-    static constexpr int gMaxNFragments = 60;
+    static constexpr int gMaxNucleusAProjectile_ = 56;
+    static constexpr int gNEnBins_ = 6;
+    static constexpr int gMaxNFragments_ = 60;
     // energy limits defined by table used for cross section in signuc.f
     // 10**1 GeV to 10**6 GeV
-    static constexpr corsika::units::si::HEPEnergyType gMinEnergyPerNucleonCoM =
+    static constexpr corsika::units::si::HEPEnergyType gMinEnergyPerNucleonCoM_ =
         10. * 1e9 * corsika::units::si::electronvolt;
-    static constexpr corsika::units::si::HEPEnergyType gMaxEnergyPerNucleonCoM =
+    static constexpr corsika::units::si::HEPEnergyType gMaxEnergyPerNucleonCoM_ =
         1.e6 * 1e9 * corsika::units::si::electronvolt;
   };
 
