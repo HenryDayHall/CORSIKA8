@@ -32,9 +32,9 @@ template <typename TStack>
 StackInspector<TStack>::StackInspector(const int vNStep, const bool vReportStack,
                                        const HEPEnergyType vE0)
     : StackProcess<StackInspector<TStack>>(vNStep)
-    , fReportStack(vReportStack)
-    , fE0(vE0)
-    , fStartTime(std::chrono::system_clock::now()) {}
+    , ReportStack_(vReportStack)
+    , E0_(vE0)
+    , StartTime_(std::chrono::system_clock::now()) {}
 
 template <typename TStack>
 StackInspector<TStack>::~StackInspector() {}
@@ -47,7 +47,7 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
   for (const auto& iterP : vS) {
     HEPEnergyType E = iterP.GetEnergy();
     Etot += E;
-    if (fReportStack) {
+    if (ReportStack_) {
       geometry::CoordinateSystem& rootCS = geometry::RootCoordinateSystem::GetInstance()
                                                .GetRootCoordinateSystem(); // for printout
       auto pos = iterP.GetPosition().GetCoordinates(rootCS);
@@ -60,12 +60,15 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
   }
 
   auto const now = std::chrono::system_clock::now();
-  const std::chrono::duration<double> elapsed_seconds = now - fStartTime;
+  const std::chrono::duration<double> elapsed_seconds = now - StartTime_;
   std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
-  double const progress = (fE0 - Etot) / fE0;
+  auto const dE = E0_ - Etot;
+  if (dE < dE_threshold_) return process::EProcessReturn::eOk;
+  double const progress = dE / E0_;
+
   double const eta_seconds = elapsed_seconds.count() / progress;
   std::time_t const eta_time = std::chrono::system_clock::to_time_t(
-      fStartTime + std::chrono::seconds((int)eta_seconds));
+      StartTime_ + std::chrono::seconds((int)eta_seconds));
 
   cout << "StackInspector: "
        << " time=" << std::put_time(std::localtime(&now_time), "%T")
@@ -79,8 +82,8 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
 
 template <typename TStack>
 void StackInspector<TStack>::Init() {
-  fReportStack = false;
-  fStartTime = std::chrono::system_clock::now();
+  ReportStack_ = false;
+  StartTime_ = std::chrono::system_clock::now();
 }
 
 #include <corsika/cascade/testCascade.h>
