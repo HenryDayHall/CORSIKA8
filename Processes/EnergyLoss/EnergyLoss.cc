@@ -181,7 +181,7 @@ namespace corsika::process::energy_loss {
     }
     p.SetEnergy(Enew);
     MomentumUpdate(p, Enew);
-    fEnergyLossTot += dE;
+    EnergyLossTot_ += dE;
     FillProfile(p, t, dE);
     return status;
   }
@@ -215,13 +215,13 @@ namespace corsika::process::energy_loss {
 
     using namespace corsika::geometry;
 
-    auto const toStart = vTrack.GetPosition(0) - fInjectionPoint;
-    auto const toEnd = vTrack.GetPosition(1) - fInjectionPoint;
+    auto const toStart = vTrack.GetPosition(0) - InjectionPoint_;
+    auto const toEnd = vTrack.GetPosition(1) - InjectionPoint_;
 
-    auto const v1 = (toStart * 1_Hz).dot(fShowerAxisDirection);
-    auto const v2 = (toEnd * 1_Hz).dot(fShowerAxisDirection);
-    geometry::Line const lineToStartBin(fInjectionPoint, fShowerAxisDirection * v1);
-    geometry::Line const lineToEndBin(fInjectionPoint, fShowerAxisDirection * v2);
+    auto const v1 = (toStart * 1_Hz).dot(ShowerAxisDirection_);
+    auto const v2 = (toEnd * 1_Hz).dot(ShowerAxisDirection_);
+    geometry::Line const lineToStartBin(InjectionPoint_, ShowerAxisDirection_ * v1);
+    geometry::Line const lineToEndBin(InjectionPoint_, ShowerAxisDirection_ * v2);
 
     SetupTrack const trajToStartBin(lineToStartBin, 1_s);
     SetupTrack const trajToEndBin(lineToEndBin, 1_s);
@@ -233,8 +233,8 @@ namespace corsika::process::energy_loss {
         vP.GetNode()->GetModelProperties().IntegratedGrammage(trajToEndBin,
                                                               trajToEndBin.GetLength());
 
-    const int binStart = grammageStart / fdX;
-    const int binEnd = grammageEnd / fdX;
+    const int binStart = grammageStart / dX_;
+    const int binEnd = grammageEnd / dX_;
 
     std::cout << "energy deposit of " << -dE << " between " << grammageStart << " and "
               << grammageEnd << std::endl;
@@ -242,21 +242,24 @@ namespace corsika::process::energy_loss {
     auto energyCount = HEPEnergyType::zero();
 
     auto fill = [&](int bin, GrammageType weight) {
-      auto const increment = -dE * weight / (grammageEnd - grammageStart);
-      fProfile[bin] += increment;
-      energyCount += increment;
+      const auto dX = grammageEnd - grammageStart;
+      if (dX > dX_threshold_) {
+        auto const increment = -dE * weight / (grammageEnd - grammageStart);
+        Profile_[bin] += increment;
+        energyCount += increment;
 
-      std::cout << "filling bin " << bin << " with weight " << weight << ": " << increment
-                << std::endl;
+        std::cout << "filling bin " << bin << " with weight " << weight << ": "
+                  << increment << std::endl;
+      }
     };
 
     // fill longitudinal profile
-    fill(binStart, (1 + binStart) * fdX - grammageStart);
-    fill(binEnd, grammageEnd - binEnd * fdX);
+    fill(binStart, (1 + binStart) * dX_ - grammageStart);
+    fill(binEnd, grammageEnd - binEnd * dX_);
 
-    if (binStart == binEnd) { fill(binStart, -fdX); }
+    if (binStart == binEnd) { fill(binStart, -dX_); }
 
-    for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, fdX); }
+    for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
 
     std::cout << "total energy added to histogram: " << energyCount << std::endl;
   }
@@ -264,8 +267,8 @@ namespace corsika::process::energy_loss {
   void EnergyLoss::PrintProfile() const {
     std::ofstream file("EnergyLossProfile.dat");
     cout << "# EnergyLoss PrintProfile  X-bin [g/cm2]  dE/dX [GeV/g/cm2]  " << endl;
-    double const deltaX = fdX / 1_g * square(1_cm);
-    for (auto v : fProfile) {
+    double const deltaX = dX_ / 1_g * square(1_cm);
+    for (auto v : Profile_) {
       file << v.first * deltaX << " " << v.second / (deltaX * 1_GeV) << endl;
     }
   }

@@ -34,8 +34,8 @@ namespace corsika::process::energy_loss {
     template <typename TDim>
     EnergyLoss(geometry::Point const& injectionPoint,
                geometry::Vector<TDim> const& direction)
-        : fInjectionPoint(injectionPoint)
-        , fShowerAxisDirection(direction.normalized()) {}
+        : InjectionPoint_(injectionPoint)
+        , ShowerAxisDirection_(direction.normalized()) {}
 
     EnergyLoss(setup::Trajectory const& trajectory)
         : EnergyLoss(trajectory.GetPosition(0), trajectory.GetV0()){};
@@ -45,7 +45,7 @@ namespace corsika::process::energy_loss {
                                          setup::Trajectory const&);
     units::si::LengthType MaxStepLength(setup::Stack::ParticleType const&,
                                         setup::Trajectory const&) const;
-    units::si::HEPEnergyType GetTotal() const { return fEnergyLossTot; }
+    units::si::HEPEnergyType GetTotal() const { return EnergyLossTot_; }
     void PrintProfile() const;
     static units::si::HEPEnergyType BetheBloch(setup::Stack::ParticleType const&,
                                                const units::si::GrammageType);
@@ -60,16 +60,20 @@ namespace corsika::process::energy_loss {
     // void FillProfileAbsorbed(setup::Stack::ParticleType const&, setup::Trajectory
     // const&);
 
-    units::si::HEPEnergyType fEnergyLossTot = units::si::HEPEnergyType::zero();
-    units::si::GrammageType const fdX = std::invoke([]() {
+    units::si::HEPEnergyType EnergyLossTot_ = units::si::HEPEnergyType::zero();
+    units::si::GrammageType const dX_ = std::invoke([]() {
       using namespace units::si;
       return 10_g / square(1_cm);
     });                                               // profile binning
-    std::map<int, units::si::HEPEnergyType> fProfile; // longitudinal profile
-    geometry::Point const fInjectionPoint;
-    geometry::Vector<units::si::dimensionless_d> const fShowerAxisDirection;
+    std::map<int, units::si::HEPEnergyType> Profile_; // longitudinal profile
+    geometry::Point const InjectionPoint_;
+    geometry::Vector<units::si::dimensionless_d> const ShowerAxisDirection_;
   };
 
+  const units::si::GrammageType dX_threshold_ = std::invoke([]() {
+    using namespace units::si;
+    return 0.0001_g / square(1_cm);
+  });
 } // namespace corsika::process::energy_loss
 
 #endif

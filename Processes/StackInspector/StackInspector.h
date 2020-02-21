@@ -39,12 +39,16 @@ namespace corsika::process {
       /**
        * To set a new E0, for example when a new shower event is started
        */
-      void SetE0(const corsika::units::si::HEPEnergyType vE0) { fE0 = vE0; }
+      void SetE0(const corsika::units::si::HEPEnergyType vE0) { E0_ = vE0; }
 
     private:
-      bool fReportStack;
-      corsika::units::si::HEPEnergyType fE0;
-      decltype(std::chrono::system_clock::now()) fStartTime;
+      bool ReportStack_;
+      corsika::units::si::HEPEnergyType E0_;
+      const corsika::units::si::HEPEnergyType dE_threshold_ = std::invoke([]() {
+        using namespace units::si;
+        return 1_eV;
+      });
+      decltype(std::chrono::system_clock::now()) StartTime_;
     };
 
   } // namespace stack_inspector
