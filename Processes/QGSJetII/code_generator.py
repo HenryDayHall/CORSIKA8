@@ -74,14 +74,12 @@ def generate_corsika2qgsjetII_xsType(particle_db):
 
 # generates the look-up table to convert qgsjetII codes to corsika codes    
 def generate_qgsjetII2corsika(particle_db) :
-    string = ""
-    
     minID = 0
     for identifier, pData in particle_db.items() :
         if 'qgsjetII_code' in pData:
             minID = min(minID, pData['qgsjetII_code'])
 
-    string += "QgsjetIICodeIntType constexpr minQgsjetII = {:d};\n\n".format(minID)
+    string = "QgsjetIICodeIntType constexpr minQgsjetII = {:d};\n\n".format(minID)
 
     pDict = {}
     for identifier, pData in particle_db.items() :
@@ -93,11 +91,9 @@ def generate_qgsjetII2corsika(particle_db) :
     string += "std::array<corsika::particles::Code, {:d}> constexpr qgsjetII2corsika = {{\n".format(nPart)
     
     for iPart in range(nPart) :
-        if iPart in pDict:
-            identifier = pDict[iPart]
-        else:
-            identifier = "Unknown"
-        string += "  corsika::particles::Code::{:s}, \n".format(identifier)
+        identifier = pDict.get(iPart, "Unknown")
+        qgsID = iPart + minID
+        string += "  corsika::particles::Code::{:s}, // {:d} \n".format(identifier, qgsID)
     
     string += "};\n"
     return string
