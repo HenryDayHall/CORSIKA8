@@ -145,7 +145,7 @@ namespace corsika::cascade {
       auto projectile = secondaries.GetProjectile();
       interaction(vParticle, projectile);
       fProcessSequence.DoSecondaries(secondaries);
-      vParticle.Delete(); // todo: this should be reviewed, see above
+      vParticle.Delete(); // todo: this should be reviewed, see below
     }
 
   private:
