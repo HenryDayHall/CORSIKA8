@@ -15,36 +15,48 @@
 using namespace corsika::process::observation_plane;
 using namespace corsika::units::si;
 
-ObservationPlane::ObservationPlane(geometry::Plane const& vObsPlane,
-                                   std::string const& vFilename)
-    : fObsPlane(vObsPlane)
-    , fOutputStream(vFilename) {
-  fOutputStream << "#PDG code, energy / eV, distance to center / m" << std::endl;
+ObservationPlane::ObservationPlane(geometry::Plane const& obsPlane,
+                                   std::string const& filename, bool deleteOnHit)
+    : plane_(obsPlane)
+    , outputStream_(filename)
+    , deleteOnHit_(deleteOnHit) {
+  outputStream_ << "#PDG code, energy / eV, distance to center / m" << std::endl;
 }
 
 corsika::process::EProcessReturn ObservationPlane::DoContinuous(
-    setup::Stack::ParticleType const& vParticle, setup::Trajectory const& vTrajectory) {
+    setup::Stack::ParticleType const& particle, setup::Trajectory const& trajectory) {
+  TimeType const timeOfIntersection =
+      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetV0().dot(plane_.GetNormal());
 
-  if (fObsPlane.IsAbove(vTrajectory.GetPosition(1.0001))) {
+  if (timeOfIntersection < TimeType::zero()) { return process::EProcessReturn::eOk; }
+
+  if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
 
-  fOutputStream << static_cast<int>(particles::GetPDG(vParticle.GetPID())) << ' '
-                << vParticle.GetEnergy() * (1 / 1_eV) << ' '
-                << (vTrajectory.GetPosition(1) - fObsPlane.GetCenter()).norm() / 1_m
+  outputStream_ << static_cast<int>(particles::GetPDG(particle.GetPID())) << ' '
+                << particle.GetEnergy() * (1 / 1_eV) << ' '
+                << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                 << std::endl;
 
-  return process::EProcessReturn::eParticleAbsorbed;
+  if (deleteOnHit_) {
+    return process::EProcessReturn::eParticleAbsorbed;
+  } else {
+    return process::EProcessReturn::eOk;
+  }
 }
 
 LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
-                                           setup::Trajectory const& vTrajectory) {
-  if (!fObsPlane.IsAbove(vTrajectory.GetR0())) {
+                                           setup::Trajectory const& trajectory) {
+  TimeType const timeOfIntersection =
+      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetV0().dot(plane_.GetNormal());
+
+  if (timeOfIntersection < TimeType::zero()) {
     return std::numeric_limits<double>::infinity() * 1_m;
   }
 
-  auto const pointOfIntersection = vTrajectory.GetPosition(
-      (fObsPlane.GetCenter() - vTrajectory.GetR0()).dot(fObsPlane.GetNormal()) /
-      vTrajectory.GetV0().dot(fObsPlane.GetNormal()));
-  return (vTrajectory.GetR0() - pointOfIntersection).norm();
+  auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
+  return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
 }

@@ -29,7 +29,7 @@ namespace corsika::process::observation_plane {
   class ObservationPlane : public corsika::process::ContinuousProcess<ObservationPlane> {
 
   public:
-    ObservationPlane(geometry::Plane const& vObsPlane, std::string const& vFilename);
+    ObservationPlane(geometry::Plane const&, std::string const&, bool = true);
     void Init() {}
 
     corsika::process::EProcessReturn DoContinuous(
@@ -41,8 +41,9 @@ namespace corsika::process::observation_plane {
         corsika::setup::Trajectory const& vTrajectory);
 
   private:
-    geometry::Plane const fObsPlane;
-    std::ofstream fOutputStream;
+    geometry::Plane const plane_;
+    std::ofstream outputStream_;
+    bool const deleteOnHit_;
   };
 } // namespace corsika::process::observation_plane
 

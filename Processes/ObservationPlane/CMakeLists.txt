@@ -16,7 +16,7 @@ set (
 add_library (ProcessObservationPlane STATIC ${MODEL_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessObservationPlane ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
-# target dependencies on other libraries (also the header onlys)
+#target dependencies on other libraries(also the header onlys)
 target_link_libraries (
   ProcessObservationPlane
   CORSIKAgeometry
@@ -32,8 +32,8 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
-# --------------------
-# code unit testing
+#-- -- -- -- -- -- -- -- -- --
+#code unit testing
 CORSIKA_ADD_TEST(testObservationPlane)
 target_link_libraries (
   testObservationPlane
@@ -41,4 +41,3 @@ target_link_libraries (
   CORSIKAstackinterface
   CORSIKAthirdparty # for catch2
 )
-

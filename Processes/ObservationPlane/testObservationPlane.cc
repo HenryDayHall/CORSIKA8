@@ -41,7 +41,7 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
   Vector<units::si::SpeedType::dimension_type> vec(rootCS, 0_m / second, 0_m / second,
                                                    -units::constants::c);
   Line line(start, vec);
-  Trajectory<Line> track(line, 10_m / units::constants::c);
+  Trajectory<Line> track(line, 12_m / units::constants::c);
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -64,14 +64,14 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
     Plane const obsPlane(Point(rootCS, {0_m, 0_m, 0_m}),
                          Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-    ObservationPlane obs(obsPlane, "particles.dat");
+    ObservationPlane obs(obsPlane, "particles.dat", true);
 
     obs.Init();
-    [[maybe_unused]] const LengthType length = obs.MaxStepLength(particle, track);
-    [[maybe_unused]] const process::EProcessReturn ret =
-        obs.DoContinuous(particle, track);
+    const LengthType length = obs.MaxStepLength(particle, track);
+    const process::EProcessReturn ret = obs.DoContinuous(particle, track);
 
-    SECTION("steplength") { REQUIRE(length == 10_m); }
+    REQUIRE(length / 10_m == Approx(1).margin(1e-4));
+    REQUIRE(ret == process::EProcessReturn::eParticleAbsorbed);
 
     /*
     SECTION("horizontal plane") {
@@ -81,16 +81,18 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
     */
   }
 
-  SECTION("inclined plane") {
+  SECTION("inclined plane") {}
+
+  SECTION("transparent plane") {
     Plane const obsPlane(Point(rootCS, {0_m, 0_m, 0_m}),
-                         Vector<dimensionless_d>(rootCS, {1., 1., 0.5}));
-    ObservationPlane obs(obsPlane, "particles.dat");
+                         Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
+    ObservationPlane obs(obsPlane, "particles.dat", false);
 
     obs.Init();
-    [[maybe_unused]] const LengthType length = obs.MaxStepLength(particle, track);
-    [[maybe_unused]] const process::EProcessReturn ret =
-        obs.DoContinuous(particle, track);
+    const LengthType length = obs.MaxStepLength(particle, track);
+    const process::EProcessReturn ret = obs.DoContinuous(particle, track);
 
-    SECTION("steplength") { REQUIRE(length == 12_m); }
+    REQUIRE(length / 10_m == Approx(1).margin(1e-4));
+    REQUIRE(ret == process::EProcessReturn::eOk);
   }
 }
