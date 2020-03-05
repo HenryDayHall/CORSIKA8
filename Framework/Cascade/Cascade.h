@@ -133,6 +133,21 @@ namespace corsika::cascade {
       }
     }
 
+    /**
+     * Force an interaction of the top particle of the stack at its current position.
+     * Note that SetNodes() or an equivalent procedure needs to be called first if you
+     * want to call forceInteraction() for the primary interaction.
+     */
+    void forceInteraction() {
+      std::cout << "forced interaction!" << std::endl;
+      auto vParticle = fStack.GetNextParticle();
+      TStackView secondaries(vParticle);
+      auto projectile = secondaries.GetProjectile();
+      interaction(vParticle, projectile);
+      fProcessSequence.DoSecondaries(secondaries);
+      vParticle.Delete(); // todo: this should be reviewed, see above
+    }
+
   private:
     /**
      * The Step function is executed for each particle from the
@@ -243,28 +258,10 @@ namespace corsika::cascade {
           [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
           if (min_distance == distance_interact) {
-            std::cout << "collide" << std::endl;
-
-            InverseGrammageType const current_inv_length =
-                fProcessSequence.GetTotalInverseInteractionLength(vParticle);
-
-            random::UniformRealDistribution<InverseGrammageType> uniDist(
-                current_inv_length);
-            const auto sample_process = uniDist(fRNG);
-            InverseGrammageType inv_lambda_count = 0. * meter * meter / gram;
-            fProcessSequence.SelectInteraction(vParticle, projectile, sample_process,
-                                               inv_lambda_count);
+            interaction(vParticle, projectile);
           } else {
             assert(min_distance == distance_decay);
-            std::cout << "decay" << std::endl;
-            InverseTimeType const actual_decay_time =
-                fProcessSequence.GetTotalInverseLifetime(vParticle);
-
-            random::UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
-            const auto sample_process = uniDist(fRNG);
-            InverseTimeType inv_decay_count = 0 / second;
-            fProcessSequence.SelectDecay(vParticle, projectile, sample_process,
-                                         inv_decay_count);
+            decay(vParticle, projectile);
             // make sure particle actually did decay if it should have done so
             if (secondaries.GetSize() == 1 &&
                 projectile.GetPID() == secondaries.GetNextParticle().GetPID())
@@ -297,6 +294,35 @@ namespace corsika::cascade {
         // DoBoundary may delete the particle (or not)
         fProcessSequence.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
       }
+    }
+
+    auto decay(Particle& particle,
+               decltype(std::declval<TStackView>().GetProjectile()) projectile) {
+      std::cout << "decay" << std::endl;
+      units::si::InverseTimeType const actual_decay_time =
+          fProcessSequence.GetTotalInverseLifetime(particle);
+
+      random::UniformRealDistribution<units::si::InverseTimeType> uniDist(
+          actual_decay_time);
+      const auto sample_process = uniDist(fRNG);
+      units::si::InverseTimeType inv_decay_count = units::si::InverseTimeType::zero();
+      return fProcessSequence.SelectDecay(particle, projectile, sample_process,
+                                          inv_decay_count);
+    }
+
+    auto interaction(Particle& particle,
+                     decltype(std::declval<TStackView>().GetProjectile()) projectile) {
+      std::cout << "collide" << std::endl;
+
+      units::si::InverseGrammageType const current_inv_length =
+          fProcessSequence.GetTotalInverseInteractionLength(particle);
+
+      random::UniformRealDistribution<units::si::InverseGrammageType> uniDist(
+          current_inv_length);
+      const auto sample_process = uniDist(fRNG);
+      auto inv_lambda_count = units::si::InverseGrammageType::zero();
+      return fProcessSequence.SelectInteraction(particle, projectile, sample_process,
+                                                inv_lambda_count);
     }
 
   private:
