@@ -136,6 +136,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   rmng.RegisterRandomStream("cascade");
 
   auto env = MakeDummyEnv();
+  auto const& rootCS = env.GetCoordinateSystem();
   tracking_line::TrackingLine tracking;
 
   stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
@@ -147,13 +148,6 @@ TEST_CASE("Cascade", "[Cascade]") {
   ProcessCut cut(Ecrit);
   auto sequence = nullModel << stackInspect << split << cut;
   TestCascadeStack stack;
-
-  cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
-                   TestCascadeStackView>
-      EAS(env, tracking, sequence, stack);
-  CoordinateSystem const& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-
   stack.Clear();
   stack.AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -161,10 +155,25 @@ TEST_CASE("Cascade", "[Cascade]") {
           particles::Code::Electron, E0,
           corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
           Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
-  EAS.Init();
-  EAS.Run();
 
-  CHECK(cut.GetCount() == 2048);
-  CHECK(cut.GetCalls() == 2047);
-  CHECK(split.GetCalls() == 2047);
+  cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
+                   TestCascadeStackView>
+      EAS(env, tracking, sequence, stack);
+
+  EAS.Init();
+
+  SECTION("full cascade") {
+    EAS.Run();
+
+    CHECK(cut.GetCount() == 2048);
+    CHECK(cut.GetCalls() == 2047);
+    CHECK(split.GetCalls() == 2047);
+  }
+
+  SECTION("forced interaction") {
+    EAS.SetNodes();
+    EAS.forceInteraction();
+    CHECK(stack.GetSize() == 2);
+    CHECK(split.GetCalls() == 1);
+  }
 }
