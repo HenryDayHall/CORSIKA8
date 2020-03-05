@@ -55,13 +55,12 @@ namespace corsika::process::qgsjetII {
       using namespace corsika::units::si;
       return qgarr14_.esp[i][0] * 1_GeV;
     }
-    MomentumVector GetMomentum(const unsigned int i, const corsika::geometry::CoordinateSystem& coordinateSystem) const {
-      using corsika::geometry::QuantityVector;
+    MomentumVector GetMomentum(const unsigned int i, const corsika::geometry::CoordinateSystem& CS) const {
       using namespace corsika::units::si;
-      QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
+      geometry::QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
                                                   qgarr14_.esp[i][3] * 1_GeV,
                                                   qgarr14_.esp[i][1] * 1_GeV};
-      return MomentumVector(coordinateSystem, components);
+      return MomentumVector(CS, components);
     }
 
     void Copy(const unsigned int i1, const unsigned int i2) {
@@ -122,7 +121,7 @@ namespace corsika::process::qgsjetII {
           GetStackData().GetId(GetIndex()));
     }
 
-    MomentumVector GetMomentum(const corsika::geometry::CoordinateSystem& coordinateSystem) const { return GetStackData().GetMomentum(GetIndex(), coordinateSystem); }
+    MomentumVector GetMomentum(const corsika::geometry::CoordinateSystem& CS) const { return GetStackData().GetMomentum(GetIndex(), CS); }
 
     void SetMomentum(const MomentumVector& v) {
       GetStackData().SetMomentum(GetIndex(), v);
