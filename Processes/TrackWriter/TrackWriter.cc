@@ -15,6 +15,7 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <iomanip>
 #include <limits>
 
 using namespace corsika::setup;
@@ -38,9 +39,16 @@ namespace corsika::process::track_writer {
     auto const delta = vT.GetPosition(1).GetCoordinates() - start;
     auto const pdg = static_cast<int>(particles::GetPDG(vP.GetPID()));
 
-    fFile << pdg << ' ' << vP.GetEnergy() / 1_eV << ' ' << start[0] / 1_m << ' '
-          << start[1] / 1_m << ' ' << start[2] / 1_m << "   " << delta[0] / 1_m << ' '
-          << delta[1] / 1_m << ' ' << delta[2] / 1_m << '\n';
+    // clang-format off
+    fFile << std::setw(7) << pdg
+          << std::setw(width) << std::scientific << std::setprecision(precision) << vP.GetEnergy() / 1_eV
+          << std::setw(width) << std::scientific << std::setprecision(precision) << start[0] / 1_m 
+          << std::setw(width) << std::scientific << std::setprecision(precision) << start[1] / 1_m
+          << std::setw(width) << std::scientific << std::setprecision(precision) << start[2] / 1_m
+          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[0] / 1_m
+          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[1] / 1_m
+          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[2] / 1_m << '\n';
+    // clang-format on
 
     return process::EProcessReturn::eOk;
   }

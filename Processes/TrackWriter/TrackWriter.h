@@ -36,6 +36,9 @@ namespace corsika::process::track_writer {
   private:
     std::string const fFilename;
     std::ofstream fFile;
+
+    int width = 14;
+    int precision = 6;
   };
 
 } // namespace corsika::process::track_writer
