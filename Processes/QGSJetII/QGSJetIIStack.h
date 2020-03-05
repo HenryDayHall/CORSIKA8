@@ -11,7 +11,7 @@
 #ifndef _include_qgsjetIIstack_h_
 #define _include_qgsjetIIstack_h_
 
-#include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/process/qgsjetII/ParticleConversion.h>
 #include <corsika/process/qgsjetII/qgsjet-II-04.h>
@@ -55,17 +55,13 @@ namespace corsika::process::qgsjetII {
       using namespace corsika::units::si;
       return qgarr14_.esp[i][0] * 1_GeV;
     }
-    MomentumVector GetMomentum(const unsigned int i) const {
-      using corsika::geometry::CoordinateSystem;
+    MomentumVector GetMomentum(const unsigned int i, const corsika::geometry::CoordinateSystem& coordinateSystem) const {
       using corsika::geometry::QuantityVector;
-      using corsika::geometry::RootCoordinateSystem;
       using namespace corsika::units::si;
-      CoordinateSystem& rootCS =
-          RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
       QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
                                                   qgarr14_.esp[i][3] * 1_GeV,
                                                   qgarr14_.esp[i][1] * 1_GeV};
-      return MomentumVector(rootCS, components);
+      return MomentumVector(coordinateSystem, components);
     }
 
     void Copy(const unsigned int i1, const unsigned int i2) {
@@ -92,7 +88,7 @@ namespace corsika::process::qgsjetII {
     using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
-    void SetParticleData(const int vID, // corsika::process::qgsjetII::QgsjetIICode vID,
+    void SetParticleData(const int vID, 
                          const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
                          const corsika::units::si::HEPMassType vM) {
@@ -102,7 +98,7 @@ namespace corsika::process::qgsjetII {
     }
 
     void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
-                         const int vID, //  corsika::process::qgsjetII::QgsjetIICode vID,
+                         const int vID, 
                          const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
                          const corsika::units::si::HEPMassType vM) {
@@ -126,7 +122,7 @@ namespace corsika::process::qgsjetII {
           GetStackData().GetId(GetIndex()));
     }
 
-    MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }
+    MomentumVector GetMomentum(const corsika::geometry::CoordinateSystem& coordinateSystem) const { return GetStackData().GetMomentum(GetIndex(), coordinateSystem); }
 
     void SetMomentum(const MomentumVector& v) {
       GetStackData().SetMomentum(GetIndex(), v);
