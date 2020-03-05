@@ -22,13 +22,7 @@ config-u-18_04:
   variables:
     CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
-    - echo $PWD
-    - echo $CI_BUILDS_DIR
-    - echo $CI_PROJECT_DIR
-    - echo $CORSIKA_DATA
-    - ls
     - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git    
-    - ls $CORSIKA_DATA
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
