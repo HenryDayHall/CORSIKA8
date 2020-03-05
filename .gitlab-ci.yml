@@ -36,6 +36,7 @@ config-u-18_04:
     expire_in: 1 day
     paths:
        - build
+       - corsika-data
 
 # job/stage to just prepare cmake
 config-clang-8:
@@ -54,6 +55,7 @@ config-clang-8:
     expire_in: 1 day
     paths:
        - build
+       - corsika-data
 
 # normal pipeline for each commit
 build-test-u-18_04: 
