@@ -19,7 +19,10 @@ config-u-18_04:
   stage: config
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git    
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
@@ -27,6 +30,7 @@ config-u-18_04:
     expire_in: 1 day
     paths:
        - build
+       - corsika-data
 
 # job/stage to just prepare cmake
 config-clang-8:
@@ -34,7 +38,10 @@ config-clang-8:
   stage: config
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_BUILDS_DIR}/AirShowerPhysics/corsika/corsika-data/"
   script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
@@ -42,6 +49,7 @@ config-clang-8:
     expire_in: 1 day
     paths:
        - build
+       - corsika-data
 
 # normal pipeline for each commit
 build-test-u-18_04: 
@@ -51,6 +59,8 @@ build-test-u-18_04:
   stage: build_test
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake --build . -- -j4
@@ -73,6 +83,8 @@ build-test-clang-8:
   stage: build_test
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake --build . -- -j4
@@ -95,6 +107,8 @@ release-u-18_04:
   stage: optional
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -119,6 +133,8 @@ release-clang-8:
   stage: optional
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -143,6 +159,8 @@ release-clang-8:
   stage: optional
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
@@ -176,6 +194,8 @@ documentation:
   stage: optional
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake --build . --target doxygen -- -j4
@@ -196,6 +216,8 @@ sanity:
   stage: optional
   tags:
     - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
     - cd build
     - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON
