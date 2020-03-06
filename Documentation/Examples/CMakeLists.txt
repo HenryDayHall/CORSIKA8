@@ -90,7 +90,7 @@ target_link_libraries (vertical_EAS
   CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
-  ProcessPythia
+ # ProcessPythia
   ProcessUrQMD
   ProcessSwitch
   CORSIKAcascade
