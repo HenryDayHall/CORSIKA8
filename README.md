@@ -60,6 +60,10 @@ CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-6.0.0.
 Additional software prerequisites: eigen3, boost, cmake, g++, git. 
 However, eigen3 is shipped in ThirdParty directory, so any installation 
 on the system is optional. 
+In case one wants to use Pythia 8 for particle decays or to simulate showers
+in a proton environment, Pythia has to be installed on your system and 
+switched ON in CMakeLists.txt. We test with Pythia version 8.235.
+
 On a bare Ubuntu 18.04, just add:
 ```
 sudo apt install cmake g++ git

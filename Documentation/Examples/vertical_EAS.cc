@@ -28,11 +28,9 @@
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 
-//~ #include <corsika/process/sibyll/Decay.h>
+#include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-
-#include <corsika/process/pythia/Decay.h>
 
 #include <corsika/process/urqmd/UrQMD.h>
 
@@ -65,7 +63,7 @@ using namespace corsika::units::si;
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  //random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
 
   random::RNGManager::GetInstance().SeedAll();
@@ -139,15 +137,10 @@ int main() {
 
   // setup processes, decays and interactions
 
-  const std::vector<particles::Code> trackedHadrons = {
-      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  //~ process::sibyll::Decay decay(trackedHadrons);
+  process::sibyll::Decay decay;
 
-  process::pythia::Decay decay(trackedHadrons);
   process::particle_cut::ParticleCut cut(5_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
