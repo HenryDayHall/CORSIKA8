@@ -245,11 +245,7 @@ namespace corsika::process::qgsjetII {
       const auto targetCode =
           mediumComposition.SampleTarget(cross_section_of_components, fRNG);
       cout << "Interaction: target selected: " << targetCode << endl;
-      /*
-        FOR NOW: allow nuclei with A<18 or protons only.
-        when medium composition becomes more complex, approximations will have to be
-        allowed air in atmosphere also contains some Argon.
-      */
+
       int targetQgsCode = -1;
       if (particles::IsNucleus(targetCode))
         targetQgsCode = particles::GetNucleusA(targetCode);
