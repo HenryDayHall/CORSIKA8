@@ -11,8 +11,7 @@ PiPlus       1 1
 PiMinus     -1 1
 # in crmc: all particles from 100 to 999 ???
 Eta         10 1
-# Eta        -10 1 there is no anti-eta
-Rho0        19 1
+Rho0        -10 1
 
 # class 2
 #Nucleus      40 2
