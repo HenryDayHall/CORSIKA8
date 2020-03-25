@@ -20,6 +20,7 @@ change/improve them.
   - Proposed code to close one issue (located in a specific git
     branch) is reviewed, discussed, and eventually merged
     into the master branch to close the issue.
+  - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy 
 
 
 ## Code formatting
@@ -64,7 +65,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
          return plane_normal.dot(plane.GetCenter()-line.GetPosition()) / plane_normal.dot(line_direction);     
          }
   ```
-  and not 
+    and not 
   ```
        TimeType TimeOfIntersection(Line const& l, Plane const& p) {
          auto const d = p.GetCenter() - l.GetR0();     
@@ -74,7 +75,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
          return n.dot(d) / c;     
          }
   ```
-  This actually is suffient to document the code, no further comments should be added in such cases. Only if further clarification is needed.  
+    This actually is suffient to document the code, no further comments should be added in such cases. Only if further clarification is needed.  
 
   - We use namespaces to avoid clashes and to structure code
     - *Everything* is part of one of those namespaces:
@@ -102,7 +103,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
 ## Coding rules
 
   - Code may not introduce any compiler errors, or warnings (latter: on current CI runners)
-  - All unit tests must succeed at all times. If tests fail, code is not merged.
+  - All unit tests must succeed (minimally) on the specified systems/configurations on gitlab-ci. If tests fail, code is not merged.
   - We use C++17 concepts wherever useful and helpful
   - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
   - We never catch exceptions for error handling, there might be very few special exceptions from this. We need to discuss such cases.
@@ -140,6 +141,7 @@ Since cmake itself lacks structure almost entirely:
     ```
   - add plenty of comments to all cmake code
   - use expressive variables and functions
+
 
 ## Release versioning scheme
 
