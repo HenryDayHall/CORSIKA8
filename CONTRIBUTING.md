@@ -48,7 +48,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
 
   - Classes and structs start with capital letters ```LikeThis```
   - Class member variables start non-captial and have a trailing "_" ```likeThis_```
-  - Class member functions start with small letters ```LikeThis::doSomething(...)```
+  - Class member functions start with small letters ```LikeThis::doSomething(...)``` or ```LikeThis::do_something(...)```
   - Any class setter begins with "set_" ```LikeThis::set_something(...)```
   - Any class getter is named accoring to its property: ```LikeThis::something()```
   - Logical getters may start with ```is_``` or ```has_```
@@ -56,13 +56,25 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - Named variables start with small letter ```likeThis```
   - types in template definitions start with "T" ```TLikeThis```
   
-  - use names that explain and document the code, thus
-  ```
+  - use names that explain and document the code, thus for example
+  ``` 
+     TimeType TimeOfIntersection(Line const& line, Plane const& plane) {
+         auto const line_direction = line.GetDirection();     
+         auto const plane_normal = plane.GetNormal();     
+         return plane_normal.dot(plane.GetCenter()-line.GetPosition()) / plane_normal.dot(line_direction);     
+         }
   ```
   and not 
   ```
+       TimeType TimeOfIntersection(Line const& l, Plane const& p) {
+         auto const d = p.GetCenter() - l.GetR0();     
+         auto const v = l.GetV0();     
+         auto const n = p.GetNormal();     
+         auto const c = n.dot(v);    
+         return n.dot(d) / c;     
+         }
   ```
-  This actually is suffient to document the code, no futher comments should be added in such case. 
+  This actually is suffient to document the code, no further comments should be added in such cases. Only if further clarification is needed.  
 
   - We use namespaces to avoid clashes and to structure code
     - *Everything* is part of one of those namespaces:
@@ -98,13 +110,13 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - Everything that does not need to be visible to the outside of a class/struct should be `private` or `protected`
   - We prefer the use of references, wherever useful
   - There cannot be any pointer in the interface of any class or object
-    exposed to outside users, there might be pointers for very special cases
+    exposed to outside users, there might be (technical) pointers for very special cases
     inside of classes.
   - When you contribute new code, or extend existing code, at the same time provide unit-tests for all functionality.
   - When you contribute new physics algorithms, in addition you also need to provide a validation module (this is still TBD what exactly this means)
   - Code must be documented with `doxygen` commands extensively -> MAKE THIS INVESTMENT OF YOUR TIME EARLY, IT REALLY HELPS
   - There should not be any useless comments in code, in particular absolutely avoid to commit commented-out debug remnants
-  - Add (extensively) meaningful comments to the code (only in English)
+  - Add sufficient and meaningful comments to the code (only in English)
   
 ## CMAKE formatting
 
