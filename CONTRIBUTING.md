@@ -46,37 +46,42 @@ e.g. [link1](https://clangformat.com/) or
 
 While `clang-format` does the structural formatting, we still need to agree on naming conventions:
 
-  - Classes and structs start with capital letters
-  - Class member variables start with "f"
-  - Any static variable has a "g" prefix. A static member variable starts with "fg"
-  - Class member functions start with capital letters
-  - Any class getter begins with "Get", and setter with "Set". Logical getters start with "Is" or "Has".
-  - enums should be "enum class" 
-  - Function parameter names start with "v"
-  - types in template definitions start with "T"
-  - Normal variable names in code start non-capital. To avoid confusion with these special identifiers
-    described above in case an identifier starts with `v`, `T`, `f`, `fg`, or `g`, this prefix may not be
-    followed by a capital letter. i.e. `funkyVariable` is allowed while `vLooksLikeArgument` is not.
+  - Classes and structs start with capital letters ```LikeThis```
+  - Class member variables start non-captial and have a trailing "_" ```likeThis_```
+  - Class member functions start with small letters ```LikeThis::doSomething(...)```
+  - Any class setter begins with "set_" ```LikeThis::set_something(...)```
+  - Any class getter is named accoring to its property: ```LikeThis::something()```
+  - Logical getters may start with ```is_``` or ```has_```
+  - enums should be ```enum class``` 
+  - Named variables start with small letter ```likeThis```
+  - types in template definitions start with "T" ```TLikeThis```
+  
+  - use names that explain and document the code, thus
+  ```
+  ```
+  and not 
+  ```
+  ```
+  This actually is suffient to document the code, no futher comments should be added in such case. 
 
   - We use namespaces to avoid clashes and to structure code
-    - *Everything* is part of the corsika namespace
+    - *Everything* is part of one of those namespaces:
+       - ```corsika::framework```, ```corsika::physics```, or ```corsika::process```
     - All classes and objects are encapsulated into suited sub-namespaces,
-      thus corsika::geometry, corsika::processes, corsika::units, etc.
+      thus ```corsika::framework::geometry```, ```corsika::physics::process```, ```corsika::physics::units```, etc.
     - Namespace names do not use capital letters.  
-    - Every header file is copied during build and install into
-      "include/corsika/[namespace]" which also means, each header file
-      can only provide definitions for a _single_ namespace. It is one
-      main purpose of namespaces to structure the location of header
-      files.
-    - Each header file must include a `#pragma once` immediately below 
-      the copyright statement.
-    - Header files should always be included with `<..>`, thus,
-      `#include <corsika/geometry/Point.h>` since the build system
-      will always provide the correct include directives (and files
-      anyway cannot be found in file-system paths, which generally do
-      not follow the namespace naming conventions outlined
-      here).
-
+  - Every header file is located in the source tree in ```include/corsika/[namespace]```, which also means that in almost all cases each header file
+    can only provide definitions for a _single_ namespace. It is one
+    main purpose of namespaces to structure the location of header
+    files.
+  - Each header file uses an include protection ```#pragma once```
+    immediately below the copyright statement.
+  - Header files should always be included with `<..>`, thus,
+    `#include <corsika/geometry/Point.h>` since the build system
+    will always provide the correct include directives (and files
+    anyway cannot be found in file-system paths, which generally do
+    not follow the namespace naming conventions outlined
+    here).
   - Header files are named after the main class (or object) they
     define. This also means each header file name starts with a
     capital letter.
@@ -89,7 +94,7 @@ While `clang-format` does the structural formatting, we still need to agree on n
   - We use C++17 concepts wherever useful and helpful
   - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
   - We never catch exceptions for error handling, there might be very few special exceptions from this. We need to discuss such cases.
-  - Everything that should not change should be `const`
+  - Everything that should not change should be ```const```
   - Everything that does not need to be visible to the outside of a class/struct should be `private` or `protected`
   - We prefer the use of references, wherever useful
   - There cannot be any pointer in the interface of any class or object
