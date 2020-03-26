@@ -102,17 +102,19 @@ While `clang-format` does the structural formatting, we still need to agree on n
 
 ## Coding rules
 
-  - Code may not introduce any compiler errors, or warnings (latter: on current CI runners)
-  - All unit tests must succeed (minimally) on the specified systems/configurations on gitlab-ci. If tests fail, code is not merged.
-  - We use C++17 concepts wherever useful and helpful
+  - Warnings should be fixed, when they appear on the system(s) currently used by the CI, by altering the code unless the warning originates from third-party code and cannot be fixed. In that case, the warning should be locally silenced with appropriate pragmas or by locally turning off warnings for that translation unit. 
+  - All unit tests must succeed on the specified systems/configurations on gitlab-ci. If tests fail, code is not merged.
+  - The unit test code coverage should not decrease due to a new merge request. 
+  - We use C++17 features wherever useful and helpful. 
   - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
   - We never catch exceptions for error handling, there might be very few special exceptions from this. We need to discuss such cases.
   - Everything that should not change should be ```const```
   - Everything that does not need to be visible to the outside of a class/struct should be `private` or `protected`
   - We prefer the use of references, wherever useful
-  - There cannot be any pointer in the interface of any class or object
-    exposed to outside users, there might be (technical) pointers for very special cases
+  - There cannot be any raw pointer in the interface of any class or object
+    exposed to outside users, there might be (technical) raw pointers for very special cases
     inside of classes.
+  - (member)functions that do something (are not just getters/setters), model actions or transformations, and should therefore be verbs. Classes are nouns.
   - When you contribute new code, or extend existing code, at the same time provide unit-tests for all functionality.
   - When you contribute new physics algorithms, in addition you also need to provide a validation module (this is still TBD what exactly this means)
   - Code must be documented with `doxygen` commands extensively -> MAKE THIS INVESTMENT OF YOUR TIME EARLY, IT REALLY HELPS
@@ -141,6 +143,7 @@ Since cmake itself lacks structure almost entirely:
     ```
   - add plenty of comments to all cmake code
   - use expressive variables and functions
+
 
 
 ## Release versioning scheme
