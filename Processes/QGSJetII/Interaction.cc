@@ -22,6 +22,9 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/utl/COMBoost.h>
 
+#include <corsika/random/RNGManager.h>
+#include <corsika/random/UniformRealDistribution.h>
+
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -211,6 +214,9 @@ namespace corsika::process::qgsjetII {
       int beamA = 0;
       if (particles::IsNucleus(corsikaBeamId)) beamA = vP.GetNuclearA();
 
+      const HEPEnergyType projectileEnergyLabPerNucleon =
+	particles::IsNucleus(corsikaBeamId) ? projectileEnergyLab/beamA : projectileEnergyLab;
+      
       cout << "Interaction: ebeam lab: " << projectileEnergyLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << projectileMomentumLab.GetComponents() / 1_GeV
            << endl;
@@ -242,8 +248,8 @@ namespace corsika::process::qgsjetII {
         cross_section_of_components[i] = sigProd;
       }
 
-      const auto targetCode =
-          mediumComposition.SampleTarget(cross_section_of_components, fRNG);
+      const auto targetCode = 
+          mediumComposition.SampleTarget(cross_section_of_components, rng_);
       cout << "Interaction: target selected: " << targetCode << endl;
 
       int targetQgsCode = -1;
@@ -262,29 +268,39 @@ namespace corsika::process::qgsjetII {
         throw std::runtime_error("QgsjetII target outside range.");
 
       // beam id for qgsjetII
-      int kBeam = 2; // default: proton Shouldn't we randomize neutron/proton for nuclei?
-      if (corsikaBeamId != particles::Code::Nucleus) {
-        kBeam = process::qgsjetII::ConvertToQgsjetIIRaw(corsikaBeamId);
+      std::uniform_real_distribution<double> select;
+
+      QgsjetIICode qgsjet_beam_code;
+      if (corsikaBeamId == particles::Code::Nucleus) {	
+	if (select(rng_)>0.5)
+	  qgsjet_beam_code = QgsjetIICode::Proton;
+	else
+	  qgsjet_beam_code = QgsjetIICode::Neutron;
+      } else { // it is a nucleus
+        qgsjet_beam_code = process::qgsjetII::ConvertToQgsjetII(corsikaBeamId);
         // from conex
-        if (kBeam == 0) { // replace pi0 or rho0 with pi+/pi-
-          static int select = 1;
-          kBeam = select;
-          select *= -1;
+        if (qgsjet_beam_code == QgsjetIICode::Pi0 or
+	    qgsjet_beam_code == QgsjetIICode::Rho0) { // replace pi0 or rho0 with pi+/pi- in alternating sequence
+	  static QgsjetIICode alternate = QgsjetIICode::PiPlus;
+	  qgsjet_beam_code = alternate;
+	  alternate = (alternate == QgsjetIICode::PiPlus ? QgsjetIICode::PiMinus : QgsjetIICode::PiPlus);
         }
         // replace lambda by neutron
-        if (kBeam == 6)
-          kBeam = 3;
-        else if (kBeam == -6)
-          kBeam = -3;
-        // else if (abs(kBeam)>6) -> throw
+        if (qgsjet_beam_code == QgsjetIICode::Lambda0)
+          qgsjet_beam_code = QgsjetIICode::Neutron;
+        else if (qgsjet_beam_code == QgsjetIICode::Lambda0Bar)
+          qgsjet_beam_code = QgsjetIICode::AntiNeutron;
+        // else if (abs(qgsjet_beam_code)>6) -> throw
       }
 
+      int qgsjet_beam_code_int = static_cast<QgsjetIICodeIntType>(qgsjet_beam_code);
+      
       cout << "Interaction: "
            << " DoInteraction: E(GeV):" << projectileEnergyLab / 1_GeV << endl;
       count_++;
-      qgini_(projectileEnergyLab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
+      qgini_(projectileEnergyLab / 1_GeV, qgsjet_beam_code_int, projQgsCode, targetQgsCode);
       // this is from CRMC, is this REALLY needed ???
-      qgini_(projectileEnergyLab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
+      qgini_(projectileEnergyLab / 1_GeV, qgsjet_beam_code_int, projQgsCode, targetQgsCode);
       qgconf_();
       
       // bookkeeping
@@ -298,23 +314,32 @@ namespace corsika::process::qgsjetII {
       geometry::CoordinateSystem const zAxisFrame =
 	originalCS.RotateToZ(projectileMomentumLab);
       
-      // fragments
+      // nuclear projectile fragments
       QGSJetIIFragmentsStack qfs;
       for (auto& fragm : qfs) {
         particles::Code idFragm = particles::Code::Nucleus;
-        int A = fragm.GetFragmentSize();
+        const int A = fragm.GetFragmentSize();
         int Z = 0;
         switch (A) {
           case 1: { // proton/neutron
-            idFragm = particles::Code::Proton;
+	    std::uniform_real_distribution<double> select;
+	    if (select(rng_)>0.5) {
+	      idFragm = particles::Code::Proton;
+	      Z = 1;
+	    } else {
+	      idFragm = particles::Code::Neutron;
+	      Z = 0;
+	    }
 
+	    const HEPMassType projectileMass = particles::GetMass(idFragm);
+	      
 	    auto momentum = geometry::Vector(
 					     zAxisFrame,
 					     corsika::geometry::QuantityVector<hepmomentum_d>{0.0_GeV, 0.0_GeV,
-						 sqrt((projectileEnergyLab + particles::Proton::GetMass()) *
-						      (projectileEnergyLab - particles::Proton::GetMass()))});
+						 sqrt((projectileEnergyLab + projectileMass) *
+						      (projectileEnergyLab - projectileMass))});
 	    
-	    auto const energy = sqrt(momentum.squaredNorm() + square(particles::GetMass(idFragm)));	    
+	    auto const energy = sqrt(momentum.squaredNorm() + square(projectileMass));	    
 	    momentum.rebase(originalCS); // transform back into standard lab frame
 	    std::cout << "secondary fragment> id=" << idFragm << " p=" << momentum.GetComponents() << std::endl;
             auto pnew = vP.AddSecondary(
@@ -340,13 +365,14 @@ namespace corsika::process::qgsjetII {
         }
 
         if (idFragm == particles::Code::Nucleus) {
-	    auto momentum = geometry::Vector(
+	  const HEPMassType nucleusMass = particles::Proton::GetMass() * Z + particles::Neutron::GetMass() * (A-Z);	  
+	  auto momentum = geometry::Vector(
 					     zAxisFrame,
 					     geometry::QuantityVector<hepmomentum_d>{0.0_GeV, 0.0_GeV,
-						 sqrt((projectileEnergyLab + constants::nucleonMass * A) *
-						      (projectileEnergyLab - constants::nucleonMass * A))});
+						 sqrt((projectileEnergyLabPerNucleon*A + nucleusMass) *
+						      (projectileEnergyLabPerNucleon*A - nucleusMass))});
 	    
-	    auto const energy = sqrt(momentum.squaredNorm() + square(constants::nucleonMass*A));	    
+	    auto const energy = sqrt(momentum.squaredNorm() + square(nucleusMass));	    
 	    momentum.rebase(originalCS); // transform back into standard lab frame
 	    std::cout << "secondary fragment> id=" << idFragm << " p=" << momentum.GetComponents() << " A=" << A << " Z=" << Z << std::endl;
             auto pnew = vP.AddSecondary(

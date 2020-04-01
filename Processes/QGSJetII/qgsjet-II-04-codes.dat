@@ -1,5 +1,5 @@
 # input file for particle conversion to/from QGSJet
-# the format of this file is: "corsika-identifier" "qgsjet-id" "hadron-class for x-section"
+# the format of this file is: "corsika-identifier" "qgsjet-id" 
 
 # class 0 (cannot interact)
 Electron    11 0
