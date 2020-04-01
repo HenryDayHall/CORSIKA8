@@ -13,6 +13,7 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
+#include <corsika/process/qgsjetII/ParticleConversion.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 
@@ -25,6 +26,7 @@ namespace corsika::process::qgsjetII {
     std::string data_path_;
     int count_ = 0;
     bool initialized_ = false;
+    QgsjetIICode alternate_ = QgsjetIICode::PiPlus; // for pi0, rho0 projectiles
 
   public:
     Interaction(const std::string& dataPath = "");
@@ -58,7 +60,7 @@ namespace corsika::process::qgsjetII {
   private:
     corsika::random::RNG& rng_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("qgran");
-    const int maxMassNumber_ = 208;
+    static constexpr int maxMassNumber_ = 208;
   };
 
 } // namespace corsika::process::qgsjetII
