@@ -26,7 +26,8 @@ namespace corsika::process::qgsjetII {
     std::string data_path_;
     int count_ = 0;
     bool initialized_ = false;
-    QgsjetIICode alternate_ = QgsjetIICode::PiPlus; // for pi0, rho0 projectiles
+    QgsjetIIHadronType alternate_ =
+        QgsjetIIHadronType::PiPlusType; // for pi0, rho0 projectiles
 
   public:
     Interaction(const std::string& dataPath = "");

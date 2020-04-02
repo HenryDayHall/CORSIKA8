@@ -2051,7 +2051,7 @@ c216   format(2x,'qgaini: integrated cut Pomeron eikonals')
 
 c=============================================================================
       subroutine qgini(e0n,icp0,iap,iat)
-c-----------------------------------------------------------------------------
+c---------------------s--------------------------------------------------------
 c additional initialization procedure
 c e0n  - interaction energy (per hadron/nucleon),
 c icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~),

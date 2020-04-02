@@ -14,14 +14,67 @@ import pickle, sys, itertools
 
 
 # loads the pickled particle_db (which is an OrderedDict)
+# definition of particle_db dict is: "name", "antiName", "pdg", "mass", "electric_charge", "lifetime", "ngc_code", "isNucleus", "isHadron"
 def load_particledb(filename):
     with open(filename, "rb") as f:
         particle_db = pickle.load(f)
     return particle_db
 
 
+def set_default_qgsjetII_definition(particle_db):
+    for identifier, pData in particle_db.items():
+        # the cross-section types
+        xsType = "CannotInteract"
+        hadronType = "UndefinedType"
+        if (pData['isNucleus']):
+            xsType = "Baryons"
+            hadronType = "NucleusType"
+        elif (pData['isHadron']):
+            pdg = abs(pData['pdg'])
+            anti = pData['pdg'] < 0
+            isBaryon = (1000 <= pdg < 4000)
+            charge = pData['electric_charge']
+            if (pdg>=100 and pdg<300 and pdg!=130): # light mesons
+                xsType = "LightMesons"
+                if (charge==0):
+                    hadronType = "NeutralLightMesonType"
+                else:
+                    if (charge>0):
+                        hadronType = "PiPlusType"
+                    else:
+                        hadronType = "PiMinusType"               
+            elif ((pdg>=300 and pdg<400) or pdg in [130, 10313, 10323]): # kanos
+                xsType = "Kaons"
+                if (charge>0):
+                    hadronType = "KaonPlusType"
+                else:
+                    hadronType = "KaonMinusType"
+                if (charge==0):
+                    hadronType = "Kaon0SType"
+                    if (pdg == 130):
+                        hadronType = "Kaon0LType"
+                    elif (pdg == 310):
+                        hadronType = "Kaon0SType"
+            elif (isBaryon or pData['isNucleus']): # baryons
+                xsType = "Baryons"
+                if (charge==0):
+                    if (anti):
+                        hadronType = "AntiNeutronType"
+                    else: 
+                        hadronType = "NeutronType"
+                else:
+                    if (charge>0):
+                        hadronType = "ProtonType"
+                    else:
+                        hadronType = "AntiProtonType"
+            # all othe not-captured cased are hopefully irrelevant
+            
 
-# 
+        pData['qgsjetII_xsType'] = xsType
+        pData['qgsjetII_hadronType'] = hadronType
+
+            
+# read the qgsjet-codes data file
 def read_qgsjetII_codes(filename, particle_db):
     with open(filename) as f:
         for line in f:
@@ -33,13 +86,11 @@ def read_qgsjetII_codes(filename, particle_db):
             identifier, model_code, xsType = line.split()
             try:
                 particle_db[identifier]["qgsjetII_code"] = int(model_code)
-                particle_db[identifier]["qgsjetII_xsType"] = int(xsType)
+                particle_db[identifier]["qgsjetII_xsType"] = xsType
             except KeyError as e:
                 raise Exception("Identifier '{:s}' not found in particle_db".format(identifier))
 
-
             
-
 # generates the enum to access qgsjetII particles by readable names
 def generate_qgsjetII_enum(particle_db):
     output = "enum class QgsjetIICode : int8_t {\n"
@@ -48,7 +99,6 @@ def generate_qgsjetII_enum(particle_db):
             output += "  {:s} = {:d},\n".format(identifier, pData['qgsjetII_code'])
     output += "};\n"
     return output
-
 
 
 # generates the look-up table to convert corsika codes to qgsjetII codes
@@ -61,13 +111,22 @@ def generate_corsika2qgsjetII(particle_db):
     return string
     
 
-
 # generates the look-up table to convert corsika codes to qgsjetII codes
 def generate_corsika2qgsjetII_xsType(particle_db):    
-    string = "std::array<int, {:d}> constexpr corsika2qgsjetIIXStype = {{\n".format(len(particle_db))
+    string = "std::array<QgsjetIIXSClass, {:d}> constexpr corsika2qgsjetIIXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
-        modelCodeXS = pData.get("qgsjetII_xsType", -1)
-        string += "  {:d}, // {:s}\n".format(modelCodeXS, identifier if modelCodeXS else identifier + " (not implemented in QGSJETII)")
+        modelCodeXS = pData.get("qgsjetII_xsType", "CannotInteract")
+        string += "  QgsjetIIXSClass::{:s}, // {:s}\n".format(modelCodeXS, identifier if modelCodeXS else identifier + " (not implemented in QGSJETII)")
+    string += "};\n"
+    return string
+
+
+# generates the look-up table to convert corsika codes to qgsjetII codes
+def generate_corsika2qgsjetII_hadronType(particle_db):    
+    string = "std::array<QgsjetIIHadronType, {:d}> constexpr corsika2qgsjetIIHadronType = {{\n".format(len(particle_db))
+    for identifier, pData in particle_db.items():
+        modelCode = pData.get("qgsjetII_hadronType", "UndefinedType")
+        string += "  QgsjetIIHadronType::{:s}, // {:s}\n".format(modelCode, identifier if modelCode else identifier + " (not implemented in QGSJETII)")
     string += "};\n"
     return string
 
@@ -98,6 +157,7 @@ def generate_qgsjetII2corsika(particle_db) :
     string += "};\n"
     return string
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("usage: {:s} <particle_db.pkl> <qgsjetII_codes.dat>".format(sys.argv[0]), file=sys.stderr)
@@ -107,6 +167,7 @@ if __name__ == "__main__":
     
     particle_db = load_particledb(sys.argv[1])
     read_qgsjetII_codes(sys.argv[2], particle_db)
+    set_default_qgsjetII_definition(particle_db)
     
     with open("Generated.inc", "w") as f:
         print("// this file is automatically generated\n// edit at your own risk!\n", file=f)
@@ -114,3 +175,4 @@ if __name__ == "__main__":
         print(generate_corsika2qgsjetII(particle_db), file=f)
         print(generate_qgsjetII2corsika(particle_db), file=f)
         print(generate_corsika2qgsjetII_xsType(particle_db), file=f)
+        print(generate_corsika2qgsjetII_hadronType(particle_db), file=f)

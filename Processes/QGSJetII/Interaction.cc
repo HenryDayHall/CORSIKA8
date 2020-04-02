@@ -21,9 +21,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/utl/COMBoost.h>
 
-#include <corsika/random/RNGManager.h>
-#include <corsika/random/UniformRealDistribution.h>
-
+#include <random>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -55,9 +53,6 @@ namespace corsika::process::qgsjetII {
   Interaction::~Interaction() { cout << "QgsjetII::Interaction n=" << count_ << endl; }
 
   void Interaction::Init() {
-
-    using random::RNGManager;
-
     // initialize QgsjetII
     if (!initialized_) {
       qgset_();
@@ -76,7 +71,7 @@ namespace corsika::process::qgsjetII {
 
     if (process::qgsjetII::CanInteract(beamId)) {
 
-      const int iBeam = process::qgsjetII::GetQgsjetIIXSCode(beamId);
+      const int iBeam = process::qgsjetII::GetQgsjetIIXSCodeRaw(beamId);
       int iTarget = 1;
       if (particles::IsNucleus(targetId)) {
         iTarget = targetA;
@@ -253,56 +248,47 @@ namespace corsika::process::qgsjetII {
           mediumComposition.SampleTarget(cross_section_of_components, rng_);
       cout << "Interaction: target selected: " << targetCode << endl;
 
-      int targetQgsCode = -1;
-      if (particles::IsNucleus(targetCode))
-        targetQgsCode = particles::GetNucleusA(targetCode);
-      if (targetCode == particles::Proton::GetCode()) targetQgsCode = 1;
-      cout << "Interaction: target qgsjetII code/A: " << targetQgsCode << endl;
-      if (targetQgsCode > maxMassNumber_ || targetQgsCode < 1)
-        throw std::runtime_error("QgsjetII target outside range.");
-
-      int projQgsCode = 1;
-      if (particles::IsNucleus(corsikaBeamId)) projQgsCode = vP.GetNuclearA();
-      cout << "Interaction: projectile qgsjetII code/A: " << projQgsCode << " "
-           << corsikaBeamId << endl;
-      if (projQgsCode > maxMassNumber_ || projQgsCode < 1)
-        throw std::runtime_error("QgsjetII target outside range.");
-
-      // beam id for qgsjetII
-      QgsjetIICode qgsjet_beam_code;
-      if (corsikaBeamId == particles::Code::Nucleus) {
-        std::array<QgsjetIICode, 2> constexpr nucleons = {QgsjetIICode::Proton,
-                                                          QgsjetIICode::Neutron};
-        std::uniform_int_distribution select(0, 1);
-        qgsjet_beam_code = nucleons[select(rng_)];
-      } else { // it is an "elementary" particle
-        qgsjet_beam_code = process::qgsjetII::ConvertToQgsjetII(corsikaBeamId);
-        // from conex
-        if (qgsjet_beam_code == QgsjetIICode::Pi0 or
-            qgsjet_beam_code == QgsjetIICode::Rho0) { // replace pi0 or rho0 with pi+/pi-
-                                                      // in alternating sequence
-          qgsjet_beam_code = alternate_;
-          alternate_ = (alternate_ == QgsjetIICode::PiPlus ? QgsjetIICode::PiMinus
-                                                           : QgsjetIICode::PiPlus);
-        }
-        // replace lambda by neutron
-        if (qgsjet_beam_code == QgsjetIICode::Lambda0)
-          qgsjet_beam_code = QgsjetIICode::Neutron;
-        else if (qgsjet_beam_code == QgsjetIICode::Lambda0Bar)
-          qgsjet_beam_code = QgsjetIICode::AntiNeutron;
-        // else if (abs(qgsjet_beam_code)>6) -> throw
+      int targetMassNumber = 1;               // proton
+      if (particles::IsNucleus(targetCode)) { // nucleus
+        targetMassNumber = particles::GetNucleusA(targetCode);
+        if (targetMassNumber > maxMassNumber_)
+          throw std::runtime_error("QgsjetII target mass outside range.");
+      } else {
+        if (targetCode != particles::Proton::GetCode())
+          throw std::runtime_error("QgsjetII Taget not possible.");
       }
+      cout << "Interaction: target qgsjetII code/A: " << targetMassNumber << endl;
 
-      int qgsjet_beam_code_int = static_cast<QgsjetIICodeIntType>(qgsjet_beam_code);
+      int projectileMassNumber = 1; // "1" means "hadron"
+      QgsjetIIHadronType qgsjet_hadron_type =
+          process::qgsjetII::GetQgsjetIIHadronType(corsikaBeamId);
+      if (qgsjet_hadron_type == QgsjetIIHadronType::NucleusType) {
+        projectileMassNumber = vP.GetNuclearA();
+        if (projectileMassNumber > maxMassNumber_)
+          throw std::runtime_error("QgsjetII projectile mass outside range.");
+        std::array<QgsjetIIHadronType, 2> constexpr nucleons = {
+            QgsjetIIHadronType::ProtonType, QgsjetIIHadronType::NeutronType};
+        std::uniform_int_distribution select(0, 1);
+        qgsjet_hadron_type = nucleons[select(rng_)];
+      } else {
+        // from conex: replace pi0 or rho0 with pi+/pi- in alternating sequence
+        if (qgsjet_hadron_type == QgsjetIIHadronType::NeutralLightMesonType) {
+          qgsjet_hadron_type = alternate_;
+          alternate_ = (alternate_ == QgsjetIIHadronType::PiPlusType
+                            ? QgsjetIIHadronType::PiMinusType
+                            : QgsjetIIHadronType::PiPlusType);
+        }
+      }
+      cout << "Interaction: projectile qgsjetII code/A: " << projectileMassNumber << " "
+           << corsikaBeamId << endl;
+
+      int qgsjet_hadron_type_int = static_cast<QgsjetIICodeIntType>(qgsjet_hadron_type);
 
       cout << "Interaction: "
            << " DoInteraction: E(GeV):" << projectileEnergyLab / 1_GeV << endl;
       count_++;
-      qgini_(projectileEnergyLab / 1_GeV, qgsjet_beam_code_int, projQgsCode,
-             targetQgsCode);
-      // this is from CRMC, is this REALLY needed ???
-      qgini_(projectileEnergyLab / 1_GeV, qgsjet_beam_code_int, projQgsCode,
-             targetQgsCode);
+      qgini_(projectileEnergyLab / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber,
+             targetMassNumber);
       qgconf_();
 
       // bookkeeping
