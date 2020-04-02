@@ -49,10 +49,14 @@ TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("cross-section type") {
 
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) == 2);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) == 3);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) == 2);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) == 1);
+    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) ==
+            process::qgsjetII::QgsjetIIXSClass::Baryons);
+    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) ==
+            process::qgsjetII::QgsjetIIXSClass::Kaons);
+    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) ==
+            process::qgsjetII::QgsjetIIXSClass::Baryons);
+    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) ==
+            process::qgsjetII::QgsjetIIXSClass::LightMesons);
   }
 }
 
