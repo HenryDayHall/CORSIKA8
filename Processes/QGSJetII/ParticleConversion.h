@@ -50,8 +50,8 @@ namespace corsika::process::qgsjetII {
     Kaon0LType = +5,
     Kaon0SType = -5,
     // special codes, not in QGSJetII
-    NucleusType,
-    NeutralLightMesonType
+    NucleusType = 100,
+    NeutralLightMesonType = 101,
   };
   using QgsjetIIHadronTypeIntType = std::underlying_type<QgsjetIIHadronType>::type;
 

@@ -71,7 +71,7 @@ namespace corsika::process::qgsjetII {
 
     if (process::qgsjetII::CanInteract(beamId)) {
 
-      const int iBeam = process::qgsjetII::GetQgsjetIIXSCodeRaw(beamId);
+      const int xsCode = process::qgsjetII::GetQgsjetIIXSCodeRaw(beamId);
       int iTarget = 1;
       if (particles::IsNucleus(targetId)) {
         iTarget = targetA;
@@ -88,9 +88,9 @@ namespace corsika::process::qgsjetII {
           throw std::runtime_error("QgsjetII target outside range. ");
       }
 
-      cout << "QgsjetII::GetCrossSection Elab=" << Elab << " iBeam=" << iBeam
+      cout << "QgsjetII::GetCrossSection Elab=" << Elab << " xs-code=" << xsCode
            << " iProjectile=" << iProjectile << " iTarget=" << iTarget << endl;
-      sigProd = qgsect_(Elab / 1_GeV, iBeam, iProjectile, iTarget);
+      sigProd = qgsect_(Elab / 1_GeV, xsCode, iProjectile, iTarget);
       cout << "QgsjetII::GetCrossSection sigProd=" << sigProd << endl;
     }
 
