@@ -88,3 +88,9 @@ target_link_libraries (
   ProcessUrQMD
   CORSIKAtesting
   )
+
+add_executable(urqmd_xs urqmd_xs.cc)
+target_link_libraries(urqmd_xs
+	ProcessUrQMD
+	CORSIKAparticles
+)
