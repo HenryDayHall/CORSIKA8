@@ -30,8 +30,9 @@ using SetupProjectile = corsika::setup::StackView::StackIterator;
 
 CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
                                         corsika::particles::Code vTargetCode,
-                                        HEPEnergyType vLabEnergy, int vAProjectile = 1) {
-  // the following is a translation of ptsigtot() into C++
+                                        HEPEnergyType vLabEnergy,
+                                        int vAProjectile) const {
+  // the following is a (incomplete!) translation of ptsigtot() into C++
   if (vProjectileCode != particles::Code::Nucleus &&
       !IsNucleus(vTargetCode)) { // both particles are "special"
     auto const mProj = particles::GetMass(vProjectileCode);
@@ -51,7 +52,39 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
 
     int one = 1;
     int two = 2;
-    return sigtot_(one, two, sqrtS) * 1_mb;
+    int three = 3;
+
+    double const totalXS = sigtot_(one, two, sqrtS);
+
+    // subtract elastic cross-section as in ptsigtot()
+    int itypmn, itypmx, iso3mn, iso3mx;
+    if (ityp < itypTar) {
+      itypmn = ityp;
+      itypmx = itypTar;
+
+      iso3mn = iso3;
+      iso3mx = iso3Tar;
+    } else {
+      itypmx = ityp;
+      itypmn = itypTar;
+
+      iso3mx = iso3;
+      iso3mn = iso3Tar;
+    }
+
+    int isigline = collclass_(itypmx, iso3mx, itypmn, iso3mn);
+    int iline = readsigmaln_(three, one, isigline);
+    double sigEl;
+    double massProj = mProj / 1_GeV;
+    double massTar = mTar / 1_GeV;
+
+    crossx_(iline, sqrtS, ityp, iso3, massProj, itypTar, iso3Tar, massTar, sigEl);
+
+    if (totalXS > sigEl) {
+      return (totalXS - sigEl) * 1_mb;
+    } else {
+      return sigEl * 0_mb;
+    }
   } else {
     int const Ap = vAProjectile;
     int const At = IsNucleus(vTargetCode) ? particles::GetNucleusA(vTargetCode) : 1;

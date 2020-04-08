@@ -33,14 +33,16 @@ namespace corsika::process::UrQMD {
     corsika::units::si::CrossSectionType GetCrossSection(TParticle const&,
                                                          corsika::particles::Code) const;
 
+    corsika::units::si::CrossSectionType GetCrossSection(
+        particles::Code, particles::Code, corsika::units::si::HEPEnergyType,
+        int Ap = 1) const;
+
     corsika::process::EProcessReturn DoInteraction(
         corsika::setup::StackView::StackIterator&);
 
     bool CanInteract(particles::Code) const;
 
   private:
-    static corsika::units::si::CrossSectionType GetCrossSection(
-        particles::Code, particles::Code, corsika::units::si::HEPEnergyType, int);
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
 
@@ -66,13 +68,18 @@ namespace corsika::process::UrQMD {
   using nmaxDoubleArray = nmaxArray<double>;
 
   extern "C" {
+  // FORTRAN functions defined in UrQMD
   void iniurqmd_();
   double ranf_(int&);
   void cascinit_(int const&, int const&, int const&);
   double nucrad_(int const&);
   void urqmd_(int&);
-  int pdgid_(int&, int&);
+  int pdgid_(int const&, int const&);
   double sigtot_(int&, int&, double&);
+  int collclass_(int&, int&, int&, int&);
+  double crossx_(int const&, double const&, int const&, int const&, double const&,
+                 int const&, int const&, double const&, double&);
+  int readsigmaln_(int const&, int const&, int const&);
 
   // defined in coms.f
   extern struct {
