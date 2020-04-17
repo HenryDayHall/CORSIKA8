@@ -31,12 +31,6 @@ namespace corsika::process::sibyll {
 
     void Init();
 
-    void SetStable(std::vector<particles::Code> const&);
-    void SetUnstable(std::vector<particles::Code> const&);
-
-    void SetUnstable(const corsika::particles::Code);
-    void SetStable(const corsika::particles::Code);
-    void SetAllUnstable();
     void SetAllStable();
 
     bool WasInitialized() { return initialized_; }
@@ -69,20 +63,7 @@ namespace corsika::process::sibyll {
   private:
     corsika::random::RNG& RNG_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
-    // FOR NOW keep trackedParticles private, could be configurable
-    std::vector<particles::Code> const trackedParticles_ = {
-        particles::Code::PiPlus,     particles::Code::PiMinus,
-        particles::Code::Pi0,        particles::Code::KMinus,
-        particles::Code::KPlus,      particles::Code::K0Long,
-        particles::Code::K0Short,    particles::Code::SigmaPlus,
-        particles::Code::Sigma0,     particles::Code::Sigma0Bar,
-        particles::Code::SigmaMinus, particles::Code::Lambda0,
-        particles::Code::Xi0,        particles::Code::XiMinus,
-        particles::Code::OmegaMinus, particles::Code::DPlus,
-        particles::Code::DMinus,     particles::Code::D0,
-        particles::Code::MuMinus,    particles::Code::MuPlus,
-        particles::Code::D0Bar};
-    const bool internalDecays_ = true;
+
     const corsika::units::si::HEPEnergyType minEnergyCoM_ =
         10. * 1e9 * corsika::units::si::electronvolt;
     const corsika::units::si::HEPEnergyType maxEnergyCoM_ =

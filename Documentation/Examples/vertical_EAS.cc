@@ -20,9 +20,9 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
+#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
 
 #include <corsika/geometry/Plane.h>
@@ -31,6 +31,8 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
+
+#include <corsika/process/pythia/Decay.h>
 
 #include <corsika/process/urqmd/UrQMD.h>
 
@@ -63,7 +65,7 @@ using namespace corsika::units::si;
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  //random::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
 
   random::RNGManager::GetInstance().SeedAll();
@@ -139,7 +141,30 @@ int main() {
 
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::sibyll::Decay decay;
+
+  process::pythia::Decay decayPythia;
+
+  // use sibyll decay routine for decays of particles unknown to pythia
+  process::sibyll::Decay decaySibyll({
+      Code::N1440Plus,
+      Code::N1440MinusBar,
+      Code::N1440_0,
+      Code::N1440_0Bar,
+      Code::N1710Plus,
+      Code::N1710MinusBar,
+      Code::N1710_0,
+      Code::N1710_0Bar,
+
+      Code::Pi1300Plus,
+      Code::Pi1300Minus,
+      Code::Pi1300_0,
+
+      Code::KStar0_1430_0,
+      Code::KStar0_1430_0Bar,
+      Code::KStar0_1430_Plus,
+      Code::KStar0_1430_MinusBar,
+  });
+  decaySibyll.PrintDecayConfig();
 
   process::particle_cut::ParticleCut cut(5_GeV);
 
@@ -157,7 +182,8 @@ int main() {
 
   auto sibyllSequence = sibyll << sibyllNuc;
   process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
-  auto sequence = switchProcess << decay << eLoss << cut << observationLevel
+  auto decaySequence = decayPythia << decaySibyll;
+  auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel
                                 << trackWriter;
 
   // define air shower object, run simulation

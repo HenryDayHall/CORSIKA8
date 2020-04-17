@@ -63,13 +63,9 @@ TEST_CASE("Pythia", "[processes]") {
   SECTION("pythia interface") {
     using namespace corsika;
 
-    const std::vector<particles::Code> particleList = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
-    process::pythia::Decay model(particleList);
+    process::pythia::Decay model;
 
     model.Init();
   }
@@ -126,19 +122,40 @@ TEST_CASE("pythia process") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::PiPlus, E0, plab, pos, 0_ns});
 
-    const std::vector<particles::Code> particleList = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
     corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 
-    process::pythia::Decay model(particleList);
+    process::pythia::Decay model;
     model.Init();
-    model.DoDecay(projectile);
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
+    model.DoDecay(projectile);
+    REQUIRE(stack.GetSize() == 3);
+  }
+
+  SECTION("pythia decay config") {
+    process::pythia::Decay model({particles::Code::PiPlus, particles::Code::PiMinus});
+    REQUIRE(model.IsDecayHandled(particles::Code::PiPlus));
+    REQUIRE(model.IsDecayHandled(particles::Code::PiMinus));
+    REQUIRE_FALSE(model.IsDecayHandled(particles::Code::KPlus));
+
+    const std::vector<particles::Code> particleTestList = {
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+        particles::Code::Lambda0Bar, particles::Code::D0Bar};
+
+    // setup decays
+    model.SetHandleDecay(particleTestList);
+    for (auto& pCode : particleTestList) REQUIRE(model.IsDecayHandled(pCode));
+
+    // individually
+    model.SetHandleDecay(particles::Code::KMinus);
+
+    // possible decays
+    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Proton));
+    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Electron));
+    REQUIRE(model.CanHandleDecay(particles::Code::PiPlus));
+    REQUIRE(model.CanHandleDecay(particles::Code::MuPlus));
   }
 
   SECTION("pythia interaction") {
