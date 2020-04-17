@@ -121,17 +121,13 @@ int main() {
   tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  const std::vector<particles::Code> trackedHadrons = {
-      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-      particles::Code::KMinus, particles::Code::K0Long,  particles::Code::K0Short};
-
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   //  process::sibyll::Interaction sibyll(env);
   process::pythia::Interaction pythia;
   //  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
-  //  process::sibyll::Decay decay(trackedHadrons);
-  process::pythia::Decay decay(trackedHadrons);
+  //  process::sibyll::Decay decay;
+  process::pythia::Decay decay;
   process::particle_cut::ParticleCut cut(20_GeV);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");

@@ -167,28 +167,41 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     Decay model;
 
+    model.PrintDecayConfig();
+
     model.Init();
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
-    // run checks
+
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
+
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
+
+    // run checks
+    // lambda decays into proton and pi- or neutron and pi+
+    REQUIRE(stack.GetSize() == 3);
   }
 
   SECTION("DecayConfiguration") {
 
-    Decay model;
+    Decay model({particles::Code::PiPlus, particles::Code::PiMinus});
+    REQUIRE(model.IsDecayHandled(particles::Code::PiPlus));
+    REQUIRE(model.IsDecayHandled(particles::Code::PiMinus));
+    REQUIRE_FALSE(model.IsDecayHandled(particles::Code::KPlus));
 
     const std::vector<particles::Code> particleTestList = {
-        particles::Code::PiPlus,     particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::Lambda0Bar, particles::Code::NuE,     particles::Code::D0Bar};
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+        particles::Code::Lambda0Bar, particles::Code::D0Bar};
 
-    for (auto& pCode : particleTestList) {
-      model.SetUnstable(pCode);
-      // get state of sibyll internal config
-      REQUIRE(0 <= s_csydec_.idb[abs(process::sibyll::ConvertToSibyllRaw(pCode)) - 1]);
+    // setup decays
+    model.SetHandleDecay(particleTestList);
+    for (auto& pCode : particleTestList) REQUIRE(model.IsDecayHandled(pCode));
 
-      model.SetStable(pCode);
-      // get state of sibyll internal config
-      REQUIRE(0 >= s_csydec_.idb[abs(process::sibyll::ConvertToSibyllRaw(pCode)) - 1]);
-    }
+    // individually
+    model.SetHandleDecay(particles::Code::KMinus);
+
+    // possible decays
+    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Proton));
+    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Electron));
+    REQUIRE(model.CanHandleDecay(particles::Code::PiPlus));
+    REQUIRE(model.CanHandleDecay(particles::Code::MuPlus));
   }
 }

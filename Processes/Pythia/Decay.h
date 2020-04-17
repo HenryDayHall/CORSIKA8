@@ -22,26 +22,59 @@ namespace corsika::process {
     typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
     class Decay : public corsika::process::DecayProcess<Decay> {
-      const std::vector<particles::Code> fTrackedParticles;
       int fCount = 0;
+      bool handleAllDecays_ = true;
 
     public:
-      Decay(std::vector<corsika::particles::Code>);
+      Decay();
+      Decay(std::set<particles::Code>);
       ~Decay();
       void Init();
 
-      void SetParticleListStable(const std::vector<particles::Code>);
-      void SetUnstable(const corsika::particles::Code);
-      void SetStable(const corsika::particles::Code);
+      // is Pythia::Decay set to handle the decay of this particle?
+      bool IsDecayHandled(const corsika::particles::Code);
+
+      // is decay possible in principle?
+      bool CanHandleDecay(const corsika::particles::Code);
+
+      // set Pythia::Decay to handle the decay of this particle!
+      void SetHandleDecay(const corsika::particles::Code);
+      // set Pythia::Decay to handle the decay of this list of particles!
+      void SetHandleDecay(const std::vector<particles::Code>);
+      // set Pythia::Decay to handle all particle decays
+      void SetHandleAllDecays();
+
+      // print internal configuration for this particle
+      void PrintDecayConfig(const corsika::particles::Code);
+      // print configuration of decays in corsika
+      void PrintDecayConfig();
+
+      bool CanDecay(const corsika::particles::Code);
+
+      /**
+       In this function PYTHIA is asked for the lifetime of the input particle.
+       Unknown particles should return an infinite lifetime so that another decay process
+       can act on the particle later on.
+     */
 
       template <typename TParticle>
       corsika::units::si::TimeType GetLifetime(TParticle const&);
+
+      /**
+       In this function PYTHIA is called to execute the decay of the input particle.
+     */
 
       template <typename TProjectile>
       void DoDecay(TProjectile&);
 
     private:
+      void SetUnstable(const corsika::particles::Code);
+      void SetStable(const corsika::particles::Code);
+      void SetStable(const std::vector<particles::Code>);
+      bool IsStable(const corsika::particles::Code);
+
       Pythia8::Pythia fPythia;
+      std::set<particles::Code> handledDecays_;
     };
 
   } // namespace pythia

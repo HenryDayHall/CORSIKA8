@@ -51,32 +51,8 @@ namespace corsika::process::sibyll {
     }
   }
 
-  void Interaction::SetStable(std::vector<particles::Code> const& vParticleList) {
-    for (auto p : vParticleList) Interaction::SetStable(p);
-  }
-
-  void Interaction::SetUnstable(std::vector<particles::Code> const& vParticleList) {
-    for (auto p : vParticleList) Interaction::SetUnstable(p);
-  }
-
-  void Interaction::SetUnstable(const particles::Code vCode) {
-    cout << "Sibyll::Interaction: setting " << vCode << " unstable.." << endl;
-    const int s_id = abs(process::sibyll::ConvertToSibyllRaw(vCode));
-    s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
-  }
-
-  void Interaction::SetStable(const particles::Code vCode) {
-    cout << "Sibyll::Interaction: setting " << vCode << " stable.." << endl;
-    const int s_id = abs(process::sibyll::ConvertToSibyllRaw(vCode));
-    s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
-  }
-
   void Interaction::SetAllStable() {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
-  }
-
-  void Interaction::SetAllUnstable() {
-    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
   }
 
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
@@ -317,16 +293,7 @@ namespace corsika::process::sibyll {
         const double sqs = Ecm / 1_GeV;
         // running sibyll, filling stack
         sibyll_(kBeam, targetSibCode, sqs);
-        if (internalDecays_) {
-          // particles that decay internally will never appear on the corsika stack
-          // switch on all decays except for the particles we want to take part in the
-          // tracking
-          SetAllUnstable();
-          SetStable(trackedParticles_);
-          decsib_();
-          // reset
-          SetAllStable();
-        }
+
         // print final state
         int print_unit = 6;
         sib_list_(print_unit);
@@ -340,8 +307,9 @@ namespace corsika::process::sibyll {
         HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
         for (auto& psib : ss) {
 
-          // skip particles that have decayed in Sibyll
-          if (psib.HasDecayed()) continue;
+          // abort on particles that have decayed in Sibyll. Should not happen!
+          if (psib.HasDecayed())
+            throw std::runtime_error("found particle that decayed in SIBYLL!");
 
           // transform energy to lab. frame
           auto const pCoM = psib.GetMomentum();
