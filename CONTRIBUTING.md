@@ -81,20 +81,24 @@ While `clang-format` does the structural formatting, we still need to agree on n
     - *Everything* is part of one of those namespaces:
        - ```corsika::framework```, ```corsika::physics```, or ```corsika::process```
     - All classes and objects are encapsulated into suited sub-namespaces,
-      thus ```corsika::framework::geometry```, ```corsika::physics::process```, ```corsika::physics::units```, etc.
+      thus corsika, corsikaes, corsika::units, etc.
     - Namespace names do not use capital letters.  
-  - Every header file is located in the source tree in ```include/corsika/[namespace]```, which also means that in almost all cases each header file
-    can only provide definitions for a _single_ namespace. It is one
-    main purpose of namespaces to structure the location of header
-    files.
-  - Each header file uses an include protection ```#pragma once```
-    immediately below the copyright statement.
-  - Header files should always be included with `<..>`, thus,
-    `#include <corsika/geometry/Point.h>` since the build system
-    will always provide the correct include directives (and files
-    anyway cannot be found in file-system paths, which generally do
-    not follow the namespace naming conventions outlined
-    here).
+    - Every header file is copied during build and install into
+      "include/corsika/[namespace]" which also means, each header file
+      can only provide definitions for a _single_ namespace. It is one
+      main purpose of namespaces to structure the location of header
+      files.
+    - Each header file uses an include protection that includes at
+      least the namespace name, and header file name, thus, `#ifndef
+      __include_geometry_Point_h__` or `#ifndef __geometry_Point_h__`,
+      or similar are acceptable.
+    - Header files should always be included with `<..>`, thus,
+      `#include <corsika/framework/geometry/Point.hpp>` since the build system
+      will always provide the correct include directives (and files
+      anyway cannot be found in file-system paths, which generally do
+      not follow the namespace naming conventions outlined
+      here).
+
   - Header files are named after the main class (or object) they
     define. This also means each header file name starts with a
     capital letter.

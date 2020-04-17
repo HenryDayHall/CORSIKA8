@@ -1,0 +1,9 @@
+add_library (CORSIKA8 INTERFACE)
+
+target_include_directories (CORSIKA8
+  INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries (CORSIKA8 INTERFACE PhysUnits)
+
+set (CORSIKA8_FOUND TRUE)
