@@ -12,7 +12,7 @@ add_custom_command (
           ${PROJECT_SOURCE_DIR}/Processes/QGSJetII/qgsjet-II-04-codes.dat
   DEPENDS code_generator.py
           qgsjet-II-04-codes.dat
-          ${PROJECT_BINARY_DIR}/Framework/Particles/particle_db.pkl
+          CORSIKAparticles
   WORKING_DIRECTORY
           ${PROJECT_BINARY_DIR}/Processes/QGSJetII/
   COMMENT "Generate conversion tables for particle codes QGSJetII <-> CORSIKA"
