@@ -20,10 +20,12 @@ endif ()
 set (
   UTILITIES_SOURCES  
   COMBoost.cc
+  CorsikaData.cc
   ${CORSIKA_FENV})
 
 set (
   UTILITIES_HEADERS
+  CorsikaData.h
   COMBoost.h
   Bit.h
   Singleton.h
