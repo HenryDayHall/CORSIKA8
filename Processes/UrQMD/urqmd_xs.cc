@@ -13,6 +13,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 
 using namespace corsika;
@@ -22,12 +23,18 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
   corsika::process::UrQMD::UrQMD urqmd;
 
-  for (auto Elab = 100_MeV; Elab <= 10_TeV; Elab *= 1.02) {
-    std::cout << Elab / 1_GeV << '\t'
-              << urqmd.GetCrossSection(particles::Code::Proton, particles::Code::Proton,
-                                       Elab) /
-                     1_mb
-              << std::endl;
+  std::vector<particles::Code> const projectiles{
+      {particles::Code::Proton, particles::Code::AntiProton, particles::Code::Neutron,
+       particles::Code::AntiNeutron, particles::Code::PiPlus, particles::Code::PiMinus,
+       particles::Code::KPlus, particles::Code::KMinus, particles::Code::K0Short}};
+
+  for (auto const& p : projectiles) {
+    std::ofstream file(std::string("xs_") + particles::GetName(p) + ".dat");
+    for (auto Elab = particles::GetMass(p) + 200_MeV; Elab <= 10_TeV; Elab *= 1.02) {
+      file << Elab / 1_GeV << '\t'
+           << urqmd.GetTabulatedCrossSection(p, particles::Code::Nitrogen, Elab) / 1_mb
+           << std::endl;
+    }
   }
 
   return EXIT_SUCCESS;
