@@ -16,15 +16,20 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/utl/CorsikaData.h>
+
+#include <boost/multi_array.hpp>
 
 #include <array>
+#include <filesystem>
 #include <random>
 #include <utility>
 
 namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
-    UrQMD();
+    UrQMD(
+        std::filesystem::path const& path = utl::CorsikaData("UrQMD/UrQMD-1.3.1-xs.dat"));
     void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
         corsika::setup::Stack::StackIterator const&) const;
@@ -37,16 +42,22 @@ namespace corsika::process::UrQMD {
         particles::Code, particles::Code, corsika::units::si::HEPEnergyType,
         int Ap = 1) const;
 
+    corsika::units::si::CrossSectionType GetTabulatedCrossSection(
+        particles::Code, particles::Code, corsika::units::si::HEPEnergyType) const;
+
     corsika::process::EProcessReturn DoInteraction(
         corsika::setup::StackView::StackIterator&);
 
     bool CanInteract(particles::Code) const;
 
   private:
+    void readXSFile(std::filesystem::path const&);
+
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
 
     std::uniform_int_distribution<int> fBooleanDist{0, 1};
+    boost::multi_array<corsika::units::si::CrossSectionType, 3> xs_interp_support_table;
   };
 
   namespace constants {

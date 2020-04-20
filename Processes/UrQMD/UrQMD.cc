@@ -15,18 +15,106 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <algorithm>
+#include <array>
+#include <cassert>
+#include <cmath>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <random>
+#include <sstream>
 
 using namespace corsika::process::UrQMD;
 using namespace corsika::units::si;
 
-UrQMD::UrQMD() { iniurqmd_(); }
-
 using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;
+
+UrQMD::UrQMD(std::filesystem::path const& xs_file) {
+  readXSFile(xs_file);
+  iniurqmd_();
+}
+
+CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code vProjectileCode,
+                                                 corsika::particles::Code vTargetCode,
+                                                 HEPEnergyType vLabEnergy) const {
+  // translated to C++ from CORSIKA 7 subroutine cxtot_u
+
+  auto const kinEnergy = vLabEnergy - particles::GetMass(vProjectileCode);
+
+  assert(kinEnergy >= HEPEnergyType::zero());
+
+  double const logKinEnergy = std::log10(kinEnergy * (1 / 1_GeV));
+  double const ye = std::max(10 * logKinEnergy + 10.5, 1.);
+  int const je = std::min(int(ye), int(xs_interp_support_table.shape()[2] - 2));
+  std::array<double, 3> w;
+  w[2 - 1] = ye - je;
+  w[3 - 1] = w[2 - 1] * (w[2 - 1] - 1.) * .5;
+  w[1 - 1] = 1 - w[2 - 1] + w[3 - 1];
+  w[2 - 1] = w[2 - 1] - 2 * w[3 - 1];
+
+  int projectileIndex;
+  switch (vProjectileCode) {
+    case particles::Code::Proton:
+      projectileIndex = 0;
+      break;
+    case particles::Code::AntiProton:
+      projectileIndex = 1;
+      break;
+    case particles::Code::Neutron:
+      projectileIndex = 2;
+      break;
+    case particles::Code::AntiNeutron:
+      projectileIndex = 3;
+      break;
+    case particles::Code::PiPlus:
+      projectileIndex = 4;
+      break;
+    case particles::Code::PiMinus:
+      projectileIndex = 5;
+      break;
+    case particles::Code::KPlus:
+      projectileIndex = 6;
+      break;
+    case particles::Code::KMinus:
+      projectileIndex = 7;
+      break;
+    case particles::Code::K0Short:
+    case particles::Code::K0Long:
+      projectileIndex = 8;
+      break;
+    default:
+      std::cout << "WARNING: UrQMD cross-section not tabulated for " << vProjectileCode
+                << std::endl;
+      return CrossSectionType::zero();
+  }
+
+  int targetIndex;
+  switch (vTargetCode) {
+    case particles::Code::Nitrogen:
+      targetIndex = 0;
+      break;
+    case particles::Code::Oxygen:
+      targetIndex = 1;
+      break;
+    case particles::Code::Argon:
+      targetIndex = 2;
+      break;
+    default:
+      std::stringstream ss;
+      ss << "UrQMD cross-section not tabluated for target " << vTargetCode;
+      throw std::runtime_error(ss.str().data());
+  }
+
+  auto result = CrossSectionType::zero();
+  for (int i = 0; i < 3; ++i) {
+    result +=
+        xs_interp_support_table[projectileIndex][targetIndex][je + i - 1 - 1] * w[i];
+  }
+
+  return result;
+}
 
 CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
                                         corsika::particles::Code vTargetCode,
@@ -343,4 +431,39 @@ std::pair<int, int> corsika::process::UrQMD::ConvertToUrQMD(
   };
 
   return mapPDGToUrQMD.at(static_cast<int>(GetPDG(code)));
+}
+
+void UrQMD::readXSFile(std::filesystem::path const& filename) {
+  std::ifstream file(filename, std::ios::in);
+
+  if (!file.is_open()) {
+    throw std::runtime_error(filename.native() + " could not be opened.");
+  }
+
+  std::string line;
+
+  std::getline(file, line);
+  std::stringstream ss(line);
+
+  char dummy;
+  int nTargets, nProjectiles, nSupports;
+  ss >> dummy >> nTargets >> nProjectiles >> nSupports;
+
+  decltype(xs_interp_support_table)::extent_gen extents;
+  xs_interp_support_table.resize(extents[nProjectiles][nTargets][nSupports]);
+
+  for (int i = 0; i < nTargets; ++i) {
+    for (int j = 0; j < nProjectiles; ++j) {
+      for (int k = 0; k < nSupports; ++k) {
+        std::getline(file, line);
+        std::stringstream s(line);
+        double energy, sigma;
+        s >> energy >> sigma;
+        xs_interp_support_table[j][i][k] = sigma * 1_mb;
+      }
+
+      std::getline(file, line);
+      std::getline(file, line);
+    }
+  }
 }
