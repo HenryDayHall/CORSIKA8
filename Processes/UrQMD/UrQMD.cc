@@ -185,22 +185,24 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
 
 template <typename TParticle> // need template here, as this is called both with
                               // SetupParticle as well as SetupProjectile
-CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
-                                        corsika::particles::Code vTargetCode) const {
+CrossSectionType UrQMD::GetCrossSection(TParticle const& projectile,
+                                        corsika::particles::Code targetCode) const {
   // TODO: return 0 for non-hadrons?
 
-  auto const projectileCode = vProjectile.GetPID();
-  auto const projectileEnergyLab = vProjectile.GetEnergy();
+  auto const projectileCode = projectile.GetPID();
+  auto const projectileEnergyLab = projectile.GetEnergy();
 
-  if (projectileCode == particles::Code::K0Long) {
-    return 0.5 *
-           (GetCrossSection(particles::Code::K0, vTargetCode, projectileEnergyLab) +
-            GetCrossSection(particles::Code::K0Bar, vTargetCode, projectileEnergyLab));
-  }
+  return GetTabulatedCrossSection(projectileCode, targetCode, projectileEnergyLab);
 
-  int const Ap =
-      (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
-  return GetCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
+  // if (projectileCode == particles::Code::K0Long) {
+  //   return 0.5 *
+  //          (GetCrossSection(particles::Code::K0, vTargetCode, projectileEnergyLab) +
+  //           GetCrossSection(particles::Code::K0Bar, vTargetCode, projectileEnergyLab));
+  // }
+
+  // int const Ap =
+  //     (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
+  // return GetCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
 }
 
 bool UrQMD::CanInteract(particles::Code vCode) const {
@@ -210,10 +212,10 @@ bool UrQMD::CanInteract(particles::Code vCode) const {
   // TODO: Charmed mesons should be added to the list, too
 
   static particles::Code const validProjectileCodes[] = {
-      particles::Code::Nucleus, particles::Code::Proton,      particles::Code::AntiProton,
-      particles::Code::Neutron, particles::Code::AntiNeutron, particles::Code::PiPlus,
-      particles::Code::PiMinus, particles::Code::KPlus,       particles::Code::KMinus,
-      particles::Code::K0,      particles::Code::K0Bar,       particles::Code::K0Long};
+      particles::Code::Proton,      particles::Code::AntiProton, particles::Code::Neutron,
+      particles::Code::AntiNeutron, particles::Code::PiPlus,     particles::Code::PiMinus,
+      particles::Code::KPlus,       particles::Code::KMinus,     particles::Code::K0Short,
+      particles::Code::K0Long};
 
   return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
                    vCode) != std::cend(validProjectileCodes);
