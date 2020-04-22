@@ -21,15 +21,14 @@
 #include <boost/multi_array.hpp>
 
 #include <array>
-#include <filesystem>
 #include <random>
+#include <string>
 #include <utility>
 
 namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
-    UrQMD(
-        std::filesystem::path const& path = utl::CorsikaData("UrQMD/UrQMD-1.3.1-xs.dat"));
+    UrQMD(std::string const& path = utl::CorsikaData("UrQMD/UrQMD-1.3.1-xs.dat"));
     void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
         corsika::setup::Stack::StackIterator const&) const;
@@ -51,7 +50,7 @@ namespace corsika::process::UrQMD {
     bool CanInteract(particles::Code) const;
 
   private:
-    void readXSFile(std::filesystem::path const&);
+    void readXSFile(std::string const&);
 
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");

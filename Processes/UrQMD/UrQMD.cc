@@ -31,7 +31,7 @@ using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;
 
-UrQMD::UrQMD(std::filesystem::path const& xs_file) {
+UrQMD::UrQMD(std::string const& xs_file) {
   readXSFile(xs_file);
   iniurqmd_();
 }
@@ -435,11 +435,11 @@ std::pair<int, int> corsika::process::UrQMD::ConvertToUrQMD(
   return mapPDGToUrQMD.at(static_cast<int>(GetPDG(code)));
 }
 
-void UrQMD::readXSFile(std::filesystem::path const& filename) {
+void UrQMD::readXSFile(std::string const& filename) {
   std::ifstream file(filename, std::ios::in);
 
   if (!file.is_open()) {
-    throw std::runtime_error(filename.native() + " could not be opened.");
+    throw std::runtime_error(filename + " could not be opened.");
   }
 
   std::string line;

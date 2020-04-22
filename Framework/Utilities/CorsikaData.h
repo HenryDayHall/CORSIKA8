@@ -8,12 +8,12 @@
  * the license.
  */
 
-#include <filesystem>
+//#include <filesystem>
 #include <string>
 
 namespace corsika::utl {
   /**
    * returns the full path of the file \p filename within the CORSIKA_DATA directory
    */
-  std::filesystem::path CorsikaData(std::filesystem::path const& filename);
+  std::string CorsikaData(std::string const& filename);
 } // namespace corsika::utl
