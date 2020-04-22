@@ -292,10 +292,9 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     rsys_.bdist = nucrad_(targetA) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
     rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
 
-    if (projectileCode == particles::Code::K0Long) {
+    if (projectileCode == particles::Code::K0Long ||
+        projectileCode == particles::Code::K0Short) {
       projectileCode = fBooleanDist(fRNG) ? particles::Code::K0 : particles::Code::K0Bar;
-    } else if (projectileCode == particles::Code::K0Short) {
-      throw std::runtime_error("K0Short should not interact");
     }
 
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
@@ -438,9 +437,7 @@ std::pair<int, int> corsika::process::UrQMD::ConvertToUrQMD(
 void UrQMD::readXSFile(std::string const& filename) {
   std::ifstream file(filename, std::ios::in);
 
-  if (!file.is_open()) {
-    throw std::runtime_error(filename + " could not be opened.");
-  }
+  if (!file.is_open()) { throw std::runtime_error(filename + " could not be opened."); }
 
   std::string line;
 
