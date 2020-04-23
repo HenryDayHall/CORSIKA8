@@ -40,9 +40,8 @@ int main() {
       cout << std::setw(20) << std::setfill(' ') << p << " | " << std::setw(10)
            << static_cast<int>(GetPDG(p)) << " | " << std::setw(10)
            << static_cast<int>(corsika::process::sibyll::ConvertToSibyll(p)) << " | "
-	   << std::setw(18) << GetMass(p) / 1_GeV << " | "
-           << std::setw(18) << corsika::process::sibyll::GetSibyllMass(p) / 1_GeV << " | "
-           << endl;
+           << std::setw(18) << GetMass(p) / 1_GeV << " | " << std::setw(18)
+           << corsika::process::sibyll::GetSibyllMass(p) / 1_GeV << " | " << endl;
   }
   cout << std::setw(54) << std::setfill('-') << "-" << endl;
 }

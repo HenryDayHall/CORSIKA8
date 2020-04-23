@@ -11,9 +11,9 @@
 #ifndef _include_processes_sibyll_particles_h_
 #define _include_processes_sibyll_particles_h_
 
-#include <corsika/units/PhysicalUnits.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/units/PhysicalUnits.h>
 
 #include <string>
 
@@ -53,7 +53,6 @@ namespace corsika::process::sibyll {
   }
 
   corsika::units::si::HEPMassType GetSibyllMass(corsika::particles::Code const);
-  
 
 } // namespace corsika::process::sibyll
 

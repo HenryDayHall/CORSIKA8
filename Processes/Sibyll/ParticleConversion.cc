@@ -13,7 +13,8 @@
 
 using namespace corsika::process::sibyll;
 
-corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(corsika::particles::Code const pCode) {
+corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(
+    corsika::particles::Code const pCode) {
   using namespace corsika::units;
   using namespace corsika::units::si;
   if (pCode == corsika::particles::Code::Nucleus)
