@@ -64,7 +64,6 @@ TEST_CASE("Sibyll", "[processes]") {
 
     REQUIRE_FALSE(process::sibyll::GetSibyllMass(particles::Code::Electron) == 0_GeV);
   }
-
 }
 
 #include <corsika/geometry/Point.h>
