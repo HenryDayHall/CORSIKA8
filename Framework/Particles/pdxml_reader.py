@@ -316,6 +316,14 @@ def gen_properties(particle_db):
     # number of particles, size of tables
     string = "static constexpr std::size_t size = {size:d};\n".format(size = len(particle_db))
     string += "\n"
+
+    # all particles
+    string += "constexpr std::initializer_list<Code> all_particles = {"
+    for k in particle_db:
+        #print(k)
+        string += "  Code::{name:s},\n".format(name = k)
+    string += "};\n"
+    string += "\n"
     
     # particle masses table
     string += "static constexpr std::array<corsika::units::si::HEPMassType const, size> masses = {\n"    
