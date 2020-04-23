@@ -3,7 +3,7 @@ target_link_libraries (helix_example CORSIKAgeometry CORSIKAunits)
 install (TARGETS helix_example DESTINATION share/examples)
 
 CORSIKA_ADD_TEST (particle_list_example)
-target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSIKAprocesses ProcessSibyll)
+target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSIKAprocesses ProcessSibyll ProcessQGSJetII)
 install (TARGETS particle_list_example DESTINATION share/examples)
 
 CORSIKA_ADD_TEST (geometry_example)
