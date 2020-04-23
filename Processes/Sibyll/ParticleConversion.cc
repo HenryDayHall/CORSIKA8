@@ -13,6 +13,15 @@
 
 using namespace corsika::process::sibyll;
 
+corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(corsika::particles::Code const pCode) {
+  using namespace corsika::units;
+  using namespace corsika::units::si;
+  if (pCode == corsika::particles::Code::Nucleus)
+    throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
+  auto sCode = ConvertToSibyllRaw(pCode);
+  return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
+}
+
 // const std::map<sibyll::PID, ParticleProperties::InternalParticleCode>
 //   process::sibyll::Sibyll2Corsika = {
 //        {PID::E_MINUS, InternalParticleCode::Electron},

@@ -24,6 +24,8 @@
 
 using namespace corsika;
 using namespace corsika::process::sibyll;
+using namespace corsika::units;
+using namespace corsika::units::si;
 
 TEST_CASE("Sibyll", "[processes]") {
 
@@ -57,6 +59,12 @@ TEST_CASE("Sibyll", "[processes]") {
     REQUIRE(process::sibyll::GetSibyllXSCode(particles::Code::SigmaPlus) == 1);
     REQUIRE(process::sibyll::GetSibyllXSCode(particles::Code::PiMinus) == 2);
   }
+
+  SECTION("sibyll mass") {
+
+    REQUIRE_FALSE(process::sibyll::GetSibyllMass(particles::Code::Electron) == 0_GeV);
+  }
+
 }
 
 #include <corsika/geometry/Point.h>

@@ -9,10 +9,10 @@
  */
 
 #include <corsika/particles/ParticleProperties.h>
-#include <corsika/units/PhysicalUnits.h>
 #include <corsika/process/ProcessSequence.h>
-#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
+#include <corsika/setup/SetupEnvironment.h>
+#include <corsika/units/PhysicalUnits.h>
 
 #include <iomanip>
 #include <iostream>
@@ -30,18 +30,19 @@ int main() {
        << "--------------------" << endl;
   cout << std::setw(20) << "Name"
        << " | " << std::setw(10) << "PDG-id"
-       << " |  " << std::setw(10) << "mass (GeV)"
        << " | " << std::setw(10) << "SIBYLL-id"
-       << endl;
+       << " | " << std::setw(18) << "PDG-mass (GeV)"
+       << " | " << std::setw(18) << "SIBYLL-mass (GeV)"
+       << " | " << endl;
   cout << std::setw(58) << std::setfill('-') << "-" << endl;
   for (auto p : corsika::particles::detail::all_particles) {
     if (p != Code::Unknown && !IsNucleus(p))
-      cout << std::setw(20) << std::setfill(' ') << p << " | "	
-           << std::setw(10) << static_cast<int>(GetPDG(p)) << " | "
-	   << std::setw(10) << GetMass(p) / 1_GeV << " | "
-	   << std::setw(10) << static_cast<int>(corsika::process::sibyll::ConvertToSibyll(p)) << " | "
-	   
-	   << endl;
+      cout << std::setw(20) << std::setfill(' ') << p << " | " << std::setw(10)
+           << static_cast<int>(GetPDG(p)) << " | " << std::setw(10)
+           << static_cast<int>(corsika::process::sibyll::ConvertToSibyll(p)) << " | "
+	   << std::setw(18) << GetMass(p) / 1_GeV << " | "
+           << std::setw(18) << corsika::process::sibyll::GetSibyllMass(p) / 1_GeV << " | "
+           << endl;
   }
   cout << std::setw(54) << std::setfill('-') << "-" << endl;
 }
