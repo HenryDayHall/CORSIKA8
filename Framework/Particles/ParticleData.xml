@@ -3791,26 +3791,26 @@
  <channel onMode="1" bRatio="1.0000000" products="4132 22"/> 
 </particle> 
  
-<!--
+
 <particle id="4314" name="Xi*_c0" antiName="Xi*_cbar0" spinType="4" chargeType="0" colType="0" 
           m0="2.64590" mWidth="0.0026" mMin="2.63590" mMax="2.65590"> 
  <channel onMode="1" bRatio="0.5000000" products="4132 111"/> 
  <channel onMode="1" bRatio="0.5000000" products="4132 22"/> 
 </particle> 
--->
+
  
 <particle id="4322" name="Xi'_c+" antiName="Xi'_cbar-" spinType="2" chargeType="3" colType="0" 
           m0="2.57560"> 
  <channel onMode="1" bRatio="1.0000000" products="4232 22"/> 
 </particle> 
  
-<!--
+
 <particle id="4324" name="Xi*_c+" antiName="Xi*_cbar-" spinType="4" chargeType="3" colType="0" 
           m0="2.64590" mWidth="0.0026" mMin="2.63590" mMax="2.65590"> 
  <channel onMode="1" bRatio="0.5000000" products="4232 111"/> 
  <channel onMode="1" bRatio="0.5000000" products="4232 22"/> 
 </particle> 
--->
+
  
 <particle id="4332" name="Omega_c0" antiName="Omega_cbar0" spinType="2" chargeType="0" colType="0" 
           m0="2.69520" tau0="2.10000e-02"> 

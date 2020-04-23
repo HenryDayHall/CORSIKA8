@@ -36,6 +36,9 @@ TEST_CASE("Sibyll", "[processes]") {
     REQUIRE(process::sibyll::ConvertToSibyll(particles::Electron::GetCode()) ==
             process::sibyll::SibyllCode::Electron);
     REQUIRE(process::sibyll::ConvertToSibyllRaw(particles::Proton::GetCode()) == 13);
+    REQUIRE(process::sibyll::ConvertToSibyll(particles::XiStarC0::GetCode()) ==
+            process::sibyll::SibyllCode::XiStarC0);
+
   }
 
   SECTION("canInteractInSibyll") {
