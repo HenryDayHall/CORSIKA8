@@ -17,6 +17,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <string>
 using namespace corsika::units;
 using namespace corsika::units::si;
 using namespace corsika::particles;
@@ -38,14 +39,19 @@ int main() {
        << " | " << endl;
   cout << std::setw(104) << std::setfill('-') << "-" << endl;
   for (auto p : corsika::particles::detail::all_particles) {
-    if (p != Code::Unknown && !IsNucleus(p))
+    if (p != Code::Unknown && !IsNucleus(p)) {
+      auto const sib_id = static_cast<int>(corsika::process::sibyll::ConvertToSibyll(p));
+      auto const sib_mass = corsika::process::sibyll::GetSibyllMass(p) / 1_GeV;
+      auto const qgs_id =
+          static_cast<int>(corsika::process::qgsjetII::ConvertToQgsjetII(p));
       cout << std::setw(20) << std::setfill(' ') << p << " | " << std::setw(10)
            << static_cast<int>(GetPDG(p)) << " | " << std::setw(10)
-           << static_cast<int>(corsika::process::sibyll::ConvertToSibyll(p)) << " | "
-           << std::setw(10)
-           << static_cast<int>(corsika::process::qgsjetII::ConvertToQgsjetII(p)) << " | "
-           << std::setw(18) << GetMass(p) / 1_GeV << " | " << std::setw(18)
-           << corsika::process::sibyll::GetSibyllMass(p) / 1_GeV << " | " << endl;
+           << (sib_id != 0 ? to_string(sib_id) : "--") << " | " << std::setw(10)
+           << (qgs_id != 0 ? to_string(qgs_id) : "--") << " | " << std::setw(18)
+           << std::setprecision(5) << GetMass(p) / 1_GeV << " | " << std::setw(18)
+           << std::setprecision(5) << (sib_mass != -1 ? to_string(sib_mass) : "--")
+           << " | " << endl;
+    }
   }
   cout << std::setw(104) << std::setfill('-') << "-" << endl;
 }
