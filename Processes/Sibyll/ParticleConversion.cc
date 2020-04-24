@@ -20,7 +20,10 @@ corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(
   if (pCode == corsika::particles::Code::Nucleus)
     throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
   auto sCode = ConvertToSibyllRaw(pCode);
-  return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
+  if (sCode == 0)
+    return std::numeric_limits<double>::quiet_NaN() * 1_GeV;
+  else
+    return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
 }
 
 // const std::map<sibyll::PID, ParticleProperties::InternalParticleCode>
