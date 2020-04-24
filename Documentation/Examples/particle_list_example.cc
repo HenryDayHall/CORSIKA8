@@ -39,7 +39,7 @@ int main() {
        << " | " << endl;
   cout << std::setw(104) << std::setfill('-') << "-" << endl;
   for (auto p : corsika::particles::detail::all_particles) {
-    if (p != Code::Unknown && !IsNucleus(p)) {
+    if (!IsNucleus(p)) {
       auto const sib_id = static_cast<int>(corsika::process::sibyll::ConvertToSibyll(p));
       auto const sib_mass = corsika::process::sibyll::GetSibyllMass(p) / 1_GeV;
       auto const qgs_id =
