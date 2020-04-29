@@ -55,11 +55,12 @@ namespace corsika::process::qgsjetII {
       using namespace corsika::units::si;
       return qgarr14_.esp[i][0] * 1_GeV;
     }
-    MomentumVector GetMomentum(const unsigned int i, const corsika::geometry::CoordinateSystem& CS) const {
+    MomentumVector GetMomentum(const unsigned int i,
+                               const corsika::geometry::CoordinateSystem& CS) const {
       using namespace corsika::units::si;
       geometry::QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
-                                                  qgarr14_.esp[i][3] * 1_GeV,
-                                                  qgarr14_.esp[i][1] * 1_GeV};
+                                                            qgarr14_.esp[i][3] * 1_GeV,
+                                                            qgarr14_.esp[i][1] * 1_GeV};
       return MomentumVector(CS, components);
     }
 
@@ -87,8 +88,7 @@ namespace corsika::process::qgsjetII {
     using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
-    void SetParticleData(const int vID, 
-                         const corsika::units::si::HEPEnergyType vE,
+    void SetParticleData(const int vID, const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
                          const corsika::units::si::HEPMassType vM) {
       SetPID(vID);
@@ -97,8 +97,7 @@ namespace corsika::process::qgsjetII {
     }
 
     void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
-                         const int vID, 
-                         const corsika::units::si::HEPEnergyType vE,
+                         const int vID, const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
                          const corsika::units::si::HEPMassType vM) {
       SetPID(vID);
@@ -121,7 +120,9 @@ namespace corsika::process::qgsjetII {
           GetStackData().GetId(GetIndex()));
     }
 
-    MomentumVector GetMomentum(const corsika::geometry::CoordinateSystem& CS) const { return GetStackData().GetMomentum(GetIndex(), CS); }
+    MomentumVector GetMomentum(const corsika::geometry::CoordinateSystem& CS) const {
+      return GetStackData().GetMomentum(GetIndex(), CS);
+    }
 
     void SetMomentum(const MomentumVector& v) {
       GetStackData().SetMomentum(GetIndex(), v);
