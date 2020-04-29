@@ -225,3 +225,20 @@ sanity:
   when: manual
   allow_failure: true
 
+check-copyrights:
+  image: corsika/devel:u-18.04
+  stage: optional
+  tags:
+    - corsika
+  script:
+    - ./do-copyright.py
+
+clang-format:
+  image: corsika/devel:u-18.04
+  stage: optional
+  tags:
+    - corsika
+  script:
+    - ./do-clang-format.py --all
+
+
