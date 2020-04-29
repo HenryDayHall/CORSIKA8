@@ -24,7 +24,11 @@
 #include <utility>
 
 namespace corsika::process::interaction_counter {
-
+  /*!
+   * Wrapper around an InteractionProcess that fills histograms of the number
+   * of calls to DoInteraction() binned in projectile energy (both in
+   * lab and center-of-mass frame) and species
+   */
   template <class TCountedProcess>
   class InteractionCounter
       : public InteractionProcess<InteractionCounter<TCountedProcess>> {
@@ -55,6 +59,9 @@ namespace corsika::process::interaction_counter {
     hist_type_count_cms interaction_histogram_cms_;
     hist_type_count_lab interaction_histogram_lab_;
 
+    /*!
+     * These maps map PDG nucei codes to their corresponding interaction histograms
+     */
     std::map<int32_t, nucl_hist_type> nuclIntHistLab, nuclIntHistCMS;
 
   public:
@@ -134,6 +141,11 @@ namespace corsika::process::interaction_counter {
     }
   };
 
+  /*! Save a histogram into a text file. The \arg comment string is written
+   * into the header of the text file.
+   * This method is static so that you can sum the histograms of multiple
+   * InteractionProcesses before saving them into the same file.
+   */
   template <typename T1>
   static void saveHist(T1 const& hist, std::string const& filename,
                        std::string const& comment = "") {
@@ -177,6 +189,11 @@ namespace corsika::process::interaction_counter {
       file << std::endl;
     }
   }
+
+  /*!
+   * save both the "normal" particle histograms as well as the "nuclear" histograms
+   * into the same file
+   */
 
   template <typename T1, typename T2>
   static void saveHist(T1 const& hist, T2 const& histMap, std::string const& filename,
