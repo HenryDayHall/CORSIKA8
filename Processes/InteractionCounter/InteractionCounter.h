@@ -134,16 +134,23 @@ namespace corsika::process::interaction_counter {
     }
   };
 
-  template <typename T1, typename T2>
-  static void saveHist(T1 const& hist, T2 const& histMap, std::string const& filename,
+  template <typename T1>
+  static void saveHist(T1 const& hist, std::string const& filename,
+                       std::string const& comment = "") {
+    std::ofstream file;
+    file.open(filename);
+    saveHist(hist, file, comment);
+  }
+
+  template <typename T1>
+  static void saveHist(T1 const& hist, std::ofstream& file,
                        std::string const& comment = "") {
     auto const& energy_axis = hist.axis(1);
-    std::ofstream myfile;
-    myfile.open(filename);
-    myfile << "# interaction count histogram (" << comment << ")" << std::endl
-           << "# " << energy_axis.size() << " bins between " << energy_axis.bin(0).lower()
-           << " and " << energy_axis.bin(energy_axis.size() - 1).upper() << " GeV"
-           << std::endl;
+
+    file << "# interaction count histogram (" << comment << ")" << std::endl
+         << "# " << energy_axis.size() << " bins between " << energy_axis.bin(0).lower()
+         << " and " << energy_axis.bin(energy_axis.size() - 1).upper() << " GeV"
+         << std::endl;
 
     for (particles::CodeIntType p = 0;
          p < static_cast<particles::CodeIntType>(particles::Code::LastParticle); ++p) {
@@ -151,22 +158,34 @@ namespace corsika::process::interaction_counter {
       if (auto pdg = static_cast<particles::PDGCodeType>(
               particles::GetPDG(static_cast<particles::Code>(p)));
           pdg < 1'000'000'000l) {
-        myfile << "# " << static_cast<particles::Code>(p) << std::endl;
-        myfile << pdg;
-        for (int i = 0; i < energy_axis.size(); ++i) { myfile << ' ' << hist.at(p, i); }
-        myfile << std::endl;
+        file << "# " << static_cast<particles::Code>(p) << std::endl;
+        file << pdg;
+        for (int i = 0; i < energy_axis.size(); ++i) { file << ' ' << hist.at(p, i); }
+        file << std::endl;
       }
     }
+  }
 
-    myfile << "# nuclei" << std::endl;
+  template <typename THistogramMap>
+  static void saveHistMap(THistogramMap const& histMap, std::ofstream& file) {
+    file << "# nuclei" << std::endl;
     for (auto const& [pdg, hist] : histMap) {
       auto const num_ebins_nucl = hist.axis(0).size();
-      assert(energy_axis.size() == num_ebins_nucl);
 
-      myfile << pdg << " ";
-      for (int i = 0; i < num_ebins_nucl; ++i) { myfile << ' ' << hist.at(i); }
-      myfile << std::endl;
+      file << pdg << ' ';
+      for (int i = 0; i < num_ebins_nucl; ++i) { file << ' ' << hist.at(i); }
+      file << std::endl;
     }
+  }
+
+  template <typename T1, typename T2>
+  static void saveHist(T1 const& hist, T2 const& histMap, std::string const& filename,
+                       std::string const& comment = "") {
+    std::ofstream file;
+    file.open(filename);
+
+    saveHist(hist, file, comment);
+    saveHistMap(histMap, file);
   }
 } // namespace corsika::process::interaction_counter
 #endif

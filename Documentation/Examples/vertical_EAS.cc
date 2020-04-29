@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
 
   process::sibyll::Interaction sibyll;
   process::interaction_counter::InteractionCounter sibyllCounted(sibyll);
-  
+
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::interaction_counter::InteractionCounter sibyllNucCounted(sibyllNuc);
 
@@ -202,14 +202,14 @@ int main(int argc, char** argv) {
   process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
   auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
-                                // << trackWriter;
+  // << trackWriter;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
   EAS.Init();
-//  EAS.SetNodes();
-//  EAS.forceInteraction();
+  //  EAS.SetNodes();
+  //  EAS.forceInteraction();
   EAS.Run();
 
   eLoss.PrintProfile(); // print longitudinal profile
@@ -221,13 +221,18 @@ int main(int argc, char** argv) {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
-       
-  auto const cms_hists = *std::get<0>(sibyllCounted.CMSHists()) + *std::get<0>(sibyllNucCounted.CMSHists());
-  auto const lab_hists = *std::get<0>(sibyllCounted.labHists()) + *std::get<0>(sibyllNucCounted.labHists());
-  
-  process::interaction_counter::saveHist(cms_hists, *std::get<1>(sibyllNucCounted.CMSHists()), "intcount_hist_cms.txt", "center-of-mass system");
-  process::interaction_counter::saveHist(lab_hists, *std::get<1>(sibyllNucCounted.labHists()), "intcount_hist_lab.txt", "lab system");
-  
+
+  auto const cms_hists =
+      *std::get<0>(sibyllCounted.CMSHists()) + *std::get<0>(sibyllNucCounted.CMSHists());
+  auto const lab_hists =
+      *std::get<0>(sibyllCounted.labHists()) + *std::get<0>(sibyllNucCounted.labHists());
+
+  process::interaction_counter::saveHist(
+      cms_hists, *std::get<1>(sibyllNucCounted.CMSHists()), "intcount_hist_cms.txt",
+      "center-of-mass system");
+  process::interaction_counter::saveHist(lab_hists,
+                                         *std::get<1>(sibyllNucCounted.labHists()),
+                                         "intcount_hist_lab.txt", "lab system");
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;
