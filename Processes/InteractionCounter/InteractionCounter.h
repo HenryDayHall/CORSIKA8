@@ -81,9 +81,14 @@ namespace corsika::process::interaction_counter {
     template <typename TProjectile>
     auto DoInteraction(TProjectile& projectile) {
       using namespace units::si;
-      auto constexpr massAir = 15.994_GeV * (1.f - 0.7847) + 14.003_GeV * .7847;
-      auto const sqrtS = sqrt(projectile.GetMass() * projectile.GetMass() +
-                              massAir * massAir + 2 * projectile.GetEnergy() * massAir);
+      auto const massNumber = projectile.GetNode()
+                                  ->GetModelProperties()
+                                  .GetNuclearComposition()
+                                  .GetAverageMassNumber();
+      auto const massTarget = massNumber * ConvertSIToHEP(units::constants::u);
+      auto const massProjectile = projectile.GetMass();
+      auto const sqrtS = sqrt(massProjectile * massProjectile + massTarget * massTarget +
+                              2 * massProjectile * massTarget);
 
       if (projectile.GetPID() == corsika::particles::Code::Nucleus) {
         std::cerr << "NUCLEUS " << projectile.GetEnergy() << " "
@@ -91,7 +96,7 @@ namespace corsika::process::interaction_counter {
                   << std::endl;
         int const A = projectile.GetNuclearA();
         int const Z = projectile.GetNuclearZ();
-        int32_t pdg = 1'000'000'000l + Z * 10'000l + A * 10l;
+        int32_t const pdg = 1'000'000'000l + Z * 10'000l + A * 10l;
 
         if (nuclIntHistCMS.count(pdg) == 0) {
 
