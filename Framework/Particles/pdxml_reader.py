@@ -317,10 +317,9 @@ def gen_properties(particle_db):
     string = "static constexpr std::size_t size = {size:d};\n".format(size = len(particle_db))
     string += "\n"
 
-    # all particles
+    # all particle initializer_list
     string += "constexpr std::initializer_list<Code> all_particles = {"
-    for k in particle_db:
-        #print(k)
+    for k in particle_db:        
         string += "  Code::{name:s},\n".format(name = k)
     string += "};\n"
     string += "\n"

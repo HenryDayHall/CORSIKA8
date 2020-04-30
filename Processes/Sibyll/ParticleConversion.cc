@@ -26,7 +26,3 @@ corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(
     return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
 }
 
-// const std::map<sibyll::PID, ParticleProperties::InternalParticleCode>
-//   process::sibyll::Sibyll2Corsika = {
-//        {PID::E_MINUS, InternalParticleCode::Electron},
-//};
