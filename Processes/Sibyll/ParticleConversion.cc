@@ -25,4 +25,3 @@ corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(
   else
     return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
 }
-
