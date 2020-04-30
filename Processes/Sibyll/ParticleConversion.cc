@@ -21,7 +21,7 @@ corsika::units::si::HEPMassType corsika::process::sibyll::GetSibyllMass(
     throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
   auto sCode = ConvertToSibyllRaw(pCode);
   if (sCode == 0)
-    return -1_GeV;
+    throw std::runtime_error("GetSibyllMass: unknown particle!");
   else
     return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
 }
