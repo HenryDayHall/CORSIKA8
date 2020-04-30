@@ -71,6 +71,10 @@ public:
     template<class U>
     empty_value(boost::empty_init_t, const U& value)
         : value_(value) { }
+
+    template<class U>
+    empty_value(boost::empty_init_t, U& value)
+        : value_(value) { }
 #endif
 
     const T& get() const BOOST_NOEXCEPT {
@@ -115,6 +119,10 @@ public:
     template<class U>
     empty_value(boost::empty_init_t, const U& value)
         : T(value) { }
+
+    template<class U>
+    empty_value(boost::empty_init_t, U& value)
+        : T(value) { }
 #endif
 
     const T& get() const BOOST_NOEXCEPT {
@@ -130,6 +138,8 @@ public:
 } /* empty_ */
 
 using empty_::empty_value;
+
+BOOST_INLINE_CONSTEXPR empty_init_t empty_init = empty_init_t();
 
 } /* boost */
 
