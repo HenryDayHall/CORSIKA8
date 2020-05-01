@@ -1,6 +1,13 @@
 # input file for particle conversion to/from QGSJet
 # the format of this file is: "corsika-identifier" "qgsjet-id"  "xs-class"
 
+# The 'Unknown' particle is needed to mark all particles qgsjetII does
+# not know
+# IMPORTANT Note: the code "20" MAY NOT BE USED by qgsjetII. Change to
+# another positive integer if a conflict arises. Since we use std::array
+# to store PID data keep the number as low as reasonable.  
+Unknown 20 CannotInteract
+
 # Note, we list here only the particles, which are produced by
 # QGSJetII as secondaries.  There is additional mapping of corsika
 # particles on QGSJetII "xs-class"es and "hadron-type"s, which are
