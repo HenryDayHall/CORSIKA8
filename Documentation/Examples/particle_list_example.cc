@@ -47,13 +47,17 @@ int main() {
                ? to_string(corsika::process::sibyll::GetSibyllMass(p) / 1_GeV)
                : "--");
       auto const qgs_id =
-          static_cast<int>(corsika::process::qgsjetII::ConvertToQgsjetII(p));
+          corsika::process::qgsjetII::ConvertToQgsjetII(p);
       cout << std::setw(20) << std::setfill(' ') << p << " | " << std::setw(10)
            << static_cast<int>(GetPDG(p)) << " | " << std::setw(10)
            << (sib_id != corsika::process::sibyll::SibyllCode::Unknown
                    ? to_string(static_cast<int>(sib_id))
                    : "--")
-           << " | " << std::setw(10) << (qgs_id != 0 ? to_string(qgs_id) : "--") << " | "
+           << " | " << std::setw(10)
+	   << (qgs_id != corsika::process::qgsjetII::QgsjetIICode::Unknown
+                   ? to_string(static_cast<int>(qgs_id))
+                   : "--")
+	   << " | "
            << std::setw(18) << std::setprecision(5) << GetMass(p) / 1_GeV << " | "
            << std::setw(18) << std::setprecision(5) << sib_mass << " | " << endl;
     }
