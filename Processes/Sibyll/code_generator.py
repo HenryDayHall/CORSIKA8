@@ -13,65 +13,83 @@ import pickle, sys, itertools
 
 
 
-# loads the pickled particle_db (which is an OrderedDict)
 def load_particledb(filename):
+    '''
+    loads the pickled particle_db (which is an OrderedDict)
+    '''
     with open(filename, "rb") as f:
         particle_db = pickle.load(f)
     return particle_db
 
 
 
-# 
 def read_sibyll_codes(filename, particle_db):
+    '''
+    reads to sibyll codes data file
+
+    For particls known to sibyll, add 'sibyll_code' and 'sibyll_xsType' to particle_db
+    '''
     with open(filename) as f:
         for line in f:
             line = line.strip()
-            if line[0] == '#':
+            if len(line)==0 or line[0] == '#':
                 continue            
             identifier, sib_code, canInteractFlag, xsType = line.split()
             try:
                 particle_db[identifier]["sibyll_code"] = int(sib_code)
-                particle_db[identifier]["sibyll_xsType"] = int(xsType)
+                particle_db[identifier]["sibyll_xsType"] = xsType
             except KeyError as e:
                 raise Exception("Identifier '{:s}' not found in particle_db".format(identifier))
 
 
             
 
-# generates the enum to access sibyll particles by readable names
 def generate_sibyll_enum(particle_db):
+    '''
+     generates the enum to access sibyll particles by readable names
+    '''
     output = "enum class SibyllCode : int8_t {\n"
     for identifier, pData in particle_db.items():
-        if pData.get('sibyll_code') != None:
+        if 'sibyll_code' in pData:
             output += "  {:s} = {:d},\n".format(identifier, pData['sibyll_code'])
     output += "};\n"
     return output
 
 
 
-# generates the look-up table to convert corsika codes to sibyll codes
 def generate_corsika2sibyll(particle_db):    
-    string = "std::array<SibyllCodeIntType, {:d}> constexpr corsika2sibyll = {{\n".format(len(particle_db))
+    '''
+    generates the look-up table to convert corsika codes to sibyll codes
+    '''
+    string = "std::array<SibyllCode, {:d}> constexpr corsika2sibyll = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
-        sibCode = pData.get("sibyll_code", 0)
-        string += "  {:d}, // {:s}\n".format(sibCode, identifier if sibCode else identifier + " (not implemented in SIBYLL)")
+        if 'sibyll_code' in pData:
+            string += "  SibyllCode::{:s}, \n".format(identifier)
+        else:
+            string += "  SibyllCode::Unknown, // {:s}\n".format(identifier + ' not implemented in SIBYLL')
     string += "};\n"
     return string
     
 
 
-# generates the look-up table to convert corsika codes to sibyll codes
 def generate_corsika2sibyll_xsType(particle_db):    
-    string = "std::array<int, {:d}> constexpr corsika2sibyllXStype = {{\n".format(len(particle_db))
+    '''
+    generates the look-up table to convert corsika codes to sibyll codes
+    '''
+    string = "std::array<SibyllXSClass, {:d}> constexpr corsika2sibyllXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
-        sibCodeXS = pData.get("sibyll_xsType", 0)
-        string += "  {:d}, // {:s}\n".format(sibCodeXS, identifier if sibCodeXS else identifier + " (not implemented in SIBYLL)")
+        if 'sibyll_xsType' in pData:
+            string += "  SibyllXSClass::{:s}, // {:s}\n".format(pData['sibyll_xsType'], identifier)
+        else:
+            string += "  SibyllXSClass::CannotInteract, // {:s}\n".format(identifier + ' not implemented in SIBYLL')
     string += "};\n"
     return string
 
 
-# generates the look-up table to convert sibyll codes to corsika codes    
 def generate_sibyll2corsika(particle_db) :
+    '''
+    generates the look-up table to convert sibyll codes to corsika codes    
+    '''
     string = ""
     
     minID = 0

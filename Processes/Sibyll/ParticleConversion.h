@@ -22,11 +22,23 @@ namespace corsika::process::sibyll {
   enum class SibyllCode : int8_t;
   using SibyllCodeIntType = std::underlying_type<SibyllCode>::type;
 
+  /**
+     These are the possible projectile for which Sibyll knows the cross section
+   */
+  enum class SibyllXSClass : int8_t {
+    CannotInteract = 0,
+    Baryon = 1,
+    Pion = 2,
+    Kaon = 3,
+  };
+  using SibyllXSClassIntType = std::underlying_type<SibyllXSClass>::type;
+
+  
 #include <corsika/process/sibyll/Generated.inc>
 
   SibyllCode constexpr ConvertToSibyll(corsika::particles::Code pCode) {
-    return static_cast<SibyllCode>(
-        corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)]);
+    return 
+        corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 
   corsika::particles::Code constexpr ConvertFromSibyll(SibyllCode pCode) {
@@ -45,7 +57,7 @@ namespace corsika::process::sibyll {
   }
 
   int constexpr GetSibyllXSCode(corsika::particles::Code pCode) {
-    return corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)];
+    return static_cast<SibyllXSClassIntType>(corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)]);
   }
 
   bool constexpr CanInteract(corsika::particles::Code pCode) {
