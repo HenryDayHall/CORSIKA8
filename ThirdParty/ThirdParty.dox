@@ -49,7 +49,7 @@ License: BSL-1.0
 (https://www.boost.org/LICENSE_1_0.txt)
 
 The subset was generated with the bcp tool:
-https://www.boost.org/doc/libs/1_70_0/tools/bcp/doc/html/index.html
+https://www.boost.org/doc/libs/1_73_0/tools/bcp/doc/html/index.html
 
 Instructions on how to update Boost with this tool:
 
@@ -58,7 +58,7 @@ Unpack source code somewhere, go to into the folder.
 Run these commands:
 
     ./bootstrap && ./b2 tools/bcp
-    ./dist/bin/bcp mp11 iterator core format interval optional type_index ./dist
+    ./dist/bin/bcp mp11 iterator core format interval optional type_index histogram ./dist
     mv ./dist/boost <CORSIKA-path>/ThirdParty/boost
 
 */
