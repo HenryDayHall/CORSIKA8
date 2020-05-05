@@ -76,6 +76,7 @@ target_link_libraries (
 CORSIKA_ADD_TEST(testFourVector)
 target_link_libraries (
   testFourVector
+  CORSIKAboost 
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAtesting

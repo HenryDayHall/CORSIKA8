@@ -77,7 +77,6 @@ install (
   TARGETS ProcessUrQMD
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-#  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
   )
 
 
@@ -87,9 +86,5 @@ CORSIKA_ADD_TEST(testUrQMD SOURCES testUrQMD.cc ${MODEL_HEADERS})
 target_link_libraries (
   testUrQMD
   ProcessUrQMD
-  CORSIKAsetup
-  CORSIKArandom
-  CORSIKAgeometry
-  CORSIKAunits
   CORSIKAtesting
   )

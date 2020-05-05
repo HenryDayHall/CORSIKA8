@@ -1,6 +1,3 @@
-set(Python_ADDITIONAL_VERSIONS 3)
-find_package(PythonInterp 3 REQUIRED)
-  
 set (
   MODEL_SOURCES
   Decay.cc
@@ -20,68 +17,64 @@ set (
   corsika/process/pythia
   )
 
-add_library (ProcessPythia STATIC ${MODEL_SOURCES})
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessPythia ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+add_library (ProcessPythia8 STATIC ${MODEL_SOURCES})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessPythia8 ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
 
 set_target_properties (
-  ProcessPythia
+  ProcessPythia8
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
-  ProcessPythia
+  ProcessPythia8
+  CORSIKAprocesssequence
   CORSIKAparticles
   CORSIKAutilities
   CORSIKAunits
   CORSIKAthirdparty
   CORSIKAgeometry
   CORSIKAenvironment
-  ${PYTHIA8_LIBRARY}
+  CORSIKAsetup
+  CORSIKArandom
+  CORSIKAPythia8
   )
 
 target_include_directories (
-  ProcessPythia
+  ProcessPythia8
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
 
 target_include_directories (
-  ProcessPythia
+  ProcessPythia8
   SYSTEM
   PUBLIC ${PYTHIA8_INCLUDE_DIR}
   INTERFACE ${PYTHIA8_INCLUDE_DIR}
   )
 
 install (
-  TARGETS ProcessPythia
+  TARGETS ProcessPythia8
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-#  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
   )
 
 
 # --------------------
 # code unit testing
 
-CORSIKA_ADD_TEST(testPythia
+CORSIKA_ADD_TEST(testPythia8
   SOURCES
-  testPythia.cc
+  testPythia8.cc
   ${MODEL_HEADERS}
 )
 target_link_libraries (
-  testPythia
-  ProcessPythia
-  CORSIKAsetup
-  CORSIKArandom
-  CORSIKAgeometry
-  CORSIKAunits
+  testPythia8
+  ProcessPythia8
   CORSIKAtesting
-  ${PYTHIA8_LIBRARY}
   )
 

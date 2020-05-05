@@ -1,6 +1,3 @@
-set(Python_ADDITIONAL_VERSIONS 3)
-find_package(PythonInterp 3 REQUIRED)
-
 add_custom_command (
   OUTPUT  ${PROJECT_BINARY_DIR}/Processes/Sibyll/Generated.inc
   COMMAND ${PROJECT_SOURCE_DIR}/Processes/Sibyll/code_generator.py 
@@ -68,7 +65,6 @@ set_target_properties (
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
 # target dependencies on other libraries (also the header onlys)
@@ -81,6 +77,8 @@ target_link_libraries (
   CORSIKAthirdparty
   CORSIKAgeometry
   CORSIKAenvironment
+  CORSIKAsetup
+  CORSIKArandom
   )
 
 target_include_directories (
@@ -94,7 +92,6 @@ install (
   TARGETS ProcessSibyll
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-#  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
   )
 
 
@@ -109,9 +106,5 @@ CORSIKA_ADD_TEST(testSibyll
 target_link_libraries (
   testSibyll
   ProcessSibyll
-  CORSIKAsetup
-  CORSIKArandom
-  CORSIKAgeometry
-  CORSIKAunits
   CORSIKAtesting
   )

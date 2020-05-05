@@ -20,8 +20,13 @@ enable_language (Fortran)
 
 # TEMPORARY: this should be removed, the sanitizers should be always enabled
 option (WITH_CORSIKA_SANITIZERS_ENABLED "temporary way to globally disable sanitizers until the currently failing tests are fixed" OFF)
-option (WITH_PYTHIA "flag to switch on/off pythia support" OFF)
-option (WITH_COAST "flag to switch on/off COAST (reverse) interface" OFF)
+option (WITH_COAST "Flag to switch on/off COAST (reverse) interface" OFF)
+set (WITH_EIGEN3 "" CACHE STRING "Selection of eigen3 package. Can be \'system\' or path to installation. If empty ThirdParty/eigen3 will be used." FORCE)
+set (WITH_PYTHIA8 "" CACHE STRING "Selection of pythia8 package. Can be \'system\' or path to installation. If empty ThirdParty/pythia8 will be used..")
+
+# check for python
+set(Python_ADDITIONAL_VERSIONS 3)
+find_package(PythonInterp 3 REQUIRED)
 
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
@@ -114,28 +119,41 @@ endif ()
 # add call to ./do-copyright.py to run as unit-test-case
 add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (WITH_PYTHIA)
-  find_package (Pythia8) # optional
-endif (WITH_PYTHIA)
+# check for Pythia8: either use ThirdParty/pythia8 or system-level installation
+message ("***** Configuring Pythia8 version")
+if (WITH_PYTHIA8)
+  string (TOLOWER ${WITH_PYTHIA8} WITH_PYTHIA8_LOWER)
+  if ("x_${WITH_PYTHIA8_LOWER}" STREQUAL "x_c8")
+    message ("Use Pythia8 from ThirdParty folder")
+  else ()
+    message ("Searching Pythia8 installed at location ${WITH_PYTHIA8}")
+    set (PYTHIA8_DIR ${WITH_PYTHIA8})
+    find_package (Pythia8 REQUIRED) 
+  endif ()
+else (WITH_PYTHIA8)
+  message ("Searching Pythia8 installed at system-level")
+  find_package (Pythia8) # if not found here, will automatically pick ThirdParty version 
+endif (WITH_PYTHIA8)
 
 # include potential ThirdParty code provided with CORSIKA
 add_subdirectory (ThirdParty)
 
 # check for Eigen3: either use ThirdParty/eigen3 or system-level installation
+message ("***** Configuring eigen3 version")
 if (WITH_EIGEN3)
   string (TOLOWER ${WITH_EIGEN3} WITH_EIGEN3_LOWER)
-  if (WITH_EIGEN3_LOWER EQUAL "system")
-    find_package (Eigen3 REQUIRED)
+  if (WITH_EIGEN3_LOWER STREQUAL "system")
+    message ("Use system-level eigen3")
   else ()
+    message ("Use eigen3 installed at ${WITH_EIGEN3}")
     list (APPEND CMAKE_MODULE_PATH "${WITH_EIGEN3}/cmake")
     set (EIGEN3_INCLUDE_DIR "${WITH_EIGEN3}" CACHE PATH "eigen3 directory") 
-    find_package (Eigen3 REQUIRED)
   endif ()
 else (WITH_EIGEN3)
-  list (APPEND CMAKE_MODULE_PATH "${LOCAL_Eigen3_VERSION}/cmake")
-  set (EIGEN3_INCLUDE_DIR "${LOCAL_Eigen3_VERSION}" CACHE PATH "eigen3 directory")
-  find_package (Eigen3 REQUIRED)
+  list (APPEND CMAKE_MODULE_PATH "${C8_Eigen3_VERSION}/cmake")
+  set (EIGEN3_INCLUDE_DIR "${C8_Eigen3_VERSION}" CACHE PATH "eigen3 directory")
 endif (WITH_EIGEN3)
+find_package (Eigen3 REQUIRED)
 
 # some final info output
 message ("Use eigen3 version: ${EIGEN3_VERSION} from ${EIGEN3_INCLUDE_DIR}")
