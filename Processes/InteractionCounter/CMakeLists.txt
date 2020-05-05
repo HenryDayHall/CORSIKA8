@@ -33,11 +33,15 @@ install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
 # --------------------
 # code unit testing
-#~ CORSIKA_ADD_TEST(testLuminosityCounter)
-#~ target_link_libraries (
-  #~ testLuminosityCounter
-  #~ ProcessLuminosityCounter
-  #~ CORSIKAstackinterface
-  #~ CORSIKAtesting
-#~ )
+CORSIKA_ADD_TEST(testInteractionCounter SOURCES
+  testInteractionCounter.cc
+  ${MODEL_HEADERS}
+)
 
+target_link_libraries (
+  testInteractionCounter
+  ProcessInteractionCounter
+  CORSIKAunits
+  CORSIKAenvironment
+  CORSIKAtesting
+  )

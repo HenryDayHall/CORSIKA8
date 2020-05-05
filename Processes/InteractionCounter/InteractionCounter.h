@@ -75,8 +75,6 @@ namespace corsika::process::interaction_counter {
       using namespace units::si;
 
       if (projectile_id == particles::Code::Nucleus) {
-        std::cerr << "NUCLEUS " << lab_energy << " " << A << " " << Z << std::endl;
-
         auto const sqrtS =
             sqrt(A * A * (units::constants::nucleonMass * units::constants::nucleonMass) +
                  mass_target * mass_target + 2 * lab_energy * mass_target);
