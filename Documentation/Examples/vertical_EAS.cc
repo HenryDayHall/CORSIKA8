@@ -222,17 +222,9 @@ int main(int argc, char** argv) {
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
 
-  auto const cms_hists =
-      *std::get<0>(sibyllCounted.CMSHists()) + *std::get<0>(sibyllNucCounted.CMSHists());
-  auto const lab_hists =
-      *std::get<0>(sibyllCounted.labHists()) + *std::get<0>(sibyllNucCounted.labHists());
-
-  process::interaction_counter::saveHist(
-      cms_hists, *std::get<1>(sibyllNucCounted.CMSHists()), "intcount_hist_cms.txt",
-      "center-of-mass system");
-  process::interaction_counter::saveHist(lab_hists,
-                                         *std::get<1>(sibyllNucCounted.labHists()),
-                                         "intcount_hist_lab.txt", "lab system");
+  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram();
+  hists.saveLab("inthist_lab.txt");
+  hists.saveCMS("inthist_cms.txt");
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;
