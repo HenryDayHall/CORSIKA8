@@ -18,7 +18,7 @@ add_library (CORSIKAboost INTERFACE IMPORTED GLOBAL)
 if (NOT Boost_FOUND)
   set (_C8_Boost_VERSION "107000")
   message ("Building ThirdParty/boost using boost-${_C8_Boost_VERSION}.tar.bz2")
-  ExternalProject_Add (boost PREFIX boost
+  ExternalProject_Add (boost
     URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-${_C8_Boost_VERSION}.tar.bz2
     URL_MD5 8ffed5895a851894ad866888d4e64685
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/boost/install/boost 
@@ -54,19 +54,51 @@ endif (NOT Boost_FOUND)
 
 # eigen3
 
-if (NOT WITH_EIGEN3)
+add_library (CORSIKAEigen3 INTERFACE IMPORTED GLOBAL)
+if (NOT Eigen3_FOUND)
   set (_C8_Eigen3_VERSION "eigen-eigen-b3f3d4950030")
-  if ("${CMAKE_CURRENT_SOURCE_DIR}/${_C8_Eigen3_VERSION}.tar.bz2"
-      IS_NEWER_THAN
-      "${CMAKE_CURRENT_SOURCE_DIR}/${_C8_Eigen3_VERSION}")
-    message ("Unpacking ThirdParty/eigen3")
-    execute_process (
-      COMMAND ${CMAKE_COMMAND} -E tar xjf ${_C8_Eigen3_VERSION}.tar.bz2
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      )
-  endif ()
-  set (C8_Eigen3_VERSION ${CMAKE_CURRENT_SOURCE_DIR}/eigen-eigen-b3f3d4950030 PARENT_SCOPE)
-endif (NOT WITH_EIGEN3)
+
+  message ("Building ThirdParty/eigen3 using ${_C8_Eigen3_VERSION}.tar.bz2")
+  ExternalProject_Add (eigen3
+    URL ${CMAKE_CURRENT_SOURCE_DIR}/${_C8_Eigen3_VERSION}.tar.bz2
+    URL_MD5 8ffed5895a851894ad866888d4e64685
+    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/eigen3/install/eigen
+    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/eigen3/install/eigen
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    BUILD_IN_SOURCE ON
+    EXCLUDE_FROM_ALL FALSE
+    )
+  set (HAVE_Eigen3 1 CACHE BOOL "presence of eigen3, via external-project-add in ThirdParty folder")
+  set (Eigen3_FOUND 1 PARENT_SCOPE)
+  ExternalProject_Get_Property (boost INSTALL_DIR)
+  set (Eigen3_PREFIX ${INSTALL_DIR}/..)
+  set (Eigen3_INCLUDE_DIR  ${Eigen3_PREFIX})
+  set (Eigen3_LIBRARY_DIR ${Eigen3_PREFIX})
+  add_dependencies (CORSIKAboost boost)
+
+  # create include directory at config time
+  file (MAKE_DIRECTORY ${Eigen3_INCLUDE_DIR})
+  
+  set (Eigen3_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/eigen3)
+  install (DIRECTORY ${Eigen3_PREFIX}/ DESTINATION ${Eigen3_INSTALL_DIR})
+  
+  set_target_properties (
+    CORSIKAEigen3 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+      $<BUILD_INTERFACE:${Eigen3_INCLUDE_DIR}>
+    )
+
+else (NOT Eigen3_FOUND)
+
+  set_target_properties (
+    CORSIKAEigen3 PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+      $<BUILD_INTERFACE:${Eigen3_INCLUDE_DIR}>
+    )
+  
+endif (NOT Eigen3_FOUND)
 
 # Pythia8
 
@@ -75,7 +107,7 @@ if (NOT Pythia8_FOUND)
   set (_C8_Pythia8_VERSION "8235")
   message ("Building ThirdParty/pythia8 using pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2")
   message ("This will take a bit.....")
-  ExternalProject_Add (pythia8 PREFIX pythia8
+  ExternalProject_Add (pythia8
     URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
     URL_MD5 53e1b5925a53875dedcf4ff2e3ba4cb9
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
