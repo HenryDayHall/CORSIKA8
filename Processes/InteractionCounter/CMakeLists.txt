@@ -1,24 +1,36 @@
 set (
   MODEL_HEADERS
   InteractionCounter.h
+  InteractionHistogram.h
   )
+
+set (
+  MODEL_SOURCES
+  InteractionHistogram.cc
+)
 
 set (
   MODEL_NAMESPACE
   corsika/process/interaction_counter
   )
 
-FIND_PACKAGE( Boost 1.70 REQUIRED )
-
-add_library (ProcessInteractionCounter INTERFACE)
+add_library (ProcessInteractionCounter STATIC ${MODEL_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessInteractionCounter ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+
+set_target_properties (
+  ProcessInteractionCounter
+  PROPERTIES
+  VERSION ${PROJECT_VERSION}
+  SOVERSION 1
+#  PUBLIC_HEADER "${MODEL_HEADERS}"
+  )
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   ProcessInteractionCounter
-  INTERFACE
   CORSIKAunits
   CORSIKAprocesssequence
+  CORSIKAthirdparty
   )
 
 target_include_directories (
@@ -26,7 +38,6 @@ target_include_directories (
   INTERFACE 
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
-  ${Boost_INCLUDE_DIR}
   )
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
