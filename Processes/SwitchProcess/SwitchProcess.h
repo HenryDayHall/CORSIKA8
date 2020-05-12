@@ -74,7 +74,8 @@ namespace corsika::process::switch_process {
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_select,
         corsika::units::si::InverseGrammageType& lambda_inv_count) {
       if (vP.GetEnergy() < fThresholdEnergy) {
-        if constexpr (is_process_sequence_v<TLowEProcess>) {
+        if constexpr (is_process_sequence_v<TLowEProcess> ||
+                      is_switch_process_v<TLowEProcess>) {
           return fLowEProcess.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         } else {
           lambda_inv_count += fLowEProcess.GetInverseInteractionLength(vP);
@@ -87,7 +88,8 @@ namespace corsika::process::switch_process {
           }
         }
       } else {
-        if constexpr (is_process_sequence_v<THighEProcess>) {
+        if constexpr (is_process_sequence_v<THighEProcess> ||
+                      is_switch_process_v<THighEProcess>) {
           return fHighEProcess.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         } else {
           lambda_inv_count += fHighEProcess.GetInverseInteractionLength(vP);
