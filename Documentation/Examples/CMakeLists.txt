@@ -101,7 +101,6 @@ target_link_libraries (vertical_EAS
   CORSIKAcascade
   ProcessEnergyLoss
   ProcessObservationPlane
-  ProcessTrackWriter
   ProcessTrackingLine
   ProcessParticleCut
   ProcessStackInspector

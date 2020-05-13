@@ -9,41 +9,29 @@
  */
 
 #include <corsika/cascade/Cascade.h>
+#include <corsika/environment/Environment.h>
+#include <corsika/environment/FlatExponential.h>
+#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
+#include <corsika/environment/NuclearComposition.h>
+#include <corsika/geometry/Plane.h>
+#include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
-#include <corsika/process/switch_process/SwitchProcess.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
-
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
-
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/FlatExponential.h>
-#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
-#include <corsika/environment/NuclearComposition.h>
-
-#include <corsika/geometry/Plane.h>
-#include <corsika/geometry/Sphere.h>
-
+#include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-
-#include <corsika/process/pythia/Decay.h>
-
+#include <corsika/process/switch_process/SwitchProcess.h>
+#include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
-
-#include <corsika/process/particle_cut/ParticleCut.h>
-#include <corsika/process/track_writer/TrackWriter.h>
-
-#include <corsika/units/PhysicalUnits.h>
-
 #include <corsika/random/RNGManager.h>
-
+#include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
 
 #include <iomanip>
@@ -187,7 +175,6 @@ int main(int argc, char** argv) {
 
   process::particle_cut::ParticleCut cut(100_GeV);
 
-  // process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss(showerAxis);
 
   Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
@@ -202,7 +189,6 @@ int main(int argc, char** argv) {
   process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
   auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
-  // << trackWriter;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
