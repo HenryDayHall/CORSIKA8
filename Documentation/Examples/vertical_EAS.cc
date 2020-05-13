@@ -76,7 +76,7 @@ void registerRandomStreams() {
 
 int main(int argc, char** argv) {
   if (argc != 4) {
-    std::cerr << "must provide A, Z, energy" << std::endl;
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV>" << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
