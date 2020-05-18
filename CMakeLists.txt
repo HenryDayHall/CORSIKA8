@@ -26,8 +26,8 @@ set (WITH_PYTHIA8 "" CACHE STRING "Selection of pythia8 package. Can be \'c8\' o
 set (WITH_BOOST "" CACHE STRING "Selection of boost libaries. Can be \'c8\' or path to installation. If empty: search system, if not found use ThirdParty/boost." FORCE)
 
 # check for python
-set(Python_ADDITIONAL_VERSIONS 3)
-find_package(PythonInterp 3 REQUIRED)
+set (Python_ADDITIONAL_VERSIONS 3)
+find_package (PythonInterp 3 REQUIRED)
 
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
