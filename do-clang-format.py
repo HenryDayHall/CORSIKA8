@@ -34,7 +34,10 @@ else:
     cmd = "git diff master --name-status"
     for line in subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n"):
         if line.startswith("D"): continue
-        filelist.append(line[1:].lstrip())
+        if line.startswith("R"):
+            filelist.append(line.split()[-1])
+        else:
+            filelist.append(line[1:].lstrip())
 
     cmd = "git ls-files --exclude-standard --others"
     filelist += subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n")
