@@ -72,7 +72,7 @@ add ```libeigen3-dev``` if you want to use system version of eigen3.
 
 Follow these steps to download and install CORSIKA 8 milestone2
 ```
-git clone git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
+git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
 cd corsika
 mkdir ../corsika-build
 cd ../corsika-build
