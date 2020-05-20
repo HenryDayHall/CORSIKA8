@@ -75,7 +75,7 @@ TEST_CASE("Sibyll", "[processes]") {
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/process/sibyll/sibyll2.3d.h>
 
 using namespace corsika::units::si;
 using namespace corsika::units;

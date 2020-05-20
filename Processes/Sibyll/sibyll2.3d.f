@@ -7,12 +7,13 @@ C         SSSSSS    IIIIIII  BBBBB       YY       LLLLLLL  LLLLLLL
 C=======================================================================
 C  Code for SIBYLL:  hadronic interaction Monte Carlo event generator
 C=======================================================================
-C   Version 2.3c03 (Jun-01-2017, modified Aug-22-2019)
+C   Version 2.3d (Jun-01-2017, modified May-20-2020)
 C
 C     with CHARM production
 C
 C       By   Eun-Joo Ahn
 C            Ralph Engel
+C            A. Fedynitch      
 C            R.S. Fletcher
 C            T.K. Gaisser
 C            Paolo Lipari
@@ -26,12 +27,14 @@ C
 C      For a correct copy contact:
 C                sein@fnal.gov
 C                ralph.engel@kit.edu
+C                afedynitch@gmail.com 
 C                gaisser@bartol.udel.edu
 C                paolo.lipari@roma1.infn.it
 C                friehn@lip.pt
 C                stanev@bartol.udel.edu
 C     
 C     last changes relative to Sibyll 2.3c:
+C     * no pi0 suppression in minijets
 C     * added cross section tables for hadron-nitrogen and hadron-oxygen
 C       (changed S_CCSIG common)
 C     * no remnant in high mass diff. events (pi0-had scattering)
@@ -458,20 +461,18 @@ C-----------------------------------------------------------------------
       WRITE(*,100)
  100  FORMAT(' ','====================================================',
      *     /,' ','|                                                  |',
-     *     /,' ','|                 S I B Y L L  2.3c                |',
+     *     /,' ','|                 S I B Y L L  2.3d                |',
      *     /,' ','|                                                  |',
      *     /,' ','|         HADRONIC INTERACTION MONTE CARLO         |',
      *     /,' ','|                        BY                        |',
      *     /,' ','|            Eun-Joo AHN, Felix RIEHN              |',
-     *     /,' ','|     R. ENGEL, R.S. FLETCHER, T.K. GAISSER        |',
-     *     /,' ','|               P. LIPARI, T. STANEV               |',
+     *     /,' ','|      R. ENGEL, A. FEDYNITCH, R.S. FLETCHER,      |',
+     *     /,' ','|       T.K. GAISSER, P. LIPARI, T. STANEV         |',
      *     /,' ','|                                                  |',
      *     /,' ','| Publication to be cited when using this program: |',
      *     /,' ','| Eun-Joo AHN et al., Phys.Rev. D80 (2009) 094003  |',
-     *     /,' ','| F. RIEHN et al., Proc. 35th Int. Cosmic Ray Conf.|',
-     *     /,' ','|           Bexco, Busan, Korea, cont. 301 (2017)  |',
-     *     /,' ','|                                                  |',
-     *     /,' ','| last modifications: F. Riehn (08/22/2019)        |',
+     *     /,' ','| F. RIEHN et al., hep-ph: 1912.03300              |',
+     *     /,' ','| last modifications: F. Riehn (05/20/2020)        |',
      *     /,' ','====================================================',
      *     /)
 
@@ -851,7 +852,7 @@ c     23rc5.4frgB1 aka retune5 aka Sibyll 2.3.5
       IPAR(92) = 1
       IPAR(93) = 1
       IPAR(94) = 0
-      IPAR(95) = 0
+      IPAR(95) = 1
       IPAR(96) = 0
       IPAR(97) = 0
       IPAR(98) = 0
@@ -10313,7 +10314,7 @@ C     f = 1/(1+exp((x-x0)/alpha))
 C-----------------------------------------------------------------------
       IMPLICIT NONE
 c     externals
-      DOUBLE PRECISION XARG,X0,XALPH
+      DOUBLE PRECISION XARG,X0,XALPH,XE
 c     COMMONs
 
 C--------------------------------------------------------------------
@@ -10331,7 +10332,8 @@ C--------------------------------------------------------------------
       SAVE
 
 c     internals
-      fermi=1.D0+exp((xarg-x0)/xalph)
+      xe = max((xarg-x0)/xalph,-10.D0)
+      fermi=1.D0+exp(xe)
       fermi=1.D0/fermi
       END
 C=======================================================================
@@ -10591,7 +10593,8 @@ C--------------------------------------------------------------------
      &     PAR1_def,PAR24_def,PAR3_def,PAR2_1_def,PAR2_2_def,PAR5_def,
      &     PAR6_def,PAR24_2_def,XM,QMASS,DBETJ      
       DIMENSION PST(5),PBM(5),PTG(5)
-      INTEGER IST,ITGST,IBMST,IPID,IFLB,IFLT,NOLD,IS,IFL1,IFBAD,IDM
+      INTEGER IST,ITGST,IBMST,IPID,IFLB,IFLT,NOLD,IS,IFL1,IFBAD,IDM,
+     &     ipar82_def
       SAVE
       DATA PGG /1.D0/
 
@@ -10674,7 +10677,15 @@ c     change vector rate and kaon vector rate
          PAR(6) = PAR(74)       ! P_K* from K
          
       ENDIF
-
+      
+C...  switch off pi0 suppression
+c     should only be applied for remnant, diff and valence
+c     in case of meson projectile
+      ipar82_def = IPAR(82)
+      IF(IPAR(95).eq.1)THEN
+         IPAR(82) = 0
+      ENDIF
+      
       NOLD = NP
       IF ( (E0.LT.8.D0) .OR. (S_RNDM(0).GT.PGG)) THEN
 C...  one string case, q - qbar
@@ -10725,7 +10736,8 @@ c     leading charm fraction
             PAR(2) = PAR2_1_def
             PAR(5) = PAR5_def
             PAR(6) = PAR6_def
-            PAR(3) = PAR3_def 
+            PAR(3) = PAR3_def
+            IPAR(82) = ipar82_def       
             RETURN
          ENDIF
       ELSE
@@ -10744,7 +10756,8 @@ c      DBETJ = (DX1J-DX2J)/(DX1J+DX2J)
       PAR(2) = PAR2_1_def
       PAR(5) = PAR5_def
       PAR(6) = PAR6_def
-      PAR(3) = PAR3_def 
+      PAR(3) = PAR3_def
+      IPAR(82) = ipar82_def  
       IBAD = 0
       END
 C=======================================================================
@@ -14108,7 +14121,7 @@ C                  SIGela     elastic cross section
 C-----------------------------------------------------------------------
 Cf2py integer, intent(in) :: L,IAT
 Cf2py double precision, intent(in) :: SQS
-Cf2py double precision, intent(out) :: SIGprod,SIGbdif
+Cf2py double precision, intent(out) :: SIGprod,SIGbdif,SIGela
       IMPLICIT NONE
 
       INTEGER NS_max, NH_max

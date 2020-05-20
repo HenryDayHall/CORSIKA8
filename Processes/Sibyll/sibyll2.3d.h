@@ -8,8 +8,8 @@
  * the license.
  */
 
-#ifndef _include_sib23c_interface_h_
-#define _include_sib23c_interface_h_
+#ifndef _include_sib23d_interface_h_
+#define _include_sib23d_interface_h_
 //----------------------------------------------
 //  C++ interface for the SIBYLL event generator
 //----------------------------------------------
