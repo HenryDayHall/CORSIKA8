@@ -87,7 +87,6 @@ if (Pythia8_FOUND)
   install (TARGETS cascade_proton_example DESTINATION share/examples)
 endif()
 
-#CORSIKA_ADD_TEST(vertical_EAS)
 add_executable(vertical_EAS vertical_EAS.cc)
 target_link_libraries (vertical_EAS
   SuperStupidStack
