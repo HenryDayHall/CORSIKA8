@@ -8,7 +8,7 @@
  * the license.
  */
 
-#include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/process/sibyll/sibyll2.3d.h>
 
 #include <corsika/random/RNGManager.h>
 #include <random>

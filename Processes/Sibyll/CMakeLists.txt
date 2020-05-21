@@ -21,17 +21,17 @@ set (
   Interaction.cc
   Decay.cc
   NuclearInteraction.cc
-  sibyll2.3c.f
+  sibyll2.3d.f
   nuclib.f
   signuc.f
-  sibyll2.3c.cc
+  sibyll2.3d.cc
   gasdev.f
   )
 
 set (
   MODEL_HEADERS
   ParticleConversion.h
-  sibyll2.3c.h
+  sibyll2.3d.h
   nuclib.h
   SibStack.h
   Decay.h

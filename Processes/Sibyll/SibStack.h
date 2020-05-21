@@ -14,7 +14,7 @@
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
-#include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/process/sibyll/sibyll2.3d.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 

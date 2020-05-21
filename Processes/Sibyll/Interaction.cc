@@ -15,7 +15,7 @@
 #include <corsika/geometry/FourVector.h>
 #include <corsika/process/sibyll/ParticleConversion.h>
 #include <corsika/process/sibyll/SibStack.h>
-#include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/process/sibyll/sibyll2.3d.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/utl/COMBoost.h>
