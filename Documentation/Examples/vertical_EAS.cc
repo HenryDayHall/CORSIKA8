@@ -194,8 +194,11 @@ int main(int argc, char** argv) {
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
   EAS.Init();
+
+  // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();
   //  EAS.forceInteraction();
+
   EAS.Run();
 
   eLoss.PrintProfile(); // print longitudinal profile
