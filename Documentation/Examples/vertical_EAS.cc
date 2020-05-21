@@ -179,7 +179,8 @@ int main(int argc, char** argv) {
 
   Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
                        Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane, "/dev/null");
+  process::observation_plane::ObservationPlane observationLevel(obsPlane,
+                                                                "particles.dat");
 
   // assemble all processes into an ordered process list
 
