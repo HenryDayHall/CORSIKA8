@@ -177,7 +177,7 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
-  NuclearInteraction<SetupEnvironment>::GetCrossSection(Particle& vP,
+  NuclearInteraction<SetupEnvironment>::GetCrossSection(Particle const& vP,
                                                         const particles::Code TargetId) {
     using namespace units::si;
     if (vP.GetPID() != particles::Code::Nucleus)
@@ -216,7 +216,7 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   units::si::GrammageType NuclearInteraction<SetupEnvironment>::GetInteractionLength(
-      Particle& vP) {
+      Particle const& vP) {
 
     using namespace units;
     using namespace units::si;
