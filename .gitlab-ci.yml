@@ -10,6 +10,7 @@ variables:
 # normal multi-step pipeline for each commit
 stages:
   - config
+  - quality
   - build_test
   - optional
 
@@ -50,6 +51,24 @@ config-clang-8:
     paths:
        - build
        - corsika-data
+
+check-copyrights:
+  image: corsika/devel:u-18.04
+  stage: quality
+  tags:
+    - corsika
+  script:
+    - ./do-copyright.py
+
+check-clang-format:
+  image: corsika/devel:u-18.04
+  before_script:
+  - apt-get update && apt-get install -y -qq clang-format
+  stage: quality
+  tags:
+    - corsika
+  script:
+    - ./do-clang-format.py --all
 
 # normal pipeline for each commit
 build-test-u-18_04: 

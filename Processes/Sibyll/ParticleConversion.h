@@ -33,12 +33,10 @@ namespace corsika::process::sibyll {
   };
   using SibyllXSClassIntType = std::underlying_type<SibyllXSClass>::type;
 
-  
 #include <corsika/process/sibyll/Generated.inc>
 
   SibyllCode constexpr ConvertToSibyll(corsika::particles::Code pCode) {
-    return 
-        corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)];
+    return corsika2sibyll[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 
   corsika::particles::Code constexpr ConvertFromSibyll(SibyllCode pCode) {
@@ -57,7 +55,8 @@ namespace corsika::process::sibyll {
   }
 
   int constexpr GetSibyllXSCode(corsika::particles::Code pCode) {
-    return static_cast<SibyllXSClassIntType>(corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)]);
+    return static_cast<SibyllXSClassIntType>(
+        corsika2sibyllXStype[static_cast<corsika::particles::CodeIntType>(pCode)]);
   }
 
   bool constexpr CanInteract(corsika::particles::Code pCode) {

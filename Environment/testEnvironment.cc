@@ -8,12 +8,12 @@
  * the license.
  */
 
-#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
+#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
