@@ -12,7 +12,7 @@
 #define _include_processes_sibyll_particles_h_
 
 #include <corsika/particles/ParticleProperties.h>
-#include <corsika/process/sibyll/sibyll2.3c.h>
+#include <corsika/process/sibyll/sibyll2.3d.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <string>
