@@ -152,6 +152,10 @@ namespace corsika::particles {
     return Proton::GetMass() * vZ + (vA - vZ) * Neutron::GetMass();
   }
 
+  std::initializer_list<Code> constexpr getAllParticles() {
+    return detail::all_particles;
+  }
+
 } // namespace corsika::particles
 
 #endif

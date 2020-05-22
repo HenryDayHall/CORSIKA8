@@ -58,8 +58,7 @@ namespace corsika::process::qgsjetII {
 #include <corsika/process/qgsjetII/Generated.inc>
 
   QgsjetIICode constexpr ConvertToQgsjetII(corsika::particles::Code pCode) {
-    return static_cast<QgsjetIICode>(
-        corsika2qgsjetII[static_cast<corsika::particles::CodeIntType>(pCode)]);
+    return corsika2qgsjetII[static_cast<corsika::particles::CodeIntType>(pCode)];
   }
 
   corsika::particles::Code constexpr ConvertFromQgsjetII(QgsjetIICode pCode) {
