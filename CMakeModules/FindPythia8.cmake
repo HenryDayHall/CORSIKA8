@@ -65,6 +65,36 @@ if (PYTHIA8_CONFIG)
   _PYTHIA8_CONFIG_ ("--libs" PYTHIA8_LIBRARY STRING "the pythia8 libs")
   _PYTHIA8_CONFIG_ ("--datadir" PYTHIA8_DATA_DIR PATH "the pythia8 data dir")
   _PYTHIA8_CONFIG_ ("--cxxflags" PYTHIA8_CXXFLAGS STRING "the pythia8 cxxflags")
+else()
+
+  # if we get here, pythia8-config was not found by CMake so we use
+  # CMake to try and find Pythia8 for us (but let the user know first).
+  # We set these variables to exactly match the format of pythia8-config.
+  # If any one of the variables is not found, CMake will automatically report
+  # that Pythia8 is NOT FOUND (which is what we want).
+  message(WARNING
+    "pythia8-config was not found. Attempting to manually locate Pythia8...")
+
+  # construct the prefix directory
+  find_path(PYTHIA8_PREFIX "Pythia8/Pythia.h")
+
+  # find the main header
+  find_path(PYTHIA8_INCLUDE_DIR "Pythia8/Pythia.h")
+
+  # and find the main library
+  find_library(PYTHIA8_LIBRARY "libpythia8.so")
+
+  # attempt to find the data directory
+  find_path(PYTHIA8_DATA_DIR "xmldoc"
+    HINTS "/usr/share" "/usr/local/share"
+    PATH_SUFFIXES "Pythia8")
+
+  # and set our best guess
+  message("Found Pythia8 in ${PYTHIA8_PREFIX}")
+  message("Found Pythia.h in ${PYTHIA8_INCLUDE_DIR}")
+  message("Found libpythia8.so at ${PYTHIA8_LIBRARY_DIR}")
+  message("Found pythia-data in in ${PYTHIA8_DATA_DIR}")
+
 endif ()
 
 # standard cmake infrastructure:
