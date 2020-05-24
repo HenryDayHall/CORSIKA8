@@ -72,19 +72,19 @@ namespace corsika::geometry {
       Eigen::Matrix3d A, B;
 
       if (s > 0) {
-        A << 1, 0, -a1,                     // comment to prevent clang-format
-            0, 1, -a2,                      // .
-            a1, a2, 1;                      // .
+        A << 1, 0, a1,                      // comment to prevent clang-format
+            0, 1, a2,                       // .
+            -a1, -a2, 1;                    // .
         B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
             -a1 * a2 * c, -a2 * a2 * c, 0,  // .
             0, 0, -(a1 * a1 + a2 * a2) * c; // .
 
       } else {
         A << 1, 0, a1,                      // .
-            0, -1, -a2,                     // .
-            a1, a2, -1;                     // .
-        B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
-            +a1 * a2 * c, +a2 * a2 * c, 0,  // .
+            0, -1, a2,                      // .
+            a1, -a2, -1;                    // .
+        B << -a1 * a1 * c, +a1 * a2 * c, 0, // .
+            -a1 * a2 * c, +a2 * a2 * c, 0,  // .
             0, 0, (a1 * a1 + a2 * a2) * c;  // .
       }
 
