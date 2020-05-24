@@ -12,8 +12,10 @@
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/pythia/Random.h>
 
+#include <corsika/geometry/FourVector.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/utl/COMBoost.h>
 
 using std::cout;
 using std::endl;
@@ -103,16 +105,14 @@ namespace corsika::process::pythia {
 
   void Decay::SetHandleDecay(const vector<particles::Code> vParticleList) {
     handleAllDecays_ = false;
-    for (auto p : vParticleList) Decay::SetHandleDecay(p);
+    for (auto p : vParticleList) SetHandleDecay(p);
   }
 
   bool Decay::IsDecayHandled(const corsika::particles::Code vParticleCode) {
-    if (handleAllDecays_ && Decay::CanHandleDecay(vParticleCode))
+    if (handleAllDecays_ && CanHandleDecay(vParticleCode))
       return true;
     else
-      return Decay::handledDecays_.find(vParticleCode) != Decay::handledDecays_.end()
-                 ? true
-                 : false;
+      return handledDecays_.find(vParticleCode) != Decay::handledDecays_.end();
   }
 
   bool Decay::IsStable(const particles::Code vCode) {
@@ -192,12 +192,17 @@ namespace corsika::process::pythia {
     using namespace units;
     using namespace units::si;
 
-    auto const decayPoint = vP.GetPosition();
+    auto const& decayPoint = vP.GetPosition();
     auto const t0 = vP.GetTime();
 
-    // coordinate system, get global frame of reference
-    geometry::CoordinateSystem& rootCS =
-        geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+    auto const& labMomentum = vP.GetMomentum();
+    geometry::CoordinateSystem const& labCS = labMomentum.GetCoordinateSystem();
+
+    // define target kinematics in lab frame
+    // define boost to and from CoM frame
+    // CoM frame definition in Pythia projectile: +z
+    utl::COMBoost const boost(labMomentum, vP.GetMass());
+    auto const& rotatedCS = boost.GetRotatedCS();
 
     fCount++;
 
@@ -213,12 +218,11 @@ namespace corsika::process::pythia {
     // input particle PDG
     auto const pdgCode = static_cast<int>(particles::GetPDG(particleId));
 
-    auto const pcomp = vP.GetMomentum().GetComponents();
-    double px = pcomp[0] / 1_GeV;
-    double py = pcomp[1] / 1_GeV;
-    double pz = pcomp[2] / 1_GeV;
-    double en = vP.GetEnergy() / 1_GeV;
-    double m = particles::GetMass(particleId) / 1_GeV;
+    double constexpr px = 0;
+    double constexpr py = 0;
+    double constexpr pz = 0;
+    double const en = vP.GetMass() / 1_GeV;
+    double const m = en;
 
     // add particle to pythia stack
     event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
@@ -236,17 +240,22 @@ namespace corsika::process::pythia {
       if (event[i].isFinal()) {
         auto const pyId =
             particles::ConvertFromPDG(static_cast<particles::PDGCode>(event[i].id()));
-        HEPEnergyType pyEn = event[i].e() * 1_GeV;
-        MomentumVector pyP(rootCS, {event[i].px() * 1_GeV, event[i].py() * 1_GeV,
-                                    event[i].pz() * 1_GeV});
+        HEPEnergyType const Erest = event[i].e() * 1_GeV;
+        MomentumVector const pRest(
+            rotatedCS,
+            {event[i].px() * 1_GeV, event[i].py() * 1_GeV, event[i].pz() * 1_GeV});
+        geometry::FourVector const fourMomRest{Erest, pRest};
+        auto const fourMomLab = boost.fromCoM(fourMomRest);
 
-        cout << "particle: id=" << pyId << " momentum=" << pyP.GetComponents() / 1_GeV
-             << " energy=" << pyEn << endl;
+        cout << "particle: id=" << pyId << " momentum="
+             << fourMomLab.GetSpaceLikeComponents().GetComponents(labCS) / 1_GeV
+             << " energy=" << fourMomLab.GetTimeLikeComponent() << endl;
 
         vP.AddSecondary(
             tuple<particles::Code, units::si::HEPEnergyType,
                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-                pyId, pyEn, pyP, decayPoint, t0});
+                pyId, fourMomLab.GetTimeLikeComponent(),
+                fourMomLab.GetSpaceLikeComponents(), decayPoint, t0});
       }
 
     // set particle stable
