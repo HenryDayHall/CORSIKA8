@@ -127,7 +127,6 @@ TEST_CASE("transformations between CoordinateSystems") {
   SECTION("RotateToZ positive") {
     Vector const v{rootCS, 0_m, 1_m, 1_m};
     auto const csPrime = rootCS.RotateToZ(v);
-    auto const transform = csPrime.GetTransform().matrix();
     Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
     Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
     Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
@@ -155,7 +154,6 @@ TEST_CASE("transformations between CoordinateSystems") {
   SECTION("RotateToZ negative") {
     Vector const v{rootCS, 0_m, 0_m, -1_m};
     auto const csPrime = rootCS.RotateToZ(v);
-    auto const transform = csPrime.GetTransform().matrix();
     Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
     Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
     Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
