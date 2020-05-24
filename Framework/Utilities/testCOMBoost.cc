@@ -42,87 +42,6 @@ auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
   return E * E - p.squaredNorm();
 };
 
-TEST_CASE("rotation") {
-  // define projectile kinematics in lab frame
-  HEPMassType const projectileMass = 1_GeV;
-  HEPMassType const targetMass = 1.0e300_eV;
-  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, 1_GeV}};
-  HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-  const FourVector PprojLab(eProjectileLab, pProjectileLab);
-
-  Eigen::Vector3d e1, e2, e3;
-  e1 << 1, 0, 0;
-  e2 << 0, 1, 0;
-  e3 << 0, 0, 1;
-
-  // define boost to com frame
-  SECTION("pos. z-axis") {
-    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, 1_GeV}}}, targetMass);
-    auto const& rot = boost.GetRotationMatrix();
-
-    CHECK((rot * e3 - e3).norm() == Approx(0).margin(absMargin));
-    CHECK((rot * e1).norm() == Approx(1));
-    CHECK((rot * e2).norm() == Approx(1));
-    CHECK((rot * e3).norm() == Approx(1));
-    CHECK(rot.determinant() == Approx(1));
-  }
-
-  SECTION("y-axis in upper half") {
-    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, 1_meV}}}, targetMass);
-    auto const& rot = boost.GetRotationMatrix();
-
-    CHECK((rot * e2 - e3).norm() == Approx(0).margin(absMargin));
-    CHECK((rot * e1).norm() == Approx(1));
-    CHECK((rot * e2).norm() == Approx(1));
-    CHECK((rot * e3).norm() == Approx(1));
-    CHECK(rot.determinant() == Approx(1));
-  }
-
-  SECTION("x-axis in upper half") {
-    COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, 1_meV}}}, targetMass);
-    auto const& rot = boost.GetRotationMatrix();
-
-    CHECK((rot * e1 - e3).norm() == Approx(0).margin(absMargin));
-    CHECK((rot * e1).norm() == Approx(1));
-    CHECK((rot * e2).norm() == Approx(1));
-    CHECK((rot * e3).norm() == Approx(1));
-    CHECK(rot.determinant() == Approx(1));
-  }
-
-  SECTION("neg. z-axis") {
-    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, -1_GeV}}}, targetMass);
-    auto const& rot = boost.GetRotationMatrix();
-
-    CHECK((rot * (-e3) - e3).norm() == Approx(0).margin(absMargin));
-    CHECK((rot * e1).norm() == Approx(1));
-    CHECK((rot * e2).norm() == Approx(1));
-    CHECK((rot * e3).norm() == Approx(1));
-    CHECK(rot.determinant() == Approx(1));
-  }
-
-  SECTION("x-axis lower half") {
-    COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, -1_meV}}}, targetMass);
-    auto const& rot = boost.GetRotationMatrix();
-
-    CHECK((rot * e1 - e3).norm() == Approx(0).margin(absMargin));
-    CHECK((rot * e1).norm() == Approx(1));
-    CHECK((rot * e2).norm() == Approx(1));
-    CHECK((rot * e3).norm() == Approx(1));
-    CHECK(rot.determinant() == Approx(1));
-  }
-
-  SECTION("y-axis lower half") {
-    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, -1_meV}}}, targetMass);
-    auto const& rot = boost.GetRotationMatrix();
-
-    CHECK((rot * e2 - e3).norm() == Approx(0).margin(absMargin));
-    CHECK((rot * e1).norm() == Approx(1));
-    CHECK((rot * e2).norm() == Approx(1));
-    CHECK((rot * e3).norm() == Approx(1));
-    CHECK(rot.determinant() == Approx(1));
-  }
-}
-
 TEST_CASE("boosts") {
   // define target kinematics in lab frame
   HEPMassType const targetMass = 1_GeV;
@@ -265,5 +184,32 @@ TEST_CASE("boosts") {
     auto const sumPCoM =
         PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
     CHECK(sumPCoM.norm() / P0 == Approx(0).margin(absMargin)); // MAKE RELATIVE CHECK
+  }
+
+  SECTION("rest frame") {
+    HEPMassType const projectileMass = 1_GeV;
+    HEPMomentumType const P0 = 1_TeV;
+    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, P0, 0_GeV}};
+    HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+
+    COMBoost boostRest(pProjectileLab, projectileMass);
+    auto const& csPrime = boostRest.GetRotatedCS();
+    FourVector const rest4Mom = boostRest.toCoM(PprojLab);
+
+    CHECK(rest4Mom.GetTimeLikeComponent() / 1_GeV == Approx(projectileMass / 1_GeV));
+    CHECK(rest4Mom.GetSpaceLikeComponents().norm() / 1_GeV ==
+          Approx(0).margin(absMargin));
+
+    FourVector const a{0_eV, Vector{csPrime, 0_eV, 5_GeV, 0_eV}};
+    FourVector const b{0_eV, Vector{rootCS, 3_GeV, 0_eV, 0_eV}};
+    auto const aLab = boostRest.fromCoM(a);
+    auto const bLab = boostRest.fromCoM(b);
+
+    CHECK(aLab.GetNorm() / a.GetNorm() == Approx(1));
+    CHECK(aLab.GetSpaceLikeComponents().GetComponents(csPrime)[1].magnitude() ==
+          Approx((5_GeV).magnitude()));
+    CHECK(bLab.GetSpaceLikeComponents().GetComponents(rootCS)[0].magnitude() ==
+          Approx((3_GeV).magnitude()));
   }
 }
