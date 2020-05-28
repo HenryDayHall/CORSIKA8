@@ -123,6 +123,61 @@ TEST_CASE("transformations between CoordinateSystems") {
     auto comp3 = v1.GetComponents(combined);
     REQUIRE((comp1 - comp3).norm().magnitude() == Approx(0).margin(absMargin));
   }
+
+  SECTION("RotateToZ positive") {
+    Vector const v{rootCS, 0_m, 1_m, 1_m};
+    auto const csPrime = rootCS.RotateToZ(v);
+    Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
+    Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
+    Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
+
+    CHECK(zPrime.dot(v).magnitude() > 0);
+    CHECK(zPrime.GetComponents(rootCS)[1].magnitude() ==
+          Approx(zPrime.GetComponents(rootCS)[2].magnitude()));
+    CHECK(zPrime.GetComponents(rootCS)[0].magnitude() == Approx(0));
+
+    CHECK(xPrime.GetComponents(rootCS).eVector.dot(
+              yPrime.GetComponents(rootCS).eVector) == Approx(0));
+    CHECK(zPrime.GetComponents(rootCS).eVector.dot(
+              xPrime.GetComponents(rootCS).eVector) == Approx(0));
+    CHECK(yPrime.GetComponents(rootCS).eVector.dot(
+              zPrime.GetComponents(rootCS).eVector) == Approx(0));
+
+    CHECK(yPrime.GetComponents(rootCS).eVector.dot(
+              yPrime.GetComponents(rootCS).eVector) == Approx((5_m * 5_m).magnitude()));
+    CHECK(xPrime.GetComponents(rootCS).eVector.dot(
+              xPrime.GetComponents(rootCS).eVector) == Approx((5_m * 5_m).magnitude()));
+    CHECK(zPrime.GetComponents(rootCS).eVector.dot(
+              zPrime.GetComponents(rootCS).eVector) == Approx((5_m * 5_m).magnitude()));
+  }
+
+  SECTION("RotateToZ negative") {
+    Vector const v{rootCS, 0_m, 0_m, -1_m};
+    auto const csPrime = rootCS.RotateToZ(v);
+    Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
+    Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
+    Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
+
+    CHECK(zPrime.dot(v).magnitude() > 0);
+    CHECK(xPrime.GetComponents(rootCS).eVector.dot(v.GetComponents().eVector) ==
+          Approx(0));
+    CHECK(yPrime.GetComponents(rootCS).eVector.dot(v.GetComponents().eVector) ==
+          Approx(0));
+
+    CHECK(xPrime.GetComponents(rootCS).eVector.dot(
+              yPrime.GetComponents(rootCS).eVector) == Approx(0));
+    CHECK(zPrime.GetComponents(rootCS).eVector.dot(
+              xPrime.GetComponents(rootCS).eVector) == Approx(0));
+    CHECK(yPrime.GetComponents(rootCS).eVector.dot(
+              zPrime.GetComponents(rootCS).eVector) == Approx(0));
+
+    CHECK(yPrime.GetComponents(rootCS).eVector.dot(
+              yPrime.GetComponents(rootCS).eVector) == Approx((5_m * 5_m).magnitude()));
+    CHECK(xPrime.GetComponents(rootCS).eVector.dot(
+              xPrime.GetComponents(rootCS).eVector) == Approx((5_m * 5_m).magnitude()));
+    CHECK(zPrime.GetComponents(rootCS).eVector.dot(
+              zPrime.GetComponents(rootCS).eVector) == Approx((5_m * 5_m).magnitude()));
+  }
 }
 
 TEST_CASE("Sphere") {

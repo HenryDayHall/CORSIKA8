@@ -15,58 +15,50 @@
 #include <corsika/utl/COMBoost.h>
 #include <corsika/utl/sgn.h>
 
+#include <cmath>
+
 using namespace corsika::utl;
 using namespace corsika::units::si;
 using namespace corsika::geometry;
 
 COMBoost::COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
                    const HEPMassType massTarget)
-    : fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
+    : originalCS_{Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()}
+    , rotatedCS_{originalCS_.RotateToZ(Pprojectile.GetSpaceLikeComponents())} {
   auto const pProjectile = Pprojectile.GetSpaceLikeComponents();
-  auto const pProjNorm = pProjectile.norm();
-  auto const a = (pProjectile / pProjNorm).GetComponents().eVector;
-  auto const a1 = a(0), a2 = a(1);
+  auto const pProjNormSquared = pProjectile.squaredNorm();
+  auto const pProjNorm = sqrt(pProjNormSquared);
 
-  auto const s = sgn(a(2));
-  auto const c = 1 / (1 + s * a(2));
+  auto const eProjectile = Pprojectile.GetTimeLikeComponent();
+  auto const massProjectileSquared = eProjectile * eProjectile - pProjNormSquared;
+  auto const s =
+      massTarget * massTarget + massProjectileSquared + 2 * eProjectile * massTarget;
 
-  Eigen::Matrix3d A, B;
+  auto const sqrtS = sqrt(s);
+  auto const sinhEta = -pProjNorm / sqrtS;
+  auto const coshEta = sqrt(1 + pProjNormSquared / s);
 
-  if (s > 0) {
-    A << 1, 0, -a1,                     // comment to prevent clang-format
-        0, 1, -a2,                      // .
-        a1, a2, 1;                      // .
-    B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
-        -a1 * a2 * c, -a2 * a2 * c, 0,  // .
-        0, 0, -(a1 * a1 + a2 * a2) * c; // .
+  setBoost(coshEta, sinhEta);
 
-  } else {
-    A << 1, 0, a1,                      // comment to prevent clang-format
-        0, -1, -a2,                     // .
-        a1, a2, -1;                     // .
-    B << -a1 * a1 * c, -a1 * a2 * c, 0, // .
-        +a1 * a2 * c, +a2 * a2 * c, 0,  // .
-        0, 0, (a1 * a1 + a2 * a2) * c;  // .
-  }
-
-  fRotation = A + B;
-
-  // calculate boost
-  double const beta = pProjNorm / (Pprojectile.GetTimeLikeComponent() + massTarget);
-
-  /* Accurracy matters here, beta = 1 - epsilon for ultra-relativistic boosts */
-  double const coshEta = 1 / std::sqrt((1 + beta) * (1 - beta));
-  //~ double const coshEta = 1 / std::sqrt((1-beta*beta));
-  double const sinhEta = -beta * coshEta;
-
-  std::cout << "COMBoost (1-beta)=" << 1 - beta << " gamma=" << coshEta << std::endl;
-  std::cout << "  det = " << fRotation.determinant() - 1 << std::endl;
-
-  fBoost << coshEta, sinhEta, sinhEta, coshEta;
-
-  fInverseBoost << coshEta, -sinhEta, -sinhEta, coshEta;
+  std::cout << "COMBoost (1-beta)=" << 1 - sinhEta / coshEta << " gamma=" << coshEta
+            << std::endl;
+  std::cout << "  det = " << boost_.determinant() - 1 << std::endl;
 }
 
-/*
-  Here we instantiate all physically meaningful versions of COMBoost
- */
+COMBoost::COMBoost(geometry::Vector<units::si::hepmomentum_d> const& momentum,
+                   units::si::HEPEnergyType mass)
+    : originalCS_{momentum.GetCoordinateSystem()}
+    , rotatedCS_{originalCS_.RotateToZ(momentum)} {
+  auto const squaredNorm = momentum.squaredNorm();
+  auto const norm = sqrt(squaredNorm);
+  auto const sinhEta = -norm / mass;
+  auto const coshEta = sqrt(1 + squaredNorm / (mass * mass));
+  setBoost(coshEta, sinhEta);
+}
+
+void COMBoost::setBoost(double coshEta, double sinhEta) {
+  boost_ << coshEta, sinhEta, sinhEta, coshEta;
+  inverseBoost_ << coshEta, -sinhEta, -sinhEta, coshEta;
+}
+
+CoordinateSystem const& COMBoost::GetRotatedCS() const { return rotatedCS_; }
