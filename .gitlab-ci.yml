@@ -11,7 +11,8 @@ variables:
 stages:
   - config
   - quality
-  - build_test
+  - build
+  - test
   - optional
 
 # job/stage to just prepare cmake
@@ -42,7 +43,6 @@ config-clang-8:
   variables:
     CORSIKA_DATA: "${CI_BUILDS_DIR}/AirShowerPhysics/corsika/corsika-data/"
   script:
-    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
@@ -50,7 +50,6 @@ config-clang-8:
     expire_in: 1 day
     paths:
        - build
-       - corsika-data
 
 check-copyrights:
   image: corsika/devel:u-18.04
@@ -71,11 +70,11 @@ check-clang-format:
     - ./do-clang-format.py --all
 
 # normal pipeline for each commit
-build-test-u-18_04: 
+build-u-18_04: 
   image: corsika/devel:u-18.04
   dependencies:
     - config-u-18_04
-  stage: build_test
+  stage: build
   tags:
     - corsika
   variables:
@@ -83,6 +82,43 @@ build-test-u-18_04:
   script:
     - cd build
     - cmake --build . -- -j4
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - build
+
+# normal pipeline for each commit
+build-clang-8: 
+  image: corsika/devel:clang-8
+  dependencies:
+    - config-clang-8
+  stage: build
+  tags:
+    - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
+  script:
+    - cd build
+    - cmake --build . -- -j4
+  artifacts:
+    expire_in: 1 hour
+    reports:
+    paths:
+      - build
+
+# normal pipeline for each commit
+test-u-18_04: 
+  image: corsika/devel:u-18.04
+  dependencies:
+    - build-u-18_04
+  stage: test
+  tags:
+    - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
+  script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
+    - cd build
     - set -o pipefail
     - ctest -VV | gzip -v -9 > test.log.gz 
   artifacts:
@@ -95,18 +131,18 @@ build-test-u-18_04:
       - build/test.log.gz
 
 # normal pipeline for each commit
-build-test-clang-8: 
+test-clang-8: 
   image: corsika/devel:clang-8
   dependencies:
-    - config-clang-8
-  stage: build_test
+    - build-clang-8
+  stage: test
   tags:
     - corsika
   variables:
     CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - cd build
-    - cmake --build . -- -j4
     - set -o pipefail
     - ctest -VV | gzip -v -9 > test.log.gz 
   artifacts:
@@ -117,9 +153,57 @@ build-test-clang-8:
         - build/test_outputs/junit*.xml
     paths:
       - build/test.log.gz
- 
+
+# normal pipeline for each commit
+example-u-18_04: 
+  image: corsika/devel:u-18.04
+  dependencies:
+    - build-u-18_04
+  stage: example
+  tags:
+    - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
+  script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
+    - cd build
+    - set -o pipefail
+    - make run_examples
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit:
+        - build/example_outputs/junit*.xml
+    paths:
+      - build/example.log.gz
+
+# normal pipeline for each commit
+example-clang-8: 
+  image: corsika/devel:clang-8
+  dependencies:
+    - build-clang-8
+  stage: example
+  tags:
+    - corsika
+  variables:
+    CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
+  script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
+    - cd build
+    - set -o pipefail
+    - make run_examples
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit:
+        - build/example_outputs/junit*.xml
+    paths:
+      - build/example.log.gz
+
 # optional release pipeline for each commit
-release-u-18_04: 
+release-full-u-18_04: 
   image: corsika/devel:u-18.04
   dependencies:
     - config-u-18_04
@@ -129,11 +213,13 @@ release-u-18_04:
   variables:
     CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -VV | gzip -v -9 > test.log.gz 
+    - make run_examples
   artifacts:
     when: always
     expire_in: 1 week
@@ -145,7 +231,7 @@ release-u-18_04:
   when: manual    
 
 # optional release pipeline for each commit
-release-clang-8: 
+release-full-clang-8: 
   image: corsika/devel:clang-8
   dependencies:
     - config-clang-8
@@ -155,11 +241,13 @@ release-clang-8:
   variables:
     CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
+    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -VV | gzip -v -9 > test.log.gz 
+    - ctest -VV | gzip -v -9 > test.log.gz
+    - make run_examples
   artifacts:
     when: always
     expire_in: 1 week
