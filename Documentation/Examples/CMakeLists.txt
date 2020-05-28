@@ -85,33 +85,34 @@ if (Pythia8_FOUND)
     CORSIKAprocesssequence
     )
   install (TARGETS cascade_proton_example DESTINATION share/examples)
-endif()
 
-add_executable(vertical_EAS vertical_EAS.cc)
-target_link_libraries (vertical_EAS
-  SuperStupidStack
-  CORSIKAunits
-  CORSIKAlogging
-  CORSIKArandom
-  ProcessSibyll
-  ProcessPythia
-  ProcessUrQMD
-  ProcessSwitch
-  CORSIKAcascade
-  ProcessEnergyLoss
-  ProcessObservationPlane
-  ProcessTrackingLine
-  ProcessParticleCut
-  ProcessStackInspector
-  ProcessInteractionCounter
-  CORSIKAprocesses
-  CORSIKAcascade
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  )
-install (TARGETS vertical_EAS DESTINATION share/examples)
+  add_executable(vertical_EAS vertical_EAS.cc)
+  target_link_libraries (vertical_EAS
+    SuperStupidStack
+    CORSIKAunits
+    CORSIKAlogging
+    CORSIKArandom
+    ProcessSibyll
+    ProcessPythia
+    ProcessUrQMD
+    ProcessSwitch
+    CORSIKAcascade
+    ProcessEnergyLoss
+    ProcessObservationPlane
+    ProcessTrackingLine
+    ProcessParticleCut
+    ProcessStackInspector
+    ProcessInteractionCounter
+    CORSIKAprocesses
+    CORSIKAcascade
+    CORSIKAparticles
+    CORSIKAgeometry
+    CORSIKAenvironment
+    CORSIKAprocesssequence
+    )
+  install (TARGETS vertical_EAS DESTINATION share/examples)
+  
+endif()
 
 CORSIKA_ADD_TEST(stopping_power)
 target_link_libraries (stopping_power
@@ -123,7 +124,6 @@ target_link_libraries (stopping_power
   CORSIKAenvironment
   )
 
-install (TARGETS vertical_EAS DESTINATION share/examples)
 CORSIKA_ADD_TEST (staticsequence_example)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence
