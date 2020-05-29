@@ -206,4 +206,5 @@ function (CORSIKA_ADD_EXAMPLE)
     COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name}"
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)
+  install (TARGETS ${name} DESTINATION share/examples)
 endfunction (CORSIKA_ADD_EXAMPLE)
