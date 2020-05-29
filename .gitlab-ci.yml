@@ -171,11 +171,8 @@ example-u-18_04:
   artifacts:
     when: always
     expire_in: 1 week
-    reports:
-      junit:
-        - build/example_outputs/junit*.xml
     paths:
-      - build/example.log.gz
+      - build/examples.log.gz
 
 # normal pipeline for each commit
 example-clang-8: 
@@ -195,11 +192,8 @@ example-clang-8:
   artifacts:
     when: always
     expire_in: 1 week
-    reports:
-      junit:
-        - build/example_outputs/junit*.xml
     paths:
-      - build/example.log.gz
+      - build/examples.log.gz
 
 # optional release pipeline for each commit
 release-full-u-18_04: 
