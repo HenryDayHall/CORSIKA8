@@ -1,47 +1,22 @@
-CORSIKA_ADD_TEST (helix_example)
+
+CORSIKA_ADD_EXAMPLE (helix_example)
 target_link_libraries (helix_example CORSIKAgeometry CORSIKAunits)
-install (TARGETS helix_example DESTINATION share/examples)
 
-CORSIKA_ADD_TEST (particle_list_example)
+CORSIKA_ADD_EXAMPLE (particle_list_example)
 target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSIKAprocesses ProcessSibyll ProcessQGSJetII)
-install (TARGETS particle_list_example DESTINATION share/examples)
 
-CORSIKA_ADD_TEST (geometry_example)
+CORSIKA_ADD_EXAMPLE (geometry_example)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
-install (TARGETS geometry_example DESTINATION share/examples)
 
-CORSIKA_ADD_TEST (logger_example)
+CORSIKA_ADD_EXAMPLE (logger_example)
 target_link_libraries (logger_example CORSIKAunits CORSIKAlogging)
-install (TARGETS logger_example DESTINATION share/examples)
 
-CORSIKA_ADD_TEST (stack_example)
+CORSIKA_ADD_EXAMPLE (stack_example)
 target_link_libraries (stack_example SuperStupidStack CORSIKAunits
   CORSIKAlogging)
 
 # address sanitizer is making this example too slow, so we only do "undefined"
-CORSIKA_ADD_TEST (cascade_example SANITIZE "undefined")
-target_link_libraries (cascade_example
-  SuperStupidStack
-  CORSIKAunits
-  CORSIKAlogging
-  CORSIKArandom
-  ProcessSibyll
-  CORSIKAcascade
-  ProcessEnergyLoss
-  ProcessStackInspector
-  ProcessParticleCut
-  ProcessTrackWriter
-  ProcessTrackingLine
-  CORSIKAprocesses
-  CORSIKAcascade
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  )
-install (TARGETS cascade_example DESTINATION share/examples)
-
-CORSIKA_ADD_TEST (boundary_example)
+CORSIKA_ADD_EXAMPLE (boundary_example)
 target_link_libraries (boundary_example
   SuperStupidStack
   CORSIKAunits
@@ -58,10 +33,32 @@ target_link_libraries (boundary_example
   CORSIKAenvironment
   CORSIKAprocesssequence
   )
-install (TARGETS boundary_example DESTINATION share/examples)
+
+CORSIKA_ADD_EXAMPLE (cascade_example)
+target_link_libraries (cascade_example
+  SuperStupidStack
+  CORSIKAunits
+  CORSIKAlogging
+  CORSIKArandom
+  ProcessSibyll
+  CORSIKAcascade
+  ProcessEnergyLoss
+  ProcessTrackWriter
+  ProcessStackInspector
+  ProcessTrackingLine
+  ProcessParticleCut
+  ProcessHadronicElasticModel
+  ProcessStackInspector
+  CORSIKAprocesses
+  CORSIKAcascade
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAprocesssequence
+  )
 
 if (Pythia8_FOUND)
-  CORSIKA_ADD_TEST (cascade_proton_example)
+  CORSIKA_ADD_EXAMPLE (cascade_proton_example)
   target_link_libraries (cascade_proton_example
     SuperStupidStack
     CORSIKAunits
@@ -84,9 +81,8 @@ if (Pythia8_FOUND)
     CORSIKAenvironment
     CORSIKAprocesssequence
     )
-  install (TARGETS cascade_proton_example DESTINATION share/examples)
 
-  add_executable(vertical_EAS vertical_EAS.cc)
+  CORSIKA_ADD_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
   target_link_libraries (vertical_EAS
     SuperStupidStack
     CORSIKAunits
@@ -99,10 +95,11 @@ if (Pythia8_FOUND)
     CORSIKAcascade
     ProcessEnergyLoss
     ProcessObservationPlane
+    ProcessInteractionCounter
+    ProcessTrackWriter
     ProcessTrackingLine
     ProcessParticleCut
     ProcessStackInspector
-    ProcessInteractionCounter
     CORSIKAprocesses
     CORSIKAcascade
     CORSIKAparticles
@@ -110,11 +107,9 @@ if (Pythia8_FOUND)
     CORSIKAenvironment
     CORSIKAprocesssequence
     )
-  install (TARGETS vertical_EAS DESTINATION share/examples)
-  
 endif()
 
-CORSIKA_ADD_TEST(stopping_power)
+CORSIKA_ADD_EXAMPLE (stopping_power stopping_power)
 target_link_libraries (stopping_power
   SuperStupidStack
   CORSIKAunits
@@ -124,10 +119,9 @@ target_link_libraries (stopping_power
   CORSIKAenvironment
   )
 
-CORSIKA_ADD_TEST (staticsequence_example)
+CORSIKA_ADD_EXAMPLE (staticsequence_example)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAlogging)
-install (TARGETS staticsequence_example DESTINATION share/examples)

@@ -31,7 +31,8 @@ endfunction (CORSIKA_PREPEND_PATH)
 #
 # if needed, create symbolic links from the source files to this build-directory location
 #
-# any path information from input filenames is stripped, IF path was specified it is used for the link destination, if NOT the link is relative to the CMAKE_CURRENT_SOURCE_DIR
+# any path information from input filenames is stripped, IF path was specified it is used for the link destination,
+# if NOT the link is relative to the CMAKE_CURRENT_SOURCE_DIR
 # 
 function (CORSIKA_COPY_HEADERS_TO_NAMESPACE for_library in_namespace)
   set (HEADERS_BUILD "")
@@ -126,20 +127,19 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 # TEMPORARY: All sanitizers are currently globally disabled by default, to enable them,
 # set CORSIKA_SANITIZERS_ENABLED to TRUE.
 function (CORSIKA_ADD_TEST)
-  cmake_parse_arguments (PARSE_ARGV 1 _ "" "SANITIZE" "SOURCES")
-
+  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_TEST "" "SANITIZE" "SOURCES")
   set (name ${ARGV0})
 
-  if (NOT __SOURCES)
+  if (NOT C8_ADD_TEST_SOURCES)
     set (sources ${name}.cc)
   else ()
-    set (sources ${__SOURCES})
+    set (sources ${C8_ADD_TEST_SOURCES})
   endif ()
 
-  if (NOT __SANITIZE)
+  if (NOT C8_ADD_TEST_SANITIZE)
     set(sanitize "address,undefined")
   else ()
-    set(sanitize ${__SANITIZE})
+    set(sanitize ${C8_ADD_TEST_SANITIZE})
   endif ()
 
   add_executable (${name} ${sources})
@@ -153,3 +153,63 @@ function (CORSIKA_ADD_TEST)
   endif ()
   add_test (NAME ${name} COMMAND ${name} -o ${PROJECT_BINARY_DIR}/test_outputs/junit-${name}.xml -s -r junit)
 endfunction (CORSIKA_ADD_TEST)
+
+
+#################################################
+#
+# central macro to register an exmaple in cmake
+#
+# Examples can be globally executed by 'make run_examples'
+#
+# 1) Simple use:
+# Pass the name of the test.cc file as the first
+# argument, without the ".cc" extention.
+#
+# Example: CORSIKA_ADD_EXAMPLE (testSomething)
+#
+# This generates target testSomething from file testSomething.cc.
+#
+# 2) Customize sources:
+# If 1) doesn't work, use the SOURCES keyword to explicitly
+# specify the sources.
+#
+# Example: CORSIKA_ADD_EXAMPLE (testSomething
+#              SOURCES source1.cc source2.cc someheader.h)
+#
+# In all cases, you can further customize the target with
+# target_link_libraries(testSomething ...) and so on.
+#
+function (CORSIKA_ADD_EXAMPLE)
+  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_EXAMPLE "" "" "SOURCES;RUN_OPTIONS")
+  set (name ${ARGV0})
+
+  if (NOT C8_ADD_EXAMPLE_SOURCES)
+    set (sources ${name}.cc)
+  else ()
+    set (sources ${C8_ADD_EXAMPLE_SOURCES})
+  endif ()
+
+  if (NOT C8_ADD_EXAMPLE_RUN_OPTIONS)
+    set (run_options "")
+  else ()
+    set (run_options ${C8_ADD_EXAMPLE_RUN_OPTIONS})
+  endif ()
+
+  add_executable (${name} ${sources})
+  target_compile_options (${name} PRIVATE -g) # do not skip asserts
+  target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs/)
+  if (TARGET run_examples)
+  else ()
+    add_custom_target (run_examples)
+  endif ()
+  add_dependencies (run_examples ${name})
+  add_custom_command (TARGET run_examples
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "**************************************"
+    COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} " ${run_options} VERBATIM
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options} VERBATIM
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)
+  install (TARGETS ${name} DESTINATION share/examples)
+endfunction (CORSIKA_ADD_EXAMPLE)
