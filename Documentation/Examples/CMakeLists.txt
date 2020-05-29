@@ -15,34 +15,12 @@ CORSIKA_ADD_EXAMPLE (logger_example)
 target_link_libraries (logger_example CORSIKAunits CORSIKAlogging)
 install (TARGETS logger_example DESTINATION share/examples)
 
-CORSIKA_ADD_EXAMPLE (stack_example stack_example.cc)
+CORSIKA_ADD_EXAMPLE (stack_example)
 target_link_libraries (stack_example SuperStupidStack CORSIKAunits
   CORSIKAlogging)
 
 # address sanitizer is making this example too slow, so we only do "undefined"
-CORSIKA_ADD_EXAMPLE (cascade_example cascade_example.cc)
-target_link_libraries (cascade_example
-  SuperStupidStack
-  CORSIKAunits
-  CORSIKAlogging
-  CORSIKArandom
-  ProcessSibyll
-  CORSIKAcascade
-  ProcessEnergyLoss
-  ProcessStackInspector
-  ProcessParticleCut
-  ProcessTrackWriter
-  ProcessTrackingLine
-  CORSIKAprocesses
-  CORSIKAcascade
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  )
-install (TARGETS cascade_example DESTINATION share/examples)
-
-CORSIKA_ADD_EXAMPLE (boundary_example boundary_example.cc)
+CORSIKA_ADD_EXAMPLE (cascade_example)
 target_link_libraries (boundary_example
   SuperStupidStack
   CORSIKAunits
@@ -62,7 +40,7 @@ target_link_libraries (boundary_example
 install (TARGETS boundary_example DESTINATION share/examples)
 
 if (Pythia8_FOUND)
-  CORSIKA_ADD_EXAMPLE (cascade_proton_example cascade_proton_example.cc)
+  CORSIKA_ADD_EXAMPLE (cascade_proton_example)
   target_link_libraries (cascade_proton_example
     SuperStupidStack
     CORSIKAunits
@@ -87,11 +65,7 @@ if (Pythia8_FOUND)
     )
   install (TARGETS cascade_proton_example DESTINATION share/examples)
 
-<<<<<<< Updated upstream
-  add_executable(vertical_EAS vertical_EAS.cc)
-=======
-  CORSIKA_ADD_EXAMPLE (vertical_EAS vertical_EAS.cc)
->>>>>>> Stashed changes
+  CORSIKA_ADD_EXAMPLE (vertical_EAS)
   target_link_libraries (vertical_EAS
     SuperStupidStack
     CORSIKAunits
@@ -104,17 +78,11 @@ if (Pythia8_FOUND)
     CORSIKAcascade
     ProcessEnergyLoss
     ProcessObservationPlane
-<<<<<<< Updated upstream
-    ProcessTrackingLine
-    ProcessParticleCut
-    ProcessStackInspector
     ProcessInteractionCounter
-=======
     ProcessTrackWriter
     ProcessTrackingLine
     ProcessParticleCut
     ProcessStackInspector
->>>>>>> Stashed changes
     CORSIKAprocesses
     CORSIKAcascade
     CORSIKAparticles
@@ -123,13 +91,9 @@ if (Pythia8_FOUND)
     CORSIKAprocesssequence
     )
   install (TARGETS vertical_EAS DESTINATION share/examples)
-<<<<<<< Updated upstream
-  
-=======
->>>>>>> Stashed changes
 endif()
 
-CORSIKA_ADD_EXAMPLE (stopping_power stopping_power.cc)
+CORSIKA_ADD_EXAMPLE (stopping_power stopping_power)
 target_link_libraries (stopping_power
   SuperStupidStack
   CORSIKAunits
@@ -140,11 +104,7 @@ target_link_libraries (stopping_power
   )
 install (TARGETS stopping_power DESTINATION share/examples)
 
-<<<<<<< Updated upstream
-CORSIKA_ADD_TEST (staticsequence_example)
-=======
-CORSIKA_ADD_EXAMPLE (staticsequence_example staticsequence_example.cc)
->>>>>>> Stashed changes
+CORSIKA_ADD_EXAMPLE (staticsequence_example)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence
   CORSIKAunits
