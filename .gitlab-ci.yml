@@ -25,7 +25,6 @@ config-u-18_04:
   variables:
     CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
   script:
-    - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git    
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
@@ -33,7 +32,6 @@ config-u-18_04:
     expire_in: 1 day
     paths:
        - build
-       - corsika-data
 
 # job/stage to just prepare cmake
 config-clang-8:
@@ -169,7 +167,7 @@ example-u-18_04:
     - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - cd build
     - set -o pipefail
-    - make run_examples
+    - make run_examples | gzip -v -9 > examples.log.gz
   artifacts:
     when: always
     expire_in: 1 week
@@ -193,7 +191,7 @@ example-clang-8:
     - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - cd build
     - set -o pipefail
-    - make run_examples
+    - make run_examples | gzip -v -9 > examples.log.gz
   artifacts:
     when: always
     expire_in: 1 week
