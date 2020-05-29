@@ -13,6 +13,7 @@ stages:
   - quality
   - build
   - test
+  - example
   - optional
 
 # job/stage to just prepare cmake
