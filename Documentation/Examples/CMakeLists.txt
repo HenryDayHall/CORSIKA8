@@ -82,7 +82,7 @@ if (Pythia8_FOUND)
     CORSIKAprocesssequence
     )
 
-  CORSIKA_ADD_EXAMPLE (vertical_EAS)
+  CORSIKA_ADD_EXAMPLE (vertical_EAS RUN_OPTIONS "4 2 10000.")
   target_link_libraries (vertical_EAS
     SuperStupidStack
     CORSIKAunits

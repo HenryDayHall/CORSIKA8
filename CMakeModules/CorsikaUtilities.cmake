@@ -181,14 +181,24 @@ endfunction (CORSIKA_ADD_TEST)
 # target_link_libraries(testSomething ...) and so on.
 #
 function (CORSIKA_ADD_EXAMPLE)
-  cmake_parse_arguments (PARSE_ARGV 1 _ "" "" "SOURCES")
-
+  set (options "")
+  set (oneValueArgs RUN_OPTIONS)
+  set (multiValueArgs SOURCES)
+  cmake_parse_arguments (CORSKA_ADD_EXAMPLE "${options}" "${oneValueArgs}"
+    "${multiValueArgs}" ${ARGN} )
+    
   set (name ${ARGV0})
 
-  if (NOT __SOURCES)
+  if (NOT CORSIKA_ADD_EXAMPLE_SOURCES)
     set (sources ${name}.cc)
   else ()
-    set (sources ${__SOURCES})
+    set (sources ${CORSIKA_ADD_EXAMPLE_SOURCES})
+  endif ()
+
+  if (NOT CORSIKA_ADD_EXAMPLE_RUN_OPTIONS)
+    set (run_options "")
+  else ()
+    set (run_option ${CORSIKA_ADD_EXAMPLE_RUN_OPTIONS})
   endif ()
 
   add_executable (${name} ${sources})
@@ -204,7 +214,7 @@ function (CORSIKA_ADD_EXAMPLE)
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "***************************************"
     COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name}"
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name}
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)
   install (TARGETS ${name} DESTINATION share/examples)
 endfunction (CORSIKA_ADD_EXAMPLE)
