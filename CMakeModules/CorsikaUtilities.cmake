@@ -180,7 +180,7 @@ endfunction (CORSIKA_ADD_TEST)
 # target_link_libraries(testSomething ...) and so on.
 #
 function (CORSIKA_ADD_EXAMPLE)
-  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_EXAMPLE "" "RUN_OPTIONS" "SOURCES")
+  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_EXAMPLE "" "" "SOURCES;RUN_OPTIONS")
   set (name ${ARGV0})
 
   if (NOT C8_ADD_EXAMPLE_SOURCES)
@@ -207,9 +207,9 @@ function (CORSIKA_ADD_EXAMPLE)
   add_custom_command (TARGET run_examples
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "***************************************"
-    COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} ${run_options}" 
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options}
+    COMMAND ${CMAKE_COMMAND} -E echo "**************************************"
+    COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} " ${run_options} VERBATIM
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options} VERBATIM
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)
   install (TARGETS ${name} DESTINATION share/examples)
 endfunction (CORSIKA_ADD_EXAMPLE)

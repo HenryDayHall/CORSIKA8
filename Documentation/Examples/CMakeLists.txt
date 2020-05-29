@@ -1,11 +1,11 @@
 
-CORSIKA_ADD_EXAMPLE (helix_example SOURCES helix_example.cc)
+CORSIKA_ADD_EXAMPLE (helix_example)
 target_link_libraries (helix_example CORSIKAgeometry CORSIKAunits)
 
-CORSIKA_ADD_EXAMPLE (particle_list_example RUN_OPTIONS aha)
+CORSIKA_ADD_EXAMPLE (particle_list_example)
 target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSIKAprocesses ProcessSibyll ProcessQGSJetII)
 
-CORSIKA_ADD_EXAMPLE (geometry_example SOURCES geometry_example.cc RUN_OPTIONS test)
+CORSIKA_ADD_EXAMPLE (geometry_example)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
 
 CORSIKA_ADD_EXAMPLE (logger_example)
@@ -82,7 +82,7 @@ if (Pythia8_FOUND)
     CORSIKAprocesssequence
     )
 
-  CORSIKA_ADD_EXAMPLE (vertical_EAS RUN_OPTIONS "4 2 10000.")
+  CORSIKA_ADD_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
   target_link_libraries (vertical_EAS
     SuperStupidStack
     CORSIKAunits
