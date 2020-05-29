@@ -1,11 +1,11 @@
 
-CORSIKA_ADD_EXAMPLE (helix_example)
+CORSIKA_ADD_EXAMPLE (helix_example SOURCES helix_example.cc)
 target_link_libraries (helix_example CORSIKAgeometry CORSIKAunits)
 
-CORSIKA_ADD_EXAMPLE (particle_list_example)
+CORSIKA_ADD_EXAMPLE (particle_list_example RUN_OPTIONS aha)
 target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSIKAprocesses ProcessSibyll ProcessQGSJetII)
 
-CORSIKA_ADD_EXAMPLE (geometry_example)
+CORSIKA_ADD_EXAMPLE (geometry_example SOURCES geometry_example.cc RUN_OPTIONS test)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
 
 CORSIKA_ADD_EXAMPLE (logger_example)

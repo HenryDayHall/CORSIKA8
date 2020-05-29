@@ -127,20 +127,19 @@ endmacro(CORSIKA_ADD_FILES_ABSOLUTE)
 # TEMPORARY: All sanitizers are currently globally disabled by default, to enable them,
 # set CORSIKA_SANITIZERS_ENABLED to TRUE.
 function (CORSIKA_ADD_TEST)
-  cmake_parse_arguments (PARSE_ARGV 1 _ "" "SANITIZE" "SOURCES")
-
+  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_TEST "" "SANITIZE" "SOURCES")
   set (name ${ARGV0})
 
-  if (NOT __SOURCES)
+  if (NOT C8_ADD_TEST_SOURCES)
     set (sources ${name}.cc)
   else ()
-    set (sources ${__SOURCES})
+    set (sources ${C8_ADD_TEST_SOURCES})
   endif ()
 
-  if (NOT __SANITIZE)
+  if (NOT C8_ADD_TEST_SANITIZE)
     set(sanitize "address,undefined")
   else ()
-    set(sanitize ${__SANITIZE})
+    set(sanitize ${C8_ADD_TEST_SANITIZE})
   endif ()
 
   add_executable (${name} ${sources})
@@ -181,24 +180,19 @@ endfunction (CORSIKA_ADD_TEST)
 # target_link_libraries(testSomething ...) and so on.
 #
 function (CORSIKA_ADD_EXAMPLE)
-  set (options "")
-  set (oneValueArgs RUN_OPTIONS)
-  set (multiValueArgs SOURCES)
-  cmake_parse_arguments (CORSKA_ADD_EXAMPLE "${options}" "${oneValueArgs}"
-    "${multiValueArgs}" ${ARGN} )
-    
+  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_EXAMPLE "" "RUN_OPTIONS" "SOURCES")
   set (name ${ARGV0})
 
-  if (NOT CORSIKA_ADD_EXAMPLE_SOURCES)
+  if (NOT C8_ADD_EXAMPLE_SOURCES)
     set (sources ${name}.cc)
   else ()
-    set (sources ${CORSIKA_ADD_EXAMPLE_SOURCES})
+    set (sources ${C8_ADD_EXAMPLE_SOURCES})
   endif ()
 
-  if (NOT CORSIKA_ADD_EXAMPLE_RUN_OPTIONS)
+  if (NOT C8_ADD_EXAMPLE_RUN_OPTIONS)
     set (run_options "")
   else ()
-    set (run_option ${CORSIKA_ADD_EXAMPLE_RUN_OPTIONS})
+    set (run_options ${C8_ADD_EXAMPLE_RUN_OPTIONS})
   endif ()
 
   add_executable (${name} ${sources})
@@ -209,11 +203,12 @@ function (CORSIKA_ADD_EXAMPLE)
   else ()
     add_custom_target (run_examples)
   endif ()
+  add_dependencies (run_examples ${name})
   add_custom_command (TARGET run_examples
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "***************************************"
-    COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name}"
+    COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} ${run_options}" 
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)
   install (TARGETS ${name} DESTINATION share/examples)
