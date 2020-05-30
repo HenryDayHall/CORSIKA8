@@ -1,4 +1,3 @@
-
 include(ExternalProject)
 
 add_library (CORSIKAthirdparty INTERFACE)
@@ -16,11 +15,11 @@ install (DIRECTORY catch2 DESTINATION include/ThirdParty/)
 
 add_library (CORSIKAboost INTERFACE IMPORTED GLOBAL)
 if (NOT Boost_FOUND)
-  set (_C8_Boost_VERSION "107000")
+  set (_C8_Boost_VERSION "107300")
   message ("Building ThirdParty/boost using boost-${_C8_Boost_VERSION}.tar.bz2")
   ExternalProject_Add (boost
     URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-${_C8_Boost_VERSION}.tar.bz2
-    URL_MD5 8ffed5895a851894ad866888d4e64685
+    URL_MD5 895e35757f133f01c451fc93229aae6b
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/boost/install/boost 
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/boost/install/boost 
     CONFIGURE_COMMAND ""
@@ -109,7 +108,8 @@ if (NOT Pythia8_FOUND)
   message ("This will take a bit.....")
   ExternalProject_Add (pythia8
     URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
-    URL_MD5 53e1b5925a53875dedcf4ff2e3ba4cb9
+    URL_MD5 83132880c0594b808bd7fd37fb642606
+    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/source
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
     CONFIGURE_COMMAND ./configure --cxx-common=-Wno-deprecated-copy --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
     BUILD_IN_SOURCE ON
@@ -121,7 +121,7 @@ if (NOT Pythia8_FOUND)
   set (Pythia8_VERSION ${_C8_Pythia8_VERSION} CACHE STRING "Version of Pythia8")
   set (Pythia8_PREFIX ${INSTALL_DIR})
   set (Pythia8_INCLUDE_DIR  ${Pythia8_PREFIX}/include)
-  set (Pythia8_LIBRARY_DIR ${Pythia8_PREFIX}/lib)
+  set (Pythia8_LIBRARY ${Pythia8_PREFIX}/lib/libpythia8.a)
   add_dependencies (CORSIKAPythia8 pythia8)
 
   # create include directory at config time
@@ -132,7 +132,7 @@ if (NOT Pythia8_FOUND)
   
   set_target_properties (
     CORSIKAPythia8 PROPERTIES
-    IMPORTED_LOCATION ${Pythia8_LIBRARY_DIR}/libpythia8.a
+    IMPORTED_LOCATION ${Pythia8_LIBRARY}
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     INTERFACE_INCLUDE_DIRECTORIES
       $<BUILD_INTERFACE:${Pythia8_INCLUDE_DIR}>
@@ -143,7 +143,7 @@ else (NOT Pythia8_FOUND)
   message ("Using Pythia8 Version ${Pythia8_VERSION}")
   set_target_properties (
     CORSIKAPythia8 PROPERTIES
-    IMPORTED_LOCATION ${Pythia8_LIBRARY_DIR}/libpythia8.a
+    IMPORTED_LOCATION ${Pythia8_LIBRARY}
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     INTERFACE_INCLUDE_DIRECTORIES ${Pythia8_INCLUDE_DIR}
     )

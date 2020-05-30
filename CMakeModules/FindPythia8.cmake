@@ -13,7 +13,7 @@
 # run pythia8-config and interpret result
 #
 
-function (_Pythia8_CONFIG_ option variable type doc)
+function (Pythia8_CONFIG_ option variable type doc)
   execute_process(COMMAND ${Pythia8_CONFIG} ${option}
     OUTPUT_VARIABLE _local_out_
     RESULT_VARIABLE _local_res_)
@@ -23,7 +23,7 @@ function (_Pythia8_CONFIG_ option variable type doc)
   else ()
     set (${variable} "${_local_out_}" CACHE ${type} ${doc})
   endif ()
-endfunction (_Pythia8_CONFIG_)
+endfunction (Pythia8_CONFIG_)
   
 
 
@@ -33,10 +33,11 @@ endfunction (_Pythia8_CONFIG_)
 #
 # This module defines
 # Pythia8_INCLUDE_DIR   where to locate Pythia.h file
-# Pythia8_LIBRARIES     (not cached) the libraries to link against to use Pythia8
+# Pythia8_LIBRARY       (not cached) the libraries to link against to use Pythia8
+# Pythia8_VERSION 
 #
 
-set (_SEARCH_Pythia8_
+set (SEARCH_Pythia8_
   ${PYTHIA8_DIR}
   $ENV{PYTHIA8_DIR}
   ${PYTHIA8}
@@ -49,37 +50,43 @@ set (_SEARCH_Pythia8_
 
 find_program (Pythia8_CONFIG
   NAME pythia8-config
-  PATHS ${_SEARCH_PYTHIA8_}
+  PATHS ${SEARCH_Pythia8_}
   PATH_SUFFIXES "/bin"
   DOC "The location of the pythia8-config script")
 
 if (Pythia8_CONFIG)
   set (HAVE_Pythia8 1 CACHE BOOL "presence of pythia8, found via pythia8-config")
-
-  _Pythia8_CONFIG_ ("--includedir" Pythia8_INCLUDE_DIR PATH "pythia8 include directory")
-  _Pythia8_CONFIG_ ("--libdir" Pythia8_LIBRARY_DIR PATH "pythia8 lib directory")
-else()
+  Pythia8_CONFIG_ ("--includedir" Pythia8_INCLUDE_DIR PATH "pythia8 include directory")
+  Pythia8_CONFIG_ ("--prefix" Pythia8_PREFIX PATH "pythia8 prefix directory")
+  find_library (Pythia8_LIBRARY NAMES "libpythia8.a" "libpythia8.so" PATH_SUFFIXES "lib" PATHS ${Pythia8_PREFIX} NO_DEFAULT_PATH DOC "pythia8 library")
+  set (Pythia8_VERSION "n/a")
+else ()
+  set (HAVE_Pythia8 1 CACHE BOOL "presence of pythia8, found via include/lib")
 
   # if we get here, pythia8-config was not found by CMake so we use
   # CMake to try and find Pythia8 for us (but let the user know first).
   # We set these variables to exactly match the format of pythia8-config.
   # If any one of the variables is not found, CMake will automatically report
   # that Pythia8 is NOT FOUND (which is what we want).
-  message(WARNING
-    "pythia8-config was not found. Attempting to manually locate Pythia8...")
+  message ("pythia8-config was not found. Attempting to manually locate Pythia8...")
 
   # find the main header
-  find_path(Pythia8_INCLUDE_DIR "Pythia8/Pythia.h")
+  find_path (Pythia8_INCLUDE_DIR NAME "Pythia8/Pythia.h" PATH_SUFFIXES "include" PATHS ${SEARCH_Pythia8_})
 
   # and find the main library
-  find_library(Pythia8_LIBRARY_DIR "libpythia8.so")
+  find_library (Pythia8_LIBRARY NAMES "libpythia8.a" "libpythia8.so" PATH_SUFFIXES "lib" PATHS ${SEARCH_Pythia8_})
+endif ()
 
-  # and set our best guess
-  message("Found Pythia.h in ${Pythia8_INCLUDE_DIR}")
-  message("Found libpythia8.so at ${Pythia8_LIBRARY_DIR}")
+# also determine Pythia8 detailed version number
+if (EXISTS "${Pythia8_INCLUDE_DIR}/Pythia8/Pythia.h")
+  file (READ "${Pythia8_INCLUDE_DIR}/Pythia8/Pythia.h" PYTHIA_H_DATA)
+  string (REGEX MATCH "#define PYTHIA_VERSION_INTEGER ([0-9]*)" test "${PYTHIA_H_DATA}")
+  set (Pythia8_VERSION ${CMAKE_MATCH_1})
 endif ()
 
 # standard cmake infrastructure:
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (Pythia8 DEFAULT_MSG Pythia8_CONFIG)
-mark_as_advanced (Pythia8_INCLUDE_DIR Pythia8_LIBRARY_DIR)
+find_package_handle_standard_args (Pythia8
+  "Did not find system-level Pythia8. Switching to CORSIKA version."
+  Pythia8_INCLUDE_DIR Pythia8_LIBRARY Pythia8_VERSION)
+mark_as_advanced (Pythia8_INCLUDE_DIR Pythia8_LIBRARY Pythia8_VERSION)
