@@ -53,6 +53,7 @@ target_link_libraries (
   CORSIKAutilities
   CORSIKAgeometry
   CORSIKAunits
+  CORSIKAboost # so far only for MetaProgramming
   )
 
 target_include_directories (

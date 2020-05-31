@@ -17,9 +17,6 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <cmath>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
@@ -173,10 +170,6 @@ TEST_CASE("four vectors") {
     FourVector<TimeType&, Vector<length_d>&> p1(T, P);
     FourVector<const TimeType&, const Vector<length_d>&> p2(T, P);
     FourVector<const TimeType&, const Vector<length_d>&> p3(T_c, P_c);
-
-    std::cout << type_id_with_cvr<decltype(p1)>().pretty_name() << std::endl;
-    std::cout << type_id_with_cvr<decltype(p2)>().pretty_name() << std::endl;
-    std::cout << type_id_with_cvr<decltype(p3)>().pretty_name() << std::endl;
 
     p1 *= 10;
     // p2 *= 10; // this does not compile, and it shoudn't !

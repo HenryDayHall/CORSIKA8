@@ -14,10 +14,6 @@
 #include <testTestStack.h> // for testing: simple stack. This is a
 // test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
-#include <boost/type_index.hpp>
-#include <type_traits>
-using boost::typeindex::type_id_with_cvr;
-
 #include <iomanip>
 #include <iostream>
 #include <vector>

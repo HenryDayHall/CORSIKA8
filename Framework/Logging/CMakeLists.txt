@@ -18,7 +18,10 @@ set (
   BufferedSink.h
   )
 
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAlogging ${CORSIKAlogging_NAMESPACE} ${CORSIKAlogging_HEADERS})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAlogging
+  ${CORSIKAlogging_NAMESPACE}
+  ${CORSIKAlogging_HEADERS}
+  )
 
 # include directive for upstream code
 target_include_directories (
@@ -26,7 +29,7 @@ target_include_directories (
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/>
-  ${Boost_INCLUDE_DIRS}
+  CORSIKAboost
   )
 
 # install library

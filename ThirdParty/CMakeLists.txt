@@ -36,7 +36,7 @@ if (NOT Boost_FOUND)
   set (Boost_INCLUDE_DIR  ${Boost_PREFIX})
   set (Boost_LIBRARY_DIR ${Boost_PREFIX})
   add_dependencies (CORSIKAboost boost)
-
+  
   # create include directory at config time
   file (MAKE_DIRECTORY ${Boost_INCLUDE_DIR})
   
@@ -48,7 +48,18 @@ if (NOT Boost_FOUND)
     INTERFACE_INCLUDE_DIRECTORIES
       $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
     )
-    
+  message ("Use ThirdParty boost include dir ${Boost_INCLUDE_DIR}")
+  include_directories (${Boost_INCLUDE_DIR})
+
+else (NOT Boost_FOUND)
+
+  message ("Using system-level boost version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}")
+  set_target_properties (
+    CORSIKAboost PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES
+      $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
+    )
+
 endif (NOT Boost_FOUND)
 
 # eigen3
@@ -140,7 +151,7 @@ if (NOT Pythia8_FOUND)
 
 else (NOT Pythia8_FOUND)
 
-  message ("Using Pythia8 Version ${Pythia8_VERSION}")
+  message ("Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_INCLUDE_DIR}")
   set_target_properties (
     CORSIKAPythia8 PROPERTIES
     IMPORTED_LOCATION ${Pythia8_LIBRARY}
