@@ -41,6 +41,7 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAutilities
+  CORSIKAeigen3
   )
 
 target_include_directories (
@@ -50,11 +51,11 @@ target_include_directories (
   $<INSTALL_INTERFACE:include/include>
   )
 
-target_include_directories (
-  CORSIKAgeometry
-  SYSTEM
-  PUBLIC "${EIGEN3_INCLUDE_DIR}"
-  )
+#target_include_directories (
+#  CORSIKAgeometry
+#  SYSTEM
+#  PUBLIC "${EIGEN3_INCLUDE_DIR}"
+#  )
 
 install (
   TARGETS CORSIKAgeometry

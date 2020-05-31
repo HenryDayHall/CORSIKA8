@@ -40,7 +40,7 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAsetup
   CORSIKArandom
-  CORSIKAPythia8
+  CORSIKApythia8
   )
 
 target_include_directories (

@@ -146,11 +146,11 @@ if (WITH_EIGEN3)
     message ("Using eigen3 installed at location ${WITH_EIGEN3}")
     list (APPEND CMAKE_MODULE_PATH "${WITH_EIGEN3}/cmake")
     # set (EIGEN3_INCLUDE_DIR "${WITH_EIGEN3}" CACHE PATH "eigen3 directory") 
-    find_package (Eigen3 REQUIRED)
+    find_package (Eigen3 REQUIRED NO_MODULE)
   endif ()
 else (WITH_EIGEN3)
   message ("Searching eigen3 installed at system-level")
-  find_package (Eigen3) # if not found here, will automatically pick ThirdParty version 
+  find_package (Eigen3 NO_MODULE) # if not found here, will automatically pick ThirdParty version 
 endif (WITH_EIGEN3)
 
 # some final info output
