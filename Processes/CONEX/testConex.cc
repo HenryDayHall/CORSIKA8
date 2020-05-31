@@ -25,6 +25,5 @@ TEST_CASE("CONEX", "[processes]") {
   SECTION("linking conex") {
     using std::cout;
     using std::endl;
-    
   }
 }
