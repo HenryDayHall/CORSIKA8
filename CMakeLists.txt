@@ -136,6 +136,22 @@ else (WITH_PYTHIA8)
   find_package (Pythia8) # if not found here, will automatically pick ThirdParty version 
 endif (WITH_PYTHIA8)
 
+# check for CxRoot/CONEX: either use ThirdParty/cxroot or system-level installation
+message ("***** Configuring CxRoot/CONEX version")
+if (WITH_CONEX)
+  string (TOLOWER ${WITH_CONEX} WITH_CONEX_LOWER)
+  if ("x_${WITH_CONEX_LOWER}" STREQUAL "x_c8")
+    message ("Use CONEX from ThirdParty folder")
+  else ()
+    message ("Searching CxRoot/CONEX installed at location ${WITH_CONEX}")
+    set (CONEX_DIR ${WITH_CONEX})
+    find_package (CONEX REQUIRED) 
+  endif ()
+else (WITH_CONEX)
+  message ("Searching CxRoot/CONEX installed at system-level")
+  find_package (CONEX) # if not found here, will automatically pick ThirdParty version 
+endif (WITH_CONEX)
+
 # check for Eigen3: either use ThirdParty/eigen3 or system-level installation
 message ("***** Configuring eigen3 version")
 if (WITH_EIGEN3)

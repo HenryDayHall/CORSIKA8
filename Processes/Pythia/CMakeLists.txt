@@ -50,13 +50,6 @@ target_include_directories (
   $<INSTALL_INTERFACE:include/include>
   )
 
-target_include_directories (
-  ProcessPythia8
-  SYSTEM
-  PUBLIC ${PYTHIA8_INCLUDE_DIR}
-  INTERFACE ${PYTHIA8_INCLUDE_DIR}
-  )
-
 install (
   TARGETS ProcessPythia8
   LIBRARY DESTINATION lib

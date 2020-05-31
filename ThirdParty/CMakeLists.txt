@@ -160,3 +160,58 @@ else (NOT Pythia8_FOUND)
   
 endif (NOT Pythia8_FOUND)
 
+
+
+# CONEX/CXROOT
+
+add_library (CORSIKAconex STATIC IMPORTED GLOBAL)
+if (NOT CONEX_FOUND)
+  message ("Building ThirdParty/cxroot is obtained via git and compiled")
+  message ("This will take a bit.....")
+  ExternalProject_Add (cxroot
+    GIT_REPOSITORY https://gitlab.ikp.kit.edu/AirShowerPhysics/cxroot.git
+    GIT_TAG origin/master
+    GIT_SHALLOW 1
+    GIT_PROGRESS 1
+    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
+    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make CX_NO_ROOT=1 all
+    INSTALL_COMMAND ""
+    BUILD_IN_SOURCE ON
+    EXCLUDE_FROM_ALL TRUE
+    )
+  set (HAVE_CONEX 1 CACHE BOOL "presence of conex, via external-project-add in ThirdParty folder")
+  set (CONEX_FOUND 1 PARENT_SCOPE)
+  ExternalProject_Get_Property (cxroot INSTALL_DIR)
+  set (CONEX_PREFIX ${INSTALL_DIR})
+  set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src)
+  set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src PARENT_SCOPE)
+  add_dependencies (CORSIKAconex cxroot)
+
+  # create include directory at config time
+  file (MAKE_DIRECTORY ${CONEX_INCLUDE_DIR})
+
+  set (CONEX_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/cxroot)
+  install (DIRECTORY ${INSTALL_DIR}/ DESTINATION ${CONEX_INSTALL_DIR})
+
+  set_target_properties (
+    CORSIKAconex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/Linux/libCONEXdynamic.a
+    IMPORTED_LINK_INTERFACE_LIBRARIES dl
+    INTERFACE_INCLUDE_DIRECTORIES
+     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
+    )
+  
+else (NOT CONEX_FOUND)
+
+  message ("Using system-level CONEX version at ${CXROOT_INCLUDE_DIR}")
+  set_target_properties (
+    CORSIKAconex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXdynamic.a
+    IMPORTED_LINK_INTERFACE_LIBRARIES dl
+    INTERFACE_INCLUDE_DIRECTORIES ${CONEX_INCLUDE_DIR}
+    )
+  
+endif (NOT CONEX_FOUND)
+
