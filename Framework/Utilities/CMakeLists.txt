@@ -53,8 +53,8 @@ target_link_libraries (
   CORSIKAutilities
   CORSIKAgeometry
   CORSIKAunits
-  CORSIKAboost # so far only for MetaProgramming
-  CORSIKAeigen3 # for COMboost
+  C8::ext::boost # so far only for MetaProgramming
+  C8::ext::eigen3 # for COMboost
   )
 
 target_include_directories (

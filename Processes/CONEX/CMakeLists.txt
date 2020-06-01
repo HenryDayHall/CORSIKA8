@@ -1,12 +1,10 @@
 set (
   MODEL_SOURCES
-  #${CONEX_INCLUDE_DIR}/ConexDynamicInterface.cc
   CONEX.cc
   )
 
 set (
   MODEL_HEADERS
-  #ConexDynamicInterface.h
   CONEX.h
   )
 
@@ -37,7 +35,7 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAsetup
   CORSIKArandom
-  CORSIKAconex
+  C8::ext::conex
   )
 
 target_include_directories (

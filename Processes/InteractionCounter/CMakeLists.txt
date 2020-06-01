@@ -30,7 +30,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAprocesssequence
   CORSIKAthirdparty
-  CORSIKAboost
+  C8::ext::boost
   )
 
 target_include_directories (

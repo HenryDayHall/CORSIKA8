@@ -21,9 +21,6 @@ enable_language (Fortran)
 # TEMPORARY: this should be removed, the sanitizers should be always enabled
 option (WITH_CORSIKA_SANITIZERS_ENABLED "temporary way to globally disable sanitizers until the currently failing tests are fixed" OFF)
 option (WITH_COAST "Flag to switch on/off COAST (reverse) interface" OFF)
-set (WITH_EIGEN3 "" CACHE STRING "Selection of eigen3 package. Can be \'c8\' or path to installation. If empty: search system, if not found use ThirdParty/eigen3." FORCE)
-set (WITH_PYTHIA8 "" CACHE STRING "Selection of pythia8 package. Can be \'c8\' or path to installation. If empty: search system, if not found use ThirdParty/pythia8." FORCE)
-set (WITH_BOOST "" CACHE STRING "Selection of boost libaries. Can be \'c8\' or path to installation. If empty: search system, if not found use ThirdParty/boost." FORCE)
 
 # check for python
 set (Python_ADDITIONAL_VERSIONS 3)
@@ -119,58 +116,6 @@ endif ()
 
 # add call to ./do-copyright.py to run as unit-test-case
 add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-# check for Pythia8: either use ThirdParty/pythia8 or system-level installation
-message ("***** Configuring Pythia8 version")
-if (WITH_PYTHIA8)
-  string (TOLOWER ${WITH_PYTHIA8} WITH_PYTHIA8_LOWER)
-  if ("x_${WITH_PYTHIA8_LOWER}" STREQUAL "x_c8")
-    message ("Use Pythia8 from ThirdParty folder")
-  else ()
-    message ("Searching Pythia8 installed at location ${WITH_PYTHIA8}")
-    set (PYTHIA8_DIR ${WITH_PYTHIA8})
-    find_package (Pythia8 REQUIRED) 
-  endif ()
-else (WITH_PYTHIA8)
-  message ("Searching Pythia8 installed at system-level")
-  find_package (Pythia8) # if not found here, will automatically pick ThirdParty version 
-endif (WITH_PYTHIA8)
-
-# check for CxRoot/CONEX: either use ThirdParty/cxroot or system-level installation
-message ("***** Configuring CxRoot/CONEX version")
-if (WITH_CONEX)
-  string (TOLOWER ${WITH_CONEX} WITH_CONEX_LOWER)
-  if ("x_${WITH_CONEX_LOWER}" STREQUAL "x_c8")
-    message ("Use CONEX from ThirdParty folder")
-  else ()
-    message ("Searching CxRoot/CONEX installed at location ${WITH_CONEX}")
-    set (CONEX_DIR ${WITH_CONEX})
-    find_package (CONEX REQUIRED) 
-  endif ()
-else (WITH_CONEX)
-  message ("Searching CxRoot/CONEX installed at system-level")
-  find_package (CONEX) # if not found here, will automatically pick ThirdParty version 
-endif (WITH_CONEX)
-
-# check for Eigen3: either use ThirdParty/eigen3 or system-level installation
-message ("***** Configuring eigen3 version")
-if (WITH_EIGEN3)
-  string (TOLOWER ${WITH_EIGEN3} WITH_EIGEN3_LOWER)
-  if ("x_${WITH_EIGEN3_LOWER}" STREQUAL "x_c8")
-    message ("Use eigen3 from ThirdParty folder")
-  else ()
-    message ("Using eigen3 installed at location ${WITH_EIGEN3}")
-    list (APPEND CMAKE_MODULE_PATH "${WITH_EIGEN3}/cmake")
-    # set (EIGEN3_INCLUDE_DIR "${WITH_EIGEN3}" CACHE PATH "eigen3 directory") 
-    find_package (Eigen3 REQUIRED NO_MODULE)
-  endif ()
-else (WITH_EIGEN3)
-  message ("Searching eigen3 installed at system-level")
-  find_package (Eigen3 NO_MODULE) # if not found here, will automatically pick ThirdParty version 
-endif (WITH_EIGEN3)
-
-# some final info output
-message ("Use eigen3 version: ${EIGEN3_VERSION} from ${EIGEN3_INCLUDE_DIR}")
 
 # include potential ThirdParty code provided with CORSIKA
 add_subdirectory (ThirdParty)

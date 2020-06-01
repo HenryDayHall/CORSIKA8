@@ -1,3 +1,13 @@
+#
+# (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+#
+# See file AUTHORS for a list of contributors.
+#
+# This software is distributed under the terms of the GNU General Public
+# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+# the license.
+#
+
 # - find Conex
 #
 # This module defines
@@ -5,27 +15,43 @@
 # CONEX_PREFIX
 # CONEX_INCLUDE_DIR
 
-FIND_PATH (CONEX_PREFIX
+set (SEARCH_conex_
+  ${WITH_CONEX}
+  ${CONEXROOT}
+  ${CONEX_ROOT}
+  $ENV{CONEXROOT}
+  $ENV{CONEX_ROOT}
+  )
+
+find_path (CONEX_PREFIX
   NAMES lib/${CMAKE_SYSTEM_NAME}
-  PATHS $ENV{CONEXROOT}
+  PATHS ${SEARCH_conex_}
   DOC "The CONEX root directory"
   NO_DEFAULT_PATH
-)
+  )
 
-FIND_PATH (CONEX_INCLUDE_DIR
+find_path (CONEX_INCLUDE_DIR
   NAMES ConexDynamicInterface.h
-  PATHS ${CONEX_PREFIX}/src
+  PATHS ${CONEX_PREFIX}
+  PATH_SUFFIXES src
   DOC "The CONEX include directory"
-)
+  )
 
-IF (CONEX_INCLUDE_DIR)
-  SET (CONEX_FOUND TRUE)
-  ADD_DEFINITIONS (-D_CONEX_PREFIX=\"${CONEX_PREFIX}\" -D_CONEX_SYSTEM=\"${CMAKE_SYSTEM_NAME}\")
-  IF (NOT Conex_FIND_QUIETLY)
-    MESSAGE (STATUS "Conex include directory is ${CONEX_INCLUDE_DIR}")
-  ENDIF ()
-  SET (CMAKE_REQUIRED_INCLUDES ${CONEX_INCLUDE_DIR})
-  CHECK_CXX_SOURCE_COMPILES (
+find_library (CONEX_LIBRARY
+  NAMES libCONEXdynamic.a
+  PATHS ${CONEX_PREFIX}
+  PATH_SUFFIXES lib/${CMAKE_SYSTEM_NAME}
+  DOC "The CONEX library"
+  )
+
+if (CONEX_INCLUDE_DIR)
+  if (NOT CONEX_FIND_QUIETLY)
+    message (STATUS "Conex include directory is ${CONEX_INCLUDE_DIR}")
+  endif ()
+  
+  set (CMAKE_REQUIRED_INCLUDES ${CONEX_INCLUDE_DIR})
+  include (CheckCXXSourceCompiles)
+  check_cxx_source_compiles (
     "
     #include <conexHEModels.h>
     
@@ -36,10 +62,11 @@ IF (CONEX_INCLUDE_DIR)
       if (test == eSibyll23) return 0;
       return 0; 
     }
-    " 
+    "
     HAS_SIBYLL23
-  )  
-  CHECK_CXX_SOURCE_COMPILES (
+    )
+  
+  check_cxx_source_compiles (
     "
     #include <conexHEModels.h>
     
@@ -52,8 +79,9 @@ IF (CONEX_INCLUDE_DIR)
     }
     " 
     HAS_EPOS_LHC
-  )
-  CHECK_CXX_SOURCE_COMPILES (
+    )
+  
+  check_cxx_source_compiles (
     "
     #include <ConexDynamicInterface.h>
     #include <ConexDynamicInterface.cc>
@@ -66,35 +94,38 @@ IF (CONEX_INCLUDE_DIR)
     }
     " 
     HAS_LEADINGINTERACTION_INTERFACE
-  )
-  IF (HAS_LEADINGINTERACTION_INTERFACE)
+    )
+  
+  if (HAS_LEADINGINTERACTION_INTERFACE)
      # at least conex2r5.65
-     ADD_DEFINITIONS (-D_CONEX2R_VERSION=565)
-     IF (NOT Conex_FIND_QUIETLY)
-       MESSAGE (STATUS "Conex has interface to leading interactions. Set _CONEX2R_VERSION=565.")
-     ENDIF ()
-  ELSEIF (HAS_SIBYLL23)
+     set (CONEX_VERSION 565)
+     if (NOT CONEX_FIND_QUIETLY)
+       message (STATUS "Conex has interface to leading interactions. Set _CONEX2R_VERSION=565.")
+     endif ()
+  elseif (HAS_SIBYLL23)
      # at least conex2r5.30
-     ADD_DEFINITIONS (-D_CONEX2R_VERSION=530)
-     IF (NOT Conex_FIND_QUIETLY)
-       MESSAGE (STATUS "Conex has SIBYLL2.3. Set _CONEX2R_VERSION=530.")
-     ENDIF ()
-  ELSEIF (HAS_EPOS_LHC)
+     set (CONEX_VERSION 530)
+     if (NOT CONEX_FIND_QUIETLY)
+       message (STATUS "Conex has SIBYLL2.3. Set _CONEX2R_VERSION=530.")
+     endif ()
+  elseif (HAS_EPOS_LHC)
      # at least conex2r4.36
-     ADD_DEFINITIONS (-D_CONEX2R_VERSION=436)
-     IF (NOT Conex_FIND_QUIETLY)
-       MESSAGE (STATUS "Conex has EPOS-LHC. Set _CONEX2R_VERSION=436.")
-     ENDIF ()
-  ELSE ()
+     set (CONEX_VERSION 436)
+     if (NOT CONEX_FIND_QUIETLY)
+       message (STATUS "Conex has EPOS-LHC. Set _CONEX2R_VERSION=436.")
+     endif ()
+  else ()
      # pre LHC
-     ADD_DEFINITIONS (-D_CONEX2R_VERSION=300)     
-     IF (NOT Conex_FIND_QUIETLY)
-       MESSAGE (STATUS "Conex is pre-LHC. Set _CONEX2R_VERSION=300.")
-     ENDIF ()
-  ENDIF ()
-ELSE ()
-  SET (CONEX_FOUND FALSE)
-  IF (Conex_FIND_REQUIRED)
-    MESSAGE (FATAL_ERROR "Could not find Conex!")
-  ENDIF ()
-ENDIF ()
+     set (CONEX_VERSION 300)
+     if (NOT CONEX_FIND_QUIETLY)
+       message (STATUS "Conex is pre-LHC. Set _CONEX2R_VERSION=300.")
+     endif ()
+  endif ()
+endif ()
+
+# standard cmake infrastructure:
+include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args (CONEX
+  "Did not find system-level CONEX."
+  CONEX_INCLUDE_DIR CONEX_LIBRARY CONEX_VERSION)
+mark_as_advanced (CONEX_INCLUDE_DIR CONEX_LIBRARY CONEX_VERSION)

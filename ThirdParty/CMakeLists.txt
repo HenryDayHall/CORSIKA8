@@ -1,5 +1,3 @@
-include(ExternalProject)
-
 add_library (CORSIKAthirdparty INTERFACE)
 
 target_include_directories (CORSIKAthirdparty SYSTEM
@@ -11,12 +9,40 @@ target_include_directories (CORSIKAthirdparty SYSTEM
 install (DIRECTORY phys DESTINATION include/ThirdParty/)
 install (DIRECTORY catch2 DESTINATION include/ThirdParty/)
 
-# boost
+include(ExternalProject)
 
-add_library (CORSIKAboost INTERFACE IMPORTED GLOBAL)
-if (NOT Boost_FOUND)
+# eventually add AUTO here, too:
+set (ThirdPartyChoiceValues "C8;SYSTEM" CACHE STRING
+    "List of possible values for the ThirdParty package choice")
+mark_as_advanced (ThirdPartyChoiceValues)
+  
+
+
+##############################################################################
+# check for boost: either use C8 or system-level installation
+
+message ("***** Configuring boost version")
+
+set (USE_BOOST_C8 "C8" CACHE STRING
+    "Selection of boost package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
+set_property (CACHE USE_BOOST_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+message (STATUS "USE_BOOST_C8='${USE_BOOST_C8}'")
+
+add_library (C8::ext::boost INTERFACE IMPORTED GLOBAL)
+if ("x_${USE_BOOST_C8}" STREQUAL "x_SYSTEM")
+  find_package (Boost REQUIRED mp11 iterator core format interval optional type_index histogram)
+
+  message (STATUS "Using system-level boost version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}")
+  set_target_properties (
+    C8::ext::boost PROPERTIES
+    INTERFACE_LINK_LIBRARIES Boost::headers
+    )
+  set (Boost_FOUND 1 PARENT_SCOPE)
+  
+else ()
+
   set (_C8_Boost_VERSION "107300")
-  message ("Building ThirdParty/boost using boost-${_C8_Boost_VERSION}.tar.bz2")
+  message (STATUS "Building ThirdParty/boost using boost-${_C8_Boost_VERSION}.tar.bz2")
   ExternalProject_Add (boost
     URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-${_C8_Boost_VERSION}.tar.bz2
     URL_MD5 895e35757f133f01c451fc93229aae6b
@@ -35,7 +61,7 @@ if (NOT Boost_FOUND)
   set (Boost_PREFIX ${INSTALL_DIR}/..)
   set (Boost_INCLUDE_DIR  ${Boost_PREFIX})
   set (Boost_LIBRARY_DIR ${Boost_PREFIX})
-  add_dependencies (CORSIKAboost boost)
+  add_dependencies (C8::ext::boost boost)
   
   # create include directory at config time
   file (MAKE_DIRECTORY ${Boost_INCLUDE_DIR})
@@ -43,33 +69,48 @@ if (NOT Boost_FOUND)
   set (Boost_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/boost)
   install (DIRECTORY ${Boost_PREFIX}/ DESTINATION ${Boost_INSTALL_DIR})
   
-  message ("Use ThirdParty boost include dir ${Boost_INCLUDE_DIR}")
+  message (STATUS "Use ThirdParty boost include dir ${Boost_INCLUDE_DIR}")
   set_target_properties (
-    CORSIKAboost PROPERTIES
+    C8::ext::boost PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
       $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
     )
  
-else (NOT Boost_FOUND)
+endif ()
 
-  message ("Using system-level boost version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}")
-  set_target_properties (
-    CORSIKAboost PROPERTIES
-    INTERFACE_LINK_LIBRARIES Boost::headers
-    )
+
+##############################################################################
+# check for Eigen3: either use ThirdParty/eigen3 or system-level installation
+
+message ("***** Configuring eigen3 version")
+
+set (USE_EIGEN3_C8 "C8" CACHE STRING
+    "Selection of eigen3 package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
+set_property (CACHE USE_EIGEN3_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+message (STATUS "USE_EIGEN3_C8='${USE_EIGEN3_C8}'")
+
+add_library (C8::ext::eigen3 INTERFACE IMPORTED GLOBAL)
+if ("x_${USE_EIGEN3_C8}" STREQUAL "x_SYSTEM")
   
-endif (NOT Boost_FOUND)
+  if (WITH_EIGEN3)
+    list (APPEND CMAKE_MODULE_PATH "${WITH_EIGEN3}/cmake")
+  endif (WITH_EIGEN3)
+  find_package (Eigen3 REQUIRED NO_MODULE)
+  message (STATUS "Using system-level eigen3 version ${Eigen3_VERSION} at ${Eigen3_INCLUDE_DIR}")
+  set_target_properties (
+    C8::ext::eigen3 PROPERTIES
+    INTERFACE_LINK_LIBRARIES Eigen3::Eigen
+  )
+set (Eigen3_FOUND 1 PARENT_SCOPE)
 
-# eigen3
+else ()
 
-add_library (CORSIKAeigen3 INTERFACE IMPORTED GLOBAL)
-if (NOT Eigen3_FOUND)
   set (_C8_Eigen3_VERSION "eigen-eigen-b3f3d4950030")
 
-  message ("Building ThirdParty/eigen3 using ${_C8_Eigen3_VERSION}.tar.bz2")
+  message (STATUS "Building ThirdParty/eigen3 using ${_C8_Eigen3_VERSION}.tar.bz2")
   ExternalProject_Add (eigen3
     URL ${CMAKE_CURRENT_SOURCE_DIR}/${_C8_Eigen3_VERSION}.tar.bz2
-    URL_MD5 8ffed5895a851894ad866888d4e64685
+    URL_MD5 e83549a79d1b721da0f8899ab34edf95
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/eigen3/install/eigen
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/eigen3/install/eigen
     CONFIGURE_COMMAND ""
@@ -78,13 +119,11 @@ if (NOT Eigen3_FOUND)
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL FALSE
     )
-  set (HAVE_Eigen3 1 CACHE BOOL "presence of eigen3, via external-project-add in ThirdParty folder")
   set (Eigen3_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (eigen3 INSTALL_DIR)
   set (Eigen3_PREFIX ${INSTALL_DIR}/..)
-  set (Eigen3_INCLUDE_DIR  ${Eigen3_PREFIX})
-  set (Eigen3_LIBRARY_DIR ${Eigen3_PREFIX})
-  add_dependencies (CORSIKAeigen3 eigen3)
+  set (Eigen3_INCLUDE_DIR  ${Eigen3_PREFIX}/eigen)
+  add_dependencies (C8::ext::eigen3 eigen3)
 
   # create include directory at config time
   file (MAKE_DIRECTORY ${Eigen3_INCLUDE_DIR})
@@ -92,30 +131,44 @@ if (NOT Eigen3_FOUND)
   set (Eigen3_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/eigen3)
   install (DIRECTORY ${Eigen3_PREFIX}/ DESTINATION ${Eigen3_INSTALL_DIR})
   
-  message ("Use ThirdParty eigen3 include dir ${Eigen3_INCLUDE_DIR}")
+  message (STATUS "Use ThirdParty eigen3 include dir ${Eigen3_INCLUDE_DIR}")
   set_target_properties (
-    CORSIKAeigen3 PROPERTIES
+    C8::ext::eigen3 PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES
       $<BUILD_INTERFACE:${Eigen3_INCLUDE_DIR}>
     )
  
-else (NOT Eigen3_FOUND)
+endif ()
 
-  message ("Using system-level eigen3 version ${Eigen3_VERSION} at ${Eigen3_INCLUDE_DIR}")
-  set_target_properties (
-    CORSIKAeigen3 PROPERTIES
-    INTERFACE_LINK_LIBRARIES Eigen3::Eigen
-  )
+
+##############################################################################
+# check for Pythia8: either use C8 or system-level installation
+
+message ("***** Configuring Pythia8 version")
+
+set (USE_PYTHIA8_C8 "C8" CACHE STRING
+    "Selection of pythia8 package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
+set_property (CACHE USE_PYTHIA8_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+message (STATUS "USE_PYTHIA8_C8='${USE_PYTHIA8_C8}'")
+
+add_library (C8::ext::pythia8 STATIC IMPORTED GLOBAL)
+if ("x_${USE_PYTHIA8_C8}" STREQUAL "x_SYSTEM")
   
-endif (NOT Eigen3_FOUND)
+  find_package (Pythia8 REQUIRED) 
+  message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_INCLUDE_DIR}")
+  set_target_properties (
+    C8::ext::pythia8 PROPERTIES
+    IMPORTED_LOCATION ${Pythia8_LIBRARY}
+    IMPORTED_LINK_INTERFACE_LIBRARIES dl
+    INTERFACE_INCLUDE_DIRECTORIES ${Pythia8_INCLUDE_DIR}
+    )
+  set (Pythia8_FOUND 1 PARENT_SCOPE)
 
-# Pythia8
+else ()
 
-add_library (CORSIKApythia8 STATIC IMPORTED GLOBAL)
-if (NOT Pythia8_FOUND)
   set (_C8_Pythia8_VERSION "8235")
-  message ("Building ThirdParty/pythia8 using pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2")
-  message ("This will take a bit.....")
+  message (STATUS "Building ThirdParty/pythia8 using pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2")
+  message (STATUS "This will take a bit.....")
   ExternalProject_Add (pythia8
     URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
     URL_MD5 83132880c0594b808bd7fd37fb642606
@@ -125,14 +178,13 @@ if (NOT Pythia8_FOUND)
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
     )
-  set (HAVE_Pythia8 1 CACHE BOOL "presence of pythia8, via external-project-add in ThirdParty folder")
   set (Pythia8_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (pythia8 INSTALL_DIR)
   set (Pythia8_VERSION ${_C8_Pythia8_VERSION} CACHE STRING "Version of Pythia8")
   set (Pythia8_PREFIX ${INSTALL_DIR})
   set (Pythia8_INCLUDE_DIR  ${Pythia8_PREFIX}/include)
   set (Pythia8_LIBRARY ${Pythia8_PREFIX}/lib/libpythia8.a)
-  add_dependencies (CORSIKApythia8 pythia8)
+  add_dependencies (C8::ext::pythia8 pythia8)
 
   # create include directory at config time
   file (MAKE_DIRECTORY ${Pythia8_INCLUDE_DIR})
@@ -141,33 +193,44 @@ if (NOT Pythia8_FOUND)
   install (DIRECTORY ${INSTALL_DIR}/ DESTINATION ${Pythia8_INSTALL_DIR})
   
   set_target_properties (
-    CORSIKApythia8 PROPERTIES
+    C8::ext::pythia8 PROPERTIES
     IMPORTED_LOCATION ${Pythia8_LIBRARY}
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     INTERFACE_INCLUDE_DIRECTORIES
       $<BUILD_INTERFACE:${Pythia8_INCLUDE_DIR}>
     )
 
-else (NOT Pythia8_FOUND)
+endif ()
 
-  message ("Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_INCLUDE_DIR}")
-  set_target_properties (
-    CORSIKApythia8 PROPERTIES
-    IMPORTED_LOCATION ${Pythia8_LIBRARY}
-    IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES ${Pythia8_INCLUDE_DIR}
-    )
+
+
+##############################################################################
+# check for CxRoot/CONEX: either use ThirdParty/cxroot or system-level installation
+
+message ("***** Configuring CxRoot/CONEX version")
+
+set (USE_CONEX_C8 "C8" CACHE STRING
+    "Selection of conex package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
+set_property (CACHE USE_CONEX_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+message (STATUS "USE_CONEX_C8='${USE_CONEX_C8}'")
+
+add_library (C8::ext::conex STATIC IMPORTED GLOBAL)
+if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   
-endif (NOT Pythia8_FOUND)
+  find_package (CONEX REQUIRED) 
+  message (STATUS "Using system-level CONEX version at ${CONEX_INCLUDE_DIR}")
+  set_target_properties (
+    C8::ext::conex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXdynamic.a
+    IMPORTED_LINK_INTERFACE_LIBRARIES dl
+    INTERFACE_INCLUDE_DIRECTORIES ${CONEX_INCLUDE_DIR}
+    )
+  set (CONEX_FOUND 1 PARENT_SCOPE)
 
+else ()
 
-
-# CONEX/CXROOT
-
-add_library (CORSIKAconex STATIC IMPORTED GLOBAL)
-if (NOT CONEX_FOUND)
-  message ("Building ThirdParty/cxroot is obtained via git and compiled")
-  message ("This will take a bit.....")
+  message (STATUS "Building conex obtained via git and compiled")
+  message (STATUS "This will take a bit.....")
   ExternalProject_Add (cxroot
     GIT_REPOSITORY https://gitlab.ikp.kit.edu/AirShowerPhysics/cxroot.git
     GIT_TAG origin/master
@@ -181,37 +244,23 @@ if (NOT CONEX_FOUND)
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
     )
-  set (HAVE_CONEX 1 CACHE BOOL "presence of conex, via external-project-add in ThirdParty folder")
   set (CONEX_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (cxroot INSTALL_DIR)
   set (CONEX_PREFIX ${INSTALL_DIR})
   set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src)
   set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src PARENT_SCOPE)
-  add_dependencies (CORSIKAconex cxroot)
+  add_dependencies (C8::ext::conex cxroot)
 
   # create include directory at config time
   file (MAKE_DIRECTORY ${CONEX_INCLUDE_DIR})
 
-  set (CONEX_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/cxroot)
-  install (DIRECTORY ${INSTALL_DIR}/ DESTINATION ${CONEX_INSTALL_DIR})
-
   set_target_properties (
-    CORSIKAconex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/Linux/libCONEXdynamic.a
+    C8::ext::conex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_LIBRARY}
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     INTERFACE_INCLUDE_DIRECTORIES
      $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
     )
-  
-else (NOT CONEX_FOUND)
-
-  message ("Using system-level CONEX version at ${CXROOT_INCLUDE_DIR}")
-  set_target_properties (
-    CORSIKAconex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXdynamic.a
-    IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES ${CONEX_INCLUDE_DIR}
-    )
-  
-endif (NOT CONEX_FOUND)
+    
+endif ()
 

@@ -41,7 +41,7 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAutilities
-  CORSIKAeigen3
+  C8::ext::eigen3
   )
 
 target_include_directories (
@@ -50,12 +50,6 @@ target_include_directories (
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
-
-#target_include_directories (
-#  CORSIKAgeometry
-#  SYSTEM
-#  PUBLIC "${EIGEN3_INCLUDE_DIR}"
-#  )
 
 install (
   TARGETS CORSIKAgeometry
@@ -77,7 +71,6 @@ target_link_libraries (
 CORSIKA_ADD_TEST(testFourVector)
 target_link_libraries (
   testFourVector
-  CORSIKAboost 
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAtesting

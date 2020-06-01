@@ -29,7 +29,7 @@ target_include_directories (
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/>
-  CORSIKAboost
+  C8::ext:boost
   )
 
 # install library
