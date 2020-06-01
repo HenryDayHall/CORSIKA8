@@ -25,7 +25,10 @@ message ("***** Configuring boost version")
 
 set (USE_BOOST_C8 "C8" CACHE STRING
     "Selection of boost package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
-set_property (CACHE USE_BOOST_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+set_property (CACHE USE_BOOST_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues} )
+if (NOT (${USE_BOOST_C8} IN_LIST ThirdPartyChoiceValues))
+  message (SEND_ERROR "Illegal USE_BOOST_C8=\"${USE_BOOST_C8}\" can only be one of: ${ThirdPartyChoiceValues}")
+endif (NOT (${USE_BOOST_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_BOOST_C8='${USE_BOOST_C8}'")
 
 add_library (C8::ext::boost INTERFACE IMPORTED GLOBAL)
@@ -87,6 +90,9 @@ message ("***** Configuring eigen3 version")
 set (USE_EIGEN3_C8 "C8" CACHE STRING
     "Selection of eigen3 package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
 set_property (CACHE USE_EIGEN3_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+if (NOT (${USE_EIGEN3_C8} IN_LIST ThirdPartyChoiceValues))
+  message (SEND_ERROR "Illegal USE_EIGEN3_C8=\"${USE_EIGEN3_C8}\" can only be one of: ${ThirdPartyChoiceValues}")
+endif (NOT (${USE_EIGEN3_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_EIGEN3_C8='${USE_EIGEN3_C8}'")
 
 add_library (C8::ext::eigen3 INTERFACE IMPORTED GLOBAL)
@@ -149,6 +155,9 @@ message ("***** Configuring Pythia8 version")
 set (USE_PYTHIA8_C8 "C8" CACHE STRING
     "Selection of pythia8 package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
 set_property (CACHE USE_PYTHIA8_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+if (NOT (${USE_PYTHIA8_C8} IN_LIST ThirdPartyChoiceValues))
+  message (SEND_ERROR "Illegal USE_PYTHIA8_C8=\"${USE_PYTHIA8_C8}\" can only be one of: ${ThirdPartyChoiceValues}")
+endif (NOT (${USE_PYTHIA8_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_PYTHIA8_C8='${USE_PYTHIA8_C8}'")
 
 add_library (C8::ext::pythia8 STATIC IMPORTED GLOBAL)
@@ -212,6 +221,9 @@ message ("***** Configuring CxRoot/CONEX version")
 set (USE_CONEX_C8 "C8" CACHE STRING
     "Selection of conex package. Can be \'C8\' or \'SYSTEM\'. Default: \'C8\'.")
 set_property (CACHE USE_CONEX_C8 PROPERTY STRINGS ${ThirdPartyChoiceValues})
+if (NOT (${USE_CONEX_C8} IN_LIST ThirdPartyChoiceValues))
+  message (SEND_ERROR "Illegal USE_CONEX_C8=\"${USE_CONEX_C8}\" can only be one of: ${ThirdPartyChoiceValues}")
+endif (NOT (${USE_CONEX_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_CONEX_C8='${USE_CONEX_C8}'")
 
 add_library (C8::ext::conex STATIC IMPORTED GLOBAL)
