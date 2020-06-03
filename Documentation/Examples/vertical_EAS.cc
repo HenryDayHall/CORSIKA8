@@ -21,6 +21,7 @@
 #include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
@@ -175,6 +176,8 @@ int main(int argc, char** argv) {
 
   process::particle_cut::ParticleCut cut(100_GeV);
 
+  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-2,1.e-2);
+  
   process::energy_loss::EnergyLoss eLoss(showerAxis);
 
   Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
@@ -189,7 +192,7 @@ int main(int argc, char** argv) {
   auto sibyllSequence = sibyllNucCounted << sibyllCounted;
   process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
-  auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << eLoss << cut << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
