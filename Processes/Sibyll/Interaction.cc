@@ -316,20 +316,50 @@ namespace corsika::process::sibyll {
           HEPEnergyType const eCoM = psib.GetEnergy();
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
+          auto const pid = process::sibyll::ConvertFromSibyll(psib.GetPID());
+          // check if on-shell in corsika
+          auto const m_kinetic = Plab.GetNorm();
+          auto const m_corsika = particles::GetMass(pid);
+          auto const e_corsika = Plab.GetTimeLikeComponent();
+          auto const m_sibyll = corsika::process::sibyll::GetSibyllMass(pid);
+          auto const m_err = abs(m_kinetic - m_corsika) / m_corsika;
+          if (m_err > 1.e-5) {
+            const HEPEnergyType e_shift_corsika = sqrt(
+                Plab.GetSpaceLikeComponents().GetSquaredNorm() + m_corsika * m_corsika);
+            auto const e_shift_relative = (e_shift_corsika / e_corsika - 1) * 100;
+            // warn about percent level shifts in particle energy
+            if (abs(e_shift_relative) > 1) {
+              std::cout << "Sibyll::Interaction: shifted particle energy by "
+                        << e_shift_relative << " %" << std::endl;
+
+              std::cout << "shift particle mass for " << pid << std::endl
+                        << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
+                        << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
+                        << "sibyll  mass (GeV): " << m_sibyll / 1_GeV << std::endl
+                        << "(m_kin-m_cor)/en: " << m_err << std::endl;
+            }
+            Plab.GetTimeLikeComponent() = e_shift_corsika;
+          }
+
           // add to corsika stack
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-                  process::sibyll::ConvertFromSibyll(psib.GetPID()),
-                  Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+                  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
                   tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();
           Ecm_final += psib.GetEnergy();
         }
-        cout << "conservation (all GeV): Ecm_final=" << Ecm_final / 1_GeV << endl
-             << "Elab_final=" << Elab_final / 1_GeV
+        cout << "conservation (all GeV):" << endl
+             << "Ecm_initial=" << Ecm / 1_GeV << " Ecm_final=" << Ecm_final / 1_GeV
+             << endl
+             << "Elab_initial=" << eProjectileLab / 1_GeV
+             << " Elab_final=" << Elab_final / 1_GeV
+             << " diff (%)=" << (Elab_final / eProjectileLab / get_nwounded() - 1) * 100
+             << endl
+             << "Plab_initial=" << (pProjectileLab / 1_GeV).GetComponents()
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
     }
