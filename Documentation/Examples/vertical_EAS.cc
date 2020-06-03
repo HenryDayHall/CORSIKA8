@@ -23,6 +23,7 @@
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
@@ -183,6 +184,8 @@ int main(int argc, char** argv) {
 
   process::particle_cut::ParticleCut cut{60_GeV};
 
+  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-2,1.e-2);
+  
   process::energy_loss::EnergyLoss eLoss(showerAxis);
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
@@ -199,7 +202,8 @@ int main(int argc, char** argv) {
   process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
-  auto sequence = switchProcess << decaySequence << longprof << eLoss << cut
+
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << longprof << eLoss << cut
                                 << observationLevel;
 
   // define air shower object, run simulation
