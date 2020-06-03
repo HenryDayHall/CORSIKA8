@@ -57,7 +57,7 @@ namespace corsika::process::pythia {
     fPythia.readString("Next:numberShowEvent = 0");
 
     fPythia.readString("Print:quiet = on");
-    fPythia.readString("Check:particleData = 1");
+    fPythia.readString("Check:particleData = 0");
 
     /*
        switching off event check in pythia is needed to allow decays that are off-shell
@@ -65,7 +65,7 @@ namespace corsika::process::pythia {
        the consistency of particle masses between event generators is an unsolved issues
     */
     cout << "Pythia::Init: switching off event checking in pythia.." << endl;
-    fPythia.readString("Check:event = 0");
+    fPythia.readString("Check:event = 1");
 
     fPythia.readString("ProcessLevel:all = off");
     fPythia.readString("ProcessLevel:resonanceDecays = off");
