@@ -323,7 +323,7 @@ namespace corsika::process::sibyll {
           auto const e_corsika = Plab.GetTimeLikeComponent();
           auto const m_sibyll = corsika::process::sibyll::GetSibyllMass(pid);
           auto const m_err = abs(m_kinetic - m_corsika) / m_corsika;
-          if (m_err > 1.e-5) {
+          if (m_err > 1.e-5 && false) {
             const HEPEnergyType e_shift_corsika = sqrt(
                 Plab.GetSpaceLikeComponents().GetSquaredNorm() + m_corsika * m_corsika);
             auto const e_shift_relative = (e_shift_corsika / e_corsika - 1) * 100;
