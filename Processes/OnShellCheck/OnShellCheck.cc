@@ -35,7 +35,7 @@ namespace corsika::process {
         auto const pid = p.GetPID();
         // if(pid==particles::Code::Gamma || particles::IsNeutrino(pid) ||
         // particles::IsNucleus(pid)) continue;
-        if (!particles::IsHadron(pid)) continue;
+        if (!particles::IsHadron(pid) || particles::IsNucleus(pid)) continue;
         auto const e_original = p.GetEnergy();
         auto const p_original = p.GetMomentum();
         auto const Plab = corsika::geometry::FourVector(e_original, p_original);

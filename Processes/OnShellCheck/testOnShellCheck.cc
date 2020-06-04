@@ -39,10 +39,13 @@ TEST_CASE("OnShellCheck", "[processes]") {
   // two energies
   const HEPEnergyType E = 10_GeV;
   // list of arbitrary particles
-  std::array<particles::Code, 2> particleList = {particles::Code::PiPlus,
-                                                 particles::Code::PiMinus};
+  std::array<particles::Code, 4> particleList = {
+      particles::Code::PiPlus,
+      particles::Code::PiMinus,
+      particles::Code::Helium,
+      particles::Code::Gamma};
 
-  std::array<double, 2> mass_shifts = {1.1, 1.001};
+  std::array<double, 4> mass_shifts = {1.1, 1.001, 1.0, 1.0};
 
   SECTION("check particle masses") {
 
@@ -83,8 +86,9 @@ TEST_CASE("OnShellCheck", "[processes]") {
       auto const m_kinetic = Plab.GetNorm();
       if (i == 0)
         REQUIRE(m_kinetic / particles::PiPlus::GetMass() == Approx(1));
-      else
+      else if (i == 1)
         REQUIRE_FALSE(m_kinetic / particles::PiMinus::GetMass() == Approx(1));
+	
     }
   }
 }
