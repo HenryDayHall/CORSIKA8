@@ -176,8 +176,8 @@ int main(int argc, char** argv) {
 
   process::particle_cut::ParticleCut cut(100_GeV);
 
-  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-2,1.e-2);
-  
+  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-2);
+
   process::energy_loss::EnergyLoss eLoss(showerAxis);
 
   Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
