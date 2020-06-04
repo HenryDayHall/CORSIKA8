@@ -73,10 +73,9 @@ TEST_CASE("OnShellCheck", "[processes]") {
       projectile.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
                                          corsika::stack::MomentumVector, geometry::Point,
                                          units::si::TimeType>{
-          proType, E, momentum, geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
-
-      check.DoSecondaries(view);
+          proType, E, momentum, geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});      
     }
+    check.DoSecondaries(view);
     int i = -1;
     for ( auto& p : view) {
       i++;
