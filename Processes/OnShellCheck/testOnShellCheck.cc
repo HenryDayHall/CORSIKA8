@@ -11,10 +11,10 @@
 #include <corsika/process/on_shell_check/OnShellCheck.h>
 
 #include <corsika/environment/Environment.h>
+#include <corsika/geometry/FourVector.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
-#include <corsika/geometry/FourVector.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
 
@@ -39,8 +39,8 @@ TEST_CASE("OnShellCheck", "[processes]") {
   // two energies
   const HEPEnergyType E = 10_GeV;
   // list of arbitrary particles
-  std::array<particles::Code, 2> particleList = {
-      particles::Code::PiPlus,   particles::Code::PiMinus};
+  std::array<particles::Code, 2> particleList = {particles::Code::PiPlus,
+                                                 particles::Code::PiMinus};
 
   std::array<double, 2> mass_shifts = {1.1, 1.001};
 
@@ -49,7 +49,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
     OnShellCheck check(1.e-2, 0.01);
 
     check.Init();
-    
+
     // add primary particle to stack
     auto particle = stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -67,24 +67,24 @@ TEST_CASE("OnShellCheck", "[processes]") {
     int count = -1;
     for (auto proType : particleList) {
       count++;
-      const auto pz = sqrt((E - particles::GetMass(proType)*mass_shifts[count]) *
-                           (E + particles::GetMass(proType)*mass_shifts[count]));
+      const auto pz = sqrt((E - particles::GetMass(proType) * mass_shifts[count]) *
+                           (E + particles::GetMass(proType) * mass_shifts[count]));
       auto const momentum = corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, pz});
       projectile.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
                                          corsika::stack::MomentumVector, geometry::Point,
                                          units::si::TimeType>{
-          proType, E, momentum, geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});      
+          proType, E, momentum, geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
     }
     check.DoSecondaries(view);
     int i = -1;
-    for ( auto& p : view) {
+    for (auto& p : view) {
       i++;
       auto const Plab = corsika::geometry::FourVector(p.GetEnergy(), p.GetMomentum());
       auto const m_kinetic = Plab.GetNorm();
-      if(i==0)
-	REQUIRE(m_kinetic / particles::PiPlus::GetMass() == Approx(1));
+      if (i == 0)
+        REQUIRE(m_kinetic / particles::PiPlus::GetMass() == Approx(1));
       else
-	REQUIRE_FALSE(m_kinetic / particles::PiMinus::GetMass() == Approx(1));
+        REQUIRE_FALSE(m_kinetic / particles::PiMinus::GetMass() == Approx(1));
     }
   }
 }
