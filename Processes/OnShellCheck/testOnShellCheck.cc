@@ -40,9 +40,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
   const HEPEnergyType E = 10_GeV;
   // list of arbitrary particles
   std::array<particles::Code, 4> particleList = {
-      particles::Code::PiPlus,
-      particles::Code::PiMinus,
-      particles::Code::Helium,
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::Helium,
       particles::Code::Gamma};
 
   std::array<double, 4> mass_shifts = {1.1, 1.001, 1.0, 1.0};
@@ -61,7 +59,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
             corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
     // view on secondary particles
-    corsika::stack::SecondaryView view(particle);
+    corsika::stack::SecondaryView view(part./ icle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.GetProjectile();
@@ -88,7 +86,6 @@ TEST_CASE("OnShellCheck", "[processes]") {
         REQUIRE(m_kinetic / particles::PiPlus::GetMass() == Approx(1));
       else if (i == 1)
         REQUIRE_FALSE(m_kinetic / particles::PiMinus::GetMass() == Approx(1));
-	
     }
   }
 }
