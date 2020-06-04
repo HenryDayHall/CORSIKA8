@@ -9,8 +9,8 @@
  * the license.
  */
 
-#include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/geometry/FourVector.h>
+#include <corsika/process/on_shell_check/OnShellCheck.h>
 
 using namespace std;
 
@@ -23,7 +23,7 @@ using namespace corsika::setup;
 namespace corsika::process {
   namespace on_shell_check {
 
-    void OnShellCheck::Init(){
+    void OnShellCheck::Init() {
       std::cout << "OnShellCheck: mass tolerance is set to " << mass_tolerance_ * 100
                 << "%" << endl
                 << "              energy tolerance is set to " << energy_tolerance_ * 100
@@ -33,8 +33,9 @@ namespace corsika::process {
     EProcessReturn OnShellCheck::DoSecondaries(corsika::setup::StackView& vS) {
       for (auto& p : vS) {
         auto const pid = p.GetPID();
-	//if(pid==particles::Code::Gamma || particles::IsNeutrino(pid) || particles::IsNucleus(pid)) continue;
-	if(!particles::IsHadron(pid)) continue;
+        // if(pid==particles::Code::Gamma || particles::IsNeutrino(pid) ||
+        // particles::IsNucleus(pid)) continue;
+        if (!particles::IsHadron(pid)) continue;
         auto const e_original = p.GetEnergy();
         auto const p_original = p.GetMomentum();
         auto const Plab = corsika::geometry::FourVector(e_original, p_original);
@@ -45,24 +46,24 @@ namespace corsika::process {
           const HEPEnergyType e_shifted =
               sqrt(p_original.GetSquaredNorm() + m_corsika * m_corsika);
           auto const e_shift_relative = (e_shifted / e_original - 1);
-	  /* 
-	     For now we warn if the necessary shift is larger than 1%.
-	     we could promote this to an error.
-	   */
-	  if (abs(e_shift_relative) > energy_tolerance_) {
-	    std::cout << "OnShellCheck: warning! shifted particle energy by "
-		      << e_shift_relative*100 << " %" << std::endl;	    
-	  }
-          std::cout << "OnShellCheck: shift particle mass for " << pid
-                    << std::endl
+          /*
+             For now we warn if the necessary shift is larger than 1%.
+             we could promote this to an error.
+           */
+          if (abs(e_shift_relative) > energy_tolerance_) {
+            std::cout << "OnShellCheck: warning! shifted particle energy by "
+                      << e_shift_relative * 100 << " %" << std::endl;
+          }
+          std::cout << "OnShellCheck: shift particle mass for " << pid << std::endl
                     << std::setw(35) << std::setfill(' ')
                     << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
-		    << std::setw(35) << std::setfill(' ')
+                    << std::setw(35) << std::setfill(' ')
                     << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
-		    << std::setw(35) << std::setfill(' ')
+                    << std::setw(35) << std::setfill(' ')
                     << "m_kin-m_cor (GeV): " << m_err_abs / 1_GeV << std::endl
-		    << std::setw(35) << std::setfill(' ')
-                    << "mass tolerance (GeV): " << ( m_corsika * mass_tolerance_ ) / 1_GeV << std::endl;
+                    << std::setw(35) << std::setfill(' ')
+                    << "mass tolerance (GeV): " << (m_corsika * mass_tolerance_) / 1_GeV
+                    << std::endl;
           // reset energy
           p.SetEnergy(e_shifted);
         } else
@@ -70,5 +71,5 @@ namespace corsika::process {
       }
       return EProcessReturn::eOk;
     }
-  }
-} // namespace on_shell_check
+  } // namespace on_shell_check
+} // namespace corsika::process
