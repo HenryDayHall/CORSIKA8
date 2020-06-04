@@ -317,29 +317,6 @@ namespace corsika::process::sibyll {
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
           auto const pid = process::sibyll::ConvertFromSibyll(psib.GetPID());
-          // check if on-shell in corsika
-          auto const m_kinetic = Plab.GetNorm();
-          auto const m_corsika = particles::GetMass(pid);
-          auto const e_corsika = Plab.GetTimeLikeComponent();
-          auto const m_sibyll = corsika::process::sibyll::GetSibyllMass(pid);
-          auto const m_err = abs(m_kinetic - m_corsika) / m_corsika;
-          if (m_err > 1.e-5 && false) {
-            const HEPEnergyType e_shift_corsika = sqrt(
-                Plab.GetSpaceLikeComponents().GetSquaredNorm() + m_corsika * m_corsika);
-            auto const e_shift_relative = (e_shift_corsika / e_corsika - 1) * 100;
-            // warn about percent level shifts in particle energy
-            if (abs(e_shift_relative) > 1) {
-              std::cout << "Sibyll::Interaction: shifted particle energy by "
-                        << e_shift_relative << " %" << std::endl;
-
-              std::cout << "shift particle mass for " << pid << std::endl
-                        << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
-                        << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
-                        << "sibyll  mass (GeV): " << m_sibyll / 1_GeV << std::endl
-                        << "(m_kin-m_cor)/en: " << m_err << std::endl;
-            }
-            Plab.GetTimeLikeComponent() = e_shift_corsika;
-          }
 
           // add to corsika stack
           auto pnew = vP.AddSecondary(
