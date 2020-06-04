@@ -40,8 +40,8 @@ namespace corsika::process {
         auto const Plab = corsika::geometry::FourVector(e_original, p_original);
         auto const m_kinetic = Plab.GetNorm();
         auto const m_corsika = particles::GetMass(pid);
-        auto const m_err = abs(m_kinetic - m_corsika) / m_corsika;
-        if (m_err > mass_tolerance_) {
+        auto const m_err_abs = abs(m_kinetic - m_corsika);
+        if (m_err_abs >= mass_tolerance_ * m_corsika) {
           const HEPEnergyType e_shifted =
               sqrt(p_original.GetSquaredNorm() + m_corsika * m_corsika);
           auto const e_shift_relative = (e_shifted / e_original - 1);
@@ -50,20 +50,23 @@ namespace corsika::process {
 	     we could promote this to an error.
 	   */
 	  if (abs(e_shift_relative) > energy_tolerance_) {
-	    std::cout << "OnShellCheck::DoSecondaries: warning! shifted particle energy by "
-		      << e_shift_relative*100 << " %" << std::endl;
+	    std::cout << "OnShellCheck: warning! shifted particle energy by "
+		      << e_shift_relative*100 << " %" << std::endl;	    
 	  }
-          std::cout << "OnShellCheck::DoSecondaries: shift particle mass for " << pid
+          std::cout << "OnShellCheck: shift particle mass for " << pid
                     << std::endl
-                    << std::setw(20) << std::setfill(' ')
+                    << std::setw(35) << std::setfill(' ')
                     << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
+		    << std::setw(35) << std::setfill(' ')
                     << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
-                    << "(m_kin-m_cor)/en: " << m_err << std::endl
-                    << "mass tolerance: " << mass_tolerance_ << std::endl;
+		    << std::setw(35) << std::setfill(' ')
+                    << "m_kin-m_cor (GeV): " << m_err_abs / 1_GeV << std::endl
+		    << std::setw(35) << std::setfill(' ')
+                    << "mass tolerance (GeV): " << ( m_corsika * mass_tolerance_ ) / 1_GeV << std::endl;
           // reset energy
           p.SetEnergy(e_shifted);
         } else
-	  std::cout << "OnShellCheck::DoSecondaries: particle mass for " << pid << " OK" << std::endl;
+          std::cout << "OnShellCheck: particle mass for " << pid << " OK" << std::endl;
       }
       return EProcessReturn::eOk;
     }
