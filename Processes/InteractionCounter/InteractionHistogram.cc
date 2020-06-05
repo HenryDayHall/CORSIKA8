@@ -19,7 +19,6 @@ void InteractionHistogram::fill(particles::Code projectile_id,
                                 units::si::HEPEnergyType lab_energy,
                                 units::si::HEPEnergyType mass_target, int A, int Z) {
   using namespace units::si;
-
   if (projectile_id == particles::Code::Nucleus) {
     auto const sqrtS =
         sqrt(A * A * (units::constants::nucleonMass * units::constants::nucleonMass) +
@@ -52,7 +51,6 @@ void InteractionHistogram::fill(particles::Code projectile_id,
 
     interaction_histogram_cms_(
         static_cast<corsika::particles::CodeIntType>(projectile_id), sqrtS / 1_GeV);
-
     interaction_histogram_lab_(
         static_cast<corsika::particles::CodeIntType>(projectile_id), lab_energy / 1_GeV);
   }
@@ -81,6 +79,9 @@ InteractionHistogram& InteractionHistogram::operator+=(
 InteractionHistogram InteractionHistogram::operator+(InteractionHistogram other) const {
   other.nuclear_inthist_lab_ += nuclear_inthist_lab_;
   other.nuclear_inthist_cms_ += nuclear_inthist_cms_;
+
+  other.interaction_histogram_lab_ += interaction_histogram_lab_;
+  other.interaction_histogram_cms_ += interaction_histogram_cms_;
 
   return other;
 }
