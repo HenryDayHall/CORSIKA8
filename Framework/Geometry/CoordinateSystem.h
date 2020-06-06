@@ -118,6 +118,12 @@ namespace corsika::geometry {
     auto const* GetReference() const { return reference; }
 
     auto const& GetTransform() const { return transf; }
+
+    bool operator==(CoordinateSystem const& cs) const {
+      return reference == cs.reference && transf.matrix() == cs.transf.matrix();
+    }
+
+    bool operator!=(CoordinateSystem const& cs) const { return !(cs == *this); }
   };
 
 } // namespace corsika::geometry
