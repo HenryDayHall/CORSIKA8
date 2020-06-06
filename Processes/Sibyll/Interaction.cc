@@ -319,7 +319,8 @@ namespace corsika::process::sibyll {
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-                  pid, Plab.GetTimeLikeComponent(), p3lab, pOrig, tOrig});
+                  process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                  Plab.GetTimeLikeComponent(), p3lab, pOrig, tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();
