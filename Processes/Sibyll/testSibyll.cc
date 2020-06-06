@@ -86,6 +86,15 @@ TEST_CASE("Sibyll", "[processes]") {
 using namespace corsika::units::si;
 using namespace corsika::units;
 
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
+  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+
+  for (auto const& p : view) { sum += p.GetMomentum(); }
+
+  return sum;
+}
+
 TEST_CASE("SibyllInterface", "[processes]") {
 
   // setup environment, geometry
@@ -113,10 +122,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
-    const HEPEnergyType E0 = 100_GeV;
+    const HEPEnergyType E0 = 60_GeV;
     HEPMomentumType P0 =
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -130,6 +139,18 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    auto const pSum = sumMomentum(view, cs);
+
+    // for debugging!
+    std::cout << pSum.GetComponents(cs) << std::endl;
+    std::cout << plab.GetComponents(cs) << std::endl;
+
+    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(1e-4));
+    CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
+
+    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.norm() / P0 == Approx(1).margin(1e-4));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
