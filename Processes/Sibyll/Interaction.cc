@@ -313,8 +313,6 @@ namespace corsika::process::sibyll {
           HEPEnergyType const eCoM = psib.GetEnergy();
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
-          auto const pid = process::sibyll::ConvertFromSibyll(psib.GetPID());
-
           // add to corsika stack
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
