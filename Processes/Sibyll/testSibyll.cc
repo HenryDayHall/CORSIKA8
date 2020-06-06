@@ -136,8 +136,18 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Interaction model;
 
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
-    [[maybe_unused]] auto const pSum = sumMomentum(view, cs);
+    auto const pSum = sumMomentum(view, cs);
 
+    // for debugging!
+    std::cout << pSum.GetComponents(cs) << std::endl;
+    std::cout << plab.GetComponents(cs) << std::endl;
+
+    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(1e-4));
+    CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
+
+    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.norm() / P0 == Approx(1).margin(1e-4));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
