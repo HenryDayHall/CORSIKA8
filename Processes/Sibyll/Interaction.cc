@@ -318,8 +318,6 @@ namespace corsika::process::sibyll {
           auto const p3lab = Plab.GetSpaceLikeComponents();
           assert(p3lab.GetCoordinateSystem() == originalCS); // just to be sure!
 
-          auto const pid = process::sibyll::ConvertFromSibyll(psib.GetPID());
-
           // add to corsika stack
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
