@@ -191,29 +191,29 @@ template <typename TParticle> // need template here, as this is called both with
                               // SetupParticle as well as SetupProjectile
 CrossSectionType UrQMD::GetCrossSection(TParticle const& projectile,
                                         corsika::particles::Code targetCode) const {
-  // TODO: return 0 for non-hadrons?
 
   auto const projectileCode = projectile.GetPID();
   auto const projectileEnergyLab = projectile.GetEnergy();
 
+  if (projectileCode == particles::Code::Nucleus) {
+    /*
+     * unfortunately unavoidable at the moment until we have tools to get the actual
+     * inealstic cross-section from UrQMD
+     */
+    return CrossSectionType::zero();
+  }
+
   return GetTabulatedCrossSection(projectileCode, targetCode, projectileEnergyLab);
-
-  // if (projectileCode == particles::Code::K0Long) {
-  //   return 0.5 *
-  //          (GetCrossSection(particles::Code::K0, vTargetCode, projectileEnergyLab) +
-  //           GetCrossSection(particles::Code::K0Bar, vTargetCode, projectileEnergyLab));
-  // }
-
-  // int const Ap =
-  //     (projectileCode == particles::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
-  // return GetCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
 }
 
 bool UrQMD::CanInteract(particles::Code vCode) const {
   // According to the manual, UrQMD can use all mesons, baryons and nucleons
   // which are modeled also as input particles. I think it is safer to accept
   // only the usual long-lived species as input.
-  // TODO: Charmed mesons should be added to the list, too
+
+  // Interactions with nucleus projectiles are possible in principle with UrQMD
+  // but right now we don't have access to the inelastic (production) cross-section,
+  // so we unfortunately have to forbid these interactions for the time being.
 
   static particles::Code const validProjectileCodes[] = {
       particles::Code::Proton,      particles::Code::AntiProton, particles::Code::Neutron,

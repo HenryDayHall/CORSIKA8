@@ -149,7 +149,7 @@ TEST_CASE("UrQMD") {
       REQUIRE(stack->GetSize() == 1);
 
       // simple check whether the cross-section is non-vanishing
-      // only nuclei with available tabluated data so far 
+      // only nuclei with available tabluated data so far
       REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Nitrogen) /
                   1_mb >
               0);
