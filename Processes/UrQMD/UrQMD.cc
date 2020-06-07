@@ -82,6 +82,10 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code vProjectileCode
       break;
     case particles::Code::K0Short:
     case particles::Code::K0Long:
+    /* since K0Short and K0Long are treated the same, we can also add K0 and K0Bar
+     * to the list. This is a deviation from CORSIKA 7. */
+    case particles::Code::K0:
+    case particles::Code::K0Bar:
       projectileIndex = 8;
       break;
     default:
