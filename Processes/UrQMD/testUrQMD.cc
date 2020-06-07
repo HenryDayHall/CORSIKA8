@@ -149,9 +149,7 @@ TEST_CASE("UrQMD") {
       REQUIRE(stack->GetSize() == 1);
 
       // simple check whether the cross-section is non-vanishing
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Proton) /
-                  1_mb >
-              0);
+      // only nuclei with available tabluated data so far 
       REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Nitrogen) /
                   1_mb >
               0);
@@ -164,7 +162,7 @@ TEST_CASE("UrQMD") {
     }
   }
 
-  SECTION("nucleon projectile") {
+  SECTION("nucleus projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);
