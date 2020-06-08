@@ -27,7 +27,7 @@ namespace corsika::process::UrQMD {
     UrQMD();
     void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
-        corsika::setup::Stack::StackIterator&) const;
+        corsika::setup::Stack::StackIterator const&) const;
 
     template <typename TParticle>
     corsika::units::si::CrossSectionType GetCrossSection(TParticle const&,
