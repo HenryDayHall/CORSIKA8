@@ -47,6 +47,8 @@ set (
 add_library (ProcessUrQMD STATIC ${MODEL_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessUrQMD ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
+find_package(Boost REQUIRED)
+
 set_target_properties (
   ProcessUrQMD
   PROPERTIES
@@ -64,6 +66,8 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKArandom
   CORSIKAsetup
+
+  Boost::headers
   )
 
 target_include_directories (
