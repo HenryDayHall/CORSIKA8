@@ -47,7 +47,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
 
   SECTION("check particle masses") {
 
-    OnShellCheck check(1.e-2, 0.01);
+    OnShellCheck check(1.e-2, 0.01, false);
 
     check.Init();
 

@@ -24,9 +24,11 @@ namespace corsika::process {
       double count_ = 0;
 
     public:
-      OnShellCheck(const double vMassTolerance, const double vEnergyTolerance)
+      OnShellCheck(const double vMassTolerance, const double vEnergyTolerance,
+                   const bool vError)
           : mass_tolerance_(vMassTolerance)
-          , energy_tolerance_(vEnergyTolerance) {}
+          , energy_tolerance_(vEnergyTolerance)
+          , throw_error_(vError) {}
 
       ~OnShellCheck() {
         std::cout << "OnShellCheck: summary" << std::endl
@@ -44,6 +46,7 @@ namespace corsika::process {
     private:
       double mass_tolerance_;
       double energy_tolerance_;
+      bool throw_error_;
     };
   } // namespace on_shell_check
 } // namespace corsika::process
