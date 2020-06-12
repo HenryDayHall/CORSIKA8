@@ -66,8 +66,7 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKArandom
   CORSIKAsetup
-
-  Boost::headers
+  CORSIKAthirdparty
   )
 
 target_include_directories (
