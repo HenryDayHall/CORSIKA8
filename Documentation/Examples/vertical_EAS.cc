@@ -13,6 +13,7 @@
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
@@ -140,9 +141,8 @@ int main(int argc, char** argv) {
             particles::Code::Proton, E0, plab, injectionPos, 0_ns});
   }
 
-  Line const line(injectionPos, plab.normalized() * 1_m * 1_Hz);
-  auto const velocity = line.GetV0().norm();
-  setup::Trajectory const showerAxis(line, (injectionPos - showerCore).norm() / velocity);
+  environment::ShowerAxis const showerAxis{injectionPos, (injectionPos - showerCore) * 2,
+                                           env};
 
   // setup processes, decays and interactions
 
