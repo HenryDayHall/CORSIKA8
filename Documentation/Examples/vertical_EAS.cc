@@ -108,18 +108,22 @@ int main(int argc, char** argv) {
     return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
   };
 
-  auto const [px, py, pz] =
-      momentumComponents(thetaRad, P0);
+  auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
   cout << "input particle: " << beamCode << endl;
   cout << "input angles: theta=" << theta << endl;
-  cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm() << endl;
-  
+  cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
+       << endl;
+
   auto const observationHeight = 1.4_km + builder.earthRadius;
   auto const injectionHeight = 112.75_km + builder.earthRadius;
-  auto const t = - observationHeight * cos(thetaRad) + sqrt(- si::detail::static_pow<2>(sin(thetaRad) * observationHeight) + si::detail::static_pow<2>(injectionHeight));
+  auto const t = -observationHeight * cos(thetaRad) +
+                 sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
+                      si::detail::static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
-  Point const injectionPos = showerCore + Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+  Point const injectionPos =
+      showerCore +
+      Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
   std::cout << "point of injection: " << injectionPos.GetCoordinates() << std::endl;
 
@@ -158,8 +162,7 @@ int main(int argc, char** argv) {
 
   process::energy_loss::EnergyLoss eLoss(showerAxis);
 
-  Plane const obsPlane(showerCore,
-                       Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
+  Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
@@ -169,7 +172,8 @@ int main(int argc, char** argv) {
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
   auto sibyllSequence = sibyllNucCounted << sibyllCounted;
-  process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence, 55_GeV);
+  process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
+                                                       55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
   auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
 
@@ -194,10 +198,11 @@ int main(int argc, char** argv) {
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
 
-  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() + urqmdCounted.GetHistogram();
+  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
+                     urqmdCounted.GetHistogram();
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");
-  
+
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;
 }
