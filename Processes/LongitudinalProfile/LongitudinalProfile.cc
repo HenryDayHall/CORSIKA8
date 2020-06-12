@@ -28,7 +28,7 @@ using namespace corsika::units::si;
 
 LongitudinalProfile::LongitudinalProfile(environment::ShowerAxis const& shower_axis)
     : shower_axis_{shower_axis}
-    , profiles_{int(shower_axis.maximumX() / dX_) + 1} {}
+    , profiles_{static_cast<unsigned int>(shower_axis.maximumX() / dX_) + 1} {}
 
 void LongitudinalProfile::Init() {}
 
