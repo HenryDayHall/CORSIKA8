@@ -1,4 +1,3 @@
-
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -33,8 +32,6 @@ namespace corsika::process {
     EProcessReturn OnShellCheck::DoSecondaries(corsika::setup::StackView& vS) {
       for (auto& p : vS) {
         auto const pid = p.GetPID();
-        // if(pid==particles::Code::Gamma || particles::IsNeutrino(pid) ||
-        // particles::IsNucleus(pid)) continue;
         if (!particles::IsHadron(pid) || particles::IsNucleus(pid)) continue;
         auto const e_original = p.GetEnergy();
         auto const p_original = p.GetMomentum();
@@ -49,24 +46,28 @@ namespace corsika::process {
           count_ = count_ + 1;
           average_shift_ += abs(e_shift_relative);
           if (abs(e_shift_relative) > max_shift_) max_shift_ = abs(e_shift_relative);
+          std::cout << "OnShellCheck: shift particle mass for " << pid << std::endl
+                    << std::setw(40) << std::setfill(' ')
+                    << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
+                    << std::setw(40) << std::setfill(' ')
+                    << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
+                    << std::setw(40) << std::setfill(' ')
+                    << "m_kin-m_cor (GeV): " << m_err_abs / 1_GeV << std::endl
+                    << std::setw(40) << std::setfill(' ')
+                    << "mass tolerance (GeV): " << (m_corsika * mass_tolerance_) / 1_GeV
+                    << std::endl;
           /*
-             For now we warn if the necessary shift is larger than 1%.
-             we could promote this to an error.
-           */
+            For now we warn if the necessary shift is larger than 1%.
+            we could promote this to an error.
+          */
           if (abs(e_shift_relative) > energy_tolerance_) {
             std::cout << "OnShellCheck: warning! shifted particle energy by "
                       << e_shift_relative * 100 << " %" << std::endl;
+            if (throw_error_)
+              throw std::runtime_error(
+                  "OnShellCheck: error! shifted energy by large amount!");
           }
-          std::cout << "OnShellCheck: shift particle mass for " << pid << std::endl
-                    << std::setw(35) << std::setfill(' ')
-                    << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
-                    << std::setw(35) << std::setfill(' ')
-                    << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
-                    << std::setw(35) << std::setfill(' ')
-                    << "m_kin-m_cor (GeV): " << m_err_abs / 1_GeV << std::endl
-                    << std::setw(35) << std::setfill(' ')
-                    << "mass tolerance (GeV): " << (m_corsika * mass_tolerance_) / 1_GeV
-                    << std::endl;
+
           // reset energy
           p.SetEnergy(e_shifted);
         } else
