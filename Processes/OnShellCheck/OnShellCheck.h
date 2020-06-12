@@ -19,11 +19,23 @@
 namespace corsika::process {
   namespace on_shell_check {
     class OnShellCheck : public process::SecondariesProcess<OnShellCheck> {
+      double average_shift_ = 0;
+      double max_shift_ = 0;
+      double count_ = 0;
 
     public:
       OnShellCheck(const double vMassTolerance, const double vEnergyTolerance)
           : mass_tolerance_(vMassTolerance)
           , energy_tolerance_(vEnergyTolerance) {}
+
+      ~OnShellCheck() {
+        std::cout << "OnShellCheck: summary" << std::endl
+                  << " particles shifted: " << int(count_) << std::endl;
+        if (count_)
+          std::cout << " average energy shift (%): " << average_shift_ / count_ * 100.
+                    << std::endl
+                    << " max. energy shift (%): " << max_shift_ * 100. << std::endl;
+      };
 
       EProcessReturn DoSecondaries(corsika::setup::StackView&);
 

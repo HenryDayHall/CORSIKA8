@@ -46,6 +46,9 @@ namespace corsika::process {
           const HEPEnergyType e_shifted =
               sqrt(p_original.GetSquaredNorm() + m_corsika * m_corsika);
           auto const e_shift_relative = (e_shifted / e_original - 1);
+          count_ = count_ + 1;
+          average_shift_ += abs(e_shift_relative);
+          if (abs(e_shift_relative) > max_shift_) max_shift_ = abs(e_shift_relative);
           /*
              For now we warn if the necessary shift is larger than 1%.
              we could promote this to an error.
