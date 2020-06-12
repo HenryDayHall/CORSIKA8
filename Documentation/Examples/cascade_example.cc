@@ -108,7 +108,7 @@ int main() {
       rootCS, 0_m, 0_m,
       height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
 
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, 120_km}, env};
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -5000_km}, env};
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
