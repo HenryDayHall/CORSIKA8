@@ -20,6 +20,7 @@
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
+#include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/pythia/Decay.h>
@@ -98,7 +99,7 @@ int main(int argc, char** argv) {
   unsigned short Z = std::stoi(std::string(argv[2]));
   auto const mass = particles::GetNucleusMass(A, Z);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 75.;
+  double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -141,8 +142,11 @@ int main(int argc, char** argv) {
             particles::Code::Proton, E0, plab, injectionPos, 0_ns});
   }
 
-  environment::ShowerAxis const showerAxis{injectionPos, (injectionPos - showerCore) * 2,
-                                           env};
+  std::cout << "shower axis length: " << (showerCore - injectionPos).norm() * 1.02
+            << std::endl;
+
+  environment::ShowerAxis const showerAxis{injectionPos,
+                                           (showerCore - injectionPos) * 1.02, env};
 
   // setup processes, decays and interactions
 
@@ -161,6 +165,7 @@ int main(int argc, char** argv) {
   process::particle_cut::ParticleCut cut{60_GeV};
 
   process::energy_loss::EnergyLoss eLoss(showerAxis);
+  process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
@@ -175,7 +180,8 @@ int main(int argc, char** argv) {
   process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
-  auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
+  auto sequence = switchProcess << decaySequence << longprof << eLoss << cut
+                                << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
@@ -202,6 +208,8 @@ int main(int argc, char** argv) {
                      urqmdCounted.GetHistogram();
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");
+
+  longprof.save("longprof.txt");
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;

@@ -100,6 +100,7 @@ if (Pythia8_FOUND)
     ProcessTrackingLine
     ProcessParticleCut
     ProcessStackInspector
+    ProcessLongitudinalProfile
     CORSIKAprocesses
     CORSIKAcascade
     CORSIKAparticles
