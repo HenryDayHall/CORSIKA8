@@ -9,6 +9,8 @@
  */
 
 #include <corsika/environment/Environment.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
@@ -36,8 +38,10 @@ int main() {
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = Environment<IMediumModel>;
   EnvType env;
+  env.GetUniverse()->SetModelProperties<HomogeneousMedium<IMediumModel>>(
+      1_g / cube(1_cm), NuclearComposition{{particles::Code::Unknown}, {1.f}});
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
