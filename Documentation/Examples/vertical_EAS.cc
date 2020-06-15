@@ -159,7 +159,26 @@ int main(int argc, char** argv) {
   process::pythia::Decay decayPythia;
 
   // use sibyll decay routine for decays of particles unknown to pythia
-  process::sibyll::Decay decaySibyll;
+  process::sibyll::Decay decaySibyll{{
+      Code::N1440Plus,
+      Code::N1440MinusBar,
+      Code::N1440_0,
+      Code::N1440_0Bar,
+      Code::N1710Plus,
+      Code::N1710MinusBar,
+      Code::N1710_0,
+      Code::N1710_0Bar,
+
+      Code::Pi1300Plus,
+      Code::Pi1300Minus,
+      Code::Pi1300_0,
+
+      Code::KStar0_1430_0,
+      Code::KStar0_1430_0Bar,
+      Code::KStar0_1430_Plus,
+      Code::KStar0_1430_MinusBar,
+  }};
+
   decaySibyll.PrintDecayConfig();
 
   process::particle_cut::ParticleCut cut{60_GeV};
