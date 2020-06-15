@@ -31,12 +31,13 @@ namespace corsika::environment {
     template <typename TEnvModel>
     ShowerAxis(geometry::Point const& pStart,
                geometry::Vector<units::si::length_d> length,
-               environment::Environment<TEnvModel> const& env)
+               environment::Environment<TEnvModel> const& env, int steps = 10'000)
         : pointStart_(pStart)
         , length_(length)
         , max_length_(length_.norm())
         , steplength_(max_length_ / steps)
-        , axis_normalized_(length / max_length_) {
+        , axis_normalized_(length / max_length_)
+        , X_(steps) {
       auto const* const universe = env.GetUniverse().get();
 
       auto rho = [pStart, length, universe](double x) {
@@ -56,15 +57,15 @@ namespace corsika::environment {
         auto const result =
             units::si::MassDensityType(phys::units::detail::magnitude_tag, r) *
             max_length_;
-        auto const resultTotal = result + (*X_)[i - 1];
-        (*X_)[i] = resultTotal;
+        auto const resultTotal = result + X_[i - 1];
+        X_[i] = resultTotal;
 
         for (; resultTotal > k * X_binning_; ++k) {
           d_.emplace_back(d_prev + k * X_binning_ * steplength_ / result);
         }
       }
 
-      assert(std::is_sorted(X_->cbegin(), X_->cend()));
+      assert(std::is_sorted(X_.cbegin(), X_.cend()));
       assert(std::is_sorted(d_.cbegin(), d_.cend()));
     }
 
@@ -79,17 +80,17 @@ namespace corsika::environment {
     units::si::GrammageType X(units::si::LengthType) const;
 
   private:
-    static constexpr int steps = 10'000;
-    units::si::GrammageType const X_binning_ = std::invoke([]() {
-      using namespace units::si;
-      return 1_g / 1_cm / 1_cm;
-    });
-    std::unique_ptr<std::array<units::si::GrammageType, steps>> const X_{
-        new std::array<units::si::GrammageType, steps>};
     geometry::Point const pointStart_;
     geometry::Vector<units::si::length_d> const length_;
     units::si::LengthType const max_length_, steplength_;
     geometry::Vector<units::si::dimensionless_d> const axis_normalized_;
+    std::vector<units::si::GrammageType> X_;
+
+    // for storing the lengths corresponding to equidistant X values
+    units::si::GrammageType const X_binning_ = std::invoke([]() {
+      using namespace units::si;
+      return 1_g / 1_cm / 1_cm;
+    });
     std::vector<units::si::LengthType> d_;
   };
 } // namespace corsika::environment

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -9,6 +9,7 @@
  */
 
 #include <corsika/environment/ShowerAxis.h>
+#include <sstream>
 
 using namespace corsika::environment;
 using namespace corsika::units::si;
@@ -19,21 +20,25 @@ GrammageType ShowerAxis::X(LengthType l) const {
   auto const lambda = fractionalBin - lower;
   int const upper = lower + 1;
 
-  if (upper >= steps) {
-    throw std::runtime_error("shower axis too short, cannot extrapolate");
+  if (upper >= X_.size()) {
+    std::stringstream errormsg;
+    errormsg << "shower axis too short, cannot extrapolate (l / max_length_ = "
+             << l / max_length_ << ")";
+    throw std::runtime_error(errormsg.str().c_str());
   } else if (lower < 0) {
     throw std::runtime_error("cannot extrapolate to points behind point of injection");
   }
 
   assert(0 <= lambda && lambda <= 1.);
-  return (*X_)[lower] * lambda + (*X_)[upper] * (1 - lambda);
+  // linear interpolation between X[lower] and X[upper]
+  return X_[lower] * lambda + X_[upper] * (1 - lambda);
 }
 
 LengthType ShowerAxis::steplength() const { return steplength_; }
 
-GrammageType ShowerAxis::maximumX() const { return *(X_->rbegin()); }
+GrammageType ShowerAxis::maximumX() const { return *X_.rbegin(); }
 
-GrammageType ShowerAxis::minimumX() const { return *(X_->cbegin()); }
+GrammageType ShowerAxis::minimumX() const { return *X_.cbegin(); }
 
 GrammageType ShowerAxis::projectedX(geometry::Point const& p) const {
   auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
