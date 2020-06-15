@@ -13,6 +13,7 @@ add_subdirectory (UrQMD)
 
 # continuous physics
 add_subdirectory (EnergyLoss)
+add_subdirectory (LongitudinalProfile)
 add_subdirectory (TrackWriter)
 add_subdirectory (ObservationPlane)
 # stack processes

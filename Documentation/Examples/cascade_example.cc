@@ -21,6 +21,7 @@
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/ShowerAxis.h>
 
 #include <corsika/geometry/Sphere.h>
 
@@ -107,6 +108,8 @@ int main() {
       rootCS, 0_m, 0_m,
       height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
 
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -5000_km}, env};
+
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
@@ -141,8 +144,7 @@ int main() {
   process::particle_cut::ParticleCut cut(80_GeV);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss(
-      injectionPos, geometry::Vector<dimensionless_d>(rootCS, {0, 0, -1}));
+  process::energy_loss::EnergyLoss eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
   auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut

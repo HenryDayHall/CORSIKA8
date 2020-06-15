@@ -13,12 +13,14 @@
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
+#include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/pythia/Decay.h>
@@ -75,8 +77,8 @@ int main(int argc, char** argv) {
   using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
-
-  environment::LayeredSphericalAtmosphereBuilder builder(Point{rootCS, 0_m, 0_m, 0_m});
+  Point const center{rootCS, 0_m, 0_m, 0_m};
+  environment::LayeredSphericalAtmosphereBuilder builder{center};
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -98,28 +100,34 @@ int main(int argc, char** argv) {
   auto const mass = particles::GetNucleusMass(A, Z);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
-  double phi = 0.;
+  auto const thetaRad = theta / 180. * M_PI;
 
-  Point const injectionPos(
-      rootCS, 0_m, 0_m,
-      112.7_km +
-          builder.earthRadius); // this is the CORSIKA 7 start of atmosphere/universe
-
-  //  {
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
   };
   HEPMomentumType P0 = elab2plab(E0, mass);
-  auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
-    return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
-                           -ptot * cos(theta));
+  auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
+    return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
   };
-  auto const [px, py, pz] =
-      momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
+
+  auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
   cout << "input particle: " << beamCode << endl;
-  cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-  cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
+  cout << "input angles: theta=" << theta << endl;
+  cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
+       << endl;
+
+  auto const observationHeight = 1.4_km + builder.earthRadius;
+  auto const injectionHeight = 112.75_km + builder.earthRadius;
+  auto const t = -observationHeight * cos(thetaRad) +
+                 sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
+                      si::detail::static_pow<2>(injectionHeight));
+  Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
+  Point const injectionPos =
+      showerCore +
+      Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+
+  std::cout << "point of injection: " << injectionPos.GetCoordinates() << std::endl;
 
   if (A != 1) {
     stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -134,12 +142,11 @@ int main(int argc, char** argv) {
             particles::Code::Proton, E0, plab, injectionPos, 0_ns});
   }
 
-  Line const line(injectionPos, plab.normalized() * 1_m * 1_Hz);
-  auto const velocity = line.GetV0().norm();
+  std::cout << "shower axis length: " << (showerCore - injectionPos).norm() * 1.02
+            << std::endl;
 
-  auto const observationHeight = 1.4_km + builder.earthRadius;
-
-  setup::Trajectory const showerAxis(line, (112.7_km - observationHeight) / velocity);
+  environment::ShowerAxis const showerAxis{injectionPos,
+                                           (showerCore - injectionPos) * 1.02, env};
 
   // setup processes, decays and interactions
 
@@ -152,44 +159,29 @@ int main(int argc, char** argv) {
   process::pythia::Decay decayPythia;
 
   // use sibyll decay routine for decays of particles unknown to pythia
-  process::sibyll::Decay decaySibyll({
-      Code::N1440Plus,
-      Code::N1440MinusBar,
-      Code::N1440_0,
-      Code::N1440_0Bar,
-      Code::N1710Plus,
-      Code::N1710MinusBar,
-      Code::N1710_0,
-      Code::N1710_0Bar,
-
-      Code::Pi1300Plus,
-      Code::Pi1300Minus,
-      Code::Pi1300_0,
-
-      Code::KStar0_1430_0,
-      Code::KStar0_1430_0Bar,
-      Code::KStar0_1430_Plus,
-      Code::KStar0_1430_MinusBar,
-  });
+  process::sibyll::Decay decaySibyll;
   decaySibyll.PrintDecayConfig();
 
-  process::particle_cut::ParticleCut cut(100_GeV);
+  process::particle_cut::ParticleCut cut{60_GeV};
 
   process::energy_loss::EnergyLoss eLoss(showerAxis);
+  process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
-  Plane const obsPlane(Point(rootCS, 0_m, 0_m, observationHeight),
-                       Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
+  Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
   // assemble all processes into an ordered process list
 
   process::UrQMD::UrQMD urqmd;
+  process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
   auto sibyllSequence = sibyllNucCounted << sibyllCounted;
-  process::switch_process::SwitchProcess switchProcess(urqmd, sibyllSequence, 55_GeV);
+  process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
+                                                       55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
-  auto sequence = switchProcess << decaySequence << eLoss << cut << observationLevel;
+  auto sequence = switchProcess << decaySequence << longprof << eLoss << cut
+                                << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
@@ -212,9 +204,12 @@ int main(int argc, char** argv) {
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
 
-  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram();
+  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
+                     urqmdCounted.GetHistogram();
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");
+
+  longprof.save("longprof.txt");
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;

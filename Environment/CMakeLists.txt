@@ -1,6 +1,7 @@
 set (
   ENVIRONMENT_SOURCES
   LayeredSphericalAtmosphereBuilder.cc
+  ShowerAxis.cc
 )
 
 set (
@@ -19,6 +20,7 @@ set (
   FlatExponential.h
   SlidingPlanarExponential.h
   LayeredSphericalAtmosphereBuilder.h
+  ShowerAxis.h
   )
 
 set (

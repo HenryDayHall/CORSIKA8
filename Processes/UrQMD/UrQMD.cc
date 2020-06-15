@@ -98,7 +98,7 @@ bool UrQMD::CanInteract(particles::Code vCode) const {
                    vCode) != std::cend(validProjectileCodes);
 }
 
-GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle) const {
+GrammageType UrQMD::GetInteractionLength(SetupParticle const& vParticle) const {
   if (!CanInteract(vParticle.GetPID())) {
     // we could do the canInteract check in GetCrossSection, too but if
     // we do it here we have the advantage of avoiding the loop

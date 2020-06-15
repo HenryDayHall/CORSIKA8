@@ -9,6 +9,9 @@
  */
 
 #include <corsika/environment/Environment.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/setup/SetupStack.h>
@@ -35,8 +38,10 @@ int main() {
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = Environment<IMediumModel>;
   EnvType env;
+  env.GetUniverse()->SetModelProperties<HomogeneousMedium<IMediumModel>>(
+      1_g / cube(1_cm), NuclearComposition{{particles::Code::Unknown}, {1.f}});
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
@@ -44,9 +49,9 @@ int main() {
       rootCS, 0_m, 0_m,
       112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
 
-  Vector<dimensionless_d> showerAxis(rootCS, {0, 0, -1});
-
-  process::energy_loss::EnergyLoss eLoss(injectionPos, showerAxis);
+  environment::ShowerAxis showerAxis{injectionPos,
+                                     Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env};
+  process::energy_loss::EnergyLoss eLoss{showerAxis};
 
   setup::Stack stack;
 
