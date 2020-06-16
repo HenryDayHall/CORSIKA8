@@ -8,6 +8,8 @@
  * the license.
  */
 
+// a little helper to dump UrQMD cross-sections
+
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
