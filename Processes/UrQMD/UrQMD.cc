@@ -36,18 +36,18 @@ UrQMD::UrQMD(std::string const& xs_file) {
   iniurqmd_();
 }
 
-CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code vProjectileCode,
-                                                 corsika::particles::Code vTargetCode,
-                                                 HEPEnergyType vLabEnergy) const {
+CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,
+                                                 corsika::particles::Code targetCode,
+                                                 HEPEnergyType labEnergy) const {
   // translated to C++ from CORSIKA 7 subroutine cxtot_u
 
-  auto const kinEnergy = vLabEnergy - particles::GetMass(vProjectileCode);
+  auto const kinEnergy = labEnergy - particles::GetMass(projectileCode);
 
   assert(kinEnergy >= HEPEnergyType::zero());
 
   double const logKinEnergy = std::log10(kinEnergy * (1 / 1_GeV));
   double const ye = std::max(10 * logKinEnergy + 10.5, 1.);
-  int const je = std::min(int(ye), int(xs_interp_support_table.shape()[2] - 2));
+  int const je = std::min(int(ye), int(xs_interp_support_table_.shape()[2] - 2));
   std::array<double, 3> w;
   w[2 - 1] = ye - je;
   w[3 - 1] = w[2 - 1] * (w[2 - 1] - 1.) * .5;
@@ -55,7 +55,7 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code vProjectileCode
   w[2 - 1] = w[2 - 1] - 2 * w[3 - 1];
 
   int projectileIndex;
-  switch (vProjectileCode) {
+  switch (projectileCode) {
     case particles::Code::Proton:
       projectileIndex = 0;
       break;
@@ -89,13 +89,13 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code vProjectileCode
       projectileIndex = 8;
       break;
     default:
-      std::cout << "WARNING: UrQMD cross-section not tabulated for " << vProjectileCode
+      std::cout << "WARNING: UrQMD cross-section not tabulated for " << projectileCode
                 << std::endl;
       return CrossSectionType::zero();
   }
 
   int targetIndex;
-  switch (vTargetCode) {
+  switch (targetCode) {
     case particles::Code::Nitrogen:
       targetIndex = 0;
       break;
@@ -107,38 +107,37 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code vProjectileCode
       break;
     default:
       std::stringstream ss;
-      ss << "UrQMD cross-section not tabluated for target " << vTargetCode;
+      ss << "UrQMD cross-section not tabluated for target " << targetCode;
       throw std::runtime_error(ss.str().data());
   }
 
   auto result = CrossSectionType::zero();
   for (int i = 0; i < 3; ++i) {
     result +=
-        xs_interp_support_table[projectileIndex][targetIndex][je + i - 1 - 1] * w[i];
+        xs_interp_support_table_[projectileIndex][targetIndex][je + i - 1 - 1] * w[i];
   }
 
   return result;
 }
 
-CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
-                                        corsika::particles::Code vTargetCode,
-                                        HEPEnergyType vLabEnergy,
-                                        int vAProjectile) const {
+CrossSectionType UrQMD::GetCrossSection(particles::Code projectileCode,
+                                        corsika::particles::Code targetCode,
+                                        HEPEnergyType labEnergy, int projectileA) const {
   // the following is a (incomplete!) translation of ptsigtot() into C++
-  if (vProjectileCode != particles::Code::Nucleus &&
-      !IsNucleus(vTargetCode)) { // both particles are "special"
-    auto const mProj = particles::GetMass(vProjectileCode);
-    auto const mTar = particles::GetMass(vTargetCode);
+  if (projectileCode != particles::Code::Nucleus &&
+      !IsNucleus(targetCode)) { // both particles are "special"
+    auto const mProj = particles::GetMass(projectileCode);
+    auto const mTar = particles::GetMass(targetCode);
     double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) +
-                        units::si::detail::static_pow<2>(mTar) + 2 * vLabEnergy * mTar) *
+                        units::si::detail::static_pow<2>(mTar) + 2 * labEnergy * mTar) *
                    (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
-    auto const [ityp, iso3] = ConvertToUrQMD(vProjectileCode);
+    auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
     inputs_.spityp[0] = ityp;
     inputs_.spiso3[0] = iso3;
 
-    auto const [itypTar, iso3Tar] = ConvertToUrQMD(vTargetCode);
+    auto const [itypTar, iso3Tar] = ConvertToUrQMD(targetCode);
     inputs_.spityp[1] = itypTar;
     inputs_.spiso3[1] = iso3Tar;
 
@@ -178,8 +177,8 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code vProjectileCode,
       return sigEl * 0_mb;
     }
   } else {
-    int const Ap = vAProjectile;
-    int const At = IsNucleus(vTargetCode) ? particles::GetNucleusA(vTargetCode) : 1;
+    int const Ap = projectileA;
+    int const At = IsNucleus(targetCode) ? particles::GetNucleusA(targetCode) : 1;
 
     double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
     return 10_mb * M_PI * units::si::detail::static_pow<2>(maxImpact);
@@ -206,7 +205,7 @@ CrossSectionType UrQMD::GetCrossSection(TParticle const& projectile,
   return GetTabulatedCrossSection(projectileCode, targetCode, projectileEnergyLab);
 }
 
-bool UrQMD::CanInteract(particles::Code vCode) const {
+bool UrQMD::CanInteract(particles::Code code) const {
   // According to the manual, UrQMD can use all mesons, baryons and nucleons
   // which are modeled also as input particles. I think it is safer to accept
   // only the usual long-lived species as input.
@@ -222,52 +221,52 @@ bool UrQMD::CanInteract(particles::Code vCode) const {
       particles::Code::K0Long};
 
   return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
-                   vCode) != std::cend(validProjectileCodes);
+                   code) != std::cend(validProjectileCodes);
 }
 
-GrammageType UrQMD::GetInteractionLength(SetupParticle const& vParticle) const {
-  if (!CanInteract(vParticle.GetPID())) {
+GrammageType UrQMD::GetInteractionLength(SetupParticle const& particle) const {
+  if (!CanInteract(particle.GetPID())) {
     // we could do the canInteract check in GetCrossSection, too but if
     // we do it here we have the advantage of avoiding the loop
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }
 
   auto const& mediumComposition =
-      vParticle.GetNode()->GetModelProperties().GetNuclearComposition();
+      particle.GetNode()->GetModelProperties().GetNuclearComposition();
   using namespace std::placeholders;
 
   CrossSectionType const weightedProdCrossSection = mediumComposition.WeightedSum(
-      std::bind(&UrQMD::GetCrossSection<decltype(vParticle)>, this, vParticle, _1));
+      std::bind(&UrQMD::GetCrossSection<decltype(particle)>, this, particle, _1));
 
   return mediumComposition.GetAverageMassNumber() * units::constants::u /
          weightedProdCrossSection;
 }
 
-corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjectile) {
+corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectile) {
   using namespace units::si;
 
-  auto projectileCode = vProjectile.GetPID();
-  auto const projectileEnergyLab = vProjectile.GetEnergy();
-  auto const& projectileMomentumLab = vProjectile.GetMomentum();
-  auto const& projectilePosition = vProjectile.GetPosition();
-  auto const projectileTime = vProjectile.GetTime();
+  auto projectileCode = projectile.GetPID();
+  auto const projectileEnergyLab = projectile.GetEnergy();
+  auto const& projectileMomentumLab = projectile.GetMomentum();
+  auto const& projectilePosition = projectile.GetPosition();
+  auto const projectileTime = projectile.GetTime();
 
   // sample target particle
   auto const& mediumComposition =
-      vProjectile.GetNode()->GetModelProperties().GetNuclearComposition();
+      projectile.GetNode()->GetModelProperties().GetNuclearComposition();
   auto const componentCrossSections = std::invoke([&]() {
     auto const& components = mediumComposition.GetComponents();
     std::vector<CrossSectionType> crossSections;
     crossSections.reserve(components.size());
 
     for (auto const c : components) {
-      crossSections.push_back(GetCrossSection(vProjectile, c));
+      crossSections.push_back(GetCrossSection(projectile, c));
     }
 
     return crossSections;
   });
 
-  auto const targetCode = mediumComposition.SampleTarget(componentCrossSections, fRNG);
+  auto const targetCode = mediumComposition.SampleTarget(componentCrossSections, rng_);
   auto const targetA = particles::GetNucleusA(targetCode);
   auto const targetZ = particles::GetNucleusZ(targetCode);
 
@@ -281,10 +280,10 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     // is this everything?
     inputs_.prspflg = 0;
 
-    sys_.Ap = vProjectile.GetNuclearA();
-    sys_.Zp = vProjectile.GetNuclearZ();
-    rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV) /
-                  vProjectile.GetNuclearA();
+    sys_.Ap = projectile.GetNuclearA();
+    sys_.Zp = projectile.GetNuclearZ();
+    rsys_.ebeam = (projectileEnergyLab - projectile.GetMass()) * (1 / 1_GeV) /
+                  projectile.GetNuclearA();
 
     rsys_.bdist = nucrad_(targetA) + nucrad_(sys_.Ap) + 2 * options_.CTParam[30 - 1];
 
@@ -294,11 +293,11 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     inputs_.prspflg = 1;
     sys_.Ap = 1; // even for non-baryons this has to be set, see vanilla UrQMD.f
     rsys_.bdist = nucrad_(targetA) + nucrad_(1) + 2 * options_.CTParam[30 - 1];
-    rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
+    rsys_.ebeam = (projectileEnergyLab - projectile.GetMass()) * (1 / 1_GeV);
 
     if (projectileCode == particles::Code::K0Long ||
         projectileCode == particles::Code::K0Short) {
-      projectileCode = fBooleanDist(fRNG) ? particles::Code::K0 : particles::Code::K0Bar;
+      projectileCode = booleanDist_(rng_) ? particles::Code::K0 : particles::Code::K0Bar;
     }
 
     auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
@@ -332,7 +331,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
   for (int i = 0; i < sys_.npart; ++i) {
     auto code = ConvertFromUrQMD(isys_.ityp[i], isys_.iso3[i]);
     if (code == particles::Code::K0 || code == particles::Code::K0Bar) {
-      code = fBooleanDist(fRNG) ? particles::Code::K0Short : particles::Code::K0Long;
+      code = booleanDist_(rng_) ? particles::Code::K0Short : particles::Code::K0Long;
     }
 
     // "coor_.p0[i] * 1_GeV" is likely off-shell as UrQMD doesn't preserve masses well
@@ -346,7 +345,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjecti
     momentum.rebase(originalCS); // transform back into standard lab frame
     std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
 
-    vProjectile.AddSecondary(
+    projectile.AddSecondary(
         std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
                    TimeType>{code, energy, momentum, projectilePosition, projectileTime});
   }
@@ -452,8 +451,8 @@ void UrQMD::readXSFile(std::string const& filename) {
   int nTargets, nProjectiles, nSupports;
   ss >> dummy >> nTargets >> nProjectiles >> nSupports;
 
-  decltype(xs_interp_support_table)::extent_gen extents;
-  xs_interp_support_table.resize(extents[nProjectiles][nTargets][nSupports]);
+  decltype(xs_interp_support_table_)::extent_gen extents;
+  xs_interp_support_table_.resize(extents[nProjectiles][nTargets][nSupports]);
 
   for (int i = 0; i < nTargets; ++i) {
     for (int j = 0; j < nProjectiles; ++j) {
@@ -462,7 +461,7 @@ void UrQMD::readXSFile(std::string const& filename) {
         std::stringstream s(line);
         double energy, sigma;
         s >> energy >> sigma;
-        xs_interp_support_table[j][i][k] = sigma * 1_mb;
+        xs_interp_support_table_[j][i][k] = sigma * 1_mb;
       }
 
       std::getline(file, line);

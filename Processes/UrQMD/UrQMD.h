@@ -52,14 +52,14 @@ namespace corsika::process::UrQMD {
   private:
     void readXSFile(std::string const&);
 
-    corsika::random::RNG& fRNG =
+    corsika::random::RNG& rng_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
 
-    std::uniform_int_distribution<int> fBooleanDist{0, 1};
-    boost::multi_array<corsika::units::si::CrossSectionType, 3> xs_interp_support_table;
+    std::uniform_int_distribution<int> booleanDist_{0, 1};
+    boost::multi_array<corsika::units::si::CrossSectionType, 3> xs_interp_support_table_;
   };
 
-  namespace constants {
+  namespace details::constants {
     // from coms.f
     int constexpr nmax = 500;
 
@@ -70,10 +70,10 @@ namespace corsika::process::UrQMD {
     // from inputs.f
     int constexpr aamax = 300;
 
-  } // namespace constants
+  } // namespace details::constants
 
   template <typename T>
-  using nmaxArray = std::array<T, constants::nmax>;
+  using nmaxArray = std::array<T, details::constants::nmax>;
   using nmaxIntArray = nmaxArray<int>;
   using nmaxDoubleArray = nmaxArray<double>;
 
@@ -134,8 +134,8 @@ namespace corsika::process::UrQMD {
 
   // defined in options.f
   extern struct {
-    std::array<double, constants::numcto> CTOption;
-    std::array<double, constants::numctp> CTParam;
+    std::array<double, details::constants::numcto> CTOption;
+    std::array<double, details::constants::numctp> CTParam;
   } options_;
 
   extern struct {
