@@ -8,7 +8,6 @@
  * the license.
  */
 
-//#include <filesystem>
 #include <string>
 
 namespace corsika::utl {
