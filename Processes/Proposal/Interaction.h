@@ -27,16 +27,6 @@ using CORSIKA_ParticleCut = corsika::process::particle_cut::ParticleCut;
 
 namespace corsika::process::proposal {
 
-  /* static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particle_map{ */
-  /*     {particles::Code::Gamma, PROPOSAL::GammaDef()}, */
-  /*     {particles::Code::Electron, PROPOSAL::EMinusDef()}, */
-  /*     {particles::Code::Positron, PROPOSAL::EPlusDef()}, */
-  /*     {particles::Code::MuMinus, PROPOSAL::MuMinusDef()}, */
-  /*     {particles::Code::MuPlus, PROPOSAL::MuPlusDef()}, */
-  /*     {particles::Code::TauPlus, PROPOSAL::TauPlusDef()}, */
-  /*     {particles::Code::TauMinus, PROPOSAL::TauMinusDef()}, */
-  /* }; */
-
   template <class TEnvironment>
   class Interaction
       : public corsika::process::InteractionProcess<Interaction<TEnvironment>> {
@@ -45,26 +35,17 @@ namespace corsika::process::proposal {
     TEnvironment const& fEnvironment;
     shared_ptr<const PROPOSAL::EnergyCutSettings> cut;
 
-    static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particle_map;
-    std::unordered_map<const NuclearComposition*, PROPOSAL::Medium> medium_map;
+    static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
+    std::unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
 
     enum { SECONDARIES, INTERACTION, DISPLACEMENT };
-    /* std::uniform_real_distribution<> rnd_uniform(0., 1.); */
-
-    /* std::map<particles::Code, std::unique_ptr<PROPOSAL::UtilityInterpolantInteraction>>
-     * corsika_particle_to_utility_map; */
-    /* std::map<particles::Code,
-     * std::unique_ptr<PROPOSAL::UtilityInterpolantDisplacement>>
-     * corsika_particle_to_displacement_map; */
 
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
 
-    // fTrackedParticles[proposal_particle.GetName()] return  particle::Code
-
     auto IsTracked(particles::Code pcode) const noexcept {
-      auto search = particle_map.find(pcode);
-      if (search != particle_map.end()) return true;
+      auto search = particles.find(pcode);
+      if (search != particles.end()) return true;
       return false;
     };
 
@@ -74,10 +55,25 @@ namespace corsika::process::proposal {
     std::unordered_map<const NuclearComposition*, calculator_t> calculators;
 
     template <typename Particle>
-    auto GetCalculator(Particle&);
+    auto GetCalculator(Particle& vP) {
+      auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
+      auto calc_it = calculators.find(&comp);
+      if (calc_it != calculators.end()) return calc_it;
+      auto cross =
+          PROPOSAL::GetStdCrossSections(particles[vP.GetPID()], media[&comp], cut, true);
+      auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+      auto [insert_it, success] = calculators.insert(
+          {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
+                                 inter_types, particles[vP.GetPID()], media[&comp]),
+                             PROPOSAL::make_interaction(cross, true),
+                             PROPOSAL::make_displacement(cross, true))});
+      return insert_it;
+    }
 
   public:
     Interaction(TEnvironment const& env, CORSIKA_ParticleCut const& cut);
+
+    void Init();
 
     template <typename Particle>
     corsika::process::EProcessReturn DoInteraction(Particle&);

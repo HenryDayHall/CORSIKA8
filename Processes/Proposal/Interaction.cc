@@ -19,13 +19,11 @@ namespace corsika::process::proposal {
   using namespace corsika::setup;
   using namespace corsika::environment;
   using namespace corsika::units::si;
-  using namespace corsika;
-
   using SetupParticle = corsika::setup::Stack::StackIterator;
 
   template <>
   std::unordered_map<particles::Code, PROPOSAL::ParticleDef>
-      Interaction<SetupEnvironment>::particle_map{
+      Interaction<SetupEnvironment>::particles{
           {particles::Code::Gamma, PROPOSAL::GammaDef()},
           {particles::Code::Electron, PROPOSAL::EMinusDef()},
           {particles::Code::Positron, PROPOSAL::EPlusDef()},
@@ -40,8 +38,10 @@ namespace corsika::process::proposal {
                                              CORSIKA_ParticleCut const& e_cut)
       : fEnvironment(env)
       , cut(make_shared<const PROPOSAL::EnergyCutSettings>(e_cut.GetCutEnergy() / 1_GeV,
-                                                           0, false)) {
+                                                           1, false)) {}
 
+  template <>
+  void Interaction<SetupEnvironment>::Init() {
     auto all_compositions = std::vector<NuclearComposition>();
     fEnvironment.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties())
@@ -55,44 +55,24 @@ namespace corsika::process::proposal {
                               *frac_iter);
         ++frac_iter;
       }
-      medium_map[&ncarg] = PROPOSAL::Medium(
+      media[&ncarg] = PROPOSAL::Medium(
           "Modified Air", 1., PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
           PROPOSAL::Air().GetA(), PROPOSAL::Air().GetM(), PROPOSAL::Air().GetX0(),
           PROPOSAL::Air().GetX1(), PROPOSAL::Air().GetD0(), 1.0, comp_vec);
     }
-    std::cout << "PROPOSAL done." << std::endl;
-  }
-
-  template <>
-  template <>
-  auto Interaction<SetupEnvironment>::GetCalculator(SetupParticle const& vP) {
-    auto& mediumComposition = vP.GetNode()->GetModelProperties().GetNuclearComposition();
-    auto calc_it = calculators.find(&mediumComposition);
-    if (calc_it != calculators.end()) return calc_it;
-    auto const& p_def = particle_map[vP.GetPID()];
-    auto& medium = medium_map[&mediumComposition];
-    auto cross = PROPOSAL::GetStdCrossSections(p_def, medium, cut, true);
-    auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
-    auto [insert_it, success] = calculators.insert(
-        {&mediumComposition,
-         make_tuple(PROPOSAL::SecondariesCalculator(inter_types, p_def, medium),
-                    PROPOSAL::make_interaction(cross, true),
-                    PROPOSAL::make_displacement(cross, true))});
-    if (success) return insert_it;
-    throw std::logic_error("insert failed.");
   }
 
   template <>
   template <>
   corsika::process::EProcessReturn Interaction<SetupEnvironment>::DoInteraction(
-      SetupParticle const& vP) {
+      SetupParticle& vP) {
     auto calc = GetCalculator(vP); // [CrossSections]
     std::uniform_real_distribution<double> distr(0., 1.);
     auto [type, comp_ptr, v] = std::get<INTERACTION>(calc->second)
                                    ->TypeInteraction(vP.GetEnergy() / 1_GeV, distr(fRNG));
     auto rnd = std::vector<double>();
-    for (auto i = 0; i < std::get<SECONDARIES>(calc->second).RequiredRandomNumbers(type);
-         ++i)
+    for (size_t i = 0;
+         i < std::get<SECONDARIES>(calc->second).RequiredRandomNumbers(type); ++i)
       rnd.push_back(distr(fRNG));
     double primary_energy = vP.GetEnergy() / 1_GeV;
     auto point =
@@ -114,11 +94,14 @@ namespace corsika::process::proposal {
           corsika::geometry::RootCoordinateSystem::GetInstance()
               .GetRootCoordinateSystem(),
           vec);
-      // particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
-      // geometry::Point, units::si::TimeType
-      auto sec = make_tuple(get<PROPOSAL::Loss::TYPE>(s), energy, momentum,
-                            vP.GetPosition(), vP.GetTime());
-      vP.AddSecondary(sec);
+      particles::Code sec_code = corsika::particles::ConvertFromPDG(
+          static_cast<particles::PDGCode>(get<PROPOSAL::Loss::TYPE>(s)));
+      corsika::units::si::HEPEnergyType sec_energy = energy;
+      stack::MomentumVector sec_momentum = momentum;
+      geometry::Point sec_position = vP.GetPosition();
+      corsika::units::si::TimeType sec_time = vP.GetTime();
+      vP.AddSecondary(
+          make_tuple(sec_code, sec_energy, sec_momentum, sec_position, sec_time));
     }
     return process::EProcessReturn::eOk;
   }
