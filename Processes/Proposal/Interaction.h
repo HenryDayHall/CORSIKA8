@@ -27,12 +27,9 @@ using CORSIKA_ParticleCut = corsika::process::particle_cut::ParticleCut;
 
 namespace corsika::process::proposal {
 
-  template <class TEnvironment>
-  class Interaction
-      : public corsika::process::InteractionProcess<Interaction<TEnvironment>> {
+  class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
   private:
-    TEnvironment const& fEnvironment;
     shared_ptr<const PROPOSAL::EnergyCutSettings> cut;
 
     static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
@@ -41,11 +38,7 @@ namespace corsika::process::proposal {
     corsika::random::RNG& fRNG =
         corsika::random::RNGManager::GetInstance().GetRandomStream("p_rndm");
 
-    bool CanInteract(particles::Code pcode) const noexcept {
-      auto search = particles.find(pcode);
-      if (search != particles.end()) return true;
-      return false;
-    };
+    bool CanInteract(particles::Code pcode) const noexcept;
 
     using calculator_t =
         tuple<PROPOSAL::SecondariesCalculator, unique_ptr<PROPOSAL::Interaction>,
@@ -70,6 +63,7 @@ namespace corsika::process::proposal {
     }
 
   public:
+    template <typename TEnvironment>
     Interaction(TEnvironment const& env, CORSIKA_ParticleCut const& cut);
 
     void Init();

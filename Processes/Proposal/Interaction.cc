@@ -22,26 +22,27 @@ namespace corsika::process::proposal {
   using namespace corsika::units::si;
 
   template <>
-  std::unordered_map<particles::Code, PROPOSAL::ParticleDef>
-      Interaction<SetupEnvironment>::particles{
-          {particles::Code::Gamma, PROPOSAL::GammaDef()},
-          {particles::Code::Electron, PROPOSAL::EMinusDef()},
-          {particles::Code::Positron, PROPOSAL::EPlusDef()},
-          {particles::Code::MuMinus, PROPOSAL::MuMinusDef()},
-          {particles::Code::MuPlus, PROPOSAL::MuPlusDef()},
-          {particles::Code::TauPlus, PROPOSAL::TauPlusDef()},
-          {particles::Code::TauMinus, PROPOSAL::TauMinusDef()},
-      };
+  std::unordered_map<particles::Code, PROPOSAL::ParticleDef> Interaction::particles{
+      {particles::Code::Gamma, PROPOSAL::GammaDef()},
+      {particles::Code::Electron, PROPOSAL::EMinusDef()},
+      {particles::Code::Positron, PROPOSAL::EPlusDef()},
+      {particles::Code::MuMinus, PROPOSAL::MuMinusDef()},
+      {particles::Code::MuPlus, PROPOSAL::MuPlusDef()},
+      {particles::Code::TauPlus, PROPOSAL::TauPlusDef()},
+      {particles::Code::TauMinus, PROPOSAL::TauMinusDef()},
+  };
+
+  bool Interaction::CanInteract(particles::Code pcode) const noexcept {
+    auto search = particles.find(pcode);
+    if (search != particles.end()) return true;
+    return false;
+  };
 
   template <>
-  Interaction<SetupEnvironment>::Interaction(SetupEnvironment const& env,
-                                             CORSIKA_ParticleCut const& e_cut)
+  Interaction::Interaction(SetupEnvironment const& env, CORSIKA_ParticleCut const& e_cut)
       : fEnvironment(env)
       , cut(make_shared<const PROPOSAL::EnergyCutSettings>(e_cut.GetCutEnergy() / 1_GeV,
-                                                           1, false)) {}
-
-  template <>
-  void Interaction<SetupEnvironment>::Init() {
+                                                           1, false)) {
     auto all_compositions = std::vector<NuclearComposition>();
     fEnvironment.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties())
@@ -63,8 +64,11 @@ namespace corsika::process::proposal {
   }
 
   template <>
+  void Interaction::Init() {}
+
   template <>
-  corsika::process::EProcessReturn Interaction<SetupEnvironment>::DoInteraction(
+  template <>
+  corsika::process::EProcessReturn Interaction::DoInteraction(
       setup::StackView::StackIterator& vP) {
     if (CanInteract(vP.GetPID())) {
       auto calc = GetCalculator(vP); // [CrossSections]
@@ -107,7 +111,7 @@ namespace corsika::process::proposal {
 
   template <>
   template <>
-  corsika::units::si::GrammageType Interaction<SetupEnvironment>::GetInteractionLength(
+  corsika::units::si::GrammageType Interaction::GetInteractionLength(
       setup::Stack::StackIterator& vP) {
     if (CanInteract(vP.GetPID())) {
       auto calc = GetCalculator(vP); // [CrossSections]
