@@ -17,7 +17,6 @@
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
-#include <random>
 #include <unordered_map>
 #include "PROPOSAL/PROPOSAL.h"
 
@@ -29,14 +28,13 @@ namespace corsika::process::proposal {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
 
-  private:
     shared_ptr<const PROPOSAL::EnergyCutSettings> cut;
 
     static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
     std::unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
 
     corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("p_rndm");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("proposal");
 
     bool CanInteract(particles::Code pcode) const noexcept;
 

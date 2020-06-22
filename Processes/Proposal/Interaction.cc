@@ -8,10 +8,8 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 #include <limits>
-#include <map>
 #include <memory>
 #include <random>
-#include <set>
 #include <tuple>
 
 using Component_PROPOSAL = PROPOSAL::Components::Component;
@@ -21,7 +19,6 @@ namespace corsika::process::proposal {
   using namespace corsika::environment;
   using namespace corsika::units::si;
 
-  template <>
   std::unordered_map<particles::Code, PROPOSAL::ParticleDef> Interaction::particles{
       {particles::Code::Gamma, PROPOSAL::GammaDef()},
       {particles::Code::Electron, PROPOSAL::EMinusDef()},
@@ -36,15 +33,14 @@ namespace corsika::process::proposal {
     auto search = particles.find(pcode);
     if (search != particles.end()) return true;
     return false;
-  };
+  }
 
   template <>
-  Interaction::Interaction(SetupEnvironment const& env, CORSIKA_ParticleCut const& e_cut)
-      : fEnvironment(env)
-      , cut(make_shared<const PROPOSAL::EnergyCutSettings>(e_cut.GetCutEnergy() / 1_GeV,
-                                                           1, false)) {
+  Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut const& _cut)
+      : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetCutEnergy() / 1_GeV, 1,
+                                                           false)) {
     auto all_compositions = std::vector<NuclearComposition>();
-    fEnvironment.GetUniverse()->walk([&](auto& vtn) {
+    _env.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties())
         all_compositions.push_back(vtn.GetModelProperties().GetNuclearComposition());
     });
@@ -63,10 +59,8 @@ namespace corsika::process::proposal {
     }
   }
 
-  template <>
   void Interaction::Init() {}
 
-  template <>
   template <>
   corsika::process::EProcessReturn Interaction::DoInteraction(
       setup::StackView::StackIterator& vP) {
@@ -109,7 +103,6 @@ namespace corsika::process::proposal {
     return process::EProcessReturn::eOk;
   }
 
-  template <>
   template <>
   corsika::units::si::GrammageType Interaction::GetInteractionLength(
       setup::Stack::StackIterator& vP) {
