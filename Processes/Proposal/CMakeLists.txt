@@ -15,6 +15,11 @@ SET_TARGET_PROPERTIES ( ProcessProposal PROPERTIES VERSION ${PROJECT_VERSION}
 
 TARGET_LINK_LIBRARIES (
   ProcessProposal
+  CORSIKAparticles
+  CORSIKAutilities
+  CORSIKAunits
+  CORSIKAthirdparty
+  CORSIKAgeometry
   CORSIKAenvironment
   ${PROPOSAL_LIBRARY}
   )

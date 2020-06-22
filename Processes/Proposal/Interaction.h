@@ -38,12 +38,10 @@ namespace corsika::process::proposal {
     static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
     std::unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
 
-    enum { SECONDARIES, INTERACTION, DISPLACEMENT };
-
     corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("p_rndm");
 
-    auto IsTracked(particles::Code pcode) const noexcept {
+    bool CanInteract(particles::Code pcode) const noexcept {
       auto search = particles.find(pcode);
       if (search != particles.end()) return true;
       return false;
@@ -54,6 +52,7 @@ namespace corsika::process::proposal {
               unique_ptr<PROPOSAL::Displacement>>;
     std::unordered_map<const NuclearComposition*, calculator_t> calculators;
 
+    enum { SECONDARIES, INTERACTION, DISPLACEMENT };
     template <typename Particle>
     auto GetCalculator(Particle& vP) {
       auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
@@ -81,6 +80,5 @@ namespace corsika::process::proposal {
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
   };
-
 } // namespace corsika::process::proposal
 #endif
