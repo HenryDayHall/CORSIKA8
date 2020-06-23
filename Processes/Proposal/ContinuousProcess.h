@@ -8,26 +8,67 @@
  * the license.
  */
 
-// #ifndef _corsika_process_proposal_interaction_h_
-// #define _corsika_process_proposalythia_interaction_h_
+#ifndef _corsika_process_proposal_interaction_h_
+#define _corsika_process_proposal_interaction_h_
 
-// #include <PROPOSAL/PROPOSAL.h>
-// #include <corsika/process/ContinuousProcess.h>
+#include <PROPOSAL/PROPOSAL.h>
+#include <corsika/environment/Environment.h>
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/process/ContinuousProcess.h>
+#include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/random/RNGManager.h>
+#include <corsika/random/UniformRealDistribution.h>
+#include <unordered_map>
+#include "PROPOSAL/PROPOSAL.h"
 
+using std::unordered_map;
 
-// namespace corsika::process::proposal {
+using namespace corsika::environment;
 
-//   class ContinuousProcess : public corsika::process::ContinuousProcess<Continuous> {
-//   private:
+using CORSIKA_ParticleCut = corsika::process::particle_cut::ParticleCut;
 
+namespace corsika::process::proposal {
 
-//   public:
-//     template <typename Particle, typename Track>
-//     EProcessReturn DoContinuous(Particle&, Track const&) const;
+  class ContinuousProcess
+      : public corsika::process::ContinuousProcess<ContinuousProcess> {
+  private:
+    shared_ptr<const PROPOSAL::EnergyCutSettings> cut;
 
-//     template <typename Particle, typename Track>
-//     units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const;
-//   }
-// } // namespace corsika::process
+    static unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
+    unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
 
-// #endif
+    corsika::random::RNG& fRNG =
+        corsika::random::RNGManager::GetInstance().GetRandomStream("proposal");
+
+    bool CanInteract(particles::Code pcode) const noexcept;
+
+    unordered_map<const NuclearComposition*, unique_ptr<PROPOSAL::Displacement>> calc;
+
+    template <typename Particle>
+    auto GetCalculator(Particle& vP) {
+      auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
+      auto calc_it = calc.find(&comp);
+      if (calc_it != calc.end()) return calc_it;
+      auto cross =
+          PROPOSAL::GetStdCrossSections(particles[vP.GetPID()], media[&comp], cut, true);
+      auto [insert_it, success] =
+          calc.insert({&comp, PROPOSAL::make_displacement(cross, true)});
+      return insert_it;
+    }
+
+    units::si::HEPEnergyType TotalEnergyLoss(setup::Stack::ParticleType const&,
+                                             const units::si::GrammageType);
+
+  public:
+    template <typename TEnvironment>
+    ContinuousProcess(TEnvironment const& env, CORSIKA_ParticleCut const& cut);
+
+    template <typename Particle, typename Track>
+    EProcessReturn DoContinuous(Particle&, Track const&) ;
+
+    template <typename Particle, typename Track>
+    units::si::LengthType MaxStepLength(Particle const& p, Track const& track) ;
+  };
+} // namespace corsika::process::proposal
+
+#endif
