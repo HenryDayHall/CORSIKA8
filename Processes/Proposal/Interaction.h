@@ -70,7 +70,7 @@ namespace corsika::process::proposal {
     corsika::process::EProcessReturn DoInteraction(Particle&);
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
+    corsika::units::si::GrammageType GetInteractionLength(TParticle const& p);
   };
 } // namespace corsika::process::proposal
 #endif

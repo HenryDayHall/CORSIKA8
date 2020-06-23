@@ -28,6 +28,8 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
 
+#include <corsika/process/proposal/Interaction.h>
+
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -48,6 +50,7 @@ using namespace corsika::units::si;
 
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  random::RNGManager::GetInstance().RegisterRandomStream("proposal");
   // add PROPOSAL here (?)
   random::RNGManager::GetInstance().SeedAll();
 }
@@ -129,10 +132,12 @@ int main(int argc, char** argv) {
   // setup processes, decays and interactions
 
   // PROPOSAL processs proposal{...};
+  process::particle_cut::ParticleCut cut(10_GeV);
+  process::proposal::Interaction proposal(env, cut);
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   // energy cut; n.b. ParticleCut needs to be modified not to discard EM particles!
-  process::particle_cut::ParticleCut cut{60_GeV};
+  /* process::particle_cut::ParticleCut cut{60_GeV}; */
 
   // long. profile; columns for gamma, e+, e- still need to be added
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
@@ -141,7 +146,7 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  auto sequence = proposalCounted << longprof << cut << observationLevel;
+  auto sequence = proposalCounted << longprof << proposal << cut << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;

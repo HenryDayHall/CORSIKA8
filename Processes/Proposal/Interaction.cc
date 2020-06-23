@@ -105,7 +105,7 @@ namespace corsika::process::proposal {
 
   template <>
   corsika::units::si::GrammageType Interaction::GetInteractionLength(
-      setup::Stack::StackIterator& vP) {
+      setup::Stack::StackIterator const& vP) {
     if (CanInteract(vP.GetPID())) {
       auto calc = GetCalculator(vP); // [CrossSections]
       std::uniform_real_distribution<double> distr(0., 1.);
