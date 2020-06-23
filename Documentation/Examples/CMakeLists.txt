@@ -125,3 +125,25 @@ target_link_libraries (staticsequence_example
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAlogging)
+
+CORSIKA_ADD_EXAMPLE (proposal_example RUN_OPTIONS 100.)
+  target_link_libraries (proposal_example
+    SuperStupidStack
+    CORSIKAunits
+    CORSIKAlogging
+    CORSIKArandom
+    CORSIKAcascade
+    ProcessObservationPlane
+    ProcessInteractionCounter
+    ProcessTrackWriter
+    ProcessTrackingLine
+    ProcessParticleCut
+    ProcessStackInspector
+    ProcessLongitudinalProfile
+    CORSIKAprocesses
+    CORSIKAcascade
+    CORSIKAparticles
+    CORSIKAgeometry
+    CORSIKAenvironment
+    CORSIKAprocesssequence
+)
