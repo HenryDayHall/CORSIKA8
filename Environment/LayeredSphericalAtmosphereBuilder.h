@@ -20,11 +20,21 @@
 
 namespace corsika::environment {
 
+  /**
+   * A namespace containing various Earth radii.
+   */
+  namespace EarthRadius {
+    static constexpr auto Mean{6'371'000 * units::si::meter};
+    static constexpr auto Eqautorial{6'378'137 * units::si::meter};
+    static constexpr auto Polar{6'356'752 * units::si::meter};
+    static constexpr auto PolarCurvature{6'399'593 * units::si::meter};
+  } // namespace EarthRadius
+
   class LayeredSphericalAtmosphereBuilder {
     std::unique_ptr<NuclearComposition> composition_;
     geometry::Point center_;
     units::si::LengthType previousRadius_{units::si::LengthType::zero()};
-    units::si::LengthType seaLevel_;
+    units::si::LengthType earthRadius_;
 
     std::stack<VolumeTreeNode<environment::IMediumModel>::VTNUPtr>
         layers_; // innermost layer first
@@ -32,12 +42,11 @@ namespace corsika::environment {
     void checkRadius(units::si::LengthType) const;
 
   public:
-    static auto constexpr earthRadius = 6'371'000 * units::si::meter;
-
-    LayeredSphericalAtmosphereBuilder(corsika::geometry::Point center,
-                                      units::si::LengthType seaLevel = earthRadius)
+    LayeredSphericalAtmosphereBuilder(
+        corsika::geometry::Point center,
+        units::si::LengthType earthRadius = EarthRadius::Mean)
         : center_(center)
-        , seaLevel_(seaLevel) {}
+        , earthRadius_(earthRadius) {}
 
     void setNuclearComposition(NuclearComposition);
 
@@ -50,6 +59,11 @@ namespace corsika::environment {
 
     void assemble(Environment<IMediumModel>&);
     Environment<IMediumModel> assemble();
+
+    /**
+     * Get the current Earth radius.
+     */
+    units::si::LengthType getEarthRadius() const { return earthRadius_; };
   };
 
 } // namespace corsika::environment

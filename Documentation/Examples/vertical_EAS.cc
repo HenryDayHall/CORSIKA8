@@ -117,8 +117,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
        << endl;
 
-  auto const observationHeight = 1.4_km + builder.earthRadius;
-  auto const injectionHeight = 112.75_km + builder.earthRadius;
+  auto const observationHeight = 1.4_km + builder.getEarthRadius();
+  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
                       si::detail::static_pow<2>(injectionHeight));
