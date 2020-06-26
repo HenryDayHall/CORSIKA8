@@ -49,16 +49,45 @@ namespace corsika::process::proposal {
       auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
       auto calc_it = calculators.find(&comp);
       if (calc_it != calculators.end()) return calc_it;
-      auto cross =
-          PROPOSAL::GetStdCrossSections(particles[vP.GetPID()], media[&comp], cut, true);
-      auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
-      auto [insert_it, success] = calculators.insert(
-          {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
-                                 inter_types, particles[vP.GetPID()], media[&comp]),
-                             PROPOSAL::make_interaction(cross, true),
-                             PROPOSAL::make_displacement(cross, true))});
-      return insert_it;
+      return BuildCalculator(vP.GetPID(), comp);
     }
+
+    auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
+      auto medium = media.at(&comp);
+      if (corsika_code == particles::Code::Gamma) {
+        auto cross =
+            GetStdCrossSections(PROPOSAL::GammaDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
+                                   inter_types, PROPOSAL::GammaDef(), media[&comp]),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+      if (corsika_code == particles::Code::Electron) {
+        auto cross =
+            GetStdCrossSections(PROPOSAL::EMinusDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
+                                   inter_types, PROPOSAL::EMinusDef(), media[&comp]),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+      if (corsika_code == particles::Code::Positron) {
+        auto cross =
+            GetStdCrossSections(PROPOSAL::EPlusDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
+                                   inter_types, PROPOSAL::EPlusDef(), media[&comp]),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+    } // namespace corsika::process::proposal
 
   public:
     template <typename TEnvironment>
@@ -71,6 +100,6 @@ namespace corsika::process::proposal {
 
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle const& p);
-  };
+  }; // namespace corsika::process::proposal
 } // namespace corsika::process::proposal
 #endif

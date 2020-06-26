@@ -39,20 +39,21 @@ namespace corsika::process::proposal {
   Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut const& _cut)
       : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetCutEnergy() / 1_GeV, 1,
                                                            false)) {
-    auto all_compositions = std::vector<NuclearComposition>();
+    auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
-      if (vtn.HasModelProperties())
-        all_compositions.push_back(vtn.GetModelProperties().GetNuclearComposition());
+      if (vtn.HasModelProperties()) {
+        all_compositions.push_back(&vtn.GetModelProperties().GetNuclearComposition());
+      }
     });
     for (auto& ncarg : all_compositions) {
       auto comp_vec = std::vector<Component_PROPOSAL>();
-      auto frac_iter = ncarg.GetFractions().cbegin();
-      for (auto& pcode : ncarg.GetComponents()) {
+      auto frac_iter = ncarg->GetFractions().cbegin();
+      for (auto& pcode : ncarg->GetComponents()) {
         comp_vec.emplace_back(GetName(pcode), GetNucleusZ(pcode), GetNucleusA(pcode),
                               *frac_iter);
         ++frac_iter;
       }
-      media[&ncarg] = PROPOSAL::Medium(
+      media[ncarg] = PROPOSAL::Medium(
           "Modified Air", 1., PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
           PROPOSAL::Air().GetA(), PROPOSAL::Air().GetM(), PROPOSAL::Air().GetX0(),
           PROPOSAL::Air().GetX1(), PROPOSAL::Air().GetD0(), 1.0, comp_vec);
