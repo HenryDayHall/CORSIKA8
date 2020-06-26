@@ -55,6 +55,7 @@ namespace corsika::process::proposal {
     auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
       auto medium = media.at(&comp);
       if (corsika_code == particles::Code::Gamma) {
+          std::cout << "Build gamma tables" << std::endl;
         auto cross =
             GetStdCrossSections(PROPOSAL::GammaDef(), media.at(&comp), cut, true);
         auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
@@ -66,6 +67,7 @@ namespace corsika::process::proposal {
         return insert_it;
       }
       if (corsika_code == particles::Code::Electron) {
+          std::cout << "Build electron tables" << std::endl;
         auto cross =
             GetStdCrossSections(PROPOSAL::EMinusDef(), media.at(&comp), cut, true);
         auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
@@ -77,6 +79,7 @@ namespace corsika::process::proposal {
         return insert_it;
       }
       if (corsika_code == particles::Code::Positron) {
+          std::cout << "Build positron tables" << std::endl;
         auto cross =
             GetStdCrossSections(PROPOSAL::EPlusDef(), media.at(&comp), cut, true);
         auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);

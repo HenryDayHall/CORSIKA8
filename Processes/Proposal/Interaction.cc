@@ -37,8 +37,10 @@ namespace corsika::process::proposal {
 
   template <>
   Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut const& _cut)
-      : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetCutEnergy() / 1_GeV, 1,
+      : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetECut() / 1_MeV, 1,
                                                            false)) {
+          std::cout << "corsika set cut to " << _cut.GetECut() / 1_GeV << " [GeV]" << std::endl;
+      std::cout << "proposal set ecut to " << cut->GetEcut() << " [MeV]" << std::endl;
     auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties()) {
