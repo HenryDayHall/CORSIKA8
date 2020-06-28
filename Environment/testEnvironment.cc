@@ -11,12 +11,14 @@
 #include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
+#include <corsika/environment/UniformMagneticField.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
@@ -228,4 +230,48 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
   REQUIRE(dynamic_cast<Sphere const&>(
               univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->GetVolume())
               .GetRadius() == R + 30_km);
+}
+
+TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
+
+  // setup our interface types
+  using IModelInterface = IMagneticFieldModel<IMediumModel>;
+  using AtmModel = UniformMagneticField<HomogeneousMedium<IModelInterface>>;
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // create a magnetic field vector
+  QuantityVector B0(0_T, 0_T, 0_T);
+
+  // create our atmospheric model
+  AtmModel const medium(B0, 19.2_g / cube(1_cm), protonComposition);
+}
+
+TEST_CASE("UniformMagneticField w/ FlatExponential") {
+
+  // setup our interface types
+  using IModelInterface = IMagneticFieldModel<IMediumModel>;
+  using AtmModel = UniformMagneticField<FlatExponential<IModelInterface>>;
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // define our quantity vector
+  Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
+
+  // the parameters of our exponential model
+  LengthType const lambda = 3_m;
+  auto const rho0 = 1_g / units::si::detail::static_pow<3>(1_cm);
+
+  // create a magnetic field vector
+  QuantityVector B0(23_T, 57_T, -4_T);
+
+  // create our atmospheric model
+  AtmModel const medium(B0, gOrigin, axis, rho0, lambda, protonComposition);
+
+  // check that the returned magnetic field is correct
+  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
 }
