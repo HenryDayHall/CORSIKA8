@@ -132,6 +132,9 @@ int main(int argc, char** argv) {
   // setup processes, decays and interactions
 
   // PROPOSAL processs proposal{...};
+  PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
+  PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
+
   process::particle_cut::ParticleCut cut(10_GeV);
   process::proposal::Interaction proposal(env, cut);
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
