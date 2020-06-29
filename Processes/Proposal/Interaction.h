@@ -43,14 +43,6 @@ namespace corsika::process::proposal {
               unique_ptr<PROPOSAL::Displacement>>;
     std::unordered_map<const NuclearComposition*, calculator_t> calculators;
 
-    enum { SECONDARIES, INTERACTION, DISPLACEMENT };
-    template <typename Particle>
-    auto GetCalculator(Particle& vP) {
-      auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
-      auto calc_it = calculators.find(&comp);
-      if (calc_it != calculators.end()) return calc_it;
-      return BuildCalculator(vP.GetPID(), comp);
-    }
 
     auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
       auto medium = media.at(&comp);
@@ -91,6 +83,15 @@ namespace corsika::process::proposal {
         return insert_it;
       }
     } // namespace corsika::process::proposal
+
+    enum { SECONDARIES, INTERACTION, DISPLACEMENT };
+    template <typename Particle>
+    auto GetCalculator(Particle& vP) {
+        auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
+        auto calc_it = calculators.find(&comp);
+        if (calc_it != calculators.end()) return calc_it;
+        return BuildCalculator(vP.GetPID(), comp);
+    }
 
   public:
     template <typename TEnvironment>

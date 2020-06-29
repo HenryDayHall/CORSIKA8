@@ -82,8 +82,10 @@ namespace corsika::process::proposal {
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
                                       vP.GetPosition().GetY() / 1_cm,
                                       vP.GetPosition().GetZ() / 1_cm);
-      auto p = vP.GetMomentum().GetComponents();
-      auto direction = PROPOSAL::Vector3D(p[0] / 1_GeV, p[1] / 1_GeV, p[2] / 1_GeV);
+      auto d = vP.GetDirection().GetComponents();
+      auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(),
+                                          d.GetY().magnitude(),
+                                          d.GetZ().magnitude());
       auto loss =
           make_tuple(static_cast<int>(type), point, direction, v * primary_energy, 0.);
       auto sec = std::get<SECONDARIES>(calc->second)
