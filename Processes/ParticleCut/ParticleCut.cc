@@ -65,12 +65,13 @@ namespace corsika::process {
         cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
              << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
              << endl;
-        if (ParticleIsEmParticle(pid)) {
-          cout << "removing em. particle..." << endl;
-          fEmEnergy += energy;
-          fEmCount += 1;
-          p.Delete();
-        } else if (ParticleIsInvisible(pid)) {
+        /* if (ParticleIsEmParticle(pid)) { */
+        /*   cout << "removing em. particle..." << endl; */
+        /*   fEmEnergy += energy; */
+        /*   fEmCount += 1; */
+        /*   p.Delete(); */
+        /* } else */
+        if (ParticleIsInvisible(pid)) {
           cout << "removing inv. particle..." << endl;
           fInvEnergy += energy;
           fInvCount += 1;
