@@ -39,8 +39,8 @@ namespace corsika::process::proposal {
   Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut const& _cut)
       : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetECut() / 1_MeV, 1,
                                                            false)) {
-          std::cout << "corsika set cut to " << _cut.GetECut() / 1_GeV << " [GeV]" << std::endl;
-      std::cout << "proposal set ecut to " << cut->GetEcut() << " [MeV]" << std::endl;
+    std::cout << "corsika set cut to " << _cut.GetECut() / 1_GeV << " [GeV]" << std::endl;
+    std::cout << "proposal set ecut to " << cut->GetEcut() << " [MeV]" << std::endl;
     auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties()) {
@@ -72,12 +72,13 @@ namespace corsika::process::proposal {
       std::uniform_real_distribution<double> distr(0., 1.);
       auto [type, comp_ptr, v] =
           std::get<INTERACTION>(calc->second)
-              ->TypeInteraction(vP.GetEnergy() / 1_GeV, distr(fRNG));
+              ->TypeInteraction(vP.GetEnergy() / 1_MeV, distr(fRNG));
+      std::cout << "InteractionType: "<< static_cast<int>(type) << std::endl;
       auto rnd = std::vector<double>();
       for (size_t i = 0;
            i < std::get<SECONDARIES>(calc->second).RequiredRandomNumbers(type); ++i)
         rnd.push_back(distr(fRNG));
-      double primary_energy = vP.GetEnergy() / 1_GeV;
+      double primary_energy = vP.GetEnergy() / 1_MeV;
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
                                       vP.GetPosition().GetY() / 1_cm,
                                       vP.GetPosition().GetZ() / 1_cm);
@@ -112,10 +113,11 @@ namespace corsika::process::proposal {
     if (CanInteract(vP.GetPID())) {
       auto calc = GetCalculator(vP); // [CrossSections]
       std::uniform_real_distribution<double> distr(0., 1.);
+      auto rnd = distr(fRNG);
       auto energy = get<INTERACTION>(calc->second)
-                        ->EnergyInteraction(vP.GetEnergy() / 1_GeV, distr(fRNG));
+                        ->EnergyInteraction(vP.GetEnergy() / 1_MeV, rnd);
       return get<DISPLACEMENT>(calc->second)
-                 ->SolveTrackIntegral(vP.GetEnergy() / 1_GeV, energy) *
+                 ->SolveTrackIntegral(vP.GetEnergy() / 1_MeV, energy) *
              1_g / 1_cm / 1_cm;
     }
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
