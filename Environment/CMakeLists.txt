@@ -23,6 +23,8 @@ set (
   ShowerAxis.h
   IMagneticFieldModel.h
   UniformMagneticField.h
+  IRefractiveIndexModel.h
+  UniformRefractiveIndex.h
   )
 
 set (
