@@ -245,8 +245,11 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   // create a magnetic field vector
   QuantityVector B0(0_T, 0_T, 0_T);
 
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
   // create our atmospheric model
-  AtmModel medium(B0, 19.2_g / cube(1_cm), protonComposition);
+  AtmModel medium(B0, density, protonComposition);
 
   // create a new magnetic field vector
   QuantityVector B1(23_T, 57_T, -4_T);
@@ -258,42 +261,22 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
   REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
   REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
-}
 
-TEST_CASE("UniformMagneticField w/ FlatExponential") {
+  // check the density and nuclear composition
+  REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.GetNuclearComposition();
 
-  // setup our interface types
-  using IModelInterface = IMagneticFieldModel<IMediumModel>;
-  using AtmModel = UniformMagneticField<FlatExponential<IModelInterface>>;
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {1_m / second, 0_m / second, 0_m / second}));
 
-  // the composition we use for the homogenous medium
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  // the end time of our line
+  auto const tEnd = 1_s;
 
-  // define our quantity vector
-  Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
+  // and the associated trajectory
+  Trajectory<Line> const trajectory(line, tEnd);
 
-  // the parameters of our exponential model
-  LengthType const lambda = 3_m;
-  auto const rho0 = 1_g / units::si::detail::static_pow<3>(1_cm);
-
-  // create a magnetic field vector
-  QuantityVector B0(23_T, 57_T, -4_T);
-
-  // create our atmospheric model
-  AtmModel medium(B0, gOrigin, axis, rho0, lambda, protonComposition);
-
-  // check that the returned magnetic field is correct
-  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
-
-  // create a new magnetic field vector
-  QuantityVector B1(23_T, 57_T, -4_T);
-
-  // and update this atmospheric model
-  medium.SetMagneticField(B1);
-
-  // and test at several locations
-  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
-  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
-  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
+  // and check the integrated grammage
+  REQUIRE((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
