@@ -246,7 +246,18 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   QuantityVector B0(0_T, 0_T, 0_T);
 
   // create our atmospheric model
-  AtmModel const medium(B0, 19.2_g / cube(1_cm), protonComposition);
+  AtmModel medium(B0, 19.2_g / cube(1_cm), protonComposition);
+
+  // create a new magnetic field vector
+  QuantityVector B1(23_T, 57_T, -4_T);
+
+  // and update this atmospheric model
+  medium.SetMagneticField(B1);
+
+  // and test at several locations
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
 }
 
 TEST_CASE("UniformMagneticField w/ FlatExponential") {
@@ -270,8 +281,19 @@ TEST_CASE("UniformMagneticField w/ FlatExponential") {
   QuantityVector B0(23_T, 57_T, -4_T);
 
   // create our atmospheric model
-  AtmModel const medium(B0, gOrigin, axis, rho0, lambda, protonComposition);
+  AtmModel medium(B0, gOrigin, axis, rho0, lambda, protonComposition);
 
   // check that the returned magnetic field is correct
   REQUIRE(B0 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
+
+  // create a new magnetic field vector
+  QuantityVector B1(23_T, 57_T, -4_T);
+
+  // and update this atmospheric model
+  medium.SetMagneticField(B1);
+
+  // and test at several locations
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
 }
