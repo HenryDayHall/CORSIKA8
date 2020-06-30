@@ -253,7 +253,11 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
 
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
   // create our atmospheric model
+<<<<<<< HEAD
 <<<<<<< HEAD
   AtmModel medium(B0, density, protonComposition);
 
@@ -292,6 +296,9 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   REQUIRE((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 =======
   AtmModel medium(n, 19.2_g / cube(1_cm), protonComposition);
+=======
+  AtmModel medium(n, density, protonComposition);
+>>>>>>> a61a703... Add additional density checks for homogeneous medium.
 
   // and require that it is constant
   REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
@@ -310,6 +317,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
+<<<<<<< HEAD
 >>>>>>> 12a0be6... Add test for SetRefractiveIndex
 }
 
@@ -332,16 +340,18 @@ TEST_CASE("UniformRefractiveIndex w/ FlatExponential") {
 
   // the refractive index we want returned everywhere
   RefractiveIndexType n = 1.000327__;
+=======
+>>>>>>> a61a703... Add additional density checks for homogeneous medium.
 
-  // create our atmospheric model
-  AtmModel medium(n, gOrigin, axis, rho0, lambda, protonComposition);
+  // check the density and nuclear composition
+  REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.GetNuclearComposition();
 
-  // check that the returned refractive index is correct
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {1_m / second, 0_m / second, 0_m / second}));
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   // the refractive index we want returned everywhere
   RefractiveIndexType n = 1.1234__;
@@ -375,14 +385,23 @@ TEST_CASE("UniformRefractiveIndex w/ FlatExponential") {
 =======
   // a new refractive index
   RefractiveIndexType n2 = 1.123456__;
+=======
+  // the end time of our line
+  auto const tEnd = 1_s;
+>>>>>>> a61a703... Add additional density checks for homogeneous medium.
 
-  // update the refractive index of this atmospheric model
-  medium.SetRefractiveIndex(n2);
+  // and the associated trajectory
+  Trajectory<Line> const trajectory(line, tEnd);
 
+<<<<<<< HEAD
   // check that the returned refractive index is correct
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
   REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
 >>>>>>> 12a0be6... Add test for SetRefractiveIndex
+=======
+  // and check the integrated grammage
+  REQUIRE((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+>>>>>>> a61a703... Add additional density checks for homogeneous medium.
 }
