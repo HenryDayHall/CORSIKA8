@@ -105,7 +105,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   # generate html report
   add_custom_command (
     OUTPUT coverage-report
-    COMMAND ${LCOV_BIN_DIR}/genhtml coverage.info -o coverage-report
+    COMMAND ${LCOV_BIN_DIR}/genhtml --demangle-cpp coverage.info -o coverage-report
     DEPENDS coverage.info
     )
   add_custom_target (coverage DEPENDS coverage-report)
