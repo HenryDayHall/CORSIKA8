@@ -39,9 +39,19 @@ namespace corsika::process::proposal {
     bool CanInteract(particles::Code pcode) const noexcept;
 
     using calculator_t =
-        tuple<PROPOSAL::SecondariesCalculator, unique_ptr<PROPOSAL::Interaction>,
+        tuple<unique_ptr<PROPOSAL::SecondariesCalculator>, unique_ptr<PROPOSAL::Interaction>,
               unique_ptr<PROPOSAL::Displacement>>;
-    std::unordered_map<const NuclearComposition*, calculator_t> calculators;
+
+    struct interaction_hash {
+        size_t operator()(const std::pair<const NuclearComposition*, particles::Code>& p) const
+        {
+            auto hash1 = std::hash<const NuclearComposition*>{}(p.first);
+            auto hash2 = std::hash<particles::Code>{}(p.second);
+            return hash1 ^ hash2;
+        }
+    };
+
+    std::unordered_map<std::pair<const NuclearComposition*, particles::Code>, calculator_t, interaction_hash> calculators;
 
 
     auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
@@ -52,8 +62,8 @@ namespace corsika::process::proposal {
             GetStdCrossSections(PROPOSAL::GammaDef(), media.at(&comp), cut, true);
         auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
         auto [insert_it, success] = calculators.insert(
-            {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
-                                   inter_types, PROPOSAL::GammaDef(), media[&comp]),
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::GammaDef(), media.at(&comp)),
                                PROPOSAL::make_interaction(cross, true),
                                PROPOSAL::make_displacement(cross, true))});
         return insert_it;
@@ -64,8 +74,8 @@ namespace corsika::process::proposal {
             GetStdCrossSections(PROPOSAL::EMinusDef(), media.at(&comp), cut, true);
         auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
         auto [insert_it, success] = calculators.insert(
-            {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
-                                   inter_types, PROPOSAL::EMinusDef(), media[&comp]),
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::EMinusDef(), media.at(&comp)),
                                PROPOSAL::make_interaction(cross, true),
                                PROPOSAL::make_displacement(cross, true))});
         return insert_it;
@@ -76,8 +86,8 @@ namespace corsika::process::proposal {
             GetStdCrossSections(PROPOSAL::EPlusDef(), media.at(&comp), cut, true);
         auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
         auto [insert_it, success] = calculators.insert(
-            {&comp, make_tuple(PROPOSAL::SecondariesCalculator(
-                                   inter_types, PROPOSAL::EPlusDef(), media[&comp]),
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::EPlusDef(), media.at(&comp)),
                                PROPOSAL::make_interaction(cross, true),
                                PROPOSAL::make_displacement(cross, true))});
         return insert_it;
@@ -88,7 +98,7 @@ namespace corsika::process::proposal {
     template <typename Particle>
     auto GetCalculator(Particle& vP) {
         auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
-        auto calc_it = calculators.find(&comp);
+        auto calc_it = calculators.find(std::make_pair(&comp, vP.GetPID()));
         if (calc_it != calculators.end()) return calc_it;
         return BuildCalculator(vP.GetPID(), comp);
     }

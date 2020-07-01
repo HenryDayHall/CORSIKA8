@@ -27,7 +27,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
-
+#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/proposal/Interaction.h>
 
 #include <iomanip>
@@ -138,6 +138,7 @@ int main(int argc, char** argv) {
   process::particle_cut::ParticleCut cut(10_GeV);
   process::proposal::Interaction proposal(env, cut);
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
 
   // energy cut; n.b. ParticleCut needs to be modified not to discard EM particles!
   /* process::particle_cut::ParticleCut cut{60_GeV}; */
@@ -149,8 +150,7 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  auto sequence = proposalCounted << longprof << proposal << cut << observationLevel;
-
+  auto sequence = proposalCounted << longprof << proposal << cut << observationLevel << trackWriter;
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);

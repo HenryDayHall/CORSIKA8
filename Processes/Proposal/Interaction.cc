@@ -76,7 +76,7 @@ namespace corsika::process::proposal {
       std::cout << "InteractionType: "<< static_cast<int>(type) << std::endl;
       auto rnd = std::vector<double>();
       for (size_t i = 0;
-           i < std::get<SECONDARIES>(calc->second).RequiredRandomNumbers(type); ++i)
+           i < std::get<SECONDARIES>(calc->second)->RequiredRandomNumbers(type); ++i)
         rnd.push_back(distr(fRNG));
       double primary_energy = vP.GetEnergy() / 1_MeV;
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
@@ -89,7 +89,7 @@ namespace corsika::process::proposal {
       auto loss =
           make_tuple(static_cast<int>(type), point, direction, v * primary_energy, 0.);
       auto sec = std::get<SECONDARIES>(calc->second)
-                     .CalculateSecondaries(primary_energy, loss, *comp_ptr, rnd);
+                     ->CalculateSecondaries(primary_energy, loss, *comp_ptr, rnd);
       for (auto& s : sec) {
         auto energy = get<PROPOSAL::Loss::ENERGY>(s) * 1_MeV;
         auto vec = corsika::geometry::QuantityVector(
