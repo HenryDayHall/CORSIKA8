@@ -42,18 +42,45 @@ namespace corsika::process::proposal {
 
     bool CanInteract(particles::Code pcode) const noexcept;
 
-    unordered_map<const NuclearComposition*, unique_ptr<PROPOSAL::Displacement>> calc;
+    struct interaction_hash {
+        size_t operator()(const std::pair<const NuclearComposition*, particles::Code>& p) const
+        {
+            auto hash1 = std::hash<const NuclearComposition*>{}(p.first);
+            auto hash2 = std::hash<particles::Code>{}(p.second);
+            return hash1 ^ hash2;
+        }
+    };
 
+    unordered_map<std::pair<const NuclearComposition*, particles::Code>, unique_ptr<PROPOSAL::Displacement>, interaction_hash> calc;
+
+    auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
+        auto medium = media.at(&comp);
+        if (corsika_code == particles::Code::Gamma) {
+            auto cross = GetStdCrossSections(PROPOSAL::GammaDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+                    calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+        if (corsika_code == particles::Code::Electron) {
+            auto cross = GetStdCrossSections(PROPOSAL::EMinusDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+        if (corsika_code == particles::Code::Positron) {
+            auto cross = GetStdCrossSections(PROPOSAL::EPlusDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+    }
+    
     template <typename Particle>
     auto GetCalculator(Particle& vP) {
       auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
-      auto calc_it = calc.find(&comp);
+      auto calc_it = calc.find(std::make_pair(&comp, vP.GetPID()));
       if (calc_it != calc.end()) return calc_it;
-      auto cross =
-          PROPOSAL::GetStdCrossSections(particles[vP.GetPID()], media[&comp], cut, true);
-      auto [insert_it, success] =
-          calc.insert({&comp, PROPOSAL::make_displacement(cross, true)});
-      return insert_it;
+      return BuildCalculator(vP.GetPID(), comp);
     }
 
     units::si::HEPEnergyType TotalEnergyLoss(setup::Stack::ParticleType const&,
@@ -62,6 +89,8 @@ namespace corsika::process::proposal {
   public:
     template <typename TEnvironment>
     ContinuousProcess(TEnvironment const& env, CORSIKA_ParticleCut const& cut);
+
+    void Init();
 
     template <typename Particle, typename Track>
     EProcessReturn DoContinuous(Particle&, Track const&) ;

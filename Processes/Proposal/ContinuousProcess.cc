@@ -36,22 +36,22 @@ namespace corsika::process::proposal {
   template <>
   ContinuousProcess::ContinuousProcess(SetupEnvironment const& _env,
                                        CORSIKA_ParticleCut const& _cut)
-      : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetCutEnergy() / 1_GeV, 1,
+      : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetECut() / 1_MeV, 1,
                                                            false)) {
-    auto all_compositions = std::vector<NuclearComposition>();
+    auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties())
-        all_compositions.push_back(vtn.GetModelProperties().GetNuclearComposition());
+        all_compositions.push_back(&vtn.GetModelProperties().GetNuclearComposition());
     });
     for (auto& ncarg : all_compositions) {
       auto comp_vec = std::vector<PROPOSAL::Components::Component>();
-      auto frac_iter = ncarg.GetFractions().cbegin();
-      for (auto& pcode : ncarg.GetComponents()) {
+      auto frac_iter = ncarg->GetFractions().cbegin();
+      for (auto& pcode : ncarg->GetComponents()) {
         comp_vec.emplace_back(GetName(pcode), GetNucleusZ(pcode), GetNucleusA(pcode),
                               *frac_iter);
         ++frac_iter;
       }
-      media[&ncarg] = PROPOSAL::Medium(
+      media[ncarg] = PROPOSAL::Medium(
           "Modified Air", 1., PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
           PROPOSAL::Air().GetA(), PROPOSAL::Air().GetM(), PROPOSAL::Air().GetX0(),
           PROPOSAL::Air().GetX1(), PROPOSAL::Air().GetD0(), 1.0, comp_vec);
@@ -62,14 +62,16 @@ namespace corsika::process::proposal {
                                                    GrammageType const vDX) {
     auto calc_ptr = GetCalculator(vP);
     auto upper_energy = calc_ptr->second->UpperLimitTrackIntegral(
-        vP.GetEnergy() / 1_GeV, vDX / 1_g * 1_cm * 1_cm);
-    return upper_energy * 1_GeV;
+        vP.GetEnergy() / 1_MeV, vDX / 1_g * 1_cm * 1_cm);
+    std::cout << "upper_energy: " << upper_energy << "MeV" << std::endl;
+    return upper_energy * 1_MeV;
   }
 
+   void ContinuousProcess::Init() {}
   template <>
   EProcessReturn ContinuousProcess::DoContinuous(SetupParticle& vP, SetupTrack const& vT) {
     if (vP.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
-
+    std::cout << "DoContinuous..." << std::endl;
     GrammageType const dX =
         vP.GetNode()->GetModelProperties().IntegratedGrammage(vT, vT.GetLength());
     HEPEnergyType dE = TotalEnergyLoss(vP, dX);
