@@ -13,12 +13,14 @@
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/IRefractiveIndexModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/UniformMagneticField.h>
+#include <corsika/environment/UniformRefractiveIndex.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
@@ -251,6 +253,11 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   // create our atmospheric model
   AtmModel medium(B0, density, protonComposition);
 
+  // and test at several locations
+  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
+  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
+  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
+
   // create a new magnetic field vector
   QuantityVector B1(23_T, 57_T, -4_T);
 
@@ -261,6 +268,65 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
   REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
   REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
+
+  // check the density and nuclear composition
+  REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.GetNuclearComposition();
+
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {1_m / second, 0_m / second, 0_m / second}));
+
+  // the end time of our line
+  auto const tEnd = 1_s;
+
+  // and the associated trajectory
+  Trajectory<Line> const trajectory(line, tEnd);
+
+  // and check the integrated grammage
+  REQUIRE((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+}
+
+TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
+
+  // setup our interface types
+  using IModelInterface = IRefractiveIndexModel<IMediumModel>;
+  using AtmModel = UniformRefractiveIndex<HomogeneousMedium<IModelInterface>>;
+
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // the refrative index that we use
+  const double n{1.000327};
+
+  // create the atmospheric model
+  AtmModel medium(n, density, protonComposition);
+
+  // and require that it is constant
+  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
+  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
+  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
+  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
+
+  // a new refractive index
+  const double n2{2.3472123};
+
+  // update the refractive index of this atmospheric model
+  medium.SetRefractiveIndex(n2);
+
+  // check that the returned refractive index is correct
+  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
+  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
+  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
+  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
+
+  // define our axis vector
+  Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
 
   // check the density and nuclear composition
   REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
