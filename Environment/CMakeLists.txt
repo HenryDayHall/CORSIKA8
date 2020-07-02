@@ -21,6 +21,8 @@ set (
   SlidingPlanarExponential.h
   LayeredSphericalAtmosphereBuilder.h
   ShowerAxis.h
+  IMagneticFieldModel.h
+  UniformMagneticField.h
   )
 
 set (

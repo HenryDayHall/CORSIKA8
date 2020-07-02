@@ -11,12 +11,14 @@
 #include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
+#include <corsika/environment/UniformMagneticField.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
@@ -228,4 +230,53 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
   REQUIRE(dynamic_cast<Sphere const&>(
               univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->GetVolume())
               .GetRadius() == R + 30_km);
+}
+
+TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
+
+  // setup our interface types
+  using IModelInterface = IMagneticFieldModel<IMediumModel>;
+  using AtmModel = UniformMagneticField<HomogeneousMedium<IModelInterface>>;
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // create a magnetic field vector
+  QuantityVector B0(0_T, 0_T, 0_T);
+
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
+  // create our atmospheric model
+  AtmModel medium(B0, density, protonComposition);
+
+  // create a new magnetic field vector
+  QuantityVector B1(23_T, 57_T, -4_T);
+
+  // and update this atmospheric model
+  medium.SetMagneticField(B1);
+
+  // and test at several locations
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
+  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
+
+  // check the density and nuclear composition
+  REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.GetNuclearComposition();
+
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {1_m / second, 0_m / second, 0_m / second}));
+
+  // the end time of our line
+  auto const tEnd = 1_s;
+
+  // and the associated trajectory
+  Trajectory<Line> const trajectory(line, tEnd);
+
+  // and check the integrated grammage
+  REQUIRE((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
