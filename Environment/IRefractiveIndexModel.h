@@ -23,9 +23,6 @@ namespace corsika::environment {
   template <typename Model>
   class IRefractiveIndexModel : public Model {
 
-    // a type-alias for a dimensionless refractive index
-    using RefractiveIndex = corsika::units::si::RefractiveIndexType;
-
   public:
     /**
      * Evaluate the refractive index at a given location.
@@ -33,7 +30,7 @@ namespace corsika::environment {
      * @param  point    The location to evaluate at.
      * @returns    The refractive index at this point.
      */
-    virtual RefractiveIndex GetRefractiveIndex(corsika::geometry::Point const&) const = 0;
+    virtual double GetRefractiveIndex(corsika::geometry::Point const&) const = 0;
 
     /**
      * A virtual default destructor.

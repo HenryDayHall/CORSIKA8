@@ -69,12 +69,6 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
-  using RefractiveIndexType = phys::units::quantity<dimensionless_d, double>;
-
-  // define a new literal to construct dimensionless types
-  // This is a 'double underscore' literal, So 3__ is a
-  // dimensionless quantity = 3
-  QUANTITY_DEFINE_LITERALS(_, dimensionless_d)
 
   namespace detail {
     template <int N, typename T>

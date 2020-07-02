@@ -23,10 +23,7 @@ namespace corsika::environment {
   template <typename T>
   class UniformRefractiveIndex : public T {
 
-    // a type-alias for a dimensionless refractive index
-    using RefractiveIndex = corsika::units::si::RefractiveIndexType;
-
-    RefractiveIndex n_; ///< The constant refractive index that we use.
+    double n_; ///< The constant refractive index that we use.
 
   public:
     /**
@@ -38,7 +35,7 @@ namespace corsika::environment {
      * @param field    The refractive index to return everywhere.
      */
     template <typename... Args>
-    UniformRefractiveIndex(RefractiveIndex const n, Args&&... args)
+    UniformRefractiveIndex(double const n, Args&&... args)
         : T(std::forward<Args>(args)...)
         , n_(n) {}
 
@@ -48,8 +45,7 @@ namespace corsika::environment {
      * @param  point    The location to evaluate at.
      * @returns    The refractive index at this point.
      */
-    RefractiveIndex GetRefractiveIndex(
-        corsika::geometry::Point const&) const final override {
+    double GetRefractiveIndex(corsika::geometry::Point const&) const final override {
       return n_;
     }
 
@@ -59,7 +55,7 @@ namespace corsika::environment {
      * @param  point    The location to evaluate at.
      * @returns    The refractive index at this location.
      */
-    void SetRefractiveIndex(RefractiveIndex const& n) { n_ = n; }
+    void SetRefractiveIndex(double const& n) { n_ = n; }
 
   }; // END: class RefractiveIndex
 
