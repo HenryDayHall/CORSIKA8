@@ -38,7 +38,7 @@ TEST_CASE("CONEX", "[processes]") {
     int nShower = 1; // large to avoid final stats.
     int maxDetail = 0;
     int particleListMode = 0;
-    cx.Init(nShower, randomSeeds, cxModel, maxDetail, particleListMode,
+    cx.Init(nShower, randomSeeds, maxDetail, particleListMode,
             parameterPathName);
 
     double energyInGeV = 100.;
