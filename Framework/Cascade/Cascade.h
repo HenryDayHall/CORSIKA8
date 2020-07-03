@@ -33,6 +33,9 @@
 #include <cmath>
 #include <limits>
 
+#include <boost/type_index.hpp>
+using boost::typeindex::type_id_with_cvr;
+
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
  */
@@ -225,7 +228,7 @@ namespace corsika::cascade {
 
       // take minimum of geometry, interaction, decay for next step
       auto const min_distance =
-          std::min({distance_interact, distance_decay/*, distance_max, geomMaxLength*/});
+          std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
@@ -233,19 +236,21 @@ namespace corsika::cascade {
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
       vParticle.SetPosition(step.PositionFromArclength(min_distance));
       // .... also update time, momentum, direction, ...
-
-// magneticfield/u have wrong units, not sure if corsika::stack is right
-	  auto magneticfield = corsika::stack::MomentumVector(fEnvironment.GetCoordinateSystem(),
-	        {0_eV, 50e-06_eV, 0_eV});
+	  
+	  //Euler algorithm to change momentum of the particle
+	  int charge;
+	  if(corsika::particles::IsNucleus(vParticle.GetPID())) {
+        charge = vParticle.GetNuclearZ();
+	  } else {
+		charge = corsika::particles::GetChargeNumber(vParticle.GetPID());
+	  }
 	  geometry::Vector<SpeedType::dimension_type> const velocity =
-            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
-      geometry::Vector<SpeedType::dimension_type> const u = velocity * 1_m / (velocity.GetNorm() * 1_s) + 
-        velocity.cross(magneticfield) * corsika::particles::GetChargeNumber(vParticle.GetPID()) * 
+        vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
+      geometry::Vector<dimensionless_d> const u = velocity / velocity.GetNorm() + 
+        velocity.cross(fEnvironment.GetMagneticField(vParticle.GetPosition())) * charge *
             min_distance * corsika::units::constants::cSquared / 
-                (vParticle.GetEnergy() * velocity.GetNorm() * velocity.GetNorm()* 1_m);
-	  vParticle.SetMomentum(u * 1_s / 1_m * vParticle.GetMomentum().GetNorm());
-//      std::cout << " Test: " << magneticfield.GetComponents() << std::endl;
-//      std::cout << " Test: " << vParticle.GetMomentum().cross(magneticfield).GetComponents() << std::endl;
+                (vParticle.GetEnergy() * velocity.GetNorm() * velocity.GetNorm());
+	  vParticle.SetMomentum(u * vParticle.GetMomentum().GetNorm());
       vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
 
       step.LimitEndTo(min_distance);
