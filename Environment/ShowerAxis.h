@@ -79,6 +79,10 @@ namespace corsika::environment {
 
     units::si::GrammageType X(units::si::LengthType) const;
 
+    geometry::Vector<units::si::dimensionless_d> const& GetDirection() const;
+
+    geometry::Point const& GetStart() const;
+
   private:
     geometry::Point const pointStart_;
     geometry::Vector<units::si::length_d> const length_;

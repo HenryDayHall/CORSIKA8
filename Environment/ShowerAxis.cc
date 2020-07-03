@@ -47,3 +47,9 @@ GrammageType ShowerAxis::projectedX(geometry::Point const& p) const {
   auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
   return X(projectedLength);
 }
+
+geometry::Vector<units::si::dimensionless_d> const& ShowerAxis::GetDirection() const {
+  return axis_normalized_;
+}
+
+geometry::Point const& ShowerAxis::GetStart() const { return pointStart_; }
