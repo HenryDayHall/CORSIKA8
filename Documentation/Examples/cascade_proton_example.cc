@@ -40,9 +40,6 @@
 
 #include <corsika/utl/CorsikaFenv.h>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
 #include <iostream>
 #include <limits>
 #include <typeinfo>

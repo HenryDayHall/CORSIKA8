@@ -16,8 +16,6 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 
-#include <Eigen/Dense>
-
 #include <iostream>
 
 using namespace corsika::geometry;

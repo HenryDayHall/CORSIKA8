@@ -13,9 +13,6 @@
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
 using namespace corsika;
 using namespace corsika::stack::nuclear_extension;
 using namespace corsika::geometry;

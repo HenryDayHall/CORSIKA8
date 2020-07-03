@@ -41,6 +41,7 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKAunits
   CORSIKAutilities
+  C8::ext::eigen3
   )
 
 target_include_directories (
@@ -48,12 +49,6 @@ target_include_directories (
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
-  )
-
-target_include_directories (
-  CORSIKAgeometry
-  SYSTEM
-  PUBLIC "${EIGEN3_INCLUDE_DIR}"
   )
 
 install (

@@ -1,6 +1,3 @@
-set(Python_ADDITIONAL_VERSIONS 3)
-find_package(PythonInterp 3 REQUIRED)
-
 if (NOT DEFINED ENV{CORSIKA_DATA})
   message (WARNING "WARNING: download corsika-data repository from gitlab for needed data tables, and set CORSIKA_DATA path!")
 endif ()
@@ -77,6 +74,8 @@ target_link_libraries (
   CORSIKAthirdparty
   CORSIKAgeometry
   CORSIKAenvironment
+  CORSIKAsetup
+  CORSIKArandom
   )
 
 target_include_directories (
@@ -92,11 +91,6 @@ install (
   ARCHIVE DESTINATION lib
   )
 
-# install(
-#    FILES qgsdat-II-04 sectnu-II-04 DESTINATION etc/data
-# )
-
-
 # --------------------
 # code unit testing
 CORSIKA_ADD_TEST(testQGSJetII
@@ -108,10 +102,6 @@ CORSIKA_ADD_TEST(testQGSJetII
 target_link_libraries (
   testQGSJetII
   ProcessQGSJetII
-  CORSIKAsetup
-  CORSIKArandom
-  CORSIKAgeometry
-  CORSIKAunits
   CORSIKAtesting
   )
 

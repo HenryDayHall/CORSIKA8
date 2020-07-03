@@ -35,9 +35,6 @@
 #include <limits>
 #include <type_traits>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
  */

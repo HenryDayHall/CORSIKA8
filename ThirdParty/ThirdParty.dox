@@ -61,4 +61,10 @@ Run these commands:
     ./dist/bin/bcp mp11 iterator core format interval optional type_index histogram ./dist
     mv ./dist/boost <CORSIKA-path>/ThirdParty/boost
 
+@section Pythia8
+
+There is a tar file provided with a default version of Pythia8. Some
+files have been removed from this with respect to the original
+distribution to save space.
+
 */

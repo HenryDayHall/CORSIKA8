@@ -1,28 +1,24 @@
 set (
   MODEL_SOURCES
-  Decay.cc
-  Random.cc
-  Interaction.cc
+  CONEX.cc
   )
 
 set (
   MODEL_HEADERS
-  Decay.h
-  Random.h
-  Interaction.h
+  CONEX.h
   )
 
 set (
   MODEL_NAMESPACE
-  corsika/process/pythia
+  corsika/process/conex
   )
 
-add_library (ProcessPythia8 STATIC ${MODEL_SOURCES})
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessPythia8 ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+add_library (ProcessConex STATIC ${MODEL_SOURCES})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessConex ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
 
 set_target_properties (
-  ProcessPythia8
+  ProcessConex
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
@@ -30,28 +26,27 @@ set_target_properties (
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
-  ProcessPythia8
+  ProcessConex
   CORSIKAprocesssequence
   CORSIKAparticles
   CORSIKAutilities
   CORSIKAunits
-  CORSIKAthirdparty
   CORSIKAgeometry
   CORSIKAenvironment
   CORSIKAsetup
   CORSIKArandom
-  C8::ext::pythia8
+  C8::ext::conex
   )
 
 target_include_directories (
-  ProcessPythia8
+  ProcessConex
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
 
 install (
-  TARGETS ProcessPythia8
+  TARGETS ProcessConex
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   )
@@ -60,14 +55,14 @@ install (
 # --------------------
 # code unit testing
 
-CORSIKA_ADD_TEST(testPythia8
+CORSIKA_ADD_TEST(testConex
   SOURCES
-  testPythia8.cc
+  testConex.cc
   ${MODEL_HEADERS}
 )
 target_link_libraries (
-  testPythia8
-  ProcessPythia8
+  testConex
+  ProcessConex
   CORSIKAtesting
   )
 

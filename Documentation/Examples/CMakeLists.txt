@@ -65,7 +65,7 @@ if (Pythia8_FOUND)
     CORSIKAlogging
     CORSIKArandom
     ProcessSibyll
-    ProcessPythia
+    ProcessPythia8
     CORSIKAcascade
     ProcessEnergyLoss
     ProcessTrackWriter
@@ -89,7 +89,7 @@ if (Pythia8_FOUND)
     CORSIKAlogging
     CORSIKArandom
     ProcessSibyll
-    ProcessPythia
+    ProcessPythia8
     ProcessUrQMD
     ProcessSwitch
     CORSIKAcascade

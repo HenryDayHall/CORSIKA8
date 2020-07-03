@@ -22,7 +22,6 @@ set_target_properties (
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
 # target dependencies on other libraries (also the header onlys)
@@ -31,6 +30,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAprocesssequence
   CORSIKAthirdparty
+  C8::ext::boost
   )
 
 target_include_directories (
@@ -52,6 +52,7 @@ CORSIKA_ADD_TEST(testInteractionCounter SOURCES
 target_link_libraries (
   testInteractionCounter
   ProcessInteractionCounter
+  CORSIKAsetup
   CORSIKAunits
   CORSIKAenvironment
   CORSIKAtesting
