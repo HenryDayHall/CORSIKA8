@@ -73,6 +73,31 @@ namespace corsika::process::proposal {
             calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
             return insert_it;
         }
+        if (corsika_code == particles::Code::MuMinus) {
+            auto cross = GetStdCrossSections(PROPOSAL::MuMinusDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+        if (corsika_code == particles::Code::MuPlus) {
+            auto cross = GetStdCrossSections(PROPOSAL::MuPlusDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+        if (corsika_code == particles::Code::TauMinus) {
+            auto cross = GetStdCrossSections(PROPOSAL::TauMinusDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+        if (corsika_code == particles::Code::TauPlus) {
+            auto cross = GetStdCrossSections(PROPOSAL::TauPlusDef(), media.at(&comp), cut, true);
+            auto [insert_it, success] =
+            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
+            return insert_it;
+        }
+        throw std::runtime_error("PROPOSAL could not find corresponding builder");
     }
     
     template <typename Particle>

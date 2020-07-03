@@ -92,6 +92,55 @@ namespace corsika::process::proposal {
                                PROPOSAL::make_displacement(cross, true))});
         return insert_it;
       }
+      if (corsika_code == particles::Code::MuMinus) {
+          std::cout << "Build MuMinus tables" << std::endl;
+        auto cross =
+            GetStdCrossSections(PROPOSAL::MuMinusDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::MuMinusDef(), media.at(&comp)),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+      if (corsika_code == particles::Code::MuPlus) {
+          std::cout << "Build MuPlus tables" << std::endl;
+        auto cross =
+            GetStdCrossSections(PROPOSAL::MuPlusDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::MuPlusDef(), media.at(&comp)),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+      if (corsika_code == particles::Code::TauMinus) {
+          std::cout << "Build TauMinus tables" << std::endl;
+        auto cross =
+            GetStdCrossSections(PROPOSAL::TauMinusDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::TauMinusDef(), media.at(&comp)),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+      if (corsika_code == particles::Code::TauPlus) {
+          std::cout << "Build TauPlus tables" << std::endl;
+        auto cross =
+            GetStdCrossSections(PROPOSAL::TauPlusDef(), media.at(&comp), cut, true);
+        auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
+        auto [insert_it, success] = calculators.insert(
+            {std::make_pair(&comp, corsika_code), make_tuple(PROPOSAL::make_secondaries(
+                                   inter_types, PROPOSAL::TauPlusDef(), media.at(&comp)),
+                               PROPOSAL::make_interaction(cross, true),
+                               PROPOSAL::make_displacement(cross, true))});
+        return insert_it;
+      }
+      throw std::runtime_error("PROPOSAL could not find corresponding builder");
     } // namespace corsika::process::proposal
 
     enum { SECONDARIES, INTERACTION, DISPLACEMENT };
