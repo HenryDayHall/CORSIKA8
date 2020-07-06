@@ -13,6 +13,7 @@
 
 using namespace corsika::environment;
 using namespace corsika::units::si;
+using namespace corsika;
 
 GrammageType ShowerAxis::X(LengthType l) const {
   auto const fractionalBin = l / steplength_;
