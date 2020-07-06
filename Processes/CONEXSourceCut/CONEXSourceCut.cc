@@ -9,6 +9,7 @@
  */
 
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
+#include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalConstants.h>
 #include <algorithm>
 #include <iomanip>
@@ -27,9 +28,9 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
   while (p != vS.end()) {
     Code const pid = p.GetPID();
 
-    auto const it = std::find_if(em_codes_.cbegin(), em_codes_.cend(),
+    auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
-    if (it == em_codes_.cend()) {
+    if (it == egs_em_codes_.cend()) {
       continue; // no EM particle
     }
 
@@ -42,8 +43,8 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
         energy / 1_MeV; // total energy, TODO: check if maybe kinetic should be used
 
     auto coords = position.GetCoordinates(conexObservationCS_) / 1_m;
-    double x = coords[0];
-    double y = coords[1];
+    double x = coords[0].magnitude();
+    double y = coords[1].magnitude();
 
     double altitude = ((position - center_).norm() - conex::earthRadius) / 1_m;
 
@@ -61,9 +62,9 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     double time = (p.GetTime() * units::constants::c - groundDist_) / 1_m;
 
     // fill u,v,w momentum direction in EGS frame
-    double u = direction.dot(y_sf_);
-    double v = direction.dot(x_sf_);
-    double w = direction.dot(showerAxis_.GetDirection());
+    double u = direction.dot(y_sf_).magnitude();
+    double v = direction.dot(x_sf_).magnitude();
+    double w = direction.dot(showerAxis_.GetDirection()).magnitude();
 
     int iri = 2; // EGS medium air
 
@@ -84,21 +85,17 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
 
 void CONEXSourceCut::Init() {}
 
-void CONEXSourceCut::SolveCE() {
-  int zero = 0;
-  int iCEmode = 1;
-  conex::HadronCascade_(id, nshtot_, zero, iCEmode);
-  conex::SolveMomentEquations_(zero);
-}
+void CONEXSourceCut::SolveCE() { conex::conexcascade_(); }
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
                                units::si::LengthType groundDist,
                                units::si::GrammageType Xcut,
-                               units::si::EnergyType primaryEnergy)
+                               units::si::HEPEnergyType primaryEnergy,
+                               particles::PDGCode primaryID)
     : center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
-    , conexObservation_{std::invoke([]() {
+    , conexObservationCS_{std::invoke([&]() {
       auto const& c8cs = center.GetCoordinateSystem();
       auto const showerCore =
           showerAxis.GetStart() + showerAxis.GetDirection() * groundDist;
@@ -110,31 +107,34 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
           c8cs, intermediateCS2); // either this way or vice versa... TODO: test this!
       return geometry::CoordinateSystem(c8cs, transform);
     })}
-    , x_sf_{geometry::Vector<dimensionless_d>{conexObservationCS_, 0., 0., 1.}
-                .cross(showerAxis_.GetDirection())
-                .normalized()}
+    , x_sf_{std::invoke([&]() {
+      return geometry::Vector<length_d>{conexObservationCS_, 0._m, 0._m, 1._m}
+          .cross(showerAxis_.GetDirection())
+          .normalized();
+    })}
     , y_sf_{showerAxis_.GetDirection().cross(x_sf_)} {
-  auto id = static_cast<int>(InitialParticle_(particles::GetPDG(pid)));
-  conex::eprima_ = primaryEnergy / 1_GeV;
-  nshtot = 1;                         // not sure about this...
-  conex::fehcut_ = conex::femcut_ = ; // what?
-  conex::ehcut_ = max(enymin, min(1.d10, eprima / aNbrNucl * fehcut));
-  conex::emcut_ = max(enymin, min(1.d10, eprima / aNbrNucl * femcut));
 
-  // set phisho, thetas
-  geometry::Vector<dimensionless_d> ez{conexObservationCS_, 0., 0., 1.};
-  auto const c = showerAxis_.GetDirection().dot(ez);
-  auto const theta = M_PI - std::acos(c);
-  conex::cxbas4_::thetas_ = theta * 180;
+  double eprima = primaryEnergy / 1_GeV;
+
+  // set phi, theta
+  geometry::Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, 1_m}};
+  auto const c = showerAxis_.GetDirection().dot(ez) / 1_m;
+  double theta = 180 * (M_PI - std::acos(c));
 
   auto const showerAxisConex =
       showerAxis_.GetDirection().GetComponents(conexObservationCS_);
-  auto const phi = std::atan2(-showerAxisConex.GetY(), showerAxisConex.GetX());
-  conex::cxbas4_::phisho_ = phi * 180;
+  double phi = 180 * std::atan2(-showerAxisConex.GetY().magnitude(),
+                                showerAxisConex.GetX().magnitude());
+  double XmaxP_ = Xcut / (1_g / 1_cm / 1_cm);
 
-  // call ranfgt(seed)?
+  int ipart = static_cast<int>(primaryID);
+  auto rng = corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
 
-  cxthin_::ethin = 0;
+  double dimpact = 0.; // valid only if shower core is fixed on the observation plane; for
+                       // skimming showers an offset is needed like in CONEX
 
-  conex::cxoutput1_::XminP_ = conex::cxoutput1_::XmaxP_ = Xcut / (1_g / 1_cm / 1_cm);
+  std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
+                            static_cast<int>(rng())};
+
+  conex::conexrun_(ipart, eprima, theta, phi, dimpact, ioseed.data());
 }
