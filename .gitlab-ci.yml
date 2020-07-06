@@ -205,9 +205,14 @@ test-clang-8:
     - set -o pipefail
     - make run_examples | gzip -v -9 > examples.log.gz
   rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_TAG
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+      when: manual
+      allow_failure: true
   artifacts:
     when: always
     expire_in: 3 days
@@ -253,9 +258,14 @@ example-clang-8:
     - set -o pipefail
     - make install
   rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_TAG
+    - if: '$CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_MERGE_REQUEST_ID
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+      when: manual
+      allow_failure: true
   cache: 
     paths:
       - build/
