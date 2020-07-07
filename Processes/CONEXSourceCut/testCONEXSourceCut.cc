@@ -8,16 +8,16 @@
  * the license.
  */
 
-#include <corsika/process/conex_source_cut/CONEXSourceCut.h>
-#include <corsika/random/RNGManager.h>
-#include <corsika/particles/ParticleProperties.h>
+#include <corsika/environment/Environment.h>
+#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/process/conex_source_cut/CONEXSourceCut.h>
+#include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <catch2/catch.hpp>
 
 using namespace corsika;
@@ -43,7 +43,7 @@ TEST_CASE("CONEXSourceCut") {
   builder.addLinearLayer(1e9_cm, 112.8_km);
 
   builder.assemble(env);
-  
+
   const HEPEnergyType mass = particles::GetMass(particles::Code::Proton);
   const HEPEnergyType E0 = 1_PeV;
   double thetaDeg = 0.;
@@ -52,7 +52,7 @@ TEST_CASE("CONEXSourceCut") {
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
   };
-  
+
   HEPMomentumType P0 = elab2plab(E0, mass);
 
   auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
@@ -63,17 +63,19 @@ TEST_CASE("CONEXSourceCut") {
 
   auto const observationHeight = 1.4_km + builder.earthRadius;
   auto const injectionHeight = 112.75_km + builder.earthRadius;
-  auto const t = -observationHeight * cos(thetaRad) +
-                 sqrt(-units::si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
-                      units::si::detail::static_pow<2>(injectionHeight));
+  auto const t =
+      -observationHeight * cos(thetaRad) +
+      sqrt(-units::si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
+           units::si::detail::static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +
       Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
-      
+
   environment::ShowerAxis const showerAxis{injectionPos,
                                            (showerCore - injectionPos) * 1.02, env};
-  
-  
-  corsika::process::conex_source_cut::CONEXSourceCut(center, showerAxis, (showerCore - injectionPos).norm(), E0, particles::GetPDG(particles::Code::Proton));
+
+  corsika::process::conex_source_cut::CONEXSourceCut(
+      center, showerAxis, (showerCore - injectionPos).norm(), E0,
+      particles::GetPDG(particles::Code::Proton));
 }

@@ -20,7 +20,6 @@ using namespace corsika::units::si;
 using namespace corsika::particles;
 using namespace corsika::setup;
 
-
 corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     corsika::setup::StackView& vS) {
   auto p = vS.begin();
@@ -78,7 +77,7 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     p.Delete();
 
     conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
-	       time, u, v, w, iri, weight, latchin);
+                  time, u, v, w, iri, weight, latchin);
   }
 
   return corsika::process::EProcessReturn::eOk;
@@ -89,14 +88,14 @@ void CONEXSourceCut::Init() {}
 void CONEXSourceCut::SolveCE() {
   int zero = 0;
   int iCEmode = 1;
-  int id =0; // RU: max, fix this
-  int nshtot_ = 0;//RU: max, fix this
+  int id = 0;      // RU: max, fix this
+  int nshtot_ = 0; // RU: max, fix this
   conex_.HadronCascade(id, nshtot_, zero, iCEmode);
   conex_.SolveMomentEquations(zero);
 
   // RU: this here is from cxroot,
 
-  int nX = conex_.GetNumberOfDepthBins(); // make sure this works! 
+  int nX = conex_.GetNumberOfDepthBins(); // make sure this works!
 
   int icut = 1;
   int icutg = 2;
@@ -106,7 +105,7 @@ void CONEXSourceCut::SolveCE() {
   int iSec = 0;
 
   const int maxX = nX;
-  
+
   auto X = std::make_unique<float[]>(maxX);
   auto H = std::make_unique<float[]>(maxX);
   auto D = std::make_unique<float[]>(maxX);
@@ -116,27 +115,27 @@ void CONEXSourceCut::SolveCE() {
   auto dMu = std::make_unique<float[]>(maxX);
   auto Gamma = std::make_unique<float[]>(maxX);
   auto Electrons = std::make_unique<float[]>(maxX);
-  auto Hadrons = std::make_unique<float[]>(maxX);  
-  
-  float EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx ;
-  
+  auto Hadrons = std::make_unique<float[]>(maxX);
+
+  float EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx;
+
   conex_.GetShowerData(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
   conex_.GetdEdXProfile(icut, nX, dEdX[0], EGround[0]);
   conex_.GetMuonProfile(icutm, nX, Mu[0], dMu[0]);
   conex_.GetGammaProfile(icutg, nX, Gamma[0]);
   conex_.GetElectronProfile(icute, nX, Electrons[0]);
   conex_.GetHadronProfile(icuth, nX, Hadrons[0]);
-  
 }
 
-// RU: move all the non-C8 code from the following c++ function into a new file. Here we only want to have a single function call to CONEX left. 
+// RU: move all the non-C8 code from the following c++ function into a new file. Here we
+// only want to have a single function call to CONEX left.
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
                                units::si::LengthType groundDist,
                                // units::si::GrammageType Xcut,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
-  : conex_(ConexDynamicInterface(eSibyll23))
+    : conex_(ConexDynamicInterface(eSibyll23))
     , center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
