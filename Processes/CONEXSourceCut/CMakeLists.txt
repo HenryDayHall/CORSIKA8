@@ -49,19 +49,19 @@ install (
 
 # --------------------
 # code unit testing
-# CORSIKA_ADD_TEST(testCONEXSourceCut SOURCES
-#   testCONEXSourceCut.cc
-#   ${MODEL_HEADERS}
-# )
+CORSIKA_ADD_TEST(testCONEXSourceCut SOURCES
+  testCONEXSourceCut.cc
+  ${MODEL_HEADERS}
+)
 # 
-# target_link_libraries (
-#   testCONEXSourceCut
-#   ProcessCONEXSourceCut
-#   CORSIKAunits
-#   CORSIKAstackinterface
-#   CORSIKAprocesssequence
-#   CORSIKAsetup
-#   CORSIKAgeometry
-#   CORSIKAenvironment
-#   CORSIKAtesting
-#   )
+target_link_libraries (
+  testCONEXSourceCut
+  ProcessCONEXSourceCut
+  CORSIKAunits
+  CORSIKAstackinterface
+  CORSIKAprocesssequence
+  CORSIKAsetup
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAtesting
+)
