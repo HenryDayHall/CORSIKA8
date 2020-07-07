@@ -26,6 +26,7 @@ using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 TEST_CASE("CONEXSourceCut") {
+  random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
