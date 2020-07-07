@@ -106,9 +106,19 @@ void CONEXSourceCut::SolveCE() {
   int iSec = 0;
 
   const int maxX = nX;
-  float X[maxX], H[maxX], D[maxX], N[maxX], dEdX[maxX],
-    Mu[maxX], dMu[maxX], Gamma[maxX], Electrons[maxX], Hadrons[maxX],
-    EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx ;
+  
+  auto X = std::make_unique<float[]>(maxX);
+  auto H = std::make_unique<float[]>(maxX);
+  auto D = std::make_unique<float[]>(maxX);
+  auto N = std::make_unique<float[]>(maxX);
+  auto dEdX = std::make_unique<float[]>(maxX);
+  auto Mu = std::make_unique<float[]>(maxX);
+  auto dMu = std::make_unique<float[]>(maxX);
+  auto Gamma = std::make_unique<float[]>(maxX);
+  auto Electrons = std::make_unique<float[]>(maxX);
+  auto Hadrons = std::make_unique<float[]>(maxX);  
+  
+  float EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx ;
   
   conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
   conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
