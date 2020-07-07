@@ -11,6 +11,8 @@
 #ifndef _corsika_process_particle_cut_CONEXSourceCut_h_
 #define _corsika_process_particle_cut_CONEXSourceCut_h_
 
+#include <ConexDynamicInterface.h>
+
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
@@ -70,7 +72,7 @@ namespace corsika::process {
 
     public:
       CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
-                     units::si::LengthType groundDist, units::si::GrammageType Xcut,
+                     units::si::LengthType groundDist, /*units::si::GrammageType Xcut,*/
                      units::si::HEPEnergyType primaryEnergy,
                      particles::PDGCode primaryID);
       corsika::process::EProcessReturn DoSecondaries(corsika::setup::StackView&);

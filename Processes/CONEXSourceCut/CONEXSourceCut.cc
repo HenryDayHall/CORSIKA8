@@ -89,7 +89,7 @@ void CONEXSourceCut::SolveCE() { conex::conexcascade_(); }
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
                                units::si::LengthType groundDist,
-                               units::si::GrammageType Xcut,
+                               //units::si::GrammageType Xcut,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
     : center_{center}
@@ -125,7 +125,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
       showerAxis_.GetDirection().GetComponents(conexObservationCS_);
   double phi = 180 * std::atan2(-showerAxisConex.GetY().magnitude(),
                                 showerAxisConex.GetX().magnitude());
-  double XmaxP_ = Xcut / (1_g / 1_cm / 1_cm);
+  //double XmaxP_ = Xcut / (1_g / 1_cm / 1_cm);
 
   int ipart = static_cast<int>(primaryID);
   auto rng = corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
