@@ -135,7 +135,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
                                // units::si::GrammageType Xcut,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
-    : conex_(ConexDynamicInterface(eSibyll23))
+    : conex_{ConexDynamicInterface(eSibyll23)}
     , center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
@@ -158,7 +158,14 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
     })}
     , y_sf_{showerAxis_.GetDirection().cross(x_sf_)} {
 
-  // TODO: call initconex
+  std::string parameterPathName = "";
+
+  int randomSeeds[3] = {1234, 0, 0}; // will be overwritten later??
+
+  int nShower = 1; // large to avoid final stats.
+  int maxDetail = 0;
+  int particleListMode = 0;
+  conex_.Init(nShower, randomSeeds, maxDetail, particleListMode, parameterPathName);
 
   double eprima = primaryEnergy / 1_GeV;
 
