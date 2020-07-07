@@ -11,6 +11,7 @@
 #ifndef _corsika_process_particle_cut_CONEXSourceCut_h_
 #define _corsika_process_particle_cut_CONEXSourceCut_h_
 
+#define __CORSIKA8__ //must define this conex-internal flag
 #include <ConexDynamicInterface.h>
 
 #include <corsika/environment/ShowerAxis.h>
@@ -22,6 +23,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 namespace conex {
+/*
   extern "C" {
     // ipart,energy,theta,phi,dimpact,ioseed
     void conexrun_(int& ipart, double& energy, double& theta, double& phi, double& dimpact,
@@ -43,6 +45,7 @@ namespace conex {
     void get_shower_electron_(const int&, const int&, float&);
     void get_shower_hadron_(const int&, const int&, float&);
   }
+*/
   corsika::units::si::LengthType constexpr earthRadius{6371315 *
                                                        corsika::units::si::meter};
 } // namespace conex
@@ -63,6 +66,8 @@ namespace corsika::process {
       void SolveCE();
 
     private:
+      ConexDynamicInterface conex_; 
+
       //! CONEX e.m. particle codes
       static std::array<std::pair<particles::Code, int>, 3> constexpr egs_em_codes_{
           {{particles::Code::Gamma, 0},

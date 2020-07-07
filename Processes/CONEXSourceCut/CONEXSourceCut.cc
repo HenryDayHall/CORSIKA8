@@ -77,8 +77,8 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
               << std::endl;
     p.Delete();
 
-    conex::show_(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
-                 time, u, v, w, iri, weight, latchin);
+    conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
+	       time, u, v, w, iri, weight, latchin);
   }
 
   return corsika::process::EProcessReturn::eOk;
@@ -91,12 +91,12 @@ void CONEXSourceCut::SolveCE() {
   int iCEmode = 1;
   int id =0; // RU: max, fix this
   int nshtot_ = 0;//RU: max, fix this
-  conex::hadroncascade_(id, nshtot_, zero, iCEmode);
-  conex::solvemomentequations_(zero);
+  conex_.HadronCascade(id, nshtot_, zero, iCEmode);
+  conex_.SolveMomentEquations(zero);
 
   // RU: this here is from cxroot,
 
-  const int nX = conex::get_number_of_depth_bins_(); // make sure this works! 
+  int nX = conex_.GetNumberOfDepthBins(); // make sure this works! 
 
   int icut = 1;
   int icutg = 2;
@@ -120,12 +120,12 @@ void CONEXSourceCut::SolveCE() {
   
   float EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx ;
   
-  conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
-  conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
-  conex::get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
-  conex::get_shower_gamma_(icutg, nX, Gamma[0]);
-  conex::get_shower_electron_(icute, nX, Electrons[0]);
-  conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
+  conex_.GetShowerData(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
+  conex_.GetdEdXProfile(icut, nX, dEdX[0], EGround[0]);
+  conex_.GetMuonProfile(icutm, nX, Mu[0], dMu[0]);
+  conex_.GetGammaProfile(icutg, nX, Gamma[0]);
+  conex_.GetElectronProfile(icute, nX, Electrons[0]);
+  conex_.GetHadronProfile(icuth, nX, Hadrons[0]);
   
 }
 
@@ -136,7 +136,8 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
                                // units::si::GrammageType Xcut,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
-    : center_{center}
+  : conex_(ConexDynamicInterface(eSibyll23))
+    , center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
     , conexObservationCS_{std::invoke([&]() {
@@ -182,5 +183,5 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
   std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
                             static_cast<int>(rng())};
 
-  conex::conexrun_(ipart, eprima, theta, phi, dimpact, ioseed.data());
+  conex_.ConexRun(ipart, eprima, theta, phi, dimpact, ioseed.data());
 }
