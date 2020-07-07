@@ -257,7 +257,7 @@ else ()
     GIT_REPOSITORY https://gitlab.ikp.kit.edu/AirShowerPhysics/cxroot.git
     GIT_SUBMODULES ""
     GIT_TAG origin/master
-    GIT_SHALLOW 1
+    GIT_SHALLOW 5
     GIT_PROGRESS 1
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source

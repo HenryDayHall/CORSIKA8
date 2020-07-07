@@ -20,12 +20,6 @@ using namespace corsika::units::si;
 using namespace corsika::particles;
 using namespace corsika::setup;
 
-// RU, after the cleanup it seems there are just few direct calls to CONEX left: 
-// show_
-// HadronCascade_(id, nshtot_, zero, iCEmode);
-//  SolveMomentEquations_(zero);
-// and a new "ini" function
-
 
 corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     corsika::setup::StackView& vS) {
@@ -95,13 +89,14 @@ void CONEXSourceCut::Init() {}
 void CONEXSourceCut::SolveCE() {
   int zero = 0;
   int iCEmode = 1;
-  int id =0; // RU
-  HadronCascade_(id, nshtot_, zero, iCEmode);
-  SolveMomentEquations_(zero);
+  int id =0; // RU: max, fix this
+  int nshtot_ = 0;//RU: max, fix this
+  conex::hadroncascade_(id, nshtot_, zero, iCEmode);
+  conex::solvemomentequations_(zero);
 
   // RU: this here is from cxroot,
 
-  const int nX = get_number_of_depth_bins_(); // make sure this works! 
+  const int nX = conex::get_number_of_depth_bins_(); // make sure this works! 
 
   int icut = 1;
   int icutg = 2;
@@ -115,20 +110,13 @@ void CONEXSourceCut::SolveCE() {
     Mu[maxX], dMu[maxX], Gamma[maxX], Electrons[maxX], Hadrons[maxX],
     EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx ;
   
-  get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
-  get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
-  get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
-  get_shower_gamma_(icutg, nX, Gamma[0]);
-  get_shower_electron_(icute, nX, Electrons[0]);
-  get_shower_hadron_(icuth, nX, Hadrons[0]);
+  conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
+  conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
+  conex::get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
+  conex::get_shower_gamma_(icutg, nX, Gamma[0]);
+  conex::get_shower_electron_(icute, nX, Electrons[0]);
+  conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
   
-  /*fConexInterface->GetShowerData(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
-  fConexInterface->GetdEdXProfile(icut, nX, dEdX[0], EGround[0]);
-  fConexInterface->GetMuonProfile(icutm, nX, Mu[0], dMu[0]);
-  fConexInterface->GetGammaProfile(icutg, nX, Gamma[0]);
-  fConexInterface->GetElectronProfile(icute, nX, Electrons[0]);
-  fConexInterface->GetHadronProfile(icuth, nX, Hadrons[0]);
-  */
 }
 
 // RU: move all the non-C8 code from the following c++ function into a new file. Here we only want to have a single function call to CONEX left. 
