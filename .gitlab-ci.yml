@@ -64,8 +64,8 @@ check-clang-format:
     - corsika
   variables:
     CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
-  script:
-    - mkdir build
+  script:    
+    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
   rules:
@@ -203,13 +203,13 @@ test-clang-8:
     - git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika-data.git
     - cd build
     - set -o pipefail
-    - make run_examples | gzip -v -9 > examples.log.gz
+    - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
-    - if: '$CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_MERGE_REQUEST_ID
+    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
       when: manual
       allow_failure: true
+    - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
@@ -256,13 +256,13 @@ example-clang-8:
   script:
     - cd build
     - set -o pipefail
-    - make install
+    - make -j2 install
   rules:
-    - if: '$CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_MERGE_REQUEST_ID
+    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
       when: manual
       allow_failure: true
+    - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
@@ -309,7 +309,7 @@ install-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -VV | gzip -v -9 > test.log.gz 
-    - make run_examples
+    - make -j4 run_examples
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -405,7 +405,7 @@ documentation:
   script:
     - cd build
     - cmake --build . --target doxygen -- -j4
-    - mkdir .public
+    - mkdir -p .public
     - cp -r Documentation/Doxygen/html .public/
     - mv .public ../public
   rules:
