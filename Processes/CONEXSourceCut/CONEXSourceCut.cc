@@ -86,6 +86,78 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
   return corsika::process::EProcessReturn::eOk;
 }
 
+void CONEXSourceCut::dummyAddPhoton() {
+  HEPEnergyType const energy = 1_TeV;
+
+  geometry::Point position(center_.GetCoordinateSystem(), 0_m, 0_m,
+                           20_km + conex::earthRadius);
+
+  std::cout << "position conexObs: " << position.GetCoordinates(conexObservationCS_)
+            << std::endl;
+
+  auto const direction = showerAxis_.GetDirection();
+
+  int egs_pid = 0;
+
+  double E = energy / 1_MeV; // total energy, TODO: check if maybe kinetic should be used
+
+  auto coords = position.GetCoordinates(conexObservationCS_) / 1_m;
+  double x = coords[0].magnitude();
+  double y = coords[1].magnitude();
+
+  double altitude = ((position - center_).norm() - conex::earthRadius) / 1_m;
+
+  double slantDistance =
+      (position - showerAxis_.GetStart()).dot(showerAxis_.GetDirection()) / 1_m;
+
+  // lateral coordinates in CONEX shower frame
+  auto const d = position - showerAxis_.GetStart();
+  auto const dShowerPlane = d - d.parallelProjectionOnto(showerAxis_.GetDirection());
+  double lateralX = dShowerPlane.dot(x_sf_) / 1_m;
+  double lateralY = dShowerPlane.dot(y_sf_) / 1_m;
+
+  double slantX = showerAxis_.projectedX(position) * (1_cm * 1_cm / 1_g);
+
+  auto t = 0_s;
+  double time = (t * units::constants::c - groundDist_) / 1_m;
+
+  // fill u,v,w momentum direction in EGS frame
+  double u = direction.dot(y_sf_).magnitude();
+  double v = direction.dot(x_sf_).magnitude();
+  double w = direction.dot(showerAxis_.GetDirection()).magnitude();
+
+  int iri = 2; // EGS medium air
+
+  double weight = 1;
+
+  int latchin = 1; // generation, we don't have the actual value...
+
+  std::cout << "CONEXSourceCut: removing " << egs_pid << " " << std::scientific << energy
+            << std::endl;
+
+  // conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY,
+  // slantX,
+  //              time, u, v, w, iri, weight, latchin);
+
+  std::cout << "#### parameters to show_() ####" << std::endl;
+  std::cout << "egs_pid = " << egs_pid << std::endl;
+  std::cout << "E = " << E << std::endl;
+  std::cout << "x = " << x << std::endl;
+  std::cout << "y = " << y << std::endl;
+  std::cout << "altitude = " << altitude << std::endl;
+  std::cout << "slantDistance = " << slantDistance << std::endl;
+  std::cout << "lateralX = " << lateralX << std::endl;
+  std::cout << "lateralY = " << lateralY << std::endl;
+  std::cout << "slantX = " << slantX << std::endl;
+  std::cout << "time = " << time << std::endl;
+  std::cout << "u = " << u << std::endl;
+  std::cout << "v = " << v << std::endl;
+  std::cout << "w = " << w << std::endl;
+
+  conex::show_(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
+               time, u, v, w, iri, weight, latchin);
+}
+
 void CONEXSourceCut::Init() {}
 
 void CONEXSourceCut::SolveCE() {
@@ -95,8 +167,7 @@ void CONEXSourceCut::SolveCE() {
   int nshtot_ = 0; // RU: max, fix this
   // conex_.HadronCascade(id, nshtot_, zero, iCEmode);
   // conex_.SolveMomentEquations(zero);
-  conex::hadroncascade_(id, nshtot_, zero, iCEmode);
-  conex::solvemomentequations_(zero);
+  conex::conexcascade_();
 
   // RU: this here is from cxroot,
 
@@ -137,6 +208,8 @@ void CONEXSourceCut::SolveCE() {
   conex::get_shower_gamma_(icutg, nX, Gamma[0]);
   conex::get_shower_electron_(icute, nX, Electrons[0]);
   conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
+
+  for (int i = 0; i < nX; ++i) { std::cout << X[i] << "  " << dEdX[i] << std::endl; }
 }
 
 // RU: move all the non-C8 code from the following c++ function into a new file. Here we
@@ -144,7 +217,7 @@ void CONEXSourceCut::SolveCE() {
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
                                units::si::LengthType groundDist,
-                               // units::si::GrammageType Xcut,
+                               units::si::LengthType injectionHeight,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
     : // conex_{ConexDynamicInterface(eSibyll23)}
@@ -159,14 +232,26 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
       auto const intermediateCS = c8cs.translate(translation.GetComponents(c8cs));
       auto const intermediateCS2 = intermediateCS.RotateToZ(translation);
 
+      std::cout << "translation C8/CONEX obs: " << translation.norm() << std::endl;
+
       auto const transform = geometry::CoordinateSystem::GetTransformation(
-          c8cs, intermediateCS2); // either this way or vice versa... TODO: test this!
+          intermediateCS2, c8cs); // either this way or vice versa... TODO: test this!
       return geometry::CoordinateSystem(c8cs, transform);
     })}
     , x_sf_{std::invoke([&]() {
-      return geometry::Vector<length_d>{conexObservationCS_, 0._m, 0._m, 1._m}
-          .cross(showerAxis_.GetDirection())
-          .normalized();
+      geometry::Vector<length_d> const a{conexObservationCS_, 0._m, 0._m, 1._m};
+      auto b = a.cross(showerAxis_.GetDirection());
+      auto const lengthB = b.norm();
+      if (lengthB < 1e-10_m) {
+        b = geometry::Vector<length_d>{conexObservationCS_, 1_m, 0_m, 0_m};
+      }
+
+      std::cout << "x_sf (conexObservationCS): " << b.GetComponents(conexObservationCS_)
+                << std::endl;
+      std::cout << "x_sf (C8): " << b.GetComponents(center.GetCoordinateSystem())
+                << std::endl;
+
+      return b.normalized();
     })}
     , y_sf_{showerAxis_.GetDirection().cross(x_sf_)} {
 
@@ -207,6 +292,8 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
   std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
                             static_cast<int>(rng())};
 
+  double xminp = injectionHeight / 1_m;
+
   // conex_.ConexRun(ipart, eprima, theta, phi, dimpact, ioseed.data());
-  conex::conexrun_(ipart, eprima, theta, phi, dimpact, ioseed.data());
+  conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
 }

@@ -15,6 +15,8 @@
 #include <corsika/geometry/Vector.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
+#include <corsika/process/sibyll/Interaction.h>
+#include <corsika/process/sibyll/NuclearInteraction.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
@@ -27,12 +29,14 @@ using namespace corsika::units::si;
 
 TEST_CASE("CONEXSourceCut") {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  environment::LayeredSphericalAtmosphereBuilder builder{center};
+  environment::LayeredSphericalAtmosphereBuilder builder{center, conex::earthRadius};
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -62,7 +66,7 @@ TEST_CASE("CONEXSourceCut") {
   auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
 
-  auto const observationHeight = 1.4_km + builder.earthRadius;
+  auto const observationHeight = 1._km + builder.earthRadius;
   auto const injectionHeight = 112.75_km + builder.earthRadius;
   auto const t =
       -observationHeight * cos(thetaRad) +
@@ -76,7 +80,16 @@ TEST_CASE("CONEXSourceCut") {
   environment::ShowerAxis const showerAxis{injectionPos,
                                            (showerCore - injectionPos) * 1.02, env};
 
-  corsika::process::conex_source_cut::CONEXSourceCut(
-      center, showerAxis, (showerCore - injectionPos).norm(), E0,
+  corsika::process::sibyll::Interaction sibyll;
+  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  sibyll.Init();
+  sibyllNuc.Init();
+
+  corsika::process::conex_source_cut::CONEXSourceCut conex(
+      center, showerAxis, (showerCore - injectionPos).norm(), 112.75_km, E0,
       particles::GetPDG(particles::Code::Proton));
+
+  conex.dummyAddPhoton();
+
+  conex.SolveCE();
 }

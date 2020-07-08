@@ -27,8 +27,8 @@ namespace conex {
                   int&,
 #endif
                   const char*, int);
-  void conexrun_(int& ipart, double& energy, double& theta, double& phi, double& dimpact,
-                 int ioseed[3]);
+  void conexrun_(int& ipart, double& energy, double& theta, double& phi,
+                 double& injectionHeight, double& dimpact, int ioseed[3]);
   void conexcascade_();
   void hadroncascade_(int&, int&, int&, int&);
   void solvemomentequations_(int&);

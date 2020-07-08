@@ -35,7 +35,8 @@ namespace corsika::process {
 
     public:
       CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
-                     units::si::LengthType groundDist, /*units::si::GrammageType Xcut,*/
+                     units::si::LengthType groundDist,
+                     units::si::LengthType injectionHeight,
                      units::si::HEPEnergyType primaryEnergy,
                      particles::PDGCode primaryID);
       corsika::process::EProcessReturn DoSecondaries(corsika::setup::StackView&);
@@ -43,6 +44,8 @@ namespace corsika::process {
       void Init();
 
       void SolveCE();
+
+      void dummyAddPhoton();
 
     private:
       // ConexDynamicInterface conex_;
