@@ -6,6 +6,7 @@ set (
 set (
   MODEL_HEADERS
   CONEXSourceCut.h
+  CONEX_f.h
   )
 
 set (
@@ -31,6 +32,8 @@ target_link_libraries (
   CORSIKAprocesssequence
   CORSIKAsetup
   C8::ext::conex
+  ProcessSibyll
+  ProcessUrQMD
   )
 
 target_include_directories (

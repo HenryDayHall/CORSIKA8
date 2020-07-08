@@ -27,8 +27,8 @@ TEST_CASE("CONEX", "[processes]") {
     using std::endl;
 
     std::string parameterPathName = "";
-    auto cxModel = eSibyll23;
-    ConexDynamicInterface cx(cxModel);
+    //auto cxModel = eSibyll23;
+    //ConexDynamicInterface cx(cxModel);
 
     int randomSeeds[3];
     randomSeeds[0] = 1234;
@@ -38,7 +38,7 @@ TEST_CASE("CONEX", "[processes]") {
     int nShower = 1; // large to avoid final stats.
     int maxDetail = 0;
     int particleListMode = 0;
-    cx.Init(nShower, randomSeeds, maxDetail, particleListMode, parameterPathName);
+    //cx.Init(nShower, randomSeeds, maxDetail, particleListMode, parameterPathName);
 
     double energyInGeV = 100.;
     double zenith = 60;
@@ -46,6 +46,6 @@ TEST_CASE("CONEX", "[processes]") {
     double impactParameter = 0;
     int particleType = 100;
 
-    cx.RunConex(randomSeeds, energyInGeV, zenith, azimuth, impactParameter, particleType);
+    //cx.RunConex(randomSeeds, energyInGeV, zenith, azimuth, impactParameter, particleType);
   }
 }

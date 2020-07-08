@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <ConexDynamicInterface.h>
+//#include <ConexDynamicInterface.h>
 
 namespace corsika::process::CONEX {
 

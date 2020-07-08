@@ -269,7 +269,8 @@ else ()
     )
   set (CONEX_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (cxroot INSTALL_DIR)
-  set (CONEX_PREFIX ${INSTALL_DIR})
+  get_filename_component(INSTALL_DIR_ABS ${INSTALL_DIR} ABSOLUTE)
+  set (CONEX_PREFIX ${INSTALL_DIR_ABS})
   set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src)
   set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src PARENT_SCOPE)
   add_dependencies (C8::ext::conex cxroot)
@@ -279,8 +280,9 @@ else ()
 
   set_target_properties (
     C8::ext::conex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXdynamic.a
-    IMPORTED_LINK_INTERFACE_LIBRARIES dl
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.so
+    IMPORTED_NO_SONAME 1
+    SKIP_BUILD_RPATH FALSE
     INTERFACE_INCLUDE_DIRECTORIES
      $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
     )
