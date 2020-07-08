@@ -212,6 +212,39 @@ namespace corsika::cascade {
       // convert next_decay from time to length [m]
       LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
                                         vParticle.GetEnergy() * units::constants::c;
+                                        
+      // determine momentum after adding magnetic field
+      int chargeNumber;
+	  if(corsika::particles::IsNucleus(vParticle.GetPID())) {
+        chargeNumber = vParticle.GetNuclearZ();
+	  } else {
+		chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
+	  }
+	  auto magneticfield = corsika::geometry::Vector
+      					   (fEnvironment.GetCoordinateSystem(), 0_uT, 50_uT, 0_uT);
+	  geometry::Vector<SpeedType::dimension_type> const velocity =
+            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
+      geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = 
+      	    velocity - magneticfield * velocity.dot(magneticfield) / (magneticfield.GetSquaredNorm());
+      geometry::Vector<dimensionless_d> const directionBefore = velocity / velocity.GetNorm();
+      LengthType const gyroradius = vParticle.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V /
+      	                            (corsika::units::constants::cSquared * abs(chargeNumber) *          
+      	                            magneticfield.GetNorm() * 1_eV);
+      LengthType const Steplength = 0.01 * gyroradius;
+      // First Movement
+      auto position = vParticle.GetPosition() + directionBefore * Steplength / 2;
+      // Change of direction by magnetic field at position
+      magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(), 0_uT, 50_uT, 0_uT);
+      geometry::Vector<dimensionless_d> const directionAfter = directionBefore + 
+            velocity.cross(magneticfield) * chargeNumber *
+                  Steplength * corsika::units::constants::cSquared * 1_eV/ 
+                        (vParticle.GetEnergy() * velocity.GetSquaredNorm() * 1_V); 
+      // Second Movement
+      position = position + directionAfter * Steplength / 2;
+      LengthType const magMaxLength = (position - vParticle.GetPosition()).GetNorm();
+      geometry::Vector<dimensionless_d> const direction = (position - vParticle.GetPosition()) / 
+  		    magMaxLength;
+      vParticle.SetMomentum( direction * vParticle.GetMomentum().GetNorm());
                                     
       // determine geometric tracking
       auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
@@ -228,29 +261,16 @@ namespace corsika::cascade {
 
       // take minimum of geometry, interaction, decay for next step
       auto const min_distance =
-          std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
+          std::min({distance_interact, distance_decay, distance_max, geomMaxLength, magMaxLength});
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
       vParticle.SetPosition(step.PositionFromArclength(min_distance));
-      // .... also update time, momentum, direction, ...
-	  
-	  //Euler algorithm to change momentum of the particle
-	  int charge;
-	  if(corsika::particles::IsNucleus(vParticle.GetPID())) {
-        charge = vParticle.GetNuclearZ();
-	  } else {
-		charge = corsika::particles::GetChargeNumber(vParticle.GetPID());
-	  }
-	  geometry::Vector<SpeedType::dimension_type> const velocity =
-        vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
-      geometry::Vector<dimensionless_d> const u = velocity / velocity.GetNorm() + 
-        velocity.cross(fEnvironment.GetMagneticField(vParticle.GetPosition())) * charge *
-            min_distance * corsika::units::constants::cSquared / 
-                (vParticle.GetEnergy() * velocity.GetNorm() * velocity.GetNorm());
-	  vParticle.SetMomentum(u * vParticle.GetMomentum().GetNorm());
+      // .... also update time, momentum, direction, ...  
+	  vParticle.SetMomentum((directionBefore * (1 - min_distance / magMaxLength) + 
+	  	directionAfter * min_distance /magMaxLength) * vParticle.GetMomentum().GetNorm());
       vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
 
       step.LimitEndTo(min_distance);
