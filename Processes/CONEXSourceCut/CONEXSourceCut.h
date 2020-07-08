@@ -26,7 +26,7 @@
 
 namespace conex {
   corsika::units::si::LengthType constexpr earthRadius{6371315 *
-      corsika::units::si::meter};
+                                                       corsika::units::si::meter};
 } // namespace conex
 
 namespace corsika::process {
@@ -45,7 +45,7 @@ namespace corsika::process {
       void SolveCE();
 
     private:
-      //ConexDynamicInterface conex_;
+      // ConexDynamicInterface conex_;
 
       //! CONEX e.m. particle codes
       static std::array<std::pair<particles::Code, int>, 3> constexpr egs_em_codes_{

@@ -76,10 +76,11 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
               << std::endl;
     p.Delete();
 
-    //conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
+    // conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY,
+    // slantX,
     //              time, u, v, w, iri, weight, latchin);
     conex::show_(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
-		 time, u, v, w, iri, weight, latchin);
+                 time, u, v, w, iri, weight, latchin);
   }
 
   return corsika::process::EProcessReturn::eOk;
@@ -92,14 +93,14 @@ void CONEXSourceCut::SolveCE() {
   int iCEmode = 1;
   int id = 0;      // RU: max, fix this
   int nshtot_ = 0; // RU: max, fix this
-  //conex_.HadronCascade(id, nshtot_, zero, iCEmode);
-  //conex_.SolveMomentEquations(zero);
+  // conex_.HadronCascade(id, nshtot_, zero, iCEmode);
+  // conex_.SolveMomentEquations(zero);
   conex::hadroncascade_(id, nshtot_, zero, iCEmode);
   conex::solvemomentequations_(zero);
 
   // RU: this here is from cxroot,
 
-  //int nX = conex_.GetNumberOfDepthBins(); // make sure this works!
+  // int nX = conex_.GetNumberOfDepthBins(); // make sure this works!
   int nX = conex::get_number_of_depth_bins_(); // make sure this works!
 
   int icut = 1;
@@ -130,12 +131,12 @@ void CONEXSourceCut::SolveCE() {
   // conex_.GetGammaProfile(icutg, nX, Gamma[0]);
   // conex_.GetElectronProfile(icute, nX, Electrons[0]);
   // conex_.GetHadronProfile(icuth, nX, Hadrons[0]);
-   conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
-   conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
-   conex::get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
-   conex::get_shower_gamma_(icutg, nX, Gamma[0]);
-   conex::get_shower_electron_(icute, nX, Electrons[0]);
-   conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
+  conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
+  conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
+  conex::get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
+  conex::get_shower_gamma_(icutg, nX, Gamma[0]);
+  conex::get_shower_electron_(icute, nX, Electrons[0]);
+  conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 }
 
 // RU: move all the non-C8 code from the following c++ function into a new file. Here we
@@ -146,8 +147,8 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
                                // units::si::GrammageType Xcut,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
-    : //conex_{ConexDynamicInterface(eSibyll23)}
-      center_{center}
+    : // conex_{ConexDynamicInterface(eSibyll23)}
+    center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
     , conexObservationCS_{std::invoke([&]() {
@@ -171,21 +172,18 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
 
   int randomSeeds[3] = {1234, 0, 0}; // will be overwritten later??
   int heModel = eSibyll23;
-  
+
   int nShower = 1; // large to avoid final stats.
   int maxDetail = 0;
   int particleListMode = 0;
-  //conex_.Init(nShower, randomSeeds, maxDetail, particleListMode, parameterPathName);
+  // conex_.Init(nShower, randomSeeds, maxDetail, particleListMode, parameterPathName);
 
   std::string configPath = CONEX_CONFIG_PATH;
-  conex::initconex_(nShower, randomSeeds,
-		    heModel,
-		    maxDetail,
+  conex::initconex_(nShower, randomSeeds, heModel, maxDetail,
 #ifdef CONEX_EXTENSIONS
-		    particleListMode,
+                    particleListMode,
 #endif
-		    configPath.c_str(),
-		    configPath.size());
+                    configPath.c_str(), configPath.size());
 
   double eprima = primaryEnergy / 1_GeV;
 
@@ -209,6 +207,6 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
   std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
                             static_cast<int>(rng())};
 
-  //conex_.ConexRun(ipart, eprima, theta, phi, dimpact, ioseed.data());
+  // conex_.ConexRun(ipart, eprima, theta, phi, dimpact, ioseed.data());
   conex::conexrun_(ipart, eprima, theta, phi, dimpact, ioseed.data());
 }
