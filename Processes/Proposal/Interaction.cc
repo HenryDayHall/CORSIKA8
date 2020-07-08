@@ -30,17 +30,15 @@ namespace corsika::process::proposal {
   };
 
   bool Interaction::CanInteract(particles::Code pcode) const noexcept {
-    auto search = particles.find(pcode);
-    if (search != particles.end()) return true;
+    if (particles.find(pcode) != particles.end()) return true;
     return false;
   }
 
   template <>
   Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut const& _cut)
       : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetECut() / 1_MeV, 1,
-                                                           false)) {
-    std::cout << "corsika set cut to " << _cut.GetECut() / 1_GeV << " [GeV]" << std::endl;
-    std::cout << "proposal set ecut to " << cut->GetEcut() << " [MeV]" << std::endl;
+                                                           false))
+      , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {
     auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties()) {
@@ -62,8 +60,6 @@ namespace corsika::process::proposal {
     }
   }
 
-  void Interaction::Init() {}
-
   template <>
   corsika::process::EProcessReturn Interaction::DoInteraction(
       setup::StackView::StackIterator& vP) {
@@ -71,39 +67,34 @@ namespace corsika::process::proposal {
       auto calc = GetCalculator(vP); // [CrossSections]
       std::uniform_real_distribution<double> distr(0., 1.);
       auto [type, comp_ptr, v] =
-          std::get<INTERACTION>(calc->second)
+          get<INTERACTION>(calc->second)
               ->TypeInteraction(vP.GetEnergy() / 1_MeV, distr(fRNG));
-      std::cout << "InteractionType: "<< static_cast<int>(type) << std::endl;
-      auto rnd = std::vector<double>();
-      for (size_t i = 0;
-           i < std::get<SECONDARIES>(calc->second)->RequiredRandomNumbers(type); ++i)
-        rnd.push_back(distr(fRNG));
-      double primary_energy = vP.GetEnergy() / 1_MeV;
+      auto rnd =
+          vector<double>(get<SECONDARIES>(calc->second)->RequiredRandomNumbers(type));
+      for (auto& it : rnd) it = distr(fRNG);
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
                                       vP.GetPosition().GetY() / 1_cm,
                                       vP.GetPosition().GetZ() / 1_cm);
       auto d = vP.GetDirection().GetComponents();
-      auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(),
-                                          d.GetY().magnitude(),
+      auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
                                           d.GetZ().magnitude());
-      auto loss =
-          make_tuple(static_cast<int>(type), point, direction, v * primary_energy, 0.);
-      auto sec = std::get<SECONDARIES>(calc->second)
-                     ->CalculateSecondaries(primary_energy, loss, *comp_ptr, rnd);
+      auto loss = make_tuple(static_cast<int>(type), point, direction,
+                             v * vP.GetEnergy() / 1_MeV, 0.);
+      auto sec = get<SECONDARIES>(calc->second)
+                     ->CalculateSecondaries(vP.GetEnergy() / 1_MeV, loss, *comp_ptr, rnd);
       for (auto& s : sec) {
-        auto energy = get<PROPOSAL::Loss::ENERGY>(s) * 1_MeV;
+        auto E = get<PROPOSAL::Loss::ENERGY>(s) * 1_MeV;
         auto vec = corsika::geometry::QuantityVector(
-            std::get<PROPOSAL::Loss::DIRECTION>(s).GetX() * energy,
-            std::get<PROPOSAL::Loss::DIRECTION>(s).GetY() * energy,
-            std::get<PROPOSAL::Loss::DIRECTION>(s).GetZ() * energy);
-        auto momentum = corsika::stack::MomentumVector(
+            get<PROPOSAL::Loss::DIRECTION>(s).GetX() * E,
+            get<PROPOSAL::Loss::DIRECTION>(s).GetY() * E,
+            get<PROPOSAL::Loss::DIRECTION>(s).GetZ() * E);
+        auto p = corsika::stack::MomentumVector(
             corsika::geometry::RootCoordinateSystem::GetInstance()
                 .GetRootCoordinateSystem(),
             vec);
-        particles::Code sec_code = corsika::particles::ConvertFromPDG(
+        auto sec_code = corsika::particles::ConvertFromPDG(
             static_cast<particles::PDGCode>(get<PROPOSAL::Loss::TYPE>(s)));
-        vP.AddSecondary(
-            make_tuple(sec_code, energy, momentum, vP.GetPosition(), vP.GetTime()));
+        vP.AddSecondary(make_tuple(sec_code, E, p, vP.GetPosition(), vP.GetTime()));
       }
     }
     return process::EProcessReturn::eOk;
@@ -113,14 +104,9 @@ namespace corsika::process::proposal {
   corsika::units::si::GrammageType Interaction::GetInteractionLength(
       setup::Stack::StackIterator const& vP) {
     if (CanInteract(vP.GetPID())) {
-      auto calc = GetCalculator(vP); // [CrossSections]
-      std::uniform_real_distribution<double> distr(0., 1.);
-      auto rnd = distr(fRNG);
-      auto energy = get<INTERACTION>(calc->second)
-                        ->EnergyInteraction(vP.GetEnergy() / 1_MeV, rnd);
-      return get<DISPLACEMENT>(calc->second)
-                 ->SolveTrackIntegral(vP.GetEnergy() / 1_MeV, energy) *
-             1_g / 1_cm / 1_cm;
+      auto calc = GetCalculator(vP);
+      return get<INTERACTION>(calc->second)->MeanFreePath(vP.GetEnergy() / 1_MeV) * 1_g /
+             (1_cm * 1_cm);
     }
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }
