@@ -35,9 +35,8 @@ namespace corsika::process::proposal {
   }
 
   template <>
-  Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut const& _cut)
-      : cut(make_shared<const PROPOSAL::EnergyCutSettings>(_cut.GetECut() / 1_MeV, 1,
-                                                           false))
+  Interaction::Interaction(SetupEnvironment const& _env, CORSIKA_ParticleCut& _cut)
+      : cut(_cut)
       , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {
     auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
