@@ -220,31 +220,36 @@ namespace corsika::cascade {
 	  } else {
 		chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
 	  }
-	  auto magneticfield = corsika::geometry::Vector
-      					   (fEnvironment.GetCoordinateSystem(), 0_uT, 50_uT, 0_uT);
 	  geometry::Vector<SpeedType::dimension_type> const velocity =
-            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
-      geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = 
-      	    velocity - magneticfield * velocity.dot(magneticfield) / (magneticfield.GetSquaredNorm());
-      geometry::Vector<dimensionless_d> const directionBefore = velocity / velocity.GetNorm();
-      LengthType const gyroradius = vParticle.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V /
-      	                            (corsika::units::constants::cSquared * abs(chargeNumber) *          
-      	                            magneticfield.GetNorm() * 1_eV);
-      LengthType const Steplength = 0.01 * gyroradius;
-      // First Movement
-      auto position = vParticle.GetPosition() + directionBefore * Steplength / 2;
-      // Change of direction by magnetic field at position
-      magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(), 0_uT, 50_uT, 0_uT);
-      geometry::Vector<dimensionless_d> const directionAfter = directionBefore + 
-            velocity.cross(magneticfield) * chargeNumber *
-                  Steplength * corsika::units::constants::cSquared * 1_eV/ 
-                        (vParticle.GetEnergy() * velocity.GetSquaredNorm() * 1_V); 
-      // Second Movement
-      position = position + directionAfter * Steplength / 2;
-      LengthType const magMaxLength = (position - vParticle.GetPosition()).GetNorm();
-      geometry::Vector<dimensionless_d> const direction = (position - vParticle.GetPosition()) / 
-  		    magMaxLength;
-      vParticle.SetMomentum( direction * vParticle.GetMomentum().GetNorm());
+		        vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
+	  geometry::Vector<dimensionless_d> const directionBefore = velocity / velocity.GetNorm();
+	  auto magMaxLength = 1_m/0;
+	  auto directionAfter = directionBefore;
+	  if(chargeNumber != 0) {
+		  auto magneticfield = corsika::geometry::Vector
+		  					   (fEnvironment.GetCoordinateSystem(), 0_uT, 50_uT, 0_uT);
+		  geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = 
+		  	    velocity - magneticfield * velocity.dot(magneticfield) / (magneticfield.GetSquaredNorm());
+		  LengthType const gyroradius = vParticle.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V /
+		  	                            (corsika::units::constants::cSquared * abs(chargeNumber) *          
+		  	                            magneticfield.GetNorm() * 1_eV);
+		  //steplength depending on how exact it should
+		  LengthType const Steplength = 0.01 * gyroradius;
+		  // First Movement
+		  auto position = vParticle.GetPosition() + directionBefore * Steplength / 2;
+		  // Change of direction by magnetic field at position
+		  magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(), 0_uT, 50_uT, 0_uT);
+		  directionAfter = directionBefore + velocity.cross(magneticfield) * chargeNumber *
+	            		   Steplength * corsika::units::constants::cSquared * 1_eV / 
+	                       (vParticle.GetEnergy() * velocity.GetSquaredNorm() * 1_V); 
+		  // Second Movement
+		  position = position + directionAfter * Steplength / 2;
+		  magMaxLength = (position - vParticle.GetPosition()).GetNorm();
+		  geometry::Vector<dimensionless_d> const direction = (position - vParticle.GetPosition()) / 
+	  		    magMaxLength;
+		  vParticle.SetMomentum( direction * vParticle.GetMomentum().GetNorm());
+		  std::cout << "New direction because of magnetic field: " << direction.GetComponents() << std::endl;
+	  }
                                     
       // determine geometric tracking
       auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
