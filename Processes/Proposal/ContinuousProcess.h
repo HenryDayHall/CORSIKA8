@@ -24,6 +24,7 @@
 using std::unordered_map;
 
 using namespace corsika::environment;
+using namespace corsika::units::si;
 
 using CORSIKA_ParticleCut = corsika::process::particle_cut::ParticleCut;
 
@@ -31,75 +32,56 @@ namespace corsika::process::proposal {
 
   class ContinuousProcess
       : public corsika::process::ContinuousProcess<ContinuousProcess> {
-  private:
-    shared_ptr<const PROPOSAL::EnergyCutSettings> cut;
-
+    CORSIKA_ParticleCut& cut;
+    corsika::random::RNG& fRNG;
     static unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
     unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
 
-    corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("proposal");
 
     bool CanInteract(particles::Code pcode) const noexcept;
 
-    struct interaction_hash {
-        size_t operator()(const std::pair<const NuclearComposition*, particles::Code>& p) const
-        {
-            auto hash1 = std::hash<const NuclearComposition*>{}(p.first);
-            auto hash2 = std::hash<particles::Code>{}(p.second);
-            return hash1 ^ hash2;
-        }
+    using calc_key_t = std::pair<const NuclearComposition*, particles::Code>;
+
+    struct disp_hash {
+      size_t operator()(const calc_key_t& p) const {
+        return std::hash<const NuclearComposition*>{}(p.first) ^
+               std::hash<particles::Code>{}(p.second);
+      }
     };
 
-    unordered_map<std::pair<const NuclearComposition*, particles::Code>, unique_ptr<PROPOSAL::Displacement>, interaction_hash> calc;
+    unordered_map<calc_key_t, unique_ptr<PROPOSAL::Displacement>, disp_hash> calc;
+
+    template <typename Particle>
+    auto BuildCalculator(particles::Code code, Particle p_def,
+                         NuclearComposition const& comp) {
+      auto medium = media.at(&comp);
+      auto cross = GetStdCrossSections(
+          p_def, media.at(&comp),
+          make_shared<const PROPOSAL::EnergyCutSettings>(cut.GetECut() / 1_MeV, 1, false),
+          true);
+      auto [insert_it, success] = calc.insert(
+          {std::make_pair(&comp, code), PROPOSAL::make_displacement(cross, true)});
+      return insert_it;
+    }
 
     auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
-        auto medium = media.at(&comp);
-        if (corsika_code == particles::Code::Gamma) {
-            auto cross = GetStdCrossSections(PROPOSAL::GammaDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-                    calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        if (corsika_code == particles::Code::Electron) {
-            auto cross = GetStdCrossSections(PROPOSAL::EMinusDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        if (corsika_code == particles::Code::Positron) {
-            auto cross = GetStdCrossSections(PROPOSAL::EPlusDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        if (corsika_code == particles::Code::MuMinus) {
-            auto cross = GetStdCrossSections(PROPOSAL::MuMinusDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        if (corsika_code == particles::Code::MuPlus) {
-            auto cross = GetStdCrossSections(PROPOSAL::MuPlusDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        if (corsika_code == particles::Code::TauMinus) {
-            auto cross = GetStdCrossSections(PROPOSAL::TauMinusDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        if (corsika_code == particles::Code::TauPlus) {
-            auto cross = GetStdCrossSections(PROPOSAL::TauPlusDef(), media.at(&comp), cut, true);
-            auto [insert_it, success] =
-            calc.insert({std::make_pair(&comp, corsika_code), PROPOSAL::make_displacement(cross, true)});
-            return insert_it;
-        }
-        throw std::runtime_error("PROPOSAL could not find corresponding builder");
+      if (corsika_code == particles::Code::Gamma)
+        return BuildCalculator(particles::Code::Gamma, PROPOSAL::GammaDef(), comp);
+      if (corsika_code == particles::Code::Electron)
+        return BuildCalculator(particles::Code::Electron, PROPOSAL::EMinusDef(), comp);
+      if (corsika_code == particles::Code::Positron)
+        return BuildCalculator(particles::Code::Positron, PROPOSAL::EPlusDef(), comp);
+      if (corsika_code == particles::Code::MuMinus)
+        return BuildCalculator(particles::Code::MuMinus, PROPOSAL::MuMinusDef(), comp);
+      if (corsika_code == particles::Code::MuPlus)
+        return BuildCalculator(particles::Code::MuPlus, PROPOSAL::MuPlusDef(), comp);
+      if (corsika_code == particles::Code::TauMinus)
+        return BuildCalculator(particles::Code::TauMinus, PROPOSAL::TauMinusDef(), comp);
+      if (corsika_code == particles::Code::TauPlus)
+        return BuildCalculator(particles::Code::TauPlus, PROPOSAL::TauPlusDef(), comp);
+      throw std::runtime_error("PROPOSAL could not find corresponding builder");
     }
-    
+
     template <typename Particle>
     auto GetCalculator(Particle& vP) {
       auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
@@ -113,15 +95,15 @@ namespace corsika::process::proposal {
 
   public:
     template <typename TEnvironment>
-    ContinuousProcess(TEnvironment const& env, CORSIKA_ParticleCut const& cut);
+    ContinuousProcess(TEnvironment const& env, CORSIKA_ParticleCut& cut);
 
-    void Init();
-
-    template <typename Particle, typename Track>
-    EProcessReturn DoContinuous(Particle&, Track const&) ;
+    void Init(){};
 
     template <typename Particle, typename Track>
-    units::si::LengthType MaxStepLength(Particle const& p, Track const& track) ;
+    EProcessReturn DoContinuous(Particle&, Track const&);
+
+    template <typename Particle, typename Track>
+    units::si::LengthType MaxStepLength(Particle const& p, Track const& track);
   };
 } // namespace corsika::process::proposal
 

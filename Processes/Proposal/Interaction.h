@@ -21,6 +21,7 @@
 #include "PROPOSAL/PROPOSAL.h"
 
 using namespace corsika::environment;
+using namespace corsika::units::si;
 
 using CORSIKA_ParticleCut = corsika::process::particle_cut::ParticleCut;
 using std::make_pair;
@@ -29,13 +30,10 @@ using std::make_tuple;
 namespace corsika::process::proposal {
 
   class Interaction : public corsika::process::InteractionProcess<Interaction> {
-
-    shared_ptr<const PROPOSAL::EnergyCutSettings> cut;
-
+    CORSIKA_ParticleCut& cut;
+    corsika::random::RNG& fRNG;
     static std::unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
     std::unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
-
-    corsika::random::RNG& fRNG;
 
     bool CanInteract(particles::Code pcode) const noexcept;
 
@@ -53,12 +51,15 @@ namespace corsika::process::proposal {
     std::unordered_map<calc_key_t, calculator_t, interaction_hash> calculators;
 
     template <typename Particle>
-    auto BuildCalculator(particles::Code corsika_code, Particle p_def,
+    auto BuildCalculator(particles::Code code, Particle p_def,
                          NuclearComposition const& comp) {
-      auto cross = GetStdCrossSections(p_def, media.at(&comp), cut, true);
+      auto cross = GetStdCrossSections(
+          p_def, media.at(&comp),
+          make_shared<const PROPOSAL::EnergyCutSettings>(cut.GetECut() / 1_MeV, 1, false),
+          true);
       auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
       auto [insert_it, success] = calculators.insert(
-          {make_pair(&comp, corsika_code),
+          {make_pair(&comp, code),
            make_tuple(PROPOSAL::make_secondaries(inter_types, p_def, media.at(&comp)),
                       PROPOSAL::make_interaction(cross, true))});
       return insert_it;
@@ -93,15 +94,15 @@ namespace corsika::process::proposal {
 
   public:
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, CORSIKA_ParticleCut const& cut);
+    Interaction(TEnvironment const& env, CORSIKA_ParticleCut& cut);
 
-    void Init() {};
+    void Init(){};
 
     template <typename Particle>
     corsika::process::EProcessReturn DoInteraction(Particle&);
 
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle const& p);
-  }; // namespace corsika::process::proposal
+  };
 } // namespace corsika::process::proposal
 #endif
