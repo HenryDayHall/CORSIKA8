@@ -24,8 +24,6 @@ using SetupParticle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::process::HadronicElasticModel {
 
-  void HadronicElasticInteraction::Init() {}
-
   HadronicElasticInteraction::HadronicElasticInteraction(units::si::CrossSectionType x,
                                                          units::si::CrossSectionType y)
       : fX(x)

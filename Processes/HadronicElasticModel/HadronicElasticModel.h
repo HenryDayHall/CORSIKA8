@@ -50,7 +50,6 @@ namespace corsika::process::HadronicElasticModel {
     HadronicElasticInteraction( // x & y values taken from DL for pp collisions
         units::si::CrossSectionType x = 0.0217 * units::si::barn,
         units::si::CrossSectionType y = 0.05608 * units::si::barn);
-    void Init();
 
     template <typename Particle>
     corsika::units::si::GrammageType GetInteractionLength(Particle const& p);
