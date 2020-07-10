@@ -36,11 +36,6 @@ namespace corsika::process::switch_process {
         , fHighEProcess(vHighEProcess)
         , fThresholdEnergy(vThresholdEnergy) {}
 
-    void Init() {
-      fLowEProcess.Init();
-      fHighEProcess.Init();
-    }
-
     template <typename TParticle>
     corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& p) {
       return 1 / GetInteractionLength(p);
