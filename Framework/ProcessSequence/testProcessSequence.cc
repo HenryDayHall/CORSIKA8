@@ -25,9 +25,9 @@ static const int nData = 10;
 int globalCount = 0;
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
-public:
   int fV = 0;
 
+public:
   ContinuousProcess1(const int v)
       : fV(v) {
 
@@ -45,9 +45,9 @@ public:
 };
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
-public:
   int fV = 0;
 
+public:
   ContinuousProcess2(const int v)
       : fV(v) {
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;

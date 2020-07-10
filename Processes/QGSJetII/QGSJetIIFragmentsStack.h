@@ -20,7 +20,6 @@ namespace corsika::process::qgsjetII {
   class QGSJetIIFragmentsStackData {
 
   public:
-    void Init();
     void Dump() const {}
 
     void Clear() {
