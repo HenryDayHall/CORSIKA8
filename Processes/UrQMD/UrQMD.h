@@ -26,7 +26,6 @@ namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
     UrQMD(std::string const& path = utl::CorsikaData("UrQMD/UrQMD-1.3.1-xs.dat"));
-    void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
         corsika::setup::Stack::StackIterator const&) const;
 
