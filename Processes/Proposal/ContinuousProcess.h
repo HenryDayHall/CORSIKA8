@@ -37,10 +37,11 @@ namespace corsika::process::proposal {
     static unordered_map<particles::Code, PROPOSAL::ParticleDef> particles;
     unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
 
-
     bool CanInteract(particles::Code pcode) const noexcept;
 
     using calc_key_t = std::pair<const NuclearComposition*, particles::Code>;
+    using calc_t =
+        tuple<unique_ptr<PROPOSAL::Displacement>, unique_ptr<PROPOSAL::Scattering>>;
 
     struct disp_hash {
       size_t operator()(const calc_key_t& p) const {
@@ -49,18 +50,21 @@ namespace corsika::process::proposal {
       }
     };
 
-    unordered_map<calc_key_t, unique_ptr<PROPOSAL::Displacement>, disp_hash> calc;
+    enum { DISPLACEMENT, SCATTERING };
+    unordered_map<calc_key_t, calc_t, disp_hash> calc;
 
     template <typename Particle>
     auto BuildCalculator(particles::Code code, Particle p_def,
                          NuclearComposition const& comp) {
-      auto medium = media.at(&comp);
       auto cross = GetStdCrossSections(
           p_def, media.at(&comp),
           make_shared<const PROPOSAL::EnergyCutSettings>(cut.GetECut() / 1_MeV, 1, false),
           true);
-      auto [insert_it, success] = calc.insert(
-          {std::make_pair(&comp, code), PROPOSAL::make_displacement(cross, true)});
+      auto [insert_it, success] =
+          calc.insert({std::make_pair(&comp, code),
+                       std::make_tuple(PROPOSAL::make_displacement(cross, true),
+                                       PROPOSAL::make_scattering("highland", p_def,
+                                                                 media.at(&comp)))});
       return insert_it;
     }
 
@@ -90,20 +94,25 @@ namespace corsika::process::proposal {
       return BuildCalculator(vP.GetPID(), comp);
     }
 
-    units::si::HEPEnergyType TotalEnergyLoss(setup::Stack::ParticleType const&,
-                                             const units::si::GrammageType);
-
   public:
     template <typename TEnvironment>
-    ContinuousProcess(TEnvironment const& env, CORSIKA_ParticleCut& cut);
+    ContinuousProcess(TEnvironment const&, CORSIKA_ParticleCut&);
 
     void Init(){};
+
+    template <typename Particle>
+    corsika::units::si::HEPEnergyType TotalEnergyLoss(
+        Particle const&, corsika::units::si::GrammageType const&);
+
+    template <typename Particle>
+    void Scatter(Particle&, corsika::units::si::HEPEnergyType const&,
+                 corsika::units::si::GrammageType const&);
 
     template <typename Particle, typename Track>
     EProcessReturn DoContinuous(Particle&, Track const&);
 
     template <typename Particle, typename Track>
-    units::si::LengthType MaxStepLength(Particle const& p, Track const& track);
+    corsika::units::si::LengthType MaxStepLength(Particle const&, Track const&);
   };
 } // namespace corsika::process::proposal
 
