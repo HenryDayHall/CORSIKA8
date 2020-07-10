@@ -24,7 +24,7 @@ corsika::random::RNG& corsika::random::RNGManager::GetRandomStream(
   if (IsRegistered(pStreamName)) {
     return rngs.at(pStreamName);
   } else { // this stream name is not in the map
-    throw std::runtime_error(pStreamName + " is not a registered stream.");
+    throw std::runtime_error("'" + pStreamName + "' is not a registered stream.");
   }
 }
 

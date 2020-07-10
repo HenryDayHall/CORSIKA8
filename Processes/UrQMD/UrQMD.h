@@ -46,7 +46,6 @@ namespace corsika::process::UrQMD {
     bool CanInteract(particles::Code) const;
 
   private:
-
     void readXSFile(std::string const&);
 
     corsika::random::RNG& rng_ =
