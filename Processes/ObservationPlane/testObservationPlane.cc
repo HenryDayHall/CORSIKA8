@@ -64,7 +64,6 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
                          Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
     ObservationPlane obs(obsPlane, "particles.dat", true);
 
-    obs.Init();
     const LengthType length = obs.MaxStepLength(particle, track);
     const process::EProcessReturn ret = obs.DoContinuous(particle, track);
 
@@ -86,7 +85,6 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
                          Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
     ObservationPlane obs(obsPlane, "particles.dat", false);
 
-    obs.Init();
     const LengthType length = obs.MaxStepLength(particle, track);
     const process::EProcessReturn ret = obs.DoContinuous(particle, track);
 

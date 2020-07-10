@@ -27,7 +27,6 @@ namespace corsika::process::observation_plane {
 
   public:
     ObservationPlane(geometry::Plane const&, std::string const&, bool = true);
-    void Init() {}
 
     corsika::process::EProcessReturn DoContinuous(
         corsika::setup::Stack::ParticleType const& vParticle,
