@@ -22,7 +22,9 @@ using Track = Trajectory;
 
 namespace corsika::process::track_writer {
 
-  void TrackWriter::Init() {
+  TrackWriter::TrackWriter(std::string const& filename)
+      : fFilename(filename) {
+
     using namespace std::string_literals;
 
     fFile.open(fFilename);
