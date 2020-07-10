@@ -23,18 +23,32 @@ SCENARIO("random-number streams can be registered and retrieved") {
   GIVEN("a RNGManager") {
     RNGManager& rngManager = RNGManager::GetInstance();
 
-    WHEN("a sequence is registered by name") {
-      rngManager.RegisterRandomStream("stream_A");
+    WHEN("the sequence name is not registered") {
+      REQUIRE(rngManager.IsRegistered("stream_A") == false);
 
-      THEN("the sequence can be retrieved") {
-        REQUIRE_NOTHROW(rngManager.GetRandomStream("stream_A"));
+      THEN("a sequence is registered by name") {
+        rngManager.RegisterRandomStream("stream_A");
+
+        THEN("the sequence can be retrieved") {
+          REQUIRE_NOTHROW(rngManager.GetRandomStream("stream_A"));
+
+          THEN("we can check that the sequence exists") {
+            REQUIRE_NOTHROW(rngManager.GetRandomStream("stream_A"));
+
+            THEN("an unknown sequence cannot be retrieved") {
+              REQUIRE(rngManager.IsRegistered("stream_A") == true);
+
+              THEN("an unknown sequence cannot be retrieved") {
+                REQUIRE_THROWS(rngManager.GetRandomStream("stream_UNKNOWN"));
+
+                THEN("an unknown sequence is not registered") {
+                  REQUIRE(rngManager.IsRegistered("stream_UNKNOWN") == false);
+                }
+              }
+            }
+          }
+        }
       }
-
-      THEN("an unknown sequence cannot be retrieved") {
-        REQUIRE_THROWS(rngManager.GetRandomStream("stream_UNKNOWN"));
-      }
-
-      // seeding not covered yet
     }
   }
 }

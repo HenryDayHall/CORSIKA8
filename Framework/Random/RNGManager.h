@@ -12,7 +12,6 @@
 
 #include <map>
 #include <random>
-#include <sstream>
 #include <string>
 
 /*!
@@ -23,7 +22,10 @@ namespace corsika::random {
 
   using RNG = std::mt19937; //!< the actual RNG type that will be used
 
-  class RNGManager : public corsika::utl::Singleton<RNGManager> {
+  /*!
+   * Manage random number generators.
+   */
+  class RNGManager final : public corsika::utl::Singleton<RNGManager> {
 
     friend class corsika::utl::Singleton<RNGManager>;
 
@@ -49,15 +51,15 @@ namespace corsika::random {
     RNG& GetRandomStream(std::string const& pStreamName);
 
     /*!
+     * Check whether a stream has been registered.
+     */
+    bool IsRegistered(std::string const& pStreamName) const;
+
+    /*!
      * dumps the names and states of all registered random-number streams
      * into a std::stringstream.
      */
     std::stringstream dumpState() const;
-
-    /**
-     * set seed_seq of \a pStreamName to \a pSeedSeq
-     */
-    // void SetSeedSeq(std::string const& pStreamName, std::seed_seq& const pSeedSeq);
 
     /**
      * Set explicit seeds for all currently registered streams. The actual seed values
