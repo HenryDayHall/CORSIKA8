@@ -49,8 +49,6 @@ namespace corsika::process::interaction_counter {
       return process_.DoInteraction(projectile);
     }
 
-    void Init() { process_.Init(); }
-
     template <typename TParticle>
     auto GetInteractionLength(TParticle const& particle) const {
       return process_.GetInteractionLength(particle);
