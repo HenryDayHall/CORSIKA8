@@ -31,6 +31,8 @@ TEST_CASE("CONEXSourceCut") {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
 
+  feenableexcept(FE_INVALID);
+
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;
   EnvType env;
@@ -51,7 +53,7 @@ TEST_CASE("CONEXSourceCut") {
 
   const HEPEnergyType mass = particles::GetMass(particles::Code::Proton);
   const HEPEnergyType E0 = 1_PeV;
-  double thetaDeg = 0.;
+  double thetaDeg = 60.;
   auto const thetaRad = thetaDeg / 180. * M_PI;
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -66,8 +68,8 @@ TEST_CASE("CONEXSourceCut") {
   auto const [px, py, pz] = momentumComponents(thetaRad, P0);
   auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
 
-  auto const observationHeight = 1._km + builder.earthRadius;
-  auto const injectionHeight = 112.75_km + builder.earthRadius;
+  auto const observationHeight = 1.4_km + conex::earthRadius;
+  auto const injectionHeight = 112.75_km + conex::earthRadius;
   auto const t =
       -observationHeight * cos(thetaRad) +
       sqrt(-units::si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
@@ -86,10 +88,23 @@ TEST_CASE("CONEXSourceCut") {
   sibyllNuc.Init();
 
   corsika::process::conex_source_cut::CONEXSourceCut conex(
-      center, showerAxis, (showerCore - injectionPos).norm(), 112.75_km, E0,
+      center, showerAxis, t, injectionHeight, E0,
       particles::GetPDG(particles::Code::Proton));
 
-  conex.dummyAddPhoton();
+  HEPEnergyType const Eem{1_PeV};
+  auto const momentum = showerAxis.GetDirection() * Eem;
+
+  auto const emPosition = showerCore + showerAxis.GetDirection() * (-20_km);
+
+  std::cout << "position injection: "
+            << injectionPos.GetCoordinates(conex.GetObserverCS()) << " "
+            << injectionPos.GetCoordinates(rootCS) << std::endl;
+  std::cout << "position core: " << showerCore.GetCoordinates(conex.GetObserverCS())
+            << " " << showerCore.GetCoordinates(rootCS) << std::endl;
+  std::cout << "position EM: " << emPosition.GetCoordinates(conex.GetObserverCS()) << " "
+            << emPosition.GetCoordinates(rootCS) << std::endl;
+
+  conex.addParticle(0, Eem, emPosition, momentum.normalized(), 0_s);
 
   conex.SolveCE();
 }
