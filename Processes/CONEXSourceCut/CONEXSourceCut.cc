@@ -32,6 +32,7 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
     if (it == egs_em_codes_.cend()) {
+      ++p;
       continue; // no EM particle
     }
 
@@ -39,6 +40,8 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
 
     addParticle(egs_pid, p.GetEnergy(), p.GetPosition(), p.GetMomentum().normalized(),
                 p.GetTime());
+
+    p.Delete();
   }
 
   return corsika::process::EProcessReturn::eOk;
