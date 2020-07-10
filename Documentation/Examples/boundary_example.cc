@@ -114,7 +114,7 @@ int main() {
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
 
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   process::sibyll::Interaction sibyll;
   process::sibyll::Decay decay;
 

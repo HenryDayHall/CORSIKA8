@@ -133,7 +133,7 @@ int main() {
   tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
