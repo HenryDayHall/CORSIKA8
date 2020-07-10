@@ -26,7 +26,6 @@ namespace corsika::process {
       Decay();
       Decay(std::set<particles::Code>);
       ~Decay();
-      void Init();
 
       // is Pythia::Decay set to handle the decay of this particle?
       bool IsDecayHandled(const corsika::particles::Code);

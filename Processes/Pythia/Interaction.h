@@ -24,10 +24,8 @@ namespace corsika::process::pythia {
     bool fInitialized = false;
 
   public:
-    Interaction() {}
+    Interaction();
     ~Interaction();
-
-    void Init();
 
     void SetParticleListStable(std::vector<particles::Code> const&);
     void SetUnstable(const corsika::particles::Code);

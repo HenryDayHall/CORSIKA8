@@ -28,14 +28,7 @@ using Track = Trajectory;
 
 namespace corsika::process::pythia {
 
-  Decay::Decay() {}
-  Decay::Decay(std::set<particles::Code> vHandled)
-      : handleAllDecays_(false)
-      , handledDecays_(vHandled) {}
-
-  Decay::~Decay() { cout << "Pythia::Decay n=" << fCount << endl; }
-
-  void Decay::Init() {
+  Decay::Decay() {
 
     // set random number generator in pythia
     Pythia8::RndmEngine* rndm = new corsika::process::pythia::Random();
@@ -76,6 +69,12 @@ namespace corsika::process::pythia {
     if (!fPythia.init())
       throw std::runtime_error("Pythia::Decay: Initialization failed!");
   }
+
+  Decay::Decay(std::set<particles::Code> vHandled)
+      : handleAllDecays_(false)
+      , handledDecays_(vHandled) {}
+
+  Decay::~Decay() { cout << "Pythia::Decay n=" << fCount << endl; }
 
   bool Decay::CanHandleDecay(const particles::Code vParticleCode) {
     using namespace corsika::particles;

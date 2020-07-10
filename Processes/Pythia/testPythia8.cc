@@ -65,8 +65,6 @@ TEST_CASE("Pythia", "[processes]") {
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
     process::pythia::Decay model;
-
-    model.Init();
   }
 }
 
@@ -136,7 +134,7 @@ TEST_CASE("pythia process") {
     auto projectile = view.GetProjectile();
 
     process::pythia::Decay model;
-    model.Init();
+
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
     model.DoDecay(projectile);
     CHECK(stack.GetSize() == 3);
@@ -186,7 +184,7 @@ TEST_CASE("pythia process") {
     auto projectile = view.GetProjectile();
 
     process::pythia::Interaction model;
-    model.Init();
+
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }

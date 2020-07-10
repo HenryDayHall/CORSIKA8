@@ -29,9 +29,10 @@ namespace corsika::process::pythia {
 
   typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
-  Interaction::~Interaction() { cout << "Pythia::Interaction n=" << fCount << endl; }
+  Interaction::~Interaction() {}
 
-  void Interaction::Init() {
+  Interaction::Interaction() {
+    cout << "Pythia::Interaction n=" << fCount << endl;
 
     using random::RNGManager;
 
