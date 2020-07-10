@@ -29,8 +29,6 @@ LongitudinalProfile::LongitudinalProfile(environment::ShowerAxis const& shower_a
     : shower_axis_{shower_axis}
     , profiles_{static_cast<unsigned int>(shower_axis.maximumX() / dX_) + 1} {}
 
-void LongitudinalProfile::Init() {}
-
 template <>
 corsika::process::EProcessReturn LongitudinalProfile::DoContinuous(Particle const& vP,
                                                                    Track const& vTrack) {
