@@ -26,8 +26,7 @@ namespace corsika::process {
       unsigned int fInvCount = 0;
 
     public:
-      ParticleCut(const units::si::HEPEnergyType vCut)
-          : fECut(vCut) {}
+      ParticleCut(const units::si::HEPEnergyType vCut);
 
       bool ParticleIsInvisible(particles::Code) const;
       EProcessReturn DoSecondaries(corsika::setup::StackView&);
@@ -37,7 +36,6 @@ namespace corsika::process {
 
       bool ParticleIsEmParticle(particles::Code) const;
 
-      void Init();
       void ShowResults();
 
       units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }

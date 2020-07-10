@@ -91,13 +91,14 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-    void ParticleCut::Init() {
+    ParticleCut::ParticleCut(const units::si::HEPEnergyType vCut)
+        : fECut(vCut) {
+
       fEmEnergy = 0._GeV;
       fEmCount = 0;
       fInvEnergy = 0._GeV;
       fInvCount = 0;
       fEnergy = 0._GeV;
-      // defineEmParticles();
     }
 
     void ParticleCut::ShowResults() {
