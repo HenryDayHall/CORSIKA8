@@ -17,11 +17,14 @@
 
 #include <conexConfig.h>
 #include <conexHEModels.h>
+#include <array>
 
 namespace conex {
-
   extern "C" {
-  // ipart,energy,theta,phi,dimpact,ioseed
+  extern struct { std::array<double, 16> dptl; } cxoptl_;
+
+  void cegs4_(int&, int&);
+
   void initconex_(int&, int*, int&, int&,
 #ifdef CONEX_EXTENSIONS
                   int&,
