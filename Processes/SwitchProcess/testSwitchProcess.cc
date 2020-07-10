@@ -24,7 +24,6 @@ class TestStackData {
 
 public:
   // these functions are needed for the Stack interface
-  void Init() {}
   void Clear() { fData.clear(); }
   unsigned int GetSize() const { return fData.size(); }
   unsigned int GetCapacity() const { return fData.size(); }
@@ -96,7 +95,6 @@ auto constexpr kgMSq = 1_kg / (1_m * 1_m);
 
 template <int N>
 struct DummyProcess : InteractionProcess<DummyProcess<N>> {
-  void Init() {}
 
   template <typename TParticle>
   corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const {
