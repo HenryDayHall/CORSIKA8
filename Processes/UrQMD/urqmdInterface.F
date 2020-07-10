@@ -11,7 +11,7 @@ c adapted by M. Reininghaus for linking UrQMD to CORSIKA 8 (Apr 2019)
 
 
 c-----------------------------------------------------------------------
-      subroutine IniUrQMD
+      subroutine IniUrQMDC8
 c-----------------------------------------------------------------------
 c Primary initialization for UrQMD 1.31
 c-----------------------------------------------------------------------

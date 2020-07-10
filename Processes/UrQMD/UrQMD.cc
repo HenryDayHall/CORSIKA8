@@ -27,6 +27,8 @@
 using namespace corsika::process::UrQMD;
 using namespace corsika::units::si;
 
+UrQMD::UrQMD() { iniurqmdc8_(); }
+
 using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
 using SetupProjectile = corsika::setup::StackView::StackIterator;

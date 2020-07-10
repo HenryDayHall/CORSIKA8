@@ -78,7 +78,7 @@ namespace corsika::process::UrQMD {
 
   extern "C" {
   // FORTRAN functions defined in UrQMD
-  void iniurqmd_();
+  void iniurqmdc8_();
   double ranf_(int&);
   void cascinit_(int const&, int const&, int const&);
   double nucrad_(int const&);
