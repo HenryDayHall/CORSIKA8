@@ -59,12 +59,36 @@ namespace corsika::process::proposal {
     }
   }
 
+  template <>
   HEPEnergyType ContinuousProcess::TotalEnergyLoss(SetupParticle const& vP,
-                                                   GrammageType const vDX) {
-    std::cout << "distance: " << vDX / 1_g * 1_cm * 1_cm << std::endl;
-    return vP.GetEnergy() - GetCalculator(vP)->second->UpperLimitTrackIntegral(
-                                vP.GetEnergy() / 1_MeV, vDX / 1_g * 1_cm * 1_cm) *
+                                                   GrammageType const& vDX) {
+    auto calc = GetCalculator(vP);
+    return vP.GetEnergy() - get<DISPLACEMENT>(calc->second)
+                                    ->UpperLimitTrackIntegral(vP.GetEnergy() / 1_MeV,
+                                                              vDX / 1_g * 1_cm * 1_cm) *
                                 1_MeV;
+  }
+
+  template <>
+  void ContinuousProcess::Scatter(SetupParticle& vP, HEPEnergyType const& loss,
+                                           GrammageType const& grammage) {
+    auto calc = GetCalculator(vP);
+    auto d = vP.GetDirection().GetComponents();
+    auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
+                                        d.GetZ().magnitude());
+    auto E_f = vP.GetEnergy() - loss; // final energy
+    std::uniform_real_distribution<double> distr(0., 1.);
+    auto rnd = array<double, 4>();
+    for (auto& it : rnd) it = distr(fRNG);
+    auto [mean_dir, final_dir] =
+        get<SCATTERING>(calc->second)
+            ->Scatter(grammage / 1_g * square(1_cm), vP.GetEnergy() / 1_MeV, E_f / 1_MeV,
+                      direction, rnd);
+    auto vec = corsika::geometry::QuantityVector(
+        final_dir.GetX() * E_f, final_dir.GetY() * E_f, final_dir.GetZ() * E_f);
+    vP.SetMomentum(corsika::stack::MomentumVector(
+        corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem(),
+        vec));
   }
 
   template <>
@@ -72,7 +96,9 @@ namespace corsika::process::proposal {
                                                  SetupTrack const& vT) {
     if (vP.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
     auto dX = vP.GetNode()->GetModelProperties().IntegratedGrammage(vT, vT.GetLength());
-    vP.SetEnergy(vP.GetEnergy() - TotalEnergyLoss(vP, dX));
+    auto energy_loss = TotalEnergyLoss(vP, dX);
+    Scatter(vP, energy_loss, dX);
+    vP.SetEnergy(vP.GetEnergy() - energy_loss);
     if (vP.GetEnergy() < cut.GetECut()) return process::EProcessReturn::eParticleAbsorbed;
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
@@ -82,8 +108,9 @@ namespace corsika::process::proposal {
   units::si::LengthType ContinuousProcess::MaxStepLength(SetupParticle const& vP,
                                                          SetupTrack const& vT) {
     auto energy_lim = 0.9 * vP.GetEnergy() / 1_MeV;
-    auto grammage = GetCalculator(vP)->second->SolveTrackIntegral(vP.GetEnergy() / 1_MeV,
-                                                                  energy_lim) *
+    auto calc = GetCalculator(vP);
+    auto grammage = get<DISPLACEMENT>(calc->second)
+                        ->SolveTrackIntegral(vP.GetEnergy() / 1_MeV, energy_lim) *
                     1_g / square(1_cm);
     return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage) *
            1.0001;
