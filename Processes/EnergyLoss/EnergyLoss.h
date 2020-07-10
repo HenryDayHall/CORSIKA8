@@ -31,7 +31,6 @@ namespace corsika::process::energy_loss {
   public:
     EnergyLoss(environment::ShowerAxis const& showerAxis);
 
-    void Init() {}
     process::EProcessReturn DoContinuous(setup::Stack::ParticleType&,
                                          setup::Trajectory const&);
     units::si::LengthType MaxStepLength(setup::Stack::ParticleType const&,
