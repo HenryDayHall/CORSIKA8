@@ -37,7 +37,6 @@ public:
   using BaseNodeType = typename TEnvType::BaseNodeType;
 
   // these functions are needed for the Stack interface
-  void Init() {}
   void Clear() { fNode.clear(); }
   unsigned int GetSize() const { return fNode.size(); }
   unsigned int GetCapacity() const { return fNode.size(); }
