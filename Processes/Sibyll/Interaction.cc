@@ -32,14 +32,7 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
-  Interaction::Interaction() {}
-
-  Interaction::~Interaction() {
-    cout << "Sibyll::Interaction n=" << count_ << " Nnuc=" << nucCount_ << endl;
-  }
-
-  void Interaction::Init() {
-
+  Interaction::Interaction() {
     using random::RNGManager;
 
     // initialize Sibyll
@@ -47,6 +40,10 @@ namespace corsika::process::sibyll {
       sibyll_ini_();
       initialized_ = true;
     }
+  }
+
+  Interaction::~Interaction() {
+    cout << "Sibyll::Interaction n=" << count_ << " Nnuc=" << nucCount_ << endl;
   }
 
   void Interaction::SetAllStable() {

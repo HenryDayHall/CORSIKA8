@@ -26,8 +26,6 @@ namespace corsika::process::sibyll {
     Interaction();
     ~Interaction();
 
-    void Init();
-
     void SetAllStable();
 
     bool WasInitialized() { return initialized_; }

@@ -22,7 +22,6 @@ namespace corsika::process::sibyll {
   class SibStackData {
 
   public:
-    void Init();
     void Dump() const {}
 
     void Clear() { s_plist_.np = 0; }

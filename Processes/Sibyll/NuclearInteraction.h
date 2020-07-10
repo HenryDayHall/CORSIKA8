@@ -30,7 +30,7 @@ namespace corsika::process::sibyll {
   public:
     NuclearInteraction(corsika::process::sibyll::Interaction&, TEnvironment const&);
     ~NuclearInteraction();
-    void Init();
+
     void InitializeNuclearCrossSections();
     void PrintCrossSectionTable(corsika::particles::Code);
     corsika::units::si::CrossSectionType ReadCrossSectionTable(

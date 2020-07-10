@@ -42,7 +42,6 @@ namespace corsika::process::sibyll {
   }
 
   Decay::~Decay() { cout << "Sibyll::Decay n=" << fCount << endl; }
-  void Decay::Init() {}
 
   bool Decay::CanHandleDecay(const particles::Code vParticleCode) {
     using namespace corsika::particles;

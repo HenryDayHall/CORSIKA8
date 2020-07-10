@@ -35,12 +35,6 @@ using Track = Trajectory;
 namespace corsika::process::sibyll {
 
   template <>
-  NuclearInteraction<SetupEnvironment>::NuclearInteraction(
-      process::sibyll::Interaction& hadint, SetupEnvironment const& env)
-      : environment_(env)
-      , hadronicInteraction_(hadint) {}
-
-  template <>
   NuclearInteraction<SetupEnvironment>::~NuclearInteraction() {
     cout << "Nuclib::NuclearInteraction n=" << count_ << " Nnuc=" << nucCount_ << endl;
   }
@@ -132,26 +126,6 @@ namespace corsika::process::sibyll {
       cout << "cross section table: " << ptarg << endl;
       PrintCrossSectionTable(ptarg);
     }
-  }
-
-  template <>
-  void NuclearInteraction<SetupEnvironment>::Init() {
-    // initialize hadronic interaction module
-    // TODO: safe to run multiple initializations?
-    if (!hadronicInteraction_.WasInitialized()) hadronicInteraction_.Init();
-
-    // check compatibility of energy ranges, someone could try to use low-energy model..
-    if (!hadronicInteraction_.IsValidCoMEnergy(GetMinEnergyPerNucleonCoM()) ||
-        !hadronicInteraction_.IsValidCoMEnergy(GetMaxEnergyPerNucleonCoM()))
-      throw std::runtime_error(
-          "NuclearInteraction: hadronic interaction model incompatible!");
-
-    // initialize nuclib
-    // TODO: make sure this does not overlap with sibyll
-    nuc_nuc_ini_();
-
-    // initialize cross sections
-    InitializeNuclearCrossSections();
   }
 
   template <>
@@ -606,6 +580,29 @@ namespace corsika::process::sibyll {
     cout << "NuclearInteraction: DoInteraction: done" << endl;
 
     return process::EProcessReturn::eOk;
+  }
+
+  template <>
+  NuclearInteraction<SetupEnvironment>::NuclearInteraction(
+      process::sibyll::Interaction& hadint, SetupEnvironment const& env)
+      : environment_(env)
+      , hadronicInteraction_(hadint) {
+
+    // initialize hadronic interaction module
+    // TODO: safe to run multiple initializations?
+
+    // check compatibility of energy ranges, someone could try to use low-energy model..
+    if (!hadronicInteraction_.IsValidCoMEnergy(GetMinEnergyPerNucleonCoM()) ||
+        !hadronicInteraction_.IsValidCoMEnergy(GetMaxEnergyPerNucleonCoM()))
+      throw std::runtime_error(
+          "NuclearInteraction: hadronic interaction model incompatible!");
+
+    // initialize nuclib
+    // TODO: make sure this does not overlap with sibyll
+    nuc_nuc_ini_();
+
+    // initialize cross sections
+    InitializeNuclearCrossSections();
   }
 
 } // namespace corsika::process::sibyll
