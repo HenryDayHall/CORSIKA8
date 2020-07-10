@@ -9,9 +9,11 @@
  */
 
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
+#include <corsika/process/conex_source_cut/CONEX_f.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalConstants.h>
 #include <algorithm>
+#include <fstream>
 #include <iomanip>
 #include <utility>
 
@@ -23,7 +25,6 @@ using namespace corsika::setup;
 corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     corsika::setup::StackView& vS) {
   auto p = vS.begin();
-  HEPEnergyType const energy = p.GetEnergy();
 
   while (p != vS.end()) {
     Code const pid = p.GetPID();
@@ -34,91 +35,39 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
       continue; // no EM particle
     }
 
-    auto const& position = p.GetPosition();
-    auto const direction = p.GetMomentum().normalized();
-
     int egs_pid = it->second;
 
-    double E =
-        energy / 1_MeV; // total energy, TODO: check if maybe kinetic should be used
-
-    auto coords = position.GetCoordinates(conexObservationCS_) / 1_m;
-    double x = coords[0].magnitude();
-    double y = coords[1].magnitude();
-
-    double altitude = ((position - center_).norm() - conex::earthRadius) / 1_m;
-
-    double slantDistance =
-        (position - showerAxis_.GetStart()).dot(showerAxis_.GetDirection()) / 1_m;
-
-    // lateral coordinates in CONEX shower frame
-    auto const d = position - showerAxis_.GetStart();
-    auto const dShowerPlane = d - d.parallelProjectionOnto(showerAxis_.GetDirection());
-    double lateralX = dShowerPlane.dot(x_sf_) / 1_m;
-    double lateralY = dShowerPlane.dot(y_sf_) / 1_m;
-
-    double slantX = showerAxis_.projectedX(position) * (1_cm * 1_cm / 1_g);
-
-    double time = (p.GetTime() * units::constants::c - groundDist_) / 1_m;
-
-    // fill u,v,w momentum direction in EGS frame
-    double u = direction.dot(y_sf_).magnitude();
-    double v = direction.dot(x_sf_).magnitude();
-    double w = direction.dot(showerAxis_.GetDirection()).magnitude();
-
-    int iri = 2; // EGS medium air
-
-    double weight = 1;
-
-    int latchin = 1; // generation, we don't have the actual value...
-
-    std::cout << "CONEXSourceCut: removing " << pid << " " << std::scientific << energy
-              << std::endl;
-    p.Delete();
-
-    // conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY,
-    // slantX,
-    //              time, u, v, w, iri, weight, latchin);
-    conex::show_(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
-                 time, u, v, w, iri, weight, latchin);
+    addParticle(egs_pid, p.GetEnergy(), p.GetPosition(), p.GetMomentum().normalized(),
+                p.GetTime());
   }
 
   return corsika::process::EProcessReturn::eOk;
 }
 
-void CONEXSourceCut::dummyAddPhoton() {
-  HEPEnergyType const energy = 1_TeV;
-
-  geometry::Point position(center_.GetCoordinateSystem(), 0_m, 0_m,
-                           20_km + conex::earthRadius);
-
+void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
+                                 geometry::Point const& position,
+                                 geometry::Vector<dimensionless_d> const& direction,
+                                 TimeType t) {
   std::cout << "position conexObs: " << position.GetCoordinates(conexObservationCS_)
             << std::endl;
-
-  auto const direction = showerAxis_.GetDirection();
-
-  int egs_pid = 0;
-
-  double E = energy / 1_MeV; // total energy, TODO: check if maybe kinetic should be used
 
   auto coords = position.GetCoordinates(conexObservationCS_) / 1_m;
   double x = coords[0].magnitude();
   double y = coords[1].magnitude();
 
   double altitude = ((position - center_).norm() - conex::earthRadius) / 1_m;
+  auto const d = position - showerCore_;
 
-  double slantDistance =
-      (position - showerAxis_.GetStart()).dot(showerAxis_.GetDirection()) / 1_m;
+  // distance from core to particle projected along shower axis
+  double slantDistance = -d.dot(showerAxis_.GetDirection()) / 1_m;
 
   // lateral coordinates in CONEX shower frame
-  auto const d = position - showerAxis_.GetStart();
   auto const dShowerPlane = d - d.parallelProjectionOnto(showerAxis_.GetDirection());
   double lateralX = dShowerPlane.dot(x_sf_) / 1_m;
   double lateralY = dShowerPlane.dot(y_sf_) / 1_m;
 
   double slantX = showerAxis_.projectedX(position) * (1_cm * 1_cm / 1_g);
 
-  auto t = 0_s;
   double time = (t * units::constants::c - groundDist_) / 1_m;
 
   // fill u,v,w momentum direction in EGS frame
@@ -131,6 +80,7 @@ void CONEXSourceCut::dummyAddPhoton() {
   double weight = 1;
 
   int latchin = 1; // generation, we don't have the actual value...
+  double E = energy / 1_GeV;
 
   std::cout << "CONEXSourceCut: removing " << egs_pid << " " << std::scientific << energy
             << std::endl;
@@ -154,8 +104,23 @@ void CONEXSourceCut::dummyAddPhoton() {
   std::cout << "v = " << v << std::endl;
   std::cout << "w = " << w << std::endl;
 
-  conex::show_(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY, slantX,
-               time, u, v, w, iri, weight, latchin);
+  conex::cxoptl_.dptl[10 - 1] = egs_pid;
+  conex::cxoptl_.dptl[4 - 1] = E;
+  conex::cxoptl_.dptl[6 - 1] = x;
+  conex::cxoptl_.dptl[7 - 1] = y;
+  conex::cxoptl_.dptl[8 - 1] = altitude;
+  conex::cxoptl_.dptl[9 - 1] = time;
+  conex::cxoptl_.dptl[11 - 1] = weight;
+  conex::cxoptl_.dptl[13 - 1] = slantX;
+  conex::cxoptl_.dptl[14 - 1] = lateralX;
+  conex::cxoptl_.dptl[15 - 1] = lateralY;
+  conex::cxoptl_.dptl[16 - 1] = slantDistance;
+  conex::cxoptl_.dptl[2 - 1] = u;
+  conex::cxoptl_.dptl[1 - 1] = v;
+  conex::cxoptl_.dptl[3 - 1] = w;
+
+  int n = 0, i = 0;
+  conex::cegs4_(n, i);
 }
 
 void CONEXSourceCut::Init() {}
@@ -209,13 +174,18 @@ void CONEXSourceCut::SolveCE() {
   conex::get_shower_electron_(icute, nX, Electrons[0]);
   conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 
-  for (int i = 0; i < nX; ++i) { std::cout << X[i] << "  " << dEdX[i] << std::endl; }
+  std::ofstream file{"conex_output.txt"};
+  for (int i = 0; i < nX; ++i) {
+    file << X[i] << " " << N[i] << " " << dEdX[i] << " " << Mu[i] << " " << dMu[i] << " "
+         << Gamma[i] << " " << Electrons[i] << " " << Hadrons[i] << std::endl;
+  }
 }
 
 // RU: move all the non-C8 code from the following c++ function into a new file. Here we
 // only want to have a single function call to CONEX left.
 
-CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
+CONEXSourceCut::CONEXSourceCut(geometry::Point center,
+                               environment::ShowerAxis const& showerAxis,
                                units::si::LengthType groundDist,
                                units::si::LengthType injectionHeight,
                                units::si::HEPEnergyType primaryEnergy,
@@ -224,18 +194,28 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
     center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
+    , showerCore_{showerAxis_.GetStart() + showerAxis_.GetDirection() * groundDist_}
     , conexObservationCS_{std::invoke([&]() {
       auto const& c8cs = center.GetCoordinateSystem();
-      auto const showerCore =
-          showerAxis.GetStart() + showerAxis.GetDirection() * groundDist;
-      auto const translation = showerCore - center;
+      auto const translation = showerCore_ - center;
       auto const intermediateCS = c8cs.translate(translation.GetComponents(c8cs));
       auto const intermediateCS2 = intermediateCS.RotateToZ(translation);
 
-      std::cout << "translation C8/CONEX obs: " << translation.norm() << std::endl;
+      std::cout << "translation C8/CONEX obs: " << translation.GetComponents()
+                << std::endl;
 
       auto const transform = geometry::CoordinateSystem::GetTransformation(
           intermediateCS2, c8cs); // either this way or vice versa... TODO: test this!
+      std::cout << transform.matrix() << std::endl << std::endl;
+      std::cout
+          << geometry::CoordinateSystem::GetTransformation(intermediateCS, c8cs).matrix()
+          << std::endl
+          << std::endl;
+      std::cout << geometry::CoordinateSystem::GetTransformation(intermediateCS2,
+                                                                 intermediateCS)
+                       .matrix()
+                << std::endl;
+
       return geometry::CoordinateSystem(c8cs, transform);
     })}
     , x_sf_{std::invoke([&]() {
@@ -246,14 +226,30 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
         b = geometry::Vector<length_d>{conexObservationCS_, 1_m, 0_m, 0_m};
       }
 
-      std::cout << "x_sf (conexObservationCS): " << b.GetComponents(conexObservationCS_)
-                << std::endl;
-      std::cout << "x_sf (C8): " << b.GetComponents(center.GetCoordinateSystem())
-                << std::endl;
-
       return b.normalized();
     })}
     , y_sf_{showerAxis_.GetDirection().cross(x_sf_)} {
+
+  std::cout << "x_sf (conexObservationCS): " << x_sf_.GetComponents(conexObservationCS_)
+            << std::endl;
+  std::cout << "x_sf (C8): " << x_sf_.GetComponents(center.GetCoordinateSystem())
+            << std::endl;
+
+  std::cout << "y_sf (conexObservationCS): " << y_sf_.GetComponents(conexObservationCS_)
+            << std::endl;
+  std::cout << "y_sf (C8): " << y_sf_.GetComponents(center.GetCoordinateSystem())
+            << std::endl;
+
+  std::cout << "showerAxisDirection (conexObservationCS): "
+            << showerAxis_.GetDirection().GetComponents(conexObservationCS_) << std::endl;
+  std::cout << "showerAxisDirection (C8): "
+            << showerAxis_.GetDirection().GetComponents(center.GetCoordinateSystem())
+            << std::endl;
+
+  std::cout << "showerCore (conexObservationCS): "
+            << showerCore_.GetCoordinates(conexObservationCS_) << std::endl;
+  std::cout << "showerCore (C8): "
+            << showerCore_.GetCoordinates(center.GetCoordinateSystem()) << std::endl;
 
   int randomSeeds[3] = {1234, 0, 0}; // will be overwritten later??
   int heModel = eSibyll23;
@@ -273,15 +269,17 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center, environment::ShowerAxis s
   double eprima = primaryEnergy / 1_GeV;
 
   // set phi, theta
-  geometry::Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, 1_m}};
+  geometry::Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, -1_m}};
   auto const c = showerAxis_.GetDirection().dot(ez) / 1_m;
-  double theta = 180 * (M_PI - std::acos(c));
+  double theta = std::acos(c) * 180 / M_PI;
 
   auto const showerAxisConex =
       showerAxis_.GetDirection().GetComponents(conexObservationCS_);
-  double phi = 180 * std::atan2(-showerAxisConex.GetY().magnitude(),
-                                showerAxisConex.GetX().magnitude());
-  // double XmaxP_ = Xcut / (1_g / 1_cm / 1_cm);
+  double phi = std::atan2(-showerAxisConex.GetY().magnitude(),
+                          showerAxisConex.GetX().magnitude()) *
+               180 / M_PI;
+
+  std::cout << "theta (deg) = " << theta << "; phi (deg) = " << phi << std::endl;
 
   int ipart = static_cast<int>(primaryID);
   auto rng = corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");

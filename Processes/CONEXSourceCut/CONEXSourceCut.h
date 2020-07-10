@@ -34,7 +34,7 @@ namespace corsika::process {
     class CONEXSourceCut : public process::SecondariesProcess<CONEXSourceCut> {
 
     public:
-      CONEXSourceCut(geometry::Point center, environment::ShowerAxis showerAxis,
+      CONEXSourceCut(geometry::Point center, environment::ShowerAxis const& showerAxis,
                      units::si::LengthType groundDist,
                      units::si::LengthType injectionHeight,
                      units::si::HEPEnergyType primaryEnergy,
@@ -45,7 +45,12 @@ namespace corsika::process {
 
       void SolveCE();
 
-      void dummyAddPhoton();
+      void addParticle(int egs_pid, units::si::HEPEnergyType energy,
+                       geometry::Point const& position,
+                       geometry::Vector<units::si::dimensionless_d> const& direction,
+                       units::si::TimeType t);
+
+      auto const& GetObserverCS() const { return conexObservationCS_; }
 
     private:
       // ConexDynamicInterface conex_;
@@ -59,6 +64,7 @@ namespace corsika::process {
       geometry::Point const center_; //!< center of CONEX Earth
       environment::ShowerAxis const& showerAxis_;
       units::si::LengthType groundDist_; //!< length from injection point to shower core
+      geometry::Point const showerCore_; //!< shower core
       geometry::CoordinateSystem const conexObservationCS_; //!< CONEX observation frame
       geometry::Vector<units::si::dimensionless_d> const x_sf_,
           y_sf_; //!< unit vectors of CONEX shower frame, z_sf is shower axis direction
