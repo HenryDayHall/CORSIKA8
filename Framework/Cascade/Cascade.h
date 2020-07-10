@@ -86,15 +86,6 @@ namespace corsika::cascade {
         , fStack(stack) {}
 
     /**
-     * The Init function is called before the actual cascade simulations.
-     * All components of the Cascade simulation must be configured here.
-     */
-    void Init() {
-      fProcessSequence.Init();
-      fStack.Init();
-    }
-
-    /**
      * set the nodes for all particles on the stack according to their numerical
      * position
      */

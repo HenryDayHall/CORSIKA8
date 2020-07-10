@@ -140,7 +140,7 @@ int main() {
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);
-  EAS.Init();
+
   EAS.Run();
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;

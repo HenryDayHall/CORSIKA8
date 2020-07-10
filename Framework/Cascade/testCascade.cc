@@ -84,8 +84,6 @@ public:
     return EProcessReturn::eInteracted;
   }
 
-  void Init() { fCalls = 0; }
-
   int GetCalls() const { return fCalls; }
 };
 
@@ -115,11 +113,6 @@ public:
     cout << "ProcessCut::DoSecondaries size=" << vS.GetSize() << " count=" << fCount
          << endl;
     return EProcessReturn::eOk;
-  }
-
-  void Init() {
-    fCalls = 0;
-    fCount = 0;
   }
 
   int GetCount() const { return fCount; }
@@ -157,8 +150,6 @@ TEST_CASE("Cascade", "[Cascade]") {
   cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
                    TestCascadeStackView>
       EAS(env, tracking, sequence, stack);
-
-  EAS.Init();
 
   SECTION("full cascade") {
     EAS.Run();
