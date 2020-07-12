@@ -33,7 +33,3 @@ double qgran_(int&) {
   std::uniform_real_distribution<double> dist;
   return dist(rng);
 }
-
-void lzmaopenfile_(const char*, int) {}
-void lzmaclosefile_() {}
-void lzmafillarray_(const double&, const int&) {}

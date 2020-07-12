@@ -100,13 +100,6 @@ double qgsect_(const double& e0n, const int& icz, const int& iap0, const int& ia
    link to random number generation
  */
 double qgran_(int&);
-
-/**
-   dummy function from CRMC
- */
-void lzmaopenfile_(const char* name, int length);
-void lzmaclosefile_();
-void lzmafillarray_(const double& dum, const int& idum);
 }
 
 #endif

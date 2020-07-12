@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.9)
+# we would need 3.16 to have CMP0097 for external subproject submodule (non) support
 
 # prevent in-source builds and give warning message
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") 
@@ -116,6 +117,17 @@ endif ()
 
 # add call to ./do-copyright.py to run as unit-test-case
 add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+if (DEFINED ENV{CORSIKA_DATA})
+  message ("Found  corsika-data in $ENV{CORSIKA_DATA}")
+  set (CORSIKA_DATA $ENV{CORSIKA_DATA})
+  add_subdirectory ($ENV{CORSIKA_DATA} corsika_data)
+else ()
+  message ("CORSIKA_DATA not defined: NEED to download AirShowerPhysics/corsika-data via git submodule")
+  message ("cmake will fail if you did not do this already.")
+  set (CORSIKA_DATA ${PROJECT_SOURCE_DIR}/Data)
+  add_subdirectory (Data)
+endif ()
 
 # include potential ThirdParty code provided with CORSIKA
 add_subdirectory (ThirdParty)
