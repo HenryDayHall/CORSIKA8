@@ -25,7 +25,7 @@ namespace corsika::environment {
 
     // a type-alias for a magnetic field vector
     using MagneticFieldVector =
-        corsika::geometry::QuantityVector<corsika::units::si::magnetic_flux_density_d>;
+        corsika::geometry::Vector<corsika::units::si::magnetic_flux_density_d>;
 
     MagneticFieldVector B_; ///< The constant magnetic field we use.
 
