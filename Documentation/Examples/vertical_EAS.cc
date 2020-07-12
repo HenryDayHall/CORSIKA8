@@ -15,9 +15,12 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/ShowerAxis.h>
+#include <corsika/environment/UniformMagneticField.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/logging/Logging.h>
@@ -143,8 +146,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
        << endl;
 
-  auto const observationHeight = 0_km + builder.getEarthRadius();
-  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+  auto const observationHeight = 1.4_km + seaLevel;
+  auto const injectionHeight = 112.75_km + seaLevel;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
                       units::static_pow<2>(injectionHeight));

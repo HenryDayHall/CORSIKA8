@@ -13,6 +13,7 @@
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/IMediumPropertyModel.h>
 #include <corsika/environment/IRefractiveIndexModel.h>
+#include <corsika/environment/IMagneticFieldModel.h>
 
 namespace corsika::setup {
 
