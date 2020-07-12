@@ -227,6 +227,11 @@ endif (NOT (${USE_CONEX_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_CONEX_C8='${USE_CONEX_C8}'")
 
 add_library (C8::ext::conex STATIC IMPORTED GLOBAL)
+get_directory_property (Boost_iostreams_FOUND DIRECTORY ${CORSIKA_DATA}/readLib DEFINITION Boost_iostreams_FOUND)
+set (conex_boost "")
+if (NOT Boost_iostreams_FOUND)
+  set (conex_boost "NO_BOOST=1")
+endif (NOT Boost_iostreams_FOUND)
 if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   
   find_package (CONEX REQUIRED) 
@@ -240,18 +245,24 @@ if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   set (CONEX_FOUND 1 PARENT_SCOPE)
 
 else ()
-
+  
   message (STATUS "Building conex obtained via git and compiled")
   message (STATUS "This will take a bit.....")
+  if (${CMAKE_VERSION} VERSION_LESS "3.16.0")
+    message (WARNING "You need cmake >= 3.16 to support proper external git submodules. Right now, it will be more inefficient than necessary.")
+  else (${CMAKE_VERSION} VERSION_LESS "3.16.0")
+    cmake_policy (SET CMP0097 NEW) # avoid cloning of git submodules
+  endif (${CMAKE_VERSION} VERSION_LESS "3.16.0")
   ExternalProject_Add (cxroot
     GIT_REPOSITORY https://gitlab.ikp.kit.edu/AirShowerPhysics/cxroot.git
+    GIT_SUBMODULES ""
     GIT_TAG origin/master
     GIT_SHALLOW 1
     GIT_PROGRESS 1
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND make CX_NO_ROOT=1 all
+    BUILD_COMMAND make CX_NO_ROOT=1 ${conex_boost} CORSIKA_DATA=${CORSIKA_DATA} all
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE

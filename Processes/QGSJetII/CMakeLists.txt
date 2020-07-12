@@ -1,5 +1,5 @@
 if (NOT DEFINED ENV{CORSIKA_DATA})
-  message (WARNING "WARNING: download corsika-data repository from gitlab for needed data tables, and set CORSIKA_DATA path!")
+  message (WARNING "WARNING: QGSJetII will not work without corsika-data. Set CORSIKA_DATA path!")
 endif ()
 
 add_custom_command (
@@ -76,6 +76,7 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAsetup
   CORSIKArandom
+  CorsikaData
   )
 
 target_include_directories (

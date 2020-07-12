@@ -411,52 +411,62 @@ c fp(i) - pomeron vertex constant (i=icz)
 
 c-----------------------------------------------------------------------------
 c reading cross sections from the file
+      luseCompress=0
       if(ifIIdat.ne.1)then
-       inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04'
+       inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04.bz2'
      *        ,exist=lcalc)
+       if (lcalc.and.CorDataCanDeCompress().ne.0) then
+          luseCompress=1
+       else
+          inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04'
+     *         ,exist=lcalc)
+       endif
       else
-       inquire(file=fnIIdat(1:nfnIIdat),exist=lcalc)       !used to link with nexus
+       luseCompress = (index(fnIIdat(1:nfnIIdat), ".bz2").eq.nfnIIdat-3)
+       inquire(file=fnIIdat(1:nfnIIdat), exist=lcalc)       !used to link with nexus
       endif
-      lzmaUse=0
       if(lcalc)then
          if(ifIIdat.ne.1)then
-            open(1,file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04'
-     *           ,status='old')
-         else                   !used to link with nexus
-            if (LEN(fnIIdat).gt.6.and.
-     *           fnIIdat(nfnIIdat-4:nfnIIdat) .eq. ".lzma") then
-               lzmaUse=1
-               call LzmaOpenFile(fnIIdat(1:nfnIIdat))
+            if (luseCompress.ne.0) then
+               call CorDataOpenFile(DATDIR(1:INDEX(DATDIR,' ')-1)
+     *              //'qgsdat-II-04.bz2')
             else
-               open(ifIIdat,file=fnIIdat(1:nfnIIdat),status='old')
+               open(1,file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04'
+     *              ,status='old')
+            endif
+         else                   !used to link with nexus
+            if (luseCompress.ne.0) then
+               call CorDataOpenFile(fnIIdat(1:nfnIIdat))
+            else
+               open(ifIIdat, file=fnIIdat(1:nfnIIdat), status='old')
             endif
          endif
 
-       if (lzmaUse.ne.0) then
+       if (luseCompress.ne.0) then
 
-          if(debug.ge.0)write (moniou,214) 'qgsdat-II-04.lzma'
+          if(debug.ge.0)write (moniou,214) 'qgsdat-II-04.bz2'
 
-          call LzmaFillArray(csborn,size(csborn))
-          call LzmaFillArray(cs0,size(cs0))
-          call LzmaFillArray(cstot,size(cstot))
-          call LzmaFillArray(evk,size(evk))
-          call LzmaFillArray(qpomi,size(qpomi))
-          call LzmaFillArray(qpomis,size(qpomis))
-          call LzmaFillArray(qlegi,size(qlegi))
-          call LzmaFillArray(qfanu,size(qfanu))
-          call LzmaFillArray(qfanc,size(qfanc))
-          call LzmaFillArray(qdfan,size(qdfan))
-          call LzmaFillArray(qpomr,size(qpomr))
-          call LzmaFillArray(gsect,size(gsect))
-          call LzmaFillArray(qlegc0,size(qlegc0))
-          call LzmaFillArray(qlegc,size(qlegc))
-          call LzmaFillArray(qpomc,size(qpomc))
-          call LzmaFillArray(fsud,size(fsud))
-          call LzmaFillArray(qrt,size(qrt))
-          call LzmaFillArray(qrev,size(qrev))
-          call LzmaFillArray(fsud,size(fsud))
-          call LzmaFillArray(qrt,size(qrt))
-          call LzmaCloseFile()
+          call CorDataFillArray(csborn,size(csborn))
+          call CorDataFillArray(cs0,size(cs0))
+          call CorDataFillArray(cstot,size(cstot))
+          call CorDataFillArray(evk,size(evk))
+          call CorDataFillArray(qpomi,size(qpomi))
+          call CorDataFillArray(qpomis,size(qpomis))
+          call CorDataFillArray(qlegi,size(qlegi))
+          call CorDataFillArray(qfanu,size(qfanu))
+          call CorDataFillArray(qfanc,size(qfanc))
+          call CorDataFillArray(qdfan,size(qdfan))
+          call CorDataFillArray(qpomr,size(qpomr))
+          call CorDataFillArray(gsect,size(gsect))
+          call CorDataFillArray(qlegc0,size(qlegc0))
+          call CorDataFillArray(qlegc,size(qlegc))
+          call CorDataFillArray(qpomc,size(qpomc))
+          call CorDataFillArray(fsud,size(fsud))
+          call CorDataFillArray(qrt,size(qrt))
+          call CorDataFillArray(qrev,size(qrev))
+          call CorDataFillArray(fsud,size(fsud))
+          call CorDataFillArray(qrt,size(qrt))
+          call CorDataCloseFile()
        else
           if(debug.ge.0)write (moniou,214) 'qgsdat-II-04'
           read (1,*)csborn,cs0,cstot,evk,qpomi,qpomis,qlegi,qfanu,qfanc
@@ -1955,24 +1965,46 @@ c writing cross sections to the file
 
 10    continue
 c-----------------------------------------------------------------------------
-c nuclear cross sections
+c     nuclear cross sections
+      luseCompress=0
       if(ifIIncs.ne.2)then
+       inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04.bz2'
+     *        ,exist=lcalc)
+       if (lcalc.and.CorDataCanDeCompress().ne.0) then
+          luseCompress=1
+       else
        inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'
-     * ,exist=lcalc)
+     *        ,exist=lcalc)          
+       endif
       else                                                  !ctp
-       inquire(file=fnIIncs(1:nfnIIncs),exist=lcalc)
+       luseCompress = (index(fnIIncs(1:nfnIIncs), ".bz2").eq.nfnIIncs-3)
+       inquire(file=fnIIncs(1:nfnIIncs), exist=lcalc)
       endif
 
       if(lcalc)then
        if(debug.ge.0)write (moniou,207)
        if(ifIIncs.ne.2)then
-        open(2,file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'
-     *  ,status='old')
-       else                                                  !ctp
-        open(ifIIncs,file=fnIIncs(1:nfnIIncs),status='old')
+          if (luseCompress.ne.0) then
+             call CorDataOpenFile(
+     *            DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04.bz2')
+          else
+             open(2,file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'
+     *            ,status='old')
+          endif
+       else                     !ctp
+          if (luseCompress.ne.0) then
+             call CorDataOpenFile(fnIIncs(1:nfnIIncs))
+          else
+             open(ifIIncs,file=fnIIncs(1:nfnIIncs),status='old')
+          endif
        endif
-       read (2,*)qgsasect
-       close(2)
+       if (luseCompress.ne.0)then
+          call CorDataFillArray(qgsasect, size(qgsasect))
+          call CorDataCloseFile()
+       else
+          read (2,*)qgsasect
+          close(2)
+       endif
 
       elseif(.not.producetables)then
         write(moniou,*) "Missing sectnu-II-04 file !"
