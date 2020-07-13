@@ -2,6 +2,7 @@ variables:
   GIT_STRATEGY: fetch
   GIT_SSL_NO_VERIFY: "1"
   GIT_DEPTH: 1
+  GIT_SUBMODULE_STRATEGY: recursive
   # to re-use clones also in different forks
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/$CI_PROJECT_NAME
   ## Runtime options for sanitizers
@@ -22,6 +23,11 @@ variables:
 # Mote: "WIP:" merge request, non-WIP merge requests and "Ready for Code Review" MR are all
 #       handled explicitly
 #
+
+
+
+# normal multi-step pipeline for each commit
+
 stages:
   - quality
   - config
