@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_geometry_rootcoordinatesystem_h_
-#define _include_corsika_geometry_rootcoordinatesystem_h_
+#pragma once
 
 #include <corsika/utl/Singleton.h>
 
@@ -41,5 +40,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_baseprocess_h_
-#define _include_corsika_baseprocess_h_
+#pragma once
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <type_traits>
@@ -41,5 +40,3 @@ namespace corsika::process {
   std::true_type is_process_impl(const BaseProcess<T>* impl);
 
 } // namespace corsika::process
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_SwitchProcess_h
-#define _corsika_SwitchProcess_h
+#pragma once
 
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessSequence.h>
@@ -104,5 +103,3 @@ namespace corsika::process::switch_process {
     }
   };
 } // namespace corsika::process::switch_process
-
-#endif

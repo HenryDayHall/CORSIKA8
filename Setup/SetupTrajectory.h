@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_setup_setuptrajectory_h_
-#define _corsika_setup_setuptrajectory_h_
+#pragma once
 
 #include <corsika/geometry/Helix.h>
 #include <corsika/geometry/Line.h>
@@ -59,5 +58,3 @@ namespace corsika::setup {
   };
   */
 } // namespace corsika::setup
-
-#endif

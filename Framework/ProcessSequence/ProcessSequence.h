@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_ProcessSequence_h_
-#define _include_ProcessSequence_h_
+#pragma once
 
 #include <corsika/process/BaseProcess.h>
 #include <corsika/process/BoundaryCrossingProcess.h>
@@ -342,5 +341,3 @@ namespace corsika::process {
   template <typename A, typename B>
   struct is_process_sequence<corsika::process::ProcessSequence<A, B>> : std::true_type {};
 } // namespace corsika::process
-
-#endif

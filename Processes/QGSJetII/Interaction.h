@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_process_qgsjetII_interaction_h_
-#define _corsika_process_qgsjetII_interaction_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
@@ -65,5 +64,3 @@ namespace corsika::process::qgsjetII {
   };
 
 } // namespace corsika::process::qgsjetII
-
-#endif

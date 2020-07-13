@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_utl_Singleton_h_
-#define _corsika_utl_Singleton_h_
+#pragma once
 
 //#define OFFLINE_USE_GAMMA_SINGLETON
 
@@ -59,5 +58,3 @@ namespace corsika::utl {
   };
 
 } // namespace corsika::utl
-
-#endif

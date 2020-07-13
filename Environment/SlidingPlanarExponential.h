@@ -9,8 +9,7 @@
  * the license.
  */
 
-#ifndef _include_Environment_SlidingPlanarExponential_h_
-#define _include_Environment_SlidingPlanarExponential_h_
+#pragma once
 
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/NuclearComposition.h>
@@ -74,4 +73,3 @@ namespace corsika::environment {
   };
 
 } // namespace corsika::environment
-#endif

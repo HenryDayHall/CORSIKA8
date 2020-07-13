@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Processes_UrQMD_UrQMD_h
-#define _Processes_UrQMD_UrQMD_h
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
@@ -155,5 +154,3 @@ namespace corsika::process::UrQMD {
   particles::Code ConvertFromUrQMD(int vItyp, int vIso3);
 
 } // namespace corsika::process::UrQMD
-
-#endif

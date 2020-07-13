@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_BufferedSink_h_
-#define _include_BufferedSink_h_
+#pragma once
 
 namespace corsika::logging {
 
@@ -76,5 +75,3 @@ namespace corsika::logging {
 
   } // namespace sink
 } // namespace corsika::logging
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Processes_ObservationPlane_h_
-#define _Processes_ObservationPlane_h_
+#pragma once
 
 #include <corsika/geometry/Plane.h>
 #include <corsika/process/ContinuousProcess.h>
@@ -46,5 +45,3 @@ namespace corsika::process::observation_plane {
     bool const deleteOnHit_;
   };
 } // namespace corsika::process::observation_plane
-
-#endif

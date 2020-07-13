@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_superstupidstack_h_
-#define _include_superstupidstack_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
@@ -250,5 +249,3 @@ namespace corsika::stack {
   } // namespace super_stupid
 
 } // namespace corsika::stack
-
-#endif

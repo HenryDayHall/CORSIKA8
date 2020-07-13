@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef CORSIKA_CORSIKAFENV_H
-#define CORSIKA_CORSIKAFENV_H
+#pragma once
 
 #include <cfenv>
 
@@ -22,5 +21,3 @@ extern "C" {
 int feenableexcept(int excepts);
 int fedisableexcept(int excepts);
 }
-
-#endif // CORSIKA_CORSIKAFENV_H

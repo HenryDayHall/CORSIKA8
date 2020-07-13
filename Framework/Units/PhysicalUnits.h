@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_PhysicalUnits_h_
-#define _include_PhysicalUnits_h_
+#pragma once
 
 #include <corsika/units/PhysicalConstants.h>
 
@@ -163,5 +162,3 @@ namespace phys {
     } // namespace literals
   }   // namespace units
 } // namespace phys
-
-#endif

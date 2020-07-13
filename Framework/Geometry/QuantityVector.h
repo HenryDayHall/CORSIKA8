@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_QUANTITYVECTOR_H_
-#define _include_QUANTITYVECTOR_H_
+#pragma once
 
 #include <corsika/units/PhysicalUnits.h>
 
@@ -139,5 +138,3 @@ namespace corsika::geometry {
   }
 
 } // namespace corsika::geometry
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_environment_Environment_h
-#define _include_environment_Environment_h
+#pragma once
 
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/VolumeTreeNode.h>
@@ -68,5 +67,3 @@ namespace corsika::environment {
   // using SetupEnvironment = Environment<corsika::setup::IEnvironmentModel>;
 
 } // namespace corsika::environment
-
-#endif

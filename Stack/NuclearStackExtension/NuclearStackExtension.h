@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_stack_nuclearstackextension_h_
-#define _include_stack_nuclearstackextension_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
@@ -372,5 +371,3 @@ namespace corsika::stack {
 
   } // namespace nuclear_extension
 } // namespace corsika::stack
-
-#endif

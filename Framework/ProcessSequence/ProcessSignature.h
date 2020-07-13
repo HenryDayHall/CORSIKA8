@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_process_processsignature_h_
-#define _include_process_processsignature_h_
+#pragma once
 
 #define FORCE_SIGNATURE(nameTrait, nameMethod, signatureMethod)                \
   template <typename U>                                                        \
@@ -27,5 +26,3 @@
   }
 
 // FORCE_SIGNATURE(thisMustBeDefined, T::thisMustBeDefined, int(*)(void));
-
-#endif

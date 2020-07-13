@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_coaststack_h_
-#define _include_coaststack_h_
+#pragma once
 
 #include <corsika/coast/ParticleConversion.h>
 #include <corsika/particles/ParticleProperties.h>
@@ -188,5 +187,3 @@ namespace corsika::coast {
   typedef corsika::stack::Stack<COASTStackImpl, ParticleInterface> COASTStack;
 
 } // namespace corsika::coast
-
-#endif

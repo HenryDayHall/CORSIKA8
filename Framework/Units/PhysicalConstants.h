@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef INCLUDE_PHYSICAL_CONSTANTS_H
-#define INCLUDE_PHYSICAL_CONSTANTS_H
+#pragma once
 
 #include <phys/units/quantity.hpp>
 
@@ -66,5 +65,3 @@ namespace corsika::units::constants {
   // etc.
 
 } // namespace corsika::units::constants
-
-#endif // PHYS_UNITS_PHYSICAL_CONSTANTS_HPP_INCLUDED

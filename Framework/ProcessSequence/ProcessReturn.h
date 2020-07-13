@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_ProcessReturn_h_
-#define _include_ProcessReturn_h_
+#pragma once
 
 namespace corsika::process {
 
@@ -39,5 +38,3 @@ namespace corsika::process {
   }
 
 } // namespace corsika::process
-
-#endif

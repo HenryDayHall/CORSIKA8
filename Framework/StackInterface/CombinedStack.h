@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_stack_combinedstack_h_
-#define _include_stack_combinedstack_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
@@ -173,5 +172,3 @@ namespace corsika::stack {
   using CombinedStack = Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI>;
 
 } // namespace corsika::stack
-
-#endif

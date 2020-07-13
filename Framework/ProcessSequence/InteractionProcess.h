@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_interactionprocess_h_
-#define _include_corsika_interactionprocess_h_
+#pragma once
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
@@ -51,5 +50,3 @@ namespace corsika::process {
   std::true_type is_process_impl(const InteractionProcess<T>* impl);
 
 } // namespace corsika::process
-
-#endif

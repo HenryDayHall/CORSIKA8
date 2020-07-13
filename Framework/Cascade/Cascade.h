@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_cascade_Cascade_h_
-#define _include_corsika_cascade_Cascade_h_
+#pragma once
 
 #include <corsika/environment/Environment.h>
 #include <corsika/process/ProcessReturn.h>
@@ -332,5 +331,3 @@ namespace corsika::cascade {
   }; // namespace corsika::cascade
 
 } // namespace corsika::cascade
-
-#endif

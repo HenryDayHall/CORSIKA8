@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_ExponentialDistribution_h
-#define _include_ExponentialDistribution_h
+#pragma once
 
 #include <corsika/units/PhysicalUnits.h>
 #include <random>
@@ -34,5 +33,3 @@ namespace corsika::random {
   };
 
 } // namespace corsika::random
-
-#endif

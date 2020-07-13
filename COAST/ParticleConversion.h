@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_processes_sibyll_particles_h_
-#define _include_processes_sibyll_particles_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 
@@ -210,5 +209,3 @@ namespace corsika::coast {
   corsika::particles::Code ConvertFromCoast(CoastCode pCode);
 
 } // namespace corsika::coast
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_HELIX_H_
-#define _include_HELIX_H_
+#pragma once
 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
@@ -73,5 +72,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

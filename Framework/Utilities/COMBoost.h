@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_utilties_comboost_h_
-#define _include_corsika_utilties_comboost_h_
+#pragma once
 
 #include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/FourVector.h>
@@ -98,5 +97,3 @@ namespace corsika::utl {
     geometry::CoordinateSystem const& GetRotatedCS() const;
   };
 } // namespace corsika::utl
-
-#endif

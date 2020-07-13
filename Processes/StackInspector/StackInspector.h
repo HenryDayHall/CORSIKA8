@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Physics_StackInspector_StackInspector_h_
-#define _Physics_StackInspector_StackInspector_h_
+#pragma once
 
 #include <corsika/process/StackProcess.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -54,5 +53,3 @@ namespace corsika::process {
   } // namespace stack_inspector
 
 } // namespace corsika::process
-
-#endif

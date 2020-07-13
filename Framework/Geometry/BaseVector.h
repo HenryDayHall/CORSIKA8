@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_BASEVECTOR_H_
-#define _include_BASEVECTOR_H_
+#pragma once
 
 #include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/QuantityVector.h>
@@ -35,5 +34,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_process_trackinling_teststack_h_
-#define _include_process_trackinling_teststack_h_
+#pragma once
 
 #include <corsika/environment/Environment.h>
 #include <corsika/geometry/Point.h>
@@ -32,5 +31,3 @@ using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
 using TestTrackingLineStack = corsika::stack::CombinedStack<
     typename corsika::setup::detail::ParticleDataStack::StackImpl,
     GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
-
-#endif

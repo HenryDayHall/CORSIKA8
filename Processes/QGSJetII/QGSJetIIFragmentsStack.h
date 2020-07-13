@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_qgsjetIIfragmentsstack_h_
-#define _include_qgsjetIIfragmentsstack_h_
+#pragma once
 
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
@@ -76,5 +75,3 @@ namespace corsika::process::qgsjetII {
       QGSJetIIFragmentsStack;
 
 } // end namespace corsika::process::qgsjetII
-
-#endif

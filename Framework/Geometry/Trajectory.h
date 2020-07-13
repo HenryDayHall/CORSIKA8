@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_TRAJECTORY_H
-#define _include_TRAJECTORY_H
+#pragma once
 
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
@@ -56,5 +55,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

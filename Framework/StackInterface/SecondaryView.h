@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_stack_secondaryview_h_
-#define _include_corsika_stack_secondaryview_h_
+#pragma once
 
 #include <corsika/stack/Stack.h>
 
@@ -246,5 +245,3 @@ namespace corsika::stack {
 #endif
 
 } // namespace corsika::stack
-
-#endif

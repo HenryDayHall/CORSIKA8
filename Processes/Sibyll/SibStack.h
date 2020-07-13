@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_sibstack_h_
-#define _include_sibstack_h_
+#pragma once
 
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
@@ -148,5 +147,3 @@ namespace corsika::process::sibyll {
   typedef corsika::stack::Stack<SibStackData, ParticleInterface> SibStack;
 
 } // end namespace corsika::process::sibyll
-
-#endif

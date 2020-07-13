@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Framework_Cascade_testCascade_h
-#define _Framework_Cascade_testCascade_h
+#pragma once
 
 #include <corsika/environment/Environment.h>
 #include <corsika/setup/SetupStack.h>
@@ -39,6 +38,4 @@ using TestCascadeStackView =
                                   StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using TestCascadeStackView = corsika::stack::MakeView<TestCascadeStack>::type;
-#endif
-
 #endif

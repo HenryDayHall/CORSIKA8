@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_process_particle_cut_ParticleCut_h_
-#define _corsika_process_particle_cut_ParticleCut_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/SecondariesProcess.h>
@@ -51,5 +50,3 @@ namespace corsika::process {
     };
   } // namespace particle_cut
 } // namespace corsika::process
-
-#endif

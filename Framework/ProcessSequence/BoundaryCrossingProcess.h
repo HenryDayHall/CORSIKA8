@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_processes_BoundaryCrossingProcess_h_
-#define _include_corsika_processes_BoundaryCrossingProcess_h_
+#pragma once
 
 #include <corsika/environment/Environment.h>
 #include <corsika/process/ProcessReturn.h>
@@ -31,5 +30,3 @@ namespace corsika::process {
   template <class T>
   std::true_type is_process_impl(BoundaryCrossingProcess<T> const* impl);
 } // namespace corsika::process
-
-#endif

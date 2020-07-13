@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_dummystack_h_
-#define _include_dummystack_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
@@ -67,5 +66,3 @@ namespace corsika::stack {
   } // namespace dummy
 
 } // namespace corsika::stack
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_processes_sibyll_particles_h_
-#define _include_processes_sibyll_particles_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/sibyll/sibyll2.3d.h>
@@ -66,5 +65,3 @@ namespace corsika::process::sibyll {
   corsika::units::si::HEPMassType GetSibyllMass(corsika::particles::Code const);
 
 } // namespace corsika::process::sibyll
-
-#endif

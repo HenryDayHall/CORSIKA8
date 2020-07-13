@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_setup_setupstack_h_
-#define _corsika_setup_setupstack_h_
+#pragma once
 
 // the basic particle data stack:
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
@@ -151,5 +150,3 @@ namespace corsika::setup {
 #endif
 
 } // namespace corsika::setup
-
-#endif

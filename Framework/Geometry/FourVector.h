@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_framework_geometry_fourvector_h_
-#define _include_corsika_framework_geometry_fourvector_h_
+#pragma once
 
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -216,5 +215,3 @@ namespace corsika::geometry {
   }
 
 } // namespace corsika::geometry
-
-#endif

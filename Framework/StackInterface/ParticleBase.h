@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_particleBase_h_
-#define _include_particleBase_h_
+#pragma once
 
 #include <type_traits>
 
@@ -106,5 +105,3 @@ namespace corsika::stack {
   };
 
 } // namespace corsika::stack
-
-#endif

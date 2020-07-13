@@ -14,8 +14,7 @@
    Interface to particle properties
  */
 
-#ifndef _include_corsika_particles_ParticleProperties_h_
-#define _include_corsika_particles_ParticleProperties_h_
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -157,5 +156,3 @@ namespace corsika::particles {
   }
 
 } // namespace corsika::particles
-
-#endif

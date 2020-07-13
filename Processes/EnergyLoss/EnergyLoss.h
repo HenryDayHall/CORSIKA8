@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Processes_EnergyLoss_h_
-#define _Processes_EnergyLoss_h_
+#pragma once
 
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Point.h>
@@ -64,5 +63,3 @@ namespace corsika::process::energy_loss {
     return 0.0001_g / square(1_cm);
   });
 } // namespace corsika::process::energy_loss
-
-#endif

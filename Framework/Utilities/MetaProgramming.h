@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_utilties_meta_programming_h_
-#define _include_corsika_utilties_meta_programming_h_
+#pragma once
 
 #include <type_traits>
 
@@ -61,5 +60,3 @@ namespace corsika::utl {
   template <class Trait>
   using disable_if = typename std::enable_if<(Trait::value == false)>::type;
 } // namespace corsika::utl
-
-#endif

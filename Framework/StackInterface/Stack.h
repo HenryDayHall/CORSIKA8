@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_Stack_h__
-#define _include_Stack_h__
+#pragma once
 
 #include <corsika/stack/StackIteratorInterface.h>
 // must be after StackIteratorInterface
@@ -240,5 +239,3 @@ namespace corsika::stack {
   };
 
 } // namespace corsika::stack
-
-#endif

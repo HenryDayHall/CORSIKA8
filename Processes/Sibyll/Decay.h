@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_process_sibyll_decay_h_
-#define _include_corsika_process_sibyll_decay_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/DecayProcess.h>
@@ -88,5 +87,3 @@ namespace corsika::process {
   } // namespace sibyll
 
 } // namespace corsika::process
-
-#endif
