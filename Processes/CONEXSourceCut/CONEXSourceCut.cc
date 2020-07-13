@@ -122,7 +122,7 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
   conex::cxoptl_.dptl[1 - 1] = v;
   conex::cxoptl_.dptl[3 - 1] = w;
 
-  int n = 0, i = 0;
+  int n = 1, i = 1;
   conex::cegs4_(n, i);
 }
 
