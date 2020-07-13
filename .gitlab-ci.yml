@@ -83,6 +83,7 @@ check-clang-format:
   variables:
   before_script:
    - cd Data && for F in `find . -name "*.bz2" | grep -v ".git"`; do [ ! -f ${F%%.bz2} ] && bunzip2 -vk $F; done
+   - cd ${CI_PROJECT_DIR}
   script:    
     - mkdir -p build
     - cd build
@@ -93,8 +94,8 @@ check-clang-format:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -137,8 +138,8 @@ config-clang-8:
   allow_failure: true
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -189,13 +190,13 @@ build-clang-8:
     expire_in: 3 days
     reports:
       junit:
-        - build/test_outputs/junit*.xml
+        - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - build/test.log.gz
+      - ${CI_PROJECT_DIR}/build/test.log.gz
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -245,13 +246,13 @@ test-clang-8:
     expire_in: 3 days
     reports:
       junit:
-        - build/test_outputs/junit*.xml
+        - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - build/test.log.gz
+      - ${CI_PROJECT_DIR}/build/test.log.gz
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -300,11 +301,11 @@ build_test-clang-8:
     when: always
     expire_in: 3 days
     paths:
-      - build/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/examples.log.gz
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
 
@@ -357,14 +358,14 @@ example-clang-8:
     expire_in: 3 days
     reports:
       junit:
-        - build/test_outputs/junit*.xml
+        - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - build/examples.log.gz
-      - build/test.log.gz
+      - ${CI_PROJECT_DIR}/build/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/test.log.gz
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
 
@@ -412,8 +413,8 @@ build_test_example-clang-8:
   allow_failure: true
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
 
@@ -453,7 +454,7 @@ install-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 -VV | gzip -v -9 > test.log.gz 
-    - make -j4 run_examples
+    - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -467,8 +468,8 @@ install-clang-8:
       allow_failure: true
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
   artifacts:
@@ -476,9 +477,10 @@ install-clang-8:
     expire_in: 3 days
     reports:
       junit:
-        - build/test_outputs/junit*.xml
+        - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - build/test.log.gz
+      - ${CI_PROJECT_DIR}/build/test.log.gz
+      - ${CI_PROJECT_DIR}/build/examples.log.gz
 
 # release for gcc
 release-full-u-18_04:
@@ -532,11 +534,11 @@ coverage:
     when: always
     expire_in: 1 year
     paths:
-      - build/coverage-report.tar.gz
+      - ${CI_PROJECT_DIR}/build/coverage-report.tar.gz
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
@@ -572,11 +574,11 @@ documentation:
   artifacts:
     expire_in: 3 weeks
     paths:
-      - public
+      - ${CI_PROJECT_DIR}/public
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
@@ -608,8 +610,8 @@ sanity:
       allow_failure: true
   cache: 
     paths:
-      - build/
-      - Data/
+      - ${CI_PROJECT_DIR}/build/
+      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
