@@ -517,7 +517,7 @@ coverage:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
-    - ctest -j4 -V > test.log 
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz 
     - cmake --build . --target coverage
     - tar czf coverage-report.tar.gz coverage-report
   coverage: '/^.*functions\.+:\s(.*\%)\s/'
@@ -534,6 +534,7 @@ coverage:
     when: always
     expire_in: 1 year
     paths:
+      - ${CI_PROJECT_DIR}/build/test.log.gz
       - ${CI_PROJECT_DIR}/build/coverage-report.tar.gz
   cache: 
     paths:
