@@ -59,7 +59,7 @@ void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("qgran");
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
 
   random::RNGManager::GetInstance().SeedAll();
 }

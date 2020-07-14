@@ -46,10 +46,11 @@ namespace corsika::process::UrQMD {
     bool CanInteract(particles::Code) const;
 
   private:
+
     void readXSFile(std::string const&);
 
     corsika::random::RNG& rng_ =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("urqmd");
 
     std::uniform_int_distribution<int> booleanDist_{0, 1};
     boost::multi_array<corsika::units::si::CrossSectionType, 3> xs_interp_support_table_;
