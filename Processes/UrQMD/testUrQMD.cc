@@ -135,8 +135,8 @@ TEST_CASE("UrQMD") {
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
   UrQMD urqmd;
 
-  SECTION("cross sections") {
-    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Unknown);
+  SECTION("interaction length") {
+    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Nitrogen);
     auto const& cs = *csPtr;
 
     particles::Code validProjectileCodes[] = {
@@ -149,22 +149,12 @@ TEST_CASE("UrQMD") {
       REQUIRE(stack->GetSize() == 1);
 
       // simple check whether the cross-section is non-vanishing
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Proton) /
-                  1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Nitrogen) /
-                  1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Oxygen) /
-                  1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Argon) /
-                  1_mb >
-              0);
+      // only nuclei with available tabluated data so far
+      REQUIRE(urqmd.GetInteractionLength(stack->GetNextParticle()) > 1_g / square(1_cm));
     }
   }
 
-  SECTION("nucleon projectile") {
+  SECTION("nucleus projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);

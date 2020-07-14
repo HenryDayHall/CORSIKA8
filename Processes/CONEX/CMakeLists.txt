@@ -35,6 +35,7 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAsetup
   CORSIKArandom
+  CorsikaData
   C8::ext::conex
   )
 

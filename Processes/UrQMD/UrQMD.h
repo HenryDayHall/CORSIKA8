@@ -16,15 +16,19 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/utl/CorsikaData.h>
+
+#include <boost/multi_array.hpp>
 
 #include <array>
 #include <random>
+#include <string>
 #include <utility>
 
 namespace corsika::process::UrQMD {
   class UrQMD : public corsika::process::InteractionProcess<UrQMD> {
   public:
-    UrQMD();
+    UrQMD(std::string const& path = utl::CorsikaData("UrQMD/UrQMD-1.3.1-xs.dat"));
     void Init() {}
     corsika::units::si::GrammageType GetInteractionLength(
         corsika::setup::Stack::StackIterator const&) const;
@@ -33,21 +37,29 @@ namespace corsika::process::UrQMD {
     corsika::units::si::CrossSectionType GetCrossSection(TParticle const&,
                                                          corsika::particles::Code) const;
 
+    corsika::units::si::CrossSectionType GetCrossSection(
+        particles::Code, particles::Code, corsika::units::si::HEPEnergyType,
+        int Ap = 1) const;
+
+    corsika::units::si::CrossSectionType GetTabulatedCrossSection(
+        particles::Code, particles::Code, corsika::units::si::HEPEnergyType) const;
+
     corsika::process::EProcessReturn DoInteraction(
         corsika::setup::StackView::StackIterator&);
 
     bool CanInteract(particles::Code) const;
 
   private:
-    static corsika::units::si::CrossSectionType GetCrossSection(
-        particles::Code, particles::Code, corsika::units::si::HEPEnergyType, int);
-    corsika::random::RNG& fRNG =
+    void readXSFile(std::string const&);
+
+    corsika::random::RNG& rng_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
 
-    std::uniform_int_distribution<int> fBooleanDist{0, 1};
+    std::uniform_int_distribution<int> booleanDist_{0, 1};
+    boost::multi_array<corsika::units::si::CrossSectionType, 3> xs_interp_support_table_;
   };
 
-  namespace constants {
+  namespace details::constants {
     // from coms.f
     int constexpr nmax = 500;
 
@@ -58,21 +70,26 @@ namespace corsika::process::UrQMD {
     // from inputs.f
     int constexpr aamax = 300;
 
-  } // namespace constants
+  } // namespace details::constants
 
   template <typename T>
-  using nmaxArray = std::array<T, constants::nmax>;
+  using nmaxArray = std::array<T, details::constants::nmax>;
   using nmaxIntArray = nmaxArray<int>;
   using nmaxDoubleArray = nmaxArray<double>;
 
   extern "C" {
+  // FORTRAN functions defined in UrQMD
   void iniurqmd_();
   double ranf_(int&);
   void cascinit_(int const&, int const&, int const&);
   double nucrad_(int const&);
   void urqmd_(int&);
-  int pdgid_(int&, int&);
+  int pdgid_(int const&, int const&);
   double sigtot_(int&, int&, double&);
+  int collclass_(int&, int&, int&, int&);
+  double crossx_(int const&, double const&, int const&, int const&, double const&,
+                 int const&, int const&, double const&, double&);
+  int readsigmaln_(int const&, int const&, int const&);
 
   // defined in coms.f
   extern struct {
@@ -117,8 +134,8 @@ namespace corsika::process::UrQMD {
 
   // defined in options.f
   extern struct {
-    std::array<double, constants::numcto> CTOption;
-    std::array<double, constants::numctp> CTParam;
+    std::array<double, details::constants::numcto> CTOption;
+    std::array<double, details::constants::numctp> CTParam;
   } options_;
 
   extern struct {

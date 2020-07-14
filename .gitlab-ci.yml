@@ -11,7 +11,7 @@ variables:
   LSAN_OPTIONS: "log_threads=1"
   ASAN_OPTIONS: "detect_leaks=0:detect_stack_use_after_return=1"
   # location of AirShowerPhysics/corsika-data
-  # CORSIKA_DATA: "${CI_PROJECT_DIR}/corsika-data/"
+  CORSIKA_DATA: "${CI_PROJECT_DIR}/Data" # the git submodule
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal
 
