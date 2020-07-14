@@ -245,7 +245,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
                                              std::vector<float>{1.f});
 
   // create a magnetic field vector
-  QuantityVector B0(0_T, 0_T, 0_T);
+  Vector B0(gCS, 0_T, 0_T, 0_T);
 
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
@@ -254,20 +254,28 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   AtmModel medium(B0, density, protonComposition);
 
   // and test at several locations
-  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
-  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
-  REQUIRE(B0 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
+  REQUIRE(B0.GetComponents(gCS) ==
+          medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)).GetComponents(gCS));
+  REQUIRE(
+      B0.GetComponents(gCS) ==
+      medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)).GetComponents(gCS));
+  REQUIRE(B0.GetComponents(gCS) ==
+          medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)).GetComponents(gCS));
 
   // create a new magnetic field vector
-  QuantityVector B1(23_T, 57_T, -4_T);
+  Vector B1(gCS, 23_T, 57_T, -4_T);
 
   // and update this atmospheric model
   medium.SetMagneticField(B1);
 
   // and test at several locations
-  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)));
-  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)));
-  REQUIRE(B1 == medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)));
+  REQUIRE(B1.GetComponents(gCS) ==
+          medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)).GetComponents(gCS));
+  REQUIRE(
+      B1.GetComponents(gCS) ==
+      medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)).GetComponents(gCS));
+  REQUIRE(B1.GetComponents(gCS) ==
+          medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)).GetComponents(gCS));
 
   // check the density and nuclear composition
   REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
