@@ -230,8 +230,7 @@ namespace corsika::cascade {
         auto magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(),
                                                        0_uT, 50_uT, 0_uT);
         geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag =
-            velocity - magneticfield * velocity.dot(magneticfield) /
-                           (magneticfield.GetSquaredNorm());
+            velocity - velocity.parallelProjectionOnto(magneticfield);
         LengthType const gyroradius =
             vParticle.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V /
             (corsika::units::constants::cSquared * abs(chargeNumber) *
@@ -308,7 +307,7 @@ namespace corsika::cascade {
 
         TStackView secondaries(vParticle);
 
-        if (min_distance != distance_max) {
+        if (min_distance != distance_max && min_distance != magMaxLength) {
           /*
             Create SecondaryView object on Stack. The data container
             remains untouched and identical, and 'projectil' is identical
