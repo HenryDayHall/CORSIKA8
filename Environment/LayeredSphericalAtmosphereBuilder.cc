@@ -29,7 +29,7 @@ void LayeredSphericalAtmosphereBuilder::setNuclearComposition(
 void LayeredSphericalAtmosphereBuilder::addExponentialLayer(
     units::si::GrammageType b, units::si::LengthType c,
     units::si::LengthType upperBoundary) {
-  auto const radius = seaLevel_ + upperBoundary;
+  auto const radius = earthRadius_ + upperBoundary;
   checkRadius(radius);
   previousRadius_ = radius;
 
@@ -40,7 +40,7 @@ void LayeredSphericalAtmosphereBuilder::addExponentialLayer(
   std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
 
   node->SetModelProperties<SlidingPlanarExponential<IMediumModel>>(
-      center_, rho0, -c, *composition_, seaLevel_);
+      center_, rho0, -c, *composition_, earthRadius_);
 
   layers_.push(std::move(node));
 }
@@ -49,7 +49,7 @@ void LayeredSphericalAtmosphereBuilder::addLinearLayer(
     units::si::LengthType c, units::si::LengthType upperBoundary) {
   using namespace units::si;
 
-  auto const radius = seaLevel_ + upperBoundary;
+  auto const radius = earthRadius_ + upperBoundary;
   checkRadius(radius);
   previousRadius_ = radius;
 

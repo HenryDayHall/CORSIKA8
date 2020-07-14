@@ -218,7 +218,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   REQUIRE(builder.size() == 0);
 
-  auto constexpr R = LayeredSphericalAtmosphereBuilder::earthRadius;
+  auto const R = builder.getEarthRadius();
 
   REQUIRE(univ->GetChildNodes().size() == 1);
 
