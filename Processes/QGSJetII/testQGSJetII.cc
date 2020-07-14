@@ -22,6 +22,26 @@
 
 using namespace corsika;
 using namespace corsika::process::qgsjetII;
+using namespace corsika::units::si;
+
+template <typename TStackView>
+auto sumCharge(TStackView const& view) {
+  int totalCharge = 0;
+
+  for (auto const& p : view) { totalCharge += particles::GetChargeNumber(p.GetPID()); }
+
+  return totalCharge;
+}
+
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
+  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+
+  for (auto const& p : view) { sum += p.GetMomentum(); }
+
+  return sum;
+}
+
 
 TEST_CASE("QgsjetII", "[processes]") {
 
@@ -113,18 +133,27 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     auto particle =
         stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                      corsika::stack::MomentumVector, geometry::Point,
-                                     units::si::TimeType, unsigned int, unsigned int>{
-            particles::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
-    // corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-    //	  particles::Code::PiPlus, E0, plab, pos, 0_ns});
+                                     units::si::TimeType>{
+            particles::Code::Proton, E0, plab, pos, 0_ns});
 
     particle.SetNode(nodePtr);
     corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
+    auto const projectileMomentum = projectile.GetMomentum();
 
     Interaction model;
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+
+    REQUIRE( length/(1_g / square(1_cm)) == Approx(93.47).margin(0.1) );
+    REQUIRE( view.GetSize() == 13 );
+    /*REQUIRE( sumCharge(view) ==
+      1 + particles::GetChargeNumber(particles::Code::Oxygen) );*/
+    auto const secMomSum =
+      sumMomentum(view, projectileMomentum.GetCoordinateSystem());
+    REQUIRE( (secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+	     Approx(0).margin(1e-2));
+
   }
 }
