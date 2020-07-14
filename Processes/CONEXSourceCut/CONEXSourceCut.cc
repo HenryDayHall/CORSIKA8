@@ -167,6 +167,7 @@ void CONEXSourceCut::SolveCE() {
         " {:>8.2f} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3}\n",
         X[i], N[i], dEdX[i], Mu[i], dMu[i], Gamma[i], Electrons[i], Hadrons[i]);
   }
+  file.close();
 
   std::ofstream fitout{"conex_fit.txt"};
   fitout << fitpars[1 - 1] << " # log10(eprima/eV)" << std::endl;
@@ -182,6 +183,7 @@ void CONEXSourceCut::SolveCE() {
   fitout << fitpars[11 - 1] << " # phi" << std::endl;
   fitout << fitpars[12 - 1] << " # inelasticity 1st int." << std::endl;
   fitout << fitpars[13 - 1] << " # ???" << std::endl;
+  fitout.close();
 }
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center,
