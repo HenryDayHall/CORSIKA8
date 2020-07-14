@@ -13,22 +13,13 @@
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Point.h>
+#include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <memory>
 #include <stack>
 
 namespace corsika::environment {
-
-  /**
-   * A namespace containing various Earth radii.
-   */
-  namespace EarthRadius {
-    static constexpr auto Mean{6'371'000 * units::si::meter};
-    static constexpr auto Eqautorial{6'378'137 * units::si::meter};
-    static constexpr auto Polar{6'356'752 * units::si::meter};
-    static constexpr auto PolarCurvature{6'399'593 * units::si::meter};
-  } // namespace EarthRadius
 
   class LayeredSphericalAtmosphereBuilder {
     std::unique_ptr<NuclearComposition> composition_;
@@ -44,7 +35,7 @@ namespace corsika::environment {
   public:
     LayeredSphericalAtmosphereBuilder(
         corsika::geometry::Point center,
-        units::si::LengthType earthRadius = EarthRadius::Mean)
+        units::si::LengthType earthRadius = units::constants::EarthRadius::Mean)
         : center_(center)
         , earthRadius_(earthRadius) {}
 

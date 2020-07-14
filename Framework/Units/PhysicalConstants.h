@@ -53,6 +53,16 @@ namespace corsika::units::constants {
   // molar gas constant
   auto constexpr R = Rep(8.314'459'8) * joule / (mole * kelvin);
 
+  /**
+   * A namespace containing various Earth radii.
+   */
+  namespace EarthRadius {
+    static constexpr auto Mean{6'371'000 * meter};
+    static constexpr auto Eqautorial{6'378'137 * meter};
+    static constexpr auto Polar{6'356'752 * meter};
+    static constexpr auto PolarCurvature{6'399'593 * meter};
+  } // namespace EarthRadius
+
   // etc.
 
 } // namespace corsika::units::constants
