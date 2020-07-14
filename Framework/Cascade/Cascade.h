@@ -227,8 +227,8 @@ namespace corsika::cascade {
       auto magMaxLength = 1_m / 0;
       auto directionAfter = directionBefore;
       if (chargeNumber != 0) {
-        // auto magneticfield = currentLogicalNode->GetModelProperties().
-                                GetMagneticField(vParticle.GetPosition());
+        /* auto magneticfield = currentLogicalNode->GetModelProperties().
+                                GetMagneticField(vParticle.GetPosition()); */
         auto magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(),
                                                        0_uT, 50_uT, 0_uT);
         geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag =
