@@ -19,18 +19,10 @@ namespace corsika::process::proposal {
   using namespace corsika::environment;
   using namespace corsika::units::si;
 
-  std::unordered_map<particles::Code, PROPOSAL::ParticleDef> Interaction::particles{
-      {particles::Code::Gamma, PROPOSAL::GammaDef()},
-      {particles::Code::Electron, PROPOSAL::EMinusDef()},
-      {particles::Code::Positron, PROPOSAL::EPlusDef()},
-      {particles::Code::MuMinus, PROPOSAL::MuMinusDef()},
-      {particles::Code::MuPlus, PROPOSAL::MuPlusDef()},
-      {particles::Code::TauPlus, PROPOSAL::TauPlusDef()},
-      {particles::Code::TauMinus, PROPOSAL::TauMinusDef()},
-  };
-
   bool Interaction::CanInteract(particles::Code pcode) const noexcept {
-    if (particles.find(pcode) != particles.end()) return true;
+    if (std::find(tracked_particles.begin(), tracked_particles.end(), pcode) !=
+        tracked_particles.end())
+      return true;
     return false;
   }
 
