@@ -115,9 +115,12 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   add_custom_target (coverage DEPENDS coverage-report)
 endif ()
 
-# add call to ./do-copyright.py to run as unit-test-case
-add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
+# include this test only if NOT run on gitlab-ci, since there we have a dedicated job for it:
+if (NOT DEFINED ENV{CI})
+  # add call to ./do-copyright.py to run as unit-test-case
+  add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif (NOT DEFINED ENV{CI})
+  
 if (DEFINED ENV{CORSIKA_DATA})
   message ("Found  corsika-data in $ENV{CORSIKA_DATA}")
   set (CORSIKA_DATA $ENV{CORSIKA_DATA})
