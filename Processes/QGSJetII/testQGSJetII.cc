@@ -42,7 +42,6 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
   return sum;
 }
 
-
 TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("QgsjetII -> Corsika") {
@@ -130,10 +129,9 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                     corsika::stack::MomentumVector, geometry::Point,
-                                     units::si::TimeType>{
+    auto particle = stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
 
     particle.SetNode(nodePtr);
@@ -146,14 +144,12 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
-    REQUIRE( length/(1_g / square(1_cm)) == Approx(93.47).margin(0.1) );
-    REQUIRE( view.GetSize() == 13 );
+    REQUIRE(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));
+    REQUIRE(view.GetSize() == 13);
     /*REQUIRE( sumCharge(view) ==
       1 + particles::GetChargeNumber(particles::Code::Oxygen) );*/
-    auto const secMomSum =
-      sumMomentum(view, projectileMomentum.GetCoordinateSystem());
-    REQUIRE( (secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
-	     Approx(0).margin(1e-2));
-
+    auto const secMomSum = sumMomentum(view, projectileMomentum.GetCoordinateSystem());
+    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+            Approx(0).margin(1e-2));
   }
 }

@@ -18,10 +18,10 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
+#include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
-#include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
@@ -193,13 +193,13 @@ int main(int argc, char** argv) {
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
-  
+
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
-  
+
   sibyllNuc.Init();
   sibyll.Init();
-                                                                
+
   process::conex_source_cut::CONEXSourceCut conexSource(
       center, showerAxis, t, injectionHeight, E0,
       particles::GetPDG(particles::Code::Proton));
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << longprof
+	  auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource << longprof
                                 << eLoss << cut << observationLevel;
 
   // define air shower object, run simulation

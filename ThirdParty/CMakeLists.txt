@@ -239,15 +239,6 @@ if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   
   find_package (CONEX REQUIRED) 
   message (STATUS "Using system-level CONEX version at ${CONEX_INCLUDE_DIR}")
-  set_target_properties (
-    C8::ext::conex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
-    IMPORTED_NO_SONAME 1
-    SKIP_BUILD_RPATH FALSE
-    IMPORTED_LINK_INTERFACE_LIBRARIES ${boost_lib}
-    INTERFACE_INCLUDE_DIRECTORIES
-     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
-    )
   set (CONEX_FOUND 1 PARENT_SCOPE)
 
 else ()
@@ -283,16 +274,26 @@ else ()
 
   # create include directory at config time
   file (MAKE_DIRECTORY ${CONEX_INCLUDE_DIR})
+    
+endif ()
 
+if (Boost_iostreams_FOUND)
   set_target_properties (
     C8::ext::conex PROPERTIES
     IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
     IMPORTED_NO_SONAME 1
     SKIP_BUILD_RPATH FALSE
-    IMPORTED_LINK_INTERFACE_LIBRARIES  ${boost_lib}
+    IMPORTED_LINK_INTERFACE_LIBRARIES boost_iostreams
     INTERFACE_INCLUDE_DIRECTORIES
-     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
+    $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
     )
-    
-endif ()
-
+else (Boost_iostreams_FOUND)
+  set_target_properties (
+    C8::ext::conex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
+    IMPORTED_NO_SONAME 1
+    SKIP_BUILD_RPATH FALSE
+    INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
+    )
+endif (Boost_iostreams_FOUND)
