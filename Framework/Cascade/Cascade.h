@@ -227,10 +227,8 @@ namespace corsika::cascade {
       auto magMaxLength = 1_m / 0;
       auto directionAfter = directionBefore;
       if (chargeNumber != 0) {
-        /* auto magneticfield = currentLogicalNode->GetModelProperties().
-                                GetMagneticField(vParticle.GetPosition()); */
-        auto magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(),
-                                                       0_uT, 50_uT, 0_uT);
+        auto magneticfield = currentLogicalNode->GetModelProperties().
+                                GetMagneticField(vParticle.GetPosition()); 
         geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag =
             velocity - velocity.parallelProjectionOnto(magneticfield);
         LengthType const gyroradius =
@@ -242,9 +240,7 @@ namespace corsika::cascade {
         // First Movement
         auto position = vParticle.GetPosition() + directionBefore * Steplength / 2;
         // Change of direction by magnetic field at position
-        // magneticfield = currentLogicalNode->GetModelProperties.GetMagneticField(position);
-        magneticfield = corsika::geometry::Vector(fEnvironment.GetCoordinateSystem(),
-                                                  0_uT, 50_uT, 0_uT);
+        magneticfield = currentLogicalNode->GetModelProperties.GetMagneticField(position);
         directionAfter = directionBefore +
                          velocity.cross(magneticfield) * chargeNumber * Steplength *
                              corsika::units::constants::cSquared * 1_eV /
