@@ -343,9 +343,11 @@ example-clang-8:
     - cd build
     - cmake --build . -- -j4 VERBOSE=1
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz
+    - echo "aha"
     - ldd corsika_data/readLib/testData
     - corsika_data/readLib/testData
+    - echo "ahaddd"
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
