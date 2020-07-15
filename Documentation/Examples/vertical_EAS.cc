@@ -203,8 +203,8 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << longprof << eLoss << cut
-                                << observationLevel;
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << longprof
+                                << eLoss << cut << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
