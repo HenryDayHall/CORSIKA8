@@ -7,6 +7,8 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
+#ifndef CORSIKA_CORSIKADATA_H
+#define CORSIKA_CORSIKADATA_H
 
 #include <string>
 
@@ -16,3 +18,5 @@ namespace corsika::utl {
    */
   std::string CorsikaData(std::string const& filename);
 } // namespace corsika::utl
+
+#endif // CORSIKA_CORSIKADATA_H
