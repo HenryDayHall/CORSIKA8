@@ -237,6 +237,7 @@ test-clang-8:
     - ctest -j4 -VV | gzip -v -9 > test.log.gz 
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
+      allow_failure: false
     - if: $CI_MERGE_REQUEST_ID
       when: manual
       allow_failure: true
