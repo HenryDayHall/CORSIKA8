@@ -186,6 +186,8 @@ int main(int argc, char** argv) {
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
+  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+
   process::energy_loss::EnergyLoss eLoss(showerAxis);
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
