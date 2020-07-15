@@ -122,6 +122,8 @@ TEST_CASE("InteractionCounter") {
   SECTION("DoInteraction nucleus") {
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 105_TeV, nodePtr, *csPtr);
+    REQUIRE(stackPtr->GetSize() == 1);
+    REQUIRE(secViewPtr->GetSize() == 0);
 
     auto projectile = secViewPtr->GetProjectile();
     auto const ret = countedProcess.DoInteraction(projectile);
@@ -140,6 +142,8 @@ TEST_CASE("InteractionCounter") {
     auto constexpr code = particles::Code::Lambda0;
     auto constexpr codeInt = static_cast<particles::CodeIntType>(code);
     auto [stackPtr, secViewPtr] = setupStack(code, 105_TeV, nodePtr, *csPtr);
+    REQUIRE(stackPtr->GetSize() == 1);
+    REQUIRE(secViewPtr->GetSize() == 0);
 
     auto projectile = secViewPtr->GetProjectile();
     auto const ret = countedProcess.DoInteraction(projectile);

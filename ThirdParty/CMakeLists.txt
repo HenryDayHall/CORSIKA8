@@ -228,13 +228,13 @@ message (STATUS "USE_CONEX_C8='${USE_CONEX_C8}'")
 
 add_library (C8::ext::conex STATIC IMPORTED GLOBAL)
 # this is from the corsika-data/readLib submodule:
-get_directory_property (Boost_iostreams_FOUND DIRECTORY ${CORSIKA_DATA}/readLib DEFINITION Boost_iostreams_FOUND)
+get_directory_property (Boost_IOSTREAMS_FOUND DIRECTORY ${CORSIKA_DATA}/readLib DEFINITION Boost_IOSTREAMS_FOUND)
 set (conex_boost "")
 set (boost_lib "boost_iostreams")
-if (NOT Boost_iostreams_FOUND)
+if (NOT Boost_IOSTREAMS_FOUND)
   set (conex_boost "NO_BOOST=1")
   set (boost_lib "")
-endif (NOT Boost_iostreams_FOUND)
+endif (NOT Boost_IOSTREAMS_FOUND)
 if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   
   find_package (CONEX REQUIRED) 
@@ -277,7 +277,7 @@ else ()
     
 endif ()
 
-if (Boost_iostreams_FOUND)
+if (Boost_IOSTREAMS_FOUND)
   set_target_properties (
     C8::ext::conex PROPERTIES
     IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
@@ -287,7 +287,7 @@ if (Boost_iostreams_FOUND)
     INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
     )
-else (Boost_iostreams_FOUND)
+else (Boost_IOSTREAMS_FOUND)
   set_target_properties (
     C8::ext::conex PROPERTIES
     IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
@@ -296,4 +296,4 @@ else (Boost_iostreams_FOUND)
     INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
     )
-endif (Boost_iostreams_FOUND)
+endif (Boost_IOSTREAMS_FOUND)

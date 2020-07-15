@@ -78,11 +78,11 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
   double v = direction.dot(x_sf_).magnitude();
   double w = direction.dot(showerAxis_.GetDirection()).magnitude();
 
-  int iri = 2; // EGS medium air
+  // int iri = 2; // EGS medium air
 
   double weight = 1;
 
-  int latchin = 1; // generation, we don't have the actual value...
+  // int latchin = 1; // generation, we don't have the actual value...
   double E = energy / 1_GeV;
 
   std::cout << "CONEXSourceCut: removing " << egs_pid << " " << std::scientific << energy
@@ -129,17 +129,11 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
 void CONEXSourceCut::Init() {}
 
 void CONEXSourceCut::SolveCE() {
-  int zero = 0;
-  int iCEmode = 1;
-  int id = 0;      // RU: max, fix this
-  int nshtot_ = 0; // RU: max, fix this
-  // conex_.HadronCascade(id, nshtot_, zero, iCEmode);
-  // conex_.SolveMomentEquations(zero);
+
   conex::conexcascade_();
 
-  // RU: this here is from cxroot,
+  // RU: this here is from cxroot:
 
-  // int nX = conex_.GetNumberOfDepthBins(); // make sure this works!
   int nX = conex::get_number_of_depth_bins_(); // make sure this works!
 
   int icut = 1;
@@ -162,14 +156,8 @@ void CONEXSourceCut::SolveCE() {
   auto Electrons = std::make_unique<float[]>(maxX);
   auto Hadrons = std::make_unique<float[]>(maxX);
 
-  float EGround[3], fitpars[13], currlgE, Xmx, Nmx, XmxdEdX, dEdXmx;
+  float EGround[3], fitpars[13];
 
-  // conex_.GetShowerData(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
-  // conex_.GetdEdXProfile(icut, nX, dEdX[0], EGround[0]);
-  // conex_.GetMuonProfile(icutm, nX, Mu[0], dMu[0]);
-  // conex_.GetGammaProfile(icutg, nX, Gamma[0]);
-  // conex_.GetElectronProfile(icute, nX, Electrons[0]);
-  // conex_.GetHadronProfile(icuth, nX, Hadrons[0]);
   conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
   conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
   conex::get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
@@ -193,8 +181,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
                                units::si::LengthType injectionHeight,
                                units::si::HEPEnergyType primaryEnergy,
                                particles::PDGCode primaryID)
-    : // conex_{ConexDynamicInterface(eSibyll23)}
-    center_{center}
+    : center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
     , showerCore_{showerAxis_.GetStart() + showerAxis_.GetDirection() * groundDist_}
@@ -259,8 +246,9 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
 
   int nShower = 1; // large to avoid final stats.
   int maxDetail = 0;
+#ifdef CONEX_EXTENSIONS
   int particleListMode = 0;
-  // conex_.Init(nShower, randomSeeds, maxDetail, particleListMode, parameterPathName);
+#endif
 
   std::string configPath = CONEX_CONFIG_PATH;
   conex::initconex_(nShower, randomSeeds, heModel, maxDetail,
@@ -295,6 +283,5 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
 
   double xminp = injectionHeight / 1_m;
 
-  // conex_.ConexRun(ipart, eprima, theta, phi, dimpact, ioseed.data());
   conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
 }

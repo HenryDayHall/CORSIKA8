@@ -26,6 +26,7 @@ TEST_CASE("CONEX", "[processes]") {
     using std::cout;
     using std::endl;
 
+    /*
     std::string parameterPathName = "";
     // auto cxModel = eSibyll23;
     // ConexDynamicInterface cx(cxModel);
@@ -48,5 +49,6 @@ TEST_CASE("CONEX", "[processes]") {
 
     // cx.RunConex(randomSeeds, energyInGeV, zenith, azimuth, impactParameter,
     // particleType);
+    */
   }
 }
