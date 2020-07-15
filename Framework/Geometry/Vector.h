@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_VECTOR_H_
-#define _include_VECTOR_H_
+#pragma once
 
 #include <corsika/geometry/BaseVector.h>
 #include <corsika/geometry/QuantityVector.h>
@@ -182,5 +181,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

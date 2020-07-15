@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_HadronicElasticInteraction_h
-#define _include_HadronicElasticInteraction_h
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
@@ -63,5 +62,3 @@ namespace corsika::process::HadronicElasticModel {
   };
 
 } // namespace corsika::process::HadronicElasticModel
-
-#endif

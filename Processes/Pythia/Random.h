@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_process_pythia_random_h_
-#define _include_corsika_process_pythia_random_h_
+#pragma once
 
 #include <Pythia8/Pythia.h>
 #include <corsika/random/RNGManager.h>
@@ -29,5 +28,3 @@ namespace corsika::process {
 
   } // namespace pythia
 } // namespace corsika::process
-
-#endif

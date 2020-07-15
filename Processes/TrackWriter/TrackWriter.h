@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Processes_track_writer_TrackWriter_h_
-#define _Processes_track_writer_TrackWriter_h_
+#pragma once
 
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -42,5 +41,3 @@ namespace corsika::process::track_writer {
   };
 
 } // namespace corsika::process::track_writer
-
-#endif

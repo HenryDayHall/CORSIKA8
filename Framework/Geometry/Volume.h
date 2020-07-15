@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_VOLUME_H_
-#define _include_VOLUME_H_
+#pragma once
 
 #include <corsika/geometry/Point.h>
 
@@ -25,5 +24,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

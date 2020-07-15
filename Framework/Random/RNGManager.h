@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_RNGManager_h_
-#define _include_RNGManager_h_
+#pragma once
 
 #include <corsika/utl/Singleton.h>
 
@@ -72,4 +71,3 @@ namespace corsika::random {
   };
 
 } // namespace corsika::random
-#endif

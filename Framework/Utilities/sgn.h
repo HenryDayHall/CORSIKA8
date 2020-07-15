@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _utilities_sgn_h
-#define _utilities_sgn_h
+#pragma once
 
 namespace corsika::utl {
 
@@ -20,5 +19,3 @@ namespace corsika::utl {
   }
 
 } // namespace corsika::utl
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_Framework_Geometry_Plane_h_
-#define _include_Framework_Geometry_Plane_h_
+#pragma once
 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
@@ -41,5 +40,3 @@ namespace corsika::geometry {
   };
 
 } // namespace corsika::geometry
-
-#endif

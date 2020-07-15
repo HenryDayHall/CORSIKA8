@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_processes_TrackingLine_h_
-#define _include_corsika_processes_TrackingLine_h_
+#pragma once
 
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Plane.h>
@@ -139,5 +138,3 @@ namespace corsika::process {
   } // namespace tracking_line
 
 } // namespace corsika::process
-
-#endif

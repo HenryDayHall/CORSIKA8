@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_InteractionCounter_h
-#define _corsika_InteractionCounter_h
+#pragma once
 
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessSequence.h>
@@ -63,5 +62,3 @@ namespace corsika::process::interaction_counter {
   };
 
 } // namespace corsika::process::interaction_counter
-
-#endif

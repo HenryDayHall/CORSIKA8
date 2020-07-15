@@ -8,9 +8,6 @@
  * the license.
  */
 
-#ifndef _include_corsika_setup_logger_h_
-#define _include_corsika_setup_logger_h_
+#pragma once
 
 namespace corsika {}
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_nuclib_interface_h_
-#define _include_nuclib_interface_h_
+#pragma once
 
 extern "C" {
 
@@ -57,4 +56,3 @@ void signuc2_(const int&, const int&, const double&, double&);
 void sigma_mc_(const int&, const int&, const double&, const double&, const int&, double&,
                double&, double&, double&);
 }
-#endif

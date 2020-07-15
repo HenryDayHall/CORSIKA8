@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_processes_qgsjetII_particles_h_
-#define _include_processes_qgsjetII_particles_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 
@@ -96,5 +95,3 @@ namespace corsika::process::qgsjetII {
   }
 
 } // namespace corsika::process::qgsjetII
-
-#endif

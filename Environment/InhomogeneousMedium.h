@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_environment_InhomogeneousMedium_h_
-#define _include_environment_InhomogeneousMedium_h_
+#pragma once
 
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
@@ -57,4 +56,3 @@ namespace corsika::environment {
   };
 
 } // namespace corsika::environment
-#endif

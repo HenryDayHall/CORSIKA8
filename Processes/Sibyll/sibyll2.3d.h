@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_sib23d_interface_h_
-#define _include_sib23d_interface_h_
+#pragma once
 //----------------------------------------------
 //  C++ interface for the SIBYLL event generator
 //----------------------------------------------
@@ -105,4 +104,3 @@ double get_sibyll_mass2(int&);
 // phojet random generator setup
 void pho_rndin_(int&, int&, int&, int&);
 }
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_IMediumModel_h
-#define _include_IMediumModel_h
+#pragma once
 
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
@@ -40,5 +39,3 @@ namespace corsika::environment {
   };
 
 } // namespace corsika::environment
-
-#endif

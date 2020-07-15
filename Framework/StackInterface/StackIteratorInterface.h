@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_StackIteratorinterface_h__
-#define _include_StackIteratorinterface_h__
+#pragma once
 
 #include <corsika/stack/ParticleBase.h>
 
@@ -286,5 +285,3 @@ namespace corsika::stack {
   }; // end class ConstStackIterator
 
 } // namespace corsika::stack
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_environment_LinearApproximationIntegrator_h_
-#define _include_environment_LinearApproximationIntegrator_h_
+#pragma once
 
 #include <limits>
 
@@ -53,5 +52,3 @@ namespace corsika::environment {
     }
   };
 } // namespace corsika::environment
-
-#endif

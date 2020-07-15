@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_process_pythia_interaction_h_
-#define _corsika_process_pythia_interaction_h_
+#pragma once
 
 #include <Pythia8/Pythia.h>
 
@@ -71,5 +70,3 @@ namespace corsika::process::pythia {
   };
 
 } // namespace corsika::process::pythia
-
-#endif

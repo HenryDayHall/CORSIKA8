@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_qgsjetII_interface_h_
-#define _include_qgsjetII_interface_h_
+#pragma once
 
 #include <string>
 
@@ -101,5 +100,3 @@ double qgsect_(const double& e0n, const int& icz, const int& iap0, const int& ia
  */
 double qgran_(int&);
 }
-
-#endif

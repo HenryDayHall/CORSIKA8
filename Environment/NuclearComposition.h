@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_NuclearComposition_h
-#define _include_NuclearComposition_h
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -131,5 +130,3 @@ namespace corsika::environment {
   };
 
 } // namespace corsika::environment
-
-#endif

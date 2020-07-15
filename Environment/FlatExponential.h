@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_Environment_FlatExponential_h_
-#define _include_Environment_FlatExponential_h_
+#pragma once
 
 #include <corsika/environment/BaseExponential.h>
 #include <corsika/environment/NuclearComposition.h>
@@ -67,4 +66,3 @@ namespace corsika::environment {
     }
   };
 } // namespace corsika::environment
-#endif

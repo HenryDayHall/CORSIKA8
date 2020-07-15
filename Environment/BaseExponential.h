@@ -9,8 +9,7 @@
  * the license.
  */
 
-#ifndef _include_Environment_BaseExponential_h_
-#define _include_Environment_BaseExponential_h_
+#pragma once
 
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
@@ -114,4 +113,3 @@ namespace corsika::environment {
   };
 
 } // namespace corsika::environment
-#endif

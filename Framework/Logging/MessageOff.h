@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_MessageOff_h_
-#define _include_MessageOff_h_
+#pragma once
 
 namespace corsika::logging {
 
@@ -26,5 +25,3 @@ namespace corsika::logging {
   };
 
 } // namespace corsika::logging
-
-#endif

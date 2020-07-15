@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_qgsjetIIstack_h_
-#define _include_qgsjetIIstack_h_
+#pragma once
 
 #include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
@@ -132,5 +131,3 @@ namespace corsika::process::qgsjetII {
   typedef corsika::stack::Stack<QGSJetIIStackData, ParticleInterface> QGSJetIIStack;
 
 } // end namespace corsika::process::qgsjetII
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_stack_testTestStack_h_
-#define _include_corsika_stack_testTestStack_h_
+#pragma once
 
 #include <corsika/stack/Stack.h>
 #include <tuple>
@@ -94,5 +93,3 @@ public:
   void SetData(const double v) { GetStackData().SetData(GetIndex(), v); }
   double GetData() const { return GetStackData().GetData(GetIndex()); }
 };
-
-#endif

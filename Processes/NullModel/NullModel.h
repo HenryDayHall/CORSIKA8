@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Physics_NullModel_NullModel_h_
-#define _Physics_NullModel_NullModel_h_
+#pragma once
 
 #include <corsika/process/BaseProcess.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -33,5 +32,3 @@ namespace corsika::process::null_model {
   };
 
 } // namespace corsika::process::null_model
-
-#endif

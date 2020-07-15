@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _Processes_track_writer_LongitudinalProfile_h_
-#define _Processes_track_writer_LongitudinalProfile_h_
+#pragma once
 
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/process/ContinuousProcess.h>
@@ -56,5 +55,3 @@ namespace corsika::process::longitudinal_profile {
   };
 
 } // namespace corsika::process::longitudinal_profile
-
-#endif

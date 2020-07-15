@@ -14,8 +14,7 @@
    Everything around logfile generation and text output.
  */
 
-#ifndef _include_logger_h_
-#define _include_logger_h_
+#pragma once
 
 #include <iosfwd>
 #include <sstream>
@@ -86,5 +85,3 @@ namespace corsika::logging {
 #define LOG(__LOGGER, ...)                                                           \
   __LOGGER.Log(__LOGGER.GetName(), __FILE__, ":", __LINE__, " (", __func__, ") -> ", \
                __VA_ARGS__);
-
-#endif

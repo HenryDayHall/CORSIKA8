@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_coast_coastprocess_h_
-#define _include_corsika_coast_coastprocess_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/ContinuousProcess.h>
@@ -42,5 +41,3 @@ namespace corsika::coast {
   };
 
 } // namespace corsika::coast
-
-#endif

@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_process_pythia_decay_h_
-#define _include_corsika_process_pythia_decay_h_
+#pragma once
 
 #include <Pythia8/Pythia.h>
 #include <corsika/particles/ParticleProperties.h>
@@ -79,5 +78,3 @@ namespace corsika::process {
 
   } // namespace pythia
 } // namespace corsika::process
-
-#endif

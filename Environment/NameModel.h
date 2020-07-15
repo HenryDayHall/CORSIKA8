@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_NameModel_h
-#define _include_NameModel_h
+#pragma once
 
 #include <string>
 #include <utility>
@@ -23,5 +22,3 @@ namespace corsika::environment {
   };
 
 } // namespace corsika::environment
-
-#endif

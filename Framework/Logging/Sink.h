@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_Sink_h_
-#define _include_Sink_h_
+#pragma once
 
 namespace corsika::logging {
 
@@ -43,5 +42,3 @@ namespace corsika::logging {
 
   } // namespace sink
 } // namespace corsika::logging
-
-#endif

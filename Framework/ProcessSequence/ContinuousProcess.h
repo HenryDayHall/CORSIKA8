@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _include_corsika_continuousprocess_h_
-#define _include_corsika_continuousprocess_h_
+#pragma once
 
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/units/PhysicalUnits.h>
@@ -45,5 +44,3 @@ namespace corsika::process {
   std::true_type is_process_impl(const ContinuousProcess<T>* impl);
 
 } // namespace corsika::process
-
-#endif

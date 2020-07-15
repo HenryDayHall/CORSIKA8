@@ -8,8 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_process_sibyll_interaction_h_
-#define _corsika_process_sibyll_interaction_h_
+#pragma once
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
@@ -72,5 +71,3 @@ namespace corsika::process::sibyll {
   };
 
 } // namespace corsika::process::sibyll
-
-#endif
