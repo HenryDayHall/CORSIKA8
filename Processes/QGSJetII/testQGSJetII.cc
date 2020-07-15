@@ -45,37 +45,37 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("QgsjetII -> Corsika") {
-    CHECK( particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(
-                                                process::qgsjetII::QgsjetIICode::PiPlus));
+    CHECK(particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(
+                                              process::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
-    CHECK( process::qgsjetII::ConvertToQgsjetII(particles::PiMinus::GetCode()) ==
-            process::qgsjetII::QgsjetIICode::PiMinus);
-    CHECK( process::qgsjetII::ConvertToQgsjetIIRaw(particles::Proton::GetCode()) == 2);
+    CHECK(process::qgsjetII::ConvertToQgsjetII(particles::PiMinus::GetCode()) ==
+          process::qgsjetII::QgsjetIICode::PiMinus);
+    CHECK(process::qgsjetII::ConvertToQgsjetIIRaw(particles::Proton::GetCode()) == 2);
   }
 
   SECTION("canInteractInQgsjetII") {
 
-    CHECK( process::qgsjetII::CanInteract(particles::Proton::GetCode()));
-    CHECK( process::qgsjetII::CanInteract(particles::Code::KPlus));
-    CHECK( process::qgsjetII::CanInteract(particles::Nucleus::GetCode()));
+    CHECK(process::qgsjetII::CanInteract(particles::Proton::GetCode()));
+    CHECK(process::qgsjetII::CanInteract(particles::Code::KPlus));
+    CHECK(process::qgsjetII::CanInteract(particles::Nucleus::GetCode()));
     // CHECK(process::qgsjetII::CanInteract(particles::Helium::GetCode()));
 
-    CHECK_FALSE( process::qgsjetII::CanInteract(particles::EtaC::GetCode()));
-    CHECK_FALSE( process::qgsjetII::CanInteract(particles::SigmaC0::GetCode()));
+    CHECK_FALSE(process::qgsjetII::CanInteract(particles::EtaC::GetCode()));
+    CHECK_FALSE(process::qgsjetII::CanInteract(particles::SigmaC0::GetCode()));
   }
 
   SECTION("cross-section type") {
 
-    CHECK( process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) ==
-            process::qgsjetII::QgsjetIIXSClass::Baryons);
-    CHECK( process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) ==
-            process::qgsjetII::QgsjetIIXSClass::Kaons);
-    CHECK( process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) ==
-            process::qgsjetII::QgsjetIIXSClass::Baryons);
-    CHECK( process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) ==
-            process::qgsjetII::QgsjetIIXSClass::LightMesons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) ==
+          process::qgsjetII::QgsjetIIXSClass::Baryons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) ==
+          process::qgsjetII::QgsjetIIXSClass::Kaons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) ==
+          process::qgsjetII::QgsjetIIXSClass::Baryons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) ==
+          process::qgsjetII::QgsjetIIXSClass::LightMesons);
   }
 }
 
@@ -145,11 +145,11 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
-    CHECK( length / (1_g / square(1_cm)) == Approx(26568.64).margin(0.1) );
-    CHECK( view.GetSize() == 8 );
-    CHECK( sumCharge(view) == 2 );
+    CHECK(length / (1_g / square(1_cm)) == Approx(26568.64).margin(0.1));
+    CHECK(view.GetSize() == 8);
+    CHECK(sumCharge(view) == 2);
     auto const secMomSum = sumMomentum(view, projectileMomentum.GetCoordinateSystem());
-    CHECK( (secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
-            Approx(0).margin(1e-2) );
+    CHECK((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+          Approx(0).margin(1e-2));
   }
 }

@@ -159,7 +159,7 @@ TEST_CASE("UrQMD") {
 
   SECTION("nucleus projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
-    [[maybe_unused]] auto const& env_dummy = env; // against warnings
+    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     unsigned short constexpr A = 14, Z = 7;
@@ -183,7 +183,7 @@ TEST_CASE("UrQMD") {
 
   SECTION("\"special\" projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
-    [[maybe_unused]] auto const& env_dummy = env; // against warnings
+    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] =
@@ -209,7 +209,7 @@ TEST_CASE("UrQMD") {
 
   SECTION("K0Long projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
-    [[maybe_unused]] auto const& env_dummy = env; // against warnings
+    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] =

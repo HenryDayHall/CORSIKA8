@@ -30,41 +30,41 @@ using namespace corsika::units::si;
 TEST_CASE("Sibyll", "[processes]") {
 
   SECTION("Sibyll -> Corsika") {
-    CHECK( particles::Electron::GetCode() ==
-            process::sibyll::ConvertFromSibyll(process::sibyll::SibyllCode::Electron));
+    CHECK(particles::Electron::GetCode() ==
+          process::sibyll::ConvertFromSibyll(process::sibyll::SibyllCode::Electron));
   }
 
   SECTION("Corsika -> Sibyll") {
-    CHECK( process::sibyll::ConvertToSibyll(particles::Electron::GetCode()) ==
-            process::sibyll::SibyllCode::Electron);
-    CHECK( process::sibyll::ConvertToSibyllRaw(particles::Proton::GetCode()) == 13);
-    CHECK( process::sibyll::ConvertToSibyll(particles::XiStarC0::GetCode()) ==
-            process::sibyll::SibyllCode::XiStarC0);
+    CHECK(process::sibyll::ConvertToSibyll(particles::Electron::GetCode()) ==
+          process::sibyll::SibyllCode::Electron);
+    CHECK(process::sibyll::ConvertToSibyllRaw(particles::Proton::GetCode()) == 13);
+    CHECK(process::sibyll::ConvertToSibyll(particles::XiStarC0::GetCode()) ==
+          process::sibyll::SibyllCode::XiStarC0);
   }
 
   SECTION("canInteractInSibyll") {
 
-    CHECK( process::sibyll::CanInteract(particles::Proton::GetCode()));
-    CHECK( process::sibyll::CanInteract(particles::Code::XiCPlus));
+    CHECK(process::sibyll::CanInteract(particles::Proton::GetCode()));
+    CHECK(process::sibyll::CanInteract(particles::Code::XiCPlus));
 
-    CHECK_FALSE( process::sibyll::CanInteract(particles::Electron::GetCode()));
-    CHECK_FALSE( process::sibyll::CanInteract(particles::SigmaC0::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::Electron::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::SigmaC0::GetCode()));
 
-    CHECK_FALSE( process::sibyll::CanInteract(particles::Nucleus::GetCode()));
-    CHECK_FALSE( process::sibyll::CanInteract(particles::Helium::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::Nucleus::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::Helium::GetCode()));
   }
 
   SECTION("cross-section type") {
 
-    CHECK( process::sibyll::GetSibyllXSCode(particles::Code::Electron) == 0);
-    CHECK( process::sibyll::GetSibyllXSCode(particles::Code::K0Long) == 3);
-    CHECK( process::sibyll::GetSibyllXSCode(particles::Code::SigmaPlus) == 1);
-    CHECK( process::sibyll::GetSibyllXSCode(particles::Code::PiMinus) == 2);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::Electron) == 0);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::K0Long) == 3);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::SigmaPlus) == 1);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::PiMinus) == 2);
   }
 
   SECTION("sibyll mass") {
 
-    CHECK_FALSE( process::sibyll::GetSibyllMass(particles::Code::Electron) == 0_GeV);
+    CHECK_FALSE(process::sibyll::GetSibyllMass(particles::Code::Electron) == 0_GeV);
   }
 }
 
@@ -197,15 +197,15 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
-    CHECK( stack.GetSize() == 3);
+    CHECK(stack.GetSize() == 3);
   }
 
   SECTION("DecayConfiguration") {
 
     Decay model({particles::Code::PiPlus, particles::Code::PiMinus});
-    CHECK( model.IsDecayHandled(particles::Code::PiPlus));
-    CHECK( model.IsDecayHandled(particles::Code::PiMinus));
-    CHECK_FALSE( model.IsDecayHandled(particles::Code::KPlus));
+    CHECK(model.IsDecayHandled(particles::Code::PiPlus));
+    CHECK(model.IsDecayHandled(particles::Code::PiMinus));
+    CHECK_FALSE(model.IsDecayHandled(particles::Code::KPlus));
 
     const std::vector<particles::Code> particleTestList = {
         particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -213,16 +213,15 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     // setup decays
     model.SetHandleDecay(particleTestList);
-    for (auto& pCode : particleTestList)
-      CHECK( model.IsDecayHandled(pCode));
+    for (auto& pCode : particleTestList) CHECK(model.IsDecayHandled(pCode));
 
     // individually
     model.SetHandleDecay(particles::Code::KMinus);
 
     // possible decays
-    CHECK_FALSE( model.CanHandleDecay(particles::Code::Proton));
-    CHECK_FALSE( model.CanHandleDecay(particles::Code::Electron));
-    CHECK( model.CanHandleDecay(particles::Code::PiPlus));
-    CHECK( model.CanHandleDecay(particles::Code::MuPlus));
+    CHECK_FALSE(model.CanHandleDecay(particles::Code::Proton));
+    CHECK_FALSE(model.CanHandleDecay(particles::Code::Electron));
+    CHECK(model.CanHandleDecay(particles::Code::PiPlus));
+    CHECK(model.CanHandleDecay(particles::Code::MuPlus));
   }
 }
