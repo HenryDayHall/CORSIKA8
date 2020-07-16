@@ -8,11 +8,11 @@
  * the license.
  */
 
-#include <corsika/environment/ShowerAxis.h>
 #include <corsika/environment/DensityFunction.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/ShowerAxis.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
@@ -44,16 +44,14 @@ auto setupEnvironment(particles::Code vTargetCode) {
 
   using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
-      density,
-      environment::NuclearComposition(std::vector<particles::Code>{vTargetCode},
-                                      std::vector<float>{1.}));
+      density, environment::NuclearComposition(std::vector<particles::Code>{vTargetCode},
+                                               std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
 
   return std::make_tuple(std::move(env), &cs, nodePtr);
 }
-
 
 TEST_CASE("Homogeneous Density") {
   auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Nitrogen);
@@ -65,26 +63,24 @@ TEST_CASE("Homogeneous Density") {
   auto const injectionHeight = 10_km;
   auto const t = -observationHeight + injectionHeight;
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
-  Point const injectionPos = 
-    showerCore + 
-    Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
-  
-  environment::ShowerAxis const showerAxis{injectionPos,
-      (showerCore - injectionPos), *env, 10000};
+  Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
-  CHECK( showerAxis.steplength() == 1_m );
-  
-  CHECK( showerAxis.maximumX()/(10_km * density) == Approx(1).epsilon(1e-8) );
+  environment::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos),
+                                           *env, 10000};
 
-  CHECK( showerAxis.minimumX() == 0_g / square(1_cm) );
+  CHECK(showerAxis.steplength() == 1_m);
+
+  CHECK(showerAxis.maximumX() / (10_km * density) == Approx(1).epsilon(1e-8));
+
+  CHECK(showerAxis.minimumX() == 0_g / square(1_cm));
 
   const Point p{cs, 10_km, 20_km, 9_km};
-  CHECK( showerAxis.projectedX(p)/(1_km * density) == Approx(1).epsilon(1e-8) );
+  CHECK(showerAxis.projectedX(p) / (1_km * density) == Approx(1).epsilon(1e-8));
 
   const units::si::LengthType d = 1_km;
-  CHECK( showerAxis.X(d)/(d * density) == Approx(1).epsilon(1e-8) );
+  CHECK(showerAxis.X(d) / (d * density) == Approx(1).epsilon(1e-8));
 
   const Vector<dimensionless_d> dir{cs, {0, 0, -1}};
-  CHECK( showerAxis.GetDirection().GetComponents(cs) == dir.GetComponents(cs) ); 
-  CHECK( showerAxis.GetStart().GetCoordinates() == injectionPos.GetCoordinates() );
+  CHECK(showerAxis.GetDirection().GetComponents(cs) == dir.GetComponents(cs));
+  CHECK(showerAxis.GetStart().GetCoordinates() == injectionPos.GetCoordinates());
 }
