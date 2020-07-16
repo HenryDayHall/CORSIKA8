@@ -99,6 +99,7 @@ if (Pythia8_FOUND)
     ProcessTrackWriter
     ProcessTrackingLine
     ProcessParticleCut
+    ProcessOnShellCheck
     ProcessStackInspector
     ProcessLongitudinalProfile
     CORSIKAprocesses

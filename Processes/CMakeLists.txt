@@ -24,7 +24,7 @@ add_subdirectory (StackInspector)
 # secondaries process
 # cuts, thinning, etc.
 add_subdirectory (ParticleCut)
-
+add_subdirectory (OnShellCheck)
 # meta-processes
 add_subdirectory (InteractionCounter)
 add_subdirectory (SwitchProcess)
@@ -42,3 +42,4 @@ add_dependencies(CORSIKAprocesses ProcessTrackingLine)
 add_dependencies(CORSIKAprocesses ProcessEnergyLoss)
 add_dependencies(CORSIKAprocesses ProcessUrQMD)
 add_dependencies(CORSIKAprocesses ProcessParticleCut)
+add_dependencies(CORSIKAprocesses ProcessOnShellCheck)

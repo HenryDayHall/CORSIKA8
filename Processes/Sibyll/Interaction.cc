@@ -316,20 +316,27 @@ namespace corsika::process::sibyll {
           HEPEnergyType const eCoM = psib.GetEnergy();
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
+          auto const pid = process::sibyll::ConvertFromSibyll(psib.GetPID());
+
           // add to corsika stack
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-                  process::sibyll::ConvertFromSibyll(psib.GetPID()),
-                  Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+                  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
                   tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();
           Ecm_final += psib.GetEnergy();
         }
-        cout << "conservation (all GeV): Ecm_final=" << Ecm_final / 1_GeV << endl
-             << "Elab_final=" << Elab_final / 1_GeV
+        cout << "conservation (all GeV):" << endl
+             << "Ecm_initial=" << Ecm / 1_GeV << " Ecm_final=" << Ecm_final / 1_GeV
+             << endl
+             << "Elab_initial=" << eProjectileLab / 1_GeV
+             << " Elab_final=" << Elab_final / 1_GeV
+             << " diff (%)=" << (Elab_final / eProjectileLab / get_nwounded() - 1) * 100
+             << endl
+             << "Plab_initial=" << (pProjectileLab / 1_GeV).GetComponents()
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
       }
     }
