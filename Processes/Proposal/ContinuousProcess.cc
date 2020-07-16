@@ -32,9 +32,8 @@ namespace corsika::process::proposal {
       , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {
     auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
-      if (vtn.HasModelProperties()) {
+      if (vtn.HasModelProperties())
         all_compositions.push_back(&vtn.GetModelProperties().GetNuclearComposition());
-      }
     });
     for (auto& ncarg : all_compositions) {
       auto comp_vec = std::vector<PROPOSAL::Components::Component>();
@@ -63,7 +62,7 @@ namespace corsika::process::proposal {
 
   template <>
   void ContinuousProcess::Scatter(SetupParticle& vP, HEPEnergyType const& loss,
-                                           GrammageType const& grammage) {
+                                  GrammageType const& grammage) {
     auto calc = GetCalculator(vP);
     auto d = vP.GetDirection().GetComponents();
     auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
@@ -86,10 +85,10 @@ namespace corsika::process::proposal {
   template <>
   EProcessReturn ContinuousProcess::DoContinuous(SetupParticle& vP,
                                                  SetupTrack const& vT) {
-    if (vP.GetChargeNumber() == 0) return process::EProcessReturn::eOk;
+    if (!CanInteract(vP.GetPID())) return process::EProcessReturn::eOk;
     auto dX = vP.GetNode()->GetModelProperties().IntegratedGrammage(vT, vT.GetLength());
     auto energy_loss = TotalEnergyLoss(vP, dX);
-    Scatter(vP, energy_loss, dX);
+    if (vP.GetChargeNumber() != 0) Scatter(vP, energy_loss, dX);
     vP.SetEnergy(vP.GetEnergy() - energy_loss);
     if (vP.GetEnergy() < cut.GetECut()) return process::EProcessReturn::eParticleAbsorbed;
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());

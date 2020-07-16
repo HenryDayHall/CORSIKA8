@@ -32,9 +32,8 @@ namespace corsika::process::proposal {
       , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {
     auto all_compositions = std::vector<const NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {
-      if (vtn.HasModelProperties()) {
+      if (vtn.HasModelProperties())
         all_compositions.push_back(&vtn.GetModelProperties().GetNuclearComposition());
-      }
     });
     for (auto& ncarg : all_compositions) {
       auto comp_vec = std::vector<Component_PROPOSAL>();
