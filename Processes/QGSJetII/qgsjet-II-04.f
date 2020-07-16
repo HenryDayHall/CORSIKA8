@@ -415,7 +415,10 @@ c reading cross sections from the file
       if(ifIIdat.ne.1)then
        inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04.bz2'
      *        ,exist=lcalc)
-       if (lcalc.and.CorDataCanDeCompress().ne.0) then
+       lcanRead=0
+       call CorDataCanDeCompress(lcanRead)
+       write (*,*) 'lcanRead=', lcanRead
+       if (lcalc.and.lcanRead.ne.0) then
           luseCompress=1
        else
           inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04'
@@ -1970,7 +1973,9 @@ c     nuclear cross sections
       if(ifIIncs.ne.2)then
        inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04.bz2'
      *        ,exist=lcalc)
-       if (lcalc.and.CorDataCanDeCompress().ne.0) then
+       lcanRead = 0
+       call CorDataCanDeCompress(lcanRead)
+       if (lcalc.and.lcanRead.ne.0) then
           luseCompress=1
        else
        inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'

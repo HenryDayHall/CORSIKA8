@@ -145,9 +145,9 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
-    CHECK(length / (1_g / square(1_cm)) == Approx(26568.64).margin(0.1));
-    CHECK(view.GetSize() == 8);
-    CHECK(sumCharge(view) == 2);
+    CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));
+    CHECK(view.GetSize() == 14);
+    CHECK(sumCharge(view) == 1);
     auto const secMomSum = sumMomentum(view, projectileMomentum.GetCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
           Approx(0).margin(1e-2));
