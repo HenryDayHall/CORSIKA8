@@ -13,6 +13,7 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/geometry/Vector.h>
+#include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/logging/Logging.h>
 
@@ -45,25 +46,71 @@ namespace corsika::process {
       template <typename Particle> // was Stack previously, and argument was
                                    // Stack::StackIterator
       auto GetTrack(Particle const& p) {
+        using namespace corsika;
         using namespace corsika::units::si;
         using namespace corsika::geometry;
-        geometry::Vector<SpeedType::dimension_type> const velocity =
+        geometry::Vector<SpeedType::dimension_type> velocity =
             p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
 
         auto const currentPosition = p.GetPosition();
-        C8LOG_DEBUG(
-            "TrackingLine pid: {}"
-            " , E = {} GeV",
-            p.GetPID(), p.GetEnergy() / 1_GeV);
-        C8LOG_DEBUG("TrackingLine pos: {}", currentPosition.GetCoordinates());
-        C8LOG_DEBUG("TrackingLine   E: {} GeV", p.GetEnergy() / 1_GeV);
-        C8LOG_DEBUG("TrackingLine   p: {} GeV", p.GetMomentum().GetComponents() / 1_GeV);
-        C8LOG_DEBUG("TrackingLine   v: {} ", velocity.GetComponents());
-
-        // to do: include effect of magnetic field
+        std::cout << "TrackingLine pid: " << p.GetPID()
+                  << " , E = " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
+        std::cout << "TrackingLine pos: "
+                  << currentPosition.GetCoordinates()
+                  // << " [" << p.GetNode()->GetModelProperties().GetName() << "]"
+                  << std::endl;
+        std::cout << "TrackingLine   E: " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
+        
+        // determine velocity after adding magnetic field
+        auto const* currentLogicalVolumeNode = p.GetNode();
+        int chargeNumber;
+        if(corsika::particles::IsNucleus(p.GetPID())) {
+        	chargeNumber = p.GetNuclearZ();
+        } else {
+        	chargeNumber = corsika::particles::GetChargeNumber(p.GetPID());
+        }
+        geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
+        auto magMaxLength = 1_m/0;
+        auto directionAfter = directionBefore;
+        if(chargeNumber != 0) {
+        	auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(currentPosition);
+        	std::cout << "TrackingLine   B: " << magneticfield.GetComponents() / 1_uT << " uT " << std::endl;
+        	geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+        		velocity.parallelProjectionOnto(magneticfield);
+		LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
+					      (corsika::units::constants::cSquared * abs(chargeNumber) * 
+					      magneticfield.GetNorm() * 1_eV);
+		//steplength depending on how exact it should be
+		LengthType const Steplength = 0.01 * gyroradius;
+		// First Movement
+		auto position = currentPosition + directionBefore * Steplength / 2;
+		// Change of direction by magnetic field at position
+		magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(position);
+		directionAfter = directionBefore + directionBefore.cross(magneticfield) * chargeNumber * 
+				 Steplength * corsika::units::constants::cSquared * 1_eV / 
+				 (p.GetEnergy() * velocity.GetNorm() * 1_V); 
+		// Second Movement
+		position = position + directionAfter * Steplength / 2;
+		magMaxLength = (position - currentPosition).GetNorm();
+		geometry::Vector<dimensionless_d> const direction = (position - currentPosition) / 
+									magMaxLength;
+		velocity = direction * velocity.GetNorm();
+		std::cout << "TrackingLine   p: " << (direction * p.GetMomentum().GetNorm()).GetComponents() / 1_GeV
+                  << " GeV " << std::endl;
+        } else {
+        	std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
+                  << " GeV " << std::endl;
+        }
+        
+        std::cout << "TrackingLine   v: " << velocity.GetComponents() << std::endl;
+        
         geometry::Line line(currentPosition, velocity);
 
-        auto const* currentLogicalVolumeNode = p.GetNode();
+        //auto const* currentLogicalVolumeNode = p.GetNode();
+        //~ auto const* currentNumericalVolumeNode =
+        //~ fEnvironment.GetUniverse()->GetContainingNode(currentPosition);
+        auto const numericallyInside =
+            currentLogicalVolumeNode->GetVolume().Contains(currentPosition);
 
         C8LOG_DEBUG("numericallyInside = {} ",
                     currentLogicalVolumeNode->GetVolume().Contains(currentPosition));
@@ -120,7 +167,8 @@ namespace corsika::process {
         C8LOG_DEBUG(" t-intersect: {} ", min);
 
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
-                               velocity.norm() * min, minIter->second);
+                               velocity.norm() * min, minIter->second, magMaxLength, 
+                               directionBefore, directionAfter);
       }
     };
 
