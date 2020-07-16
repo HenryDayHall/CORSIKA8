@@ -46,7 +46,6 @@ namespace corsika::process {
       template <typename Particle> // was Stack previously, and argument was
                                    // Stack::StackIterator
       auto GetTrack(Particle const& p) {
-        using namespace corsika;
         using namespace corsika::units::si;
         using namespace corsika::geometry;
         geometry::Vector<SpeedType::dimension_type> velocity =
