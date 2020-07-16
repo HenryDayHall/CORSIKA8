@@ -341,7 +341,7 @@ example-clang-8:
     - corsika
   script:
     - cd build
-    - cmake --build . -- -j4 VERBOSE=1
+    - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 -VV | gzip -v -9 > test.log.gz
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
