@@ -417,7 +417,6 @@ c reading cross sections from the file
      *        ,exist=lcalc)
        lcanRead=0
        call CorDataCanDeCompress(lcanRead)
-       write (*,*) 'lcanRead=', lcanRead
        if (lcalc.and.lcanRead.ne.0) then
           luseCompress=1
        else
@@ -428,11 +427,12 @@ c reading cross sections from the file
        luseCompress = (index(fnIIdat(1:nfnIIdat), ".bz2").eq.nfnIIdat-3)
        inquire(file=fnIIdat(1:nfnIIdat), exist=lcalc)       !used to link with nexus
       endif
+      
       if(lcalc)then
          if(ifIIdat.ne.1)then
             if (luseCompress.ne.0) then
-               call CorDataOpenFile(DATDIR(1:INDEX(DATDIR,' ')-1)
-     *              //'qgsdat-II-04.bz2')
+               call CorDataOpenFile(
+     *              DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04.bz2')
             else
                open(1,file=DATDIR(1:INDEX(DATDIR,' ')-1)//'qgsdat-II-04'
      *              ,status='old')
@@ -1978,8 +1978,8 @@ c     nuclear cross sections
        if (lcalc.and.lcanRead.ne.0) then
           luseCompress=1
        else
-       inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'
-     *        ,exist=lcalc)          
+          inquire(file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'
+     *         ,exist=lcalc)          
        endif
       else                                                  !ctp
        luseCompress = (index(fnIIncs(1:nfnIIncs), ".bz2").eq.nfnIIncs-3)
@@ -1987,12 +1987,13 @@ c     nuclear cross sections
       endif
 
       if(lcalc)then
-       if(debug.ge.0)write (moniou,207)
        if(ifIIncs.ne.2)then
           if (luseCompress.ne.0) then
+             if(debug.ge.0)write (moniou,207) 'sectnu-II-04.bz2'
              call CorDataOpenFile(
      *            DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04.bz2')
           else
+             if(debug.ge.0)write (moniou,207) 'sectnu-II-04'
              open(2,file=DATDIR(1:INDEX(DATDIR,' ')-1)//'sectnu-II-04'
      *            ,status='old')
           endif
@@ -2057,8 +2058,8 @@ c     nuclear cross sections
 205   format(2x,'qgaini: pretabulation of the interaction eikonals')
 206   format(2x,'qgaini: initial particle energy:',e10.3,2x
      *,'its type:',a7,2x,'target mass number:',i2)
-207   format(2x,'qgaini: nuclear cross sections readout from the file'
-     *,' sectnu-II-04')
+ 207  format(2x,'qgaini: nuclear cross sections readout from the file:'
+     *     ,A,2x)
 208   format(2x,'qgaini: initial nucleus energy:',e10.3,2x
      *,'projectile mass:',i2,2x,'target mass:',i2)
 209   format(2x,'gtot',d10.3,'  gprod',d10.3,'  gabs',d10.3
@@ -2067,7 +2068,6 @@ c     nuclear cross sections
 212   format(2x,'qgaini: integrated Pomeron leg eikonals')
 213   format(2x,'qgaini: integrated fan contributions')
 214   format(2x,'qgaini: cross sections readout from the file: ', A,2x)
-c     *,' qgsdat-II-04')
 215   format(2x,'qgaini: integrated cut fan contributions')
 c216   format(2x,'qgaini: integrated cut Pomeron eikonals')
 218   format(2x,'qgaini - end')
