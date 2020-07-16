@@ -83,9 +83,9 @@ TEST_CASE("OnShellCheck", "[processes]") {
       auto const Plab = corsika::geometry::FourVector(p.GetEnergy(), p.GetMomentum());
       auto const m_kinetic = Plab.GetNorm();
       if (i == 0)
-        REQUIRE(m_kinetic / particles::PiPlus::GetMass() == Approx(1));
+        CHECK(m_kinetic / particles::PiPlus::GetMass() == Approx(1));
       else if (i == 1)
-        REQUIRE_FALSE(m_kinetic / particles::PiMinus::GetMass() == Approx(1));
+        CHECK_FALSE(m_kinetic / particles::PiMinus::GetMass() == Approx(1));
     }
   }
 }
