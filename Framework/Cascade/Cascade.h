@@ -227,7 +227,7 @@ namespace corsika::cascade {
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // take minimum of geometry, interaction, decay for next step
-      auto const min_distance =std::min(
+      auto const min_distance = std::min(
           {distance_interact, distance_decay, distance_max, geomMaxLength, magMaxLength});
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
