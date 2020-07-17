@@ -78,19 +78,12 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
   double v = direction.dot(x_sf_).magnitude();
   double w = direction.dot(showerAxis_.GetDirection()).magnitude();
 
-  // int iri = 2; // EGS medium air
-
   double weight = 1;
 
-  // int latchin = 1; // generation, we don't have the actual value...
   double E = energy / 1_GeV;
 
   std::cout << "CONEXSourceCut: removing " << egs_pid << " " << std::scientific << energy
             << std::endl;
-
-  // conex_.Shower(egs_pid, E, x, y, altitude, slantDistance, lateralX, lateralY,
-  // slantX,
-  //              time, u, v, w, iri, weight, latchin);
 
   std::cout << "#### parameters to show_() ####" << std::endl;
   std::cout << "egs_pid = " << egs_pid << std::endl;
@@ -132,8 +125,6 @@ void CONEXSourceCut::SolveCE() {
 
   conex::conexcascade_();
 
-  // RU: this here is from cxroot:
-
   int nX = conex::get_number_of_depth_bins_(); // make sure this works!
 
   int icut = 1;
@@ -172,8 +163,6 @@ void CONEXSourceCut::SolveCE() {
   }
 }
 
-// RU: move all the non-C8 code from the following c++ function into a new file. Here we
-// only want to have a single function call to CONEX left.
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center,
                                environment::ShowerAxis const& showerAxis,

@@ -9,6 +9,7 @@
  */
 
 #pragma once
+
 #include <corsika/environment/Environment.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>

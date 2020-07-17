@@ -8,11 +8,7 @@
  * the license.
  */
 
-#ifndef _corsika_process_particle_cut_CONEXSourceCut_h_
-#define _corsika_process_particle_cut_CONEXSourceCut_h_
-
-//#define __CORSIKA8__ // must define this conex-internal flag
-//#include <ConexDynamicInterface.h>
+#pragma once
 
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Point.h>
@@ -53,7 +49,6 @@ namespace corsika::process {
       auto const& GetObserverCS() const { return conexObservationCS_; }
 
     private:
-      // ConexDynamicInterface conex_;
 
       //! CONEX e.m. particle codes
       static std::array<std::pair<particles::Code, int>, 3> constexpr egs_em_codes_{

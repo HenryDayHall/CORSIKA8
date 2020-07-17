@@ -47,7 +47,6 @@ install (
   TARGETS ProcessCONEXSourceCut
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-#  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
   )
 
 # --------------------
