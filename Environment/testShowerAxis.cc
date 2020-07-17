@@ -66,18 +66,18 @@ TEST_CASE("Homogeneous Density") {
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
   environment::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos),
-                                           *env, 10000};
+                                           *env, 20};
 
-  CHECK(showerAxis.steplength() == 1_m);
+  CHECK(showerAxis.steplength() == 500_m);
 
   CHECK(showerAxis.maximumX() / (10_km * density) == Approx(1).epsilon(1e-8));
 
   CHECK(showerAxis.minimumX() == 0_g / square(1_cm));
 
-  const Point p{cs, 10_km, 20_km, 9_km};
-  CHECK(showerAxis.projectedX(p) / (1_km * density) == Approx(1).epsilon(1e-8));
+  const Point p{cs, 10_km, 20_km, 8.3_km};
+  CHECK(showerAxis.projectedX(p) / (1.7_km * density) == Approx(1).epsilon(1e-8));
 
-  const units::si::LengthType d = 1_km;
+  const units::si::LengthType d = 6.789_km;
   CHECK(showerAxis.X(d) / (d * density) == Approx(1).epsilon(1e-8));
 
   const Vector<dimensionless_d> dir{cs, {0, 0, -1}};
