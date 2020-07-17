@@ -315,8 +315,6 @@ namespace corsika::process::sibyll {
           auto const pCoM = Vector<hepmomentum_d>(csPrime, tmp);
           HEPEnergyType const eCoM = psib.GetEnergy();
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
-          auto const p3lab = Plab.GetSpaceLikeComponents();
-          assert(p3lab.GetCoordinateSystem() == originalCS); // just to be sure!
 
           auto const pid = process::sibyll::ConvertFromSibyll(psib.GetPID());
 
@@ -324,8 +322,8 @@ namespace corsika::process::sibyll {
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-                  process::sibyll::ConvertFromSibyll(psib.GetPID()),
-                  Plab.GetTimeLikeComponent(), p3lab, pOrig, tOrig});
+		  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+		  tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();

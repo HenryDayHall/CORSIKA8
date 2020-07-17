@@ -51,22 +51,9 @@ TEST_CASE("CONEXSourceCut") {
 
   builder.assemble(env);
 
-  const HEPEnergyType mass = particles::GetMass(particles::Code::Proton);
   const HEPEnergyType E0 = 1_PeV;
   double thetaDeg = 60.;
   auto const thetaRad = thetaDeg / 180. * M_PI;
-
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-
-  HEPMomentumType P0 = elab2plab(E0, mass);
-
-  auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
-    return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
-  };
-  auto const [px, py, pz] = momentumComponents(thetaRad, P0);
-  auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
 
   auto const observationHeight = 1.4_km + conex::earthRadius;
   auto const injectionHeight = 112.75_km + conex::earthRadius;

@@ -67,4 +67,3 @@ namespace corsika::process {
   } // namespace conex_source_cut
 } // namespace corsika::process
 
-#endif

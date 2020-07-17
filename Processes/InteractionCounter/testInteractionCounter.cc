@@ -119,6 +119,8 @@ TEST_CASE("InteractionCounter") {
   }
 
   auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+  [[maybe_unused]] auto& env_dummy = env;
+  
   SECTION("DoInteraction nucleus") {
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 105_TeV, nodePtr, *csPtr);
