@@ -10,7 +10,6 @@ import re
 text = """/*
  * (c) Copyright YEAR CORSIKA Project, corsika-project@lists.kit.edu
  *
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -22,7 +21,7 @@ Debug settings are 0: nothing, 1: checking, 2: filesystem
 """
 Debug = 0 
 
-excludeDirs = ["ThirdParty", "git"]
+excludeDirs = ["ThirdParty", "git", "build", "install"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h']
 
 extensions = [".cc", ".h", ".test"]
@@ -111,7 +110,7 @@ def checkNote(filename, justCheck, forYear):
             if not re.match(regex, lines[startNote[0]+iLine].strip(" \n")):
                 isSame = False
                 foundMissing = True
-                print ("needs update: " + filename + " new=\'" + noteLines[iLine] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
+                print ("needs update: " + filename + "\n   [diff] new=\'" + noteLines[iLine] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
                 break
     if Debug>0:
         print ("isSame=" + str(isSame) + " " + str(len(startNote)))
@@ -129,7 +128,7 @@ def checkNote(filename, justCheck, forYear):
         return
     
     """ add (new) copyright notice here: """
-    print ("File: " + filename + ", make copy to " + filename+".bak")
+    print ("   [file] " + filename + " --> backup to " + filename+".bak")
     os.rename(filename, filename+".bak")
     
     with open(filename, "w") as file:
