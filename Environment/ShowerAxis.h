@@ -9,6 +9,7 @@
  */
 
 #pragma once
+
 #include <corsika/environment/Environment.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
@@ -22,6 +23,8 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+
+#include <iostream>
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
@@ -37,7 +40,7 @@ namespace corsika::environment {
         , max_length_(length_.norm())
         , steplength_(max_length_ / steps)
         , axis_normalized_(length / max_length_)
-        , X_(steps) {
+        , X_(steps + 1) {
       auto const* const universe = env.GetUniverse().get();
 
       auto rho = [pStart, length, universe](double x) {
@@ -48,19 +51,23 @@ namespace corsika::environment {
 
       double error;
       int k = 0;
-      for (int i = 1; i < steps; ++i) {
-        auto const x_prev = (i - 1) / (steps - 1.);
+      X_[0] = units::si::GrammageType::zero();
+      auto sum = units::si::GrammageType::zero();
+
+      for (int i = 1; i <= steps; ++i) {
+        auto const x_prev = (i - 1.) / steps;
         auto const d_prev = max_length_ * x_prev;
-        auto const x = i / (steps - 1.);
+        auto const x = double(i) / steps;
         auto const r = boost::math::quadrature::gauss_kronrod<double, 15>::integrate(
             rho, x_prev, x, 15, 1e-9, &error);
         auto const result =
             units::si::MassDensityType(phys::units::detail::magnitude_tag, r) *
             max_length_;
-        auto const resultTotal = result + X_[i - 1];
-        X_[i] = resultTotal;
 
-        for (; resultTotal > k * X_binning_; ++k) {
+        sum += result;
+        X_[i] = sum;
+
+        for (; sum > k * X_binning_; ++k) {
           d_.emplace_back(d_prev + k * X_binning_ * steplength_ / result);
         }
       }
@@ -78,6 +85,10 @@ namespace corsika::environment {
     units::si::GrammageType projectedX(geometry::Point const& p) const;
 
     units::si::GrammageType X(units::si::LengthType) const;
+
+    geometry::Vector<units::si::dimensionless_d> const& GetDirection() const;
+
+    geometry::Point const& GetStart() const;
 
   private:
     geometry::Point const pointStart_;

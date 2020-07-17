@@ -164,9 +164,8 @@ namespace corsika::process::sibyll {
 
   template <>
   process::EProcessReturn Interaction::DoInteraction(SetupProjectile& vP) {
-
-    using namespace units;
     using namespace utl;
+    using namespace units;
     using namespace units::si;
     using namespace geometry;
 
@@ -181,23 +180,21 @@ namespace corsika::process::sibyll {
     }
 
     if (process::sibyll::CanInteract(corsikaBeamId)) {
-      const CoordinateSystem& rootCS =
-          RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-
       // position and time of interaction, not used in Sibyll
-      Point pOrig = vP.GetPosition();
-      TimeType tOrig = vP.GetTime();
+      Point const pOrig = vP.GetPosition();
+      TimeType const tOrig = vP.GetTime();
+
+      // define projectile
+      HEPEnergyType const eProjectileLab = vP.GetEnergy();
+      auto const pProjectileLab = vP.GetMomentum();
+      const CoordinateSystem& originalCS = pProjectileLab.GetCoordinateSystem();
 
       // define target
       // for Sibyll is always a single nucleon
       // FOR NOW: target is always at rest
       const auto eTargetLab = 0_GeV + constants::nucleonMass;
-      const auto pTargetLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
+      const auto pTargetLab = MomentumVector(originalCS, 0_GeV, 0_GeV, 0_GeV);
       const FourVector PtargLab(eTargetLab, pTargetLab);
-
-      // define projectile
-      HEPEnergyType const eProjectileLab = vP.GetEnergy();
-      auto const pProjectileLab = vP.GetMomentum();
 
       cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
@@ -211,6 +208,7 @@ namespace corsika::process::sibyll {
       // define boost to and from CoM frame
       // CoM frame definition in Sibyll projectile: +z
       COMBoost const boost(PprojLab, constants::nucleonMass);
+      auto const& csPrime = boost.GetRotatedCS();
 
       // just for show:
       // boost projecticle
@@ -222,11 +220,11 @@ namespace corsika::process::sibyll {
       cout << "Interaction: ebeam CoM: " << PprojCoM.GetTimeLikeComponent() / 1_GeV
            << endl
            << "Interaction: pbeam CoM: "
-           << PprojCoM.GetSpaceLikeComponents().GetComponents() / 1_GeV << endl;
+           << PprojCoM.GetSpaceLikeComponents().GetComponents(csPrime) / 1_GeV << endl;
       cout << "Interaction: etarget CoM: " << PtargCoM.GetTimeLikeComponent() / 1_GeV
            << endl
            << "Interaction: ptarget CoM: "
-           << PtargCoM.GetSpaceLikeComponents().GetComponents() / 1_GeV << endl;
+           << PtargCoM.GetSpaceLikeComponents().GetComponents(csPrime) / 1_GeV << endl;
 
       cout << "Interaction: position of interaction: " << pOrig.GetCoordinates() << endl;
       cout << "Interaction: time: " << tOrig << endl;
@@ -247,7 +245,7 @@ namespace corsika::process::sibyll {
        */
       //#warning reading interaction cross section again, should not be necessary
       auto const& compVec = mediumComposition.GetComponents();
-      std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
+      std::vector<CrossSectionType> cross_section_of_components(compVec.size());
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
@@ -303,7 +301,7 @@ namespace corsika::process::sibyll {
         // link to sibyll stack
         SibStack ss;
 
-        MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+        MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
         HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
         for (auto& psib : ss) {
 
@@ -311,8 +309,10 @@ namespace corsika::process::sibyll {
           if (psib.HasDecayed())
             throw std::runtime_error("found particle that decayed in SIBYLL!");
 
-          // transform energy to lab. frame
-          auto const pCoM = psib.GetMomentum();
+          // transform 4-momentum to lab. frame
+          // note that the momentum needs to be rotated back
+          auto const tmp = psib.GetMomentum().GetComponents();
+          auto const pCoM = Vector<hepmomentum_d>(csPrime, tmp);
           HEPEnergyType const eCoM = psib.GetEnergy();
           auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
 
@@ -322,8 +322,8 @@ namespace corsika::process::sibyll {
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-                  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
-                  tOrig});
+		  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+		  tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();

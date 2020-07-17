@@ -93,6 +93,7 @@ if (Pythia8_FOUND)
     ProcessUrQMD
     ProcessSwitch
     CORSIKAcascade
+    ProcessCONEXSourceCut
     ProcessEnergyLoss
     ProcessObservationPlane
     ProcessInteractionCounter

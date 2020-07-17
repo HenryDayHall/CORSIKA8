@@ -18,6 +18,7 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
+#include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
@@ -118,7 +119,7 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
        << endl;
 
-  auto const observationHeight = 1.4_km + builder.getEarthRadius();
+  auto const observationHeight = 0_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
@@ -193,17 +194,24 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  // assemble all processes into an ordered process list
-
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
+
+  sibyllNuc.Init();
+  sibyll.Init();
+
+  process::conex_source_cut::CONEXSourceCut conexSource(
+      center, showerAxis, t, injectionHeight, E0,
+      particles::GetPDG(particles::Code::Proton));
+
+  // assemble all processes into an ordered process list
 
   auto sibyllSequence = sibyllNucCounted << sibyllCounted;
   process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << longprof
+	  auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource << longprof
                                 << eLoss << cut << observationLevel;
 
   // define air shower object, run simulation
@@ -218,6 +226,7 @@ int main(int argc, char** argv) {
   EAS.Run();
 
   eLoss.PrintProfile(); // print longitudinal profile
+  conexSource.SolveCE();
 
   cut.ShowResults();
   const HEPEnergyType Efinal =

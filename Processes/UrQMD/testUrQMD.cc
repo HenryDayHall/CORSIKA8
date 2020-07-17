@@ -138,6 +138,8 @@ TEST_CASE("UrQMD") {
   SECTION("interaction length") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Nitrogen);
     auto const& cs = *csPtr;
+    [[maybe_unused]] auto const& env_dummy = env;
+    [[maybe_unused]] auto const& node_dummy = nodePtr;
 
     particles::Code validProjectileCodes[] = {
         particles::Code::PiPlus,  particles::Code::PiMinus, particles::Code::Proton,
@@ -147,6 +149,7 @@ TEST_CASE("UrQMD") {
     for (auto code : validProjectileCodes) {
       auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);
       REQUIRE(stack->GetSize() == 1);
+      REQUIRE(view->GetSize() == 0);
 
       // simple check whether the cross-section is non-vanishing
       // only nuclei with available tabluated data so far
@@ -156,8 +159,13 @@ TEST_CASE("UrQMD") {
 
   SECTION("nucleus projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
+    [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
+
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);
+    REQUIRE(stackPtr->GetSize() == 1);
+    REQUIRE(secViewPtr->GetSize() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
@@ -175,8 +183,13 @@ TEST_CASE("UrQMD") {
 
   SECTION("\"special\" projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
+    [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
+
     auto [stackPtr, secViewPtr] =
         setupStack(particles::Code::PiPlus, 400_GeV, nodePtr, *csPtr);
+    REQUIRE(stackPtr->GetSize() == 1);
+    REQUIRE(secViewPtr->GetSize() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
@@ -196,8 +209,13 @@ TEST_CASE("UrQMD") {
 
   SECTION("K0Long projectile") {
     auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
+    [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
+
     auto [stackPtr, secViewPtr] =
         setupStack(particles::Code::K0Long, 400_GeV, nodePtr, *csPtr);
+    REQUIRE(stackPtr->GetSize() == 1);
+    REQUIRE(secViewPtr->GetSize() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();

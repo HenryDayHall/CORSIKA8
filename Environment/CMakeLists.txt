@@ -75,3 +75,11 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAtesting
   )
+
+CORSIKA_ADD_TEST(testShowerAxis)
+target_link_libraries (
+  testShowerAxis
+  CORSIKAsetup
+  CORSIKAenvironment
+  CORSIKAtesting
+  )

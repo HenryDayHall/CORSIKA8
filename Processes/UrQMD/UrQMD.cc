@@ -33,7 +33,7 @@ using SetupProjectile = corsika::setup::StackView::StackIterator;
 
 UrQMD::UrQMD(std::string const& xs_file) {
   readXSFile(xs_file);
-  iniurqmd_();
+  iniurqmdc8_();
 }
 
 CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,

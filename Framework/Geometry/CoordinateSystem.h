@@ -31,10 +31,6 @@ namespace corsika::geometry {
     CoordinateSystem const* reference = nullptr;
     EigenTransform transf;
 
-    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf)
-        : reference(&reference)
-        , transf(transf) {}
-
     CoordinateSystem()
         : // for creating the root CS
         transf(EigenTransform::Identity()) {}
@@ -48,6 +44,10 @@ namespace corsika::geometry {
     static EigenTransform GetTransformation(CoordinateSystem const& c1,
                                             CoordinateSystem const& c2);
 
+    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf)
+        : reference(&reference)
+        , transf(transf) {}
+
     auto& operator=(const CoordinateSystem& pCS) {
       reference = pCS.reference;
       transf = pCS.transf;
@@ -60,6 +60,9 @@ namespace corsika::geometry {
       return CoordinateSystem(*this, translation);
     }
 
+    /**
+     * creates a new CS in which vVec points in direction of the new z-axis
+     */
     template <typename TDim>
     auto RotateToZ(Vector<TDim> vVec) const {
       auto const a = vVec.normalized().GetComponents(*this).eVector;
@@ -117,6 +120,12 @@ namespace corsika::geometry {
     auto const* GetReference() const { return reference; }
 
     auto const& GetTransform() const { return transf; }
+
+    bool operator==(CoordinateSystem const& cs) const {
+      return reference == cs.reference && transf.matrix() == cs.transf.matrix();
+    }
+
+    bool operator!=(CoordinateSystem const& cs) const { return !(cs == *this); }
   };
 
 } // namespace corsika::geometry

@@ -22,41 +22,60 @@
 
 using namespace corsika;
 using namespace corsika::process::qgsjetII;
+using namespace corsika::units::si;
+
+template <typename TStackView>
+auto sumCharge(TStackView const& view) {
+  int totalCharge = 0;
+
+  for (auto const& p : view) { totalCharge += particles::GetChargeNumber(p.GetPID()); }
+
+  return totalCharge;
+}
+
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
+  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+
+  for (auto const& p : view) { sum += p.GetMomentum(); }
+
+  return sum;
+}
 
 TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("QgsjetII -> Corsika") {
-    REQUIRE(particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(
-                                                process::qgsjetII::QgsjetIICode::PiPlus));
+    CHECK(particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(
+                                              process::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
-    REQUIRE(process::qgsjetII::ConvertToQgsjetII(particles::PiMinus::GetCode()) ==
-            process::qgsjetII::QgsjetIICode::PiMinus);
-    REQUIRE(process::qgsjetII::ConvertToQgsjetIIRaw(particles::Proton::GetCode()) == 2);
+    CHECK(process::qgsjetII::ConvertToQgsjetII(particles::PiMinus::GetCode()) ==
+          process::qgsjetII::QgsjetIICode::PiMinus);
+    CHECK(process::qgsjetII::ConvertToQgsjetIIRaw(particles::Proton::GetCode()) == 2);
   }
 
   SECTION("canInteractInQgsjetII") {
 
-    REQUIRE(process::qgsjetII::CanInteract(particles::Proton::GetCode()));
-    REQUIRE(process::qgsjetII::CanInteract(particles::Code::KPlus));
-    REQUIRE(process::qgsjetII::CanInteract(particles::Nucleus::GetCode()));
-    // REQUIRE(process::qgsjetII::CanInteract(particles::Helium::GetCode()));
+    CHECK(process::qgsjetII::CanInteract(particles::Proton::GetCode()));
+    CHECK(process::qgsjetII::CanInteract(particles::Code::KPlus));
+    CHECK(process::qgsjetII::CanInteract(particles::Nucleus::GetCode()));
+    // CHECK(process::qgsjetII::CanInteract(particles::Helium::GetCode()));
 
-    REQUIRE_FALSE(process::qgsjetII::CanInteract(particles::EtaC::GetCode()));
-    REQUIRE_FALSE(process::qgsjetII::CanInteract(particles::SigmaC0::GetCode()));
+    CHECK_FALSE(process::qgsjetII::CanInteract(particles::EtaC::GetCode()));
+    CHECK_FALSE(process::qgsjetII::CanInteract(particles::SigmaC0::GetCode()));
   }
 
   SECTION("cross-section type") {
 
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) ==
-            process::qgsjetII::QgsjetIIXSClass::Baryons);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) ==
-            process::qgsjetII::QgsjetIIXSClass::Kaons);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) ==
-            process::qgsjetII::QgsjetIIXSClass::Baryons);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) ==
-            process::qgsjetII::QgsjetIIXSClass::LightMesons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) ==
+          process::qgsjetII::QgsjetIIXSClass::Baryons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) ==
+          process::qgsjetII::QgsjetIIXSClass::Kaons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) ==
+          process::qgsjetII::QgsjetIIXSClass::Baryons);
+    CHECK(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) ==
+          process::qgsjetII::QgsjetIIXSClass::LightMesons);
   }
 }
 
@@ -101,6 +120,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
 
   random::RNGManager::GetInstance().RegisterRandomStream("qgran");
+  random::RNGManager::GetInstance().SeedAll(111);
 
   SECTION("InteractionInterface") {
 
@@ -110,21 +130,26 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                     corsika::stack::MomentumVector, geometry::Point,
-                                     units::si::TimeType, unsigned int, unsigned int>{
-            particles::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
-    // corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-    //	  particles::Code::PiPlus, E0, plab, pos, 0_ns});
+    auto particle = stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Proton, E0, plab, pos, 0_ns});
 
     particle.SetNode(nodePtr);
     corsika::stack::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
+    auto const projectileMomentum = projectile.GetMomentum();
 
     Interaction model;
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+
+    CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));
+    CHECK(view.GetSize() == 14);
+    CHECK(sumCharge(view) == 1);
+    auto const secMomSum = sumMomentum(view, projectileMomentum.GetCoordinateSystem());
+    CHECK((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
+          Approx(0).margin(1e-2));
   }
 }

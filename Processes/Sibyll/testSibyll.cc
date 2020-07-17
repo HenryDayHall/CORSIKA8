@@ -30,41 +30,41 @@ using namespace corsika::units::si;
 TEST_CASE("Sibyll", "[processes]") {
 
   SECTION("Sibyll -> Corsika") {
-    REQUIRE(particles::Electron::GetCode() ==
-            process::sibyll::ConvertFromSibyll(process::sibyll::SibyllCode::Electron));
+    CHECK(particles::Electron::GetCode() ==
+          process::sibyll::ConvertFromSibyll(process::sibyll::SibyllCode::Electron));
   }
 
   SECTION("Corsika -> Sibyll") {
-    REQUIRE(process::sibyll::ConvertToSibyll(particles::Electron::GetCode()) ==
-            process::sibyll::SibyllCode::Electron);
-    REQUIRE(process::sibyll::ConvertToSibyllRaw(particles::Proton::GetCode()) == 13);
-    REQUIRE(process::sibyll::ConvertToSibyll(particles::XiStarC0::GetCode()) ==
-            process::sibyll::SibyllCode::XiStarC0);
+    CHECK(process::sibyll::ConvertToSibyll(particles::Electron::GetCode()) ==
+          process::sibyll::SibyllCode::Electron);
+    CHECK(process::sibyll::ConvertToSibyllRaw(particles::Proton::GetCode()) == 13);
+    CHECK(process::sibyll::ConvertToSibyll(particles::XiStarC0::GetCode()) ==
+          process::sibyll::SibyllCode::XiStarC0);
   }
 
   SECTION("canInteractInSibyll") {
 
-    REQUIRE(process::sibyll::CanInteract(particles::Proton::GetCode()));
-    REQUIRE(process::sibyll::CanInteract(particles::Code::XiCPlus));
+    CHECK(process::sibyll::CanInteract(particles::Proton::GetCode()));
+    CHECK(process::sibyll::CanInteract(particles::Code::XiCPlus));
 
-    REQUIRE_FALSE(process::sibyll::CanInteract(particles::Electron::GetCode()));
-    REQUIRE_FALSE(process::sibyll::CanInteract(particles::SigmaC0::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::Electron::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::SigmaC0::GetCode()));
 
-    REQUIRE_FALSE(process::sibyll::CanInteract(particles::Nucleus::GetCode()));
-    REQUIRE_FALSE(process::sibyll::CanInteract(particles::Helium::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::Nucleus::GetCode()));
+    CHECK_FALSE(process::sibyll::CanInteract(particles::Helium::GetCode()));
   }
 
   SECTION("cross-section type") {
 
-    REQUIRE(process::sibyll::GetSibyllXSCode(particles::Code::Electron) == 0);
-    REQUIRE(process::sibyll::GetSibyllXSCode(particles::Code::K0Long) == 3);
-    REQUIRE(process::sibyll::GetSibyllXSCode(particles::Code::SigmaPlus) == 1);
-    REQUIRE(process::sibyll::GetSibyllXSCode(particles::Code::PiMinus) == 2);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::Electron) == 0);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::K0Long) == 3);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::SigmaPlus) == 1);
+    CHECK(process::sibyll::GetSibyllXSCode(particles::Code::PiMinus) == 2);
   }
 
   SECTION("sibyll mass") {
 
-    REQUIRE_FALSE(process::sibyll::GetSibyllMass(particles::Code::Electron) == 0_GeV);
+    CHECK_FALSE(process::sibyll::GetSibyllMass(particles::Code::Electron) == 0_GeV);
   }
 }
 
@@ -85,6 +85,15 @@ TEST_CASE("Sibyll", "[processes]") {
 
 using namespace corsika::units::si;
 using namespace corsika::units;
+
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
+  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+
+  for (auto const& p : view) { sum += p.GetMomentum(); }
+
+  return sum;
+}
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
@@ -113,10 +122,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
-    const HEPEnergyType E0 = 100_GeV;
+    const HEPEnergyType E0 = 60_GeV;
     HEPMomentumType P0 =
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -130,6 +139,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] auto const pSum = sumMomentum(view, cs);
+
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
@@ -186,15 +197,15 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
-    REQUIRE(stack.GetSize() == 3);
+    CHECK(stack.GetSize() == 3);
   }
 
   SECTION("DecayConfiguration") {
 
     Decay model({particles::Code::PiPlus, particles::Code::PiMinus});
-    REQUIRE(model.IsDecayHandled(particles::Code::PiPlus));
-    REQUIRE(model.IsDecayHandled(particles::Code::PiMinus));
-    REQUIRE_FALSE(model.IsDecayHandled(particles::Code::KPlus));
+    CHECK(model.IsDecayHandled(particles::Code::PiPlus));
+    CHECK(model.IsDecayHandled(particles::Code::PiMinus));
+    CHECK_FALSE(model.IsDecayHandled(particles::Code::KPlus));
 
     const std::vector<particles::Code> particleTestList = {
         particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
@@ -202,15 +213,15 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     // setup decays
     model.SetHandleDecay(particleTestList);
-    for (auto& pCode : particleTestList) REQUIRE(model.IsDecayHandled(pCode));
+    for (auto& pCode : particleTestList) CHECK(model.IsDecayHandled(pCode));
 
     // individually
     model.SetHandleDecay(particles::Code::KMinus);
 
     // possible decays
-    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Proton));
-    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Electron));
-    REQUIRE(model.CanHandleDecay(particles::Code::PiPlus));
-    REQUIRE(model.CanHandleDecay(particles::Code::MuPlus));
+    CHECK_FALSE(model.CanHandleDecay(particles::Code::Proton));
+    CHECK_FALSE(model.CanHandleDecay(particles::Code::Electron));
+    CHECK(model.CanHandleDecay(particles::Code::PiPlus));
+    CHECK(model.CanHandleDecay(particles::Code::MuPlus));
   }
 }

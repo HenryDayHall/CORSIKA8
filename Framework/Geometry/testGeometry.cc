@@ -131,7 +131,10 @@ TEST_CASE("transformations between CoordinateSystems") {
     Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
     Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
 
-    CHECK(zPrime.dot(v).magnitude() > 0);
+    CHECK(xPrime.dot(v).magnitude() == Approx(0).margin(absMargin));
+    CHECK(yPrime.dot(v).magnitude() == Approx(0).margin(absMargin));
+    CHECK((zPrime.dot(v) / 1_m).magnitude() == Approx(5 * sqrt(2)));
+
     CHECK(zPrime.GetComponents(rootCS)[1].magnitude() ==
           Approx(zPrime.GetComponents(rootCS)[2].magnitude()));
     CHECK(zPrime.GetComponents(rootCS)[0].magnitude() == Approx(0));

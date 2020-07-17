@@ -227,21 +227,18 @@ endif (NOT (${USE_CONEX_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_CONEX_C8='${USE_CONEX_C8}'")
 
 add_library (C8::ext::conex STATIC IMPORTED GLOBAL)
-get_directory_property (Boost_iostreams_FOUND DIRECTORY ${CORSIKA_DATA}/readLib DEFINITION Boost_iostreams_FOUND)
+# this is from the corsika-data/readLib submodule:
+get_directory_property (Boost_IOSTREAMS_FOUND DIRECTORY ${CORSIKA_DATA}/readLib DEFINITION Boost_IOSTREAMS_FOUND)
 set (conex_boost "")
-if (NOT Boost_iostreams_FOUND)
+set (boost_lib "boost_iostreams")
+if (NOT Boost_IOSTREAMS_FOUND)
   set (conex_boost "NO_BOOST=1")
-endif (NOT Boost_iostreams_FOUND)
+  set (boost_lib "")
+endif (NOT Boost_IOSTREAMS_FOUND)
 if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   
   find_package (CONEX REQUIRED) 
   message (STATUS "Using system-level CONEX version at ${CONEX_INCLUDE_DIR}")
-  set_target_properties (
-    C8::ext::conex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_LIBRARY}
-    IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES ${CONEX_INCLUDE_DIR}
-    )
   set (CONEX_FOUND 1 PARENT_SCOPE)
 
 else ()
@@ -257,33 +254,46 @@ else ()
     GIT_REPOSITORY https://gitlab.ikp.kit.edu/AirShowerPhysics/cxroot.git
     GIT_SUBMODULES ""
     GIT_TAG origin/master
-    GIT_SHALLOW 1
+    GIT_SHALLOW 5
     GIT_PROGRESS 1
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND make CX_NO_ROOT=1 ${conex_boost} CORSIKA_DATA=${CORSIKA_DATA} all
+    BUILD_COMMAND make CX_NO_ROOT=1 CORSIKA_8=1 ${conex_boost} CORSIKA_DATA=${CORSIKA_DATA} all
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
     )
   set (CONEX_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (cxroot INSTALL_DIR)
-  set (CONEX_PREFIX ${INSTALL_DIR})
+  get_filename_component(INSTALL_DIR_ABS ${INSTALL_DIR} ABSOLUTE)
+  set (CONEX_PREFIX ${INSTALL_DIR_ABS})
   set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src)
   set (CONEX_INCLUDE_DIR  ${CONEX_PREFIX}/src PARENT_SCOPE)
   add_dependencies (C8::ext::conex cxroot)
 
   # create include directory at config time
   file (MAKE_DIRECTORY ${CONEX_INCLUDE_DIR})
-
-  set_target_properties (
-    C8::ext::conex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXdynamic.a
-    IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES
-     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
-    )
     
 endif ()
 
+if (Boost_IOSTREAMS_FOUND)
+  set_target_properties (
+    C8::ext::conex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
+    IMPORTED_NO_SONAME 1
+    SKIP_BUILD_RPATH FALSE
+    IMPORTED_LINK_INTERFACE_LIBRARIES boost_iostreams
+    INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
+    )
+else (Boost_IOSTREAMS_FOUND)
+  set_target_properties (
+    C8::ext::conex PROPERTIES
+    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
+    IMPORTED_NO_SONAME 1
+    SKIP_BUILD_RPATH FALSE
+    INTERFACE_INCLUDE_DIRECTORIES
+    $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
+    )
+endif (Boost_IOSTREAMS_FOUND)

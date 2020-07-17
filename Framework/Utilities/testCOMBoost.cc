@@ -35,6 +35,8 @@ auto const energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
   return sqrt(m * m + p.squaredNorm());
 };
 
+auto const momentum = [](HEPEnergyType E, HEPMassType m) { return sqrt(E * E - m * m); };
+
 // helper function for mandelstam-s
 auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
   return E * E - p.squaredNorm();
@@ -54,7 +56,7 @@ TEST_CASE("boosts") {
 
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1._GeV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 1_PeV, 0_GeV}};
+    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 20_GeV, 0_GeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
@@ -101,18 +103,26 @@ TEST_CASE("boosts") {
 
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1_GeV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, -1_PeV}};
+    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_GeV, -20_GeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     const FourVector PprojLab(eProjectileLab, pProjectileLab);
+
+    auto const sqrt_s_lab =
+        sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
 
     // define boost to com frame
     COMBoost boost(PprojLab, targetMass);
 
     // boost projecticle
     auto const PprojCoM = boost.toCoM(PprojLab);
+    auto const a = PprojCoM.GetSpaceLikeComponents().GetComponents(boost.GetRotatedCS());
+    CHECK(a.GetX() / 1_GeV == Approx(0));
+    CHECK(a.GetY() / 1_GeV == Approx(0));
+    CHECK(a.GetZ() / (momentum(sqrt_s_lab / 2, projectileMass)) == Approx(1));
 
     // boost target
     auto const PtargCoM = boost.toCoM(FourVector(targetMass, pTargetLab));
+    CHECK(PtargCoM.GetTimeLikeComponent() / sqrt_s_lab == Approx(.5));
 
     // sum of momenta in CoM, should be 0
     auto const sumPCoM =
@@ -183,31 +193,30 @@ TEST_CASE("boosts") {
         PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
     CHECK(sumPCoM.norm() / P0 == Approx(0).margin(absMargin)); // MAKE RELATIVE CHECK
   }
+}
 
-  SECTION("rest frame") {
-    HEPMassType const projectileMass = 1_GeV;
-    HEPMomentumType const P0 = 1_TeV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, P0, 0_GeV}};
-    HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+TEST_CASE("rest frame") {
+  HEPMassType const projectileMass = 1_GeV;
+  HEPMomentumType const P0 = 1_TeV;
+  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, P0, 0_GeV}};
+  HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+  const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
-    COMBoost boostRest(pProjectileLab, projectileMass);
-    auto const& csPrime = boostRest.GetRotatedCS();
-    FourVector const rest4Mom = boostRest.toCoM(PprojLab);
+  COMBoost boostRest(pProjectileLab, projectileMass);
+  auto const& csPrime = boostRest.GetRotatedCS();
+  FourVector const rest4Mom = boostRest.toCoM(PprojLab);
 
-    CHECK(rest4Mom.GetTimeLikeComponent() / 1_GeV == Approx(projectileMass / 1_GeV));
-    CHECK(rest4Mom.GetSpaceLikeComponents().norm() / 1_GeV ==
-          Approx(0).margin(absMargin));
+  CHECK(rest4Mom.GetTimeLikeComponent() / 1_GeV == Approx(projectileMass / 1_GeV));
+  CHECK(rest4Mom.GetSpaceLikeComponents().norm() / 1_GeV == Approx(0).margin(absMargin));
 
-    FourVector const a{0_eV, Vector{csPrime, 0_eV, 5_GeV, 0_eV}};
-    FourVector const b{0_eV, Vector{rootCS, 3_GeV, 0_eV, 0_eV}};
-    auto const aLab = boostRest.fromCoM(a);
-    auto const bLab = boostRest.fromCoM(b);
+  FourVector const a{0_eV, Vector{csPrime, 0_eV, 5_GeV, 0_eV}};
+  FourVector const b{0_eV, Vector{rootCS, 3_GeV, 0_eV, 0_eV}};
+  auto const aLab = boostRest.fromCoM(a);
+  auto const bLab = boostRest.fromCoM(b);
 
-    CHECK(aLab.GetNorm() / a.GetNorm() == Approx(1));
-    CHECK(aLab.GetSpaceLikeComponents().GetComponents(csPrime)[1].magnitude() ==
-          Approx((5_GeV).magnitude()));
-    CHECK(bLab.GetSpaceLikeComponents().GetComponents(rootCS)[0].magnitude() ==
-          Approx((3_GeV).magnitude()));
-  }
+  CHECK(aLab.GetNorm() / a.GetNorm() == Approx(1));
+  CHECK(aLab.GetSpaceLikeComponents().GetComponents(csPrime)[1].magnitude() ==
+        Approx((5_GeV).magnitude()));
+  CHECK(bLab.GetSpaceLikeComponents().GetComponents(rootCS)[0].magnitude() ==
+        Approx((3_GeV).magnitude()));
 }

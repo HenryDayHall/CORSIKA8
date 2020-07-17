@@ -13,6 +13,7 @@
 
 using namespace corsika::environment;
 using namespace corsika::units::si;
+using namespace corsika;
 
 GrammageType ShowerAxis::X(LengthType l) const {
   auto const fractionalBin = l / steplength_;
@@ -33,17 +34,25 @@ GrammageType ShowerAxis::X(LengthType l) const {
 
   assert(0 <= lambda && lambda <= 1.);
 
+  std::cout << l << ": " << lower << " " << lambda << " " << upper << std::endl;
+
   // linear interpolation between X[lower] and X[upper]
-  return X_[lower] * lambda + X_[upper] * (1 - lambda);
+  return X_[upper] * lambda + X_[lower] * (1 - lambda);
 }
 
 LengthType ShowerAxis::steplength() const { return steplength_; }
 
 GrammageType ShowerAxis::maximumX() const { return *X_.rbegin(); }
 
-GrammageType ShowerAxis::minimumX() const { return *X_.cbegin(); }
+GrammageType ShowerAxis::minimumX() const { return GrammageType::zero(); }
 
 GrammageType ShowerAxis::projectedX(geometry::Point const& p) const {
   auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
   return X(projectedLength);
 }
+
+geometry::Vector<units::si::dimensionless_d> const& ShowerAxis::GetDirection() const {
+  return axis_normalized_;
+}
+
+geometry::Point const& ShowerAxis::GetStart() const { return pointStart_; }

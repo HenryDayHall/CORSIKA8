@@ -237,6 +237,7 @@ test-clang-8:
     - ctest -j4 -VV | gzip -v -9 > test.log.gz 
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
+      allow_failure: false
     - if: $CI_MERGE_REQUEST_ID
       when: manual
       allow_failure: true
@@ -342,7 +343,7 @@ example-clang-8:
     - cd build
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz 
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
