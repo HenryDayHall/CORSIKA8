@@ -14,14 +14,18 @@
 using namespace corsika::process::observation_plane;
 using namespace corsika::units::si;
 
-ObservationPlane::ObservationPlane(geometry::Plane const& obsPlane,
-                                   std::string const& filename, bool deleteOnHit)
+ObservationPlane::ObservationPlane(
+    geometry::Plane const& obsPlane,
+    geometry::Vector<units::si::dimensionless_d> const& x_axis,
+    std::string const& filename, bool deleteOnHit)
     : plane_(obsPlane)
     , outputStream_(filename)
     , deleteOnHit_(deleteOnHit)
     , energy_ground_(0_GeV)
     , count_ground_(0) {
-  outputStream_ << "#PDG code, energy / eV, distance to center / m" << std::endl;
+    , xAxis_(x_axis.normalized())
+    , yAxis_(obsPlane.GetNormal().cross(xAxis_)) {
+  outputStream_ << "#PDG code, energy / eV, x distance / m, y distance / m" << std::endl;
 }
 
 corsika::process::EProcessReturn ObservationPlane::DoContinuous(
@@ -37,8 +41,11 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
   }
 
   const auto energy = particle.GetEnergy();
+  auto const displacement = trajectory.GetPosition(1) - plane_.GetCenter();
+
   outputStream_ << static_cast<int>(particles::GetPDG(particle.GetPID())) << ' '
                 << energy / 1_eV << ' '
+                << displacement.dot(xAxis_) / 1_m << ' ' << displacement.dot(yAxis_) / 1_m
                 << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                 << std::endl;
 

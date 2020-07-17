@@ -26,7 +26,9 @@ namespace corsika::process::observation_plane {
   class ObservationPlane : public corsika::process::ContinuousProcess<ObservationPlane> {
 
   public:
-    ObservationPlane(geometry::Plane const&, std::string const&, bool = true);
+    ObservationPlane(geometry::Plane const&,
+                     geometry::Vector<units::si::dimensionless_d> const&,
+                     std::string const&, bool = true);
 
     corsika::process::EProcessReturn DoContinuous(
         corsika::setup::Stack::ParticleType& vParticle,
@@ -47,5 +49,6 @@ namespace corsika::process::observation_plane {
 
     units::si::HEPEnergyType energy_ground_ = 0 * units::si::electronvolt;
     unsigned int count_ground_ = 0;
+    geometry::Vector<units::si::dimensionless_d> const xAxis_, yAxis_;
   };
 } // namespace corsika::process::observation_plane

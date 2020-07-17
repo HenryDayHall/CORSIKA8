@@ -162,8 +162,20 @@ int main(int argc, char** argv) {
     stack.AddParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    stack.AddParticle(
-        std::make_tuple(particles::Code::Proton, E0, plab, injectionPos, 0_ns));
+    if (Z == 1) {
+      stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                   corsika::stack::MomentumVector, geometry::Point,
+                                   units::si::TimeType>{particles::Code::Proton, E0, plab,
+                                                        injectionPos, 0_ns});
+    } else if (Z == 0) {
+      stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                   corsika::stack::MomentumVector, geometry::Point,
+                                   units::si::TimeType>{particles::Code::Neutron, E0,
+                                                        plab, injectionPos, 0_ns});
+    } else {
+      std::cerr << "illegal parameters" << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   // we make the axis much longer than the inj-core distance since the
@@ -217,8 +229,8 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  process::observation_plane::ObservationPlane observationLevel(
+      obsPlane, Vector<dimensionless_d>(rootCS, {1., 0., 0.}), "particles.dat");
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
