@@ -119,22 +119,20 @@ def checkNote(filename, justCheck, forYear, updateMessage):
             # only if updateMessage is True:
             # read the YEAR from old message to use it for new message (->update message)
             if updateMessage:
-                regexYear = re.compile(re.escape('Copyright (..+)'))
+                regexYear = re.compile(r'.*Copyright\s+(\d\d\S*)\s.*')
                 matchYear = re.match(regexYear, lines[startNote[0]+iLine].strip(" \n"))
-                if matchYear:
-                    print (str(matchYear.groups()))
-                    if len(matchYear.groups())>0:
-                        prevYear = str(matchYear.groups()[0])
-                        print (" group year: " + prevYear)
+                if matchYear and len(matchYear.groups())>0:
+                    prevYear = str(matchYear.groups()[0])
 
+            # compare old with new message here:
             regex = re.compile(re.escape(noteLines[iLine].strip(" \n")).replace('YEAR','(..+)'))
             match = re.match(regex, lines[startNote[0]+iLine].strip(" \n"))
             if not match:
+                if isSame:
+                    print ("needs update: " + filename + "\n   [diff] new=\'" + noteLines[iLine] +
+                           "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
                 isSame = False
                 foundMissing = True
-                print ("needs update: " + filename + "\n   [diff] new=\'" + noteLines[iLine] +
-                       "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
-                break
 
     if Debug>0:
         print ("isSame=" + str(isSame) + " " + str(len(startNote)))
@@ -230,16 +228,18 @@ def main(argv):
    updateMessage = False
    Debug = 0
    try:
-      opts, args = getopt.getopt(argv, "c:uA:hd:", ["check=", "update-message", "add=", "help", "debug="])
+      opts, args = getopt.getopt(argv, "cnuA:hd:", ["check", "no-check", "update-message", "add=", "help", "debug="])
    except getopt.GetoptError:
-      print ('do-copyright.py [--check=1] [--add=YEAR] [--update-message] [--debug=0]')
+      print ('do-copyright.py [--check/--no-check] [--add=YEAR] [--update-message] [--debug=0]')
       sys.exit(2)
    for opt, arg in opts:
       if opt in ("-h", "--help"):
-         print ('do-copyright.py [--check] [--add=YEAR] [--update-message] [--debug=0]')
+         print ('do-copyright.py [--check/--no-check] [--add=YEAR] [--update-message] [--debug=0]')
          sys.exit() 
       elif opt in ("-c", "--check"):
-         justCheck = bool(arg)         
+         justCheck = True
+      elif opt in ("-n", "--no-check"):
+         justCheck = False         
       elif opt in ("-u", "--update-message"):
          updateMessage = True
          print ('Preserve YEAR of existing message, where possible.')
@@ -253,7 +253,7 @@ def main(argv):
    if justCheck:
        print ('Only checking. No changes. See \'do-copyright.py -h\' for options.')
    else:
-       print ('WARN: this will modify your files! ')
+       print ('** WARN: THIS WILL MODIFY YOUR FILES! ** ')
        
    for root, dirs, files in os.walk('./'):
        next_file(root, files, justCheck, forYear, updateMessage)
