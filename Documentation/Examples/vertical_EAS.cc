@@ -17,9 +17,9 @@
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMagneticFieldModel.h>
-#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/ShowerAxis.h>
+#include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/UniformMagneticField.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
