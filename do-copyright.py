@@ -10,8 +10,6 @@ import re
 text = """/*
  * (c) Copyright YEAR CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -23,7 +21,7 @@ Debug settings are 0: nothing, 1: checking, 2: filesystem
 """
 Debug = 0 
 
-excludeDirs = ["ThirdParty", "git"]
+excludeDirs = ["ThirdParty", "git", "build", "install"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h']
 
 extensions = [".cc", ".h", ".test"]
@@ -36,6 +34,10 @@ justCheck = True
 foundMissing: global variable set to True in case of any needed action 
 """
 foundMissing = False
+"""
+updateMessage: T: update message, put preserve the YEAR, F: no special action
+"""
+updateMessage = False
 
 """
 forYear: replace this with year for copyright notice via command line
@@ -45,7 +47,7 @@ forYear="YEAR"
 
 ###############################################
 #
-def checkNote(filename, justCheck, forYear):
+def checkNote(filename, justCheck, forYear, updateMessage):
     """
     function to check, if the file 'filename' contains an exact copy
     of the copyright notice defined above. 
@@ -56,6 +58,10 @@ def checkNote(filename, justCheck, forYear):
     the function will attempt to put the correct notice exactly once 
     at the top of the file. The copyright YEAR will be replace with 
     'forYear', e.g. forYear="2019" or forYear="2018-2020", etc.
+
+    If 'updateMessage' is True, then the value of Year will be determined 
+    from the previous copyright message, if possible. Thus, the copyright year
+    is preserved. 
     
     The global variable 'foundMissing' is set to True in the event 
     where any changes are identified, BUT not implemented. 
@@ -101,6 +107,7 @@ def checkNote(filename, justCheck, forYear):
     
     """ now check if first copyright notices is already identical... """
     isSame = False
+    prevYear = ""
     if len(startNote)>0: 
         isSame = True
         noteLines = text.split('\n')
@@ -108,12 +115,25 @@ def checkNote(filename, justCheck, forYear):
             if startNote[0]+iLine >= len(lines):
                 isSame = False
                 break
-            regex = re.compile(re.escape(noteLines[iLine].strip(" \n")).replace('YEAR','....'))
-            if not re.match(regex, lines[startNote[0]+iLine].strip(" \n")):
+
+            # only if updateMessage is True:
+            # read the YEAR from old message to use it for new message (->update message)
+            if updateMessage:
+                regexYear = re.compile(r'.*Copyright\s+(\d\d\S*)\s.*')
+                matchYear = re.match(regexYear, lines[startNote[0]+iLine].strip(" \n"))
+                if matchYear and len(matchYear.groups())>0:
+                    prevYear = str(matchYear.groups()[0])
+
+            # compare old with new message here:
+            regex = re.compile(re.escape(noteLines[iLine].strip(" \n")).replace('YEAR','(..+)'))
+            match = re.match(regex, lines[startNote[0]+iLine].strip(" \n"))
+            if not match:
+                if isSame:
+                    print ("needs update: " + filename + "\n   [diff] new=\'" + noteLines[iLine] +
+                           "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
                 isSame = False
                 foundMissing = True
-                print ("needs update: " + filename + " new=\'" + noteLines[iLine] + "\' vs old=\'" + lines[startNote[0]+iLine].rstrip('\n') + "\'")
-                break
+
     if Debug>0:
         print ("isSame=" + str(isSame) + " " + str(len(startNote)))
     
@@ -130,12 +150,15 @@ def checkNote(filename, justCheck, forYear):
         return
     
     """ add (new) copyright notice here: """
-    print ("File: " + filename + ", make copy to " + filename+".bak")
+    print ("   [file] " + filename + " --> backup to " + filename+".bak")
     os.rename(filename, filename+".bak")
     
     with open(filename, "w") as file:
-        
-        textReplace = re.sub(r"Copyright YEAR ", "Copyright " + forYear + " ", text)
+
+        if len(prevYear)>0:
+            textReplace = re.sub(r"Copyright YEAR ", "Copyright " + prevYear + " ", text)
+        else:
+            textReplace = re.sub(r"Copyright YEAR ", "Copyright " + forYear + " ", text)
         file.write(textReplace)
         
         skip = False
@@ -163,7 +186,7 @@ def checkNote(filename, justCheck, forYear):
 
 ###############################################
 #
-def next_file(dir_name, files, justCheck, forYear):
+def next_file(dir_name, files, justCheck, forYear, updateMessage):
     """
     check files: loops over list of files,
     excludes if wished, process otherwise
@@ -188,7 +211,7 @@ def next_file(dir_name, files, justCheck, forYear):
         if excludeThisFile:
             continue
         if file_extension in extensions:
-            checkNote(os.path.join(dir_name, check), justCheck, forYear)
+            checkNote(os.path.join(dir_name, check), justCheck, forYear, updateMessage)
         else:
             if Debug>1:
                 print ("exclude-extension: " + os.path.join(dir_name, check))
@@ -200,20 +223,26 @@ def main(argv):
    """
     the main program
    """
-   global justCheck, foundMissing, Debug, forYear
+   global justCheck, foundMissing, updateMessage, Debug, forYear
    justCheck = True
+   updateMessage = False
    Debug = 0
    try:
-      opts, args = getopt.getopt(argv, "cAhd:", ["check", "add=", "debug="])
+      opts, args = getopt.getopt(argv, "cnuA:hd:", ["check", "no-check", "update-message", "add=", "help", "debug="])
    except getopt.GetoptError:
-      print ('do-copyright.py [--check] [--add=YEAR] [--debug=0]')
+      print ('do-copyright.py [--check/--no-check] [--add=YEAR] [--update-message] [--debug=0]')
       sys.exit(2)
    for opt, arg in opts:
-      if opt == '-h':
-         print ('do-copyright.py [--check] [--add=YEAR] [--debug=0]')
-         sys.exit()
+      if opt in ("-h", "--help"):
+         print ('do-copyright.py [--check/--no-check] [--add=YEAR] [--update-message] [--debug=0]')
+         sys.exit() 
       elif opt in ("-c", "--check"):
          justCheck = True
+      elif opt in ("-n", "--no-check"):
+         justCheck = False         
+      elif opt in ("-u", "--update-message"):
+         updateMessage = True
+         print ('Preserve YEAR of existing message, where possible.')
       elif opt in ("-A", "--add"):
          justCheck = False
          forYear = str(arg)
@@ -223,9 +252,11 @@ def main(argv):
 
    if justCheck:
        print ('Only checking. No changes. See \'do-copyright.py -h\' for options.')
-         
+   else:
+       print ('** WARN: THIS WILL MODIFY YOUR FILES! ** ')
+       
    for root, dirs, files in os.walk('./'):
-       next_file(root, files, justCheck, forYear)
+       next_file(root, files, justCheck, forYear, updateMessage)
 
     
 ###############################################
