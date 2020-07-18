@@ -117,8 +117,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
   const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
 
-  random::RNGManager::GetInstance().RegisterRandomStream("qgran");
-  random::RNGManager::GetInstance().SeedAll(111);
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("qgran");
 
   SECTION("InteractionInterface") {
 
@@ -145,7 +144,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
     CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));
     CHECK(view.GetSize() == 14);
-    CHECK(sumCharge(view) == 1);
+    CHECK(sumCharge(view) == 2);
     auto const secMomSum = sumMomentum(view, projectileMomentum.GetCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
           Approx(0).margin(1e-2));
