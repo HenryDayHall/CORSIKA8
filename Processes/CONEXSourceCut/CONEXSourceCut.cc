@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -119,8 +117,6 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
   conex::cegs4_(n, i);
 }
 
-void CONEXSourceCut::Init() {}
-
 void CONEXSourceCut::SolveCE() {
 
   conex::conexcascade_();
@@ -162,7 +158,6 @@ void CONEXSourceCut::SolveCE() {
          << Gamma[i] << " " << Electrons[i] << " " << Hadrons[i] << std::endl;
   }
 }
-
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center,
                                environment::ShowerAxis const& showerAxis,

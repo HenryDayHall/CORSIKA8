@@ -135,7 +135,6 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     Interaction model;
 
-    model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] auto const pSum = sumMomentum(view, cs);
 
@@ -163,7 +162,6 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Interaction hmodel;
     NuclearInteraction model(hmodel, env);
 
-    model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
@@ -186,8 +184,6 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Decay model;
 
     model.PrintDecayConfig();
-
-    model.Init();
 
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
 

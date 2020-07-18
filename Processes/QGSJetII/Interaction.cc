@@ -46,11 +46,7 @@ namespace corsika::process::qgsjetII {
         cout << "Searching for QGSJetII data tables in " << data_path_ << endl;
       }
     }
-  }
 
-  Interaction::~Interaction() { cout << "QgsjetII::Interaction n=" << count_ << endl; }
-
-  void Interaction::Init() {
     // initialize QgsjetII
     if (!initialized_) {
       qgset_();
@@ -59,6 +55,8 @@ namespace corsika::process::qgsjetII {
       initialized_ = true;
     }
   }
+
+  Interaction::~Interaction() { cout << "QgsjetII::Interaction n=" << count_ << endl; }
 
   units::si::CrossSectionType Interaction::GetCrossSection(
       const particles::Code beamId, const particles::Code targetId,

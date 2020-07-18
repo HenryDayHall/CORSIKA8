@@ -150,7 +150,7 @@ int main() {
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);
-  EAS.Init();
+
   EAS.Run();
 
   eLoss.PrintProfile(); // print longitudinal profile

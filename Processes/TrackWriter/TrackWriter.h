@@ -19,10 +19,7 @@ namespace corsika::process::track_writer {
   class TrackWriter : public corsika::process::ContinuousProcess<TrackWriter> {
 
   public:
-    TrackWriter(std::string const& filename)
-        : fFilename(filename) {}
-
-    void Init();
+    TrackWriter(std::string const& filename);
 
     template <typename Particle, typename Track>
     corsika::process::EProcessReturn DoContinuous(Particle&, Track&);

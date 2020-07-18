@@ -30,7 +30,6 @@ namespace corsika::process {
                      const corsika::units::si::HEPEnergyType vE0);
       ~StackInspector();
 
-      void Init();
       EProcessReturn DoStack(const TStack&);
 
       /**

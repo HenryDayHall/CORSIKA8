@@ -27,7 +27,6 @@ namespace corsika::process {
       Decay();
       Decay(std::set<particles::Code>);
       ~Decay();
-      void Init();
 
       void PrintDecayConfig(const corsika::particles::Code);
       void PrintDecayConfig();

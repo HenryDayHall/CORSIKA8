@@ -29,12 +29,12 @@ class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
 
 public:
   ContinuousProcess1(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "ContinuousProcess1::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+
+    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
     globalCount++;
   }
+
   template <typename D, typename T>
   inline EProcessReturn DoContinuous(D& d, T&) const {
     cout << "ContinuousProcess1::DoContinuous" << endl;
@@ -48,12 +48,11 @@ class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 
 public:
   ContinuousProcess2(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "ContinuousProcess2::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
     globalCount++;
   }
+
   template <typename D, typename T>
   inline EProcessReturn DoContinuous(D& d, T&) const {
     cout << "ContinuousProcess2::DoContinuous" << endl;
@@ -65,18 +64,18 @@ public:
 class Process1 : public InteractionProcess<Process1> {
 public:
   Process1(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "Process1::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
     globalCount++;
   }
+
   template <typename D, typename S>
   inline EProcessReturn DoInteraction(D& d, S&) const {
     for (int i = 0; i < nData; ++i) d.p[i] += 1 + i;
     return EProcessReturn::eOk;
   }
-  // private:
+
+private:
   int fV;
 };
 
@@ -85,12 +84,11 @@ class Process2 : public InteractionProcess<Process2> {
 
 public:
   Process2(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "Process2::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
     globalCount++;
   }
+
   template <typename Particle>
   inline EProcessReturn DoInteraction(Particle&) const {
     cout << "Process2::DoInteraction" << endl;
@@ -108,12 +106,11 @@ class Process3 : public InteractionProcess<Process3> {
 
 public:
   Process3(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "Process3::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
     globalCount++;
   }
+
   template <typename Particle>
   inline EProcessReturn DoInteraction(Particle&) const {
     cout << "Process3::DoInteraction" << endl;
@@ -131,18 +128,16 @@ class Process4 : public BaseProcess<Process4> {
 
 public:
   Process4(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "Process4::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
     globalCount++;
   }
+
   template <typename D, typename T>
   inline EProcessReturn DoContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) { d.p[i] /= 1.2; }
     return EProcessReturn::eOk;
   }
-  // inline double MinStepLength(D& d) {
   template <typename Particle>
   EProcessReturn DoInteraction(Particle&) const {
     return EProcessReturn::eOk;
@@ -154,12 +149,11 @@ class Decay1 : public DecayProcess<Decay1> {
 
 public:
   Decay1(const int v)
-      : fV(v) {}
-  void Init() {
-    cout << "Decay1::Init" << endl;
-    assert(globalCount == fV);
+      : fV(v) {
+    cout << "Decay1()" << endl;
     globalCount++;
   }
+
   template <typename Particle>
   TimeType GetLifetime(Particle&) const {
     return 1_s;
@@ -192,25 +186,22 @@ struct DummyTrajectory {};
 
 TEST_CASE("Process Sequence", "[Process Sequence]") {
 
-  SECTION("Check init order") {
-    Process1 m1(0);
-    Process2 m2(1);
-    Process3 m3(2);
-    Process4 m4(3);
-
-    auto sequence = m1 << m2 << m3 << m4;
-
+  SECTION("Check construction") {
     globalCount = 0;
-    sequence.Init();
-    // REQUIRE_NOTHROW( (sequence.Init()) );
+    Process1 m1(0);
+    CHECK(globalCount == 1);
+    Process2 m2(1);
+    CHECK(globalCount == 2);
+    Process3 m3(2);
+    CHECK(globalCount == 3);
+    Process4 m4(3);
+    CHECK(globalCount == 4);
 
-    // const auto sequence_wrong = m3 + m2 + m1 + m4;
-    // globalCount = 0;
-    // sequence_wrong.Init();
-    // REQUIRE_THROWS(sequence_wrong.Init());
+    [[maybe_unused]] auto sequence = m1 << m2 << m3 << m4;
   }
 
   SECTION("interaction length") {
+    globalCount = 0;
     ContinuousProcess1 cp1(0);
     Process2 m2(1);
     Process3 m3(2);
@@ -222,13 +213,15 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     InverseGrammageType const tot_inv =
         sequence2.GetTotalInverseInteractionLength(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
+    globalCount = 0;
   }
 
   SECTION("lifetime") {
+    globalCount = 0;
     ContinuousProcess1 cp1(0);
     Process2 m2(1);
     Process3 m3(2);
-    Decay1 d3(2);
+    Decay1 d3(3);
 
     DummyData particle;
 
@@ -236,14 +229,16 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     TimeType const tot = sequence2.GetTotalLifetime(particle);
     InverseTimeType const tot_inv = sequence2.GetTotalInverseLifetime(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
+
+    globalCount = 0;
   }
 
   SECTION("sectionTwo") {
-
+    globalCount = 0;
     ContinuousProcess1 cp1(0);
-    ContinuousProcess2 cp2(3);
-    Process2 m2(1);
-    Process3 m3(2);
+    ContinuousProcess2 cp2(1);
+    Process2 m2(2);
+    Process3 m3(3);
 
     auto sequence2 = cp1 << m2 << m3 << cp2;
 
@@ -252,7 +247,6 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     cout << "-->init sequence2" << endl;
     globalCount = 0;
-    sequence2.Init();
     cout << "-->docont" << endl;
 
     sequence2.DoContinuous(particle, track);
@@ -270,10 +264,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
   SECTION("StackProcess") {
 
-    ContinuousProcess1 cp1(0);
-    ContinuousProcess2 cp2(3);
-    Process2 m2(1);
-    Process3 m3(2);
+    globalCount = 0;
     Stack1 s1(1);
     Stack1 s2(2);
 
@@ -294,8 +285,9 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
   in Processes/SwitchProcess/testSwtichProcess
  */
 TEST_CASE("SwitchProcess") {
+  globalCount = 0;
   Process1 p1(0);
-  Process2 p2(0);
+  Process2 p2(1);
   switch_process::SwitchProcess s(p1, p2, 10_GeV);
   REQUIRE(is_switch_process_v<decltype(s)>);
 }

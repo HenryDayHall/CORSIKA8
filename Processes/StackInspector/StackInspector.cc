@@ -32,7 +32,11 @@ StackInspector<TStack>::StackInspector(const int vNStep, const bool vReportStack
     : StackProcess<StackInspector<TStack>>(vNStep)
     , ReportStack_(vReportStack)
     , E0_(vE0)
-    , StartTime_(std::chrono::system_clock::now()) {}
+    , StartTime_(std::chrono::system_clock::now()) {
+
+  ReportStack_ = false;
+  StartTime_ = std::chrono::system_clock::now();
+}
 
 template <typename TStack>
 StackInspector<TStack>::~StackInspector() {}
@@ -76,12 +80,6 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
        << ", Estack=" << Etot / 1_GeV << " GeV"
        << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << endl;
   return process::EProcessReturn::eOk;
-}
-
-template <typename TStack>
-void StackInspector<TStack>::Init() {
-  ReportStack_ = false;
-  StartTime_ = std::chrono::system_clock::now();
 }
 
 #include <corsika/cascade/testCascade.h>

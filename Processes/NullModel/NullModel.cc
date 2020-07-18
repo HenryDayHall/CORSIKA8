@@ -13,8 +13,6 @@
 using namespace corsika;
 namespace corsika::process::null_model {
 
-  void NullModel::Init() {}
-
   NullModel::NullModel(units::si::LengthType maxStepLength)
       : fMaxStepLength(maxStepLength) {}
 

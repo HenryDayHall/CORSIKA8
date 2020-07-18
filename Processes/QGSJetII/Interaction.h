@@ -30,8 +30,6 @@ namespace corsika::process::qgsjetII {
     Interaction(const std::string& dataPath = "");
     ~Interaction();
 
-    void Init();
-
     bool WasInitialized() { return initialized_; }
     int GetMaxTargetMassNumber() const { return maxMassNumber_; }
     bool IsValidTarget(corsika::particles::Code TargetId) const {

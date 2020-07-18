@@ -195,9 +195,6 @@ int main(int argc, char** argv) {
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
-  sibyllNuc.Init();
-  sibyll.Init();
-
   process::conex_source_cut::CONEXSourceCut conexSource(
       center, showerAxis, t, injectionHeight, E0,
       particles::GetPDG(particles::Code::Proton));
@@ -209,13 +206,12 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-	  auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource << longprof
-                                << eLoss << cut << observationLevel;
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource
+                                << longprof << eLoss << cut << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
-  EAS.Init();
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();

@@ -106,11 +106,6 @@ namespace corsika::stack {
   class CombinedStackImpl : public Stack1Impl, public Stack2Impl {
 
   public:
-    void Init() {
-      Stack1Impl::Init();
-      Stack2Impl::Init();
-    }
-
     void Clear() {
       Stack1Impl::Clear();
       Stack2Impl::Clear();

@@ -139,7 +139,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     auto const projectileMomentum = projectile.GetMomentum();
 
     Interaction model;
-    model.Init();
+
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 

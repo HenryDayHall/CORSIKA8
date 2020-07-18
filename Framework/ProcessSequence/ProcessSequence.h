@@ -315,11 +315,6 @@ namespace corsika::process {
       } // end branch B
       return EProcessReturn::eOk;
     }
-
-    void Init() {
-      A.Init();
-      B.Init();
-    }
   };
 
   /// the << operator assembles many BaseProcess, ContinuousProcess, and

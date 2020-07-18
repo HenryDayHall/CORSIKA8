@@ -22,7 +22,6 @@ class TestStackData {
 
 public:
   // these functions are needed for the Stack interface
-  void Init() {}
   void Clear() { fData.clear(); }
   unsigned int GetSize() const { return fData.size(); }
   unsigned int GetCapacity() const { return fData.size(); }

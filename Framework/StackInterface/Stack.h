@@ -63,8 +63,6 @@ namespace corsika::stack {
         delete; ///< since Stack can be very big, we don't want to copy it
 
   public:
-    // Stack() { Init(); }
-
     /**
      * if StackDataType is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
@@ -128,10 +126,7 @@ namespace corsika::stack {
      */
     unsigned int GetCapacity() const { return fData.GetCapacity(); }
     unsigned int GetSize() const { return fData.GetSize(); }
-    template <typename... Args>
-    auto Init(Args... args) {
-      return fData.Init(args...);
-    }
+
     template <typename... Args>
     auto Clear(Args... args) {
       return fData.Clear(args...);

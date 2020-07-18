@@ -26,8 +26,6 @@ namespace corsika::process::longitudinal_profile {
   public:
     LongitudinalProfile(environment::ShowerAxis const&);
 
-    void Init();
-
     template <typename Particle, typename Track>
     corsika::process::EProcessReturn DoContinuous(Particle const&, Track const&);
 

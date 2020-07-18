@@ -32,7 +32,6 @@ class TestStackData2 {
 
 public:
   // these functions are needed for the Stack interface
-  void Init() {}
   void Clear() { fData2.clear(); }
   unsigned int GetSize() const { return fData2.size(); }
   unsigned int GetCapacity() const { return fData2.size(); }
@@ -104,7 +103,6 @@ TEST_CASE("Combined Stack", "[stack]") {
 
     // construct a valid Stack object
     StackTest s;
-    s.Init();
     s.Clear();
     s.AddParticle(std::tuple{0.});
     s.Copy(s.cbegin(), s.begin());
@@ -200,7 +198,6 @@ class TestStackData3 {
 
 public:
   // these functions are needed for the Stack interface
-  void Init() {}
   void Clear() { fData3.clear(); }
   unsigned int GetSize() const { return fData3.size(); }
   unsigned int GetCapacity() const { return fData3.size(); }

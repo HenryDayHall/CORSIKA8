@@ -20,8 +20,6 @@ namespace corsika::process::null_model {
     NullModel(corsika::units::si::LengthType maxStepLength =
                   corsika::units::si::meter * std::numeric_limits<double>::infinity());
 
-    void Init();
-
     template <typename Particle, typename Track>
     process::EProcessReturn DoContinuous(Particle&, Track&) const;
 

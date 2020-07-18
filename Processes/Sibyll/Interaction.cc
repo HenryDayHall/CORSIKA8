@@ -32,14 +32,9 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
-  Interaction::Interaction() {}
+  bool Interaction::initialized_ = false;
 
-  Interaction::~Interaction() {
-    cout << "Sibyll::Interaction n=" << count_ << " Nnuc=" << nucCount_ << endl;
-  }
-
-  void Interaction::Init() {
-
+  Interaction::Interaction() {
     using random::RNGManager;
 
     // initialize Sibyll
@@ -47,6 +42,10 @@ namespace corsika::process::sibyll {
       sibyll_ini_();
       initialized_ = true;
     }
+  }
+
+  Interaction::~Interaction() {
+    cout << "Sibyll::Interaction n=" << count_ << " Nnuc=" << nucCount_ << endl;
   }
 
   void Interaction::SetAllStable() {
@@ -320,8 +319,8 @@ namespace corsika::process::sibyll {
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-		  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
-		  tOrig});
+                  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+                  tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();
