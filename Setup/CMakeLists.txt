@@ -1,7 +1,6 @@
 set (
   SETUP_HEADERS
   SetupStack.h
-  SetupLogger.h
   SetupEnvironment.h
   SetupTrajectory.h
   )

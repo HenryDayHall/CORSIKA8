@@ -11,8 +11,6 @@
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <corsika/logging/Logger.h>
-
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <chrono>
