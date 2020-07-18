@@ -6,7 +6,6 @@
  * the license.
  */
 
-
 #pragma once
 
 #include <corsika/geometry/Line.h>

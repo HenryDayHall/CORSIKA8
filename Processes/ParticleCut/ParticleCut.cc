@@ -6,7 +6,6 @@
  * the license.
  */
 
-
 #include <corsika/process/particle_cut/ParticleCut.h>
 
 using namespace std;

@@ -32,7 +32,6 @@ public:
       : fV(v) {
 
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -51,7 +50,6 @@ public:
   ContinuousProcess2(const int v)
       : fV(v) {
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -68,7 +66,6 @@ public:
   Process1(const int v)
       : fV(v) {
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -77,7 +74,8 @@ public:
     for (int i = 0; i < nData; ++i) d.p[i] += 1 + i;
     return EProcessReturn::eOk;
   }
-  // private:
+
+private:
   int fV;
 };
 
@@ -88,7 +86,6 @@ public:
   Process2(const int v)
       : fV(v) {
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -111,7 +108,6 @@ public:
   Process3(const int v)
       : fV(v) {
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -134,7 +130,6 @@ public:
   Process4(const int v)
       : fV(v) {
     cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -143,7 +138,6 @@ public:
     for (int i = 0; i < nData; ++i) { d.p[i] /= 1.2; }
     return EProcessReturn::eOk;
   }
-  // inline double MinStepLength(D& d) {
   template <typename Particle>
   EProcessReturn DoInteraction(Particle&) const {
     return EProcessReturn::eOk;
@@ -157,7 +151,6 @@ public:
   Decay1(const int v)
       : fV(v) {
     cout << "Decay1()" << endl;
-    assert(globalCount == fV);
     globalCount++;
   }
 
@@ -193,16 +186,18 @@ struct DummyTrajectory {};
 
 TEST_CASE("Process Sequence", "[Process Sequence]") {
 
-  SECTION("Check init order") {
+  SECTION("Check construction") {
     globalCount = 0;
     Process1 m1(0);
+    CHECK(globalCount == 1);
     Process2 m2(1);
+    CHECK(globalCount == 2);
     Process3 m3(2);
+    CHECK(globalCount == 3);
     Process4 m4(3);
+    CHECK(globalCount == 4);
 
-    auto sequence = m1 << m2 << m3 << m4;
-
-    globalCount = 0;
+    [[maybe_unused]] auto sequence = m1 << m2 << m3 << m4;
   }
 
   SECTION("interaction length") {

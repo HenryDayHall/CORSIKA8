@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -37,8 +35,6 @@ namespace corsika::process {
                      particles::PDGCode primaryID);
       corsika::process::EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
-      void Init();
-
       void SolveCE();
 
       void addParticle(int egs_pid, units::si::HEPEnergyType energy,
@@ -49,7 +45,6 @@ namespace corsika::process {
       auto const& GetObserverCS() const { return conexObservationCS_; }
 
     private:
-
       //! CONEX e.m. particle codes
       static std::array<std::pair<particles::Code, int>, 3> constexpr egs_em_codes_{
           {{particles::Code::Gamma, 0},
@@ -66,4 +61,3 @@ namespace corsika::process {
     };
   } // namespace conex_source_cut
 } // namespace corsika::process
-

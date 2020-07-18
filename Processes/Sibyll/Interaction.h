@@ -20,7 +20,7 @@ namespace corsika::process::sibyll {
 
     int count_ = 0;
     int nucCount_ = 0;
-    bool initialized_ = false;
+    static bool initialized_; ///! flag to assure init is done only once
 
   public:
     Interaction();
@@ -28,7 +28,7 @@ namespace corsika::process::sibyll {
 
     void SetAllStable();
 
-    bool WasInitialized() { return initialized_; }
+    static bool WasInitialized() { return initialized_; }
     bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) const {
       return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }

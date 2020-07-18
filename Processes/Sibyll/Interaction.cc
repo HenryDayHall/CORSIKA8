@@ -32,6 +32,8 @@ using Track = Trajectory;
 
 namespace corsika::process::sibyll {
 
+  bool Interaction::initialized_ = false;
+
   Interaction::Interaction() {
     using random::RNGManager;
 
@@ -317,8 +319,8 @@ namespace corsika::process::sibyll {
           auto pnew = vP.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{
-		  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
-		  tOrig});
+                  pid, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
+                  tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();
