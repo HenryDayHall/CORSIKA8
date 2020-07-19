@@ -22,11 +22,6 @@ variables:
 # Mote: "WIP:" merge request, non-WIP merge requests and "Ready for Code Review" MR are all
 #       handled explicitly
 #
-
-
-
-# normal multi-step pipeline for each commit
-
 stages:
   - quality
   - config

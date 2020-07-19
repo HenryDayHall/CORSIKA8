@@ -46,11 +46,13 @@ namespace corsika::logging {
   }
 
   /**
-   * Get a reference to a named logger.
+   * Get a smart pointer to an existing logger.
    *
-   * If the logger does not exist, it is created.
+   * If the logger does not exist, it is created and returned.
    *
    * @param name    The name of the logger to get.
+   * @param defaultlog   If True, make this the default logger.
+   * @returns              The constructed and formatted logger.
    */
   auto GetLogger(std::string const& name, bool const defaultlog = false) {
 
