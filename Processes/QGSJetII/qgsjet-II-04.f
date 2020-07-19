@@ -2012,6 +2012,7 @@ c     nuclear cross sections
           close(2)
        endif
 
+       if(debug.ge.0)write (moniou,*)'done'
       elseif(.not.producetables)then
         write(moniou,*) "Missing sectnu-II-04 file !"
         write(moniou,*) "Please correct the defined path ",
