@@ -72,23 +72,46 @@ TEST_CASE("Logging", "[Logging]") {
     logging::error("This should NOT be printed!");
     logging::critical("This SHOULD BE printed!!");
 
-    // and reset it for the next tests
-    logging::SetDefaultLevel(logging::level::debug);
-  }
-
-  SECTION("test macro style printing") {
-
-    // these print with the "corsika" logger
-    C8LOG_INFO("This is a macro info msg!");
-    C8LOG_DEBUG("This is a macro debug msg!");
-    C8LOG_ERROR("This is a macro error msg!");
-    C8LOG_CRITICAL("This is a macro critical msg!");
-
     // get a reference to an unknown logger
     auto logger = logging::GetLogger("loggerD");
 
-    // these print with the "loggerD" logger
-    C8LOG_LOGGER_INFO(logger, "This is a macro info msg!");
-    C8LOG_LOGGER_WARN(logger, "This is a macro warn msg!");
+    // now set the default log level for this logger
+    logging::SetLevel(logger, logging::level::critical);
+
+    // now try the various logging functions
+    logger->info("This should NOT be printed!");
+    logger->warn("This should NOT be printed!");
+    logger->debug("This should NOT be printed!");
+    logger->error("This should NOT be printed!");
+    logger->critical("This SHOULD BE printed!!");
+
+    // and reset it for the next tests
+    logging::SetDefaultLevel(logging::level::debug);
+    logging::SetLevel(logging::level::debug);
+  }
+
+  SECTION("test macro style logging") {
+
+    // these print with the "corsika" logger
+    C8LOG_INFO("test macro style logging");
+    C8LOG_DEBUG("test macro style logging");
+    C8LOG_ERROR("test macro style logging");
+    C8LOG_CRITICAL("test macro style logging");
+
+    // get a reference to an unknown logger
+    auto logger = logging::GetLogger("loggerE");
+
+    // add the filename, source information to this logger
+    logging::AddSourceInfo(logger);
+
+    // these print with the "loggerE" logger
+    C8LOG_LOGGER_INFO(logger, "test macro style logging");
+    C8LOG_LOGGER_WARN(logger, "test macro style logging");
+
+    // reset the logging pattern
+    logging::ResetPattern(logger);
+
+    // these trace macros should not print file, function, and line
+    C8LOG_LOGGER_TRACE(logger, "test macro style logging:");
   }
 }
