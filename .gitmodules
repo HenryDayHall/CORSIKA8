@@ -2,3 +2,7 @@
 	path = Data
 	url = ../../AirShowerPhysics/corsika-data
 	branch = master
+[submodule "ThirdParty/spdlog"]
+	path = ThirdParty/spdlog
+	url = https://github.com/gabime/spdlog.git
+	shallow = true

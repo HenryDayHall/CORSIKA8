@@ -15,8 +15,10 @@ include(ExternalProject)
 set (ThirdPartyChoiceValues "C8;SYSTEM" CACHE STRING
     "List of possible values for the ThirdParty package choice")
 mark_as_advanced (ThirdPartyChoiceValues)
-  
 
+##############################################################################
+# Build spdlog
+add_subdirectory(spdlog)
 
 ##############################################################################
 # check for boost: either use C8 or system-level installation

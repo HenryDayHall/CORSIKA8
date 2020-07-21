@@ -79,6 +79,9 @@ set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
 # clang produces a lot of unecessary warnings without this:
 add_compile_options ("$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>")
 
+# set a flag to inform code that we are in debug mode
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
 # COAST - interface, this requires CORSIKA7 to be installed first
 # COAST will allow you to program code in CORSIKA8 and execute it inside CORSIKA7
 if (WITH_COAST)

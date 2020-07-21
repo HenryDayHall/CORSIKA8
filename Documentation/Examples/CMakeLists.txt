@@ -8,12 +8,8 @@ target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSI
 CORSIKA_ADD_EXAMPLE (geometry_example)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
 
-CORSIKA_ADD_EXAMPLE (logger_example)
-target_link_libraries (logger_example CORSIKAunits CORSIKAlogging)
-
 CORSIKA_ADD_EXAMPLE (stack_example)
-target_link_libraries (stack_example SuperStupidStack CORSIKAunits
-  CORSIKAlogging)
+target_link_libraries (stack_example SuperStupidStack CORSIKAunits)
 
 # address sanitizer is making this example too slow, so we only do "undefined"
 CORSIKA_ADD_EXAMPLE (boundary_example)
