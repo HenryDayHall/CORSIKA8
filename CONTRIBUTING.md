@@ -20,7 +20,7 @@ change/improve them.
   - Proposed code to close one issue (located in a specific git
     branch) is reviewed, discussed, and eventually merged
     into the master branch to close the issue.
-  - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy 
+  - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy: [Code Approval Procedure](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
 
 
 ## Code formatting
