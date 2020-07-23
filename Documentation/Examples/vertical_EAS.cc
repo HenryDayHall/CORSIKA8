@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-  process::particle_cut::ParticleCut cut{60_GeV};
+  process::particle_cut::ParticleCut cut{60_GeV, true, true};
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 

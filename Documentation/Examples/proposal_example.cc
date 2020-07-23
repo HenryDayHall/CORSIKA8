@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -107,8 +105,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
        << endl;
 
-  auto const observationHeight = 1.4_km + builder.earthRadius;
-  auto const injectionHeight = 112.75_km + builder.earthRadius;
+  auto const observationHeight = 1.4_km + builder.getEarthRadius();
+  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
                       si::detail::static_pow<2>(injectionHeight));
@@ -136,14 +134,11 @@ int main(int argc, char** argv) {
   PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
   PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
 
-  process::particle_cut::ParticleCut cut(10_GeV);
+  process::particle_cut::ParticleCut cut(10_GeV, false, true);
   process::proposal::Interaction proposal(env, cut);
   process::proposal::ContinuousProcess em_continuous(env, cut);
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
   process::track_writer::TrackWriter trackWriter("tracks.dat");
-
-  // energy cut; n.b. ParticleCut needs to be modified not to discard EM particles!
-  /* process::particle_cut::ParticleCut cut{60_GeV}; */
 
   // long. profile; columns for gamma, e+, e- still need to be added
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
@@ -161,7 +156,6 @@ int main(int argc, char** argv) {
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
-  EAS.Init();
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();

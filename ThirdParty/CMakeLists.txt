@@ -18,7 +18,7 @@ mark_as_advanced (ThirdPartyChoiceValues)
 
 ##############################################################################
 # Build spdlog
-add_subdirectory(spdlog)
+add_subdirectory (spdlog)
 
 ##############################################################################
 # check for boost: either use C8 or system-level installation

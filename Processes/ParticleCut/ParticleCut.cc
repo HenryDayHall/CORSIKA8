@@ -34,7 +34,6 @@ namespace corsika::process {
     }
 
     bool ParticleCut::ParticleIsEmParticle(Code vCode) const {
-      // FOR NOW: switch
       switch (vCode) {
         case Code::Gamma:
         case Code::Electron:
@@ -66,13 +65,12 @@ namespace corsika::process {
       C8LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV", pid,
                               energy / 1_GeV,
                               (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV));
-      /* if (ParticleIsEmParticle(pid)) { */
-      /*   C8LOG_DEBUG("removing em. particle..."); */
-      /*   fEmEnergy += energy; */
-      /*   fEmCount += 1; */
-      /*   return true; */
-      /* } else */
-      if (ParticleIsInvisible(pid)) {
+      if (bCutEm &&ParticleIsEmParticle(pid)) {
+        C8LOG_DEBUG("removing em. particle...");
+        fEmEnergy += energy;
+        fEmCount += 1;
+        return true;
+      } else if (bCutInv && ParticleIsInvisible(pid)) {
         C8LOG_DEBUG("removing inv. particle...");
         fInvEnergy += energy;
         fInvCount += 1;
@@ -110,14 +108,14 @@ namespace corsika::process {
       return process::EProcessReturn::eOk;
     }
 
-    ParticleCut::ParticleCut(const units::si::HEPEnergyType vCut)
-        : fECut(vCut) {
+    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv)
+      : eCut_(eCut), cutEm_(em), cutInv_(inv) {
 
-      fEmEnergy = 0._GeV;
-      fEmCount = 0;
-      fInvEnergy = 0._GeV;
-      fInvCount = 0;
-      fEnergy = 0._GeV;
+      fEmEnergy = 0_GeV;
+      uiEmCount = 0;
+      finvEnergy = 0_GeV;
+      uiInvCount = 0;
+      fEnergy = 0_GeV;
     }
 
     void ParticleCut::ShowResults() {
@@ -130,7 +128,7 @@ namespace corsika::process {
           " no. of inv. particles injected:  {}\n"
           " energy below particle cut (GeV): {}\n"
           " ******************************",
-          fEmEnergy / 1_GeV, fEmCount, fInvEnergy / 1_GeV, fInvCount, fEnergy / 1_GeV));
+          fEmEnergy / 1_GeV, uiEmCount, fInvEnergy / 1_GeV, uiInvCount, fEnergy / 1_GeV));
     }
   } // namespace particle_cut
 } // namespace corsika::process

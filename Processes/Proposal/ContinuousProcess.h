@@ -1,15 +1,12 @@
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
 
-#ifndef _corsika_process_proposal_interaction_h_
-#define _corsika_process_proposal_interaction_h_
+#pragma once
 
 #include <PROPOSAL/PROPOSAL.h>
 #include <corsika/environment/Environment.h>
@@ -19,7 +16,6 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
 #include <unordered_map>
-#include "PROPOSAL/PROPOSAL.h"
 
 using std::unordered_map;
 
@@ -102,8 +98,6 @@ namespace corsika::process::proposal {
     template <typename TEnvironment>
     ContinuousProcess(TEnvironment const&, CORSIKA_ParticleCut&);
 
-    void Init(){};
-
     template <typename Particle>
     corsika::units::si::HEPEnergyType TotalEnergyLoss(
         Particle const&, corsika::units::si::GrammageType const&);
@@ -120,4 +114,3 @@ namespace corsika::process::proposal {
   };
 } // namespace corsika::process::proposal
 
-#endif

@@ -118,7 +118,7 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::Decay decay;
 
-  process::particle_cut::ParticleCut cut(20_GeV);
+  process::particle_cut::ParticleCut cut(20_GeV, true, true);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");

@@ -1,15 +1,14 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
 
-#ifndef _corsika_process_proposal_interaction_h_
-#define _corsika_process_proposalythia_interaction_h_
+#pragma once
+
+#include <PROPOSAL/PROPOSAL.h>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/particles/ParticleProperties.h>
@@ -18,7 +17,6 @@
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
 #include <array>
-#include "PROPOSAL/PROPOSAL.h"
 
 using namespace corsika::environment;
 using namespace corsika::units::si;
@@ -100,8 +98,6 @@ namespace corsika::process::proposal {
     template <typename TEnvironment>
     Interaction(TEnvironment const& env, CORSIKA_ParticleCut& cut);
 
-    void Init(){};
-
     template <typename Particle>
     corsika::process::EProcessReturn DoInteraction(Particle&);
 
@@ -109,4 +105,3 @@ namespace corsika::process::proposal {
     corsika::units::si::GrammageType GetInteractionLength(TParticle const& p);
   };
 } // namespace corsika::process::proposal
-#endif
