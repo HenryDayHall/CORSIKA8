@@ -8,12 +8,8 @@ target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSI
 CORSIKA_ADD_EXAMPLE (geometry_example)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
 
-CORSIKA_ADD_EXAMPLE (logger_example)
-target_link_libraries (logger_example CORSIKAunits CORSIKAlogging)
-
 CORSIKA_ADD_EXAMPLE (stack_example)
-target_link_libraries (stack_example SuperStupidStack CORSIKAunits
-  CORSIKAlogging)
+target_link_libraries (stack_example SuperStupidStack CORSIKAunits)
 
 # address sanitizer is making this example too slow, so we only do "undefined"
 CORSIKA_ADD_EXAMPLE (boundary_example)
@@ -43,6 +39,7 @@ target_link_libraries (cascade_example
   CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
+  ProcessProposal
   CORSIKAcascade
   ProcessEnergyLoss
   ProcessTrackWriter
@@ -95,13 +92,18 @@ if (Pythia8_FOUND)
     CORSIKAlogging
     CORSIKArandom
     CORSIKAcascade
+    ProcessProposal
+    ProcessPythia8
     ProcessObservationPlane
     ProcessInteractionCounter
     ProcessTrackWriter
+    ProcessEnergyLoss
     ProcessTrackingLine
     ProcessParticleCut
+    ProcessOnShellCheck
     ProcessStackInspector
     ProcessLongitudinalProfile
+    ProcessCONEXSourceCut
     CORSIKAprocesses
     CORSIKAcascade
     CORSIKAparticles
@@ -127,3 +129,34 @@ target_link_libraries (staticsequence_example
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAlogging)
+
+
+CORSIKA_ADD_EXAMPLE (proposal_example RUN_OPTIONS 100.)
+target_link_libraries (proposal_example
+  SuperStupidStack
+  CORSIKAunits
+  CORSIKAlogging
+  CORSIKArandom
+  ProcessSibyll
+  ProcessPythia8
+  ProcessUrQMD
+  ProcessSwitch
+  CORSIKAcascade
+  ProcessCONEXSourceCut
+  ProcessEnergyLoss
+  ProcessObservationPlane
+  ProcessInteractionCounter
+  ProcessTrackWriter
+  ProcessProposal
+  ProcessTrackingLine
+  ProcessParticleCut
+  ProcessOnShellCheck
+  ProcessStackInspector
+  ProcessLongitudinalProfile
+  CORSIKAprocesses
+  CORSIKAcascade
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAprocesssequence
+  )

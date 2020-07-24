@@ -23,7 +23,7 @@
 
 #include <corsika/geometry/Sphere.h>
 
-#include <corsika/process/proposal/Interaction.h>
+//#include <corsika/process/proposal/Interaction.h>
 
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
@@ -137,19 +137,19 @@ int main() {
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  random::RNGManager::GetInstance().RegisterRandomStream("proposal");
+  //random::RNGManager::GetInstance().RegisterRandomStream("proposal");
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay;
   // cascade with only HE model ==> HE cut
-  process::particle_cut::ParticleCut cut(80_GeV);
-  process::proposal::Interaction proposal(env, cut);
+  process::particle_cut::ParticleCut cut(80_GeV, true, true);
+  //process::proposal::Interaction proposal(env, cut);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect << sibyll << sibyllNuc << proposal << decay
+  auto sequence = stackInspect << sibyll << sibyllNuc /* << proposal*/ << decay
       /* << eLoss */
       << cut << trackWriter;
 

@@ -26,14 +26,13 @@ namespace corsika::process {
       if (vP.GetPID() == particles::Code::Nucleus) {
         // calculate energy per nucleon
         auto const ElabNuc = energyLab / vP.GetNuclearA();
-        return (ElabNuc < fECut);
+        return (ElabNuc < eCut_);
       } else {
-        return (energyLab < fECut);
+        return (energyLab < eCut_);
       }
     }
 
     bool ParticleCut::ParticleIsEmParticle(Code vCode) const {
-      // FOR NOW: switch
       switch (vCode) {
         case Code::Gamma:
         case Code::Electron:
@@ -63,26 +62,25 @@ namespace corsika::process {
         const Code pid = p.GetPID();
         HEPEnergyType energy = p.GetEnergy();
         cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
-             << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
+             << ", EcutTot=" << (emEnergy_ + invEnergy_ + energy_) / 1_GeV << " GeV"
              << endl;
-        /* if (ParticleIsEmParticle(pid)) { */
-        /*   cout << "removing em. particle..." << endl; */
-        /*   fEmEnergy += energy; */
-        /*   fEmCount += 1; */
-        /*   p.Delete(); */
-        /* } else */
-        if (ParticleIsInvisible(pid)) {
+	if (cutEm_ && ParticleIsEmParticle(pid)) { 
+	  cout << "removing em. particle..." << endl; 
+	  emEnergy_ += energy; 
+	  emCount_ += 1; 
+	  p.Delete(); 
+	} else if (cutInv_ && ParticleIsInvisible(pid)) {
           cout << "removing inv. particle..." << endl;
-          fInvEnergy += energy;
-          fInvCount += 1;
+          invEnergy_ += energy;
+          invCount_ += 1;
           p.Delete();
         } else if (ParticleIsBelowEnergyCut(p)) {
           cout << "removing low en. particle..." << endl;
-          fEnergy += energy;
+          energy_ += energy;
           p.Delete();
         } else if (p.GetTime() > 10_ms) {
           cout << "removing OLD particle..." << endl;
-          fEnergy += energy;
+          energy_ += energy;
           p.Delete();
         } else {
           ++p; // next entry in SecondaryView
@@ -91,24 +89,24 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-    ParticleCut::ParticleCut(const units::si::HEPEnergyType vCut)
-        : fECut(vCut) {
+    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv)
+      : eCut_(eCut), cutEm_(em), cutInv_(inv) {
 
-      fEmEnergy = 0._GeV;
-      fEmCount = 0;
-      fInvEnergy = 0._GeV;
-      fInvCount = 0;
-      fEnergy = 0._GeV;
+      emEnergy_ = 0_GeV;
+      emCount_ = 0;
+      invEnergy_ = 0_GeV;
+      invCount_ = 0;
+      energy_ = 0_GeV;
     }
 
     void ParticleCut::ShowResults() {
       cout << " ******************************" << endl
            << " ParticleCut: " << endl
-           << " energy in em.  component (GeV):  " << fEmEnergy / 1_GeV << endl
-           << " no. of em.  particles injected:  " << fEmCount << endl
-           << " energy in inv. component (GeV):  " << fInvEnergy / 1_GeV << endl
-           << " no. of inv. particles injected:  " << fInvCount << endl
-           << " energy below particle cut (GeV): " << fEnergy / 1_GeV << endl
+           << " energy in em.  component (GeV):  " << emEnergy_ / 1_GeV << endl
+           << " no. of em.  particles injected:  " << emCount_ << endl
+           << " energy in inv. component (GeV):  " << invEnergy_ / 1_GeV << endl
+           << " no. of inv. particles injected:  " << invCount_ << endl
+           << " energy below particle cut (GeV): " << energy_ / 1_GeV << endl
            << " ******************************" << endl;
     }
   } // namespace particle_cut

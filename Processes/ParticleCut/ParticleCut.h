@@ -16,18 +16,19 @@
 namespace corsika::process {
   namespace particle_cut {
     class ParticleCut : public process::SecondariesProcess<ParticleCut> {
-
-      units::si::HEPEnergyType const fECut;
-
-      units::si::HEPEnergyType fEnergy = 0 * units::si::electronvolt;
-      units::si::HEPEnergyType fEmEnergy = 0 * units::si::electronvolt;
-      unsigned int fEmCount = 0;
-      units::si::HEPEnergyType fInvEnergy = 0 * units::si::electronvolt;
-      unsigned int fInvCount = 0;
-
+      
+      units::si::HEPEnergyType const eCut_;
+      bool cutEm_;
+      bool cutInv_;
+      
+      units::si::HEPEnergyType energy_ = 0 * units::si::electronvolt;
+      units::si::HEPEnergyType emEnergy_ = 0 * units::si::electronvolt;
+      unsigned int emCount_ = 0;
+      units::si::HEPEnergyType invEnergy_ = 0 * units::si::electronvolt;
+      unsigned int invCount_ = 0;     
+      
     public:
-      ParticleCut(const units::si::HEPEnergyType eCut)
-          : fECut(eCut) {}
+      ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv);
 
       bool ParticleIsInvisible(particles::Code) const;
       EProcessReturn DoSecondaries(corsika::setup::StackView&);
@@ -39,12 +40,12 @@ namespace corsika::process {
 
       void ShowResults();
 
-      units::si::HEPEnergyType GetECut() const { return fECut; }
-      units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
-      units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
-      units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
-      unsigned int GetNumberEmParticles() const { return fEmCount; }
-      unsigned int GetNumberInvParticles() const { return fInvCount; }
+      units::si::HEPEnergyType GetECut() const { return eCut_; }
+      units::si::HEPEnergyType GetInvEnergy() const { return invEnergy_; }
+      units::si::HEPEnergyType GetCutEnergy() const { return energy_; }
+      units::si::HEPEnergyType GetEmEnergy() const { return emEnergy_; }
+      unsigned int GetNumberEmParticles() const { return emCount_; }
+      unsigned int GetNumberInvParticles() const { return invCount_; }
     };
   } // namespace particle_cut
 } // namespace corsika::process
