@@ -18,9 +18,9 @@ mark_as_advanced (ThirdPartyChoiceValues)
 
 ##############################################################################
 # Build spdlog
-set (CMAKE_POSITION_INDEPENDENT_CODE ON) # this is needed for PROPOSAL... since it is dynamic
+#set (CMAKE_POSITION_INDEPENDENT_CODE ON) # this is needed for PROPOSAL... since it is dynamic
 add_subdirectory (spdlog)
-unset (CMAKE_POSITION_INDEPENDENT_CODE)
+#unset (CMAKE_POSITION_INDEPENDENT_CODE)
 
 ##############################################################################
 # check for boost: either use C8 or system-level installation
