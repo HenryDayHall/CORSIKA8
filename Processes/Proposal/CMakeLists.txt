@@ -1,3 +1,5 @@
+file(READ CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
+file(WRITE PROPOSAL/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
 add_subdirectory (PROPOSAL)
 
 FILE (GLOB MODEL_SOURCES *.cc)
