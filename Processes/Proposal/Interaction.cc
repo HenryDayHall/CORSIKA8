@@ -6,7 +6,6 @@
  * the license.
  */
 
-
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/process/proposal/Interaction.h>

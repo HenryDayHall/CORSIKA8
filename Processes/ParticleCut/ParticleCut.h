@@ -16,17 +16,17 @@
 namespace corsika::process {
   namespace particle_cut {
     class ParticleCut : public process::SecondariesProcess<ParticleCut> {
-      
+
       units::si::HEPEnergyType const eCut_;
       bool cutEm_;
       bool cutInv_;
-      
+
       units::si::HEPEnergyType energy_ = 0 * units::si::electronvolt;
       units::si::HEPEnergyType emEnergy_ = 0 * units::si::electronvolt;
       unsigned int emCount_ = 0;
       units::si::HEPEnergyType invEnergy_ = 0 * units::si::electronvolt;
-      unsigned int invCount_ = 0;     
-      
+      unsigned int invCount_ = 0;
+
     public:
       ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv);
 

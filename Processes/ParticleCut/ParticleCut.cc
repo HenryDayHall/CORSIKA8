@@ -64,12 +64,12 @@ namespace corsika::process {
         cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
              << ", EcutTot=" << (emEnergy_ + invEnergy_ + energy_) / 1_GeV << " GeV"
              << endl;
-	if (cutEm_ && ParticleIsEmParticle(pid)) { 
-	  cout << "removing em. particle..." << endl; 
-	  emEnergy_ += energy; 
-	  emCount_ += 1; 
-	  p.Delete(); 
-	} else if (cutInv_ && ParticleIsInvisible(pid)) {
+        if (cutEm_ && ParticleIsEmParticle(pid)) {
+          cout << "removing em. particle..." << endl;
+          emEnergy_ += energy;
+          emCount_ += 1;
+          p.Delete();
+        } else if (cutInv_ && ParticleIsInvisible(pid)) {
           cout << "removing inv. particle..." << endl;
           invEnergy_ += energy;
           invCount_ += 1;
@@ -90,7 +90,9 @@ namespace corsika::process {
     }
 
     ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv)
-      : eCut_(eCut), cutEm_(em), cutInv_(inv) {
+        : eCut_(eCut)
+        , cutEm_(em)
+        , cutInv_(inv) {
 
       emEnergy_ = 0_GeV;
       emCount_ = 0;

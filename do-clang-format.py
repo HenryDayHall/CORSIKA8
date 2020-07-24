@@ -20,7 +20,12 @@ args = parser.parse_args()
 filelist = []
 if args.all:
     for dirpath, dirnames, filenames in os.walk("."):
-        if "ThirdParty" in dirpath:
+        doExclude = False
+        for exclude in ["ThirdParty", "PROPOSAL", "include", "build"]:
+            if exclude in dirpath:
+                doExclude = True
+                break
+        if doExclude:
             continue
         for f in filenames:
             if f.endswith(".h") or f.endswith(".cc"):

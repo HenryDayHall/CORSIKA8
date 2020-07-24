@@ -113,4 +113,3 @@ namespace corsika::process::proposal {
     corsika::units::si::LengthType MaxStepLength(Particle const&, Track const&);
   };
 } // namespace corsika::process::proposal
-
