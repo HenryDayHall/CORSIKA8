@@ -19,15 +19,15 @@
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/proposal/ContinuousProcess.h>
+#include <corsika/process/proposal/Interaction.h>
+#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
-#include <corsika/process/track_writer/TrackWriter.h>
-#include <corsika/process/proposal/Interaction.h>
-#include <corsika/process/proposal/ContinuousProcess.h>
 
 #include <iomanip>
 #include <iostream>
@@ -147,12 +147,8 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  auto sequence = proposalCounted
-      << cut
-      << em_continuous
-      << longprof
-      << observationLevel
-      << trackWriter;
+  auto sequence = proposalCounted << cut << em_continuous << longprof << observationLevel
+                                  << trackWriter;
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);

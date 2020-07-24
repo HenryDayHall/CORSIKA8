@@ -102,7 +102,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     CHECK(view.GetSize() == 9);
   }
-  
+
   SECTION("cut low energy") {
     ParticleCut cut(20_GeV, true, true);
 
