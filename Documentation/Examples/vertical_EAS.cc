@@ -56,7 +56,7 @@ using namespace corsika::units::si;
 
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
-  random::RNGManager::GetInstance().RegisterRandomStream("qgran");
+  random::RNGManager::GetInstance().RegisterRandomStream("qgsjet");
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
