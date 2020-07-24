@@ -27,7 +27,7 @@ using namespace corsika::units::si;
 
 TEST_CASE("CONEXSourceCut") {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
 
   feenableexcept(FE_INVALID);
 
