@@ -78,6 +78,7 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
 
   double weight = 1;
 
+  int latchin = 1; // generation
   double E = energy / 1_GeV;
 
   std::cout << "CONEXSourceCut: removing " << egs_pid << " " << std::scientific << energy
@@ -105,6 +106,7 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
   conex::cxoptl_.dptl[8 - 1] = altitude;
   conex::cxoptl_.dptl[9 - 1] = time;
   conex::cxoptl_.dptl[11 - 1] = weight;
+  conex::cxoptl_.dptl[12 - 1] = latchin;
   conex::cxoptl_.dptl[13 - 1] = slantX;
   conex::cxoptl_.dptl[14 - 1] = lateralX;
   conex::cxoptl_.dptl[15 - 1] = lateralY;
