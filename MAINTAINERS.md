@@ -13,7 +13,7 @@ High performance, GPU:
 - Luisa Arrabito <arrabito@in2p3.fr>, Montpellier
 
 Electromagnetic models, and infrastructure: 
-- Jean-Marco Alameddine <gitlab@gitlab.ikp.kit.edu>, Dortmund
+- Jean-Marco Alameddine <jean-marco.alameddine@udo.edu>, Dortmund
 - Jan Soedingrekso <jan.soedingrekso@tu-dortmund.de>, Dortmund
 - Maximilian Sackel <maximilian.sackel@udo.edu>, Dortmund
 
