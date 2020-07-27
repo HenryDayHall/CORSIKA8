@@ -204,8 +204,7 @@ namespace corsika::process::qgsjetII {
       int beamA = 1;
       if (particles::IsNucleus(corsikaBeamId)) beamA = vP.GetNuclearA();
 
-      const HEPEnergyType projectileEnergyLabPerNucleon =
-	projectileEnergyLab / beamA;
+      const HEPEnergyType projectileEnergyLabPerNucleon = projectileEnergyLab / beamA;
 
       cout << "Interaction: ebeam lab: " << projectileEnergyLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << projectileMomentumLab.GetComponents() / 1_GeV
@@ -313,9 +312,9 @@ namespace corsika::process::qgsjetII {
               idFragm = particles::Code::Neutron;
               Z = 0;
             }
-	    
+
             const HEPMassType nucleonMass = particles::GetMass(idFragm);
-	    
+
             auto momentum = geometry::Vector(
                 zAxisFrame, corsika::geometry::QuantityVector<hepmomentum_d>{
                                 0.0_GeV, 0.0_GeV,
