@@ -69,7 +69,7 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 # FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
 # debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
-set (CMAKE_Fortran_FLAGS "-std=legacy")
+set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
 
 # setup coverage build type
 set (CMAKE_CXX_FLAGS_COVERAGE "-g --coverage")
