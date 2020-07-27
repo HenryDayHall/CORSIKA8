@@ -142,12 +142,15 @@ TEST_CASE("SibyllInterface", "[processes]") {
     std::cout << pSum.GetComponents(cs) << std::endl;
     std::cout << plab.GetComponents(cs) << std::endl;
 
-    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(1e-4));
+    CHECK(pSum.GetComponents(cs).GetX() / P0 ==
+          Approx(1).margin(model.get_relative_precision_momentum()));
     CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
     CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
 
-    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(1e-4));
-    CHECK(pSum.norm() / P0 == Approx(1).margin(1e-4));
+    CHECK(
+        (pSum - plab).norm() / 1_GeV ==
+        Approx(0).margin(plab.norm() * model.get_relative_precision_momentum() / 1_GeV));
+    CHECK(pSum.norm() / P0 == Approx(1).margin(model.get_relative_precision_momentum()));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 

@@ -10,6 +10,7 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
+#include <corsika/process/sibyll/sibyll2.3d.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <tuple>
@@ -35,6 +36,18 @@ namespace corsika::process::sibyll {
     int GetMaxTargetMassNumber() const { return maxTargetMassNumber_; }
     corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
     corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
+    double get_relative_precision_momentum() const {
+      if (get_nwounded() == 1)
+        return precision_momentum_single_;
+      else
+        return precision_momentum_ * get_nwounded();
+    }
+    double get_relative_precision_energy() const {
+      if (get_nwounded() == 1)
+        return precision_energy_single_;
+      else
+        return precision_energy_ * get_nwounded();
+    }
     bool IsValidTarget(corsika::particles::Code TargetId) const {
       return (corsika::particles::GetNucleusA(TargetId) < maxTargetMassNumber_) &&
              corsika::particles::IsNucleus(TargetId);
@@ -64,6 +77,19 @@ namespace corsika::process::sibyll {
     const corsika::units::si::HEPEnergyType maxEnergyCoM_ =
         1.e6 * 1e9 * corsika::units::si::electronvolt;
     const int maxTargetMassNumber_ = 18;
+    /*
+       for interactions with a single target nucleon energy and momentum conservation
+       are fullfilled
+       for more than one target nucleon, conservation is only approximately true in the
+       lab frame in addition there seems to be a bug in sibyll that leads to violation of
+       momentum conservation already in the nuc-nuc frame. see Issue #272
+
+       https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/272
+     */
+    const double precision_energy_single_ = 1.e-8;
+    const double precision_momentum_single_ = 1.e-8;
+    const double precision_energy_ = 2.e-2;
+    const double precision_momentum_ = 5.e-2;
   };
 
 } // namespace corsika::process::sibyll
