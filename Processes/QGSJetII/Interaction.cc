@@ -201,12 +201,11 @@ namespace corsika::process::qgsjetII {
       HEPEnergyType const projectileEnergyLab = vP.GetEnergy();
       auto const projectileMomentumLab = vP.GetMomentum();
 
-      int beamA = 0;
+      int beamA = 1;
       if (particles::IsNucleus(corsikaBeamId)) beamA = vP.GetNuclearA();
 
       const HEPEnergyType projectileEnergyLabPerNucleon =
-          particles::IsNucleus(corsikaBeamId) ? projectileEnergyLab / beamA
-                                              : projectileEnergyLab;
+	projectileEnergyLab / beamA;
 
       cout << "Interaction: ebeam lab: " << projectileEnergyLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << projectileMomentumLab.GetComponents() / 1_GeV
@@ -314,16 +313,16 @@ namespace corsika::process::qgsjetII {
               idFragm = particles::Code::Neutron;
               Z = 0;
             }
-
-            const HEPMassType projectileMass = particles::GetMass(idFragm);
-
+	    
+            const HEPMassType nucleonMass = particles::GetMass(idFragm);
+	    
             auto momentum = geometry::Vector(
                 zAxisFrame, corsika::geometry::QuantityVector<hepmomentum_d>{
                                 0.0_GeV, 0.0_GeV,
-                                sqrt((projectileEnergyLab + projectileMass) *
-                                     (projectileEnergyLab - projectileMass))});
+                                sqrt((projectileEnergyLabPerNucleon + nucleonMass) *
+                                     (projectileEnergyLabPerNucleon - nucleonMass))});
 
-            auto const energy = sqrt(momentum.squaredNorm() + square(projectileMass));
+            auto const energy = sqrt(momentum.squaredNorm() + square(nucleonMass));
             momentum.rebase(originalCS); // transform back into standard lab frame
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.GetComponents() << std::endl;
@@ -349,7 +348,7 @@ namespace corsika::process::qgsjetII {
           }
         }
 
-        if (idFragm == particles::Code::Nucleus) {
+        if (idFragm == particles::Code::Nucleus) { // thus: not p or n
           const HEPMassType nucleusMass =
               particles::Proton::GetMass() * Z + particles::Neutron::GetMass() * (A - Z);
           auto momentum = geometry::Vector(
