@@ -34,10 +34,10 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
       continue; // no EM particle
     }
 
-    int egs_pid = it->second;
+    auto const egs_pid = it->second;
 
-    addParticle(egs_pid, p.GetEnergy(), p.GetPosition(), p.GetMomentum().normalized(),
-                p.GetTime());
+    addParticle(egs_pid, p.GetEnergy(), p.GetMass(), p.GetPosition(),
+                p.GetMomentum().normalized(), p.GetTime());
 
     p.Delete();
   }
@@ -45,48 +45,52 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
   return corsika::process::EProcessReturn::eOk;
 }
 
-void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
+void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy, HEPEnergyType mass,
                                  geometry::Point const& position,
                                  geometry::Vector<dimensionless_d> const& direction,
                                  TimeType t) {
   std::cout << "position conexObs: " << position.GetCoordinates(conexObservationCS_)
             << std::endl;
 
-  auto coords = position.GetCoordinates(conexObservationCS_) / 1_m;
-  double x = coords[0].magnitude();
-  double y = coords[1].magnitude();
+  auto const coords = position.GetCoordinates(conexObservationCS_) / 1_m;
+  double const x = coords[0].magnitude();
+  double const y = coords[1].magnitude();
 
-  double altitude = ((position - center_).norm() - conex::earthRadius) / 1_m;
+  double const altitude = ((position - center_).norm() - conex::earthRadius) / 1_m;
   auto const d = position - showerCore_;
 
   // distance from core to particle projected along shower axis
-  double slantDistance = -d.dot(showerAxis_.GetDirection()) / 1_m;
+  double const slantDistance = -d.dot(showerAxis_.GetDirection()) / 1_m;
 
   // lateral coordinates in CONEX shower frame
   auto const dShowerPlane = d - d.parallelProjectionOnto(showerAxis_.GetDirection());
-  double lateralX = dShowerPlane.dot(x_sf_) / 1_m;
-  double lateralY = dShowerPlane.dot(y_sf_) / 1_m;
+  double const lateralX = dShowerPlane.dot(x_sf_) / 1_m;
+  double const lateralY = dShowerPlane.dot(y_sf_) / 1_m;
 
-  double slantX = showerAxis_.projectedX(position) * (1_cm * 1_cm / 1_g);
+  double const slantX = showerAxis_.projectedX(position) * (1_cm * 1_cm / 1_g);
 
-  double time = (t * units::constants::c - groundDist_) / 1_m;
+  double const time = (t * units::constants::c - groundDist_) / 1_m;
 
   // fill u,v,w momentum direction in EGS frame
-  double u = direction.dot(y_sf_).magnitude();
-  double v = direction.dot(x_sf_).magnitude();
-  double w = direction.dot(showerAxis_.GetDirection()).magnitude();
+  double const u = direction.dot(y_sf_).magnitude();
+  double const v = direction.dot(x_sf_).magnitude();
+  double const w = direction.dot(showerAxis_.GetDirection()).magnitude();
 
-  double weight = 1;
+  double const weight = 1; // NEEDS TO BE CHANGED WHEN WE HAVE WEIGHTS!
 
-  int latchin = 1; // generation
-  double E = energy / 1_GeV;
+  // generation, TO BE CHANGED WHEN WE HAVE THAT INFORMATION AVAILABLE
+  int const latchin = 1;
+
+  double const E = energy / 1_GeV;
+  double const m = mass / 1_GeV;
 
   std::cout << "CONEXSourceCut: removing " << egs_pid << " " << std::scientific << energy
-            << std::endl;
+            << " GeV" << std::endl;
 
-  std::cout << "#### parameters to show_() ####" << std::endl;
+  std::cout << "#### parameters to cegs4_() ####" << std::endl;
   std::cout << "egs_pid = " << egs_pid << std::endl;
   std::cout << "E = " << E << std::endl;
+  std::cout << "m = " << m << std::endl;
   std::cout << "x = " << x << std::endl;
   std::cout << "y = " << y << std::endl;
   std::cout << "altitude = " << altitude << std::endl;
@@ -101,6 +105,7 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy,
 
   conex::cxoptl_.dptl[10 - 1] = egs_pid;
   conex::cxoptl_.dptl[4 - 1] = E;
+  conex::cxoptl_.dptl[5 - 1] = m;
   conex::cxoptl_.dptl[6 - 1] = x;
   conex::cxoptl_.dptl[7 - 1] = y;
   conex::cxoptl_.dptl[8 - 1] = altitude;
