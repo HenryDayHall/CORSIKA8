@@ -64,10 +64,8 @@ While `clang-format` does the structural formatting, we still need to agree on n
       can only provide definitions for a _single_ namespace. It is one
       main purpose of namespaces to structure the location of header
       files.
-    - Each header file uses an include protection that includes at
-      least the namespace name, and header file name, thus, `#ifndef
-      __include_geometry_Point_h__` or `#ifndef __geometry_Point_h__`,
-      or similar are acceptable.
+    - Each header file must include a `#pragma once` immediately below 
+      the copyright statement.
     - Header files should always be included with `<..>`, thus,
       `#include <corsika/geometry/Point.h>` since the build system
       will always provide the correct include directives (and files
