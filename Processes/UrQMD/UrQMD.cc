@@ -358,7 +358,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
  */
 double corsika::process::UrQMD::ranf_(int&) {
   static corsika::random::RNG& rng =
-      corsika::random::RNGManager::GetInstance().GetRandomStream("UrQMD");
+      corsika::random::RNGManager::GetInstance().GetRandomStream("urqmd");
   static std::uniform_real_distribution<double> dist;
 
   return dist(rng);

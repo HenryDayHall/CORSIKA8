@@ -7,6 +7,7 @@
  */
 
 #include <corsika/random/RNGManager.h>
+#include <sstream>
 
 void corsika::random::RNGManager::RegisterRandomStream(std::string const& pStreamName) {
   corsika::random::RNG rng;
@@ -20,7 +21,15 @@ void corsika::random::RNGManager::RegisterRandomStream(std::string const& pStrea
 
 corsika::random::RNG& corsika::random::RNGManager::GetRandomStream(
     std::string const& pStreamName) {
-  return rngs.at(pStreamName);
+  if (IsRegistered(pStreamName)) {
+    return rngs.at(pStreamName);
+  } else { // this stream name is not in the map
+    throw std::runtime_error("'" + pStreamName + "' is not a registered stream.");
+  }
+}
+
+bool corsika::random::RNGManager::IsRegistered(std::string const& pStreamName) const {
+  return rngs.count(pStreamName) > 0;
 }
 
 std::stringstream corsika::random::RNGManager::dumpState() const {
@@ -44,10 +53,3 @@ void corsika::random::RNGManager::SeedAll() {
     entry.second.seed(sseq);
   }
 }
-
-/*
-void corsika::random::RNGManager::SetSeedSeq(std::string const& pStreamName,
-                                             std::seed_seq const& pSeedSeq) {
-  seeds[pStreamName] = pSeedSeq;
-}
-*/

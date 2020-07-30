@@ -130,7 +130,7 @@ TEST_CASE("UrQMD") {
   }
 
   feenableexcept(FE_INVALID);
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  corsika::random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
   UrQMD urqmd;
 
   SECTION("interaction length") {

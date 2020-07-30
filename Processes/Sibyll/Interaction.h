@@ -57,7 +57,7 @@ namespace corsika::process::sibyll {
 
   private:
     corsika::random::RNG& RNG_ =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("sibyll");
 
     const corsika::units::si::HEPEnergyType minEnergyCoM_ =
         10. * 1e9 * corsika::units::si::electronvolt;

@@ -16,7 +16,7 @@ double get_sibyll_mass2(int& id) { return s_mass1_.am2[abs(id) - 1]; }
 
 double s_rndm_(int&) {
   static corsika::random::RNG& rng =
-      corsika::random::RNGManager::GetInstance().GetRandomStream("s_rndm");
+      corsika::random::RNGManager::GetInstance().GetRandomStream("sibyll");
 
   std::uniform_real_distribution<double> dist;
   return dist(rng);

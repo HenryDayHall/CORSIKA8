@@ -55,7 +55,7 @@ namespace corsika::process::qgsjetII {
 
   private:
     corsika::random::RNG& rng_ =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("qgran");
+        corsika::random::RNGManager::GetInstance().GetRandomStream("qgsjet");
     static constexpr int maxMassNumber_ = 208;
   };
 

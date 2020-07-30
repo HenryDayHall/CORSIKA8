@@ -115,7 +115,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
 
-  random::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
+  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
 
   SECTION("InteractionInterface") {
 
