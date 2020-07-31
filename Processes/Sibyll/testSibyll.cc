@@ -117,7 +117,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
 
-  SECTION("InteractionInterface") {
+  SECTION("InteractionInterface - low energy") {
 
     setup::Stack stack;
     const HEPEnergyType E0 = 60_GeV;
@@ -138,22 +138,49 @@ TEST_CASE("SibyllInterface", "[processes]") {
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     auto const pSum = sumMomentum(view, cs);
 
-    // for debugging!
-    std::cout << pSum.GetComponents(cs) << std::endl;
-    std::cout << plab.GetComponents(cs) << std::endl;
+    /*
+      Interactions between hadrons (h) and nuclei (A) in Sibyll are treated in the
+      hadron-nucleon center-of-mass frame (hnCoM). In addition the incoming hadron (h) and
+      nucleon (n) are assumed massless, such that the energy and momentum in the hnCoM are
+      : E_i_cm = 0.5 * SQS and P_i_cm = +- 0.5 * SQS  where i is either the projectile
+      hadron or the target nucleon and SQS is the hadron-nucleon center-of-mass energy.
 
-    CHECK(pSum.GetComponents(cs).GetX() / P0 ==
-          Approx(1).margin(model.get_relative_precision_momentum()));
+      Any hadron-nucleus event can contain several nucleon interactions. In case of Nw
+      (number of wounded nucleons) in the hadron-nucleus interaction the total energy and
+      momentum in the hadron-nucleon center-of-mass frame are: momentum: p_projectile +
+      p_nucleon_1 + p_nucleon_2 + .... p_nucleon_Nw = -(Nw-1) Pcm with center-of-mass
+      momentum Pcm = p_projectile = - p_nucleon_i energy: E_projectile + E_nucleon_1 + ...
+      E_nucleon_Nw = (Nw+1) / 2 * SQS with SQS the hadron-nucleon center-of-mass energy.
+
+      In case of a single interaction (Nw=1), by definition, the total momentum is zero in
+      the hadron-nucleon frame. After the boost to the lab. frame the lab. momentum of the
+      projectile before the interaction is recoverred.
+
+      In case of multiple interactions (Nw>1), the momentum is not zero and the total
+      momentum in the lab. frame after the boost is different from the original projectile
+      (momentum violation).
+
+      The level of violation of momentum conservation is further enhanced due to the
+      approximation of massless hadrons. At low energies (~10GeV), where the masses can
+      not be neglected the violation is at the level of percent.
+
+      For this reason the numerical precision in these tests is limited to 5% at low
+      energies. see also:
+
+      Issue 272 / MR 204
+      https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/merge_requests/204
+
+    */
+
+    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.05));
     CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
     CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
 
-    CHECK(
-        (pSum - plab).norm() / 1_GeV ==
-        Approx(0).margin(plab.norm() * model.get_relative_precision_momentum() / 1_GeV));
-    CHECK(pSum.norm() / P0 == Approx(1).margin(model.get_relative_precision_momentum()));
+    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.05 / 1_GeV));
+    CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
-
+    
   SECTION("NuclearInteractionInterface") {
 
     setup::Stack stack;
