@@ -20,6 +20,7 @@ change/improve them.
   - Proposed code to close one issue (located in a specific git
     branch) is reviewed, discussed, and eventually merged
     into the master branch to close the issue.
+  - all merge request will undergo a code review, and must be approved before merge, in order to ensure high code qualtiy: [Code Approval Procedure](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/wikis/Code-Approval-Procedure)
 
 
 ## Code formatting
@@ -46,35 +47,54 @@ e.g. [link1](https://clangformat.com/) or
 
 While `clang-format` does the structural formatting, we still need to agree on naming conventions:
 
-  - Classes and structs start with capital letters
-  - Class member variables start with "f"
-  - Any static variable has a "g" prefix. A static member variable starts with "fg"
-  - Class member functions start with capital letters
-  - Any class getter begins with "Get", and setter with "Set". Logical getters start with "Is" or "Has".
-  - enums should be "enum class" and start with a capital "E"
-  - Function parameter names start with "v"
+  - Classes and structs start with capital letters ```LikeThis```
+  - Class member variables start non-captial and have a trailing "_" ```likeThis_```
+  - Class member functions start with small letters ```LikeThis::doSomething(...)``` or ```LikeThis::do_something(...)```
+  - Any class setter begins with "set_" ```LikeThis::set_something(...)```
+  - Any class getter is named accoring to its property: ```LikeThis::something()```
+  - Logical getters may start with ```is_``` or ```has_```
+  - enums should be ```enum class``` 
+  - Named variables start with small letter ```likeThis```
+  - types in template definitions start with "T" ```TLikeThis```
+  
+  - use names that explain and document the code, thus for example
+  ``` 
+     TimeType TimeOfIntersection(Line const& line, Plane const& plane) {
+         auto const line_direction = line.GetDirection();     
+         auto const plane_normal = plane.GetNormal();     
+         return plane_normal.dot(plane.GetCenter()-line.GetPosition()) / plane_normal.dot(line_direction);     
+         }
+  ```
+    and not 
+  ```
+       TimeType TimeOfIntersection(Line const& l, Plane const& p) {
+         auto const d = p.GetCenter() - l.GetR0();     
+         auto const v = l.GetV0();     
+         auto const n = p.GetNormal();     
+         auto const c = n.dot(v);    
+         return n.dot(d) / c;     
+         }
+  ```
+    This actually is suffient to document the code, no further comments should be added in such cases. Only if further clarification is needed.  
 
   - We use namespaces to avoid clashes and to structure code
-    - *Everything* is part of the corsika namespace
+    - *Everything* is part of one of those namespaces:
+       - ```corsika::framework```, ```corsika::physics```, or ```corsika::process```
     - All classes and objects are encapsulated into suited sub-namespaces,
-      thus corsika::geometry, corsika::processes, corsika::units, etc.
+      thus ```corsika::framework::geometry```, ```corsika::physics::process```, ```corsika::physics::units```, etc.
     - Namespace names do not use capital letters.  
-    - Every header file is copied during build and install into
-      "include/corsika/[namespace]" which also means, each header file
-      can only provide definitions for a _single_ namespace. It is one
-      main purpose of namespaces to structure the location of header
-      files.
-    - Each header file uses an include protection that includes at
-      least the namespace name, and header file name, thus, `#ifndef
-      __include_geometry_Point_h__` or `#ifndef __geometry_Point_h__`,
-      or similar are acceptable.
-    - Header files should always be included with `<..>`, thus,
-      `#include <corsika/geometry/Point.h>` since the build system
-      will always provide the correct include directives (and files
-      anyway cannot be found in file-system paths, which generally do
-      not follow the namespace naming conventions outlined
-      here).
-
+  - Every header file is located in the source tree in ```include/corsika/[namespace]```, which also means that in almost all cases each header file
+    can only provide definitions for a _single_ namespace. It is one
+    main purpose of namespaces to structure the location of header
+    files.
+  - Each header file uses an include protection ```#pragma once```
+    immediately below the copyright statement.
+  - Header files should always be included with `<..>`, thus,
+    `#include <corsika/geometry/Point.h>` since the build system
+    will always provide the correct include directives (and files
+    anyway cannot be found in file-system paths, which generally do
+    not follow the namespace naming conventions outlined
+    here).
   - Header files are named after the main class (or object) they
     define. This also means each header file name starts with a
     capital letter.
@@ -82,20 +102,24 @@ While `clang-format` does the structural formatting, we still need to agree on n
 
 ## Coding rules
 
-  - Code may not introduce any compiler errors, or warnings (latter: on current CI runners)
-  - All unit tests must succeed at all times. If tests fail, code is not merged.
-  - We use C++17 concepts wherever useful and helpful
+  - Warnings should be fixed, when they appear on the system(s) currently used by the CI, by altering the code unless the warning originates from third-party code and cannot be fixed. In that case, the warning should be locally silenced with appropriate pragmas or by locally turning off warnings for that translation unit. 
+  - All unit tests must succeed on the specified systems/configurations on gitlab-ci. If tests fail, code is not merged.
+  - The unit test code coverage should not decrease due to a new merge request. 
+  - We use C++17 features wherever useful and helpful. 
   - On any major error or malfunction we throw an exception. This is needed and required for complex physics and shower debugging.
   - We never catch exceptions for error handling, there might be very few special exceptions from this. We need to discuss such cases.
-  - Everything that should not change should be `const`
+  - Everything that should not change should be ```const```
   - Everything that does not need to be visible to the outside of a class/struct should be `private` or `protected`
   - We prefer the use of references, wherever useful
-  - There cannot be any pointer in the interface of any class or object
-    exposed to outside users, there might be pointers for very special cases
+  - There cannot be any raw pointer in the interface of any class or object
+    exposed to outside users, there might be (technical) raw pointers for very special cases
     inside of classes.
+  - (member)functions that do something (are not just getters/setters), model actions or transformations, and should therefore be verbs. Classes are nouns.
   - When you contribute new code, or extend existing code, at the same time provide unit-tests for all functionality.
-  - When you contribute new physics algorithms, in addition you also need to provide a validation module
-  - Code must be documented with `doxygen` commands
+  - When you contribute new physics algorithms, in addition you also need to provide a validation module (this is still TBD what exactly this means)
+  - Code must be documented with `doxygen` commands extensively -> MAKE THIS INVESTMENT OF YOUR TIME EARLY, IT REALLY HELPS
+  - There should not be any useless comments in code, in particular absolutely avoid to commit commented-out debug remnants
+  - Add sufficient and meaningful comments to the code (only in English)
   
 ## CMAKE formatting
 
@@ -119,6 +143,8 @@ Since cmake itself lacks structure almost entirely:
     ```
   - add plenty of comments to all cmake code
   - use expressive variables and functions
+
+
 
 ## Release versioning scheme
 

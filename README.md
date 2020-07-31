@@ -13,9 +13,7 @@ compiler optimization. Thus, the most fundamental configuration
 decision of the user must be performed at compile time. At run time
 only specific model parameters can still be changed.
 
-CORSIKA 8 is released under the GPLv3 license. This does not exclude
-that specific CORSIKA 8 versions can be released for specific purposes
-under different licensing. See [license
+CORSIKA 8 is by default released under the GPLv3 license. See [license
 file](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
 which is part of every release and the source code.
 
@@ -23,7 +21,7 @@ If you use, or want to refer to, CORSIKA 8 please cite ["Towards a Next
 Generation of CORSIKA: A Framework for the Simulation of Particle
 Cascades in Astroparticle Physics", Comput.Softw.Big Sci. 3 (2019)
 2](https://doi.org/10.1007/s41781-018-0013-0). We kindly ask (and
-expect) any relevant improvement or addition to be offered or
+require) any relevant improvement or addition to be offered or
 contributed to the main CORSIKA 8 repository for the benefit of the
 whole community.
 
@@ -33,9 +31,7 @@ guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/CONT
 that fails the review by the CORSIKA author group must be improved
 before it can be merged in the official code base. After your code has
 been accepted and merged you become a contributor of the CORSIKA 8
-project and you should include yourself in the
-[AUTHORS](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/AUTHORS)
-file.
+project (code author). 
 
 IMPORTANT: Before you contribute, you need to read and agree to the
 [collaboration
@@ -48,21 +44,21 @@ which are very useful also for us.
 
 
 ## Get in contact
-  * Connect to https://gitlab.ikp.kit.edu; register yourself and join the "Air Shower Physics" group
+  * Connect to https://gitlab.ikp.kit.edu register yourself and join the "Air Shower Physics" group
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
     touch with the project
 
 
-## Installation
+## Prerequisites
 
-CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-6.0.0.
-Additional software prerequisites: eigen3, boost, cmake, g++, git. 
-However, eigen3 is shipped in ThirdParty directory, so any installation 
-on the system is optional. 
-In case one wants to use Pythia 8 for particle decays or to simulate showers
-in a proton environment, Pythia has to be installed on your system and 
-switched ON in CMakeLists.txt. We test with Pythia version 8.235.
+CORSIKA 8 is tested regularly via gitlab-CI using recent gcc and clang
+versions.  Additional software prerequisites: cmake, g++, git.
+Furthermore, eigen3, boost, catch2, spdlog are shipped in the
+ThirdParty directory, so an installation on the system is optional.
+Also Pythia 8, CONEX and PROPOSAL are distributed in the ThirdParty
+folder. You may also install those packages on your system and use
+those; we test with Pythia version 8.235.
 
 On a bare Ubuntu 18.04, just add:
 ```
@@ -70,9 +66,18 @@ sudo apt install cmake g++ git
 ```
 add ```libeigen3-dev``` if you want to use system version of eigen3.
 
+If you work with FreeBSD, run:
+```
+pkg install git cmake python3 flang
+```
+or add ```boost-libs``` and ```eigen``` if you want to use the system versions. 
+
+## Installation
+
+
 Follow these steps to download and install CORSIKA 8 milestone2
 ```
-git clone https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
+git clone --recursive https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
 cd corsika
 mkdir ../corsika-build
 cd ../corsika-build
@@ -81,7 +86,8 @@ make -j8
 make install
 make test
 ```
-and if you want to see how the first simple hadron cascade develops, see `Documentation/Examples/cascade_example.cc` for a starting point. 
+and if you want to see how the first simple hadron cascade develops, 
+see `Documentation/Examples/cascade_example.cc` for a starting point. 
 
 Run the cascade_example with: 
 ```
@@ -94,6 +100,10 @@ Visualize output (needs gnuplot installed):
 bash share/tools/plot_tracks.sh tracks.dat 
 firefox tracks.dat.gif 
 ```
+
+Or also consider the `vertical_eas` example in the same directory, which can 
+be configured with command line options. 
+
 
 ### Generating doxygen documentation
 
