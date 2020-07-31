@@ -15,9 +15,11 @@
 #include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/geometry/Point.h>
+
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/utl/CorsikaFenv.h>
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("Pythia", "[processes]") {
@@ -77,10 +79,13 @@ TEST_CASE("Pythia", "[processes]") {
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
+#include <corsika/setup/SetupEnvironment.h>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/UniformMediumType.h>
+#include <corsika/environment/UniformMagneticField.h>
 
 using namespace corsika;
 using namespace corsika::units::si;
@@ -97,24 +102,28 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 TEST_CASE("pythia process") {
 
   // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
-
-  geometry::CoordinateSystem const& cs = env.GetCoordinateSystem();
+  setup::Environment env;
+  auto& universe = *(env.GetUniverse());
+  using EnvironmentModel = environment::UniformMediumType<environment::UniformMagneticField<environment::HomogeneousMedium<setup::IEnvironment>>>;
 
   auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{cs, 0_m, 0_m, 0_m},
+    setup::Environment::CreateNode<geometry::Sphere>(
+          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
           1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
+  theMedium->SetModelProperties<EnvironmentModel>(
+						  environment::EMediumType::eAir,
+						  geometry::Vector(env.GetCoordinateSystem(), 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Hydrogen},
-          std::vector<float>{1.}));
+          std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
 
-  auto const* nodePtr = theMedium.get(); // save the medium for later use before moving it
+  auto const* nodePtr = theMedium.get();
+  universe.AddChild(std::move(theMedium));
 
+  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
+
+  
   SECTION("pythia decay") {
     feenableexcept(FE_INVALID);
     setup::Stack stack;

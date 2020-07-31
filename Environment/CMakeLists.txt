@@ -25,6 +25,9 @@ set (
   UniformMagneticField.h
   IRefractiveIndexModel.h
   UniformRefractiveIndex.h
+  MediumTypes.h
+  IMediumTypeModel.h
+  UniformMediumType.h
   )
 
 set (

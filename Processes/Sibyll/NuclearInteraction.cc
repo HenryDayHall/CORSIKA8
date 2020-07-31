@@ -43,7 +43,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  void NuclearInteraction<SetupEnvironment>::PrintCrossSectionTable(
+  void NuclearInteraction<setup::Environment>::PrintCrossSectionTable(
       corsika::particles::Code pCode) {
     using namespace corsika::particles;
     const int k = targetComponentsIndex_.at(pCode);
@@ -68,7 +68,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  void NuclearInteraction<SetupEnvironment>::InitializeNuclearCrossSections() {
+  void NuclearInteraction<setup::Environment>::InitializeNuclearCrossSections() {
     using namespace corsika::particles;
     using namespace units::si;
 
@@ -134,7 +134,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::CrossSectionType NuclearInteraction<SetupEnvironment>::ReadCrossSectionTable(
+  units::si::CrossSectionType NuclearInteraction<setup::Environment>::ReadCrossSectionTable(
       const int ia, particles::Code pTarget, units::si::HEPEnergyType elabnuc) {
     using namespace corsika::particles;
     using namespace units::si;
@@ -154,7 +154,7 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
-  NuclearInteraction<SetupEnvironment>::GetCrossSection(Particle const& vP,
+  NuclearInteraction<setup::Environment>::GetCrossSection(Particle const& vP,
                                                         const particles::Code TargetId) {
     using namespace units::si;
     if (vP.GetPID() != particles::Code::Nucleus)
@@ -195,7 +195,7 @@ namespace corsika::process::sibyll {
 
   template <>
   template <>
-  units::si::GrammageType NuclearInteraction<SetupEnvironment>::GetInteractionLength(
+  units::si::GrammageType NuclearInteraction<setup::Environment>::GetInteractionLength(
       Particle const& vP) {
 
     using namespace units;
@@ -615,8 +615,8 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  NuclearInteraction<SetupEnvironment>::NuclearInteraction(
-      process::sibyll::Interaction& hadint, SetupEnvironment const& env)
+  NuclearInteraction<setup::Environment>::NuclearInteraction(
+								 process::sibyll::Interaction& hadint, setup::Environment const& env)
       : environment_(env)
       , hadronicInteraction_(hadint) {
 

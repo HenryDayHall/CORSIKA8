@@ -6,18 +6,28 @@
  * the license.
  */
 
+#include <corsika/setup/SetupEnvironment.h>
+
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
+#include <corsika/environment/UniformMediumType.h>
+#include <corsika/environment/UniformMagneticField.h>
+
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
+
 #include <corsika/particles/ParticleProperties.h>
+
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
+
 #include <corsika/random/RNGManager.h>
+
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
+
 #include <catch2/catch.hpp>
 
 using namespace corsika;
@@ -32,11 +42,14 @@ TEST_CASE("CONEXSourceCut") {
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
-  EnvType env;
+  setup::Environment env;
+  auto& universe = *(env.GetUniverse());
+  using EnvironmentModel = environment::UniformMediumType<environment::UniformMagneticField<environment::InhomogeneousMedium<setup::IEnvironment>>>;
+
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   environment::LayeredSphericalAtmosphereBuilder builder{center, conex::earthRadius};
+  
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now

@@ -75,12 +75,14 @@ TEST_CASE("Sibyll", "[processes]") {
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/process/sibyll/sibyll2.3d.h>
+#include <corsika/environment/UniformMediumType.h>
+#include <corsika/environment/UniformMagneticField.h>
 
 using namespace corsika::units::si;
 using namespace corsika::units;
@@ -95,17 +97,19 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 TEST_CASE("SibyllInterface", "[processes]") {
 
   // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
+  setup::Environment env;
   auto& universe = *(env.GetUniverse());
+  using EnvironmentModel = environment::UniformMediumType<environment::UniformMagneticField<environment::HomogeneousMedium<setup::IEnvironment>>>;
 
   auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
+      setup::Environment::CreateNode<geometry::Sphere>(
           geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
           1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
+  theMedium->SetModelProperties<EnvironmentModel>(
+						  environment::EMediumType::eAir,
+						  geometry::Vector(env.GetCoordinateSystem(), 0_T, 0_T, 0_T),
+						  1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
 

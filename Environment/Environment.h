@@ -38,8 +38,6 @@ namespace corsika::environment {
         , fUniverse(std::make_unique<BaseNodeType>(
               std::make_unique<Universe>(fCoordinateSystem))) {}
 
-    // using IEnvironmentModel = corsika::setup::IEnvironmentModel;
-
     auto& GetUniverse() { return fUniverse; }
     auto const& GetUniverse() const { return fUniverse; }
 
@@ -60,8 +58,5 @@ namespace corsika::environment {
     corsika::geometry::CoordinateSystem const& fCoordinateSystem;
     typename BaseNodeType::VTNUPtr fUniverse;
   };
-
-  // using SetupBaseNodeType = VolumeTreeNode<corsika::setup::IEnvironmentModel>;
-  // using SetupEnvironment = Environment<corsika::setup::IEnvironmentModel>;
 
 } // namespace corsika::environment

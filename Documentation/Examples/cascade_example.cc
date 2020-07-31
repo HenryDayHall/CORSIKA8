@@ -45,7 +45,6 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
-using namespace corsika::setup;
 using namespace corsika::geometry;
 using namespace corsika::environment;
 
@@ -68,27 +67,30 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = environment::Environment<setup::IEnvironmentModel>;
-  EnvType env;
+  setup::Environment env;
   auto& universe = *(env.GetUniverse());
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  auto outerMedium = EnvType::CreateNode<Sphere>(
+  auto outerMedium = setup::EnvironmentType::CreateNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
+
+  using EnvironmentModel = environment::UniformMediumType<environment::UniformMagneticField<environment::HomogeneousMedium<setup::IEnvironment>>>;
+  
   // fraction of oxygen
   const float fox = 0.20946;
   auto const props =
       outerMedium
-          ->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
-              1_kg / (1_m * 1_m * 1_m),
-              environment::NuclearComposition(
-                  std::vector<particles::Code>{particles::Code::Nitrogen,
-                                               particles::Code::Oxygen},
-                  std::vector<float>{1.f - fox, fox}));
+    ->SetModelProperties<EnvironmentModel>(environment::EMediumType::eAir,
+					   Vector(rootCS, 0_T, 0_T, 0_T),
+					   1_kg / (1_m * 1_m * 1_m),
+					   environment::NuclearComposition(
+									   std::vector<particles::Code>{particles::Code::Nitrogen,
+													  particles::Code::Oxygen},
+									   std::vector<float>{1.f - fox, fox}));
 
-  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+  auto innerMedium = setup::Environment::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
 
   innerMedium->SetModelProperties(props);
 

@@ -9,10 +9,20 @@
 #pragma once
 
 #include <corsika/environment/Environment.h>
+#include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
-#include <corsika/environment/NameModel.h>
+#include <corsika/environment/IMediumTypeModel.h>
+#include <corsika/environment/IRefractiveIndexModel.h>
+#include <corsika/environment/InhomogeneousMedium.h>
 
 namespace corsika::setup {
-  using IEnvironmentModel = environment::IMediumModel;
-  using SetupEnvironment = environment::Environment<IEnvironmentModel>;
+
+  /**
+     Definition of the default environemnt model interface. Each model
+     interface provides properties of the environment in a position
+     bdependent way. 
+   */
+  
+  using IEnvironment = environment::IMediumTypeModel<environment::IMagneticFieldModel<environment::IMediumModel>>;
+  using Environment = environment::Environment<IEnvironment>;
 } // namespace corsika::setup

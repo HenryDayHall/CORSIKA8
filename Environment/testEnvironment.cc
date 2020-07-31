@@ -11,6 +11,7 @@
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/IMediumTypeModel.h>
 #include <corsika/environment/IRefractiveIndexModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
@@ -18,6 +19,7 @@
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/UniformMagneticField.h>
+#include <corsika/environment/UniformMediumType.h>
 #include <corsika/environment/UniformRefractiveIndex.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
@@ -61,8 +63,8 @@ TEST_CASE("FlatExponential") {
                                  gCS, {20_cm / second, 0_m / second, 0_m / second}));
     Trajectory<Line> const trajectory(line, tEnd);
 
-    REQUIRE((medium.IntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
-    REQUIRE((medium.ArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
+    CHECK((medium.IntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
+    CHECK((medium.ArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
   }
 
   SECTION("vertical") {
@@ -72,8 +74,8 @@ TEST_CASE("FlatExponential") {
     LengthType const length = 2 * lambda;
     GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
 
-    REQUIRE((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
-    REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+    CHECK((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    CHECK((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 
   SECTION("escape grammage") {
@@ -83,9 +85,9 @@ TEST_CASE("FlatExponential") {
 
     GrammageType const escapeGrammage = rho0 * lambda;
 
-    REQUIRE(trajectory.NormalizedDirection().dot(axis).magnitude() < 0);
-    REQUIRE(medium.ArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
-            std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
+    CHECK(trajectory.NormalizedDirection().dot(axis).magnitude() < 0);
+    CHECK(medium.ArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
+          std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
   }
 
   SECTION("inclined") {
@@ -96,8 +98,8 @@ TEST_CASE("FlatExponential") {
     LengthType const length = 2 * lambda;
     GrammageType const exact =
         rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
-    REQUIRE((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
-    REQUIRE((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+    CHECK((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    CHECK((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 }
 
@@ -170,9 +172,9 @@ TEST_CASE("InhomogeneousMedium") {
   DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);
 
   SECTION("DensityFunction") {
-    REQUIRE(e.Derivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
-            Approx(1));
-    REQUIRE(rho.EvaluateAt(gOrigin) == e(gOrigin));
+    CHECK(e.Derivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
+          Approx(1));
+    CHECK(rho.EvaluateAt(gOrigin) == e(gOrigin));
   }
 
   auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };
@@ -184,18 +186,18 @@ TEST_CASE("InhomogeneousMedium") {
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
 
   SECTION("Integration") {
-    REQUIRE(rho.IntegrateGrammage(trajectory, l) / exactGrammage(l) ==
-            Approx(1).epsilon(1e-2));
-    REQUIRE(rho.ArclengthFromGrammage(trajectory, exactGrammage(l)) /
-                exactLength(exactGrammage(l)) ==
-            Approx(1).epsilon(1e-2));
-    REQUIRE(rho.MaximumLength(trajectory, 1e-2) >
-            l); // todo: write reasonable test when implementation is working
+    CHECK(rho.IntegrateGrammage(trajectory, l) / exactGrammage(l) ==
+          Approx(1).epsilon(1e-2));
+    CHECK(rho.ArclengthFromGrammage(trajectory, exactGrammage(l)) /
+              exactLength(exactGrammage(l)) ==
+          Approx(1).epsilon(1e-2));
+    CHECK(rho.MaximumLength(trajectory, 1e-2) >
+          l); // todo: write reasonable test when implementation is working
 
-    REQUIRE(rho.IntegrateGrammage(trajectory, l) ==
-            inhMedium.IntegratedGrammage(trajectory, l));
-    REQUIRE(rho.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
-            inhMedium.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
+    CHECK(rho.IntegrateGrammage(trajectory, l) ==
+          inhMedium.IntegratedGrammage(trajectory, l));
+    CHECK(rho.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
+          inhMedium.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
   }
 }
 
@@ -208,27 +210,27 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
   builder.addLinearLayer(2_km, 20_km);
   builder.addLinearLayer(3_km, 30_km);
 
-  REQUIRE(builder.size() == 3);
+  CHECK(builder.size() == 3);
 
   auto const builtEnv = builder.assemble();
   auto const& univ = builtEnv.GetUniverse();
 
-  REQUIRE(builder.size() == 0);
+  CHECK(builder.size() == 0);
 
   auto const R = builder.getEarthRadius();
 
-  REQUIRE(univ->GetChildNodes().size() == 1);
+  CHECK(univ->GetChildNodes().size() == 1);
 
-  REQUIRE(univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 35_km)) == univ.get());
-  REQUIRE(dynamic_cast<Sphere const&>(
-              univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 8_km))->GetVolume())
-              .GetRadius() == R + 10_km);
-  REQUIRE(dynamic_cast<Sphere const&>(
-              univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 12_km))->GetVolume())
-              .GetRadius() == R + 20_km);
-  REQUIRE(dynamic_cast<Sphere const&>(
-              univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->GetVolume())
-              .GetRadius() == R + 30_km);
+  CHECK(univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 35_km)) == univ.get());
+  CHECK(dynamic_cast<Sphere const&>(
+            univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 8_km))->GetVolume())
+            .GetRadius() == R + 10_km);
+  CHECK(dynamic_cast<Sphere const&>(
+            univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 12_km))->GetVolume())
+            .GetRadius() == R + 20_km);
+  CHECK(dynamic_cast<Sphere const&>(
+            univ->GetContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->GetVolume())
+            .GetRadius() == R + 30_km);
 }
 
 TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
@@ -251,13 +253,13 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   AtmModel medium(B0, density, protonComposition);
 
   // and test at several locations
-  REQUIRE(B0.GetComponents(gCS) ==
-          medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)).GetComponents(gCS));
-  REQUIRE(
+  CHECK(B0.GetComponents(gCS) ==
+        medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)).GetComponents(gCS));
+  CHECK(
       B0.GetComponents(gCS) ==
       medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)).GetComponents(gCS));
-  REQUIRE(B0.GetComponents(gCS) ==
-          medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)).GetComponents(gCS));
+  CHECK(B0.GetComponents(gCS) ==
+        medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)).GetComponents(gCS));
 
   // create a new magnetic field vector
   Vector B1(gCS, 23_T, 57_T, -4_T);
@@ -266,16 +268,16 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   medium.SetMagneticField(B1);
 
   // and test at several locations
-  REQUIRE(B1.GetComponents(gCS) ==
-          medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)).GetComponents(gCS));
-  REQUIRE(
+  CHECK(B1.GetComponents(gCS) ==
+        medium.GetMagneticField(Point(gCS, -10_m, 4_m, 35_km)).GetComponents(gCS));
+  CHECK(
       B1.GetComponents(gCS) ==
       medium.GetMagneticField(Point(gCS, 1000_km, -1000_km, 1000_km)).GetComponents(gCS));
-  REQUIRE(B1.GetComponents(gCS) ==
-          medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)).GetComponents(gCS));
+  CHECK(B1.GetComponents(gCS) ==
+        medium.GetMagneticField(Point(gCS, 0_m, 0_m, 0_m)).GetComponents(gCS));
 
   // check the density and nuclear composition
-  REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  CHECK(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
   medium.GetNuclearComposition();
 
   // create a line of length 1 m
@@ -289,8 +291,8 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   Trajectory<Line> const trajectory(line, tEnd);
 
   // and check the integrated grammage
-  REQUIRE((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
-  REQUIRE((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+  CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
 
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
@@ -313,10 +315,10 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   AtmModel medium(n, density, protonComposition);
 
   // and require that it is constant
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
-  REQUIRE(n == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(n == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(n == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(n == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(n == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
 
   // a new refractive index
   const double n2{2.3472123};
@@ -325,16 +327,16 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   medium.SetRefractiveIndex(n2);
 
   // check that the returned refractive index is correct
-  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
-  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
-  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
-  REQUIRE(n2 == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(n2 == medium.GetRefractiveIndex(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(n2 == medium.GetRefractiveIndex(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(n2 == medium.GetRefractiveIndex(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(n2 == medium.GetRefractiveIndex(Point(gCS, 100_km, 400_km, 350_km)));
 
   // define our axis vector
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
 
   // check the density and nuclear composition
-  REQUIRE(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  CHECK(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
   medium.GetNuclearComposition();
 
   // create a line of length 1 m
@@ -348,6 +350,65 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   Trajectory<Line> const trajectory(line, tEnd);
 
   // and check the integrated grammage
-  REQUIRE((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
-  REQUIRE((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+  CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+}
+
+TEST_CASE("UniformMediumType w/ Homogeneous") {
+
+  // setup our interface types
+  using IModelInterface = IMediumTypeModel<IMediumModel>;
+  using AtmModel = UniformMediumType<HomogeneousMedium<IModelInterface>>;
+
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // the refrative index that we use
+  const EMediumType type = EMediumType::eAir;
+
+  // create the atmospheric model
+  AtmModel medium(type, density, protonComposition);
+
+  // and require that it is constant
+  CHECK(type == medium.medium_type(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(type == medium.medium_type(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(type == medium.medium_type(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(type == medium.medium_type(Point(gCS, 100_km, 400_km, 350_km)));
+
+  // a new refractive index
+  const EMediumType type2 = EMediumType::eRock;
+
+  // update the refractive index of this atmospheric model
+  medium.set_medium_type(type2);
+
+  // check that the returned refractive index is correct
+  CHECK(type2 == medium.medium_type(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(type2 == medium.medium_type(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(type2 == medium.medium_type(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(type2 == medium.medium_type(Point(gCS, 100_km, 400_km, 350_km)));
+
+  // define our axis vector
+  Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
+
+  // check the density and nuclear composition
+  CHECK(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.GetNuclearComposition();
+
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {1_m / second, 0_m / second, 0_m / second}));
+
+  // the end time of our line
+  auto const tEnd = 1_s;
+
+  // and the associated trajectory
+  Trajectory<Line> const trajectory(line, tEnd);
+
+  // and check the integrated grammage
+  CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
