@@ -38,7 +38,7 @@ namespace corsika::process {
       void SolveCE();
 
       void addParticle(int egs_pid, units::si::HEPEnergyType energy,
-                       geometry::Point const& position,
+                       units::si::HEPEnergyType mass, geometry::Point const& position,
                        geometry::Vector<units::si::dimensionless_d> const& direction,
                        units::si::TimeType t);
 

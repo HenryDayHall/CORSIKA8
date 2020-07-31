@@ -88,7 +88,7 @@ TEST_CASE("CONEXSourceCut") {
   std::cout << "position EM: " << emPosition.GetCoordinates(conex.GetObserverCS()) << " "
             << emPosition.GetCoordinates(rootCS) << std::endl;
 
-  conex.addParticle(0, Eem, emPosition, momentum.normalized(), 0_s);
+  conex.addParticle(0, Eem, 0_eV, emPosition, momentum.normalized(), 0_s);
 
   conex.SolveCE();
 }
