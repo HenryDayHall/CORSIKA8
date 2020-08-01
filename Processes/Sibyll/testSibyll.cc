@@ -140,32 +140,54 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     /*
       Interactions between hadrons (h) and nuclei (A) in Sibyll are treated in the
-      hadron-nucleon center-of-mass frame (hnCoM). In addition the incoming hadron (h) and
-      nucleon (n) are assumed massless, such that the energy and momentum in the hnCoM are
+      hadron-nucleon center-of-mass frame (hnCoM). The incoming hadron (h) and
+      nucleon (N) are assumed massless, such that the energy and momentum in the hnCoM are
       : E_i_cm = 0.5 * SQS and P_i_cm = +- 0.5 * SQS  where i is either the projectile
       hadron or the target nucleon and SQS is the hadron-nucleon center-of-mass energy.
 
+      The true energies and momenta, accounting for the hadron masses, are: E_i = ( S +
+      m_i**2 - m_j**2 ) / (2 * SQS) and Pcm = +-
+      sqrt( (S-(m_j+m_i)**2) * (s-(m_j-m_i)**2) ) / (2*SQS) where m_i is the projectiles
+      mass and m_j is the target particles mass. In terms of lab. frame variables Pcm =
+      m_j * Plab_i / SQS, where Plab_i is the momentum of the projectile (i) in the lab.
+      and m_j is the mass of the target, i.e. the particle at rest (usually a nucleon).
+
       Any hadron-nucleus event can contain several nucleon interactions. In case of Nw
-      (number of wounded nucleons) in the hadron-nucleus interaction the total energy and
-      momentum in the hadron-nucleon center-of-mass frame are: momentum: p_projectile +
-      p_nucleon_1 + p_nucleon_2 + .... p_nucleon_Nw = -(Nw-1) Pcm with center-of-mass
-      momentum Pcm = p_projectile = - p_nucleon_i energy: E_projectile + E_nucleon_1 + ...
-      E_nucleon_Nw = (Nw+1) / 2 * SQS with SQS the hadron-nucleon center-of-mass energy.
+      (number of wounded nucleons) nucleons interacting in the hadron-nucleus interaction,
+      the total energy and momentum in the hadron(i)-nucleon(N) center-of-mass frame are:
+      momentum: p_projectile + p_nucleon_1 + p_nucleon_2 + .... p_nucleon_Nw = -(Nw-1) *
+      Pcm with center-of-mass momentum Pcm = p_projectile = - p_nucleon_i. For the energy:
+      E_projectile + E_nucleon_1 + ... E_nucleon_Nw = E_projectile + Nw * E_nucleon.
 
-      In case of a single interaction (Nw=1), by definition, the total momentum is zero in
-      the hadron-nucleon frame. After the boost to the lab. frame the lab. momentum of the
-      projectile before the interaction is recoverred.
+      Using the above definitions of center-of-mass energies and momenta this leads to the
+      total energy: E_tot = SQS/2 * (1+Nw) + (m_N**2-m_i**2)/(2*SQS) * (Nw-1) and P_tot
+      = -m_N * Plab_i / SQS * (Nw-1).
 
-      In case of multiple interactions (Nw>1), the momentum is not zero and the total
-      momentum in the lab. frame after the boost is different from the original projectile
-      (momentum violation).
+      A Lorentztransformation of these quantities to the lab. frame recovers Plab_i for
+      the total momentum, so momentum is exactly conserved, and Elab_i + Nw * m_N for the
+      total energy. Not surprisingly the total energy differs from the total energy before
+      the collision by the mass of the additional nucleons (Nw-1)*m_N. In relative terms
+      the additional energy is entirely negligible and as it is not kinetic energy there
+      is zero influence on the shower development.
 
-      The level of violation of momentum conservation is further enhanced due to the
-      approximation of massless hadrons. At low energies (~10GeV), where the masses can
-      not be neglected the violation is at the level of percent.
+      Due to the ommission of the hadron masses in Sibyll, the total energy and momentum
+      in the center-of-mass system after the collision are just: E_tot = SQS/2 * (1+Nw)
+      and P_tot = SQS/2 * (1-Nw). After the Lorentztransformation the total momentum in
+      the lab. thus differs from the initial value by (1-Nw)/2 * ( m_N + m_i**2 / (2 *
+      Plab_i) ) and momentum is NOT conserved. Note however that the second term quickly
+      vanishes as the lab. momentum of the projectile increases. The first term is fixed
+      as it depends only on the number of additional nucleons, in relative terms it is
+      always small at high energies.
 
-      For this reason the numerical precision in these tests is limited to 5% at low
-      energies. see also:
+      For this reason the numerical precision in these tests is limited to 5% to still
+      pass at low energies and no absolute check is implemented, e.g.
+
+          CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.05));
+          CHECK((pSum - plab).norm()/1_GeV == Approx(0).margin(plab.norm() * 0.05/1_GeV));
+
+      /FR'2020
+
+      See also:
 
       Issue 272 / MR 204
       https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/merge_requests/204
@@ -180,7 +202,37 @@ TEST_CASE("SibyllInterface", "[processes]") {
     CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
-    
+
+    SECTION("InteractionInterface - high energy") {
+
+    setup::Stack stack;
+    const HEPEnergyType E0 = 60_EeV;
+    HEPMomentumType P0 =
+        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
+    auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
+    geometry::Point pos(cs, 0_m, 0_m, 0_m);
+    auto particle = stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Proton, E0, plab, pos, 0_ns});
+    particle.SetNode(nodePtr);
+    corsika::stack::SecondaryView view(particle);
+    auto projectile = view.GetProjectile();
+
+    Interaction model;
+
+    model.Init();
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    auto const pSum = sumMomentum(view, cs);
+    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.05));
+    CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
+
+    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.05 / 1_GeV));
+    CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
+    [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+  }
+
   SECTION("NuclearInteractionInterface") {
 
     setup::Stack stack;
