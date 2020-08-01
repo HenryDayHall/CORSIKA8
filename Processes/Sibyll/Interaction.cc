@@ -327,11 +327,12 @@ namespace corsika::process::sibyll {
           Ecm_final += psib.GetEnergy();
         }
         cout << "conservation (all GeV):" << endl
-             << "Ecm_initial=" << Ecm / 1_GeV << " Ecm_final=" << Ecm_final / 1_GeV
-             << endl
-             << "Elab_initial=" << eProjectileLab / 1_GeV
+             << "Ecm_initial(per nucleon)=" << Ecm / 1_GeV
+             << " Ecm_final(per nucleon)=" << Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV << endl
+             << "Elab_initial=" << Etot / 1_GeV
              << " Elab_final=" << Elab_final / 1_GeV
-             << " diff (%)=" << (Elab_final / eProjectileLab / get_nwounded() - 1) * 100
+             << " diff (%)=" << (Elab_final / Etot / get_nwounded() - 1) * 100
+	     << " E in nucleons=" << constants::nucleonMass * get_nwounded() / 1_GeV 
              << endl
              << "Plab_initial=" << (pProjectileLab / 1_GeV).GetComponents()
              << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << endl;
