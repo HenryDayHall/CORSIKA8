@@ -10,7 +10,6 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
-#include <corsika/process/sibyll/sibyll2.3d.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <tuple>
