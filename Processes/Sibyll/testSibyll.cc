@@ -203,7 +203,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
-    SECTION("InteractionInterface - high energy") {
+  SECTION("InteractionInterface - high energy") {
 
     setup::Stack stack;
     const HEPEnergyType E0 = 60_EeV;
