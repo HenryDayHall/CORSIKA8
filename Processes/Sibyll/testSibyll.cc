@@ -203,7 +203,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
-    SECTION("InteractionInterface - high energy") {
+  SECTION("InteractionInterface - high energy") {
 
     setup::Stack stack;
     const HEPEnergyType E0 = 60_EeV;
@@ -221,7 +221,6 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     Interaction model;
 
-    model.Init();
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     auto const pSum = sumMomentum(view, cs);
     CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.05));
