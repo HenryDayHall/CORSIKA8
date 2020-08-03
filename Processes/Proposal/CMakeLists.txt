@@ -23,6 +23,7 @@ TARGET_LINK_LIBRARIES (
   CORSIKAthirdparty
   CORSIKAgeometry
   CORSIKAenvironment
+  ProcessParticleCut
   PROPOSAL::PROPOSAL
   )
 
