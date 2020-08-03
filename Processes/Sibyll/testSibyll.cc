@@ -223,11 +223,11 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
     auto const pSum = sumMomentum(view, cs);
-    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.05));
+    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.001));
     CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
     CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
 
-    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.05 / 1_GeV));
+    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.001 / 1_GeV));
     CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
