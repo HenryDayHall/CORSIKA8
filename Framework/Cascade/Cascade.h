@@ -226,7 +226,7 @@ namespace corsika::cascade {
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
 
-      // take minimum of geometry, interaction, decay, magnetic field for next step
+      // take minimum of geometry, interaction, decay for next step
       auto const min_distance = std::min(
           {distance_interact, distance_decay, distance_max, geomMaxLength});
 
