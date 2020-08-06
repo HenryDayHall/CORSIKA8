@@ -214,7 +214,7 @@ namespace corsika::cascade {
                                         vParticle.GetEnergy() * units::constants::c;
                                     
       // determine geometric tracking
-      auto [step, geomMaxLength, nextVol, magMaxLength, directionBefore, directionAfter] = fTracking.GetTrack(vParticle);
+      auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
       
       // convert next_step from grammage to length
@@ -226,18 +226,46 @@ namespace corsika::cascade {
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
 
-      // take minimum of geometry, interaction, decay for next step
+      // take minimum of geometry, interaction, decay, magnetic field for next step
       auto const min_distance = std::min(
-          {distance_interact, distance_decay, distance_max, geomMaxLength, magMaxLength});
+          {distance_interact, distance_decay, distance_max, geomMaxLength});
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
+
+      //determine displacement by the magnetic field
+	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
+      int chargeNumber;
+      if(corsika::particles::IsNucleus(vParticle.GetPID())) {
+        chargeNumber = vParticle.GetNuclearZ();
+      } else {
+     	  chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
+      }
+      if(chargeNumber != 0) {
+    		auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
+    		geometry::Vector<SpeedType::dimension_type> velocity = vParticle.GetMomentum() / vParticle.GetEnergy() *
+    			                                                     corsika::units::constants::c;
+    		geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
+    		auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
+                (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
+    		LengthType const steplength = min_distance / 
+                                      (directionBefore + directionBefore.cross(magneticfield) * k / 2).GetNorm();
+    		// First Movement
+    		//assuming magnetic field does not change during movement
+    		auto position = vParticle.GetPosition() + directionBefore * Steplength / 2;
+    		// Change of direction by magnetic field
+    		geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
+                                                                Steplength * k; 
+    		// Second Movement
+    		position = position + directionAfter * Steplength / 2;
+    		geometry::Vector<dimensionless_d> const direction = (position - vParticle.GetPosition()) / 
+    									                                      (position - vParticle.GetPosition()).GetNorm();
+        vParticle.SetMomentum(direction * vParticle.GetMomentum().GetNorm());
+      }
 
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
       vParticle.SetPosition(step.PositionFromArclength(min_distance));
       // .... also update time, momentum, direction, ...  
-	  vParticle.SetMomentum((directionBefore * (1 - min_distance / magMaxLength) + 
-	  	directionAfter * min_distance /magMaxLength) * vParticle.GetMomentum().GetNorm());
       vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
 
       step.LimitEndTo(min_distance);
@@ -263,7 +291,7 @@ namespace corsika::cascade {
 
         TStackView secondaries(vParticle);
 
-        if (min_distance != distance_max && min_distance != magMaxLength) {
+        if (min_distance != distance_max) {
           /*
             Create SecondaryView object on Stack. The data container
             remains untouched and identical, and 'projectil' is identical

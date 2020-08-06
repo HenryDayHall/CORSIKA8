@@ -86,7 +86,7 @@ TEST_CASE("TrackingLine") {
                                                             0_m / second, 1_m / second);
     Line line(origin, v);
 
-    auto const [traj, geomMaxLength, nextVol] = tracking.GetTrack(p);
+    auto const [traj, geomMaxLength, nextVol, magMaxLength, beforeDirection, afterDirection] = tracking.GetTrack(p);
     [[maybe_unused]] auto dummy_geomMaxLength = geomMaxLength;
     [[maybe_unused]] auto dummy_nextVol = nextVol;
 

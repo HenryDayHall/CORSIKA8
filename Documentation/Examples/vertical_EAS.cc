@@ -34,6 +34,7 @@
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
+#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
@@ -226,6 +227,7 @@ int main(int argc, char** argv) {
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
