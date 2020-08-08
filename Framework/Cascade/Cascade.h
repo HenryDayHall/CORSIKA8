@@ -247,26 +247,24 @@ namespace corsika::cascade {
     		geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
     		auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
                 (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
-    		LengthType const steplength = min_distance / 
-                                      (directionBefore + directionBefore.cross(magneticfield) * k / 2).GetNorm();
     		// First Movement
     		//assuming magnetic field does not change during movement
-    		auto position = vParticle.GetPosition() + directionBefore * Steplength / 2;
+    		auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
     		// Change of direction by magnetic field
     		geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
-                                                                Steplength * k; 
+                                                                min_distance * k; 
     		// Second Movement
-    		position = position + directionAfter * Steplength / 2;
-    		geometry::Vector<dimensionless_d> const direction = (position - vParticle.GetPosition()) / 
-    									                                      (position - vParticle.GetPosition()).GetNorm();
-        vParticle.SetMomentum(direction * vParticle.GetMomentum().GetNorm());
+    		position = position + directionAfter * min_distance / 2;
+        // here the particle is actually moved along the trajectory to new position:
+        // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
+        vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().GetNorm());
+        vParticle.SetPosition(position);
+      } else {
+        vParticle.SetPosition(step.PositionFromArclength(min_distance));
       }
-
-      // here the particle is actually moved along the trajectory to new position:
-      // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
-      vParticle.SetPosition(step.PositionFromArclength(min_distance));
       // .... also update time, momentum, direction, ...  
       vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
+      std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
 
       step.LimitEndTo(min_distance);
 

@@ -115,6 +115,11 @@ namespace corsika::process {
 		std::cout << "TrackingLine   p: " << (direction * p.GetMomentum().GetNorm()).GetComponents() / 1_GeV
                   << " GeV " << std::endl;
 
+            auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.GetNorm() * p.GetEnergy() * 1_V);
+        geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
+            double test =((directionBefore.cross(magneticfield)).dot(position-currentPosition) * k + 1) / (1_m * 1_m * (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k);
+            std::cout << "Test: " << test << k << std::endl;
+            
         } else {
         	std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
                   << " GeV " << std::endl;
@@ -143,6 +148,8 @@ namespace corsika::process {
           auto const& sphere = dynamic_cast<geometry::Sphere const&>(
               volume); // for the moment we are a bit bold here and assume
           // everything is a sphere, crashes with exception if not
+          
+          std::cout << "Mittelpunkt: " << sphere.GetCenter().GetCoordinates() << std::endl;
 
           if (auto opt = TimeOfIntersection(line, sphere); opt.has_value()) {
             auto const [t1, t2] = *opt;
