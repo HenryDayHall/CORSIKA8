@@ -88,27 +88,24 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
       plane_.GetNormal().dot(velocity.cross(magneticfield)) * 2 * k)) - 
       velocity.dot(plane_.GetNormal()) / velocity.GetNorm() ) / 
       (plane_.GetNormal().dot(velocity.cross(magneticfield)) * k);
-    std::cout << "Test: " << MaxStepLength1 << " " << MaxStepLength2 << std::endl;
-    if (MaxStepLength1 < 0_m && MaxStepLength2 < 0_m) {
+    if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
       return std::numeric_limits<double>::infinity() * 1_m;
-    } else if (MaxStepLength1 < 0_m || MaxStepLength2 < MaxStepLength1) {
-      return MaxStepLength2;
-    } else if (MaxStepLength2 < 0_m || MaxStepLength1 < MaxStepLength2) {
-      return MaxStepLength1;
+    } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
+      return MaxStepLength2 * 1.0001;
+    } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
+      return MaxStepLength1 * 1.0001;
     }
-  } else {
-    TimeType const timeOfIntersection =
-      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-      trajectory.GetV0().dot(plane_.GetNormal());
+  } 
+  TimeType const timeOfIntersection =
+    (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
+    trajectory.GetV0().dot(plane_.GetNormal());
 
-    if (timeOfIntersection < TimeType::zero()) {
-      return std::numeric_limits<double>::infinity() * 1_m;
-    }
-
-    auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
-    return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
-    //why is it *1.0001? should i do that too?
+  if (timeOfIntersection < TimeType::zero()) {
+    return std::numeric_limits<double>::infinity() * 1_m;
   }
+
+  auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
+  return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
 }
 
 void ObservationPlane::ShowResults() const {

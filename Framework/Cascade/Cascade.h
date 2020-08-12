@@ -227,6 +227,10 @@ namespace corsika::cascade {
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // take minimum of geometry, interaction, decay for next step
+      std::cout << "Interaction: " << distance_interact << std::endl;
+      std::cout << "Decay: " << distance_decay << std::endl;
+      std::cout << "ObsPlane: " << distance_max << std::endl;
+      std::cout << "Transition: " << geomMaxLength << std::endl;
       auto const min_distance = std::min(
           {distance_interact, distance_decay, distance_max, geomMaxLength});
 
@@ -234,44 +238,43 @@ namespace corsika::cascade {
 
       // determine displacement by the magnetic field
 	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
+      auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
+      geometry::Vector<SpeedType::dimension_type> velocity = vParticle.GetMomentum() / vParticle.GetEnergy() *
+                                                              corsika::units::constants::c;
+  		geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
       int chargeNumber;
       if (corsika::particles::IsNucleus(vParticle.GetPID())) {
         chargeNumber = vParticle.GetNuclearZ();
       } else {
      	  chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
       }
-      if (chargeNumber != 0) {
-  		  auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-    		geometry::Vector<SpeedType::dimension_type> velocity = vParticle.GetMomentum() / vParticle.GetEnergy() *
-    			                                                     corsika::units::constants::c;
-    		geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
-    		auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
-                (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
-    		// First Movement
-    		// assuming magnetic field does not change during movement
-    		auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
-    		// Change of direction by magnetic field
-    		geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
-                                                                min_distance * k; 
-    		// Second Movement
-    		position = position + directionAfter * min_distance / 2;
-        // here the particle is actually moved along the trajectory to new position:
-        // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
-        vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().GetNorm());
-        vParticle.SetPosition(position);
-      } else {
-        vParticle.SetPosition(stepWithoutB.PositionFromArclength(min_distance));
-      }
-      // .... also update time, momentum, direction, ...  
-      vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
+      auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
+              (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
+		  
+  		// First Movement
+  		// assuming magnetic field does not change during movement
+  		auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
+  		// Change of direction by magnetic field
+  		geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
+                                                              min_distance * k; 
+  		// Second Movement
+  		position = position + directionAfter * min_distance / 2;
+      auto distance = position - vParticle.GetPosition();
+      //distance.norm() != min_distance for distance_interact, distance_decay if q != 0
+      //small error can be neglected
+      velocity = distance.normalized() * velocity.norm();
+      
+      // here the particle is actually moved along the trajectory to new position:
+      // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
+      vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().GetNorm());
+      geometry::Line line(vParticle.GetPosition(), velocity);
+      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / velocity.GetNorm());
+      vParticle.SetPosition(position);
+      vParticle.SetTime(vParticle.GetTime() + distance.norm() / units::constants::c);
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
 
-      // is this necessary?
-      stepWithoutB.LimitEndTo(min_distance);
-      stepWithB.LimitEndTo(min_distance);
-
       // apply all continuous processes on particle + track
-      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, stepWithoutB);
+      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, stepNew);
 
       if (status == process::EProcessReturn::eParticleAbsorbed) {
         C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
