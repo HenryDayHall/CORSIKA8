@@ -214,16 +214,16 @@ namespace corsika::cascade {
                                         vParticle.GetEnergy() * units::constants::c;
                                     
       // determine geometric tracking
-      auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
+      auto [stepWithoutB, stepWithB, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
       
       // convert next_step from grammage to length
       LengthType const distance_interact =
-          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
+          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(stepWithB,
                                                                          next_interact);
       
       // determine the maximum geometric step length
-      LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
+      LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, stepWithoutB);
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // take minimum of geometry, interaction, decay for next step
@@ -232,23 +232,23 @@ namespace corsika::cascade {
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
-      //determine displacement by the magnetic field
+      // determine displacement by the magnetic field
 	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
       int chargeNumber;
-      if(corsika::particles::IsNucleus(vParticle.GetPID())) {
+      if (corsika::particles::IsNucleus(vParticle.GetPID())) {
         chargeNumber = vParticle.GetNuclearZ();
       } else {
      	  chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
       }
-      if(chargeNumber != 0) {
-    		auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
+      if (chargeNumber != 0) {
+  		  auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
     		geometry::Vector<SpeedType::dimension_type> velocity = vParticle.GetMomentum() / vParticle.GetEnergy() *
     			                                                     corsika::units::constants::c;
     		geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
     		auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
                 (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
     		// First Movement
-    		//assuming magnetic field does not change during movement
+    		// assuming magnetic field does not change during movement
     		auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
     		// Change of direction by magnetic field
     		geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
@@ -260,17 +260,20 @@ namespace corsika::cascade {
         vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().GetNorm());
         vParticle.SetPosition(position);
       } else {
-        vParticle.SetPosition(step.PositionFromArclength(min_distance));
+        vParticle.SetPosition(stepWithoutB.PositionFromArclength(min_distance));
       }
       // .... also update time, momentum, direction, ...  
       vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
 
-      step.LimitEndTo(min_distance);
+      // is this necessary?
+      stepWithoutB.LimitEndTo(min_distance);
+      stepWithB.LimitEndTo(min_distance);
 
       // apply all continuous processes on particle + track
-      if (process_sequence_.DoContinuous(vParticle, step) ==
-          process::EProcessReturn::eParticleAbsorbed) {
+      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, stepWithoutB);
+
+      if (status == process::EProcessReturn::eParticleAbsorbed) {
         C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                     vParticle.GetPID(), vParticle.GetEnergy() / 1_GeV);
         if (!vParticle.isDeleted()) vParticle.Delete();
