@@ -260,15 +260,17 @@ namespace corsika::cascade {
   		// Second Movement
   		position = position + directionAfter * min_distance / 2;
       auto distance = position - vParticle.GetPosition();
-      //distance.norm() != min_distance for distance_interact, distance_decay if q != 0
+      //distance.norm() != min_distance if q != 0
       //small error can be neglected
+      if (distance.norm() != 0_m) {
       velocity = distance.normalized() * velocity.norm();
+      } //no velocity update for very small steps
       
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
-      vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().GetNorm());
+      vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().norm());
       geometry::Line line(vParticle.GetPosition(), velocity);
-      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / velocity.GetNorm());
+      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / velocity.norm());
       vParticle.SetPosition(position);
       vParticle.SetTime(vParticle.GetTime() + distance.norm() / units::constants::c);
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;

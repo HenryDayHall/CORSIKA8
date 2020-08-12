@@ -121,6 +121,7 @@ namespace corsika::process {
               std::cout << "no intersection (1)!" << std::endl;
               // what to do when this happens? (very unlikely)
             }
+            delete [] solutions;
 		
   		      // First Movement
   		      // assuming magnetic field does not change during movement
@@ -181,6 +182,7 @@ namespace corsika::process {
               std::cout << "no intersection (2)!" << std::endl;
               // what to do when this happens? (very unlikely)
             }
+            delete [] solutions;
 		
   		      // First Movement
   		      // assuming magnetic field does not change during movement
