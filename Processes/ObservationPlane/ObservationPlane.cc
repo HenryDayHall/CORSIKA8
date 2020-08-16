@@ -88,6 +88,7 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
       plane_.GetNormal().dot(velocity.cross(magneticfield)) * 2 * k)) - 
       velocity.dot(plane_.GetNormal()) / velocity.GetNorm() ) / 
       (plane_.GetNormal().dot(velocity.cross(magneticfield)) * k);
+      
     if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
       return std::numeric_limits<double>::infinity() * 1_m;
     } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {

@@ -135,7 +135,7 @@ namespace corsika::process {
   									                                            (position - currentPosition).GetNorm();
   		      velocity1 = direction * velocity.GetNorm();
           } // instead of changing the line with magnetic field, the TimeOfIntersection() could be changed
-          // line has some errors
+          // using line has some errors for huge steps
           geometry::Line line(currentPosition, velocity1);
 
           if (auto opt = TimeOfIntersection(line, sphere); opt.has_value()) {
@@ -232,9 +232,10 @@ namespace corsika::process {
                                                                   min * k;
         // Second Movement
         position = position + directionAfter * velocity.norm() * min / 2;
-        geometry::Vector<dimensionless_d> const direction = (position - currentPosition) / 
-                                                            (position - currentPosition).GetNorm();
-        velocity = direction * velocity.GetNorm();
+        if ((position - currentPosition).GetNorm() != 0_m) {
+          geometry::Vector<dimensionless_d> const direction = (position - currentPosition).normalized();
+          velocity = direction * velocity.norm();
+        } // no velocity update for very small steps
         geometry::Line lineWithB(currentPosition, velocity);
 
         return std::make_tuple(geometry::Trajectory<geometry::Line>(lineWithoutB, min),

@@ -227,12 +227,11 @@ namespace corsika::cascade {
       std::cout << "distance_max=" << distance_max << std::endl;
 
       // take minimum of geometry, interaction, decay for next step
-      std::cout << "Interaction: " << distance_interact << std::endl;
-      std::cout << "Decay: " << distance_decay << std::endl;
-      std::cout << "ObsPlane: " << distance_max << std::endl;
-      std::cout << "Transition: " << geomMaxLength << std::endl;
-      auto const min_distance = std::min(
+      auto min_distance = std::min(
           {distance_interact, distance_decay, distance_max, geomMaxLength});
+      if (min_distance == geomMaxLength) {
+        min_distance = 1.001 * geomMaxLength;
+      } 
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
@@ -260,11 +259,11 @@ namespace corsika::cascade {
   		// Second Movement
   		position = position + directionAfter * min_distance / 2;
       auto distance = position - vParticle.GetPosition();
-      //distance.norm() != min_distance if q != 0
-      //small error can be neglected
+      // distance.norm() != min_distance if q != 0
+      // small error can be neglected
       if (distance.norm() != 0_m) {
       velocity = distance.normalized() * velocity.norm();
-      } //no velocity update for very small steps
+      } // no velocity update for very small steps
       
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
