@@ -71,7 +71,7 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
   auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
   geometry::Vector<SpeedType::dimension_type> const velocity = trajectory.GetV0();
   
-  if (chargeNumber != 0 && plane_.GetNormal().dot(velocity.cross(magneticfield)) * 1_s / 1_m / 1_T != 0) {
+  if (chargeNumber != 0 && plane_.GetNormal().dot(velocity.cross(magneticfield)) * 1_s / 1_m / 1_T > 0.0001) {
     auto const* currentLogicalVolumeNode = vParticle.GetNode();
     auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
     auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
@@ -88,12 +88,13 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
       plane_.GetNormal().dot(velocity.cross(magneticfield)) * 2 * k)) - 
       velocity.dot(plane_.GetNormal()) / velocity.GetNorm() ) / 
       (plane_.GetNormal().dot(velocity.cross(magneticfield)) * k);
-      
     if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
       return std::numeric_limits<double>::infinity() * 1_m;
     } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
+	  std::cout << " distance to obs plane : " << MaxStepLength2 << std::endl;
       return MaxStepLength2 * 1.0001;
     } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
+	  std::cout << " distance to obs plane : " << MaxStepLength1 << std::endl;
       return MaxStepLength1 * 1.0001;
     }
   } 

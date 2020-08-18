@@ -111,12 +111,13 @@ namespace corsika::process {
             for (int i = 0; i < 4; i++) {
               if (solutions[i].imag() == 0 && solutions[i].real() > 0) {
                 tmp.push_back(solutions[i].real());
+                std::cout << "Solutions for next Volume: " << solutions[i].real() << std::endl;
               }
             }
             LengthType Steplength;
             if (tmp.size() > 0) {
               Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
-              std::cout << "s = " << Steplength << std::endl;
+              std::cout << "Steplength to next volume = " << Steplength << std::endl;
             } else {
               std::cout << "no intersection (1)!" << std::endl;
               // what to do when this happens? (very unlikely)
@@ -172,12 +173,18 @@ namespace corsika::process {
             for (int i = 0; i < 4; i++) {
               if (solutions[i].imag() == 0 && solutions[i].real() > 0) {
                 tmp.push_back(solutions[i].real());
+                std::cout << "Solutions for current Volume: " << solutions[i].real() << std::endl;
               }
             }
             LengthType Steplength;
             if (tmp.size() > 0) {
-              Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
-              std::cout << "s = " << Steplength << std::endl;
+				Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
+				if (numericallyInside == false) {
+					int p = std::min_element(tmp.begin(),tmp.end()) - tmp.begin();
+					tmp.erase(tmp.begin() + p);
+					Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
+				}
+				std::cout << "steplength out of current volume = " << Steplength << std::endl;
             } else {
               std::cout << "no intersection (2)!" << std::endl;
               // what to do when this happens? (very unlikely)

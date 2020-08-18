@@ -229,18 +229,15 @@ namespace corsika::cascade {
       // take minimum of geometry, interaction, decay for next step
       auto min_distance = std::min(
           {distance_interact, distance_decay, distance_max, geomMaxLength});
-      if (min_distance == geomMaxLength) {
-        min_distance = 1.001 * geomMaxLength;
-      } 
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
       // determine displacement by the magnetic field
-	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
+	  auto const* currentLogicalVolumeNode = vParticle.GetNode();
       auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
       geometry::Vector<SpeedType::dimension_type> velocity = vParticle.GetMomentum() / vParticle.GetEnergy() *
                                                               corsika::units::constants::c;
-  		geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
+  	  geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
       int chargeNumber;
       if (corsika::particles::IsNucleus(vParticle.GetPID())) {
         chargeNumber = vParticle.GetNuclearZ();
@@ -250,19 +247,19 @@ namespace corsika::cascade {
       auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
               (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
 		  
-  		// First Movement
-  		// assuming magnetic field does not change during movement
-  		auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
-  		// Change of direction by magnetic field
-  		geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
+	  // First Movement
+  	  // assuming magnetic field does not change during movement
+  	  auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
+  	  // Change of direction by magnetic field
+  	  geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
                                                               min_distance * k; 
-  		// Second Movement
-  		position = position + directionAfter * min_distance / 2;
+  	  // Second Movement
+  	  position = position + directionAfter * min_distance / 2;
       auto distance = position - vParticle.GetPosition();
       // distance.norm() != min_distance if q != 0
       // small error can be neglected
       if (distance.norm() != 0_m) {
-      velocity = distance.normalized() * velocity.norm();
+		velocity = distance.normalized() * velocity.norm();
       } // no velocity update for very small steps
       
       // here the particle is actually moved along the trajectory to new position:
