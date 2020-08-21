@@ -54,20 +54,6 @@ namespace corsika::process {
         geometry::Vector<SpeedType::dimension_type> velocity =
             p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
             
-            std::complex<double>*  solutions = solve_quartic(1, 0, 1, -20);
-            std::vector<double> tmp;
-            for(int i = 0; i < 4; i++) {
-              if(solutions[i].imag() == 0 && solutions[i].real() >= 0) {
-                tmp.push_back(solutions[i].real());
-                }
-            }
-            double s = *std::min_element(tmp.begin(),tmp.end());
-            std::cout << "s = " << s << std::endl;
-            std::cout << "x1 = " << (solutions[0].real()>=0. ? " " : "") << solutions[0].real(); if(solutions[0].imag()!=0.0) std::cout << "   +   i * " <<  solutions[0].imag(); std::cout << std::endl;
-		std::cout << "x2 = " << (solutions[1].real()>=0. ? " " : "") << solutions[1].real(); if(solutions[1].imag()!=0.0) std::cout << "   -   i * " << -solutions[1].imag(); std::cout << std::endl;
-		std::cout << "x3 = " << (solutions[2].real()>=0. ? " " : "") << solutions[2].real(); if(solutions[2].imag()!=0.0) std::cout << "   +   i * " <<  solutions[2].imag(); std::cout << std::endl;
-		std::cout << "x4 = " << (solutions[3].real()>=0. ? " " : "") << solutions[3].real(); if(solutions[3].imag()!=0.0) std::cout << "   -   i * " << -solutions[3].imag(); std::cout << std::endl;
-
         auto const currentPosition = p.GetPosition();
         std::cout << "TrackingLine pid: " << p.GetPID()
                   << " , E = " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
@@ -97,8 +83,11 @@ namespace corsika::process {
 					      (corsika::units::constants::cSquared * abs(chargeNumber) * 
 					      magneticfield.GetNorm() * 1_eV);
  		//steplength should consider more things than just gyroradius
-    double maxAngle = 0.1; 
+    double maxAngle = 1e-5; 
 		LengthType const Steplength = 2 * sin(maxAngle * M_PI / 180) * gyroradius;
+   
+   std::cout << "Test: " << Steplength << " " << gyroradius << std::endl;
+   
 		// First Movement
 		auto position = currentPosition + directionBefore * Steplength / 2;
 		// Change of direction by magnetic field at position
@@ -114,11 +103,6 @@ namespace corsika::process {
 		velocity = direction * velocity.GetNorm();
 		std::cout << "TrackingLine   p: " << (direction * p.GetMomentum().GetNorm()).GetComponents() / 1_GeV
                   << " GeV " << std::endl;
-
-            auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.GetNorm() * p.GetEnergy() * 1_V);
-        geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
-            double test =((directionBefore.cross(magneticfield)).dot(position-currentPosition) * k + 1) / (1_m * 1_m * (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k);
-            std::cout << "Test: " << test << k << std::endl;
             
         } else {
         	std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
