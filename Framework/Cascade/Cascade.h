@@ -214,7 +214,7 @@ namespace corsika::cascade {
                                         vParticle.GetEnergy() * units::constants::c;
                                     
       // determine geometric tracking
-      auto [stepWithoutB, stepWithB, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
+      auto [lineWithoutB, stepWithoutB, stepWithB, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
       
       // convert next_step from grammage to length
@@ -232,41 +232,16 @@ namespace corsika::cascade {
 
       C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
-      // determine displacement by the magnetic field
-	  auto const* currentLogicalVolumeNode = vParticle.GetNode();
-      auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-      geometry::Vector<SpeedType::dimension_type> velocity = vParticle.GetMomentum() / vParticle.GetEnergy() *
-                                                              corsika::units::constants::c;
-  	  geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
-      int chargeNumber;
-      if (corsika::particles::IsNucleus(vParticle.GetPID())) {
-        chargeNumber = vParticle.GetNuclearZ();
-      } else {
-     	  chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
-      }
-      auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
-              (velocity.GetNorm() * vParticle.GetEnergy() * 1_V);
-		  
-	  // First Movement
-  	  // assuming magnetic field does not change during movement
-  	  auto position = vParticle.GetPosition() + directionBefore * min_distance / 2;
-  	  // Change of direction by magnetic field
-  	  geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
-                                                              min_distance * k; 
-  	  // Second Movement
-  	  position = position + directionAfter * min_distance / 2;
+      // determine displacement by the magnetic field     
+      auto [line, position, directionAfter] = fTracking.MagneticStep(vParticle, lineWithoutB, min_distance);
       auto distance = position - vParticle.GetPosition();
       // distance.norm() != min_distance if q != 0
       // small error can be neglected
-      if (distance.norm() != 0_m) {
-		velocity = distance.normalized() * velocity.norm();
-      } // no velocity update for very small steps
       
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
       vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().norm());
-      geometry::Line line(vParticle.GetPosition(), velocity);
-      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / velocity.norm());
+      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / line.GetV0().norm());
       vParticle.SetPosition(position);
       vParticle.SetTime(vParticle.GetTime() + distance.norm() / units::constants::c);
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
