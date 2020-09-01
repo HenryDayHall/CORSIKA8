@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: fetch
   GIT_SSL_NO_VERIFY: "1"
-  GIT_DEPTH: 1
+  GIT_DEPTH: "1"
   # to re-use clones also in different forks
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/$CI_PROJECT_NAME
   ## Runtime options for sanitizers
