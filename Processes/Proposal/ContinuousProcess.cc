@@ -52,7 +52,7 @@ namespace corsika::process::proposal {
         ++frac_iter;
       }
       media[ncarg] = PROPOSAL::Medium(
-          "Modified Air", 1., PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
+          "Modified Air", PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
           PROPOSAL::Air().GetA(), PROPOSAL::Air().GetM(), PROPOSAL::Air().GetX0(),
           PROPOSAL::Air().GetX1(), PROPOSAL::Air().GetD0(), 1.0, comp_vec);
     }
