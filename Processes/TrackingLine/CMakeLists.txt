@@ -1,6 +1,7 @@
 set (
   MODEL_HEADERS
   TrackingLine.h
+  dump_bh.hpp
   )
 
 set (

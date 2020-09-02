@@ -20,12 +20,35 @@
 #include <type_traits>
 #include <utility>
 
+#include <fstream>
+#include <iostream>
+#include <boost/histogram.hpp>
+#include <boost/histogram/ostream.hpp>
+#include <corsika/process/tracking_line/dump_bh.hpp>
+
 namespace corsika::environment {
   template <typename IEnvironmentModel>
   class Environment;
   template <typename IEnvironmentModel>
   class VolumeTreeNode;
 } // namespace corsika::environment
+
+using namespace boost::histogram;
+static auto histL = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
+static auto histS = make_histogram(axis::regular<>(100, 0, 60000, "S"));
+static auto histB = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));
+static auto histLB = make_histogram(axis::regular<>(100, 0, 0.01, "L - B"));
+static auto histLS = make_histogram(axis::regular<>(100, 0, 0.01, "L - S"));
+static auto histLBrel = make_histogram(axis::regular<double, axis::transform::log> (20,1e-11,1e-6,"L/B -1"));
+static auto histLSrel = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"));
+static auto histELSrel = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"),axis::regular<double, axis::transform::log>(20, 0.1, 1e4, "E / GeV"));
+static auto histBS = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
+static auto histLp = make_histogram(axis::regular<>(100, 0, 60000, "L' für Protonen"));
+static auto histLpi = make_histogram(axis::regular<>(100, 0, 60000, "L' für Pionen"));
+static auto histLmu = make_histogram(axis::regular<>(100, 0, 60000, "L' für Myonen"));
+//static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
+//static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
+static double L = 0;
 
 namespace corsika::process {
 
@@ -36,11 +59,64 @@ namespace corsika::process {
 
     corsika::units::si::TimeType TimeOfIntersection(geometry::Line const&,
                                                     geometry::Plane const&);
-
+                                                  
     class TrackingLine {
 
     public:
       TrackingLine() = default;
+      ~TrackingLine(){
+		  std::ofstream myfile;
+          myfile.open ("histograms.txt");
+          myfile << histLB << std::endl;
+          myfile << histLBrel << std::endl;
+          myfile << histLS << std::endl;
+          myfile << histLSrel << std::endl;
+          myfile << histELSrel << std::endl;
+          myfile.close(); 
+		  
+		  /*std::cout << histLBrel << std::endl;
+		  std::cout << histLSrel << std::endl;*/
+
+		  
+		      std::ofstream file1("histL.json");
+          dump_bh(file1, histL);
+          file1.close();
+          std::ofstream file2("histS.json");
+          dump_bh(file2, histS);
+          file2.close();
+          std::ofstream file3("histB.json");
+          dump_bh(file3, histB);
+          file3.close();
+          std::ofstream file4("histLB.json");
+          dump_bh(file4, histLB);
+          file4.close();
+          std::ofstream file5("histLS.json");
+          dump_bh(file5, histLS);
+          file5.close();
+          std::ofstream file6("histBS.json");
+          dump_bh(file6, histBS);
+          file6.close();
+          std::ofstream file7("histLBrel.json");
+          dump_bh(file7, histLBrel);
+          file7.close();
+          std::ofstream file8("histLSrel.json");
+          dump_bh(file8, histLSrel);
+          file8.close();
+          
+          std::ofstream file10("histELSrel.json");
+          dump_bh(file10, histELSrel);
+          file10.close();
+          std::ofstream file11("histLmu.json");
+          dump_bh(file11, histLmu);
+          file11.close();
+          std::ofstream file12("histLpi.json");
+          dump_bh(file12, histLpi);
+          file12.close();
+          std::ofstream file13("histLp.json");
+          dump_bh(file13, histLp);
+          file13.close();
+		  
+		  };
 
       template <typename Particle> // was Stack previously, and argument was
                                    // Stack::StackIterator
@@ -88,7 +164,10 @@ namespace corsika::process {
    	    std::cout << " Magnetic Field: " << magneticfield.GetComponents() / 1_uT << " uT " << std::endl;
         auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.GetNorm() * p.GetEnergy() * 1_V);
         geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
-        LengthType Steplength = 10_m; // length irrelevant if q=0 and else it gets changed again
+        LengthType Steplength1 = 10_m; // length irrelevant if q=0 and else it gets changed again
+        LengthType Steplength2 = 10_m;
+        LengthType Steplimit = 1_m / 0;
+        //infinite kann man auch anders schreiben          
 
         // for entering from outside
         auto addIfIntersects = [&](auto const& vtn) {
@@ -98,7 +177,7 @@ namespace corsika::process {
           // everything is a sphere, crashes with exception if not
           
           // creating Line with magnetic field
-          if (chargeNumber != 0) {
+          if (chargeNumber != 0) {        
           	// determine steplength to next volume
             double a = ((directionBefore.cross(magneticfield)).dot(currentPosition - sphere.GetCenter()) * k + 1) * 4 / 
                       (1_m * 1_m * (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k);
@@ -116,18 +195,24 @@ namespace corsika::process {
               }
             }
             if (tmp.size() > 0) {
-              Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
-              std::cout << "Steplength to next volume = " << Steplength << std::endl;
+              Steplength1 = 1_m * *std::min_element(tmp.begin(),tmp.end());
+              std::cout << "Steplength to next volume = " << Steplength1 << std::endl;
+              std::cout << "Time to next volume = " << Steplength1 / velocity.norm() << std::endl;
             } else {
               std::cout << "no intersection (1)!" << std::endl;
               // what to do when this happens? (very unlikely)
             }
             delete [] solutions;
             
+            geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+            velocity.parallelProjectionOnto(magneticfield);
+            LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
+					                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
+					                            magneticfield.GetNorm() * 1_eV);
+            Steplimit = 2 * sin(0.1) * gyroradius;
           }
             
-          auto [line1, position, direction] = MagneticStep(p, line, Steplength);
-          // new particle position and direction not needed in this case
+          auto line1 = MagneticStep(p, line, Steplength1, false);
           // instead of changing the line with magnetic field, the TimeOfIntersection() could be changed
           // using line has some errors for huge steps
 
@@ -168,15 +253,15 @@ namespace corsika::process {
                 std::cout << "Solutions for current Volume: " << solutions[i].real() << std::endl;
               }
             }
-            LengthType Steplength;
             if (tmp.size() > 0) {
-				      Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
-				      if (numericallyInside == false) {
-					      int p = std::min_element(tmp.begin(),tmp.end()) - tmp.begin();
-					      tmp.erase(tmp.begin() + p);
-					      Steplength = 1_m * *std::min_element(tmp.begin(),tmp.end());
-				      }
-				      std::cout << "steplength out of current volume = " << Steplength << std::endl;
+			  Steplength2 = 1_m * *std::min_element(tmp.begin(),tmp.end());
+			  if (numericallyInside == false) {
+			    int p = std::min_element(tmp.begin(),tmp.end()) - tmp.begin();
+				tmp.erase(tmp.begin() + p);
+				Steplength2 = 1_m * *std::min_element(tmp.begin(),tmp.end());
+			  }
+			  std::cout << "steplength out of current volume = " << Steplength2 << std::endl;
+              std::cout << "Time out of current volume = " << Steplength2 / velocity.norm() << std::endl;
             } else {
               std::cout << "no intersection (2)!" << std::endl;
               // what to do when this happens? (very unlikely)
@@ -184,8 +269,7 @@ namespace corsika::process {
             delete [] solutions;
           }
 		
-          auto [line2, position, direction] = MagneticStep(p, line, Steplength);
-          // new particle position and direction not needed in this case
+          auto line2 = MagneticStep(p, line, Steplength2, false);
           // instead of changing the line with magnetic field, the TimeOfIntersection() could be changed
           // using line has some errors for huge steps
           
@@ -212,20 +296,98 @@ namespace corsika::process {
                   << min
                   // << " " << minIter->second->GetModelProperties().GetName()
                   << std::endl;
-                  
-        auto [lineWithB, position, direction] = MagneticStep(p, line, velocity.norm() * min);
-        // new particle position and direction not needed in this case
+                 
+        auto lineWithB = MagneticStep(p, line, velocity.norm() * min, true);
         
-        return std::make_tuple(line, geometry::Trajectory<geometry::Line>(line, min),
+        if(min * velocity.norm() < 1000000_m) {
+			      histL(L);
+            histS(lineWithB.ArcLength(0_s,min) / 1_m);
+            histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
+                        
+            if(chargeNumber != 0) {
+            histLSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
+            histELSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+            auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(currentPosition);
+            geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+                 velocity.parallelProjectionOnto(magneticfield);
+            
+            
+              LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
+                                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
+                                            magneticfield.GetNorm() * 1_eV);;
+              LengthType B = 2 * gyroradius * asin ( lineWithB.ArcLength(0_s,min) / 2 / gyroradius);
+              histB(B / 1_m);
+              histLB(L-B/1_m);
+              histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
+              histLBrel(L * 1_m/B-1);
+            }
+            
+            int pdg = static_cast<int>(particles::GetPDG(p.GetPID()));
+            if (abs(pdg) == 13)
+              histLmu(L);
+            if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi(L);
+            if (abs(pdg) == 2212 || abs(pdg) == 2112)
+              histLp(L);
+	        }
+
+        
+        return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
                                geometry::Trajectory<geometry::Line>(lineWithB, min),
-                               velocity.norm() * min, minIter->second);
+                               velocity.norm() * min, Steplimit, minIter->second);
       }
       
       template <typename Particle> // was Stack previously, and argument was
                                    // Stack::StackIterator
                                    
       // determine direction of the particle after adding magnetic field
-      auto MagneticStep(Particle const& p, corsika::geometry::Line line, corsika::units::si::LengthType Steplength) {
+      corsika::geometry::Line MagneticStep(
+      Particle const& p, corsika::geometry::Line line, corsika::units::si::LengthType Steplength, bool i) {
+        using namespace corsika::units::si;
+      
+        //charge of the particle
+        int chargeNumber;
+        if (corsika::particles::IsNucleus(p.GetPID())) {
+        	chargeNumber = p.GetNuclearZ();
+        } else {
+        	chargeNumber = corsika::particles::GetChargeNumber(p.GetPID());
+        }
+        
+        auto const* currentLogicalVolumeNode = p.GetNode();
+        auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(p.GetPosition());
+        auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (line.GetV0().norm() * p.GetEnergy() * 1_V);
+        geometry::Vector<dimensionless_d> direction = line.GetV0().normalized();
+        auto position = p.GetPosition();
+          
+        // First Movement
+        // assuming magnetic field does not change during movement
+        position = position + direction * Steplength / 2;
+        // Change of direction by magnetic field
+        direction = direction + direction.cross(magneticfield) * Steplength * k;
+        // Second Movement
+        position = position + direction * Steplength / 2;
+        
+        if(i) {
+		      //if(chargeNumber != 0) {
+		        if(Steplength < 1000000_m) {
+              L = direction.norm() * Steplength / 2_m + Steplength / 2_m;
+            }
+          //}
+        }
+          
+        geometry::Vector<LengthType::dimension_type> const distance = position - p.GetPosition();
+        if(distance.norm() == 0_m) {
+          return line;
+        } 
+        geometry::Line newLine(p.GetPosition(), distance.normalized() * line.GetV0().norm());
+        return newLine;
+      }
+      
+      template <typename Particle> // was Stack previously, and argument was
+                                   // Stack::StackIterator
+                                   
+      // determine direction of the particle after adding magnetic field
+      auto MagneticStep(Particle const& p, corsika::units::si::LengthType Steplength) {
         using namespace corsika::units::si;
         
         //charge of the particle
@@ -235,26 +397,24 @@ namespace corsika::process {
         } else {
         	chargeNumber = corsika::particles::GetChargeNumber(p.GetPID());
         }
+        
         auto const* currentLogicalVolumeNode = p.GetNode();
         auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(p.GetPosition());
-        auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (line.GetV0().norm() * p.GetEnergy() * 1_V);
-        geometry::Vector<dimensionless_d> const directionBefore = line.GetV0().normalized();
-        
+        geometry::Vector<SpeedType::dimension_type> velocity =
+                  p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
+        auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.norm() * p.GetEnergy() * 1_V);
+        geometry::Vector<dimensionless_d> direction = velocity.normalized();
+        auto position = p.GetPosition();
+
         // First Movement
         // assuming magnetic field does not change during movement
-        auto position = p.GetPosition() + directionBefore * Steplength / 2;
+        position = position + direction * Steplength / 2;
         // Change of direction by magnetic field
-        geometry::Vector<dimensionless_d> const directionAfter = directionBefore + directionBefore.cross(magneticfield) *
-                                                                 Steplength * k;
+        direction = direction + direction.cross(magneticfield) * Steplength * k;
         // Second Movement
-        position = position + directionAfter * Steplength / 2;
-        auto distance = position - p.GetPosition();
+        position = position + direction * Steplength / 2;
+        return std::make_tuple(position, direction.normalized());
         
-        if(distance.norm() == 0_m) {
-          return std::make_tuple(line, position, directionAfter);
-        } 
-        geometry::Line newLine(p.GetPosition(), distance.normalized() * line.GetV0().norm());
-        return std::make_tuple(newLine, position, directionAfter);
       }
     };
 

@@ -36,6 +36,26 @@
 #include <boost/type_index.hpp>
 using boost::typeindex::type_id_with_cvr;
 
+#include <fstream>
+#include <boost/histogram.hpp>
+#include <boost/histogram/ostream.hpp>
+#include <corsika/process/tracking_line/dump_bh.hpp>
+using namespace boost::histogram;
+static auto histL2 = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
+static auto histS2 = make_histogram(axis::regular<>(100, 0, 60000, "S"));
+static auto histB2 = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));
+static auto histLB2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - B"));
+static auto histLS2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - S"));
+static auto histLBrel2 = make_histogram(axis::regular<double, axis::transform::log> (20,1e-11,1e-6,"L/B -1"));
+static auto histLSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"));
+static auto histELSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"),axis::regular<double, axis::transform::log>(20, 0.1, 1e4, "E / GeV"));
+static auto histBS2 = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
+static auto histLp2 = make_histogram(axis::regular<>(100, 0, 60000, "L' für Protonen"));
+static auto histLpi2 = make_histogram(axis::regular<>(100, 0, 60000, "L' für Pionen"));
+static auto histLmu2 = make_histogram(axis::regular<>(100, 0, 60000, "L' für Myonen"));
+//static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
+//static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
+
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
  */
@@ -105,6 +125,72 @@ namespace corsika::cascade {
       if constexpr (TStackView::has_event) {
         C8LOG_INFO(" - With full cascade HISTORY.");
       }
+    }
+
+    ~Cascade(){
+		  std::ofstream myfile;
+          myfile.open ("histograms2.txt");
+          myfile << histLB2 << std::endl;
+          myfile << histLBrel2 << std::endl;
+          myfile << histLS2 << std::endl;
+          myfile << histLSrel2 << std::endl;
+          myfile << histELSrel2 << std::endl;
+          myfile.close(); 
+		  
+		  /*std::cout << histLBrel << std::endl;
+		  std::cout << histLSrel << std::endl;*/
+
+		  
+		      std::ofstream file1("histL2.json");
+          dump_bh(file1, histL2);
+          file1.close();
+          std::ofstream file2("histS2.json");
+          dump_bh(file2, histS2);
+          file2.close();
+          std::ofstream file3("histB2.json");
+          dump_bh(file3, histB2);
+          file3.close();
+          /*std::ofstream file4("histLB.json");
+          dump_bh(file4, histLB);
+          file4.close();
+          std::ofstream file5("histLS.json");
+          dump_bh(file5, histLS);
+          file5.close();
+          std::ofstream file6("histBS.json");
+          dump_bh(file6, histBS);
+          file6.close();
+          std::ofstream file7("histLBrel.json");
+          dump_bh(file7, histLBrel);
+          file7.close();
+          std::ofstream file8("histLSrel.json");
+          dump_bh(file8, histLSrel);
+          file8.close();
+          
+          std::ofstream file10("histELSrel.json");
+          dump_bh(file10, histELSrel);
+          file10.close();*/
+          std::ofstream file11("histLmu2.json");
+          dump_bh(file11, histLmu2);
+          file11.close();
+          std::ofstream file12("histLpi2.json");
+          dump_bh(file12, histLpi2);
+          file12.close();
+          std::ofstream file13("histLp2.json");
+          dump_bh(file13, histLp2);
+          file13.close();
+		  
+		  };
+
+    /**
+     * set the nodes for all particles on the stack according to their numerical
+     * position
+     */
+    void SetNodes() {
+      std::for_each(fStack.begin(), fStack.end(), [&](auto& p) {
+        auto const* numericalNode =
+            fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+        p.SetNode(numericalNode);
+      });
     }
 
     /**
@@ -214,7 +300,7 @@ namespace corsika::cascade {
                                         vParticle.GetEnergy() * units::constants::c;
                                     
       // determine geometric tracking
-      auto [lineWithoutB, stepWithoutB, stepWithB, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
+      auto [stepWithoutB, stepWithB, geomMaxLength, magMaxLength, nextVol] = fTracking.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
       
       // convert next_step from grammage to length
@@ -228,20 +314,59 @@ namespace corsika::cascade {
 
       // take minimum of geometry, interaction, decay for next step
       auto min_distance = std::min(
-          {distance_interact, distance_decay, distance_max, geomMaxLength});
+          {distance_interact, distance_decay, distance_max, geomMaxLength, magMaxLength});
 
-      C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
+      C8LOG_DEBUG("transport particle by : {} m "
+		  "Max Displacement after: {} m "
+		  "Medium transition after: {} m "
+		  "Decay after: {} m "
+		  "Interaction after: {} m", 
+		  min_distance/1_m, magMaxLength/1_m, geomMaxLength/1_m, distance_decay/1_m, distance_interact/1_m);
 
-      // determine displacement by the magnetic field     
-      auto [line, position, directionAfter] = fTracking.MagneticStep(vParticle, lineWithoutB, min_distance);
+      // determine displacement by the magnetic field
+      /*
+      int chargeNumber;
+	    if (corsika::particles::IsNucleus(vParticle.GetPID())) {
+	      chargeNumber = vParticle.GetNuclearZ();
+	    } else {
+	      chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
+	    }
+	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
+	    auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
+	    auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
+               ((vParticle.GetMomentum() / vParticle.GetEnergy() * 
+               corsika::units::constants::c).norm() * vParticle.GetEnergy() * 1_V);
+	    geometry::Vector<dimensionless_d> const directionBefore = vParticle.GetMomentum().normalized();
+	    LengthType Steplength = min_distance;
+	    if (chargeNumber != 0) {
+		    Steplength = (-sqrt(2 * k * min_distance * (directionBefore.cross(magneticfield)).norm() + 1) - 1)
+	                 / ((directionBefore.cross(magneticfield)).norm() * k);
+        std::cout << "Steplength2 " << Steplength << std::endl;
+        
+	      Steplength = (sqrt(2 * k * min_distance * (directionBefore.cross(magneticfield)).norm() + 1) - 1)
+	                 / ((directionBefore.cross(magneticfield)).norm() * k);
+        std::cout << "Steplength1 " << Steplength << std::endl;
+	      // not totally sure if it is always the positive solution
+	    } 
+	    */
+	    // This formula has an error or doesnt work for specific conditions
+	    // Steplength should not be min_distance
+	    
+      auto [position, direction] = fTracking.MagneticStep(vParticle, min_distance);
       auto distance = position - vParticle.GetPosition();
-      // distance.norm() != min_distance if q != 0
-      // small error can be neglected
+      
+      //Building Trajectory for Continuous processes
+      geometry::Vector<SpeedType::dimension_type> velocity =
+            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
+      if (distance.norm() != 0_m) {
+        velocity = distance.normalized() * velocity.norm();
+      }
+      geometry::Line line(vParticle.GetPosition(), velocity);
+      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / line.GetV0().norm());
       
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
-      vParticle.SetMomentum(directionAfter.normalized() * vParticle.GetMomentum().norm());
-      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / line.GetV0().norm());
+      vParticle.SetMomentum(direction * vParticle.GetMomentum().norm());
       vParticle.SetPosition(position);
       vParticle.SetTime(vParticle.GetTime() + distance.norm() / units::constants::c);
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
@@ -268,7 +393,7 @@ namespace corsika::cascade {
 
         TStackView secondaries(vParticle);
 
-        if (min_distance != distance_max) {
+        if (min_distance != distance_max && min_distance != magMaxLength) {
           /*
             Create SecondaryView object on Stack. The data container
             remains untouched and identical, and 'projectil' is identical
