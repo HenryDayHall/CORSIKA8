@@ -34,26 +34,39 @@ namespace corsika::environment {
 } // namespace corsika::environment
 
 using namespace boost::histogram;
-static auto histL = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
-static auto histS = make_histogram(axis::regular<>(100, 0, 60000, "S"));
-static auto histB = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));
-static auto histLB = make_histogram(axis::regular<>(100, 0, 0.01, "L - B"));
-static auto histLS = make_histogram(axis::regular<>(100, 0, 0.01, "L - S"));
-static auto histLBrel = make_histogram(axis::regular<double, axis::transform::log> (20,1e-11,1e-6,"L/B -1"));
-static auto histLSrel = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"));
-static auto histELSrel = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"),axis::regular<double, axis::transform::log>(20, 0.1, 1e4, "E / GeV"));
+static auto histL = make_histogram(axis::regular<>(100, 0, 100000, "Leap-Frog-ength L'"));
+static auto histS = make_histogram(axis::regular<>(100, 0, 100000, "Direct Length S"));
+static auto histB = make_histogram(axis::regular<>(100, 0, 100000, "Arc Length B"));
+static auto histLlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
+static auto histSlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Direct Length S"));
+static auto histBlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Arc Length B"));
+static auto histLB = make_histogram(axis::regular<>(100, 0, 100, "L - B"));
+static auto histLS = make_histogram(axis::regular<>(100, 0, 100, "L - S"));
+static auto histLBrel = make_histogram(axis::regular<double, axis::transform::log> (40,1e-12,1e-2,"L/B -1"));
+static auto histLSrel = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-2, "L/S -1"));
+static auto histELSrel = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-4, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histBS = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
-static auto histLp = make_histogram(axis::regular<>(100, 0, 60000, "L' für Protonen"));
-static auto histLpi = make_histogram(axis::regular<>(100, 0, 60000, "L' für Pionen"));
-static auto histLmu = make_histogram(axis::regular<>(100, 0, 60000, "L' für Myonen"));
+static auto histLp = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
+static auto histLpi = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
+static auto histLmu = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
 //static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
 //static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
 static double L = 0;
+static std::vector<double> Lsmall;
+static std::vector<double> Bbig;
+static std::vector<double> Sbig;
+static std::vector<double> Lsmallmag;
+static std::vector<double> Bbigmag;
+static std::vector<double> Sbigmag;
+static std::vector<double> Emag;
+static std::vector<double> E;
+static std::vector<double> Steplimitmag;
+
 
 namespace corsika::process {
 
   namespace tracking_line {
-
+  
     std::optional<std::pair<corsika::units::si::TimeType, corsika::units::si::TimeType>>
     TimeOfIntersection(geometry::Line const&, geometry::Sphere const&);
 
@@ -67,16 +80,53 @@ namespace corsika::process {
       ~TrackingLine(){
 		  std::ofstream myfile;
           myfile.open ("histograms.txt");
+          myfile << histLlog << std::endl;
+          myfile << histBlog << std::endl;
           myfile << histLB << std::endl;
           myfile << histLBrel << std::endl;
           myfile << histLS << std::endl;
           myfile << histLSrel << std::endl;
-          myfile << histELSrel << std::endl;
           myfile.close(); 
-		  
-		  /*std::cout << histLBrel << std::endl;
-		  std::cout << histLSrel << std::endl;*/
-
+          
+          std::ofstream myfile2;
+          myfile2.open ("lengen.txt");
+          myfile2 << "L " << std::endl;
+          for(double n : Lsmall) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "B " << std::endl;
+          for(double n : Bbig) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "S " << std::endl;
+          for(double n : Sbig) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "E in GeV" << std::endl;
+          for(double n : E) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "L mag" << std::endl;
+          for(double n : Lsmallmag) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "B mag" << std::endl;
+          for(double n : Bbigmag) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "S mag" << std::endl;
+          for(double n : Sbigmag) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "E mag in GeV" << std::endl;
+          for(double n : Emag) {
+            myfile2 << n << '\n';
+          }
+          myfile2 << "Schrittlänge" << std::endl;
+          for(double n : Steplimitmag) {
+            myfile2 << n << '\n';
+          }
+          myfile2.close();
 		  
 		      std::ofstream file1("histL.json");
           dump_bh(file1, histL);
@@ -115,6 +165,15 @@ namespace corsika::process {
           std::ofstream file13("histLp.json");
           dump_bh(file13, histLp);
           file13.close();
+          std::ofstream file14("histLlog.json");
+          dump_bh(file14, histLlog);
+          file14.close();
+          std::ofstream file15("histBlog.json");
+          dump_bh(file15, histBlog);
+          file15.close();
+          std::ofstream file16("histSlog.json");
+          dump_bh(file16, histSlog);
+          file16.close();
 		  
 		  };
 
@@ -154,7 +213,7 @@ namespace corsika::process {
         std::vector<std::pair<TimeType, decltype(p.GetNode())>> intersections;
         
         //charge of the particle
-        int chargeNumber;
+        int chargeNumber = 0;
         if (corsika::particles::IsNucleus(p.GetPID())) {
         	chargeNumber = p.GetNuclearZ();
         } else {
@@ -162,13 +221,12 @@ namespace corsika::process {
         }
         auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(currentPosition);
    	    std::cout << " Magnetic Field: " << magneticfield.GetComponents() / 1_uT << " uT " << std::endl;
-        auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.GetNorm() * p.GetEnergy() * 1_V);
-        geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
-        LengthType Steplength1 = 10_m; // length irrelevant if q=0 and else it gets changed again
-        LengthType Steplength2 = 10_m;
+        LengthType Steplength1 = 0_m;
+        LengthType Steplength2 = 0_m;
         LengthType Steplimit = 1_m / 0;
-        //infinite kann man auch anders schreiben          
-
+        //infinite kann man auch anders schreiben
+        bool intersection = true;
+        
         // for entering from outside
         auto addIfIntersects = [&](auto const& vtn) {
           auto const& volume = vtn.GetVolume();
@@ -177,7 +235,9 @@ namespace corsika::process {
           // everything is a sphere, crashes with exception if not
           
           // creating Line with magnetic field
-          if (chargeNumber != 0) {        
+          if (chargeNumber != 0) {
+            auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.norm() * p.GetEnergy() * 1_V);
+            geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
           	// determine steplength to next volume
             double a = ((directionBefore.cross(magneticfield)).dot(currentPosition - sphere.GetCenter()) * k + 1) * 4 / 
                       (1_m * 1_m * (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k);
@@ -200,29 +260,27 @@ namespace corsika::process {
               std::cout << "Time to next volume = " << Steplength1 / velocity.norm() << std::endl;
             } else {
               std::cout << "no intersection (1)!" << std::endl;
-              // what to do when this happens? (very unlikely)
+              intersection = false;
             }
             delete [] solutions;
-            
-            geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
-            velocity.parallelProjectionOnto(magneticfield);
-            LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
-					                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
-					                            magneticfield.GetNorm() * 1_eV);
-            Steplimit = 2 * sin(0.1) * gyroradius;
           }
-            
-          auto line1 = MagneticStep(p, line, Steplength1, false);
-          // instead of changing the line with magnetic field, the TimeOfIntersection() could be changed
-          // using line has some errors for huge steps
-
-          if (auto opt = TimeOfIntersection(line1, sphere); opt.has_value()) {
-            auto const [t1, t2] = *opt;
-            C8LOG_DEBUG("intersection times: {} s; {} s", t1 / 1_s, t2 / 1_s);
-            if (t1.magnitude() > 0)
-              intersections.emplace_back(t1, &vtn);
-            else if (t2.magnitude() > 0)
-              C8LOG_DEBUG("inside other volume");
+          
+          if (intersection) {
+            auto line1 = MagneticStep(p, line, Steplength1, false);
+            // instead of changing the line with magnetic field, the TimeOfIntersection() could be changed
+            // using line has some errors for huge steps
+  
+            if (auto opt = TimeOfIntersection(line1, sphere); opt.has_value()) {
+              auto const [t1, t2] = *opt;
+              std::cout << "intersection times: " << t1 / 1_s << "; "
+                        << t2 / 1_s
+                        // << " " << vtn.GetModelProperties().GetName()
+                        << std::endl;
+              if (t1.magnitude() > 0)
+                intersections.emplace_back(t1, &vtn);
+              else if (t2.magnitude() > 0)
+                std::cout << "inside other volume" << std::endl;
+            }
           }
         };
 
@@ -237,6 +295,8 @@ namespace corsika::process {
           
           // creating Line with magnetic field
           if (chargeNumber != 0) {
+            auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.norm() * p.GetEnergy() * 1_V);
+            geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
           	// determine steplength to next volume
             double a = ((directionBefore.cross(magneticfield)).dot(currentPosition - sphere.GetCenter()) * k + 1) * 4 / 
                       (1_m * 1_m * (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k);
@@ -267,6 +327,14 @@ namespace corsika::process {
               // what to do when this happens? (very unlikely)
             }
             delete [] solutions;
+            
+            geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+            velocity.parallelProjectionOnto(magneticfield);
+            LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
+					                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
+					                            magneticfield.GetNorm() * 1_eV);
+            Steplimit = 2 * sin(0.1) * gyroradius;
+            std::cout << "Steplimit: " << Steplimit << std::endl;
           }
 		
           auto line2 = MagneticStep(p, line, Steplength2, false);
@@ -296,30 +364,49 @@ namespace corsika::process {
                   << min
                   // << " " << minIter->second->GetModelProperties().GetName()
                   << std::endl;
-                 
-        auto lineWithB = MagneticStep(p, line, velocity.norm() * min, true);
         
-        if(min * velocity.norm() < 1000000_m) {
-			      histL(L);
+        //if the used Steplengths are too big, min gets false and we do another Step
+        std::cout << Steplength1 << Steplength2 << std::endl;
+        std::cout << intersection << " " << Steplimit << std::endl;
+        if ((Steplength1 > Steplimit || Steplength1 == 0_m) && Steplength2 > Steplimit) {
+          min = Steplimit / velocity.norm();
+          auto lineWithB = MagneticStep(p, line, Steplimit, true);
+          
+ 			      histL(L);
+            histLlog(L);
             histS(lineWithB.ArcLength(0_s,min) / 1_m);
+            histSlog(lineWithB.ArcLength(0_s,min) / 1_m);
             histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
                         
             if(chargeNumber != 0) {
-            histLSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
-            histELSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
-            auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(currentPosition);
-            geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
-                 velocity.parallelProjectionOnto(magneticfield);
-            
-            
+              if(L * 1_m/lineWithB.ArcLength(0_s,min) -1 > 0) {
+                histLSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
+                //histELSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+              } else {
+Lsmallmag.push_back(L); Sbigmag.push_back(lineWithB.ArcLength(0_s,min) / 1_m);
+Emag.push_back(p.GetEnergy() / 1_GeV);Steplimitmag.push_back(Steplimit / 1_m);
+              }
+              auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(currentPosition);
+              geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+                   velocity.parallelProjectionOnto(magneticfield);
               LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
                                             (corsika::units::constants::cSquared * abs(chargeNumber) * 
-                                            magneticfield.GetNorm() * 1_eV);;
+                                            magneticfield.GetNorm() * 1_eV);
+              std::cout << "Schrittlaenge " << velocity.norm() * min << " gyroradius " << gyroradius << std::endl;
               LengthType B = 2 * gyroradius * asin ( lineWithB.ArcLength(0_s,min) / 2 / gyroradius);
+              std::cout << "Bogenlaenge" << B << std::endl;
               histB(B / 1_m);
-              histLB(L-B/1_m);
-              histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
-              histLBrel(L * 1_m/B-1);
+              histBlog(B / 1_m);
+              if(L-B/1_m > 0) {
+                histLB(L-B/1_m);
+                histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
+                histLBrel(L * 1_m/B-1);
+              } else {
+Bbigmag.push_back(B / 1_m);
+              }
+            } else {
+            histB(lineWithB.ArcLength(0_s,min) / 1_m);
+            histBlog(lineWithB.ArcLength(0_s,min) / 1_m);
             }
             
             int pdg = static_cast<int>(particles::GetPDG(p.GetPID()));
@@ -329,7 +416,58 @@ namespace corsika::process {
               histLpi(L);
             if (abs(pdg) == 2212 || abs(pdg) == 2112)
               histLp(L);
-	        }
+          
+          return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
+                               geometry::Trajectory<geometry::Line>(lineWithB, min),
+                               Steplimit * 1.0001, Steplimit, minIter->second);
+        }
+        
+        auto lineWithB = MagneticStep(p, line, velocity.norm() * min, true);
+        
+			      histL(L);
+            histLlog(L);
+            histS(lineWithB.ArcLength(0_s,min) / 1_m);
+            histSlog(lineWithB.ArcLength(0_s,min) / 1_m);
+            histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
+                        
+            if(chargeNumber != 0) {
+              if(L * 1_m/lineWithB.ArcLength(0_s,min) -1 > 0) {
+                histLSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
+                histELSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+              } else {
+Lsmall.push_back(L); Sbig.push_back(lineWithB.ArcLength(0_s,min) / 1_m);
+E.push_back(p.GetEnergy() / 1_GeV);
+              }
+              auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(currentPosition);
+              geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+                   velocity.parallelProjectionOnto(magneticfield);
+              LengthType const gyroradius = p.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
+                                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
+                                            magneticfield.GetNorm() * 1_eV);
+              std::cout << "Schrittlaenge " << velocity.norm() * min << " gyroradius " << gyroradius << std::endl;
+              LengthType B = 2 * gyroradius * asin ( lineWithB.ArcLength(0_s,min) / 2 / gyroradius);
+              std::cout << "Bogenlaenge" << B << std::endl;
+              histB(B / 1_m);
+              histBlog(B / 1_m);
+              if(L-B/1_m > 0) {
+                histLB(L-B/1_m);
+                histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
+                histLBrel(L * 1_m/B-1);
+              } else {
+Bbig.push_back(B / 1_m);
+              }
+            } else {
+            histB(lineWithB.ArcLength(0_s,min) / 1_m);
+            histBlog(lineWithB.ArcLength(0_s,min) / 1_m);
+            }
+            
+            int pdg = static_cast<int>(particles::GetPDG(p.GetPID()));
+            if (abs(pdg) == 13)
+              histLmu(L);
+            if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi(L);
+            if (abs(pdg) == 2212 || abs(pdg) == 2112)
+              histLp(L);
 
         
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
@@ -345,6 +483,9 @@ namespace corsika::process {
       Particle const& p, corsika::geometry::Line line, corsika::units::si::LengthType Steplength, bool i) {
         using namespace corsika::units::si;
       
+        if (line.GetV0().norm() * 1_s == 0_m) 
+          return line;
+        
         //charge of the particle
         int chargeNumber;
         if (corsika::particles::IsNucleus(p.GetPID())) {
@@ -367,11 +508,9 @@ namespace corsika::process {
         // Second Movement
         position = position + direction * Steplength / 2;
         
-        if(i) {
+        if(i == true) {
 		      //if(chargeNumber != 0) {
-		        if(Steplength < 1000000_m) {
               L = direction.norm() * Steplength / 2_m + Steplength / 2_m;
-            }
           //}
         }
           
@@ -389,6 +528,10 @@ namespace corsika::process {
       // determine direction of the particle after adding magnetic field
       auto MagneticStep(Particle const& p, corsika::units::si::LengthType Steplength) {
         using namespace corsika::units::si;
+        
+        if (p.GetMomentum().norm() == 0_GeV) {
+          return std::make_tuple(p.GetPosition(), p.GetMomentum() / 1_GeV, double(0));
+        }
         
         //charge of the particle
         int chargeNumber;
@@ -413,8 +556,8 @@ namespace corsika::process {
         direction = direction + direction.cross(magneticfield) * Steplength * k;
         // Second Movement
         position = position + direction * Steplength / 2;
-        return std::make_tuple(position, direction.normalized());
-        
+        auto L2 = direction.norm() * Steplength / 2_m + Steplength / 2_m;
+        return std::make_tuple(position, direction.normalized(), L2);
       }
     };
 

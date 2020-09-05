@@ -44,15 +44,18 @@ using namespace boost::histogram;
 static auto histL2 = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
 static auto histS2 = make_histogram(axis::regular<>(100, 0, 60000, "S"));
 static auto histB2 = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));
+static auto histLlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
+static auto histSlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Direct Length S"));
+static auto histBlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Arc Length B"));
 static auto histLB2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - B"));
 static auto histLS2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - S"));
 static auto histLBrel2 = make_histogram(axis::regular<double, axis::transform::log> (20,1e-11,1e-6,"L/B -1"));
 static auto histLSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"));
 static auto histELSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"),axis::regular<double, axis::transform::log>(20, 0.1, 1e4, "E / GeV"));
 static auto histBS2 = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
-static auto histLp2 = make_histogram(axis::regular<>(100, 0, 60000, "L' für Protonen"));
-static auto histLpi2 = make_histogram(axis::regular<>(100, 0, 60000, "L' für Pionen"));
-static auto histLmu2 = make_histogram(axis::regular<>(100, 0, 60000, "L' für Myonen"));
+static auto histLp2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
+static auto histLpi2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
+static auto histLmu2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
 //static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
 //static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
 
@@ -130,11 +133,10 @@ namespace corsika::cascade {
     ~Cascade(){
 		  std::ofstream myfile;
           myfile.open ("histograms2.txt");
-          myfile << histLB2 << std::endl;
-          myfile << histLBrel2 << std::endl;
-          myfile << histLS2 << std::endl;
-          myfile << histLSrel2 << std::endl;
-          myfile << histELSrel2 << std::endl;
+          myfile << histLp2 << std::endl;
+          myfile << histLpi2 << std::endl;
+          myfile << histLmu2 << std::endl;
+          myfile << histL2 << std::endl;
           myfile.close(); 
 		  
 		  /*std::cout << histLBrel << std::endl;
@@ -178,6 +180,15 @@ namespace corsika::cascade {
           std::ofstream file13("histLp2.json");
           dump_bh(file13, histLp2);
           file13.close();
+          std::ofstream file14("histLlog2.json");
+          dump_bh(file14, histLlog2);
+          file14.close();
+          std::ofstream file15("histBlog2.json");
+          dump_bh(file15, histBlog2);
+          file15.close();
+          std::ofstream file16("histSlog2.json");
+          dump_bh(file16, histSlog2);
+          file16.close();
 		  
 		  };
 
@@ -352,7 +363,16 @@ namespace corsika::cascade {
 	    // This formula has an error or doesnt work for specific conditions
 	    // Steplength should not be min_distance
 	    
-      auto [position, direction] = fTracking.MagneticStep(vParticle, min_distance);
+      auto [position, direction, L2] = fTracking.MagneticStep(vParticle, min_distance);
+      histL2(L2);
+      histLlog2(L2);
+      int pdg = static_cast<int>(particles::GetPDG(vParticle.GetPID()));
+            if (abs(pdg) == 13)
+              histLmu2(L2);
+            if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi2(L2);
+            if (abs(pdg) == 2212 || abs(pdg) == 2112)
+              histLp2(L2);
       auto distance = position - vParticle.GetPosition();
       
       //Building Trajectory for Continuous processes
