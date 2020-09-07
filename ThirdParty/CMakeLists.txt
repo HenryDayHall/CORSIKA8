@@ -46,7 +46,7 @@ if ("x_${USE_BOOST_C8}" STREQUAL "x_SYSTEM")
   
 else ()
 
-  set (_C8_Boost_VERSION "107300")
+  set (_C8_Boost_VERSION "107400")
   message (STATUS "Building ThirdParty/boost using boost-${_C8_Boost_VERSION}.tar.bz2")
   ExternalProject_Add (boost
     URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-${_C8_Boost_VERSION}.tar.bz2
