@@ -52,15 +52,18 @@ static auto histELSrel = make_histogram(axis::regular<double, axis::transform::l
 static auto histELSrelp = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histELSrelpi = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histELSrelmu = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
+static auto histELSrele = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histBS = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
 static auto histLpgeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
 static auto histLpigeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
 static auto histLmugeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
+static auto histLegeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Elektronen"));
+static auto histLygeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Photonen"));
 static auto histLpmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
 static auto histLpimag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
 static auto histLmumag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
-//static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
-//static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
+static auto histLemag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Elektronen"));
+static auto histLymag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Photonen"));
 static double L = 0;
 static std::vector<double> Lsmall;
 static std::vector<double> Bbig;
@@ -213,6 +216,21 @@ namespace corsika::process {
           std::ofstream file25("histLpmag.json");
           dump_bh(file25, histLpmag);
           file25.close();
+          std::ofstream file26("histLemag.json");
+          dump_bh(file26, histLemag);
+          file26.close();
+          std::ofstream file27("histLegeo.json");
+          dump_bh(file27, histLegeo);
+          file27.close();
+          std::ofstream file28("histELSrele.json");
+          dump_bh(file28, histELSrele);
+          file28.close();
+          std::ofstream file29("histLymag.json");
+          dump_bh(file29, histLymag);
+          file29.close();
+          std::ofstream file20("histLygeo.json");
+          dump_bh(file20, histLygeo);
+          file20.close();
 		  
 		  };
 
@@ -456,6 +474,10 @@ Bbigmag.push_back(B / 1_m);
               histLpimag(L);
             if (abs(pdg) == 2212 || abs(pdg) == 2112)
               histLpmag(L);
+            if (abs(pdg) == 11)
+              histLemag(L);
+            if (abs(pdg) == 22)
+              histLymag(L);
           
           return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
                                geometry::Trajectory<geometry::Line>(lineWithB, min),
@@ -517,6 +539,13 @@ Bbig.push_back(B / 1_m);
               if (chargeNumber != 0) 
                 histELSrelp(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
             }
+            if (abs(pdg) == 11){
+              histLegeo(L);
+              if (chargeNumber != 0) 
+                histELSrele(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+            }
+            if (abs(pdg) == 22)
+              histLymag(L);
 
         
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),

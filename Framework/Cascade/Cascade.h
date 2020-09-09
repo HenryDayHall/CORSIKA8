@@ -44,12 +44,12 @@ using namespace boost::histogram;
 static auto histL2 = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
 static auto histS2 = make_histogram(axis::regular<>(100, 0, 60000, "S"));
 static auto histB2 = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));
-static auto histLlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
-static auto histLlog2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
-static auto histLlog2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
-static auto histLlog2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
-static auto histLlog2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
-static auto histLlog2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
+static auto histLlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
 
 static auto histSlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Direct Length S"));
 static auto histBlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Arc Length B"));
@@ -62,8 +62,9 @@ static auto histBS2 = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
 static auto histLp2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
 static auto histLpi2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
 static auto histLmu2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
-//static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
-//static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
+static auto histLe2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Elektronen"));
+static auto histLy2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Photonen"));
+
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -177,6 +178,12 @@ namespace corsika::cascade {
           std::ofstream file10("histELSrel.json");
           dump_bh(file10, histELSrel);
           file10.close();*/
+          std::ofstream file19("histLy2.json");
+          dump_bh(file19, histLy2);
+          file19.close();
+          std::ofstream file10("histLe2.json");
+          dump_bh(file10, histLe2);
+          file10.close();
           std::ofstream file11("histLmu2.json");
           dump_bh(file11, histLmu2);
           file11.close();
@@ -393,6 +400,10 @@ namespace corsika::cascade {
       int pdg = static_cast<int>(particles::GetPDG(vParticle.GetPID()));
             if (abs(pdg) == 13)
               histLmu2(L2);
+            if (abs(pdg) == 11)
+              histLe2(L2);
+            if (abs(pdg) == 22)
+              histLy2(L2);
             if (abs(pdg) == 211 || abs(pdg) == 111)
               histLpi2(L2);
             if (abs(pdg) == 2212 || abs(pdg) == 2112)
