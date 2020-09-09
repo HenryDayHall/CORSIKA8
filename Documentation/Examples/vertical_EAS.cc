@@ -41,6 +41,8 @@
 #include <corsika/process/sibyll/NuclearInteraction.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
+#include <corsika/process/proposal/ContinuousProcess.h>
+#include <corsika/process/proposal/Interaction.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -188,6 +190,14 @@ int main(int argc, char** argv) {
                                            (showerCore - injectionPos) * 1.5, env};
 
   // setup processes, decays and interactions
+
+  PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
+  PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
+
+  process::particle_cut::ParticleCut cut{3_GeV, true, true};
+  process::proposal::Interaction proposal(env, cut);
+  process::proposal::ContinuousProcess em_continuous(env, cut);
+  process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::sibyll::Interaction sibyll;
   process::interaction_counter::InteractionCounter sibyllCounted(sibyll);
