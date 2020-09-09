@@ -38,17 +38,27 @@ static auto histL = make_histogram(axis::regular<>(100, 0, 100000, "Leap-Frog-en
 static auto histS = make_histogram(axis::regular<>(100, 0, 100000, "Direct Length S"));
 static auto histB = make_histogram(axis::regular<>(100, 0, 100000, "Arc Length B"));
 static auto histLlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
+static auto histLloggeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L for geometric steps"));
+static auto histLlogmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L for magnetic steps"));
 static auto histSlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Direct Length S"));
 static auto histBlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Arc Length B"));
 static auto histLB = make_histogram(axis::regular<>(100, 0, 100, "L - B"));
 static auto histLS = make_histogram(axis::regular<>(100, 0, 100, "L - S"));
-static auto histLBrel = make_histogram(axis::regular<double, axis::transform::log> (40,1e-12,1e-2,"L/B -1"));
-static auto histLSrel = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-2, "L/S -1"));
-static auto histELSrel = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-4, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
+static auto histLBrelgeo = make_histogram(axis::regular<double, axis::transform::log> (40,1e-12,1e-2,"L/B -1"));
+static auto histLBrelmag = make_histogram(axis::regular<double, axis::transform::log> (40,1e-12,1e-2,"L/B -1"));
+static auto histLSrelgeo = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-2, "L/S -1"));
+static auto histLSrelmag = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-2, "L/S -1"));
+static auto histELSrel = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
+static auto histELSrelp = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
+static auto histELSrelpi = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
+static auto histELSrelmu = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histBS = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
-static auto histLp = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
-static auto histLpi = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
-static auto histLmu = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
+static auto histLpgeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
+static auto histLpigeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
+static auto histLmugeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
+static auto histLpmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
+static auto histLpimag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
+static auto histLmumag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
 //static auto histLe = make_histogram(axis::regular<>(100, 0, 60000, "L' für Elektronen"));
 //static auto histLy = make_histogram(axis::regular<>(100, 0, 60000, "L' für Photonen"));
 static double L = 0;
@@ -83,9 +93,7 @@ namespace corsika::process {
           myfile << histLlog << std::endl;
           myfile << histBlog << std::endl;
           myfile << histLB << std::endl;
-          myfile << histLBrel << std::endl;
           myfile << histLS << std::endl;
-          myfile << histLSrel << std::endl;
           myfile.close(); 
           
           std::ofstream myfile2;
@@ -128,7 +136,7 @@ namespace corsika::process {
           }
           myfile2.close();
 		  
-		      std::ofstream file1("histL.json");
+          std::ofstream file1("histL.json");
           dump_bh(file1, histL);
           file1.close();
           std::ofstream file2("histS.json");
@@ -146,24 +154,30 @@ namespace corsika::process {
           std::ofstream file6("histBS.json");
           dump_bh(file6, histBS);
           file6.close();
-          std::ofstream file7("histLBrel.json");
-          dump_bh(file7, histLBrel);
+          std::ofstream file7("histLBrelgeo.json");
+          dump_bh(file7, histLBrelgeo);
           file7.close();
-          std::ofstream file8("histLSrel.json");
-          dump_bh(file8, histLSrel);
+          std::ofstream file8("histLSrelgeo.json");
+          dump_bh(file8, histLSrelgeo);
           file8.close();
+          std::ofstream file9("histLBrelmag.json");
+          dump_bh(file9, histLBrelmag);
+          file9.close();
+          std::ofstream file0("histLSrelmag.json");
+          dump_bh(file0, histLSrelmag);
+          file0.close();
           
           std::ofstream file10("histELSrel.json");
           dump_bh(file10, histELSrel);
           file10.close();
-          std::ofstream file11("histLmu.json");
-          dump_bh(file11, histLmu);
+          std::ofstream file11("histLmugeo.json");
+          dump_bh(file11, histLmugeo);
           file11.close();
-          std::ofstream file12("histLpi.json");
-          dump_bh(file12, histLpi);
+          std::ofstream file12("histLpigeo.json");
+          dump_bh(file12, histLpigeo);
           file12.close();
-          std::ofstream file13("histLp.json");
-          dump_bh(file13, histLp);
+          std::ofstream file13("histLpgeo.json");
+          dump_bh(file13, histLpgeo);
           file13.close();
           std::ofstream file14("histLlog.json");
           dump_bh(file14, histLlog);
@@ -174,6 +188,31 @@ namespace corsika::process {
           std::ofstream file16("histSlog.json");
           dump_bh(file16, histSlog);
           file16.close();
+          std::ofstream file17("histELSrelmu.json");
+          dump_bh(file17, histELSrelmu);
+          file17.close();
+          std::ofstream file18("histELSrelp.json");
+          dump_bh(file18, histELSrelp);
+          file18.close();
+          std::ofstream file19("histELSrelpi.json");
+          dump_bh(file19, histELSrelpi);
+          file19.close();
+          
+          std::ofstream file21("histLgeo.json");
+          dump_bh(file21, histLloggeo);
+          file21.close();
+          std::ofstream file22("histLmag.json");
+          dump_bh(file22, histLlogmag);
+          file22.close();
+          std::ofstream file23("histLmumag.json");
+          dump_bh(file23, histLmumag);
+          file23.close();
+          std::ofstream file24("histLpimag.json");
+          dump_bh(file24, histLpimag);
+          file24.close();
+          std::ofstream file25("histLpmag.json");
+          dump_bh(file25, histLpmag);
+          file25.close();
 		  
 		  };
 
@@ -372,15 +411,16 @@ namespace corsika::process {
           min = Steplimit / velocity.norm();
           auto lineWithB = MagneticStep(p, line, Steplimit, true);
           
- 			      histL(L);
+ 			histL(L);
             histLlog(L);
+            histLlogmag(L);
             histS(lineWithB.ArcLength(0_s,min) / 1_m);
             histSlog(lineWithB.ArcLength(0_s,min) / 1_m);
             histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
                         
             if(chargeNumber != 0) {
               if(L * 1_m/lineWithB.ArcLength(0_s,min) -1 > 0) {
-                histLSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
+                histLSrelmag(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
                 //histELSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
               } else {
 Lsmallmag.push_back(L); Sbigmag.push_back(lineWithB.ArcLength(0_s,min) / 1_m);
@@ -400,7 +440,7 @@ Emag.push_back(p.GetEnergy() / 1_GeV);Steplimitmag.push_back(Steplimit / 1_m);
               if(L-B/1_m > 0) {
                 histLB(L-B/1_m);
                 histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
-                histLBrel(L * 1_m/B-1);
+                histLBrelmag(L * 1_m/B-1);
               } else {
 Bbigmag.push_back(B / 1_m);
               }
@@ -411,11 +451,11 @@ Bbigmag.push_back(B / 1_m);
             
             int pdg = static_cast<int>(particles::GetPDG(p.GetPID()));
             if (abs(pdg) == 13)
-              histLmu(L);
+              histLmumag(L);
             if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi(L);
+              histLpimag(L);
             if (abs(pdg) == 2212 || abs(pdg) == 2112)
-              histLp(L);
+              histLpmag(L);
           
           return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
                                geometry::Trajectory<geometry::Line>(lineWithB, min),
@@ -424,15 +464,16 @@ Bbigmag.push_back(B / 1_m);
         
         auto lineWithB = MagneticStep(p, line, velocity.norm() * min, true);
         
-			      histL(L);
+			histL(L);
             histLlog(L);
+            histLloggeo(L);
             histS(lineWithB.ArcLength(0_s,min) / 1_m);
             histSlog(lineWithB.ArcLength(0_s,min) / 1_m);
             histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
                         
             if(chargeNumber != 0) {
               if(L * 1_m/lineWithB.ArcLength(0_s,min) -1 > 0) {
-                histLSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
+                histLSrelgeo(L * 1_m/lineWithB.ArcLength(0_s,min) -1);
                 histELSrel(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
               } else {
 Lsmall.push_back(L); Sbig.push_back(lineWithB.ArcLength(0_s,min) / 1_m);
@@ -452,7 +493,7 @@ E.push_back(p.GetEnergy() / 1_GeV);
               if(L-B/1_m > 0) {
                 histLB(L-B/1_m);
                 histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
-                histLBrel(L * 1_m/B-1);
+                histLBrelgeo(L * 1_m/B-1);
               } else {
 Bbig.push_back(B / 1_m);
               }
@@ -462,12 +503,20 @@ Bbig.push_back(B / 1_m);
             }
             
             int pdg = static_cast<int>(particles::GetPDG(p.GetPID()));
-            if (abs(pdg) == 13)
-              histLmu(L);
-            if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi(L);
-            if (abs(pdg) == 2212 || abs(pdg) == 2112)
-              histLp(L);
+            if (abs(pdg) == 13)  {
+              histLmugeo(L);
+              histELSrelmu(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+            }
+            if (abs(pdg) == 211 || abs(pdg) == 111) {
+              histLpigeo(L);
+              if (chargeNumber != 0) 
+                histELSrelpi(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+            }
+            if (abs(pdg) == 2212 || abs(pdg) == 2112){
+              histLpgeo(L);
+              if (chargeNumber != 0) 
+                histELSrelp(L * 1_m/lineWithB.ArcLength(0_s,min) -1, p.GetEnergy() / 1_GeV);
+            }
 
         
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
