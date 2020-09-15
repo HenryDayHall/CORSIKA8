@@ -50,7 +50,7 @@ else ()
   message (STATUS "Building ThirdParty/boost using boost-${_C8_Boost_VERSION}.tar.bz2")
   ExternalProject_Add (boost
     URL ${CMAKE_CURRENT_SOURCE_DIR}/boost-${_C8_Boost_VERSION}.tar.bz2
-    URL_MD5 895e35757f133f01c451fc93229aae6b
+    URL_MD5 d55f45e662d101985353136b321ec624
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/boost/install/boost 
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/boost/install/boost 
     CONFIGURE_COMMAND ""
