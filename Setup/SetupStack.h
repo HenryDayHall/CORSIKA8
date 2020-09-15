@@ -8,123 +8,36 @@
 
 #pragma once
 
-// the basic particle data stack:
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
-
-// extension with nuclear data for Code::Nucleus
+#include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
+//#include <corsika/history/HistoryStackExtension.h>
 
-// extension with geometry information for tracking
-#include <corsika/environment/Environment.h>
-#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/stack/CombinedStack.h>
 
-#include <tuple>
-#include <utility>
-#include <vector>
-
-// definition of stack-data object to store geometry information
-template <typename TEnvType>
-
-/**
- * @class GeometryData
- *
- * definition of stack-data object to store geometry information
- */
-class GeometryData {
-
-public:
-  using BaseNodeType = typename TEnvType::BaseNodeType;
-
-  // these functions are needed for the Stack interface
-  void Clear() { fNode.clear(); }
-  unsigned int GetSize() const { return fNode.size(); }
-  unsigned int GetCapacity() const { return fNode.size(); }
-  void Copy(const int i1, const int i2) { fNode[i2] = fNode[i1]; }
-  void Swap(const int i1, const int i2) { std::swap(fNode[i1], fNode[i2]); }
-
-  // custom data access function
-  void SetNode(const int i, BaseNodeType const* v) { fNode[i] = v; }
-  auto const* GetNode(const int i) const { return fNode[i]; }
-
-  // these functions are also needed by the Stack interface
-  void IncrementSize() { fNode.push_back(nullptr); }
-  void DecrementSize() {
-    if (fNode.size() > 0) { fNode.pop_back(); }
-  }
-
-  // custom private data section
-private:
-  std::vector<const BaseNodeType*> fNode;
-};
-
-/**
- * @class GeometryDataInterface
- *
- * corresponding defintion of a stack-readout object, the iteractor
- * dereference operator will deliver access to these function
-// defintion of a stack-readout object, the iteractor dereference
-// operator will deliver access to these function
- */
-template <typename T, typename TEnvType>
-class GeometryDataInterface : public T {
-
-public:
-  using T::GetIndex;
-  using T::GetStackData;
-  using T::SetParticleData;
-  using BaseNodeType = typename TEnvType::BaseNodeType;
-
-  // default version for particle-creation from input data
-  void SetParticleData(const std::tuple<BaseNodeType const*> v) {
-    SetNode(std::get<0>(v));
-  }
-  void SetParticleData(GeometryDataInterface& parent,
-                       const std::tuple<BaseNodeType const*>) {
-    SetNode(parent.GetNode()); // copy Node from parent particle!
-  }
-  void SetParticleData() { SetNode(nullptr); }
-  void SetParticleData(GeometryDataInterface& parent) {
-    SetNode(parent.GetNode()); // copy Node from parent particle!
-  }
-  void SetNode(BaseNodeType const* v) { GetStackData().SetNode(GetIndex(), v); }
-  auto const* GetNode() const { return GetStackData().GetNode(GetIndex()); }
-};
+#include <corsika/setup/SetupEnvironment.h>
 
 namespace corsika::setup {
 
   namespace detail {
 
-    //
-    // this is an auxiliary help typedef, which I don't know how to put
-    // into NuclearStackExtension.h where it belongs...
-    template <typename StackIter>
-    using ExtendedParticleInterfaceType =
-        corsika::stack::nuclear_extension::NuclearParticleInterface<
-            corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
-    //
-
-    // the particle data stack with extra nuclear information:
-    using ParticleDataStack = corsika::stack::nuclear_extension::NuclearStackExtension<
-        corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType>;
-
-    template <typename T>
-    using SetupGeometryDataInterface = GeometryDataInterface<T, setup::SetupEnvironment>;
-
+    // the GeometryNode stack needs to know the type of geometry-nodes from the environment:
+    template <typename TStackIter>
+    using SetupGeometryDataInterface = typename stack::node::MakeGeometryDataInterface<TStackIter, setup::SetupEnvironment>::type;
+    
     // combine particle data stack with geometry information for tracking
-    template <typename StackIter>
-    using StackWithGeometryInterface =
-        corsika::stack::CombinedParticleInterface<ParticleDataStack::PIType,
-                                                  SetupGeometryDataInterface, StackIter>;
+    template <typename TStackIter>
+    using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
+        stack::nuclear_extension::ParticleDataStack::PIType,
+    SetupGeometryDataInterface, TStackIter>;
 
-    using StackWithGeometry =
-        corsika::stack::CombinedStack<typename ParticleDataStack::StackImpl,
-                                      GeometryData<setup::SetupEnvironment>,
-                                      StackWithGeometryInterface>;
+    using StackWithGeometry = corsika::stack::CombinedStack<
+        typename corsika::stack::nuclear_extension::ParticleDataStack::StackImpl,
+        corsika::stack::node::GeometryData<setup::SetupEnvironment>,
+        StackWithGeometryInterface>;
 
   } // namespace detail
 
-  // this is the REAL stack we use:
+  // this is the FINAL stack we use in C8:
   using Stack = detail::StackWithGeometry;
 
   /*
@@ -141,7 +54,8 @@ namespace corsika::setup {
 #if defined(__clang__)
   using StackView =
       corsika::stack::SecondaryView<typename corsika::setup::Stack::StackImpl,
-                                    corsika::setup::detail::StackWithGeometryInterface>;
+    // CHECK with CLANG: corsika::setup::Stack::PIType>;
+    corsika::setup::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
   using StackView = corsika::stack::MakeView<corsika::setup::Stack>::type;
 #endif

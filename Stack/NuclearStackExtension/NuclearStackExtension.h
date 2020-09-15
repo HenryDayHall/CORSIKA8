@@ -9,7 +9,10 @@
 #pragma once
 
 #include <corsika/particles/ParticleProperties.h>
+
 #include <corsika/stack/Stack.h>
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
+
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/geometry/Point.h>
@@ -24,7 +27,10 @@ namespace corsika::stack {
   /**
    * @namespace nuclear_extension
    *
-   * Add A and Z data to existing stack of particle properties.
+   * Add A and Z data to existing stack (currently SuperStupidStack) of particle
+   * properties. This is done via inheritance, not via CombinedStack since the nuclear
+   * data is stored ONLY when needed (for nuclei) and not for all particles. Thus, this is
+   * a new, derived Stack object.
    *
    * Only for Code::Nucleus particles A and Z are stored, not for all
    * normal elementary particles.
@@ -324,48 +330,19 @@ namespace corsika::stack {
 
     }; // end class NuclearStackExtensionImpl
 
-    //    template<typename StackIteratorInterface>
-    // using NuclearParticleInterfaceType<StackIteratorInterface> =
-    // NuclearParticleInterface< ,StackIteratorInterface>
-
-    // works, but requires stupd _PI class
-    // template<typename SS> using TEST =
-    // NuclearParticleInterface<corsika::stack::super_stupid::SuperStupidStack::PIType,
-    // SS>;
     template <typename InnerStack, template <typename> typename _PI>
     using NuclearStackExtension =
         Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, _PI>;
 
-    // ----
+    //
+    template <typename StackIter>
+    using ExtendedParticleInterfaceType =
+        corsika::stack::nuclear_extension::NuclearParticleInterface<
+            corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
 
-    // I'm dont't manage to do this properly.......
-    /*
-    template<typename TT, typename SS> using TESTi = typename
-    NuclearParticleInterface<TT::template PIType, SS>::ExtendedParticleInterface;
-    template<typename TT, typename SS> using TEST1 = TESTi<TT, SS>;
-    template<typename SS> using TEST2 = TEST1<typename
-    corsika::stack::super_stupid::SuperStupidStack, SS>;
-
-    using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, TEST2>;
-    */
-    /*
-      // .... this should be fixed ....
-
-    template <typename InnerStack, typename SS=StackIteratorInterface>
-      //using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, NuclearParticleInterface<typename InnerStack::template PIType,
-    StackIteratorInterface>::ExtendedParticleInterface>; using NuclearStackExtension =
-    Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, TEST1<typename
-    corsika::stack::super_stupid::SuperStupidStack, SS> >;
-
-    //template <typename InnerStack>
-      //  using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, TEST<typename
-    corsika::stack::super_stupid::SuperStupidStack::PIType>>;
-    //using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, TEST>;
-    */
+    // the particle data stack with extra nuclear information:
+    using ParticleDataStack = corsika::stack::nuclear_extension::NuclearStackExtension<
+        corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType>;
 
   } // namespace nuclear_extension
 } // namespace corsika::stack

@@ -26,3 +26,12 @@ install (
   DESTINATION
   include/${DummyStack_NAMESPACE}
   )
+
+# ----------------
+# code unit testing
+ CORSIKA_ADD_TEST(testDummyStack)
+ target_link_libraries (
+   testDummyStack
+   DummyStack
+   CORSIKAtesting
+   )

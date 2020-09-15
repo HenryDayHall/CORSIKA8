@@ -36,7 +36,6 @@ namespace corsika::stack::node {
     using T::GetIndex;
     using BaseNodeType = typename TEnvType::BaseNodeType;
 
-  public:
     // default version for particle-creation from input data
     void SetParticleData(const std::tuple<BaseNodeType const*> v) {
       SetNode(std::get<0>(v));
@@ -91,9 +90,10 @@ namespace corsika::stack::node {
     std::vector<const BaseNodeType*> fNode;
   };
 
+
   template <typename T, typename TEnv>
-  struct MakeGeometryDataInterface {
-    typedef GeometryDataInterface<T, TEnv> type;
-  };
+    struct MakeGeometryDataInterface {
+      typedef GeometryDataInterface<T, TEnv> type;
+    };
 
 } // namespace corsika::stack::node

@@ -7,26 +7,37 @@
  */
 
 #include <corsika/geometry/RootCoordinateSystem.h>
-#include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/history/HistoryStackExtension.h>
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
 
 using namespace corsika;
+using namespace corsika::history;
 using namespace corsika::stack::nuclear_extension;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 #include <catch2/catch.hpp>
 
+// this is an auxiliary help typedef, which I don't know how to put
+// into NuclearStackExtension.h where it belongs...
+template <typename StackIter>
+using ExtendedParticleInterfaceType =
+    corsika::stack::nuclear_extension::NuclearParticleInterface<
+        corsika::stack::super_stupid::SuperStupidStack::template PIType, StackIter>;
+
+using ExtStack = NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
+                                       ExtendedParticleInterfaceType>;
+
 #include <iostream>
 using namespace std;
 
-TEST_CASE("NuclearStackExtension", "[stack]") {
+TEST_CASE("HistoryStackExtension", "[stack]") {
 
   geometry::CoordinateSystem& dummyCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   SECTION("write non nucleus") {
-    NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
+    HistoryStackExtension<corsika::stack::super_stupid::SuperStupidStack,
                           ExtendedParticleInterfaceType>
         s;
     s.AddParticle(
@@ -39,7 +50,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("write nucleus") {
-    NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
+    HistoryStackExtension<corsika::stack::super_stupid::SuperStupidStack,
                           ExtendedParticleInterfaceType>
         s;
     s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -52,7 +63,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("write invalid nucleus") {
-    ParticleDataStack s;
+    ExtStack s;
     REQUIRE_THROWS(
         s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                  corsika::stack::MomentumVector, geometry::Point,
@@ -63,7 +74,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("read non nucleus") {
-    ParticleDataStack s;
+    ExtStack s;
     s.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
@@ -77,7 +88,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("read nucleus") {
-    ParticleDataStack s;
+    ExtStack s;
     s.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                              corsika::stack::MomentumVector, geometry::Point,
                              units::si::TimeType, unsigned short, unsigned short>{
@@ -88,12 +99,12 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     REQUIRE(pout.GetPID() == particles::Code::Nucleus);
     REQUIRE(pout.GetEnergy() == 1.5_GeV);
     REQUIRE(pout.GetTime() == 100_s);
-    REQUIRE(pout.GetNuclearA() == 10);
+    REQUIRE(pout.GetHistoryA() == 10);
     REQUIRE(pout.GetNuclearZ() == 9);
   }
 
   SECTION("read invalid nucleus") {
-    ParticleDataStack s;
+    ExtStack s;
     s.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
@@ -107,7 +118,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
   SECTION("stack fill and cleanup") {
 
-    ParticleDataStack s;
+    ExtStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {
@@ -134,7 +145,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
   SECTION("stack operations") {
 
-    ParticleDataStack s;
+    ExtStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {

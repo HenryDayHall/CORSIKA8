@@ -16,8 +16,8 @@
 #include <corsika/geometry/RootCoordinateSystem.h> // remove
 #include <corsika/geometry/Vector.h>
 
-#include <algorithm>
 #include <vector>
+#include <tuple>
 
 namespace corsika::stack {
 
@@ -50,13 +50,6 @@ namespace corsika::stack {
         SetPosition(std::get<3>(v));
         SetTime(std::get<4>(v));
       }
-      /*
-    void SetParticleData(const corsika::particles::Code vDataPID,
-                         const corsika::units::si::HEPEnergyType vDataE,
-                         const MomentumVector& vMomentum,
-                         const corsika::geometry::Point& vPosition,
-                         const corsika::units::si::TimeType vTime) {
-      }*/
 
       void SetParticleData(
           ParticleInterface<StackIteratorInterface>&,
@@ -69,18 +62,6 @@ namespace corsika::stack {
         SetPosition(std::get<3>(v));
         SetTime(std::get<4>(v));
       }
-      /*      void SetParticleData(ParticleInterface<StackIteratorInterface>&,
-                           const corsika::particles::Code vDataPID,
-                           const corsika::units::si::HEPEnergyType vDataE,
-                           const MomentumVector& vMomentum,
-                           const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime) {
-        SetPID(vDataPID);
-        SetEnergy(vDataE);
-        SetMomentum(vMomentum);
-        SetPosition(vPosition);
-        SetTime(vTime);
-      }*/
 
       /// individual setters
       void SetPID(const corsika::particles::Code id) {
@@ -243,7 +224,7 @@ namespace corsika::stack {
     }; // end class SuperStupidStackImpl
 
     typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
-
+     
   } // namespace super_stupid
 
 } // namespace corsika::stack
