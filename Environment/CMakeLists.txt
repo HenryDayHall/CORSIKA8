@@ -35,6 +35,7 @@ set (
   ShowerAxis.h
   IMagneticFieldModel.h
   UniformMagneticField.h
+  NoMagneticField.h
   IRefractiveIndexModel.h
   UniformRefractiveIndex.h
   IMediumPropertyModel.h
