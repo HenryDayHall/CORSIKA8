@@ -1,6 +1,9 @@
 set (
   SETUP_HEADERS
+  Event.hpp
+  HStackView.hpp
   HistoryStackExtension.h
+  SecondaryParticle.hpp
   )
 
 set (
@@ -14,6 +17,8 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAhistory ${SETUP_NAMESPACE} ${SETUP_HEA
 target_link_libraries (
   CORSIKAhistory
   INTERFACE
+  CORSIKAparticles
+  CORSIKAgeometry
   SuperStupidStack
   NuclearStackExtension
   )

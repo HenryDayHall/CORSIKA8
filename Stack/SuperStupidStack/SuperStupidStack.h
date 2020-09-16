@@ -16,8 +16,8 @@
 #include <corsika/geometry/RootCoordinateSystem.h> // remove
 #include <corsika/geometry/Vector.h>
 
-#include <vector>
 #include <tuple>
+#include <vector>
 
 namespace corsika::stack {
 
@@ -224,7 +224,7 @@ namespace corsika::stack {
     }; // end class SuperStupidStackImpl
 
     typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
-     
+
   } // namespace super_stupid
 
 } // namespace corsika::stack

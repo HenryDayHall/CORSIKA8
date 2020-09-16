@@ -23,14 +23,18 @@ namespace corsika::stack {
      */
 
     /**
-       however, conceptually we need to provide fake data. A stack without data does not work...
+       however, conceptually we need to provide fake data. A stack without data does not
+       work...
      */
 
-    struct NoData {/* nothing */ int nothing=0; };
-    
+    struct NoData { /* nothing */
+      int nothing = 0;
+    };
+
     template <typename StackIteratorInterface>
-      class ParticleInterface : public corsika::stack::ParticleBase<StackIteratorInterface> {
-      
+    class ParticleInterface
+        : public corsika::stack::ParticleBase<StackIteratorInterface> {
+
     protected:
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetStack;
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
@@ -40,7 +44,8 @@ namespace corsika::stack {
 
     public:
       void SetParticleData(const std::tuple<NoData>& /*v*/) {}
-      void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/, const std::tuple<NoData>& /*v*/) {}
+      void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
+                           const std::tuple<NoData>& /*v*/) {}
     };
 
     /**
@@ -51,9 +56,9 @@ namespace corsika::stack {
     class DummyStackImpl {
 
     public:
-      void Init() {entries_=0;}
+      void Init() { entries_ = 0; }
 
-      void Clear() {entries_=0;}
+      void Clear() { entries_ = 0; }
 
       int GetSize() const { return entries_; }
       int GetCapacity() const { return entries_; }
@@ -63,12 +68,12 @@ namespace corsika::stack {
        */
       void Copy(const int /*i1*/, const int /*i2*/) {}
 
-      void IncrementSize() {entries_++;}
-      void DecrementSize() {entries_--;}
+      void IncrementSize() { entries_++; }
+      void DecrementSize() { entries_--; }
 
     private:
       int entries_ = 0;
-      
+
     }; // end class DummyStackImpl
 
     typedef Stack<DummyStackImpl, ParticleInterface> DummyStack;

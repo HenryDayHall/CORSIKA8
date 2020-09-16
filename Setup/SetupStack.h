@@ -8,11 +8,10 @@
 
 #pragma once
 
+#include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
-//#include <corsika/history/HistoryStackExtension.h>
-
-#include <corsika/stack/CombinedStack.h>
+#include <corsika/history/HistoryStackExtension.h>
 
 #include <corsika/setup/SetupEnvironment.h>
 
@@ -20,15 +19,26 @@ namespace corsika::setup {
 
   namespace detail {
 
-    // the GeometryNode stack needs to know the type of geometry-nodes from the environment:
+    // the GeometryNode stack needs to know the type of geometry-nodes from the
+    // environment:
     template <typename TStackIter>
-    using SetupGeometryDataInterface = typename stack::node::MakeGeometryDataInterface<TStackIter, setup::SetupEnvironment>::type;
+    using SetupGeometryDataInterface =
+        typename stack::node::MakeGeometryDataInterface<TStackIter,
+                                                        setup::SetupEnvironment>::type;
+
+    /*
+    template <typename TStackIter>
+    using SetupGeometryHistoryDataInterface =
+      typename stack::node::MakeHistoryDataInterface<TStackIter,
+                                    ...event... >::type;
+    */
+
     
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>
     using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
-        stack::nuclear_extension::ParticleDataStack::PIType,
-    SetupGeometryDataInterface, TStackIter>;
+        stack::nuclear_extension::ParticleDataStack::PIType, SetupGeometryDataInterface,
+        TStackIter>;
 
     using StackWithGeometry = corsika::stack::CombinedStack<
         typename corsika::stack::nuclear_extension::ParticleDataStack::StackImpl,
@@ -54,8 +64,8 @@ namespace corsika::setup {
 #if defined(__clang__)
   using StackView =
       corsika::stack::SecondaryView<typename corsika::setup::Stack::StackImpl,
-    // CHECK with CLANG: corsika::setup::Stack::PIType>;
-    corsika::setup::detail::StackWithGeometryInterface>;
+                                    // CHECK with CLANG: corsika::setup::Stack::PIType>;
+                                    corsika::setup::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
   using StackView = corsika::stack::MakeView<corsika::setup::Stack>::type;
 #endif

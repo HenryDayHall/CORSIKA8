@@ -21,7 +21,20 @@ using namespace std;
 // this is our dummy environment, it only knows its trivial BaseNodeType
 class DummyEvent {
 public:
-  int id;
+  DummyEvent() {}
+  DummyEvent(const std::shared_ptr<DummyEvent>& parent) {
+    parent_ = parent;
+    //parent.addSecondary();
+  }
+
+  std::shared_ptr<DummyEvent> getParent() { return parent_; }
+  void addSecondary(const std::shared_ptr<DummyEvent>& particle) { secondaries_.push_back(particle); }
+
+  int multiplicity() const { return secondaries_.size(); }
+  
+private:
+  std::shared_ptr<DummyEvent> parent_;
+  std::vector<std::shared_ptr<DummyEvent>> secondaries_;
 };
 
 // the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:

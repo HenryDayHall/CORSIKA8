@@ -70,12 +70,13 @@ namespace corsika::stack {
      * @{
      */
     using InnerStackTypeValue = Stack<StackDataType, ParticleInterface>;
+
+  public:
     using StackIteratorValue =
         StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
                                ParticleInterface, InnerStackTypeValue>;
     /// @}
 
-  public:
     using StackIterator =
         StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
                                ParticleInterface, ViewType>;

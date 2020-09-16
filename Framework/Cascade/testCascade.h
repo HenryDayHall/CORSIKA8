@@ -10,9 +10,9 @@
 
 #include <corsika/environment/Environment.h>
 
+#include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
-#include <corsika/stack/CombinedStack.h>
 
 using TestEnvironmentType =
     corsika::environment::Environment<corsika::environment::IMediumModel>;

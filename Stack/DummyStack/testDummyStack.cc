@@ -20,7 +20,7 @@ TEST_CASE("DummyStack", "[stack]") {
   using TestStack = dummy::DummyStack;
 
   dummy::NoData noData;
-    
+
   SECTION("write node") {
 
     TestStack s;
@@ -28,17 +28,14 @@ TEST_CASE("DummyStack", "[stack]") {
     REQUIRE(s.GetSize() == 1);
   }
 
-
   SECTION("stack fill and cleanup") {
 
     TestStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
-    for (int i = 0; i < 99; ++i) {
-      s.AddParticle(std::tuple<dummy::NoData>{noData});
-    }
-      
+    for (int i = 0; i < 99; ++i) { s.AddParticle(std::tuple<dummy::NoData>{noData}); }
+
     REQUIRE(s.GetSize() == 99);
     for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
     REQUIRE(s.GetSize() == 0);
-  }  
+  }
 }
