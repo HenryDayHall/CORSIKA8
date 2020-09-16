@@ -35,9 +35,6 @@ install (
 CORSIKA_ADD_TEST(testHistory)
 target_link_libraries (
   testHistory
-  SuperStupidStack
   CORSIKAhistory
-  CORSIKAparticles
-  CORSIKAunits
   CORSIKAtesting
   )

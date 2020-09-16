@@ -8,29 +8,22 @@
 
 #pragma once
 
-// the basic particle data stack:
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
+#include <corsika/stack/Stack.h>
 
-// extension with nuclear data for Code::Nucleus
-#include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
-
-// extension with nuclear data AND volume node ref
-#include <corsika/setup/GeometryNodeStackExtension.h>
-
-#include <memory>
 #include <tuple>
-#include <utility>
-
-class Event {};
+#include <vector>
+#include <memory>
 
 namespace corsika::history {
 
   /**
    * @class HistoryData
    *
-   * definition of stack-data object to store history information
-   * this is vector with shared_ptr<Event>
+   * definition of stack-data object to store history information this
+   * is vector with shared_ptr<TEvent>, where TEvent is a free
+   * template parameter for customization.
    */
+  template <typename TEvent>
   class HistoryData {
 
   public:
@@ -42,8 +35,8 @@ namespace corsika::history {
     void Swap(const int i1, const int i2) { std::swap(fEvent[i1], fEvent[i2]); }
 
     // custom data access function
-    void SetEvent(const int i, std::shared_ptr<Event> v) { fEvent[i] = v; }
-    std::shared_ptr<Event> GetEvent(const int i) const { return fEvent[i]; }
+    void SetEvent(const int i, std::shared_ptr<TEvent> v) { fEvent[i] = v; }
+    std::shared_ptr<TEvent> GetEvent(const int i) const { return fEvent[i]; }
 
     // these functions are also needed by the Stack interface
     void IncrementSize() { fEvent.push_back(nullptr); }
@@ -53,7 +46,7 @@ namespace corsika::history {
 
     // custom private data section
   private:
-    std::vector<std::shared_ptr<Event>> fEvent;
+    std::vector<std::shared_ptr<TEvent>> fEvent;
   };
 
   /**
@@ -64,62 +57,36 @@ namespace corsika::history {
   // defintion of a stack-readout object, the iteractor dereference
   // operator will deliver access to these function
    */
-  template <typename T>
+  template <typename T, typename TEvent>
   class HistoryDataInterface : public T {
+    protected:
+      using T::GetStack;
+      using T::GetStackData;
+
+    public:
+      using T::GetIndex;
 
   public:
-    using T::GetIndex;
-    using T::GetStackData;
-    using T::SetParticleData;
-
     // default version for particle-creation from input data
-    void SetParticleData(const std::tuple<Event const*> v) { SetEvent(std::get<0>(v)); }
+    void SetParticleData(const std::tuple<TEvent const*> v) { SetEvent(std::get<0>(v)); }
     void SetParticleData(HistoryDataInterface& parent,
-                         const std::tuple<std::shared_ptr<Event>>) {
+                         const std::tuple<std::shared_ptr<TEvent>>) {
       SetEvent(parent.GetEvent()); // copy Event from parent particle!
     }
     void SetParticleData() { SetEvent(nullptr); }
     void SetParticleData(HistoryDataInterface& parent) {
       SetEvent(parent.GetEvent()); // copy Event from parent particle!
     }
-    void SetEvent(std::shared_ptr<Event> v) { GetStackData().SetEvent(GetIndex(), v); }
-    std::shared_ptr<Event> GetEvent() const {
+    void SetEvent(std::shared_ptr<TEvent> v) { GetStackData().SetEvent(GetIndex(), v); }
+    std::shared_ptr<TEvent> GetEvent() const {
       return GetStackData().GetEvent(GetIndex());
     }
   };
-
-  namespace detail {
-
-    //
-    // this is an auxiliary help typedef, which I don't know how to put
-    // into NuclearStackExtension.h where it belongs...
-    template <typename StackIter>
-    using ExtendedParticleInterfaceType =
-        corsika::stack::nuclear_extension::NuclearParticleInterface<
-            corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
-    //
-
-    // the particle data stack with extra nuclear information:
-    using ParticleDataStack = corsika::stack::nuclear_extension::NuclearStackExtension<
-        corsika::stack::super_stupid::SuperStupidStack, ExtendedParticleInterfaceType>;
-
-    template <typename T>
-    using SetupHistoryDataInterface = HistoryDataInterface<T>;
-
-    // combine particle data stack with history information for tracking
-    template <typename StackIter>
-    using StackWithHistoryInterface =
-        corsika::stack::CombinedParticleInterface<ParticleDataStack::PIType,
-                                                  SetupHistoryDataInterface, StackIter>;
-
-    using StackWithHistory =
-        corsika::stack::CombinedStack<typename ParticleDataStack::StackImpl, HistoryData,
-                                      StackWithHistoryInterface>;
-
-  } // namespace detail
-
-  template <typename InnerStack, template <typename> typename _PI>
-  using NuclearStackExtension =
-      Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, _PI>;
-
+  
+  template <typename T, typename TEvent>
+    struct MakeHistoryDataInterface {
+      typedef HistoryDataInterface<T, TEvent> type;
+    };
+  
+  
 } // namespace corsika::history

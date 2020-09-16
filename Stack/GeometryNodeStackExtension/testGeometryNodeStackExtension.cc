@@ -28,7 +28,6 @@ public:
 template <typename TStackIter>
 using DummyGeometryDataInterface = typename corsika::stack::node::MakeGeometryDataInterface<TStackIter, DummyEnv>::type;
 
-
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<

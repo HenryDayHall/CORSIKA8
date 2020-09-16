@@ -37,14 +37,14 @@ TEST_CASE("SuperStupidStack", "[stack]") {
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
     // read
-    REQUIRE(s.GetSize() == 1);
+    CHECK(s.GetSize() == 1);
     auto pout = s.GetNextParticle();
-    REQUIRE(pout.GetPID() == particles::Code::Electron);
-    REQUIRE(pout.GetEnergy() == 1.5_GeV);
-    // REQUIRE(pout.GetMomentum() == stack::MomentumVector(dummyCS, {1_GeV,
-    // 1_GeV, 1_GeV})); REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 *
+    CHECK(pout.GetPID() == particles::Code::Electron);
+    CHECK(pout.GetEnergy() == 1.5_GeV);
+    // CHECK(pout.GetMomentum() == stack::MomentumVector(dummyCS, {1_GeV,
+    // 1_GeV, 1_GeV})); CHECK(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 *
     // meter, 1 * meter}));
-    REQUIRE(pout.GetTime() == 100_s);
+    CHECK(pout.GetTime() == 100_s);
   }
 
   SECTION("write+delete") {
@@ -59,10 +59,10 @@ TEST_CASE("SuperStupidStack", "[stack]") {
               corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
               Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
-    REQUIRE(s.GetSize() == 99);
+    CHECK(s.GetSize() == 99);
 
     for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
 
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.GetSize() == 0);
   }
 }
