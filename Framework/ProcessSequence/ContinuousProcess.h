@@ -24,7 +24,10 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-  struct ContinuousProcess : public BaseProcess<TDerived> {
+  class ContinuousProcess : public BaseProcess<TDerived>{
+  private:
+  protected:
+  public:       
 
     // here starts the interface part
     // -> enforce TDerived to implement DoContinuous...

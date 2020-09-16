@@ -30,6 +30,8 @@ add_subdirectory (OnShellCheck)
 add_subdirectory (InteractionCounter)
 add_subdirectory (SwitchProcess)
 
+add_subdirectory (DevTools)
+
 ##########################################
 # add_custom_target(CORSIKAprocesses)
 add_library (CORSIKAprocesses INTERFACE)

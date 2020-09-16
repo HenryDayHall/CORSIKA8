@@ -17,7 +17,7 @@ namespace corsika::process::switch_process {
 
   /**
    * This process provides an energy-based switch between two interaction processes P1 and
-   * P1. For energies below the threshold, P1 is invoked, otherwise P2. Both can be either
+   * P2. For energies below the threshold, P1 is invoked, otherwise P2. Both can be either
    * single interaction processes or multiple ones combined in a ProcessSequence. A
    * SwitchProcess itself will always be regarded as a distinct case when assembled into a
    * (greater) ProcessSequence.

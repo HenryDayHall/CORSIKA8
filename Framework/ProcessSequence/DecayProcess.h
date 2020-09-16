@@ -25,7 +25,8 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-  struct DecayProcess : BaseProcess<TDerived> {
+  class DecayProcess : BaseProcess<TDerived> {
+    public:
 
     using BaseProcess<TDerived>::GetRef;
 
