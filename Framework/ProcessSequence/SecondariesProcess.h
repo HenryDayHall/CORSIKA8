@@ -25,7 +25,6 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-
   class SecondariesProcess : public BaseProcess<TDerived> {
     public:
     using _TDerived = TDerived;
