@@ -1,0 +1,32 @@
+/*
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <chrono>
+#include <thread>
+
+#include <corsika/process/BoundaryCrossingProcess.h>
+
+namespace corsika::process {
+  namespace devtools {
+
+    template <int ISleep>
+    class DummyBoundaryCrossingProcess : BoundaryCrossingProcess<DummyBoundaryCrossingProcess<ISleep>> {
+    private:
+    public:
+      template <typename Particle, typename VTNType>
+      EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from,
+                                        VTNType const& to) {
+        std::this_thread::sleep_for( std::chrono::milliseconds(ISleep) );
+        return EProcessReturn::eOk;
+      }
+    };
+
+  } // namespace devtools
+} // namespace corsika::process
