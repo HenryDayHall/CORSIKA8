@@ -24,21 +24,11 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-<<<<<<< HEAD
   class ContinuousProcess : public BaseProcess<TDerived> {
-=======
-  class ContinuousProcess {
->>>>>>> renamed base process templates
   private:
   protected:
   public:
     using _TDerived = TDerived;
-<<<<<<< HEAD
-=======
-
-    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
-    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
->>>>>>> renamed base process templates
 
     // here starts the interface part
     // -> enforce TDerived to implement DoContinuous...

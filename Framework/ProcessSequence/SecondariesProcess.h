@@ -25,23 +25,11 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-<<<<<<< HEAD
+
   class SecondariesProcess : public BaseProcess<TDerived> {
     public:
     using _TDerived = TDerived;
-    
-=======
-  class SecondariesProcess {
-
-  private:
-  protected:
-  public:
-    using _TDerived = TDerived;
-
-    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
-    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
-
->>>>>>> renamed base process templates
+   
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoSecondaries...
     template <typename TSecondaries>
