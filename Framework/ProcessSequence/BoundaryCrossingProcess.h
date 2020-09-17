@@ -18,6 +18,8 @@ namespace corsika::process {
   private:
   protected:
   public:
+    using _TDerived = TDerived;
+
     /**
      * This method is called when a particle crosses the boundary between the nodes
      * \p from and \p to.
