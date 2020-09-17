@@ -8,22 +8,23 @@
 
 #pragma once
 
+#include <corsika/process/BoundaryCrossingProcess.h>
+
 #include <chrono>
 #include <thread>
-
-#include <corsika/process/BoundaryCrossingProcess.h>
 
 namespace corsika::process {
   namespace devtools {
 
     template <int ISleep>
-    class DummyBoundaryCrossingProcess : BoundaryCrossingProcess<DummyBoundaryCrossingProcess<ISleep>> {
+    class DummyBoundaryCrossingProcess
+        : public BoundaryCrossingProcess<DummyBoundaryCrossingProcess<ISleep>> {
     private:
     public:
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from,
                                         VTNType const& to) {
-        std::this_thread::sleep_for( std::chrono::milliseconds(ISleep) );
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return EProcessReturn::eOk;
       }
     };

@@ -8,12 +8,11 @@
 
 #pragma once
 
+#include <corsika/process/DecayProcess.h>
+#include <corsika/units/PhysicalUnits.h>
+
 #include <chrono>
 #include <thread>
-
-#include <corsika/process/DecayProcess.h>
-
-#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
   namespace devtools {
@@ -24,17 +23,15 @@ namespace corsika::process {
     public:
       template <typename Particle>
       EProcessReturn DoDecay(Particle&) {
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(ISleep));
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return process::EProcessReturn::eOk;
       }
 
       template <typename Particle>
       corsika::units::si::TimeType GetLifetime(Particle& p) {
         using namespace corsika::units::si;
-        
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(ISleep));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return std::numeric_limits<double>::infinity() * 1_s;
       }
     };

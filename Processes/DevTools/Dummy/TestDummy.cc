@@ -22,6 +22,8 @@ using namespace corsika;
 using namespace corsika::process;
 using namespace corsika::process::devtools;
 
+using namespace corsika::units::si;
+
 TEST_CASE("Dummy Processes") {
   DummyBoundaryCrossingProcess<1000> dbc;
   DummyContinuousProcess<1000> dc;
@@ -50,5 +52,42 @@ TEST_CASE("Dummy Processes") {
     end = std::chrono::steady_clock::now();
     REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
             Approx(1000).margin(1));
+  }
+
+   SECTION("Decay") {
+    auto start = std::chrono::steady_clock::now();
+    REQUIRE(dd.DoDecay(tmp) == EProcessReturn::eOk);
+    auto end = std::chrono::steady_clock::now();
+    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+            Approx(1000).margin(1));
+
+    start = std::chrono::steady_clock::now();
+    REQUIRE(dd.GetLifetime(tmp) == units::si::second * std::numeric_limits<double>::infinity());
+    end = std::chrono::steady_clock::now();
+    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+            Approx(1000).margin(1));
+  }
+
+   SECTION("Interaction") {
+    auto start = std::chrono::steady_clock::now();
+    REQUIRE(di.DoInteraction(tmp) == EProcessReturn::eOk);
+    auto end = std::chrono::steady_clock::now();
+    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+            Approx(1000).margin(1));
+
+    start = std::chrono::steady_clock::now();
+    REQUIRE(di.GetInteractionLength(tmp) ==  (units::si::gram / 1_cm / 1_cm) * std::numeric_limits<double>::infinity());
+    end = std::chrono::steady_clock::now();
+    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+            Approx(1000).margin(1));
+  }
+
+   SECTION("Secondaries") {
+    auto start = std::chrono::steady_clock::now();
+    REQUIRE(dse.DoSecondaries(tmp) == EProcessReturn::eOk);
+    auto end = std::chrono::steady_clock::now();
+    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+            Approx(1000).margin(1));
+   
   }
 }

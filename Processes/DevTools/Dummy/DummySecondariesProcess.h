@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <corsika/process/SecondariesProcess.h>
+
 #include <chrono>
 #include <thread>
-
-#include <corsika/process/SecondariesProcess.h>
 
 namespace corsika::process {
   namespace devtools {
@@ -21,10 +21,8 @@ namespace corsika::process {
     private:
     public:
       template <typename TSecondaries>
-      inline EProcessReturn DoSecondaries(TSecondaries&)
-      {
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(ISleep));
+      inline EProcessReturn DoSecondaries(TSecondaries&) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return process::EProcessReturn::eOk;
       }
     };
