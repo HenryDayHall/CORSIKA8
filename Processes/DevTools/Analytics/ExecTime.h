@@ -108,22 +108,30 @@ namespace corsika::process {
               std::is_base_of<BoundaryCrossingProcess<typename T::_TDerived>, T>::value>,
           public ExecTime_Continuous<
               T, std::is_base_of<ContinuousProcess<typename T::_TDerived>, T>::value>,
-          public ExecTime_Decay<T,
-                         std::is_base_of<DecayProcess<typename T::_TDerived>, T>::value>,
+          public ExecTime_Decay<
+              T, std::is_base_of<DecayProcess<typename T::_TDerived>, T>::value>,
           public ExecTime_Interaction<
               T, std::is_base_of<InteractionProcess<typename T::_TDerived>, T>::value>,
           public ExecTime_Secondaries<
               T, std::is_base_of<SecondariesProcess<typename T::_TDerived>, T>::value> {
     private:
+      std::chrono::microseconds fStart;
+      std::chrono::microseconds fElapsedSum;
+      std::chrono::microseconds fMean;
+      std::chrono::microseconds fMean2;
+      std::chrono::microseconds fMin;
+      std::chrono::microseconds fMax;
+      long long fN;
+
       void start();
       void stop();
 
     protected:
     public:
-      float mean();
-      float min();
-      float max();
-      float var();
+      double mean();
+      double min();
+      double max();
+      double var();
 
       /*
                   // Stack
