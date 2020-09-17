@@ -6,6 +6,8 @@
  * the license.
  */
 
+#define protected public // to also test the internal state of objects
+
 #include <corsika/stack/SecondaryView.h>
 #include <corsika/stack/Stack.h>
 
@@ -45,73 +47,90 @@ TEST_CASE("SecondaryStack", "[stack]") {
   // helper function for sum over stack data
   auto sum = [](const StackTest& stack) {
     double v = 0;
-    for (const auto& p : stack) v += p.GetData();
+    for (const auto& p : stack) { v += p.GetData(); }
     return v;
+  };
+
+  auto sumView = [](const StackTestView& stack) {
+    double value = 0;
+    for (const auto& p : stack) { value += p.GetData(); }
+    return value;
   };
 
   SECTION("secondary view") {
     StackTest s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
+    CHECK(s.IsEmpty());
+
     s.AddParticle(std::tuple{9.9});
     s.AddParticle(std::tuple{8.8});
-    const double sumS = 9.9 + 8.8;
+    const double sumS = 9.9 + 8.8; // helper, see below
+    CHECK(s.getSize() == 2);
+    CHECK(s.getEntries() == 2);
+    CHECK(!s.IsEmpty());
 
     auto particle = s.GetNextParticle();
 
     StackTestView view(particle);
-    REQUIRE(view.GetSize() == 0);
+    CHECK(view.getSize() == 0);
+    CHECK(view.getEntries() == 0);
+    CHECK(view.IsEmpty());
 
     {
       auto proj = view.GetProjectile();
-      REQUIRE(proj.GetData() == particle.GetData());
+      CHECK(proj.GetData() == particle.GetData());
       proj.AddSecondary(std::tuple{4.4});
     }
+    CHECK(view.getSize() == 1);
+    CHECK(view.getEntries() == 1);
+    CHECK(!view.IsEmpty());
+    CHECK(s.getSize() == 3);
+    CHECK(s.getEntries() == 3);
+    CHECK(!s.IsEmpty());
 
     view.AddSecondary(std::tuple{4.5});
     view.AddSecondary(std::tuple{4.6});
+    CHECK(view.getSize() == 3);
+    CHECK(view.getEntries() == 3);
+    CHECK(!view.IsEmpty());
+    CHECK(s.getSize() == 5);
+    CHECK(s.getEntries() == 5);
+    CHECK(!s.IsEmpty());
 
-    REQUIRE(view.GetSize() == 3);
-    REQUIRE(s.GetSize() == 5);
-    REQUIRE(!view.IsEmpty());
+    CHECK(sum(s) == sumS + 4.4 + 4.5 + 4.6);
+    CHECK(sumView(view) == 4.4 + 4.5 + 4.6);
 
-    auto sumView = [](const StackTestView& stack) {
-      double value = 0;
-      for (const auto& p : stack) { value += p.GetData(); }
-      return value;
-    };
+    view.last().Delete();
+    CHECK(view.getSize() == 3);
+    CHECK(view.getEntries() == 2);
+    CHECK(s.getSize() == 5);
+    CHECK(s.getEntries() == 4);
 
-    REQUIRE(sum(s) == sumS + 4.4 + 4.5 + 4.6);
-    REQUIRE(sumView(view) == 4.4 + 4.5 + 4.6);
-
-    view.DeleteLast();
-    REQUIRE(view.GetSize() == 2);
-    REQUIRE(s.GetSize() == 4);
-
-    REQUIRE(sum(s) == sumS + 4.4 + 4.5);
-    REQUIRE(sumView(view) == 4.4 + 4.5);
+    CHECK(sum(s) == sumS + 4.4 + 4.5);
+    CHECK(sumView(view) == 4.4 + 4.5);
 
     auto pDel = view.GetNextParticle();
     view.Delete(pDel);
-    REQUIRE(view.GetSize() == 1);
-    REQUIRE(s.GetSize() == 3);
+    CHECK(view.getSize() == 2);
+    CHECK(s.getSize() == 4);
 
-    REQUIRE(sum(s) == sumS + 4.4 + 4.5 - pDel.GetData());
-    REQUIRE(sumView(view) == 4.4 + 4.5 - pDel.GetData());
+    CHECK(sum(s) == sumS + 4.4 + 4.5 - pDel.GetData());
+    CHECK(sumView(view) == 4.4 + 4.5 - pDel.GetData());
 
     view.Delete(view.GetNextParticle());
-    REQUIRE(sum(s) == sumS);
-    REQUIRE(sumView(view) == 0);
-    REQUIRE(view.IsEmpty());
+    CHECK(sum(s) == sumS);
+    CHECK(sumView(view) == 0);
+    CHECK(view.IsEmpty());
 
     {
       auto proj = view.GetProjectile();
-      REQUIRE(proj.GetData() == particle.GetData());
+      CHECK(proj.GetData() == particle.GetData());
     }
   }
 
   SECTION("secondary view, construct from ParticleType") {
     StackTest s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
     s.AddParticle(std::tuple{9.9});
     s.AddParticle(std::tuple{8.8});
 
@@ -119,11 +138,11 @@ TEST_CASE("SecondaryStack", "[stack]") {
     typename StackTest::ParticleType& particle = iterator; // as in corsika::Cascade
 
     StackTestView view(particle);
-    REQUIRE(view.GetSize() == 0);
+    CHECK(view.getSize() == 0);
 
     view.AddSecondary(std::tuple{4.4});
 
-    REQUIRE(view.GetSize() == 1);
+    CHECK(view.getSize() == 1);
   }
 
   SECTION("deletion") {
@@ -141,21 +160,20 @@ TEST_CASE("SecondaryStack", "[stack]") {
       proj.AddSecondary(std::tuple{1.});
       proj.AddSecondary(std::tuple{2.});
 
-      CHECK(stack.GetSize() == 6); // -99, 0, -2, -1, 1, 2
-      CHECK(view.GetSize() == 4);  // -2, -1, 1, 2
+      CHECK(stack.getSize() == 6); // -99, 0, -2, -1, 1, 2
+      CHECK(view.getSize() == 4);  // -2, -1, 1, 2
 
       // now delete all negative entries, i.e. -1 and -2
       auto p = view.begin();
       while (p != view.end()) {
         auto data = p.GetData();
-        if (data < 0) {
-          p.Delete();
-        } else {
-          ++p;
-        }
+        if (data < 0) { p.Delete(); }
+        ++p;
       }
-      CHECK(stack.GetSize() == 4); // -99, 0, 2, 1 (order changes during deletion)
-      CHECK(view.GetSize() == 2);  // 2, 1
+      CHECK(stack.getSize() == 6);
+      CHECK(stack.getEntries() == 4); // -99, 0, 2, 1 (order changes during deletion)
+      CHECK(view.getSize() == 4);
+      CHECK(view.getEntries() == 2); // 2, 1
     }
 
     // repeat
@@ -175,17 +193,15 @@ TEST_CASE("SecondaryStack", "[stack]") {
       auto p = view.begin();
       while (p != view.end()) {
         auto data = p.GetData();
-        if (data < 0) {
-          p.Delete();
-        } else {
-          ++p;
-        }
+        if (data < 0) { p.Delete(); }
+        ++p;
       }
 
       // stack should contain -99, 0, 2, 1, [2, 1]
       // view should contain 1, 2
 
-      CHECK(stack.GetSize() == 6);
+      CHECK(stack.getEntries() == 6);
+      CHECK(stack.getSize() == 10);
     }
   }
 }

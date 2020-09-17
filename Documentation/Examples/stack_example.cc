@@ -36,7 +36,7 @@ void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
 }
 
 void read(corsika::stack::super_stupid::SuperStupidStack& s) {
-  assert(s.GetSize() == 11); // stack has 11 particles
+  assert(s.getEntries() == 11); // stack has 11 particles
 
   HEPEnergyType total_energy;
   int i = 0;
@@ -49,6 +49,9 @@ void read(corsika::stack::super_stupid::SuperStupidStack& s) {
 }
 
 int main() {
+
+  std::cout << "stack_example" << std::endl;
+  
   corsika::stack::super_stupid::SuperStupidStack s;
   fill(s);
   read(s);

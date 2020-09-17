@@ -129,6 +129,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    CHECK(view.GetSize() == 0);
+    REQUIRE(view.getEntries() == 0);
+    REQUIRE(view.getSize() == 10);
   }
 }

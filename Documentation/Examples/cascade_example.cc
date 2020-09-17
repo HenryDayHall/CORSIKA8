@@ -56,6 +56,8 @@ using namespace corsika::units::si;
 //
 int main() {
 
+  std::cout << "cascade_example" << std::endl;
+
   const LengthType height_atmosphere = 112.8_km;
 
   feenableexcept(FE_INVALID);

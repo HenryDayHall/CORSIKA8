@@ -58,6 +58,9 @@ using namespace corsika::units::si;
 // The example main program for a particle cascade
 //
 int main() {
+
+  std::cout << "cascade_proton_example" << std::endl;
+
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");

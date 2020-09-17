@@ -282,7 +282,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
-    CHECK(stack.GetSize() == 3);
+    CHECK(stack.getEntries() == 3);
   }
 
   SECTION("DecayConfiguration") {

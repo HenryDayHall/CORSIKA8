@@ -111,7 +111,9 @@ namespace corsika::cascade {
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
           auto pNext = fStack.GetNextParticle();
-          std::cout << "========= next: " << pNext.GetPID() << std::endl;
+          std::cout << "========= next: pid=" << pNext.GetPID()
+                    << ", stack entries=" << fStack.getEntries()
+                    << ", stack deleted=" << fStack.getDeleted() << std::endl;
           Step(pNext);
           std::cout << "========= stack ============" << std::endl;
           fProcessSequence.DoStack(fStack);
@@ -253,7 +255,7 @@ namespace corsika::cascade {
             assert(min_distance == distance_decay);
             decay(vParticle, projectile);
             // make sure particle actually did decay if it should have done so
-            if (secondaries.GetSize() == 1 &&
+            if (secondaries.getSize() == 1 &&
                 projectile.GetPID() == secondaries.GetNextParticle().GetPID())
               throw std::runtime_error(
                   fmt::format("Cascade: {} decayed into itself!",

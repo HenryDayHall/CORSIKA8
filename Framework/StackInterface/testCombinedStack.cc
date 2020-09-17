@@ -6,6 +6,8 @@
  * the license.
  */
 
+#define protected public // to also test the internal state of objects
+
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/SecondaryView.h>
 #include <corsika/stack/Stack.h>
@@ -107,7 +109,7 @@ TEST_CASE("Combined Stack", "[stack]") {
     s.AddParticle(std::tuple{0.});
     s.Copy(s.cbegin(), s.begin());
     s.Swap(s.begin(), s.begin());
-    REQUIRE(s.GetSize() == 1);
+    CHECK(s.getSize() == 1);
   }
 
   SECTION("construct") {
@@ -120,72 +122,99 @@ TEST_CASE("Combined Stack", "[stack]") {
 
     StackTest s;
     s.AddParticle(std::tuple{9.9});
-    REQUIRE(sum2(s) == 0.);
-    REQUIRE(sum(s) == 9.9);
+    CHECK(sum2(s) == 0.);
+    CHECK(sum(s) == 9.9);
   }
 
   SECTION("delete from stack") {
 
     StackTest s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
     StackTest::StackIterator p =
         s.AddParticle(std::tuple{0.}); // valid way to access particle data
     p.SetData(8.9);
     p.SetData2(3.);
-    REQUIRE(sum2(s) == 3.);
-    REQUIRE(sum(s) == 8.9);
-    REQUIRE(s.GetSize() == 1);
+    CHECK(sum2(s) == 3.);
+    CHECK(sum(s) == 8.9);
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 1);
     s.Delete(p);
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 0);
   }
 
   SECTION("delete particle") {
 
     StackTest s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
     auto p = s.AddParticle(
         std::tuple{9.9}); // also valid way to access particle data, identical to above
-    REQUIRE(s.GetSize() == 1);
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 1);
     p.Delete();
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 0);
   }
 
   SECTION("create secondaries") {
     StackTest s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
     auto iter = s.AddParticle(std::tuple{9.9});
     iter.SetData2(2);
-    REQUIRE(s.GetSize() == 1);
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 1);
     iter.AddSecondary(std::tuple{4.4});
-    REQUIRE(s.GetSize() == 2);
+    CHECK(s.getSize() == 2);
+    CHECK(s.getEntries() == 2);
     // p.AddSecondary(3.3, 2.2, 1.);
-    // REQUIRE(s.GetSize() == 3);
+    // CHECK(s.getSize() == 3);
     double v = 0;
     for (const auto& i : s) {
       v += i.GetData();
-      REQUIRE(i.GetData2() == 2);
+      CHECK(i.GetData2() == 2);
     }
-    REQUIRE(v == 9.9 + 4.4);
+    CHECK(v == 9.9 + 4.4);
   }
 
   SECTION("get next particle") {
     StackTest s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
+    CHECK(s.getEntries() == 0);
+    CHECK(s.IsEmpty());
+
     auto p1 = s.AddParticle(std::tuple{9.9});
     auto p2 = s.AddParticle(std::tuple{8.8});
     p1.SetData2(20.2);
     p2.SetData2(20.3);
+    CHECK(s.getSize() == 2);
+    CHECK(s.getEntries() == 2);
+    CHECK(!s.IsEmpty());
+
     auto particle = s.GetNextParticle(); // first particle
-    REQUIRE(particle.GetData() == 8.8);
-    REQUIRE(particle.GetData2() == 20.3);
+    CHECK(particle.GetData() == 8.8);
+    CHECK(particle.GetData2() == 20.3);
 
-    particle.Delete();
+    particle.Delete(); // only marks (last) particle as "deleted"
+    CHECK(s.getSize() == 2);
+    CHECK(s.getEntries() == 1);
+    CHECK(!s.IsEmpty());
+
+    /*
+      This following call to GetNextParticle will realize that the
+      current last particle on the stack was marked "deleted" and will
+      purge it: stack size is reduced by one.
+     */
     auto particle2 = s.GetNextParticle(); // first particle
-    REQUIRE(particle2.GetData() == 9.9);
-    REQUIRE(particle2.GetData2() == 20.2);
-    particle2.Delete();
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 1);
+    CHECK(!s.IsEmpty());
+    CHECK(particle2.GetData() == 9.9);
+    CHECK(particle2.GetData2() == 20.2);
 
-    REQUIRE(s.GetSize() == 0);
+    particle2.Delete(); // also mark this particle as "deleted"
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 0);
+    CHECK(s.IsEmpty());
   }
 }
 
@@ -199,7 +228,7 @@ class TestStackData3 {
 public:
   // these functions are needed for the Stack interface
   void Clear() { fData3.clear(); }
-  unsigned int GetSize() const { return fData3.size(); }
+  unsigned int getSize() const { return fData3.size(); }
   unsigned int GetCapacity() const { return fData3.size(); }
   void Copy(const int i1, const int i2) { fData3[i2] = fData3[i1]; }
   void Swap(const int i1, const int i2) {
@@ -259,11 +288,17 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
   SECTION("create secondaries") {
 
     StackTest2 s;
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getSize() == 0);
+    CHECK(s.IsEmpty()); // size = entries = 0
+
     // add new particle, only provide tuple data for StackTest
     auto p1 = s.AddParticle(std::tuple{9.9});
     // add new particle, provide tuple data for both StackTest and TestStackData3
     auto p2 = s.AddParticle(std::tuple{8.8}, std::tuple{0.1});
+
+    CHECK(s.getSize() == 2);
+    CHECK(!s.IsEmpty()); // size = entries = 2
+
     // examples to explicitly change data on stack
     p2.SetData2(0.1); // not clear why this is needed, need to check
                       // SetParticleData workflow for more complicated
@@ -271,32 +306,46 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
     p1.SetData3(20.2);
     p2.SetData3(10.3);
 
-    REQUIRE(p1.GetData() == 9.9);
-    REQUIRE(p1.GetData2() == 0.);
+    CHECK(p1.GetData() == 9.9);
+    CHECK(p1.GetData2() == 0.);
     p1.SetData2(10.2);
-    REQUIRE(p1.GetData2() == 10.2);
-    REQUIRE(p1.GetData3() == 20.2);
+    CHECK(p1.GetData2() == 10.2);
+    CHECK(p1.GetData3() == 20.2);
 
-    REQUIRE(p2.GetData() == 8.8);
-    REQUIRE(p2.GetData2() == 0.1);
-    REQUIRE(p2.GetData3() == 10.3);
+    CHECK(p2.GetData() == 8.8);
+    CHECK(p2.GetData2() == 0.1);
+    CHECK(p2.GetData3() == 10.3);
 
     auto particle = s.GetNextParticle(); // first particle
-    REQUIRE(particle.GetData() == 8.8);
-    REQUIRE(particle.GetData2() == 0.1);
-    REQUIRE(particle.GetData3() == 10.3);
+    CHECK(particle.GetData() == 8.8);
+    CHECK(particle.GetData2() == 0.1);
+    CHECK(particle.GetData3() == 10.3);
 
-    REQUIRE(s.GetSize() == 2);
     auto sec = particle.AddSecondary(std::tuple{4.4});
-    REQUIRE(s.GetSize() == 3);
-    REQUIRE(sec.GetData() == 4.4);
-    REQUIRE(sec.GetData2() == 0.1);
-    REQUIRE(sec.GetData3() == 10.3);
+    CHECK(s.getSize() == 3);
+    CHECK(s.getEntries() == 3);
+    CHECK(sec.GetData() == 4.4);
+    CHECK(sec.GetData2() == 0.1);
+    CHECK(sec.GetData3() == 10.3);
 
-    sec.Delete();
-    s.DeleteLast();
-    s.GetNextParticle().Delete();
-    REQUIRE(s.GetSize() == 0);
+    sec.Delete(); // mark for deletion: size=3, entries=2
+    CHECK(s.getSize() == 3);
+    CHECK(s.getEntries() == 2);
+    CHECK(!s.IsEmpty());
+
+    s.last().Delete(); // mark for deletion: size=3, entries=1
+    CHECK(s.getSize() == 3);
+    CHECK(s.getEntries() == 1);
+    CHECK(!s.IsEmpty());
+
+    /*
+       GetNextParticle will find two entries marked as "deleted" and
+       will purge this from the end of the stack: size = 1
+    */
+    s.GetNextParticle().Delete(); // mark for deletion: size=3, entries=0
+    CHECK(s.getSize() == 1);
+    CHECK(s.getEntries() == 0);
+    CHECK(s.IsEmpty());
   }
 }
 
@@ -341,6 +390,6 @@ TEST_CASE("Combined Stack - secondary view") {
     auto projectile = view.GetProjectile();
     projectile.AddSecondary(std::tuple{8.8});
 
-    REQUIRE(stack.GetSize() == 2);
+    CHECK(stack.getSize() == 2);
   }
 }

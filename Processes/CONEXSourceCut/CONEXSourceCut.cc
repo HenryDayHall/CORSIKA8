@@ -29,17 +29,17 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
 
     auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
-    if (it == egs_em_codes_.cend()) {
-      ++p;
-      continue; // no EM particle
+    if (it != egs_em_codes_.cend()) {
+      // EM particle
+    
+      auto const egs_pid = it->second;
+
+      addParticle(egs_pid, p.GetEnergy(), p.GetMass(), p.GetPosition(),
+		  p.GetMomentum().normalized(), p.GetTime());
+
+      p.Delete();
     }
-
-    auto const egs_pid = it->second;
-
-    addParticle(egs_pid, p.GetEnergy(), p.GetMass(), p.GetPosition(),
-                p.GetMomentum().normalized(), p.GetTime());
-
-    p.Delete();
+    ++p;
   }
 
   return corsika::process::EProcessReturn::eOk;

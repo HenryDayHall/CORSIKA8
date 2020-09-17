@@ -63,6 +63,7 @@ namespace corsika::stack {
      * Helper type for inside this class
      */
     using InnerStackType = Stack<StackDataType&, ParticleInterface>;
+    using InnerStackType::getDeleted;
 
     /**
      * @name We need this "special" types with non-reference StackData for
@@ -104,6 +105,11 @@ namespace corsika::stack {
     template <typename... Args>
     SecondaryView(Args... args) = delete;
 
+  private:
+    InnerStackTypeValue& innerstack_;
+    unsigned int fProjectileIndex;
+    std::vector<unsigned int> fIndices;
+
   public:
     /**
        SecondaryView can only be constructed passing it a valid
@@ -111,6 +117,7 @@ namespace corsika::stack {
      **/
     SecondaryView(StackIteratorValue& vI)
         : Stack<StackDataType&, ParticleInterface>(vI.GetStackData())
+        , innerstack_(vI.GetStack())
         , fProjectileIndex(vI.GetIndex()) {}
 
     StackIterator GetProjectile() {
@@ -128,8 +135,9 @@ namespace corsika::stack {
     auto AddSecondary(StackIterator& proj, const Args... v) {
       // make space on stack
       InnerStackType::GetStackData().IncrementSize();
+      innerstack_.deleted_.push_back(false);
       // get current number of secondaries on stack
-      const unsigned int idSec = GetSize();
+      const unsigned int idSec = getSize();
       // determine index on (inner) stack where new particle will be located
       const unsigned int index = InnerStackType::GetStackData().GetSize() - 1;
       fIndices.push_back(index);
@@ -141,27 +149,65 @@ namespace corsika::stack {
     /**
      * overwrite Stack::GetSize to return actual number of secondaries
      */
-    unsigned int GetSize() const { return fIndices.size(); }
+    unsigned int getSize() const { return fIndices.size(); }
+    unsigned int getEntries() const { return getSize() - getDeleted(); }
+    bool IsEmpty() const { return getEntries() == 0; }
 
     /**
      * @name These are functions required by std containers and std loops
      * The Stack-versions must be overwritten, since here we need the correct
-     * SecondaryView::GetSize
+     * SecondaryView::getSize
      * @{
      */
     // NOTE: the "+1" is since "0" is special marker here for PROJECTILE, see
     // GetIndexFromIterator
-    auto begin() { return StackIterator(*this, 0 + 1); }
-    auto end() { return StackIterator(*this, GetSize() + 1); }
-    auto last() { return StackIterator(*this, GetSize() - 1 + 1); }
+    StackIterator begin() {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!isDeleted(i)) break;
+      }
+      return StackIterator(*this, i + 1);
+    }
+    auto end() { return StackIterator(*this, getSize() + 1); }
+    auto last() {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!isDeleted(getSize() - 1 - i)) break;
+      }
+      return StackIterator(*this, getSize() - 1 - i + 1);
+    }
 
-    auto begin() const { return ConstStackIterator(*this, 0 + 1); }
-    auto end() const { return ConstStackIterator(*this, GetSize() + 1); }
-    auto last() const { return ConstStackIterator(*this, GetSize() - 1 + 1); }
+    auto begin() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!isDeleted(i)) break;
+      }
+      return ConstStackIterator(*this, i + 1);
+    }
+    auto end() const { return ConstStackIterator(*this, getSize() + 1); }
+    auto last() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!isDeleted(getSize() - 1 - i)) break;
+      }
+      return ConstStackIterator(*this, getSize() - 1 - i + 1);
+    }
 
-    auto cbegin() const { return ConstStackIterator(*this, 0 + 1); }
-    auto cend() const { return ConstStackIterator(*this, GetSize() + 1); }
-    auto clast() const { return ConstStackIterator(*this, GetSize() - 1 + 1); }
+    auto cbegin() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!isDeleted(i)) break;
+      }
+      return ConstStackIterator(*this, i + 1);
+    }
+    auto cend() const { return ConstStackIterator(*this, getSize()); }
+    auto clast() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!isDeleted(getSize() - 1 - i)) break;
+      }
+      return ConstStackIterator(*this, getSize() - 1 - i + 1);
+    }
     /// @}
 
     /**
@@ -177,42 +223,91 @@ namespace corsika::stack {
      *
      */
     void Delete(StackIterator p) {
-      if (IsEmpty()) { /* error */
+      if (IsEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
-      const int innerSize = InnerStackType::GetSize();
-      const int innerIndex = GetIndexFromIterator(p.GetIndex());
-      if (innerIndex < innerSize - 1)
-        InnerStackType::GetStackData().Copy(innerSize - 1,
-                                            GetIndexFromIterator(p.GetIndex()));
-      DeleteLast();
+      if (isDeleted(p.GetIndex() - 1)) { /*error*/
+        throw std::runtime_error("Stack, cannot delete entry since already deleted");
+      }
+      innerstack_.Delete(GetIndexFromIterator(p.GetIndex()));
+      InnerStackType::nDeleted_++; // also count in SecondaryView
     }
 
     /**
      * need overwrite Stack::Delete, since we want to call SecondaryView::DeleteLast
      */
-    void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
-
-    /**
-     * delete last particle on stack by decrementing stack size
-     */
-    void DeleteLast() {
-      fIndices.pop_back();
-      InnerStackType::GetStackData().DecrementSize();
-    }
+    // void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
 
     /**
      * return next particle from stack, need to overwrtie Stack::GetNextParticle to get
      * right reference
      */
-    StackIterator GetNextParticle() { return last(); }
+    StackIterator GetNextParticle() {
+      while (purgeLastIfDeleted()) {}
+      return last();
+    }
 
     /**
-     * check if there are no further particles on stack
+     * check if this particle was already deleted
+     *
+     * need to re-implement for SecondaryView since StackIterator types are a bit
+     * different
      */
-    bool IsEmpty() { return GetSize() == 0; }
+    bool isDeleted(const StackIterator& p) const { return isDeleted(p.GetIndex() - 1); }
+    bool isDeleted(const ConstStackIterator& p) const {
+      return isDeleted(p.GetIndex() - 1);
+    }
+    /**
+     * delete this particle
+     */
+    bool isDeleted(const ParticleInterfaceType& p) const {
+      return isDeleted(p.GetIterator());
+    }
+
+    /**
+     * Function to ultimatively remove the last entry from the stack,
+     * if it was marked as deleted before. If this is not the case,
+     * the function will just return false and do nothing.
+     */
+    bool purgeLastIfDeleted() {
+      if (!isDeleted(getSize() - 1))
+        return false; // the last particle is not marked for deletion. Do nothing.
+      innerstack_.purge(GetIndexFromIterator(getSize()));
+      InnerStackType::nDeleted_--;
+      fIndices.pop_back();
+      return true;
+    }
+
+    /**
+     * Function to ultimatively remove all entries from the stack
+     * marked as deleted.
+     *
+     * Careful: this will re-order the entries on the stack, since
+     * "gaps" in the stack are filled with entries from the back
+     * (copied).
+     */
+    void purge() {
+      unsigned int iStack = 0;
+      unsigned int size = getSize();
+      while (iStack < size) {
+        if (isDeleted(iStack)) {
+          innerstack_.purge(iStack);
+          fIndices.erase(fIndices.begin() + iStack);
+        }
+        size = getSize();
+        iStack++;
+      }
+      InnerStackType::nDeleted_ = 0;
+    }
 
   protected:
+    // forward to inner stack
+    // this also checks the allowed bounds of 'i'
+    bool isDeleted(unsigned int i) const {
+      if (i >= fIndices.size()) return false;
+      return innerstack_.isDeleted(GetIndexFromIterator(i + 1));
+    }
+
     /**
      * We only want to 'see' secondaries indexed in fIndices. In this
      * function the conversion form iterator-index to stack-index is
@@ -222,10 +317,6 @@ namespace corsika::stack {
       if (vI == 0) return fProjectileIndex;
       return fIndices[vI - 1];
     }
-
-  private:
-    unsigned int fProjectileIndex;
-    std::vector<unsigned int> fIndices;
   };
 
   /*

@@ -146,8 +146,8 @@ TEST_CASE("UrQMD") {
 
     for (auto code : validProjectileCodes) {
       auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);
-      REQUIRE(stack->GetSize() == 1);
-      REQUIRE(view->GetSize() == 0);
+      REQUIRE(stack->getEntries() == 1);
+      REQUIRE(view->getEntries() == 0);
 
       // simple check whether the cross-section is non-vanishing
       // only nuclei with available tabluated data so far
@@ -162,8 +162,8 @@ TEST_CASE("UrQMD") {
 
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->GetSize() == 1);
-    REQUIRE(secViewPtr->GetSize() == 0);
+    REQUIRE(stackPtr->getEntries() == 1);
+    REQUIRE(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
@@ -186,8 +186,8 @@ TEST_CASE("UrQMD") {
 
     auto [stackPtr, secViewPtr] =
         setupStack(particles::Code::PiPlus, 400_GeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->GetSize() == 1);
-    REQUIRE(secViewPtr->GetSize() == 0);
+    REQUIRE(stackPtr->getEntries() == 1);
+    REQUIRE(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
@@ -212,8 +212,8 @@ TEST_CASE("UrQMD") {
 
     auto [stackPtr, secViewPtr] =
         setupStack(particles::Code::K0Long, 400_GeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->GetSize() == 1);
-    REQUIRE(secViewPtr->GetSize() == 0);
+    REQUIRE(stackPtr->getEntries() == 1);
+    REQUIRE(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();

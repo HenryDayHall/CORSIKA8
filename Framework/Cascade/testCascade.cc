@@ -106,11 +106,10 @@ public:
       if (E < fEcrit) {
         p.Delete();
         fCount++;
-      } else {
-        ++p; // next particle
       }
+      ++p; // next particle
     }
-    cout << "ProcessCut::DoSecondaries size=" << vS.GetSize() << " count=" << fCount
+    cout << "ProcessCut::DoSecondaries size=" << vS.getEntries() << " count=" << fCount
          << endl;
     return EProcessReturn::eOk;
   }
@@ -162,7 +161,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   SECTION("forced interaction") {
     EAS.SetNodes();
     EAS.forceInteraction();
-    CHECK(stack.GetSize() == 2);
+    CHECK(stack.getEntries() == 2);
     CHECK(split.GetCalls() == 1);
   }
 }

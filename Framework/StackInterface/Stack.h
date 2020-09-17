@@ -10,11 +10,12 @@
 
 #include <corsika/stack/StackIteratorInterface.h>
 // must be after StackIteratorInterface
-#include <corsika/stack/SecondaryView.h>
+// #include <corsika/stack/SecondaryView.h>
 #include <corsika/utl/MetaProgramming.h>
 
 #include <stdexcept>
 #include <type_traits>
+#include <vector>
 
 /**
    All classes around management of particles on a stack.
@@ -51,11 +52,15 @@ namespace corsika::stack {
      loops, ranges, etc.
    */
 
-  template <typename StackDataType, template <typename> typename ParticleInterface>
+  template <typename TStackData, template <typename> typename TParticleInterface>
   class Stack {
-    using StackDataValueType = std::remove_reference_t<StackDataType>;
+    using StackDataValueType = std::remove_reference_t<TStackData>;
 
-    StackDataType fData; ///< this in general holds all the data and can be quite big
+  private:
+    TStackData data_; ///< this in general holds all the data and can be quite big
+    std::vector<bool> deleted_; ///< bit field to flag deleted entries
+  protected:
+    unsigned int nDeleted_ = 0;
 
   private:
     Stack(Stack&) = delete; ///< since Stack can be very big, we don't want to copy it
@@ -64,48 +69,52 @@ namespace corsika::stack {
 
   public:
     /**
-     * if StackDataType is a reference member we *HAVE* to initialize
+     * if TStackData is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
      */
-    template <typename _ = StackDataType, typename = utl::enable_if<std::is_reference<_>>>
-    Stack(StackDataType vD)
-        : fData(vD) {}
+    template <typename _ = TStackData, typename = utl::enable_if<std::is_reference<_>>>
+    Stack(TStackData vD)
+        : data_(vD)
+        , deleted_(std::vector<bool>(data_.GetSize(), false))
+        , nDeleted_(0) {}
 
     /**
      * This constructor takes any argument and passes it on to the
-     * StackDataType user class. If the user did not provide a suited
+     * TStackData user class. If the user did not provide a suited
      * constructor this will fail with an error message.
      *
      * Furthermore, this is disabled with enable_if for SecondaryView
      * stacks, where the inner data container is always a reference
      * and cannot be initialized here.
      */
-    template <typename... Args, typename _ = StackDataType,
+    template <typename... Args, typename _ = TStackData,
               typename = utl::disable_if<std::is_reference<_>>>
     Stack(Args... args)
-        : fData(args...) {}
+        : data_(args...)
+        , deleted_(std::vector<bool>(data_.GetSize(), false))
+        , nDeleted_(0) {}
 
   public:
-    typedef StackDataType
+    typedef TStackData
         StackImpl; ///< this is the type of the user-provided data structure
 
     template <typename SI>
-    using PIType = ParticleInterface<SI>;
+    using PIType = TParticleInterface<SI>;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
      * specialization, the type of the StackIterator
      * template class is declared for a particular stack data
      * object. Using CRTP, this also determines the type of
-     * ParticleInterface template class simultaneously.
+     * TParticleInterface template class simultaneously.
      */
     using StackIterator =
-        StackIteratorInterface<StackDataValueType, ParticleInterface, Stack>;
+        StackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
     using ConstStackIterator =
-        ConstStackIteratorInterface<StackDataValueType, ParticleInterface, Stack>;
+        ConstStackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
 
     /**
-     * this is the full type of the user-declared ParticleInterface
+     * this is the full type of the user-declared TParticleInterface
      */
     using ParticleInterfaceType = typename StackIterator::ParticleInterfaceType;
     /**
@@ -115,21 +124,25 @@ namespace corsika::stack {
     using ParticleType = StackIterator;
 
     // friends are needed since they need access to protected members
-    friend class StackIteratorInterface<StackDataValueType, ParticleInterface, Stack>;
-    friend class ConstStackIteratorInterface<StackDataValueType, ParticleInterface,
+    friend class StackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
+    friend class ConstStackIteratorInterface<StackDataValueType, TParticleInterface,
                                              Stack>;
+    friend class SecondaryView<StackDataValueType, TParticleInterface>;
 
   public:
     /**
-     * @name Most generic proxy methods for StackDataType fData
+     * @name Most generic proxy methods for TStackData data_
      * @{
      */
-    unsigned int GetCapacity() const { return fData.GetCapacity(); }
-    unsigned int GetSize() const { return fData.GetSize(); }
+    unsigned int GetCapacity() const { return data_.GetCapacity(); }
+    unsigned int getDeleted() const { return nDeleted_; }
+    unsigned int getEntries() const { return getSize() - getDeleted(); }
 
     template <typename... Args>
-    auto Clear(Args... args) {
-      return fData.Clear(args...);
+    void Clear(Args... args) {
+      data_.Clear(args...);
+      deleted_ = std::vector<bool>(data_.GetSize(), false);
+      nDeleted_ = 0;
     }
     ///@}
 
@@ -138,26 +151,68 @@ namespace corsika::stack {
      * @name These are functions required by std containers and std loops
      * @{
      */
-    StackIterator begin() { return StackIterator(*this, 0); }
-    StackIterator end() { return StackIterator(*this, GetSize()); }
-    StackIterator last() { return StackIterator(*this, GetSize() - 1); }
+    StackIterator begin() {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!deleted_[i]) break;
+      }
+      return StackIterator(*this, i);
+    }
+    StackIterator end() { return StackIterator(*this, getSize()); }
+    StackIterator last() {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!deleted_[getSize() - 1 - i]) break;
+      }
+      return StackIterator(*this, getSize() - 1 - i);
+    }
 
-    ConstStackIterator begin() const { return ConstStackIterator(*this, 0); }
-    ConstStackIterator end() const { return ConstStackIterator(*this, GetSize()); }
-    ConstStackIterator last() const { return ConstStackIterator(*this, GetSize() - 1); }
+    ConstStackIterator begin() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!deleted_[i]) break;
+      }
+      return ConstStackIterator(*this, i);
+    }
+    ConstStackIterator end() const { return ConstStackIterator(*this, getSize()); }
+    ConstStackIterator last() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!deleted_[getSize() - 1 - i]) break;
+      }
+      return ConstStackIterator(*this, getSize() - 1 - i);
+    }
 
-    ConstStackIterator cbegin() const { return ConstStackIterator(*this, 0); }
-    ConstStackIterator cend() const { return ConstStackIterator(*this, GetSize()); }
-    ConstStackIterator clast() const { return ConstStackIterator(*this, GetSize() - 1); }
+    ConstStackIterator cbegin() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!deleted_[i]) break;
+      }
+      return ConstStackIterator(*this, 0);
+    }
+    ConstStackIterator cend() const { return ConstStackIterator(*this, getSize()); }
+    ConstStackIterator clast() const {
+      unsigned int i = 0;
+      for (; i < getSize(); ++i) {
+        if (!deleted_[getSize() - 1 - i]) break;
+      }
+      return ConstStackIterator(*this, getSize() - 1 - i);
+    }
     /// @}
+
+    StackIterator GetNextParticle() {
+      while (purgeLastIfDeleted()) {}
+      return last();
+    }
 
     /**
      * increase stack size, create new particle at end of stack
      */
     template <typename... Args>
     StackIterator AddParticle(const Args... v) {
-      fData.IncrementSize();
-      return StackIterator(*this, GetSize() - 1, v...);
+      data_.IncrementSize();
+      deleted_.push_back(false);
+      return StackIterator(*this, getSize() - 1, v...);
     }
 
     /**
@@ -166,32 +221,44 @@ namespace corsika::stack {
      */
     template <typename... Args>
     StackIterator AddSecondary(StackIterator& parent, const Args... v) {
-      fData.IncrementSize();
-      return StackIterator(*this, GetSize() - 1, parent, v...);
+      data_.IncrementSize();
+      deleted_.push_back(false);
+      return StackIterator(*this, getSize() - 1, parent, v...);
     }
 
     void Swap(StackIterator a, StackIterator b) {
-      fData.Swap(a.GetIndex(), b.GetIndex());
+      data_.Swap(a.GetIndex(), b.GetIndex());
+      std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);
     }
     void Swap(ConstStackIterator a, ConstStackIterator b) {
-      fData.Swap(a.GetIndex(), b.GetIndex());
+      data_.Swap(a.GetIndex(), b.GetIndex());
+      std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);
     }
     void Copy(StackIterator a, StackIterator b) {
-      fData.Copy(a.GetIndex(), b.GetIndex());
+      data_.Copy(a.GetIndex(), b.GetIndex());
+      if (deleted_[b.GetIndex()] && !deleted_[a.GetIndex()]) nDeleted_--;
+      if (!deleted_[b.GetIndex()] && deleted_[a.GetIndex()]) nDeleted_++;
+      deleted_[b.GetIndex()] = deleted_[a.GetIndex()];
     }
     void Copy(ConstStackIterator a, StackIterator b) {
-      fData.Copy(a.GetIndex(), b.GetIndex());
+      data_.Copy(a.GetIndex(), b.GetIndex());
+      if (deleted_[b.GetIndex()] && !deleted_[a.GetIndex()]) nDeleted_--;
+      if (!deleted_[b.GetIndex()] && deleted_[a.GetIndex()]) nDeleted_++;
+      deleted_[b.GetIndex()] = deleted_[a.GetIndex()];
     }
 
     /**
      * delete this particle
      */
+  public:
     void Delete(StackIterator p) {
-      if (GetSize() == 0) { /*error*/
+      if (IsEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
-      if (p.GetIndex() < GetSize() - 1) fData.Copy(GetSize() - 1, p.GetIndex());
-      DeleteLast();
+      if (deleted_[p.GetIndex()]) { /*error*/
+        throw std::runtime_error("Stack, cannot delete entry since already deleted");
+      }
+      Delete(p.GetIndex());
     }
     /**
      * delete this particle
@@ -199,35 +266,99 @@ namespace corsika::stack {
     void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
 
     /**
-     * delete last particle on stack by decrementing stack size
+     * check if there are no further non-deleted particles on stack
      */
-    void DeleteLast() { fData.DecrementSize(); }
+    bool IsEmpty() { return getEntries() == 0; }
 
     /**
-     * check if there are no further particles on stack
+     * check if this particle was already deleted
      */
-    bool IsEmpty() { return GetSize() == 0; }
+  public:
+    bool isDeleted(const StackIterator& p) { return isDeleted(p.GetIndex()); }
+    bool isDeleted(const ConstStackIterator& p) const { return isDeleted(p.GetIndex()); }
+    bool isDeleted(const ParticleInterfaceType& p) { return isDeleted(p.GetIterator()); }
 
     /**
-     * return next particle from stack
+     * Function to ultimatively remove the last entry from the stack,
+     * if it was marked as deleted before. If this is not the case,
+     * the function will just return false and do nothing.
      */
-    StackIterator GetNextParticle() { return last(); }
+    bool purgeLastIfDeleted() {
+      if (!deleted_.back())
+        return false; // the last particle is not marked for deletion. Do nothing.
+      data_.DecrementSize();
+      nDeleted_--;
+      deleted_.pop_back();
+      return true;
+    }
+
+    /**
+     * Function to ultimatively remove all entries from the stack
+     * marked as deleted.
+     *
+     * Careful: this will re-order the entries on the stack, since
+     * "gaps" in the stack are filled with entries from the back
+     * (copied).
+     */
+    void purge() {
+      unsigned int iStackFront = 0;
+      unsigned int iStackBack = getSize() - 1;
+      for (unsigned int iDeleted = 0; iDeleted < getDeleted(); ++iDeleted) {
+        // search first delete entry on stack
+        while (!deleted_[iStackFront]) { iStackFront++; }
+        // search for last non-deleted particle on stack
+        while (deleted_[iStackBack]) { iStackBack--; }
+        // copy entry from iStackBack to iStackFront
+        data_.Copy(iStackBack, iStackFront);
+        data_.DecrementSize();
+      }
+      deleted_.clear();
+      nDeleted_ = 0;
+    }
 
   protected:
+    unsigned int getSize() const { return data_.GetSize(); }
+
+    bool isDeleted(unsigned int i) const {
+      if (i >= deleted_.size()) return false;
+      return deleted_.at(i);
+    }
+
+    void Delete(unsigned int i) {
+      deleted_[i] = true;
+      nDeleted_++;
+    }
+
+    /**
+     * will remove from storage the element i. This is a helper
+     * function for SecondaryView.
+     */
+    void purge(unsigned int i) {
+      unsigned int iStackBack = getSize() - 1;
+      // search for last non-deleted particle on stack
+      while (deleted_[iStackBack]) { iStackBack--; }
+      // copy entry from iStackBack to iStackFront
+      data_.Copy(iStackBack, i);
+      if (deleted_[i]) nDeleted_--;
+      deleted_[i] = deleted_[iStackBack];
+      data_.DecrementSize();
+      deleted_.pop_back();
+    }
+
     /**
      * Function to perform eventual transformation from
      * StackIterator::GetIndex() to index in data stored in
-     * StackDataType fData. By default (and in almost all cases) this
+     * TStackData data_. By default (and in almost all cases) this
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
     unsigned int GetIndexFromIterator(const unsigned int vI) const { return vI; }
 
     /**
-     * @name Return reference to StackDataType object fData for data access
+     * @name Return reference to TStackData object data_ for data access
      * @{
      */
-    StackDataValueType& GetStackData() { return fData; }
-    const StackDataValueType& GetStackData() const { return fData; }
+    StackDataValueType& GetStackData() { return data_; }
+    const StackDataValueType& GetStackData() const { return data_; }
     ///@}
   };
 

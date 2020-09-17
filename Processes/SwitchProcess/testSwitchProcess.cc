@@ -172,7 +172,7 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
       InverseGrammageType invLambda = 0 / kgMSq;
       switchProcess.SelectInteraction(p, projectile, 0.01 / kgMSq, invLambda);
 
-      REQUIRE(view.GetSize() == 2);
+      REQUIRE(view.getSize() == 2);
     }
   }
 }
@@ -214,7 +214,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
         InverseGrammageType accumulator = 0 / kgMSq;
         completeSeq.SelectInteraction(p, projectile, invLambda, accumulator);
 
-        numberOfSecondaries.push_back(view.GetSize());
+        numberOfSecondaries.push_back(view.getSize());
       }
 
       auto const mean =
@@ -248,7 +248,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
         InverseGrammageType accumulator = 0 / kgMSq;
         completeSeq.SelectInteraction(p, projectile, invLambda, accumulator);
 
-        numberOfSecondaries.push_back(view.GetSize());
+        numberOfSecondaries.push_back(view.getSize());
       }
 
       auto const mean =

@@ -35,7 +35,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
             particles::Code::Electron, 1.5_GeV,
             corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
-    REQUIRE(s.GetSize() == 1);
+    REQUIRE(s.getEntries() == 1);
   }
 
   SECTION("write nucleus") {
@@ -48,7 +48,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
         particles::Code::Nucleus, 1.5_GeV,
         corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 10});
-    REQUIRE(s.GetSize() == 1);
+    REQUIRE(s.getEntries() == 1);
   }
 
   SECTION("write invalid nucleus") {
@@ -127,9 +127,9 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
       }
     }
 
-    REQUIRE(s.GetSize() == 99);
+    REQUIRE(s.getEntries() == 99);
     for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
-    REQUIRE(s.GetSize() == 0);
+    REQUIRE(s.getEntries() == 0);
   }
 
   SECTION("stack operations") {
@@ -224,7 +224,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
       REQUIRE(p59.GetNuclearZ() == 29 / 2);
     }
 
-    for (int i = 0; i < 99; ++i) s.DeleteLast();
-    REQUIRE(s.GetSize() == 0);
+    for (int i = 0; i < 99; ++i) s.last().Delete();
+    REQUIRE(s.getEntries() == 0);
   }
 }

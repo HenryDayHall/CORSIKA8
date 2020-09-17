@@ -396,7 +396,7 @@ namespace corsika::process::qgsjetII {
            << QGSJetIIFragmentsStackData::GetWoundedNucleonsTarget()
            << ", N_wounded,proj="
            << QGSJetIIFragmentsStackData::GetWoundedNucleonsProjectile()
-           << ", N_fragm,proj=" << qfs.GetSize() << endl;
+           << ", N_fragm,proj=" << qfs.getEntries() << endl;
     }
     return process::EProcessReturn::eOk;
   }

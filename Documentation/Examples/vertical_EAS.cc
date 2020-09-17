@@ -55,7 +55,7 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-void registerRandomStreams() {
+void registerRandomStreams(const int seed) {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   random::RNGManager::GetInstance().RegisterRandomStream("qgsjet");
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
@@ -63,17 +63,28 @@ void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
   random::RNGManager::GetInstance().RegisterRandomStream("proposal");
 
-  random::RNGManager::GetInstance().SeedAll();
+  if (seed==0)
+    random::RNGManager::GetInstance().SeedAll();
+  else 
+    random::RNGManager::GetInstance().SeedAll(seed);
 }
 
 int main(int argc, char** argv) {
-  if (argc != 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV>" << std::endl;
+
+  std::cout << "vertical_EAS" << std::endl;
+
+  if (argc < 4) {
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
+    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
+
+  int seed = 0;
+  if (argc>4)
+    seed = std::stoi(std::string(argv[4]));
   // initialize random number sequence(s)
-  registerRandomStreams();
+  registerRandomStreams(seed);
 
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;

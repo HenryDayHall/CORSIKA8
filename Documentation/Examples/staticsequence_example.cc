@@ -100,6 +100,9 @@ void modular() {
 }
 
 int main() {
+
+  std::cout << "staticsequence_example" << std::endl;
+  
   modular();
   return 0;
 }
