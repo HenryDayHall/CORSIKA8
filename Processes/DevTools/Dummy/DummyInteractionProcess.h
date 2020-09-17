@@ -8,23 +8,21 @@
 
 #pragma once
 
+#include <corsika/process/InteractionProcess.h>
+
 #include <chrono>
 #include <thread>
-
-#include <corsika/process/InteractionProcess.h>
 
 namespace corsika::process {
   namespace devtools {
 
     template <int ISleep>
-    class DummyInteractionProcess : InteractionProcess< DummyInteractionProcess<ISleep> > {
+    class DummyInteractionProcess : InteractionProcess<DummyInteractionProcess<ISleep> > {
     private:
     public:
       template <typename Particle>
-      EProcessReturn DoInteraction(Particle&)
-      {
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(ISleep));
+      EProcessReturn DoInteraction(Particle&) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return process::EProcessReturn::eOk;
       }
 
@@ -32,8 +30,7 @@ namespace corsika::process {
       corsika::units::si::GrammageType GetInteractionLength(TParticle& p) {
         using namespace corsika::units::si;
 
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(ISleep));
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return std::numeric_limits<double>::infinity() * (1_g / 1_cm / 1_cm);
       }
     };
