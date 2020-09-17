@@ -50,6 +50,7 @@ CORSIKA_ADD_TEST (testExecTime testExecTime.cc)
 target_link_libraries (
   testExecTime  ProcessDevTools
   CORSIKAsetup
+  DevTools_Dummy
   CORSIKAthirdparty # for catch2
   )
 

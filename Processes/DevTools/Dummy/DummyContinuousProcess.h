@@ -8,29 +8,27 @@
 
 #pragma once
 
+#include <corsika/process/ContinuousProcess.h>
+
 #include <chrono>
 #include <thread>
-
-#include <corsika/process/ContinuousProcess.h>
 
 namespace corsika::process {
   namespace devtools {
 
     template <int ISleep>
-    class DummyContinuousProcess : ContinuousProcess<DummyContinuousProcess<ISleep>> {
+    class DummyContinuousProcess : public ContinuousProcess<DummyContinuousProcess<ISleep>> {
     private:
     public:
       template <typename Particle, typename Track>
       EProcessReturn DoContinuous(Particle&, Track const&) const {
-        std::this_thread::sleep_for(
-           std::chrono::milliseconds(ISleep));
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return process::EProcessReturn::eOk;
       }
 
       template <typename Particle, typename Track>
       units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const {
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(ISleep));
+        std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return units::si::meter * std::numeric_limits<double>::infinity();
       }
 
