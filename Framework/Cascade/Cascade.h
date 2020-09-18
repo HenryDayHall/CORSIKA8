@@ -71,6 +71,17 @@ namespace corsika::cascade {
         std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>;
     using MediumInterface = typename VolumeTreeNode::IModelProperties;
 
+  private:
+    // Data members
+    corsika::environment::Environment<MediumInterface> const& fEnvironment;
+    TTracking& fTracking;
+    TProcessList& fProcessSequence;
+    TStack& fStack;
+    corsika::random::RNG& fRNG =
+        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+    unsigned int count_ = 0;
+
+  private:
     // we only want fully configured objects
     Cascade() = delete;
 
@@ -110,8 +121,9 @@ namespace corsika::cascade {
 
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
+	  count_++;
           auto pNext = fStack.GetNextParticle();
-          std::cout << "========= next: pid=" << pNext.GetPID()
+          std::cout << "========= next: count=" << count_ << ", pid=" << pNext.GetPID() 
                     << ", stack entries=" << fStack.getEntries()
                     << ", stack deleted=" << fStack.getDeleted() << std::endl;
           Step(pNext);
@@ -330,16 +342,19 @@ namespace corsika::cascade {
                                                 inv_lambda_count);
     }
 
-  private:
-    corsika::environment::Environment<MediumInterface> const& fEnvironment;
-    TTracking& fTracking;
-    TProcessList& fProcessSequence;
-    TStack& fStack;
-    corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
-
-    corsika::units::si::HEPEnergyType energy_cut_;
-
-  }; // namespace corsika::cascade
+    // but this here temporarily. Should go into dedicated file later:
+    const char* c8_ascii_ = 
+R"V0G0N(
+  ,ad8888ba,     ,ad8888ba,    88888888ba    ad88888ba   88  88      a8P          db              ad88888ba   
+ d8"'    `"8b   d8"'    `"8b   88      "8b  d8"     "8b  88  88    ,88'          d88b            d8"     "8b  
+d8'            d8'        `8b  88      ,8P  Y8,          88  88  ,88"           d8'`8b           Y8a     a8P  
+88             88          88  88aaaaaa8P'  `Y8aaaaa,    88  88,d88'           d8'  `8b           "Y8aaa8P"   
+88             88          88  88""""88'      `"""""8b,  88  8888"88,         d8YaaaaY8b          ,d8"""8b,   
+Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8""""""""8b        d8"     "8b  
+ Y8a.    .a8P   Y8a.    .a8P   88     `8b   Y8a     a8P  88  88     "88,    d8'        `8b       Y8a     a8P  
+  `"Y8888Y"'     `"Y8888Y"'    88      `8b   "Y88888P"   88  88       Y8b  d8'          `8b       "Y88888P"
+	)V0G0N";
+    
+  }; 
 
 } // namespace corsika::cascade
