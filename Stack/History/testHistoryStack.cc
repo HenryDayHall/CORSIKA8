@@ -9,8 +9,6 @@
 #include <corsika/history/HistoryStackExtension.h>
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/dummy/DummyStack.h>
-#include <corsika/history/Event.hpp>
-#include <corsika/history/HSecondaryView.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -19,10 +17,25 @@
 using namespace corsika;
 using namespace corsika::stack;
 
+// this is our dummy environment, it only knows its trivial BaseNodeType
+class DummyEvent {
+private:
+  size_t parent_;
+  std::vector<int> secondaries_;
+
+public:
+  DummyEvent() {}
+  DummyEvent(const size_t parent) { parent_ = parent; }
+
+  size_t getParentIndex() { return parent_; }
+  void addSecondary(const int particle) { secondaries_.push_back(particle); }
+  int multiplicity() const { return secondaries_.size(); }
+};
+
 // the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:
 template <typename TStackIter>
 using DummyHistoryDataInterface =
-    typename history::MakeHistoryDataInterface<TStackIter, history::Event>::type;
+    typename history::MakeHistoryDataInterface<TStackIter, DummyEvent>::type;
 
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
@@ -32,10 +45,10 @@ using StackWithHistoryInterface =
 
 using TestStack =
     corsika::stack::CombinedStack<typename stack::dummy::DummyStack::StackImpl,
-                                  history::HistoryData<history::Event>,
+                                  history::HistoryData<DummyEvent>,
                                   StackWithHistoryInterface>;
 
-using EvtPtr = std::shared_ptr<history::Event>;
+using EvtPtr = std::shared_ptr<DummyEvent>;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 
@@ -50,12 +63,4 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     EvtPtr evt = p.GetEvent();
     CHECK(evt == nullptr);
   }
-
-  SECTION("write event") {
-    history::HSecondaryView hview{p};
-
-    hview.AddSecondary(std::tuple<dummy::NoData>{noData});
-  }
-
-  // REQUIRE(pout.GetPID() == particles::Code::Electron);
 }

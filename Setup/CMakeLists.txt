@@ -20,7 +20,7 @@ target_link_libraries (
   CORSIKAgeometry
   NuclearStackExtension
   GeometryNodeStackExtension
-  #  CORSIKAhistory
+  CORSIKAhistory
   )
 
 target_include_directories (

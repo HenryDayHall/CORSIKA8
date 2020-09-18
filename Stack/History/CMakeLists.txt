@@ -37,9 +37,15 @@ install (
 
 # ----------------
 # code unit testing
-CORSIKA_ADD_TEST(testHistory)
+CORSIKA_ADD_TEST(testHistoryStack)
 target_link_libraries (
-  testHistory
+  testHistoryStack
+  CORSIKAhistory
+  CORSIKAtesting
+  )
+CORSIKA_ADD_TEST(testHistoryView)
+target_link_libraries (
+  testHistoryView
   CORSIKAhistory
   CORSIKAtesting
   )

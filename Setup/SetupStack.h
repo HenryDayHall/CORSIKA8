@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <corsika/history/HistoryStackExtension.h>
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
-#include <corsika/history/HistoryStackExtension.h>
 
 #include <corsika/setup/SetupEnvironment.h>
 
@@ -33,7 +33,6 @@ namespace corsika::setup {
                                     ...event... >::type;
     */
 
-    
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>
     using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<

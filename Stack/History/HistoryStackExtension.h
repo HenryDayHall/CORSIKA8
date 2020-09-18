@@ -72,7 +72,7 @@ namespace corsika::history {
     void SetParticleData() {} // nullptr, already by design
 
     // create a new particle as secondary of a parent
-    void SetParticleData(HistoryDataInterface& parent) { SetParticleData(); }
+    void SetParticleData(HistoryDataInterface& /*parent*/) { SetParticleData(); }
 
     void SetEvent(const std::shared_ptr<TEvent>& v) {
       GetStackData().SetEvent(GetIndex(), v);
