@@ -24,50 +24,50 @@ namespace corsika::process {
     template <typename T>
     class ExecTime : private T {
     private:
-      std::chrono::high_resolution_clock::time_point fStart;
-      std::chrono::duration<double,std::micro> fElapsedSum;
-      double fMean;
-      double fMean2;
-      double fMin;
-      double fMax;
-      long long fN;
+      std::chrono::high_resolution_clock::time_point startTime_;
+      std::chrono::duration<double,std::micro> cumulatedTime_;
+      double mean_;
+      double mean2_;
+      double min_;
+      double max_;
+      long long n_;
 
     protected:
     public:
       ExecTime() {
-        fMin = std::numeric_limits<long long>::max();
-        fMax = 0;
-        fMean = 0;
-        fMean2 = 0;
-        fN = 0;
+        min_ = std::numeric_limits<long long>::max();
+        max_ = 0;
+        mean_ = 0;
+        mean2_ = 0;
+        n_ = 0;
       }
 
-      void start() { fStart = std::chrono::high_resolution_clock::now(); }
+      void start() { startTime_ = std::chrono::high_resolution_clock::now(); }
       void stop() {
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double,std::micro> timeDiv =
-            std::chrono::duration_cast< std::chrono::duration<double,std::micro> >(end - fStart);
+            std::chrono::duration_cast< std::chrono::duration<double,std::micro> >(end - startTime_);
 
-        fElapsedSum += timeDiv;
-        fN = fN + 1;
+        cumulatedTime_ += timeDiv;
+        n_ = n_ + 1;
 
-        if (fMax < timeDiv.count()) fMax = timeDiv.count();
+        if (max_ < timeDiv.count()) max_ = timeDiv.count();
 
-        if (timeDiv.count() < fMin) fMin = timeDiv.count();
+        if (timeDiv.count() < min_) min_ = timeDiv.count();
 
-        double delta = timeDiv.count() - fMean;
-        fMean += delta / static_cast<double>(fN);
+        double delta = timeDiv.count() - mean_;
+        mean_ += delta / static_cast<double>(n_);
 
-        double delta2 = timeDiv.count() - fMean;
+        double delta2 = timeDiv.count() - mean_;
 
-        fMean2 += delta * delta2;
+        mean2_ += delta * delta2;
       }
 
-      double mean() const { return fMean; }
-      double min() const { return fMin; }
-      double max() const { return fMax; }
-      double var() const { return fMean2 / fN; }
-      double sumTime() const { return fElapsedSum.count(); }
+      double mean() const { return mean_; }
+      double min() const { return min_; }
+      double max() const { return max_; }
+      double var() const { return mean2_ / n_; }
+      double sumTime() const { return cumulatedTime_.count(); }
 
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
