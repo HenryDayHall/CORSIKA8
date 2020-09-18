@@ -13,11 +13,11 @@ set (
   corsika/process/devtools
   )
 
-add_library (ProcessDevTools STATIC ${MODEL_SOURCES})
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessDevTools ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+add_library (DevTools_Analytic STATIC ${MODEL_SOURCES})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (DevTools_Analytic ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
 set_target_properties (
-  ProcessDevTools
+  DevTools_Analytic
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
@@ -25,32 +25,39 @@ set_target_properties (
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
-  ProcessDevTools
-  CORSIKAsetup
+  DevTools_Analytic
+  CORSIKAprocesssequence
+  CORSIKAunits
+  CORSIKAthirdparty  
   )
 
 target_include_directories (
-  ProcessDevTools 
+  DevTools_Analytic 
   INTERFACE 
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
 
 install (
-  TARGETS ProcessDevTools
+  TARGETS DevTools_Analytic
   LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
+  ARCHIVE DESTINATION lib 
   )
 
 
 # --------------------
 # code unit testing
-CORSIKA_ADD_TEST (testExecTime testExecTime.cc)
+CORSIKA_ADD_TEST (testExecTime
+ SOURCES
+ testExecTime.cc
+ ${MODEL_HEADERS}
+)
+
 target_link_libraries (
-  testExecTime  ProcessDevTools
-  CORSIKAsetup
+  testExecTime  
+  DevTools_Analytic  
   DevTools_Dummy
+  CORSIKAtesting
   CORSIKAthirdparty # for catch2
   )
 
