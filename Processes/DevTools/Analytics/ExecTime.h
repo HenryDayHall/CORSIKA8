@@ -21,117 +21,118 @@
 namespace corsika::process {
   namespace devtools {
 
-    template <typename T, bool>
-    class ExecTime_BoundaryCrossing {};
-
     template <typename T>
-    class ExecTime_BoundaryCrossing<T, true> : protected T {
+    class ExecTime : private T {
+    private:
+      std::chrono::high_resolution_clock::time_point fStart;
+      std::chrono::duration<double,std::micro> fElapsedSum;
+      double fMean;
+      double fMean2;
+      double fMin;
+      double fMax;
+      long long fN;
+
+    protected:
     public:
-      template <
-          typename Particle, typename VTNType,
-          typename std::enable_if_t<
-              std::is_base_of<BoundaryCrossingProcess<typename T::_TDerived>, T>::value,
-              int> = 0>
+      ExecTime() {
+        fMin = std::numeric_limits<long long>::max();
+        fMax = 0;
+        fMean = 0;
+        fMean2 = 0;
+        fN = 0;
+      }
+
+      void start() { fStart = std::chrono::high_resolution_clock::now(); }
+      void stop() {
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double,std::micro> timeDiv =
+            std::chrono::duration_cast< std::chrono::duration<double,std::micro> >(end - fStart);
+
+        fElapsedSum += timeDiv;
+        fN = fN + 1;
+
+        if (fMax < timeDiv.count()) fMax = timeDiv.count();
+
+        if (timeDiv.count() < fMin) fMin = timeDiv.count();
+
+        double delta = timeDiv.count() - fMean;
+        fMean += delta / static_cast<double>(fN);
+
+        double delta2 = timeDiv.count() - fMean;
+
+        fMean2 += delta * delta2;
+      }
+
+      double mean() const { return fMean; }
+      double min() const { return fMin; }
+      double max() const { return fMax; }
+      double var() const { return fMean2 / fN; }
+      double sumTime() const { return fElapsedSum.count(); }
+
+      template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
                                         VTNType const& to) {
-        return T::DoBoundaryCrossing(p, from, to);
+        this->start();
+        auto r = T::DoBoundaryCrossing(p, from, to);
+        this->stop();
+        return r;
       }
-    };
 
-    template <typename T, bool>
-    class ExecTime_Continuous {};
-
-    template <typename T>
-    class ExecTime_Continuous<T, true> : protected T {
-    public:
       template <typename Particle, typename Track>
       EProcessReturn DoContinuous(Particle& p, Track const& t) const {
-        return T::DoContinous(p, t);
+        this->start();
+        auto r = T::DoContinous(p, t);
+        this->stop();
+        return r;
       }
 
       template <typename Particle, typename Track>
       units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const {
-        return T::MaxStepLength(p, track);
+        this->start();
+        auto r = T::MaxStepLength(p, track);
+        this->stop();
+        return r;
       }
-    };
 
-    template <typename T, bool>
-    class ExecTime_Decay {};
-
-    template <typename T>
-    class ExecTime_Decay<T, true> : protected T {
-    public:
       template <typename Particle>
       EProcessReturn DoDecay(Particle& p) {
-        return T::DoDecay(p);
+        this->start();
+        auto r = T::DoDecay(p);
+        this->stop();
+        return r;
       }
 
       template <typename Particle>
       corsika::units::si::TimeType GetLifetime(Particle& p) {
-        return T::GetLifetime(p);
+        this->start();
+        auto r = T::GetLifetime(p);
+        this->stop();
+        return r;
       }
-    };
 
-    template <typename T, bool>
-    class ExecTime_Interaction {};
-
-    template <typename T>
-    class ExecTime_Interaction<T, true> : protected T {
-    public:
       template <typename Particle>
       EProcessReturn DoInteraction(Particle& p) {
-        return T::DoInteraction(p);
+        this->start();
+        auto r = T::DoInteraction(p);
+        this->stop();
+        return r;
       }
 
       template <typename Particle>
       corsika::units::si::GrammageType GetInteractionLength(Particle& p) {
-        return T::GetInteractionLength(p);
+        this->start();
+        auto r = T::GetInteractionLength(p);
+        this->stop();
+        return r;
       }
-    };
 
-    template <typename T, bool>
-    class ExecTime_Secondaries {};
-
-    template <typename T>
-    class ExecTime_Secondaries<T, true> : protected T {
-    public:
       template <typename Secondaries>
       inline EProcessReturn DoSecondaries(Secondaries& sec) {
-        return T::DoSecondaries(sec);
+        this->start();
+        auto r = T::DoSecondaries(sec);
+        this->stop();
+        return r;
       }
-    };
-
-    template <typename T>
-    class ExecTime
-        : public ExecTime_BoundaryCrossing<
-              T,
-              std::is_base_of<BoundaryCrossingProcess<typename T::_TDerived>, T>::value>,
-          public ExecTime_Continuous<
-              T, std::is_base_of<ContinuousProcess<typename T::_TDerived>, T>::value>,
-          public ExecTime_Decay<
-              T, std::is_base_of<DecayProcess<typename T::_TDerived>, T>::value>,
-          public ExecTime_Interaction<
-              T, std::is_base_of<InteractionProcess<typename T::_TDerived>, T>::value>,
-          public ExecTime_Secondaries<
-              T, std::is_base_of<SecondariesProcess<typename T::_TDerived>, T>::value> {
-    private:
-      std::chrono::microseconds fStart;
-      std::chrono::microseconds fElapsedSum;
-      std::chrono::microseconds fMean;
-      std::chrono::microseconds fMean2;
-      std::chrono::microseconds fMin;
-      std::chrono::microseconds fMax;
-      long long fN;
-
-      void start();
-      void stop();
-
-    protected:
-    public:
-      double mean();
-      double min();
-      double max();
-      double var();
 
       /*
                   // Stack
