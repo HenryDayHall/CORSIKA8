@@ -10,6 +10,11 @@
 
 #include <corsika/stack/ParticleBase.h>
 
+namespace corsika::history {
+  template <typename T>
+  class HSecondaryView; // forward decl. for befriending
+}
+
 namespace corsika::stack {
 
   template <typename StackDataType, template <typename> typename ParticleInterface>
@@ -75,6 +80,9 @@ namespace corsika::stack {
     friend class ParticleBase<StackIteratorInterface>; // for access to GetStackDataType
     friend class SecondaryView<StackDataType,
                                ParticleInterface>; // access for SecondaryView
+
+    template <typename T>
+    friend class corsika::history::HSecondaryView;
 
   private:
     unsigned int fIndex = 0;

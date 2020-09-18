@@ -29,7 +29,9 @@ namespace corsika::history {
     // - polarization?
 
   public:
-    SecondaryParticle(units::si::HEPEnergyType energy, geometry::Vector<units::si::hepmomentum_d> momentum, particles::Code pid)
+    SecondaryParticle(units::si::HEPEnergyType energy,
+                      geometry::Vector<units::si::hepmomentum_d> momentum,
+                      particles::Code pid)
         : energy_{energy}
         , momentum_{momentum}
         , pid_{pid} {}

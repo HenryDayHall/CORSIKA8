@@ -1,7 +1,7 @@
 set (
   SETUP_HEADERS
   Event.hpp
-  HStackView.hpp
+  HSecondaryView.hpp
   HistoryStackExtension.h
   SecondaryParticle.hpp
   )

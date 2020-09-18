@@ -9,17 +9,16 @@
 #pragma once
 
 #include <corsika/particles/ParticleProperties.h>
-#include <corsika/stack/Stack.h>
 #include <corsika/history/SecondaryParticle.hpp>
 
+#include <iostream>
 #include <optional>
 #include <vector>
 
 namespace corsika::history {
 
-  template <typename TStackIterator>
-  class Event {
-    TStackIterator const projectile_; //!< reference to projectile
+  struct Event {
+    size_t const projectileIndex_; //!< reference to projectile
     std::vector<SecondaryParticle> secondaries;
 
     // meta information, could also be in a separate class
@@ -27,8 +26,10 @@ namespace corsika::history {
         targetCode; // cannot be const, value set only after construction
 
   public:
-    Event(TStackIterator projectile)
-        : projectile_{projectile} {}
+    Event(size_t projectileIndex)
+        : projectileIndex_{projectileIndex} {
+      std::cout << "Event created (index = " << projectileIndex_ << ")" << std::endl;
+    }
   };
 
 } // namespace corsika::history

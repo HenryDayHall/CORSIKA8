@@ -49,7 +49,6 @@ namespace corsika::history {
   private:
     std::vector<std::shared_ptr<TEvent>> event_;
   };
-  
 
   /**
    * @class HistoryDataInterface
@@ -69,17 +68,16 @@ namespace corsika::history {
     using T::GetIndex;
 
   public:
- 
     // create a new particle from scratch
-    void SetParticleData() { } // nullptr, already by design 
+    void SetParticleData() {} // nullptr, already by design
 
     // create a new particle as secondary of a parent
-    void SetParticleData(HistoryDataInterface& parent) {
-      SetEvent(std::make_shared<TEvent>(parent.GetEvent()));
-      GetEvent().getParent().addSecondary(GetEvent());
+    void SetParticleData(HistoryDataInterface& parent) { SetParticleData(); }
+
+    void SetEvent(const std::shared_ptr<TEvent>& v) {
+      GetStackData().SetEvent(GetIndex(), v);
     }
 
-    void SetEvent(const std::shared_ptr<TEvent>& v) { GetStackData().SetEvent(GetIndex(), v); }
     std::shared_ptr<TEvent> GetEvent() const {
       return GetStackData().GetEvent(GetIndex());
     }
