@@ -25,13 +25,22 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-  class StackProcess : public BaseProcess<TDerived> {
+  class StackProcess : public BaseProcess<TDerived>{
+  private:
+  protected:
+    using _TDerived = TDerived;
 
   public:
     StackProcess() = delete;
     StackProcess(const unsigned int nStep)
         : fNStep(nStep) {}
 
+<<<<<<< HEAD
+=======
+    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
+    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
+
+>>>>>>> renamed base process templates
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoStack...
     template <typename TStack>

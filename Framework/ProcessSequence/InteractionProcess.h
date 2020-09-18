@@ -26,7 +26,9 @@ namespace corsika::process {
 
   template <typename TDerived>
   class InteractionProcess : public BaseProcess<TDerived> {
-
+    public:
+    using _TDerived = TDerived;
+    
     using BaseProcess<TDerived>::GetRef;
 
     /// here starts the interface-definition part
