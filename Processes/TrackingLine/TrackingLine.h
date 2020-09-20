@@ -34,16 +34,16 @@ namespace corsika::environment {
 } // namespace corsika::environment
 
 using namespace boost::histogram;
-static auto histL = make_histogram(axis::regular<>(100, 0, 100000, "Leap-Frog-ength L'"));
+/*static auto histL = make_histogram(axis::regular<>(100, 0, 100000, "Leap-Frog-ength L'"));
 static auto histS = make_histogram(axis::regular<>(100, 0, 100000, "Direct Length S"));
-static auto histB = make_histogram(axis::regular<>(100, 0, 100000, "Arc Length B"));
-static auto histLlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L'"));
-static auto histLloggeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L for geometric steps"));
-static auto histLlogmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-ength L for magnetic steps"));
-static auto histSlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Direct Length S"));
-static auto histBlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Arc Length B"));
-static auto histLB = make_histogram(axis::regular<>(100, 0, 100, "L - B"));
-static auto histLS = make_histogram(axis::regular<>(100, 0, 100, "L - S"));
+static auto histB = make_histogram(axis::regular<>(100, 0, 100000, "Arc Length B")); */
+static auto histLlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-ength L'"));
+static auto histLloggeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L for geometric steps"));
+static auto histLlogmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L for magnetic steps"));
+static auto histSlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Direct Length S"));
+static auto histBlog = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Arc Length B"));
+/*static auto histLB = make_histogram(axis::regular<>(100, 0, 100, "L - B"));
+static auto histLS = make_histogram(axis::regular<>(100, 0, 100, "L - S"));*/
 static auto histLBrelgeo = make_histogram(axis::regular<double, axis::transform::log> (40,1e-12,1e-2,"L/B -1"));
 static auto histLBrelmag = make_histogram(axis::regular<double, axis::transform::log> (40,1e-12,1e-2,"L/B -1"));
 static auto histLSrelgeo = make_histogram(axis::regular<double, axis::transform::log>(40,1e-12,1e-2, "L/S -1"));
@@ -53,17 +53,17 @@ static auto histELSrelp = make_histogram(axis::regular<double, axis::transform::
 static auto histELSrelpi = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histELSrelmu = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
 static auto histELSrele = make_histogram(axis::regular<double, axis::transform::log>(50,1e-8,1e-3, "L/S -1"),axis::regular<double, axis::transform::log>(30, 3, 3e1, "E / GeV"));
-static auto histBS = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
-static auto histLpgeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
-static auto histLpigeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
-static auto histLmugeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
-static auto histLegeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Elektronen"));
-static auto histLygeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Photonen"));
-static auto histLpmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
-static auto histLpimag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
-static auto histLmumag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
-static auto histLemag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Elektronen"));
-static auto histLymag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Photonen"));
+//static auto histBS = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
+static auto histLpgeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Protonen"));
+static auto histLpigeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Pionen"));
+static auto histLmugeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Myonen"));
+static auto histLegeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Elektronen"));
+static auto histLygeo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Photonen"));
+static auto histLpmag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Protonen"));
+static auto histLpimag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Pionen"));
+static auto histLmumag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Myonen"));
+static auto histLemag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Elektronen"));
+static auto histLymag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Photonen"));
 static double L = 0;
 static std::vector<double> Lsmall;
 static std::vector<double> Bbig;
@@ -91,7 +91,7 @@ namespace corsika::process {
     public:
       TrackingLine() = default;
       ~TrackingLine(){
-		  std::ofstream myfile;
+		  /*std::ofstream myfile;
           myfile.open ("histograms.txt");
           myfile << histLlog << std::endl;
           myfile << histBlog << std::endl;
@@ -156,7 +156,7 @@ namespace corsika::process {
           file5.close();
           std::ofstream file6("histBS.json");
           dump_bh(file6, histBS);
-          file6.close();
+          file6.close();*/
           std::ofstream file7("histLBrelgeo.json");
           dump_bh(file7, histLBrelgeo);
           file7.close();
@@ -429,12 +429,12 @@ namespace corsika::process {
           min = Steplimit / velocity.norm();
           auto lineWithB = MagneticStep(p, line, Steplimit, true);
           
- 			histL(L);
+ 			      //histL(L);
             histLlog(L);
             histLlogmag(L);
-            histS(lineWithB.ArcLength(0_s,min) / 1_m);
+            //histS(lineWithB.ArcLength(0_s,min) / 1_m);
             histSlog(lineWithB.ArcLength(0_s,min) / 1_m);
-            histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
+            //histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
                         
             if(chargeNumber != 0) {
               if(L * 1_m/lineWithB.ArcLength(0_s,min) -1 > 0) {
@@ -453,17 +453,17 @@ Emag.push_back(p.GetEnergy() / 1_GeV);Steplimitmag.push_back(Steplimit / 1_m);
               std::cout << "Schrittlaenge " << velocity.norm() * min << " gyroradius " << gyroradius << std::endl;
               LengthType B = 2 * gyroradius * asin ( lineWithB.ArcLength(0_s,min) / 2 / gyroradius);
               std::cout << "Bogenlaenge" << B << std::endl;
-              histB(B / 1_m);
+              //histB(B / 1_m);
               histBlog(B / 1_m);
               if(L-B/1_m > 0) {
-                histLB(L-B/1_m);
-                histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
+                //histLB(L-B/1_m);
+                //histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
                 histLBrelmag(L * 1_m/B-1);
               } else {
 Bbigmag.push_back(B / 1_m);
               }
             } else {
-            histB(lineWithB.ArcLength(0_s,min) / 1_m);
+            //histB(lineWithB.ArcLength(0_s,min) / 1_m);
             histBlog(lineWithB.ArcLength(0_s,min) / 1_m);
             }
             
@@ -486,12 +486,12 @@ Bbigmag.push_back(B / 1_m);
         
         auto lineWithB = MagneticStep(p, line, velocity.norm() * min, true);
         
-			histL(L);
+			      //histL(L);
             histLlog(L);
             histLloggeo(L);
-            histS(lineWithB.ArcLength(0_s,min) / 1_m);
+            //histS(lineWithB.ArcLength(0_s,min) / 1_m);
             histSlog(lineWithB.ArcLength(0_s,min) / 1_m);
-            histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
+            //histLS(L-lineWithB.ArcLength(0_s,min) / 1_m);
                         
             if(chargeNumber != 0) {
               if(L * 1_m/lineWithB.ArcLength(0_s,min) -1 > 0) {
@@ -510,17 +510,17 @@ E.push_back(p.GetEnergy() / 1_GeV);
               std::cout << "Schrittlaenge " << velocity.norm() * min << " gyroradius " << gyroradius << std::endl;
               LengthType B = 2 * gyroradius * asin ( lineWithB.ArcLength(0_s,min) / 2 / gyroradius);
               std::cout << "Bogenlaenge" << B << std::endl;
-              histB(B / 1_m);
+              //histB(B / 1_m);
               histBlog(B / 1_m);
               if(L-B/1_m > 0) {
-                histLB(L-B/1_m);
-                histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
+                //histLB(L-B/1_m);
+                //histBS(B/1_m - lineWithB.ArcLength(0_s,min) / 1_m);
                 histLBrelgeo(L * 1_m/B-1);
               } else {
 Bbig.push_back(B / 1_m);
               }
             } else {
-            histB(lineWithB.ArcLength(0_s,min) / 1_m);
+            //histB(lineWithB.ArcLength(0_s,min) / 1_m);
             histBlog(lineWithB.ArcLength(0_s,min) / 1_m);
             }
             
@@ -574,7 +574,7 @@ Bbig.push_back(B / 1_m);
         
         auto const* currentLogicalVolumeNode = p.GetNode();
         auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(p.GetPosition());
-        auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (line.GetV0().norm() * p.GetEnergy() * 1_V);
+        auto k = chargeNumber * corsika::units::constants::c * 1_eV / (p.GetMomentum().norm() * 1_V);
         geometry::Vector<dimensionless_d> direction = line.GetV0().normalized();
         auto position = p.GetPosition();
           
@@ -621,10 +621,8 @@ Bbig.push_back(B / 1_m);
         
         auto const* currentLogicalVolumeNode = p.GetNode();
         auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(p.GetPosition());
-        geometry::Vector<SpeedType::dimension_type> velocity =
-                  p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
-        auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.norm() * p.GetEnergy() * 1_V);
-        geometry::Vector<dimensionless_d> direction = velocity.normalized();
+        auto k = chargeNumber * corsika::units::constants::c * 1_eV / (p.GetMomentum().norm() * 1_V);
+        geometry::Vector<dimensionless_d> direction = p.GetMomentum().normalized();
         auto position = p.GetPosition();
 
         // First Movement

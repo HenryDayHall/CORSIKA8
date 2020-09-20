@@ -41,29 +41,40 @@ using boost::typeindex::type_id_with_cvr;
 #include <boost/histogram/ostream.hpp>
 #include <corsika/process/tracking_line/dump_bh.hpp>
 using namespace boost::histogram;
-static auto histL2 = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
+/*static auto histL2 = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
 static auto histS2 = make_histogram(axis::regular<>(100, 0, 60000, "S"));
-static auto histB2 = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));
-static auto histLlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Leap-Frog-length L'"));
+static auto histB2 = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));*/
+static auto histLlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLlog2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
 
-static auto histSlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Direct Length S"));
-static auto histBlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "Arc Length B"));
+/*static auto histSlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Direct Length S"));
+static auto histBlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Arc Length B"));
 static auto histLB2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - B"));
 static auto histLS2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - S"));
 static auto histLBrel2 = make_histogram(axis::regular<double, axis::transform::log> (20,1e-11,1e-6,"L/B -1"));
 static auto histLSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"));
 static auto histELSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"),axis::regular<double, axis::transform::log>(20, 0.1, 1e4, "E / GeV"));
-static auto histBS2 = make_histogram(axis::regular<>(100, 0, 0.01, "B - S"));
-static auto histLp2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Protonen"));
-static auto histLpi2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Pionen"));
-static auto histLmu2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Myonen"));
-static auto histLe2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Elektronen"));
-static auto histLy2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1, 1e7, "L' für Photonen"));
+static auto histBS2 = make_histogram(axis::regular<>(100, 0, 0.01, "B - S")); */
+
+static auto histLp2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Protonen"));
+static auto histLpi2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Pionen"));
+static auto histLpi2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLpi2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLpi2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLpi2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLpi2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLmu2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Myonen"));
+static auto histLmu2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLmu2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLmu2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLmu2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLmu2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
+static auto histLe2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Elektronen"));
+static auto histLy2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Photonen"));
 
 
 /**
@@ -136,21 +147,21 @@ namespace corsika::cascade {
         C8LOG_INFO(" - With full cascade HISTORY.");
       }
     }
-
-    ~Cascade(){
-		  std::ofstream myfile;
+    
+    ~Cascade(){    
+		  /*std::ofstream myfile;
           myfile.open ("histograms2.txt");
           myfile << histLp2 << std::endl;
           myfile << histLpi2 << std::endl;
           myfile << histLmu2 << std::endl;
           myfile << histL2 << std::endl;
-          myfile.close(); 
+          myfile.close(); */
 		  
 		  /*std::cout << histLBrel << std::endl;
 		  std::cout << histLSrel << std::endl;*/
 
 		  
-		      std::ofstream file1("histL2.json");
+		      /*std::ofstream file1("histL2.json");
           dump_bh(file1, histL2);
           file1.close();
           std::ofstream file2("histS2.json");
@@ -159,7 +170,7 @@ namespace corsika::cascade {
           std::ofstream file3("histB2.json");
           dump_bh(file3, histB2);
           file3.close();
-          /*std::ofstream file4("histLB.json");
+          std::ofstream file4("histLB.json");
           dump_bh(file4, histLB);
           file4.close();
           std::ofstream file5("histLS.json");
@@ -196,12 +207,12 @@ namespace corsika::cascade {
           std::ofstream file14("histLlog2.json");
           dump_bh(file14, histLlog2);
           file14.close();
-          std::ofstream file15("histBlog2.json");
+          /*std::ofstream file15("histBlog2.json");
           dump_bh(file15, histBlog2);
           file15.close();
           std::ofstream file16("histSlog2.json");
           dump_bh(file16, histSlog2);
-          file16.close();
+          file16.close();*/
           std::ofstream file17("histLlog2int.json");
           dump_bh(file17, histLlog2int);
           file17.close();
@@ -218,6 +229,38 @@ namespace corsika::cascade {
           std::ofstream file22("histLlog2max.json");
           dump_bh(file22, histLlog2max);
           file22.close();
+          
+          std::ofstream filepi1("histLpi2int.json");
+          dump_bh(filepi1, histLpi2int);
+          filepi1.close();
+          std::ofstream filepi2("histLpi2dec.json");
+          dump_bh(filepi2, histLpi2dec);
+          filepi2.close();
+          std::ofstream filepi3("histLpi2mag.json");
+          dump_bh(filepi3, histLpi2mag);
+          filepi3.close();
+          std::ofstream filepi4("histLpi2geo.json");
+          dump_bh(filepi4, histLpi2geo);
+          filepi4.close();
+          std::ofstream filepi5("histLpi2max.json");
+          dump_bh(filepi5, histLpi2max);
+          filepi5.close();
+          
+          std::ofstream filemu1("histLmu2int.json");
+          dump_bh(filemu1, histLmu2int);
+          filemu1.close();
+          std::ofstream filemu2("histLmu2dec.json");
+          dump_bh(filemu2, histLmu2dec);
+          filemu2.close();
+          std::ofstream filemu3("histLmu2mag.json");
+          dump_bh(filemu3, histLmu2mag);
+          filemu3.close();
+          std::ofstream filemu4("histLmu2geo.json");
+          dump_bh(filemu4, histLmu2geo);
+          filemu4.close();
+          std::ofstream filemu5("histLmu2max.json");
+          dump_bh(filemu5, histLmu2max);
+          filemu5.close();
 		  
 		  };
 
@@ -384,20 +427,45 @@ namespace corsika::cascade {
 	    // Steplength should not be min_distance
 	    
       auto [position, direction, L2] = fTracking.MagneticStep(vParticle, min_distance);
-      histL2(L2);
+      //histL2(L2);
       histLlog2(L2);
-      if (min_distance == distance_interact)
+      int pdg = static_cast<int>(particles::GetPDG(vParticle.GetPID()));
+      if (min_distance == distance_interact){
         histLlog2int(L2);
-      if (min_distance == distance_decay)
+        if (abs(pdg) == 13)
+              histLmu2int(L2);
+      
+        if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi2int(L2);
+      }
+      if (min_distance == distance_decay) {
         histLlog2dec(L2);
-      if (min_distance == distance_max)
+        if (abs(pdg) == 13)
+              histLmu2dec(L2);
+        if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi2dec(L2);
+      }
+      if (min_distance == distance_max) {
         histLlog2max(L2);
-      if (min_distance == geomMaxLength)
+        if (abs(pdg) == 13)
+              histLmu2max(L2);
+        if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi2max(L2);
+      }
+      if (min_distance == geomMaxLength) {
         histLlog2geo(L2);
+        if (abs(pdg) == 13)
+              histLmu2geo(L2);
+        if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi2geo(L2);
+      }
       if (min_distance == magMaxLength) {
         histLlog2mag(L2);
+        if (abs(pdg) == 13)
+              histLmu2mag(L2);
+        if (abs(pdg) == 211 || abs(pdg) == 111)
+              histLpi2mag(L2);
       }
-      int pdg = static_cast<int>(particles::GetPDG(vParticle.GetPID()));
             if (abs(pdg) == 13)
               histLmu2(L2);
             if (abs(pdg) == 11)
@@ -411,6 +479,7 @@ namespace corsika::cascade {
       auto distance = position - vParticle.GetPosition();
       
       //Building Trajectory for Continuous processes
+      //could also be done in MagneticStep
       geometry::Vector<SpeedType::dimension_type> velocity =
             vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
       if (distance.norm() != 0_m) {
@@ -423,7 +492,7 @@ namespace corsika::cascade {
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
       vParticle.SetMomentum(direction * vParticle.GetMomentum().norm());
       vParticle.SetPosition(position);
-      vParticle.SetTime(vParticle.GetTime() + distance.norm() / units::constants::c);
+      vParticle.SetTime(vParticle.GetTime() + distance.norm() / velocity.norm());
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
 
       // apply all continuous processes on particle + track
