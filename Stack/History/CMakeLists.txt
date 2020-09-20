@@ -1,18 +1,18 @@
 set (
-  SETUP_HEADERS
+  HISTORY_HEADERS
   Event.hpp
-  HSecondaryView.hpp
+  HistorySecondaryView.hpp
   HistoryStackExtension.h
   SecondaryParticle.hpp
   )
 
 set (
-  SETUP_NAMESPACE
+  HISTORY_NAMESPACE
   corsika/history
   )
 
 add_library (CORSIKAhistory INTERFACE)
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAhistory ${SETUP_NAMESPACE} ${SETUP_HEADERS})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAhistory ${HISTORY_NAMESPACE} ${HISTORY_HEADERS})
 
 target_link_libraries (
   CORSIKAhistory
@@ -31,8 +31,8 @@ target_include_directories (
   )
 
 install (
-  FILES ${SETUP_HEADERS} 
-  DESTINATION include/${SETUP_NAMESPACE}
+  FILES ${HISTORY_HEADERS} 
+  DESTINATION include/${HISTORY_NAMESPACE}
   )
 
 # ----------------

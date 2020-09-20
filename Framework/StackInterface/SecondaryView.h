@@ -126,13 +126,13 @@ namespace corsika::stack {
     }
 
     template <typename... Args>
-    auto AddSecondary(const Args... v) {
+    StackIterator AddSecondary(const Args... v) {
       StackIterator proj = GetProjectile();
       return AddSecondary(proj, v...);
     }
 
     template <typename... Args>
-    auto AddSecondary(StackIterator& proj, const Args... v) {
+    StackIterator AddSecondary(StackIterator& proj, const Args... v) {
       // make space on stack
       InnerStackType::GetStackData().IncrementSize();
       innerstack_.deleted_.push_back(false);
