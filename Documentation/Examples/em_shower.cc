@@ -50,7 +50,6 @@ using namespace corsika::units::si;
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   random::RNGManager::GetInstance().RegisterRandomStream("proposal");
-  // add PROPOSAL here (?)
   random::RNGManager::GetInstance().SeedAll();
 }
 
@@ -138,6 +137,7 @@ int main(int argc, char** argv) {
   process::proposal::Interaction proposal(env, cut);
   process::proposal::ContinuousProcess em_continuous(env, cut);
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
+
   process::track_writer::TrackWriter trackWriter("tracks.dat");
 
   // long. profile; columns for gamma, e+, e- still need to be added
