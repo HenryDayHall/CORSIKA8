@@ -27,6 +27,8 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
+#include <corsika/process/proposal/ContinuousProcess.h>
+#include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/switch_process/SwitchProcess.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
@@ -60,6 +62,7 @@ void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
   random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
+  random::RNGManager::GetInstance().RegisterRandomStream("proposal");
 
   random::RNGManager::GetInstance().SeedAll();
 }
@@ -181,7 +184,14 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
+  // PROPOSAL processs proposal{...};
+  PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
+  PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
+
   process::particle_cut::ParticleCut cut{60_GeV, true, true};
+  process::proposal::Interaction proposal(env, cut);
+  process::proposal::ContinuousProcess em_continuous(env, cut);
+  process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
@@ -206,9 +216,11 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource
-                                << longprof << eLoss << cut << observationLevel;
-
+  //auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource
+  //                            << longprof << eLoss << cut << observationLevel;
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << cut << em_continuous 
+				<< longprof << observationLevel;
+  
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
@@ -231,7 +243,11 @@ int main(int argc, char** argv) {
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
 
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
-                     urqmdCounted.GetHistogram();
+    urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
+
+  hists.saveLab("inthist_lab.txt");
+  hists.saveCMS("inthist_cms.txt");
+
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");
 
