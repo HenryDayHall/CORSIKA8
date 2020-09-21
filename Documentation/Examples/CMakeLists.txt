@@ -91,6 +91,11 @@ if (Pythia8_FOUND)
     CORSIKAunits
     CORSIKAlogging
     CORSIKArandom
+    CORSIKAhistory
+    ProcessSibyll
+    ProcessPythia8
+    ProcessUrQMD
+    ProcessSwitch
     CORSIKAcascade
     ProcessProposal
     ProcessPythia8

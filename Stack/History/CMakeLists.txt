@@ -2,6 +2,7 @@ set (
   HISTORY_HEADERS
   Event.hpp
   HistorySecondaryView.hpp
+  HistoryObservationPlane.hpp
   HistoryStackExtension.h
   SecondaryParticle.hpp
   )
@@ -11,16 +12,23 @@ set (
   corsika/history
   )
 
-add_library (CORSIKAhistory INTERFACE)
+set (
+  HISTORY_SOURCES
+  HistoryObservationPlane.cc
+)
+
+#add_library (CORSIKAhistory INTERFACE)
+add_library (CORSIKAhistory STATIC ${HISTORY_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAhistory ${HISTORY_NAMESPACE} ${HISTORY_HEADERS})
 
 target_link_libraries (
   CORSIKAhistory
-  INTERFACE
+#  INTERFACE
   CORSIKAparticles
   CORSIKAgeometry
   SuperStupidStack
   NuclearStackExtension
+  C8::ext::boost
   )
 
 target_include_directories (

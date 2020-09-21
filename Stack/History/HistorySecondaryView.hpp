@@ -27,16 +27,11 @@ namespace corsika::history {
 
   public:
     HistorySecondaryView(StackIteratorValue& p)
-        : TView(p)
-        , event_{p.GetEvent()} {
-      if (event_ == nullptr) {
-        // aha, this particle has no [registered] anchestor
-        // thus, create Event here:
-        p.SetEvent(std::make_shared<Event>());
-        std::cout << "Event created for index=" << p.GetIndex() << std::endl;
-        event_ = p.GetEvent();
-      }
+        : TView{p}
+        , event_{std::make_shared<Event>()} {
       event_->setProjectileIndex(p.GetIndex());
+      event_->
+
       //	event_{std::make_shared<Event>(p.GetIndex())} {
       // p.SetEvent(event_); // here an entry on the main particle stack obtains its Event
       // RU: what seems to missing to me right now, at 2am..., is the
@@ -48,9 +43,9 @@ namespace corsika::history {
       auto sec = TView::AddSecondary(std::forward<Args...>(args...));
       // generate new Event for all secondaries to link them to
       // anchestor (aka projectile, here).
-      auto sec_event = std::make_shared<Event>();
+      /*auto sec_event = std::make_shared<Event>();
       sec_event->setParentEventAndSecondaryIndex(event_, event_->secondaries().size());
-      sec.SetEvent(sec_event);
+      sec.SetEvent(sec_event);*/
 
       // store particles at production time in parent/projectile Event here
       event_->addSecondary(sec.GetEnergy(), sec.GetMomentum(), sec.GetPID());
@@ -60,12 +55,6 @@ namespace corsika::history {
       // , 2. dynamic particle ... not sure, but would be extremely flexible.
 
       return sec;
-    }
-
-    // it is probably better to have one method "GetEvent()" and then one can always call
-    // GetEvent().set/getWhatever(...)
-    void SetTarget(const particles::Code targetCode) {
-      event_->setTargetCode(targetCode);
     }
   };
 
