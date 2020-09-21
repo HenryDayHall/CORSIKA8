@@ -293,7 +293,7 @@ namespace corsika::process {
           
           // creating Line with magnetic field
           if (chargeNumber != 0) {
-            auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.norm() * p.GetEnergy() * 1_V);
+            auto k = chargeNumber * corsika::units::constants::c * 1_eV / (p.GetMomentum().norm() * 1_V);
             geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
           	// determine steplength to next volume
             double a = ((directionBefore.cross(magneticfield)).dot(currentPosition - sphere.GetCenter()) * k + 1) * 4 / 
@@ -352,7 +352,7 @@ namespace corsika::process {
           
           // creating Line with magnetic field
           if (chargeNumber != 0) {
-            auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / (velocity.norm() * p.GetEnergy() * 1_V);
+            auto k = chargeNumber * corsika::units::constants::c * 1_eV / (p.GetMomentum().norm() * 1_V);
             geometry::Vector<dimensionless_d> const directionBefore = velocity.normalized();
           	// determine steplength to next volume
             double a = ((directionBefore.cross(magneticfield)).dot(currentPosition - sphere.GetCenter()) * k + 1) * 4 / 
