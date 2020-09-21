@@ -56,7 +56,7 @@ void registerRandomStreams() {
 
 int main(int argc, char** argv) {
   if (argc != 2) {
-    std::cerr << "usage: proposal_example <energy/GeV>" << std::endl;
+    std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
