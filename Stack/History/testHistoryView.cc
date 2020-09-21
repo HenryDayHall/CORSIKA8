@@ -28,20 +28,15 @@ using namespace corsika::units::si;
    way, but with real particle data
  */
 
-// the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:
-template <typename TStackIter>
-using HistoryDataInterface =
-    typename history::MakeHistoryDataInterface<TStackIter, history::Event>::type;
-
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithHistoryInterface = corsika::stack::CombinedParticleInterface<
-    stack::nuclear_extension::ParticleDataStack::PIType, HistoryDataInterface,
+  stack::nuclear_extension::ParticleDataStack::PIType, history::HistoryEventDataInterface,
     TStackIter>;
 
 using TestStack = corsika::stack::CombinedStack<
     typename stack::nuclear_extension::ParticleDataStack::StackImpl,
-    history::HistoryData<history::Event>, StackWithHistoryInterface>;
+    history::HistoryEventData, StackWithHistoryInterface>;
 
 /*
     See Issue 161

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <corsika/stack/Stack.h>
-#include <corsika/history/Event.hpp>
 
 #include <memory>
 #include <tuple>
@@ -88,4 +87,20 @@ namespace corsika::history {
     typedef HistoryDataInterface<T, TEvent> type;
   };
 
+} // namespace corsika::history
+
+  
+  // for user-friendlyness we create the HistoryDataInterface type
+  // with the histoy::Event data content right here: 
+
+#include <corsika/history/Event.hpp>
+
+namespace corsika::history {
+
+  template <typename TStackIter>
+  using HistoryEventDataInterface =
+  typename history::MakeHistoryDataInterface<TStackIter, history::Event>::type;  
+
+  using HistoryEventData = history::HistoryData<history::Event>;
+  
 } // namespace corsika::history

@@ -12,7 +12,7 @@
 
 namespace corsika::history {
   template <typename T>
-  class HSecondaryView; // forward decl. for befriending
+  class HistorySecondaryView; // forward decl. for befriending
 }
 
 namespace corsika::stack {
@@ -80,6 +80,10 @@ namespace corsika::stack {
     friend class ParticleBase<StackIteratorInterface>;   // for access to GetStackData
     friend class SecondaryView<TStackData,
                                TParticleInterface>; // access for SecondaryView
+
+  template <typename T>
+  friend class corsika::history::HistorySecondaryView;
+
   private:
     unsigned int index_ = 0;
     StackType* data_ = 0; // info: Particles and StackIterators become invalid when parent

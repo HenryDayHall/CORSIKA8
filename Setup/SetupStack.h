@@ -19,19 +19,15 @@ namespace corsika::setup {
 
   namespace detail {
 
+    // ------------------------------------------
+    // add geometry node tracking data to stack:
+    
     // the GeometryNode stack needs to know the type of geometry-nodes from the
     // environment:
     template <typename TStackIter>
     using SetupGeometryDataInterface =
         typename stack::node::MakeGeometryDataInterface<TStackIter,
                                                         setup::SetupEnvironment>::type;
-
-    /*
-    template <typename TStackIter>
-    using SetupGeometryHistoryDataInterface =
-      typename stack::node::MakeHistoryDataInterface<TStackIter,
-                                    ...event... >::type;
-    */
 
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>
@@ -44,10 +40,27 @@ namespace corsika::setup {
         corsika::stack::node::GeometryData<setup::SetupEnvironment>,
         StackWithGeometryInterface>;
 
+
+    // ------------------------------------------
+    // Add [optional] history data to stack, too:
+
+    // combine dummy stack with geometry information for tracking
+    template <typename TStackIter>
+    using StackWithHistoryInterface = corsika::stack::CombinedParticleInterface<
+      StackWithGeometry::PIType, history::HistoryEventDataInterface,
+      TStackIter>;
+
+    using StackWithHistory = corsika::stack::CombinedStack<
+    typename StackWithGeometry::StackImpl,
+    history::HistoryEventData, StackWithHistoryInterface>;
+    
   } // namespace detail
 
+  
+  // ---------------------------------------
   // this is the FINAL stack we use in C8:
-  using Stack = detail::StackWithGeometry;
+  //using Stack = detail::StackWithGeometry;
+  using Stack = detail::StackWithHistory;
 
   /*
     See Issue 161
