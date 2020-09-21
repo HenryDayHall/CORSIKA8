@@ -131,8 +131,8 @@ target_link_libraries (staticsequence_example
   CORSIKAlogging)
 
 
-CORSIKA_ADD_EXAMPLE (proposal_example RUN_OPTIONS 100.)
-target_link_libraries (proposal_example
+CORSIKA_ADD_EXAMPLE (em_shower RUN_OPTIONS 100.)
+target_link_libraries (em_shower
   SuperStupidStack
   CORSIKAunits
   CORSIKAlogging
