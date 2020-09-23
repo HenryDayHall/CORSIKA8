@@ -19,7 +19,6 @@
 #include <iostream>
 
 using namespace corsika;
-using namespace corsika::stack;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
@@ -31,8 +30,8 @@ using namespace corsika::units::si;
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithHistoryInterface = corsika::stack::CombinedParticleInterface<
-  stack::nuclear_extension::ParticleDataStack::PIType, history::HistoryEventDataInterface,
-    TStackIter>;
+    stack::nuclear_extension::ParticleDataStack::PIType,
+    history::HistoryEventDataInterface, TStackIter>;
 
 using TestStack = corsika::stack::CombinedStack<
     typename stack::nuclear_extension::ParticleDataStack::StackImpl,
@@ -62,25 +61,25 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   // in this test we only use one singel stack !
-  TestStack s;
+  TestStack stack;
 
   // add primary particle
-  auto p0 = s.AddParticle(
+  auto p0 = stack.AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
           particles::Code::Electron, 1.5_GeV,
           corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
           Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
-  CHECK(s.getEntries() == 1);
-  corsika::history::EvtPtr evt = p0.GetEvent();
+  CHECK(stack.getEntries() == 1);
+  corsika::history::EventPtr evt = p0.GetEvent();
   CHECK(evt == nullptr);
 
   // add secondaries, 1st generation
   history::HistorySecondaryView<TestStackView> hview0(p0);
 
-  auto ev0 = p0.GetEvent();
-  CHECK(ev0 != nullptr);
+  auto const ev0 = p0.GetEvent();
+  CHECK(ev0 == nullptr);
   // CHECK(ev0->projectile(s.begin()) == p0);
 
   // add 5 secondaries
@@ -92,16 +91,17 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
             corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
-    CHECK(sec.GetEvent()->parentEvent() == ev0);
-    CHECK(sec.GetEvent()->parentEvent()->parentEvent() == nullptr);
+    CHECK(sec.GetParentEventIndex() == i);
+    CHECK(sec.GetEvent() != nullptr);
+    CHECK(sec.GetEvent()->parentEvent() == nullptr);
   }
 
   // read 1st genertion particle particle
-  auto p1 = s.GetNextParticle();
+  auto p1 = stack.GetNextParticle();
 
   history::HistorySecondaryView<TestStackView> hview1(p1);
 
-  auto ev1 = p1.GetEvent();
+  auto const ev1 = p1.GetEvent();
 
   // add second generation of secondaries
   // add 10 secondaries
@@ -113,17 +113,20 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
             corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
+    CHECK(sec.GetParentEventIndex() == i);
     CHECK(sec.GetEvent()->parentEvent() == ev1);
     CHECK(sec.GetEvent()->parentEvent()->parentEvent() == ev0);
-    CHECK(sec.GetEvent()->parentEvent()->parentEvent()->parentEvent() == nullptr);
+
+    CHECK((stack.begin() + sec.GetEvent()->projectileIndex()).GetEvent() ==
+          sec.GetEvent()->parentEvent());
   }
 
   // read 2nd genertion particle particle
-  auto p2 = s.GetNextParticle();
+  auto p2 = stack.GetNextParticle();
 
   history::HistorySecondaryView<TestStackView> hview2(p2);
 
-  auto ev2 = p2.GetEvent();
+  auto const ev2 = p2.GetEvent();
 
   // add third generation of secondaries
   // add 15 secondaries
@@ -135,41 +138,10 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
             corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
+    CHECK(sec.GetParentEventIndex() == i);
     CHECK(sec.GetEvent()->parentEvent() == ev2);
     CHECK(sec.GetEvent()->parentEvent()->parentEvent() == ev1);
     CHECK(sec.GetEvent()->parentEvent()->parentEvent()->parentEvent() == ev0);
-    CHECK(sec.GetEvent()->parentEvent()->parentEvent()->parentEvent()->parentEvent() ==
-          nullptr);
-  }
-
-  // read 3rd genertion particle particle
-  auto p3 = s.GetNextParticle();
-
-  history::HistorySecondaryView<TestStackView> hview3(p3);
-
-  auto ev3 = p3.GetEvent();
-
-  // add fourth generation of secondaries
-  // add 20 secondaries
-  for (int i = 0; i < 20; ++i) {
-    auto sec = hview3.AddSecondary(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Electron, 1.5_GeV,
-            corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
-
-    CHECK(sec.GetEvent()->parentEvent() == ev3);
-    CHECK(sec.GetEvent()->parentEvent()->parentEvent() == ev2);
-    CHECK(sec.GetEvent()->parentEvent()->parentEvent()->parentEvent() == ev1);
-    CHECK(sec.GetEvent()->parentEvent()->parentEvent()->parentEvent()->parentEvent() ==
-          ev0);
-    CHECK(sec.GetEvent()
-              ->parentEvent()
-              ->parentEvent()
-              ->parentEvent()
-              ->parentEvent()
-              ->parentEvent() == nullptr);
   }
 
   /*
@@ -179,7 +151,7 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     secondaries), with another projectil (with 10 secondaries), with
     antother projectil (5 secondaries), with NO parent
 
-  **/
+
   {
     auto test_ev3 = p3.GetEvent();
     auto test_sec3 = test_ev3->secondaries();
@@ -203,4 +175,5 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     CHECK(test_proj1.GetEvent()->parentEvent() == ev0);
     CHECK(test_proj1.GetEvent()->parentEvent()->parentEvent() == nullptr);
   }
+  */
 }
