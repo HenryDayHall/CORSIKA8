@@ -20,7 +20,7 @@
 
 namespace corsika::history {
   namespace detail {
-    auto hist_factory() {
+    inline auto hist_factory() {
       /*auto h = boost::histogram::make_histogram(
           boost::histogram::axis::regular<double, boost::histogram::axis::transform::log>{
               130, 1e8, 1e21, "muon energy/eV"},

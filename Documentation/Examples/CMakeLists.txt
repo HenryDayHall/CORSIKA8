@@ -115,6 +115,7 @@ if (Pythia8_FOUND)
     CORSIKAgeometry
     CORSIKAenvironment
     CORSIKAprocesssequence
+    CORSIKAhistory # for HistoryObservationPlane
     )
 endif()
 

@@ -37,6 +37,9 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
 
+#include <corsika/history/HistoryObservationPlane.hpp>
+#include <corsika/history/HistorySecondaryView.hpp>
+
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -63,9 +66,9 @@ void registerRandomStreams(const int seed) {
   random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
   random::RNGManager::GetInstance().RegisterRandomStream("proposal");
 
-  if (seed==0)
+  if (seed == 0)
     random::RNGManager::GetInstance().SeedAll();
-  else 
+  else
     random::RNGManager::GetInstance().SeedAll(seed);
 }
 
@@ -81,8 +84,7 @@ int main(int argc, char** argv) {
   feenableexcept(FE_INVALID);
 
   int seed = 0;
-  if (argc>4)
-    seed = std::stoi(std::string(argv[4]));
+  if (argc > 4) seed = std::stoi(std::string(argv[4]));
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
@@ -205,8 +207,9 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  //~ process::observation_plane::ObservationPlane observationLevel(obsPlane,
+  //~ "particles.dat");
+  corsika::history::HistoryObservationPlane observationLevel{stack, obsPlane};
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
@@ -223,7 +226,9 @@ int main(int argc, char** argv) {
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
-  cascade::Cascade EAS(env, tracking, sequence, stack);
+  cascade::Cascade<decltype(tracking), decltype(sequence), decltype(stack),
+                   corsika::history::HistorySecondaryView<corsika::setup::StackView> >
+      EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();
