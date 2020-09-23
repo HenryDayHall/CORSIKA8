@@ -21,7 +21,7 @@
 namespace corsika::history {
   namespace detail {
     auto hist_factory() {
-      auto h = boost::histogram::make_histogram(
+      /*auto h = boost::histogram::make_histogram(
           boost::histogram::axis::regular<double, boost::histogram::axis::transform::log>{
               130, 1e8, 1e21, "muon energy/eV"},
           boost::histogram::axis::integer<int, boost::histogram::use_default,
@@ -30,7 +30,12 @@ namespace corsika::history {
           boost::histogram::axis::regular<double, boost::histogram::axis::transform::log>{
               130, 1e8, 1e21, "hadronic energy/eV"},
           boost::histogram::axis::category<int, boost::histogram::use_default,
-                                           boost::histogram::axis::option::growth_t>{});
+                                           boost::histogram::axis::option::growth_t>{});*/
+
+      auto h = boost::histogram::make_histogram(
+          boost::histogram::axis::integer<int, boost::histogram::use_default,
+                                          boost::histogram::axis::option::growth_t>{
+              0, 10, "hadronic generation"});
       return h;
     }
   } // namespace detail
@@ -38,9 +43,9 @@ namespace corsika::history {
   class HistoryObservationPlane
       : public corsika::process::ContinuousProcess<HistoryObservationPlane> {
   public:
-    HistoryObservationPlane(geometry::Plane const&, bool = true);
+    HistoryObservationPlane(setup::Stack const&, geometry::Plane const&, bool = true);
 
-    void save(std::string const&);
+    //~ void save(std::string const&);
 
     corsika::units::si::LengthType MaxStepLength(
         corsika::setup::Stack::ParticleType const&,
@@ -53,6 +58,7 @@ namespace corsika::history {
   private:
     void fillHistoryHistogram(setup::Stack::ParticleType const&);
 
+    setup::Stack const& stack_;
     geometry::Plane const plane_;
     bool const deleteOnHit_;
 

@@ -42,6 +42,9 @@ namespace corsika::history {
 
     template <typename TStackIterator>
     TStackIterator projectile(TStackIterator begin) {
+      // MR: This is dangerous. You can pass any iterator though it must
+      // be stack.begin() to yield the correct projectile
+
       return begin + projectileIndex_;
     }
 
