@@ -11,7 +11,7 @@
 #include <corsika/stack/Stack.h>
 
 #include <memory>
-#include <tuple>
+#include <utility>
 #include <vector>
 
 namespace corsika::history {
@@ -25,28 +25,41 @@ namespace corsika::history {
    */
   template <typename TEvent>
   class HistoryData {
+    using EventPtr =
+        std::shared_ptr<TEvent>; //!< Pointer to the event where this particle was created
+    using ParentEventIndex = int; //!< index to TEvent::secondaries_
+    using DataType = std::pair<EventPtr, ParentEventIndex>;
 
   public:
     // these functions are needed for the Stack interface
-    void Clear() { event_.clear(); }
-    unsigned int GetSize() const { return event_.size(); }
-    unsigned int GetCapacity() const { return event_.size(); }
-    void Copy(const int i1, const int i2) { event_[i2] = event_[i1]; }
-    void Swap(const int i1, const int i2) { std::swap(event_[i1], event_[i2]); }
+    void Clear() { historyData_.clear(); }
+    unsigned int GetSize() const { return historyData_.size(); }
+    unsigned int GetCapacity() const { return historyData_.size(); }
+    void Copy(const int i1, const int i2) { historyData_[i2] = historyData_[i1]; }
+    void Swap(const int i1, const int i2) {
+      std::swap(historyData_[i1], historyData_[i2]);
+    }
 
     // custom data access function
-    void SetEvent(const int i, std::shared_ptr<TEvent> v) { event_[i] = std::move(v); }
-    std::shared_ptr<TEvent> GetEvent(const int i) const { return event_[i]; }
+    void SetEvent(const int i, EventPtr v) { historyData_[i].first = std::move(v); }
+    EventPtr GetEvent(const int i) const { return historyData_[i].first; }
+
+    void SetParentEventIndex(const int i, ParentEventIndex v) {
+      historyData_[i].second = std::move(v);
+    }
+    ParentEventIndex GetParentEventIndex(const int i) const {
+      return historyData_[i].second;
+    }
 
     // these functions are also needed by the Stack interface
-    void IncrementSize() { event_.push_back(nullptr); }
+    void IncrementSize() { historyData_.push_back(DataType{}); }
     void DecrementSize() {
-      if (event_.size() > 0) { event_.pop_back(); }
+      if (historyData_.size() > 0) { historyData_.pop_back(); }
     }
 
     // custom private data section
   private:
-    std::vector<std::shared_ptr<TEvent>> event_;
+    std::vector<DataType> historyData_;
   };
 
   /**
@@ -68,7 +81,7 @@ namespace corsika::history {
 
   public:
     // create a new particle from scratch
-    void SetParticleData() {} // nullptr, already by design
+    void SetParticleData() { GetStackData().SetParentEventIndex(GetIndex(), -1); }
 
     // create a new particle as secondary of a parent
     void SetParticleData(HistoryDataInterface& /*parent*/) { SetParticleData(); }
@@ -77,8 +90,16 @@ namespace corsika::history {
       GetStackData().SetEvent(GetIndex(), v);
     }
 
+    void SetParentEventIndex(int index) {
+      GetStackData().SetParentEventIndex(GetIndex(), index);
+    }
+
     std::shared_ptr<TEvent> GetEvent() const {
       return GetStackData().GetEvent(GetIndex());
+    }
+
+    int GetParentEventIndex() const {
+      return GetStackData().GetParentEventIndex(GetIndex());
     }
   };
 
@@ -89,9 +110,8 @@ namespace corsika::history {
 
 } // namespace corsika::history
 
-  
-  // for user-friendlyness we create the HistoryDataInterface type
-  // with the histoy::Event data content right here: 
+// for user-friendlyness we create the HistoryDataInterface type
+// with the histoy::Event data content right here:
 
 #include <corsika/history/Event.hpp>
 
@@ -99,8 +119,8 @@ namespace corsika::history {
 
   template <typename TStackIter>
   using HistoryEventDataInterface =
-  typename history::MakeHistoryDataInterface<TStackIter, history::Event>::type;  
+      typename history::MakeHistoryDataInterface<TStackIter, history::Event>::type;
 
   using HistoryEventData = history::HistoryData<history::Event>;
-  
+
 } // namespace corsika::history

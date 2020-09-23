@@ -26,6 +26,8 @@ target_link_libraries (
 #  INTERFACE
   CORSIKAparticles
   CORSIKAgeometry
+  CORSIKAprocesssequence # for HistoryObservationPlane
+  CORSIKAsetup # for HistoryObservationPlane
   SuperStupidStack
   NuclearStackExtension
   C8::ext::boost
@@ -50,6 +52,7 @@ target_link_libraries (
   testHistoryStack
   CORSIKAhistory
   CORSIKAtesting
+  DummyStack
   )
 CORSIKA_ADD_TEST(testHistoryView)
 target_link_libraries (

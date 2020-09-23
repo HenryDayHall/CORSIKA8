@@ -19,15 +19,13 @@
 namespace corsika::history {
 
   class Event;
-  using EvtPtr = std::shared_ptr<history::Event>;
+  using EventPtr = std::shared_ptr<history::Event>;
 
   class Event {
 
-    size_t projectileIndex_ = 0; //!< reference to projectile (for secondaries_)
+    size_t projectileIndex_ = 0; //!< index of projectile on stack
     std::vector<SecondaryParticle> secondaries_;
-    EvtPtr parent_event_;
-    size_t sec_index_ =
-        0; //!< index of the projectile of this Event in the parent_event_.secondaries_;
+    EventPtr parent_event_;
 
     std::optional<corsika::particles::Code>
         targetCode_; // cannot be const, value set only after construction
@@ -35,16 +33,9 @@ namespace corsika::history {
   public:
     Event() = default;
 
-    void setParentEvent(EvtPtr& evt) { parent_event_ = evt; }
+    void setParentEvent(EventPtr const& evt) { parent_event_ = evt; }
 
-    void setParentEventAndSecondaryIndex(EvtPtr& evt, size_t sec_index) {
-      setParentEvent(evt);
-      setParentSecondaryIndex(sec_index);
-    }
-
-    void setParentSecondaryIndex(size_t sec_index) { sec_index_ = sec_index; }
-
-    EvtPtr parentEvent() { return parent_event_; }
+    EventPtr parentEvent() { return parent_event_; }
 
     void setProjectileIndex(size_t i) { projectileIndex_ = i; }
     size_t projectileIndex() const { return projectileIndex_; }
@@ -54,11 +45,13 @@ namespace corsika::history {
       return begin + projectileIndex_;
     }
 
-    void addSecondary(units::si::HEPEnergyType energy,
-                      geometry::Vector<units::si::hepmomentum_d> momentum,
-                      particles::Code pid) {
+    size_t addSecondary(units::si::HEPEnergyType energy,
+                        geometry::Vector<units::si::hepmomentum_d> const& momentum,
+                        particles::Code pid) {
       secondaries_.emplace_back(energy, momentum, pid);
+      return secondaries_.size() - 1;
     }
+
     std::vector<SecondaryParticle>& secondaries() { return secondaries_; }
 
     void setTargetCode(const particles::Code t) { targetCode_ = t; }
