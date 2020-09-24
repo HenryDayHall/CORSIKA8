@@ -124,8 +124,7 @@ TEST_CASE("InteractionCounter") {
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 
-    auto projectile = secViewPtr->GetProjectile();
-    auto const ret = countedProcess.DoInteraction(projectile);
+    auto const ret = countedProcess.DoInteraction(*secViewPtr);
     REQUIRE(ret == nullptr);
 
     auto const& h = countedProcess.GetHistogram().labHists().second.at(1'000'070'140);
@@ -144,8 +143,7 @@ TEST_CASE("InteractionCounter") {
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 
-    auto projectile = secViewPtr->GetProjectile();
-    auto const ret = countedProcess.DoInteraction(projectile);
+    auto const ret = countedProcess.DoInteraction(*secViewPtr);
     REQUIRE(ret == nullptr);
 
     auto const& h = countedProcess.GetHistogram().labHists().first;

@@ -69,18 +69,19 @@ public:
     return fX0;
   }
 
-  template <typename TProjectile>
-  corsika::process::EProcessReturn DoInteraction(TProjectile& vP) {
+  template <typename TSecondaryView>
+  corsika::process::EProcessReturn DoInteraction(TSecondaryView& view) {
     fCalls++;
-    const HEPEnergyType E = vP.GetEnergy();
-    vP.AddSecondary(
+    auto const projectile = view.GetProjectile();
+    const HEPEnergyType E = projectile.GetEnergy();
+    view.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
-    vP.AddSecondary(
+            projectile.GetPID(), E / 2, projectile.GetMomentum(), projectile.GetPosition(), projectile.GetTime()});
+    view.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
+            projectile.GetPID(), E / 2, projectile.GetMomentum(), projectile.GetPosition(), projectile.GetTime()});
     return EProcessReturn::eInteracted;
   }
 

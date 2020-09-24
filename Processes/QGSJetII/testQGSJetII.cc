@@ -139,7 +139,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
     CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));

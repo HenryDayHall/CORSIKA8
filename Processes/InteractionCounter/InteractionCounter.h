@@ -30,8 +30,9 @@ namespace corsika::process::interaction_counter {
     InteractionCounter(TCountedProcess& process)
         : process_(process) {}
 
-    template <typename TProjectile>
-    auto DoInteraction(TProjectile& projectile) {
+    template <typename TSecondaryView>
+    auto DoInteraction(TSecondaryView& view) {
+      auto const projectile = view.GetProjectile();
       auto const massNumber = projectile.GetNode()
                                   ->GetModelProperties()
                                   .GetNuclearComposition()
@@ -46,7 +47,7 @@ namespace corsika::process::interaction_counter {
       } else {
         histogram_.fill(projectile_id, projectile.GetEnergy(), massTarget);
       }
-      return process_.DoInteraction(projectile);
+      return process_.DoInteraction(view);
     }
 
     template <typename TParticle>

@@ -96,7 +96,10 @@ namespace corsika::cascade {
         , fTracking(tr)
         , fProcessSequence(pl)
         , fStack(stack)
-        , energy_cut_(0 * corsika::units::si::electronvolt) {}
+        , energy_cut_(0 * corsika::units::si::electronvolt) {
+
+      std::cout << c8_ascii_ << std::endl;
+    }
 
     corsika::units::si::HEPEnergyType GetEnergyCut() const { return energy_cut_; }
 
@@ -121,9 +124,9 @@ namespace corsika::cascade {
 
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
-	  count_++;
+          count_++;
           auto pNext = fStack.GetNextParticle();
-          std::cout << "========= next: count=" << count_ << ", pid=" << pNext.GetPID() 
+          std::cout << "========= next: count=" << count_ << ", pid=" << pNext.GetPID()
                     << ", stack entries=" << fStack.getEntries()
                     << ", stack deleted=" << fStack.getDeleted() << std::endl;
           Step(pNext);
@@ -145,8 +148,7 @@ namespace corsika::cascade {
       std::cout << "forced interaction!" << std::endl;
       auto vParticle = fStack.GetNextParticle();
       TStackView secondaries(vParticle);
-      auto projectile = secondaries.GetProjectile();
-      interaction(vParticle, projectile);
+      interaction(vParticle, secondaries);
       fProcessSequence.DoSecondaries(secondaries);
       vParticle.Delete(); // todo: this should be reviewed, see below
     }
@@ -262,7 +264,7 @@ namespace corsika::cascade {
           [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
           if (min_distance == distance_interact) {
-            interaction(vParticle, projectile);
+            interaction(vParticle, secondaries);
           } else {
             assert(min_distance == distance_decay);
             decay(vParticle, secondaries);
@@ -313,8 +315,7 @@ namespace corsika::cascade {
       }
     }
 
-    auto decay(Particle& particle,
-               TStackView& view) {
+    auto decay(Particle& particle, TStackView& view) {
       std::cout << "decay" << std::endl;
       units::si::InverseTimeType const actual_decay_time =
           fProcessSequence.GetTotalInverseLifetime(particle);
@@ -323,12 +324,11 @@ namespace corsika::cascade {
           actual_decay_time);
       const auto sample_process = uniDist(fRNG);
       units::si::InverseTimeType inv_decay_count = units::si::InverseTimeType::zero();
-      return fProcessSequence.SelectDecay(particle, projectile, sample_process,
+      return fProcessSequence.SelectDecay(particle, view, sample_process,
                                           inv_decay_count);
     }
 
-    auto interaction(Particle& particle,
-                     decltype(std::declval<TStackView>().GetProjectile()) projectile) {
+    auto interaction(Particle& particle, TStackView& view) {
       std::cout << "collide" << std::endl;
 
       units::si::InverseGrammageType const current_inv_length =
@@ -338,13 +338,13 @@ namespace corsika::cascade {
           current_inv_length);
       const auto sample_process = uniDist(fRNG);
       auto inv_lambda_count = units::si::InverseGrammageType::zero();
-      return fProcessSequence.SelectInteraction(particle, projectile, sample_process,
+      return fProcessSequence.SelectInteraction(particle, view, sample_process,
                                                 inv_lambda_count);
     }
 
     // but this here temporarily. Should go into dedicated file later:
-    const char* c8_ascii_ = 
-R"V0G0N(
+    const char* c8_ascii_ =
+        R"V0G0N(
   ,ad8888ba,     ,ad8888ba,    88888888ba    ad88888ba   88  88      a8P          db              ad88888ba   
  d8"'    `"8b   d8"'    `"8b   88      "8b  d8"     "8b  88  88    ,88'          d88b            d8"     "8b  
 d8'            d8'        `8b  88      ,8P  Y8,          88  88  ,88"           d8'`8b           Y8a     a8P  
@@ -354,7 +354,6 @@ Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8"
  Y8a.    .a8P   Y8a.    .a8P   88     `8b   Y8a     a8P  88  88     "88,    d8'        `8b       Y8a     a8P  
   `"Y8888Y"'     `"Y8888Y"'    88      `8b   "Y88888P"   88  88       Y8b  d8'          `8b       "Y88888P"
 	)V0G0N";
-    
-  }; 
+  };
 
 } // namespace corsika::cascade

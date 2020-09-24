@@ -52,8 +52,8 @@ namespace corsika::process::sibyll {
     template <typename Particle>
     corsika::units::si::GrammageType GetInteractionLength(Particle const&);
 
-    template <typename Projectile>
-    corsika::process::EProcessReturn DoInteraction(Projectile&);
+    template <typename TSecondaryView>
+    corsika::process::EProcessReturn DoInteraction(TSecondaryView&);
 
   private:
     TEnvironment const& environment_;

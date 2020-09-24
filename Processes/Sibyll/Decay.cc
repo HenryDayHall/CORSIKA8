@@ -182,7 +182,7 @@ namespace corsika::process::sibyll {
 
     auto const projectile = view.GetProjectile();
 
-    const particles::Code pCode = vP.GetPID();
+    const particles::Code pCode = projectile.GetPID();
     // check if sibyll is configured to handle this decay!
     if (!IsDecayHandled(pCode))
       throw std::runtime_error("STOP! Sibyll not configured to execute this decay!");

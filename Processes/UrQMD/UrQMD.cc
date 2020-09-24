@@ -27,7 +27,7 @@ using namespace corsika::units::si;
 
 using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
-using SetupProjectile = corsika::setup::StackView::StackIterator;
+using SetupView = corsika::setup::StackView;
 
 UrQMD::UrQMD(std::string const& xs_file) {
   readXSFile(xs_file);
@@ -240,8 +240,10 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle const& particle) const {
          weightedProdCrossSection;
 }
 
-corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectile) {
+corsika::process::EProcessReturn UrQMD::DoInteraction(SetupView& view) {
   using namespace units::si;
+
+  auto const projectile = view.GetProjectile();
 
   auto projectileCode = projectile.GetPID();
   auto const projectileEnergyLab = projectile.GetEnergy();
@@ -343,7 +345,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
     momentum.rebase(originalCS); // transform back into standard lab frame
     std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
 
-    projectile.AddSecondary(
+    view.AddSecondary(
         std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
                    TimeType>{code, energy, momentum, projectilePosition, projectileTime});
   }

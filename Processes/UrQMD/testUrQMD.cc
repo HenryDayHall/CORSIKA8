@@ -168,7 +168,7 @@ TEST_CASE("UrQMD") {
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(*secViewPtr);
 
     REQUIRE(sumCharge(*secViewPtr) ==
             Z + particles::GetChargeNumber(particles::Code::Oxygen));
@@ -193,7 +193,7 @@ TEST_CASE("UrQMD") {
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(*secViewPtr);
 
     REQUIRE(sumCharge(*secViewPtr) ==
             particles::GetChargeNumber(particles::Code::PiPlus) +
@@ -219,7 +219,7 @@ TEST_CASE("UrQMD") {
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(*secViewPtr);
 
     REQUIRE(sumCharge(*secViewPtr) ==
             particles::GetChargeNumber(particles::Code::K0Long) +

@@ -131,11 +131,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
             particles::Code::Proton, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
     corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     auto const pSum = sumMomentum(view, cs);
 
     /*
@@ -217,11 +216,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
             particles::Code::Proton, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
     corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     auto const pSum = sumMomentum(view, cs);
     CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.001));
     CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
@@ -248,12 +246,11 @@ TEST_CASE("SibyllInterface", "[processes]") {
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
     particle.SetNode(nodePtr);
     corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
 
     Interaction hmodel;
     NuclearInteraction model(hmodel, env);
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
@@ -270,7 +267,6 @@ TEST_CASE("SibyllInterface", "[processes]") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Lambda0, E0, plab, pos, 0_ns});
     corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
 
     Decay model;
 
@@ -278,7 +274,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
 
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(view);
 
     // run checks
     // lambda decays into proton and pi- or neutron and pi+

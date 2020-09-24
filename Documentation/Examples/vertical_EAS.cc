@@ -226,9 +226,7 @@ int main(int argc, char** argv) {
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
-  cascade::Cascade<decltype(tracking), decltype(sequence), decltype(stack),
-                   corsika::history::HistorySecondaryView<corsika::setup::StackView> >
-      EAS(env, tracking, sequence, stack);
+  cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();
