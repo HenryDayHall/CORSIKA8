@@ -55,6 +55,8 @@ namespace corsika::history {
         corsika::setup::Stack::ParticleType const& vParticle,
         corsika::setup::Trajectory const& vTrajectory);
 
+    void print();
+
   private:
     void fillHistoryHistogram(setup::Stack::ParticleType const&);
 

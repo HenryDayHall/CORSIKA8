@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/history/HistoryStackExtension.h>
+#include <corsika/history/HistorySecondaryView.hpp>
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
@@ -78,7 +79,7 @@ namespace corsika::setup {
       // corsika::setup::detail::StackWithGeometryInterface>;
       corsika::setup::detail::StackWithHistoryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-  using StackView = corsika::stack::MakeView<corsika::setup::Stack>::type;
+  using StackView = corsika::history::HistorySecondaryView<corsika::stack::MakeView<corsika::setup::Stack>::type>;
 #endif
 
 } // namespace corsika::setup

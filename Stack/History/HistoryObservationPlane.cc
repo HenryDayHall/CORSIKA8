@@ -12,6 +12,7 @@
 #include <boost/histogram/ostream.hpp>
 
 #include <fstream>
+#include <iostream>
 
 using namespace corsika::units::si;
 using namespace corsika::history;
