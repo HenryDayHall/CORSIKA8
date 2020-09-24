@@ -176,9 +176,11 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  void Decay::DoDecay(SetupProjectile& vP) {
+  void Decay::DoDecay(SetupView& view) {
     using geometry::Point;
     using namespace units::si;
+
+    auto const projectile = view.GetProjectile();
 
     const particles::Code pCode = vP.GetPID();
     // check if sibyll is configured to handle this decay!
@@ -190,14 +192,14 @@ namespace corsika::process::sibyll {
     ss.Clear();
 
     // copy particle to sibyll stack
-    ss.AddParticle(process::sibyll::ConvertToSibyllRaw(pCode), vP.GetEnergy(),
-                   vP.GetMomentum(),
+    ss.AddParticle(process::sibyll::ConvertToSibyllRaw(pCode), projectile.GetEnergy(),
+                   projectile.GetMomentum(),
                    // setting particle mass with Corsika values, may be inconsistent
                    // with sibyll internal values
                    particles::GetMass(pCode));
     // remember position
-    Point const decayPoint = vP.GetPosition();
-    TimeType const t0 = vP.GetTime();
+    Point const decayPoint = projectile.GetPosition();
+    TimeType const t0 = projectile.GetTime();
     // remember if particles is unstable
     // auto const priorIsUnstable = IsUnstable(pCode);
     // switch on decay for this particle
@@ -220,7 +222,7 @@ namespace corsika::process::sibyll {
       // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
       if (psib.HasDecayed()) continue;
       // add to corsika stack
-      vP.AddSecondary(
+      view.AddSecondary(
           tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
                 geometry::Point, units::si::TimeType>{
               process::sibyll::ConvertFromSibyll(psib.GetPID()), psib.GetEnergy(),

@@ -22,7 +22,7 @@ using std::vector;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Projectile = corsika::setup::StackView::ParticleType;
+using View = corsika::setup::StackView;
 using Particle = corsika::setup::Stack::ParticleType;
 using Track = Trajectory;
 
@@ -184,21 +184,23 @@ namespace corsika::process::pythia {
   }
 
   template <>
-  void Decay::DoDecay(Projectile& vP) {
+  void Decay::DoDecay(View& view) {
     using geometry::Point;
     using namespace units;
     using namespace units::si;
 
-    auto const& decayPoint = vP.GetPosition();
-    auto const t0 = vP.GetTime();
+    auto const projectile = view.GetProjectile();
 
-    auto const& labMomentum = vP.GetMomentum();
+    auto const& decayPoint = projectile.GetPosition();
+    auto const t0 = projectile.GetTime();
+
+    auto const& labMomentum = projectile.GetMomentum();
     geometry::CoordinateSystem const& labCS = labMomentum.GetCoordinateSystem();
 
     // define target kinematics in lab frame
     // define boost to and from CoM frame
     // CoM frame definition in Pythia projectile: +z
-    utl::COMBoost const boost(labMomentum, vP.GetMass());
+    utl::COMBoost const boost(labMomentum, projectile.GetMass());
     auto const& rotatedCS = boost.GetRotatedCS();
 
     fCount++;
@@ -207,7 +209,7 @@ namespace corsika::process::pythia {
     Pythia8::Event& event = fPythia.event;
     event.reset();
 
-    auto const particleId = vP.GetPID();
+    auto const particleId = projectile.GetPID();
 
     // set particle unstable
     Decay::SetUnstable(particleId);
@@ -218,7 +220,7 @@ namespace corsika::process::pythia {
     double constexpr px = 0;
     double constexpr py = 0;
     double constexpr pz = 0;
-    double const en = vP.GetMass() / 1_GeV;
+    double const en = projectile.GetMass() / 1_GeV;
     double const m = en;
 
     // add particle to pythia stack
@@ -248,7 +250,7 @@ namespace corsika::process::pythia {
              << fourMomLab.GetSpaceLikeComponents().GetComponents(labCS) / 1_GeV
              << " energy=" << fourMomLab.GetTimeLikeComponent() << endl;
 
-        vP.AddSecondary(
+        view.AddSecondary(
             tuple<particles::Code, units::si::HEPEnergyType,
                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
                 pyId, fourMomLab.GetTimeLikeComponent(),

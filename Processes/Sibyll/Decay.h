@@ -52,8 +52,8 @@ namespace corsika::process {
        In this function SIBYLL is called to produce to decay the input particle.
      */
 
-      template <typename TProjectile>
-      void DoDecay(TProjectile&);
+      template <typename TSecondaryView>
+      void DoDecay(TSecondaryView&);
 
       template <typename TParticleView>
       EProcessReturn DoSecondaries(TParticleView&);

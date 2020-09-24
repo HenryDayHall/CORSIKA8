@@ -265,7 +265,7 @@ namespace corsika::cascade {
             interaction(vParticle, projectile);
           } else {
             assert(min_distance == distance_decay);
-            decay(vParticle, projectile);
+            decay(vParticle, secondaries);
             // make sure particle actually did decay if it should have done so
             if (secondaries.getSize() == 1 &&
                 projectile.GetPID() == secondaries.GetNextParticle().GetPID())
@@ -314,7 +314,7 @@ namespace corsika::cascade {
     }
 
     auto decay(Particle& particle,
-               decltype(std::declval<TStackView>().GetProjectile()) projectile) {
+               TStackView& view) {
       std::cout << "decay" << std::endl;
       units::si::InverseTimeType const actual_decay_time =
           fProcessSequence.GetTotalInverseLifetime(particle);
