@@ -10,22 +10,32 @@
 
 # with this script you can plot an animation of output of TrackWriter
 
-track_dat=$1
-muon_dat=$2
-
-if [ -z "$track_dat" ] || [ -z "$muon_dat" ]; then
-  echo "usage: $0 <hadron.dat> <muon.dat> [output.gif]" >&2
+tracks_dat="$1"
+if [ -z "$tracks_dat" ]; then
+  echo "usage: $0 <tracks.dat> [output.gif]" >&2
   exit 1
 fi
 
-output=$3
-if [ -z "$output" ]; then
-  output="$track_dat.gif"
+directory=$(dirname "$tracks_dat")
+hadrons_dat="$directory/hadrons.dat"
+muons_dat="$directory/muons.dat"
+
+if [ "$muons_dat" -ot "$tracks_dat" -o "$hadrons_dat" -ot "$muons_dat" ]; then
+  echo "splitting $tracks_dat into $muons_dat and $hadrons_dat."
+  cat "$tracks_dat" | egrep '^\s+-*13\s' > "$muons_dat"
+  cat "$tracks_dat" | egrep -v '^\s+-*13\s' > "$hadrons_dat"
 fi
 
+output="$2"
+if [ -z "$output" ]; then
+  output="$tracks_dat.gif"
+fi
+
+echo "creating $output..."
+
 cat <<EOF | gnuplot
-set term png size 900,900
-#set output "$output"
+set term gif animate size 900,900
+set output "$output"
 
 #set zrange [0:40e3]
 #set xrange [-10:10]
@@ -36,9 +46,11 @@ set zlabel "z / m"
 set title "CORSIKA 8 preliminary"
 
 do for [t=0:359:1] {
-	set output sprintf("%03d_$output", t)
-	set view 90, t
-        splot "$muon_dat" u 3:4:5:6:7:8 w vectors nohead lt rgb "red" t "", "$track_dat" u 3:4:5:6:7:8 w vectors nohead  lc rgb "black" t ""
+# for separate file per angle:
+#	set output sprintf("%03d_$output", t)
+
+	set view 80, t
+        splot "$muons_dat" u 3:4:5:6:7:8 w vectors nohead lt rgb "red" t "", "$hadrons_dat" u 3:4:5:6:7:8 w vectors nohead  lc rgb "black" t ""
 }
 EOF
 
