@@ -1,0 +1,4 @@
+include README.md LICENSE
+recursive-include corsika *
+recursive-include scripts *
+recursive-include examples *
