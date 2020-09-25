@@ -125,6 +125,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
     {
       auto proj = view.GetProjectile();
       CHECK(proj.GetData() == particle.GetData());
+      CHECK(particle == view.parent());
     }
   }
 

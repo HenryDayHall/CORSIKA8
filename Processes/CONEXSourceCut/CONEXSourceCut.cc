@@ -31,11 +31,11 @@ corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
                                  [=](auto const& p) { return pid == p.first; });
     if (it != egs_em_codes_.cend()) {
       // EM particle
-    
+
       auto const egs_pid = it->second;
 
       addParticle(egs_pid, p.GetEnergy(), p.GetMass(), p.GetPosition(),
-		  p.GetMomentum().normalized(), p.GetTime());
+                  p.GetMomentum().normalized(), p.GetTime());
 
       p.Delete();
     }

@@ -77,11 +77,13 @@ public:
     view.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            projectile.GetPID(), E / 2, projectile.GetMomentum(), projectile.GetPosition(), projectile.GetTime()});
+            projectile.GetPID(), E / 2, projectile.GetMomentum(),
+            projectile.GetPosition(), projectile.GetTime()});
     view.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            projectile.GetPID(), E / 2, projectile.GetMomentum(), projectile.GetPosition(), projectile.GetTime()});
+            projectile.GetPID(), E / 2, projectile.GetMomentum(),
+            projectile.GetPosition(), projectile.GetTime()});
     return EProcessReturn::eInteracted;
   }
 

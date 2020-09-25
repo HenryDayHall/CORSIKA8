@@ -35,7 +35,7 @@ using namespace corsika::units::si;
 int main() {
 
   std::cout << "stopping_power" << std::endl;
-  
+
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry

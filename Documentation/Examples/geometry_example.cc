@@ -22,8 +22,8 @@ using namespace corsika::units::si;
 
 int main() {
 
-  std::cout << "geometry_example" << std::endl;    
-  
+  std::cout << "geometry_example" << std::endl;
+
   // define the root coordinate system
   geometry::CoordinateSystem& root =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();

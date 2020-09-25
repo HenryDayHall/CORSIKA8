@@ -43,13 +43,13 @@ namespace corsika::stack {
      *Further information about implementation (for developers):* All
      data is stored in the original stack privided at construction
      time. The secondary particle (view) indices are stored in an
-     extra std::vector of SecondaryView class 'fIndices' referring to
+     extra std::vector of SecondaryView class 'indices_' referring to
      the original stack slot indices. The index of the primary
      projectle particle is also explicitly stored in
-     'fProjectileIndex'. StackIterator indices
+     'projectile_index_'. StackIterator indices
      'i = StackIterator::GetIndex()' are referring to those numbers,
-     where 'i==0' refers to the 'fProjectileIndex', and
-     'StackIterator::GetIndex()>0' to 'fIndices[i-1]', see function
+     where 'i==0' refers to the 'projectile_index_', and
+     'StackIterator::GetIndex()>0' to 'indices_[i-1]', see function
      GetIndexFromIterator.
    */
 
@@ -62,8 +62,8 @@ namespace corsika::stack {
     /**
      * Helper type for inside this class
      */
-    using InnerStackType = Stack<StackDataType&, ParticleInterface>;
-    using InnerStackType::getDeleted;
+    using InnerStackTypeRef = Stack<StackDataType&, ParticleInterface>;
+    using InnerStackTypeRef::getDeleted;
 
     /**
      * @name We need this "special" types with non-reference StackData for
@@ -76,6 +76,9 @@ namespace corsika::stack {
     using StackIteratorValue =
         StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
                                ParticleInterface, InnerStackTypeValue>;
+    using ConstStackIteratorValue =
+        ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
+                                    ParticleInterface, InnerStackTypeValue>;
     /// @}
 
     using StackIterator =
@@ -106,9 +109,9 @@ namespace corsika::stack {
     SecondaryView(Args... args) = delete;
 
   private:
-    InnerStackTypeValue& innerstack_;
-    unsigned int fProjectileIndex;
-    std::vector<unsigned int> fIndices;
+    InnerStackTypeValue& inner_stack_;
+    unsigned int projectile_index_;
+    std::vector<unsigned int> indices_;
 
   public:
     /**
@@ -117,14 +120,29 @@ namespace corsika::stack {
      **/
     SecondaryView(StackIteratorValue& vI)
         : Stack<StackDataType&, ParticleInterface>(vI.GetStackData())
-        , innerstack_(vI.GetStack())
-        , fProjectileIndex(vI.GetIndex()) {}
+        , inner_stack_(vI.GetStack())
+        , projectile_index_(vI.GetIndex()) {}
 
+    /**
+     * This returns the projectile/parent in the original Stack, where this
+     * SecondaryView is derived from. This projectile should not be
+     * used to modify the Stack!
+     */
+
+    ConstStackIteratorValue parent() const {
+      return ConstStackIteratorValue(inner_stack_, projectile_index_);
+    }
+
+    /**
+     * This return a projectile of this SecondaryView, which can be
+     * used to modify the SecondaryView
+     */
     StackIterator GetProjectile() {
       // NOTE: 0 is special marker here for PROJECTILE, see GetIndexFromIterator
       return StackIterator(*this, 0);
     }
 
+  public:
     template <typename... Args>
     StackIterator AddSecondary(const Args... v) {
       StackIterator proj = GetProjectile();
@@ -134,13 +152,13 @@ namespace corsika::stack {
     template <typename... Args>
     StackIterator AddSecondary(StackIterator& proj, const Args... v) {
       // make space on stack
-      InnerStackType::GetStackData().IncrementSize();
-      innerstack_.deleted_.push_back(false);
+      InnerStackTypeRef::GetStackData().IncrementSize();
+      inner_stack_.deleted_.push_back(false);
       // get current number of secondaries on stack
       const unsigned int idSec = getSize();
       // determine index on (inner) stack where new particle will be located
-      const unsigned int index = InnerStackType::GetStackData().GetSize() - 1;
-      fIndices.push_back(index);
+      const unsigned int index = InnerStackTypeRef::GetStackData().GetSize() - 1;
+      indices_.push_back(index);
       // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
       // GetIndexFromIterator
       return StackIterator(*this, idSec + 1, proj, v...);
@@ -149,7 +167,7 @@ namespace corsika::stack {
     /**
      * overwrite Stack::GetSize to return actual number of secondaries
      */
-    unsigned int getSize() const { return fIndices.size(); }
+    unsigned int getSize() const { return indices_.size(); }
     unsigned int getEntries() const { return getSize() - getDeleted(); }
     bool IsEmpty() const { return getEntries() == 0; }
 
@@ -215,7 +233,7 @@ namespace corsika::stack {
      * SecondaryView::DeleteLast
      *
      * The particle is deleted on the underlying (internal) stack. The
-     * local references in SecondaryView in fIndices must be fixed,
+     * local references in SecondaryView in indices_ must be fixed,
      * too.  The approach is to a) check if the particle 'p' is at the
      * very end of the internal stack, b) if not: move it there by
      * copying the last particle to the current particle location, c)
@@ -229,8 +247,8 @@ namespace corsika::stack {
       if (isDeleted(p.GetIndex() - 1)) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since already deleted");
       }
-      innerstack_.Delete(GetIndexFromIterator(p.GetIndex()));
-      InnerStackType::nDeleted_++; // also count in SecondaryView
+      inner_stack_.Delete(GetIndexFromIterator(p.GetIndex()));
+      InnerStackTypeRef::nDeleted_++; // also count in SecondaryView
     }
 
     /**
@@ -272,9 +290,9 @@ namespace corsika::stack {
     bool purgeLastIfDeleted() {
       if (!isDeleted(getSize() - 1))
         return false; // the last particle is not marked for deletion. Do nothing.
-      innerstack_.purge(GetIndexFromIterator(getSize()));
-      InnerStackType::nDeleted_--;
-      fIndices.pop_back();
+      inner_stack_.purge(GetIndexFromIterator(getSize()));
+      InnerStackTypeRef::nDeleted_--;
+      indices_.pop_back();
       return true;
     }
 
@@ -291,31 +309,31 @@ namespace corsika::stack {
       unsigned int size = getSize();
       while (iStack < size) {
         if (isDeleted(iStack)) {
-          innerstack_.purge(iStack);
-          fIndices.erase(fIndices.begin() + iStack);
+          inner_stack_.purge(iStack);
+          indices_.erase(indices_.begin() + iStack);
         }
         size = getSize();
         iStack++;
       }
-      InnerStackType::nDeleted_ = 0;
+      InnerStackTypeRef::nDeleted_ = 0;
     }
 
   protected:
     // forward to inner stack
     // this also checks the allowed bounds of 'i'
     bool isDeleted(unsigned int i) const {
-      if (i >= fIndices.size()) return false;
-      return innerstack_.isDeleted(GetIndexFromIterator(i + 1));
+      if (i >= indices_.size()) return false;
+      return inner_stack_.isDeleted(GetIndexFromIterator(i + 1));
     }
 
     /**
-     * We only want to 'see' secondaries indexed in fIndices. In this
+     * We only want to 'see' secondaries indexed in indices_. In this
      * function the conversion form iterator-index to stack-index is
      * performed.
      */
     unsigned int GetIndexFromIterator(const unsigned int vI) const {
-      if (vI == 0) return fProjectileIndex;
-      return fIndices[vI - 1];
+      if (vI == 0) return projectile_index_;
+      return indices_[vI - 1];
     }
   };
 

@@ -51,7 +51,7 @@ void read(corsika::stack::super_stupid::SuperStupidStack& s) {
 int main() {
 
   std::cout << "stack_example" << std::endl;
-  
+
   corsika::stack::super_stupid::SuperStupidStack s;
   fill(s);
   read(s);

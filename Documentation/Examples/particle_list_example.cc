@@ -27,7 +27,7 @@ using namespace std;
 int main() {
 
   std::cout << "particle_list_example" << std::endl;
-  
+
   cout << "------------------------------------------"
        << "particles in CORSIKA"
        << "------------------------------------------" << endl;
