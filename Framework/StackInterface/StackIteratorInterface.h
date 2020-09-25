@@ -320,6 +320,8 @@ namespace corsika::stack {
                                                  StackType>& rhs) const {
       return index_ != rhs.index_;
     }
+    bool operator==(const StackIteratorInterface<TStackData, TParticleInterface, StackType>& rhs) const { return index_ == rhs.index_; }
+    bool operator!=(const StackIteratorInterface<TStackData, TParticleInterface, StackType>& rhs) const { return index_ != rhs.index_; }
 
     const ParticleInterfaceType& operator*() const {
       return static_cast<const ParticleInterfaceType&>(*this);
