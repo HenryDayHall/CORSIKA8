@@ -72,10 +72,11 @@ namespace corsika::setup {
     actually needed. Keep an eye on this!
   */
 #if defined(__clang__)
-  using StackView =
-      corsika::stack::SecondaryView<typename corsika::setup::Stack::StackImpl,
-                                    // CHECK with CLANG: corsika::setup::Stack::PIType>;
-                                    corsika::setup::detail::StackWithGeometryInterface>;
+  using StackView = corsika::stack::SecondaryView<
+      typename corsika::setup::Stack::StackImpl,
+      // CHECK with CLANG: corsika::setup::Stack::PIType>;
+      // corsika::setup::detail::StackWithGeometryInterface>;
+      corsika::setup::detail::StackWithHistoryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
   using StackView = corsika::stack::MakeView<corsika::setup::Stack>::type;
 #endif
