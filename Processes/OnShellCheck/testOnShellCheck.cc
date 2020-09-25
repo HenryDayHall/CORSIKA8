@@ -37,11 +37,10 @@ TEST_CASE("OnShellCheck", "[processes]") {
   // two energies
   const HEPEnergyType E = 10_GeV;
   // list of arbitrary particles
-  std::array<particles::Code, 4> particleList = {
-      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::Helium,
-      particles::Code::Gamma};
+  std::array const particleList{particles::Code::PiPlus, particles::Code::PiMinus,
+                                particles::Code::Helium, particles::Code::Gamma};
 
-  std::array<double, 4> mass_shifts = {1.1, 1.001, 1.0, 1.0};
+  std::array const mass_shifts{1.1, 1.001, 1.0, 1.0};
 
   SECTION("check particle masses") {
 
@@ -57,7 +56,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
             corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
     // view on secondary particles
-    corsika::stack::SecondaryView view(particle);
+    setup::StackView view{particle};
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.GetProjectile();

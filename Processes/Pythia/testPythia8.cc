@@ -130,7 +130,7 @@ TEST_CASE("pythia process") {
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
-    corsika::stack::SecondaryView view(particle);
+    setup::StackView view(particle);
 
     process::pythia::Decay model;
 
@@ -179,7 +179,7 @@ TEST_CASE("pythia process") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::PiPlus, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
+    setup::StackView view(particle);
 
     process::pythia::Interaction model;
 

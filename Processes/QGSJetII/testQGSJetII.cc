@@ -133,7 +133,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
             particles::Code::Proton, E0, plab, pos, 0_ns});
 
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
+    setup::StackView view(particle);
     auto projectile = view.GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 

@@ -130,7 +130,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
+    corsika::setup::StackView view(particle);
 
     Interaction model;
 
@@ -215,7 +215,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, E0, plab, pos, 0_ns});
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
+    corsika::setup::StackView view(particle);
 
     Interaction model;
 
@@ -245,7 +245,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
                                      units::si::TimeType, unsigned short, unsigned short>{
             particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
+    corsika::setup::StackView view(particle);
 
     Interaction hmodel;
     NuclearInteraction model(hmodel, env);
@@ -266,7 +266,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Lambda0, E0, plab, pos, 0_ns});
-    corsika::stack::SecondaryView view(particle);
+    corsika::setup::StackView view(particle);
 
     Decay model;
 

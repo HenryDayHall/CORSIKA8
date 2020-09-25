@@ -95,8 +95,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
-      std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::move(stack), std::make_unique<decltype(setup::StackView{particle})>(particle));
 }
 
 template <typename TNodeType>
@@ -117,8 +116,7 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
-      std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::move(stack), std::make_unique<decltype(setup::StackView{particle})>(particle));
 }
 
 TEST_CASE("UrQMD") {
