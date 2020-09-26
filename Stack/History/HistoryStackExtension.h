@@ -90,13 +90,6 @@ namespace corsika::history {
     void SetParticleData(HistoryDataInterface& /*parent*/) {
             C8LOG_TRACE("HistoyDatatInterface::SetParticleData(parnt)");
 	    SetParticleData();
-
-
-      // store particles at production time in Event here
-      auto const sec_index = event_->addSecondary(
-          stack_sec.GetEnergy(), stack_sec.GetMomentum(), stack_sec.GetPID());
-      stack_sec.SetParentEventIndex(sec_index);
-      stack_sec.SetEvent(event_);
     }
 
     void SetEvent(const std::shared_ptr<TEvent>& v) {

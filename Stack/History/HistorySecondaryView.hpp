@@ -24,6 +24,7 @@ namespace corsika::history {
 
     EventPtr event_;
 
+  public:
     using StackIteratorValue = typename TView::StackIteratorValue;
     using StackIterator = typename TView::StackIterator;
 
