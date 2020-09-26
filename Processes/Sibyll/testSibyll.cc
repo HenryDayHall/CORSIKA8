@@ -87,9 +87,7 @@ using namespace corsika::units;
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
   geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
-
   for (auto const& p : view) { sum += p.GetMomentum(); }
-
   return sum;
 }
 

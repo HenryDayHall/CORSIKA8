@@ -135,8 +135,8 @@ int main(int argc, char** argv) {
   auto const observationHeight = 0_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
-                 sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
-                      si::detail::static_pow<2>(injectionHeight));
+    sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
+                      units::static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +

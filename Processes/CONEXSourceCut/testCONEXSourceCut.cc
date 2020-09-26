@@ -57,8 +57,8 @@ TEST_CASE("CONEXSourceCut") {
   auto const injectionHeight = 112.75_km + conex::earthRadius;
   auto const t =
       -observationHeight * cos(thetaRad) +
-      sqrt(-units::si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
-           units::si::detail::static_pow<2>(injectionHeight));
+      sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
+           units::static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +

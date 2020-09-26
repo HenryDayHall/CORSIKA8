@@ -126,8 +126,8 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code projectileCode,
       !IsNucleus(targetCode)) { // both particles are "special"
     auto const mProj = particles::GetMass(projectileCode);
     auto const mTar = particles::GetMass(targetCode);
-    double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) +
-                        units::si::detail::static_pow<2>(mTar) + 2 * labEnergy * mTar) *
+    double sqrtS = sqrt(units::static_pow<2>(mProj) +
+                        units::static_pow<2>(mTar) + 2 * labEnergy * mTar) *
                    (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
@@ -179,7 +179,7 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code projectileCode,
     int const At = IsNucleus(targetCode) ? particles::GetNucleusA(targetCode) : 1;
 
     double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
-    return 10_mb * M_PI * units::si::detail::static_pow<2>(maxImpact);
+    return 10_mb * M_PI * units::static_pow<2>(maxImpact);
     // is a constant cross-section really reasonable?
   }
 }

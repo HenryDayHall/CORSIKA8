@@ -60,7 +60,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
   HEPEnergyType const E0 =
-      sqrt(units::si::detail::static_pow<2>(mN * vA) + pLab.squaredNorm());
+      sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
   auto particle =
       stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                     corsika::stack::MomentumVector, geometry::Point,
@@ -82,7 +82,7 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
   HEPEnergyType const E0 =
-      sqrt(units::si::detail::static_pow<2>(particles::GetMass(vProjectileType)) +
+      sqrt(units::static_pow<2>(particles::GetMass(vProjectileType)) +
            pLab.squaredNorm());
   auto particle = stack->AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,

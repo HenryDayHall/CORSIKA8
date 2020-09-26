@@ -50,7 +50,7 @@ units::si::GrammageType HadronicElasticInteraction::GetInteractionLength(
 
       for (size_t i = 0; i < fractions.size(); ++i) {
         auto const targetMass = particles::GetMass(components[i]);
-        auto const s = detail::static_pow<2>(projectileEnergy + targetMass) -
+        auto const s = units::static_pow<2>(projectileEnergy + targetMass) -
                        projectileMomentumSquaredNorm;
         avgCrossSection += CrossSection(s) * fractions[i];
       }
@@ -92,7 +92,7 @@ process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupView& vie
 
   for (size_t i = 0; i < components.size(); ++i) {
     auto const targetMass = particles::GetMass(components[i]);
-    auto const s = units::si::detail::static_pow<2>(projectileEnergy + targetMass) -
+    auto const s = units::static_pow<2>(projectileEnergy + targetMass) -
                    projectileMomentumSquaredNorm;
     cross_section_of_components[i] = CrossSection(s);
   }
@@ -119,7 +119,7 @@ process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupView& vie
   auto const eTargetCoM = targetCoM.GetTimeLikeComponent();
 
   auto const sqrtS = eProjectileCoM + eTargetCoM;
-  auto const s = units::si::detail::static_pow<2>(sqrtS);
+  auto const s = units::static_pow<2>(sqrtS);
 
   auto const B = this->B(s);
   std::cout << B << std::endl;
@@ -158,7 +158,7 @@ process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupView& vie
   p.SetMomentum(projectileScatteredLab.GetSpaceLikeComponents());
   p.SetEnergy(
       sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() +
-           units::si::detail::static_pow<2>(particles::GetMass(
+           units::static_pow<2>(particles::GetMass(
                p.GetPID())))); // Don't use energy from boost. It can be smaller than
                                // the momentum due to limited numerical accuracy.
 
@@ -185,7 +185,7 @@ units::si::CrossSectionType HadronicElasticInteraction::CrossSection(
   // according to Schuler & Sjöstrand, PRD 49, 2257 (1994)
   // (we ignore rho because rho^2 is just ~2 %)
   auto const sigmaElastic =
-      units::si::detail::static_pow<2>(sigmaTotal) /
+      units::static_pow<2>(sigmaTotal) /
       (16 * M_PI * ConvertHEPToSI<CrossSectionType::dimension_type>(B(s)));
 
   std::cout << "HEM sigmaTot = " << sigmaTotal / 1_mb << " mb" << std::endl;
