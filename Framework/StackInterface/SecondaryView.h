@@ -10,6 +10,8 @@
 
 #include <corsika/stack/Stack.h>
 
+#include <corsika/logging/Logging.h>
+
 #include <stdexcept>
 #include <vector>
 
@@ -100,6 +102,8 @@ namespace corsika::stack {
     friend class ConstStackIteratorInterface<
         typename std::remove_reference<StackDataType>::type, ParticleInterface, ViewType>;
 
+    friend class ParticleBase<StackIterator>;
+
   private:
     /**
      * This is not accessible, since we don't want to allow creating a
@@ -143,14 +147,29 @@ namespace corsika::stack {
     }
 
   public:
+    /**
+     * Method to add a new secondary particle on this SecondaryView
+     */
     template <typename... Args>
     StackIterator AddSecondary(const Args... v) {
+      C8LOG_DEBUG("SecondaryView::AddSecondary(Args&&)");
       StackIterator proj = GetProjectile();
       return AddSecondary(proj, v...);
     }
 
+  protected:
+    /**
+     * Overwrite of Stack::StackIterator
+     * 
+     * increase stack size, create new particle at end of stack,
+     * related to parent particle/projectile
+     *
+     * This should only get internally called from a
+     * StackIterator::AddSecondary via ParticleBase
+     */    
     template <typename... Args>
     StackIterator AddSecondary(StackIterator& proj, const Args... v) {
+      C8LOG_DEBUG("SecondaryView::AddSecondary(StackIterator&, Args&&)");
       // make space on stack
       InnerStackTypeRef::GetStackData().IncrementSize();
       inner_stack_.deleted_.push_back(false);
@@ -163,7 +182,9 @@ namespace corsika::stack {
       // GetIndexFromIterator
       return StackIterator(*this, idSec + 1, proj, v...);
     }
-
+    
+  public:
+    
     /**
      * overwrite Stack::GetSize to return actual number of secondaries
      */

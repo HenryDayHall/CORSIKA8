@@ -11,6 +11,8 @@
 #include <corsika/stack/SecondaryView.h>
 #include <corsika/history/Event.hpp>
 
+#include <corsika/logging/Logging.h>
+
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -35,6 +37,7 @@ namespace corsika::history {
 
     template <typename... Args>
     StackIterator AddSecondary(Args&&... args) {
+      C8LOG_TRACE("HistorySecondaryView::AddSecondary(Args&&)");
       auto stack_sec = TView::AddSecondary(std::forward<Args...>(args...));
 
       // store particles at production time in Event here
@@ -49,6 +52,13 @@ namespace corsika::history {
 
       return stack_sec;
     }
+
+    template <typename... Args>
+    StackIterator AddSecondary(StackIterator& proj, const Args... args) {
+      C8LOG_TRACE("HistorySecondaryView::AddSecondary(StackIterator&, Args&&)");
+      return TView::AddSecondary(proj, std::forward<Args...>(args...));
+    }
+
   };
 
 } // namespace corsika::history

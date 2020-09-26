@@ -168,7 +168,7 @@ namespace corsika::logging {
   inline auto ResetPattern(TLogger& logger) -> void {
     logger->set_pattern(default_pattern);
   }
-
+  
 // define our macro-style loggers
 #define C8LOG_TRACE SPDLOG_TRACE
 #define C8LOG_DEBUG SPDLOG_DEBUG
@@ -186,3 +186,5 @@ namespace corsika::logging {
 #define C8LOG_LOGGER_CRITICAL SPDLOG_LOGGER_CRITICAL
 
 } // namespace corsika::logging
+
+

@@ -28,6 +28,7 @@ target_link_libraries (
   CORSIKAgeometry
   CORSIKAprocesssequence # for HistoryObservationPlane
   CORSIKAsetup # for HistoryObservationPlane
+  CORSIKAlogging
   SuperStupidStack
   NuclearStackExtension
   C8::ext::boost

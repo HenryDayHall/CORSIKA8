@@ -57,6 +57,9 @@ using TestStackView = corsika::stack::MakeView<TestStack>::type;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 
+  logging::SetDefaultLevel(logging::level::debug);
+  logging::SetLevel(logging::level::trace);
+
   geometry::CoordinateSystem& dummyCS =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
@@ -82,7 +85,9 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
 
     auto const ev0 = p0.GetEvent();
     CHECK(ev0 == nullptr);
-    
+
+    C8LOG_DEBUG("loop VIEW");
+
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
       auto sec = hview0.AddSecondary(
@@ -132,12 +137,15 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
   // add third generation of secondaries
   // add 15 secondaries
   for (int i = 0; i < 15; ++i) {
+    C8LOG_TRACE("loop, view: " + std::to_string(i));
+
     auto sec = hview2.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Electron, 1.5_GeV,
             corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+    C8LOG_TRACE("loop, ---- " );
 
     CHECK(sec.GetParentEventIndex() == i);
     CHECK(sec.GetEvent()->parentEvent() == ev2);
@@ -186,9 +194,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     auto proj0 = hview0.GetProjectile();    
     auto const ev0 = p0.GetEvent();
     CHECK(ev0 == nullptr);
+
+    C8LOG_TRACE("loop");
     
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
+      C8LOG_TRACE("loop " + std::to_string(i));
       auto sec = proj0.AddSecondary(
 				     std::tuple<particles::Code, units::si::HEPEnergyType,
 				     corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{

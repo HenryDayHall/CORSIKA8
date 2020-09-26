@@ -9,8 +9,6 @@
 #pragma once
 
 #include <corsika/stack/StackIteratorInterface.h>
-// must be after StackIteratorInterface
-// #include <corsika/stack/SecondaryView.h>
 #include <corsika/utl/MetaProgramming.h>
 
 #include <stdexcept>
@@ -128,7 +126,8 @@ namespace corsika::stack {
     friend class ConstStackIteratorInterface<StackDataValueType, TParticleInterface,
                                              Stack>;
     friend class SecondaryView<StackDataValueType, TParticleInterface>;
-
+    friend class ParticleBase<StackIterator>;
+    
   public:
     /**
      * @name Most generic proxy methods for TStackData data_
@@ -215,9 +214,13 @@ namespace corsika::stack {
       return StackIterator(*this, getSize() - 1, v...);
     }
 
+  protected:
     /**
      * increase stack size, create new particle at end of stack, related to parent
      * particle/projectile
+     *
+     * This should only get internally called from a
+     * StackIterator::AddSecondary via ParticleBase
      */
     template <typename... Args>
     StackIterator AddSecondary(StackIterator& parent, const Args... v) {
@@ -226,6 +229,7 @@ namespace corsika::stack {
       return StackIterator(*this, getSize() - 1, parent, v...);
     }
 
+  public:
     void Swap(StackIterator a, StackIterator b) {
       data_.Swap(a.GetIndex(), b.GetIndex());
       std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);

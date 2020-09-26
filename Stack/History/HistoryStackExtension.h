@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/stack/Stack.h>
+#include <corsika/logging/Logging.h>
 
 #include <memory>
 #include <utility>
@@ -81,10 +82,22 @@ namespace corsika::history {
 
   public:
     // create a new particle from scratch
-    void SetParticleData() { GetStackData().SetParentEventIndex(GetIndex(), -1); }
+    void SetParticleData() {
+      C8LOG_TRACE("HistoyDatatInterface::SetParticleData()");
+      GetStackData().SetParentEventIndex(GetIndex(), -1); }
 
     // create a new particle as secondary of a parent
-    void SetParticleData(HistoryDataInterface& /*parent*/) { SetParticleData(); }
+    void SetParticleData(HistoryDataInterface& /*parent*/) {
+            C8LOG_TRACE("HistoyDatatInterface::SetParticleData(parnt)");
+	    SetParticleData();
+
+
+      // store particles at production time in Event here
+      auto const sec_index = event_->addSecondary(
+          stack_sec.GetEnergy(), stack_sec.GetMomentum(), stack_sec.GetPID());
+      stack_sec.SetParentEventIndex(sec_index);
+      stack_sec.SetEvent(event_);
+    }
 
     void SetEvent(const std::shared_ptr<TEvent>& v) {
       GetStackData().SetEvent(GetIndex(), v);
