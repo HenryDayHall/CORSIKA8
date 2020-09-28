@@ -19,11 +19,12 @@ namespace corsika {
      * Note that this function makes a temporary, dense copy of the histogram, which could
      * be an issue for huge sizes (e.g. for high dimensions)
      */
-    template <typename hist_type>
-    void save_hist(hist_type const& h, std::string const& filename) {
-      auto const rank = h.rank();
-      auto const size = h.size();
-      using value_type = typename hist_type::value_type;
+    template <class Axes, class Storage>
+    void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
+                   std::string const& filename) {
+      int const rank = h.rank();
+      int const size = h.size();
+      using value_type = typename boost::histogram::histogram<Axes, Storage>::value_type;
 
       std::vector<size_t> axes_dims;
       axes_dims.reserve(rank);
