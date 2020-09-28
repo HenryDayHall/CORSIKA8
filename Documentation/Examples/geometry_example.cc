@@ -41,7 +41,7 @@ int main() {
 
   Vector<length_d> const diff =
       p2 -
-      p1; // the distance between the points, basically the translation vector given above
+      p1;                               // the distance between the points, basically the translation vector given above
   auto const norm = diff.squaredNorm(); // squared length with the right dimension
 
   // print the components of the vector as given in the different CS

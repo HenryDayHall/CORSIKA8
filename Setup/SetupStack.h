@@ -9,10 +9,10 @@
 #pragma once
 
 #include <corsika/history/HistoryStackExtension.h>
-#include <corsika/history/HistorySecondaryView.hpp>
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
+#include <corsika/history/HistorySecondaryProducer.hpp>
 
 #include <corsika/setup/SetupEnvironment.h>
 
@@ -58,12 +58,16 @@ namespace corsika::setup {
 
   // ---------------------------------------
   // this is the FINAL stack we use in C8:
-  
+
   // the version without history
   // using Stack = detail::StackWithGeometry;
+  //template<typename T1, template<typename>typename M2>
+  //using StackViewProducer = corsika::stack::DefaultSecondaryProducer<T1,M2>;
 
   // the version with history
   using Stack = detail::StackWithHistory;
+  template <typename T1, template <typename> typename M2>
+  using StackViewProducer = corsika::history::HistorySecondaryProducer<T1, M2>;
 
   namespace detail {
     /*
@@ -79,22 +83,18 @@ namespace corsika::setup {
     */
 #if defined(__clang__)
     using TheStackView = corsika::stack::SecondaryView<
-      typename corsika::setup::Stack::StackImpl,
-      // CHECK with CLANG: corsika::setup::Stack::PIType>;
-      // corsika::setup::detail::StackWithGeometryInterface>;
-      corsika::setup::detail::StackWithHistoryInterface>;
+        typename corsika::setup::Stack::StackImpl,
+        // CHECK with CLANG: corsika::setup::Stack::PIType>;
+        // corsika::setup::detail::StackWithGeometryInterface>;
+        corsika::setup::detail::StackWithHistoryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-    using TheStackView = corsika::stack::MakeView<corsika::setup::Stack>::type;
+    using TheStackView = corsika::stack::MakeView<corsika::setup::Stack, StackViewProducer>::type;
 #endif
-  }
+  } // namespace detail
 
   // ---------------------------------------
   // this is the FINAL stackitertor (particle type) we use in C8:
 
-  // the version without history
-  //using StackView = detail::StackView;
-
-  // the one with history
-  using StackView = corsika::history::HistorySecondaryView<detail::TheStackView>;
+  using StackView = detail::TheStackView;
 
 } // namespace corsika::setup

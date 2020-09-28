@@ -138,9 +138,9 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr;
 
     particles::Code validProjectileCodes[] = {
-        particles::Code::PiPlus,  particles::Code::PiMinus, particles::Code::Proton,
-        particles::Code::Neutron, particles::Code::KPlus,   particles::Code::KMinus,
-        particles::Code::K0,      particles::Code::K0Bar,   particles::Code::K0Long};
+        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::Proton,
+        particles::Code::Neutron, particles::Code::KPlus, particles::Code::KMinus,
+        particles::Code::K0, particles::Code::K0Bar, particles::Code::K0Long};
 
     for (auto code : validProjectileCodes) {
       auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);

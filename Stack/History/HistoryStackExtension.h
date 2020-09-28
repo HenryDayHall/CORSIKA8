@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <corsika/stack/Stack.h>
 #include <corsika/logging/Logging.h>
+#include <corsika/stack/Stack.h>
 
 #include <memory>
 #include <utility>
@@ -27,7 +27,7 @@ namespace corsika::history {
   template <typename TEvent>
   class HistoryData {
     using EventPtr =
-        std::shared_ptr<TEvent>; //!< Pointer to the event where this particle was created
+        std::shared_ptr<TEvent>;  //!< Pointer to the event where this particle was created
     using ParentEventIndex = int; //!< index to TEvent::secondaries_
     using DataType = std::pair<EventPtr, ParentEventIndex>;
 
@@ -84,12 +84,13 @@ namespace corsika::history {
     // create a new particle from scratch
     void SetParticleData() {
       C8LOG_TRACE("HistoyDatatInterface::SetParticleData()");
-      GetStackData().SetParentEventIndex(GetIndex(), -1); }
+      GetStackData().SetParentEventIndex(GetIndex(), -1);
+    }
 
     // create a new particle as secondary of a parent
     void SetParticleData(HistoryDataInterface& /*parent*/) {
-            C8LOG_TRACE("HistoyDatatInterface::SetParticleData(parnt)");
-	    SetParticleData();
+      C8LOG_TRACE("HistoyDatatInterface::SetParticleData(parnt)");
+      SetParticleData();
     }
 
     void SetEvent(const std::shared_ptr<TEvent>& v) {

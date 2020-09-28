@@ -55,7 +55,7 @@ namespace corsika::stack {
     using StackDataValueType = std::remove_reference_t<TStackData>;
 
   private:
-    TStackData data_; ///< this in general holds all the data and can be quite big
+    TStackData data_;           ///< this in general holds all the data and can be quite big
     std::vector<bool> deleted_; ///< bit field to flag deleted entries
   protected:
     unsigned int nDeleted_ = 0;
@@ -125,9 +125,15 @@ namespace corsika::stack {
     friend class StackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
     friend class ConstStackIteratorInterface<StackDataValueType, TParticleInterface,
                                              Stack>;
-    friend class SecondaryView<StackDataValueType, TParticleInterface>;
+    //friend class SecondaryView<StackDataValueType, TParticleInterface>;
+    template <typename T1,                     //=TStackData,
+              template <typename> typename M1, //=TParticleInterface,
+                                               //             template<typename>typename M2>
+              template <class T2, template <class> class T3> class MSecondaryProducer>
+    friend class SecondaryView; //<TStackData,TParticleInterface,M>; // access for SecondaryView
+
     friend class ParticleBase<StackIterator>;
-    
+
   public:
     /**
      * @name Most generic proxy methods for TStackData data_

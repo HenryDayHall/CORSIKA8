@@ -1,7 +1,7 @@
 set (
   HISTORY_HEADERS
   Event.hpp
-  HistorySecondaryView.hpp
+  HistorySecondaryProducer.hpp
   HistoryObservationPlane.hpp
   HistoryStackExtension.h
   SecondaryParticle.hpp
@@ -23,7 +23,6 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAhistory ${HISTORY_NAMESPACE} ${HISTORY
 
 target_link_libraries (
   CORSIKAhistory
-#  INTERFACE
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAprocesssequence # for HistoryObservationPlane

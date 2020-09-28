@@ -117,7 +117,7 @@ namespace corsika::process::UrQMD {
     int nevents;
     std::array<int, 2> spityp; // particle codes of: [0]: projectile, [1]: target
     int prspflg;               // projectile special flag
-    int trspflg; // target special flag, set to 1 unless target is nucleus > H
+    int trspflg;               // target special flag, set to 1 unless target is nucleus > H
     std::array<int, 2> spiso3; // particle codes of: [0]: projectile, [1]: target
     int outsteps, bflag, srtflag, efuncflag, nsrt, npb, firstev;
   } inputs_;

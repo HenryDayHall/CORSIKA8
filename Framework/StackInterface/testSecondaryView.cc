@@ -44,6 +44,8 @@ using Particle = typename StackTest::ParticleType;
 
 TEST_CASE("SecondaryStack", "[stack]") {
 
+  logging::SetLevel(logging::level::debug);
+
   // helper function for sum over stack data
   auto sum = [](const StackTest& stack) {
     double v = 0;

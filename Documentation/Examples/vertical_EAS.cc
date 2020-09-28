@@ -14,6 +14,7 @@
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
+#include <corsika/logging/Logging.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
@@ -38,7 +39,6 @@
 #include <corsika/utl/CorsikaFenv.h>
 
 #include <corsika/history/HistoryObservationPlane.hpp>
-#include <corsika/history/HistorySecondaryView.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -74,7 +74,9 @@ void registerRandomStreams(const int seed) {
 
 int main(int argc, char** argv) {
 
-  std::cout << "vertical_EAS" << std::endl;
+  logging::SetLevel(logging::level::debug);
+
+  C8LOG_INFO("vertical_EAS");
 
   if (argc < 4) {
     std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
@@ -135,7 +137,7 @@ int main(int argc, char** argv) {
   auto const observationHeight = 0_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
-    sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
+                 sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
                       units::static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =

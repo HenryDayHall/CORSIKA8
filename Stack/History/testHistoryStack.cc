@@ -52,6 +52,8 @@ using EvtPtr = std::shared_ptr<DummyEvent>;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 
+  logging::SetLevel(logging::level::debug);
+
   const dummy::NoData noData;
   TestStack s;
 

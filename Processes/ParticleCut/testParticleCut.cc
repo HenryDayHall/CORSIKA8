@@ -38,9 +38,9 @@ TEST_CASE("ParticleCut", "[processes]") {
   const HEPEnergyType Ebelow = 10_GeV;
   // list of arbitrary particles
   std::vector<particles::Code> particleList = {
-      particles::Code::PiPlus,   particles::Code::PiMinus, particles::Code::KPlus,
-      particles::Code::KMinus,   particles::Code::K0Long,  particles::Code::K0Short,
-      particles::Code::Electron, particles::Code::MuPlus,  particles::Code::NuE,
+      particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
+      particles::Code::KMinus, particles::Code::K0Long, particles::Code::K0Short,
+      particles::Code::Electron, particles::Code::MuPlus, particles::Code::NuE,
       particles::Code::Neutron};
 
   SECTION("cut on particle type: inv") {

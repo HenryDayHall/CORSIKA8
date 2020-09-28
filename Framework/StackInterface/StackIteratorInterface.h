@@ -11,8 +11,10 @@
 #include <corsika/stack/ParticleBase.h>
 
 namespace corsika::history {
-  template <typename T>
-  class HistorySecondaryView; // forward decl. for befriending
+  template <typename T,
+            template <typename> typename ParticleInterface>
+  //class HistorySecondaryView; // forward decl. for befriending
+  class HistorySecondaryProducer;
 }
 
 namespace corsika::stack {
@@ -20,7 +22,10 @@ namespace corsika::stack {
   template <typename TStackData, template <typename> typename TParticleInterface>
   class Stack; // forward decl
 
-  template <typename TStackData, template <typename> typename TParticleInterface>
+  template <typename TStackData,
+            template <typename> typename TParticleInterface,
+            //template <typename> typename TProd>
+            template <class T1, template <class> class T2> class MSecondaryProducer>
   class SecondaryView; // forward decl
 
   template <typename TStackData, template <typename> typename TParticleInterface,
@@ -65,7 +70,8 @@ namespace corsika::stack {
      corsika::processes::sibyll::SibStack class
   */
 
-  template <typename TStackData, template <typename> typename TParticleInterface,
+  template <typename TStackData,
+            template <typename> typename TParticleInterface,
             typename StackType = Stack<TStackData, TParticleInterface>>
   class StackIteratorInterface
       : public TParticleInterface<
@@ -78,15 +84,22 @@ namespace corsika::stack {
 
     // friends are needed for access to protected methods
     friend class Stack<TStackData,
-                       TParticleInterface>; // for access to GetIndex for Stack
+                       TParticleInterface>;              // for access to GetIndex for Stack
     friend class Stack<TStackData&, TParticleInterface>; // for access to GetIndex
                                                          // SecondaryView : public Stack
     friend class ParticleBase<StackIteratorInterface>;   // for access to GetStackData
-    friend class SecondaryView<TStackData,
-                               TParticleInterface>; // access for SecondaryView
 
-    template <typename T>
-    friend class corsika::history::HistorySecondaryView;
+    template <typename T1,                     //=TStackData,
+              template <typename> typename M1, //=TParticleInterface,
+              template <typename T,
+                        template <typename> typename T3> typename M2>
+    //              template <typename> typename M2>
+    friend class SecondaryView; //<TStackData,TParticleInterface,M>; // access for SecondaryView
+
+    template <typename T,
+              template <typename> typename ParticleInterface>
+    //friend class corsika::history::HistorySecondaryView;
+    friend class corsika::history::HistorySecondaryProducer;
 
     friend class ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>;
 
@@ -245,14 +258,24 @@ namespace corsika::stack {
 
     // friends are needed for access to protected methods
     friend class Stack<TStackData,
-                       TParticleInterface>; // for access to GetIndex for Stack
-    friend class Stack<TStackData&, TParticleInterface>; // for access to GetIndex
-                                                         // SecondaryView : public Stack
+                       TParticleInterface>;                 // for access to GetIndex for Stack
+    friend class Stack<TStackData&, TParticleInterface>;    // for access to GetIndex
+                                                            // SecondaryView : public Stack
     friend class ParticleBase<ConstStackIteratorInterface>; // for access to GetStackData
-    friend class SecondaryView<TStackData,
-                               TParticleInterface>; // access for SecondaryView
+                                                            //friend class SecondaryView<TStackData,
+                                                            //                           TParticleInterface>; // access for SecondaryView
+    template <typename T1,                                  //=TStackData,
+              template <typename> typename M1,              //=TParticleInterface,
+                                                            //              template <typename> typename M2>
+              template <class T2, template <class> class T3> class MSecondaryProducer>
+    friend class SecondaryView; //<TStackData,TParticleInterface,M>; // access for SecondaryView
 
     friend class StackIteratorInterface<TStackData, TParticleInterface, StackType>;
+
+    template <typename T,
+              template <typename> typename ParticleInterface>
+    //friend class corsika::history::HistorySecondaryView;
+    friend class corsika::history::HistorySecondaryProducer;
 
   protected:
     unsigned int index_ = 0;

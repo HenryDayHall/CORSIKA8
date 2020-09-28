@@ -51,14 +51,14 @@ namespace corsika::process::pythia {
         // define which particles are passed to corsika, i.e. which particles make it into
         // history even very shortlived particles like charm or pi0 are of interest here
         const std::vector<particles::Code> HadronsWeWantTrackedByCorsika = {
-            particles::Code::PiPlus,     particles::Code::PiMinus,
-            particles::Code::Pi0,        particles::Code::KMinus,
-            particles::Code::KPlus,      particles::Code::K0Long,
-            particles::Code::K0Short,    particles::Code::SigmaPlus,
+            particles::Code::PiPlus, particles::Code::PiMinus,
+            particles::Code::Pi0, particles::Code::KMinus,
+            particles::Code::KPlus, particles::Code::K0Long,
+            particles::Code::K0Short, particles::Code::SigmaPlus,
             particles::Code::SigmaMinus, particles::Code::Lambda0,
-            particles::Code::Xi0,        particles::Code::XiMinus,
+            particles::Code::Xi0, particles::Code::XiMinus,
             particles::Code::OmegaMinus, particles::Code::DPlus,
-            particles::Code::DMinus,     particles::Code::D0,
+            particles::Code::DMinus, particles::Code::D0,
             particles::Code::D0Bar};
 
         Interaction::SetParticleListStable(HadronsWeWantTrackedByCorsika);

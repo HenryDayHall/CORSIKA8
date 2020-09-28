@@ -61,7 +61,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
 
   HEPEnergyType const E0 =
       sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
-  auto particle =
+  setup::Stack::StackIterator particle =
       stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                     corsika::stack::MomentumVector, geometry::Point,
                                     units::si::TimeType, unsigned short, unsigned short>{
@@ -70,7 +70,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
   particle.SetNode(vNodePtr);
   return std::make_tuple(
       std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::make_unique<decltype(setup::StackView(particle))>(particle));
 }
 
 template <typename TNodeType>
@@ -92,7 +92,7 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
   particle.SetNode(vNodePtr);
   return std::make_tuple(
       std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::make_unique<decltype(setup::StackView(particle))>(particle));
 }
 
 struct DummyProcess {
@@ -108,6 +108,9 @@ struct DummyProcess {
 };
 
 TEST_CASE("InteractionCounter") {
+
+  logging::SetLevel(logging::level::debug);
+
   DummyProcess d;
   InteractionCounter countedProcess(d);
 

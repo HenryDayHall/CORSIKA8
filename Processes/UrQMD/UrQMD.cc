@@ -213,9 +213,9 @@ bool UrQMD::CanInteract(particles::Code code) const {
   // so we unfortunately have to forbid these interactions for the time being.
 
   static particles::Code const validProjectileCodes[] = {
-      particles::Code::Proton,      particles::Code::AntiProton, particles::Code::Neutron,
-      particles::Code::AntiNeutron, particles::Code::PiPlus,     particles::Code::PiMinus,
-      particles::Code::KPlus,       particles::Code::KMinus,     particles::Code::K0Short,
+      particles::Code::Proton, particles::Code::AntiProton, particles::Code::Neutron,
+      particles::Code::AntiNeutron, particles::Code::PiPlus, particles::Code::PiMinus,
+      particles::Code::KPlus, particles::Code::KMinus, particles::Code::K0Short,
       particles::Code::K0Long};
 
   return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
