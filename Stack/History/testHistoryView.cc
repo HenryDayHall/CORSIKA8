@@ -30,7 +30,7 @@ using namespace corsika::units::si;
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithHistoryInterface = corsika::stack::CombinedParticleInterface<
-    stack::nuclear_extension::ParticleDataStack::PIType,
+    stack::nuclear_extension::ParticleDataStack::MPIType,
     history::HistoryEventDataInterface, TStackIter>;
 
 using TestStack = corsika::stack::CombinedStack<

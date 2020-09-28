@@ -338,7 +338,7 @@ namespace corsika::stack {
     template <typename StackIter>
     using ExtendedParticleInterfaceType =
         corsika::stack::nuclear_extension::NuclearParticleInterface<
-            corsika::stack::super_stupid::SuperStupidStack::PIType, StackIter>;
+            corsika::stack::super_stupid::SuperStupidStack::MPIType, StackIter>;
 
     // the particle data stack with extra nuclear information:
     using ParticleDataStack = corsika::stack::nuclear_extension::NuclearStackExtension<

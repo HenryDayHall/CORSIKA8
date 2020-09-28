@@ -277,7 +277,7 @@ public:
 // combined stack
 template <typename StackIter>
 using CombinedTestInterfaceType2 =
-    corsika::stack::CombinedParticleInterface<StackTest::PIType, TestParticleInterface3,
+    corsika::stack::CombinedParticleInterface<StackTest::MPIType, TestParticleInterface3,
                                               StackIter>;
 
 using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
@@ -363,7 +363,7 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
  */
 template <typename StackIter>
 using CombinedTestInterfaceType2 =
-    corsika::stack::CombinedParticleInterface<StackTest::PIType, TestParticleInterface3,
+    corsika::stack::CombinedParticleInterface<StackTest::MPIType, TestParticleInterface3,
                                               StackIter>;
 
 using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,

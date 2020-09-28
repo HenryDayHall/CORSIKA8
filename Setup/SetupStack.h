@@ -16,6 +16,7 @@
 
 #include <corsika/setup/SetupEnvironment.h>
 
+
 namespace corsika::setup {
 
   namespace detail {
@@ -33,7 +34,7 @@ namespace corsika::setup {
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>
     using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
-        stack::nuclear_extension::ParticleDataStack::PIType, SetupGeometryDataInterface,
+        stack::nuclear_extension::ParticleDataStack::MPIType, SetupGeometryDataInterface,
         TStackIter>;
 
     using StackWithGeometry = corsika::stack::CombinedStack<
@@ -47,7 +48,7 @@ namespace corsika::setup {
     // combine dummy stack with geometry information for tracking
     template <typename TStackIter>
     using StackWithHistoryInterface = corsika::stack::CombinedParticleInterface<
-        StackWithGeometry::PIType, history::HistoryEventDataInterface, TStackIter>;
+        StackWithGeometry::MPIType, history::HistoryEventDataInterface, TStackIter>;
 
     using StackWithHistory =
         corsika::stack::CombinedStack<typename StackWithGeometry::StackImpl,
@@ -84,7 +85,7 @@ namespace corsika::setup {
 #if defined(__clang__)
     using TheStackView = corsika::stack::SecondaryView<
         typename corsika::setup::Stack::StackImpl,
-        // CHECK with CLANG: corsika::setup::Stack::PIType>;
+        // CHECK with CLANG: corsika::setup::Stack::MPIType>;
         // corsika::setup::detail::StackWithGeometryInterface>;
         corsika::setup::detail::StackWithHistoryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)

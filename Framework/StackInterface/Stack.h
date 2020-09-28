@@ -50,7 +50,8 @@ namespace corsika::stack {
      loops, ranges, etc.
    */
 
-  template <typename TStackData, template <typename> typename TParticleInterface>
+  template <typename TStackData,
+            template <typename> typename MParticleInterface>
   class Stack {
     using StackDataValueType = std::remove_reference_t<TStackData>;
 
@@ -96,23 +97,23 @@ namespace corsika::stack {
     typedef TStackData
         StackImpl; ///< this is the type of the user-provided data structure
 
-    template <typename SI>
-    using PIType = TParticleInterface<SI>;
+    template <typename TSI>
+    using MPIType = MParticleInterface<TSI>;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
      * specialization, the type of the StackIterator
      * template class is declared for a particular stack data
      * object. Using CRTP, this also determines the type of
-     * TParticleInterface template class simultaneously.
+     * MParticleInterface template class simultaneously.
      */
     using StackIterator =
-        StackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
+        StackIteratorInterface<StackDataValueType, MParticleInterface, Stack>;
     using ConstStackIterator =
-        ConstStackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
+        ConstStackIteratorInterface<StackDataValueType, MParticleInterface, Stack>;
 
     /**
-     * this is the full type of the user-declared TParticleInterface
+     * this is the full type of the user-declared MParticleInterface
      */
     using ParticleInterfaceType = typename StackIterator::ParticleInterfaceType;
     /**
@@ -122,15 +123,15 @@ namespace corsika::stack {
     using ParticleType = StackIterator;
 
     // friends are needed since they need access to protected members
-    friend class StackIteratorInterface<StackDataValueType, TParticleInterface, Stack>;
-    friend class ConstStackIteratorInterface<StackDataValueType, TParticleInterface,
+    friend class StackIteratorInterface<StackDataValueType, MParticleInterface, Stack>;
+    friend class ConstStackIteratorInterface<StackDataValueType, MParticleInterface,
                                              Stack>;
-    //friend class SecondaryView<StackDataValueType, TParticleInterface>;
+    //friend class SecondaryView<StackDataValueType, MParticleInterface>;
     template <typename T1,                     //=TStackData,
-              template <typename> typename M1, //=TParticleInterface,
+              template <typename> typename M1, //=MParticleInterface,
                                                //             template<typename>typename M2>
               template <class T2, template <class> class T3> class MSecondaryProducer>
-    friend class SecondaryView; //<TStackData,TParticleInterface,M>; // access for SecondaryView
+    friend class SecondaryView; //<TStackData,MParticleInterface,M>; // access for SecondaryView
 
     friend class ParticleBase<StackIterator>;
 

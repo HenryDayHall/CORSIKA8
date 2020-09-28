@@ -40,7 +40,7 @@ using DummyHistoryDataInterface =
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithHistoryInterface =
-    corsika::stack::CombinedParticleInterface<dummy::DummyStack::PIType,
+    corsika::stack::CombinedParticleInterface<dummy::DummyStack::MPIType,
                                               DummyHistoryDataInterface, TStackIter>;
 
 using TestStack =

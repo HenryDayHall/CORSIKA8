@@ -31,7 +31,7 @@ using SetupGeometryDataInterface =
 // combine particle data stack with geometry information for tracking
 template <typename StackIter>
 using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
-    corsika::stack::nuclear_extension::ParticleDataStack::PIType,
+    corsika::stack::nuclear_extension::ParticleDataStack::MPIType,
     SetupGeometryDataInterface, StackIter>;
 
 using TestTrackingLineStack = corsika::stack::CombinedStack<

@@ -57,14 +57,10 @@ namespace corsika::stack {
 
   template <typename StackDataType,
             template <typename> typename ParticleInterface,
-            //template <typename> typename MSecondaryProducer = DefaultSecondaryProducer>
-            template <class T1, template <class> class T2> class MSecondaryProducer> // T2==ParticleInterface
+            template <class T1, template <class> class T2> class MSecondaryProducer>
 
   class SecondaryView : public Stack<StackDataType&, ParticleInterface>,
-                        public MSecondaryProducer<StackDataType, ParticleInterface>
-
-  { //, public MSecondaryProducer<SecondaryView<StackDataType,ParticleInterface,MSecondaryProducer>> {
-
+                        public MSecondaryProducer<StackDataType, ParticleInterface> {
     using ViewType = SecondaryView<StackDataType, ParticleInterface, MSecondaryProducer>;
 
   private:
@@ -101,8 +97,8 @@ namespace corsika::stack {
 
     friend class ParticleBase<StackIterator>;
 
-    template <template <typename> typename M1>
-    friend class MSecondaryProducer;
+    //template <template <typename> typename M1>
+    //friend class MSecondaryProducer;
 
   private:
     /**
@@ -398,12 +394,11 @@ namespace corsika::stack {
     generic and universal.
   */
 #if not defined(__clang__) && defined(__GNUC__) || defined(__GNUG__)
-  template <typename S,
-            // template <typename> typename MSecondaryProducer = corsika::stack::DefaultSecondaryProducer,
-            template <class T1, template <class> class T2> class MSecondaryProducer = corsika::stack::DefaultSecondaryProducer,
-            template <typename> typename _PIType = S::template PIType>
+  template <typename TStack,
+            template <class TStack_, template <class> class MPIType_> class MSecondaryProducer = corsika::stack::DefaultSecondaryProducer,
+            template <typename> typename MPIType_ = TStack::template MPIType>
   struct MakeView {
-    using type = corsika::stack::SecondaryView<typename S::StackImpl, _PIType, MSecondaryProducer>;
+    using type = corsika::stack::SecondaryView<typename TStack::StackImpl, MPIType_, MSecondaryProducer>;
   };
 #endif
 
