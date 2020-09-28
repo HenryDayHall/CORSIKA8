@@ -241,10 +241,6 @@ namespace corsika::stack {
       data_.Swap(a.GetIndex(), b.GetIndex());
       std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);
     }
-    void Swap(ConstStackIterator a, ConstStackIterator b) {
-      data_.Swap(a.GetIndex(), b.GetIndex());
-      std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);
-    }
     void Copy(StackIterator a, StackIterator b) {
       data_.Copy(a.GetIndex(), b.GetIndex());
       if (deleted_[b.GetIndex()] && !deleted_[a.GetIndex()]) nDeleted_--;
