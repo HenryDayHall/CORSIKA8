@@ -11,6 +11,14 @@
 namespace corsika {
   namespace utl {
 
+    /**
+     * This functions saves a boost::histogram into a numpy file. Only rather basic axis
+     * types are supported: regular, variable, integer, category<int>. Only "ordinary" bin
+     * counts (i.e. a double or int) are supported, nothing fancy like profiles.
+     *
+     * Note that this function makes a temporary, dense copy of the histogram, which could
+     * be an issue for huge sizes (e.g. for high dimensions)
+     */
     template <typename hist_type>
     void save_hist(hist_type const& h, std::string const& filename) {
       auto const rank = h.rank();
