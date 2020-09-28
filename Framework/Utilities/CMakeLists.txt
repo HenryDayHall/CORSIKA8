@@ -13,6 +13,7 @@ else ()
   endif()
 endif ()
 
+find_package(ZLIB)
 
 #
 # library setup
@@ -32,6 +33,7 @@ set (
   sgn.h
   CorsikaFenv.h
   MetaProgramming.h
+  SaveBoostHistogram.hpp
   )
 
 set (
@@ -57,6 +59,8 @@ target_link_libraries (
   CORSIKAunits
   C8::ext::boost # so far only for MetaProgramming
   C8::ext::eigen3 # for COMboost
+  cnpy # for SaveBoostHistogram
+  ZLIB::ZLIB # for SaveBoostHistogram
   )
 
 target_include_directories (
@@ -86,6 +90,13 @@ target_link_libraries (
 CORSIKA_ADD_TEST(testCorsikaFenv)
 target_link_libraries (
   testCorsikaFenv
+  CORSIKAutilities
+  CORSIKAtesting
+)
+
+CORSIKA_ADD_TEST(testSaveBoostHistogram)
+target_link_libraries (
+  testSaveBoostHistogram
   CORSIKAutilities
   CORSIKAtesting
 )
