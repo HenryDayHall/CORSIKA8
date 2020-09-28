@@ -131,8 +131,7 @@ process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupView& vie
 
     do {
       // |t| cannot become arbitrarily large, max. given by GER eq. (4.16), so we just
-      // throw again until we have an acceptable value. Note that the formula holds in
-      // any frame despite of what is stated in the book.
+      // throw again until we have an acceptable value.
       absT = tDist(fRNG);
     } while (absT >= maxT);
 
@@ -155,12 +154,10 @@ process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupView& vie
                                            pProjectileCoMNorm * sin(theta) * sin(phi),
                                            pProjectileCoMNorm * cos(theta)})));
 
-  p.SetMomentum(projectileScatteredLab.GetSpaceLikeComponents());
-  p.SetEnergy(
-      sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() +
-           units::static_pow<2>(particles::GetMass(
-               p.GetPID())))); // Don't use energy from boost. It can be smaller than
-                               // the momentum due to limited numerical accuracy.
+  view.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                               corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+      p.GetPID(), sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() + units::static_pow<2>(particles::GetMass(p.GetPID()))),
+      projectileScatteredLab.GetSpaceLikeComponents(), p.GetPosition(), p.GetTime()});
 
   return process::EProcessReturn::eOk;
 }
