@@ -299,3 +299,5 @@ else (Boost_IOSTREAMS_FOUND)
     $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
     )
 endif (Boost_IOSTREAMS_FOUND)
+
+add_subdirectory(cnpy)
