@@ -147,7 +147,7 @@ public:
 class Decay1 : public DecayProcess<Decay1> {
 
 public:
-  Decay1(const int v) {
+  Decay1(const int) {
     cout << "Decay1()" << endl;
     globalCount++;
   }

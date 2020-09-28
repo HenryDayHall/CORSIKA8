@@ -17,6 +17,10 @@
 
 namespace corsika::stack {
 
+  // forward-decl:
+  template <class T1, template <class> class T2>
+  class DefaultSecondaryProducer;
+
   /**
    * @class SecondaryView
    *
@@ -57,7 +61,7 @@ namespace corsika::stack {
 
   template <typename StackDataType,
             template <typename> typename ParticleInterface,
-            template <class T1, template <class> class T2> class MSecondaryProducer>
+            template <class T1, template <class> class T2> class MSecondaryProducer = DefaultSecondaryProducer>
 
   class SecondaryView : public Stack<StackDataType&, ParticleInterface>,
                         public MSecondaryProducer<StackDataType, ParticleInterface> {
