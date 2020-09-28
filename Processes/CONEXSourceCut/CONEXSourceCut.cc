@@ -187,8 +187,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
 
       auto const transform = geometry::CoordinateSystem::GetTransformation(
           intermediateCS2, c8cs); // either this way or vice versa... TODO: test this!
-      std::cout << transform.matrix() << std::endl
-                << std::endl;
+      std::cout << transform.matrix() << std::endl << std::endl;
       std::cout
           << geometry::CoordinateSystem::GetTransformation(intermediateCS, c8cs).matrix()
           << std::endl

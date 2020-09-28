@@ -53,11 +53,13 @@ using TheTestStackView = corsika::stack::SecondaryView<typename TestStack::Stack
                                                        StackWithHistoryInterface,
                                                        history::HistorySecondaryProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-//using TheTestStackView = corsika::stack::MakeView<TestStack, history::HistorySecondaryProducer>::type;
-using TheTestStackView = corsika::stack::MakeView<TestStack, history::HistorySecondaryProducer>::type;
+// using TheTestStackView = corsika::stack::MakeView<TestStack,
+// history::HistorySecondaryProducer>::type;
+using TheTestStackView =
+    corsika::stack::MakeView<TestStack, history::HistorySecondaryProducer>::type;
 #endif
 
-using TestStackView = TheTestStackView; //history::HistorySecondaryView<TheTestStackView>;
+using TestStackView = TheTestStackView; // history::HistorySecondaryView<TheTestStackView>;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 
@@ -93,12 +95,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
 
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
-      auto sec = hview0.AddSecondary(
-          std::tuple<particles::Code, units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+      auto sec = hview0.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                                corsika::stack::MomentumVector,
+                                                geometry::Point, units::si::TimeType>{
+          particles::Code::Electron, 1.5_GeV,
+          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
       CHECK(sec.GetParentEventIndex() == i);
       CHECK(sec.GetEvent() != nullptr);
@@ -115,12 +117,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     // add second generation of secondaries
     // add 10 secondaries
     for (int i = 0; i < 10; ++i) {
-      auto sec = hview1.AddSecondary(
-          std::tuple<particles::Code, units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+      auto sec = hview1.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                                corsika::stack::MomentumVector,
+                                                geometry::Point, units::si::TimeType>{
+          particles::Code::Electron, 1.5_GeV,
+          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
       CHECK(sec.GetParentEventIndex() == i);
       CHECK(sec.GetEvent()->parentEvent() == ev1);
@@ -142,12 +144,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     for (int i = 0; i < 15; ++i) {
       C8LOG_TRACE("loop, view: " + std::to_string(i));
 
-      auto sec = hview2.AddSecondary(
-          std::tuple<particles::Code, units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+      auto sec = hview2.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                                corsika::stack::MomentumVector,
+                                                geometry::Point, units::si::TimeType>{
+          particles::Code::Electron, 1.5_GeV,
+          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
       C8LOG_TRACE("loop, ---- ");
 
       CHECK(sec.GetParentEventIndex() == i);
@@ -205,12 +207,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
       C8LOG_TRACE("loop " + std::to_string(i));
-      auto sec = proj0.AddSecondary(
-          std::tuple<particles::Code, units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+      auto sec = proj0.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                               corsika::stack::MomentumVector,
+                                               geometry::Point, units::si::TimeType>{
+          particles::Code::Electron, 1.5_GeV,
+          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
       CHECK(sec.GetParentEventIndex() == i);
       CHECK(sec.GetEvent() != nullptr);
@@ -228,12 +230,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
     // add second generation of secondaries
     // add 10 secondaries
     for (int i = 0; i < 10; ++i) {
-      auto sec = proj1.AddSecondary(
-          std::tuple<particles::Code, units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+      auto sec = proj1.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                               corsika::stack::MomentumVector,
+                                               geometry::Point, units::si::TimeType>{
+          particles::Code::Electron, 1.5_GeV,
+          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
 
       CHECK(sec.GetParentEventIndex() == i);
       CHECK(sec.GetEvent()->parentEvent() == ev1);

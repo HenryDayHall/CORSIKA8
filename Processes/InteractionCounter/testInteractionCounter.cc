@@ -59,8 +59,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-  HEPEnergyType const E0 =
-      sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
+  HEPEnergyType const E0 = sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
   setup::Stack::StackIterator particle =
       stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                     corsika::stack::MomentumVector, geometry::Point,
@@ -69,8 +68,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
-      std::move(stack),
-      std::make_unique<decltype(setup::StackView(particle))>(particle));
+      std::move(stack), std::make_unique<decltype(setup::StackView(particle))>(particle));
 }
 
 template <typename TNodeType>
@@ -81,9 +79,8 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-  HEPEnergyType const E0 =
-      sqrt(units::static_pow<2>(particles::GetMass(vProjectileType)) +
-           pLab.squaredNorm());
+  HEPEnergyType const E0 = sqrt(
+      units::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
   auto particle = stack->AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
@@ -91,8 +88,7 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
-      std::move(stack),
-      std::make_unique<decltype(setup::StackView(particle))>(particle));
+      std::move(stack), std::make_unique<decltype(setup::StackView(particle))>(particle));
 }
 
 struct DummyProcess {

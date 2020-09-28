@@ -45,7 +45,7 @@ namespace corsika::process::sibyll {
     using namespace corsika::particles;
     const int k = targetComponentsIndex_.at(pCode);
     Code pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
-                      Code::Neon, Code::Argon, Code::Iron};
+                      Code::Neon,   Code::Argon,    Code::Iron};
     cout << "en/A ";
     for (auto& j : pNuclei) cout << std::setw(9) << j;
     cout << endl;

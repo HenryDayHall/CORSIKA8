@@ -85,8 +85,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-  HEPEnergyType const E0 =
-      sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
+  HEPEnergyType const E0 = sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
   auto particle =
       stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                     corsika::stack::MomentumVector, geometry::Point,
@@ -106,9 +105,8 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-  HEPEnergyType const E0 =
-      sqrt(units::static_pow<2>(particles::GetMass(vProjectileType)) +
-           pLab.squaredNorm());
+  HEPEnergyType const E0 = sqrt(
+      units::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
   auto particle = stack->AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
@@ -138,9 +136,9 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr;
 
     particles::Code validProjectileCodes[] = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::Proton,
-        particles::Code::Neutron, particles::Code::KPlus, particles::Code::KMinus,
-        particles::Code::K0, particles::Code::K0Bar, particles::Code::K0Long};
+        particles::Code::PiPlus,  particles::Code::PiMinus, particles::Code::Proton,
+        particles::Code::Neutron, particles::Code::KPlus,   particles::Code::KMinus,
+        particles::Code::K0,      particles::Code::K0Bar,   particles::Code::K0Long};
 
     for (auto code : validProjectileCodes) {
       auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);

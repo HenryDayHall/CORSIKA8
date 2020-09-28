@@ -126,8 +126,8 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code projectileCode,
       !IsNucleus(targetCode)) { // both particles are "special"
     auto const mProj = particles::GetMass(projectileCode);
     auto const mTar = particles::GetMass(targetCode);
-    double sqrtS = sqrt(units::static_pow<2>(mProj) +
-                        units::static_pow<2>(mTar) + 2 * labEnergy * mTar) *
+    double sqrtS = sqrt(units::static_pow<2>(mProj) + units::static_pow<2>(mTar) +
+                        2 * labEnergy * mTar) *
                    (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
@@ -213,9 +213,9 @@ bool UrQMD::CanInteract(particles::Code code) const {
   // so we unfortunately have to forbid these interactions for the time being.
 
   static particles::Code const validProjectileCodes[] = {
-      particles::Code::Proton, particles::Code::AntiProton, particles::Code::Neutron,
-      particles::Code::AntiNeutron, particles::Code::PiPlus, particles::Code::PiMinus,
-      particles::Code::KPlus, particles::Code::KMinus, particles::Code::K0Short,
+      particles::Code::Proton,      particles::Code::AntiProton, particles::Code::Neutron,
+      particles::Code::AntiNeutron, particles::Code::PiPlus,     particles::Code::PiMinus,
+      particles::Code::KPlus,       particles::Code::KMinus,     particles::Code::K0Short,
       particles::Code::K0Long};
 
   return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),

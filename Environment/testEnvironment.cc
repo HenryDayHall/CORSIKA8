@@ -145,8 +145,7 @@ struct Exponential {
 
   template <int N>
   auto Derivative(Point const& p, Vector<dimensionless_d> const& v) const {
-    return v.GetComponents()[0] * (*this)(p) /
-           corsika::units::static_pow<N>(1_m);
+    return v.GetComponents()[0] * (*this)(p) / corsika::units::static_pow<N>(1_m);
   }
 
   auto FirstDerivative(Point const& p, Vector<dimensionless_d> const& v) const {

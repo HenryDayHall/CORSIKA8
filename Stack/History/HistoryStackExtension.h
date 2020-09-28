@@ -27,7 +27,7 @@ namespace corsika::history {
   template <typename TEvent>
   class HistoryData {
     using EventPtr =
-        std::shared_ptr<TEvent>;  //!< Pointer to the event where this particle was created
+        std::shared_ptr<TEvent>; //!< Pointer to the event where this particle was created
     using ParentEventIndex = int; //!< index to TEvent::secondaries_
     using DataType = std::pair<EventPtr, ParentEventIndex>;
 

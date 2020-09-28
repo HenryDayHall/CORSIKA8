@@ -16,7 +16,6 @@
 
 #include <corsika/setup/SetupEnvironment.h>
 
-
 namespace corsika::setup {
 
   namespace detail {
@@ -62,8 +61,8 @@ namespace corsika::setup {
 
   // the version without history
   // using Stack = detail::StackWithGeometry;
-  //template<typename T1, template<typename>typename M2>
-  //using StackViewProducer = corsika::stack::DefaultSecondaryProducer<T1,M2>;
+  // template<typename T1, template<typename>typename M2>
+  // using StackViewProducer = corsika::stack::DefaultSecondaryProducer<T1,M2>;
 
   // the version with history
   using Stack = detail::StackWithHistory;
@@ -73,7 +72,7 @@ namespace corsika::setup {
   namespace detail {
     /*
       See Issue 161
-      
+
       unfortunately clang does not support this in the same way (yet) as
       gcc, so we have to distinguish here. If clang cataches up, we
       could remove the clang branch here and also in
@@ -89,7 +88,8 @@ namespace corsika::setup {
         // corsika::setup::detail::StackWithGeometryInterface>;
         corsika::setup::detail::StackWithHistoryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-    using TheStackView = corsika::stack::MakeView<corsika::setup::Stack, StackViewProducer>::type;
+    using TheStackView =
+        corsika::stack::MakeView<corsika::setup::Stack, StackViewProducer>::type;
 #endif
   } // namespace detail
 

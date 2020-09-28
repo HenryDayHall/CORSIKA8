@@ -168,23 +168,23 @@ TEST_CASE("Stack", "[Stack]") {
     CHECK(s.getSize() == 0);
     CHECK(s.getEntries() == 0);
     CHECK(s.IsEmpty());
-    
+
     s.AddParticle(std::tuple{9.888});
-    s.AddParticle(std::tuple{8.999});    
+    s.AddParticle(std::tuple{8.999});
     CHECK(s.getSize() == 2);
     CHECK(s.getEntries() == 2);
     CHECK(!s.IsEmpty());
 
     auto p1 = s.begin();
-    auto p2 = p1+1;
+    auto p2 = p1 + 1;
 
-    CHECK(p1.GetData()==9.888);
-    CHECK(p2.GetData()==8.999);
+    CHECK(p1.GetData() == 9.888);
+    CHECK(p2.GetData() == 8.999);
 
     s.Swap(p1, p2);
-    
-    CHECK(p1.GetData()==8.999);
-    CHECK(p2.GetData()==9.888);    
+
+    CHECK(p1.GetData() == 8.999);
+    CHECK(p2.GetData() == 9.888);
   }
 
   SECTION("copy particle") {
@@ -192,22 +192,22 @@ TEST_CASE("Stack", "[Stack]") {
     CHECK(s.getSize() == 0);
     CHECK(s.getEntries() == 0);
     CHECK(s.IsEmpty());
-    
+
     s.AddParticle(std::tuple{9.888});
-    s.AddParticle(std::tuple{8.999});    
+    s.AddParticle(std::tuple{8.999});
     CHECK(s.getSize() == 2);
     CHECK(s.getEntries() == 2);
     CHECK(!s.IsEmpty());
 
     auto p1 = s.begin();
-    auto p2 = p1+1;
+    auto p2 = p1 + 1;
 
-    CHECK(p1.GetData()==9.888);
-    CHECK(p2.GetData()==8.999);
+    CHECK(p1.GetData() == 9.888);
+    CHECK(p2.GetData() == 8.999);
 
     s.Copy(p1, p2);
-    
-    CHECK(p1.GetData()==9.888);
-    CHECK(p2.GetData()==9.888);    
+
+    CHECK(p1.GetData() == 9.888);
+    CHECK(p2.GetData() == 9.888);
   }
 }

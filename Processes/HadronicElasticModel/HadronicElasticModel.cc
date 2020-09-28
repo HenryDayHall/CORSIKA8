@@ -154,10 +154,13 @@ process::EProcessReturn HadronicElasticInteraction::DoInteraction(SetupView& vie
                                            pProjectileCoMNorm * sin(theta) * sin(phi),
                                            pProjectileCoMNorm * cos(theta)})));
 
-  view.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
-                               corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-      p.GetPID(), sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() + units::static_pow<2>(particles::GetMass(p.GetPID()))),
-      projectileScatteredLab.GetSpaceLikeComponents(), p.GetPosition(), p.GetTime()});
+  view.AddSecondary(
+      std::tuple<particles::Code, units::si::HEPEnergyType,
+                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+          p.GetPID(),
+          sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() +
+               units::static_pow<2>(particles::GetMass(p.GetPID()))),
+          projectileScatteredLab.GetSpaceLikeComponents(), p.GetPosition(), p.GetTime()});
 
   return process::EProcessReturn::eOk;
 }

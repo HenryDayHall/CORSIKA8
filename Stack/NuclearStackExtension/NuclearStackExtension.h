@@ -275,8 +275,8 @@ namespace corsika::stack {
             fNucleusRef[i2] = -1;                       // flag as non-nucleus
             fNuclearA.erase(fNuclearA.cbegin() + ref2); // remove data for i2
             fNuclearZ.erase(fNuclearZ.cbegin() + ref2); // remove data for i2
-            const int n = fNucleusRef.size();           // update fNucleusRef: indices above ref2
-                                                        // must be decremented by 1
+            const int n = fNucleusRef.size(); // update fNucleusRef: indices above ref2
+                                              // must be decremented by 1
             for (int i = 0; i < n; ++i) {
               if (fNucleusRef[i] > ref2) { fNucleusRef[i] -= 1; }
             }

@@ -50,13 +50,12 @@ namespace corsika::stack {
      loops, ranges, etc.
    */
 
-  template <typename TStackData,
-            template <typename> typename MParticleInterface>
+  template <typename TStackData, template <typename> typename MParticleInterface>
   class Stack {
     using StackDataValueType = std::remove_reference_t<TStackData>;
 
   private:
-    TStackData data_;           ///< this in general holds all the data and can be quite big
+    TStackData data_; ///< this in general holds all the data and can be quite big
     std::vector<bool> deleted_; ///< bit field to flag deleted entries
   protected:
     unsigned int nDeleted_ = 0;
@@ -126,12 +125,14 @@ namespace corsika::stack {
     friend class StackIteratorInterface<StackDataValueType, MParticleInterface, Stack>;
     friend class ConstStackIteratorInterface<StackDataValueType, MParticleInterface,
                                              Stack>;
-    //friend class SecondaryView<StackDataValueType, MParticleInterface>;
-    template <typename T1,                     //=TStackData,
-              template <typename> typename M1, //=MParticleInterface,
-                                               //             template<typename>typename M2>
+    // friend class SecondaryView<StackDataValueType, MParticleInterface>;
+    template <typename T1, //=TStackData,
+              template <typename>
+              typename M1, //=MParticleInterface,
+                           //             template<typename>typename M2>
               template <class T2, template <class> class T3> class MSecondaryProducer>
-    friend class SecondaryView; //<TStackData,MParticleInterface,M>; // access for SecondaryView
+    friend class SecondaryView; //<TStackData,MParticleInterface,M>; // access for
+                                //SecondaryView
 
     friend class ParticleBase<StackIterator>;
 
