@@ -9,10 +9,12 @@
 #pragma once
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/logging/Logging.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <tuple>
+#include <string>
 
 namespace corsika::stack {
 
@@ -46,6 +48,8 @@ namespace corsika::stack {
       void SetParticleData(const std::tuple<NoData>& /*v*/) {}
       void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
                            const std::tuple<NoData>& /*v*/) {}
+
+      std::string as_string() const { return "dummy-data"; }
     };
 
     /**

@@ -10,10 +10,12 @@
 
 #include <corsika/stack/StackIteratorInterface.h>
 #include <corsika/utl/MetaProgramming.h>
+#include <corsika/logging/Logging.h>
 
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
+#include <string>
 
 /**
    All classes around management of particles on a stack.
@@ -85,9 +87,9 @@ namespace corsika::stack {
      * stacks, where the inner data container is always a reference
      * and cannot be initialized here.
      */
-    template <typename... Args, typename _ = TStackData,
+    template <typename... TArgs, typename _ = TStackData,
               typename = utl::disable_if<std::is_reference<_>>>
-    Stack(Args... args)
+    Stack(TArgs... args)
         : data_(args...)
         , deleted_(std::vector<bool>(data_.GetSize(), false))
         , nDeleted_(0) {}
@@ -125,7 +127,6 @@ namespace corsika::stack {
     friend class StackIteratorInterface<StackDataValueType, MParticleInterface, Stack>;
     friend class ConstStackIteratorInterface<StackDataValueType, MParticleInterface,
                                              Stack>;
-    // friend class SecondaryView<StackDataValueType, MParticleInterface>;
     template <typename T1, //=TStackData,
               template <typename>
               typename M1, //=MParticleInterface,
@@ -145,8 +146,8 @@ namespace corsika::stack {
     unsigned int getDeleted() const { return nDeleted_; }
     unsigned int getEntries() const { return getSize() - getDeleted(); }
 
-    template <typename... Args>
-    void Clear(Args... args) {
+    template <typename... TArgs>
+    void Clear(TArgs... args) {
       data_.Clear(args...);
       deleted_ = std::vector<bool>(data_.GetSize(), false);
       nDeleted_ = 0;
@@ -195,7 +196,7 @@ namespace corsika::stack {
       for (; i < getSize(); ++i) {
         if (!deleted_[i]) break;
       }
-      return ConstStackIterator(*this, 0);
+      return ConstStackIterator(*this, i);
     }
     ConstStackIterator cend() const { return ConstStackIterator(*this, getSize()); }
     ConstStackIterator clast() const {
@@ -215,8 +216,9 @@ namespace corsika::stack {
     /**
      * increase stack size, create new particle at end of stack
      */
-    template <typename... Args>
-    StackIterator AddParticle(const Args... v) {
+    template <typename... TArgs>
+    StackIterator AddParticle(const TArgs... v) {
+      C8LOG_TRACE("Stack::AddParticle");
       data_.IncrementSize();
       deleted_.push_back(false);
       return StackIterator(*this, getSize() - 1, v...);
@@ -230,8 +232,9 @@ namespace corsika::stack {
      * This should only get internally called from a
      * StackIterator::AddSecondary via ParticleBase
      */
-    template <typename... Args>
-    StackIterator AddSecondary(StackIterator& parent, const Args... v) {
+    template <typename... TArgs>
+    StackIterator AddSecondary(StackIterator& parent, const TArgs... v) {
+      C8LOG_TRACE("Stack::AddSecondary");
       data_.IncrementSize();
       deleted_.push_back(false);
       return StackIterator(*this, getSize() - 1, parent, v...);
@@ -239,27 +242,43 @@ namespace corsika::stack {
 
   public:
     void Swap(StackIterator a, StackIterator b) {
+      C8LOG_TRACE("Stack::Swap");
       data_.Swap(a.GetIndex(), b.GetIndex());
       std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);
     }
     void Copy(StackIterator a, StackIterator b) {
+      C8LOG_TRACE("Stack::Copy");
       data_.Copy(a.GetIndex(), b.GetIndex());
       if (deleted_[b.GetIndex()] && !deleted_[a.GetIndex()]) nDeleted_--;
       if (!deleted_[b.GetIndex()] && deleted_[a.GetIndex()]) nDeleted_++;
       deleted_[b.GetIndex()] = deleted_[a.GetIndex()];
     }
     void Copy(ConstStackIterator a, StackIterator b) {
+      C8LOG_TRACE("Stack::Copy");
       data_.Copy(a.GetIndex(), b.GetIndex());
       if (deleted_[b.GetIndex()] && !deleted_[a.GetIndex()]) nDeleted_--;
       if (!deleted_[b.GetIndex()] && deleted_[a.GetIndex()]) nDeleted_++;
       deleted_[b.GetIndex()] = deleted_[a.GetIndex()];
     }
 
+    std::string as_string() const {
+      std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(), getEntries(), getDeleted()));
+      // we make our own begin/end since we want ALL entries
+      std::string new_line = "     ";
+      for (unsigned int iPart = 0; iPart!=getSize(); ++iPart) {
+	ConstStackIterator itPart(*this, iPart);
+	str += fmt::format("{}{}{}", new_line, itPart.as_string(), (deleted_[itPart.GetIndex()]?" [deleted]":""));
+	new_line = "\n     ";
+      }
+      return str;
+    }
+    
     /**
      * delete this particle
      */
   public:
     void Delete(StackIterator p) {
+      C8LOG_TRACE("Stack::Delete");
       if (IsEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
@@ -294,6 +313,7 @@ namespace corsika::stack {
     bool purgeLastIfDeleted() {
       if (!deleted_.back())
         return false; // the last particle is not marked for deletion. Do nothing.
+      C8LOG_TRACE("Stack::purgeLastIfDeleted: yes");
       data_.DecrementSize();
       nDeleted_--;
       deleted_.pop_back();
@@ -359,7 +379,10 @@ namespace corsika::stack {
      * TStackData data_. By default (and in almost all cases) this
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
-    unsigned int GetIndexFromIterator(const unsigned int vI) const { return vI; }
+    unsigned int GetIndexFromIterator(const unsigned int vI) const {
+      // this is too much: C8LOG_TRACE("Stack::GetIndexFromIterator({})={}", vI, vI);
+      return vI;
+    }
 
     /**
      * @name Return reference to TStackData object data_ for data access

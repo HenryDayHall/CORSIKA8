@@ -43,7 +43,8 @@ namespace corsika::history {
 
     // custom data access function
     void SetEvent(const int i, EventPtr v) { historyData_[i].first = std::move(v); }
-    EventPtr GetEvent(const int i) const { return historyData_[i].first; }
+    const EventPtr& GetEvent(const int i) const { return historyData_[i].first; }
+    EventPtr& GetEvent(const int i) { return historyData_[i].first; }
 
     void SetParentEventIndex(const int i, ParentEventIndex v) {
       historyData_[i].second = std::move(v);
@@ -107,6 +108,10 @@ namespace corsika::history {
 
     int GetParentEventIndex() const {
       return GetStackData().GetParentEventIndex(GetIndex());
+    }
+
+    std::string as_string() const {
+      return fmt::format("i_parent={}, [evt: {}]", GetParentEventIndex(), (bool(GetEvent())?GetEvent()->as_string():"n/a"));
     }
   };
 

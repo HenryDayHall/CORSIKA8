@@ -10,6 +10,7 @@
 
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/history/SecondaryParticle.hpp>
+#include <corsika/logging/Logging.h>
 
 #include <iostream>
 #include <memory>
@@ -20,7 +21,7 @@ namespace corsika::history {
 
   class Event;
   using EventPtr = std::shared_ptr<history::Event>;
-
+  
   class Event {
 
     size_t projectileIndex_ = 0; //!< index of projectile on stack
@@ -28,20 +29,23 @@ namespace corsika::history {
     EventPtr parent_event_;
 
     std::optional<corsika::particles::Code>
-        targetCode_; // cannot be const, value set only after construction
+        targetCode_; 
 
   public:
     Event() = default;
 
     void setParentEvent(EventPtr const& evt) { parent_event_ = evt; }
 
-    EventPtr parentEvent() { return parent_event_; }
-
+    bool hasParentEvent() const { return bool(parent_event_); }
+    EventPtr& parentEvent() { return parent_event_; }
+    const EventPtr& parentEvent() const { return parent_event_; }
+    
     void setProjectileIndex(size_t i) { projectileIndex_ = i; }
     size_t projectileIndex() const { return projectileIndex_; }
 
     template <typename TStackIterator>
     TStackIterator projectile(TStackIterator begin) {
+      // todo: change this
       // MR: This is dangerous. You can pass any iterator though it must
       // be stack.begin() to yield the correct projectile
 
@@ -58,6 +62,10 @@ namespace corsika::history {
     std::vector<SecondaryParticle>& secondaries() { return secondaries_; }
 
     void setTargetCode(const particles::Code t) { targetCode_ = t; }
+
+    std::string as_string() const {
+      return fmt::format("hasParent={}, projIndex={}, Nsec={}", hasParentEvent(), projectileIndex_, secondaries_.size());
+    }
   };
 
 } // namespace corsika::history

@@ -86,7 +86,7 @@ namespace corsika::setup {
         typename corsika::setup::Stack::StackImpl,
         // CHECK with CLANG: corsika::setup::Stack::MPIType>;
         // corsika::setup::detail::StackWithGeometryInterface>;
-        corsika::setup::detail::StackWithHistoryInterface>;
+      corsika::setup::detail::StackWithHistoryInterface, StackViewProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
     using TheStackView =
         corsika::stack::MakeView<corsika::setup::Stack, StackViewProducer>::type;

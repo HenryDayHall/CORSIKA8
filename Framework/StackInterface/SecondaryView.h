@@ -276,6 +276,7 @@ namespace corsika::stack {
      *
      */
     void Delete(StackIterator p) {
+      C8LOG_TRACE("SecondaryView::Delete");
       if (IsEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
@@ -323,6 +324,7 @@ namespace corsika::stack {
      * the function will just return false and do nothing.
      */
     bool purgeLastIfDeleted() {
+      C8LOG_TRACE("SecondaryView::purgeLastIfDeleted");
       if (!isDeleted(getSize() - 1))
         return false; // the last particle is not marked for deletion. Do nothing.
       inner_stack_.purge(GetIndexFromIterator(getSize()));
@@ -367,6 +369,7 @@ namespace corsika::stack {
      * performed.
      */
     unsigned int GetIndexFromIterator(const unsigned int vI) const {
+      // this is too much: C8LOG_TRACE("SecondaryView::GetIndexFromIterator({})={}", vI, (vI?indices_[vI-1]:projectile_index_));
       if (vI == 0) return projectile_index_;
       return indices_[vI - 1];
     }

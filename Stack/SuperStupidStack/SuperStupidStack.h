@@ -16,6 +16,7 @@
 #include <corsika/geometry/RootCoordinateSystem.h> // remove
 #include <corsika/geometry/Vector.h>
 
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -40,6 +41,12 @@ namespace corsika::stack {
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
     public:
+      std::string as_string() const {
+        using namespace corsika::units::si;
+        return fmt::format("particle: i={}, PID={}, E={}GeV", GetIndex(),
+                           particles::GetName(GetPID()), GetEnergy() / 1_GeV);
+      }
+
       void SetParticleData(
           const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
                            MomentumVector, corsika::geometry::Point,

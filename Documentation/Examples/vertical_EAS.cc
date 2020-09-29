@@ -74,8 +74,6 @@ void registerRandomStreams(const int seed) {
 
 int main(int argc, char** argv) {
 
-  logging::SetLevel(logging::level::debug);
-
   C8LOG_INFO("vertical_EAS");
 
   if (argc < 4) {

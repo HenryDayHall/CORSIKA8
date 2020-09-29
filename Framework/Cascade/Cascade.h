@@ -17,6 +17,8 @@
 #include <corsika/stack/SecondaryView.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/logging/Logging.h>
+
 #include <corsika/setup/SetupTrajectory.h>
 
 /*  see Issue 161, we need to include SetupStack only because we need
@@ -61,8 +63,9 @@ namespace corsika::cascade {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             /*
-              TStackView is needed as template parameter because of issue 161 and the
-              inability of clang to understand "MakeView" so far.
+              TStackView is needed as explicit template parameter because
+              of issue 161 and the
+              inability of clang to understand "stack::MakeView" so far.
              */
             typename TStackView = corsika::setup::StackView>
   class Cascade {
@@ -96,9 +99,8 @@ namespace corsika::cascade {
         , fTracking(tr)
         , fProcessSequence(pl)
         , fStack(stack)
-        , energy_cut_(0 * corsika::units::si::electronvolt) {
-
-      std::cout << c8_ascii_ << std::endl;
+        , count_(0) {
+      C8LOG_INFO(c8_ascii_);
     }
 
     corsika::units::si::HEPEnergyType GetEnergyCut() const { return energy_cut_; }
@@ -124,13 +126,17 @@ namespace corsika::cascade {
 
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
+	  C8LOG_TRACE(fmt::format("Stack: {}", fStack.as_string()));
+	  for (const auto& tmp_p : fStack)
+	    std::cout << " test " << tmp_p.GetPID() << std::endl;
           count_++;
           auto pNext = fStack.GetNextParticle();
-          std::cout << "========= next: count=" << count_ << ", pid=" << pNext.GetPID()
-                    << ", stack entries=" << fStack.getEntries()
-                    << ", stack deleted=" << fStack.getDeleted() << std::endl;
+          C8LOG_DEBUG(fmt::format(
+              "============== next particle : count={}, pid={}, "
+              ", stack entries={}"
+              ", stack deleted={}",
+              count_, pNext.GetPID(), fStack.getEntries(), fStack.getDeleted()));
           Step(pNext);
-          std::cout << "========= stack ============" << std::endl;
           fProcessSequence.DoStack(fStack);
         }
         // do cascade equations, which can put new particles on Stack,
@@ -145,7 +151,7 @@ namespace corsika::cascade {
      * want to call forceInteraction() for the primary interaction.
      */
     void forceInteraction() {
-      std::cout << "forced interaction!" << std::endl;
+      C8LOG_DEBUG("forced interaction!");
       auto vParticle = fStack.GetNextParticle();
       TStackView secondaries(vParticle);
       interaction(vParticle, secondaries);
@@ -180,8 +186,10 @@ namespace corsika::cascade {
       corsika::random::ExponentialDistribution expDist(1 / total_inv_lambda);
       GrammageType const next_interact = expDist(fRNG);
 
-      std::cout << "total_inv_lambda=" << total_inv_lambda
-                << ", next_interact=" << next_interact << std::endl;
+      C8LOG_DEBUG(
+          "total_lambda={} g/cm2, "
+          ", next_interact={} g/cm2",
+          double((1. / total_inv_lambda) / 1_g * 1_cm * 1_cm), double(next_interact / 1_g * 1_cm * 1_cm));
 
       auto const* currentLogicalNode = vParticle.GetNode();
 
@@ -197,7 +205,7 @@ namespace corsika::cascade {
 
       // determine the maximum geometric step length from continuous processes
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
-      std::cout << "distance_max=" << distance_max << std::endl;
+      C8LOG_DEBUG("distance_max={} m", distance_max/1_m);
 
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
@@ -206,8 +214,10 @@ namespace corsika::cascade {
       // sample random exponential decay time
       corsika::random::ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
       TimeType const next_decay = expDistDecay(fRNG);
-      std::cout << "total_inv_lifetime=" << total_inv_lifetime
-                << ", next_decay=" << next_decay << std::endl;
+      C8LOG_DEBUG(
+          "total_lifetime={} s"
+          ", next_decay={} s",
+          (1/total_inv_lifetime)/1_s, next_decay/1_s);
 
       // convert next_decay from time to length [m]
       LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
@@ -217,7 +227,7 @@ namespace corsika::cascade {
       auto const min_distance =
           std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
 
-      std::cout << " move particle by : " << min_distance << std::endl;
+      C8LOG_DEBUG("transport particle by : {} m", min_distance/1_m);
 
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
@@ -231,15 +241,14 @@ namespace corsika::cascade {
       process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
 
       if (status == process::EProcessReturn::eParticleAbsorbed) {
-        std::cout << "Cascade: delete absorbed particle " << vParticle.GetPID() << " "
-                  << vParticle.GetEnergy() / 1_GeV << "GeV" << std::endl;
-        energy_cut_ += vParticle.GetEnergy();
+        C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
+                    vParticle.GetPID(), vParticle.GetEnergy() / 1_GeV);
         vParticle.Delete();
         return;
       }
 
-      std::cout << "sth. happening before geometric limit ? "
-                << ((min_distance < geomMaxLength) ? "yes" : "no") << std::endl;
+      C8LOG_DEBUG("sth. happening before geometric limit ? {}",
+                  ((min_distance < geomMaxLength) ? "yes" : "no"));
 
       if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
 
@@ -257,7 +266,7 @@ namespace corsika::cascade {
             to 'vParticle' above this line. However,
             projectil.AddSecondaries populate the SecondaryView, which can
             then be used afterwards for further processing. Thus: it is
-            important to use projectle (and not vParticle) for Interaction,
+            important to use projectle/view (and not vParticle) for Interaction,
             and Decay!
           */
 
@@ -277,15 +286,10 @@ namespace corsika::cascade {
           }
 
           fProcessSequence.DoSecondaries(secondaries);
-          vParticle.Delete(); // todo: this should be reviewed. Where
-                              // exactly are particles best deleted, and
-                              // where they should NOT be
-                              // deleted... maybe Delete function should
-                              // be "protected" and not accessible to physics
+          vParticle.Delete();
 
         } else { // step-length limitation within volume
-
-          std::cout << "step-length limitation" << std::endl;
+          C8LOG_DEBUG("step-length limitation");
           // no extra physics happens here. just proceed to next step.
         }
 
@@ -299,10 +303,8 @@ namespace corsika::cascade {
         };
 
         assert(assertion()); // numerical and logical nodes don't match
-
-      } else { // boundary crossing, step is limited by volume boundary
-
-        std::cout << "boundary crossing! next node = " << nextVol << std::endl;
+      } else {               // boundary crossing, step is limited by volume boundary
+        // C8LOG_DEBUG("boundary crossing! next node = {}", int(nextVol));
         vParticle.SetNode(nextVol);
         /*
           DoBoundary may delete the particle (or not)
@@ -316,7 +318,7 @@ namespace corsika::cascade {
     }
 
     auto decay(Particle& particle, TStackView& view) {
-      std::cout << "decay" << std::endl;
+      C8LOG_DEBUG("decay");
       units::si::InverseTimeType const actual_decay_time =
           fProcessSequence.GetTotalInverseLifetime(particle);
 
@@ -329,7 +331,7 @@ namespace corsika::cascade {
     }
 
     auto interaction(Particle& particle, TStackView& view) {
-      std::cout << "collide" << std::endl;
+      C8LOG_DEBUG("collide");
 
       units::si::InverseGrammageType const current_inv_length =
           fProcessSequence.GetTotalInverseInteractionLength(particle);

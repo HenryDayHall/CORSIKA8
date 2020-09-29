@@ -18,6 +18,8 @@
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Vector.h>
 
+#include <corsika/logging/Logging.h>
+
 #include <algorithm>
 #include <tuple>
 #include <vector>
@@ -60,6 +62,7 @@ namespace corsika::stack {
     protected:
       using InnerParticleInterface<StackIteratorInterface>::GetStackData;
       using InnerParticleInterface<StackIteratorInterface>::GetIndex;
+      using InnerParticleInterface<StackIteratorInterface>::as_string;
 
     public:
       void SetParticleData(
@@ -141,6 +144,13 @@ namespace corsika::stack {
                                                         std::get<4>(v)});
       }
 
+      std::string as_string() const {
+        return fmt::format(
+            "{}, nuc({})", InnerParticleInterface<StackIteratorInterface>::as_string(),
+            (isNucleus() ? fmt::format("A={}, Z={}", GetNuclearA(), GetNuclearZ())
+                         : "n/a"));
+      }
+
       /**
        * @name individual setters
        * @{
@@ -184,6 +194,7 @@ namespace corsika::stack {
 
     protected:
       void SetNucleusRef(const int vR) { GetStackData().SetNucleusRef(GetIndex(), vR); }
+      bool isNucleus() const { return GetStackData().isNucleus(GetIndex()); }
     };
 
     /**
@@ -239,6 +250,8 @@ namespace corsika::stack {
         err << "NuclearStackExtension: no nucleus at ref=" << i;
         throw std::runtime_error(err.str());
       }
+
+      bool isNucleus(const unsigned int i) const { return fNucleusRef[i] >= 0; }
 
       /**
        *   Function to copy particle at location i1 in stack to i2
