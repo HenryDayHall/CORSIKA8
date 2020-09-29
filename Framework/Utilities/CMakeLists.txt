@@ -13,8 +13,6 @@ else ()
   endif()
 endif ()
 
-find_package(ZLIB)
-
 #
 # library setup
 #
@@ -60,7 +58,6 @@ target_link_libraries (
   C8::ext::boost # so far only for MetaProgramming
   C8::ext::eigen3 # for COMboost
   cnpy # for SaveBoostHistogram
-  ZLIB::ZLIB # for SaveBoostHistogram
   )
 
 target_include_directories (

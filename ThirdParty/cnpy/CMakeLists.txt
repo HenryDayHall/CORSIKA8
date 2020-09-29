@@ -24,13 +24,12 @@ set_target_properties (
 #  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
+find_package(ZLIB)
+
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   cnpy
-  CORSIKAunits
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAsetup
+  ${ZLIB_LIBRARIES}
   )
 
 target_include_directories (
