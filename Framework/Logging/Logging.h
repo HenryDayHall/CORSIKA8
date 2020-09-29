@@ -40,8 +40,9 @@
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_CRITICAL
 #endif
 
+#include <spdlog/fmt/ostr.h> // will output whenerver a streaming operator is found
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-#include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace corsika::logging {
 

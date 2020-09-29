@@ -111,9 +111,6 @@ namespace corsika::stack {
 
     friend class ParticleBase<StackIterator>;
 
-    // template <template <typename> typename M1>
-    // friend class MSecondaryProducer;
-
   private:
     /**
      * This is not accessible, since we don't want to allow creating a
@@ -121,6 +118,7 @@ namespace corsika::stack {
      */
     template <typename... Args>
     SecondaryView(Args... args) = delete;
+    SecondaryView() = delete;
 
   private:
     InnerStackTypeValue& inner_stack_;
@@ -132,12 +130,26 @@ namespace corsika::stack {
        SecondaryView can only be constructed passing it a valid
        StackIterator to another Stack object
      **/
-    SecondaryView(StackIteratorValue& vI)
-        : Stack<StackDataType&, ParticleInterface>(vI.GetStackData())
-        , inner_stack_(vI.GetStack())
-        , projectile_index_(vI.GetIndex()) {
-      C8LOG_TRACE("SecondaryView::SecondaryView");
-      MSecondaryProducer<StackDataType, ParticleInterface>::new_view(vI);
+    SecondaryView(StackIteratorValue& particle)
+        : Stack<StackDataType&, ParticleInterface>(particle.GetStackData())
+        , inner_stack_(particle.GetStack())
+        , projectile_index_(particle.GetIndex()) {
+      C8LOG_TRACE("SecondaryView::SecondaryView(particle)");
+      MSecondaryProducer<StackDataType, ParticleInterface>::new_view(particle);
+    }
+    /**
+     * Also allow to create a new View from a Projectile (StackIterator on View)
+     *
+     * Note, the view generated this way will be equivalent to the orignal view in
+     * terms of reference to the underlying data stack. It is not a "view to a view".
+     */
+    SecondaryView(ViewType& view, StackIterator& projectile)
+        : Stack<StackDataType&, ParticleInterface>(view.GetStackData())
+        , inner_stack_(view.inner_stack_)
+        , projectile_index_(view.GetIndexFromIterator(projectile.GetIndex())) {
+      C8LOG_TRACE("SecondaryView::SecondaryView(projectile)");
+      StackIteratorValue particle(inner_stack_, projectile_index_);
+      MSecondaryProducer<StackDataType, ParticleInterface>::new_view(particle);
     }
 
     /**
@@ -145,9 +157,17 @@ namespace corsika::stack {
      * SecondaryView is derived from. This projectile should not be
      * used to modify the Stack!
      */
-
     ConstStackIteratorValue parent() const {
       return ConstStackIteratorValue(inner_stack_, projectile_index_);
+    }
+
+    /**
+     * This returns the projectile/parent in the original Stack, where this
+     * SecondaryView is derived from. This projectile should not be
+     * used to modify the Stack!
+     */
+    StackIteratorValue asNewParent() const {
+      return StackIteratorValue(inner_stack_, projectile_index_);
     }
 
     /**
@@ -369,14 +389,15 @@ namespace corsika::stack {
      * performed.
      */
     unsigned int GetIndexFromIterator(const unsigned int vI) const {
-      // this is too much: C8LOG_TRACE("SecondaryView::GetIndexFromIterator({})={}", vI, (vI?indices_[vI-1]:projectile_index_));
+      // this is too much: C8LOG_TRACE("SecondaryView::GetIndexFromIterator({})={}", vI,
+      // (vI?indices_[vI-1]:projectile_index_));
       if (vI == 0) return projectile_index_;
       return indices_[vI - 1];
     }
   };
 
   /**
-   *
+   * Class to handle the generation of new secondaries.
    */
   template <class T1, template <class> class T2>
   class DefaultSecondaryProducer {

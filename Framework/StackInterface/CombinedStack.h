@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <corsika/logging/Logging.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
-#include <corsika/logging/Logging.h>
 
 namespace corsika::stack {
 
@@ -90,9 +90,8 @@ namespace corsika::stack {
     ///@}
 
     std::string as_string() const {
-      return fmt::format("[[{}][{}]]",PI_A::as_string(), PI_B::as_string());
+      return fmt::format("[[{}][{}]]", PI_A::as_string(), PI_B::as_string());
     }
-
   };
 
   /**
@@ -115,7 +114,7 @@ namespace corsika::stack {
 
     unsigned int GetSize() const { return Stack1Impl::GetSize(); }
     unsigned int GetCapacity() const { return Stack1Impl::GetCapacity(); }
-    
+
     /**
      *   Function to copy particle at location i1 in stack to i2
      */

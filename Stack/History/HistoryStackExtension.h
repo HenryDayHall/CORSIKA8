@@ -111,7 +111,8 @@ namespace corsika::history {
     }
 
     std::string as_string() const {
-      return fmt::format("i_parent={}, [evt: {}]", GetParentEventIndex(), (bool(GetEvent())?GetEvent()->as_string():"n/a"));
+      return fmt::format("i_parent={}, [evt: {}]", GetParentEventIndex(),
+                         (bool(GetEvent()) ? GetEvent()->as_string() : "n/a"));
     }
   };
 

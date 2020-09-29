@@ -8,14 +8,14 @@
 
 #pragma once
 
+#include <corsika/logging/Logging.h>
 #include <corsika/stack/StackIteratorInterface.h>
 #include <corsika/utl/MetaProgramming.h>
-#include <corsika/logging/Logging.h>
 
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
-#include <string>
 
 /**
    All classes around management of particles on a stack.
@@ -133,7 +133,7 @@ namespace corsika::stack {
                            //             template<typename>typename M2>
               template <class T2, template <class> class T3> class MSecondaryProducer>
     friend class SecondaryView; //<TStackData,MParticleInterface,M>; // access for
-                                //SecondaryView
+                                // SecondaryView
 
     friend class ParticleBase<StackIterator>;
 
@@ -262,17 +262,19 @@ namespace corsika::stack {
     }
 
     std::string as_string() const {
-      std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(), getEntries(), getDeleted()));
+      std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
+                                  getEntries(), getDeleted()));
       // we make our own begin/end since we want ALL entries
       std::string new_line = "     ";
-      for (unsigned int iPart = 0; iPart!=getSize(); ++iPart) {
-	ConstStackIterator itPart(*this, iPart);
-	str += fmt::format("{}{}{}", new_line, itPart.as_string(), (deleted_[itPart.GetIndex()]?" [deleted]":""));
-	new_line = "\n     ";
+      for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
+        ConstStackIterator itPart(*this, iPart);
+        str += fmt::format("{}{}{}", new_line, itPart.as_string(),
+                           (deleted_[itPart.GetIndex()] ? " [deleted]" : ""));
+        new_line = "\n     ";
       }
       return str;
     }
-    
+
     /**
      * delete this particle
      */

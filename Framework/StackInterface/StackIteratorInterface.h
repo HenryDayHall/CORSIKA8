@@ -91,7 +91,7 @@ namespace corsika::stack {
               template <typename T, template <typename> typename T3> typename M2>
     //              template <typename> typename M2>
     friend class SecondaryView; //<TStackData,TParticleInterface,M>; // access for
-                                //SecondaryView
+                                // SecondaryView
 
     template <typename T, template <typename> typename ParticleInterface>
     // friend class corsika::history::HistorySecondaryView;
@@ -263,13 +263,13 @@ namespace corsika::stack {
                                       //                           TParticleInterface>; //
                                       //                           access for
                                       //                           SecondaryView
-    template <typename T1, //=TStackData,
+    template <typename T1,            //=TStackData,
               template <typename>
               typename M1, //=TParticleInterface,
                            //              template <typename> typename M2>
               template <class T2, template <class> class T3> class MSecondaryProducer>
     friend class SecondaryView; //<TStackData,TParticleInterface,M>; // access for
-                                //SecondaryView
+                                // SecondaryView
 
     friend class StackIteratorInterface<TStackData, TParticleInterface, StackType>;
 

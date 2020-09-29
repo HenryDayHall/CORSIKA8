@@ -8,6 +8,7 @@
 
 #include <corsika/geometry/QuantityVector.h>
 #include <corsika/geometry/Vector.h>
+#include <corsika/logging/Logging.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -38,6 +39,10 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,
                                                  corsika::particles::Code targetCode,
                                                  HEPEnergyType labEnergy) const {
   // translated to C++ from CORSIKA 7 subroutine cxtot_u
+
+  C8LOG_DEBUG("UrQMD::GetTabulatedCrossSection proj={}, targ={}, E={}GeV",
+              particles::GetName(projectileCode), particles::GetName(targetCode),
+              labEnergy / 1_GeV);
 
   auto const kinEnergy = labEnergy - particles::GetMass(projectileCode);
 

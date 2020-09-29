@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <corsika/particles/ParticleProperties.h>
 #include <corsika/logging/Logging.h>
+#include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <tuple>
 #include <string>
+#include <tuple>
 
 namespace corsika::stack {
 

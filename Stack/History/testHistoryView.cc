@@ -61,7 +61,8 @@ using TheTestStackView =
     corsika::stack::MakeView<TestStack, history::HistorySecondaryProducer>::type;
 #endif
 
-using TestStackView = TheTestStackView; // history::HistorySecondaryView<TheTestStackView>;
+using TestStackView =
+    TheTestStackView; // history::HistorySecondaryView<TheTestStackView>;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 

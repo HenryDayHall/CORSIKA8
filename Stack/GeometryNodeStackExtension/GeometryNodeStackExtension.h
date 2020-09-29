@@ -10,7 +10,6 @@
 
 #include <corsika/logging/Logging.h>
 #include <corsika/stack/Stack.h>
-#include <corsika/logging/Logging.h>
 
 #include <tuple>
 #include <utility>

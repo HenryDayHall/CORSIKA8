@@ -126,9 +126,7 @@ namespace corsika::cascade {
 
       while (!fStack.IsEmpty()) {
         while (!fStack.IsEmpty()) {
-	  C8LOG_TRACE(fmt::format("Stack: {}", fStack.as_string()));
-	  for (const auto& tmp_p : fStack)
-	    std::cout << " test " << tmp_p.GetPID() << std::endl;
+          C8LOG_TRACE(fmt::format("Stack: {}", fStack.as_string()));
           count_++;
           auto pNext = fStack.GetNextParticle();
           C8LOG_DEBUG(fmt::format(
@@ -189,7 +187,8 @@ namespace corsika::cascade {
       C8LOG_DEBUG(
           "total_lambda={} g/cm2, "
           ", next_interact={} g/cm2",
-          double((1. / total_inv_lambda) / 1_g * 1_cm * 1_cm), double(next_interact / 1_g * 1_cm * 1_cm));
+          double((1. / total_inv_lambda) / 1_g * 1_cm * 1_cm),
+          double(next_interact / 1_g * 1_cm * 1_cm));
 
       auto const* currentLogicalNode = vParticle.GetNode();
 
@@ -205,7 +204,7 @@ namespace corsika::cascade {
 
       // determine the maximum geometric step length from continuous processes
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
-      C8LOG_DEBUG("distance_max={} m", distance_max/1_m);
+      C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
 
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
@@ -217,7 +216,7 @@ namespace corsika::cascade {
       C8LOG_DEBUG(
           "total_lifetime={} s"
           ", next_decay={} s",
-          (1/total_inv_lifetime)/1_s, next_decay/1_s);
+          (1 / total_inv_lifetime) / 1_s, next_decay / 1_s);
 
       // convert next_decay from time to length [m]
       LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
@@ -227,7 +226,7 @@ namespace corsika::cascade {
       auto const min_distance =
           std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
 
-      C8LOG_DEBUG("transport particle by : {} m", min_distance/1_m);
+      C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
 
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
