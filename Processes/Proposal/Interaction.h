@@ -14,89 +14,29 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/proposal/ProposalProcessBase.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
 #include <array>
 
-using namespace corsika::environment;
-using namespace corsika::units::si;
-
-using CORSIKA_ParticleCut = corsika::process::particle_cut::ParticleCut;
-using std::make_pair;
-using std::make_tuple;
-
 namespace corsika::process::proposal {
 
-  class Interaction : public corsika::process::InteractionProcess<Interaction> {
-    CORSIKA_ParticleCut& cut;
-    corsika::random::RNG& fRNG;
-    static constexpr std::array<particles::Code, 7> tracked_particles{
-        particles::Code::Gamma,    particles::Code::Electron, particles::Code::Positron,
-        particles::Code::MuMinus,  particles::Code::MuPlus,   particles::Code::TauPlus,
-        particles::Code::TauMinus,
-    };
-    std::unordered_map<const NuclearComposition*, PROPOSAL::Medium> media;
+  using namespace corsika::units::si;
 
-    bool CanInteract(particles::Code pcode) const noexcept;
+  class Interaction : public InteractionProcess<Interaction>, ProposalProcessBase {
 
     using calculator_t = tuple<unique_ptr<PROPOSAL::SecondariesCalculator>,
                                unique_ptr<PROPOSAL::Interaction>>;
-    using calc_key_t = std::pair<const NuclearComposition*, particles::Code>;
 
-    struct interaction_hash {
-      size_t operator()(const calc_key_t& p) const {
-        return std::hash<const NuclearComposition*>{}(p.first) ^
-               std::hash<particles::Code>{}(p.second);
-      }
-    };
+    std::unordered_map<calc_key_t, calculator_t, hash> calc;
 
-    std::unordered_map<calc_key_t, calculator_t, interaction_hash> calculators;
-
-    template <typename Particle>
-    auto BuildCalculator(particles::Code code, Particle p_def,
-                         NuclearComposition const& comp) {
-      auto cross = GetStdCrossSections(
-          p_def, media.at(&comp),
-          make_shared<const PROPOSAL::EnergyCutSettings>(cut.GetECut() / 1_MeV, 1, false),
-          true);
-      auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(cross);
-      auto [insert_it, success] = calculators.insert(
-          {make_pair(&comp, code),
-           make_tuple(PROPOSAL::make_secondaries(inter_types, p_def, media.at(&comp)),
-                      PROPOSAL::make_interaction(cross, true))});
-      return insert_it;
-    }
-
-    auto BuildCalculator(particles::Code corsika_code, NuclearComposition const& comp) {
-      if (corsika_code == particles::Code::Gamma)
-        return BuildCalculator(particles::Code::Gamma, PROPOSAL::GammaDef(), comp);
-      if (corsika_code == particles::Code::Electron)
-        return BuildCalculator(particles::Code::Electron, PROPOSAL::EMinusDef(), comp);
-      if (corsika_code == particles::Code::Positron)
-        return BuildCalculator(particles::Code::Positron, PROPOSAL::EPlusDef(), comp);
-      if (corsika_code == particles::Code::MuMinus)
-        return BuildCalculator(particles::Code::MuMinus, PROPOSAL::MuMinusDef(), comp);
-      if (corsika_code == particles::Code::MuPlus)
-        return BuildCalculator(particles::Code::MuPlus, PROPOSAL::MuPlusDef(), comp);
-      if (corsika_code == particles::Code::TauMinus)
-        return BuildCalculator(particles::Code::TauMinus, PROPOSAL::TauMinusDef(), comp);
-      if (corsika_code == particles::Code::TauPlus)
-        return BuildCalculator(particles::Code::TauPlus, PROPOSAL::TauPlusDef(), comp);
-      throw std::runtime_error("PROPOSAL could not find corresponding builder");
-    }
+    void BuildCalculator(particles::Code, environment::NuclearComposition const&) final;
 
     enum { SECONDARIES, INTERACTION };
-    template <typename Particle>
-    auto GetCalculator(Particle& vP) {
-      auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
-      auto calc_it = calculators.find(make_pair(&comp, vP.GetPID()));
-      if (calc_it != calculators.end()) return calc_it;
-      return BuildCalculator(vP.GetPID(), comp);
-    }
 
   public:
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, CORSIKA_ParticleCut& cut);
+    Interaction(TEnvironment const& env, particle_cut::ParticleCut& cut);
 
     template <typename Particle>
     corsika::process::EProcessReturn DoInteraction(Particle&);
