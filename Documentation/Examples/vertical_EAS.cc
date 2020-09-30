@@ -195,7 +195,6 @@ int main(int argc, char** argv) {
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
-  process::energy_loss::EnergyLoss eLoss(showerAxis);
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
@@ -205,10 +204,6 @@ int main(int argc, char** argv) {
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
-  /* process::conex_source_cut::CONEXSourceCut conexSource( */
-  /*     center, showerAxis, t, injectionHeight, E0, */
-  /*     particles::GetPDG(particles::Code::Proton)); */
-
   // assemble all processes into an ordered process list
 
   auto sibyllSequence = sibyllNucCounted << sibyllCounted;
@@ -216,8 +211,6 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  //auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource
-  //                            << longprof << eLoss << cut << observationLevel;
   auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << cut << em_continuous
 				<< longprof << observationLevel;
 
@@ -231,16 +224,12 @@ int main(int argc, char** argv) {
 
   EAS.Run();
 
-  eLoss.PrintProfile(); // print longitudinal profile
-  /* conexSource.SolveCE(); */
 
   cut.ShowResults();
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
-       << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
 
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
     urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();

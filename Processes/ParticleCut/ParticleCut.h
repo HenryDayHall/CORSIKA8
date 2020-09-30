@@ -18,8 +18,8 @@ namespace corsika::process {
     class ParticleCut : public process::SecondariesProcess<ParticleCut> {
 
       units::si::HEPEnergyType const eCut_;
-      bool cutEm_;
-      bool cutInv_;
+      bool discardEm_;
+      bool discardInv_;
 
       units::si::HEPEnergyType energy_ = 0 * units::si::electronvolt;
       units::si::HEPEnergyType emEnergy_ = 0 * units::si::electronvolt;

@@ -84,7 +84,7 @@ namespace corsika::process {
 
     ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool discardEm, bool discardInv)
         : eCut_(eCut)
-        , discardEm_(cutEm)
+        , discardEm_(discardEm)
         , discardInv_(discardInv) {
 
       emEnergy_ = 0_GeV;

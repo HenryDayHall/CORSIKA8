@@ -31,10 +31,20 @@ namespace corsika::process::proposal {
 
   void Interaction::BuildCalculator(particles::Code code,
                                     environment::NuclearComposition const& comp) {
+    // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
       throw std::runtime_error("PROPOSAL could not find corresponding builder");
+
+    // interpolate the crosssection for given media and energy cut. These may
+    // take some minutes if you have to build the tables and cannot read the
+    // from disk
     auto c = p_cross->second(media.at(&comp), cut);
+
+    // Look which interactions take place and build the corresponding
+    // interaction and secondarie builder. The interaction integral will
+    // interpolated too and saved in the calc map by a key build out of a hash
+    // of composed of the component and particle code.
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
     calc[std::make_pair(&comp, code)] = std::make_tuple(
         PROPOSAL::make_secondaries(inter_types, particle[code], media.at(&comp)),
@@ -45,11 +55,19 @@ namespace corsika::process::proposal {
   corsika::process::EProcessReturn Interaction::DoInteraction(
       setup::StackView::StackIterator& vP) {
     if (CanInteract(vP.GetPID())) {
-      auto c = GetCalculator(vP, calc); // [CrossSections]
+      // Get or build corresponding calculators
+      auto c = GetCalculator(vP, calc);
+
+      // Get the rates of the interaction types for every component.
       std::uniform_real_distribution<double> distr(0., 1.);
+
+      // sample a interaction-type, loss and component
       auto rates = get<INTERACTION>(c->second)->Rates(vP.GetEnergy() / 1_MeV);
       auto [type, comp_ptr, v] = get<INTERACTION>(c->second)->SampleLoss(
           vP.GetEnergy() / 1_MeV, rates, distr(fRNG));
+
+      // Read how much random numbers are required to calculate the secondaries.
+      // Calculate the secondaries and deploy them on the corsika stack.
       auto rnd = vector<double>(get<SECONDARIES>(c->second)->RequiredRandomNumbers(type));
       for (auto& it : rnd) it = distr(fRNG);
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
