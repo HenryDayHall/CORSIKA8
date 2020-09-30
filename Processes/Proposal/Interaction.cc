@@ -31,7 +31,10 @@ namespace corsika::process::proposal {
 
   void Interaction::BuildCalculator(particles::Code code,
                                     environment::NuclearComposition const& comp) {
-    auto c = cross[code](media.at(&comp), cut);
+    auto p_cross = cross.find(code);
+    if (p_cross == cross.end())
+      throw std::runtime_error("PROPOSAL could not find corresponding builder");
+    auto c = p_cross->second(media.at(&comp), cut);
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
     calc[std::make_pair(&comp, code)] = std::make_tuple(
         PROPOSAL::make_secondaries(inter_types, particle[code], media.at(&comp)),

@@ -49,7 +49,7 @@ namespace corsika::process::proposal {
     }
     PROPOSAL::InterpolationDef::order_of_interpolation = 2;
     PROPOSAL::InterpolationDef::nodes_cross_section = 100;
-    PROPOSAL::InterpolationDef::nodes_propagate = 100;
+    PROPOSAL::InterpolationDef::nodes_propagate = 1000;
   }
 
   size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const noexcept {
