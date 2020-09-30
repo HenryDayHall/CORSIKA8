@@ -78,7 +78,7 @@ namespace corsika::process::proposal {
     auto energy_loss = TotalEnergyLoss(vP, dX);
     if (vP.GetChargeNumber() != 0) Scatter(vP, energy_loss, dX);
     vP.SetEnergy(vP.GetEnergy() - energy_loss);
-    if (vP.GetEnergy() < cut.GetECut()) return process::EProcessReturn::eParticleAbsorbed;
+    if (vP.GetEnergy() <= cut.GetECut()) return process::EProcessReturn::eParticleAbsorbed;
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
   }
@@ -94,8 +94,7 @@ namespace corsika::process::proposal {
     auto grammage = get<DISPLACEMENT>(c->second)->SolveTrackIntegral(
                         vP.GetEnergy() / 1_MeV, energy_lim / 1_MeV) *
                     1_g / square(1_cm);
-    return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage) *
-           1.0001;
+    return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage);
   }
 
 } // namespace corsika::process::proposal
