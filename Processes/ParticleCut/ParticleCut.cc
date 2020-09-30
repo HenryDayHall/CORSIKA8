@@ -88,31 +88,10 @@ namespace corsika::process {
     }
 
     EProcessReturn ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {
-<<<<<<< HEAD
       auto particle = vS.begin();
       while (particle != vS.end()) {
         if (checkCutParticle(particle)) {
           particle.Delete();
-=======
-      auto p = vS.begin();
-      while (p != vS.end()) {
-        const Code pid = p.GetPID();
-        HEPEnergyType energy = p.GetEnergy();
-        if (discardEm_ && ParticleIsEmParticle(pid)) {
-          emEnergy_ += energy;
-          emCount_ += 1;
-          p.Delete();
-        } else if (discardInv_ && ParticleIsInvisible(pid)) {
-          invEnergy_ += energy;
-          invCount_ += 1;
-          p.Delete();
-        } else if (ParticleIsBelowEnergyCut(p)) {
-          energy_ += energy;
-          p.Delete();
-        } else if (p.GetTime() > 10_ms) {
-          energy_ += energy;
-          p.Delete();
->>>>>>> dbc61589... rename ParticleCut cstr. bools because they were misunderstandable and delete delete debug messages
         } else {
           ++particle; // next entry in SecondaryView
         }
@@ -120,7 +99,6 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-<<<<<<< HEAD
     process::EProcessReturn ParticleCut::DoContinuous(Particle& particle, Track const&) {
       C8LOG_TRACE("ParticleCut::DoContinuous");
       if (checkCutParticle(particle)) {
@@ -134,13 +112,6 @@ namespace corsika::process {
         : fECut(eCut)
         , bCutEm(em)
         , bCutInv(inv) {
-=======
-    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool discardEm, bool discardInv)
-        : eCut_(eCut)
-        , discardEm_(cutEm)
-        , discardInv_(discardInv) {
->>>>>>> dbc61589... rename ParticleCut cstr. bools because they were misunderstandable and delete delete debug messages
-
       fEmEnergy = 0_GeV;
       uiEmCount = 0;
       finvEnergy = 0_GeV;

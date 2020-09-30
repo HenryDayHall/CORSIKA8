@@ -43,19 +43,14 @@ namespace corsika::process::proposal {
     void BuildCalculator(particles::Code, environment::NuclearComposition const&) final;
 
   public:
+
+    //!
     //! Produces the continuous loss calculator for leptons based on nuclear
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
     ContinuousProcess(TEnvironment const&, particle_cut::ParticleCut&);
 
-    //!
-    //! Calculates the energy of the particle which has passed the given
-    //! grammage.
-    //!
-    template <typename Particle>
-    corsika::units::si::HEPEnergyType TotalEnergyLoss(
-        Particle const&, corsika::units::si::GrammageType const&);
 
     //!
     //! Multiple Scattering of the lepton. Stochastic deflection is not yet taken into
