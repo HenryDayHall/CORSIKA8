@@ -99,13 +99,13 @@ namespace corsika::process::proposal {
                         1_MeV;
 
     // if the particle has a charge take multiple scattering into account
-    if (vP.GetChargeNumber() != 0 && vP.GetEnergy() > final_energy)
+    if (vP.GetChargeNumber() != 0)
       Scatter(vP, vP.GetEnergy() - final_energy, dX);
 
     // Update the energy and absorbe the particle if it's below the energy
     // threshold, because it will no longer propagated.
     vP.SetEnergy(final_energy);
-    if (std::fabs((vP.GetEnergy() - cut.GetECut() )/ cut.GetECut()) < 0.01)
+    if (vP.GetEnergy() <= cut.GetECut())
       return process::EProcessReturn::eParticleAbsorbed;
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
@@ -120,10 +120,6 @@ namespace corsika::process::proposal {
     // Limit the step size of a conitnous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
     auto energy_lim = 0.9 * vP.GetEnergy();
-
-    // If energy lim is below the cut it couldn't be descriped by these process. So the
-    // energy_lim is replaced by the cut.
-    if (cut.GetECut() > energy_lim) energy_lim = cut.GetECut();
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);
