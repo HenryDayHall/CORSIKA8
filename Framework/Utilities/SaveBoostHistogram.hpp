@@ -44,7 +44,9 @@ namespace corsika {
           std::vector<double> ax_edges;
           ax_edges.reserve(ax.size());
 
-          for (int j = 0; j <= ax.size(); ++j) { ax_edges.push_back(ax.bin(j).lower()); }
+          for (int j = 0; j < ax.size() + has_overflow; ++j) {
+            ax_edges.push_back(ax.bin(j).lower());
+          }
 
           cnpy::npz_save(filename, std::string{"binedges_"} + std::to_string(i),
                          ax_edges.data(), {ax_edges.size()}, "a");
@@ -79,7 +81,7 @@ namespace corsika {
         int const offset_underflow = (h.axis(0).options() & 0x01) ? 1 : 0;
         auto p = x.index(0) + offset_underflow; // 1-d-index
 
-        for (size_t axis_index = 1; axis_index < rank; ++axis_index) {
+        for (int axis_index = 1; axis_index < rank; ++axis_index) {
           int const offset_underflow = (h.axis(axis_index).options() & 0x01) ? 1 : 0;
           auto k = x.index(axis_index) + offset_underflow;
           p = k + p * axes_dims.at(axis_index);
