@@ -61,25 +61,18 @@ namespace corsika::process {
       while (p != vS.end()) {
         const Code pid = p.GetPID();
         HEPEnergyType energy = p.GetEnergy();
-        cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
-             << ", EcutTot=" << (emEnergy_ + invEnergy_ + energy_) / 1_GeV << " GeV"
-             << endl;
-        if (cutEm_ && ParticleIsEmParticle(pid)) {
-          cout << "removing em. particle..." << endl;
+        if (discardEm_ && ParticleIsEmParticle(pid)) {
           emEnergy_ += energy;
           emCount_ += 1;
           p.Delete();
-        } else if (cutInv_ && ParticleIsInvisible(pid)) {
-          cout << "removing inv. particle..." << endl;
+        } else if (discardInv_ && ParticleIsInvisible(pid)) {
           invEnergy_ += energy;
           invCount_ += 1;
           p.Delete();
         } else if (ParticleIsBelowEnergyCut(p)) {
-          cout << "removing low en. particle..." << endl;
           energy_ += energy;
           p.Delete();
         } else if (p.GetTime() > 10_ms) {
-          cout << "removing OLD particle..." << endl;
           energy_ += energy;
           p.Delete();
         } else {
@@ -89,10 +82,10 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv)
+    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool discardEm, bool discardInv)
         : eCut_(eCut)
-        , cutEm_(em)
-        , cutInv_(inv) {
+        , discardEm_(cutEm)
+        , discardInv_(discardInv) {
 
       emEnergy_ = 0_GeV;
       emCount_ = 0;
