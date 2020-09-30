@@ -23,7 +23,10 @@ namespace corsika::process::proposal {
 
   void ContinuousProcess::BuildCalculator(particles::Code code,
                                           environment::NuclearComposition const& comp) {
-    auto c = cross[code](media.at(&comp), cut);
+    auto p_cross = cross.find(code);
+    if (p_cross == cross.end())
+      throw std::runtime_error("PROPOSAL could not find corresponding builder");
+    auto c = p_cross->second(media.at(&comp), cut);
     auto disp = PROPOSAL::make_displacement(c, true);
     auto scatter = PROPOSAL::make_scattering("highland", particle[code], media.at(&comp));
     calc[std::make_pair(&comp, code)] =
@@ -83,13 +86,16 @@ namespace corsika::process::proposal {
   template <>
   units::si::LengthType ContinuousProcess::MaxStepLength(
       setup::Stack::ParticleType const& vP, setup::Trajectory const& vT) {
+    if (!CanInteract(vP.GetPID()))
+      return units::si::meter * std::numeric_limits<double>::infinity();
     auto energy_lim = 0.9 * vP.GetEnergy();
     if (cut.GetECut() > energy_lim) energy_lim = cut.GetECut();
     auto c = GetCalculator(vP, calc);
     auto grammage = get<DISPLACEMENT>(c->second)->SolveTrackIntegral(
                         vP.GetEnergy() / 1_MeV, energy_lim / 1_MeV) *
                     1_g / square(1_cm);
-    return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage) * 1.0001;
+    return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage) *
+           1.0001;
   }
 
 } // namespace corsika::process::proposal

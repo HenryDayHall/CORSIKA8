@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
   PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
   PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
 
-  process::particle_cut::ParticleCut cut{60_GeV, true, true};
+  process::particle_cut::ParticleCut cut{60_GeV, false, true};
   process::proposal::Interaction proposal(env, cut);
   process::proposal::ContinuousProcess em_continuous(env, cut);
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
@@ -205,9 +205,9 @@ int main(int argc, char** argv) {
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
-  process::conex_source_cut::CONEXSourceCut conexSource(
-      center, showerAxis, t, injectionHeight, E0,
-      particles::GetPDG(particles::Code::Proton));
+  /* process::conex_source_cut::CONEXSourceCut conexSource( */
+  /*     center, showerAxis, t, injectionHeight, E0, */
+  /*     particles::GetPDG(particles::Code::Proton)); */
 
   // assemble all processes into an ordered process list
 
@@ -218,9 +218,9 @@ int main(int argc, char** argv) {
 
   //auto sequence = switchProcess << reset_particle_mass << decaySequence << conexSource
   //                            << longprof << eLoss << cut << observationLevel;
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << cut << em_continuous 
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << cut << em_continuous
 				<< longprof << observationLevel;
-  
+
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
   EAS.Run();
 
   eLoss.PrintProfile(); // print longitudinal profile
-  conexSource.SolveCE();
+  /* conexSource.SolveCE(); */
 
   cut.ShowResults();
   const HEPEnergyType Efinal =
