@@ -130,9 +130,6 @@ int main(int argc, char** argv) {
   // setup processes, decays and interactions
 
   // PROPOSAL processs proposal{...};
-  PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
-  PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
-
   process::particle_cut::ParticleCut cut(10_GeV, false, true);
   process::proposal::Interaction proposal(env, cut);
   process::proposal::ContinuousProcess em_continuous(env, cut);
@@ -147,7 +144,7 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  auto sequence = proposalCounted << cut << em_continuous << longprof << observationLevel
+  auto sequence = proposalCounted << em_continuous << longprof << cut << observationLevel
                                   << trackWriter;
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
@@ -160,11 +157,16 @@ int main(int argc, char** argv) {
   EAS.Run();
 
   cut.ShowResults();
+  em_continuous.ShowResults();
+  observationLevel.ShowResults();
   const HEPEnergyType Efinal =
-      cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
+    cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy() + em_continuous.GetEnergyLost() + observationLevel.GetEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-
+  observationLevel.Reset();
+  cut.Reset();
+  em_continuous.Reset();
+  
   auto const hists = proposalCounted.GetHistogram();
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");

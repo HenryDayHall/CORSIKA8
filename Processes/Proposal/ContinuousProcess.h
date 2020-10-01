@@ -20,8 +20,6 @@
 
 namespace corsika::process::proposal {
 
-  using namespace corsika::units::si;
-
   //!
   //! Electro-magnetic and gamma continous losses produced by proposal. It makes
   //! use of interpolation tables which are runtime intensive calculation, but can be
@@ -37,6 +35,8 @@ namespace corsika::process::proposal {
     std::unordered_map<calc_key_t, calc_t, hash>
         calc; //!< Stores the displacement and scattering calculators.
 
+    units::si::HEPEnergyType energy_lost_ = 0 * units::si::electronvolt;
+    
     //!
     //! Build the displacement and scattering calculators and add it to calc.
     //!
@@ -74,5 +74,9 @@ namespace corsika::process::proposal {
     //!
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle const&, Track const&);
+
+    void ShowResults() const;
+    void Reset();
+    corsika::units::si::HEPEnergyType GetEnergyLost() const { return energy_lost_; }
   };
 } // namespace corsika::process::proposal

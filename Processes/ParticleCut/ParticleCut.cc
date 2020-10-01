@@ -131,5 +131,14 @@ namespace corsika::process {
           " ******************************",
           fEmEnergy / 1_GeV, uiEmCount, fInvEnergy / 1_GeV, uiInvCount, fEnergy / 1_GeV));
     }
+
+    void ParticleCut::Reset() {
+      fEmEnergy = 0_GeV;
+      uiEmCount = 0;
+      fInvEnergy = 0_GeV;
+      uiInvCount = 0;
+      fEnergy = 0_GeV;
+    }
+
   } // namespace particle_cut
 } // namespace corsika::process

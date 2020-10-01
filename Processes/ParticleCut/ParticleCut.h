@@ -52,7 +52,8 @@ namespace corsika::process {
 
       bool ParticleIsEmParticle(particles::Code) const;
 
-      void ShowResults();
+      void ShowResults() const;
+      void Reset();
 
       units::si::HEPEnergyType GetECut() const { return fECut; }
       units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }

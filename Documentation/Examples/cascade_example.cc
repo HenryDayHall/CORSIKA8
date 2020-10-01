@@ -23,8 +23,6 @@
 
 #include <corsika/geometry/Sphere.h>
 
-//#include <corsika/process/proposal/Interaction.h>
-
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
@@ -137,35 +135,32 @@ int main() {
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  // random::RNGManager::GetInstance().RegisterRandomStream("proposal");
   process::sibyll::Interaction sibyll;
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay;
   // cascade with only HE model ==> HE cut
   process::particle_cut::ParticleCut cut(80_GeV, true, true);
-  // process::proposal::Interaction proposal(env, cut);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::energy_loss::EnergyLoss eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect << sibyll << sibyllNuc /* << proposal*/
-                               << decay
-                               /* << eLoss */
-                               << cut << trackWriter;
+  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
+                               << trackWriter;
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   EAS.Run();
 
-  /* eLoss.PrintProfile(); // print longitudinal profile */
+  eLoss.PrintProfile(); // print longitudinal profile
 
   cut.ShowResults();
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  /* cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl */
-  /*      << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl; */
+  cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
+       << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+  cut.Reset();  
 }
