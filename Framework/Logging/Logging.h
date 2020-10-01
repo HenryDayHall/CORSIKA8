@@ -68,7 +68,7 @@ namespace corsika::logging {
    * @param defaultlog     If True, set this as the default logger.
    * @returns              The constructed and formatted logger.
    */
-  auto CreateLogger(std::string const& name, bool const defaultlog = false) {
+  inline auto CreateLogger(std::string const& name, bool const defaultlog = false) {
 
     // create the logger
     // this is currently a colorized multi-threading safe logger
@@ -97,7 +97,7 @@ namespace corsika::logging {
    * @param defaultlog   If True, make this the default logger.
    * @returns              The constructed and formatted logger.
    */
-  auto GetLogger(std::string const& name, bool const defaultlog = false) {
+  inline auto GetLogger(std::string const& name, bool const defaultlog = false) {
 
     // attempt to get the logger from the registry
     auto logger = spdlog::get(name);
@@ -121,7 +121,7 @@ namespace corsika::logging {
    *  @param name    The minimum log level required to print.
    *
    */
-  auto SetDefaultLevel(level::level_enum const minlevel) -> void {
+  inline auto SetDefaultLevel(level::level_enum const minlevel) -> void {
     spdlog::set_level(minlevel);
   }
 
@@ -131,7 +131,7 @@ namespace corsika::logging {
    * @param name    The minimum log level required to print.
    *
    */
-  auto SetLevel(level::level_enum const minlevel) -> void {
+  inline auto SetLevel(level::level_enum const minlevel) -> void {
     corsika->set_level(minlevel);
   }
 
@@ -143,7 +143,7 @@ namespace corsika::logging {
    *
    */
   template <typename TLogger>
-  auto SetLevel(TLogger& logger, level::level_enum const minlevel) -> void {
+  inline auto SetLevel(TLogger& logger, level::level_enum const minlevel) -> void {
     logger->set_level(minlevel);
   }
 
@@ -154,7 +154,7 @@ namespace corsika::logging {
    *
    */
   template <typename TLogger>
-  auto AddSourceInfo(TLogger& logger) -> void {
+  inline auto AddSourceInfo(TLogger& logger) -> void {
     logger->set_pattern("[%n:%^%-8l%$(%s:%!:%#)] %v");
   }
 
@@ -165,7 +165,7 @@ namespace corsika::logging {
    *
    */
   template <typename TLogger>
-  auto ResetPattern(TLogger& logger) -> void {
+  inline auto ResetPattern(TLogger& logger) -> void {
     logger->set_pattern(default_pattern);
   }
 
