@@ -21,15 +21,13 @@ set_target_properties (
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
-
-find_package(ZLIB)
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   cnpy
-  ${ZLIB_LIBRARIES}
+  PUBLIC
+  ZLIB::ZLIB
   )
 
 target_include_directories (
@@ -43,18 +41,5 @@ install (
   TARGETS cnpy
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-#  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
   )
-
-
-# --------------------
-# code unit testing
-# CORSIKA_ADD_TEST(testNullModel)
-#target_link_libraries (
-#  testNullModel  ProcessNullModel
-#  CORSIKAsetup
-#  CORSIKAgeometry
-#  CORSIKAunits
-#  CORSIKAthirdparty # for catch2
-#  )
 
