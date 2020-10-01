@@ -14,11 +14,11 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <random>
 #include <tuple>
-#include <cstdlib>
 
 namespace corsika::process::proposal {
   bool ProposalProcessBase::CanInteract(particles::Code pcode) const {
@@ -55,8 +55,14 @@ namespace corsika::process::proposal {
     //! If corsika data exist store interpolation tables to the corresponding
     //! path, otherwise interpolation tables would only stored in main memory if
     //! no explicit intrpolation def is specified.
-    if(auto data_path = std::getenv("CORSIKA_DATA"))
-        PROPOSAL::InterpolationDef::path_to_tables = std::string(data_path) + "/PROPOSAL";
+    if (auto data_path = std::getenv("CORSIKA_DATA")) {
+      PROPOSAL::InterpolationDef::path_to_tables = std::string(data_path) + "/PROPOSAL";
+    } else {
+      throw std::runtime_error(
+          "It is not recommended to run PROPOSAL without its tables in "
+          "$CORSIKA_DATA/PROPOSAL. This would be extremely slow. Please provide the "
+          "table directory. ");
+    }
   }
 
   size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const noexcept {
