@@ -22,10 +22,10 @@ namespace corsika::process {
   namespace devtools {
 
     template <typename T>
-    class ExecTime : private T {
+    class _ExecTimeImpl : protected T {
     private:
       std::chrono::high_resolution_clock::time_point startTime_;
-      std::chrono::duration<double,std::micro> cumulatedTime_;
+      std::chrono::duration<double, std::micro> cumulatedTime_;
       double mean_;
       double mean2_;
       double min_;
@@ -34,7 +34,7 @@ namespace corsika::process {
 
     protected:
     public:
-      ExecTime() {
+      _ExecTimeImpl() {
         min_ = std::numeric_limits<long long>::max();
         max_ = 0;
         mean_ = 0;
@@ -45,8 +45,9 @@ namespace corsika::process {
       void start() { startTime_ = std::chrono::high_resolution_clock::now(); }
       void stop() {
         auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double,std::micro> timeDiv =
-            std::chrono::duration_cast< std::chrono::duration<double,std::micro> >(end - startTime_);
+        std::chrono::duration<double, std::micro> timeDiv =
+            std::chrono::duration_cast<std::chrono::duration<double, std::micro> >(
+                end - startTime_);
 
         cumulatedTime_ += timeDiv;
         n_ = n_ + 1;
@@ -68,7 +69,18 @@ namespace corsika::process {
       double max() const { return max_; }
       double var() const { return mean2_ / n_; }
       double sumTime() const { return cumulatedTime_.count(); }
+    };
 
+    template <class T, bool TCheck>
+    class Boundary;
+
+    template <class T>
+    class Boundary<T, false> {};
+
+    template <class T>
+    class Boundary<T, true> : public _ExecTimeImpl<T> {
+    private:
+    public:
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
                                         VTNType const& to) {
@@ -77,7 +89,18 @@ namespace corsika::process {
         this->stop();
         return r;
       }
+    };
 
+    template <class T, bool TCheck>
+    class Continuous;
+
+    template <class T>
+    class Continuous<T, false> {};
+
+    template <class T>
+    class Continuous<T, true> : public _ExecTimeImpl<T> {
+    private:
+    public:
       template <typename Particle, typename Track>
       EProcessReturn DoContinuous(Particle& p, Track const& t) const {
         this->start();
@@ -93,7 +116,18 @@ namespace corsika::process {
         this->stop();
         return r;
       }
+    };
 
+    template <class T, bool TCheck>
+    class Decay;
+
+    template <class T>
+    class Decay<T, false> {};
+
+    template <class T>
+    class Decay<T, true> : public _ExecTimeImpl<T> {
+    private:
+    public:
       template <typename Particle>
       EProcessReturn DoDecay(Particle& p) {
         this->start();
@@ -109,7 +143,18 @@ namespace corsika::process {
         this->stop();
         return r;
       }
+    };
 
+    template <class T, bool TCheck>
+    class Interaction;
+
+    template <class T>
+    class Interaction<T, false> {};
+
+    template <class T>
+    class Interaction<T, true> : public _ExecTimeImpl<T> {
+    private:
+    public:
       template <typename Particle>
       EProcessReturn DoInteraction(Particle& p) {
         this->start();
@@ -125,7 +170,18 @@ namespace corsika::process {
         this->stop();
         return r;
       }
+    };
 
+    template <class T, bool TCheck>
+    class Secondaries;
+
+    template <class T>
+    class Secondaries<T, false> {};
+
+    template <class T>
+    class Secondaries<T, true> : public _ExecTimeImpl<T> {
+    private:
+    public:
       template <typename Secondaries>
       inline EProcessReturn DoSecondaries(Secondaries& sec) {
         this->start();
@@ -133,15 +189,26 @@ namespace corsika::process {
         this->stop();
         return r;
       }
-
-      /*
-                  // Stack
-                  template <
-                      typename TStack,
-                      typename std::enable_if_t<
-                          std::is_base_of<StackProcess<typename T::_TDerived>, T>::type,
-         int> = 0> inline EProcessReturn DoStack(TStack& stack) { return T::stack(stack);
-                  }*/
     };
+
+    template <typename T>
+    class ExecTime
+        : public Boundary<T, std::is_base_of<corsika::process::BoundaryCrossingProcess<
+                                                 typename T::_TDerived>,
+                                             T>::value>,
+          public Continuous<
+              T,
+              std::is_base_of<corsika::process::ContinuousProcess<typename T::_TDerived>,
+                              T>::value>,
+          public Decay<
+              T, std::is_base_of<corsika::process::DecayProcess<typename T::_TDerived>,
+                                 T>::value>,
+          public Interaction<
+              T,
+              std::is_base_of<corsika::process::InteractionProcess<typename T::_TDerived>,
+                              T>::value>,
+          public Interaction<
+              T, std::is_base_of<corsika::process::Secondaries<typename T::_TDerived>,
+                                 T>::value> {};
   } // namespace devtools
 } // namespace corsika::process

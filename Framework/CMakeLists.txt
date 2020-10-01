@@ -1,10 +1,18 @@
+#add_subdirectory (Analytics)
+add_subdirectory (Cascade)
+add_subdirectory (Geometry)
+add_subdirectory (Logging)
+add_subdirectory (Particles)
+add_subdirectory (ProcessSequence)
+add_subdirectory (Random)
+add_subdirectory (StackInterface)
 add_subdirectory (Testing)
 add_subdirectory (Utilities)
 add_subdirectory (Units)
-add_subdirectory (Geometry)
-add_subdirectory (Particles)
-add_subdirectory (Logging)
-add_subdirectory (StackInterface)
-add_subdirectory (ProcessSequence)
-add_subdirectory (Cascade)
-add_subdirectory (Random)
+
+
+
+
+
+
+
