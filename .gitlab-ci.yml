@@ -19,7 +19,7 @@ variables:
 #
 # multi-step pipeline for each commit
 #
-# Mote: "WIP:" merge request, non-WIP merge requests and "Ready for Code Review" MR are all
+# Mote: "Draft:" merge request, non-Draft merge requests and "Ready for Code Review" MR are all
 #       handled explicitly
 #
 stages:
@@ -219,7 +219,7 @@ test-clang-8:
 
 
 
-####### BUILD-TEST (all builds <= WIP, default) ##############
+####### BUILD-TEST (all builds <= Draft, default) ##############
 
 ##########################################################
 # the generic build_test template job
@@ -234,7 +234,7 @@ test-clang-8:
     - set -o pipefail
     - ctest -j4 -VV | gzip -v -9 > test.log.gz 
   rules:
-    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
+    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
       allow_failure: false
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -328,7 +328,7 @@ example-clang-8:
 
 
 
-####### BUILD-TEST-EXAMPLE (only non-WIP)  ##############
+####### BUILD-TEST-EXAMPLE (only non-Draft)  ##############
 
 ##########################################################
 # generic example template job
@@ -344,7 +344,7 @@ example-clang-8:
     - ctest -j4 -VV | gzip -v -9 > test.log.gz
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
-    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^WIP:/'
+    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
       when: manual
       allow_failure: true
     - if: $CI_COMMIT_BRANCH
