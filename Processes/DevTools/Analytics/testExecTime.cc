@@ -33,13 +33,13 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][DevTools ExecTime]") {
     REQUIRE(execTime.DoBoundaryCrossing(tmp, 0, 0) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
     REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
-            Approx(50).margin(1));
+            Approx(50).margin(5));
 
     for (int i = 0; i < 100; i++) execTime.DoBoundaryCrossing(tmp, 0, 0);
 
-    REQUIRE(execTime.mean() == Approx(50 * 1000).margin(1 * 1000));
+    REQUIRE(execTime.mean() == Approx(50 * 1000).margin(2 * 1000));
 
-    REQUIRE(execTime.sumTime() == Approx(50 * 100 * 1000).margin(100 * 1000));
+    REQUIRE(execTime.sumTime() == Approx(50 * 100 * 1000).margin(200 * 1000));
 
     REQUIRE(execTime.var() == Approx(0).margin(20000));
   }
