@@ -16,7 +16,6 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
-#include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
