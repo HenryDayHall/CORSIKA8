@@ -28,7 +28,7 @@ namespace corsika::process {
       }
 
       template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle& p) {
+      corsika::units::si::TimeType GetLifetime(Particle&) {
         using namespace corsika::units::si;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));

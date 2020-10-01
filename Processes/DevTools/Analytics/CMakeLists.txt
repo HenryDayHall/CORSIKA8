@@ -6,6 +6,11 @@ set (
 set (
   MODEL_HEADERS
   ExecTime.h
+  ImplBoundary.h
+  ImplContinuous.h
+  ImplDecay.h
+  ImplInteraction.h
+  ImplSecondaries.h
   )
 
 set (

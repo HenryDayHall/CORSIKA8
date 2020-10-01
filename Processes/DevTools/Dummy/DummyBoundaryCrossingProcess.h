@@ -22,8 +22,8 @@ namespace corsika::process {
     private:
     public:
       template <typename Particle, typename VTNType>
-      EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from,
-                                        VTNType const& to) {
+      EProcessReturn DoBoundaryCrossing(Particle&, VTNType const&,
+                                        VTNType const&) {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return EProcessReturn::eOk;
       }
