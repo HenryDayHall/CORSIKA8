@@ -47,14 +47,11 @@ set (
 add_library (ProcessUrQMD STATIC ${MODEL_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessUrQMD ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
-find_package(Boost REQUIRED)
-
 set_target_properties (
   ProcessUrQMD
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
 # target dependencies on other libraries (also the header onlys)

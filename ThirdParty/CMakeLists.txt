@@ -35,7 +35,7 @@ message (STATUS "USE_BOOST_C8='${USE_BOOST_C8}'")
 
 add_library (C8::ext::boost INTERFACE IMPORTED GLOBAL)
 if ("x_${USE_BOOST_C8}" STREQUAL "x_SYSTEM")
-  find_package (Boost REQUIRED COMPONENTS mp11 iterator core format interval optional type_index histogram)
+  find_package (Boost REQUIRED COMPONENTS mp11 iterator core format interval optional type_index histogram multi_array)
 
   message (STATUS "Using system-level boost version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}")
   set_target_properties (
