@@ -18,6 +18,12 @@
 #include <corsika/process/SecondariesProcess.h>
 #include <corsika/process/StackProcess.h>
 
+#include <corsika/process/devtools/ImplBoundary.h>
+#include <corsika/process/devtools/ImplContinuous.h>
+#include <corsika/process/devtools/ImplDecay.h>
+#include <corsika/process/devtools/ImplInteraction.h>
+#include <corsika/process/devtools/ImplSecondaries.h>
+
 namespace corsika::process {
   namespace devtools {
 
@@ -71,126 +77,6 @@ namespace corsika::process {
       double sumTime() const { return cumulatedTime_.count(); }
     };
 
-    template <class T, bool TCheck>
-    class Boundary;
-
-    template <class T>
-    class Boundary<T, false> {};
-
-    template <class T>
-    class Boundary<T, true> : public _ExecTimeImpl<T> {
-    private:
-    public:
-      template <typename Particle, typename VTNType>
-      EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
-                                        VTNType const& to) {
-        this->start();
-        auto r = T::DoBoundaryCrossing(p, from, to);
-        this->stop();
-        return r;
-      }
-    };
-
-    template <class T, bool TCheck>
-    class Continuous;
-
-    template <class T>
-    class Continuous<T, false> {};
-
-    template <class T>
-    class Continuous<T, true> : public _ExecTimeImpl<T> {
-    private:
-    public:
-      template <typename Particle, typename Track>
-      EProcessReturn DoContinuous(Particle& p, Track const& t) const {
-        this->start();
-        auto r = T::DoContinous(p, t);
-        this->stop();
-        return r;
-      }
-
-      template <typename Particle, typename Track>
-      units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const {
-        this->start();
-        auto r = T::MaxStepLength(p, track);
-        this->stop();
-        return r;
-      }
-    };
-
-    template <class T, bool TCheck>
-    class Decay;
-
-    template <class T>
-    class Decay<T, false> {};
-
-    template <class T>
-    class Decay<T, true> : public _ExecTimeImpl<T> {
-    private:
-    public:
-      template <typename Particle>
-      EProcessReturn DoDecay(Particle& p) {
-        this->start();
-        auto r = T::DoDecay(p);
-        this->stop();
-        return r;
-      }
-
-      template <typename Particle>
-      corsika::units::si::TimeType GetLifetime(Particle& p) {
-        this->start();
-        auto r = T::GetLifetime(p);
-        this->stop();
-        return r;
-      }
-    };
-
-    template <class T, bool TCheck>
-    class Interaction;
-
-    template <class T>
-    class Interaction<T, false> {};
-
-    template <class T>
-    class Interaction<T, true> : public _ExecTimeImpl<T> {
-    private:
-    public:
-      template <typename Particle>
-      EProcessReturn DoInteraction(Particle& p) {
-        this->start();
-        auto r = T::DoInteraction(p);
-        this->stop();
-        return r;
-      }
-
-      template <typename Particle>
-      corsika::units::si::GrammageType GetInteractionLength(Particle& p) {
-        this->start();
-        auto r = T::GetInteractionLength(p);
-        this->stop();
-        return r;
-      }
-    };
-
-    template <class T, bool TCheck>
-    class Secondaries;
-
-    template <class T>
-    class Secondaries<T, false> {};
-
-    template <class T>
-    class Secondaries<T, true> : public _ExecTimeImpl<T> {
-    private:
-    public:
-      template <typename Secondaries>
-      inline EProcessReturn DoSecondaries(Secondaries& sec) {
-        this->start();
-        auto r = T::DoSecondaries(sec);
-        this->stop();
-        return r;
-      }
-    };
-
     template <typename T>
     class ExecTime
         : public Boundary<T, std::is_base_of<corsika::process::BoundaryCrossingProcess<
@@ -207,8 +93,8 @@ namespace corsika::process {
               T,
               std::is_base_of<corsika::process::InteractionProcess<typename T::_TDerived>,
                               T>::value>,
-          public Interaction<
-              T, std::is_base_of<corsika::process::Secondaries<typename T::_TDerived>,
+          public Secondaries<
+              T, std::is_base_of<corsika::process::SecondariesProcess<typename T::_TDerived>,
                                  T>::value> {};
   } // namespace devtools
 } // namespace corsika::process

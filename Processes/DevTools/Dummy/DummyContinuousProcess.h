@@ -27,7 +27,7 @@ namespace corsika::process {
       }
 
       template <typename Particle, typename Track>
-      units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const {
+      units::si::LengthType MaxStepLength(Particle const&, Track const& ) const {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return units::si::meter * std::numeric_limits<double>::infinity();
       }

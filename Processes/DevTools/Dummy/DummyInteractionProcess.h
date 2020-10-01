@@ -27,7 +27,7 @@ namespace corsika::process {
       }
 
       template <typename TParticle>
-      corsika::units::si::GrammageType GetInteractionLength(TParticle& p) {
+      corsika::units::si::GrammageType GetInteractionLength(TParticle&) {
         using namespace corsika::units::si;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
