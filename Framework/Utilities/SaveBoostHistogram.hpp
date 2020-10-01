@@ -23,30 +23,34 @@ namespace corsika {
     void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
                    std::string const& filename) {
       int const rank = h.rank();
-      int const size = h.size();
-      using value_type = typename boost::histogram::histogram<Axes, Storage>::value_type;
 
       std::vector<size_t> axes_dims;
       axes_dims.reserve(rank);
+
+      auto overflow = std::make_unique<bool[]>(rank);
+      auto underflow = std::make_unique<bool[]>(rank);
 
       std::vector<char> axis_types;
       axis_types.reserve(rank);
 
       for (int i = 0; i < rank; ++i) {
         auto const& ax = h.axis(i);
-        int const has_underflow = (ax.options() & 0x01) ? 1 : 0;
-        int const has_overflow = (ax.options() & 0x02) ? 1 : 0;
+        unsigned const has_underflow = (ax.options() & 0x01) ? 1 : 0;
+        unsigned const has_overflow = (ax.options() & 0x02) ? 1 : 0;
+
+        underflow[i] = has_underflow;
+        overflow[i] = has_overflow;
 
         axes_dims.emplace_back(ax.size() + has_underflow + has_overflow);
 
         if (ax.continuous()) {
           axis_types.push_back('c');
           std::vector<double> ax_edges;
-          ax_edges.reserve(ax.size());
+          ax_edges.reserve(ax.size() + 1);
 
-          for (int j = 0; j < ax.size() + has_overflow; ++j) {
-            ax_edges.push_back(ax.bin(j).lower());
-          }
+          for (int j = 0; j < ax.size(); ++j) { ax_edges.push_back(ax.bin(j).lower()); }
+
+          ax_edges.push_back(ax.bin(ax.size() - 1).upper());
 
           cnpy::npz_save(filename, std::string{"binedges_"} + std::to_string(i),
                          ax_edges.data(), {ax_edges.size()}, "a");
@@ -63,29 +67,30 @@ namespace corsika {
 
         cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(),
                        {axis_types.size()}, "a");
+
+        cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(),
+                       {axis_types.size()}, "a");
+        cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(),
+                       {axis_types.size()}, "a");
       }
 
-      auto const prod_axis_size =
-          std::accumulate(axes_dims.cbegin(), axes_dims.cend(), 1, std::multiplies<>());
-      auto temp = std::make_unique<value_type[]>(prod_axis_size);
+      auto const prod_axis_size = std::accumulate(axes_dims.cbegin(), axes_dims.cend(),
+                                                  unsigned{1}, std::multiplies<>());
+      auto temp = std::make_unique<float[]>(prod_axis_size);
 
-      std::cout << "rank = " << rank << std::endl;
-      std::cout << "size = " << size << std::endl;
-      std::cout << "prod_axis_size = " << prod_axis_size << std::endl;
+      assert(prod_axis_size == h.size());
 
       // reduce multi-dim. to 1-dim, row-major (i.e., last axis index is contiguous in
-      // memory) take special care of underflow bins, which have -1 as index and thus need
+      // memory) take special care of underflow bins which have -1 as index and thus need
       // to be shifted by +1
 
       for (auto&& x : indexed(h, boost::histogram::coverage::all)) {
-        int const offset_underflow = (h.axis(0).options() & 0x01) ? 1 : 0;
-        auto p = x.index(0) + offset_underflow; // 1-d-index
+        int p = 0;
 
-        for (int axis_index = 1; axis_index < rank; ++axis_index) {
+        for (int axis_index = 0; axis_index < rank; ++axis_index) {
           int const offset_underflow = (h.axis(axis_index).options() & 0x01) ? 1 : 0;
           auto k = x.index(axis_index) + offset_underflow;
           p = k + p * axes_dims.at(axis_index);
-          std::cout << " " << x.index(axis_index);
         }
 
         temp[p] = *x;

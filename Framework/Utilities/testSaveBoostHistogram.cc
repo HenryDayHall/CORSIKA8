@@ -11,23 +11,28 @@
 
 #include <random>
 
+namespace bh = boost::histogram;
+
 TEST_CASE("SaveHistogram") {
   std::mt19937 rng;
   std::normal_distribution n1{2., 6.};
   std::exponential_distribution e{1.};
   std::uniform_int_distribution u{1, 10};
+  std::uniform_real_distribution<double> r{-3, 3};
 
-  auto h =
-      boost::histogram::make_histogram(boost::histogram::axis::regular{5, 0, 10, "x"},
-                                       boost::histogram::axis::regular{3, 0, 4, "y"},
-                                       boost::histogram::axis::category{1, 4, 8});
+  auto h = bh::make_histogram(
+      bh::axis::regular{5, 0, 10, "normal"}, bh::axis::regular{3, 0, 4, "exponential"},
+      bh::axis::category<int>{{2, 3, 5, 7}, "integer category"},
+      bh::axis::regular<double, bh::use_default, bh::use_default,
+                        bh::axis::option::growth_t>{10, -1, 1, "integer category"});
 
   for (int i{0}; i < 100'000; ++i) {
     auto const a = n1(rng);
     auto const b = e(rng);
     auto const c = u(rng);
+    auto const d = r(rng);
 
-    h(a, b, c);
+    h(a, b, c, d);
   }
 
   corsika::utl::save_hist(h, "hist.npz");
