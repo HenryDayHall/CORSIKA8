@@ -88,6 +88,7 @@ namespace corsika::process::proposal {
   EProcessReturn ContinuousProcess::DoContinuous(setup::Stack::ParticleType& vP,
                                                  setup::Trajectory const& vT) {
     if (!CanInteract(vP.GetPID())) return process::EProcessReturn::eOk;
+    if (vT.GetLength()==0_m) return process::EProcessReturn::eOk;
 
     // calculate passed grammage
     auto dX = vP.GetNode()->GetModelProperties().IntegratedGrammage(vT, vT.GetLength());
@@ -106,9 +107,12 @@ namespace corsika::process::proposal {
 
     // Update the energy and absorbe the particle if it's below the energy
     // threshold, because it will no longer propagated.
-    vP.SetEnergy(final_energy);
-    if (vP.GetEnergy() <= emCut_)
+    if (final_energy <= emCut_) {
+      vP.SetEnergy(emCut_);
+      vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
       return process::EProcessReturn::eParticleAbsorbed;
+    }
+    vP.SetEnergy(final_energy);
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
   }
@@ -121,8 +125,16 @@ namespace corsika::process::proposal {
 
     // Limit the step size of a conitnous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
-    // in any case: never go below emCut_
-    auto energy_lim = std::max(0.9 * vP.GetEnergy(), emCut_);;
+    //
+    // in any case: never go below 0.99*emCut_ This needs to be
+    // slightly smaller than emCut_ since, either this Step is limited
+    // by energy_lim, then the particle is stopped in a very short
+    // range (before doing anythin else) and is then removed
+    // instantly. The exact position where it reaches emCut is not
+    // important, the important fact is that its E_kin is zero
+    // afterwards.
+    // 
+    auto energy_lim = std::max(0.9 * vP.GetEnergy(), 0.99*emCut_);
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);

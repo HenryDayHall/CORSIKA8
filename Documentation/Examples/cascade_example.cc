@@ -142,7 +142,7 @@ int main() {
   process::particle_cut::ParticleCut cut(80_GeV, true, true);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss{showerAxis};
+  process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
 
   // assemble all processes into an ordered process list
   auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
