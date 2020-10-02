@@ -21,7 +21,6 @@ set_target_properties (
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
 # target dependencies on other libraries (also the header onlys)
@@ -31,6 +30,7 @@ target_link_libraries (
   CORSIKAparticles
   CORSIKAprocesssequence
   CORSIKAsetup
+  CORSIKAlogging
   )
 
 target_include_directories (
@@ -44,7 +44,6 @@ install (
   TARGETS ProcessParticleCut
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-#  PUBLIC_HEADER DESTINATION include/${MODEL_NAMESPACE}
   )
 
 # --------------------

@@ -27,12 +27,20 @@ namespace corsika::process {
     return static_cast<EProcessReturn>(static_cast<int>(a) | static_cast<int>(b));
   }
 
-  inline EProcessReturn& operator|=(EProcessReturn& a, EProcessReturn b) {
+  inline EProcessReturn& operator|=(EProcessReturn& a, const EProcessReturn b) {
     return a = a | b;
   }
 
-  inline bool operator==(EProcessReturn a, EProcessReturn b) {
+  inline EProcessReturn operator&(const EProcessReturn a, const EProcessReturn b) {
+    return static_cast<EProcessReturn>(static_cast<int>(a) & static_cast<int>(b));
+  }
+
+  inline bool operator==(const EProcessReturn a, const EProcessReturn b) {
     return (static_cast<int>(a) & static_cast<int>(b)) != 0;
+  }
+
+  inline bool isAbsorbed(const EProcessReturn a) {
+    return static_cast<int>(a & EProcessReturn::eParticleAbsorbed);
   }
 
 } // namespace corsika::process

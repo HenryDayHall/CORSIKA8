@@ -35,33 +35,29 @@ namespace corsika::process {
      https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
    */
 
-  // define a marker (trait class) to tag any class that qualifies as "Process" for the
-  // "ProcessSequence"
-  std::false_type is_process_impl(...);
-  template <class T>
-  using is_process = decltype(is_process_impl(std::declval<T*>()));
-
   // this is a marker to track which BaseProcess is also a ProcessSequence
-  template <typename T>
+  template <typename TClass>
   struct is_process_sequence : std::false_type {};
 
-  template <typename T>
-  bool constexpr is_process_sequence_v = is_process_sequence<T>::value;
+  template <typename TClass>
+  bool constexpr is_process_sequence_v = is_process_sequence<TClass>::value;
 
+  // we also need a marker to identify SwitchProcess
   namespace switch_process {
-    template <typename A, typename B>
+    template <typename TProcess1, typename TProcess2>
     class SwitchProcess; // fwd-decl.
   }
 
   // to detect SwitchProcesses inside the ProcessSequence
-  template <typename T>
+  template <typename TClass>
   struct is_switch_process : std::false_type {};
 
-  template <typename T>
-  bool constexpr is_switch_process_v = is_switch_process<T>::value;
+  template <typename TClass>
+  bool constexpr is_switch_process_v = is_switch_process<TClass>::value;
 
-  template <typename A, typename B>
-  struct is_switch_process<switch_process::SwitchProcess<A, B>> : std::true_type {};
+  template <typename Process1, typename Process2>
+  struct is_switch_process<switch_process::SwitchProcess<Process1, Process2>>
+      : std::true_type {};
 
   /**
      T1 and T2 are both references if possible (lvalue), otherwise
@@ -88,9 +84,6 @@ namespace corsika::process {
         : A(in_A)
         , B(in_B) {}
 
-    // example for a trait-based call:
-    // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
-
     template <typename Particle, typename VTNType>
     EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
                                       VTNType const& to) {
@@ -113,10 +106,10 @@ namespace corsika::process {
     EProcessReturn DoContinuous(TParticle& vP, TTrack& vT) {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (std::is_base_of_v<ContinuousProcess<T1type>, T1type> || t1ProcSeq) {
-        ret |= A.DoContinuous(vP, vT);
+        if (!isAbsorbed(ret)) { ret |= A.DoContinuous(vP, vT); }
       }
       if constexpr (std::is_base_of_v<ContinuousProcess<T2type>, T2type> || t2ProcSeq) {
-        ret |= B.DoContinuous(vP, vT);
+        if (!isAbsorbed(ret)) { ret |= B.DoContinuous(vP, vT); }
       }
       return ret;
     }
@@ -317,20 +310,28 @@ namespace corsika::process {
     }
   };
 
-  /// the << operator assembles many BaseProcess, ContinuousProcess, and
-  /// Interaction/DecayProcess objects into a ProcessSequence, all combinatorics
-  /// must be allowed, this is why we define a macro to define all
-  /// combinations here:
+  // the << operator assembles many BaseProcess, ContinuousProcess, and
+  // Interaction/DecayProcess objects into a ProcessSequence, all combinatorics
+  // must be allowed, this is why we define a macro to define all
+  // combinations here:
 
-  template <
-      typename P1, typename P2,
-      typename std::enable_if<is_process<typename std::decay<P1>::type>::value &&
-                              is_process<typename std::decay<P2>::type>::value>::type...>
-  inline auto operator<<(P1&& vA, P2&& vB) -> ProcessSequence<P1, P2> {
-    return ProcessSequence<P1, P2>(vA.GetRef(), vB.GetRef());
+  // enable the << operator to construct ProcessSequence from two
+  // Processes, only if poth Processes derive from BaseProcesses
+
+  template <typename TProcess1, typename TProcess2>
+  inline typename std::enable_if<
+      std::is_base_of<BaseProcess<typename std::decay<TProcess1>::type>,
+                      typename std::decay<TProcess1>::type>::value &&
+          std::is_base_of<BaseProcess<typename std::decay<TProcess2>::type>,
+                          typename std::decay<TProcess2>::type>::value,
+      ProcessSequence<TProcess1, TProcess2>>::type
+  operator<<(TProcess1&& vA, TProcess2&& vB) {
+    return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
 
   /// marker to identify objectas ProcessSequence
-  template <typename A, typename B>
-  struct is_process_sequence<corsika::process::ProcessSequence<A, B>> : std::true_type {};
+  template <typename TProcess1, typename TProcess2>
+  struct is_process_sequence<corsika::process::ProcessSequence<TProcess1, TProcess2>>
+      : std::true_type {};
+
 } // namespace corsika::process

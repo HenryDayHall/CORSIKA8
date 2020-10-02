@@ -18,7 +18,7 @@ namespace corsika::environment {
 
   class IMediumModel {
   public:
-    virtual ~IMediumModel() = default;
+    virtual ~IMediumModel() = default; // LCOV_EXCL_LINE
 
     virtual corsika::units::si::MassDensityType GetMassDensity(
         corsika::geometry::Point const&) const = 0;

@@ -9,13 +9,18 @@
 #pragma once
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/process/ContinuousProcess.h>
 #include <corsika/process/SecondariesProcess.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
   namespace particle_cut {
-    class ParticleCut : public process::SecondariesProcess<ParticleCut> {
+    class ParticleCut : public process::SecondariesProcess<ParticleCut>,
+                        public corsika::process::ContinuousProcess<ParticleCut> {
+
+      using Particle = corsika::setup::Stack::ParticleType;
+      using Track = corsika::setup::Trajectory;
 
       units::si::HEPEnergyType const fECut;
 
@@ -28,13 +33,14 @@ namespace corsika::process {
     public:
       ParticleCut(const units::si::HEPEnergyType vCut);
 
-      bool ParticleIsInvisible(particles::Code) const;
       EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
-      template <typename TParticle>
-      bool ParticleIsBelowEnergyCut(TParticle const&) const;
+      EProcessReturn DoContinuous(Particle& vParticle, Track const& vTrajectory);
 
-      bool ParticleIsEmParticle(particles::Code) const;
+      corsika::units::si::LengthType MaxStepLength(
+          corsika::setup::Stack::ParticleType const&, corsika::setup::Trajectory const&) {
+        return units::si::meter * std::numeric_limits<double>::infinity();
+      }
 
       void ShowResults();
 
@@ -43,6 +49,16 @@ namespace corsika::process {
       units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
       unsigned int GetNumberEmParticles() const { return fEmCount; }
       unsigned int GetNumberInvParticles() const { return fInvCount; }
+
+    protected:
+      template <typename TParticle>
+      bool checkCutParticle(const TParticle& p);
+
+      template <typename TParticle>
+      bool ParticleIsBelowEnergyCut(TParticle const&) const;
+
+      bool ParticleIsEmParticle(particles::Code) const;
+      bool ParticleIsInvisible(particles::Code) const;
     };
   } // namespace particle_cut
 } // namespace corsika::process

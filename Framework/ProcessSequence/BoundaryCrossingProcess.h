@@ -8,23 +8,21 @@
 
 #pragma once
 
-#include <corsika/environment/Environment.h>
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
 namespace corsika::process {
+
   template <typename TDerived>
-  struct BoundaryCrossingProcess {
-    auto& GetRef() { return static_cast<TDerived&>(*this); }
-    auto const& GetRef() const { return static_cast<const TDerived&>(*this); }
+  struct BoundaryCrossingProcess : public BaseProcess<TDerived> {
 
     /**
      * This method is called when a particle crosses the boundary between the nodes
      * \p from and \p to.
      */
-    template <typename Particle, typename VTNType>
-    EProcessReturn DoBoundaryCrossing(Particle&, VTNType const& from, VTNType const& to);
+    template <typename TParticle, typename TVolumeNode>
+    EProcessReturn DoBoundaryCrossing(TParticle&, TVolumeNode const& from,
+                                      TVolumeNode const& to);
   };
 
-  template <class T>
-  std::true_type is_process_impl(BoundaryCrossingProcess<T> const* impl);
 } // namespace corsika::process

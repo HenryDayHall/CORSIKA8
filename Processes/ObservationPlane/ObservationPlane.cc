@@ -38,11 +38,8 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
                 << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                 << std::endl;
 
-  if (deleteOnHit_) {
-    return process::EProcessReturn::eParticleAbsorbed;
-  } else {
-    return process::EProcessReturn::eOk;
-  }
+  if (deleteOnHit_) { return process::EProcessReturn::eParticleAbsorbed; }
+  return process::EProcessReturn::eOk;
 }
 
 LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,

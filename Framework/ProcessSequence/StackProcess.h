@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -23,19 +24,16 @@ namespace corsika::process {
 
    */
 
-  template <typename derived>
-  class StackProcess {
+  template <typename TDerived>
+  class StackProcess : public BaseProcess<TDerived> {
 
   public:
     StackProcess() = delete;
     StackProcess(const unsigned int nStep)
         : fNStep(nStep) {}
 
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
-
     /// here starts the interface-definition part
-    // -> enforce derived to implement DoStack...
+    // -> enforce TDerived to implement DoStack...
     template <typename TStack>
     inline EProcessReturn DoStack(TStack&);
 

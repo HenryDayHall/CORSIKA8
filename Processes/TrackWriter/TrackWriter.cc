@@ -53,9 +53,4 @@ namespace corsika::process::track_writer {
     return process::EProcessReturn::eOk;
   }
 
-  template <>
-  units::si::LengthType TrackWriter::MaxStepLength(Particle&, Track&) {
-    return units::si::meter * std::numeric_limits<double>::infinity();
-  }
-
 } // namespace corsika::process::track_writer

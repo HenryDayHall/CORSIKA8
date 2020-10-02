@@ -40,7 +40,7 @@ namespace corsika::environment {
     /**
      * A virtual default destructor.
      */
-    virtual ~IMagneticFieldModel() = default;
+    virtual ~IMagneticFieldModel() = default; // LCOV_EXCL_LINE
 
   }; // END: class MagneticField
 

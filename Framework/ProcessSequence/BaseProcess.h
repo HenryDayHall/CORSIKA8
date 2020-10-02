@@ -13,6 +13,8 @@
 
 namespace corsika::process {
 
+  class TDerived; // fwd decl
+
   /**
      \class BaseProcess
 
@@ -22,19 +24,17 @@ namespace corsika::process {
 
    */
 
-  template <typename Derived>
-  struct BaseProcess {
-  private:
-    BaseProcess() {}
-    friend Derived;
+  template <typename TDerived>
+  class BaseProcess {
+  protected:
+    friend TDerived;
 
-  public:
-    Derived& GetRef() { return static_cast<Derived&>(*this); }
-    const Derived& GetRef() const { return static_cast<const Derived&>(*this); }
+    BaseProcess() = default; // protected constructor will allow only
+                             // derived classes to be created, not
+                             // BaseProcess itself
+
+    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
+    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const BaseProcess<T>* impl);
 
 } // namespace corsika::process

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -23,27 +24,23 @@ namespace corsika::process {
 
    */
 
-  template <typename derived>
-  struct DecayProcess {
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
+  template <typename TDerived>
+  struct DecayProcess : BaseProcess<TDerived> {
+
+    using BaseProcess<TDerived>::GetRef;
 
     /// here starts the interface-definition part
-    // -> enforce derived to implement DoDecay...
-    template <typename Particle>
-    EProcessReturn DoDecay(Particle&);
+    // -> enforce TDerived to implement DoDecay...
+    template <typename TParticle>
+    EProcessReturn DoDecay(TParticle&);
 
-    template <typename Particle>
-    corsika::units::si::TimeType GetLifetime(Particle& p);
+    template <typename TParticle>
+    corsika::units::si::TimeType GetLifetime(TParticle& p);
 
-    template <typename Particle>
-    corsika::units::si::InverseTimeType GetInverseLifetime(Particle& vP) {
+    template <typename TParticle>
+    corsika::units::si::InverseTimeType GetInverseLifetime(TParticle& vP) {
       return 1. / GetRef().GetLifetime(vP);
     }
   };
-
-  // overwrite the default trait class, to mark DecayProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const DecayProcess<T>* impl);
 
 } // namespace corsika::process
