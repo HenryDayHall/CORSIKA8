@@ -84,8 +84,11 @@ namespace corsika::cascade {
         : fEnvironment(env)
         , fTracking(tr)
         , fProcessSequence(pl)
-        , fStack(stack) {}
+        , fStack(stack)
+        , energy_cut_(0 * corsika::units::si::electronvolt) {}
 
+    corsika::units::si::HEPEnergyType GetEnergyCut() const {  return energy_cut_; }
+    
     /**
      * set the nodes for all particles on the stack according to their numerical
      * position
@@ -210,10 +213,11 @@ namespace corsika::cascade {
 
       // apply all continuous processes on particle + track
       process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
-
+      
       if (status == process::EProcessReturn::eParticleAbsorbed) {
         std::cout << "Cascade: delete absorbed particle " << vParticle.GetPID() << " "
                   << vParticle.GetEnergy() / 1_GeV << "GeV" << std::endl;
+	energy_cut_ += vParticle.GetEnergy();
         vParticle.Delete();
         return;
       }
@@ -330,7 +334,10 @@ namespace corsika::cascade {
     TProcessList& fProcessSequence;
     TStack& fStack;
     corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+    corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+    
+    corsika::units::si::HEPEnergyType energy_cut_;
+    
   }; // namespace corsika::cascade
 
 } // namespace corsika::cascade

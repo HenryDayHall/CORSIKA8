@@ -49,7 +49,7 @@ int main() {
 
   environment::ShowerAxis showerAxis{injectionPos,
                                      Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env};
-  process::energy_loss::EnergyLoss eLoss{showerAxis};
+  process::energy_loss::EnergyLoss eLoss{showerAxis, 300_MeV};
 
   setup::Stack stack;
 

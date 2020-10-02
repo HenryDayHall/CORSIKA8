@@ -91,6 +91,7 @@ namespace corsika::process::proposal {
             vec);
         auto sec_code = corsika::particles::ConvertFromPDG(
             static_cast<particles::PDGCode>(get<PROPOSAL::Loss::TYPE>(s)));
+	std::cout << " proposal secondary: " << sec_code << " " << E/1_GeV << std::endl;
         vP.AddSecondary(make_tuple(sec_code, E, p, vP.GetPosition(), vP.GetTime()));
       }
     }

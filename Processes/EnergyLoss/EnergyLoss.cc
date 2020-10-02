@@ -30,8 +30,10 @@ using SetupTrack = corsika::setup::Trajectory;
 
 using namespace corsika::process::energy_loss;
 
-EnergyLoss::EnergyLoss(environment::ShowerAxis const& shower_axis)
+EnergyLoss::EnergyLoss(environment::ShowerAxis const& shower_axis,
+		       corsika::units::si::HEPEnergyType emCut)
     : shower_axis_(shower_axis)
+    , emCut_(emCut)
     , profile_(int(shower_axis.maximumX() / dX_) + 1) {}
 
 auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -176,9 +178,8 @@ process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p, SetupTrack co
        << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV << ", Enew=" << Enew / 1_GeV
        << "GeV" << endl;
   auto status = process::EProcessReturn::eOk;
-  if (-dE > Ekin) {
-    dE = -Ekin;
-    Enew = p.GetMass();
+  if (E<emCut_) {
+    Enew = emCut_;
     status = process::EProcessReturn::eParticleAbsorbed;
   }
   p.SetEnergy(Enew);
@@ -194,14 +195,24 @@ LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,
   }
 
   auto constexpr dX = 1_g / square(1_cm);
-  auto const dE = -TotalEnergyLoss(vParticle, dX); // dE > 0
+  auto const dEdX = - TotalEnergyLoss(vParticle, dX) / dX; // dE > 0
   //~ auto const Ekin = vParticle.GetEnergy() - vParticle.GetMass();
-  auto const maxLoss = 0.01 * vParticle.GetEnergy();
-  auto const maxGrammage = maxLoss / dE * dX;
+
+  // in any case: never go below 0.99*emCut_ This needs to be
+  // slightly smaller than emCut_ since, either this Step is limited
+  // by energy_lim, then the particle is stopped in a very short
+  // range (before doing anythin else) and is then removed
+  // instantly. The exact position where it reaches emCut is not
+  // important, the important fact is that its E_kin is zero
+  // afterwards.
+  //
+  const auto energy = vParticle.GetEnergy();
+  auto energy_lim = std::max(0.9*energy, 0.99*emCut_);
+  
+  auto const maxGrammage = (energy - energy_lim) / dEdX;
 
   return vParticle.GetNode()->GetModelProperties().ArclengthFromGrammage(vTrack,
-                                                                         maxGrammage) *
-         1.0001; // to make sure particle gets absorbed when DoContinuous() is called
+                                                                         maxGrammage);
 }
 
 void EnergyLoss::MomentumUpdate(corsika::setup::Stack::ParticleType& vP,
