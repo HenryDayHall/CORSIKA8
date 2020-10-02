@@ -17,6 +17,8 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 
+#include <iostream>
+
 namespace corsika::process::proposal {
 
   using namespace corsika::units::si;
@@ -97,10 +99,11 @@ namespace corsika::process::proposal {
     auto final_energy = get<DISPLACEMENT>(c->second)->UpperLimitTrackIntegral(
                             vP.GetEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
-
+    auto dE = vP.GetEnergy() - final_energy;
+    energy_lost_ += dE;
+    
     // if the particle has a charge take multiple scattering into account
-    if (vP.GetChargeNumber() != 0)
-      Scatter(vP, vP.GetEnergy() - final_energy, dX);
+    if (vP.GetChargeNumber() != 0) Scatter(vP, dE, dX);
 
     // Update the energy and absorbe the particle if it's below the energy
     // threshold, because it will no longer propagated.
@@ -129,6 +132,16 @@ namespace corsika::process::proposal {
 
     // return it in distance aequivalent
     return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage);
+  }
+
+  void ContinuousProcess::ShowResults() const {
+    std::cout << " ******************************" << std::endl
+              << " PROCESS::ContinuousProcess: " << std::endl;
+    std::cout << " energy lost dE (GeV)      :  " << energy_lost_ / 1_GeV << std::endl;
+  }
+
+  void ContinuousProcess::Reset() {
+    energy_lost_ = 0_GeV;
   }
 
 } // namespace corsika::process::proposal

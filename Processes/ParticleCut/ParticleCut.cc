@@ -94,15 +94,26 @@ namespace corsika::process {
       energy_ = 0_GeV;
     }
 
-    void ParticleCut::ShowResults() {
+    void ParticleCut::ShowResults() const {
       cout << " ******************************" << endl
-           << " ParticleCut: " << endl
-           << " energy in em.  component (GeV):  " << emEnergy_ / 1_GeV << endl
-           << " no. of em.  particles injected:  " << emCount_ << endl
-           << " energy in inv. component (GeV):  " << invEnergy_ / 1_GeV << endl
-           << " no. of inv. particles injected:  " << invCount_ << endl
-           << " energy below particle cut (GeV): " << energy_ / 1_GeV << endl
+           << " ParticleCut: " << endl;
+      if (discardEm_) 
+	cout << " energy in em.  component (GeV)     :  " << emEnergy_ / 1_GeV << endl
+	     << " no. of em.  particles removed      :  " << emCount_ << endl;
+      if (discardInv_)
+	cout << " energy in inv. component (GeV)     :  " << invEnergy_ / 1_GeV << endl
+	     << " no. of inv. particles removed      :  " << invCount_ << endl;      
+      cout << " energy below energy threshold (GeV): " << energy_ / 1_GeV << endl
            << " ******************************" << endl;
     }
+
+    void ParticleCut::Reset() {
+      emEnergy_ = 0_GeV;
+      emCount_ = 0;
+      invEnergy_ = 0_GeV;
+      invCount_ = 0;
+      energy_ = 0_GeV;
+    }
+    
   } // namespace particle_cut
 } // namespace corsika::process

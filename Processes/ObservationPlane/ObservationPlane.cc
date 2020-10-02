@@ -9,6 +9,7 @@
 #include <corsika/process/observation_plane/ObservationPlane.h>
 
 #include <fstream>
+#include <iostream>
 
 using namespace corsika::process::observation_plane;
 using namespace corsika::units::si;
@@ -17,7 +18,9 @@ ObservationPlane::ObservationPlane(geometry::Plane const& obsPlane,
                                    std::string const& filename, bool deleteOnHit)
     : plane_(obsPlane)
     , outputStream_(filename)
-    , deleteOnHit_(deleteOnHit) {
+    , deleteOnHit_(deleteOnHit)
+    , energy_ground_(0_GeV)
+    , count_ground_(0) {
   outputStream_ << "#PDG code, energy / eV, distance to center / m" << std::endl;
 }
 
@@ -32,13 +35,16 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
   if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
-
+  
+  const auto energy = particle.GetEnergy();
   outputStream_ << static_cast<int>(particles::GetPDG(particle.GetPID())) << ' '
-                << particle.GetEnergy() * (1 / 1_eV) << ' '
+                << energy / 1_eV << ' '
                 << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                 << std::endl;
 
   if (deleteOnHit_) {
+    count_ground_++;
+    energy_ground_ += energy;
     return process::EProcessReturn::eParticleAbsorbed;
   } else {
     return process::EProcessReturn::eOk;
@@ -57,4 +63,17 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
 
   auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
   return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+}
+
+void ObservationPlane::ShowResults() const {
+  std::cout << " ******************************" << std::endl
+       << " ObservationPlane: " << std::endl;
+  std::cout << " energy in ground (GeV)     :  " << energy_ground_ / 1_GeV << std::endl
+       << " no. of particles in ground :  " << count_ground_ << std::endl
+       << " ******************************" << std::endl;
+}
+
+void ObservationPlane::Reset() {
+  energy_ground_ = 0_GeV;
+  count_ground_ = 0;
 }

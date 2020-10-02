@@ -207,8 +207,8 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << cut << em_continuous
-				<< longprof << observationLevel;
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << em_continuous
+				<< cut << longprof << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
@@ -222,10 +222,15 @@ int main(int argc, char** argv) {
 
 
   cut.ShowResults();
+  em_continuous.ShowResults();
+  observationLevel.ShowResults();
   const HEPEnergyType Efinal =
-      cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
+    cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy() + em_continuous.GetEnergyLost() + observationLevel.GetEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+  observationLevel.Reset();
+  cut.Reset();
+  em_continuous.Reset();
 
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
     urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
