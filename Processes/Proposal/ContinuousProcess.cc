@@ -30,14 +30,14 @@ namespace corsika::process::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto c = p_cross->second(media.at(&comp), emCut_);
+    auto c = p_cross->second(media.at(comp.hash()), emCut_);
 
     // Build displacement integral and scattering object and interpolate them too and
     // saved in the calc map by a key build out of a hash of composed of the component and
     // particle code.
     auto disp = PROPOSAL::make_displacement(c, true);
-    auto scatter = PROPOSAL::make_scattering("highland", particle[code], media.at(&comp));
-    calc[std::make_pair(&comp, code)] =
+    auto scatter = PROPOSAL::make_scattering("highland", particle[code], media.at(comp.hash()));
+    calc[std::make_pair(comp.hash(), code)] =
         std::make_tuple(std::move(disp), std::move(scatter));
   }
 
