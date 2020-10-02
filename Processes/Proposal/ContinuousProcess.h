@@ -35,21 +35,19 @@ namespace corsika::process::proposal {
         calc; //!< Stores the displacement and scattering calculators.
 
     units::si::HEPEnergyType energy_lost_ = 0 * units::si::electronvolt;
-    
+
     //!
     //! Build the displacement and scattering calculators and add it to calc.
     //!
     void BuildCalculator(particles::Code, environment::NuclearComposition const&) final;
 
   public:
-
     //!
     //! Produces the continuous loss calculator for leptons based on nuclear
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
     ContinuousProcess(TEnvironment const&, corsika::units::si::HEPEnergyType _emCut);
-
 
     //!
     //! Multiple Scattering of the lepton. Stochastic deflection is not yet taken into

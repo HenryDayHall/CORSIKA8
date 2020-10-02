@@ -20,8 +20,6 @@
 
 namespace corsika::process::proposal {
 
-  using namespace corsika::units::si;
-
   //!
   //! Electro-magnetic and gamma stochastic losses produced by proposal. It makes
   //! use of interpolation tables which are runtime intensive calculation, but can be
