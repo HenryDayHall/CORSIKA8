@@ -69,7 +69,7 @@ namespace corsika::process::proposal {
     for (auto& it : rnd) it = distr(fRNG);
 
     // calculate deflection based on particle energy, loss
-    auto [mean_dir, final_dir] = get<SCATTERING>(c->second)->Scatter(
+    auto [mean_dir, final_dir] = get<eSCATTERING>(c->second)->Scatter(
         grammage / 1_g * square(1_cm), vP.GetEnergy() / 1_MeV, E_f / 1_MeV, direction,
         rnd);
 
@@ -98,7 +98,7 @@ namespace corsika::process::proposal {
     // Get or build corresponding track integral calculator and solve the
     // integral
     auto c = GetCalculator(vP, calc);
-    auto final_energy = get<DISPLACEMENT>(c->second)->UpperLimitTrackIntegral(
+    auto final_energy = get<eDISPLACEMENT>(c->second)->UpperLimitTrackIntegral(
                             vP.GetEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
     auto dE = vP.GetEnergy() - final_energy;
@@ -142,7 +142,7 @@ namespace corsika::process::proposal {
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);
-    auto grammage = get<DISPLACEMENT>(c->second)->SolveTrackIntegral(
+    auto grammage = get<eDISPLACEMENT>(c->second)->SolveTrackIntegral(
                         vP.GetEnergy() / 1_MeV, energy_lim / 1_MeV) *
                     1_g / square(1_cm);
 

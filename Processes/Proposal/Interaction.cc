@@ -61,13 +61,13 @@ namespace corsika::process::proposal {
       std::uniform_real_distribution<double> distr(0., 1.);
 
       // sample a interaction-type, loss and component
-      auto rates = get<INTERACTION>(c->second)->Rates(vP.GetEnergy() / 1_MeV);
-      auto [type, comp_ptr, v] = get<INTERACTION>(c->second)->SampleLoss(
+      auto rates = get<eINTERACTION>(c->second)->Rates(vP.GetEnergy() / 1_MeV);
+      auto [type, comp_ptr, v] = get<eINTERACTION>(c->second)->SampleLoss(
           vP.GetEnergy() / 1_MeV, rates, distr(fRNG));
 
       // Read how much random numbers are required to calculate the secondaries.
       // Calculate the secondaries and deploy them on the corsika stack.
-      auto rnd = vector<double>(get<SECONDARIES>(c->second)->RequiredRandomNumbers(type));
+      auto rnd = vector<double>(get<eSECONDARIES>(c->second)->RequiredRandomNumbers(type));
       for (auto& it : rnd) it = distr(fRNG);
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
                                       vP.GetPosition().GetY() / 1_cm,
@@ -78,7 +78,7 @@ namespace corsika::process::proposal {
                                           d.GetZ().magnitude());
       auto loss = make_tuple(static_cast<int>(type), point, direction,
                              v * vP.GetEnergy() / 1_MeV, 0.);
-      auto sec = get<SECONDARIES>(c->second)->CalculateSecondaries(vP.GetEnergy() / 1_MeV,
+      auto sec = get<eSECONDARIES>(c->second)->CalculateSecondaries(vP.GetEnergy() / 1_MeV,
                                                                    loss, *comp_ptr, rnd);
       for (auto& s : sec) {
         auto E = get<PROPOSAL::Loss::ENERGY>(s) * 1_MeV;
@@ -102,7 +102,7 @@ namespace corsika::process::proposal {
 
     if (CanInteract(vP.GetPID())) {
       auto c = GetCalculator(vP, calc);
-      return get<INTERACTION>(c->second)->MeanFreePath(vP.GetEnergy() / 1_MeV) * 1_g /
+      return get<eINTERACTION>(c->second)->MeanFreePath(vP.GetEnergy() / 1_MeV) * 1_g /
              (1_cm * 1_cm);
     }
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);

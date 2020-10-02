@@ -27,7 +27,7 @@ namespace corsika::process::proposal {
   class ContinuousProcess : public process::ContinuousProcess<ContinuousProcess>,
                             ProposalProcessBase {
 
-    enum { DISPLACEMENT, SCATTERING };
+    enum { eDISPLACEMENT, eSCATTERING };
     using calc_t = std::tuple<std::unique_ptr<PROPOSAL::Displacement>,
                               std::unique_ptr<PROPOSAL::Scattering>>;
 

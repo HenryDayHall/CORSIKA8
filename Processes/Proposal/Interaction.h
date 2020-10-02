@@ -27,7 +27,7 @@ namespace corsika::process::proposal {
   //!
   class Interaction : public InteractionProcess<Interaction>, ProposalProcessBase {
 
-    enum { SECONDARIES, INTERACTION };
+    enum { eSECONDARIES, eINTERACTION };
     using calculator_t = tuple<unique_ptr<PROPOSAL::SecondariesCalculator>,
                                unique_ptr<PROPOSAL::Interaction>>;
 
