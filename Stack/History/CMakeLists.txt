@@ -1,5 +1,6 @@
 set (
   HISTORY_HEADERS
+  EventType.hpp
   Event.hpp
   HistorySecondaryProducer.hpp
   HistoryObservationPlane.hpp

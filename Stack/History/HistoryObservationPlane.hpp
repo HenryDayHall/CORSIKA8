@@ -21,21 +21,20 @@
 namespace corsika::history {
   namespace detail {
     inline auto hist_factory() {
-      /*auto h = boost::histogram::make_histogram(
-          boost::histogram::axis::regular<double, boost::histogram::axis::transform::log>{
-              130, 1e8, 1e21, "muon energy/eV"},
-          boost::histogram::axis::integer<int, boost::histogram::use_default,
-                                          boost::histogram::axis::option::growth_t>{
-              0, 10, "hadronic generation"},
-          boost::histogram::axis::regular<double, boost::histogram::axis::transform::log>{
-              130, 1e8, 1e21, "hadronic energy/eV"},
-          boost::histogram::axis::category<int, boost::histogram::use_default,
-                                           boost::histogram::axis::option::growth_t>{});*/
-
-      auto h = boost::histogram::make_histogram(
-          boost::histogram::axis::integer<int, boost::histogram::use_default,
-                                          boost::histogram::axis::option::growth_t>{
-              0, 10, "hadronic generation"});
+      namespace bh = boost::histogram;
+      namespace bha = bh::axis;
+      auto h = bh::make_histogram(
+          bha::regular<double, bha::transform::log>{130, 1e8, 1e21, "muon energy/eV"},
+          bha::integer<int, bh::use_default, bha::option::growth_t>{
+              0, 10, "hadronic interaction generation"},
+          bha::regular<double, bha::transform::log>{130, 1e8, 1e21, "hadronic energy/eV"},
+          bha::category<int, bh::use_default, bha::option::growth_t>{});
+      /*
+            auto h = bh::make_histogram(
+                bha::integer<int, bh::use_default,
+                                                bha::option::growth_t>{
+                    0, 10, "hadronic generation"});
+      */
       return h;
     }
   } // namespace detail

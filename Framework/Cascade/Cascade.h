@@ -16,6 +16,7 @@
 #include <corsika/random/UniformRealDistribution.h>
 #include <corsika/stack/SecondaryView.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/history/EventType.hpp>
 
 #include <corsika/logging/Logging.h>
 
@@ -325,8 +326,10 @@ namespace corsika::cascade {
           actual_decay_time);
       const auto sample_process = uniDist(fRNG);
       units::si::InverseTimeType inv_decay_count = units::si::InverseTimeType::zero();
-      return fProcessSequence.SelectDecay(particle, view, sample_process,
+      auto const returnCode = fProcessSequence.SelectDecay(particle, view, sample_process,
                                           inv_decay_count);
+      view.GetProjectile().GetEvent()->set_type(history::EventType::Decay);
+      return returnCode;
     }
 
     auto interaction(Particle& particle, TStackView& view) {
@@ -339,8 +342,10 @@ namespace corsika::cascade {
           current_inv_length);
       const auto sample_process = uniDist(fRNG);
       auto inv_lambda_count = units::si::InverseGrammageType::zero();
-      return fProcessSequence.SelectInteraction(particle, view, sample_process,
+      auto const returnCode = fProcessSequence.SelectInteraction(particle, view, sample_process,
                                                 inv_lambda_count);
+            view.GetProjectile().GetEvent()->set_type(history::EventType::Interaction);
+      return returnCode;
     }
 
     // but this here temporarily. Should go into dedicated file later:
