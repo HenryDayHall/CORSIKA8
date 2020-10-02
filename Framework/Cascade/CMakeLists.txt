@@ -15,6 +15,19 @@ add_library (CORSIKAcascade INTERFACE)
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAcascade ${CORSIKAcascade_NAMESPACE} ${CORSIKAcascade_HEADERS})
 
+target_link_libraries(
+  CORSIKAcascade
+  INTERFACE
+  CORSIKArandom
+  CORSIKAstackinterface
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAprocesssequence
+  CORSIKAunits
+  CORSIKAlogging
+  )
+
 # include directive for upstream code
 target_include_directories (
   CORSIKAcascade
@@ -34,19 +47,9 @@ install (
 CORSIKA_ADD_TEST(testCascade)
 target_link_libraries (
   testCascade
-  #  CORSIKAutls
-  CORSIKArandom
-  ProcessSibyll
   CORSIKAcascade
   ProcessStackInspector
   ProcessTrackingLine
   ProcessNullModel
-  CORSIKAstackinterface
-  CORSIKAprocesses
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  CORSIKAunits
   CORSIKAtesting
   )

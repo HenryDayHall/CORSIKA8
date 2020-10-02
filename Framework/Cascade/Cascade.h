@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/environment/Environment.h>
+#include <corsika/logging/Logging.h>
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/random/ExponentialDistribution.h>
 #include <corsika/random/RNGManager.h>
@@ -175,7 +176,7 @@ namespace corsika::cascade {
           currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
                                                                          next_interact);
 
-      // determine the maximum geometric step length
+      // determine the maximum geometric step length from continuous processes
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
 
@@ -250,7 +251,9 @@ namespace corsika::cascade {
             // make sure particle actually did decay if it should have done so
             if (secondaries.GetSize() == 1 &&
                 projectile.GetPID() == secondaries.GetNextParticle().GetPID())
-              throw std::runtime_error("Cascade::Step: Particle decays into itself!");
+              throw std::runtime_error(
+                  fmt::format("Cascade: {} decayed into itself!",
+                              particles::GetName(projectile.GetPID())));
           }
 
           fProcessSequence.DoSecondaries(secondaries);
@@ -263,20 +266,31 @@ namespace corsika::cascade {
         } else { // step-length limitation within volume
 
           std::cout << "step-length limitation" << std::endl;
-          fProcessSequence.DoSecondaries(secondaries);
+          // no extra physics happens here. just proceed to next step.
         }
 
         [[maybe_unused]] auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
               fEnvironment.GetUniverse()->GetContainingNode(vParticle.GetPosition());
+          C8LOG_TRACE(fmt::format(
+              "Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
+              fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode)));
           return numericalNodeAfterStep == currentLogicalNode;
         };
 
         assert(assertion()); // numerical and logical nodes don't match
-      } else {               // boundary crossing, step is limited by volume boundary
+
+      } else { // boundary crossing, step is limited by volume boundary
+
         std::cout << "boundary crossing! next node = " << nextVol << std::endl;
         vParticle.SetNode(nextVol);
-        // DoBoundary may delete the particle (or not)
+        /*
+          DoBoundary may delete the particle (or not)
+
+          small caveat: any changes to vParticle, or even the production
+          of new secondaries is currently not passed to ParticleCut,
+          thus, particles outside the desired phase space may be produced.
+        */
         fProcessSequence.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
       }
     }

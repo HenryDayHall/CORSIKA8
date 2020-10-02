@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -23,20 +24,13 @@ namespace corsika::process {
 
    */
 
-  template <typename derived>
-  struct SecondariesProcess {
-
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
+  template <typename TDerived>
+  struct SecondariesProcess : public BaseProcess<TDerived> {
 
     /// here starts the interface-definition part
-    // -> enforce derived to implement DoSecondaries...
+    // -> enforce TDerived to implement DoSecondaries...
     template <typename TSecondaries>
     inline EProcessReturn DoSecondaries(TSecondaries&);
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const SecondariesProcess<T>* impl);
 
 } // namespace corsika::process

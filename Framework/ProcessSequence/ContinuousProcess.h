@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/units/PhysicalUnits.h>
 
@@ -22,23 +23,17 @@ namespace corsika::process {
 
    */
 
-  template <typename derived>
-  struct ContinuousProcess {
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
+  template <typename TDerived>
+  struct ContinuousProcess : public BaseProcess<TDerived> {
 
     // here starts the interface part
-    // -> enforce derived to implement DoContinuous...
-    template <typename Particle, typename Track>
-    EProcessReturn DoContinuous(Particle&, Track const&) const;
+    // -> enforce TDerived to implement DoContinuous...
+    template <typename TParticle, typename TTrack>
+    EProcessReturn DoContinuous(TParticle&, TTrack const&) const;
 
-    // -> enforce derived to implement MaxStepLength...
-    template <typename Particle, typename Track>
-    units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const;
+    // -> enforce TDerived to implement MaxStepLength...
+    template <typename TParticle, typename TTrack>
+    units::si::LengthType MaxStepLength(TParticle const& p, TTrack const& track) const;
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const ContinuousProcess<T>* impl);
 
 } // namespace corsika::process

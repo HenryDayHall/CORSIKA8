@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -23,16 +24,15 @@ namespace corsika::process {
 
    */
 
-  template <typename derived>
-  struct InteractionProcess {
+  template <typename TDerived>
+  struct InteractionProcess : public BaseProcess<TDerived> {
 
-    derived& GetRef() { return static_cast<derived&>(*this); }
-    const derived& GetRef() const { return static_cast<const derived&>(*this); }
+    using BaseProcess<TDerived>::GetRef;
 
     /// here starts the interface-definition part
-    // -> enforce derived to implement DoInteraction...
-    template <typename Particle>
-    EProcessReturn DoInteraction(Particle&);
+    // -> enforce TDerived to implement DoInteraction...
+    template <typename TParticle>
+    EProcessReturn DoInteraction(TParticle&);
 
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
@@ -42,9 +42,5 @@ namespace corsika::process {
       return 1. / GetRef().GetInteractionLength(p);
     }
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const InteractionProcess<T>* impl);
 
 } // namespace corsika::process

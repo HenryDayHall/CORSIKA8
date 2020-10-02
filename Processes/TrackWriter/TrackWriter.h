@@ -25,7 +25,9 @@ namespace corsika::process::track_writer {
     corsika::process::EProcessReturn DoContinuous(Particle&, Track&);
 
     template <typename Particle, typename Track>
-    corsika::units::si::LengthType MaxStepLength(Particle&, Track&);
+    corsika::units::si::LengthType MaxStepLength(Particle&, Track&) {
+      return units::si::meter * std::numeric_limits<double>::infinity();
+    }
 
   private:
     std::string const fFilename;
