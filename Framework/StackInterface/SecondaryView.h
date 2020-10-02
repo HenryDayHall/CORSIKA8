@@ -428,7 +428,7 @@ namespace corsika::stack {
      * itself.
      */
     template <typename Particle>
-    DefaultSecondaryProducer([[maybe_unused]] Particle const&) {
+    DefaultSecondaryProducer(Particle const&) {
       C8LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
     }
   };
