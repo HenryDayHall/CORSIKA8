@@ -43,7 +43,7 @@ namespace corsika::process::proposal {
                               *frac_iter);
         ++frac_iter;
       }
-      media[ncarg] = PROPOSAL::Medium(
+      media[ncarg->hash()] = PROPOSAL::Medium(
           "Modified Air", PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
           PROPOSAL::Air().GetA(), PROPOSAL::Air().GetM(), PROPOSAL::Air().GetX0(),
           PROPOSAL::Air().GetX1(), PROPOSAL::Air().GetD0(), 1.0, comp_vec);
@@ -64,10 +64,9 @@ namespace corsika::process::proposal {
           "table directory. ");
     }
   }
-
+  
   size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const noexcept {
-    return std::hash<const environment::NuclearComposition*>{}(p.first) ^
-           std::hash<particles::Code>{}(p.second);
+    return p.first ^ std::hash<particles::Code>{}(p.second);
   }
 
 } // namespace corsika::process::proposal

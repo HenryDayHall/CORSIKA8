@@ -73,7 +73,7 @@ namespace corsika::process::proposal {
                                 //!< will be handeled continuously.
     corsika::random::RNG& fRNG; //!< random number generator used by proposal
 
-    std::unordered_map<const environment::NuclearComposition*, PROPOSAL::Medium>
+    std::unordered_map<std::size_t, PROPOSAL::Medium>
         media; //!< maps nuclear composition from univers to media to produce
                //!< crosssections, which requires further ionization constants.
 
@@ -89,7 +89,7 @@ namespace corsika::process::proposal {
     //!
     bool CanInteract(particles::Code pcode) const;
 
-    using calc_key_t = std::pair<const environment::NuclearComposition*, particles::Code>;
+    using calc_key_t = std::pair<std::size_t, particles::Code>;
 
     //!
     //! Hash to store interpolation tables related to a pair of particle and nuclear
@@ -112,8 +112,8 @@ namespace corsika::process::proposal {
     //!
     template <typename Particle, typename Calculators>
     auto GetCalculator(Particle& vP, Calculators& calc) {
-      auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
-      auto calc_it = calc.find(std::make_pair(&comp, vP.GetPID()));
+      const auto& comp = vP.GetNode()->GetModelProperties().GetNuclearComposition();
+      auto calc_it = calc.find(std::make_pair(comp.hash(), vP.GetPID()));
       if (calc_it != calc.end()) return calc_it;
       BuildCalculator(vP.GetPID(), comp);
       return GetCalculator(vP, calc);
