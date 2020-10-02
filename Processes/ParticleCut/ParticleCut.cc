@@ -26,9 +26,9 @@ namespace corsika::process {
       if (vP.GetPID() == particles::Code::Nucleus) {
         // calculate energy per nucleon
         auto const ElabNuc = energyLab / vP.GetNuclearA();
-        return (ElabNuc < eCut_);
+        return (ElabNuc <= eCut_);
       } else {
-        return (energyLab < eCut_);
+        return (energyLab <= eCut_);
       }
     }
 
