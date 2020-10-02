@@ -23,18 +23,9 @@ namespace corsika::history {
     inline auto hist_factory() {
       namespace bh = boost::histogram;
       namespace bha = bh::axis;
-      auto h = bh::make_histogram(
-          bha::regular<double, bha::transform::log>{130, 1e8, 1e21, "muon energy/eV"},
-          bha::integer<int, bh::use_default, bha::option::growth_t>{
-              0, 10, "hadronic interaction generation"},
-          bha::regular<double, bha::transform::log>{130, 1e8, 1e21, "hadronic energy/eV"},
-          bha::category<int, bh::use_default, bha::option::growth_t>{});
-      /*
-            auto h = bh::make_histogram(
-                bha::integer<int, bh::use_default,
-                                                bha::option::growth_t>{
-                    0, 10, "hadronic generation"});
-      */
+      auto h =
+          bh::make_histogram(bha::integer<int, bh::use_default, bha::option::growth_t>{
+              0, 10, "hadronic generation"});
       return h;
     }
   } // namespace detail
@@ -43,8 +34,6 @@ namespace corsika::history {
       : public corsika::process::ContinuousProcess<HistoryObservationPlane> {
   public:
     HistoryObservationPlane(setup::Stack const&, geometry::Plane const&, bool = true);
-
-    //~ void save(std::string const&);
 
     corsika::units::si::LengthType MaxStepLength(
         corsika::setup::Stack::ParticleType const&,

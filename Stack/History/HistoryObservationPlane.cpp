@@ -73,9 +73,10 @@ void HistoryObservationPlane::fillHistoryHistogram(
 
   int intCounter = 0;
   while (event) {
+    if (event->eventType() == EventType::Interaction) intCounter++;
     event = event->parentEvent().get();
-    intCounter++;
   }
+
   histogram_(intCounter);
 }
 
