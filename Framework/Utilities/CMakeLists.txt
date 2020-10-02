@@ -13,7 +13,6 @@ else ()
   endif()
 endif ()
 
-
 #
 # library setup
 #
@@ -35,6 +34,25 @@ set (
   )
 
 set (
+  UTILITIES_DEPENDS
+  CORSIKAgeometry
+  CORSIKAunits
+  C8::ext::boost # so far only for MetaProgramming
+  C8::ext::eigen3 # for COMboost
+  )
+
+if (TARGET cnpy)
+  LIST (APPEND
+    UTILITIES_HEADERS
+    SaveBoostHistogram.hpp
+    )
+  LIST (APPEND
+    UTILITIES_DEPENDS
+    cnpy # for SaveBoostHistogram
+    )
+endif (TARGET cnpy)
+  
+set (
   UTILITIES_NAMESPACE
   corsika/utl
   )
@@ -53,10 +71,7 @@ set_target_properties (
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   CORSIKAutilities
-  CORSIKAgeometry
-  CORSIKAunits
-  C8::ext::boost # so far only for MetaProgramming
-  C8::ext::eigen3 # for COMboost
+  ${UTILITIES_DEPENDS}
   )
 
 target_include_directories (
@@ -89,3 +104,12 @@ target_link_libraries (
   CORSIKAutilities
   CORSIKAtesting
 )
+
+if (TARGET cnpy)
+  CORSIKA_ADD_TEST(testSaveBoostHistogram)
+  target_link_libraries (
+    testSaveBoostHistogram
+    CORSIKAutilities
+    CORSIKAtesting
+    )
+endif (TARGET cnpy)

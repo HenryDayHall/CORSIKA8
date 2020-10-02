@@ -143,8 +143,17 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
     CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));
-    CHECK(view.GetSize() == 14);
-    CHECK(sumCharge(view) == 2);
+
+    /***********************************
+     It as turned out already two times (#291 and #307) that the detailed output of
+    QGSJetII event generation depends on the gfortran version used. This is not reliable
+    and cannot be tested in a unit test here. One related problem was already found (#291)
+    and is realted to undefined behaviour in the evaluation of functions in logical
+    expressions. It is not clear if #307 is the same issue.
+
+     CHECK(view.GetSize() == 14);
+     CHECK(sumCharge(view) == 2);
+    ************************************/
     auto const secMomSum = sumMomentum(view, projectileMomentum.GetCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
           Approx(0).margin(1e-2));

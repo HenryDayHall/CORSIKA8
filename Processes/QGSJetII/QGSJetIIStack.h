@@ -86,7 +86,7 @@ namespace corsika::process::qgsjetII {
   public:
     void SetParticleData(const int vID, const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType vM) {
+                         const corsika::units::si::HEPMassType) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
@@ -95,7 +95,7 @@ namespace corsika::process::qgsjetII {
     void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
                          const int vID, const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType vM) {
+                         const corsika::units::si::HEPMassType) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);

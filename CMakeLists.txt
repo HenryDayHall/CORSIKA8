@@ -93,6 +93,9 @@ endif ()
 if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   find_package (Perl REQUIRED)
 
+  # compile coverage under -O2 to remove unused functions
+  add_compile_options ("-O2")
+  
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
   set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/ThirdParty/lcov/bin")
   # collect coverage data
