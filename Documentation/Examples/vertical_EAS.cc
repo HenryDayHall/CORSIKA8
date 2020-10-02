@@ -185,8 +185,8 @@ int main(int argc, char** argv) {
 
   // PROPOSAL processs proposal{...};
   process::particle_cut::ParticleCut cut{60_GeV, false, true};
-  process::proposal::Interaction proposal(env, cut);
-  process::proposal::ContinuousProcess em_continuous(env, cut);
+  process::proposal::Interaction proposal(env, cut.GetECut());
+  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);

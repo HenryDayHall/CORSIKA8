@@ -131,8 +131,8 @@ int main(int argc, char** argv) {
 
   // PROPOSAL processs proposal{...};
   process::particle_cut::ParticleCut cut(10_GeV, false, true);
-  process::proposal::Interaction proposal(env, cut);
-  process::proposal::ContinuousProcess em_continuous(env, cut);
+  process::proposal::Interaction proposal(env, cut.GetECut());
+  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
