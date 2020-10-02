@@ -72,7 +72,8 @@ namespace corsika::process::proposal {
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
                                       vP.GetPosition().GetY() / 1_cm,
                                       vP.GetPosition().GetZ() / 1_cm);
-      auto d = vP.GetDirection().GetComponents();
+      auto vP_dir = vP.GetDirection();
+      auto d = vP_dir.GetComponents();
       auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
                                           d.GetZ().magnitude());
       auto loss = make_tuple(static_cast<int>(type), point, direction,
@@ -85,13 +86,9 @@ namespace corsika::process::proposal {
             get<PROPOSAL::Loss::DIRECTION>(s).GetX() * E,
             get<PROPOSAL::Loss::DIRECTION>(s).GetY() * E,
             get<PROPOSAL::Loss::DIRECTION>(s).GetZ() * E);
-        auto p = corsika::stack::MomentumVector(
-            corsika::geometry::RootCoordinateSystem::GetInstance()
-                .GetRootCoordinateSystem(),
-            vec);
+        auto p = corsika::stack::MomentumVector(vP_dir.GetCoordinateSystem(), vec);
         auto sec_code = corsika::particles::ConvertFromPDG(
             static_cast<particles::PDGCode>(get<PROPOSAL::Loss::TYPE>(s)));
-	std::cout << " proposal secondary: " << sec_code << " " << E/1_GeV << std::endl;
         vP.AddSecondary(make_tuple(sec_code, E, p, vP.GetPosition(), vP.GetTime()));
       }
     }

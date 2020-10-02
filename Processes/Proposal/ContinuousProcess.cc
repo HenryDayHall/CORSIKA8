@@ -56,7 +56,8 @@ namespace corsika::process::proposal {
     auto c = GetCalculator(vP, calc);
 
     // Cast corsika vector to proposal vector
-    auto d = vP.GetDirection().GetComponents();
+    auto vP_dir = vP.GetDirection();
+    auto d = vP_dir.GetComponents();
     auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
                                         d.GetZ().magnitude());
 
@@ -79,9 +80,8 @@ namespace corsika::process::proposal {
     // scattering
     auto vec = corsika::geometry::QuantityVector(
         final_dir.GetX() * E_f, final_dir.GetY() * E_f, final_dir.GetZ() * E_f);
-    vP.SetMomentum(corsika::stack::MomentumVector(
-        corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem(),
-        vec));
+    vP.SetMomentum(
+        corsika::stack::MomentumVector(vP_dir.GetCoordinateSystem(), vec));
   }
 
   template <>
@@ -90,7 +90,7 @@ namespace corsika::process::proposal {
     using namespace corsika::units::si; // required for operator::_MeV
 
     if (!CanInteract(vP.GetPID())) return process::EProcessReturn::eOk;
-    if (vT.GetLength()==0_m) return process::EProcessReturn::eOk;
+    if (vT.GetLength() == 0_m) return process::EProcessReturn::eOk;
 
     // calculate passed grammage
     auto dX = vP.GetNode()->GetModelProperties().IntegratedGrammage(vT, vT.GetLength());
@@ -138,7 +138,7 @@ namespace corsika::process::proposal {
     // important, the important fact is that its E_kin is zero
     // afterwards.
     //
-    auto energy_lim = std::max(0.9 * vP.GetEnergy(), 0.99*emCut_);
+    auto energy_lim = std::max(0.9 * vP.GetEnergy(), 0.99 * emCut_);
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);
