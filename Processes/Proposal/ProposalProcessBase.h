@@ -9,9 +9,6 @@
 
 namespace corsika::process::proposal {
 
-  using namespace corsika::units::si;
-  using namespace std::placeholders;
-
   //!
   //! Particles which can be handled by proposal. That means they can be
   //! propagated and decayed if they decays.
@@ -40,20 +37,23 @@ namespace corsika::process::proposal {
   //! Crosssection factories for different particle types.
   //!
   template <typename T>
-  static auto cross_builder = [](PROPOSAL::Medium& m, corsika::units::si::HEPEnergyType emCut) {
-    auto p_cut = std::make_shared<const PROPOSAL::EnergyCutSettings>(
-        emCut / 1_MeV, 1, true);
-    return PROPOSAL::DefaultCrossSections<T>::template Get<std::false_type>(T(), m, p_cut,
-                                                                            true);
-  };
+  static auto cross_builder =
+      [](PROPOSAL::Medium& m, corsika::units::si::HEPEnergyType emCut) {
+        using namespace corsika::units::si;
+        auto p_cut =
+            std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, true);
+        return PROPOSAL::DefaultCrossSections<T>::template Get<std::false_type>(
+            T(), m, p_cut, true);
+      };
 
   //!
   //! PROPOSAL default crosssections are maped to corresponding corsika particle
   //! code.
   //!
-  static std::map<particles::Code, std::function<PROPOSAL::crosssection_list_t<
-                                       PROPOSAL::ParticleDef, PROPOSAL::Medium>(
-                                       PROPOSAL::Medium&, corsika::units::si::HEPEnergyType)>>
+  static std::map<particles::Code,
+                  std::function<PROPOSAL::crosssection_list_t<PROPOSAL::ParticleDef,
+                                                              PROPOSAL::Medium>(
+                      PROPOSAL::Medium&, corsika::units::si::HEPEnergyType)>>
       cross = {{particles::Code::Gamma, cross_builder<PROPOSAL::GammaDef>},
                {particles::Code::Electron, cross_builder<PROPOSAL::EMinusDef>},
                {particles::Code::Positron, cross_builder<PROPOSAL::EPlusDef>},
@@ -68,9 +68,10 @@ namespace corsika::process::proposal {
   //!
   class ProposalProcessBase {
   protected:
-    corsika::units::si::HEPEnergyType emCut_; //!< Stochastic losses smaller than the given cut
-                                              //!< will be handeled continuously.
-    corsika::random::RNG& fRNG;     //!< random number generator used by proposal
+    corsika::units::si::HEPEnergyType
+        emCut_;                 //!< Stochastic losses smaller than the given cut
+                                //!< will be handeled continuously.
+    corsika::random::RNG& fRNG; //!< random number generator used by proposal
 
     std::unordered_map<const environment::NuclearComposition*, PROPOSAL::Medium>
         media; //!< maps nuclear composition from univers to media to produce

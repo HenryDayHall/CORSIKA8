@@ -20,8 +20,6 @@
 
 namespace corsika::process::proposal {
 
-  using namespace corsika::units::si;
-
   void ContinuousProcess::BuildCalculator(particles::Code code,
                                           environment::NuclearComposition const& comp) {
     // search crosssection builder for given particle
@@ -45,13 +43,15 @@ namespace corsika::process::proposal {
 
   template <>
   ContinuousProcess::ContinuousProcess(setup::SetupEnvironment const& _env,
-				       corsika::units::si::HEPEnergyType _emCut)
+                                       corsika::units::si::HEPEnergyType _emCut)
       : ProposalProcessBase(_env, _emCut) {}
 
   template <>
   void ContinuousProcess::Scatter(setup::Stack::ParticleType& vP,
-                                  HEPEnergyType const& loss,
-                                  GrammageType const& grammage) {
+                                  corsika::units::si::HEPEnergyType const& loss,
+                                  corsika::units::si::GrammageType const& grammage) {
+    using namespace corsika::units::si; // required for operator::_MeV
+
     // Get or build corresponding calculators
     auto c = GetCalculator(vP, calc);
 
@@ -87,6 +87,8 @@ namespace corsika::process::proposal {
   template <>
   EProcessReturn ContinuousProcess::DoContinuous(setup::Stack::ParticleType& vP,
                                                  setup::Trajectory const& vT) {
+    using namespace corsika::units::si; // required for operator::_MeV
+
     if (!CanInteract(vP.GetPID())) return process::EProcessReturn::eOk;
 
     // calculate passed grammage
@@ -100,15 +102,14 @@ namespace corsika::process::proposal {
                         1_MeV;
     auto dE = vP.GetEnergy() - final_energy;
     energy_lost_ += dE;
-    
+
     // if the particle has a charge take multiple scattering into account
     if (vP.GetChargeNumber() != 0) Scatter(vP, dE, dX);
 
     // Update the energy and absorbe the particle if it's below the energy
     // threshold, because it will no longer propagated.
     vP.SetEnergy(final_energy);
-    if (vP.GetEnergy() <= emCut_)
-      return process::EProcessReturn::eParticleAbsorbed;
+    if (vP.GetEnergy() <= emCut_) return process::EProcessReturn::eParticleAbsorbed;
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
   }
@@ -116,13 +117,16 @@ namespace corsika::process::proposal {
   template <>
   units::si::LengthType ContinuousProcess::MaxStepLength(
       setup::Stack::ParticleType const& vP, setup::Trajectory const& vT) {
+    using namespace corsika::units::si; // required for operator::_MeV
+
     if (!CanInteract(vP.GetPID()))
       return units::si::meter * std::numeric_limits<double>::infinity();
 
     // Limit the step size of a conitnous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
     // in any case: never go below emCut_
-    auto energy_lim = std::max(0.9 * vP.GetEnergy(), emCut_);;
+    auto energy_lim = std::max(0.9 * vP.GetEnergy(), emCut_);
+    ;
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);
@@ -135,12 +139,14 @@ namespace corsika::process::proposal {
   }
 
   void ContinuousProcess::ShowResults() const {
+    using namespace corsika::units::si; // required for operator::_MeV
     std::cout << " ******************************" << std::endl
               << " PROCESS::ContinuousProcess: " << std::endl;
     std::cout << " energy lost dE (GeV)      :  " << energy_lost_ / 1_GeV << std::endl;
   }
 
   void ContinuousProcess::Reset() {
+    using namespace corsika::units::si; // required for operator::_MeV
     energy_lost_ = 0_GeV;
   }
 

@@ -20,8 +20,6 @@
 #include <tuple>
 
 namespace corsika::process::proposal {
-  using namespace corsika::environment;
-  using namespace corsika::units::si;
 
   template <>
   Interaction::Interaction(setup::SetupEnvironment const& _env,
@@ -53,6 +51,8 @@ namespace corsika::process::proposal {
   template <>
   corsika::process::EProcessReturn Interaction::DoInteraction(
       setup::StackView::StackIterator& vP) {
+    using namespace corsika::units::si; // required for operator::_MeV
+
     if (CanInteract(vP.GetPID())) {
       // Get or build corresponding calculators
       auto c = GetCalculator(vP, calc);
@@ -100,6 +100,8 @@ namespace corsika::process::proposal {
   template <>
   corsika::units::si::GrammageType Interaction::GetInteractionLength(
       setup::Stack::StackIterator const& vP) {
+    using namespace corsika::units::si; // required for operator::_MeV
+
     if (CanInteract(vP.GetPID())) {
       auto c = GetCalculator(vP, calc);
       return get<INTERACTION>(c->second)->MeanFreePath(vP.GetEnergy() / 1_MeV) * 1_g /
