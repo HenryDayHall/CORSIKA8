@@ -405,6 +405,8 @@ namespace corsika::stack {
     using View = SecondaryView<T1, T2, DefaultSecondaryProducer>;
 
   public:
+    static bool constexpr has_event{false};
+
     /**
      * Method is called after a new secondary has been created on the
      * SecondaryView. Extra logic can be introduced here.

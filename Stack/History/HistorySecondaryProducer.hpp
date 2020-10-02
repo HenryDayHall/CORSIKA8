@@ -13,6 +13,8 @@
 
 #include <corsika/logging/Logging.h>
 
+#include <boost/type_index.hpp>
+
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -24,6 +26,7 @@ namespace corsika::history {
   class HistorySecondaryProducer {
   public:
     EventPtr event_;
+    static bool constexpr has_event{true};
 
   public:
     template <typename Particle>
