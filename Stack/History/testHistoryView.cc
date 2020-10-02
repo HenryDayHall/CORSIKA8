@@ -64,6 +64,17 @@ using TheTestStackView =
 using TestStackView =
     TheTestStackView; // history::HistorySecondaryProducer<TheTestStackView>;
 
+template <typename Event>
+int count_generations(Event const* event) {
+  int genCounter = 0;
+  while (event) {
+    event = event->parentEvent().get();
+    genCounter++;
+  }
+
+  return genCounter;
+}
+
 TEST_CASE("HistoryStackExtension", "[stack]") {
 
   logging::SetLevel(logging::level::debug);
@@ -85,6 +96,7 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
   CHECK(stack.getEntries() == 1);
   corsika::history::EventPtr evt = p0.GetEvent();
   CHECK(evt == nullptr);
+  CHECK(count_generations(evt.get()) == 0);
 
   SECTION("interface test, view") {
 
@@ -108,10 +120,12 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
       CHECK(sec.GetParentEventIndex() == i);
       CHECK(sec.GetEvent() != nullptr);
       CHECK(sec.GetEvent()->parentEvent() == nullptr);
+      CHECK(count_generations(sec.GetEvent().get()) == 1);
     }
 
     // read 1st genertion particle particle
     auto p1 = stack.GetNextParticle();
+    CHECK(count_generations(p1.GetEvent().get()) == 1);
 
     TestStackView hview1(p1);
 
@@ -130,6 +144,8 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
       CHECK(sec.GetParentEventIndex() == i);
       CHECK(sec.GetEvent()->parentEvent() == ev1);
       CHECK(sec.GetEvent()->parentEvent()->parentEvent() == ev0);
+
+      CHECK(count_generations(sec.GetEvent().get()) == 2);
 
       CHECK((stack.begin() + sec.GetEvent()->projectileIndex()).GetEvent() ==
             sec.GetEvent()->parentEvent());
@@ -159,6 +175,8 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
       CHECK(sec.GetEvent()->parentEvent() == ev2);
       CHECK(sec.GetEvent()->parentEvent()->parentEvent() == ev1);
       CHECK(sec.GetEvent()->parentEvent()->parentEvent()->parentEvent() == ev0);
+
+      CHECK(count_generations(sec.GetEvent().get()) == 3);
     }
 
     /*
