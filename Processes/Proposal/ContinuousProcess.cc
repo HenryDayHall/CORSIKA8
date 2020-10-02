@@ -56,7 +56,8 @@ namespace corsika::process::proposal {
     auto c = GetCalculator(vP, calc);
 
     // Cast corsika vector to proposal vector
-    auto d = vP.GetDirection().GetComponents();
+    auto vP_dir = vP.GetDirection();
+    auto d = vP_dir.GetComponents();
     auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
                                         d.GetZ().magnitude());
 
@@ -68,7 +69,7 @@ namespace corsika::process::proposal {
     for (auto& it : rnd) it = distr(fRNG);
 
     // calculate deflection based on particle energy, loss
-    auto [mean_dir, final_dir] = get<SCATTERING>(c->second)->Scatter(
+    auto [mean_dir, final_dir] = get<eSCATTERING>(c->second)->Scatter(
         grammage / 1_g * square(1_cm), vP.GetEnergy() / 1_MeV, E_f / 1_MeV, direction,
         rnd);
 
@@ -79,9 +80,8 @@ namespace corsika::process::proposal {
     // scattering
     auto vec = corsika::geometry::QuantityVector(
         final_dir.GetX() * E_f, final_dir.GetY() * E_f, final_dir.GetZ() * E_f);
-    vP.SetMomentum(corsika::stack::MomentumVector(
-        corsika::geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem(),
-        vec));
+    vP.SetMomentum(
+        corsika::stack::MomentumVector(vP_dir.GetCoordinateSystem(), vec));
   }
 
   template <>
@@ -90,7 +90,7 @@ namespace corsika::process::proposal {
     using namespace corsika::units::si; // required for operator::_MeV
 
     if (!CanInteract(vP.GetPID())) return process::EProcessReturn::eOk;
-    if (vT.GetLength()==0_m) return process::EProcessReturn::eOk;
+    if (vT.GetLength() == 0_m) return process::EProcessReturn::eOk;
 
     // calculate passed grammage
     auto dX = vP.GetNode()->GetModelProperties().IntegratedGrammage(vT, vT.GetLength());
@@ -98,7 +98,7 @@ namespace corsika::process::proposal {
     // Get or build corresponding track integral calculator and solve the
     // integral
     auto c = GetCalculator(vP, calc);
-    auto final_energy = get<DISPLACEMENT>(c->second)->UpperLimitTrackIntegral(
+    auto final_energy = get<eDISPLACEMENT>(c->second)->UpperLimitTrackIntegral(
                             vP.GetEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
     auto dE = vP.GetEnergy() - final_energy;
@@ -144,11 +144,11 @@ namespace corsika::process::proposal {
     // important, the important fact is that its E_kin is zero
     // afterwards.
     //
-    auto energy_lim = std::max(0.9 * vP.GetEnergy(), 0.99*emCut_);
+    auto energy_lim = std::max(0.9 * vP.GetEnergy(), 0.99 * emCut_);
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);
-    auto grammage = get<DISPLACEMENT>(c->second)->SolveTrackIntegral(
+    auto grammage = get<eDISPLACEMENT>(c->second)->SolveTrackIntegral(
                         vP.GetEnergy() / 1_MeV, energy_lim / 1_MeV) *
                     1_g / square(1_cm);
 
