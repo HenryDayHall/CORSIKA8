@@ -25,7 +25,7 @@ If you wish to develop new features in `corsika`, you will also need to install
 some additional dependencies so you can run our unit tests. These can be
 installed with
 
-    pip install --user -e .[test]
+    pip install --user -e '.[test]'
 
 Once that is completed, you can run the unit tests directory from the `corsika` directory
 
