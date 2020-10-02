@@ -327,9 +327,7 @@ namespace corsika::cascade {
       units::si::InverseTimeType inv_decay_count = units::si::InverseTimeType::zero();
       auto const returnCode =
           fProcessSequence.SelectDecay(particle, view, sample_process, inv_decay_count);
-      if constexpr (TStackView::has_event) {
-        view.GetProjectile().GetEvent()->setEventType(history::EventType::Decay);
-      }
+      SetEventType(view, history::EventType::Decay);
       return returnCode;
     }
 
@@ -345,10 +343,14 @@ namespace corsika::cascade {
       auto inv_lambda_count = units::si::InverseGrammageType::zero();
       auto const returnCode = fProcessSequence.SelectInteraction(
           particle, view, sample_process, inv_lambda_count);
-      if constexpr (TStackView::has_event) {
-        view.GetProjectile().GetEvent()->setEventType(history::EventType::Interaction);
-      }
+      SetEventType(view, history::EventType::Interaction);
       return returnCode;
+    }
+
+    void SetEventType(TStackView& view, history::EventType eventType) {
+      if constexpr (TStackView::has_event) {
+        for (auto&& sec : view) { sec.GetEvent()->setEventType(eventType); }
+      }
     }
 
     // but this here temporarily. Should go into dedicated file later:
