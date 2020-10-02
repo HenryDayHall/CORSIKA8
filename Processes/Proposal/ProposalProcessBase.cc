@@ -27,8 +27,8 @@ namespace corsika::process::proposal {
   }
 
   ProposalProcessBase::ProposalProcessBase(setup::SetupEnvironment const& _env,
-                                           particle_cut::ParticleCut& _cut)
-      : cut(_cut)
+                                           corsika::units::si::HEPEnergyType _emCut)
+      : emCut_(_emCut)
       , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {
     auto all_compositions = std::vector<const environment::NuclearComposition*>();
     _env.GetUniverse()->walk([&](auto& vtn) {

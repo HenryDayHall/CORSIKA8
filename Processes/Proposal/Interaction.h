@@ -13,7 +13,6 @@
 #include <corsika/environment/Environment.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/InteractionProcess.h>
-#include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/proposal/ProposalProcessBase.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/random/UniformRealDistribution.h>
@@ -48,7 +47,7 @@ namespace corsika::process::proposal {
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, particle_cut::ParticleCut& cut);
+    Interaction(TEnvironment const& env, corsika::units::si::HEPEnergyType emCut);
 
     //!
     //! Calculate the rates for the different targets and interactions. Sample a

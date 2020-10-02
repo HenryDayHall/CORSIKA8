@@ -8,7 +8,6 @@
 
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
@@ -26,8 +25,8 @@ namespace corsika::process::proposal {
 
   template <>
   Interaction::Interaction(setup::SetupEnvironment const& _env,
-                           particle_cut::ParticleCut& _cut)
-      : ProposalProcessBase(_env, _cut) {}
+                           corsika::units::si::HEPEnergyType _emCut)
+      : ProposalProcessBase(_env, _emCut) {}
 
   void Interaction::BuildCalculator(particles::Code code,
                                     environment::NuclearComposition const& comp) {
@@ -39,7 +38,7 @@ namespace corsika::process::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto c = p_cross->second(media.at(&comp), cut);
+    auto c = p_cross->second(media.at(&comp), emCut_);
 
     // Look which interactions take place and build the corresponding
     // interaction and secondarie builder. The interaction integral will

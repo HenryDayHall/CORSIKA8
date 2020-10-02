@@ -8,7 +8,6 @@
 
 #include <PROPOSAL/PROPOSAL.h>
 #include <corsika/environment/IMediumModel.h>
-#include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/setup/SetupEnvironment.h>
@@ -33,7 +32,7 @@ namespace corsika::process::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto c = p_cross->second(media.at(&comp), cut);
+    auto c = p_cross->second(media.at(&comp), emCut_);
 
     // Build displacement integral and scattering object and interpolate them too and
     // saved in the calc map by a key build out of a hash of composed of the component and
@@ -46,8 +45,8 @@ namespace corsika::process::proposal {
 
   template <>
   ContinuousProcess::ContinuousProcess(setup::SetupEnvironment const& _env,
-                                       particle_cut::ParticleCut& _cut)
-      : ProposalProcessBase(_env, _cut) {}
+				       corsika::units::si::HEPEnergyType _emCut)
+      : ProposalProcessBase(_env, _emCut) {}
 
   template <>
   void ContinuousProcess::Scatter(setup::Stack::ParticleType& vP,
@@ -108,7 +107,7 @@ namespace corsika::process::proposal {
     // Update the energy and absorbe the particle if it's below the energy
     // threshold, because it will no longer propagated.
     vP.SetEnergy(final_energy);
-    if (vP.GetEnergy() <= cut.GetECut())
+    if (vP.GetEnergy() <= emCut_)
       return process::EProcessReturn::eParticleAbsorbed;
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
@@ -122,7 +121,8 @@ namespace corsika::process::proposal {
 
     // Limit the step size of a conitnous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
-    auto energy_lim = 0.9 * vP.GetEnergy();
+    // in any case: never go below emCut_
+    auto energy_lim = std::max(0.9 * vP.GetEnergy(), emCut_);;
 
     // solving the track integral for giving energy lim
     auto c = GetCalculator(vP, calc);
