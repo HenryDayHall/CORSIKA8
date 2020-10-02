@@ -65,15 +65,17 @@ those; we test with Pythia version 8.235.
 
 On a bare Ubuntu 18.04, just add:
 ```
-sudo apt install cmake g++ git
+sudo apt install binutils gfortran make python3 cmake gcc g++ git libz-dev libspdlog-dev libeigen3-dev libboost-iostreams-dev
 ```
-add ```libeigen3-dev``` if you want to use system version of eigen3.
+
+Furthermore these packages are also reqommended:
+add ```gcc ssh-client less rsync libboost-dev```
 
 If you work with FreeBSD, run:
 ```
-pkg install git cmake python3 flang
+pkg install git cmake python3 flang eigen
 ```
-or add ```boost-libs``` and ```eigen``` if you want to use the system versions. 
+or add ```boost-libs``` if you want to use the system versions. 
 
 ### Compiling
 
