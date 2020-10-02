@@ -38,7 +38,7 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
 
-#include <corsika/history/HistoryObservationPlane.hpp>
+#include <corsika/stack/history/HistoryObservationPlane.hpp>
 
 #include <iomanip>
 #include <iostream>

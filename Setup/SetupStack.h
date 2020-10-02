@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <corsika/history/HistoryStackExtension.h>
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
-#include <corsika/history/HistorySecondaryProducer.hpp>
+#include <corsika/stack/history/HistorySecondaryProducer.hpp>
+#include <corsika/stack/history/HistoryStackExtension.hpp>
 
 #include <corsika/setup/SetupEnvironment.h>
 

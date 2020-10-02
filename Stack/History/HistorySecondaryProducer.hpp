@@ -9,7 +9,7 @@
 #pragma once
 
 #include <corsika/stack/SecondaryView.h>
-#include <corsika/history/Event.hpp>
+#include <corsika/stack/history/Event.hpp>
 
 #include <corsika/logging/Logging.h>
 
@@ -19,31 +19,17 @@
 
 namespace corsika::history {
 
+  //! mix-in class for SecondaryView that fills secondaries into an \class Event
   template <class T1, template <class> class T2>
   class HistorySecondaryProducer {
-
-    using TView = corsika::stack::SecondaryView<T1, T2, HistorySecondaryProducer>;
-
   public:
     EventPtr event_;
 
   public:
-    HistorySecondaryProducer() :
-        event_{std::make_shared<Event>()} {
-      C8LOG_TRACE("HistorySecondaryProducer::HistorySecondaryProducer");
-    }
-
-    /**
-     * Method is called after a new SecondaryView has been
-     * created. Extra logic can be introduced here.  
-     * 
-     * The input Particle is a reference object into the original
-     * parent stack! It is not a reference into the SecondaryView
-     * itself.
-     */
     template <typename Particle>
-    void new_view(Particle& p) {
-      C8LOG_TRACE("HistorySecondaryProducer::new_view");
+    HistorySecondaryProducer(Particle const& p)
+        : event_{std::make_shared<Event>()} {
+      C8LOG_TRACE("HistorySecondaryProducer::HistorySecondaryProducer");
       event_->setProjectileIndex(p.GetIndex());
       event_->setParentEvent(p.GetEvent());
     }
@@ -51,7 +37,7 @@ namespace corsika::history {
     /**
      * Method is called after a new Secondary has been created on the
      * SecondaryView. Extra logic can be introduced here.
-     * 
+     *
      * The input Particle is the new secondary that was produced and
      * is of course a reference into the SecondaryView itself.
      */
@@ -60,12 +46,11 @@ namespace corsika::history {
       C8LOG_TRACE("HistorySecondaryProducer::new_secondary(sec)");
 
       // store particles at production time in Event here
-      auto const sec_index = event_->addSecondary(
-          sec.GetEnergy(), sec.GetMomentum(), sec.GetPID());
+      auto const sec_index =
+          event_->addSecondary(sec.GetEnergy(), sec.GetMomentum(), sec.GetPID());
       sec.SetParentEventIndex(sec_index);
       sec.SetEvent(event_);
     }
-
   };
 
 } // namespace corsika::history

@@ -6,9 +6,9 @@
  * the license.
  */
 
-#include <corsika/history/HistoryStackExtension.h>
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/dummy/DummyStack.h>
+#include <corsika/stack/history/HistoryStackExtension.hpp>
 
 #include <catch2/catch.hpp>
 

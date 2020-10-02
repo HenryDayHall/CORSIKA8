@@ -7,7 +7,7 @@
  */
 
 #include <corsika/logging/Logging.h>
-#include <corsika/history/HistoryObservationPlane.hpp>
+#include <corsika/stack/history/HistoryObservationPlane.hpp>
 
 #include <boost/histogram/ostream.hpp>
 

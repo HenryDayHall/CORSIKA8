@@ -9,7 +9,7 @@
 #pragma once
 
 #include <corsika/particles/ParticleProperties.h>
-#include <corsika/history/SecondaryParticle.hpp>
+#include <corsika/stack/history/SecondaryParticle.hpp>
 #include <corsika/logging/Logging.h>
 
 #include <iostream>

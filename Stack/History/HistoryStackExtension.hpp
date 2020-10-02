@@ -126,7 +126,7 @@ namespace corsika::history {
 // for user-friendlyness we create the HistoryDataInterface type
 // with the histoy::Event data content right here:
 
-#include <corsika/history/Event.hpp>
+#include <corsika/stack/history/Event.hpp>
 
 namespace corsika::history {
 

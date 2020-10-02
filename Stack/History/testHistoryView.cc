@@ -6,9 +6,9 @@
  * the license.
  */
 
-#include <corsika/history/HistoryStackExtension.h>
-#include <corsika/history/Event.hpp>
-#include <corsika/history/HistorySecondaryProducer.hpp>
+#include <corsika/stack/history/Event.hpp>
+#include <corsika/stack/history/HistorySecondaryProducer.hpp>
+#include <corsika/stack/history/HistoryStackExtension.hpp>
 
 #include <corsika/stack/CombinedStack.h>
 #include <corsika/stack/dummy/DummyStack.h>
@@ -62,7 +62,7 @@ using TheTestStackView =
 #endif
 
 using TestStackView =
-    TheTestStackView; // history::HistorySecondaryView<TheTestStackView>;
+    TheTestStackView; // history::HistorySecondaryProducer<TheTestStackView>;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 

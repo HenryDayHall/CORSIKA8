@@ -132,10 +132,10 @@ namespace corsika::stack {
      **/
     SecondaryView(StackIteratorValue& particle)
         : Stack<StackDataType&, ParticleInterface>(particle.GetStackData())
+        , MSecondaryProducer<StackDataType, ParticleInterface>{particle}
         , inner_stack_(particle.GetStack())
         , projectile_index_(particle.GetIndex()) {
       C8LOG_TRACE("SecondaryView::SecondaryView(particle)");
-      MSecondaryProducer<StackDataType, ParticleInterface>::new_view(particle);
     }
     /**
      * Also allow to create a new View from a Projectile (StackIterator on View)
@@ -144,12 +144,12 @@ namespace corsika::stack {
      * terms of reference to the underlying data stack. It is not a "view to a view".
      */
     SecondaryView(ViewType& view, StackIterator& projectile)
-        : Stack<StackDataType&, ParticleInterface>(view.GetStackData())
-        , inner_stack_(view.inner_stack_)
-        , projectile_index_(view.GetIndexFromIterator(projectile.GetIndex())) {
-      C8LOG_TRACE("SecondaryView::SecondaryView(projectile)");
-      StackIteratorValue particle(inner_stack_, projectile_index_);
-      MSecondaryProducer<StackDataType, ParticleInterface>::new_view(particle);
+        : Stack<StackDataType&, ParticleInterface>{view.GetStackData()}
+        , MSecondaryProducer<StackDataType, ParticleInterface>{StackIteratorValue{
+              view.inner_stack_, view.GetIndexFromIterator(projectile.GetIndex())}}
+        , inner_stack_{view.inner_stack_}
+        , projectile_index_{view.GetIndexFromIterator(projectile.GetIndex())} {
+      C8LOG_TRACE("SecondaryView::SecondaryView(view, projectile)");
     }
 
     /**
@@ -397,7 +397,8 @@ namespace corsika::stack {
   };
 
   /**
-   * Class to handle the generation of new secondaries.
+   * Class to handle the generation of new secondaries. Used as default mix-in for
+   * SecondaryView.
    */
   template <class T1, template <class> class T2>
   class DefaultSecondaryProducer {
@@ -405,7 +406,19 @@ namespace corsika::stack {
 
   public:
     /**
-     * Method is called after a new SecondaryView has been
+     * Method is called after a new secondary has been created on the
+     * SecondaryView. Extra logic can be introduced here.
+     *
+     * The input Particle is the new secondary that was produced and
+     * is of course a reference into the SecondaryView itself.
+     */
+    template <typename Particle>
+    auto new_secondary(Particle&) const {
+      C8LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&)");
+    }
+
+    /**
+     * Method is called when a new SecondaryView is being created
      * created. Extra logic can be introduced here.
      *
      * The input Particle is a reference object into the original
@@ -413,20 +426,8 @@ namespace corsika::stack {
      * itself.
      */
     template <typename Particle>
-    void new_view(Particle&) {
-      C8LOG_TRACE("DefaultSecondaryProducer::init");
-    }
-
-    /**
-     * Method is called after a new Secondary has been created on the
-     * SecondaryView. Extra logic can be introduced here.
-     *
-     * The input Particle is the new secondary that was produced and
-     * is of course a reference into the SecondaryView itself.
-     */
-    template <typename Particle>
-    auto new_secondary(Particle&) {
-      C8LOG_TRACE("DefaultSecondaryProducer::produce(TView,Args&&)");
+    DefaultSecondaryProducer([[maybe_unused]] Particle const&) {
+      C8LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
     }
   };
 

@@ -3,18 +3,18 @@ set (
   Event.hpp
   HistorySecondaryProducer.hpp
   HistoryObservationPlane.hpp
-  HistoryStackExtension.h
+  HistoryStackExtension.hpp
   SecondaryParticle.hpp
   )
 
 set (
   HISTORY_NAMESPACE
-  corsika/history
+  corsika/stack/history
   )
 
 set (
   HISTORY_SOURCES
-  HistoryObservationPlane.cc
+  HistoryObservationPlane.cpp
 )
 
 #add_library (CORSIKAhistory INTERFACE)
@@ -29,8 +29,8 @@ target_link_libraries (
   CORSIKAsetup # for HistoryObservationPlane
   CORSIKAlogging
   SuperStupidStack
-  NuclearStackExtension
-  C8::ext::boost
+  NuclearStackExtension # for testHistoryView.cc
+  C8::ext::boost # for HistoryObservationPlane
   )
 
 target_include_directories (
