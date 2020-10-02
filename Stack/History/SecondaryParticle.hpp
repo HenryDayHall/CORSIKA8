@@ -20,13 +20,10 @@ namespace corsika::history {
    * This class stores the non-common properties of secondaries in an event. All
    * other (common) properties are available via the event itself or its projectile.
    */
-  class SecondaryParticle {
+  struct SecondaryParticle {
     units::si::HEPEnergyType const energy_;
     geometry::Vector<units::si::hepmomentum_d> const momentum_;
     particles::Code const pid_;
-
-    // what else...?
-    // - polarization?
 
   public:
     SecondaryParticle(units::si::HEPEnergyType energy,
