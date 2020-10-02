@@ -38,8 +38,6 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
 
-#include <corsika/stack/history/HistoryObservationPlane.hpp>
-
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -209,9 +207,8 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  //~ process::observation_plane::ObservationPlane observationLevel(obsPlane,
-  //~ "particles.dat");
-  corsika::history::HistoryObservationPlane observationLevel{stack, obsPlane};
+  process::observation_plane::ObservationPlane observationLevel(obsPlane,
+                                                                "particles.dat");
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};

@@ -10,9 +10,8 @@
 
 #include <corsika/logging/Logging.h>
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/stack/history/EventType.hpp>
 #include <corsika/stack/history/SecondaryParticle.hpp>
-#include <corsika/logging/Logging.h>
-#include <corsika/history/EventType.hpp>
 
 #include <iostream>
 #include <memory>

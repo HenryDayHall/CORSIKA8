@@ -16,7 +16,7 @@
 #include <corsika/random/UniformRealDistribution.h>
 #include <corsika/stack/SecondaryView.h>
 #include <corsika/units/PhysicalUnits.h>
-#include <corsika/history/EventType.hpp>
+#include <corsika/stack/history/EventType.hpp>
 
 #include <corsika/logging/Logging.h>
 

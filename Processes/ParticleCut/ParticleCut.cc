@@ -95,7 +95,6 @@ namespace corsika::process {
         } else {
           ++particle; // next entry in SecondaryView
         }
-        ++p; // next entry in SecondaryView
       }
       return EProcessReturn::eOk;
     }
