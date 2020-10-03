@@ -165,6 +165,11 @@ namespace corsika::stack {
       }
       return StackIterator(*this, i);
     }
+
+    StackIterator first() { return StackIterator{*this, 0}; }
+
+    ConstStackIterator cfirst() const { return ConstStackIterator{*this, 0}; }
+
     StackIterator end() { return StackIterator(*this, getSize()); }
     StackIterator last() {
       unsigned int i = 0;
@@ -345,9 +350,9 @@ namespace corsika::stack {
       nDeleted_ = 0;
     }
 
-  protected:
     unsigned int getSize() const { return data_.GetSize(); }
 
+  protected:
     bool isDeleted(unsigned int i) const {
       if (i >= deleted_.size()) return false;
       return deleted_.at(i);

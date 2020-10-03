@@ -6,7 +6,6 @@
  * the license.
  */
 
-#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 #include <corsika/cascade/Cascade.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
@@ -31,12 +30,13 @@
 #include <corsika/process/sibyll/NuclearInteraction.h>
 #include <corsika/process/switch_process/SwitchProcess.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
-#include <corsika/process/urqmd/UrQMD.h>
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
 #include <iomanip>
 #include <iostream>
