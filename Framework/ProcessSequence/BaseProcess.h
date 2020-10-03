@@ -9,7 +9,6 @@
 #pragma once
 
 #include <corsika/process/ProcessReturn.h> // for convenience
-#include <type_traits>
 
 namespace corsika::process {
 

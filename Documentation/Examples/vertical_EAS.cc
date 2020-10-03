@@ -42,7 +42,6 @@
 #include <iostream>
 #include <limits>
 #include <string>
-#include <typeinfo>
 
 using namespace corsika;
 using namespace corsika::process;

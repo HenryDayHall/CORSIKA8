@@ -32,7 +32,6 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
-#include <type_traits>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.

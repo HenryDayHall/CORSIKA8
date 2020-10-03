@@ -12,7 +12,6 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <iostream>
-#include <type_traits>
 
 namespace corsika::geometry {
 
