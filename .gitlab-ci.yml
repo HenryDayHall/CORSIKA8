@@ -622,7 +622,7 @@ sanity:
     - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
     - pip install --user -e '.[test]'  # install the package + test deps
     - python -m mypy corsika
-    - python -m isort --atomic corsika tests
+    - python -m isort --atomic --check-only corsika tests
     - python -m black -t py37 corsika tests
     - python -m flake8 corsika tests
     - python -m pytest --cov=corsika tests
