@@ -136,7 +136,7 @@ namespace corsika::environment {
     size_t hash() const { return hash_; }
     
   private:
-    void updateHash() const {
+    void updateHash() {
       std::vector<std::size_t> hashes;
       for (float ifrac : GetFractions())
 	hashes.push_back(std::hash<float>{}(ifrac));
