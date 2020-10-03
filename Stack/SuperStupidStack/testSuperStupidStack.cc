@@ -20,7 +20,6 @@ using namespace corsika::units::si;
 using namespace corsika;
 using namespace corsika::stack::super_stupid;
 
-#include <iostream>
 using namespace std;
 
 TEST_CASE("SuperStupidStack", "[stack]") {
@@ -31,9 +30,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
   SECTION("read+write") {
 
     SuperStupidStack s;
-    s.AddParticle(std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
-                             corsika::stack::MomentumVector, corsika::geometry::Point,
-                             corsika::units::si::TimeType>{
+    s.AddParticle(std::make_tuple{
         particles::Code::Electron, 1.5_GeV,
         corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
@@ -44,9 +41,6 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     auto pout = s.GetNextParticle();
     CHECK(pout.GetPID() == particles::Code::Electron);
     CHECK(pout.GetEnergy() == 1.5_GeV);
-    // CHECK(pout.GetMomentum() == stack::MomentumVector(dummyCS, {1_GeV,
-    // 1_GeV, 1_GeV})); CHECK(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 *
-    // meter, 1 * meter}));
     CHECK(pout.GetTime() == 100_s);
   }
 
@@ -55,9 +49,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     SuperStupidStack s;
     for (int i = 0; i < 99; ++i)
       s.AddParticle(
-          std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, corsika::geometry::Point,
-                     corsika::units::si::TimeType>{
+          std::make_tuple{
               particles::Code::Electron, 1.5_GeV,
               corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
               Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
