@@ -56,7 +56,7 @@ target_link_libraries (
   CORSIKAparticles
   PUBLIC
   CORSIKAunits
-  spdlog::spdlog
+  CORSIKAlogging
   )
 
 set_target_properties (
