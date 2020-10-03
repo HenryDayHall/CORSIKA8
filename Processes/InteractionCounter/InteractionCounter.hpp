@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include <corsika/process/interaction_counter/InteractionHistogram.hpp>
+
 #include <corsika/process/InteractionProcess.h>
 #include <corsika/process/ProcessSequence.h>
-#include <corsika/process/interaction_counter/InteractionHistogram.h>
 #include <corsika/setup/SetupStack.h>
 
 namespace corsika::process::interaction_counter {

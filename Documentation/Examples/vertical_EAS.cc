@@ -18,7 +18,6 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/on_shell_check/OnShellCheck.h>
@@ -37,6 +36,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
 #include <iomanip>
 #include <iostream>

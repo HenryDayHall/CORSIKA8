@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/process/interaction_counter/InteractionCounter.h>
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>

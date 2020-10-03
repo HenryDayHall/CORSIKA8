@@ -6,6 +6,8 @@
  * the license.
  */
 
+#pragma once
+
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 
