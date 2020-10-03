@@ -18,8 +18,6 @@
 #include <stdexcept>
 #include <vector>
 
-
-    
 namespace corsika::environment {
   class NuclearComposition {
     std::vector<float> const fNumberFractions; //!< relative fractions of number density
@@ -29,7 +27,7 @@ namespace corsika::environment {
     double const fAvgMassNumber;
 
     std::size_t hash_;
-    
+
     template <class AConstIterator, class BConstIterator>
     class WeightProviderIterator {
       AConstIterator fAIter;
@@ -134,21 +132,17 @@ namespace corsika::environment {
     // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
     size_t hash() const { return hash_; }
-    
+
   private:
     void updateHash() {
       std::vector<std::size_t> hashes;
-      for (float ifrac : GetFractions())
-	hashes.push_back(std::hash<float>{}(ifrac));
+      for (float ifrac : GetFractions()) hashes.push_back(std::hash<float>{}(ifrac));
       for (corsika::particles::Code icode : GetComponents())
-	hashes.push_back(std::hash<int>{}(static_cast<int>(icode)));
+        hashes.push_back(std::hash<int>{}(static_cast<int>(icode)));
       std::size_t h = std::hash<double>{}(GetAverageMassNumber());
-      for (std::size_t ih : hashes)
-	h = h ^ (ih<<1);
+      for (std::size_t ih : hashes) h = h ^ (ih << 1);
       hash_ = h;
     }
-
   };
 
 } // namespace corsika::environment
-

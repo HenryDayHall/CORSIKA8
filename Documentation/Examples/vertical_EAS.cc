@@ -22,12 +22,12 @@
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/proposal/ContinuousProcess.h>
+#include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/proposal/ContinuousProcess.h>
-#include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/switch_process/SwitchProcess.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
@@ -207,8 +207,8 @@ int main(int argc, char** argv) {
                                                        55_GeV);
   auto decaySequence = decayPythia << decaySibyll;
 
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted << em_continuous
-				<< cut << longprof << observationLevel;
+  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted
+                                << em_continuous << cut << longprof << observationLevel;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
@@ -220,13 +220,13 @@ int main(int argc, char** argv) {
 
   EAS.Run();
 
-
   cut.ShowResults();
   em_continuous.ShowResults();
   observationLevel.ShowResults();
-  cout << "Cascade energy cut: " << EAS.GetEnergyCut()/1_GeV << " GeV" << endl;
-  const HEPEnergyType Efinal =
-    cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy() + em_continuous.GetEnergyLost() + observationLevel.GetEnergyGround() + EAS.GetEnergyCut();
+  cout << "Cascade energy cut: " << EAS.GetEnergyCut() / 1_GeV << " GeV" << endl;
+  const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
+                               cut.GetEmEnergy() + em_continuous.GetEnergyLost() +
+                               observationLevel.GetEnergyGround() + EAS.GetEnergyCut();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.Reset();
@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
   em_continuous.Reset();
 
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
-    urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
+                     urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
 
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");

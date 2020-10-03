@@ -55,7 +55,7 @@ check-copyrights:
 
 ##########################################################
 check-clang-format:
-  image: corsika/devel:u-18.04
+  image: corsika/devel:clang-8
   stage: quality
   tags:
     - corsika
@@ -83,7 +83,7 @@ check-clang-format:
   before_script:
    - cd Data && for F in `find . -name "*.bz2" | grep -v ".git"`; do [ ! -f ${F%%.bz2} ] && bunzip2 -vk $F; done
    - cd ${CI_PROJECT_DIR}
-  script:    
+  script:
     - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
@@ -91,7 +91,7 @@ check-clang-format:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -135,7 +135,7 @@ config-clang-8:
     - if: $CI_COMMIT_BRANCH
       when: manual
   allow_failure: true
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -152,7 +152,7 @@ build-u-18_04:
     key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # build for clang
-build-clang-8: 
+build-clang-8:
   extends: .build
   image: corsika/devel:clang-8
   dependencies:
@@ -175,7 +175,7 @@ build-clang-8:
   script:
     - cd build
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz 
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -192,7 +192,7 @@ build-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/test.log.gz
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -233,7 +233,7 @@ test-clang-8:
     - cd build
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz 
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
       allow_failure: false
@@ -249,7 +249,7 @@ test-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/test.log.gz
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -266,7 +266,7 @@ build_test-u-18_04:
     key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # build_test for clang
-build_test-clang-8: 
+build_test-clang-8:
   extends: .build_test
   image: corsika/devel:clang-8
   dependencies:
@@ -302,7 +302,7 @@ build_test-clang-8:
     expire_in: 3 days
     paths:
       - ${CI_PROJECT_DIR}/build/examples.log.gz
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -310,7 +310,7 @@ build_test-clang-8:
     policy: pull
 
 # example for gcc
-example-u-18_04: 
+example-u-18_04:
   extends: .example
   image: corsika/devel:u-18.04
   dependencies:
@@ -362,7 +362,7 @@ example-clang-8:
     paths:
       - ${CI_PROJECT_DIR}/build/examples.log.gz
       - ${CI_PROJECT_DIR}/build/test.log.gz
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -370,7 +370,7 @@ example-clang-8:
     policy: pull
 
 # build_test_example for gcc
-build_test_example-u-18_04: 
+build_test_example-u-18_04:
   extends: .build_test_example
   image: corsika/devel:u-18.04
   dependencies:
@@ -412,7 +412,7 @@ build_test_example-clang-8:
     - if: $CI_COMMIT_BRANCH
       when: manual
   allow_failure: true
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -420,7 +420,7 @@ build_test_example-clang-8:
     policy: pull
 
 # install for gcc
-install-u-18_04: 
+install-u-18_04:
   extends: .install
   image: corsika/devel:u-18.04
   dependencies:
@@ -454,7 +454,7 @@ install-clang-8:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz 
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
@@ -467,7 +467,7 @@ install-clang-8:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -493,7 +493,7 @@ release-full-u-18_04:
     key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # release for clang
-release-full-clang-8: 
+release-full-clang-8:
   extends: .release
   image: corsika/devel:clang-8
   dependencies:
@@ -518,7 +518,7 @@ coverage:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz 
+    - ctest -j4 -VV | gzip -v -9 > test.log.gz
     - cmake --build . --target coverage
     - tar czf coverage-report.tar.gz coverage-report
   coverage: '/^.*functions\.+:\s(.*\%)\s/'
@@ -537,7 +537,7 @@ coverage:
     paths:
       - ${CI_PROJECT_DIR}/build/test.log.gz
       - ${CI_PROJECT_DIR}/build/coverage-report.tar.gz
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -577,7 +577,7 @@ documentation:
     expire_in: 3 weeks
     paths:
       - ${CI_PROJECT_DIR}/public
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/
@@ -610,7 +610,7 @@ sanity:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
-  cache: 
+  cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
       - ${CI_PROJECT_DIR}/Data/

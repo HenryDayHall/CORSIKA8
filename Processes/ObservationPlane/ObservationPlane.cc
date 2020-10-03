@@ -67,10 +67,10 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
 
 void ObservationPlane::ShowResults() const {
   std::cout << " ******************************" << std::endl
-       << " ObservationPlane: " << std::endl;
+            << " ObservationPlane: " << std::endl;
   std::cout << " energy in ground (GeV)     :  " << energy_ground_ / 1_GeV << std::endl
-       << " no. of particles in ground :  " << count_ground_ << std::endl
-       << " ******************************" << std::endl;
+            << " no. of particles in ground :  " << count_ground_ << std::endl
+            << " ******************************" << std::endl;
 }
 
 void ObservationPlane::Reset() {

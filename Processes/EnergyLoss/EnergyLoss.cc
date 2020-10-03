@@ -31,7 +31,7 @@ using SetupTrack = corsika::setup::Trajectory;
 using namespace corsika::process::energy_loss;
 
 EnergyLoss::EnergyLoss(environment::ShowerAxis const& shower_axis,
-		       corsika::units::si::HEPEnergyType emCut)
+                       corsika::units::si::HEPEnergyType emCut)
     : shower_axis_(shower_axis)
     , emCut_(emCut)
     , profile_(int(shower_axis.maximumX() / dX_) + 1) {}
@@ -178,7 +178,7 @@ process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p, SetupTrack co
        << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV << ", Enew=" << Enew / 1_GeV
        << "GeV" << endl;
   auto status = process::EProcessReturn::eOk;
-  if (E<emCut_) {
+  if (E < emCut_) {
     Enew = emCut_;
     status = process::EProcessReturn::eParticleAbsorbed;
   }
@@ -195,7 +195,7 @@ LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,
   }
 
   auto constexpr dX = 1_g / square(1_cm);
-  auto const dEdX = - TotalEnergyLoss(vParticle, dX) / dX; // dE > 0
+  auto const dEdX = -TotalEnergyLoss(vParticle, dX) / dX; // dE > 0
   //~ auto const Ekin = vParticle.GetEnergy() - vParticle.GetMass();
 
   // in any case: never go below 0.99*emCut_ This needs to be
@@ -207,8 +207,8 @@ LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,
   // afterwards.
   //
   const auto energy = vParticle.GetEnergy();
-  auto energy_lim = std::max(0.9*energy, 0.99*emCut_);
-  
+  auto energy_lim = std::max(0.9 * energy, 0.99 * emCut_);
+
   auto const maxGrammage = (energy - energy_lim) / dEdX;
 
   return vParticle.GetNode()->GetModelProperties().ArclengthFromGrammage(vTrack,

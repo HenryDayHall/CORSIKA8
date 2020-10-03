@@ -123,9 +123,11 @@ namespace corsika::process {
       C8LOG_INFO(fmt::format(
           " ******************************\n"
           " ParticleCut: \n"
-          " energy in em.  component (GeV):  {}\n"
+          if (bCutEm)
+              " energy in em.  component (GeV):  {}\n"
           " no. of em.  particles injected:  {}\n"
-          " energy in inv. component (GeV):  {}\n"
+          if (bCutInv)
+              " energy in inv. component (GeV):  {}\n"
           " no. of inv. particles injected:  {}\n"
           " energy below particle cut (GeV): {}\n"
           " ******************************",

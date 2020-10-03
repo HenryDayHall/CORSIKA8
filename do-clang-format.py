@@ -49,7 +49,10 @@ else:
     filelist = [x for x in filelist
                 if "ThirdParty" not in x and (x.endswith(".h") or x.endswith(".cc"))]
 
-cmd = "clang-format -style=file"
+cmd = "clang-format"
+if "CLANG_FORMAT" in os.environ:
+  cmd = os.environ["CLANG_FORMAT"]
+cmd +=  " -style=file"
 if args.apply:
     for filename in filelist:
         subp.check_call(cmd.split() + ["-i", filename])
