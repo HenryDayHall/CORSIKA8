@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# ignore any generated output files
+*.npz
+*.dat
+
 # C extensions
 *.so
 

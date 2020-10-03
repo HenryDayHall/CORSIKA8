@@ -621,22 +621,33 @@ sanity:
   script:
     - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
     - pip install --user -e '.[test]'  # install the package + test deps
-    - make all 2&>1 | tee python-test.log  # this runs all of the Python tests
+    - python -m mypy corsika
+    - python -m isort --atomic corsika tests
+    - python -m black -t py37 corsika tests
+    - python -m flake8 corsika tests
+    - python -m pytest --cov=corsika tests
     - cd ${CI_PROJECT_DIR}  # reset the directory
   coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
+<<<<<<< HEAD
   artifacts:
     when: always
     expire_in: 1 year
     paths:
       - ${CI_PROJECT_DIR}/Python/python-test.log
   allow_failure: true
+=======
+>>>>>>> 927acbbd... Move 'read_hist' into 'corsika' and new CI.
 
-# we now configure the jobs for the three
-# supported Python versions
+# we now configure the jobs for the three supported Python versions. We run
+# Python 3.7 for all commits but only run Python 3.6/3.8 before merging or if
+# the MR is an explict Python MR with the 'Python' tag.
 python-3.6:
   extends: .python
   image: python:3.6
-
+  rules:
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Python/'
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Code review finished/'
+      
 python-3.7:
   extends: .python
   image: python:3.7
@@ -644,3 +655,6 @@ python-3.7:
 python-3.8:
   extends: .python
   image: python:3.8
+  rules:
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Python/'
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Code review finished/'

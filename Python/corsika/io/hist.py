@@ -14,7 +14,7 @@ import numpy as np
 
 def read_hist(filename: str) -> bh.Histogram:
     """
-    Read a histogram produced with CORSIKA8's `save_hist()` function.
+    Read a histogram produced with CORSIKA8's `SaveBoostHistogram()` function.
 
     Parameters
     ----------
