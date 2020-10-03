@@ -36,7 +36,8 @@ namespace corsika::process::proposal {
     // saved in the calc map by a key build out of a hash of composed of the component and
     // particle code.
     auto disp = PROPOSAL::make_displacement(c, true);
-    auto scatter = PROPOSAL::make_scattering("highland", particle[code], media.at(comp.hash()));
+    auto scatter =
+        PROPOSAL::make_scattering("highland", particle[code], media.at(comp.hash()));
     calc[std::make_pair(comp.hash(), code)] =
         std::make_tuple(std::move(disp), std::move(scatter));
   }
@@ -80,8 +81,7 @@ namespace corsika::process::proposal {
     // scattering
     auto vec = corsika::geometry::QuantityVector(
         final_dir.GetX() * E_f, final_dir.GetY() * E_f, final_dir.GetZ() * E_f);
-    vP.SetMomentum(
-        corsika::stack::MomentumVector(vP_dir.GetCoordinateSystem(), vec));
+    vP.SetMomentum(corsika::stack::MomentumVector(vP_dir.GetCoordinateSystem(), vec));
   }
 
   template <>

@@ -82,7 +82,8 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool discardEm, bool discardInv)
+    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool discardEm,
+                             bool discardInv)
         : eCut_(eCut)
         , discardEm_(discardEm)
         , discardInv_(discardInv) {
@@ -95,14 +96,13 @@ namespace corsika::process {
     }
 
     void ParticleCut::ShowResults() const {
-      cout << " ******************************" << endl
-           << " ParticleCut: " << endl;
-      if (discardEm_) 
-	cout << " energy in em.  component (GeV)     :  " << emEnergy_ / 1_GeV << endl
-	     << " no. of em.  particles removed      :  " << emCount_ << endl;
+      cout << " ******************************" << endl << " ParticleCut: " << endl;
+      if (discardEm_)
+        cout << " energy in em.  component (GeV)     :  " << emEnergy_ / 1_GeV << endl
+             << " no. of em.  particles removed      :  " << emCount_ << endl;
       if (discardInv_)
-	cout << " energy in inv. component (GeV)     :  " << invEnergy_ / 1_GeV << endl
-	     << " no. of inv. particles removed      :  " << invCount_ << endl;      
+        cout << " energy in inv. component (GeV)     :  " << invEnergy_ / 1_GeV << endl
+             << " no. of inv. particles removed      :  " << invCount_ << endl;
       cout << " energy below energy threshold (GeV): " << energy_ / 1_GeV << endl
            << " ******************************" << endl;
     }
@@ -114,6 +114,6 @@ namespace corsika::process {
       invCount_ = 0;
       energy_ = 0_GeV;
     }
-    
+
   } // namespace particle_cut
 } // namespace corsika::process

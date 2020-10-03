@@ -36,15 +36,15 @@ namespace corsika::process::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto c = p_cross->second(media.at(&comp), emCut_);
+    auto c = p_cross->second(media.at(comp.hash()), emCut_);
 
     // Look which interactions take place and build the corresponding
     // interaction and secondarie builder. The interaction integral will
     // interpolated too and saved in the calc map by a key build out of a hash
     // of composed of the component and particle code.
     auto inter_types = PROPOSAL::CrossSectionVector::GetInteractionTypes(c);
-    calc[std::make_pair(&comp, code)] = std::make_tuple(
-        PROPOSAL::make_secondaries(inter_types, particle[code], media.at(&comp)),
+    calc[std::make_pair(comp.hash(), code)] = std::make_tuple(
+        PROPOSAL::make_secondaries(inter_types, particle[code], media.at(comp.hash())),
         PROPOSAL::make_interaction(c, true));
   }
 
@@ -67,7 +67,8 @@ namespace corsika::process::proposal {
 
       // Read how much random numbers are required to calculate the secondaries.
       // Calculate the secondaries and deploy them on the corsika stack.
-      auto rnd = vector<double>(get<eSECONDARIES>(c->second)->RequiredRandomNumbers(type));
+      auto rnd =
+          vector<double>(get<eSECONDARIES>(c->second)->RequiredRandomNumbers(type));
       for (auto& it : rnd) it = distr(fRNG);
       auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
                                       vP.GetPosition().GetY() / 1_cm,
@@ -78,8 +79,8 @@ namespace corsika::process::proposal {
                                           d.GetZ().magnitude());
       auto loss = make_tuple(static_cast<int>(type), point, direction,
                              v * vP.GetEnergy() / 1_MeV, 0.);
-      auto sec = get<eSECONDARIES>(c->second)->CalculateSecondaries(vP.GetEnergy() / 1_MeV,
-                                                                   loss, *comp_ptr, rnd);
+      auto sec = get<eSECONDARIES>(c->second)->CalculateSecondaries(
+          vP.GetEnergy() / 1_MeV, loss, *comp_ptr, rnd);
       for (auto& s : sec) {
         auto E = get<PROPOSAL::Loss::ENERGY>(s) * 1_MeV;
         auto vec = corsika::geometry::QuantityVector(

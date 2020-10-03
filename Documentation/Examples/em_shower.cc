@@ -159,15 +159,16 @@ int main(int argc, char** argv) {
   cut.ShowResults();
   em_continuous.ShowResults();
   observationLevel.ShowResults();
-  cout << "Cascade energy cut: " << EAS.GetEnergyCut()/1_GeV << " GeV" << endl;
-  const HEPEnergyType Efinal =
-    cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy() + em_continuous.GetEnergyLost() + observationLevel.GetEnergyGround() + EAS.GetEnergyCut();
+  cout << "Cascade energy cut: " << EAS.GetEnergyCut() / 1_GeV << " GeV" << endl;
+  const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
+                               cut.GetEmEnergy() + em_continuous.GetEnergyLost() +
+                               observationLevel.GetEnergyGround() + EAS.GetEnergyCut();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.Reset();
   cut.Reset();
   em_continuous.Reset();
-  
+
   auto const hists = proposalCounted.GetHistogram();
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");

@@ -64,7 +64,7 @@ namespace corsika::process::proposal {
           "table directory. ");
     }
   }
-  
+
   size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const noexcept {
     return p.first ^ std::hash<particles::Code>{}(p.second);
   }

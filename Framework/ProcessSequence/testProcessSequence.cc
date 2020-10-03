@@ -145,11 +145,9 @@ public:
 };
 
 class Decay1 : public DecayProcess<Decay1> {
-  int fV = 0;
 
 public:
-  Decay1(const int v)
-      : fV(v) {
+  Decay1(const int v) {
     cout << "Decay1()" << endl;
     globalCount++;
   }

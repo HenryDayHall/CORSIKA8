@@ -39,7 +39,7 @@ namespace corsika::process::observation_plane {
     void ShowResults() const;
     void Reset();
     corsika::units::si::HEPEnergyType GetEnergyGround() const { return energy_ground_; }
-    
+
   private:
     geometry::Plane const plane_;
     std::ofstream outputStream_;

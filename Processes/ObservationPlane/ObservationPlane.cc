@@ -35,7 +35,7 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
   if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
-  
+
   const auto energy = particle.GetEnergy();
   outputStream_ << static_cast<int>(particles::GetPDG(particle.GetPID())) << ' '
                 << energy / 1_eV << ' '
@@ -67,10 +67,10 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
 
 void ObservationPlane::ShowResults() const {
   std::cout << " ******************************" << std::endl
-       << " ObservationPlane: " << std::endl;
+            << " ObservationPlane: " << std::endl;
   std::cout << " energy in ground (GeV)     :  " << energy_ground_ / 1_GeV << std::endl
-       << " no. of particles in ground :  " << count_ground_ << std::endl
-       << " ******************************" << std::endl;
+            << " no. of particles in ground :  " << count_ground_ << std::endl
+            << " ******************************" << std::endl;
 }
 
 void ObservationPlane::Reset() {
