@@ -28,6 +28,7 @@ stages:
   - build
   - test
   - build_test
+  - python
   - example
   - build_test_example
   - install
@@ -616,3 +617,36 @@ sanity:
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
+
+
+
+##########################################################
+# template for all Python jobs
+.python:
+  stage: python
+  tags:
+    - corsika
+  script:
+    - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
+    - pip install --user -e '.[test]'  # install the package + test deps
+    - make all 2&>1 | tee python-test.log  # this runs all of the Python tests
+    - cd ${CI_PROJECT_DIR}  # reset the directory
+  artifacts:
+    when: always
+    expire_in: 1 year
+    paths:
+      - ${CI_PROJECT_DIR}/Python/python-test.log
+
+# we now configure the jobs for the three
+# supported Python versions
+python-3.6:
+  extends: .python
+  image: python:3.6
+
+python-3.7:
+  extends: .python
+  image: python:3.7
+
+python-3.8:
+  extends: .python
+  image: python:3.8
