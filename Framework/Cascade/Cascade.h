@@ -31,7 +31,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <type_traits>
 
@@ -303,7 +302,6 @@ namespace corsika::cascade {
 
         assert(assertion()); // numerical and logical nodes don't match
       } else {               // boundary crossing, step is limited by volume boundary
-        // C8LOG_DEBUG("boundary crossing! next node = {}", int(nextVol));
         vParticle.SetNode(nextVol);
         /*
           DoBoundary may delete the particle (or not)

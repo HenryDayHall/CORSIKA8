@@ -15,7 +15,6 @@
 // test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
 #include <iomanip>
-#include <iostream>
 #include <vector>
 
 #include <catch2/catch.hpp>

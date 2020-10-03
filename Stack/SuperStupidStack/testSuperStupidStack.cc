@@ -30,10 +30,10 @@ TEST_CASE("SuperStupidStack", "[stack]") {
   SECTION("read+write") {
 
     SuperStupidStack s;
-    s.AddParticle(std::make_tuple{
-        particles::Code::Electron, 1.5_GeV,
-        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+    s.AddParticle(
+        std::make_tuple(particles::Code::Electron, 1.5_GeV,
+                        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     // read
     CHECK(s.getEntries() == 1);
@@ -49,10 +49,9 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     SuperStupidStack s;
     for (int i = 0; i < 99; ++i)
       s.AddParticle(
-          std::make_tuple{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+          std::make_tuple(particles::Code::Electron, 1.5_GeV,
+                          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     CHECK(s.getSize() == 99);
 

@@ -15,7 +15,6 @@
                            // CMAKE_CURRENT_SOURCE_DIR
 
 #include <iomanip>
-#include <iostream>
 #include <tuple>
 #include <vector>
 
@@ -118,11 +117,6 @@ TEST_CASE("Stack", "[Stack]") {
     CHECK(s.getSize() == 1);
     p.AddSecondary(std::tuple{4.4});
     CHECK(s.getSize() == 2);
-    /*p.AddSecondary(3.3, 2.2);
-    CHECK(s.getSize() == 3);
-    double v = 0;
-    for (auto& p : s) { v += p.GetData(); }
-    CHECK(v == 9.9 + 4.4 + 3.3 + 2.2);*/
   }
 
   SECTION("get next particle") {

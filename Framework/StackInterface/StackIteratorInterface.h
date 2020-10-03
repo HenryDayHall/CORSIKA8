@@ -12,7 +12,7 @@
 
 namespace corsika::history {
   template <typename T, template <typename> typename ParticleInterface>
-    class HistorySecondaryProducer; // forward decl.
+  class HistorySecondaryProducer; // forward decl.
 }
 
 namespace corsika::stack {
@@ -87,11 +87,11 @@ namespace corsika::stack {
     template <typename T1,                     // best fix this to: TStackData,
               template <typename> typename M1, // best fix this to: TParticleInterface,
               template <typename T, template <typename> typename T3> typename M2>
-    friend class SecondaryView;                // access grant for SecondaryView
+    friend class SecondaryView; // access grant for SecondaryView
 
     template <typename T, template <typename> typename ParticleInterface>
     friend class corsika::history::HistorySecondaryProducer;
-  
+
     friend class ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>;
 
   protected:
@@ -252,14 +252,12 @@ namespace corsika::stack {
                        TParticleInterface>; // for access to GetIndex for Stack
     friend class Stack<TStackData&, TParticleInterface>; // for access to GetIndex
 
-    friend class ParticleBase<
-        ConstStackIteratorInterface>; // for access to GetStackData
+    friend class ParticleBase<ConstStackIteratorInterface>; // for access to GetStackData
 
-    template <typename T1,            // best fix to: TStackData,
-              template <typename>
-              typename M1,            // best fix to: TParticleInterface,
+    template <typename T1,                     // best fix to: TStackData,
+              template <typename> typename M1, // best fix to: TParticleInterface,
               template <class T2, template <class> class T3> class MSecondaryProducer>
-    friend class SecondaryView;       // access for SecondaryView
+    friend class SecondaryView; // access for SecondaryView
 
     friend class StackIteratorInterface<TStackData, TParticleInterface, StackType>;
 

@@ -32,7 +32,6 @@ using namespace corsika::units;
 using namespace corsika::units::si;
 using namespace corsika::geometry;
 
-#include <iostream>
 #include <limits>
 using namespace std;
 
@@ -112,8 +111,8 @@ public:
       }
       ++p; // next particle
     }
-    cout << "ProcessCut::DoSecondaries size=" << vS.getEntries() << " count=" << fCount
-         << endl;
+    C8LOG_INFO(fmt::format("ProcessCut::DoSecondaries size={} count={}", vS.getEntries(),
+                           fCount));
     return EProcessReturn::eOk;
   }
 

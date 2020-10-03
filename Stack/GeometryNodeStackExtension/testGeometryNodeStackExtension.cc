@@ -49,7 +49,7 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
     const int data = 5;
 
     TestStack s;
-    s.AddParticle(std::tuple<dummy::NoData>{noData}, std::tuple<const int*>{&data});
+    s.AddParticle(std::make_tuple(noData), std::tuple<const int*>{&data});
 
     CHECK(s.GetSize() == 1);
   }
@@ -58,7 +58,7 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
     const int data = 15;
 
     TestStack s;
-    auto p = s.AddParticle(std::tuple<dummy::NoData>{noData});
+    auto p = s.AddParticle(std::make_tuple(noData));
     p.SetNode(&data);
     CHECK(s.GetSize() == 1);
 

@@ -24,6 +24,7 @@
 #include <set>
 #include <sstream>
 
+using std::make_tuple;
 using std::tuple;
 using std::vector;
 
@@ -554,19 +555,13 @@ namespace corsika::process::sibyll {
 
       if (nuclA == 1)
         // add nucleon
-        projectile.AddSecondary(
-            tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
-                  geometry::Point, units::si::TimeType>{
-                specCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(),
-                pOrig, tOrig});
+        projectile.AddSecondary(make_tuple(specCode, Plab.GetTimeLikeComponent(),
+                                           Plab.GetSpaceLikeComponents(), pOrig, tOrig));
       else
         // add nucleus
-        projectile.AddSecondary(
-            tuple<particles::Code, units::si::HEPEnergyType,
-                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType,
-                  unsigned short, unsigned short>{specCode, Plab.GetTimeLikeComponent(),
-                                                  Plab.GetSpaceLikeComponents(), pOrig,
-                                                  tOrig, nuclA, nuclZ});
+        projectile.AddSecondary(make_tuple(specCode, Plab.GetTimeLikeComponent(),
+                                           Plab.GetSpaceLikeComponents(), pOrig, tOrig,
+                                           nuclA, nuclZ));
     }
 
     // add elastic nucleons to corsika stack
@@ -583,11 +578,8 @@ namespace corsika::process::sibyll {
       const double mass_ratio = particles::GetMass(elaNucCode) / ProjMass;
       auto const Plab = PprojLab * mass_ratio;
 
-      projectile.AddSecondary(
-          tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
-                geometry::Point, units::si::TimeType>{
-              elaNucCode, Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(),
-              pOrig, tOrig});
+      projectile.AddSecondary(make_tuple(elaNucCode, Plab.GetTimeLikeComponent(),
+                                         Plab.GetSpaceLikeComponents(), pOrig, tOrig));
     }
 
     // add inelastic interactions
@@ -600,10 +592,8 @@ namespace corsika::process::sibyll {
       setup::Stack nucleonStack;
       // auto inelasticNucleon = projectile.AddSecondary(
       auto inelasticNucleon = nucleonStack.AddParticle(
-          tuple<particles::Code, units::si::HEPEnergyType, corsika::stack::MomentumVector,
-                geometry::Point, units::si::TimeType>{
-              pCode, PprojNucLab.GetTimeLikeComponent(),
-              PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig});
+          make_tuple(pCode, PprojNucLab.GetTimeLikeComponent(),
+                     PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig));
       inelasticNucleon.SetNode(projectile.GetNode());
       // create inelastic interaction for each nucleon
       C8LOG_TRACE("calling HadronicInteraction...");
@@ -613,11 +603,9 @@ namespace corsika::process::sibyll {
       hadronicInteraction_.DoInteraction(nucleon_secondaries);
       // inelasticNucleon.Delete(); // this is just a temporary object
       for (const auto& pSec : nucleon_secondaries) {
-        projectile.AddSecondary(
-            tuple<particles::Code, units::si::HEPEnergyType,
-                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-                pSec.GetPID(), pSec.GetEnergy(), pSec.GetMomentum(), pSec.GetPosition(),
-                pSec.GetTime()});
+        projectile.AddSecondary(make_tuple(pSec.GetPID(), pSec.GetEnergy(),
+                                           pSec.GetMomentum(), pSec.GetPosition(),
+                                           pSec.GetTime()));
       }
     }
 

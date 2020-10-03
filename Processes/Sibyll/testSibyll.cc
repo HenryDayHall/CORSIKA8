@@ -19,6 +19,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <catch2/catch.hpp>
+#include <tuple>
 
 using namespace corsika;
 using namespace corsika::process::sibyll;
@@ -123,10 +124,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
+    auto particle =
+        stack.AddParticle(std::make_tuple(particles::Code::Proton, E0, plab, pos, 0_ns));
     particle.SetNode(nodePtr);
     corsika::setup::StackView view(particle);
 
@@ -208,10 +207,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
+    auto particle =
+        stack.AddParticle(std::make_tuple(particles::Code::Proton, E0, plab, pos, 0_ns));
     particle.SetNode(nodePtr);
     corsika::setup::StackView view(particle);
 
@@ -237,11 +234,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
 
-    auto particle =
-        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                     corsika::stack::MomentumVector, geometry::Point,
-                                     units::si::TimeType, unsigned short, unsigned short>{
-            particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
+    auto particle = stack.AddParticle(
+        std::make_tuple(particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2));
     particle.SetNode(nodePtr);
     corsika::setup::StackView view(particle);
 
@@ -260,10 +254,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Lambda0, E0, plab, pos, 0_ns});
+    auto particle =
+        stack.AddParticle(std::make_tuple(particles::Code::Lambda0, E0, plab, pos, 0_ns));
     corsika::setup::StackView view(particle);
 
     Decay model;

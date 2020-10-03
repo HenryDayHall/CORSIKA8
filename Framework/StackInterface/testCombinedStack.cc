@@ -16,7 +16,6 @@
 // test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
 #include <iomanip>
-#include <iostream>
 #include <vector>
 
 #include <catch2/catch.hpp>
@@ -384,7 +383,6 @@ TEST_CASE("Combined Stack - secondary view") {
 
     StackTest2 stack;
     auto particle = stack.AddParticle(std::tuple{9.9});
-    // cout << boost::typeindex::type_id_runtime(particle).pretty_name() << endl;
     StackTestView view(particle);
 
     auto projectile = view.GetProjectile();
