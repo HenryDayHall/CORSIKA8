@@ -618,14 +618,17 @@ sanity:
   stage: python
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y python3-pip
   script:
     - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
-    - pip install --user -e '.[test]'  # install the package + test deps
-    - python -m mypy corsika
-    - python -m isort --atomic --check-only corsika tests
-    - python -m black -t py37 corsika tests
-    - python -m flake8 corsika tests
-    - python -m pytest --cov=corsika tests
+    - pip3 install --user -e '.[test]'  # install the package + test deps
+    - python3 --version
+    - python3 -m mypy corsika
+    - python3 -m isort --atomic --check-only corsika tests
+    - python3 -m black -t py37 corsika tests
+    - python3 -m flake8 corsika tests
+    - python3 -m pytest --cov=corsika tests
     - cd ${CI_PROJECT_DIR}  # reset the directory
   coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
 <<<<<<< HEAD
@@ -638,23 +641,11 @@ sanity:
 =======
 >>>>>>> 927acbbd... Move 'read_hist' into 'corsika' and new CI.
 
-# we now configure the jobs for the three supported Python versions. We run
-# Python 3.7 for all commits but only run Python 3.6/3.8 before merging or if
-# the MR is an explict Python MR with the 'Python' tag.
-python-3.6:
-  extends: .python
-  image: python:3.6
-  rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Python/'
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Code review finished/'
-      
-python-3.7:
-  extends: .python
-  image: python:3.7
-
+# the default Python version Ubuntu 18.04 is Python3.8
 python-3.8:
   extends: .python
-  image: python:3.8
-  rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Python/'
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Code review finished/'
+  image: corsika/devel:u-18.04
+  dependencies:
+    - build-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
