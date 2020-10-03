@@ -54,9 +54,7 @@ check-copyrights:
 
 ##########################################################
 check-clang-format:
-  image: corsika/devel:u-18.04
-  before_script:
-  - apt-get update && apt-get install -y -qq clang-format
+  image: corsika/devel:clang-8
   stage: quality
   tags:
     - corsika
