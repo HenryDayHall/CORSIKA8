@@ -12,8 +12,6 @@
 
 #include <catch2/catch.hpp>
 
-#include <iostream>
-
 using namespace corsika;
 using namespace corsika::stack;
 

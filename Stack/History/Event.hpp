@@ -13,7 +13,6 @@
 #include <corsika/stack/history/EventType.hpp>
 #include <corsika/stack/history/SecondaryParticle.hpp>
 
-#include <iostream>
 #include <memory>
 #include <optional>
 #include <vector>

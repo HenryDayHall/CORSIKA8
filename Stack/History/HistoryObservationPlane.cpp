@@ -12,7 +12,6 @@
 #include <boost/histogram/ostream.hpp>
 
 #include <fstream>
-#include <iostream>
 
 using namespace corsika::units::si;
 using namespace corsika::history;
@@ -80,4 +79,4 @@ void HistoryObservationPlane::fillHistoryHistogram(
   histogram_(intCounter);
 }
 
-void HistoryObservationPlane::print() { std::cout << histogram_ << std::endl; }
+void HistoryObservationPlane::print() { C8LOG_INFO(histogram_); }
