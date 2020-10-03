@@ -16,7 +16,7 @@ tests:
 	${PYTHON} -m pytest --cov=corsika tests
 
 flake:
-	${PYTHON} -m flake8 corsika
+	${PYTHON} -m flake8 corsika tests
 
 black:
 	${PYTHON} -m black -t py37 corsika tests

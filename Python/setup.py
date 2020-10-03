@@ -32,7 +32,7 @@ setup(
     keywords=["cosmic ray", "physics", "astronomy", "simulation"],
     packages=["corsika"],
     python_requires=">=3.6*, <4",
-    install_requires=["numpy", "pyyaml",],
+    install_requires=["numpy", "pyyaml", "boost_histogram"],
     extras_require={
         "test": [
             "pytest",

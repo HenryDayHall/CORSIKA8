@@ -622,8 +622,8 @@ sanity:
     - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
     - pip install --user -e '.[test]'  # install the package + test deps
     - make all 2&>1 | tee python-test.log  # this runs all of the Python tests
-    - echo "finished" >> python-test.log # create even an empty file...
-    - cd ${CI_PROJECT_DIR}  # reset the directory    
+    - cd ${CI_PROJECT_DIR}  # reset the directory
+  coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
   artifacts:
     when: always
     expire_in: 1 year

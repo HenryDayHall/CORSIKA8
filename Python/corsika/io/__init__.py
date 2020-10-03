@@ -1,5 +1,5 @@
 """
- A Python interface to CORSIKA 8.
+ The 'io' module provides for reading CORSIKA8 output files.
 
  (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
 
@@ -8,9 +8,7 @@
  the license.
 """
 
-from . import io
+from .hist import read_hist
 
-# all imported objects
-__all__ = ["io"]
-
-__version__: str = "8.0.0-alpha"
+# all exported objects
+__all__ = ["read_hist"]
