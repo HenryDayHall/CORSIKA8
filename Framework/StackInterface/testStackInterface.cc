@@ -40,10 +40,16 @@ TEST_CASE("Stack", "[Stack]") {
     // construct a valid Stack object
     StackTest s;
     s.Clear();
-    s.AddParticle(std::tuple{0.});
+    auto pTest0 = s.AddParticle(std::tuple{0.});
+    CHECK(s.getSize() == 1);
+    auto pTest1 = s.AddParticle(std::tuple{1.});
     s.Copy(s.cbegin(), s.begin());
     s.Swap(s.begin(), s.begin());
     CHECK(s.getSize() == 1);
+    auto pTestAt = s.at(0);
+    CHECK(pTestAt == pTest);
+    auto pTestFirst = s.first();
+    CHECK(pTestFirst == pTest);
   }
 
   SECTION("construct") {

@@ -281,6 +281,12 @@ namespace corsika::stack {
       }
       return ConstStackIterator(*this, getSize() - 1 - i + 1);
     }
+    StackIterator at(unsigned int i) {
+      return StackIterator(*this, i);
+    }
+    ConstStackIterator at(unsigned int i) const {
+      return ConstStackIterator(*this, i);
+    }
     /// @}
 
     /**
