@@ -59,18 +59,18 @@ TEST_CASE("SecondaryStack", "[stack]") {
   };
 
   SECTION("secondary view") {
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    CHECK(s.IsEmpty());
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    CHECK(stack.IsEmpty());
 
-    s.AddParticle(std::tuple{9.9});
-    s.AddParticle(std::tuple{8.8});
+    stack.AddParticle(std::tuple{9.9});
+    stack.AddParticle(std::tuple{8.8});
     const double sumS = 9.9 + 8.8; // helper, see below
-    CHECK(s.getSize() == 2);
-    CHECK(s.getEntries() == 2);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 2);
+    CHECK(stack.getEntries() == 2);
+    CHECK(!stack.IsEmpty());
 
-    auto particle = s.GetNextParticle();
+    auto particle = stack.GetNextParticle();
 
     StackTestView view(particle);
     CHECK(view.getSize() == 0);
@@ -85,41 +85,41 @@ TEST_CASE("SecondaryStack", "[stack]") {
     CHECK(view.getSize() == 1);
     CHECK(view.getEntries() == 1);
     CHECK(!view.IsEmpty());
-    CHECK(s.getSize() == 3);
-    CHECK(s.getEntries() == 3);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 3);
+    CHECK(stack.getEntries() == 3);
+    CHECK(!stack.IsEmpty());
 
     view.AddSecondary(std::tuple{4.5});
     view.AddSecondary(std::tuple{4.6});
     CHECK(view.getSize() == 3);
     CHECK(view.getEntries() == 3);
     CHECK(!view.IsEmpty());
-    CHECK(s.getSize() == 5);
-    CHECK(s.getEntries() == 5);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 5);
+    CHECK(stack.getEntries() == 5);
+    CHECK(!stack.IsEmpty());
 
-    CHECK(sum(s) == sumS + 4.4 + 4.5 + 4.6);
+    CHECK(sum(stack) == sumS + 4.4 + 4.5 + 4.6);
     CHECK(sumView(view) == 4.4 + 4.5 + 4.6);
 
     view.last().Delete();
     CHECK(view.getSize() == 3);
     CHECK(view.getEntries() == 2);
-    CHECK(s.getSize() == 5);
-    CHECK(s.getEntries() == 4);
+    CHECK(stack.getSize() == 5);
+    CHECK(stack.getEntries() == 4);
 
-    CHECK(sum(s) == sumS + 4.4 + 4.5);
+    CHECK(sum(stack) == sumS + 4.4 + 4.5);
     CHECK(sumView(view) == 4.4 + 4.5);
 
     auto pDel = view.GetNextParticle();
     view.Delete(pDel);
     CHECK(view.getSize() == 2);
-    CHECK(s.getSize() == 4);
+    CHECK(stack.getSize() == 4);
 
-    CHECK(sum(s) == sumS + 4.4 + 4.5 - pDel.GetData());
+    CHECK(sum(stack) == sumS + 4.4 + 4.5 - pDel.GetData());
     CHECK(sumView(view) == 4.4 + 4.5 - pDel.GetData());
 
     view.Delete(view.GetNextParticle());
-    CHECK(sum(s) == sumS);
+    CHECK(sum(stack) == sumS);
     CHECK(sumView(view) == 0);
     CHECK(view.IsEmpty());
 
@@ -128,15 +128,20 @@ TEST_CASE("SecondaryStack", "[stack]") {
       CHECK(proj.GetData() == particle.GetData());
       CHECK(particle == view.parent());
     }
+
+    // at() and first()
+    auto pTestAt = view.at(0);
+    auto pTestFirst = view.first();
+    CHECK(pTestFirst == pTestAt);
   }
 
   SECTION("secondary view, construct from ParticleType") {
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    s.AddParticle(std::tuple{9.9});
-    s.AddParticle(std::tuple{8.8});
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    stack.AddParticle(std::tuple{9.9});
+    stack.AddParticle(std::tuple{8.8});
 
-    auto iterator = s.GetNextParticle();
+    auto iterator = stack.GetNextParticle();
     typename StackTest::ParticleType& particle = iterator; // as in corsika::Cascade
 
     StackTestView view(particle);
@@ -205,5 +210,47 @@ TEST_CASE("SecondaryStack", "[stack]") {
       CHECK(stack.getEntries() == 6);
       CHECK(stack.getSize() == 10);
     }
+  }
+
+  SECTION("swap particle") {
+    StackTest stack;
+    stack.AddParticle(std::tuple{-99.});
+
+    StackTestView view(stack.first());
+    view.AddSecondary(std::tuple{-2.});
+    view.AddSecondary(std::tuple{-1.});
+    view.AddSecondary(std::tuple{1.});
+
+    auto p1 = view.begin();
+    auto p2 = p1 + 1;
+
+    CHECK(p1.GetData() == -2.);
+    CHECK(p2.GetData() == -1.);
+
+    view.Swap(p1, p2);
+
+    CHECK(p1.GetData() == -1);
+    CHECK(p2.GetData() == -2);
+  }
+
+  SECTION("copy particle") {
+    StackTest stack;
+    stack.AddParticle(std::tuple{-99.});
+
+    StackTestView view(stack.first());
+    view.AddSecondary(std::tuple{-2.});
+    view.AddSecondary(std::tuple{-1.});
+    view.AddSecondary(std::tuple{1.});
+
+    auto p1 = view.begin();
+    auto p2 = p1 + 1;
+
+    CHECK(p1.GetData() == -2.);
+    CHECK(p2.GetData() == -1.);
+
+    view.Copy(p1, p2);
+
+    CHECK(p1.GetData() == -2);
+    CHECK(p2.GetData() == -2);
   }
 }

@@ -13,17 +13,23 @@ set (
   corsika/stack/history
   )
 
-set (
-  HISTORY_SOURCES
-  HistoryObservationPlane.cpp
-)
+if (WITH_HISTORY)
+  set (
+    HISTORY_SOURCES
+    HistoryObservationPlane.cpp
+    )
+  add_library (CORSIKAhistory STATIC ${HISTORY_SOURCES})
+  set (IS_INTERFACE "")
+else (WITH_HISTORY)
+  add_library (CORSIKAhistory INTERFACE)
+  set (IS_INTERFACE "INTERFACE")
+endif (WITH_HISTORY)
 
-#add_library (CORSIKAhistory INTERFACE)
-add_library (CORSIKAhistory STATIC ${HISTORY_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAhistory ${HISTORY_NAMESPACE} ${HISTORY_HEADERS})
 
 target_link_libraries (
   CORSIKAhistory
+  ${IS_INTERFACE}
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAprocesssequence # for HistoryObservationPlane

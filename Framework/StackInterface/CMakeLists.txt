@@ -25,6 +25,7 @@ target_link_libraries (
   CORSIKAstackinterface
   INTERFACE
   CORSIKAlogging
+  CORSIKAsetup  
   )
 
 target_include_directories (

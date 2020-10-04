@@ -18,6 +18,10 @@
 
 #include <catch2/catch.hpp>
 
+#include <cstdlib>
+#include <experimental/filesystem>
+#include <iostream>
+
 using namespace corsika;
 using namespace corsika::process::qgsjetII;
 using namespace corsika::units::si;
@@ -40,7 +44,29 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
   return sum;
 }
 
+TEST_CASE("CORSIKA_DATA", "[processes]") {
+
+  SECTION("check CORSIKA_DATA") {
+
+    const char* data = std::getenv("CORSIKA_DATA");
+    // these REQUIRES are needed:
+    REQUIRE(data != 0);
+    REQUIRE(std::experimental::filesystem::is_directory(
+        std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
+    std::cout << "data: " << data << " isDir: "
+              << std::experimental::filesystem::is_directory(std::string(data) +
+                                                             "/QGSJetII")
+              << std::endl;
+  }
+}
+
 TEST_CASE("QgsjetII", "[processes]") {
+
+  SECTION("Corsika -> QgsjetII") {
+    CHECK(process::qgsjetII::ConvertToQgsjetII(particles::PiMinus::GetCode()) ==
+          process::qgsjetII::QgsjetIICode::PiMinus);
+    CHECK(process::qgsjetII::ConvertToQgsjetIIRaw(particles::Proton::GetCode()) == 2);
+  }
 
   SECTION("QgsjetII -> Corsika") {
     CHECK(particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(

@@ -65,10 +65,9 @@ LengthType HistoryObservationPlane::MaxStepLength(setup::Stack::ParticleType con
 
 void HistoryObservationPlane::fillHistoryHistogram(
     setup::Stack::ParticleType const& muon) {
-  //  double const muonEnergy = muon.GetEnergy() / 1_eV;
-
-  // auto parent = stack_.begin() + muon.GetEvent()->projectileIndex();
-  Event* event = muon.GetEvent().get();
+  // double const muonEnergy = muon.GetEnergy() / 1_eV;
+  // auto parent = stack_.at(muon.GetEvent()->projectileIndex());
+  Event const* event = muon.GetEvent().get();
 
   int intCounter = 0;
   while (event) {

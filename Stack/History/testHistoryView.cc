@@ -136,8 +136,8 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
 
       CHECK(count_generations(sec.GetEvent().get()) == 2);
 
-      CHECK((stack.begin() + sec.GetEvent()->projectileIndex()).GetEvent() ==
-            sec.GetEvent()->parentEvent());
+      const auto org_projectile = stack.at(sec.GetEvent()->projectileIndex());
+      CHECK(org_projectile.GetEvent() == sec.GetEvent()->parentEvent());
     }
 
     // read 2nd genertion particle particle
@@ -246,8 +246,8 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
       CHECK(sec.GetEvent()->secondaries().size() == i + 1);
       CHECK(sec.GetEvent()->parentEvent()->parentEvent() == ev0);
 
-      CHECK((stack.begin() + sec.GetEvent()->projectileIndex()).GetEvent() ==
-            sec.GetEvent()->parentEvent());
+      const auto org_projectile = stack.at(sec.GetEvent()->projectileIndex());
+      CHECK(org_projectile.GetEvent() == sec.GetEvent()->parentEvent());
     }
     CHECK(stack.getEntries() == 16);
   }

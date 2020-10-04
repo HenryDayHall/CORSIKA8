@@ -128,14 +128,25 @@ namespace corsika::stack {
   public:
     /**
        SecondaryView can only be constructed passing it a valid
-       StackIterator to another Stack object
+       StackIterator to another Stack object (here: lvalue)
      **/
     SecondaryView(StackIteratorValue& particle)
         : Stack<StackDataType&, ParticleInterface>(particle.GetStackData())
         , MSecondaryProducer<StackDataType, ParticleInterface>{particle}
         , inner_stack_(particle.GetStack())
         , projectile_index_(particle.GetIndex()) {
-      C8LOG_TRACE("SecondaryView::SecondaryView(particle)");
+      C8LOG_TRACE("SecondaryView::SecondaryView(particle&)");
+    }
+    /**
+       SecondaryView can only be constructed passing it a valid
+       StackIterator to another Stack object (here: rvalue)
+     **/
+    SecondaryView(StackIteratorValue&& particle)
+        : Stack<StackDataType&, ParticleInterface>(particle.GetStackData())
+        , MSecondaryProducer<StackDataType, ParticleInterface>{particle}
+        , inner_stack_(particle.GetStack())
+        , projectile_index_(particle.GetIndex()) {
+      C8LOG_TRACE("SecondaryView::SecondaryView(particle&&)");
     }
     /**
      * Also allow to create a new View from a Projectile (StackIterator on View)
@@ -281,13 +292,27 @@ namespace corsika::stack {
       }
       return ConstStackIterator(*this, getSize() - 1 - i + 1);
     }
-    StackIterator at(unsigned int i) {
-      return StackIterator(*this, i);
-    }
-    ConstStackIterator at(unsigned int i) const {
-      return ConstStackIterator(*this, i);
-    }
+    StackIterator at(unsigned int i) { return StackIterator(*this, i); }
+    ConstStackIterator at(unsigned int i) const { return ConstStackIterator(*this, i); }
+    StackIterator first() { return StackIterator{*this, 0}; }
+    ConstStackIterator cfirst() const { return ConstStackIterator{*this, 0}; }
     /// @}
+
+    void Swap(StackIterator a, StackIterator b) {
+      C8LOG_TRACE("View::Swap");
+      inner_stack_.Swap(GetIndexFromIterator(a.GetIndex()),
+                        GetIndexFromIterator(b.GetIndex()));
+    }
+    void Copy(StackIterator a, StackIterator b) {
+      C8LOG_TRACE("View::Copy");
+      inner_stack_.Copy(GetIndexFromIterator(a.GetIndex()),
+                        GetIndexFromIterator(b.GetIndex()));
+    }
+    void Copy(ConstStackIterator a, StackIterator b) {
+      C8LOG_TRACE("View::Copy");
+      inner_stack_.Copy(GetIndexFromIterator(a.GetIndex()),
+                        GetIndexFromIterator(b.GetIndex()));
+    }
 
     /**
      * need overwrite Stack::Delete, since we want to call
@@ -381,6 +406,21 @@ namespace corsika::stack {
       InnerStackTypeRef::nDeleted_ = 0;
     }
 
+    std::string as_string() const {
+      std::string str(fmt::format("size {}\n", getSize()));
+      // we make our own begin/end since we want ALL entries
+      std::string new_line = "     ";
+      for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
+        ConstStackIterator itPart(*this, iPart);
+        str += fmt::format(
+            "{}{}{}", new_line, itPart.as_string(),
+            (inner_stack_.deleted_[GetIndexFromIterator(itPart.GetIndex())] ? " [deleted]"
+                                                                            : ""));
+        new_line = "\n     ";
+      }
+      return str;
+    }
+
   protected:
     // forward to inner stack
     // this also checks the allowed bounds of 'i'
@@ -421,8 +461,8 @@ namespace corsika::stack {
      * is of course a reference into the SecondaryView itself.
      */
     template <typename Particle>
-    auto new_secondary(Particle&) const {
-      C8LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&)");
+    auto new_secondary(Particle&&) const {
+      C8LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&&)");
     }
 
     /**

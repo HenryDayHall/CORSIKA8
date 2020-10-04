@@ -38,18 +38,20 @@ TEST_CASE("Stack", "[Stack]") {
   SECTION("StackInterface") {
 
     // construct a valid Stack object
-    StackTest s;
-    s.Clear();
-    auto pTest0 = s.AddParticle(std::tuple{0.});
-    CHECK(s.getSize() == 1);
-    auto pTest1 = s.AddParticle(std::tuple{1.});
-    s.Copy(s.cbegin(), s.begin());
-    s.Swap(s.begin(), s.begin());
-    CHECK(s.getSize() == 1);
-    auto pTestAt = s.at(0);
-    CHECK(pTestAt == pTest);
-    auto pTestFirst = s.first();
-    CHECK(pTestFirst == pTest);
+    StackTest stack;
+    stack.Clear();
+    CHECK(stack.getSize() == 0);
+    CHECK(stack.IsEmpty());                          // stack empty here
+    auto pTest0 = stack.AddParticle(std::tuple{0.}); // [0]
+    CHECK(stack.getSize() == 1);
+    CHECK(!stack.IsEmpty());
+    auto pTest1 = stack.AddParticle(std::tuple{1.}); // [0,1]
+    CHECK(stack.getSize() == 2);
+    CHECK(pTest1.GetData() == 1.);
+    auto pTestAt = stack.at(1); // -> 1
+    CHECK(pTestAt == pTest1);
+    auto pTestFirst = stack.first(); // -> 0
+    CHECK(pTestFirst == pTest0);
   }
 
   SECTION("construct") {
@@ -60,152 +62,152 @@ TEST_CASE("Stack", "[Stack]") {
 
   SECTION("write and read") {
 
-    StackTest s;
-    s.AddParticle(std::tuple{9.9});
-    const double v = sum(s);
+    StackTest stack;
+    stack.AddParticle(std::tuple{9.9});
+    const double v = sum(stack);
     CHECK(v == 9.9);
   }
 
   SECTION("delete from stack") {
 
-    StackTest s;
-    CHECK(s.getSize() == 0);
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
     StackTest::StackIterator p =
-        s.AddParticle(std::tuple{0.}); // valid way to access particle data
+        stack.AddParticle(std::tuple{0.}); // valid way to access particle data
     p.SetData(9.9);
-    CHECK(s.getSize() == 1);
-    CHECK(s.getEntries() == 1);
-    s.Delete(p);
-    CHECK(s.getSize() == 1);
-    CHECK(s.getEntries() == 0);
+    CHECK(stack.getSize() == 1);
+    CHECK(stack.getEntries() == 1);
+    stack.Delete(p);
+    CHECK(stack.getSize() == 1);
+    CHECK(stack.getEntries() == 0);
   }
 
   SECTION("delete particle") {
 
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    s.AddParticle(std::tuple{8.9});
-    s.AddParticle(std::tuple{7.9});
-    auto p = s.AddParticle(
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    stack.AddParticle(std::tuple{8.9});
+    stack.AddParticle(std::tuple{7.9});
+    auto p = stack.AddParticle(
         std::tuple{9.9}); // also valid way to access particle data, identical to above
 
-    CHECK(s.getSize() == 3);
-    CHECK(s.getEntries() == 3);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 3);
+    CHECK(stack.getEntries() == 3);
+    CHECK(!stack.IsEmpty());
 
     p.Delete(); // mark for deletion: size=3, entries=2
-    CHECK(s.getSize() == 3);
-    CHECK(s.getEntries() == 2);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 3);
+    CHECK(stack.getEntries() == 2);
+    CHECK(!stack.IsEmpty());
 
-    s.last().Delete(); // mark for deletion: size=3, entries=1
-    CHECK(s.getSize() == 3);
-    CHECK(s.getEntries() == 1);
-    CHECK(!s.IsEmpty());
+    stack.last().Delete(); // mark for deletion: size=3, entries=1
+    CHECK(stack.getSize() == 3);
+    CHECK(stack.getEntries() == 1);
+    CHECK(!stack.IsEmpty());
 
     /*
        GetNextParticle will find two entries marked as "deleted" and
        will purge this from the end of the stack: size = 1
     */
-    s.GetNextParticle().Delete(); // mark for deletion: size=3, entries=0
-    CHECK(s.getSize() == 1);
-    CHECK(s.getEntries() == 0);
-    CHECK(s.IsEmpty());
+    stack.GetNextParticle().Delete(); // mark for deletion: size=3, entries=0
+    CHECK(stack.getSize() == 1);
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.IsEmpty());
   }
 
   SECTION("create secondaries") {
 
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    auto iter = s.AddParticle(std::tuple{9.9});
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    auto iter = stack.AddParticle(std::tuple{9.9});
     StackTest::ParticleInterfaceType& p =
         *iter; // also this is valid to access particle data
-    CHECK(s.getSize() == 1);
+    CHECK(stack.getSize() == 1);
     p.AddSecondary(std::tuple{4.4});
-    CHECK(s.getSize() == 2);
+    CHECK(stack.getSize() == 2);
   }
 
   SECTION("get next particle") {
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    CHECK(s.getEntries() == 0);
-    CHECK(s.IsEmpty());
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.IsEmpty());
 
-    s.AddParticle(std::tuple{9.9});
-    s.AddParticle(std::tuple{8.8});
-    CHECK(s.getSize() == 2);
-    CHECK(s.getEntries() == 2);
-    CHECK(!s.IsEmpty());
+    stack.AddParticle(std::tuple{9.9});
+    stack.AddParticle(std::tuple{8.8});
+    CHECK(stack.getSize() == 2);
+    CHECK(stack.getEntries() == 2);
+    CHECK(!stack.IsEmpty());
 
-    auto particle = s.GetNextParticle(); // first particle
+    auto particle = stack.GetNextParticle(); // first particle
     CHECK(particle.GetData() == 8.8);
 
     particle.Delete(); // only marks (last) particle as deleted
-    CHECK(s.getSize() == 2);
-    CHECK(s.getEntries() == 1);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 2);
+    CHECK(stack.getEntries() == 1);
+    CHECK(!stack.IsEmpty());
 
     /*
       This following call to GetNextParticle will realize that the
       current last particle on the stack was marked "deleted" and will
       purge it: stack size is reduced by one.
      */
-    auto particle2 = s.GetNextParticle(); // first particle
+    auto particle2 = stack.GetNextParticle(); // first particle
     CHECK(particle2.GetData() == 9.9);
-    CHECK(s.getSize() == 1);
-    CHECK(s.getEntries() == 1);
-    CHECK(!s.IsEmpty());
+    CHECK(stack.getSize() == 1);
+    CHECK(stack.getEntries() == 1);
+    CHECK(!stack.IsEmpty());
 
     particle2.Delete(); // also mark this particle as deleted
 
-    CHECK(s.getSize() == 1);
-    CHECK(s.getEntries() == 0);
-    CHECK(s.IsEmpty());
+    CHECK(stack.getSize() == 1);
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.IsEmpty());
   }
 
   SECTION("swap particle") {
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    CHECK(s.getEntries() == 0);
-    CHECK(s.IsEmpty());
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.IsEmpty());
 
-    s.AddParticle(std::tuple{9.888});
-    s.AddParticle(std::tuple{8.999});
-    CHECK(s.getSize() == 2);
-    CHECK(s.getEntries() == 2);
-    CHECK(!s.IsEmpty());
+    stack.AddParticle(std::tuple{9.888});
+    stack.AddParticle(std::tuple{8.999});
+    CHECK(stack.getSize() == 2);
+    CHECK(stack.getEntries() == 2);
+    CHECK(!stack.IsEmpty());
 
-    auto p1 = s.begin();
+    auto p1 = stack.begin();
     auto p2 = p1 + 1;
 
     CHECK(p1.GetData() == 9.888);
     CHECK(p2.GetData() == 8.999);
 
-    s.Swap(p1, p2);
+    stack.Swap(p1, p2);
 
     CHECK(p1.GetData() == 8.999);
     CHECK(p2.GetData() == 9.888);
   }
 
   SECTION("copy particle") {
-    StackTest s;
-    CHECK(s.getSize() == 0);
-    CHECK(s.getEntries() == 0);
-    CHECK(s.IsEmpty());
+    StackTest stack;
+    CHECK(stack.getSize() == 0);
+    CHECK(stack.getEntries() == 0);
+    CHECK(stack.IsEmpty());
 
-    s.AddParticle(std::tuple{9.888});
-    s.AddParticle(std::tuple{8.999});
-    CHECK(s.getSize() == 2);
-    CHECK(s.getEntries() == 2);
-    CHECK(!s.IsEmpty());
+    stack.AddParticle(std::tuple{9.888});
+    stack.AddParticle(std::tuple{8.999});
+    CHECK(stack.getSize() == 2);
+    CHECK(stack.getEntries() == 2);
+    CHECK(!stack.IsEmpty());
 
-    auto p1 = s.begin();
+    auto p1 = stack.begin();
     auto p2 = p1 + 1;
 
     CHECK(p1.GetData() == 9.888);
     CHECK(p2.GetData() == 8.999);
 
-    s.Copy(p1, p2);
+    stack.Copy(p1, p2);
 
     CHECK(p1.GetData() == 9.888);
     CHECK(p2.GetData() == 9.888);

@@ -44,15 +44,6 @@ namespace corsika::history {
     void setProjectileIndex(size_t i) { projectile_index_ = i; }
     size_t projectileIndex() const { return projectile_index_; }
 
-    template <typename TStackIterator>
-    TStackIterator projectile(TStackIterator begin) {
-      // todo: change this
-      // MR: This is dangerous. You can pass any iterator though it must
-      // be stack.begin() to yield the correct projectile
-
-      return begin + projectile_index_;
-    }
-
     size_t addSecondary(units::si::HEPEnergyType energy,
                         geometry::Vector<units::si::hepmomentum_d> const& momentum,
                         particles::Code pid) {

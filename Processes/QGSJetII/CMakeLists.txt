@@ -104,20 +104,4 @@ target_link_libraries (
   testQGSJetII
   ProcessQGSJetII
   CORSIKAtesting
-  )
-
-# also provide QGSJetII large data tables for testing in build tree (links)
-# -> changed that to use environment variable "${CORSIKA_DATA}/QGSJetII"
-# add_custom_command (
-#  OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/qgsdat-II-04 ${CMAKE_CURRENT_BINARY_DIR}/sectnu-II-04
-#  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/qgsdat-II-04 ${CMAKE_CURRENT_BINARY_DIR}/qgsdat-II-04
-#  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/sectnu-II-04 ${CMAKE_CURRENT_BINARY_DIR}/sectnu-II-04
-#  COMMENT "Generate link in source-dir: qgsjet-II-04"
-#  )
-
-# add_custom_target (QGSJetDataLink DEPENDS
-#  ${CMAKE_CURRENT_BINARY_DIR}/qgsdat-II-04
-#  ${CMAKE_CURRENT_BINARY_DIR}/sectnu-II-04
-#  )
-
-# add_dependencies (testQGSJetII QGSJetDataLink)
+  stdc++fs)

@@ -165,11 +165,6 @@ namespace corsika::stack {
       }
       return StackIterator(*this, i);
     }
-
-    StackIterator first() { return StackIterator{*this, 0}; }
-
-    ConstStackIterator cfirst() const { return ConstStackIterator{*this, 0}; }
-
     StackIterator end() { return StackIterator(*this, getSize()); }
     StackIterator last() {
       unsigned int i = 0;
@@ -210,13 +205,10 @@ namespace corsika::stack {
       }
       return ConstStackIterator(*this, getSize() - 1 - i);
     }
-    StackIterator at(unsigned int i) {
-      return StackIterator(*this, i);
-    }
-
-    ConstStackIterator at(unsigned int i) const {
-      return ConstStackIterator(*this, i);
-    }
+    StackIterator at(unsigned int i) { return StackIterator(*this, i); }
+    ConstStackIterator at(unsigned int i) const { return ConstStackIterator(*this, i); }
+    StackIterator first() { return StackIterator{*this, 0}; }
+    ConstStackIterator cfirst() const { return ConstStackIterator{*this, 0}; }
     /// @}
 
     StackIterator GetNextParticle() {
@@ -254,15 +246,11 @@ namespace corsika::stack {
   public:
     void Swap(StackIterator a, StackIterator b) {
       C8LOG_TRACE("Stack::Swap");
-      data_.Swap(a.GetIndex(), b.GetIndex());
-      std::swap(deleted_[a.GetIndex()], deleted_[b.GetIndex()]);
+      Swap(a.GetIndex(), b.GetIndex());
     }
     void Copy(StackIterator a, StackIterator b) {
       C8LOG_TRACE("Stack::Copy");
-      data_.Copy(a.GetIndex(), b.GetIndex());
-      if (deleted_[b.GetIndex()] && !deleted_[a.GetIndex()]) nDeleted_--;
-      if (!deleted_[b.GetIndex()] && deleted_[a.GetIndex()]) nDeleted_++;
-      deleted_[b.GetIndex()] = deleted_[a.GetIndex()];
+      Copy(a.GetIndex(), b.GetIndex());
     }
     void Copy(ConstStackIterator a, StackIterator b) {
       C8LOG_TRACE("Stack::Copy");
@@ -272,18 +260,18 @@ namespace corsika::stack {
       deleted_[b.GetIndex()] = deleted_[a.GetIndex()];
     }
 
-    std::string as_string() const {
-      std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
-                                  getEntries(), getDeleted()));
-      // we make our own begin/end since we want ALL entries
-      std::string new_line = "     ";
-      for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
-        ConstStackIterator itPart(*this, iPart);
-        str += fmt::format("{}{}{}", new_line, itPart.as_string(),
-                           (deleted_[itPart.GetIndex()] ? " [deleted]" : ""));
-        new_line = "\n     ";
-      }
-      return str;
+  protected:
+    void Swap(unsigned int a, unsigned int b) {
+      C8LOG_TRACE("Stack::Swap(unsigned int)");
+      data_.Swap(a, b);
+      std::swap(deleted_[a], deleted_[b]);
+    }
+    void Copy(unsigned int a, unsigned int b) {
+      C8LOG_TRACE("Stack::Copy");
+      data_.Copy(a, b);
+      if (deleted_[b] && !deleted_[a]) nDeleted_--;
+      if (!deleted_[b] && deleted_[a]) nDeleted_++;
+      deleted_[b] = deleted_[a];
     }
 
     /**
@@ -313,7 +301,6 @@ namespace corsika::stack {
     /**
      * check if this particle was already deleted
      */
-  public:
     bool isDeleted(const StackIterator& p) { return isDeleted(p.GetIndex()); }
     bool isDeleted(const ConstStackIterator& p) const { return isDeleted(p.GetIndex()); }
     bool isDeleted(const ParticleInterfaceType& p) { return isDeleted(p.GetIterator()); }
@@ -358,6 +345,20 @@ namespace corsika::stack {
     }
 
     unsigned int getSize() const { return data_.GetSize(); }
+
+    std::string as_string() const {
+      std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
+                                  getEntries(), getDeleted()));
+      // we make our own begin/end since we want ALL entries
+      std::string new_line = "     ";
+      for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
+        ConstStackIterator itPart(*this, iPart);
+        str += fmt::format("{}{}{}", new_line, itPart.as_string(),
+                           (deleted_[itPart.GetIndex()] ? " [deleted]" : ""));
+        new_line = "\n     ";
+      }
+      return str;
+    }
 
   protected:
     bool isDeleted(unsigned int i) const {

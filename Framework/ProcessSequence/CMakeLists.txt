@@ -23,6 +23,12 @@ set (
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAprocesssequence ${CORSIKAprocesssequence_NAMESPACE} ${CORSIKAprocesssequence_HEADERS})
 
 #include directive for upstream code
+target_link_libraries (
+  CORSIKAprocesssequence
+  INTERFACE
+  CORSIKAsetup
+  )
+
 target_include_directories (
   CORSIKAprocesssequence
   INTERFACE
@@ -48,7 +54,6 @@ CORSIKA_ADD_TEST (testProcessSequence)
 target_link_libraries (
   testProcessSequence
   ProcessSwitch
-  CORSIKAsetup
   CORSIKAgeometry
   CORSIKAprocesssequence
   CORSIKAtesting

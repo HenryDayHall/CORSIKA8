@@ -99,6 +99,9 @@ namespace corsika::cascade {
         , fStack(stack)
         , count_(0) {
       C8LOG_INFO(c8_ascii_);
+#ifdef WITH_HISTORY
+      C8LOG_INFO(" - With full cascade HISTORY.");
+#endif
     }
 
     corsika::units::si::HEPEnergyType GetEnergyCut() const { return energy_cut_; }
@@ -344,7 +347,7 @@ namespace corsika::cascade {
       return returnCode;
     }
 
-    void SetEventType(TStackView& view, history::EventType eventType) {
+    void SetEventType(TStackView& view, [[maybe_unused]] history::EventType eventType) {
       if constexpr (TStackView::has_event) {
         for (auto&& sec : view) { sec.GetEvent()->setEventType(eventType); }
       }

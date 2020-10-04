@@ -6,6 +6,12 @@
  * the license.
  */
 
+/* clang-format off */
+// InteractionCounter used boost/histogram, which
+// fails if boost/type_traits have been included before. Thus, we have
+// to include it first...
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
+/* clang-format on */
 #include <corsika/cascade/Cascade.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
@@ -36,7 +42,6 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
-#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
 #include <iomanip>
 #include <iostream>

@@ -23,6 +23,10 @@ target_link_libraries (
   CORSIKAhistory
   )
 
+if (WITH_HISTORY)
+  target_compile_definitions (CORSIKAsetup INTERFACE "WITH_HISTORY")
+endif (WITH_HISTORY)
+
 target_include_directories (
   CORSIKAsetup
   INTERFACE 
