@@ -10,20 +10,21 @@
                           // cpp file
 #include <catch2/catch.hpp>
 
-#include <corsika/process/devtools/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTime.h>
 
-#include <corsika/process/devtools/DummyBoundaryCrossingProcess.h>
-#include <corsika/process/devtools/DummyContinuousProcess.h>
-#include <corsika/process/devtools/DummyDecayProcess.h>
-#include <corsika/process/devtools/DummyInteractionProcess.h>
-#include <corsika/process/devtools/DummySecondariesProcess.h>
+#include <corsika/process/example_processors/DummyBoundaryCrossingProcess.h>
+#include <corsika/process/example_processors/DummyContinuousProcess.h>
+#include <corsika/process/example_processors/DummyDecayProcess.h>
+#include <corsika/process/example_processors/DummyInteractionProcess.h>
+#include <corsika/process/example_processors/DummySecondariesProcess.h>
 
 #include <random>
 
 using namespace corsika::process;
-using namespace corsika::process::devtools;
+using namespace corsika::process::analytic_processors;
+using namespace corsika::process::example_processors;
 
-TEST_CASE("ContinuousProcess interface", "[proccesses][DevTools ExecTime]") {
+TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
   ExecTime<DummyBoundaryCrossingProcess<50>> execTime;
   int tmp = 0;

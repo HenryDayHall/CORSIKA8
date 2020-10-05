@@ -6,37 +6,37 @@
  * the license.
  */
 #pragma once
-#include <corsika/process/ContinuousProcess.h>
+#include <corsika/process/InteractionProcess.h>
 
-#include <corsika/process/devtools/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTime.h>
 
 namespace corsika::process {
-  namespace devtools {
+  namespace analytic_processors {
     template <typename T>
     class _ExecTimeImpl;
 
     template <class T, bool TCheck>
-    class Continuous;
+    class Interaction;
 
     template <class T>
-    class Continuous<T, false> {};
+    class Interaction<T, false> {};
 
     template <class T>
-    class Continuous<T, true> : public _ExecTimeImpl<T> {
+    class Interaction<T, true> : public _ExecTimeImpl<T> {
     private:
     public:
-      template <typename Particle, typename Track>
-      EProcessReturn DoContinuous(Particle& p, Track const& t) const {
+      template <typename Particle>
+      EProcessReturn DoInteraction(Particle& p) {
         this->start();
-        auto r = T::DoContinous(p, t);
+        auto r = T::DoInteraction(p);
         this->stop();
         return r;
       }
 
-      template <typename Particle, typename Track>
-      units::si::LengthType MaxStepLength(Particle const& p, Track const& track) const {
+      template <typename Particle>
+      corsika::units::si::GrammageType GetInteractionLength(Particle& p) {
         this->start();
-        auto r = T::MaxStepLength(p, track);
+        auto r = T::GetInteractionLength(p);
         this->stop();
         return r;
       }

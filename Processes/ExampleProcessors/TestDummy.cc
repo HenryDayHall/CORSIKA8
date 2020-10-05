@@ -6,11 +6,11 @@
  * the license.
  */
 
-#include <corsika/process/devtools/DummyBoundaryCrossingProcess.h>
-#include <corsika/process/devtools/DummyContinuousProcess.h>
-#include <corsika/process/devtools/DummyDecayProcess.h>
-#include <corsika/process/devtools/DummyInteractionProcess.h>
-#include <corsika/process/devtools/DummySecondariesProcess.h>
+#include <corsika/process/example_processors/DummyBoundaryCrossingProcess.h>
+#include <corsika/process/example_processors/DummyContinuousProcess.h>
+#include <corsika/process/example_processors/DummyDecayProcess.h>
+#include <corsika/process/example_processors/DummyInteractionProcess.h>
+#include <corsika/process/example_processors/DummySecondariesProcess.h>
 
 #include <corsika/process/ProcessReturn.h>
 
@@ -20,7 +20,7 @@
 
 using namespace corsika;
 using namespace corsika::process;
-using namespace corsika::process::devtools;
+using namespace corsika::process::example_processors;
 
 using namespace corsika::units::si;
 

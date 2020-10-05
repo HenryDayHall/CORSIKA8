@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/analytics/Timer.h>
+#include <corsika/analytics/FunctionTimer.h>
 
 #include <catch2/catch.hpp>
 
@@ -23,10 +23,6 @@ int testFunc() {
 
 class testClass {
 public:
-  int testFunc() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    return 31415;
-  }
 
   int operator()() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -50,12 +46,5 @@ TEST_CASE("Analytics", "[Timer]") {
     std::cout << test() << std::endl;
     std::cout << test.getTime().count() << std::endl;
   }
-
-  SECTION("Measure runtime of a class member function") {
-    testClass testC;
-    auto test = corsika::analytics::timeProxy<testClass>();
-
-    std::cout << test() << std::endl;
-    std::cout << test.getTime().count() << std::endl;
-  }
+ 
 }

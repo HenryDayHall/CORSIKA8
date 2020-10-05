@@ -15,7 +15,7 @@
 #include <thread>
 
 namespace corsika::process {
-  namespace devtools {
+  namespace example_processors {
 
     template <int ISleep>
     class DummyDecayProcess : DecayProcess<DummyDecayProcess<ISleep>> {
@@ -36,5 +36,5 @@ namespace corsika::process {
       }
     };
 
-  } // namespace devtools
+  } // namespace example_processors
 } // namespace corsika::process

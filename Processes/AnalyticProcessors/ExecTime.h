@@ -18,14 +18,14 @@
 #include <corsika/process/SecondariesProcess.h>
 #include <corsika/process/StackProcess.h>
 
-#include <corsika/process/devtools/ImplBoundary.h>
-#include <corsika/process/devtools/ImplContinuous.h>
-#include <corsika/process/devtools/ImplDecay.h>
-#include <corsika/process/devtools/ImplInteraction.h>
-#include <corsika/process/devtools/ImplSecondaries.h>
+#include <corsika/process/analytic_processors/ImplBoundary.h>
+#include <corsika/process/analytic_processors/ImplContinuous.h>
+#include <corsika/process/analytic_processors/ImplDecay.h>
+#include <corsika/process/analytic_processors/ImplInteraction.h>
+#include <corsika/process/analytic_processors/ImplSecondaries.h>
 
 namespace corsika::process {
-  namespace devtools {
+  namespace analytic_processors {
 
     template <typename T>
     class _ExecTimeImpl : protected T {

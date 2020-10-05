@@ -40,28 +40,29 @@ namespace corsika::analytics {
     inline TDuration getTime() const { return vDiff; }
   };
 
-  template <typename TClass, typename TClock = std::chrono::high_resolution_clock,
-            typename TDuration = std::chrono::microseconds>
-  class timeProxy : public TClass {
-  private:
-    typename TClock::time_point vStart;
-    TDuration vDiff;
+  /*
+    template <typename TClass, typename TClock = std::chrono::high_resolution_clock,
+              typename TDuration = std::chrono::microseconds>
+    class timeProxy : public TClass {
+    private:
+      typename TClock::time_point vStart;
+      TDuration vDiff;
 
-    TClass& vObj;
+      TClass& vObj;
 
-    /*template <typename F, typename... Args>
-    decltype(auto) call_func(F func, Args&&... args) {
-      return (vObj.*func)(std::forward<Args>(args)...);
-    }*/
+     //template <typename F, typename... Args>
+      //decltype(auto) call_func(F func, Args&&... args) {
+       // return (vObj.*func)(std::forward<Args>(args)...);
+      //}
 
-  public:
-    template<typename ... TArgs>
-    timeProxy(TArgs args) : TClass<TArgs...>(std::forward<TArgs>(args)...)
-    {}
+    public:
+      template<typename ... TArgs>
+      timeProxy(TArgs args) : TClass<TArgs...>(std::forward<TArgs>(args)...)
+      {}
 
-    auto operator->() {return 2;}
+      auto operator->() {return 2;}
 
-    inline TDuration getTime() const { return vDiff; }
-  };
+      inline TDuration getTime() const { return vDiff; }
+    };*/
 
 } // namespace corsika::analytics

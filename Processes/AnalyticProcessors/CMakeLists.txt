@@ -1,6 +1,5 @@
 set (
-  MODEL_SOURCES
-  ExecTime.cc
+  MODEL_SOURCES  
   )
 
 set (
@@ -15,36 +14,22 @@ set (
 
 set (
   MODEL_NAMESPACE
-  corsika/process/devtools
+  corsika/process/analytic_processors
   )
 
-add_library (DevTools_Analytic STATIC ${MODEL_SOURCES})
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (DevTools_Analytic ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+add_library (AnalyticProcessors INTERFACE)  #STATIC ${MODEL_SOURCES})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (AnalyticProcessors ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
-set_target_properties (
-  DevTools_Analytic
-  PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  SOVERSION 1
-  )
-
-# target dependencies on other libraries (also the header onlys)
-target_link_libraries (
-  DevTools_Analytic
-  CORSIKAprocesssequence
-  CORSIKAunits
-  CORSIKAthirdparty  
-  )
 
 target_include_directories (
-  DevTools_Analytic 
+  AnalyticProcessors 
   INTERFACE 
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
 
 install (
-  TARGETS DevTools_Analytic
+  TARGETS AnalyticProcessors
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib 
   )
@@ -60,9 +45,10 @@ CORSIKA_ADD_TEST (testExecTime
 
 target_link_libraries (
   testExecTime  
-  DevTools_Analytic  
-  DevTools_Dummy
+  AnalyticProcessors
+  ExampleProcessors
   CORSIKAtesting
+  C8::ext::eigen3
   CORSIKAthirdparty # for catch2
   )
 

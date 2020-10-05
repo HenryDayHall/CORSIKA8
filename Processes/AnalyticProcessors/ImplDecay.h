@@ -6,29 +6,37 @@
  * the license.
  */
 #pragma once
-#include <corsika/process/SecondariesProcess.h>
+#include <corsika/process/DecayProcess.h>
 
-#include <corsika/process/devtools/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTime.h>
 
 namespace corsika::process {
-  namespace devtools {
+  namespace analytic_processors {
     template <typename T>
     class _ExecTimeImpl;
 
     template <class T, bool TCheck>
-    class Secondaries;
+    class Decay;
 
     template <class T>
-    class Secondaries<T, false> {};
+    class Decay<T, false> {};
 
     template <class T>
-    class Secondaries<T, true> : public _ExecTimeImpl<T> {
+    class Decay<T, true> : public _ExecTimeImpl<T> {
     private:
     public:
-      template <typename Secondaries>
-      inline EProcessReturn DoSecondaries(Secondaries& sec) {
+      template <typename Particle>
+      EProcessReturn DoDecay(Particle& p) {
         this->start();
-        auto r = T::DoSecondaries(sec);
+        auto r = T::DoDecay(p);
+        this->stop();
+        return r;
+      }
+
+      template <typename Particle>
+      corsika::units::si::TimeType GetLifetime(Particle& p) {
+        this->start();
+        auto r = T::GetLifetime(p);
         this->stop();
         return r;
       }

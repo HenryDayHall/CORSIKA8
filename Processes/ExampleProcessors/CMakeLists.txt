@@ -1,7 +1,5 @@
-add_library (DevTools_Dummy INTERFACE)
-
 set (
-  DevTools_Dummy_HEADERS
+  ExampleProcessors_HEADERS
   DummyBoundaryCrossingProcess.h
   DummyContinuousProcess.h
   DummyDecayProcess.h
@@ -10,23 +8,24 @@ set (
   )
 
 set (
-  DevTools_Dummy_NAMESPACE
-  corsika/process/devtools
+  ExampleProcessors_NAMESPACE
+  corsika/process/example_processors
   )
 
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (DevTools_Dummy ${DevTools_Dummy_NAMESPACE} ${DevTools_Dummy_HEADERS})
+add_library (ExampleProcessors INTERFACE)
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (ExampleProcessors ${ExampleProcessors_NAMESPACE} ${ExampleProcessors_HEADERS})
 
 
 target_include_directories (
-  DevTools_Dummy 
+  ExampleProcessors 
   INTERFACE 
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
   )
 
 install (
-  FILES ${DevTools_Dummy_HEADERS}
-  DESTINATION include/${DevTools_Dummy_NAMESPACE}
+  FILES ${ExampleProcessors_HEADERS}
+  DESTINATION include/${ExampleProcessors_NAMESPACE}
   )
 
 
@@ -37,7 +36,7 @@ CORSIKA_ADD_TEST (TestDummy)
 
 target_link_libraries (
   TestDummy  
-  DevTools_Dummy
+  ExampleProcessors
   CORSIKAunits
   CORSIKAstackinterface
   CORSIKAprocesssequence

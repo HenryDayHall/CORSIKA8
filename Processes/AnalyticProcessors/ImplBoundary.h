@@ -6,12 +6,11 @@
  * the license.
  */
 #pragma once
-#include <corsika/process/BoundaryCrossingProcess.h>
 
-#include <corsika/process/devtools/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTime.h>
 
 namespace corsika::process {
-  namespace devtools {
+  namespace analytic_processors {
 
     template <typename T>
     class _ExecTimeImpl;

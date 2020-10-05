@@ -8,32 +8,33 @@
 
 #pragma once
 
-#include <corsika/process/InteractionProcess.h>
+#include <corsika/process/ContinuousProcess.h>
 
 #include <chrono>
 #include <thread>
 
 namespace corsika::process {
-  namespace devtools {
+  namespace example_processors {
 
     template <int ISleep>
-    class DummyInteractionProcess : InteractionProcess<DummyInteractionProcess<ISleep> > {
+    class DummyContinuousProcess
+        : public ContinuousProcess<DummyContinuousProcess<ISleep>> {
     private:
     public:
-      template <typename Particle>
-      EProcessReturn DoInteraction(Particle&) {
+      template <typename Particle, typename Track>
+      EProcessReturn DoContinuous(Particle&, Track const&) const {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return process::EProcessReturn::eOk;
       }
 
-      template <typename TParticle>
-      corsika::units::si::GrammageType GetInteractionLength(TParticle&) {
-        using namespace corsika::units::si;
-
+      template <typename Particle, typename Track>
+      units::si::LengthType MaxStepLength(Particle const&, Track const&) const {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
-        return std::numeric_limits<double>::infinity() * (1_g / 1_cm / 1_cm);
+        return units::si::meter * std::numeric_limits<double>::infinity();
       }
+
+      std::string name() { return "DummyContinuousProcess"; }
     };
 
-  } // namespace devtools
+  } // namespace example_processors
 } // namespace corsika::process

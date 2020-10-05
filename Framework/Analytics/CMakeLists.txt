@@ -10,7 +10,8 @@ set (
 # header files of this library
 set (
   CORSIKAanalytics_HEADERS
-  Timer.h
+  ClassTimer.h
+  FunctionTimer.h
   )
 
 # copy the headers into the namespace
@@ -44,9 +45,16 @@ install (
 # ----------------
 # code unit testing
 
-CORSIKA_ADD_TEST (testAnalytics)
+CORSIKA_ADD_TEST (testFunctionTimer)
 target_link_libraries (
- testAnalytics
+ testFunctionTimer
+ CORSIKAanalytics
+ CORSIKAtesting
+ )
+
+ CORSIKA_ADD_TEST (testClassTimer)
+target_link_libraries (
+ testClassTimer
  CORSIKAanalytics
  CORSIKAtesting
  )
