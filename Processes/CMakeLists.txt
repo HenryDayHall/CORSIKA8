@@ -33,10 +33,6 @@ add_subdirectory (OnShellCheck)
 add_subdirectory (InteractionCounter)
 add_subdirectory (SwitchProcess)
 
-<<<<<<< HEAD
-=======
-add_subdirectory (DevTools)
->>>>>>> Added first implementations of timeing analytics for processor
 
 ##########################################
 # add_custom_target(CORSIKAprocesses)
