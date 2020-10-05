@@ -339,11 +339,6 @@ namespace corsika::stack {
     }
 
     /**
-     * need overwrite Stack::Delete, since we want to call SecondaryView::DeleteLast
-     */
-    // void Delete(ParticleInterfaceType p) { Delete(p.GetIterator()); }
-
-    /**
      * return next particle from stack, need to overwrtie Stack::GetNextParticle to get
      * right reference
      */

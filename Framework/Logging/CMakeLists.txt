@@ -25,7 +25,6 @@ target_include_directories (
   INTERFACE
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/>
-#  C8::ext:boost
   )
 
 # and link against spdlog
