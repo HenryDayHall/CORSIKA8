@@ -45,7 +45,7 @@ install (
 # ----------------
 # code unit testing
 
-<<<<<<< HEAD
+
 CORSIKA_ADD_TEST (testFunctionTimer)
 target_link_libraries (
  testFunctionTimer
@@ -56,11 +56,6 @@ target_link_libraries (
  CORSIKA_ADD_TEST (testClassTimer)
 target_link_libraries (
  testClassTimer
-=======
-CORSIKA_ADD_TEST (testAnalytics)
-target_link_libraries (
- testAnalytics
->>>>>>> New timer class added for cleaner structure
  CORSIKAanalytics
  CORSIKAtesting
  )
