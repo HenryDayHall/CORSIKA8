@@ -1,4 +1,4 @@
-#add_subdirectory (Analytics)
+add_subdirectory (Analytics)
 add_subdirectory (Cascade)
 add_subdirectory (Geometry)
 add_subdirectory (Logging)
