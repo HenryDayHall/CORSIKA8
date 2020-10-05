@@ -23,6 +23,8 @@ target_link_libraries (boundary_example
   ProcessTrackWriter
   ProcessParticleCut
   ProcessTrackingLine
+  ProcessPythia8
+  ProcessProposal
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
@@ -37,6 +39,7 @@ target_link_libraries (cascade_example
   CORSIKAlogging
   CORSIKArandom
   ProcessSibyll
+  ProcessProposal
   CORSIKAcascade
   ProcessEnergyLoss
   ProcessTrackWriter
@@ -62,12 +65,16 @@ if (Pythia8_FOUND)
     CORSIKArandom
     ProcessSibyll
     ProcessPythia8
+    ProcessUrQMD
+    ProcessSwitch
     CORSIKAcascade
+    ProcessCONEXSourceCut
     ProcessEnergyLoss
     ProcessTrackWriter
     ProcessStackInspector
     ProcessTrackingLine
     ProcessParticleCut
+    ProcessOnShellCheck
     ProcessHadronicElasticModel
     ProcessStackInspector
     CORSIKAprocesses
@@ -84,21 +91,19 @@ if (Pythia8_FOUND)
     CORSIKAunits
     CORSIKAlogging
     CORSIKArandom
-    ProcessSibyll
-    ProcessPythia8
-    ProcessUrQMD
-    ProcessSwitch
     CORSIKAcascade
-    ProcessCONEXSourceCut
-    ProcessEnergyLoss
+    ProcessProposal
+    ProcessPythia8
     ProcessObservationPlane
     ProcessInteractionCounter
     ProcessTrackWriter
+    ProcessEnergyLoss
     ProcessTrackingLine
     ProcessParticleCut
     ProcessOnShellCheck
     ProcessStackInspector
     ProcessLongitudinalProfile
+    ProcessCONEXSourceCut
     CORSIKAprocesses
     CORSIKAcascade
     CORSIKAparticles
@@ -124,3 +129,34 @@ target_link_libraries (staticsequence_example
   CORSIKAunits
   CORSIKAgeometry
   CORSIKAlogging)
+
+
+CORSIKA_ADD_EXAMPLE (em_shower RUN_OPTIONS 100.)
+target_link_libraries (em_shower
+  SuperStupidStack
+  CORSIKAunits
+  CORSIKAlogging
+  CORSIKArandom
+  ProcessSibyll
+  ProcessPythia8
+  ProcessUrQMD
+  ProcessSwitch
+  CORSIKAcascade
+  ProcessCONEXSourceCut
+  ProcessEnergyLoss
+  ProcessObservationPlane
+  ProcessInteractionCounter
+  ProcessTrackWriter
+  ProcessProposal
+  ProcessTrackingLine
+  ProcessParticleCut
+  ProcessOnShellCheck
+  ProcessStackInspector
+  ProcessLongitudinalProfile
+  CORSIKAprocesses
+  CORSIKAcascade
+  CORSIKAparticles
+  CORSIKAgeometry
+  CORSIKAenvironment
+  CORSIKAprocesssequence
+  )

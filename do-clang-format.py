@@ -20,7 +20,12 @@ args = parser.parse_args()
 filelist = []
 if args.all:
     for dirpath, dirnames, filenames in os.walk("."):
-        if "ThirdParty" in dirpath:
+        doExclude = False
+        for exclude in ["ThirdParty", "PROPOSAL", "include", "build"]:
+            if exclude in dirpath:
+                doExclude = True
+                break
+        if doExclude:
             continue
         for f in filenames:
             if f.endswith(".h") or f.endswith(".cc"):
@@ -44,7 +49,10 @@ else:
     filelist = [x for x in filelist
                 if "ThirdParty" not in x and (x.endswith(".h") or x.endswith(".cc"))]
 
-cmd = "clang-format -style=file"
+cmd = "clang-format"
+if "CLANG_FORMAT" in os.environ:
+  cmd = os.environ["CLANG_FORMAT"]
+cmd +=  " -style=file"
 if args.apply:
     for filename in filelist:
         subp.check_call(cmd.split() + ["-i", filename])

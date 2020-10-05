@@ -1,0 +1,41 @@
+file(READ CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
+file(WRITE PROPOSAL/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
+add_subdirectory (PROPOSAL)
+
+FILE (GLOB MODEL_SOURCES *.cc)
+FILE (GLOB MODEL_HEADERS *.h)
+SET (MODEL_NAMESPACE corsika/process/proposal)
+
+ADD_LIBRARY (ProcessProposal STATIC ${MODEL_SOURCES})
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessProposal ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+
+SET_TARGET_PROPERTIES (
+  ProcessProposal
+  PROPERTIES VERSION ${PROJECT_VERSION}
+  SOVERSION 1
+  )
+
+TARGET_LINK_LIBRARIES (
+  ProcessProposal
+  CORSIKAparticles
+  CORSIKAutilities
+  CORSIKAunits
+  CORSIKAthirdparty
+  CORSIKAgeometry
+  CORSIKAenvironment
+  ProcessParticleCut
+  PROPOSAL::PROPOSAL
+  )
+
+TARGET_INCLUDE_DIRECTORIES (
+  ProcessProposal
+  INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include/include>
+  )
+
+INSTALL (
+  TARGETS ProcessProposal
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  )

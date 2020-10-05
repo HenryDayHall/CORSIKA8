@@ -36,9 +36,16 @@ namespace corsika::process::observation_plane {
         corsika::setup::Stack::ParticleType const&,
         corsika::setup::Trajectory const& vTrajectory);
 
+    void ShowResults() const;
+    void Reset();
+    corsika::units::si::HEPEnergyType GetEnergyGround() const { return energy_ground_; }
+
   private:
     geometry::Plane const plane_;
     std::ofstream outputStream_;
     bool const deleteOnHit_;
+
+    units::si::HEPEnergyType energy_ground_ = 0 * units::si::electronvolt;
+    unsigned int count_ground_ = 0;
   };
 } // namespace corsika::process::observation_plane

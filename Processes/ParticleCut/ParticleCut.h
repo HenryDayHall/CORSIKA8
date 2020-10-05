@@ -19,36 +19,39 @@ namespace corsika::process {
     class ParticleCut : public process::SecondariesProcess<ParticleCut>,
                         public corsika::process::ContinuousProcess<ParticleCut> {
 
-      using Particle = corsika::setup::Stack::ParticleType;
-      using Track = corsika::setup::Trajectory;
-
       units::si::HEPEnergyType const fECut;
+      bool bCutEm;
+      bool bCutInv;
 
       units::si::HEPEnergyType fEnergy = 0 * units::si::electronvolt;
       units::si::HEPEnergyType fEmEnergy = 0 * units::si::electronvolt;
-      unsigned int fEmCount = 0;
+      unsigned int uiEmCount = 0;
       units::si::HEPEnergyType fInvEnergy = 0 * units::si::electronvolt;
-      unsigned int fInvCount = 0;
+      unsigned int uiInvCount = 0;
 
     public:
-      ParticleCut(const units::si::HEPEnergyType vCut);
+      ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv);
 
       EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
-      EProcessReturn DoContinuous(Particle& vParticle, Track const& vTrajectory);
+      EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType& vParticle,
+                                  corsika::setup::Trajectory const& vTrajectory);
 
       corsika::units::si::LengthType MaxStepLength(
           corsika::setup::Stack::ParticleType const&, corsika::setup::Trajectory const&) {
         return units::si::meter * std::numeric_limits<double>::infinity();
       }
 
-      void ShowResults();
 
+      units::si::HEPEnergyType GetECut() const { return fECut; }
       units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
       units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
       units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
-      unsigned int GetNumberEmParticles() const { return fEmCount; }
-      unsigned int GetNumberInvParticles() const { return fInvCount; }
+      unsigned int GetNumberEmParticles() const { return uiEmCount; }
+      unsigned int GetNumberInvParticles() const { return uiInvCount; }
+
+      void ShowResults() const;
+      void Reset();
 
     protected:
       template <typename TParticle>
@@ -59,6 +62,8 @@ namespace corsika::process {
 
       bool ParticleIsEmParticle(particles::Code) const;
       bool ParticleIsInvisible(particles::Code) const;
+
+
     };
   } // namespace particle_cut
 } // namespace corsika::process

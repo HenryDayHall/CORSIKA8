@@ -29,7 +29,8 @@ namespace corsika::process::energy_loss {
     void MomentumUpdate(setup::Stack::ParticleType&, units::si::HEPEnergyType Enew);
 
   public:
-    EnergyLoss(environment::ShowerAxis const& showerAxis);
+    EnergyLoss(environment::ShowerAxis const& showerAxis,
+               corsika::units::si::HEPEnergyType emCut);
 
     process::EProcessReturn DoContinuous(setup::Stack::ParticleType&,
                                          setup::Trajectory const&);
@@ -51,7 +52,10 @@ namespace corsika::process::energy_loss {
       using namespace units::si;
       return 10_g / square(1_cm);
     }); // profile binning
+
+  private:
     environment::ShowerAxis const& shower_axis_;
+    corsika::units::si::HEPEnergyType emCut_;
     std::vector<units::si::HEPEnergyType> profile_; // longitudinal profile
   };
 

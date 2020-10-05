@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -8,7 +8,6 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/environment/Environment.h>
-#include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/ShowerAxis.h>
@@ -16,21 +15,14 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
-#include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
-#include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
-#include <corsika/process/pythia/Decay.h>
-#include <corsika/process/sibyll/Decay.h>
-#include <corsika/process/sibyll/Interaction.h>
-#include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/switch_process/SwitchProcess.h>
+#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
-#include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -57,18 +49,13 @@ using namespace corsika::units::si;
 
 void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
-  random::RNGManager::GetInstance().RegisterRandomStream("qgsjet");
-  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
-  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
   random::RNGManager::GetInstance().RegisterRandomStream("proposal");
-
   random::RNGManager::GetInstance().SeedAll();
 }
 
 int main(int argc, char** argv) {
-  if (argc != 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV>" << std::endl;
+  if (argc != 2) {
+    std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
@@ -96,11 +83,9 @@ int main(int argc, char** argv) {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Nucleus;
-  unsigned short const A = std::stoi(std::string(argv[1]));
-  unsigned short Z = std::stoi(std::string(argv[2]));
-  auto const mass = particles::GetNucleusMass(A, Z);
-  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
+  const Code beamCode = Code::Electron;
+  auto const mass = particles::GetMass(beamCode);
+  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[1]));
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
@@ -119,7 +104,7 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
        << endl;
 
-  auto const observationHeight = 0_km + builder.getEarthRadius();
+  auto const observationHeight = 1.4_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
@@ -131,18 +116,10 @@ int main(int argc, char** argv) {
 
   std::cout << "point of injection: " << injectionPos.GetCoordinates() << std::endl;
 
-  if (A != 1) {
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, injectionPos, 0_ns, A, Z});
-
-  } else {
-    stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, injectionPos, 0_ns});
-  }
+  stack.AddParticle(
+      std::tuple<particles::Code, units::si::HEPEnergyType,
+                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+          beamCode, E0, plab, injectionPos, 0_ns});
 
   std::cout << "shower axis length: " << (showerCore - injectionPos).norm() * 1.02
             << std::endl;
@@ -152,64 +129,23 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  process::sibyll::Interaction sibyll;
-  process::interaction_counter::InteractionCounter sibyllCounted(sibyll);
-
-  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::interaction_counter::InteractionCounter sibyllNucCounted(sibyllNuc);
-
-  process::pythia::Decay decayPythia;
-
-  // use sibyll decay routine for decays of particles unknown to pythia
-  process::sibyll::Decay decaySibyll{{
-      Code::N1440Plus,
-      Code::N1440MinusBar,
-      Code::N1440_0,
-      Code::N1440_0Bar,
-      Code::N1710Plus,
-      Code::N1710MinusBar,
-      Code::N1710_0,
-      Code::N1710_0Bar,
-
-      Code::Pi1300Plus,
-      Code::Pi1300Minus,
-      Code::Pi1300_0,
-
-      Code::KStar0_1430_0,
-      Code::KStar0_1430_0Bar,
-      Code::KStar0_1430_Plus,
-      Code::KStar0_1430_MinusBar,
-  }};
-
-  decaySibyll.PrintDecayConfig();
-
   // PROPOSAL processs proposal{...};
-  process::particle_cut::ParticleCut cut{60_GeV, false, true};
+  process::particle_cut::ParticleCut cut(10_GeV, false, true);
   process::proposal::Interaction proposal(env, cut.GetECut());
   process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
-  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
 
+  // long. profile; columns for gamma, e+, e- still need to be added
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  process::UrQMD::UrQMD urqmd;
-  process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
-
-  // assemble all processes into an ordered process list
-
-  auto sibyllSequence = sibyllNucCounted << sibyllCounted;
-  process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
-                                                       55_GeV);
-  auto decaySequence = decayPythia << decaySibyll;
-
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted
-                                << em_continuous << cut << longprof << observationLevel;
-
+  auto sequence = proposalCounted << em_continuous << longprof << cut << observationLevel
+                                  << trackWriter;
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
@@ -233,12 +169,7 @@ int main(int argc, char** argv) {
   cut.Reset();
   em_continuous.Reset();
 
-  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
-                     urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
-
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
-
+  auto const hists = proposalCounted.GetHistogram();
   hists.saveLab("inthist_lab.txt");
   hists.saveCMS("inthist_cms.txt");
 

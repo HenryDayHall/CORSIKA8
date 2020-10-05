@@ -43,8 +43,15 @@ namespace corsika::process::longitudinal_profile {
     }); // profile binning
 
     environment::ShowerAxis const& shower_axis_;
-    using ProfileEntry = std::array<uint32_t, 3>;
-    enum ProfileIndex { MuPlus = 0, MuMinus = 1, Hadron = 2 };
+    using ProfileEntry = std::array<uint32_t, 6>;
+    enum ProfileIndex {
+      Gamma = 0,
+      Positron = 1,
+      Electron = 2,
+      MuPlus = 3,
+      MuMinus = 4,
+      Hadron = 5
+    };
     std::vector<ProfileEntry> profiles_; // longitudinal profile
 
     static int const width_ = 14;

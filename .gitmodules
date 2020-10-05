@@ -6,3 +6,7 @@
 	path = ThirdParty/spdlog
 	url = https://github.com/gabime/spdlog.git
 	shallow = true
+[submodule "Processes/Proposal/PROPOSAL"]
+	path = Processes/Proposal/PROPOSAL
+	url = https://github.com/tudo-astroparticlephysics/PROPOSAL.git
+	shallow = true

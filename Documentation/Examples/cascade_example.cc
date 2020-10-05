@@ -139,10 +139,10 @@ int main() {
   process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   process::sibyll::Decay decay;
   // cascade with only HE model ==> HE cut
-  process::particle_cut::ParticleCut cut(80_GeV);
+  process::particle_cut::ParticleCut cut(80_GeV, true, true);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss{showerAxis};
+  process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
 
   // assemble all processes into an ordered process list
   auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
@@ -162,4 +162,5 @@ int main() {
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
+  cut.Reset();
 }

@@ -41,7 +41,13 @@ corsika::process::EProcessReturn LongitudinalProfile::DoContinuous(Particle cons
   const int binEnd = std::floor(grammageEnd / dX_);
 
   for (int b = binStart; b <= binEnd; ++b) {
-    if (pid == particles::Code::MuPlus) {
+    if (pid == particles::Code::Gamma) {
+      profiles_.at(b)[ProfileIndex::Gamma]++;
+    } else if (pid == particles::Code::Positron) {
+      profiles_.at(b)[ProfileIndex::Positron]++;
+    } else if (pid == particles::Code::Electron) {
+      profiles_.at(b)[ProfileIndex::Electron]++;
+    } else if (pid == particles::Code::MuPlus) {
       profiles_.at(b)[ProfileIndex::MuPlus]++;
     } else if (pid == particles::Code::MuMinus) {
       profiles_.at(b)[ProfileIndex::MuMinus]++;
@@ -55,7 +61,7 @@ corsika::process::EProcessReturn LongitudinalProfile::DoContinuous(Particle cons
 
 void LongitudinalProfile::save(std::string const& filename) {
   std::ofstream f{filename};
-  f << "# X / g·cm¯², mu+, mu-, all hadrons" << std::endl;
+  f << "# X / g·cm¯², gamma, e+, e-, mu+, mu-, all hadrons" << std::endl;
   for (size_t b = 0; b < profiles_.size(); ++b) {
     f << std::setprecision(5) << std::setw(11) << b * (dX_ / (1_g / 1_cm / 1_cm));
     for (auto const& N : profiles_.at(b)) {

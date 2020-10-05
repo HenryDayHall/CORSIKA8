@@ -27,14 +27,13 @@ namespace corsika::process {
       if (vP.GetPID() == particles::Code::Nucleus) {
         // calculate energy per nucleon
         auto const ElabNuc = energyLab / vP.GetNuclearA();
-        return (ElabNuc < fECut);
+        return (ElabNuc <= fECut);
       } else {
-        return (energyLab < fECut);
+        return (energyLab <= fECut);
       }
     }
 
     bool ParticleCut::ParticleIsEmParticle(Code vCode) const {
-      // FOR NOW: switch
       switch (vCode) {
         case Code::Gamma:
         case Code::Electron:
@@ -66,15 +65,15 @@ namespace corsika::process {
       C8LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV", pid,
                               energy / 1_GeV,
                               (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV));
-      if (ParticleIsEmParticle(pid)) {
+      if (bCutEm && ParticleIsEmParticle(pid)) {
         C8LOG_DEBUG("removing em. particle...");
         fEmEnergy += energy;
-        fEmCount += 1;
+        uiEmCount += 1;
         return true;
-      } else if (ParticleIsInvisible(pid)) {
+      } else if (bCutInv && ParticleIsInvisible(pid)) {
         C8LOG_DEBUG("removing inv. particle...");
         fInvEnergy += energy;
-        fInvCount += 1;
+        uiInvCount += 1;
         return true;
       } else if (ParticleIsBelowEnergyCut(particle)) {
         C8LOG_DEBUG("removing low en. particle...");
@@ -100,7 +99,9 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-    process::EProcessReturn ParticleCut::DoContinuous(Particle& particle, Track const&) {
+    process::EProcessReturn ParticleCut::DoContinuous(
+        corsika::setup::Stack::ParticleType& particle,
+        corsika::setup::Trajectory const&) {
       C8LOG_TRACE("ParticleCut::DoContinuous");
       if (checkCutParticle(particle)) {
         C8LOG_TRACE("removing during continuous");
@@ -109,17 +110,18 @@ namespace corsika::process {
       return process::EProcessReturn::eOk;
     }
 
-    ParticleCut::ParticleCut(const units::si::HEPEnergyType vCut)
-        : fECut(vCut) {
-
-      fEmEnergy = 0._GeV;
-      fEmCount = 0;
-      fInvEnergy = 0._GeV;
-      fInvCount = 0;
-      fEnergy = 0._GeV;
+    ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv)
+        : fECut(eCut)
+        , bCutEm(em)
+        , bCutInv(inv) {
+      fEmEnergy = 0_GeV;
+      uiEmCount = 0;
+      fInvEnergy = 0_GeV;
+      uiInvCount = 0;
+      fEnergy = 0_GeV;
     }
 
-    void ParticleCut::ShowResults() {
+    void ParticleCut::ShowResults() const {
       C8LOG_INFO(fmt::format(
           " ******************************\n"
           " ParticleCut: \n"
@@ -129,7 +131,16 @@ namespace corsika::process {
           " no. of inv. particles injected:  {}\n"
           " energy below particle cut (GeV): {}\n"
           " ******************************",
-          fEmEnergy / 1_GeV, fEmCount, fInvEnergy / 1_GeV, fInvCount, fEnergy / 1_GeV));
+          fEmEnergy / 1_GeV, uiEmCount, fInvEnergy / 1_GeV, uiInvCount, fEnergy / 1_GeV));
     }
+
+    void ParticleCut::Reset() {
+      fEmEnergy = 0_GeV;
+      uiEmCount = 0;
+      fInvEnergy = 0_GeV;
+      uiInvCount = 0;
+      fEnergy = 0_GeV;
+    }
+
   } // namespace particle_cut
 } // namespace corsika::process

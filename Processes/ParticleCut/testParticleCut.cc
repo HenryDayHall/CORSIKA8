@@ -43,9 +43,9 @@ TEST_CASE("ParticleCut", "[processes]") {
       particles::Code::Electron, particles::Code::MuPlus,  particles::Code::NuE,
       particles::Code::Neutron};
 
-  SECTION("cut on particle type") {
+  SECTION("cut on particle type: inv") {
 
-    ParticleCut cut(20_GeV);
+    ParticleCut cut(20_GeV, false, true);
 
     // add primary particle to stack
     auto particle = stack.AddParticle(
@@ -70,11 +70,41 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    REQUIRE(view.GetSize() == 8);
+    CHECK(view.GetSize() == 9);
+  }
+
+  SECTION("cut on particle type: em") {
+
+    ParticleCut cut(20_GeV, true, false);
+
+    // add primary particle to stack
+    auto particle = stack.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Proton, Eabove,
+            corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+            geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+    // view on secondary particles
+    corsika::stack::SecondaryView view(particle);
+    // ref. to primary particle through the secondary view.
+    // only this way the secondary view is populated
+    auto projectile = view.GetProjectile();
+    // add secondaries, all with energies above the threshold
+    // only cut is by species
+    for (auto proType : particleList)
+      projectile.AddSecondary(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                         corsika::stack::MomentumVector, geometry::Point,
+                                         units::si::TimeType>{
+          proType, Eabove, corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+          geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+
+    cut.DoSecondaries(view);
+
+    CHECK(view.GetSize() == 9);
   }
 
   SECTION("cut low energy") {
-    ParticleCut cut(20_GeV);
+    ParticleCut cut(20_GeV, true, true);
 
     // add primary particle to stack
     auto particle = stack.AddParticle(
@@ -99,6 +129,6 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    REQUIRE(view.GetSize() == 0);
+    CHECK(view.GetSize() == 0);
   }
 }
