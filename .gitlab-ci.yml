@@ -630,12 +630,14 @@ sanity:
     - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
     - pip install --user -e '.[test]'  # install the package + test deps
     - make all 2&>1 | tee python-test.log  # this runs all of the Python tests
-    - cd ${CI_PROJECT_DIR}  # reset the directory
+    - echo "finished" >> python-test.log # create even an empty file...
+    - cd ${CI_PROJECT_DIR}  # reset the directory    
   artifacts:
     when: always
     expire_in: 1 year
     paths:
       - ${CI_PROJECT_DIR}/Python/python-test.log
+  allow_failure: true
 
 # we now configure the jobs for the three
 # supported Python versions

@@ -52,7 +52,7 @@ else:
 cmd = "clang-format"
 if "CLANG_FORMAT" in os.environ:
   cmd = os.environ["CLANG_FORMAT"]
-cmd +=  " -style=file"
+  cmd +=  " -style=file"
 if args.apply:
     for filename in filelist:
         subp.check_call(cmd.split() + ["-i", filename])
