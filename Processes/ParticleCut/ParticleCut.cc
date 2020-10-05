@@ -27,9 +27,9 @@ namespace corsika::process {
       if (vP.GetPID() == particles::Code::Nucleus) {
         // calculate energy per nucleon
         auto const ElabNuc = energyLab / vP.GetNuclearA();
-        return (ElabNuc < fECut);
+        return (ElabNuc <= fECut);
       } else {
-        return (energyLab < fECut);
+        return (energyLab <= fECut);
       }
     }
 
@@ -65,15 +65,15 @@ namespace corsika::process {
       C8LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV", pid,
                               energy / 1_GeV,
                               (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV));
-      if (bCutEm &&ParticleIsEmParticle(pid)) {
+      if (bCutEm && ParticleIsEmParticle(pid)) {
         C8LOG_DEBUG("removing em. particle...");
         fEmEnergy += energy;
-        fEmCount += 1;
+        uiEmCount += 1;
         return true;
       } else if (bCutInv && ParticleIsInvisible(pid)) {
         C8LOG_DEBUG("removing inv. particle...");
         fInvEnergy += energy;
-        fInvCount += 1;
+        uiInvCount += 1;
         return true;
       } else if (ParticleIsBelowEnergyCut(particle)) {
         C8LOG_DEBUG("removing low en. particle...");
@@ -99,7 +99,9 @@ namespace corsika::process {
       return EProcessReturn::eOk;
     }
 
-    process::EProcessReturn ParticleCut::DoContinuous(Particle& particle, Track const&) {
+    process::EProcessReturn ParticleCut::DoContinuous(
+        corsika::setup::Stack::ParticleType& particle,
+        corsika::setup::Trajectory const&) {
       C8LOG_TRACE("ParticleCut::DoContinuous");
       if (checkCutParticle(particle)) {
         C8LOG_TRACE("removing during continuous");
@@ -114,20 +116,18 @@ namespace corsika::process {
         , bCutInv(inv) {
       fEmEnergy = 0_GeV;
       uiEmCount = 0;
-      finvEnergy = 0_GeV;
+      fInvEnergy = 0_GeV;
       uiInvCount = 0;
       fEnergy = 0_GeV;
     }
 
-    void ParticleCut::ShowResults() {
+    void ParticleCut::ShowResults() const {
       C8LOG_INFO(fmt::format(
           " ******************************\n"
           " ParticleCut: \n"
-          if (bCutEm)
-              " energy in em.  component (GeV):  {}\n"
+          " energy in em.  component (GeV):  {}\n"
           " no. of em.  particles injected:  {}\n"
-          if (bCutInv)
-              " energy in inv. component (GeV):  {}\n"
+          " energy in inv. component (GeV):  {}\n"
           " no. of inv. particles injected:  {}\n"
           " energy below particle cut (GeV): {}\n"
           " ******************************",

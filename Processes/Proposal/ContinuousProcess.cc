@@ -114,7 +114,6 @@ namespace corsika::process::proposal {
       vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
       return process::EProcessReturn::eParticleAbsorbed;
     }
-
     if (final_energy <= emCut_) {
       vP.SetEnergy(emCut_);
       vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());

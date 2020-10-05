@@ -19,7 +19,7 @@ namespace corsika::process {
     class ParticleCut : public process::SecondariesProcess<ParticleCut>,
                         public corsika::process::ContinuousProcess<ParticleCut> {
 
-      units::si::HEPEnergyType const fECut_;
+      units::si::HEPEnergyType const fECut;
       bool bCutEm;
       bool bCutInv;
 
@@ -34,14 +34,24 @@ namespace corsika::process {
 
       EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
-      EProcessReturn DoContinuous(Particle& vParticle, Track const& vTrajectory);
+      EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType& vParticle,
+                                  corsika::setup::Trajectory const& vTrajectory);
 
       corsika::units::si::LengthType MaxStepLength(
           corsika::setup::Stack::ParticleType const&, corsika::setup::Trajectory const&) {
         return units::si::meter * std::numeric_limits<double>::infinity();
       }
 
-      void ShowResults();
+
+      units::si::HEPEnergyType GetECut() const { return fECut; }
+      units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
+      units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
+      units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
+      unsigned int GetNumberEmParticles() const { return uiEmCount; }
+      unsigned int GetNumberInvParticles() const { return uiInvCount; }
+
+      void ShowResults() const;
+      void Reset();
 
     protected:
       template <typename TParticle>
@@ -51,16 +61,9 @@ namespace corsika::process {
       bool ParticleIsBelowEnergyCut(TParticle const&) const;
 
       bool ParticleIsEmParticle(particles::Code) const;
+      bool ParticleIsInvisible(particles::Code) const;
 
-      void ShowResults() const;
-      void Reset();
 
-      units::si::HEPEnergyType GetECut() const { return fECut; }
-      units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
-      units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
-      units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }
-      unsigned int GetNumberEmParticles() const { return uiEmCount; }
-      unsigned int GetNumberInvParticles() const { return fInvCount; }
     };
   } // namespace particle_cut
 } // namespace corsika::process
