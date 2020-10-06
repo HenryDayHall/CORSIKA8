@@ -22,13 +22,13 @@ namespace corsika::process {
     private:
     public:
       template <typename Particle, typename Track>
-      EProcessReturn DoContinuous(Particle&, Track const&) const {
+      inline EProcessReturn DoContinuous(Particle&, Track const&) const {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return process::EProcessReturn::eOk;
       }
 
       template <typename Particle, typename Track>
-      units::si::LengthType MaxStepLength(Particle const&, Track const&) const {
+      inline units::si::LengthType MaxStepLength(Particle const&, Track const&) const {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return units::si::meter * std::numeric_limits<double>::infinity();
       }

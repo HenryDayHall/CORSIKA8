@@ -47,6 +47,7 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
+list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 # Set the possible values of build type for cmake-gui and command line check
 set (ALLOWED_BUILD_TYPES Debug Release MinSizeRel RelWithDebInfo Coverage)

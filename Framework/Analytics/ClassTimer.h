@@ -36,7 +36,7 @@ namespace corsika::analytics {
     timeClass(TType& obj)
         : vObj(obj) {}
 
-    TRet call(TArgs&&... args) {
+    TRet call(TArgs... args) {
       vStart = TClock::now();
       auto tmp = (vObj.*TFuncPtr)(std::forward<TArgs>(args)...);
       vDiff = std::chrono::duration_cast<TDuration>(TClock::now() - vStart);
@@ -62,7 +62,7 @@ namespace corsika::analytics {
     timeClass(TType& obj)
         : vObj(obj) {}
 
-    void call(TArgs&&... args) {
+    void call(TArgs... args) {
       vStart = TClock::now();
       (vObj.*TFuncPtr)(std::forward<TArgs>(args)...);
       vDiff = std::chrono::duration_cast<TDuration>(TClock::now() - vStart);
@@ -90,7 +90,7 @@ namespace corsika::analytics {
     timeClass(TType& obj)
         : vObj(obj) {}
 
-    TRet call(TArgs&&... args) {
+    TRet call(TArgs... args) {
       vStart = TClock::now();
       auto tmp = (vObj.*TFuncPtr)(std::forward<TArgs>(args)...);
       vDiff = std::chrono::duration_cast<TDuration>(TClock::now() - vStart);
@@ -117,11 +117,11 @@ namespace corsika::analytics {
     timeClass(TType& obj)
         : vObj(obj) {}
 
-    void call(TArgs&&... args) {
+    void call(TArgs... args) {
       vStart = TClock::now();
-     (vObj.*TFuncPtr)(std::forward<TArgs>(args)...);
+      (vObj.*TFuncPtr)(std::forward<TArgs>(args)...);
       vDiff = std::chrono::duration_cast<TDuration>(TClock::now() - vStart);
-      return ;
+      return;
     }
 
     inline TDuration getTime() const { return vDiff; }

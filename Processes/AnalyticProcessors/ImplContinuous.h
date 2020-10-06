@@ -26,9 +26,9 @@ namespace corsika::process {
     private:
     public:
       template <typename Particle, typename Track>
-      EProcessReturn DoContinuous(Particle& p, Track const& t) const {
+      EProcessReturn DoContinuous(Particle& p, Track const& t) {
         this->start();
-        auto r = T::DoContinous(p, t);
+        auto r = _ExecTimeImpl<T>::DoContinuous(p, t);
         this->stop();
         return r;
       }
@@ -41,5 +41,5 @@ namespace corsika::process {
         return r;
       }
     };
-  } // namespace devtools
+  } // namespace analytic_processors
 } // namespace corsika::process

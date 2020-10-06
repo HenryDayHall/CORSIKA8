@@ -28,7 +28,7 @@ namespace corsika::process {
       template <typename Particle>
       EProcessReturn DoDecay(Particle& p) {
         this->start();
-        auto r = T::DoDecay(p);
+        auto r = _ExecTimeImpl<T>::DoDecay(p);
         this->stop();
         return r;
       }
@@ -41,5 +41,5 @@ namespace corsika::process {
         return r;
       }
     };
-  } // namespace devtools
+  } // namespace analytic_processors
 } // namespace corsika::process

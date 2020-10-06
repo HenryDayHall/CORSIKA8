@@ -20,12 +20,14 @@ namespace corsika::process {
     class DummyBoundaryCrossingProcess
         : public BoundaryCrossingProcess<DummyBoundaryCrossingProcess<ISleep>> {
     private:
+    protected:
+      
     public:
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle&, VTNType const&, VTNType const&) {
         std::this_thread::sleep_for(std::chrono::milliseconds(ISleep));
         return EProcessReturn::eOk;
-      }
+      }    
     };
 
   } // namespace example_processors

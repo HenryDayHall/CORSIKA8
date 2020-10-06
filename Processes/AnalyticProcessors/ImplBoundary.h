@@ -9,6 +9,8 @@
 
 #include <corsika/process/analytic_processors/ExecTime.h>
 
+#include <corsika/analytics/ClassTimer.h>
+
 namespace corsika::process {
   namespace analytic_processors {
 
@@ -25,14 +27,20 @@ namespace corsika::process {
     class Boundary<T, true> : public _ExecTimeImpl<T> {
     private:
     public:
+      
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
-                                        VTNType const& to) {
-        this->start();
-        auto r = T::DoBoundaryCrossing(p, from, to);
-        this->stop();
+                                        VTNType const& to) {        
+        auto tc = corsika::analytics::timeClass<
+            EProcessReturn (_ExecTimeImpl<T>::_T::*)(Particle&, VTNType const&, VTNType const&),
+            &_ExecTimeImpl<T>::_T::template DoBoundaryCrossing<Particle, VTNType>>(*this);
+
+        EProcessReturn r = tc.call(p, from, to);
+        this->update(
+            std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(
+                tc.getTime()));
         return r;
       }
     };
-  } // namespace devtools
+  } // namespace analytic_processors
 } // namespace corsika::process

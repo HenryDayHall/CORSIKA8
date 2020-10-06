@@ -16,7 +16,19 @@
 
 using namespace corsika;
 
-class foo {
+class _foo2 {
+public:
+  int inside(int) { return 123; }
+
+  int inside(char) { return 312; }
+};
+
+class _foo1 : public _foo2 {
+public:
+  int inside(int) { return 123; }
+};
+
+class foo : public _foo1 {
 public:
   int bar() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -32,6 +44,62 @@ public:
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return;
   }
+
+  int inside() {
+    auto tc = corsika::analytics::timeClass<int (_foo1::*)(int), &_foo1::inside>(*this);
+
+    auto r = tc.call(1);
+
+    return r;
+  }
+};
+
+template <typename TType, TType>
+class timeMin;
+
+template <typename TType, typename TRet, typename... TArgs,
+          TRet (TType::*TFuncPtr)(TArgs...)>
+class timeMin<TRet (TType::*)(TArgs...), TFuncPtr> {
+private:
+  TType& vObj;
+
+public:
+  timeMin(TType& obj)
+      : vObj(obj) {}
+
+  TRet call(TArgs... args) { return (vObj.*TFuncPtr)(std::forward<TArgs>(args)...); }
+};
+
+// quasi processor
+class fooT1 {
+public:
+  template <typename T1, typename T2>
+  int inside_t(T1 a, T2 b, T2 c) {
+    return 123;
+  }
+};
+
+//  exec_time_impl
+template <typename T>
+class fooT2 : public T {
+public:
+  using _T = T;
+};
+
+//  exec_time_impl
+template <typename T>
+class fooT3 : public fooT2<T> {
+public:
+  template <typename T1, typename T2>
+  int inside_t(T1 a, T2 b, T2 c) {
+    auto tc =
+        timeMin<int (fooT2<T>::_T::*)(T1, T2, T2),
+                &fooT2<T>::_T::template inside_t<T1, T2>>(*this); // <- dependent template
+
+    auto r = tc.call(a, b, c);
+
+    return r;
+  }
 };
 
 TEST_CASE("Analytics", "[Timer]") {
@@ -42,7 +110,7 @@ TEST_CASE("Analytics", "[Timer]") {
 
     tc.call();
 
-    std::cout << tc.getTime().count() << std::endl;
+    REQUIRE(tc.getTime().count() == Approx(100000).margin(1000));
   }
 
   SECTION("Measure runtime of a function with arguments") {
@@ -52,7 +120,7 @@ TEST_CASE("Analytics", "[Timer]") {
 
     tc.call(1);
 
-    std::cout << tc.getTime().count() << std::endl;
+    REQUIRE(tc.getTime().count() == Approx(100000).margin(1000));
   }
 
   SECTION("Measure runtime of a const function without arguments") {
@@ -63,6 +131,17 @@ TEST_CASE("Analytics", "[Timer]") {
 
     tc.call();
 
-    std::cout << tc.getTime().count() << std::endl;
+    REQUIRE(tc.getTime().count() == Approx(100000).margin(1000));
+  }
+
+  SECTION("Measure runtime of function inside class") {
+
+    auto test = foo();
+    REQUIRE(test.inside() == 123);
+  }
+
+  SECTION("Measure runtime of function inside class") {
+    auto test = fooT3<fooT1>();
+    REQUIRE(test.inside_t(1, 'a', 'b') == 123);
   }
 }

@@ -28,9 +28,9 @@ namespace corsika::process {
   class StackProcess : public BaseProcess<TDerived>{
   private:
   protected:
-    using _TDerived = TDerived;
-
   public:
+    using _TDerived = TDerived;
+    
     StackProcess() = delete;
     StackProcess(const unsigned int nStep)
         : fNStep(nStep) {}

@@ -28,10 +28,10 @@ namespace corsika::process {
       template <typename Secondaries>
       inline EProcessReturn DoSecondaries(Secondaries& sec) {
         this->start();
-        auto r = T::DoSecondaries(sec);
+        auto r = _ExecTimeImpl<T>::DoSecondaries(sec);
         this->stop();
         return r;
       }
     };
-  } // namespace devtools
+  } // namespace analytic_processors
 } // namespace corsika::process

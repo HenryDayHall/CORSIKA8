@@ -17,7 +17,7 @@ namespace corsika::process {
   namespace example_processors {
 
     template <int ISleep>
-    class DummySecondariesProcess : SecondariesProcess<DummySecondariesProcess<ISleep>> {
+    class DummySecondariesProcess : public SecondariesProcess<DummySecondariesProcess<ISleep>> {
     private:
     public:
       template <typename TSecondaries>

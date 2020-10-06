@@ -17,7 +17,7 @@ namespace corsika::process {
   namespace example_processors {
 
     template <int ISleep>
-    class DummyInteractionProcess : InteractionProcess<DummyInteractionProcess<ISleep> > {
+    class DummyInteractionProcess : public InteractionProcess<DummyInteractionProcess<ISleep> > {
     private:
     public:
       template <typename Particle>
