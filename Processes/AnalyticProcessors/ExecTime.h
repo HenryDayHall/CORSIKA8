@@ -11,6 +11,8 @@
 #include <chrono>
 #include <type_traits>
 
+#include <corsika/logging/Logging.h>
+
 #include <corsika/process/BoundaryCrossingProcess.h>
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/process/DecayProcess.h>
@@ -106,6 +108,11 @@ namespace corsika::process {
               std::is_base_of<corsika::process::SecondariesProcess<typename T::_TDerived>,
                               T>::value> {      
       static_assert(std::is_base_of<corsika::process::_BaseProcess,T>::value, "error message");
+
+
+      ~ExecTime(){
+        C8LOG_INFO("Accumulated time spend in process {} is {} µs", typeid(T).name(), this->sumTime());
+      }
     };
   } // namespace analytic_processors
 } // namespace corsika::process

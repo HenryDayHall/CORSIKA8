@@ -20,6 +20,9 @@ set (
 add_library (AnalyticProcessors INTERFACE)  #STATIC ${MODEL_SOURCES})
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (AnalyticProcessors ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
+target_link_libraries(AnalyticProcessors 
+  INTERFACE
+  CORSIKAlogging)
 
 target_include_directories (
   AnalyticProcessors 
@@ -49,6 +52,6 @@ target_link_libraries (
   ExampleProcessors
   CORSIKAtesting
   C8::ext::eigen3
-  CORSIKAthirdparty # for catch2
+  CORSIKAthirdparty # for catch2  
   )
 
