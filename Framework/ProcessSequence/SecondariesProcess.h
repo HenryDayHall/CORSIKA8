@@ -35,9 +35,9 @@ namespace corsika::process {
 
   private:
   protected:
+  public:
     using _TDerived = TDerived;
 
-  public:
     TDerived& GetRef() { return static_cast<TDerived&>(*this); }
     const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
 
