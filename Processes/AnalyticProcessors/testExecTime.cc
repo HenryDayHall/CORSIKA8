@@ -20,6 +20,7 @@
 
 #include <random>
 #include <vector>
+#include <cmath>
 
 using namespace corsika::process;
 using namespace corsika::process::analytic_processors;
@@ -43,7 +44,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
     REQUIRE(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(-20000 < execTime.var() && execTime.var() < 20000);
+    REQUIRE(fabs(execTime.var()) < 20000);
   }
 
   SECTION("Continuous") {
@@ -60,7 +61,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
     REQUIRE(execTime.sumTime() == Approx(50 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(-20000 < execTime.var() && execTime.var() < 20000);
+    REQUIRE(fabs(execTime.var()) < 20000);
   }
 
   SECTION("Decay") {
@@ -77,7 +78,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
     REQUIRE(execTime.sumTime() == Approx(10 * 100 * 100).margin((10 * 100) * 1000));
 
-    REQUIRE(-20000 < execTime.var() && execTime.var() < 20000);
+    REQUIRE(fabs(execTime.var()) < 20000);
   }
 
   SECTION("Interaction") {
@@ -94,7 +95,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
     REQUIRE(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(-20000 < execTime.var() && execTime.var() < 20000);
+    REQUIRE(fabs(execTime.var()) < 20000);
   }
 
   SECTION("Secondaries") {
@@ -111,7 +112,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
     REQUIRE(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(-20000 < execTime.var() && execTime.var() < 20000);
+    REQUIRE(fabs(execTime.var()) < 20000);
   }
 
   SECTION("TestMeanAlgo") {
