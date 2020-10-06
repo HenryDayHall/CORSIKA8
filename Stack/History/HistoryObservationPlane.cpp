@@ -11,7 +11,8 @@
 
 #include <boost/histogram/ostream.hpp>
 
-#include <fstream>
+#include <iomanip>
+#include <iostream>
 
 using namespace corsika::units::si;
 using namespace corsika::history;
@@ -65,17 +66,20 @@ LengthType HistoryObservationPlane::MaxStepLength(setup::Stack::ParticleType con
 
 void HistoryObservationPlane::fillHistoryHistogram(
     setup::Stack::ParticleType const& muon) {
-  // double const muonEnergy = muon.GetEnergy() / 1_eV;
-  // auto parent = stack_.at(muon.GetEvent()->projectileIndex());
+  double const muon_energy = muon.GetEnergy() / 1_GeV;
+
+  int genctr{0};
   Event const* event = muon.GetEvent().get();
-
-  int intCounter = 0;
   while (event) {
-    if (event->eventType() == EventType::Interaction) intCounter++;
-    event = event->parentEvent().get();
-  }
+    auto const projectile = stack_.cfirst() + event->projectileIndex();
+    if (event->eventType() == EventType::Interaction) {
+      genctr++;
+      double const projEnergy = projectile.GetEnergy() / 1_GeV;
+      int const pdg = static_cast<int>(particles::GetPDG(projectile.GetPID()));
 
-  histogram_(intCounter);
+      histogram_(muon_energy, projEnergy, pdg);
+    }
+    event = event->parentEvent().get(); // projectile.GetEvent().get();
+  }
 }
 
-void HistoryObservationPlane::print() { C8LOG_INFO(histogram_); }

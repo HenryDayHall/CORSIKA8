@@ -23,9 +23,12 @@ namespace corsika::history {
     inline auto hist_factory() {
       namespace bh = boost::histogram;
       namespace bha = bh::axis;
-      auto h =
-          bh::make_histogram(bha::integer<int, bh::use_default, bha::option::growth_t>{
-              0, 10, "hadronic generation"});
+      auto h = bh::make_histogram(
+          bha::regular<float, bha::transform::log>{11 * 5, 1e0, 1e11, "muon energy"},
+          bha::regular<float, bha::transform::log>{11 * 5, 1e0, 1e11,
+                                                   "projectile energy"},
+          bha::category<int, bh::use_default, bha::option::growth_t>{
+              {211, -211, 2212, -2212}, "projectile PDG"});
       return h;
     }
   } // namespace detail
@@ -43,7 +46,7 @@ namespace corsika::history {
         corsika::setup::Stack::ParticleType const& vParticle,
         corsika::setup::Trajectory const& vTrajectory);
 
-    void print();
+    auto const& histogram() const { return histogram_; }
 
   private:
     void fillHistoryHistogram(setup::Stack::ParticleType const&);
