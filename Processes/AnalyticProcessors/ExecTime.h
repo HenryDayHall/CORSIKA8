@@ -109,7 +109,7 @@ namespace corsika::process {
                               T>::value> {      
       static_assert(std::is_base_of<corsika::process::_BaseProcess,T>::value, "error message");
 
-
+    public:
       ~ExecTime(){
         C8LOG_INFO("Accumulated time spend in process {} is {} µs", typeid(T).name(), this->sumTime());
       }
