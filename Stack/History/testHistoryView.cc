@@ -165,39 +165,6 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
 
       CHECK(count_generations(sec.GetEvent().get()) == 3);
     }
-
-    /*
-    Now, let's perform some history reading and checking based on p3
-
-    p3 should have 20 secondaries, and a projectile (with 15
-    secondaries), with another projectil (with 10 secondaries), with
-    antother projectil (5 secondaries), with NO parent
-
-
-  {
-    auto test_ev3 = p3.GetEvent();
-    auto test_sec3 = test_ev3->secondaries();
-    CHECK(test_sec3.size() == 20);
-
-    auto test_proj3 = test_ev3->projectile(s.begin());
-    CHECK(test_proj3.GetEvent() == ev3);
-    auto test_ev2 = test_ev3->parentEvent();
-    auto test_sec2 = test_ev2->secondaries();
-    CHECK(test_sec2.size() == 15);
-
-    auto test_proj2 = test_ev2->projectile(s.begin());
-    CHECK(test_proj2.GetEvent() == ev2);
-    auto test_ev1 = test_ev2->parentEvent();
-    auto test_sec1 = test_ev1->secondaries();
-    CHECK(test_sec1.size() == 10);
-
-    auto test_proj1 = test_ev1->projectile(s.begin());
-    CHECK(test_proj1.GetEvent() == ev1);
-
-    CHECK(test_proj1.GetEvent()->parentEvent() == ev0);
-    CHECK(test_proj1.GetEvent()->parentEvent()->parentEvent() == nullptr);
-  }
-  */
   }
 
   SECTION("also test projectile access") {

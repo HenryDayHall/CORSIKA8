@@ -104,8 +104,6 @@ namespace corsika::cascade {
 #endif
     }
 
-    corsika::units::si::HEPEnergyType GetEnergyCut() const { return energy_cut_; }
-
     /**
      * set the nodes for all particles on the stack according to their numerical
      * position

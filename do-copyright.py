@@ -21,7 +21,7 @@ Debug settings are 0: nothing, 1: checking, 2: filesystem
 """
 Debug = 0 
 
-excludeDirs = ["ThirdParty", "git", "build", "install", "PROPOSAL"]
+excludeDirs = ["ThirdParty", "git", "build", "install", "PROPOSAL", "inexlib_rio"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h']
 
 extensions = [".cc", ".h", ".test"]

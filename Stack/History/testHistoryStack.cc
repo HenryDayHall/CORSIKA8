@@ -58,7 +58,7 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
   auto p = s.AddParticle(std::tuple<dummy::NoData>{noData});
 
   SECTION("add lone particle") {
-    CHECK(s.GetSize() == 1);
+    CHECK(s.getEntries() == 1);
 
     EvtPtr evt = p.GetEvent();
     CHECK(evt == nullptr);

@@ -51,7 +51,7 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
     TestStack s;
     s.AddParticle(std::make_tuple(noData), std::tuple<const int*>{&data});
 
-    CHECK(s.GetSize() == 1);
+    CHECK(s.getEntries() == 1);
   }
 
   SECTION("write/read node") {
@@ -60,7 +60,7 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
     TestStack s;
     auto p = s.AddParticle(std::make_tuple(noData));
     p.SetNode(&data);
-    CHECK(s.GetSize() == 1);
+    CHECK(s.getEntries() == 1);
 
     const auto pout = s.GetNextParticle();
     CHECK(*(pout.GetNode()) == 15);
@@ -77,7 +77,7 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
       p.SetNode(&data);
     }
 
-    CHECK(s.GetSize() == 99);
+    CHECK(s.getEntries() == 99);
     double v = 0;
     for (int i = 0; i < 99; ++i) {
       auto p = s.GetNextParticle();
@@ -85,6 +85,6 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
       p.Delete();
     }
     CHECK(v == 99 * data);
-    CHECK(s.GetSize() == 0);
+    CHECK(s.getEntries() == 0);
   }
 }
