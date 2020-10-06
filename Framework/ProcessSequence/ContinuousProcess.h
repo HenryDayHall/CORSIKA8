@@ -30,12 +30,6 @@ namespace corsika::process {
   public:
     using _TDerived = TDerived;
 
-<<<<<<< HEAD
-=======
-    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
-    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
-
->>>>>>> renamed base process templates
     // here starts the interface part
     // -> enforce TDerived to implement DoContinuous...
     template <typename TParticle, typename TTrack>

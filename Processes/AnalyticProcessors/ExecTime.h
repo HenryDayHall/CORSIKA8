@@ -104,9 +104,8 @@ namespace corsika::process {
           public Secondaries<
               T,
               std::is_base_of<corsika::process::SecondariesProcess<typename T::_TDerived>,
-                              T>::value> {
-      using is_process = decltype(is_process_impl(std::declval<T*>()));
-      static_assert(std::is_same<is_process, std::true_type>::value, "error message");
+                              T>::value> {      
+      static_assert(std::is_base_of<corsika::process::_BaseProcess,T>::value, "error message");
     };
   } // namespace analytic_processors
 } // namespace corsika::process

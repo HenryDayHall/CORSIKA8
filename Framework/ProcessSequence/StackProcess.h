@@ -35,12 +35,6 @@ namespace corsika::process {
     StackProcess(const unsigned int nStep)
         : fNStep(nStep) {}
 
-<<<<<<< HEAD
-=======
-    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
-    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
-
->>>>>>> renamed base process templates
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoStack...
     template <typename TStack>
@@ -60,9 +54,5 @@ namespace corsika::process {
     unsigned long int fIStep = 0;
     //! @}
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const StackProcess<T>* impl);
 
 } // namespace corsika::process

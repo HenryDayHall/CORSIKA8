@@ -22,9 +22,10 @@ namespace corsika::process {
      are of type BaseProcess<T>
 
    */
+  class _BaseProcess{};
 
   template <typename TDerived>
-  class BaseProcess {
+  class BaseProcess : _BaseProcess {
   protected:
     friend TDerived;
 
