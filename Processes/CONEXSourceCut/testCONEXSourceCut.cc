@@ -63,20 +63,30 @@ TEST_CASE("CONEXSourceCut") {
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer<MEnv>(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer<MEnv>(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer<MEnv>(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer<MEnv>(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addLinearLayer<MEnv>(1e9_cm, 112.8_km, environment::EMediumType::eAir,
-                               geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addLinearLayer<environment::UniformMediumType<
+      environment::UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>(
+      1e9_cm, 112.8_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
 
   builder.assemble(env);
 
@@ -102,8 +112,7 @@ TEST_CASE("CONEXSourceCut") {
   [[maybe_unused]] process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
 
   corsika::process::conex_source_cut::CONEXSourceCut conex(
-      center, showerAxis, t, injectionHeight, E0,
-      particles::GetPDG(particles::Code::Proton));
+      center, showerAxis, t, injectionHeight, E0, particles::Code::Proton);
 
   HEPEnergyType const Eem{1_PeV};
   auto const momentum = showerAxis.GetDirection() * Eem;
