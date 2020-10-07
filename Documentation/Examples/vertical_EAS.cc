@@ -75,6 +75,9 @@ void registerRandomStreams(const int seed) {
     random::RNGManager::GetInstance().SeedAll(seed);
 }
 
+template <typename T>
+using MEnv = environment::UniformMediumType<environment::UniformMagneticField<T>>;
+
 int main(int argc, char** argv) {
 
   logging::SetLevel(logging::level::info);

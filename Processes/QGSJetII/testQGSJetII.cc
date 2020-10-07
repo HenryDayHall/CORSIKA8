@@ -118,6 +118,7 @@ TEST_CASE("QgsjetII", "[processes]") {
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/UniformMagneticField.h>
+#include <corsika/environment/UniformMediumType.h>
 
 using namespace corsika::units::si;
 using namespace corsika::units;
