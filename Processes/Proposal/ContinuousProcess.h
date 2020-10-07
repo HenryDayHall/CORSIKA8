@@ -72,8 +72,8 @@ namespace corsika::process::proposal {
     template <typename Particle, typename Track>
     corsika::units::si::LengthType MaxStepLength(Particle const&, Track const&);
 
-    void ShowResults() const;
-    void Reset();
-    corsika::units::si::HEPEnergyType GetEnergyLost() const { return energy_lost_; }
+    void showResults() const;
+    void reset();
+    corsika::units::si::HEPEnergyType energyLost() const { return energy_lost_; }
   };
 } // namespace corsika::process::proposal

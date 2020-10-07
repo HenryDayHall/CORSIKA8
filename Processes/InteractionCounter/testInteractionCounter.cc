@@ -27,7 +27,6 @@ using namespace corsika::process::interaction_counter;
 using namespace corsika::units;
 using namespace corsika::units::si;
 
-
 struct DummyProcess {
   template <typename TParticle>
   GrammageType GetInteractionLength([[maybe_unused]] TParticle const& particle) {
@@ -56,7 +55,8 @@ TEST_CASE("InteractionCounter") {
 
   SECTION("DoInteraction nucleus") {
     unsigned short constexpr A = 14, Z = 7;
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::Nucleus, A, Z, 105_TeV, nodePtr, *csPtr);
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::Nucleus, A,
+                                                             Z, 105_TeV, nodePtr, *csPtr);
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 
@@ -76,7 +76,8 @@ TEST_CASE("InteractionCounter") {
   SECTION("DoInteraction Lambda") {
     auto constexpr code = particles::Code::Lambda0;
     auto constexpr codeInt = static_cast<particles::CodeIntType>(code);
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(code, 0,0, 105_TeV, nodePtr, *csPtr);
+    auto [stackPtr, secViewPtr] =
+        setup::testing::setupStack(code, 0, 0, 105_TeV, nodePtr, *csPtr);
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 

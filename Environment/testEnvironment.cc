@@ -327,12 +327,12 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   auto const R = builder.getEarthRadius();
 
   // check magnetic field at several locations
-  const Point pTest(gCS, -10_m, 4_m, R+35_m);
+  const Point pTest(gCS, -10_m, 4_m, R + 35_m);
   CHECK(B0.GetComponents(gCS) == univ->GetContainingNode(pTest)
                                      ->GetModelProperties()
                                      .GetMagneticField(pTest)
                                      .GetComponents(gCS));
-  const Point pTest2(gCS, 10_m, -4_m, R+15_km);
+  const Point pTest2(gCS, 10_m, -4_m, R + 15_km);
   CHECK(B1.GetComponents(gCS) == univ->GetContainingNode(pTest2)
                                      ->GetModelProperties()
                                      .GetMagneticField(pTest2)

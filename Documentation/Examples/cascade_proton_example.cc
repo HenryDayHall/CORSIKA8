@@ -74,14 +74,13 @@ int main() {
   auto& universe = *(env.GetUniverse());
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  auto theMedium =
-      EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m},
-                                  1_km * std::numeric_limits<double>::infinity());
+  auto theMedium = EnvType::CreateNode<Sphere>(
+      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel =
       environment::UniformMediumType<environment::UniformMagneticField<
           environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
-  
+
   theMedium->SetModelProperties<MyHomogeneousModel>(
       environment::EMediumType::eAir, geometry::Vector(rootCS, 0_T, 0_T, 1_T),
       1_kg / (1_m * 1_m * 1_m),

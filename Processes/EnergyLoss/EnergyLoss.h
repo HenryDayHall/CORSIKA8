@@ -45,6 +45,10 @@ namespace corsika::process::energy_loss {
     static units::si::HEPEnergyType TotalEnergyLoss(setup::Stack::ParticleType const&,
                                                     const units::si::GrammageType);
 
+    void showResults() const;
+    void reset();
+    corsika::units::si::HEPEnergyType energyLost() const { return energy_lost_; }
+
   private:
     void FillProfile(setup::Trajectory const&, units::si::HEPEnergyType);
 
@@ -57,6 +61,7 @@ namespace corsika::process::energy_loss {
     environment::ShowerAxis const& shower_axis_;
     corsika::units::si::HEPEnergyType emCut_;
     std::vector<units::si::HEPEnergyType> profile_; // longitudinal profile
+    units::si::HEPEnergyType energy_lost_ = 0 * units::si::electronvolt;
   };
 
   units::si::GrammageType const dX_threshold_ = std::invoke([]() {

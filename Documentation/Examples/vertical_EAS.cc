@@ -78,7 +78,6 @@ void registerRandomStreams(const int seed) {
 template <typename T>
 using MEnv = environment::UniformMediumType<environment::UniformMagneticField<T>>;
 
-
 int main(int argc, char** argv) {
 
   logging::SetLevel(logging::level::info);
@@ -102,7 +101,8 @@ int main(int argc, char** argv) {
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface> builder{center};
+  environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface> builder{
+      center};
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now

@@ -7,12 +7,12 @@
  */
 
 #include <corsika/environment/Environment.h>
+#include <corsika/environment/FlatExponential.h>
+#include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/VolumeTreeNode.h>
-#include <corsika/environment/FlatExponential.h>
-#include <corsika/environment/HomogeneousMedium.h>
 
 #include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalConstants.h>

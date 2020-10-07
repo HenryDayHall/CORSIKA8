@@ -31,13 +31,12 @@ namespace corsika::process {
       CONEXSourceCut(geometry::Point center, environment::ShowerAxis const& showerAxis,
                      units::si::LengthType groundDist,
                      units::si::LengthType injectionHeight,
-                     units::si::HEPEnergyType primaryEnergy,
-                     particles::PDGCode primaryID);
+                     units::si::HEPEnergyType primaryEnergy, particles::Code pid);
       corsika::process::EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
       void SolveCE();
 
-      void addParticle(int egs_pid, units::si::HEPEnergyType energy,
+      bool addParticle(particles::Code pid, units::si::HEPEnergyType energy,
                        units::si::HEPEnergyType mass, geometry::Point const& position,
                        geometry::Vector<units::si::dimensionless_d> const& direction,
                        units::si::TimeType t);

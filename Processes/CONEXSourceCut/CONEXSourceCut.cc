@@ -6,10 +6,12 @@
  * the license.
  */
 
+#include <corsika/logging/Logging.h>
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/conex_source_cut/CONEX_f.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/units/PhysicalConstants.h>
+
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
@@ -23,32 +25,28 @@ using namespace corsika::setup;
 corsika::process::EProcessReturn CONEXSourceCut::DoSecondaries(
     corsika::setup::StackView& vS) {
   auto p = vS.begin();
-
   while (p != vS.end()) {
     Code const pid = p.GetPID();
-
-    auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
-                                 [=](auto const& p) { return pid == p.first; });
-    if (it != egs_em_codes_.cend()) {
-      // EM particle
-
-      auto const egs_pid = it->second;
-
-      addParticle(egs_pid, p.GetEnergy(), p.GetMass(), p.GetPosition(),
-                  p.GetMomentum().normalized(), p.GetTime());
-
+    if (addParticle(pid, p.GetEnergy(), p.GetMass(), p.GetPosition(),
+                    p.GetMomentum().normalized(), p.GetTime())) {
       p.Delete();
     }
     ++p;
   }
-
   return corsika::process::EProcessReturn::eOk;
 }
 
-void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy, HEPEnergyType mass,
-                                 geometry::Point const& position,
+bool CONEXSourceCut::addParticle(particles::Code pid, HEPEnergyType energy,
+                                 HEPEnergyType mass, geometry::Point const& position,
                                  geometry::Vector<dimensionless_d> const& direction,
                                  TimeType t) {
+
+  auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
+                               [=](auto const& p) { return pid == p.first; });
+  if (it == egs_em_codes_.cend()) { return false; }
+
+  // EM particle
+  auto const egs_pid = it->second;
   std::cout << "position conexObs: " << position.GetCoordinates(conexObservationCS_)
             << std::endl;
 
@@ -122,6 +120,8 @@ void CONEXSourceCut::addParticle(int egs_pid, HEPEnergyType energy, HEPEnergyTyp
 
   int n = 1, i = 1;
   conex::cegs4_(n, i);
+
+  return true;
 }
 
 void CONEXSourceCut::SolveCE() {
@@ -160,9 +160,12 @@ void CONEXSourceCut::SolveCE() {
   conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 
   std::ofstream file{"conex_output.txt"};
+  file << fmt::format("#{:>8} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13}\n", "X",
+                      "N", "dEdX", "Mu", "dMu", "Gamma", "El", "Had");
   for (int i = 0; i < nX; ++i) {
-    file << X[i] << " " << N[i] << " " << dEdX[i] << " " << Mu[i] << " " << dMu[i] << " "
-         << Gamma[i] << " " << Electrons[i] << " " << Hadrons[i] << std::endl;
+    file << fmt::format(
+        " {:>8.2f} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3}\n",
+        X[i], N[i], dEdX[i], Mu[i], dMu[i], Gamma[i], Electrons[i], Hadrons[i]);
   }
 
   std::ofstream fitout{"conex_fit.txt"};
@@ -186,7 +189,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
                                units::si::LengthType groundDist,
                                units::si::LengthType injectionHeight,
                                units::si::HEPEnergyType primaryEnergy,
-                               particles::PDGCode primaryID)
+                               particles::Code primaryPID)
     : center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
@@ -278,7 +281,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
 
   std::cout << "theta (deg) = " << theta << "; phi (deg) = " << phi << std::endl;
 
-  int ipart = static_cast<int>(primaryID);
+  int ipart = static_cast<int>(particles::GetPDG(primaryPID));
   auto rng = corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
 
   double dimpact = 0.; // valid only if shower core is fixed on the observation plane; for

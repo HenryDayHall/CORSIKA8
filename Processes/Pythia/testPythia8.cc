@@ -77,15 +77,15 @@ TEST_CASE("Pythia", "[processes]") {
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
-#include <corsika/setup/SetupEnvironment.h>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/environment/UniformMediumType.h>
 #include <corsika/environment/UniformMagneticField.h>
+#include <corsika/environment/UniformMediumType.h>
 
 using namespace corsika;
 using namespace corsika::units::si;
@@ -105,12 +105,14 @@ TEST_CASE("pythia process") {
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
-  
+
   SECTION("pythia decay") {
     feenableexcept(FE_INVALID);
     const HEPEnergyType P0 = 10_GeV;
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0, 0, P0, nodePtr, *csPtr);
-    const auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    auto [stackPtr, secViewPtr] =
+        setup::testing::setupStack(particles::Code::PiPlus, 0, 0, P0, nodePtr, *csPtr);
+    const auto plab = corsika::stack::MomentumVector(
+        cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     auto& stack = *stackPtr;
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
@@ -154,7 +156,8 @@ TEST_CASE("pythia process") {
   SECTION("pythia interaction") {
 
     feenableexcept(FE_INVALID);
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0, 0, 100_GeV, nodePtr, *csPtr);
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0,
+                                                             0, 100_GeV, nodePtr, *csPtr);
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
 

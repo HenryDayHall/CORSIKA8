@@ -146,14 +146,14 @@ namespace corsika::process::proposal {
     return dist;
   }
 
-  void ContinuousProcess::ShowResults() const {
+  void ContinuousProcess::showResults() const {
     using namespace corsika::units::si; // required for operator::_MeV
     std::cout << " ******************************" << std::endl
               << " PROCESS::ContinuousProcess: " << std::endl;
     std::cout << " energy lost dE (GeV)      :  " << energy_lost_ / 1_GeV << std::endl;
   }
 
-  void ContinuousProcess::Reset() {
+  void ContinuousProcess::reset() {
     using namespace corsika::units::si; // required for operator::_MeV
     energy_lost_ = 0_GeV;
   }
