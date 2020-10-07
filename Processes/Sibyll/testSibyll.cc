@@ -106,15 +106,16 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("InteractionInterface - low energy") {
 
     const HEPEnergyType P0 = 60_GeV;
-    auto [stack, view] = setup::testing::setupStack(particles::Code::Proton, 0,0, P0, nodePtr, cs);
+    auto [stack, viewPtr] = setup::testing::setupStack(particles::Code::Proton, 0,0, P0, nodePtr, cs);
     const auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    setup::StackView& view = *viewPtr;
     
     auto particle = stack->first();
     
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*view);
-    auto const pSum = sumMomentum(*view, cs);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
+    auto const pSum = sumMomentum(view, cs);
 
     /*
       Interactions between hadrons (h) and nuclei (A) in Sibyll are treated in the
@@ -179,23 +180,29 @@ TEST_CASE("SibyllInterface", "[processes]") {
     CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.05 / 1_GeV));
     CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+    CHECK(length/1_g*1_cm*1_cm == Approx(88.7).margin(0.1));
+    CHECK(view.getSize() == 20);
   }
 
   SECTION("NuclearInteractionInterface") {
 
-    auto [stack, view] = setup::testing::setupStack(particles::Code::Nucleus, 4, 2, 100_GeV, nodePtr, cs);
+    auto [stack, viewPtr] = setup::testing::setupStack(particles::Code::Nucleus, 4, 2, 500_GeV, nodePtr, cs);
+    setup::StackView& view = *viewPtr;
     auto particle = stack->first();
 
     Interaction hmodel;
     NuclearInteraction model(hmodel, *env);
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*view);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+    CHECK(length/1_g*1_cm*1_cm == Approx(44.2).margin(.1));
+    CHECK(view.getSize() == 11);
   }
 
   SECTION("DecayInterface") {
 
-    auto [stackPtr, view] = setup::testing::setupStack(particles::Code::Lambda0, 0,0, 10_GeV, nodePtr, cs);
+    auto [stackPtr, viewPtr] = setup::testing::setupStack(particles::Code::Lambda0, 0,0, 10_GeV, nodePtr, cs);
+    setup::StackView& view = *viewPtr;
     auto& stack = *stackPtr; 
     auto particle = stack.first();
 
@@ -203,7 +210,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     model.PrintDecayConfig();
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
 
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(*view);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(view);
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
     CHECK(stack.getEntries() == 3);

@@ -159,7 +159,7 @@ namespace corsika::setup::testing {
       particle.SetNode(vNodePtr);
       return std::make_tuple(
           std::move(stack),
-          std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+          std::make_unique<setup::StackView>(particle));
     } else { // not a nucleus
       HEPEnergyType const E0 = sqrt(
           units::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
@@ -168,7 +168,7 @@ namespace corsika::setup::testing {
       particle.SetNode(vNodePtr);
       return std::make_tuple(
           std::move(stack),
-          std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+          std::make_unique<setup::StackView>(particle));
     }
   }
 
