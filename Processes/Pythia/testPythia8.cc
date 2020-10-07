@@ -101,45 +101,17 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 
 TEST_CASE("pythia process") {
 
-  // setup environment, geometry
-  setup::Environment env;
-  auto& universe = *(env.GetUniverse());
-  using EnvironmentModel = environment::UniformMediumType<environment::UniformMagneticField<environment::HomogeneousMedium<setup::IEnvironment>>>;
-
-  auto theMedium =
-    setup::Environment::CreateNode<geometry::Sphere>(
-          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
-
-  theMedium->SetModelProperties<EnvironmentModel>(
-						  environment::EMediumType::eAir,
-						  geometry::Vector(env.GetCoordinateSystem(), 0_T, 0_T, 0_T),
-      1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
-
-  auto const* nodePtr = theMedium.get();
-  universe.AddChild(std::move(theMedium));
-
-  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
-
+  auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+  auto const& cs = *csPtr;
+  [[maybe_unused]] auto const& env_dummy = env;
+  [[maybe_unused]] auto const& node_dummy = nodePtr;
   
   SECTION("pythia decay") {
     feenableexcept(FE_INVALID);
-    setup::Stack stack;
-    const HEPEnergyType E0 = 10_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::PiPlus::GetMass() * particles::PiPlus::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::PiPlus, E0, plab, pos, 0_ns});
+    auto [stackPtr, secViewPtr] = testing::setupStack(code::PiPlus, 0, 0, 10_GeV, nodePtr, *csPtr);
+    auto projectile = secViewPtr->GetProjectile();
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-
-    setup::StackView view(particle);
 
     process::pythia::Decay model;
 
@@ -177,18 +149,9 @@ TEST_CASE("pythia process") {
 
   SECTION("pythia interaction") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 100_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::PiPlus::GetMass() * particles::PiPlus::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::PiPlus, E0, plab, pos, 0_ns});
-    particle.SetNode(nodePtr);
-    setup::StackView view(particle);
+    feenableexcept(FE_INVALID);
+    auto [stackPtr, secViewPtr] = testing::setupStack(code::PiPlus, 0, 0, 100_GeV, nodePtr, *csPtr);
+    auto projectile = secViewPtr->GetProjectile();
 
     process::pythia::Interaction model;
 
