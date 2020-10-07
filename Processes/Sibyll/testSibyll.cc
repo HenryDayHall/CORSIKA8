@@ -115,8 +115,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
-    auto const pSum = sumMomentum(view, cs);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*view);
+    auto const pSum = sumMomentum(*view, cs);
 
     /*
       Interactions between hadrons (h) and nuclei (A) in Sibyll are treated in the
@@ -195,7 +195,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Interaction hmodel;
     NuclearInteraction model(hmodel, *env);
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
     CHECK(view.getSize() == 11);
