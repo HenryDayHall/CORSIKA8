@@ -131,3 +131,44 @@ namespace corsika::setup {
   using StackView = detail::TheStackView;
 
 } // namespace corsika::setup
+
+namespace corsika::setup::testing {
+
+  /**
+   * standard setup for unit tests. This can be moved to "test"
+   * directory, when available.
+   */
+  auto setupStack(particles::Code vProjectileType, int vA, int vZ,
+                  units::si::HEPEnergyType vMomentum,
+                  setup::Environment::BaseNodeType* vNodePtr,
+                  geometry::CoordinateSystem const& cs) {
+
+    using namespace corsika;
+    using namespace corsika::units::si;
+
+    auto stack = std::make_unique<setup::Stack>();
+    auto constexpr mN = corsika::units::constants::nucleonMass;
+
+    geometry::Point const origin(cs, {0_m, 0_m, 0_m});
+    corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+    
+    if (vProjectileType == particles::Code::Nucleus) {
+      HEPEnergyType const E0 = sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
+      auto particle = stack->AddParticle(
+          std::make_tuple(particles::Code::Nucleus, E0, pLab, origin, 0_ns, vA, vZ));
+    } else { // not a nucleus
+      HEPEnergyType const E0 = sqrt(
+          units::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
+      auto particle = stack->AddParticle(
+          std::tuple<particles::Code, units::si::HEPEnergyType,
+                     corsika::stack::MomentumVector, geometry::Point,
+                     units::si::TimeType>{vProjectileType, E0, pLab, origin, 0_ns});
+    }
+
+    particle.SetNode(vNodePtr);
+    return std::make_tuple(
+        std::move(stack),
+        std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+  }
+
+} // namespace corsika::setup::testing

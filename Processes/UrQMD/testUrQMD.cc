@@ -53,69 +53,6 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
   return sum;
 }
 
-auto setupEnvironment(particles::Code vTargetCode) {
-  // setup environment, geometry
-  auto env = std::make_unique<environment::Environment<environment::IMediumModel>>();
-  auto& universe = *(env->GetUniverse());
-  const geometry::CoordinateSystem& cs = env->GetCoordinateSystem();
-
-  auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{cs, 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
-
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(std::vector<particles::Code>{vTargetCode},
-                                      std::vector<float>{1.}));
-
-  auto const* nodePtr = theMedium.get();
-  universe.AddChild(std::move(theMedium));
-
-  return std::make_tuple(std::move(env), &cs, nodePtr);
-}
-
-template <typename TNodeType>
-auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
-                geometry::CoordinateSystem const& cs) {
-  auto stack = std::make_unique<setup::Stack>();
-  auto constexpr mN = corsika::units::constants::nucleonMass;
-
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
-  corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
-
-  HEPEnergyType const E0 = sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
-  auto particle =
-      stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                    corsika::stack::MomentumVector, geometry::Point,
-                                    units::si::TimeType, unsigned short, unsigned short>{
-          particles::Code::Nucleus, E0, pLab, origin, 0_ns, vA, vZ});
-
-  particle.SetNode(vNodePtr);
-  return std::make_tuple(
-      std::move(stack), std::make_unique<decltype(setup::StackView{particle})>(particle));
-}
-
-template <typename TNodeType>
-auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
-                TNodeType* vNodePtr, geometry::CoordinateSystem const& cs) {
-  auto stack = std::make_unique<setup::Stack>();
-
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
-  corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
-
-  HEPEnergyType const E0 = sqrt(
-      units::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
-  auto particle = stack->AddParticle(
-      std::tuple<particles::Code, units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          vProjectileType, E0, pLab, origin, 0_ns});
-
-  particle.SetNode(vNodePtr);
-  return std::make_tuple(
-      std::move(stack), std::make_unique<decltype(setup::StackView{particle})>(particle));
-}
 
 TEST_CASE("UrQMD") {
   SECTION("conversion") {
