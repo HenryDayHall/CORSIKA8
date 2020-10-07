@@ -114,7 +114,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("static_pow") {
-    using namespace corsika::units::si::detail;
+    using namespace corsika::units;
     double x = 235.7913;
     REQUIRE(1 == static_pow<0, double>(x));
     REQUIRE(x == static_pow<1, double>(x));

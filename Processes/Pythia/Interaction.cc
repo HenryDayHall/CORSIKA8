@@ -22,7 +22,7 @@ using std::tuple;
 
 using namespace corsika;
 using namespace corsika::setup;
-using Projectile = corsika::setup::StackView::ParticleType;
+using SecondaryView = corsika::setup::StackView;
 using Particle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::process::pythia {
@@ -241,14 +241,16 @@ namespace corsika::process::pythia {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(Projectile& vP) {
+  process::EProcessReturn Interaction::DoInteraction(SecondaryView& view) {
 
     using namespace units;
     using namespace utl;
     using namespace units::si;
     using namespace geometry;
 
-    const auto corsikaBeamId = vP.GetPID();
+    auto const projectile = view.GetProjectile();
+
+    const auto corsikaBeamId = projectile.GetPID();
     cout << "Pythia::Interaction: "
          << "DoInteraction: " << corsikaBeamId << " interaction? "
          << process::pythia::Interaction::CanInteract(corsikaBeamId) << endl;
@@ -264,8 +266,8 @@ namespace corsika::process::pythia {
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
       // position and time of interaction, not used in Sibyll
-      Point pOrig = vP.GetPosition();
-      TimeType tOrig = vP.GetTime();
+      Point pOrig = projectile.GetPosition();
+      TimeType tOrig = projectile.GetTime();
 
       // define target
       // FOR NOW: target is always at rest
@@ -274,8 +276,8 @@ namespace corsika::process::pythia {
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
       // define projectile
-      HEPEnergyType const eProjectileLab = vP.GetEnergy();
-      auto const pProjectileLab = vP.GetMomentum();
+      HEPEnergyType const eProjectileLab = projectile.GetEnergy();
+      auto const pProjectileLab = projectile.GetMomentum();
 
       cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << endl
            << "Interaction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
@@ -310,12 +312,12 @@ namespace corsika::process::pythia {
       cout << "Interaction: time: " << tOrig << endl;
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
-      MomentumVector Ptot = vP.GetMomentum();
+      MomentumVector Ptot = projectile.GetMomentum();
       // invariant mass, i.e. cm. energy
       HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
 
       // sample target mass number
-      const auto* currentNode = vP.GetNode();
+      const auto* currentNode = projectile.GetNode();
       const auto& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // get cross sections for target materials
@@ -381,7 +383,7 @@ namespace corsika::process::pythia {
           HEPEnergyType const pyEn = p8p.e() * 1_GeV;
 
           // add to corsika stack
-          auto pnew = vP.AddSecondary(
+          auto pnew = view.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType>{pyId, pyEn, pyPlab, pOrig,
                                                           tOrig});

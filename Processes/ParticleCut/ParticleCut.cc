@@ -90,11 +90,8 @@ namespace corsika::process {
     EProcessReturn ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {
       auto particle = vS.begin();
       while (particle != vS.end()) {
-        if (checkCutParticle(particle)) {
-          particle.Delete();
-        } else {
-          ++particle; // next entry in SecondaryView
-        }
+        if (checkCutParticle(particle)) { particle.Delete(); }
+        ++particle; // next entry in SecondaryView
       }
       return EProcessReturn::eOk;
     }

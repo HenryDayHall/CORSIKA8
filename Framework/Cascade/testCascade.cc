@@ -32,7 +32,6 @@ using namespace corsika::units;
 using namespace corsika::units::si;
 using namespace corsika::geometry;
 
-#include <iostream>
 #include <limits>
 using namespace std;
 
@@ -69,18 +68,21 @@ public:
     return fX0;
   }
 
-  template <typename TProjectile>
-  corsika::process::EProcessReturn DoInteraction(TProjectile& vP) {
+  template <typename TSecondaryView>
+  corsika::process::EProcessReturn DoInteraction(TSecondaryView& view) {
     fCalls++;
-    const HEPEnergyType E = vP.GetEnergy();
-    vP.AddSecondary(
+    auto const projectile = view.GetProjectile();
+    const HEPEnergyType E = projectile.GetEnergy();
+    view.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
-    vP.AddSecondary(
+            projectile.GetPID(), E / 2, projectile.GetMomentum(),
+            projectile.GetPosition(), projectile.GetTime()});
+    view.AddSecondary(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
+            projectile.GetPID(), E / 2, projectile.GetMomentum(),
+            projectile.GetPosition(), projectile.GetTime()});
     return EProcessReturn::eInteracted;
   }
 
@@ -106,12 +108,11 @@ public:
       if (E < fEcrit) {
         p.Delete();
         fCount++;
-      } else {
-        ++p; // next particle
       }
+      ++p; // next particle
     }
-    cout << "ProcessCut::DoSecondaries size=" << vS.GetSize() << " count=" << fCount
-         << endl;
+    C8LOG_INFO(fmt::format("ProcessCut::DoSecondaries size={} count={}", vS.getEntries(),
+                           fCount));
     return EProcessReturn::eOk;
   }
 
@@ -162,7 +163,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   SECTION("forced interaction") {
     EAS.SetNodes();
     EAS.forceInteraction();
-    CHECK(stack.GetSize() == 2);
+    CHECK(stack.getEntries() == 2);
     CHECK(split.GetCalls() == 1);
   }
 }

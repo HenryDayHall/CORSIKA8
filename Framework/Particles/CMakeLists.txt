@@ -56,6 +56,7 @@ target_link_libraries (
   CORSIKAparticles
   PUBLIC
   CORSIKAunits
+  CORSIKAlogging
   )
 
 set_target_properties (

@@ -40,8 +40,7 @@ namespace corsika::process::UrQMD {
     corsika::units::si::CrossSectionType GetTabulatedCrossSection(
         particles::Code, particles::Code, corsika::units::si::HEPEnergyType) const;
 
-    corsika::process::EProcessReturn DoInteraction(
-        corsika::setup::StackView::StackIterator&);
+    corsika::process::EProcessReturn DoInteraction(corsika::setup::StackView&);
 
     bool CanInteract(particles::Code) const;
 

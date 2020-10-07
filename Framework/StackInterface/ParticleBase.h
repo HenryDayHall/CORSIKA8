@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <type_traits>
-
 namespace corsika::stack {
 
   /**
@@ -62,6 +60,11 @@ namespace corsika::stack {
      * will be invalidated by this operation
      */
     void Delete() { GetIterator().GetStack().Delete(GetIterator()); }
+
+    /**
+     * Method to retrieve the status of the Particle. Is it already deleted? Or not.
+     */
+    bool isDeleted() const { return GetIterator().GetStack().isDeleted(GetIterator()); }
 
     /**
      * Add a secondary particle based on *this on the stack @param

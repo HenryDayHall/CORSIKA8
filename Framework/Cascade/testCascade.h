@@ -9,23 +9,28 @@
 #pragma once
 
 #include <corsika/environment/Environment.h>
-#include <corsika/setup/SetupStack.h>
+
+#include <corsika/stack/CombinedStack.h>
+#include <corsika/stack/SecondaryView.h>
+#include <corsika/stack/node/GeometryNodeStackExtension.h>
+#include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
 
 using TestEnvironmentType =
     corsika::environment::Environment<corsika::environment::IMediumModel>;
 
 template <typename T>
-using SetupGeometryDataInterface = GeometryDataInterface<T, TestEnvironmentType>;
+using SetupGeometryDataInterface =
+    corsika::stack::node::GeometryDataInterface<T, TestEnvironmentType>;
 
 // combine particle data stack with geometry information for tracking
 template <typename StackIter>
 using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
-    corsika::setup::detail::ParticleDataStack::PIType, SetupGeometryDataInterface,
-    StackIter>;
+    corsika::stack::nuclear_extension::ParticleDataStack::MPIType,
+    SetupGeometryDataInterface, StackIter>;
 
 using TestCascadeStack = corsika::stack::CombinedStack<
-    typename corsika::setup::detail::ParticleDataStack::StackImpl,
-    GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
+    typename corsika::stack::nuclear_extension::ParticleDataStack::StackImpl,
+    corsika::stack::node::GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
 
 /*
   See also Issue 161

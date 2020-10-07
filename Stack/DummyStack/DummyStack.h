@@ -8,58 +8,79 @@
 
 #pragma once
 
+#include <corsika/logging/Logging.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <string>
-#include <vector>
+#include <tuple>
 
 namespace corsika::stack {
 
   namespace dummy {
 
     /**
-     * Example of a particle object on the stack.
+     * Example of a particle object on the stack, with NO DATA.
      */
 
-    template <typename _Stack>
-    class ParticleRead : public StackIteratorInfo<_Stack, ParticleRead<_Stack> > {
+    /**
+       however, conceptually we need to provide fake data. A stack without data does not
+       work...
+     */
 
-      using StackIteratorInfo<_Stack, ParticleRead>::GetIndex;
-      using StackIteratorInfo<_Stack, ParticleRead>::GetStack;
+    struct NoData { /* nothing */
+      int nothing = 0;
+    };
+
+    template <typename StackIteratorInterface>
+    class ParticleInterface
+        : public corsika::stack::ParticleBase<StackIteratorInterface> {
+
+    protected:
+      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStack;
+      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
 
     public:
+      using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
+
+    public:
+      void SetParticleData(const std::tuple<NoData>& /*v*/) {}
+      void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
+                           const std::tuple<NoData>& /*v*/) {}
+
+      std::string as_string() const { return "dummy-data"; }
     };
 
     /**
      *
-     * Memory implementation of the most simple (stupid) particle stack object.
+     * Memory implementation of the most simple (no-data) particle stack object.
      */
 
     class DummyStackImpl {
 
     public:
-      void Init() {}
+      void Init() { entries_ = 0; }
 
-      void Clear() {}
+      void Clear() { entries_ = 0; }
 
-      int GetSize() const { return 0; }
-      int GetCapacity() const { return 0; }
+      int GetSize() const { return entries_; }
+      int GetCapacity() const { return entries_; }
 
       /**
        *   Function to copy particle at location i2 in stack to i1
        */
-      void Copy(const int i1, const int i2) {}
+      void Copy(const int /*i1*/, const int /*i2*/) {}
 
-    protected:
-      void IncrementSize() {}
-      void DecrementSize() {}
+      void IncrementSize() { entries_++; }
+      void DecrementSize() { entries_--; }
+
+    private:
+      int entries_ = 0;
 
     }; // end class DummyStackImpl
 
-    typedef StackIterator<DummyStackImpl, ParticleRead<DummyStackImpl> > Particle;
-    typedef Stack<DummyStackImpl, Particle> DummyStack;
+    typedef Stack<DummyStackImpl, ParticleInterface> DummyStack;
 
   } // namespace dummy
 

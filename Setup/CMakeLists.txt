@@ -3,6 +3,7 @@ set (
   SetupStack.h
   SetupEnvironment.h
   SetupTrajectory.h
+  GeometryNodeStackExtension.h
   )
 
 set (
@@ -17,9 +18,14 @@ target_link_libraries (
   CORSIKAsetup
   INTERFACE
   CORSIKAgeometry
-  SuperStupidStack
   NuclearStackExtension
+  GeometryNodeStackExtension
+  CORSIKAhistory
   )
+
+if (WITH_HISTORY)
+  target_compile_definitions (CORSIKAsetup INTERFACE "WITH_HISTORY")
+endif (WITH_HISTORY)
 
 target_include_directories (
   CORSIKAsetup

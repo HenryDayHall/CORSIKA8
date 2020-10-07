@@ -1,7 +1,7 @@
 set (
   MODEL_HEADERS
-  InteractionCounter.h
-  InteractionHistogram.h
+  InteractionCounter.hpp
+  InteractionHistogram.hpp
   )
 
 set (

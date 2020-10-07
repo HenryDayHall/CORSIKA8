@@ -8,6 +8,7 @@
 
 #include <corsika/geometry/QuantityVector.h>
 #include <corsika/geometry/Vector.h>
+#include <corsika/logging/Logging.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -27,7 +28,7 @@ using namespace corsika::units::si;
 
 using SetupStack = corsika::setup::Stack;
 using SetupParticle = corsika::setup::Stack::StackIterator;
-using SetupProjectile = corsika::setup::StackView::StackIterator;
+using SetupView = corsika::setup::StackView;
 
 UrQMD::UrQMD(std::string const& xs_file) {
   readXSFile(xs_file);
@@ -38,6 +39,10 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,
                                                  corsika::particles::Code targetCode,
                                                  HEPEnergyType labEnergy) const {
   // translated to C++ from CORSIKA 7 subroutine cxtot_u
+
+  C8LOG_DEBUG("UrQMD::GetTabulatedCrossSection proj={}, targ={}, E={}GeV",
+              particles::GetName(projectileCode), particles::GetName(targetCode),
+              labEnergy / 1_GeV);
 
   auto const kinEnergy = labEnergy - particles::GetMass(projectileCode);
 
@@ -126,8 +131,8 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code projectileCode,
       !IsNucleus(targetCode)) { // both particles are "special"
     auto const mProj = particles::GetMass(projectileCode);
     auto const mTar = particles::GetMass(targetCode);
-    double sqrtS = sqrt(units::si::detail::static_pow<2>(mProj) +
-                        units::si::detail::static_pow<2>(mTar) + 2 * labEnergy * mTar) *
+    double sqrtS = sqrt(units::static_pow<2>(mProj) + units::static_pow<2>(mTar) +
+                        2 * labEnergy * mTar) *
                    (1 / 1_GeV);
 
     // we must set some UrQMD globals first...
@@ -179,7 +184,7 @@ CrossSectionType UrQMD::GetCrossSection(particles::Code projectileCode,
     int const At = IsNucleus(targetCode) ? particles::GetNucleusA(targetCode) : 1;
 
     double const maxImpact = nucrad_(Ap) + nucrad_(At) + 2 * options_.CTParam[30 - 1];
-    return 10_mb * M_PI * units::si::detail::static_pow<2>(maxImpact);
+    return 10_mb * M_PI * units::static_pow<2>(maxImpact);
     // is a constant cross-section really reasonable?
   }
 }
@@ -240,8 +245,10 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle const& particle) const {
          weightedProdCrossSection;
 }
 
-corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectile) {
+corsika::process::EProcessReturn UrQMD::DoInteraction(SetupView& view) {
   using namespace units::si;
+
+  auto const projectile = view.GetProjectile();
 
   auto projectileCode = projectile.GetPID();
   auto const projectileEnergyLab = projectile.GetEnergy();
@@ -343,7 +350,7 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupProjectile& projectil
     momentum.rebase(originalCS); // transform back into standard lab frame
     std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
 
-    projectile.AddSecondary(
+    view.AddSecondary(
         std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
                    TimeType>{code, energy, momentum, projectilePosition, projectileTime});
   }

@@ -147,7 +147,7 @@ public:
 class Decay1 : public DecayProcess<Decay1> {
 
 public:
-  Decay1(const int v) {
+  Decay1(const int) {
     cout << "Decay1()" << endl;
     globalCount++;
   }
@@ -287,5 +287,5 @@ TEST_CASE("SwitchProcess") {
   Process1 p1(0);
   Process2 p2(1);
   switch_process::SwitchProcess s(p1, p2, 10_GeV);
-  REQUIRE(is_switch_process_v<decltype(s)>);
+  CHECK(is_switch_process_v<decltype(s)>);
 }

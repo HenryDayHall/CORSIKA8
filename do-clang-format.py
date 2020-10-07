@@ -28,7 +28,7 @@ if args.all:
         if doExclude:
             continue
         for f in filenames:
-            if f.endswith(".h") or f.endswith(".cc"):
+            if f.endswith(".h") or f.endswith(".cc") or f.endswith(".hpp") or f.endswith(".cpp") or f.endswith(".cxx"):
                 filename = os.path.join(dirpath, f)
                 if not os.path.islink(filename):
                     filelist.append(filename)
@@ -52,7 +52,7 @@ else:
 cmd = "clang-format"
 if "CLANG_FORMAT" in os.environ:
   cmd = os.environ["CLANG_FORMAT"]
-  cmd +=  " -style=file"
+cmd +=  " -style=file"
 if args.apply:
     for filename in filelist:
         subp.check_call(cmd.split() + ["-i", filename])

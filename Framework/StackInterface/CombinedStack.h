@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/logging/Logging.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/stack/Stack.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -36,10 +37,6 @@ namespace corsika::stack {
             template <typename> typename ParticleInterfaceB, typename StackIterator>
   class CombinedParticleInterface
       : public ParticleInterfaceB<ParticleInterfaceA<StackIterator>> {
-
-    // template<template <typename> typename _PI>
-    // template <typename StackDataType, template <typename> typename ParticleInterface>
-    // template<typename T1, template <typename> typename T2> friend class Stack<T1, T2>;
 
     using PI_C =
         CombinedParticleInterface<ParticleInterfaceA, ParticleInterfaceB, StackIterator>;
@@ -91,6 +88,10 @@ namespace corsika::stack {
       PI_B::SetParticleData(static_cast<PI_B&>(p), vB);
     }
     ///@}
+
+    std::string as_string() const {
+      return fmt::format("[[{}][{}]]", PI_A::as_string(), PI_B::as_string());
+    }
   };
 
   /**

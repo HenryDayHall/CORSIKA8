@@ -33,6 +33,9 @@ using namespace corsika::units::si;
 // This example demonstrates the energy loss of muons as function of beta*gamma (=p/m)
 //
 int main() {
+
+  std::cout << "stopping_power" << std::endl;
+
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry

@@ -21,6 +21,13 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (
   CORSIKAstackinterface ${CORSIKAstackinterface_NAMESPACE} ${CORSIKAstackinterface_HEADERS}
   )
 
+target_link_libraries (
+  CORSIKAstackinterface
+  INTERFACE
+  CORSIKAlogging
+  CORSIKAsetup  
+  )
+
 target_include_directories (
   CORSIKAstackinterface
   INTERFACE

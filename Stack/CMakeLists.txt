@@ -1,3 +1,5 @@
 add_subdirectory (DummyStack)
 add_subdirectory (SuperStupidStack)
 add_subdirectory (NuclearStackExtension)
+add_subdirectory (GeometryNodeStackExtension)
+add_subdirectory (History)

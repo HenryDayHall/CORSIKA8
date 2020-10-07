@@ -33,7 +33,7 @@ using std::tuple;
 using namespace corsika;
 using namespace corsika::setup;
 using SetupParticle = setup::Stack::StackIterator;
-using SetupProjectile = setup::StackView::StackIterator;
+using SetupView = setup::StackView;
 using Track = Trajectory;
 
 namespace corsika::process::qgsjetII {
@@ -169,14 +169,16 @@ namespace corsika::process::qgsjetII {
    */
 
   template <>
-  process::EProcessReturn Interaction::DoInteraction(SetupProjectile& vP) {
+  process::EProcessReturn Interaction::DoInteraction(SetupView& view) {
 
     using namespace units;
     using namespace utl;
     using namespace units::si;
     using namespace geometry;
 
-    const auto corsikaBeamId = vP.GetPID();
+    auto const projectile = view.GetProjectile();
+
+    const auto corsikaBeamId = projectile.GetPID();
     cout << "ProcessQgsjetII: "
          << "DoInteraction: " << corsikaBeamId << " interaction? "
          << process::qgsjetII::CanInteract(corsikaBeamId) << endl;
@@ -187,8 +189,8 @@ namespace corsika::process::qgsjetII {
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
       // position and time of interaction, not used in QgsjetII
-      Point pOrig = vP.GetPosition();
-      TimeType tOrig = vP.GetTime();
+      Point pOrig = projectile.GetPosition();
+      TimeType tOrig = projectile.GetTime();
 
       // define target
       // for QgsjetII is always a single nucleon
@@ -198,11 +200,11 @@ namespace corsika::process::qgsjetII {
       const FourVector PtargLab(targetEnergyLab, targetMomentumLab);
 
       // define projectile
-      HEPEnergyType const projectileEnergyLab = vP.GetEnergy();
-      auto const projectileMomentumLab = vP.GetMomentum();
+      HEPEnergyType const projectileEnergyLab = projectile.GetEnergy();
+      auto const projectileMomentumLab = projectile.GetMomentum();
 
       int beamA = 1;
-      if (particles::IsNucleus(corsikaBeamId)) beamA = vP.GetNuclearA();
+      if (particles::IsNucleus(corsikaBeamId)) beamA = projectile.GetNuclearA();
 
       const HEPEnergyType projectileEnergyLabPerNucleon = projectileEnergyLab / beamA;
 
@@ -217,7 +219,7 @@ namespace corsika::process::qgsjetII {
       cout << "Interaction: time: " << tOrig << endl;
 
       // sample target mass number
-      auto const* currentNode = vP.GetNode();
+      auto const* currentNode = projectile.GetNode();
       auto const& mediumComposition =
           currentNode->GetModelProperties().GetNuclearComposition();
       // get cross sections for target materials
@@ -257,7 +259,7 @@ namespace corsika::process::qgsjetII {
       QgsjetIIHadronType qgsjet_hadron_type =
           process::qgsjetII::GetQgsjetIIHadronType(corsikaBeamId);
       if (qgsjet_hadron_type == QgsjetIIHadronType::NucleusType) {
-        projectileMassNumber = vP.GetNuclearA();
+        projectileMassNumber = projectile.GetNuclearA();
         if (projectileMassNumber > maxMassNumber_)
           throw std::runtime_error("QgsjetII projectile mass outside range.");
         std::array<QgsjetIIHadronType, 2> constexpr nucleons = {
@@ -325,7 +327,7 @@ namespace corsika::process::qgsjetII {
             momentum.rebase(originalCS); // transform back into standard lab frame
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.GetComponents() << std::endl;
-            auto pnew = vP.AddSecondary(
+            auto pnew = view.AddSecondary(
                 tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                       geometry::Point, units::si::TimeType>{idFragm, energy, momentum,
                                                             pOrig, tOrig});
@@ -361,7 +363,7 @@ namespace corsika::process::qgsjetII {
           std::cout << "secondary fragment> id=" << idFragm
                     << " p=" << momentum.GetComponents() << " A=" << A << " Z=" << Z
                     << std::endl;
-          auto pnew = vP.AddSecondary(
+          auto pnew = view.AddSecondary(
               tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                     geometry::Point, units::si::TimeType, unsigned short, unsigned short>{
                   idFragm, energy, momentum, pOrig, tOrig, A, Z});
@@ -381,7 +383,7 @@ namespace corsika::process::qgsjetII {
         std::cout << "secondary fragment> id="
                   << process::qgsjetII::ConvertFromQgsjetII(psec.GetPID())
                   << " p=" << momentum.GetComponents() << std::endl;
-        auto pnew = vP.AddSecondary(
+        auto pnew = view.AddSecondary(
             tuple<particles::Code, units::si::HEPEnergyType, stack::MomentumVector,
                   geometry::Point, units::si::TimeType>{
                 process::qgsjetII::ConvertFromQgsjetII(psec.GetPID()), energy, momentum,
@@ -396,7 +398,7 @@ namespace corsika::process::qgsjetII {
            << QGSJetIIFragmentsStackData::GetWoundedNucleonsTarget()
            << ", N_wounded,proj="
            << QGSJetIIFragmentsStackData::GetWoundedNucleonsProjectile()
-           << ", N_fragm,proj=" << qfs.GetSize() << endl;
+           << ", N_fragm,proj=" << qfs.getEntries() << endl;
     }
     return process::EProcessReturn::eOk;
   }

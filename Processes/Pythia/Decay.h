@@ -60,8 +60,8 @@ namespace corsika::process {
        In this function PYTHIA is called to execute the decay of the input particle.
      */
 
-      template <typename TProjectile>
-      void DoDecay(TProjectile&);
+      template <typename TSecondaryView>
+      void DoDecay(TSecondaryView&);
 
     private:
       void SetUnstable(const corsika::particles::Code);

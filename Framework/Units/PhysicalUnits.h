@@ -30,6 +30,19 @@ namespace phys::units {
  *
  */
 
+namespace corsika::units {
+  template <int N, typename T>
+  auto constexpr static_pow([[maybe_unused]] T x) {
+    if constexpr (N == 0) {
+      return 1;
+    } else if constexpr (N > 0) {
+      return x * static_pow<N - 1, T>(x);
+    } else {
+      return 1 / static_pow<-N, T>(x);
+    }
+  }
+} // namespace corsika::units
+
 namespace corsika::units::si {
   using namespace phys::units;
   using namespace phys::units::literals;
@@ -66,19 +79,6 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
-
-  namespace detail {
-    template <int N, typename T>
-    auto constexpr static_pow([[maybe_unused]] T x) {
-      if constexpr (N == 0) {
-        return 1;
-      } else if constexpr (N > 0) {
-        return x * static_pow<N - 1, T>(x);
-      } else {
-        return 1 / static_pow<-N, T>(x);
-      }
-    }
-  } // namespace detail
 
   template <typename DimFrom, typename DimTo>
   auto constexpr ConversionFactorHEPToSI() {

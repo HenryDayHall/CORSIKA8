@@ -18,6 +18,7 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAcascade ${CORSIKAcascade_NAMESPACE} ${
 target_link_libraries(
   CORSIKAcascade
   INTERFACE
+  CORSIKAsetup
   CORSIKArandom
   CORSIKAstackinterface
   CORSIKAparticles

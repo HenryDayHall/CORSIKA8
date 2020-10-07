@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/process/interaction_counter/InteractionCounter.h>
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
@@ -59,9 +59,8 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-  HEPEnergyType const E0 =
-      sqrt(units::si::detail::static_pow<2>(mN * vA) + pLab.squaredNorm());
-  auto particle =
+  HEPEnergyType const E0 = sqrt(units::static_pow<2>(mN * vA) + pLab.squaredNorm());
+  setup::Stack::StackIterator particle =
       stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
                                     corsika::stack::MomentumVector, geometry::Point,
                                     units::si::TimeType, unsigned short, unsigned short>{
@@ -69,8 +68,7 @@ auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
-      std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::move(stack), std::make_unique<decltype(setup::StackView(particle))>(particle));
 }
 
 template <typename TNodeType>
@@ -81,9 +79,8 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
   geometry::Point const origin(cs, {0_m, 0_m, 0_m});
   corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-  HEPEnergyType const E0 =
-      sqrt(units::si::detail::static_pow<2>(particles::GetMass(vProjectileType)) +
-           pLab.squaredNorm());
+  HEPEnergyType const E0 = sqrt(
+      units::static_pow<2>(particles::GetMass(vProjectileType)) + pLab.squaredNorm());
   auto particle = stack->AddParticle(
       std::tuple<particles::Code, units::si::HEPEnergyType,
                  corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
@@ -91,8 +88,7 @@ auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
-      std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::move(stack), std::make_unique<decltype(setup::StackView(particle))>(particle));
 }
 
 struct DummyProcess {
@@ -108,6 +104,9 @@ struct DummyProcess {
 };
 
 TEST_CASE("InteractionCounter") {
+
+  logging::SetLevel(logging::level::debug);
+
   DummyProcess d;
   InteractionCounter countedProcess(d);
 
@@ -121,11 +120,10 @@ TEST_CASE("InteractionCounter") {
   SECTION("DoInteraction nucleus") {
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 105_TeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->GetSize() == 1);
-    REQUIRE(secViewPtr->GetSize() == 0);
+    REQUIRE(stackPtr->getEntries() == 1);
+    REQUIRE(secViewPtr->getEntries() == 0);
 
-    auto projectile = secViewPtr->GetProjectile();
-    auto const ret = countedProcess.DoInteraction(projectile);
+    auto const ret = countedProcess.DoInteraction(*secViewPtr);
     REQUIRE(ret == nullptr);
 
     auto const& h = countedProcess.GetHistogram().labHists().second.at(1'000'070'140);
@@ -141,11 +139,10 @@ TEST_CASE("InteractionCounter") {
     auto constexpr code = particles::Code::Lambda0;
     auto constexpr codeInt = static_cast<particles::CodeIntType>(code);
     auto [stackPtr, secViewPtr] = setupStack(code, 105_TeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->GetSize() == 1);
-    REQUIRE(secViewPtr->GetSize() == 0);
+    REQUIRE(stackPtr->getEntries() == 1);
+    REQUIRE(secViewPtr->getEntries() == 0);
 
-    auto projectile = secViewPtr->GetProjectile();
-    auto const ret = countedProcess.DoInteraction(projectile);
+    auto const ret = countedProcess.DoInteraction(*secViewPtr);
     REQUIRE(ret == nullptr);
 
     auto const& h = countedProcess.GetHistogram().labHists().first;

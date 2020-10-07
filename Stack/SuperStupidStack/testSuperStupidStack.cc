@@ -6,6 +6,8 @@
  * the license.
  */
 
+#define protected public // to also test the internal state of objects
+
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/stack/super_stupid/SuperStupidStack.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -18,7 +20,6 @@ using namespace corsika::units::si;
 using namespace corsika;
 using namespace corsika::stack::super_stupid;
 
-#include <iostream>
 using namespace std;
 
 TEST_CASE("SuperStupidStack", "[stack]") {
@@ -29,22 +30,18 @@ TEST_CASE("SuperStupidStack", "[stack]") {
   SECTION("read+write") {
 
     SuperStupidStack s;
-    s.AddParticle(std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
-                             corsika::stack::MomentumVector, corsika::geometry::Point,
-                             corsika::units::si::TimeType>{
-        particles::Code::Electron, 1.5_GeV,
-        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+    s.AddParticle(
+        std::make_tuple(particles::Code::Electron, 1.5_GeV,
+                        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     // read
-    REQUIRE(s.GetSize() == 1);
+    CHECK(s.getEntries() == 1);
+    CHECK(s.getSize() == 1);
     auto pout = s.GetNextParticle();
-    REQUIRE(pout.GetPID() == particles::Code::Electron);
-    REQUIRE(pout.GetEnergy() == 1.5_GeV);
-    // REQUIRE(pout.GetMomentum() == stack::MomentumVector(dummyCS, {1_GeV,
-    // 1_GeV, 1_GeV})); REQUIRE(pout.GetPosition() == Point(dummyCS, {1 * meter, 1 *
-    // meter, 1 * meter}));
-    REQUIRE(pout.GetTime() == 100_s);
+    CHECK(pout.GetPID() == particles::Code::Electron);
+    CHECK(pout.GetEnergy() == 1.5_GeV);
+    CHECK(pout.GetTime() == 100_s);
   }
 
   SECTION("write+delete") {
@@ -52,17 +49,15 @@ TEST_CASE("SuperStupidStack", "[stack]") {
     SuperStupidStack s;
     for (int i = 0; i < 99; ++i)
       s.AddParticle(
-          std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
-                     corsika::stack::MomentumVector, corsika::geometry::Point,
-                     corsika::units::si::TimeType>{
-              particles::Code::Electron, 1.5_GeV,
-              corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-              Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s});
+          std::make_tuple(particles::Code::Electron, 1.5_GeV,
+                          corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
-    REQUIRE(s.GetSize() == 99);
+    CHECK(s.getSize() == 99);
 
     for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
 
-    REQUIRE(s.GetSize() == 0);
+    CHECK(s.getEntries() == 0);
+    CHECK(s.getSize() == 1);
   }
 }

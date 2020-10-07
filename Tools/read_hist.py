@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import boost_histogram as bh
 import operator
 import functools

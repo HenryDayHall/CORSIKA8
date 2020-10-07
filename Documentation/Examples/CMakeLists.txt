@@ -9,12 +9,12 @@ CORSIKA_ADD_EXAMPLE (geometry_example)
 target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
 
 CORSIKA_ADD_EXAMPLE (stack_example)
-target_link_libraries (stack_example SuperStupidStack CORSIKAunits)
+target_link_libraries (stack_example CORSIKAsetup CORSIKAunits)
 
 # address sanitizer is making this example too slow, so we only do "undefined"
 CORSIKA_ADD_EXAMPLE (boundary_example)
 target_link_libraries (boundary_example
-  SuperStupidStack
+  CORSIKAsetup
   CORSIKAunits
   CORSIKAlogging
   CORSIKArandom
@@ -34,7 +34,7 @@ target_link_libraries (boundary_example
 
 CORSIKA_ADD_EXAMPLE (cascade_example)
 target_link_libraries (cascade_example
-  SuperStupidStack
+  CORSIKAsetup
   CORSIKAunits
   CORSIKAlogging
   CORSIKArandom
@@ -59,7 +59,7 @@ target_link_libraries (cascade_example
 if (Pythia8_FOUND)
   CORSIKA_ADD_EXAMPLE (cascade_proton_example)
   target_link_libraries (cascade_proton_example
-    SuperStupidStack
+    CORSIKAsetup
     CORSIKAunits
     CORSIKAlogging
     CORSIKArandom
@@ -87,10 +87,15 @@ if (Pythia8_FOUND)
 
   CORSIKA_ADD_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
   target_link_libraries (vertical_EAS
-    SuperStupidStack
+    CORSIKAsetup
     CORSIKAunits
     CORSIKAlogging
     CORSIKArandom
+    CORSIKAhistory
+    ProcessSibyll
+    ProcessPythia8
+    ProcessUrQMD
+    ProcessSwitch
     CORSIKAcascade
     ProcessProposal
     ProcessPythia8
@@ -110,12 +115,13 @@ if (Pythia8_FOUND)
     CORSIKAgeometry
     CORSIKAenvironment
     CORSIKAprocesssequence
+    CORSIKAhistory # for HistoryObservationPlane
     )
 endif()
 
 CORSIKA_ADD_EXAMPLE (stopping_power stopping_power)
 target_link_libraries (stopping_power
-  SuperStupidStack
+  CORSIKAsetup
   CORSIKAunits
   ProcessEnergyLoss
   CORSIKAparticles

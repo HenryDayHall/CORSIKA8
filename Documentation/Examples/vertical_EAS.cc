@@ -6,6 +6,12 @@
  * the license.
  */
 
+/* clang-format off */
+// InteractionCounter used boost/histogram, which
+// fails if boost/type_traits have been included before. Thus, we have
+// to include it first...
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
+/* clang-format on */
 #include <corsika/cascade/Cascade.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
@@ -14,10 +20,10 @@
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
+#include <corsika/logging/Logging.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/on_shell_check/OnShellCheck.h>
@@ -41,7 +47,6 @@
 #include <iostream>
 #include <limits>
 #include <string>
-#include <typeinfo>
 
 using namespace corsika;
 using namespace corsika::process;
@@ -55,7 +60,7 @@ using namespace corsika::environment;
 using namespace std;
 using namespace corsika::units::si;
 
-void registerRandomStreams() {
+void registerRandomStreams(const int seed) {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
   random::RNGManager::GetInstance().RegisterRandomStream("qgsjet");
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
@@ -63,17 +68,29 @@ void registerRandomStreams() {
   random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
   random::RNGManager::GetInstance().RegisterRandomStream("proposal");
 
-  random::RNGManager::GetInstance().SeedAll();
+  if (seed == 0)
+    random::RNGManager::GetInstance().SeedAll();
+  else
+    random::RNGManager::GetInstance().SeedAll(seed);
 }
 
 int main(int argc, char** argv) {
-  if (argc != 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV>" << std::endl;
+
+  logging::SetLevel(logging::level::info);
+
+  C8LOG_INFO("vertical_EAS");
+
+  if (argc < 4) {
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
+    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
+
+  int seed = 0;
+  if (argc > 4) seed = std::stoi(std::string(argv[4]));
   // initialize random number sequence(s)
-  registerRandomStreams();
+  registerRandomStreams(seed);
 
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;
@@ -122,8 +139,8 @@ int main(int argc, char** argv) {
   auto const observationHeight = 0_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
-                 sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
-                      si::detail::static_pow<2>(injectionHeight));
+                 sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
+                      units::static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +
@@ -223,10 +240,9 @@ int main(int argc, char** argv) {
   cut.ShowResults();
   em_continuous.ShowResults();
   observationLevel.ShowResults();
-  cout << "Cascade energy cut: " << EAS.GetEnergyCut() / 1_GeV << " GeV" << endl;
   const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
                                cut.GetEmEnergy() + em_continuous.GetEnergyLost() +
-                               observationLevel.GetEnergyGround() + EAS.GetEnergyCut();
+                               observationLevel.GetEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.Reset();

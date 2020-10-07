@@ -81,6 +81,9 @@ private:
 // The example main program for a particle cascade
 //
 int main() {
+
+  std::cout << "boundary_example" << std::endl;
+
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");

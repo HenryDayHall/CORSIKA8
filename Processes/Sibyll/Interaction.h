@@ -52,8 +52,8 @@ namespace corsika::process::sibyll {
        event is copied (and boosted) into the shower lab frame.
      */
 
-    template <typename TProjectile>
-    corsika::process::EProcessReturn DoInteraction(TProjectile&);
+    template <typename TSecondaryView>
+    corsika::process::EProcessReturn DoInteraction(TSecondaryView&);
 
   private:
     corsika::random::RNG& RNG_ =

@@ -74,7 +74,7 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
        << " time=" << std::put_time(std::localtime(&now_time), "%T")
        << ", running=" << elapsed_seconds.count() << " seconds"
        << " (" << setw(3) << int(progress * 100) << "%)"
-       << ", nStep=" << GetStep() << ", stackSize=" << vS.GetSize()
+       << ", nStep=" << GetStep() << ", stackEntries=" << vS.getEntries()
        << ", Estack=" << Etot / 1_GeV << " GeV"
        << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << endl;
   return process::EProcessReturn::eOk;

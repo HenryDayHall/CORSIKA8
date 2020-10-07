@@ -55,7 +55,7 @@ TEST_CASE("ParticleCut", "[processes]") {
             corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
     // view on secondary particles
-    corsika::stack::SecondaryView view(particle);
+    setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.GetProjectile();
@@ -70,7 +70,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    CHECK(view.GetSize() == 9);
+    CHECK(view.getEntries() == 9);
   }
 
   SECTION("cut on particle type: em") {
@@ -85,7 +85,7 @@ TEST_CASE("ParticleCut", "[processes]") {
             corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
     // view on secondary particles
-    corsika::stack::SecondaryView view(particle);
+    corsika::setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.GetProjectile();
@@ -100,7 +100,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    CHECK(view.GetSize() == 9);
+    CHECK(view.getEntries() == 9);
   }
 
   SECTION("cut low energy") {
@@ -114,7 +114,7 @@ TEST_CASE("ParticleCut", "[processes]") {
             corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
     // view on secondary particles
-    corsika::stack::SecondaryView view(particle);
+    setup::StackView view{particle};
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.GetProjectile();
@@ -129,6 +129,7 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     cut.DoSecondaries(view);
 
-    CHECK(view.GetSize() == 0);
+    REQUIRE(view.getEntries() == 0);
+    REQUIRE(view.getSize() == 10);
   }
 }

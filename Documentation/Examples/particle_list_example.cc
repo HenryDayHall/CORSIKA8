@@ -25,6 +25,9 @@ using namespace std;
 // The example main program for a particle list
 //
 int main() {
+
+  std::cout << "particle_list_example" << std::endl;
+
   cout << "------------------------------------------"
        << "particles in CORSIKA"
        << "------------------------------------------" << endl;

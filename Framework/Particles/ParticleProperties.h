@@ -17,7 +17,6 @@
 #include <array>
 #include <cstdint>
 #include <iosfwd>
-#include <type_traits>
 
 #include <corsika/units/PhysicalUnits.h>
 

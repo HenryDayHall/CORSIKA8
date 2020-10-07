@@ -79,6 +79,7 @@ target_link_libraries (
   CORSIKAenvironment
   CORSIKAsetup
   CORSIKArandom
+  CORSIKAlogging
   )
 
 target_include_directories (

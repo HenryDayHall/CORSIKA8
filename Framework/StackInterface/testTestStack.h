@@ -78,13 +78,6 @@ public:
                        std::tuple<double> v) {
     SetData(std::get<0>(v));
   }
-  /// alternative set-particle data for non-standard construction from different inputs
-  /*
-  void SetParticleData(const double v, const double p) { SetData(v + p); }
-  void SetParticleData(TestParticleInterface<StackIteratorInterface>&,
-                       const double v, const double p) {
-    SetData(v + p);
-    }*/
 
   // here are the fundamental methods for access to TestStackData data
   void SetData(const double v) { GetStackData().SetData(GetIndex(), v); }

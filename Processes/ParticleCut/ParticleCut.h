@@ -42,7 +42,6 @@ namespace corsika::process {
         return units::si::meter * std::numeric_limits<double>::infinity();
       }
 
-
       units::si::HEPEnergyType GetECut() const { return fECut; }
       units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
       units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
@@ -62,8 +61,6 @@ namespace corsika::process {
 
       bool ParticleIsEmParticle(particles::Code) const;
       bool ParticleIsInvisible(particles::Code) const;
-
-
     };
   } // namespace particle_cut
 } // namespace corsika::process

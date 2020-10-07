@@ -52,8 +52,8 @@ namespace corsika::process::proposal {
     //! pair of interaction-type, component and rate, followed by sampling a loss and
     //! produce the corresponding secondaries and store them on the particle stack.
     //!
-    template <typename Particle>
-    corsika::process::EProcessReturn DoInteraction(Particle&);
+    template <typename TSecondaryView>
+    corsika::process::EProcessReturn DoInteraction(TSecondaryView&);
 
     //!
     //! Calculates the  mean free path length

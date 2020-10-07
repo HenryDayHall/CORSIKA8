@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/process/interaction_counter/InteractionHistogram.h>
+#include <corsika/process/interaction_counter/InteractionHistogram.hpp>
 
 #include <fstream>
 #include <string>

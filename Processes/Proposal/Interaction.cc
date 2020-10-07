@@ -49,48 +49,51 @@ namespace corsika::process::proposal {
   }
 
   template <>
-  corsika::process::EProcessReturn Interaction::DoInteraction(
-      setup::StackView::StackIterator& vP) {
+  corsika::process::EProcessReturn Interaction::DoInteraction(setup::StackView& view) {
     using namespace corsika::units::si; // required for operator::_MeV
 
-    if (CanInteract(vP.GetPID())) {
+    auto const projectile = view.GetProjectile();
+
+    if (CanInteract(projectile.GetPID())) {
       // Get or build corresponding calculators
-      auto c = GetCalculator(vP, calc);
+      auto c = GetCalculator(projectile, calc);
 
       // Get the rates of the interaction types for every component.
       std::uniform_real_distribution<double> distr(0., 1.);
 
       // sample a interaction-type, loss and component
-      auto rates = get<eINTERACTION>(c->second)->Rates(vP.GetEnergy() / 1_MeV);
+      auto rates = get<eINTERACTION>(c->second)->Rates(projectile.GetEnergy() / 1_MeV);
       auto [type, comp_ptr, v] = get<eINTERACTION>(c->second)->SampleLoss(
-          vP.GetEnergy() / 1_MeV, rates, distr(fRNG));
+          projectile.GetEnergy() / 1_MeV, rates, distr(fRNG));
 
       // Read how much random numbers are required to calculate the secondaries.
       // Calculate the secondaries and deploy them on the corsika stack.
       auto rnd =
           vector<double>(get<eSECONDARIES>(c->second)->RequiredRandomNumbers(type));
       for (auto& it : rnd) it = distr(fRNG);
-      auto point = PROPOSAL::Vector3D(vP.GetPosition().GetX() / 1_cm,
-                                      vP.GetPosition().GetY() / 1_cm,
-                                      vP.GetPosition().GetZ() / 1_cm);
-      auto vP_dir = vP.GetDirection();
-      auto d = vP_dir.GetComponents();
+      auto point = PROPOSAL::Vector3D(projectile.GetPosition().GetX() / 1_cm,
+                                      projectile.GetPosition().GetY() / 1_cm,
+                                      projectile.GetPosition().GetZ() / 1_cm);
+      auto projectile_dir = projectile.GetDirection();
+      auto d = projectile_dir.GetComponents();
       auto direction = PROPOSAL::Vector3D(d.GetX().magnitude(), d.GetY().magnitude(),
                                           d.GetZ().magnitude());
       auto loss = make_tuple(static_cast<int>(type), point, direction,
-                             v * vP.GetEnergy() / 1_MeV, 0.);
+                             v * projectile.GetEnergy() / 1_MeV, 0.);
       auto sec = get<eSECONDARIES>(c->second)->CalculateSecondaries(
-          vP.GetEnergy() / 1_MeV, loss, *comp_ptr, rnd);
+          projectile.GetEnergy() / 1_MeV, loss, *comp_ptr, rnd);
       for (auto& s : sec) {
         auto E = get<PROPOSAL::Loss::ENERGY>(s) * 1_MeV;
         auto vec = corsika::geometry::QuantityVector(
             get<PROPOSAL::Loss::DIRECTION>(s).GetX() * E,
             get<PROPOSAL::Loss::DIRECTION>(s).GetY() * E,
             get<PROPOSAL::Loss::DIRECTION>(s).GetZ() * E);
-        auto p = corsika::stack::MomentumVector(vP_dir.GetCoordinateSystem(), vec);
+        auto p =
+            corsika::stack::MomentumVector(projectile_dir.GetCoordinateSystem(), vec);
         auto sec_code = corsika::particles::ConvertFromPDG(
             static_cast<particles::PDGCode>(get<PROPOSAL::Loss::TYPE>(s)));
-        vP.AddSecondary(make_tuple(sec_code, E, p, vP.GetPosition(), vP.GetTime()));
+        view.AddSecondary(
+            make_tuple(sec_code, E, p, projectile.GetPosition(), projectile.GetTime()));
       }
     }
     return process::EProcessReturn::eOk;
@@ -98,13 +101,13 @@ namespace corsika::process::proposal {
 
   template <>
   corsika::units::si::GrammageType Interaction::GetInteractionLength(
-      setup::Stack::StackIterator const& vP) {
+      setup::Stack::StackIterator const& projectile) {
     using namespace corsika::units::si; // required for operator::_MeV
 
-    if (CanInteract(vP.GetPID())) {
-      auto c = GetCalculator(vP, calc);
-      return get<eINTERACTION>(c->second)->MeanFreePath(vP.GetEnergy() / 1_MeV) * 1_g /
-             (1_cm * 1_cm);
+    if (CanInteract(projectile.GetPID())) {
+      auto c = GetCalculator(projectile, calc);
+      return get<eINTERACTION>(c->second)->MeanFreePath(projectile.GetEnergy() / 1_MeV) *
+             1_g / (1_cm * 1_cm);
     }
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }

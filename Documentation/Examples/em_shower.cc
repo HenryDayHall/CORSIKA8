@@ -15,7 +15,6 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/StackProcess.h>
-#include <corsika/process/interaction_counter/InteractionCounter.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
@@ -28,6 +27,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
+#include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -107,8 +107,8 @@ int main(int argc, char** argv) {
   auto const observationHeight = 1.4_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
-                 sqrt(-si::detail::static_pow<2>(sin(thetaRad) * observationHeight) +
-                      si::detail::static_pow<2>(injectionHeight));
+                 sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
+                      static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +
@@ -159,10 +159,9 @@ int main(int argc, char** argv) {
   cut.ShowResults();
   em_continuous.ShowResults();
   observationLevel.ShowResults();
-  cout << "Cascade energy cut: " << EAS.GetEnergyCut() / 1_GeV << " GeV" << endl;
   const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
                                cut.GetEmEnergy() + em_continuous.GetEnergyLost() +
-                               observationLevel.GetEnergyGround() + EAS.GetEnergyCut();
+                               observationLevel.GetEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.Reset();

@@ -12,6 +12,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAparticles
   CORSIKAgeometry
+  SuperStupidStack
   )
 
 target_include_directories (
@@ -33,7 +34,6 @@ install (
 CORSIKA_ADD_TEST(testNuclearStackExtension)
 target_link_libraries (
   testNuclearStackExtension
-  SuperStupidStack
   NuclearStackExtension
   CORSIKAparticles
   CORSIKAgeometry

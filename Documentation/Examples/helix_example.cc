@@ -20,6 +20,9 @@ using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 int main() {
+
+  std::cout << "helix_example" << std::endl;
+
   geometry::CoordinateSystem& root =
       geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 

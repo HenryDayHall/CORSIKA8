@@ -16,7 +16,8 @@
 #include <corsika/geometry/RootCoordinateSystem.h> // remove
 #include <corsika/geometry/Vector.h>
 
-#include <algorithm>
+#include <string>
+#include <tuple>
 #include <vector>
 
 namespace corsika::stack {
@@ -40,6 +41,12 @@ namespace corsika::stack {
       using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
     public:
+      std::string as_string() const {
+        using namespace corsika::units::si;
+        return fmt::format("particle: i={}, PID={}, E={}GeV", GetIndex(),
+                           particles::GetName(GetPID()), GetEnergy() / 1_GeV);
+      }
+
       void SetParticleData(
           const std::tuple<corsika::particles::Code, corsika::units::si::HEPEnergyType,
                            MomentumVector, corsika::geometry::Point,
@@ -50,13 +57,6 @@ namespace corsika::stack {
         SetPosition(std::get<3>(v));
         SetTime(std::get<4>(v));
       }
-      /*
-    void SetParticleData(const corsika::particles::Code vDataPID,
-                         const corsika::units::si::HEPEnergyType vDataE,
-                         const MomentumVector& vMomentum,
-                         const corsika::geometry::Point& vPosition,
-                         const corsika::units::si::TimeType vTime) {
-      }*/
 
       void SetParticleData(
           ParticleInterface<StackIteratorInterface>&,
@@ -69,18 +69,6 @@ namespace corsika::stack {
         SetPosition(std::get<3>(v));
         SetTime(std::get<4>(v));
       }
-      /*      void SetParticleData(ParticleInterface<StackIteratorInterface>&,
-                           const corsika::particles::Code vDataPID,
-                           const corsika::units::si::HEPEnergyType vDataE,
-                           const MomentumVector& vMomentum,
-                           const corsika::geometry::Point& vPosition,
-                           const corsika::units::si::TimeType vTime) {
-        SetPID(vDataPID);
-        SetEnergy(vDataE);
-        SetMomentum(vMomentum);
-        SetPosition(vPosition);
-        SetTime(vTime);
-      }*/
 
       /// individual setters
       void SetPID(const corsika::particles::Code id) {

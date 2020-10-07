@@ -19,6 +19,7 @@
 #include <corsika/units/PhysicalUnits.h>
 
 #include <catch2/catch.hpp>
+#include <tuple>
 
 using namespace corsika;
 using namespace corsika::process::sibyll;
@@ -87,9 +88,7 @@ using namespace corsika::units;
 template <typename TStackView>
 auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
   geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
-
   for (auto const& p : view) { sum += p.GetMomentum(); }
-
   return sum;
 }
 
@@ -125,17 +124,14 @@ TEST_CASE("SibyllInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
+    auto particle =
+        stack.AddParticle(std::make_tuple(particles::Code::Proton, E0, plab, pos, 0_ns));
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
+    corsika::setup::StackView view(particle);
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     auto const pSum = sumMomentum(view, cs);
 
     /*
@@ -211,17 +207,14 @@ TEST_CASE("SibyllInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
+    auto particle =
+        stack.AddParticle(std::make_tuple(particles::Code::Proton, E0, plab, pos, 0_ns));
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
+    corsika::setup::StackView view(particle);
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     auto const pSum = sumMomentum(view, cs);
     CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.001));
     CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
@@ -241,19 +234,15 @@ TEST_CASE("SibyllInterface", "[processes]") {
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
 
-    auto particle =
-        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                     corsika::stack::MomentumVector, geometry::Point,
-                                     units::si::TimeType, unsigned short, unsigned short>{
-            particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2});
+    auto particle = stack.AddParticle(
+        std::make_tuple(particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2));
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
+    corsika::setup::StackView view(particle);
 
     Interaction hmodel;
     NuclearInteraction model(hmodel, env);
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
@@ -265,12 +254,9 @@ TEST_CASE("SibyllInterface", "[processes]") {
         sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
     auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Lambda0, E0, plab, pos, 0_ns});
-    corsika::stack::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
+    auto particle =
+        stack.AddParticle(std::make_tuple(particles::Code::Lambda0, E0, plab, pos, 0_ns));
+    corsika::setup::StackView view(particle);
 
     Decay model;
 
@@ -278,11 +264,11 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
 
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(view);
 
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
-    CHECK(stack.GetSize() == 3);
+    CHECK(stack.getEntries() == 3);
   }
 
   SECTION("DecayConfiguration") {

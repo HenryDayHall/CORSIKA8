@@ -41,9 +41,9 @@ namespace corsika::process::sibyll {
     corsika::units::si::HEPEnergyType GetMaxEnergyPerNucleonCoM() {
       return gMaxEnergyPerNucleonCoM_;
     }
-    int constexpr GetMaxNucleusAProjectile() { return gMaxNucleusAProjectile_; }
-    int constexpr GetMaxNFragments() { return gMaxNFragments_; }
-    int constexpr GetNEnergyBins() { return gNEnBins_; }
+    unsigned int constexpr GetMaxNucleusAProjectile() { return gMaxNucleusAProjectile_; }
+    unsigned int constexpr GetMaxNFragments() { return gMaxNFragments_; }
+    unsigned int constexpr GetNEnergyBins() { return gNEnBins_; }
 
     template <typename Particle>
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
@@ -52,8 +52,8 @@ namespace corsika::process::sibyll {
     template <typename Particle>
     corsika::units::si::GrammageType GetInteractionLength(Particle const&);
 
-    template <typename Projectile>
-    corsika::process::EProcessReturn DoInteraction(Projectile&);
+    template <typename TSecondaryView>
+    corsika::process::EProcessReturn DoInteraction(TSecondaryView&);
 
   private:
     TEnvironment const& environment_;
@@ -61,11 +61,11 @@ namespace corsika::process::sibyll {
     std::map<corsika::particles::Code, int> targetComponentsIndex_;
     corsika::random::RNG& RNG_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("sibyll");
-    static constexpr int gNSample_ =
+    static constexpr unsigned int gNSample_ =
         500; // number of samples in MC estimation of cross section
-    static constexpr int gMaxNucleusAProjectile_ = 56;
-    static constexpr int gNEnBins_ = 6;
-    static constexpr int gMaxNFragments_ = 60;
+    static constexpr unsigned int gMaxNucleusAProjectile_ = 56;
+    static constexpr unsigned int gNEnBins_ = 6;
+    static constexpr unsigned int gMaxNFragments_ = 60;
     // energy limits defined by table used for cross section in signuc.f
     // 10**1 GeV to 10**6 GeV
     static constexpr corsika::units::si::HEPEnergyType gMinEnergyPerNucleonCoM_ =

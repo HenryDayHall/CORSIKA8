@@ -1,5 +1,5 @@
 variables:
-  GIT_STRATEGY: fetch
+  GIT_STRATEGY: fetch # clone: fresh clone, fetch: update
   GIT_SSL_NO_VERIFY: "1"
   GIT_DEPTH: "1"
   # to re-use clones also in different forks
@@ -13,7 +13,8 @@ variables:
   # location of AirShowerPhysics/corsika-data
   CORSIKA_DATA: "${CI_PROJECT_DIR}/Data" # the git submodule
   # _alternatively_ corsika-data can be downloaded as submodule:
-  GIT_SUBMODULE_STRATEGY: normal
+  GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
+                                 # normal: get submodules automatically
 
 
 #
@@ -79,11 +80,7 @@ check-clang-format:
   stage: config
   tags:
     - corsika
-  variables:
-  before_script:
-   - cd Data && for F in `find . -name "*.bz2" | grep -v ".git"`; do [ ! -f ${F%%.bz2} ] && bunzip2 -vk $F; done
-   - cd ${CI_PROJECT_DIR}
-  script:
+  script:    
     - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
@@ -94,7 +91,6 @@ check-clang-format:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -138,7 +134,6 @@ config-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -195,7 +190,6 @@ build-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -252,7 +246,6 @@ test-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull-push
 
@@ -305,7 +298,6 @@ build_test-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
 
@@ -365,7 +357,6 @@ example-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
 
@@ -415,7 +406,6 @@ build_test_example-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
 
@@ -470,7 +460,6 @@ install-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
   artifacts:
@@ -540,7 +529,6 @@ coverage:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
@@ -580,7 +568,6 @@ documentation:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
@@ -613,7 +600,6 @@ sanity:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
-      - ${CI_PROJECT_DIR}/Data/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"

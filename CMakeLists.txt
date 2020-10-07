@@ -16,12 +16,21 @@ project (
   LANGUAGES CXX
   )
 
+include (FeatureSummary)
+
 # as long as there still are modules using it:
 enable_language (Fortran)
 
 # TEMPORARY: this should be removed, the sanitizers should be always enabled
 option (WITH_CORSIKA_SANITIZERS_ENABLED "temporary way to globally disable sanitizers until the currently failing tests are fixed" OFF)
+add_feature_info (CORSIKA_SANITIZERS_ENABLED WITH_CORSIKA_SANITIZERS_ENABLED "Switch to run c++ sanitzers on CORSIKA objects and code.")
+
 option (WITH_COAST "Flag to switch on/off COAST (reverse) interface" OFF)
+add_feature_info (COAST WITH_COAST "The COAST interface, so that you can write C8 processes to run inside C7.")
+
+# HISTORY option selection
+option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
+add_feature_info (HISTORY WITH_HISTORY "The Foo feature provides very cool stuffdddd.")
 
 # check for python
 set (Python_ADDITIONAL_VERSIONS 3)
@@ -156,5 +165,4 @@ endif ()
 
 
 # final summary output
-include (FeatureSummary)
 feature_summary (WHAT ALL)

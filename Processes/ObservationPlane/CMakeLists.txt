@@ -21,6 +21,7 @@ target_link_libraries (
   ProcessObservationPlane
   CORSIKAgeometry
   CORSIKAprocesssequence
+  CORSIKAlogging
   )
 
 target_include_directories (
