@@ -80,20 +80,30 @@ int main(int argc, char** argv) {
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer<MEnv>(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer<MEnv>(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer<MEnv>(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer<MEnv>(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km,
-                                    environment::EMediumType::eAir,
-                                    geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addLinearLayer<MEnv>(1e9_cm, 112.8_km, environment::EMediumType::eAir,
-                               geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer<
+      environment::UniformMediumType<environment::UniformMagneticField<
+          SlidingPlanarExponential<setup::EnvironmentInterface>>>>(
+      540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addLinearLayer<environment::UniformMediumType<
+      environment::UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>(
+      1e9_cm, 112.8_km, environment::EMediumType::eAir,
+      geometry::Vector(rootCS, 0_T, 0_T, 1_T));
 
   builder.assemble(env);
 
@@ -174,16 +184,16 @@ int main(int argc, char** argv) {
   EAS.Run();
 
   cut.ShowResults();
-  em_continuous.ShowResults();
+  em_continuous.showResults();
   observationLevel.ShowResults();
   const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
-                               cut.GetEmEnergy() + em_continuous.GetEnergyLost() +
+                               cut.GetEmEnergy() + em_continuous.energyLost() +
                                observationLevel.GetEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.Reset();
   cut.Reset();
-  em_continuous.Reset();
+  em_continuous.reset();
 
   auto const hists = proposalCounted.GetHistogram();
   hists.saveLab("inthist_lab_emShower.npz");

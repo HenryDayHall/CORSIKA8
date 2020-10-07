@@ -298,7 +298,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
 
   // setup our interface types
-  using IModelInterface = IMagneticFieldModel<IMediumModel>;
+  using ModelInterface = IMagneticFieldModel<IMediumModel>;
 
   // the composition we use for the homogenous medium
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
@@ -308,14 +308,15 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   Vector B0(gCS, 0_T, 0_T, 1_T);
   Vector B1(gCS, 1_T, 1_T, 0_T);
 
-  // LayeredSphericalAtmosphereBuilder<IMediumModel> builder(gOrigin);
-  LayeredSphericalAtmosphereBuilder<IModelInterface> builder(gOrigin);
+  LayeredSphericalAtmosphereBuilder<ModelInterface> builder(gOrigin);
   builder.setNuclearComposition(
       {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
 
-  builder.addLinearLayer<UniformMagneticField>(1_km, 10_km, B0);
-  builder.addExponentialLayer<UniformMagneticField>(1222.6562_g / (1_cm * 1_cm),
-                                                    994186.38_cm, 20_km, B1);
+  builder.addLinearLayer<UniformMagneticField<HomogeneousMedium<ModelInterface>>>(
+      1_km, 10_km, B0);
+  builder.addExponentialLayer<
+      UniformMagneticField<SlidingPlanarExponential<ModelInterface>>>(
+      1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km, B1);
 
   CHECK(builder.size() == 2);
 

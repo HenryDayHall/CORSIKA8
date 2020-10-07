@@ -62,28 +62,13 @@ namespace corsika::environment {
       composition_ = std::make_unique<NuclearComposition>(composition);
     }
 
-    void addExponentialLayer(units::si::GrammageType b, units::si::LengthType c,
-                             units::si::LengthType upperBoundary) {
-      auto const radius = earthRadius_ + upperBoundary;
-      checkRadius(radius);
-      previousRadius_ = radius;
-
-      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
-          std::make_unique<geometry::Sphere>(center_, radius));
-
-      auto const rho0 = b / c;
-      std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
-
-      node->template SetModelProperties<
-          environment::SlidingPlanarExponential<TMediumInterface>>(
-          center_, rho0, -c, *composition_, earthRadius_);
-
-      layers_.push(std::move(node));
-    }
-
-    template <template <typename> typename MExtraModels, typename... TArgs>
+    template <
+        typename TMediumModel = environment::SlidingPlanarExponential<TMediumInterface>,
+        typename... TArgs>
     void addExponentialLayer(units::si::GrammageType b, units::si::LengthType c,
                              units::si::LengthType upperBoundary, TArgs&&... args) {
+      using namespace units::si;
+
       auto const radius = earthRadius_ + upperBoundary;
       checkRadius(radius);
       previousRadius_ = radius;
@@ -94,16 +79,14 @@ namespace corsika::environment {
       auto const rho0 = b / c;
       std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
 
-      node->template SetModelProperties<
-          MExtraModels<SlidingPlanarExponential<TMediumInterface>>>(
-          args..., center_, rho0, -c, *composition_, earthRadius_);
+      node->template SetModelProperties<TMediumModel>(args..., center_, rho0, -c,
+                                                      *composition_, earthRadius_);
 
       layers_.push(std::move(node));
     }
 
-    int size() const { return layers_.size(); }
-
-    template <template <typename> typename MExtraModels, typename... TArgs>
+    template <typename TMediumModel = environment::HomogeneousMedium<TMediumInterface>,
+              typename... TArgs>
     void addLinearLayer(units::si::LengthType c, units::si::LengthType upperBoundary,
                         TArgs&&... args) {
       using namespace units::si;
@@ -120,32 +103,12 @@ namespace corsika::environment {
       auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
           std::make_unique<geometry::Sphere>(center_, radius));
 
-      node->template SetModelProperties<
-          MExtraModels<HomogeneousMedium<TMediumInterface>>>(args..., rho0,
-                                                             *composition_);
+      node->template SetModelProperties<TMediumModel>(args..., rho0, *composition_);
 
       layers_.push(std::move(node));
     }
 
-    void addLinearLayer(units::si::LengthType c, units::si::LengthType upperBoundary) {
-      using namespace units::si;
-
-      auto const radius = earthRadius_ + upperBoundary;
-      checkRadius(radius);
-      previousRadius_ = radius;
-
-      units::si::GrammageType constexpr b = 1 * 1_g / (1_cm * 1_cm);
-      auto const rho0 = b / c;
-
-      std::cout << "rho0 = " << rho0;
-
-      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
-          std::make_unique<geometry::Sphere>(center_, radius));
-      node->template SetModelProperties<HomogeneousMedium<TMediumInterface>>(
-          rho0, *composition_);
-
-      layers_.push(std::move(node));
-    }
+    int size() const { return layers_.size(); }
 
     void assemble(Environment<TMediumInterface>& env) {
       auto& universe = env.GetUniverse();
