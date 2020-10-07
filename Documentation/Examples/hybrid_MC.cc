@@ -81,10 +81,10 @@ int main(int argc, char** argv) {
 
   logging::SetLevel(logging::level::info);
 
-  C8LOG_INFO("vertical_EAS");
+  C8LOG_INFO("hybrid_MC");
 
   if (argc < 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
+    std::cerr << "usage: hybrid_MC <A> <Z> <energy/GeV> [seed]" << std::endl;
     std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
     return 1;
   }

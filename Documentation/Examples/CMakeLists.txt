@@ -114,7 +114,7 @@ if (Pythia8_FOUND)
     CORSIKAhistory # for HistoryObservationPlane
     )
 
-  CORSIKA_ADD_EXAMPLE (hybrid_MC)
+  CORSIKA_ADD_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
   target_link_libraries (hybrid_MC
     CORSIKAsetup
     CORSIKAunits
