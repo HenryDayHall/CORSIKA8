@@ -122,10 +122,11 @@ TEST_CASE("QgsjetII", "[processes]") {
 
 using namespace corsika::units::si;
 using namespace corsika::units;
+using namespace corsika;
 
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
-  auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
@@ -135,13 +136,15 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   SECTION("InteractionInterface") {
 
     auto [stackPtr, secViewPtr] =
-      testing::setupStack(particles::Code::Proton, 0,0, 110_GeV, nodePtr, *csPtr);
-    auto projectile = view.GetProjectile();
+      setup::testing::setupStack(particles::Code::Proton, 0,0, 110_GeV, nodePtr, *csPtr);
+    const auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
+    auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*secViewPtr);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
     CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));

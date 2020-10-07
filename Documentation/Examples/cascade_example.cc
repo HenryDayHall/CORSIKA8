@@ -72,25 +72,25 @@ int main() {
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  auto outerMedium = setup::EnvironmentType::CreateNode<Sphere>(
+  auto outerMedium = setup::Environment::CreateNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
+  using MyHomogeneousModel =
+      environment::UniformMediumType<environment::UniformMagneticField<
+          environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
 
-  using EnvironmentModel = environment::UniformMediumType<environment::UniformMagneticField<environment::HomogeneousMedium<setup::IEnvironment>>>;
-  
   // fraction of oxygen
   const float fox = 0.20946;
-  auto const props =
-      outerMedium
-    ->SetModelProperties<EnvironmentModel>(environment::EMediumType::eAir,
-					   Vector(rootCS, 0_T, 0_T, 0_T),
-					   1_kg / (1_m * 1_m * 1_m),
-					   environment::NuclearComposition(
-									   std::vector<particles::Code>{particles::Code::Nitrogen,
-													  particles::Code::Oxygen},
-									   std::vector<float>{1.f - fox, fox}));
+  auto const props = outerMedium->SetModelProperties<MyHomogeneousModel>(
+      environment::EMediumType::eAir, Vector(rootCS, 0_T, 0_T, 0_T),
+      1_kg / (1_m * 1_m * 1_m),
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Nitrogen,
+                                       particles::Code::Oxygen},
+          std::vector<float>{1.f - fox, fox}));
 
-  auto innerMedium = setup::Environment::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+  auto innerMedium =
+      setup::Environment::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
 
   innerMedium->SetModelProperties(props);
 

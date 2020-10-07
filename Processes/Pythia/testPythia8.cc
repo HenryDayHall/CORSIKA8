@@ -101,15 +101,19 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 
 TEST_CASE("pythia process") {
 
-  auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
   
   SECTION("pythia decay") {
     feenableexcept(FE_INVALID);
-    auto [stackPtr, secViewPtr] = testing::setupStack(code::PiPlus, 0, 0, 10_GeV, nodePtr, *csPtr);
-    auto projectile = secViewPtr->GetProjectile();
+    const HEPEnergyType P0 = 10_GeV;
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0, 0, P0, nodePtr, *csPtr);
+    const auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    auto& stack = *stackPtr;
+    auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
 
@@ -150,8 +154,9 @@ TEST_CASE("pythia process") {
   SECTION("pythia interaction") {
 
     feenableexcept(FE_INVALID);
-    auto [stackPtr, secViewPtr] = testing::setupStack(code::PiPlus, 0, 0, 100_GeV, nodePtr, *csPtr);
-    auto projectile = secViewPtr->GetProjectile();
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0, 0, 100_GeV, nodePtr, *csPtr);
+    auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
 
     process::pythia::Interaction model;
 

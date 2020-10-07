@@ -26,7 +26,7 @@ namespace corsika::process::proposal {
     return false;
   }
 
-  ProposalProcessBase::ProposalProcessBase(setup::SetupEnvironment const& _env,
+  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env,
                                            corsika::units::si::HEPEnergyType _emCut)
       : emCut_(_emCut)
       , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {

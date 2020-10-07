@@ -39,7 +39,7 @@ namespace corsika::setup {
  */
 namespace corsika::setup::testing {
 
-  auto setupEnvironment(particles::Code vTargetCode) {
+  inline auto setupEnvironment(particles::Code vTargetCode) {
 
     using namespace corsika::units::si;
     using namespace corsika;

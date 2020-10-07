@@ -44,7 +44,7 @@ namespace corsika::process::proposal {
   }
 
   template <>
-  ContinuousProcess::ContinuousProcess(setup::SetupEnvironment const& _env,
+  ContinuousProcess::ContinuousProcess(setup::Environment const& _env,
                                        corsika::units::si::HEPEnergyType _emCut)
       : ProposalProcessBase(_env, _emCut) {}
 

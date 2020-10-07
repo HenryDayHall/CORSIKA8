@@ -89,7 +89,7 @@ namespace corsika::process::proposal {
     //! Store cut and  nuclear composition of the whole universe in media which are
     //! required for creating crosssections by proposal.
     //!
-    ProposalProcessBase(corsika::setup::SetupEnvironment const& _env,
+    ProposalProcessBase(corsika::setup::Environment const& _env,
                         corsika::units::si::HEPEnergyType _emCut);
 
     //!

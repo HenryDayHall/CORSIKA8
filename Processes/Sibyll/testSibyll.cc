@@ -96,7 +96,7 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
-  auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
@@ -105,13 +105,16 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   SECTION("InteractionInterface - low energy") {
 
-    auto [stack, view] = testing::setupStack(particles::Code::Proton, 60_GeV, nodePtr, cs);
-    auto projectile = view.GetProjectile();
-
+    const HEPEnergyType P0 = 60_GeV;
+    auto [stack, view] = setup::testing::setupStack(particles::Code::Proton, 0,0, P0, nodePtr, cs);
+    const auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    
+    auto particle = stack->first();
+    
     Interaction model;
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
-    auto const pSum = sumMomentum(view, cs);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*view);
+    auto const pSum = sumMomentum(*view, cs);
 
     /*
       Interactions between hadrons (h) and nuclei (A) in Sibyll are treated in the
@@ -180,26 +183,27 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   SECTION("NuclearInteractionInterface") {
 
-    auto [stack, view] = testing::setupStack(particles::Code::Nucleus, 4, 2, 100_GeV, nodePtr, cs);
-    auto projectile = view.GetProjectile();
+    auto [stack, view] = setup::testing::setupStack(particles::Code::Nucleus, 4, 2, 100_GeV, nodePtr, cs);
+    auto particle = stack->first();
 
     Interaction hmodel;
-    NuclearInteraction model(hmodel, env);
+    NuclearInteraction model(hmodel, *env);
 
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
+    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(*view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
   SECTION("DecayInterface") {
 
-    auto [stack, view] = testing::setupStack(particles::Code::Lambda0, 0,0, 10_GeV, nodePtr, cs);
-    auto projectile = view.GetProjectile();
+    auto [stackPtr, view] = setup::testing::setupStack(particles::Code::Lambda0, 0,0, 10_GeV, nodePtr, cs);
+    auto& stack = *stackPtr; 
+    auto particle = stack.first();
 
     Decay model;
     model.PrintDecayConfig();
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
 
-    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(projectile);
+    /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(*view);
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
     CHECK(stack.getEntries() == 3);

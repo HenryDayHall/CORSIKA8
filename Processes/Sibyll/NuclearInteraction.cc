@@ -29,15 +29,14 @@ using std::tuple;
 using std::vector;
 
 using namespace corsika;
-using namespace corsika::setup;
 using Particle = corsika::setup::Stack::ParticleType; // StackIterator; // ParticleType;
 using View = corsika::setup::StackView;               // StackView::ParticleType;
-using Track = Trajectory;
+using Track = setup::Trajectory;
 
 namespace corsika::process::sibyll {
 
   template <>
-  NuclearInteraction<SetupEnvironment>::~NuclearInteraction() {
+  NuclearInteraction<setup::Environment>::~NuclearInteraction() {
     C8LOG_DEBUG(
         fmt::format("Nuclib::NuclearInteraction n={} Nnuc={}", count_, nucCount_));
   }
@@ -306,7 +305,7 @@ namespace corsika::process::sibyll {
 
   template <>
   template <>
-  process::EProcessReturn NuclearInteraction<SetupEnvironment>::DoInteraction(
+  process::EProcessReturn NuclearInteraction<setup::Environment>::DoInteraction(
       View& view) {
 
     // this routine superimposes different nucleon-nucleon interactions

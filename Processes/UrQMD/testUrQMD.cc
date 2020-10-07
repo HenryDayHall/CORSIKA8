@@ -67,7 +67,7 @@ TEST_CASE("UrQMD") {
   UrQMD urqmd;
 
   SECTION("interaction length") {
-    auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Nitrogen);
+    auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Nitrogen);
     auto const& cs = *csPtr;
     [[maybe_unused]] auto const& env_dummy = env;
     [[maybe_unused]] auto const& node_dummy = nodePtr;
@@ -78,7 +78,7 @@ TEST_CASE("UrQMD") {
         particles::Code::K0,      particles::Code::K0Bar,   particles::Code::K0Long};
 
     for (auto code : validProjectileCodes) {
-      auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);
+      auto [stack, view] = setup::testing::setupStack(code, 0,0, 100_GeV, nodePtr, cs);
       REQUIRE(stack->getEntries() == 1);
       REQUIRE(view->getEntries() == 0);
 
@@ -89,12 +89,12 @@ TEST_CASE("UrQMD") {
   }
 
   SECTION("nucleus projectile") {
-    auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     unsigned short constexpr A = 14, Z = 7;
-    auto [stackPtr, secViewPtr] = setupStack(code::Nucleus, A, Z, 400_GeV, nodePtr, *csPtr);
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::Nucleus, A, Z, 400_GeV, nodePtr, *csPtr);
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 
@@ -113,12 +113,12 @@ TEST_CASE("UrQMD") {
   }
 
   SECTION("\"special\" projectile") {
-    auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] =
-      setupStack(particles::Code::PiPlus, 0,0, 400_GeV, nodePtr, *csPtr);
+      setup::testing::setupStack(particles::Code::PiPlus, 0,0, 400_GeV, nodePtr, *csPtr);
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 
@@ -139,12 +139,12 @@ TEST_CASE("UrQMD") {
   }
 
   SECTION("K0Long projectile") {
-    auto [env, csPtr, nodePtr] = testing::setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] =
-      setupStack(particles::Code::K0Long,0,0, 400_GeV, nodePtr, *csPtr);
+      setup::testing::setupStack(particles::Code::K0Long,0,0, 400_GeV, nodePtr, *csPtr);
     REQUIRE(stackPtr->getEntries() == 1);
     REQUIRE(secViewPtr->getEntries() == 0);
 

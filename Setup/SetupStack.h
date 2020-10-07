@@ -26,9 +26,8 @@ namespace corsika::setup {
     // the GeometryNode stack needs to know the type of geometry-nodes from the
     // environment:
     template <typename TStackIter>
-    using SetupGeometryDataInterface =
-        typename stack::node::MakeGeometryDataInterface<TStackIter,
-                                                        setup::SetupEnvironment>::type;
+    using SetupGeometryDataInterface = typename stack::node::MakeGeometryDataInterface<
+        TStackIter, corsika::setup::Environment>::type;
 
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>
@@ -38,7 +37,7 @@ namespace corsika::setup {
 
     using StackWithGeometry = corsika::stack::CombinedStack<
         typename corsika::stack::nuclear_extension::ParticleDataStack::StackImpl,
-        corsika::stack::node::GeometryData<setup::SetupEnvironment>,
+        corsika::stack::node::GeometryData<setup::Environment>,
         StackWithGeometryInterface>;
 
     // ------------------------------------------
@@ -132,16 +131,17 @@ namespace corsika::setup {
 
 } // namespace corsika::setup
 
-namespace corsika::setup::testing {
-
   /**
-   * standard setup for unit tests. This can be moved to "test"
+   * standard stack setup for unit tests. This can be moved to "test"
    * directory, when available.
    */
-  auto setupStack(particles::Code vProjectileType, int vA, int vZ,
-                  units::si::HEPEnergyType vMomentum,
-                  setup::Environment::BaseNodeType* vNodePtr,
-                  geometry::CoordinateSystem const& cs) {
+
+namespace corsika::setup::testing {
+
+  inline auto setupStack(particles::Code vProjectileType, int vA, int vZ,
+			 units::si::HEPEnergyType vMomentum,
+			 const setup::Environment::BaseNodeType* vNodePtr,
+			 geometry::CoordinateSystem const& cs) {
 
     using namespace corsika;
     using namespace corsika::units::si;

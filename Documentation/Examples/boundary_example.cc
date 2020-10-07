@@ -45,7 +45,6 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
-using namespace corsika::setup;
 using namespace corsika::geometry;
 using namespace corsika::environment;
 
@@ -95,7 +94,7 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = setup::Environment;
   EnvType env;
   auto& universe = *(env.GetUniverse());
 

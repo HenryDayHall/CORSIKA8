@@ -49,7 +49,6 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
-using namespace corsika::setup;
 using namespace corsika::geometry;
 using namespace corsika::environment;
 
@@ -70,23 +69,26 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = setup::Environment;
   EnvType env;
   auto& universe = *(env.GetUniverse());
+  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   auto theMedium =
-      EnvType::CreateNode<Sphere>(Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m},
                                   1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
+  using MyHomogeneousModel =
+      environment::UniformMediumType<environment::UniformMagneticField<
+          environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
+  
   theMedium->SetModelProperties<MyHomogeneousModel>(
+      environment::EMediumType::eAir, geometry::Vector(rootCS, 0_T, 0_T, 1_T),
       1_kg / (1_m * 1_m * 1_m),
       NuclearComposition(std::vector<particles::Code>{particles::Code::Hydrogen},
                          std::vector<float>{(float)1.}));
 
   universe.AddChild(std::move(theMedium));
-
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   // setup particle stack, and add primary particle
   setup::Stack stack;

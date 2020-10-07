@@ -27,7 +27,7 @@ using namespace corsika::units::si;
 
 TEST_CASE("OnShellCheck", "[processes]") {
   feenableexcept(FE_INVALID);
-  using EnvType = environment::Environment<setup::IEnvironmentModel>;
+  using EnvType = setup::Environment;
   EnvType env;
   const geometry::CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
