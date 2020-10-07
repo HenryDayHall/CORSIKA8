@@ -208,7 +208,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   builder.addLinearLayer(1_km, 10_km);
   builder.addLinearLayer(2_km, 20_km);
-  builder.addLinearLayer(3_km, 30_km);
+  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 30_km);
 
   CHECK(builder.size() == 3);
 
@@ -293,6 +293,50 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   // and check the integrated grammage
   CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
   CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+}
+
+TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
+
+  // setup our interface types
+  using IModelInterface = IMagneticFieldModel<IMediumModel>;
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // create magnetic field vectors
+  Vector B0(gCS, 0_T, 0_T, 1_T);
+  Vector B1(gCS, 1_T, 1_T, 0_T);
+
+  // LayeredSphericalAtmosphereBuilder<IMediumModel> builder(gOrigin);
+  LayeredSphericalAtmosphereBuilder<IModelInterface> builder(gOrigin);
+  builder.setNuclearComposition(
+      {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
+
+  builder.addLinearLayer<UniformMagneticField>(1_km, 10_km, B0);
+  builder.addExponentialLayer<UniformMagneticField>(1222.6562_g / (1_cm * 1_cm),
+                                                    994186.38_cm, 20_km, B1);
+
+  CHECK(builder.size() == 2);
+
+  auto const builtEnv = builder.assemble();
+  auto const& univ = builtEnv.GetUniverse();
+
+  CHECK(builder.size() == 0);
+  CHECK(univ->GetChildNodes().size() == 1);
+  auto const R = builder.getEarthRadius();
+
+  // check magnetic field at several locations
+  const Point pTest(gCS, -10_m, 4_m, R+35_m);
+  CHECK(B0.GetComponents(gCS) == univ->GetContainingNode(pTest)
+                                     ->GetModelProperties()
+                                     .GetMagneticField(pTest)
+                                     .GetComponents(gCS));
+  const Point pTest2(gCS, 10_m, -4_m, R+15_km);
+  CHECK(B1.GetComponents(gCS) == univ->GetContainingNode(pTest2)
+                                     ->GetModelProperties()
+                                     .GetMagneticField(pTest2)
+                                     .GetComponents(gCS));
 }
 
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {

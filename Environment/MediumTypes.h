@@ -10,6 +10,13 @@
 
 namespace corsika::environment {
 
+  /**
+   * Medium types are useful most importantly for effective models
+   * like energy losses. a particular medium (mixture of components)
+   * may have specif properties not reflected by its mixture of
+   * components. 
+   */
+  
   enum class EMediumType { eUnknown, eAir, eWater, eIce, eRock };
 
 }

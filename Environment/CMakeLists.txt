@@ -1,6 +1,6 @@
 set (
   ENVIRONMENT_SOURCES
-  LayeredSphericalAtmosphereBuilder.cc
+  # LayeredSphericalAtmosphereBuilder.cc
   ShowerAxis.cc
 )
 
