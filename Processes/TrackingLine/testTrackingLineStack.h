@@ -21,8 +21,21 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
+
+class TestMagneticField {
+    using MagneticFieldVector =
+        corsika::geometry::Vector<corsika::units::si::magnetic_flux_density_d>;
+
+public:
+  MagneticFieldVector GetMagneticField(corsika::geometry::Point const& p) const {
+    using namespace corsika::units::si;
+    return MagneticFieldVector(p.GetCoordinateSystem(), 0_T, 0_T, 1_T);
+  }
+};
+
+
 using TestEnvironmentType =
-    corsika::environment::Environment<corsika::environment::Empty>;
+    corsika::environment::Environment<TestMagneticField>;
 
 template <typename T>
 using SetupGeometryDataInterface =

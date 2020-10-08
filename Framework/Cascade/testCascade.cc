@@ -35,17 +35,24 @@ using namespace corsika::geometry;
 #include <limits>
 using namespace std;
 
+/*
+  The dummy env must support GetMagneticField(), and a density model
+
+ */
 auto MakeDummyEnv() {
   TestEnvironmentType env; // dummy environment
   auto& universe = *(env.GetUniverse());
+  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
 
   auto theMedium = TestEnvironmentType::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      100_km * std::numeric_limits<double>::infinity());
+      1_m * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
+  using MyHomogeneousModel = environment::UniformMagneticField<
+      environment::HomogeneousMedium<TestEnvironmentInterface>>;
+
   theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_g / (1_cm * 1_cm * 1_cm),
+      geometry::Vector(cs, 0_T, 0_T, 0_T), 1_g / (1_cm * 1_cm * 1_cm),
       environment::NuclearComposition(
           std::vector<particles::Code>{particles::Code::Proton}, std::vector<float>{1.}));
 
@@ -73,16 +80,12 @@ public:
     fCalls++;
     auto const projectile = view.GetProjectile();
     const HEPEnergyType E = projectile.GetEnergy();
-    view.AddSecondary(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            projectile.GetPID(), E / 2, projectile.GetMomentum(),
-            projectile.GetPosition(), projectile.GetTime()});
-    view.AddSecondary(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            projectile.GetPID(), E / 2, projectile.GetMomentum(),
-            projectile.GetPosition(), projectile.GetTime()});
+    view.AddSecondary(std::make_tuple(projectile.GetPID(), E / 2,
+                                      projectile.GetMomentum(), projectile.GetPosition(),
+                                      projectile.GetTime()));
+    view.AddSecondary(std::make_tuple(projectile.GetPID(), E / 2,
+                                      projectile.GetMomentum(), projectile.GetPosition(),
+                                      projectile.GetTime()));
     return EProcessReturn::eInteracted;
   }
 
@@ -141,12 +144,13 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto sequence = process::sequence(nullModel, stackInspect, split, cut);
   TestCascadeStack stack;
   stack.Clear();
-  stack.AddParticle(
-      std::tuple<particles::Code, units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          particles::Code::Electron, E0,
-          corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-          Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
+  stack.AddParticle(std::make_tuple(
+      particles::Code::Electron, E0,
+      corsika::stack::MomentumVector(
+          rootCS, {0_GeV, 0_GeV,
+                   -sqrt(E0 * E0 - units::static_pow<2>(
+                                       particles::GetMass(particles::Code::Electron)))}),
+      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
                    TestCascadeStackView>

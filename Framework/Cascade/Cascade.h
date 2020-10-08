@@ -285,15 +285,6 @@ namespace corsika::cascade {
       assert(currentLogicalNode != &*environment_.GetUniverse() ||
              environment_.GetUniverse()->HasModelProperties());
 
-      // convert next_step from grammage to length
-      LengthType const distance_interact =
-          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
-                                                                         next_interact);
-
-      // determine the maximum geometric step length from continuous processes
-      LengthType const distance_max = process_sequence_.MaxStepLength(vParticle, step);
-      C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
-
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
           process_sequence_.GetInverseLifetime(vParticle);
@@ -321,7 +312,7 @@ namespace corsika::cascade {
       
       // determine the maximum geometric step length
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, stepWithoutB);
-      std::cout << "distance_max=" << distance_max << std::endl;
+      C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
 
       // take minimum of geometry, interaction, decay for next step
       auto min_distance = std::min(

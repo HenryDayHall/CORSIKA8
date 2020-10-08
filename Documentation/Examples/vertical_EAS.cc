@@ -17,6 +17,7 @@
 #include <corsika/environment/FlatExponential.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMagneticFieldModel.h>
+#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/ShowerAxis.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
@@ -34,15 +35,12 @@
 #include <corsika/process/particle_cut/ParticleCut.h>
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
-#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
-#include <corsika/process/proposal/ContinuousProcess.h>
-#include <corsika/process/proposal/Interaction.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -191,12 +189,9 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  PROPOSAL::InterpolationDef::path_to_tables = "~/.local/share/PROPOSAL/tables/";
-  PROPOSAL::InterpolationDef::path_to_tables_readonly = "~/.local/share/PROPOSAL/tables/";
-
-  process::particle_cut::ParticleCut cut{3_GeV, true, true};
-  process::proposal::Interaction proposal(env, cut);
-  process::proposal::ContinuousProcess em_continuous(env, cut);
+  process::particle_cut::ParticleCut cut{60_GeV, true, true};
+  process::proposal::Interaction proposal(env, cut.GetECut());
+  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::sibyll::Interaction sibyll;

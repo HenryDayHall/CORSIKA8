@@ -75,7 +75,7 @@ void dump_bh_2d(std::ostream& os, T& h)
   // bins-x
   os << "  \"xbins\" : [";
   double lastx = 0;
-  for (unsigned int i=0; i<h.axis(0).size(); ++i) {
+  for (int i=0; i<h.axis(0).size(); ++i) {
     os << h.axis(0).bin(i).lower() << ", ";
     lastx = h.axis(0).bin(i).upper();
   }
@@ -84,7 +84,7 @@ void dump_bh_2d(std::ostream& os, T& h)
   // bins-y
   os << "  \"ybins\" : [";
   double lasty = 0;
-  for (unsigned int i=0; i<h.axis(1).size(); ++i) {
+  for (int i=0; i<h.axis(1).size(); ++i) {
     os << h.axis(1).bin(i).lower() << ", ";
     lasty = h.axis(1).bin(i).upper();
   }

@@ -30,8 +30,9 @@ using namespace corsika::geometry;
 using namespace std;
 using namespace corsika::units::si;
 
+
 TEST_CASE("TrackingLine") {
-  environment::Environment<environment::Empty> env; // dummy environment
+  environment::Environment<TestMagneticField> env; // dummy environment
   auto const& cs = env.GetCoordinateSystem();
 
   tracking_line::TrackingLine tracking;
@@ -64,7 +65,7 @@ TEST_CASE("TrackingLine") {
 
     auto const radius = 20_m;
 
-    auto theMedium = environment::Environment<environment::Empty>::CreateNode<Sphere>(
+    auto theMedium = environment::Environment<TestMagneticField>::CreateNode<Sphere>(
         Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
     auto const* theMediumPtr = theMedium.get();
     universe.AddChild(std::move(theMedium));
@@ -86,11 +87,15 @@ TEST_CASE("TrackingLine") {
                                                             0_m / second, 1_m / second);
     Line line(origin, v);
 
-    auto const [traj, geomMaxLength, nextVol, magMaxLength, beforeDirection, afterDirection] = tracking.GetTrack(p);
-    [[maybe_unused]] auto dummy_geomMaxLength = geomMaxLength;
-    [[maybe_unused]] auto dummy_nextVol = nextVol;
+    const auto [stepWithoutB, stepWithB, geomMaxLength, magMaxLength, nextVol] = tracking.GetTrack(p);
+    //auto const [traj, geomMaxLength, nextVol, magMaxLength, beforeDirection,
+    //          afterDirection] = tracking.GetTrack(p);
+    [[maybe_unused]] auto& dummy_1 = stepWithB;
+    [[maybe_unused]] auto& dummy_2 = magMaxLength;
+    [[maybe_unused]] auto& dummy_geomMaxLength = geomMaxLength;
+    [[maybe_unused]] auto& dummy_nextVol = nextVol;
 
-    REQUIRE((traj.GetPosition(1.) - Point(cs, 0_m, 0_m, radius))
+    REQUIRE((stepWithoutB.GetPosition(1.) - Point(cs, 0_m, 0_m, radius))
                 .GetComponents(cs)
                 .norm()
                 .magnitude() == Approx(0).margin(1e-4));

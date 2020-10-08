@@ -22,7 +22,7 @@ ObservationPlane::ObservationPlane(
     , outputStream_(filename)
     , deleteOnHit_(deleteOnHit)
     , energy_ground_(0_GeV)
-    , count_ground_(0) {
+    , count_ground_(0)
     , xAxis_(x_axis.normalized())
     , yAxis_(obsPlane.GetNormal().cross(xAxis_)) {
   outputStream_ << "#PDG code, energy / eV, x distance / m, y distance / m" << std::endl;
