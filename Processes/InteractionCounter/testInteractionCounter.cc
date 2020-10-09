@@ -126,12 +126,13 @@ TEST_CASE("InteractionCounter") {
     auto const ret = countedProcess.DoInteraction(*secViewPtr);
     REQUIRE(ret == nullptr);
 
-    auto const& h = countedProcess.GetHistogram().labHists().second.at(1'000'070'140);
-    REQUIRE(h.at(50) == 1);
+    auto const& h = countedProcess.GetHistogram().labHist();
+    REQUIRE(h.at(h.axis(0).index(1'000'070'140), h.axis(1).index(1.05e14)) == 1);
     REQUIRE(std::accumulate(h.cbegin(), h.cend(), 0) == 1);
 
-    auto const& h2 = countedProcess.GetHistogram().CMSHists().second.at(1'000'070'140);
-    REQUIRE(h2.at(32) == 1); // bin 1.584 .. 1.995 TeV √s
+    auto const& h2 = countedProcess.GetHistogram().CMSHist();
+    REQUIRE(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
+    // REQUIRE(h2.at(1'000'070'140, 92) == 1); // bin 1.584 .. 1.995 TeV √s
     REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
   }
 
@@ -145,12 +146,12 @@ TEST_CASE("InteractionCounter") {
     auto const ret = countedProcess.DoInteraction(*secViewPtr);
     REQUIRE(ret == nullptr);
 
-    auto const& h = countedProcess.GetHistogram().labHists().first;
-    REQUIRE(h.at(codeInt, 50) == 1);
+    auto const& h = countedProcess.GetHistogram().labHist();
+    REQUIRE(h.at(h.axis(0).index(3122), h.axis(1).index(1.05e14)) == 1);
     REQUIRE(std::accumulate(h.cbegin(), h.cend(), 0) == 1);
 
-    auto const& h2 = countedProcess.GetHistogram().CMSHists().first;
-    REQUIRE(h2.at(codeInt, 32) == 1); // bin 1.584 .. 1.995 TeV √s
+    auto const& h2 = countedProcess.GetHistogram().CMSHist();
+    REQUIRE(h2.at(h2.axis(0).index(3122), h2.axis(1).index(1.6e12)) == 1);
     REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
   }
 }
