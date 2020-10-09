@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  process::particle_cut::ParticleCut cut{60_GeV, true, true};
+  process::particle_cut::ParticleCut cut{60_GeV, false, true};
   process::proposal::Interaction proposal(env, cut.GetECut());
   process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
