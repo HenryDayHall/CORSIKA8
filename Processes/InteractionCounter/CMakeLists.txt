@@ -28,6 +28,7 @@ set_target_properties (
 target_link_libraries (
   ProcessInteractionCounter
   CORSIKAunits
+  CORSIKAutilities
   CORSIKAprocesssequence
   CORSIKAthirdparty
   C8::ext::boost
