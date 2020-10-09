@@ -82,4 +82,3 @@ void HistoryObservationPlane::fillHistoryHistogram(
     event = event->parentEvent().get(); // projectile.GetEvent().get();
   }
 }
-

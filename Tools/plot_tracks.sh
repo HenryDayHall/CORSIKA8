@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
 #
@@ -20,7 +20,12 @@ directory=$(dirname "$tracks_dat")
 hadrons_dat="$directory/hadrons.dat"
 muons_dat="$directory/muons.dat"
 
-if [ "$muons_dat" -ot "$tracks_dat" -o "$hadrons_dat" -ot "$muons_dat" ]; then
+if [ ! -e "$tracks_dat" ]; then
+  echo "$tracks_dat does not exist" >&2
+  exit 2
+fi
+
+if [ "$muons_dat" -ot "$tracks_dat" ] || [ "$hadrons_dat" -ot "$tracks_dat" ]; then
   echo "splitting $tracks_dat into $muons_dat and $hadrons_dat."
   cat "$tracks_dat" | egrep '^\s+-*13\s' > "$muons_dat"
   cat "$tracks_dat" | egrep -v '^\s+-*13\s' > "$hadrons_dat"
