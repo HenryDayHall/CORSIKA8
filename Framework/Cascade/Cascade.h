@@ -74,11 +74,11 @@ namespace corsika::cascade {
 
   private:
     // Data members
-    corsika::environment::Environment<MediumInterface> const& fEnvironment;
-    TTracking& fTracking;
-    TProcessList& fProcessSequence;
-    TStack& fStack;
-    corsika::random::RNG& fRNG =
+    corsika::environment::Environment<MediumInterface> const& environment_;
+    TTracking& tracking_;
+    TProcessList& process_sequence_;
+    TStack& stack_;
+    corsika::random::RNG& rng_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
     unsigned int count_ = 0;
 
@@ -93,15 +93,15 @@ namespace corsika::cascade {
      */
     Cascade(corsika::environment::Environment<MediumInterface> const& env, TTracking& tr,
             TProcessList& pl, TStack& stack)
-        : fEnvironment(env)
-        , fTracking(tr)
-        , fProcessSequence(pl)
-        , fStack(stack)
+        : environment_(env)
+        , tracking_(tr)
+        , process_sequence_(pl)
+        , stack_(stack)
         , count_(0) {
       C8LOG_INFO(c8_ascii_);
-#ifdef WITH_HISTORY
-      C8LOG_INFO(" - With full cascade HISTORY.");
-#endif
+      if constexpr (TStackView::has_event) {
+        C8LOG_INFO(" - With full cascade HISTORY.");
+      }
     }
 
     /**
@@ -109,9 +109,9 @@ namespace corsika::cascade {
      * position
      */
     void SetNodes() {
-      std::for_each(fStack.begin(), fStack.end(), [&](auto& p) {
+      std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
         auto const* numericalNode =
-            fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
+            environment_.GetUniverse()->GetContainingNode(p.GetPosition());
         p.SetNode(numericalNode);
       });
     }
@@ -123,18 +123,18 @@ namespace corsika::cascade {
     void Run() {
       SetNodes();
 
-      while (!fStack.IsEmpty()) {
-        while (!fStack.IsEmpty()) {
-          C8LOG_TRACE(fmt::format("Stack: {}", fStack.as_string()));
+      while (!stack_.IsEmpty()) {
+        while (!stack_.IsEmpty()) {
+          C8LOG_TRACE("Stack: {}", stack_.as_string());
           count_++;
-          auto pNext = fStack.GetNextParticle();
-          C8LOG_DEBUG(fmt::format(
+          auto pNext = stack_.GetNextParticle();
+          C8LOG_DEBUG(
               "============== next particle : count={}, pid={}, "
               ", stack entries={}"
               ", stack deleted={}",
-              count_, pNext.GetPID(), fStack.getEntries(), fStack.getDeleted()));
+              count_, pNext.GetPID(), stack_.getEntries(), stack_.getDeleted());
           Step(pNext);
-          fProcessSequence.DoStack(fStack);
+          process_sequence_.DoStack(stack_);
         }
         // do cascade equations, which can put new particles on Stack,
         // thus, the double loop
@@ -149,10 +149,10 @@ namespace corsika::cascade {
      */
     void forceInteraction() {
       C8LOG_DEBUG("forced interaction!");
-      auto vParticle = fStack.GetNextParticle();
+      auto vParticle = stack_.GetNextParticle();
       TStackView secondaries(vParticle);
-      interaction(vParticle, secondaries);
-      fProcessSequence.DoSecondaries(secondaries);
+      interaction(secondaries);
+      process_sequence_.DoSecondaries(secondaries);
       vParticle.Delete(); // todo: this should be reviewed, see below
     }
 
@@ -172,16 +172,16 @@ namespace corsika::cascade {
       using namespace corsika::units::si;
 
       // determine geometric tracking
-      auto [step, geomMaxLength, nextVol] = fTracking.GetTrack(vParticle);
+      auto [step, geomMaxLength, nextVol] = tracking_.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
 
       // determine combined total interaction length (inverse)
       InverseGrammageType const total_inv_lambda =
-          fProcessSequence.GetTotalInverseInteractionLength(vParticle);
+          process_sequence_.GetInverseInteractionLength(vParticle);
 
       // sample random exponential step length in grammage
       corsika::random::ExponentialDistribution expDist(1 / total_inv_lambda);
-      GrammageType const next_interact = expDist(fRNG);
+      GrammageType const next_interact = expDist(rng_);
 
       C8LOG_DEBUG(
           "total_lambda={} g/cm2, "
@@ -193,8 +193,8 @@ namespace corsika::cascade {
 
       // assert that particle stays outside void Universe if it has no
       // model properties set
-      assert(currentLogicalNode != &*fEnvironment.GetUniverse() ||
-             fEnvironment.GetUniverse()->HasModelProperties());
+      assert(currentLogicalNode != &*environment_.GetUniverse() ||
+             environment_.GetUniverse()->HasModelProperties());
 
       // convert next_step from grammage to length
       LengthType const distance_interact =
@@ -202,16 +202,16 @@ namespace corsika::cascade {
                                                                          next_interact);
 
       // determine the maximum geometric step length from continuous processes
-      LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
+      LengthType const distance_max = process_sequence_.MaxStepLength(vParticle, step);
       C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
 
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
-          fProcessSequence.GetTotalInverseLifetime(vParticle);
+          process_sequence_.GetInverseLifetime(vParticle);
 
       // sample random exponential decay time
       corsika::random::ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
-      TimeType const next_decay = expDistDecay(fRNG);
+      TimeType const next_decay = expDistDecay(rng_);
       C8LOG_DEBUG(
           "total_lifetime={} s"
           ", next_decay={} s",
@@ -236,12 +236,12 @@ namespace corsika::cascade {
       step.LimitEndTo(min_distance);
 
       // apply all continuous processes on particle + track
-      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
-
-      if (status == process::EProcessReturn::eParticleAbsorbed) {
+      if (process_sequence_.DoContinuous(vParticle, step) ==
+          process::EProcessReturn::eParticleAbsorbed) {
         C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                     vParticle.GetPID(), vParticle.GetEnergy() / 1_GeV);
-        vParticle.Delete();
+	if (!vParticle.isDeleted())
+	  vParticle.Delete();
         return;
       }
 
@@ -271,10 +271,10 @@ namespace corsika::cascade {
           [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
           if (min_distance == distance_interact) {
-            interaction(vParticle, secondaries);
+            interaction(secondaries);
           } else {
             assert(min_distance == distance_decay);
-            decay(vParticle, secondaries);
+            decay(secondaries);
             // make sure particle actually did decay if it should have done so
             if (secondaries.getSize() == 1 &&
                 projectile.GetPID() == secondaries.GetNextParticle().GetPID())
@@ -283,7 +283,7 @@ namespace corsika::cascade {
                               particles::GetName(projectile.GetPID())));
           }
 
-          fProcessSequence.DoSecondaries(secondaries);
+          process_sequence_.DoSecondaries(secondaries);
           vParticle.Delete();
 
         } else { // step-length limitation within volume
@@ -293,10 +293,9 @@ namespace corsika::cascade {
 
         [[maybe_unused]] auto const assertion = [&] {
           auto const* numericalNodeAfterStep =
-              fEnvironment.GetUniverse()->GetContainingNode(vParticle.GetPosition());
-          C8LOG_TRACE(fmt::format(
-              "Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
-              fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode)));
+              environment_.GetUniverse()->GetContainingNode(vParticle.GetPosition());
+          C8LOG_TRACE("Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
+                      fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
           return numericalNodeAfterStep == currentLogicalNode;
         };
 
@@ -306,41 +305,45 @@ namespace corsika::cascade {
         /*
           DoBoundary may delete the particle (or not)
 
-          small caveat: any changes to vParticle, or even the production
+          caveat: any changes to vParticle, or even the production
           of new secondaries is currently not passed to ParticleCut,
           thus, particles outside the desired phase space may be produced.
+
+          todo: this must be fixed.
         */
-        fProcessSequence.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+        process_sequence_.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
       }
     }
 
-    auto decay(Particle& particle, TStackView& view) {
+    process::EProcessReturn decay(TStackView& view) {
       C8LOG_DEBUG("decay");
       units::si::InverseTimeType const actual_decay_time =
-          fProcessSequence.GetTotalInverseLifetime(particle);
+          process_sequence_.GetInverseLifetime(view.parent());
 
       random::UniformRealDistribution<units::si::InverseTimeType> uniDist(
           actual_decay_time);
-      const auto sample_process = uniDist(fRNG);
-      units::si::InverseTimeType inv_decay_count = units::si::InverseTimeType::zero();
-      auto const returnCode =
-          fProcessSequence.SelectDecay(particle, view, sample_process, inv_decay_count);
+      const auto sample_process = uniDist(rng_);
+      auto const returnCode = process_sequence_.SelectDecay(view, sample_process);
+      if (returnCode != process::EProcessReturn::eDecayed) {
+        C8LOG_WARN("Particle did not decay!");
+      }
       SetEventType(view, history::EventType::Decay);
       return returnCode;
     }
 
-    auto interaction(Particle& particle, TStackView& view) {
+    process::EProcessReturn interaction(TStackView& view) {
       C8LOG_DEBUG("collide");
 
       units::si::InverseGrammageType const current_inv_length =
-          fProcessSequence.GetTotalInverseInteractionLength(particle);
+          process_sequence_.GetInverseInteractionLength(view.parent());
 
       random::UniformRealDistribution<units::si::InverseGrammageType> uniDist(
           current_inv_length);
-      const auto sample_process = uniDist(fRNG);
-      auto inv_lambda_count = units::si::InverseGrammageType::zero();
-      auto const returnCode = fProcessSequence.SelectInteraction(
-          particle, view, sample_process, inv_lambda_count);
+      const auto sample_process = uniDist(rng_);
+      auto const returnCode = process_sequence_.SelectInteraction(view, sample_process);
+      if (returnCode != process::EProcessReturn::eInteracted) {
+        C8LOG_WARN("Particle did not interace!");
+      }
       SetEventType(view, history::EventType::Interaction);
       return returnCode;
     }

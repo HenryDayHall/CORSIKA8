@@ -138,7 +138,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   const HEPEnergyType Ecrit = 85_MeV;
   ProcessSplit split(X0);
   ProcessCut cut(Ecrit);
-  auto sequence = nullModel << stackInspect << split << cut;
+  auto sequence = nullModel % stackInspect % split % cut;
   TestCascadeStack stack;
   stack.Clear();
   stack.AddParticle(

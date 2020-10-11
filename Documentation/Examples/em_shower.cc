@@ -144,8 +144,8 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  auto sequence = proposalCounted << em_continuous << longprof << cut << observationLevel
-                                  << trackWriter;
+  auto sequence = proposalCounted % em_continuous % longprof % cut % observationLevel
+                                  % trackWriter;
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);

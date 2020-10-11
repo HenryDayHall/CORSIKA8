@@ -23,7 +23,7 @@ using namespace corsika::setup;
 
 using SetupView = corsika::setup::StackView;
 using SetupProjectile = corsika::setup::StackView::ParticleType;
-using SetupParticle = corsika::setup::Stack::ParticleType;
+using Particle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::process::sibyll {
 
@@ -142,7 +142,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::TimeType Decay::GetLifetime(SetupParticle const& vP) {
+  units::si::TimeType Decay::GetLifetime(Particle const& vP) {
     using namespace units::si;
 
     const particles::Code pid = vP.GetPID();

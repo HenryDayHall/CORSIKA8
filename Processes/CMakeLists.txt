@@ -31,7 +31,6 @@ add_subdirectory (ParticleCut)
 add_subdirectory (OnShellCheck)
 # meta-processes
 add_subdirectory (InteractionCounter)
-add_subdirectory (SwitchProcess)
 
 
 ##########################################

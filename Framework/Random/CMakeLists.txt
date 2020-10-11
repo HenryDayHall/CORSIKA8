@@ -20,9 +20,8 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKArandom ${CORSIKArandom_NAMESPACE} ${CO
 
 target_link_libraries (
   CORSIKArandom
-  INTERFACE
   CORSIKAutilities
-  CORSIKAunits
+  CORSIKAlogging
   )
 
 target_include_directories (
@@ -50,4 +49,5 @@ target_link_libraries (
   testRandom
   CORSIKArandom
   CORSIKAtesting
+  CORSIKAunits
   )

@@ -47,7 +47,7 @@ namespace corsika::process::pythia {
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle&);
+    corsika::units::si::GrammageType GetInteractionLength(const TParticle&);
 
     /**
        In this function PYTHIA is called to produce one event. The

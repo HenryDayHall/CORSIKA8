@@ -29,8 +29,8 @@ namespace corsika::process {
       StackInspector(const int vNStep, const bool vReportStack,
                      const corsika::units::si::HEPEnergyType vE0);
       ~StackInspector();
-
-      EProcessReturn DoStack(const TStack&);
+      
+      void DoStack(const TStack&);
 
       /**
        * To set a new E0, for example when a new shower event is started

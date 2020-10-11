@@ -7,6 +7,8 @@
  */
 
 #include <corsika/random/RNGManager.h>
+#include <corsika/logging/Logging.h>
+
 #include <sstream>
 
 void corsika::random::RNGManager::RegisterRandomStream(std::string const& pStreamName) {
@@ -42,14 +44,21 @@ std::stringstream corsika::random::RNGManager::dumpState() const {
 }
 
 void corsika::random::RNGManager::SeedAll(uint64_t vSeed) {
-  for (auto& entry : rngs) { entry.second.seed(vSeed++); }
+  for (auto& entry : rngs) {
+    auto seed = vSeed++;
+    C8LOG_TRACE("Random seed stream {} seed {}", entry.first, seed);
+    entry.second.seed(seed);
+  }
 }
 
 void corsika::random::RNGManager::SeedAll() {
   std::random_device rd;
-
+  std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};  
   for (auto& entry : rngs) {
-    std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
-    entry.second.seed(sseq);
+    std::vector<std::uint32_t> seeds(1);
+    sseq.generate(seeds.begin(), seeds.end());
+    std::uint32_t seed = seeds[0];
+    C8LOG_TRACE("Random seed stream {} seed {}", entry.first, seed);
+    entry.second.seed(seed);
   }
 }

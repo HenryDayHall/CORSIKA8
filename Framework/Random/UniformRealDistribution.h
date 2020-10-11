@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <corsika/units/PhysicalUnits.h>
 #include <random>
 
 namespace corsika::random {

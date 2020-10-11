@@ -64,7 +64,7 @@ namespace corsika::stack {
 
      For two examples see stack_example.cc, or the
      corsika::processes::sibyll::SibStack class
-  */
+  **/
 
   template <typename TStackData, template <typename> typename TParticleInterface,
             typename StackType = Stack<TStackData, TParticleInterface>>
@@ -105,6 +105,10 @@ namespace corsika::stack {
     StackIteratorInterface() = delete;
 
   public:
+    StackIteratorInterface(StackIteratorInterface&& rhs)
+        : index_(std::move(rhs.index_))
+        , data_(std::move(rhs.data_)) {}
+
     StackIteratorInterface(StackIteratorInterface const& vR)
         : index_(vR.index_)
         , data_(vR.data_) {}
@@ -118,7 +122,7 @@ namespace corsika::stack {
     /** iterator must always point to data, with an index:
           @param data reference to the stack [rw]
           @param index index on stack
-       */
+    **/
     StackIteratorInterface(StackType& data, const unsigned int index)
         : index_(index)
         , data_(&data) {}
@@ -129,7 +133,7 @@ namespace corsika::stack {
         @param args variadic list of data to initialize stack entry, this must be
        consistent with the definition of the user-provided
        ParticleInterfaceType::SetParticleData(...) function
-     */
+    **/
     template <typename... Args>
     StackIteratorInterface(StackType& data, const unsigned int index, const Args... args)
         : index_(index)
@@ -146,7 +150,7 @@ namespace corsika::stack {
         @param args variadic list of data to initialize stack entry, this must be
        consistent with the definition of the user-provided
        ParticleInterfaceType::SetParticleData(...) function
-    */
+    **/
     template <typename... Args>
     StackIteratorInterface(StackType& data, const unsigned int index,
                            StackIteratorInterface& parent, const Args... args)
@@ -160,7 +164,7 @@ namespace corsika::stack {
   public:
     /** @name Iterator interface
         @{
-    */
+    **/
     StackIteratorInterface& operator++() {
       do {
         ++index_;
@@ -195,14 +199,15 @@ namespace corsika::stack {
     /**
      * Convert iterator to value type, where value type is the user-provided particle
      * readout class
-     */
+     **/
     ParticleInterfaceType& operator*() {
       return static_cast<ParticleInterfaceType&>(*this);
     }
+  
     /**
      * Convert iterator to const value type, where value type is the user-provided
      * particle readout class
-     */
+     **/
     const ParticleInterfaceType& operator*() const {
       return static_cast<const ParticleInterfaceType&>(*this);
     }
@@ -212,7 +217,7 @@ namespace corsika::stack {
     /**
      * @name Stack data access
      * @{
-     */
+     **/
     /// Get current particle index
     inline unsigned int GetIndex() const { return index_; }
     /// Get current particle Stack object
@@ -234,7 +239,7 @@ namespace corsika::stack {
      @class ConstStackIteratorInterface
 
      This is the iterator class for const-access to stack data
-   */
+  **/
 
   template <typename TStackData, template <typename> typename TParticleInterface,
             typename StackType = Stack<TStackData, TParticleInterface>>
@@ -275,6 +280,10 @@ namespace corsika::stack {
     ConstStackIteratorInterface() = delete;
 
   public:
+    ConstStackIteratorInterface(ConstStackIteratorInterface&& rhs)
+        : index_(std::move(rhs.index_))
+        , data_(std::move(rhs.data_)) {}
+
     ConstStackIteratorInterface(const StackType& data, const unsigned int index)
         : index_(index)
         , data_(&data) {}
@@ -290,13 +299,13 @@ namespace corsika::stack {
        \endverbatim
 
        See documentation of StackIteratorInterface for more details.
-    */
+    **/
 
     bool isDeleted() const { return GetStack().isDeleted(*this); }
 
   public:
     /** @name Iterator interface
-     */
+     **/
     ///@{
     ConstStackIteratorInterface& operator++() {
       do {
@@ -339,7 +348,7 @@ namespace corsika::stack {
   protected:
     /** @name Stack data access
         Only the const versions for read-only access
-     */
+    **/
     ///@{
     inline unsigned int GetIndex() const { return index_; }
     inline const StackType& GetStack() const { return *data_; }

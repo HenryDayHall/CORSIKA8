@@ -83,7 +83,7 @@ void modular() {
   Process3 m3;
   Process4 m4(0.9);
 
-  auto sequence = m1 << m2 << m3 << m4;
+  auto sequence = m1 % m2 % m3 % m4;
 
   DummyData particle;
   DummyTrajectory track;
@@ -93,7 +93,7 @@ void modular() {
 
   for (int i = 0; i < nData; ++i) {
     // cout << p.p[i] << endl;
-    // assert(p.p[i] == n-i*100);
+    assert(particle.p[i] == n-i*100);
   }
 
   cout << " done (nothing...) " << endl;

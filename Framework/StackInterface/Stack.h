@@ -301,9 +301,9 @@ namespace corsika::stack {
     /**
      * check if this particle was already deleted
      */
-    bool isDeleted(const StackIterator& p) { return isDeleted(p.GetIndex()); }
+    bool isDeleted(const StackIterator& p) const { return isDeleted(p.GetIndex()); }
     bool isDeleted(const ConstStackIterator& p) const { return isDeleted(p.GetIndex()); }
-    bool isDeleted(const ParticleInterfaceType& p) { return isDeleted(p.GetIterator()); }
+    bool isDeleted(const ParticleInterfaceType& p) const { return isDeleted(p.GetIterator()); }
 
     /**
      * Function to ultimatively remove the last entry from the stack,

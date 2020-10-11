@@ -25,7 +25,7 @@ using std::tuple;
 
 using namespace corsika;
 using namespace corsika::setup;
-using SetupParticle = setup::Stack::StackIterator;
+using Particle = setup::Stack::StackIterator;
 using SetupView = setup::StackView;
 using Track = Trajectory;
 
@@ -81,8 +81,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(
-      SetupParticle const& vP) const {
+  units::si::GrammageType Interaction::GetInteractionLength(Particle const& vP) const {
 
     using namespace units;
     using namespace units::si;
@@ -172,187 +171,184 @@ namespace corsika::process::sibyll {
     auto const projectile = view.GetProjectile();
 
     const auto corsikaBeamId = projectile.GetPID();
-    C8LOG_DEBUG(
-        fmt::format("ProcessSibyll: "
-                    "DoInteraction: {} interaction? ",
-                    corsikaBeamId, process::sibyll::CanInteract(corsikaBeamId)));
 
     if (particles::IsNucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
       throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
     }
 
-    if (process::sibyll::CanInteract(corsikaBeamId)) {
-      // position and time of interaction, not used in Sibyll
-      Point const pOrig = projectile.GetPosition();
-      TimeType const tOrig = projectile.GetTime();
+    // position and time of interaction, not used in Sibyll
+    Point const pOrig = projectile.GetPosition();
+    TimeType const tOrig = projectile.GetTime();
 
-      // define projectile
-      HEPEnergyType const eProjectileLab = projectile.GetEnergy();
-      auto const pProjectileLab = projectile.GetMomentum();
-      const CoordinateSystem& originalCS = pProjectileLab.GetCoordinateSystem();
+    // define projectile
+    HEPEnergyType const eProjectileLab = projectile.GetEnergy();
+    auto const pProjectileLab = projectile.GetMomentum();
+    const CoordinateSystem& originalCS = pProjectileLab.GetCoordinateSystem();
 
-      // define target
-      // for Sibyll is always a single nucleon
-      // FOR NOW: target is always at rest
-      const auto eTargetLab = 0_GeV + constants::nucleonMass;
-      const auto pTargetLab = MomentumVector(originalCS, 0_GeV, 0_GeV, 0_GeV);
-      const FourVector PtargLab(eTargetLab, pTargetLab);
+    C8LOG_DEBUG(
+        "ProcessSibyll: "
+        "DoInteraction: pid {} interaction ",
+        corsikaBeamId);
 
+    // define target
+    // for Sibyll is always a single nucleon
+    // FOR NOW: target is always at rest
+    const auto eTargetLab = 0_GeV + constants::nucleonMass;
+    const auto pTargetLab = MomentumVector(originalCS, 0_GeV, 0_GeV, 0_GeV);
+    const FourVector PtargLab(eTargetLab, pTargetLab);
+
+    C8LOG_DEBUG(
+        "Interaction: ebeam lab: {} GeV"
+        "Interaction: pbeam lab: {} GeV",
+        eProjectileLab / 1_GeV, pProjectileLab.GetComponents());
+    C8LOG_DEBUG(
+        "Interaction: etarget lab: {} GeV "
+        "Interaction: ptarget lab: {} GeV",
+        eTargetLab / 1_GeV, pTargetLab.GetComponents() / 1_GeV);
+
+    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+
+    // define target kinematics in lab frame
+    // define boost to and from CoM frame
+    // CoM frame definition in Sibyll projectile: +z
+    COMBoost const boost(PprojLab, constants::nucleonMass);
+    auto const& csPrime = boost.GetRotatedCS();
+
+    // just for show:
+    // boost projecticle
+    auto const PprojCoM = boost.toCoM(PprojLab);
+
+    // boost target
+    auto const PtargCoM = boost.toCoM(PtargLab);
+
+    C8LOG_DEBUG(
+        "Interaction: ebeam CoM: {} GeV "
+        "Interaction: pbeam CoM: {} GeV ",
+        PprojCoM.GetTimeLikeComponent() / 1_GeV,
+        PprojCoM.GetSpaceLikeComponents().GetComponents(csPrime) / 1_GeV);
+    C8LOG_DEBUG(
+        "Interaction: etarget CoM: {} GeV "
+        "Interaction: ptarget CoM: {} GeV ",
+        PtargCoM.GetTimeLikeComponent() / 1_GeV,
+        PtargCoM.GetSpaceLikeComponents().GetComponents(csPrime) / 1_GeV);
+
+    C8LOG_DEBUG("Interaction: position of interaction: {} ", pOrig.GetCoordinates());
+    C8LOG_DEBUG("Interaction: time: {} ", tOrig);
+
+    HEPEnergyType Etot = eProjectileLab + eTargetLab;
+    MomentumVector Ptot = projectile.GetMomentum();
+    // invariant mass, i.e. cm. energy
+    HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
+
+    // sample target mass number
+    auto const* currentNode = projectile.GetNode();
+    auto const& mediumComposition =
+        currentNode->GetModelProperties().GetNuclearComposition();
+    // get cross sections for target materials
+    /*
+      Here we read the cross section from the interaction model again,
+      should be passed from GetInteractionLength if possible
+     */
+    //#warning reading interaction cross section again, should not be necessary
+    auto const& compVec = mediumComposition.GetComponents();
+    std::vector<CrossSectionType> cross_section_of_components(compVec.size());
+
+    for (size_t i = 0; i < compVec.size(); ++i) {
+      auto const targetId = compVec[i];
+      const auto [sigProd, sigEla] = GetCrossSection(corsikaBeamId, targetId, Ecm);
+      [[maybe_unused]] const auto& dummy_sigEla = sigEla;
+      cross_section_of_components[i] = sigProd;
+    }
+
+    const auto targetCode =
+        mediumComposition.SampleTarget(cross_section_of_components, RNG_);
+    C8LOG_DEBUG("Interaction: target selected: {} ", targetCode);
+    /*
+      FOR NOW: allow nuclei with A<18 or protons only.
+      when medium composition becomes more complex, approximations will have to be
+      allowed air in atmosphere also contains some Argon.
+    */
+    int targetSibCode = -1;
+    if (IsNucleus(targetCode)) targetSibCode = GetNucleusA(targetCode);
+    if (targetCode == particles::Proton::GetCode()) targetSibCode = 1;
+    C8LOG_DEBUG("Interaction: sibyll code: {}", targetSibCode);
+    if (targetSibCode > maxTargetMassNumber_ || targetSibCode < 1)
+      throw std::runtime_error(
+          "Sibyll target outside range. Only nuclei with A<18 or protons are "
+          "allowed.");
+
+    // beam id for sibyll
+    const int kBeam = process::sibyll::ConvertToSibyllRaw(corsikaBeamId);
+
+    C8LOG_DEBUG(
+        "Interaction: "
+        " DoInteraction: E(GeV): {} "
+        " Ecm(GeV): {} ",
+        eProjectileLab / 1_GeV, Ecm / 1_GeV);
+    if (Ecm > GetMaxEnergyCoM())
+      throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
+    // FR: removed eProjectileLab < 8.5_GeV ||
+    if (Ecm < GetMinEnergyCoM()) {
       C8LOG_DEBUG(
-          fmt::format("Interaction: ebeam lab: {} GeV"
-                      "Interaction: pbeam lab: {} GeV",
-                      eProjectileLab / 1_GeV, pProjectileLab.GetComponents()));
-      C8LOG_DEBUG(
-          fmt::format("Interaction: etarget lab: {} GeV "
-                      "Interaction: ptarget lab: {} GeV",
-                      eTargetLab / 1_GeV, pTargetLab.GetComponents() / 1_GeV));
+          "Interaction: "
+          " DoInteraction: should have dropped particle.. "
+          "THIS IS AN ERROR");
+      throw std::runtime_error("energy too low for SIBYLL");
+    } else {
+      count_++;
+      // Sibyll does not know about units..
+      const double sqs = Ecm / 1_GeV;
+      // running sibyll, filling stack
+      sibyll_(kBeam, targetSibCode, sqs);
 
-      const FourVector PprojLab(eProjectileLab, pProjectileLab);
+      // print final state
+      int print_unit = 6;
+      sib_list_(print_unit);
+      nucCount_ += get_nwounded() - 1;
 
-      // define target kinematics in lab frame
-      // define boost to and from CoM frame
-      // CoM frame definition in Sibyll projectile: +z
-      COMBoost const boost(PprojLab, constants::nucleonMass);
-      auto const& csPrime = boost.GetRotatedCS();
+      // add particles from sibyll to stack
+      // link to sibyll stack
+      SibStack ss;
 
-      // just for show:
-      // boost projecticle
-      auto const PprojCoM = boost.toCoM(PprojLab);
+      MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
+      HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
+      for (auto& psib : ss) {
 
-      // boost target
-      auto const PtargCoM = boost.toCoM(PtargLab);
+        // abort on particles that have decayed in Sibyll. Should not happen!
+        if (psib.HasDecayed())
+          throw std::runtime_error("found particle that decayed in SIBYLL!");
 
-      C8LOG_DEBUG(
-          fmt::format("Interaction: ebeam CoM: {} GeV "
-                      "Interaction: pbeam CoM: {} GeV ",
-                      PprojCoM.GetTimeLikeComponent() / 1_GeV,
-                      PprojCoM.GetSpaceLikeComponents().GetComponents(csPrime) / 1_GeV));
-      C8LOG_DEBUG(
-          fmt::format("Interaction: etarget CoM: {} GeV "
-                      "Interaction: ptarget CoM: {} GeV ",
-                      PtargCoM.GetTimeLikeComponent() / 1_GeV,
-                      PtargCoM.GetSpaceLikeComponents().GetComponents(csPrime) / 1_GeV));
+        // transform 4-momentum to lab. frame
+        // note that the momentum needs to be rotated back
+        auto const tmp = psib.GetMomentum().GetComponents();
+        auto const pCoM = Vector<hepmomentum_d>(csPrime, tmp);
+        HEPEnergyType const eCoM = psib.GetEnergy();
+        auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
+        auto const p3lab = Plab.GetSpaceLikeComponents();
+        assert(p3lab.GetCoordinateSystem() == originalCS); // just to be sure!
 
-      C8LOG_DEBUG(fmt::format("Interaction: position of interaction: {} ",
-                              pOrig.GetCoordinates()));
-      C8LOG_DEBUG(fmt::format("Interaction: time: {} ", tOrig));
+        // add to corsika stack
+        auto pnew = view.AddSecondary(
+            make_tuple(process::sibyll::ConvertFromSibyll(psib.GetPID()),
+                       Plab.GetTimeLikeComponent(), p3lab, pOrig, tOrig));
 
-      HEPEnergyType Etot = eProjectileLab + eTargetLab;
-      MomentumVector Ptot = projectile.GetMomentum();
-      // invariant mass, i.e. cm. energy
-      HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.squaredNorm());
-
-      // sample target mass number
-      auto const* currentNode = projectile.GetNode();
-      auto const& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
-      // get cross sections for target materials
-      /*
-        Here we read the cross section from the interaction model again,
-        should be passed from GetInteractionLength if possible
-       */
-      //#warning reading interaction cross section again, should not be necessary
-      auto const& compVec = mediumComposition.GetComponents();
-      std::vector<CrossSectionType> cross_section_of_components(compVec.size());
-
-      for (size_t i = 0; i < compVec.size(); ++i) {
-        auto const targetId = compVec[i];
-        const auto [sigProd, sigEla] = GetCrossSection(corsikaBeamId, targetId, Ecm);
-        [[maybe_unused]] const auto& dummy_sigEla = sigEla;
-        cross_section_of_components[i] = sigProd;
+        Plab_final += pnew.GetMomentum();
+        Elab_final += pnew.GetEnergy();
+        Ecm_final += psib.GetEnergy();
       }
-
-      const auto targetCode =
-          mediumComposition.SampleTarget(cross_section_of_components, RNG_);
-      C8LOG_DEBUG(fmt::format("Interaction: target selected: {} ", targetCode));
-      /*
-        FOR NOW: allow nuclei with A<18 or protons only.
-        when medium composition becomes more complex, approximations will have to be
-        allowed air in atmosphere also contains some Argon.
-      */
-      int targetSibCode = -1;
-      if (IsNucleus(targetCode)) targetSibCode = GetNucleusA(targetCode);
-      if (targetCode == particles::Proton::GetCode()) targetSibCode = 1;
-      C8LOG_DEBUG(fmt::format("Interaction: sibyll code: {}", targetSibCode));
-      if (targetSibCode > maxTargetMassNumber_ || targetSibCode < 1)
-        throw std::runtime_error(
-            "Sibyll target outside range. Only nuclei with A<18 or protons are "
-            "allowed.");
-
-      // beam id for sibyll
-      const int kBeam = process::sibyll::ConvertToSibyllRaw(corsikaBeamId);
-
       C8LOG_DEBUG(
-          fmt::format("Interaction: "
-                      " DoInteraction: E(GeV): {} "
-                      " Ecm(GeV): {} ",
-                      eProjectileLab / 1_GeV, Ecm / 1_GeV));
-      if (Ecm > GetMaxEnergyCoM())
-        throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
-      // FR: removed eProjectileLab < 8.5_GeV ||
-      if (Ecm < GetMinEnergyCoM()) {
-        C8LOG_DEBUG(
-            fmt::format("Interaction: "
-                        " DoInteraction: should have dropped particle.. "
-                        "THIS IS AN ERROR"));
-        throw std::runtime_error("energy too low for SIBYLL");
-      } else {
-        count_++;
-        // Sibyll does not know about units..
-        const double sqs = Ecm / 1_GeV;
-        // running sibyll, filling stack
-        sibyll_(kBeam, targetSibCode, sqs);
-
-        // print final state
-        int print_unit = 6;
-        sib_list_(print_unit);
-        nucCount_ += get_nwounded() - 1;
-
-        // add particles from sibyll to stack
-        // link to sibyll stack
-        SibStack ss;
-
-        MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
-        HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
-        for (auto& psib : ss) {
-
-          // abort on particles that have decayed in Sibyll. Should not happen!
-          if (psib.HasDecayed())
-            throw std::runtime_error("found particle that decayed in SIBYLL!");
-
-          // transform 4-momentum to lab. frame
-          // note that the momentum needs to be rotated back
-          auto const tmp = psib.GetMomentum().GetComponents();
-          auto const pCoM = Vector<hepmomentum_d>(csPrime, tmp);
-          HEPEnergyType const eCoM = psib.GetEnergy();
-          auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
-          auto const p3lab = Plab.GetSpaceLikeComponents();
-          assert(p3lab.GetCoordinateSystem() == originalCS); // just to be sure!
-
-          // add to corsika stack
-          auto pnew = view.AddSecondary(
-              make_tuple(process::sibyll::ConvertFromSibyll(psib.GetPID()),
-                         Plab.GetTimeLikeComponent(), p3lab, pOrig, tOrig));
-
-          Plab_final += pnew.GetMomentum();
-          Elab_final += pnew.GetEnergy();
-          Ecm_final += psib.GetEnergy();
-        }
-        C8LOG_DEBUG(fmt::format(
-            "conservation (all GeV):"
-            "Ecm_initial(per nucleon)={}, Ecm_final(per nucleon)={}, "
-            "Elab_initial={}, Elab_final={}, "
-            "diff (%)={}, "
-            "E in nucleons={}, "
-            "Plab_initial={}, "
-            "Plab_final={} ",
-            Ecm / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV, Etot / 1_GeV,
-            Elab_final / 1_GeV, (Elab_final / Etot / get_nwounded() - 1) * 100,
-            constants::nucleonMass * get_nwounded() / 1_GeV,
-            (pProjectileLab / 1_GeV).GetComponents(),
-            (Plab_final / 1_GeV).GetComponents()));
-      }
+          "conservation (all GeV):"
+          "Ecm_initial(per nucleon)={}, Ecm_final(per nucleon)={}, "
+          "Elab_initial={}, Elab_final={}, "
+          "diff (%)={}, "
+          "E in nucleons={}, "
+          "Plab_initial={}, "
+          "Plab_final={} ",
+          Ecm / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV, Etot / 1_GeV,
+          Elab_final / 1_GeV, (Elab_final / Etot / get_nwounded() - 1) * 100,
+          constants::nucleonMass * get_nwounded() / 1_GeV,
+          (pProjectileLab / 1_GeV).GetComponents(), (Plab_final / 1_GeV).GetComponents());
     }
     return process::EProcessReturn::eOk;
   }

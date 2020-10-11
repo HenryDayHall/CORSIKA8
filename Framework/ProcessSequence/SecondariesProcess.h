@@ -9,8 +9,6 @@
 #pragma once
 
 #include <corsika/process/BaseProcess.h>
-#include <corsika/process/ProcessReturn.h> // for convenience
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
@@ -30,7 +28,7 @@ namespace corsika::process {
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoSecondaries...
     template <typename TSecondaries>
-    inline EProcessReturn DoSecondaries(TSecondaries&);
+    inline void DoSecondaries(TSecondaries&);
   };
 
 } // namespace corsika::process

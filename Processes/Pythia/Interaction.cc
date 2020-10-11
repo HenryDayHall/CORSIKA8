@@ -164,7 +164,7 @@ namespace corsika::process::pythia {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(Particle& p) {
+  units::si::GrammageType Interaction::GetInteractionLength(const Particle& p) {
 
     using namespace units;
     using namespace units::si;

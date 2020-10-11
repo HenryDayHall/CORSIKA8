@@ -127,7 +127,7 @@ int main() {
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << decay << cut << boundaryCrossing << trackWriter;
+  auto sequence = sibyll % decay % cut % boundaryCrossing % trackWriter;
 
   // setup particle stack, and add primary particles
   setup::Stack stack;

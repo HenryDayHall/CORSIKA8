@@ -135,21 +135,9 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
     // low energy process returns 1 kg/m²
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(1));
-      REQUIRE(seq.GetTotalInteractionLength(p) / kgMSq == Approx(3. / 4));
+      REQUIRE(seq.GetInteractionLength(p) / kgMSq == Approx(3. / 4));
     }
 
-    // low energy process creates 1 secondary
-    //~ SECTION("SelectInteraction") {
-    //~ typename SimpleStack::ParticleType theParticle =
-    //~ stack.GetNextParticle(); // as in corsika::Cascade
-    //~ StackTestView view(theParticle);
-    //~ auto projectile = view.GetProjectile();
-
-    //~ InverseGrammageType invLambda = 0 / kgMSq;
-    //~ switchProcess.SelectInteraction(p, projectile, 0.01 / kgMSq, invLambda);
-
-    //~ REQUIRE(view.GetSize() == 1);
-    //~ }
   }
 
   SECTION("high energy") {
@@ -159,7 +147,7 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
     // high energy process returns 2 kg/m²
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2));
-      REQUIRE(seq.GetTotalInteractionLength(p) / kgMSq == Approx(6. / 5));
+      REQUIRE(seq.GetInteractionLength(p) / kgMSq == Approx(6. / 5));
     }
 
     // high energy process creates 2 secondaries
@@ -196,7 +184,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
 
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2. / 3));
-      REQUIRE(completeSeq.GetTotalInteractionLength(p) / kgMSq == Approx(4. / 7));
+      REQUIRE(completeSeq.GetInteractionLength(p) / kgMSq == Approx(4. / 7));
     }
 
     SECTION("SelectInteraction") {
@@ -230,7 +218,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
 
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(3));
-      REQUIRE(completeSeq.GetTotalInteractionLength(p) / kgMSq == Approx(12. / 7.));
+      REQUIRE(completeSeq.GetInteractionLength(p) / kgMSq == Approx(12. / 7.));
     }
 
     SECTION("SelectInteraction") {

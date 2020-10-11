@@ -17,7 +17,9 @@ set (
   StackProcess.h
   DecayProcess.h
   ProcessSequence.h
+  SwitchProcessSequence.h
   ProcessReturn.h
+  ProcessTraits.h
   )
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAprocesssequence ${CORSIKAprocesssequence_NAMESPACE} ${CORSIKAprocesssequence_HEADERS})
@@ -27,6 +29,7 @@ target_link_libraries (
   CORSIKAprocesssequence
   INTERFACE
   CORSIKAsetup
+  CORSIKAlogging
   )
 
 target_include_directories (
@@ -53,8 +56,15 @@ target_link_libraries (
 CORSIKA_ADD_TEST (testProcessSequence)
 target_link_libraries (
   testProcessSequence
-  ProcessSwitch
   CORSIKAgeometry
   CORSIKAprocesssequence
   CORSIKAtesting
   )
+
+# # CORSIKA_ADD_TEST (testSwitchProcessSequence)
+# # target_link_libraries (
+# #   testSwitchProcessSequence
+# #   CORSIKAgeometry
+# #   CORSIKAprocesssequence
+# #   CORSIKAtesting
+# #   )

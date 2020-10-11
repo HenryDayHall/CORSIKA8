@@ -7,9 +7,9 @@
  */
 
 #include <corsika/process/observation_plane/ObservationPlane.h>
+#include <corsika/logging/Logging.h>
 
 #include <fstream>
-#include <iostream>
 
 using namespace corsika::process::observation_plane;
 using namespace corsika::units::si;
@@ -25,7 +25,7 @@ ObservationPlane::ObservationPlane(geometry::Plane const& obsPlane,
 }
 
 corsika::process::EProcessReturn ObservationPlane::DoContinuous(
-    setup::Stack::ParticleType const& particle, setup::Trajectory const& trajectory) {
+    setup::Stack::ParticleType& particle, setup::Trajectory const& trajectory) {
   TimeType const timeOfIntersection =
       (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
       trajectory.GetV0().dot(plane_.GetNormal());
@@ -45,6 +45,7 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
   if (deleteOnHit_) {
     count_ground_++;
     energy_ground_ += energy;
+    particle.Delete();
     return process::EProcessReturn::eParticleAbsorbed;
   } else {
     return process::EProcessReturn::eOk;
@@ -62,15 +63,19 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
   }
 
   auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
-  return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+  auto dist = (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+  C8LOG_TRACE("ObservationPlane::MaxStepLength l={} m", dist / 1_m);
+  return dist;
 }
 
 void ObservationPlane::ShowResults() const {
-  std::cout << " ******************************" << std::endl
-            << " ObservationPlane: " << std::endl;
-  std::cout << " energy in ground (GeV)     :  " << energy_ground_ / 1_GeV << std::endl
-            << " no. of particles in ground :  " << count_ground_ << std::endl
-            << " ******************************" << std::endl;
+  C8LOG_INFO(
+      " ******************************\n"
+      " ObservationPlane: \n"
+      " energy in ground (GeV)     :  {}\n"
+      " no. of particles in ground :  {}\n"
+      " ******************************",
+      energy_ground_ / 1_GeV, count_ground_);
 }
 
 void ObservationPlane::Reset() {

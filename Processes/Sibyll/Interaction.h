@@ -45,7 +45,7 @@ namespace corsika::process::sibyll {
                     const corsika::units::si::HEPEnergyType) const;
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
+    corsika::units::si::GrammageType GetInteractionLength(const TParticle&) const;
 
     /**
        In this function SIBYLL is called to produce one event. The

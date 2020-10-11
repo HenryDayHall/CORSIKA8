@@ -9,8 +9,6 @@
 #pragma once
 
 #include <corsika/process/BaseProcess.h>
-#include <corsika/process/ProcessReturn.h> // for convenience
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
@@ -35,12 +33,19 @@ namespace corsika::process {
     EProcessReturn DoInteraction(TParticle&);
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle& p);
+    corsika::units::si::GrammageType GetInteractionLength(const TParticle&);
 
     template <typename TParticle>
-    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& p) {
-      return 1. / GetRef().GetInteractionLength(p);
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(const TParticle& particle) {
+      return 1. / GetRef().GetInteractionLength(particle);
     }
-  };
+
+    /*
+    template <typename TParticle>
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle&& particle) {
+      auto p = std::move(particle);
+      return 1. / GetRef().GetInteractionLength(p);
+      }*/
+};
 
 } // namespace corsika::process

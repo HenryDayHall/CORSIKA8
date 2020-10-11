@@ -177,15 +177,10 @@ process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p, SetupTrack co
   cout << "EnergyLoss  dE=" << dE / 1_MeV << "MeV, "
        << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV << ", Enew=" << Enew / 1_GeV
        << "GeV" << endl;
-  auto status = process::EProcessReturn::eOk;
-  if (E < emCut_) {
-    Enew = emCut_;
-    status = process::EProcessReturn::eParticleAbsorbed;
-  }
   p.SetEnergy(Enew);
   MomentumUpdate(p, Enew);
   FillProfile(t, dE);
-  return status;
+  return process::EProcessReturn::eOk;
 }
 
 LengthType EnergyLoss::MaxStepLength(SetupParticle const& vParticle,

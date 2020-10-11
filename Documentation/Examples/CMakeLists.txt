@@ -24,7 +24,6 @@ target_link_libraries (boundary_example
   ProcessParticleCut
   ProcessTrackingLine
   ProcessPythia8
-  ProcessProposal
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
@@ -66,7 +65,6 @@ if (Pythia8_FOUND)
     ProcessSibyll
     ProcessPythia8
     ProcessUrQMD
-    ProcessSwitch
     CORSIKAcascade
     ProcessCONEXSourceCut
     ProcessEnergyLoss
@@ -95,7 +93,6 @@ if (Pythia8_FOUND)
     ProcessSibyll
     ProcessPythia8
     ProcessUrQMD
-    ProcessSwitch
     CORSIKAcascade
     ProcessProposal
     ProcessPythia8
@@ -146,7 +143,6 @@ target_link_libraries (em_shower
   ProcessSibyll
   ProcessPythia8
   ProcessUrQMD
-  ProcessSwitch
   CORSIKAcascade
   ProcessCONEXSourceCut
   ProcessEnergyLoss

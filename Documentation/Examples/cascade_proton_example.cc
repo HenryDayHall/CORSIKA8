@@ -136,7 +136,7 @@ int main() {
 
   // assemble all processes into an ordered process list
   // auto sequence = sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = pythia << decay << cut << trackWriter << stackInspect;
+  auto sequence = pythia % decay % cut % trackWriter % stackInspect;
 
   // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
   // << "\n";

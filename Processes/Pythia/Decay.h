@@ -11,6 +11,8 @@
 #include <Pythia8/Pythia.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/DecayProcess.h>
+#include <corsika/units/PhysicalUnits.h>
+#include <corsika/geometry/FourVector.h>
 
 namespace corsika::process {
 
