@@ -28,8 +28,8 @@ namespace corsika::utl {
    * be an issue for huge sizes (e.g. for high dimensions)
    */
   template <class Axes, class Storage>
-  void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
-                 std::string const& filename) {
+  inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
+                        std::string const& filename) {
     int const rank = h.rank();
 
     std::vector<size_t> axes_dims;
