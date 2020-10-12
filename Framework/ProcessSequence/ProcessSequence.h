@@ -30,7 +30,7 @@ namespace corsika::process {
 
      A compile time static list of processes. The compiler will
      generate a new type based on template logic containing all the
-     elements.
+     elements provided by the user.
 
      TProcess1 and TProcess2 must both be derived from BaseProcess,
      and are both references if possible (lvalue), otherwise (rvalue)
@@ -52,14 +52,13 @@ namespace corsika::process {
     static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<TProcess1type>;
     static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<TProcess2type>;
 
-  protected:
-    TProcess1 A; // this is a reference, if possible
-    TProcess2 B; // this is a reference, if possible
+    TProcess1 A_; // this is a reference, if possible
+    TProcess2 B_; // this is a reference, if possible
 
   public:
     ProcessSequence(TProcess1 in_A, TProcess2 in_B)
-        : A(in_A)
-        , B(in_B) {}
+        : A_(in_A)
+        , B_(in_B) {}
 
     template <typename Particle, typename VTNType>
     EProcessReturn DoBoundaryCrossing(Particle& particle, VTNType const& from,
@@ -69,13 +68,13 @@ namespace corsika::process {
       if constexpr (std::is_base_of_v<BoundaryCrossingProcess<TProcess1type>,
                                       TProcess1type> ||
                     t1ProcSeq) {
-        ret |= A.DoBoundaryCrossing(particle, from, to);
+        ret |= A_.DoBoundaryCrossing(particle, from, to);
       }
 
       if constexpr (std::is_base_of_v<BoundaryCrossingProcess<TProcess2type>,
                                       TProcess2type> ||
                     t2ProcSeq) {
-        ret |= B.DoBoundaryCrossing(particle, from, to);
+        ret |= B_.DoBoundaryCrossing(particle, from, to);
       }
 
       return ret;
@@ -86,11 +85,11 @@ namespace corsika::process {
       EProcessReturn ret = EProcessReturn::eOk;
       if constexpr (std::is_base_of_v<ContinuousProcess<TProcess1type>, TProcess1type> ||
                     t1ProcSeq) {
-        ret |= A.DoContinuous(particle, vT);
+        ret |= A_.DoContinuous(particle, vT);
       }
       if constexpr (std::is_base_of_v<ContinuousProcess<TProcess2type>, TProcess2type> ||
                     t2ProcSeq) {
-        if (!isAbsorbed(ret)) { ret |= B.DoContinuous(particle, vT); }
+        if (!isAbsorbed(ret)) { ret |= B_.DoContinuous(particle, vT); }
       }
       return ret;
     }
@@ -99,11 +98,11 @@ namespace corsika::process {
     inline void DoSecondaries(TSecondaries& vS) {
       if constexpr (std::is_base_of_v<SecondariesProcess<TProcess1type>, TProcess1type> ||
                     t1ProcSeq) {
-        A.DoSecondaries(vS);
+        A_.DoSecondaries(vS);
       }
       if constexpr (std::is_base_of_v<SecondariesProcess<TProcess2type>, TProcess2type> ||
                     t2ProcSeq) {
-        B.DoSecondaries(vS);
+        B_.DoSecondaries(vS);
       }
     }
 
@@ -112,18 +111,18 @@ namespace corsika::process {
        so they can be exectuted only each N steps. Often these are
        "maintenacne processes" that do not need to run after each
        single step of the simulations. In the CheckStep function it is
-       tested if either A or B are StackProcess and if they are due
+       tested if either A_ or B_ are StackProcess and if they are due
        for execution.
      */
     inline bool CheckStep() {
       bool ret = false;
       if constexpr (std::is_base_of_v<StackProcess<TProcess1type>, TProcess1type> ||
                     (t1ProcSeq && !t1SwitchProcSeq)) {
-        ret |= A.CheckStep();
+        ret |= A_.CheckStep();
       }
       if constexpr (std::is_base_of_v<StackProcess<TProcess2type>, TProcess2type> ||
                     (t2ProcSeq && !t2SwitchProcSeq)) {
-        ret |= B.CheckStep();
+        ret |= B_.CheckStep();
       }
       return ret;
     }
@@ -135,11 +134,11 @@ namespace corsika::process {
     inline void DoStack(TStack& stack) {
       if constexpr (std::is_base_of_v<StackProcess<TProcess1type>, TProcess1type> ||
                     (t1ProcSeq && !t1SwitchProcSeq)) {
-        if (A.CheckStep()) { A.DoStack(stack); }
+        if (A_.CheckStep()) { A_.DoStack(stack); }
       }
       if constexpr (std::is_base_of_v<StackProcess<TProcess2type>, TProcess2type> ||
                     (t2ProcSeq && !t2SwitchProcSeq)) {
-        if (B.CheckStep()) { B.DoStack(stack); }
+        if (B_.CheckStep()) { B_.DoStack(stack); }
       }
     }
 
@@ -152,12 +151,12 @@ namespace corsika::process {
 
       if constexpr (std::is_base_of_v<ContinuousProcess<TProcess1type>, TProcess1type> ||
                     t1ProcSeq) {
-        corsika::units::si::LengthType const len = A.MaxStepLength(particle, vTrack);
+        corsika::units::si::LengthType const len = A_.MaxStepLength(particle, vTrack);
         max_length = std::min(max_length, len);
       }
       if constexpr (std::is_base_of_v<ContinuousProcess<TProcess2type>, TProcess2type> ||
                     t2ProcSeq) {
-        corsika::units::si::LengthType const len = B.MaxStepLength(particle, vTrack);
+        corsika::units::si::LengthType const len = B_.MaxStepLength(particle, vTrack);
         max_length = std::min(max_length, len);
       }
       return max_length;
@@ -177,11 +176,11 @@ namespace corsika::process {
 
       if constexpr (std::is_base_of_v<InteractionProcess<TProcess1type>, TProcess1type> ||
                     t1ProcSeq) {
-        tot += A.GetInverseInteractionLength(particle);
+        tot += A_.GetInverseInteractionLength(particle);
       }
       if constexpr (std::is_base_of_v<InteractionProcess<TProcess2type>, TProcess2type> ||
                     t2ProcSeq) {
-        tot += B.GetInverseInteractionLength(particle);
+        tot += B_.GetInverseInteractionLength(particle);
       }
       return tot;
     }
@@ -198,34 +197,34 @@ namespace corsika::process {
       if constexpr (t1ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
-            A.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
-        // if A did succeed, stop routine. Not checking other static branch B.
+            A_.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
+        // if A_ did succeed, stop routine. Not checking other static branch B_.
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of_v<InteractionProcess<TProcess1type>,
                                              TProcess1type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         const auto particle = view.parent();
-        lambda_inv_sum += A.GetInverseInteractionLength(particle);
+        lambda_inv_sum += A_.GetInverseInteractionLength(particle);
         // check if we should execute THIS process and then EXIT
         if (lambda_inv_select < lambda_inv_sum) {
-          A.DoInteraction(view);
+          A_.DoInteraction(view);
           return EProcessReturn::eInteracted;
         }
-      } // end branch A
+      } // end branch A_
 
       if constexpr (t2ProcSeq) {
-        // if B is a process sequence --> check inside
-        return B.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
+        // if B_ is a process sequence --> check inside
+        return B_.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
       } else if constexpr (std::is_base_of_v<InteractionProcess<TProcess2type>,
                                              TProcess2type>) {
         // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_sum += B.GetInverseInteractionLength(view.parent());
+        lambda_inv_sum += B_.GetInverseInteractionLength(view.parent());
         // check if we should execute THIS process and then EXIT
         if (lambda_inv_select < lambda_inv_sum) {
-          B.DoInteraction(view);
+          B_.DoInteraction(view);
           return EProcessReturn::eInteracted;
         }
-      } // end branch B
+      } // end branch B_
       return EProcessReturn::eOk;
     }
 
@@ -242,11 +241,11 @@ namespace corsika::process {
 
       if constexpr (std::is_base_of_v<DecayProcess<TProcess1type>, TProcess1type> ||
                     t1ProcSeq) {
-        tot += A.GetInverseLifetime(particle);
+        tot += A_.GetInverseLifetime(particle);
       }
       if constexpr (std::is_base_of_v<DecayProcess<TProcess2type>, TProcess2type> ||
                     t2ProcSeq) {
-        tot += B.GetInverseLifetime(particle);
+        tot += B_.GetInverseLifetime(particle);
       }
       return tot;
     }
@@ -262,35 +261,35 @@ namespace corsika::process {
       // TODO: add check for decay_inv_select>decay_inv_tot
 
       if constexpr (t1ProcSeq) {
-        // if A is a process sequence --> check inside
-        const EProcessReturn ret = A.SelectDecay(view, decay_inv_select, decay_inv_sum);
-        // if A did succeed, stop routine here (not checking other static branch B)
+        // if A_ is a process sequence --> check inside
+        const EProcessReturn ret = A_.SelectDecay(view, decay_inv_select, decay_inv_sum);
+        // if A_ did succeed, stop routine here (not checking other static branch B_)
         if (ret != EProcessReturn::eOk) { return ret; }
       } else if constexpr (std::is_base_of_v<DecayProcess<TProcess1type>,
                                              TProcess1type>) {
         // if this is not a ContinuousProcess --> evaluate probability
-        decay_inv_sum += A.GetInverseLifetime(view.parent());
+        decay_inv_sum += A_.GetInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
         if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
                                                 // decay_inv_sum / decay_inv_tot
-          A.DoDecay(view);
+          A_.DoDecay(view);
           return EProcessReturn::eDecayed;
         }
-      } // end branch A
+      } // end branch A_
 
       if constexpr (t2ProcSeq) {
-        // if B is a process sequence --> check inside
-        return B.SelectDecay(view, decay_inv_select, decay_inv_sum);
+        // if B_ is a process sequence --> check inside
+        return B_.SelectDecay(view, decay_inv_select, decay_inv_sum);
       } else if constexpr (std::is_base_of_v<DecayProcess<TProcess2type>,
                                              TProcess2type>) {
         // if this is not a ContinuousProcess --> evaluate probability
-        decay_inv_sum += B.GetInverseLifetime(view.parent());
+        decay_inv_sum += B_.GetInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
         if (decay_inv_select < decay_inv_sum) {
-          B.DoDecay(view);
+          B_.DoDecay(view);
           return EProcessReturn::eDecayed;
         }
-      } // end branch B
+      } // end branch B_
       return EProcessReturn::eOk;
     }
   };

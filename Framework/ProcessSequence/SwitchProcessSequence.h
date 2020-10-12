@@ -65,14 +65,14 @@ namespace corsika::process {
 
     TSelect select_; // this is a reference, if possible
 
-  public:
-    TProcess1 A; // this is a reference, if possible
-    TProcess2 B; // this is a reference, if possible
+    TProcess1 A_; // this is a reference, if possible
+    TProcess2 B_; // this is a reference, if possible
 
+  public:
     SwitchProcessSequence(TProcess1 in_A, TProcess2 in_B, TSelect sel)
         : select_(sel)
-        , A(in_A)
-        , B(in_B) {}
+        , A_(in_A)
+        , B_(in_B) {}
 
     template <typename Particle, typename VTNType>
     EProcessReturn DoBoundaryCrossing(Particle& particle, VTNType const& from,
@@ -83,7 +83,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<BoundaryCrossingProcess<TProcess1type>,
                                           TProcess1type> ||
                         t1ProcSeq) {
-            return A.DoBoundaryCrossing(particle, from, to);
+            return A_.DoBoundaryCrossing(particle, from, to);
           }
           break;
         }
@@ -91,7 +91,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<BoundaryCrossingProcess<TProcess2type>,
                                           TProcess2type> ||
                         t2ProcSeq) {
-            return B.DoBoundaryCrossing(particle, from, to);
+            return B_.DoBoundaryCrossing(particle, from, to);
           }
           break;
         }
@@ -106,7 +106,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<ContinuousProcess<TProcess1type>,
                                           TProcess1type> ||
                         t1ProcSeq) {
-            return A.DoContinuous(particle, vT);
+            return A_.DoContinuous(particle, vT);
           }
           break;
         }
@@ -114,7 +114,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<ContinuousProcess<TProcess2type>,
                                           TProcess2type> ||
                         t2ProcSeq) {
-            return B.DoContinuous(particle, vT);
+            return B_.DoContinuous(particle, vT);
           }
           break;
         }
@@ -130,7 +130,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<SecondariesProcess<TProcess1type>,
                                           TProcess1type> ||
                         t1ProcSeq) {
-            A.DoSecondaries(vS);
+            A_.DoSecondaries(vS);
           }
           break;
         }
@@ -138,7 +138,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<SecondariesProcess<TProcess2type>,
                                           TProcess2type> ||
                         t2ProcSeq) {
-            B.DoSecondaries(vS);
+            B_.DoSecondaries(vS);
           }
           break;
         }
@@ -154,7 +154,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<ContinuousProcess<TProcess1type>,
                                           TProcess1type> ||
                         t1ProcSeq) {
-            return A.MaxStepLength(particle, vTrack);
+            return A_.MaxStepLength(particle, vTrack);
           }
           break;
         }
@@ -162,7 +162,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<ContinuousProcess<TProcess2type>,
                                           TProcess2type> ||
                         t2ProcSeq) {
-            return B.MaxStepLength(particle, vTrack);
+            return B_.MaxStepLength(particle, vTrack);
           }
           break;
         }
@@ -187,7 +187,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<InteractionProcess<TProcess1type>,
                                           TProcess1type> ||
                         t1ProcSeq) {
-            return A.GetInverseInteractionLength(particle);
+            return A_.GetInverseInteractionLength(particle);
           }
           break;
         }
@@ -195,7 +195,7 @@ namespace corsika::process {
           if constexpr (std::is_base_of_v<InteractionProcess<TProcess2type>,
                                           TProcess2type> ||
                         t2ProcSeq) {
-            return B.GetInverseInteractionLength(particle);
+            return B_.GetInverseInteractionLength(particle);
           }
           break;
         }
@@ -213,39 +213,39 @@ namespace corsika::process {
       switch (select_.select(view.parent())) {
         case SwitchResult::First: {
           if constexpr (t1ProcSeq) {
-            // if A is a process sequence --> check inside
+            // if A_ is a process sequence --> check inside
             const EProcessReturn ret =
-                A.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
-            // if A did succeed, stop routine. Not checking other static branch B.
+                A_.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
+            // if A_ did succeed, stop routine. Not checking other static branch B_.
             if (ret != EProcessReturn::eOk) { return ret; }
           } else if constexpr (std::is_base_of_v<InteractionProcess<TProcess1type>,
                                                  TProcess1type>) {
             // if this is not a ContinuousProcess --> evaluate probability
-            lambda_inv_sum += A.GetInverseInteractionLength(view.parent());
+            lambda_inv_sum += A_.GetInverseInteractionLength(view.parent());
             // check if we should execute THIS process and then EXIT
             if (lambda_inv_select < lambda_inv_sum) {
-              A.DoInteraction(view);
+              A_.DoInteraction(view);
               return EProcessReturn::eInteracted;
             }
-          } // end branch A
+          } // end branch A_
           break;
         }
 
         case SwitchResult::Second: {
 
           if constexpr (t2ProcSeq) {
-            // if B is a process sequence --> check inside
-            return B.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
+            // if B_ is a process sequence --> check inside
+            return B_.SelectInteraction(view, lambda_inv_select, lambda_inv_sum);
           } else if constexpr (std::is_base_of_v<InteractionProcess<TProcess2type>,
                                                  TProcess2type>) {
             // if this is not a ContinuousProcess --> evaluate probability
-            lambda_inv_sum += B.GetInverseInteractionLength(view.parent());
+            lambda_inv_sum += B_.GetInverseInteractionLength(view.parent());
             // check if we should execute THIS process and then EXIT
             if (lambda_inv_select < lambda_inv_sum) {
-              B.DoInteraction(view);
+              B_.DoInteraction(view);
               return EProcessReturn::eInteracted;
             }
-          } // end branch B
+          } // end branch B_
           break;
         }
       }
@@ -265,7 +265,7 @@ namespace corsika::process {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<DecayProcess<TProcess1type>, TProcess1type> ||
                         t1ProcSeq) {
-            return A.GetInverseLifetime(particle);
+            return A_.GetInverseLifetime(particle);
           }
           break;
         }
@@ -273,7 +273,7 @@ namespace corsika::process {
         case SwitchResult::Second: {
           if constexpr (std::is_base_of_v<DecayProcess<TProcess2type>, TProcess2type> ||
                         t2ProcSeq) {
-            return B.GetInverseLifetime(particle);
+            return B_.GetInverseLifetime(particle);
           }
           break;
         }
@@ -292,40 +292,40 @@ namespace corsika::process {
       switch (select_.select(view.parent())) {
         case SwitchResult::First: {
           if constexpr (t1ProcSeq) {
-            // if A is a process sequence --> check inside
+            // if A_ is a process sequence --> check inside
             const EProcessReturn ret =
-                A.SelectDecay(view, decay_inv_select, decay_inv_sum);
-            // if A did succeed, stop routine here (not checking other static branch B)
+                A_.SelectDecay(view, decay_inv_select, decay_inv_sum);
+            // if A_ did succeed, stop routine here (not checking other static branch B_)
             if (ret != EProcessReturn::eOk) { return ret; }
           } else if constexpr (std::is_base_of_v<DecayProcess<TProcess1type>,
                                                  TProcess1type>) {
             // if this is not a ContinuousProcess --> evaluate probability
-            decay_inv_sum += A.GetInverseLifetime(view.parent());
+            decay_inv_sum += A_.GetInverseLifetime(view.parent());
             // check if we should execute THIS process and then EXIT
             if (decay_inv_select < decay_inv_sum) {
               // more pedagogical: rndm_select < decay_inv_sum / decay_inv_tot
-              A.DoDecay(view);
+              A_.DoDecay(view);
               return EProcessReturn::eDecayed;
             }
-          } // end branch A
+          } // end branch A_
           break;
         }
 
         case SwitchResult::Second: {
 
           if constexpr (t2ProcSeq) {
-            // if B is a process sequence --> check inside
-            return B.SelectDecay(view, decay_inv_select, decay_inv_sum);
+            // if B_ is a process sequence --> check inside
+            return B_.SelectDecay(view, decay_inv_select, decay_inv_sum);
           } else if constexpr (std::is_base_of_v<DecayProcess<TProcess2type>,
                                                  TProcess2type>) {
             // if this is not a ContinuousProcess --> evaluate probability
-            decay_inv_sum += B.GetInverseLifetime(view.parent());
+            decay_inv_sum += B_.GetInverseLifetime(view.parent());
             // check if we should execute THIS process and then EXIT
             if (decay_inv_select < decay_inv_sum) {
-              B.DoDecay(view);
+              B_.DoDecay(view);
               return EProcessReturn::eDecayed;
             }
-          } // end branch B
+          } // end branch B_
           break;
         }
       }
