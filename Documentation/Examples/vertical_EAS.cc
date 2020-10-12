@@ -252,11 +252,8 @@ int main(int argc, char** argv) {
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
                      urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
 
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
-
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
+  hists.saveLab("inthist_lab.npz");
+  hists.saveCMS("inthist_cms.npz");
 
   longprof.save("longprof.txt");
 
