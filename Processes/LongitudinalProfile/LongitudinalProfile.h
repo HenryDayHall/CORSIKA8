@@ -20,27 +20,44 @@
 
 namespace corsika::process::longitudinal_profile {
 
+  /**
+   * /class Longitudinal_Profile
+   *
+   * is a ContinuousProcess, which is constructed from a ShowerAxis
+   * object, and a dX in units of g/cm2
+   * (corsika::units::si::GrammageType). The shower axis can convert
+   * location in the shower into a projected grammage along the shower
+   * axis.
+   *
+   * LongitudinalProfile does then convert each single Track of the
+   * simulation into a projected grammage range and counts for
+   * different particle species when they cross dX (default: 10g/cm2)
+   * boundaries.
+   *
+   **/
+
   class LongitudinalProfile
       : public corsika::process::ContinuousProcess<LongitudinalProfile> {
 
   public:
-    LongitudinalProfile(environment::ShowerAxis const&);
+    LongitudinalProfile(environment::ShowerAxis const&,
+                        units::si::GrammageType dX = std::invoke([]() {
+                          using namespace units::si;
+                          return 10_g / square(1_cm);
+                        })); // profile binning);
 
-    template <typename Particle, typename Track>
-    corsika::process::EProcessReturn DoContinuous(Particle const&, Track const&);
+    template <typename TParticle, typename TTrack>
+    corsika::process::EProcessReturn DoContinuous(TParticle const&, TTrack const&);
 
-    template <typename Particle, typename Track>
-    corsika::units::si::LengthType MaxStepLength(Particle const&, Track const&) {
+    template <typename TParticle, typename TTrack>
+    corsika::units::si::LengthType MaxStepLength(TParticle const&, TTrack const&) {
       return units::si::meter * std::numeric_limits<double>::infinity();
     }
 
-    void save(std::string const&);
+    void save(std::string const&, int const width = 14, int const precision = 6);
 
   private:
-    units::si::GrammageType const dX_ = std::invoke([]() {
-      using namespace units::si;
-      return 10_g / square(1_cm);
-    }); // profile binning
+    units::si::GrammageType const dX_;
 
     environment::ShowerAxis const& shower_axis_;
     using ProfileEntry = std::array<uint32_t, 6>;
@@ -53,9 +70,6 @@ namespace corsika::process::longitudinal_profile {
       Hadron = 5
     };
     std::vector<ProfileEntry> profiles_; // longitudinal profile
-
-    static int const width_ = 14;
-    static int const precision_ = 6;
   };
 
 } // namespace corsika::process::longitudinal_profile
