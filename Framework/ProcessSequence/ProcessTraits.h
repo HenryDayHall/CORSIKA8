@@ -19,7 +19,6 @@ namespace corsika::process {
   template <typename TClass>
   bool constexpr is_process_sequence_v = is_process_sequence<TClass>::value;
 
-  
   /**
    * A traits marker to identiy a BaseProcess that is also SwitchProcessesSequence
    **/

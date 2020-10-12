@@ -108,7 +108,7 @@ namespace corsika::process::proposal {
     // if the particle has a charge take multiple scattering into account
     if (vP.GetChargeNumber() != 0) Scatter(vP, dE, dX);
     vP.SetEnergy(final_energy);
-    vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());     
+    vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
   }
 
@@ -141,7 +141,8 @@ namespace corsika::process::proposal {
 
     // return it in distance aequivalent
     auto dist = vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage);
-    C8LOG_TRACE("PROPOSAL::MaxStepLength X={} g/cm2, l={} m ", grammage/1_g*square(1_cm), dist/1_m);
+    C8LOG_TRACE("PROPOSAL::MaxStepLength X={} g/cm2, l={} m ",
+                grammage / 1_g * square(1_cm), dist / 1_m);
     return dist;
   }
 

@@ -39,13 +39,11 @@ namespace corsika::process {
     corsika::units::si::InverseTimeType GetInverseLifetime(const TParticle& particle) {
       return 1. / GetRef().GetLifetime(particle);
     }
-    
-    /*    template <typename TParticle>
-    corsika::units::si::InverseTimeType GetInverseInteractionLength(TParticle&& particle) {
-      auto p = std::move(particle);
-      return 1. / GetRef().GetLifetime(p);
-      }*/
 
+    /*    template <typename TParticle>
+    corsika::units::si::InverseTimeType GetInverseInteractionLength(TParticle&& particle)
+    { auto p = std::move(particle); return 1. / GetRef().GetLifetime(p);
+      }*/
   };
 
 } // namespace corsika::process

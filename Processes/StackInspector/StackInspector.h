@@ -29,7 +29,7 @@ namespace corsika::process {
       StackInspector(const int vNStep, const bool vReportStack,
                      const corsika::units::si::HEPEnergyType vE0);
       ~StackInspector();
-      
+
       void DoStack(const TStack&);
 
       /**

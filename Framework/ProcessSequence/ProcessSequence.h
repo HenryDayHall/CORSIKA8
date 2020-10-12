@@ -144,7 +144,8 @@ namespace corsika::process {
     }
 
     template <typename TParticle, typename TTrack>
-    inline corsika::units::si::LengthType MaxStepLength(TParticle& particle, TTrack& vTrack) {
+    inline corsika::units::si::LengthType MaxStepLength(TParticle& particle,
+                                                        TTrack& vTrack) {
       corsika::units::si::LengthType
           max_length = // if no other process in the sequence implements it
           std::numeric_limits<double>::infinity() * corsika::units::si::meter;
@@ -193,7 +194,7 @@ namespace corsika::process {
             corsika::units::si::InverseGrammageType::zero()) {
 
       // TODO: add check for lambda_inv_select>lambda_inv_tot
-      
+
       if constexpr (t1ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret =
@@ -259,7 +260,7 @@ namespace corsika::process {
             corsika::units::si::InverseTimeType::zero()) {
 
       // TODO: add check for decay_inv_select>decay_inv_tot
-      
+
       if constexpr (t1ProcSeq) {
         // if A is a process sequence --> check inside
         const EProcessReturn ret = A.SelectDecay(view, decay_inv_select, decay_inv_sum);
@@ -271,7 +272,7 @@ namespace corsika::process {
         decay_inv_sum += A.GetInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
         if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
-                                            // decay_inv_sum / decay_inv_tot
+                                                // decay_inv_sum / decay_inv_tot
           A.DoDecay(view);
           return EProcessReturn::eDecayed;
         }
@@ -311,30 +312,6 @@ namespace corsika::process {
                           typename std::decay<TProcess2>::type>::value,
       ProcessSequence<TProcess1, TProcess2>>::type
   operator%(TProcess1&& vA, TProcess2&& vB) {
-    return ProcessSequence<TProcess1, TProcess2>(vA, vB);
-  }
-
-    template <typename TProcess1, typename TProcess2>
-  inline typename std::enable_if<
-      std::is_base_of<BaseProcess<typename std::decay<TProcess1>::type>,
-                      typename std::decay<TProcess1>::type>::value &&
-          std::is_base_of<BaseProcess<typename std::decay<TProcess2>::type>,
-                          typename std::decay<TProcess2>::type>::value,
-      ProcessSequence<TProcess1, TProcess2>>::type
-  operator+(TProcess1&& vA, TProcess2&& vB) {
-    C8LOG_TRACE("ProcessSequence (+) for\n\t\t {} and\n\t\t {}", typeid(vA).name(), typeid(vB).name());
-    return ProcessSequence<TProcess1, TProcess2>(vA, vB);
-  }
-
-      template <typename TProcess1, typename TProcess2>
-  inline typename std::enable_if<
-      std::is_base_of<BaseProcess<typename std::decay<TProcess1>::type>,
-                      typename std::decay<TProcess1>::type>::value &&
-          std::is_base_of<BaseProcess<typename std::decay<TProcess2>::type>,
-                          typename std::decay<TProcess2>::type>::value,
-      ProcessSequence<TProcess1, TProcess2>>::type
-	operator*(TProcess1&& vA, TProcess2&& vB) {
-    C8LOG_TRACE("ProcessSequence (*) for\n\t\t {} and\n\t\t {}", typeid(vA).name(), typeid(vB).name());
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
 

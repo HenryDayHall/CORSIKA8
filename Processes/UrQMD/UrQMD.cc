@@ -247,16 +247,17 @@ GrammageType UrQMD::GetInteractionLength(SetupParticle const& particle) const {
 corsika::process::EProcessReturn UrQMD::DoInteraction(SetupView& view) {
   using namespace units::si;
 
-  auto const projectile = view.GetProjectile();  
-  
+  auto const projectile = view.GetProjectile();
+
   auto projectileCode = projectile.GetPID();
   auto const projectileEnergyLab = projectile.GetEnergy();
   auto const& projectileMomentumLab = projectile.GetMomentum();
   auto const& projectilePosition = projectile.GetPosition();
   auto const projectileTime = projectile.GetTime();
 
-  C8LOG_DEBUG("UrQMD::DoInteraction pid={} E={} GeV", projectileCode, projectileEnergyLab/1_GeV);
-  
+  C8LOG_DEBUG("UrQMD::DoInteraction pid={} E={} GeV", projectileCode,
+              projectileEnergyLab / 1_GeV);
+
   // sample target particle
   auto const& mediumComposition =
       projectile.GetNode()->GetModelProperties().GetNuclearComposition();

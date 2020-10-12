@@ -22,20 +22,22 @@ GrammageType ShowerAxis::X(LengthType l) const {
   decltype(X_.size()) const upper = lower + 1;
 
   if (lower < 0) {
-    C8LOG_ERROR("cannot extrapolate to points behind point of injection l={} m", l/1_m);
+    C8LOG_ERROR("cannot extrapolate to points behind point of injection l={} m", l / 1_m);
     throw std::runtime_error("cannot extrapolate to points behind point of injection");
   }
 
-  if (upper >= X_.size()) { 
-    const std::string err = fmt::format("shower axis too short, cannot extrapolate (l / max_length_ = {} )",
-				   l / max_length_);
+  if (upper >= X_.size()) {
+    const std::string err =
+        fmt::format("shower axis too short, cannot extrapolate (l / max_length_ = {} )",
+                    l / max_length_);
     C8LOG_ERROR(err);
     throw std::runtime_error(err.c_str());
   }
 
   assert(0 <= lambda && lambda <= 1.);
 
-  C8LOG_TRACE("ShowerAxis::X l={} m, lower={}, lambda={}, upper={}", l/1_m, lower, lambda, upper);
+  C8LOG_TRACE("ShowerAxis::X l={} m, lower={}, lambda={}, upper={}", l / 1_m, lower,
+              lambda, upper);
 
   // linear interpolation between X[lower] and X[upper]
   return X_[upper] * lambda + X_[lower] * (1 - lambda);

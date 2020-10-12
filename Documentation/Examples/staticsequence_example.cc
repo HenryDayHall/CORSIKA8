@@ -79,29 +79,28 @@ struct DummyTrajectory {};
 void modular() {
 
   //              = 0
-  Process1 m1; // + 1.0
-  Process2 m2; // - (0.1*i)
-  Process3 m3; // * 1.0
+  Process1 m1;      // + 1.0
+  Process2 m2;      // - (0.1*i)
+  Process3 m3;      // * 1.0
   Process4 m4(1.5); // * 1.5
-  
+
   auto sequence = m1 % m2 % m3 % m4;
 
   DummyData particle;
   DummyTrajectory track;
 
-  double check[nData] = {0,0,0,0,0,0,0,0,0,0};
-  
+  double check[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
   const int nEv = 10;
-  for (int iEv = 0; iEv < nEv; ++iEv) { sequence.DoContinuous(particle, track);
+  for (int iEv = 0; iEv < nEv; ++iEv) {
+    sequence.DoContinuous(particle, track);
     for (int i = 0; i < nData; ++i) {
-      check[i] += 1. - 0.1*i;
+      check[i] += 1. - 0.1 * i;
       check[i] *= 1.5;
     }
   }
 
-  for (int i = 0; i < nData; ++i) {
-    assert(particle.p[i] == check[i]);
-  }
+  for (int i = 0; i < nData; ++i) { assert(particle.p[i] == check[i]); }
 
   cout << " done (checking...) " << endl;
 }

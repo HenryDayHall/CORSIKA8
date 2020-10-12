@@ -161,7 +161,6 @@ TEST_CASE("Cascade", "[Cascade]") {
   }
 
   SECTION("forced interaction") {
-    EAS.SetNodes();
     EAS.forceInteraction();
     CHECK(stack.getEntries() == 2);
     CHECK(split.GetCalls() == 1);

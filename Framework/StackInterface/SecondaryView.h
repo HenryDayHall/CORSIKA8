@@ -168,7 +168,8 @@ namespace corsika::stack {
      * SecondaryView is derived from. This projectile should not be
      * used to modify the Stack!
      */
-    StackIteratorValue parent() const { // todo: check if this can't be ConstStackIteratorValue
+    StackIteratorValue parent()
+        const { // todo: check if this can't be ConstStackIteratorValue
       return StackIteratorValue(inner_stack_, projectile_index_);
     }
 

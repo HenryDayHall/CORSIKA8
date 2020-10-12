@@ -41,7 +41,9 @@ corsika::process::EProcessReturn LongitudinalProfile::DoContinuous(Particle cons
   GrammageType const grammageStart = shower_axis_.projectedX(vTrack.GetPosition(0));
   GrammageType const grammageEnd = shower_axis_.projectedX(vTrack.GetPosition(1));
 
-  C8LOG_INFO("pos1={} m, pos2={}, X={} g/cm2", vTrack.GetPosition(0).GetCoordinates()/1_m, vTrack.GetPosition(1).GetCoordinates()/1_m, grammageStart/1_g*square(1_cm));
+  C8LOG_INFO(
+      "pos1={} m, pos2={}, X={} g/cm2", vTrack.GetPosition(0).GetCoordinates() / 1_m,
+      vTrack.GetPosition(1).GetCoordinates() / 1_m, grammageStart / 1_g * square(1_cm));
 
   const int binStart = std::ceil(grammageStart / dX_);
   const int binEnd = std::floor(grammageEnd / dX_);

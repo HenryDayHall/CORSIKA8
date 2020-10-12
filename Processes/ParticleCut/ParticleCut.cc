@@ -101,9 +101,9 @@ namespace corsika::process {
       C8LOG_TRACE("ParticleCut::DoContinuous");
       if (checkCutParticle(particle)) {
         C8LOG_TRACE("removing during continuous");
-	particle.Delete();
-	// signal to upstream code that this particle was deleted
-        return process::EProcessReturn::eParticleAbsorbed; 
+        particle.Delete();
+        // signal to upstream code that this particle was deleted
+        return process::EProcessReturn::eParticleAbsorbed;
       }
       return process::EProcessReturn::eOk;
     }

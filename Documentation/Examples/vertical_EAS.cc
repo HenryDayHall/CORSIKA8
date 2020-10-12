@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-   process::particle_cut::ParticleCut cut{50_GeV, false, true};
+  process::particle_cut::ParticleCut cut{50_GeV, false, true};
   process::proposal::Interaction proposal(env, cut.GetECut());
   process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);
@@ -230,15 +230,14 @@ int main(int argc, char** argv) {
   auto hadronSequence = process::select(urqmdCounted, sibyllNucCounted % sibyllCounted,
                                         EnergySwitch(55_GeV));
   auto decaySequence = decayPythia % decaySibyll;
-  auto sequence = hadronSequence + (reset_particle_mass + decaySequence + proposalCounted) *
-                  em_continuous + cut + observationLevel + longprof;
+  auto sequence = hadronSequence % reset_particle_mass % decaySequence % proposalCounted %
+                  em_continuous % cut % observationLevel % longprof;
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.SetNodes();
   //  EAS.forceInteraction();
 
   EAS.Run();

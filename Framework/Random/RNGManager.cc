@@ -53,7 +53,7 @@ void corsika::random::RNGManager::SeedAll(uint64_t vSeed) {
 
 void corsika::random::RNGManager::SeedAll() {
   std::random_device rd;
-  std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};  
+  std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
   for (auto& entry : rngs) {
     std::vector<std::uint32_t> seeds(1);
     sseq.generate(seeds.begin(), seeds.end());

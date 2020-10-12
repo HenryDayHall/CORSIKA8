@@ -105,23 +105,11 @@ namespace corsika::cascade {
     }
 
     /**
-     * set the nodes for all particles on the stack according to their numerical
-     * position
-     */
-    void SetNodes() {
-      std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
-        auto const* numericalNode =
-            environment_.GetUniverse()->GetContainingNode(p.GetPosition());
-        p.SetNode(numericalNode);
-      });
-    }
-
-    /**
      * The Run function is the main simulation loop, which processes
      * particles from the Stack until the Stack is empty.
      */
     void Run() {
-      SetNodes();
+      setNodes();
 
       while (!stack_.IsEmpty()) {
         while (!stack_.IsEmpty()) {
@@ -149,11 +137,12 @@ namespace corsika::cascade {
      */
     void forceInteraction() {
       C8LOG_DEBUG("forced interaction!");
+      setNodes();
       auto vParticle = stack_.GetNextParticle();
       TStackView secondaries(vParticle);
       interaction(secondaries);
       process_sequence_.DoSecondaries(secondaries);
-      vParticle.Delete(); // todo: this should be reviewed, see below
+      vParticle.Delete(); // primary particle has interacted and is gone
     }
 
   private:
@@ -240,8 +229,7 @@ namespace corsika::cascade {
           process::EProcessReturn::eParticleAbsorbed) {
         C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                     vParticle.GetPID(), vParticle.GetEnergy() / 1_GeV);
-	if (!vParticle.isDeleted())
-	  vParticle.Delete();
+        if (!vParticle.isDeleted()) vParticle.Delete();
         return;
       }
 
@@ -346,6 +334,18 @@ namespace corsika::cascade {
       }
       SetEventType(view, history::EventType::Interaction);
       return returnCode;
+    }
+
+    /**
+     * set the nodes for all particles on the stack according to their numerical
+     * position
+     */
+    void setNodes() {
+      std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
+        auto const* numericalNode =
+            environment_.GetUniverse()->GetContainingNode(p.GetPosition());
+        p.SetNode(numericalNode);
+      });
     }
 
     void SetEventType(TStackView& view, [[maybe_unused]] history::EventType eventType) {

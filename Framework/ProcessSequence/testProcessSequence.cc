@@ -26,10 +26,10 @@ static const int nData = 10;
 
 int globalCount = 0; // simple counter
 
-int checkDecay = 0;   // use this as a bit field
+int checkDecay = 0;    // use this as a bit field
 int checkInteract = 0; // use this as a bit field
-int checkSec = 0;     // use this as a bit field
-int checkCont = 0;    // use this as a bit field
+int checkSec = 0;      // use this as a bit field
+int checkCont = 0;     // use this as a bit field
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
   int fV = 0;
@@ -232,7 +232,7 @@ public:
     fCount++;
     return EProcessReturn::eOk;
   }
-  int GetCount() const { return fCount; }  
+  int GetCount() const { return fCount; }
 };
 
 struct DummyStack {};
@@ -402,7 +402,7 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
     CHECK(checkSec == 0);
 
     // 1/(30g/cm2) is Process3
-    corsika::units::si::InverseGrammageType lambda_select = .9/30. * square(1_cm) / 1_g; 
+    corsika::units::si::InverseGrammageType lambda_select = .9 / 30. * square(1_cm) / 1_g;
     corsika::units::si::InverseTimeType time_select = 0.1 / second;
 
     checkDecay = 0;
@@ -413,10 +413,10 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
     sequence.SelectInteraction(view, lambda_select);
     sequence.SelectDecay(view, time_select);
     CHECK(checkInteract == 0b100); // this is Process3
-    CHECK(checkDecay == 0b001); // this is Decay1
+    CHECK(checkDecay == 0b001);    // this is Decay1
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
-    lambda_select = 1.01/30. * square(1_cm) / 1_g; 
+    lambda_select = 1.01 / 30. * square(1_cm) / 1_g;
     checkInteract = 0;
     sequence.SelectInteraction(view, lambda_select);
     CHECK(checkInteract == 0b001); // this is Process1
@@ -429,7 +429,7 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
     sequence.SelectInteraction(view, lambda_select);
     sequence.SelectDecay(view, time_select);
     CHECK(checkInteract == 0b010); // this is Process2
-    CHECK(checkDecay == 0b010); // this is Decay2
+    CHECK(checkDecay == 0b010);    // this is Decay2
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
 
@@ -447,4 +447,3 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
     CHECK(checkSec == 0);
   }
 }
-

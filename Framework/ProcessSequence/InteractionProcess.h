@@ -36,16 +36,17 @@ namespace corsika::process {
     corsika::units::si::GrammageType GetInteractionLength(const TParticle&);
 
     template <typename TParticle>
-    corsika::units::si::InverseGrammageType GetInverseInteractionLength(const TParticle& particle) {
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(
+        const TParticle& particle) {
       return 1. / GetRef().GetInteractionLength(particle);
     }
 
     /*
     template <typename TParticle>
-    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle&& particle) {
-      auto p = std::move(particle);
-      return 1. / GetRef().GetInteractionLength(p);
+    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle&&
+    particle) { auto p = std::move(particle); return 1. /
+    GetRef().GetInteractionLength(p);
       }*/
-};
+  };
 
 } // namespace corsika::process

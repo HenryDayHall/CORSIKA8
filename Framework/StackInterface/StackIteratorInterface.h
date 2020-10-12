@@ -203,7 +203,7 @@ namespace corsika::stack {
     ParticleInterfaceType& operator*() {
       return static_cast<ParticleInterfaceType&>(*this);
     }
-  
+
     /**
      * Convert iterator to const value type, where value type is the user-provided
      * particle readout class

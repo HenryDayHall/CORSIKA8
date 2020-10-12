@@ -137,7 +137,6 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(1));
       REQUIRE(seq.GetInteractionLength(p) / kgMSq == Approx(3. / 4));
     }
-
   }
 
   SECTION("high energy") {

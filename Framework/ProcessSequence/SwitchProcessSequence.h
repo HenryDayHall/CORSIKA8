@@ -293,7 +293,8 @@ namespace corsika::process {
         case SwitchResult::First: {
           if constexpr (t1ProcSeq) {
             // if A is a process sequence --> check inside
-            const EProcessReturn ret = A.SelectDecay(view, decay_inv_select, decay_inv_sum);
+            const EProcessReturn ret =
+                A.SelectDecay(view, decay_inv_select, decay_inv_sum);
             // if A did succeed, stop routine here (not checking other static branch B)
             if (ret != EProcessReturn::eOk) { return ret; }
           } else if constexpr (std::is_base_of_v<DecayProcess<TProcess1type>,
@@ -356,7 +357,7 @@ namespace corsika::process {
       corsika::process::SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
       : std::true_type {};
 
-    /// traits marker to identify objectas SwitchProcessSequence
+  /// traits marker to identify objectas SwitchProcessSequence
   template <typename TProcess1, typename TProcess2, typename TSelect>
   struct is_switch_process_sequence<
       corsika::process::SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
