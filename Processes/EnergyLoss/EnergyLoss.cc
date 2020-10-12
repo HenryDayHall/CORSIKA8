@@ -13,6 +13,8 @@
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
+#include <corsika/logging/Logging.h>
+
 #include <corsika/geometry/Line.h>
 
 #include <cmath>
@@ -85,19 +87,18 @@ HEPEnergyType EnergyLoss::BetheBloch(SetupParticle const& p, GrammageType const 
   double const beta2 = (gamma2 - 1) / gamma2; // 1-1/gamma2    (1-1/gamma)*(1+1/gamma);
                                               // (gamma_2-1)/gamma_2 = (1-1/gamma2);
   double constexpr c2 = 1;                    // HEP convention here c=c2=1
-  cout << "BetheBloch beta2=" << beta2 << " gamma2=" << gamma2 << endl;
+  C8LOG_DEBUG("BetheBloch beta2={}, gamma2={}", beta2, gamma2);
   [[maybe_unused]] double const eta2 = beta2 / (1 - beta2);
   HEPMassType const Wmax =
       2 * me * c2 * beta2 * gamma2 / (1 + 2 * gamma * me / m + me2 / m2);
   // approx, but <<1%    HEPMassType const Wmax = 2*me*c2*beta2*gamma2;      for HEAVY
   // PARTICLES Wmax ~ 2me v2 for non-relativistic particles
-  cout << "BetheBloch Wmax=" << Wmax << endl;
+  C8LOG_DEBUG("BetheBloch Wmax={}", Wmax);
 
   // Sternheimer parameterization, density corrections towards high energies
   // NOTE/TODO: when Cbar is 0 it needs to be approximated from parameterization ->
   // MISSING
-  cout << "BetheBloch p.GetMomentum().GetNorm()/m=" << p.GetMomentum().GetNorm() / m
-       << endl;
+  C8LOG_DEBUG("BetheBloch p.GetMomentum().GetNorm()/m{}=", p.GetMomentum().GetNorm() / m);
   double const x = log10(p.GetMomentum().GetNorm() / m);
   double delta = 0;
   if (x >= x1) {
@@ -107,7 +108,7 @@ HEPEnergyType EnergyLoss::BetheBloch(SetupParticle const& p, GrammageType const 
   } else if (x < x0) { // and IF conductor (otherwise, this is 0)
     delta = delta0 * pow(100, 2 * (x - x0));
   }
-  cout << "BetheBloch delta=" << delta << endl;
+  C8LOG_DEBUG("BetheBloch delta={}", delta);
 
   // with further low energies correction, accurary ~1% down to beta~0.05 (1MeV for p)
 
@@ -141,9 +142,6 @@ HEPEnergyType EnergyLoss::BetheBloch(SetupParticle const& p, GrammageType const 
   double const y2 = Z * Z * alpha * alpha / beta2;
   double const bloch = -y2 * (1.202 - y2 * (1.042 - 0.855 * y2 + 0.343 * y2 * y2));
 
-  // cout << "BetheBloch Erel=" << Erel << " barkas=" << barkas << " bloch=" << bloch <<
-  // endl;
-
   double const aux = 2 * me * c2 * beta2 * gamma2 * Wmax / (Ieff * Ieff);
   return -K * Z2 * ZoverA / beta2 *
          (0.5 * log(aux) - beta2 - Cadj / Z - delta / 2 + barkas + bloch) * dX;
@@ -168,15 +166,14 @@ process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p, SetupTrack co
 
   GrammageType const dX =
       p.GetNode()->GetModelProperties().IntegratedGrammage(t, t.GetLength());
-  cout << "EnergyLoss " << p.GetPID() << ", z=" << p.GetChargeNumber()
-       << ", dX=" << dX / 1_g * square(1_cm) << "g/cm2" << endl;
+  C8LOG_DEBUG("EnergyLoss pid={}, z={}, dX={} g/cm2", p.GetPID(), p.GetChargeNumber(),
+              dX / 1_g * square(1_cm));
   HEPEnergyType dE = TotalEnergyLoss(p, dX);
   auto E = p.GetEnergy();
   const auto Ekin = E - p.GetMass();
   auto Enew = E + dE;
-  cout << "EnergyLoss  dE=" << dE / 1_MeV << "MeV, "
-       << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV << ", Enew=" << Enew / 1_GeV
-       << "GeV" << endl;
+  C8LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV", dE / 1_MeV,
+              E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
   p.SetEnergy(Enew);
   MomentumUpdate(p, Enew);
   FillProfile(t, dE);
@@ -226,8 +223,8 @@ void EnergyLoss::FillProfile(SetupTrack const& vTrack, const HEPEnergyType dE) {
   const int binStart = grammageStart / dX_;
   const int binEnd = grammageEnd / dX_;
 
-  std::cout << "energy deposit of " << -dE << " between " << grammageStart << " and "
-            << grammageEnd << std::endl;
+  C8LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
+              grammageEnd);
 
   auto energyCount = HEPEnergyType::zero();
 
@@ -237,8 +234,7 @@ void EnergyLoss::FillProfile(SetupTrack const& vTrack, const HEPEnergyType dE) {
       profile_[bin] += increment;
       energyCount += increment;
 
-      std::cout << "filling bin " << bin << " with weight " << weight << ": " << increment
-                << std::endl;
+      C8LOG_DEBUG("filling bin {} with weight {} : {} ", bin, weight, increment);
     }
   };
 
@@ -250,7 +246,7 @@ void EnergyLoss::FillProfile(SetupTrack const& vTrack, const HEPEnergyType dE) {
 
   for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
 
-  std::cout << "total energy added to histogram: " << energyCount << std::endl;
+  C8LOG_DEBUG("total energy added to histogram: {} ", energyCount);
 }
 
 void EnergyLoss::PrintProfile() const {

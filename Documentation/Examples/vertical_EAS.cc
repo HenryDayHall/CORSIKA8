@@ -78,7 +78,7 @@ void registerRandomStreams(const int seed) {
 
 int main(int argc, char** argv) {
 
-  logging::SetLevel(logging::level::trace);
+  logging::SetLevel(logging::level::info);
 
   C8LOG_INFO("vertical_EAS");
 
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-  process::particle_cut::ParticleCut cut{50_GeV, false, true};
+  process::particle_cut::ParticleCut cut{60_GeV, false, true};
   process::proposal::Interaction proposal(env, cut.GetECut());
   process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
   process::interaction_counter::InteractionCounter proposalCounted(proposal);

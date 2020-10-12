@@ -21,9 +21,10 @@ namespace corsika::process::sibyll {
     int count_ = 0;
     int nucCount_ = 0;
     static bool initialized_; ///! flag to assure init is done only once
+    bool sibyll_listing_;
 
   public:
-    Interaction();
+    Interaction(const bool sibyll_printout_on = false);
     ~Interaction();
 
     void SetAllStable();

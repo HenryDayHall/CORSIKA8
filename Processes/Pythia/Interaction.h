@@ -22,10 +22,11 @@ namespace corsika::process::pythia {
 
     int fCount = 0;
     bool fInitialized = false;
+    bool print_listing_ = false;
 
   public:
-    Interaction();
-    ~Interaction();
+    Interaction(const bool print_listing = false);
+    ~Interaction() = default;
 
     void SetParticleListStable(std::vector<particles::Code> const&);
     void SetUnstable(const corsika::particles::Code);

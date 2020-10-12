@@ -37,6 +37,7 @@ set (
   UTILITIES_DEPENDS
   CORSIKAgeometry
   CORSIKAunits
+  CORSIKAlogging
   C8::ext::boost # so far only for MetaProgramming
   C8::ext::eigen3 # for COMboost
   )

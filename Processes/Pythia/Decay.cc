@@ -28,7 +28,8 @@ using Track = Trajectory;
 
 namespace corsika::process::pythia {
 
-  Decay::Decay() {
+  Decay::Decay(const bool print_listing)
+      : print_listing_(print_listing) {
 
     // set random number generator in pythia
     Pythia8::RndmEngine* rndm = new corsika::process::pythia::Random();
@@ -231,8 +232,10 @@ namespace corsika::process::pythia {
     else
       cout << "Pythia::Decay: particles after decay: " << event.size() << endl;
 
-    // list final state
-    event.list();
+    if (print_listing_) {
+      // list final state
+      event.list();
+    }
 
     // loop over final state
     for (int i = 0; i < event.size(); ++i)

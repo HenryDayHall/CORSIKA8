@@ -29,6 +29,8 @@
 #include <corsika/utl/CorsikaFenv.h>
 #include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
+#include <corsika/logging/Logging.h>
+
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -54,6 +56,9 @@ void registerRandomStreams() {
 }
 
 int main(int argc, char** argv) {
+
+  logging::SetLevel(logging::level::info);
+
   if (argc != 2) {
     std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
     return 1;

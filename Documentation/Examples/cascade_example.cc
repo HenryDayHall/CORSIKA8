@@ -35,6 +35,7 @@
 #include <corsika/random/RNGManager.h>
 
 #include <corsika/utl/CorsikaFenv.h>
+#include <corsika/logging/Logging.h>
 
 #include <iostream>
 #include <limits>
@@ -55,6 +56,8 @@ using namespace corsika::units::si;
 // The example main program for a particle cascade
 //
 int main() {
+
+  logging::SetLevel(logging::level::info);
 
   std::cout << "cascade_example" << std::endl;
 

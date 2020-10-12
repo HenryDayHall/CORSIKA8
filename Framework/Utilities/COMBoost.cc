@@ -12,6 +12,7 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 #include <corsika/utl/sgn.h>
+#include <corsika/logging/Logging.h>
 
 #include <cmath>
 
@@ -38,9 +39,8 @@ COMBoost::COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pproj
 
   setBoost(coshEta, sinhEta);
 
-  std::cout << "COMBoost (1-beta)=" << 1 - sinhEta / coshEta << " gamma=" << coshEta
-            << std::endl;
-  std::cout << "  det = " << boost_.determinant() - 1 << std::endl;
+  C8LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta, coshEta,
+              boost_.determinant() - 1);
 }
 
 COMBoost::COMBoost(geometry::Vector<units::si::hepmomentum_d> const& momentum,

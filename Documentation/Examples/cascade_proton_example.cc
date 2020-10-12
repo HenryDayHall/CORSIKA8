@@ -38,6 +38,8 @@
 
 #include <corsika/utl/CorsikaFenv.h>
 
+#include <corsika/logging/Logging.h>
+
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -58,6 +60,8 @@ using namespace corsika::units::si;
 // The example main program for a particle cascade
 //
 int main() {
+
+  logging::SetLevel(logging::level::info);
 
   std::cout << "cascade_proton_example" << std::endl;
 

@@ -33,7 +33,8 @@ namespace corsika::process::sibyll {
 
   bool Interaction::initialized_ = false;
 
-  Interaction::Interaction() {
+  Interaction::Interaction(const bool sibyll_printout_on)
+      : sibyll_listing_(sibyll_printout_on) {
     using random::RNGManager;
 
     // initialize Sibyll
@@ -302,10 +303,12 @@ namespace corsika::process::sibyll {
       // running sibyll, filling stack
       sibyll_(kBeam, targetSibCode, sqs);
 
-      // print final state
-      int print_unit = 6;
-      sib_list_(print_unit);
-      nucCount_ += get_nwounded() - 1;
+      if (sibyll_listing_) {
+        // print final state
+        int print_unit = 6;
+        sib_list_(print_unit);
+        nucCount_ += get_nwounded() - 1;
+      }
 
       // add particles from sibyll to stack
       // link to sibyll stack

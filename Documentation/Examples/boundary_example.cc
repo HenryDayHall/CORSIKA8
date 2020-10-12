@@ -34,6 +34,8 @@
 
 #include <corsika/utl/CorsikaFenv.h>
 
+#include <corsika/logging/Logging.h>
+
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -60,7 +62,9 @@ struct MyBoundaryCrossingProcess
   EProcessReturn DoBoundaryCrossing(Particle& p,
                                     typename Particle::BaseNodeType const& from,
                                     typename Particle::BaseNodeType const& to) {
-    std::cout << "boundary crossing! from: " << &from << "; to: " << &to << std::endl;
+
+    C8LOG_INFO("MyBoundaryCrossingProcess: crossing! from: {} to: {} ", fmt::ptr(&from),
+               fmt::ptr(&to));
 
     auto const& name = particles::GetName(p.GetPID());
     auto const start = p.GetPosition().GetCoordinates();
@@ -82,7 +86,9 @@ private:
 //
 int main() {
 
-  std::cout << "boundary_example" << std::endl;
+  logging::SetLevel(logging::level::info);
+
+  C8LOG_INFO("boundary_example");
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
@@ -121,7 +127,7 @@ int main() {
   process::sibyll::Interaction sibyll;
   process::sibyll::Decay decay;
 
-  process::particle_cut::ParticleCut cut(20_GeV, true, true);
+  process::particle_cut::ParticleCut cut(50_GeV, true, true);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
@@ -132,9 +138,9 @@ int main() {
   // setup particle stack, and add primary particles
   setup::Stack stack;
   stack.Clear();
-  const Code beamCode = Code::Proton;
-  const HEPMassType mass = particles::GetMass(Code::Proton);
-  const HEPEnergyType E0 = 50_TeV;
+  const Code beamCode = Code::MuPlus;
+  const HEPMassType mass = particles::GetMass(beamCode);
+  const HEPEnergyType E0 = 100_GeV;
 
   std::uniform_real_distribution distTheta(0., 180.);
   std::uniform_real_distribution distPhi(0., 360.);
@@ -155,9 +161,11 @@ int main() {
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
     auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
-    cout << "input particle: " << beamCode << endl;
-    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-    cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
+    C8LOG_INFO(
+        "input particle: {} "
+        "input angles: theta={} phi={}"
+        "input momentum: {} GeV",
+        beamCode, theta, phi, plab.GetComponents() / 1_GeV);
     Point pos(rootCS, 0_m, 0_m, 0_m);
     stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -170,10 +178,10 @@ int main() {
 
   EAS.Run();
 
-  cout << "Result: E0=" << E0 / 1_GeV << endl;
+  C8LOG_INFO("Result: E0={}GeV", E0 / 1_GeV);
   cut.ShowResults();
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
-  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+  C8LOG_INFO("Total energy (GeV): {} relative difference (%): {}", Efinal / 1_GeV,
+             (Efinal / E0 - 1.) * 100);
 }

@@ -29,9 +29,9 @@ namespace corsika::process::pythia {
 
   typedef corsika::geometry::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
-  Interaction::~Interaction() {}
+  Interaction::Interaction(const bool print_listing)
+      : print_listing_(print_listing) {
 
-  Interaction::Interaction() {
     cout << "Pythia::Interaction n=" << fCount << endl;
 
     using random::RNGManager;
@@ -365,8 +365,11 @@ namespace corsika::process::pythia {
 
         // link to pythia stack
         Pythia8::Event& event = fPythia.event;
-        // print final state
-        event.list();
+
+        if (print_listing_) {
+          // list final state
+          event.list();
+        }
 
         MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
         HEPEnergyType Elab_final = 0_GeV;
