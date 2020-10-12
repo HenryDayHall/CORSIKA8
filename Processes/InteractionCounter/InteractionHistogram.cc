@@ -13,6 +13,10 @@
 
 using namespace corsika::process::interaction_counter;
 
+InteractionHistogram::InteractionHistogram()
+    : inthist_cms_{detail::hist_factory(num_bins_cms, lower_edge_cms, upper_edge_cms)}
+    , inthist_lab_{detail::hist_factory(num_bins_lab, lower_edge_lab, upper_edge_lab)} {}
+
 void InteractionHistogram::fill(particles::Code projectile_id,
                                 units::si::HEPEnergyType lab_energy,
                                 units::si::HEPEnergyType mass_target, int A, int Z) {
@@ -59,7 +63,3 @@ InteractionHistogram InteractionHistogram::operator+(InteractionHistogram other)
 
   return other;
 }
-
-InteractionHistogram::InteractionHistogram()
-    : inthist_cms_{detail::hist_factory(num_bins_cms, lower_edge_cms, upper_edge_cms)}
-    , inthist_lab_{detail::hist_factory(num_bins_lab, lower_edge_lab, upper_edge_lab)} {}
