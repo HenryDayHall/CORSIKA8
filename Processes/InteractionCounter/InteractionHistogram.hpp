@@ -23,7 +23,6 @@ namespace corsika::process::interaction_counter {
     inline auto hist_factory(unsigned int bin_number, float e_low, float e_high) {
       namespace bh = boost::histogram;
       namespace bha = bh::axis;
-      using namespace units::si;
 
       auto h = bh::make_histogram(
           bha::category<int, bh::use_default, bha::option::growth_t>{{2212, 2112},
