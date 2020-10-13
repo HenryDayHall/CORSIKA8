@@ -26,7 +26,21 @@
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
+
 namespace corsika::environment {
+
+  /**
+   * \class ShowerAxis
+   *
+   * The environment::ShowerAxis is created from a geometry::Point and
+   * a geometry::Vector and inside an Environment. It internally uses
+   * a table with steps=10000 (default) rows for interpolation.
+   *
+   * The shower axis can convert location in the shower into a
+   * projected grammage along the shower axis.
+   *
+   **/
+
   class ShowerAxis {
   public:
     template <typename TEnvModel>
