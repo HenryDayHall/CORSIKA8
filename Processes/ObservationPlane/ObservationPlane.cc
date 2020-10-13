@@ -71,7 +71,7 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
   auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
   auto direction = trajectory.GetV0().normalized();
   
-  if (chargeNumber != 0 && plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield)) * 1_s / 1_m / 1_T > 1e-6) {
+  if (chargeNumber != 0 && abs(plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield))) * 1_s / 1_m / 1_T > 1e-6) {
     auto const* currentLogicalVolumeNode = vParticle.GetNode();
     auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
     auto k = chargeNumber * corsika::units::constants::c * 1_eV / (vParticle.GetMomentum().norm() * 1_V);
