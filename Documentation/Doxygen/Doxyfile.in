@@ -7,7 +7,7 @@ GENERATE_XML           = YES
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
 INPUT                  = @PROJECT_SOURCE_DIR@ @PROJECT_BINARY_DIR@/Framework
-EXCLUDE_PATTERNS       = */ThirdParty/*/* */build*/*
+EXCLUDE_PATTERNS       = */ThirdParty/*/* */build*/corsika/*
 FULL_PATH_NAMES        = YES
 STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
 
