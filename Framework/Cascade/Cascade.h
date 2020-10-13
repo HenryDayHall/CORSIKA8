@@ -76,6 +76,15 @@ static auto histLmu2mag = make_histogram(axis::regular<double, axis::transform::
 static auto histLe2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Elektronen"));
 static auto histLy2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Photonen"));
 
+static double stepradius = 0;
+static int N = 0;
+static double stepradiusp = 0;
+static int Np = 0;
+static double stepradiuspi = 0;
+static int Npi = 0;
+static double stepradiusmu = 0;
+static int Nmu = 0;
+
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -150,12 +159,12 @@ namespace corsika::cascade {
     
     ~Cascade(){    
 		  /*std::ofstream myfile;
-          myfile.open ("histograms2.txt");
-          myfile << histLp2 << std::endl;
-          myfile << histLpi2 << std::endl;
-          myfile << histLmu2 << std::endl;
-          myfile << histL2 << std::endl;
-          myfile.close(); */
+          myfile.open ("stepradius.txt");
+          myfile << "All charged particles " << stepradius/N << std::endl;
+          myfile << "Protons " << stepradiusp/Np << std::endl;
+          myfile << "Pions " << stepradiuspi/Npi << std::endl;
+          myfile << "Muons " << stepradiusmu/Nmu << std::endl;
+          myfile.close();
 		  
 		  /*std::cout << histLBrel << std::endl;
 		  std::cout << histLSrel << std::endl;*/
@@ -188,7 +197,7 @@ namespace corsika::cascade {
           
           std::ofstream file10("histELSrel.json");
           dump_bh(file10, histELSrel);
-          file10.close();*/
+          file10.close(); //hier ende
           std::ofstream file19("histLy2.json");
           dump_bh(file19, histLy2);
           file19.close();
@@ -212,7 +221,7 @@ namespace corsika::cascade {
           file15.close();
           std::ofstream file16("histSlog2.json");
           dump_bh(file16, histSlog2);
-          file16.close();*/
+          file16.close(); //hier ende
           std::ofstream file17("histLlog2int.json");
           dump_bh(file17, histLlog2int);
           file17.close();
@@ -260,7 +269,7 @@ namespace corsika::cascade {
           filemu4.close();
           std::ofstream filemu5("histLmu2max.json");
           dump_bh(filemu5, histLmu2max);
-          filemu5.close();
+          filemu5.close();*/
 		  
 		  };
 
@@ -374,12 +383,12 @@ namespace corsika::cascade {
                                         vParticle.GetEnergy() * units::constants::c;
                                     
       // determine geometric tracking
-      auto [stepWithoutB, stepWithB, geomMaxLength, magMaxLength, nextVol] = fTracking.GetTrack(vParticle);
+      auto [step, geomMaxLength, magMaxLength, nextVol] = fTracking.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
       
       // convert next_step from grammage to length
       LengthType const distance_interact =
-          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(stepWithB,
+          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
                                                                          next_interact);
       
       // determine the maximum geometric step length
@@ -397,7 +406,8 @@ namespace corsika::cascade {
 		  "Interaction after: {} m", 
 		  min_distance/1_m, magMaxLength/1_m, geomMaxLength/1_m, distance_decay/1_m, distance_interact/1_m);
 
-      // determine displacement by the magnetic field
+      // determine steplength for the magnetic field
+      // because Steplength should not be min_distance
       /*
       int chargeNumber;
 	    if (corsika::particles::IsNucleus(vParticle.GetPID())) {
@@ -407,24 +417,16 @@ namespace corsika::cascade {
 	    }
 	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
 	    auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-	    auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV / 
-               ((vParticle.GetMomentum() / vParticle.GetEnergy() * 
-               corsika::units::constants::c).norm() * vParticle.GetEnergy() * 1_V);
-	    geometry::Vector<dimensionless_d> const directionBefore = vParticle.GetMomentum().normalized();
+      geometry::Vector<dimensionless_d> const directionBefore = vParticle.GetMomentum().normalized();
+	    auto c = directionBefore.cross(magneticfield) * chargeNumber * corsika::units::constants::c * 1_eV / 
+               (vParticle.GetMomentum().norm() * 1_V)
 	    LengthType Steplength = min_distance;
 	    if (chargeNumber != 0) {
-		    Steplength = (-sqrt(2 * k * min_distance * (directionBefore.cross(magneticfield)).norm() + 1) - 1)
-	                 / ((directionBefore.cross(magneticfield)).norm() * k);
-        std::cout << "Steplength2 " << Steplength << std::endl;
-        
-	      Steplength = (sqrt(2 * k * min_distance * (directionBefore.cross(magneticfield)).norm() + 1) - 1)
-	                 / ((directionBefore.cross(magneticfield)).norm() * k);
-        std::cout << "Steplength1 " << Steplength << std::endl;
-	      // not totally sure if it is always the positive solution
+	      Steplength = sqrt(2 / c.squaredNorm() * (sqrt(c.squaredNorm() * min_distance * min_distance + 1) -1));
+        std::cout << "Steplength " << Steplength << std::endl;
 	    } 
 	    */
-	    // This formula has an error or doesnt work for specific conditions
-	    // Steplength should not be min_distance
+	    // This formula hasnt been tested
 	    
       auto [position, direction, L2] = fTracking.MagneticStep(vParticle, min_distance);
       //histL2(L2);
@@ -476,6 +478,42 @@ namespace corsika::cascade {
               histLpi2(L2);
             if (abs(pdg) == 2212 || abs(pdg) == 2112)
               histLp2(L2);
+              
+              
+              
+     int chargeNumber = 0;
+        if (corsika::particles::IsNucleus(vParticle.GetPID())) {
+        	chargeNumber = vParticle.GetNuclearZ();
+        } else {
+        	chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
+        }
+     if(chargeNumber != 0) {
+     auto const* currentLogicalVolumeNode = vParticle.GetNode();
+     auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
+             geometry::Vector<SpeedType::dimension_type> velocity =
+            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
+              geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
+                   velocity.parallelProjectionOnto(magneticfield);
+              LengthType const gyroradius = vParticle.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
+                                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
+                                            magneticfield.GetNorm() * 1_eV);
+     stepradius = stepradius + min_distance/gyroradius;
+     N ++;
+     if (abs(pdg) == 13) {
+       stepradiusmu += min_distance/gyroradius;
+       Nmu ++;
+     }
+     if (abs(pdg) == 211 || abs(pdg) == 111) {
+       stepradiuspi += min_distance/gyroradius;
+       Npi ++;
+     }
+     if (abs(pdg) == 2212 || abs(pdg) == 2112) {
+       stepradiusp += min_distance/gyroradius;
+       Np ++;
+     }
+     }         
+              
+              
       auto distance = position - vParticle.GetPosition();
       
       //Building Trajectory for Continuous processes
