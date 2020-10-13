@@ -209,9 +209,9 @@ function (CORSIKA_ADD_EXAMPLE)
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "**************************************"
     COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} " ${run_options} VERBATIM
-    COMMAND gdb -ex "run ${run_options}" -ex bt -ex "info locals" -ex "up" -ex "info locals" \
-                                                -ex "up"-ex "info locals" -ex "up" -ex "info locals" \
-                                                -ex quit ${CMAKE_CURRENT_BINARY_DIR}/${name} \
+    COMMAND gdb -ex "run ${run_options}" -ex bt -ex "info locals" -ex "up" -ex "info locals" 
+                                                -ex "up"-ex "info locals" -ex "up" -ex "info locals" 
+                                                -ex quit ${CMAKE_CURRENT_BINARY_DIR}/${name} 
                                                 VERBATIM
     gdb -ex 'run arg1 arg2' -ex bt -ex quit ./program
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)

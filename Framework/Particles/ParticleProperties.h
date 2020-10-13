@@ -54,7 +54,6 @@ namespace corsika::particles {
   int constexpr GetNucleusA(Code const);
   int constexpr GetNucleusZ(Code const);
 
-#include <corsika/particles/GeneratedParticleProperties.inc>
 
   /*!
    * returns mass of particle in natural units
@@ -153,3 +152,5 @@ namespace corsika::particles {
   }
 
 } // namespace corsika::particles
+
+#include <corsika/particles/GeneratedParticleProperties.inc>

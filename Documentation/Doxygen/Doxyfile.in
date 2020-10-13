@@ -7,11 +7,11 @@ GENERATE_XML           = YES
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
 INPUT                  = @PROJECT_SOURCE_DIR@ @PROJECT_BINARY_DIR@/Framework
-EXCLUDE_PATTERNS       = */ThirdParty/*/*
+EXCLUDE_PATTERNS       = */ThirdParty/*/* */build*/*
 FULL_PATH_NAMES        = YES
 STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
 
-FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.dox *.inc *.md
+FILE_PATTERNS          = *.cc *.cpp *.cxx *.h *.hpp *.dox *.inc *.md
 EXTENSION_MAPPING      = inc=C++
 RECURSIVE              = YES
 
