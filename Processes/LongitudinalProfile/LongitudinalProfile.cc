@@ -25,8 +25,10 @@ using Track = Trajectory;
 using namespace corsika::process::longitudinal_profile;
 using namespace corsika::units::si;
 
-LongitudinalProfile::LongitudinalProfile(environment::ShowerAxis const& shower_axis)
-    : shower_axis_{shower_axis}
+LongitudinalProfile::LongitudinalProfile(environment::ShowerAxis const& shower_axis,
+                                         units::si::GrammageType dX)
+    : dX_(dX)
+    , shower_axis_{shower_axis}
     , profiles_{static_cast<unsigned int>(shower_axis.maximumX() / dX_) + 1} {}
 
 template <>
@@ -59,13 +61,14 @@ corsika::process::EProcessReturn LongitudinalProfile::DoContinuous(Particle cons
   return corsika::process::EProcessReturn::eOk;
 }
 
-void LongitudinalProfile::save(std::string const& filename) {
+void LongitudinalProfile::save(std::string const& filename, const int width,
+                               const int precision) {
   std::ofstream f{filename};
   f << "# X / g·cm¯², gamma, e+, e-, mu+, mu-, all hadrons" << std::endl;
   for (size_t b = 0; b < profiles_.size(); ++b) {
     f << std::setprecision(5) << std::setw(11) << b * (dX_ / (1_g / 1_cm / 1_cm));
     for (auto const& N : profiles_.at(b)) {
-      f << std::setw(width_) << std::setprecision(precision_) << std::scientific << N;
+      f << std::setw(width) << std::setprecision(precision) << std::scientific << N;
     }
     f << std::endl;
   }
