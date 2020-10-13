@@ -164,6 +164,21 @@ void CONEXSourceCut::SolveCE() {
     file << X[i] << " " << N[i] << " " << dEdX[i] << " " << Mu[i] << " " << dMu[i] << " "
          << Gamma[i] << " " << Electrons[i] << " " << Hadrons[i] << std::endl;
   }
+
+  std::ofstream fitout{"conex_fit.txt"};
+  fitout << fitpars[1 - 1] << " # log10(eprima/eV)" << std::endl;
+  fitout << fitpars[2 - 1] << " # theta" << std::endl;
+  fitout << fitpars[3 - 1] << " # X1 (first interaction)" << std::endl;
+  fitout << fitpars[4 - 1] << " # Nmax" << std::endl;
+  fitout << fitpars[5 - 1] << " # X0" << std::endl;
+  fitout << fitpars[6 - 1] << " # P1" << std::endl;
+  fitout << fitpars[7 - 1] << " # P2" << std::endl;
+  fitout << fitpars[8 - 1] << " # P3" << std::endl;
+  fitout << fitpars[9 - 1] << " # chi^2 / sqrt(Nmax)" << std::endl;
+  fitout << fitpars[10 - 1] << " # Xmax" << std::endl;
+  fitout << fitpars[11 - 1] << " # phi" << std::endl;
+  fitout << fitpars[12 - 1] << " # inelasticity 1st int." << std::endl;
+  fitout << fitpars[13 - 1] << " # ???" << std::endl;
 }
 
 CONEXSourceCut::CONEXSourceCut(geometry::Point center,
