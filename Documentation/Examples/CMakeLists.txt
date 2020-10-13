@@ -29,6 +29,7 @@ target_link_libraries (boundary_example
   CORSIKAgeometry
   CORSIKAenvironment
   CORSIKAprocesssequence
+  C8::ext::boost # boost::histogram
   )
 
 CORSIKA_ADD_EXAMPLE (cascade_example)
@@ -120,6 +121,7 @@ CORSIKA_ADD_EXAMPLE (stopping_power stopping_power)
 target_link_libraries (stopping_power
   CORSIKAsetup
   CORSIKAunits
+  CORSIKAlogging
   ProcessEnergyLoss
   CORSIKAparticles
   CORSIKAgeometry

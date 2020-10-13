@@ -101,24 +101,23 @@ int main() {
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  auto outerMedium = EnvType::CreateNode<Sphere>(
+  // create "world" as infinite sphere filled with protons
+  auto world = EnvType::CreateNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   auto const props =
-      outerMedium
-          ->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
-              1_kg / (1_m * 1_m * 1_m),
-              environment::NuclearComposition(
-                  std::vector<particles::Code>{particles::Code::Proton},
-                  std::vector<float>{1.f}));
+      world->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
+          1_kg / (1_m * 1_m * 1_m),
+          environment::NuclearComposition(
+              std::vector<particles::Code>{particles::Code::Proton},
+              std::vector<float>{1.f}));
 
-  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);
+  // add a "target" sphere with 5km readius at 0,0,0
+  auto target = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);
+  target->SetModelProperties(props);
 
-  innerMedium->SetModelProperties(props);
-
-  outerMedium->AddChild(std::move(innerMedium));
-
-  universe.AddChild(std::move(outerMedium));
+  world->AddChild(std::move(target));
+  universe.AddChild(std::move(world));
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
@@ -129,7 +128,7 @@ int main() {
 
   process::particle_cut::ParticleCut cut(50_GeV, true, true);
 
-  process::track_writer::TrackWriter trackWriter("tracks.dat");
+  process::track_writer::TrackWriter trackWriter("boundary_tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
@@ -147,8 +146,8 @@ int main() {
   std::mt19937 rng;
 
   for (int i = 0; i < 100; ++i) {
-    auto const theta = distTheta(rng);
-    auto const phi = distPhi(rng);
+    double const theta = distTheta(rng);
+    double const phi = distPhi(rng);
 
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
@@ -166,6 +165,7 @@ int main() {
         "input angles: theta={} phi={}"
         "input momentum: {} GeV",
         beamCode, theta, phi, plab.GetComponents() / 1_GeV);
+    // shoot particles from inside target out
     Point pos(rootCS, 0_m, 0_m, 0_m);
     stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
@@ -180,8 +180,8 @@ int main() {
 
   C8LOG_INFO("Result: E0={}GeV", E0 / 1_GeV);
   cut.ShowResults();
-  const HEPEnergyType Efinal =
-      cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
+  [[maybe_unused]] const HEPEnergyType Efinal =
+      (cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy());
   C8LOG_INFO("Total energy (GeV): {} relative difference (%): {}", Efinal / 1_GeV,
              (Efinal / E0 - 1.) * 100);
 }

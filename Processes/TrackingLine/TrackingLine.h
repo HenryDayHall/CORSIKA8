@@ -64,10 +64,9 @@ namespace corsika::process {
         geometry::Line line(currentPosition, velocity);
 
         auto const* currentLogicalVolumeNode = p.GetNode();
-        auto const numericallyInside =
-            currentLogicalVolumeNode->GetVolume().Contains(currentPosition);
 
-        C8LOG_DEBUG("numericallyInside = {} ", numericallyInside);
+        C8LOG_DEBUG("numericallyInside = {} ",
+                    currentLogicalVolumeNode->GetVolume().Contains(currentPosition));
 
         auto const& children = currentLogicalVolumeNode->GetChildNodes();
         auto const& excluded = currentLogicalVolumeNode->GetExcludedNodes();
