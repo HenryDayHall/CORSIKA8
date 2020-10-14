@@ -27,8 +27,7 @@ namespace corsika::process {
   class ContinuousProcess : public BaseProcess<TDerived> {
   private:
   protected:
-  public:
-    using _TDerived = TDerived;
+  public:   
 
     // here starts the interface part
     // -> enforce TDerived to implement DoContinuous...

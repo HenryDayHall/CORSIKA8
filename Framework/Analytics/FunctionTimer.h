@@ -18,51 +18,26 @@ namespace corsika::analytics {
 
   template <typename TFunc, typename TClock = std::chrono::high_resolution_clock,
             typename TDuration = std::chrono::microseconds>
-  class timeFunction {
+  class FunctionTimer {
   private:
-    typename TClock::time_point vStart;
-    TDuration vDiff;
+    typename TClock::time_point start_;
+    TDuration timeDiff_;
 
-    TFunc vFunction;
+    TFunc function_;
 
   public:
-    timeFunction(TFunc f)
-        : vFunction(f) {}
+    FunctionTimer(TFunc f)
+        : function_(f) {}
 
     template <typename... TArgs>
     auto operator()(TArgs&&... args) -> std::invoke_result_t<TFunc, TArgs...> {
-      vStart = TClock::now();
-      auto tmp = vFunction(std::forward<TArgs>(args)...);
-      vDiff = std::chrono::duration_cast<TDuration>(TClock::now() - vStart);
+      start_ = TClock::now();
+      auto tmp = function_(std::forward<TArgs>(args)...);
+      timeDiff_ = std::chrono::duration_cast<TDuration>(TClock::now() - start_);
       return tmp;
     }
 
-    inline TDuration getTime() const { return vDiff; }
+    inline TDuration getTime() const { return timeDiff_; }
   };
-
-  /*
-    template <typename TClass, typename TClock = std::chrono::high_resolution_clock,
-              typename TDuration = std::chrono::microseconds>
-    class timeProxy : public TClass {
-    private:
-      typename TClock::time_point vStart;
-      TDuration vDiff;
-
-      TClass& vObj;
-
-     //template <typename F, typename... Args>
-      //decltype(auto) call_func(F func, Args&&... args) {
-       // return (vObj.*func)(std::forward<Args>(args)...);
-      //}
-
-    public:
-      template<typename ... TArgs>
-      timeProxy(TArgs args) : TClass<TArgs...>(std::forward<TArgs>(args)...)
-      {}
-
-      auto operator->() {return 2;}
-
-      inline TDuration getTime() const { return vDiff; }
-    };*/
 
 } // namespace corsika::analytics

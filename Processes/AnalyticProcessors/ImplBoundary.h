@@ -7,15 +7,17 @@
  */
 #pragma once
 
-#include <corsika/process/analytic_processors/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTimeImpl.h>
 
 #include <corsika/analytics/ClassTimer.h>
 
 namespace corsika::process {
   namespace analytic_processors {
 
-    template <typename T>
-    class _ExecTimeImpl;
+    namespace detail {
+      template <typename T>
+      class ExecTimeImpl;
+    }
 
     template <class T, bool TCheck>
     class Boundary;
@@ -24,16 +26,16 @@ namespace corsika::process {
     class Boundary<T, false> {};
 
     template <class T>
-    class Boundary<T, true> : public _ExecTimeImpl<T> {
+    class Boundary<T, true> : public detail::ExecTimeImpl<T> {
     private:
     public:
-      
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
-                                        VTNType const& to) {        
-        auto tc = corsika::analytics::timeClass<
-            EProcessReturn (_ExecTimeImpl<T>::_T::*)(Particle&, VTNType const&, VTNType const&),
-            &_ExecTimeImpl<T>::_T::template DoBoundaryCrossing<Particle, VTNType>>(*this);
+                                        VTNType const& to) {
+        auto tc = corsika::analytics::ClassTimer<
+            EProcessReturn (detail::ExecTimeImpl<T>::_T::*)(Particle&, VTNType const&,
+                                                    VTNType const&),
+            &detail::ExecTimeImpl<T>::_T::template DoBoundaryCrossing<Particle, VTNType>>(*this);
 
         EProcessReturn r = tc.call(p, from, to);
         this->update(

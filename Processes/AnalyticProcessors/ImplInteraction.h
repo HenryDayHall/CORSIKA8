@@ -8,12 +8,15 @@
 #pragma once
 #include <corsika/process/InteractionProcess.h>
 
-#include <corsika/process/analytic_processors/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTimeImpl.h>
 
 namespace corsika::process {
   namespace analytic_processors {
-    template <typename T>
-    class _ExecTimeImpl;
+
+    namespace detail {
+      template <typename T>
+      class ExecTimeImpl;
+    }
 
     template <class T, bool TCheck>
     class Interaction;
@@ -22,13 +25,13 @@ namespace corsika::process {
     class Interaction<T, false> {};
 
     template <class T>
-    class Interaction<T, true> : public _ExecTimeImpl<T> {
+    class Interaction<T, true> : public detail::ExecTimeImpl<T> {
     private:
     public:
       template <typename Particle>
       EProcessReturn DoInteraction(Particle& p) {
         this->start();
-        auto r = _ExecTimeImpl<T>::DoInteraction(p);
+        auto r = detail::ExecTimeImpl<T>::DoInteraction(p);
         this->stop();
         return r;
       }

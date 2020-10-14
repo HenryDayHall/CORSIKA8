@@ -19,8 +19,7 @@ namespace corsika::process {
   class BoundaryCrossingProcess : public BaseProcess<TDerived> {
   private:
   protected:
-  public:
-    using _TDerived = TDerived;
+  public:    
 
     /**
      * This method is called when a particle crosses the boundary between the nodes

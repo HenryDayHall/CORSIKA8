@@ -21,7 +21,7 @@ int testFunc() {
   return 31415;
 }
 
-class testClass {
+class TestClass {
 public:
 
   int operator()() {
@@ -33,15 +33,15 @@ public:
 TEST_CASE("Analytics", "[Timer]") {
   SECTION("Measure runtime of a free function") {
 
-    auto test = corsika::analytics::timeFunction(testFunc);
+    auto test = corsika::analytics::FunctionTimer(testFunc);
 
     std::cout << test() << std::endl;
     std::cout << test.getTime().count() << std::endl;
   }
 
   SECTION("Measure runtime of a class functor") {
-    testClass testC;
-    auto test = corsika::analytics::timeFunction(testC);
+    TestClass testC;
+    auto test = corsika::analytics::FunctionTimer(testC);
 
     std::cout << test() << std::endl;
     std::cout << test.getTime().count() << std::endl;

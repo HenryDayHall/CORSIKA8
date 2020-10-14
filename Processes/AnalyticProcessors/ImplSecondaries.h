@@ -8,12 +8,15 @@
 #pragma once
 #include <corsika/process/SecondariesProcess.h>
 
-#include <corsika/process/analytic_processors/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTimeImpl.h>
 
 namespace corsika::process {
   namespace analytic_processors {
-    template <typename T>
-    class _ExecTimeImpl;
+
+    namespace detail {
+      template <typename T>
+      class ExecTimeImpl;
+    }
 
     template <class T, bool TCheck>
     class Secondaries;
@@ -22,13 +25,13 @@ namespace corsika::process {
     class Secondaries<T, false> {};
 
     template <class T>
-    class Secondaries<T, true> : public _ExecTimeImpl<T> {
+    class Secondaries<T, true> : public detail::ExecTimeImpl<T> {
     private:
     public:
       template <typename Secondaries>
       inline EProcessReturn DoSecondaries(Secondaries& sec) {
         this->start();
-        auto r = _ExecTimeImpl<T>::DoSecondaries(sec);
+        auto r = detail::ExecTimeImpl<T>::DoSecondaries(sec);
         this->stop();
         return r;
       }

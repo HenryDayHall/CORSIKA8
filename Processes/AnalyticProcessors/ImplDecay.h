@@ -8,12 +8,15 @@
 #pragma once
 #include <corsika/process/DecayProcess.h>
 
-#include <corsika/process/analytic_processors/ExecTime.h>
+#include <corsika/process/analytic_processors/ExecTimeImpl.h>
 
 namespace corsika::process {
   namespace analytic_processors {
-    template <typename T>
-    class _ExecTimeImpl;
+
+    namespace detail {
+      template <typename T>
+      class ExecTimeImpl;
+    }
 
     template <class T, bool TCheck>
     class Decay;
@@ -22,13 +25,13 @@ namespace corsika::process {
     class Decay<T, false> {};
 
     template <class T>
-    class Decay<T, true> : public _ExecTimeImpl<T> {
+    class Decay<T, true> : public detail::ExecTimeImpl<T> {
     private:
     public:
       template <typename Particle>
       EProcessReturn DoDecay(Particle& p) {
         this->start();
-        auto r = _ExecTimeImpl<T>::DoDecay(p);
+        auto r = detail::ExecTimeImpl<T>::DoDecay(p);
         this->stop();
         return r;
       }

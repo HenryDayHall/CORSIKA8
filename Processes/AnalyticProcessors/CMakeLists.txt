@@ -5,6 +5,7 @@ set (
 set (
   MODEL_HEADERS
   ExecTime.h
+  ExecTimeImpl.h
   ImplBoundary.h
   ImplContinuous.h
   ImplDecay.h

@@ -35,7 +35,7 @@ public:
     return 31415;
   }
 
-  void bar2(int i) {
+  void bar2(int) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return;
   }
@@ -46,7 +46,7 @@ public:
   }
 
   int inside() {
-    auto tc = corsika::analytics::timeClass<int (_foo1::*)(int), &_foo1::inside>(*this);
+    auto tc = corsika::analytics::ClassTimer<int (_foo1::*)(int), &_foo1::inside>(*this);
 
     auto r = tc.call(1);
 
@@ -61,13 +61,13 @@ template <typename TType, typename TRet, typename... TArgs,
           TRet (TType::*TFuncPtr)(TArgs...)>
 class timeMin<TRet (TType::*)(TArgs...), TFuncPtr> {
 private:
-  TType& vObj;
+  TType& obj_;
 
 public:
   timeMin(TType& obj)
-      : vObj(obj) {}
+      : obj_(obj) {}
 
-  TRet call(TArgs... args) { return (vObj.*TFuncPtr)(std::forward<TArgs>(args)...); }
+  TRet call(TArgs... args) { return (obj_.*TFuncPtr)(std::forward<TArgs>(args)...); }
 };
 
 // quasi processor
@@ -106,7 +106,7 @@ TEST_CASE("Analytics", "[Timer]") {
   SECTION("Measure runtime of a function without arguments") {
 
     auto test = foo();
-    auto tc = corsika::analytics::timeClass<decltype(&foo::bar), &foo::bar>(test);
+    auto tc = corsika::analytics::ClassTimer<decltype(&foo::bar), &foo::bar>(test);
 
     tc.call();
 
@@ -116,7 +116,7 @@ TEST_CASE("Analytics", "[Timer]") {
   SECTION("Measure runtime of a function with arguments") {
 
     auto test = foo();
-    auto tc = corsika::analytics::timeClass<decltype(&foo::bar2), &foo::bar2>(test);
+    auto tc = corsika::analytics::ClassTimer<decltype(&foo::bar2), &foo::bar2>(test);
 
     tc.call(1);
 
@@ -127,7 +127,7 @@ TEST_CASE("Analytics", "[Timer]") {
 
     auto test = foo();
     auto tc =
-        corsika::analytics::timeClass<decltype(&foo::bar_const), &foo::bar_const>(test);
+        corsika::analytics::ClassTimer<decltype(&foo::bar_const), &foo::bar_const>(test);
 
     tc.call();
 
