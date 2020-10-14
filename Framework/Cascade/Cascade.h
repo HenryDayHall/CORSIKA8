@@ -408,6 +408,9 @@ namespace corsika::cascade {
 
       // determine steplength for the magnetic field
       // because Steplength should not be min_distance
+	    
+      auto [position, direction, L2] = fTracking.MagneticStep(vParticle, min_distance);
+      
       
       int chargeNumber;
 	    if (corsika::particles::IsNucleus(vParticle.GetPID())) {
@@ -415,25 +418,6 @@ namespace corsika::cascade {
 	    } else {
 	      chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
 	    }
-	    auto const* currentLogicalVolumeNode = vParticle.GetNode();
-	    auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-      geometry::Vector<dimensionless_d> const directionBefore = vParticle.GetMomentum().normalized();
-	    auto c = directionBefore.cross(magneticfield) * chargeNumber * corsika::units::constants::c * 1_eV / 
-               (vParticle.GetMomentum().norm() * 1_V);
-	    LengthType Steplength = min_distance;
-	    if (chargeNumber != 0) {
-	      Steplength = sqrt(2 / c.squaredNorm() * (sqrt(c.squaredNorm() * min_distance * min_distance + 1) -1));
-        std::cout << "Steplength " << Steplength << std::endl;
-	    }
-      if (Steplength == 0_m) {
-        Steplength = min_distance;
-      }
-	    
-	    // This formula hasnt been tested
-	    
-      //auto [position, direction, L2] = fTracking.MagneticStep(vParticle, min_distance);
-      auto [position, direction, L2] = fTracking.MagneticStep(vParticle, Steplength);
-      
       //histL2(L2);
       histLlog2(L2);
       int pdg = static_cast<int>(particles::GetPDG(vParticle.GetPID()));
