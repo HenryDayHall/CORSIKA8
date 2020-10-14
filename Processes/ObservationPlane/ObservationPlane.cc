@@ -70,8 +70,10 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
   auto const* currentLogicalVolumeNode = vParticle.GetNode();
   auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
   auto direction = trajectory.GetV0().normalized();
+
+  std::cout << "           " << plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield)) << std::endl;
   
-  if (chargeNumber != 0 && abs(plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield))) * 1_s / 1_m / 1_T > 1e-6) {
+  if (chargeNumber != 0 && abs(plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield))) * 1_s / 1_m / 1_T > 1e-5) {
     auto const* currentLogicalVolumeNode = vParticle.GetNode();
     auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
     auto k = chargeNumber * corsika::units::constants::c * 1_eV / (vParticle.GetMomentum().norm() * 1_V);
@@ -93,11 +95,11 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
     if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
       return std::numeric_limits<double>::infinity() * 1_m;
     } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
-	  std::cout << " distance to obs plane : " << MaxStepLength2 << std::endl;
-      return MaxStepLength2 * 1.0001;
+	  std::cout << " steplength to obs plane 2: " << MaxStepLength2 << std::endl;
+      return MaxStepLength2 * (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2).norm() * 1.001;
     } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
-	  std::cout << " distance to obs plane : " << MaxStepLength1 << std::endl;
-      return MaxStepLength1 * 1.0001;
+	  std::cout << " steplength to obs plane 1: " << MaxStepLength1 << std::endl;
+      return MaxStepLength1 * (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2).norm() * 1.001;
     }
   } 
   TimeType const timeOfIntersection =
