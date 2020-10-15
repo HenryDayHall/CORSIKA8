@@ -72,15 +72,11 @@ namespace corsika::utl {
         cnpy::npz_save(filename, std::string{"bins_"} + std::to_string(i), bins.data(),
                        {bins.size()}, "a");
       }
-
-      cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(),
-                     {axis_types.size()}, "a");
-
-      cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(),
-                     {axis_types.size()}, "a");
-      cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(),
-                     {axis_types.size()}, "a");
     }
+
+    cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(), {rank}, "a");
+    cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(), {rank}, "a");
+    cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(), {rank}, "a");
 
     auto const prod_axis_size = std::accumulate(axes_dims.cbegin(), axes_dims.cend(),
                                                 unsigned{1}, std::multiplies<>());
