@@ -31,8 +31,14 @@ namespace corsika::process {
 
     namespace detail {
 
+      /// Process type independent functionality of the Process runtime measurement class ExecTime
+      /** Inherits all functionality of the class that should be sampled, this includes special functions for getters and setters
+       * 
+       * 
+       * 
+       */
       template <typename T>
-      class ExecTimeImpl : protected T {
+      class ExecTimeImpl : public T {
       private:
         std::chrono::high_resolution_clock::time_point startTime_;
         std::chrono::duration<double, std::micro> cumulatedTime_;
@@ -55,7 +61,10 @@ namespace corsika::process {
           n_ = 0;
         }
 
+        /// Starts the internal
         inline void start() { startTime_ = std::chrono::high_resolution_clock::now(); }
+
+        /// Stops the internal timer and updates measurements
         inline void stop() {
           auto end = std::chrono::high_resolution_clock::now();
           std::chrono::duration<double, std::micro> timeDiv =
@@ -65,6 +74,7 @@ namespace corsika::process {
           this->update(timeDiv);
         }
 
+        /// Updates the floating mean and variance as well as the global min and max of the sampled runtimes
         void update(std::chrono::duration<double, std::micro> timeDif) {
 
           cumulatedTime_ += timeDif;

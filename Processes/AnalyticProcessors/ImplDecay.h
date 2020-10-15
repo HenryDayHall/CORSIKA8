@@ -18,12 +18,15 @@ namespace corsika::process {
       class ExecTimeImpl;
     }
 
+    /// Base for Decay Implementation
     template <class T, bool TCheck>
     class Decay;
 
+    /// Specialisation if class is not DecayProcess
     template <class T>
     class Decay<T, false> {};
 
+    /// Specialisation if class is a DecayProcess
     template <class T>
     class Decay<T, true> : public detail::ExecTimeImpl<T> {
     private:

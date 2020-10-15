@@ -18,12 +18,15 @@ namespace corsika::process {
       class ExecTimeImpl;
     }
 
+    /// Base for Continuous Implementation
     template <class T, bool TCheck>
     class Continuous;
 
+    /// Specialisation if class is not ContinuousProcess
     template <class T>
     class Continuous<T, false> {};
 
+    /// Specialisation if class is a ContinuousProcess
     template <class T>
     class Continuous<T, true> : public detail::ExecTimeImpl<T> {
     private:

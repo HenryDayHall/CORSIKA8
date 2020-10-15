@@ -19,12 +19,15 @@ namespace corsika::process {
       class ExecTimeImpl;
     }
 
+    /// Base for Boundary Implementation
     template <class T, bool TCheck>
     class Boundary;
 
+    /// Specialisation if class is not BoundaryProcess
     template <class T>
     class Boundary<T, false> {};
 
+    /// Specialisation if class is a BoundaryProcess
     template <class T>
     class Boundary<T, true> : public detail::ExecTimeImpl<T> {
     private:
@@ -32,6 +35,8 @@ namespace corsika::process {
       template <typename Particle, typename VTNType>
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
                                         VTNType const& to) {
+
+        // Use of the ClassTimer function -> see ClassTimer for documentation                                          
         auto tc = corsika::analytics::ClassTimer<
             EProcessReturn (detail::ExecTimeImpl<T>::_T::*)(Particle&, VTNType const&,
                                                     VTNType const&),

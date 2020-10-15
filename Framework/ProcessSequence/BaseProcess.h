@@ -37,6 +37,7 @@ namespace corsika::process {
     const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
 
     public:
+      // Base processor type for use in other template classes
       using TProcessType = TDerived;
   };
 

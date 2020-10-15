@@ -29,6 +29,15 @@
 namespace corsika::process {
   namespace analytic_processors {
 
+    ///  Time measurement of individual processes
+    /** This class allowes to log the runtime spend in all default calls to the process. 
+     *  No distinction is made between individual function calls of the process, the runtime is accumulated 
+     *  and or avaraged without differentiation.
+     *  
+     *  The class is currently only implemented for BoundaryProcess, ContinuousProcess, DecayProcess, InteractionProcess and SecondariesProcess and captures only the according functions of the base class given as template parameter. Trying to access BoundaryProcess functions with a DecayProcess as template parameter will currently give long errormessages. 
+     * 
+     * Inherits all functionality of the class that should be measured, this includes functions like getters and setters
+     */
     template <typename T>
     class ExecTime
         : public Boundary<T, std::is_base_of<corsika::process::BoundaryCrossingProcess<

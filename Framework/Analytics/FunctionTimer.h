@@ -1,14 +1,10 @@
 /*
- * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
-
-// Another possibility:
-// https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Execute-Around_Pointer
-
 #pragma once
 
 #include <chrono>
@@ -16,6 +12,13 @@
 
 namespace corsika::analytics {
 
+  /// Wraps and measures the runtime of a single function type object
+  /** 
+  * 
+  * @tparam TFunc funtion pointer that should be wrapped
+  * @tparam TClock type of the clock that should be used for measurements
+  * @tparam TDuration type of std::duration to measure the elapsed time
+  */
   template <typename TFunc, typename TClock = std::chrono::high_resolution_clock,
             typename TDuration = std::chrono::microseconds>
   class FunctionTimer {
@@ -26,6 +29,8 @@ namespace corsika::analytics {
     TFunc function_;
 
   public:
+
+    /// Constructs the wrapper with the given functionpointer
     FunctionTimer(TFunc f)
         : function_(f) {}
 
