@@ -30,7 +30,7 @@ namespace corsika::utl {
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
                         std::string const& filename) {
-    int const rank = h.rank();
+    unsigned const rank = h.rank();
 
     std::vector<size_t> axes_dims;
     axes_dims.reserve(rank);
@@ -91,7 +91,7 @@ namespace corsika::utl {
     for (auto&& x : indexed(h, boost::histogram::coverage::all)) {
       int p = 0;
 
-      for (int axis_index = 0; axis_index < rank; ++axis_index) {
+      for (unsigned axis_index = 0; axis_index < rank; ++axis_index) {
         int const offset_underflow = (h.axis(axis_index).options() & 0x01) ? 1 : 0;
         auto k = x.index(axis_index) + offset_underflow;
         p = k + p * axes_dims.at(axis_index);
