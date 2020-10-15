@@ -174,13 +174,15 @@ endfunction (CORSIKA_ADD_TEST)
 # specify the sources.
 #
 # Example: CORSIKA_ADD_EXAMPLE (testSomething
-#              SOURCES source1.cc source2.cc someheader.h)
+#              SOURCES source1.cc source2.cc someheader.h
+#              RUN_OPTION "extra command line options"
+#              RUN_IN_GDB)
 #
 # In all cases, you can further customize the target with
 # target_link_libraries(testSomething ...) and so on.
 #
 function (CORSIKA_ADD_EXAMPLE)
-  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_EXAMPLE "" "" "SOURCES;RUN_OPTIONS")
+  cmake_parse_arguments (PARSE_ARGV 1 C8_ADD_EXAMPLE "RUN_IN_GDB" "" "SOURCES;RUN_OPTIONS")
   set (name ${ARGV0})
 
   if (NOT C8_ADD_EXAMPLE_SOURCES)
@@ -204,15 +206,21 @@ function (CORSIKA_ADD_EXAMPLE)
     add_custom_target (run_examples)
   endif ()
   add_dependencies (run_examples ${name})
+  if (C8_ADD_EXAMPLE_RUN_IN_GDB)
+    # convert cmake list into real string:
+    string (REPLACE ";" " " run_options_str "${run_options}")
+    # run the command in gdb and study backtrace a bit
+    set (CMD gdb -q --batch -ex "run ${run_options_str}" -ex bt -ex "info locals" -ex "up" -ex "info locals" -ex "up" -ex "info locals" -ex "up" -ex "info locals" -ex quit "${CMAKE_CURRENT_BINARY_DIR}/${name}") 
+  else (C8_ADD_EXAMPLE_RUN_IN_GDB)
+    # just run the command as-is
+    set (CMD ${CMAKE_CURRENT_BINARY_DIR}/${name} ${run_options})
+  endif (C8_ADD_EXAMPLE_RUN_IN_GDB)
   add_custom_command (TARGET run_examples
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "**************************************"
     COMMAND ${CMAKE_COMMAND} -E echo "*****   running example: ${name} " ${run_options} VERBATIM
-    COMMAND gdb -q --batch -ex "run ${run_options}" -ex bt -ex "info locals" -ex "up" -ex "info locals" 
-                                                -ex "up"-ex "info locals" -ex "up" -ex "info locals" 
-                                                -ex quit ${CMAKE_CURRENT_BINARY_DIR}/${name} 
-                                                VERBATIM
+    COMMAND ${CMD} VERBATIM
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/example_outputs)
   install (TARGETS ${name} DESTINATION share/examples)
 endfunction (CORSIKA_ADD_EXAMPLE)
