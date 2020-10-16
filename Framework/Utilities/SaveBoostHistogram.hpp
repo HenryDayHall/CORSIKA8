@@ -41,7 +41,7 @@ namespace corsika::utl {
     std::vector<char> axis_types;
     axis_types.reserve(rank);
 
-    for (int i = 0; i < rank; ++i) {
+    for (unsigned int i = 0; i < rank; ++i) {
       auto const& ax = h.axis(i);
       unsigned const has_underflow = (ax.options() & 0x01) ? 1 : 0;
       unsigned const has_overflow = (ax.options() & 0x02) ? 1 : 0;

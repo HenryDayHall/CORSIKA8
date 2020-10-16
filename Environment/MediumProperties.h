@@ -17,10 +17,19 @@ namespace corsika::environment {
    * components.
    **/
 
-  enum class MediumType { Unknown, Element, RadioactiveElement, InorganicCompound, OrganicCompound, Polymer, Mixture, BiologicalDosimetry };
+  enum class MediumType {
+    Unknown,
+    Element,
+    RadioactiveElement,
+    InorganicCompound,
+    OrganicCompound,
+    Polymer,
+    Mixture,
+    BiologicalDosimetry
+  };
 
   enum class State { Unknown, Solid, Liquid, Gas, DiatomicGas };
-  
+
   enum class Medium : int16_t;
   using MediumIntType = std::underlying_type<Medium>::type;
 
@@ -51,8 +60,8 @@ namespace corsika::environment {
     double dlt0_;
 
     std::string name() const { return name_; }
-    std::string pretty_name() const {return pretty_name_; }
-    double weight() const {return weight_; }
+    std::string pretty_name() const { return pretty_name_; }
+    double weight() const { return weight_; }
     int weight_significant_figure() const { return weight_significant_figure_; }
     int weight_error_last_digit() const { return weight_error_last_digit_; }
     double Z_over_A() const { return Z_over_A_; }
@@ -72,14 +81,12 @@ namespace corsika::environment {
 
 } // namespace corsika::environment
 
-
 #include <corsika/environment/GeneratedMediaProperties.inc>
-
 
 namespace corsika::environment {
 
   constexpr MediumData const& mediumData(Medium const m) {
     return detail::medium_data[static_cast<MediumIntType>(m)];
   }
-  
+
 } // namespace corsika::environment

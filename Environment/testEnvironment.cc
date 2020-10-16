@@ -16,10 +16,10 @@
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/LinearApproximationIntegrator.h>
+#include <corsika/environment/MediumPropertyModel.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/UniformMagneticField.h>
-#include <corsika/environment/MediumPropertyModel.h>
 #include <corsika/environment/UniformRefractiveIndex.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
@@ -399,20 +399,18 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
 
-
 TEST_CASE("MediumProperties") {
 
   // test access of medium properties via enum and class types
-  
+
   const Medium type = Medium::AirDry1Atm;
   const MediumData& air = mediumData(type);
-  CHECK(air.Ieff() ==  85.7 );
-  CHECK(air.Cbar() ==  10.5961 );
-  CHECK(air.x0() ==  1.7418 );
-  CHECK(air.x1() ==  4.2759 );
-  CHECK(air.sk() ==  3.3994 );
-  CHECK(air.dlt0() ==  0.0 );
-
+  CHECK(air.Ieff() == 85.7);
+  CHECK(air.Cbar() == 10.5961);
+  CHECK(air.x0() == 1.7418);
+  CHECK(air.x1() == 4.2759);
+  CHECK(air.sk() == 3.3994);
+  CHECK(air.dlt0() == 0.0);
 }
 
 TEST_CASE("MediumPropertyModel w/ Homogeneous") {

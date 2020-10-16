@@ -10,8 +10,8 @@
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
-#include <corsika/environment/UniformMagneticField.h>
 #include <corsika/environment/MediumPropertyModel.h>
+#include <corsika/environment/UniformMagneticField.h>
 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>

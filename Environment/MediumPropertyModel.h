@@ -48,10 +48,7 @@ namespace corsika::environment {
       return medium_;
     }
 
-    void set_medium(Medium v) {
-      medium_ = v;
-    }
-
+    void set_medium(Medium v) { medium_ = v; }
 
   }; // END: class MediumPropertyModel
 

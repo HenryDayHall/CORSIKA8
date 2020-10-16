@@ -30,8 +30,8 @@ namespace corsika::setup {
 
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/InhomogeneousMedium.h>
-#include <corsika/environment/UniformMagneticField.h>
 #include <corsika/environment/MediumPropertyModel.h>
+#include <corsika/environment/UniformMagneticField.h>
 
 /**
  * standard environment for unit testing. This can be moved to
@@ -59,7 +59,7 @@ namespace corsika::setup::testing {
      * construct suited environment medium model:
      */
     using MyHomogeneousModel =
-      environment::MediumPropertyModel<environment::UniformMagneticField<
+        environment::MediumPropertyModel<environment::UniformMagneticField<
             environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
 
     world->SetModelProperties<MyHomogeneousModel>(
