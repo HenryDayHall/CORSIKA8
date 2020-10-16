@@ -70,13 +70,18 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
   auto const* currentLogicalVolumeNode = vParticle.GetNode();
   auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
   auto direction = trajectory.GetV0().normalized();
-
-  std::cout << "           " << plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield)) << std::endl;
   
-  if (chargeNumber != 0 && abs(plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield))) * 1_s / 1_m / 1_T > 1e-5) {
+  if (chargeNumber != 0 && abs(plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield))) * 1_s / 1_m / 1_T > 1e-6) {
     auto const* currentLogicalVolumeNode = vParticle.GetNode();
     auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
     auto k = chargeNumber * corsika::units::constants::c * 1_eV / (vParticle.GetMomentum().norm() * 1_V);
+
+	if (direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+		(plane_.GetNormal().dot(trajectory.GetR0() - plane_.GetCenter()) *
+			plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k) < 0) 
+	{
+		return std::numeric_limits<double>::infinity() * 1_m;
+	}
     
     LengthType MaxStepLength1 = 
       ( sqrt(direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) - 
