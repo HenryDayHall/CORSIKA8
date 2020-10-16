@@ -410,7 +410,7 @@ def gen_classes(particle_db):
                 antiP = cname_anti
                 break
         
-        string += "\n";
+        string += "\n"
         string += "/** @class " + cname + "\n\n"
         string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
         string += " *  - pdg=" + str(particle_db[cname]['pdg']) +"\n"

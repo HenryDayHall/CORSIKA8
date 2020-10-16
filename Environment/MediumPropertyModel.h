@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/environment/IMediaTypeModel.h>
+#include <corsika/environment/IMediumPropertyModel.h>
 
 namespace corsika::environment {
 
@@ -20,13 +20,13 @@ namespace corsika::environment {
    *
    */
   template <typename T>
-  class UniformMediaType : public T {
+  class MediumPropertyModel : public T {
 
-    EMediaType double n_; ///< The constant refractive index that we use.
+    Medium medium_; ///< The medium code
 
   public:
     /**
-     * Construct a UniformMediaType.
+     * Construct a MediumPropertyModel
      *
      * This is initialized with a fixed refractive index
      * and returns this refractive index at all locations.
@@ -34,28 +34,25 @@ namespace corsika::environment {
      * @param field    The refractive index to return everywhere.
      */
     template <typename... Args>
-    UniformMediaType(double const n, Args&&... args)
+    MediumPropertyModel(const Medium medium, Args&&... args)
         : T(std::forward<Args>(args)...)
-        , n_(n) {}
+        , medium_(medium) {}
 
     /**
-     * Evaluate the refractive index at a given location.
+     * Evaluate the medium type at a given location.
      *
      * @param  point    The location to evaluate at.
-     * @returns    The refractive index at this point.
+     * @returns    The medium type as enum environment::Medium
      */
-    double GetMediaType(corsika::geometry::Point const&) const final override {
-      return n_;
+    Medium medium(corsika::geometry::Point const&) const final override {
+      return medium_;
     }
 
-    /**
-     * Set the refractive index returned by this instance.
-     *
-     * @param  point    The location to evaluate at.
-     * @returns    The refractive index at this location.
-     */
-    void SetMediaType(double const& n) { n_ = n; }
+    void set_medium(Medium v) {
+      medium_ = v;
+    }
 
-  }; // END: class MediaType
+
+  }; // END: class MediumPropertyModel
 
 } // namespace corsika::environment

@@ -11,7 +11,7 @@
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
-#include <corsika/environment/IMediumTypeModel.h>
+#include <corsika/environment/IMediumPropertyModel.h>
 #include <corsika/environment/IRefractiveIndexModel.h>
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
@@ -19,7 +19,7 @@
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/SlidingPlanarExponential.h>
 #include <corsika/environment/UniformMagneticField.h>
-#include <corsika/environment/UniformMediumType.h>
+#include <corsika/environment/MediumPropertyModel.h>
 #include <corsika/environment/UniformRefractiveIndex.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Line.h>
@@ -399,11 +399,27 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
 
-TEST_CASE("UniformMediumType w/ Homogeneous") {
+
+TEST_CASE("MediumProperties") {
+
+  // test access of medium properties via enum and class types
+  
+  const Medium type = Medium::AirDry1Atm;
+  const MediumData& air = mediumData(type);
+  CHECK(air.Ieff() ==  85.7 );
+  CHECK(air.Cbar() ==  10.5961 );
+  CHECK(air.x0() ==  1.7418 );
+  CHECK(air.x1() ==  4.2759 );
+  CHECK(air.sk() ==  3.3994 );
+  CHECK(air.dlt0() ==  0.0 );
+
+}
+
+TEST_CASE("MediumPropertyModel w/ Homogeneous") {
 
   // setup our interface types
-  using IModelInterface = IMediumTypeModel<IMediumModel>;
-  using AtmModel = UniformMediumType<HomogeneousMedium<IModelInterface>>;
+  using IModelInterface = IMediumPropertyModel<IMediumModel>;
+  using AtmModel = MediumPropertyModel<HomogeneousMedium<IModelInterface>>;
 
   // the constant density
   const auto density{19.2_g / cube(1_cm)};
@@ -413,28 +429,28 @@ TEST_CASE("UniformMediumType w/ Homogeneous") {
                                              std::vector<float>{1.f});
 
   // the refrative index that we use
-  const EMediumType type = EMediumType::eAir;
+  const Medium type = Medium::AirDry1Atm;
 
   // create the atmospheric model
   AtmModel medium(type, density, protonComposition);
 
   // and require that it is constant
-  CHECK(type == medium.medium_type(Point(gCS, -10_m, 4_m, 35_km)));
-  CHECK(type == medium.medium_type(Point(gCS, +210_m, 0_m, 7_km)));
-  CHECK(type == medium.medium_type(Point(gCS, 0_m, 0_m, 0_km)));
-  CHECK(type == medium.medium_type(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(type == medium.medium(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(type == medium.medium(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(type == medium.medium(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(type == medium.medium(Point(gCS, 100_km, 400_km, 350_km)));
 
   // a new refractive index
-  const EMediumType type2 = EMediumType::eRock;
+  const Medium type2 = Medium::StandardRock;
 
   // update the refractive index of this atmospheric model
-  medium.set_medium_type(type2);
+  medium.set_medium(type2);
 
   // check that the returned refractive index is correct
-  CHECK(type2 == medium.medium_type(Point(gCS, -10_m, 4_m, 35_km)));
-  CHECK(type2 == medium.medium_type(Point(gCS, +210_m, 0_m, 7_km)));
-  CHECK(type2 == medium.medium_type(Point(gCS, 0_m, 0_m, 0_km)));
-  CHECK(type2 == medium.medium_type(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(type2 == medium.medium(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(type2 == medium.medium(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(type2 == medium.medium(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(type2 == medium.medium(Point(gCS, 100_km, 400_km, 350_km)));
 
   // define our axis vector
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));

@@ -11,7 +11,7 @@
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/IMediumModel.h>
-#include <corsika/environment/IMediumTypeModel.h>
+#include <corsika/environment/IMediumPropertyModel.h>
 #include <corsika/environment/IRefractiveIndexModel.h>
 
 namespace corsika::setup {
@@ -22,7 +22,7 @@ namespace corsika::setup {
      bdependent way.
    */
 
-  using EnvironmentInterface = environment::IMediumTypeModel<
+  using EnvironmentInterface = environment::IMediumPropertyModel<
       environment::IMagneticFieldModel<environment::IMediumModel>>;
   using Environment = environment::Environment<EnvironmentInterface>;
 
@@ -31,7 +31,7 @@ namespace corsika::setup {
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/InhomogeneousMedium.h>
 #include <corsika/environment/UniformMagneticField.h>
-#include <corsika/environment/UniformMediumType.h>
+#include <corsika/environment/MediumPropertyModel.h>
 
 /**
  * standard environment for unit testing. This can be moved to
@@ -59,11 +59,11 @@ namespace corsika::setup::testing {
      * construct suited environment medium model:
      */
     using MyHomogeneousModel =
-        environment::UniformMediumType<environment::UniformMagneticField<
+      environment::MediumPropertyModel<environment::UniformMagneticField<
             environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
 
     world->SetModelProperties<MyHomogeneousModel>(
-        environment::EMediumType::eAir, geometry::Vector(cs, 0_T, 0_T, 1_T),
+        environment::Medium::AirDry1Atm, geometry::Vector(cs, 0_T, 0_T, 1_T),
         1_kg / (1_m * 1_m * 1_m),
         environment::NuclearComposition(std::vector<particles::Code>{vTargetCode},
                                         std::vector<float>{1.}));

@@ -1,6 +1,18 @@
+add_custom_command (
+  OUTPUT  ${PROJECT_BINARY_DIR}/Environment/GeneratedMediaProperties.inc
+  COMMAND ${PROJECT_SOURCE_DIR}/Environment/readProperties.py 
+          ${PROJECT_SOURCE_DIR}/Environment/properties8.dat
+  DEPENDS readProperties.py
+          properties8.dat
+  WORKING_DIRECTORY
+          ${PROJECT_BINARY_DIR}/Environment
+  COMMENT "Read NIST properties8 data file and produce C++ source code GeneratedMediaProperties.inc"
+  VERBATIM
+  )
+
+
 set (
   ENVIRONMENT_SOURCES
-  # LayeredSphericalAtmosphereBuilder.cc
   ShowerAxis.cc
 )
 
@@ -25,9 +37,10 @@ set (
   UniformMagneticField.h
   IRefractiveIndexModel.h
   UniformRefractiveIndex.h
-  MediumTypes.h
-  IMediumTypeModel.h
-  UniformMediumType.h
+  IMediumPropertyModel.h
+  MediumProperties.h
+  MediumPropertyModel.h
+  ${PROJECT_BINARY_DIR}/Environment/GeneratedMediaProperties.inc # this one is auto-generated
   )
 
 set (
@@ -45,6 +58,19 @@ set_target_properties (
   SOVERSION 1
   PUBLIC_HEADER "${ENVIRONMENT_HEADERS}"
   )
+
+# ....................................................
+# since GeneratedMediaProperties.inc is an automatically produced file in the build directory,
+# create a symbolic link into the source tree, so that it can be found and edited more easily
+# this is not needed for the build to succeed! .......
+add_custom_command (
+  OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedParticleProperties.inc
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/include/corsika/environment/GeneratedMediaProperties.inc ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedMediaProperties.inc
+  COMMENT "Generate link in source-dir: ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedMediaProperties.inc"
+  )
+add_custom_target (SourceDirLinkMedia DEPENDS ${PROJECT_BINARY_DIR}/Environment/GeneratedMediaProperties.inc)
+add_dependencies (CORSIKAenvironment SourceDirLinkMedia)
+# .....................................................
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (

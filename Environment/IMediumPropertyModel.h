@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/environment/MediumTypes.h>
+#include <corsika/environment/MediumProperties.h>
 
 #include <corsika/geometry/Point.h>
 #include <corsika/units/PhysicalUnits.h>
@@ -22,7 +22,7 @@ namespace corsika::environment {
    *
    */
   template <typename Model>
-  class IMediumTypeModel : public Model {
+  class IMediumPropertyModel : public Model {
 
   public:
     /**
@@ -31,12 +31,12 @@ namespace corsika::environment {
      * @param  point    The location to evaluate at.
      * @returns    The media type
      */
-    virtual EMediumType medium_type(corsika::geometry::Point const&) const = 0;
+    virtual Medium medium(corsika::geometry::Point const&) const = 0;
 
     /**
      * A virtual default destructor.
      */
-    virtual ~IMediumTypeModel() = default;
+    virtual ~IMediumPropertyModel() = default;
 
   }; // END: class IMediumTypeModel
 

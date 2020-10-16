@@ -78,11 +78,11 @@ int main() {
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel =
-      environment::UniformMediumType<environment::UniformMagneticField<
+      environment::MediumPropertyModel<environment::UniformMagneticField<
           environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
 
   theMedium->SetModelProperties<MyHomogeneousModel>(
-      environment::EMediumType::eAir, geometry::Vector(rootCS, 0_T, 0_T, 1_T),
+      environment::Medium::AirDry1Atm, geometry::Vector(rootCS, 0_T, 0_T, 1_T),
       1_kg / (1_m * 1_m * 1_m),
       NuclearComposition(std::vector<particles::Code>{particles::Code::Hydrogen},
                          std::vector<float>{(float)1.}));
