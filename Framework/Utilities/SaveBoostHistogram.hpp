@@ -30,7 +30,7 @@ namespace corsika::utl {
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
                         std::string const& filename) {
-    int const rank = h.rank();
+    unsigned const rank = h.rank();
 
     std::vector<size_t> axes_dims;
     axes_dims.reserve(rank);
@@ -72,15 +72,11 @@ namespace corsika::utl {
         cnpy::npz_save(filename, std::string{"bins_"} + std::to_string(i), bins.data(),
                        {bins.size()}, "a");
       }
-
-      cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(),
-                     {axis_types.size()}, "a");
-
-      cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(),
-                     {axis_types.size()}, "a");
-      cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(),
-                     {axis_types.size()}, "a");
     }
+
+    cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(), {rank}, "a");
+    cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(), {rank}, "a");
+    cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(), {rank}, "a");
 
     auto const prod_axis_size = std::accumulate(axes_dims.cbegin(), axes_dims.cend(),
                                                 unsigned{1}, std::multiplies<>());
@@ -95,7 +91,7 @@ namespace corsika::utl {
     for (auto&& x : indexed(h, boost::histogram::coverage::all)) {
       int p = 0;
 
-      for (int axis_index = 0; axis_index < rank; ++axis_index) {
+      for (unsigned axis_index = 0; axis_index < rank; ++axis_index) {
         int const offset_underflow = (h.axis(axis_index).options() & 0x01) ? 1 : 0;
         auto k = x.index(axis_index) + offset_underflow;
         p = k + p * axes_dims.at(axis_index);
