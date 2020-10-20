@@ -29,7 +29,7 @@ namespace corsika {
 
     bool IsAbove(Point const& vP) const ;
 
-    units::si::LengthType DistanceTo(geometry::Point const& vP) const ;
+    units::si::LengthType DistanceTo(corsika::Point const& vP) const ;
 
 
     Point const& GetCenter() const ;

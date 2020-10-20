@@ -14,18 +14,12 @@
 
 namespace corsika {
 
-          Universe::Universe(corsika::CoordinateSystem const& pCS):
-       corsika::Sphere(
-              corsika::Point{pCS,
-    	                               0 * corsika::units::si::meter,
-                                       0 * corsika::units::si::meter,
-                                       0 * corsika::units::si::meter},
-              corsika::units::si::meter * std::numeric_limits<double>::infinity())
-    {}
+  Universe::Universe(corsika::CoordinateSystem const& pCS)
+      : corsika::Sphere(
+            corsika::Point{pCS, 0 * corsika::units::si::meter,
+                           0 * corsika::units::si::meter, 0 * corsika::units::si::meter},
+            corsika::units::si::meter * std::numeric_limits<double>::infinity()) {}
 
-    bool Universe::Contains(corsika::Point const&) const
-    {
-    	return true;
-    } 
+  bool Universe::Contains(corsika::Point const&) const { return true; }
 
-} 
+} // namespace corsika

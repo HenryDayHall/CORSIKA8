@@ -2,8 +2,17 @@
 set (test_modules_sources
   TestMain.cpp
   testSibyll.cpp
+  testNullModel.cpp
+  testObservationPlane.cpp
+  #testParticleCut.cpp
+  #testPythia.cpp
+  #testQGSJetII.cpp
+  #testSibyll.cpp
+  #testStackInspector.cpp
+  #testSwitchProcess.cpp
+  #testTrackingLine.cpp
+  #testUrQMD.cpp
   )
-
 
 add_executable (testModules ${test_modules_sources})
 

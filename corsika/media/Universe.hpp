@@ -17,7 +17,7 @@ namespace corsika {
 
   struct Universe : public corsika::Sphere
   {
-    Universe(corsika::CoordinateSystem const& pCS);
+    inline Universe(corsika::CoordinateSystem const& pCS);
     inline bool Contains(corsika::Point const&) const override;
   };
 

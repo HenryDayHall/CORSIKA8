@@ -22,7 +22,7 @@ namespace corsika {
       return fNormal.dot(vP - fCenter) > corsika::units::si::LengthType::zero();
     }
 
-    units::si::LengthType Plane::DistanceTo(geometry::Point const& vP) const
+    units::si::LengthType Plane::DistanceTo(corsika::Point const& vP) const
     {
       return (fNormal * (vP - fCenter).dot(fNormal)).norm();
     }
