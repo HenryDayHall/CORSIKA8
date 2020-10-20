@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <type_traits>
 #include <corsika/framework/sequence/ProcessReturn.hpp> // for convenience
+#include <type_traits>
 
 namespace corsika {
 
@@ -48,4 +48,3 @@ namespace corsika {
   std::true_type is_process_impl(const BaseProcess<T>* impl);
 
 } // namespace corsika
-

@@ -9,8 +9,6 @@
 #pragma once
 
 #include <cmath>
-#include <limits>
-#include <type_traits>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/sequence/BaseProcess.hpp>
 #include <corsika/framework/sequence/BoundaryCrossingProcess.hpp>
@@ -20,6 +18,8 @@
 #include <corsika/framework/sequence/ProcessReturn.hpp>
 #include <corsika/framework/sequence/SecondariesProcess.hpp>
 #include <corsika/framework/sequence/StackProcess.hpp>
+#include <limits>
+#include <type_traits>
 
 namespace corsika {
 
@@ -75,10 +75,10 @@ namespace corsika {
                                       VTNType const& to);
 
     template <typename TParticle, typename TTrack>
-    EProcessReturn DoContinuous(TParticle& vP, TTrack& vT) ;
+    EProcessReturn DoContinuous(TParticle& vP, TTrack& vT);
 
     template <typename TSecondaries>
-    EProcessReturn DoSecondaries(TSecondaries& vS) ;
+    EProcessReturn DoSecondaries(TSecondaries& vS);
 
     /**
        The processes of type StackProcess do have an internal counter,
@@ -88,7 +88,7 @@ namespace corsika {
        tested if either A_ or B_ are StackProcess and if they are due
        for execution.
      */
-    bool CheckStep() ;
+    bool CheckStep();
 
     /**
        Execute the StackProcess-es in the ProcessSequence
@@ -97,16 +97,17 @@ namespace corsika {
     EProcessReturn DoStack(TStack& vS);
 
     template <typename TParticle, typename TTrack>
-    corsika::units::si::LengthType MaxStepLength(TParticle& vP, TTrack& vTrack) ;
+    corsika::units::si::LengthType MaxStepLength(TParticle& vP, TTrack& vTrack);
     template <typename TParticle>
     corsika::units::si::GrammageType GetTotalInteractionLength(TParticle& vP);
 
     template <typename TParticle>
     inline corsika::units::si::InverseGrammageType GetTotalInverseInteractionLength(
-        TParticle& vP) ;
+        TParticle& vP);
 
     template <typename TParticle>
-    inline corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle& vP) ;
+    inline corsika::units::si::InverseGrammageType GetInverseInteractionLength(
+        TParticle& vP);
 
     template <typename TParticle, typename TSecondaries>
     EProcessReturn SelectInteraction(
@@ -115,20 +116,20 @@ namespace corsika {
         corsika::units::si::InverseGrammageType& lambda_inv_count);
 
     template <typename TParticle>
-    corsika::units::si::TimeType GetTotalLifetime(TParticle& p) ;
+    corsika::units::si::TimeType GetTotalLifetime(TParticle& p);
 
     template <typename TParticle>
-    corsika::units::si::InverseTimeType GetTotalInverseLifetime(TParticle& p) ;
+    corsika::units::si::InverseTimeType GetTotalInverseLifetime(TParticle& p);
 
     template <typename TParticle>
-    corsika::units::si::InverseTimeType GetInverseLifetime(TParticle& p) ;
+    corsika::units::si::InverseTimeType GetInverseLifetime(TParticle& p);
 
     // select decay process
     template <typename TParticle, typename TSecondaries>
     EProcessReturn SelectDecay(
         TParticle& vP, TSecondaries& vS,
         [[maybe_unused]] corsika::units::si::InverseTimeType decay_select,
-        corsika::units::si::InverseTimeType& decay_inv_count) ;
+        corsika::units::si::InverseTimeType& decay_inv_count);
 
     void Init() {
       A.Init();
@@ -172,4 +173,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include<corsika/detail/framework/sequence/ProcessSequence.inl>
+#include <corsika/detail/framework/sequence/ProcessSequence.inl>

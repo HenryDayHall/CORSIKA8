@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include <corsika/modules/pythia8/Pythia8.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/modules/pythia8/Pythia8.hpp>
 
 #include <tuple>
 
@@ -42,12 +42,10 @@ namespace corsika::pythia8 {
     }
 
     bool CanInteract(const corsika::Code);
-    void ConfigureLabFrameCollision(const corsika::Code,
-                                    const corsika::Code,
+    void ConfigureLabFrameCollision(const corsika::Code, const corsika::Code,
                                     const corsika::units::si::HEPEnergyType);
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(const corsika::Code BeamId,
-                    const corsika::Code TargetId,
+    GetCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
     template <typename TParticle>
@@ -62,8 +60,7 @@ namespace corsika::pythia8 {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream("pythia");
+    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("pythia");
     Pythia8::Pythia fPythia;
     Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;

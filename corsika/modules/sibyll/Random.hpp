@@ -15,9 +15,9 @@ namespace sibyll {
 
   double rndm_interface() {
     static corsika::RNG& rng =
-      corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
+        corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
     std::uniform_real_distribution<double> dist;
     return dist(rng);
   }
-  
-}
+
+} // namespace sibyll

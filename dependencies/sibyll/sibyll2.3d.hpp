@@ -28,14 +28,14 @@ extern "C" {
 
 typedef char s_name[6];
 
-  /**
-     \struct s_plist_
+/**
+   \struct s_plist_
 
-    SIBYLL particle stack (FORTRAN COMMON)
-    variables are: np : numer of particles on stack
-                    p : 4momentum + mass of particles on stack
-                llist : id of particles on stack
-   **/
+  SIBYLL particle stack (FORTRAN COMMON)
+  variables are: np : numer of particles on stack
+                  p : 4momentum + mass of particles on stack
+              llist : id of particles on stack
+ **/
 extern struct {
   double p[5][8000];
   int llist[8000];

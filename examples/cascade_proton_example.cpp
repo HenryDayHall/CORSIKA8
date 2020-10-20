@@ -17,14 +17,14 @@
 
 #include <corsika/modules/energy_loss/EnergyLoss.hpp>
 #include <corsika/modules/particle_cut/ParticleCut.hpp>
+#include <corsika/modules/pythia8/Decay.hpp>
+#include <corsika/modules/pythia8/Interaction.hpp>
 #include <corsika/modules/sibyll/Decay.hpp>
 #include <corsika/modules/sibyll/Interaction.hpp>
 #include <corsika/modules/sibyll/NuclearInteraction.hpp>
 #include <corsika/modules/stack_inspector/StackInspector.hpp>
 #include <corsika/modules/track_writer/TrackWriter.hpp>
 #include <corsika/modules/tracking_line/TrackingLine.hpp>
-#include <corsika/modules/pythia8/Interaction.hpp>
-#include <corsika/modules/pythia8/Decay.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -96,9 +96,8 @@ int main() {
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
     stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
-            beamCode, E0, plab, pos, 0_ns});
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{beamCode, E0, plab, pos, 0_ns});
   }
 
   // setup processes, decays and interactions

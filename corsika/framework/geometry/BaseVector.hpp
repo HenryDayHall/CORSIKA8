@@ -13,36 +13,32 @@
 
 namespace corsika {
 
-	/*!
-	 * Common base class for Vector and Point. Currently it does basically nothing.
-	 */
-	/*
-	 * FIXME Many potential issues:
-	 * 1. does this class really need to be templated ?
-	 * 2. copy constructor, assignment operator not implemented
-	 * 3. this member pointer is quite scary...
-	 */
-	template <typename dim>
-	class BaseVector {
+  /*!
+   * Common base class for Vector and Point. Currently it does basically nothing.
+   */
+  /*
+   * FIXME Many potential issues:
+   * 1. does this class really need to be templated ?
+   * 2. copy constructor, assignment operator not implemented
+   * 3. this member pointer is quite scary...
+   */
+  template <typename dim>
+  class BaseVector {
 
-	public:
+  public:
+    /*
+     * FIXME Why to copy pQVector twice?
+     */
+    BaseVector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector)
+        : qVector(pQVector)
+        , cs(&pCS) {}
 
-	/*
-	 * FIXME Why to copy pQVector twice?
-	 */
-	BaseVector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector):
-		qVector(pQVector),
-		cs(&pCS)
-	{}
+    auto const& GetCoordinateSystem() const;
 
-	  auto const& GetCoordinateSystem() const;
-
-
-	protected:
-		QuantityVector<dim> qVector;
-		CoordinateSystem const* cs;
-
-	};
+  protected:
+    QuantityVector<dim> qVector;
+    CoordinateSystem const* cs;
+  };
 
 } // namespace corsika
 

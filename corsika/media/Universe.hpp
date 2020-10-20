@@ -15,12 +15,11 @@
 
 namespace corsika {
 
-  struct Universe : public corsika::Sphere
-  {
+  struct Universe : public corsika::Sphere {
     inline Universe(corsika::CoordinateSystem const& pCS);
     inline bool Contains(corsika::Point const&) const override;
   };
 
-}
+} // namespace corsika
 
 #include <corsika/detail/media/Universe.inl>

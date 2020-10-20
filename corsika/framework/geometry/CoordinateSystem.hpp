@@ -8,13 +8,12 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/utility/sgn.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <Eigen/Dense>
 #include <stdexcept>
-
 
 /*
  * FIXME Review this global typedef.
@@ -26,7 +25,6 @@ namespace corsika {
 
   class RootCoordinateSystem;
 
-
   template <typename T>
   class Vector;
 
@@ -35,24 +33,21 @@ namespace corsika {
    */
   using corsika::units::si::length_d;
 
-  class CoordinateSystem
-  {
+  class CoordinateSystem {
 
     CoordinateSystem const* reference = nullptr;
     EigenTransform transf;
 
-    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf):
-    	reference(&reference),
-		transf(transf)
-    {}
+    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf)
+        : reference(&reference)
+        , transf(transf) {}
 
     CoordinateSystem()
         : // for creating the root CS
         transf(EigenTransform::Identity()) {}
 
   public:
-
-    //FIXME missing test for self assignment
+    // FIXME missing test for self assignment
     inline CoordinateSystem& operator=(const CoordinateSystem& pCS);
 
     inline CoordinateSystem translate(QuantityVector<length_d> vector) const;
@@ -64,7 +59,7 @@ namespace corsika {
     auto RotateToZ(Vector<TDim> vVec) const;
 
     template <typename TDim>
-    auto rotate(QuantityVector<TDim> axis, double angle) const ;
+    auto rotate(QuantityVector<TDim> axis, double angle) const;
 
     template <typename TDim>
     auto translateAndRotate(QuantityVector<phys::units::length_d> translation,
@@ -75,16 +70,15 @@ namespace corsika {
     inline const EigenTransform& GetTransform() const;
 
   protected:
-
     static CoordinateSystem CreateCS() { return CoordinateSystem(); }
 
     friend corsika::RootCoordinateSystem; /// this is the only class that can
-                                                    /// create ONE unique root CS
+                                          /// create ONE unique root CS
   };
 
+  EigenTransform getTransformation(CoordinateSystem const& c1,
+                                   CoordinateSystem const& c2);
 
-  EigenTransform getTransformation(CoordinateSystem const& c1, CoordinateSystem const& c2);
-  
 } // namespace corsika
 
 #include <corsika/detail/framework/geometry/CoordinateSystem.inl>

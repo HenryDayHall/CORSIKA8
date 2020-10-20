@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <corsika/framework/utility/Singleton.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
+#include <corsika/framework/utility/Singleton.hpp>
 
 /*!
  * This is the only way to get a root-coordinate system, and it is a
@@ -27,18 +27,11 @@ namespace corsika {
     RootCoordinateSystem() {}
 
   public:
-    corsika::CoordinateSystem& GetRootCoordinateSystem()
-    {
-    	return fRootCS;
-    }
-    const corsika::CoordinateSystem& GetRootCoordinateSystem() const
-    {
-      return fRootCS;
-    }
+    corsika::CoordinateSystem& GetRootCoordinateSystem() { return fRootCS; }
+    const corsika::CoordinateSystem& GetRootCoordinateSystem() const { return fRootCS; }
 
   private:
     corsika::CoordinateSystem fRootCS; // THIS IS IT
   };
 
 } // namespace corsika
-

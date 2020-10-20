@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <stdexcept>
-#include <vector>
-#include <type_traits>
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/framework/stack/StackIteratorInterface.hpp>
+#include <stdexcept>
+#include <type_traits>
+#include <vector>
 
 namespace corsika {
 
@@ -195,7 +195,7 @@ namespace corsika {
      * Method to add a new secondary particle on this SecondaryView
      */
     template <typename... Args>
-    auto AddSecondary(const Args... v) ;
+    auto AddSecondary(const Args... v);
 
   protected:
     /**
@@ -208,7 +208,7 @@ namespace corsika {
      * StackIterator::AddSecondary via ParticleBase
      */
     template <typename... Args>
-    auto AddSecondary(StackIterator& proj, const Args... v) ;
+    auto AddSecondary(StackIterator& proj, const Args... v);
     /**
      * overwrite Stack::GetSize to return actual number of secondaries
      */
@@ -311,7 +311,7 @@ namespace corsika {
      * return next particle from stack, need to overwrtie Stack::GetNextParticle to get
      * right reference
      */
-    inline void Delete(ParticleInterfaceType p) ;
+    inline void Delete(ParticleInterfaceType p);
     /**
      * check if this particle was already deleted
      *
@@ -325,7 +325,7 @@ namespace corsika {
     /**
      * delete this particle
      */
-    inline void DeleteLast() ;
+    inline void DeleteLast();
 
     /**
      * Function to ultimatively remove the last entry from the stack,

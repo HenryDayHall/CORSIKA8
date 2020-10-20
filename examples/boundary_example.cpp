@@ -11,9 +11,9 @@
 #include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/framework/sequence/ProcessSequence.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/ProcessSequence.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
@@ -24,12 +24,12 @@
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <corsika/modules/tracking_line/TrackingLine.hpp>
+#include <corsika/modules/particle_cut/ParticleCut.hpp>
 #include <corsika/modules/sibyll/Decay.hpp>
 #include <corsika/modules/sibyll/Interaction.hpp>
 #include <corsika/modules/sibyll/NuclearInteraction.hpp>
 #include <corsika/modules/track_writer/TrackWriter.hpp>
-#include <corsika/modules/particle_cut/ParticleCut.hpp>
+#include <corsika/modules/tracking_line/TrackingLine.hpp>
 
 #include <iostream>
 #include <limits>
@@ -148,9 +148,8 @@ int main() {
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     Point pos(rootCS, 0_m, 0_m, 0_m);
     stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
-            beamCode, E0, plab, pos, 0_ns});
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{beamCode, E0, plab, pos, 0_ns});
   }
 
   // define air shower object, run simulation

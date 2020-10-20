@@ -30,4 +30,3 @@ using StackWithGeometryInterface =
 using TestTrackingLineStack =
     corsika::CombinedStack<typename corsika::setup::detail::ParticleDataStack::StackImpl,
                            GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
-

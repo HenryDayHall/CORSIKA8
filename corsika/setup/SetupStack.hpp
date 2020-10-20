@@ -15,8 +15,8 @@
 #include <corsika/stack/NuclearStackExtension.hpp>
 
 // extension with geometry information for tracking
-#include <corsika/media/Environment.hpp>
 #include <corsika/framework/stack/CombinedStack.hpp>
+#include <corsika/media/Environment.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 
@@ -120,12 +120,12 @@ namespace corsika::setup {
     template <typename StackIter>
     using StackWithGeometryInterface =
         corsika::CombinedParticleInterface<ParticleDataStack::PIType,
-                                                  SetupGeometryDataInterface, StackIter>;
+                                           SetupGeometryDataInterface, StackIter>;
 
     using StackWithGeometry =
         corsika::CombinedStack<typename ParticleDataStack::StackImpl,
-                                      GeometryData<setup::SetupEnvironment>,
-                                      StackWithGeometryInterface>;
+                               GeometryData<setup::SetupEnvironment>,
+                               StackWithGeometryInterface>;
 
   } // namespace detail
 
@@ -186,9 +186,8 @@ namespace corsika::setup {
       actually needed. Keep an eye on this!
     */
 #if defined(__clang__)
-  using StackView =
-      corsika::SecondaryView<typename corsika::Stack::StackImpl,
-                                    corsika::detail::StackWithGeometryInterface>;
+  using StackView = corsika::SecondaryView<typename corsika::Stack::StackImpl,
+                                           corsika::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
   using StackView = corsika::MakeView<corsika::setup::Stack>::type;
 #endif
@@ -201,5 +200,4 @@ namespace corsika::setup {
 
   using StackView = detail::TheStackView;
 
-} // namespace corsika
-
+} // namespace corsika::setup

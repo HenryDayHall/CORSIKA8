@@ -38,9 +38,8 @@ namespace corsika {
     corsika::units::si::LengthType const radius;
 
   public:
-
-    Helix(Point const& pR0, units::si::FrequencyType pOmegaC,
-          VelocityVec const& pvPar, VelocityVec const& pvPerp)
+    Helix(Point const& pR0, units::si::FrequencyType pOmegaC, VelocityVec const& pvPar,
+          VelocityVec const& pvPerp)
         : r0(pR0)
         , omegaC(pOmegaC)
         , vPar(pvPar)
@@ -48,17 +47,16 @@ namespace corsika {
         , uPerp(vPerp.cross(vPar.normalized()))
         , radius(pvPar.norm() / abs(pOmegaC)) {}
 
-    inline Point GetPosition(units::si::TimeType t) const ;
+    inline Point GetPosition(units::si::TimeType t) const;
 
-    inline Point PositionFromArclength(units::si::LengthType l) const ;
+    inline Point PositionFromArclength(units::si::LengthType l) const;
 
-    inline units::si::LengthType GetRadius() const ;
+    inline units::si::LengthType GetRadius() const;
 
-    inline units::si::LengthType
-	ArcLength(units::si::TimeType t1, units::si::TimeType t2) const ;
+    inline units::si::LengthType ArcLength(units::si::TimeType t1,
+                                           units::si::TimeType t2) const;
 
-    inline units::si::TimeType TimeFromArclength(units::si::LengthType l) const ;
-
+    inline units::si::TimeType TimeFromArclength(units::si::LengthType l) const;
   };
 
 } // namespace corsika

@@ -12,15 +12,15 @@
 #include <cmath>
 #include <limits>
 
-#include <corsika/media/Environment.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/framework/sequence/ProcessReturn.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/media/Environment.hpp>
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -50,25 +50,23 @@ namespace corsika {
    *
    */
   template <typename TTracking, typename TProcessList, typename TStack,
-	    typename TStackView = corsika::setup::StackView>
-  class Cascade
-  {
+            typename TStackView = corsika::setup::StackView>
+  class Cascade {
 
     typedef typename TStack::ParticleType Particle;
-    typedef std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())> VolumeTreeNode;
+    typedef std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>
+        VolumeTreeNode;
     typedef typename VolumeTreeNode::IModelProperties MediumInterface;
 
   public:
-
     Cascade() = delete;
 
     Cascade(corsika::Environment<MediumInterface> const& env, TTracking& tr,
-    		 TProcessList& pl, TStack& stack):
-    	fEnvironment(env),
-		fTracking(tr),
-		fProcessSequence(pl),
-		fStack(stack)
-    { }
+            TProcessList& pl, TStack& stack)
+        : fEnvironment(env)
+        , fTracking(tr)
+        , fProcessSequence(pl)
+        , fStack(stack) {}
 
     /**
      * The Init function is called before the actual cascade simulations.
@@ -96,20 +94,19 @@ namespace corsika {
     void forceInteraction();
 
   private:
-
     void Step(Particle& vParticle);
 
-    auto decay(Particle& particle, decltype(std::declval<TStackView>().GetProjectile()) projectile);
+    auto decay(Particle& particle,
+               decltype(std::declval<TStackView>().GetProjectile()) projectile);
 
-    auto interaction(Particle& particle, decltype(std::declval<TStackView>().GetProjectile()) projectile) ;
+    auto interaction(Particle& particle,
+                     decltype(std::declval<TStackView>().GetProjectile()) projectile);
 
     corsika::Environment<MediumInterface> const& fEnvironment;
     TTracking& fTracking;
     TProcessList& fProcessSequence;
     TStack& fStack;
-    corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream("cascade");
-
+    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("cascade");
   };
 
 } // namespace corsika

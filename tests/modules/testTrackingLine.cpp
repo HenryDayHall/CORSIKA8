@@ -12,8 +12,8 @@
 
 #include <testTrackingLineStack.hpp> // test-build, and include file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
-#include <corsika/media/Environment.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/media/Environment.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
@@ -72,13 +72,12 @@ TEST_CASE("TrackingLine") {
 
     TestTrackingLineStack stack;
     stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
-            corsika::Code::MuPlus,
-            1_GeV,
-            {cs, {0_GeV, 0_GeV, 1_GeV}},
-            {cs, {0_m, 0_m, 0_km}},
-            0_ns});
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{corsika::Code::MuPlus,
+                                                        1_GeV,
+                                                        {cs, {0_GeV, 0_GeV, 1_GeV}},
+                                                        {cs, {0_m, 0_m, 0_km}},
+                                                        0_ns});
     auto p = stack.GetNextParticle();
     p.SetNode(theMediumPtr);
 

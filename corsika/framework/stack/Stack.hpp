@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include <corsika/framework/utility/MetaProgramming.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
+#include <corsika/framework/utility/MetaProgramming.hpp>
 
 /**
    All classes around management of particles on a stack.
@@ -72,7 +72,8 @@ namespace corsika {
      * if TStackData is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
      */
-    template <typename _ = StackDataType, typename = corsika::enable_if<std::is_reference<_>>>
+    template <typename _ = StackDataType,
+              typename = corsika::enable_if<std::is_reference<_>>>
     Stack(StackDataType vD)
         : fData(vD) {}
 
@@ -409,5 +410,3 @@ namespace corsika {
   };
 
 } // namespace corsika
-
-

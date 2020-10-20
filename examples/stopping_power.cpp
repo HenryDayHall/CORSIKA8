@@ -10,8 +10,8 @@
 
 #include <corsika/media/Environment.hpp>
 
-#include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/modules/energy_loss/EnergyLoss.hpp>
@@ -74,9 +74,9 @@ int main() {
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
 
     stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
-            beamCode, E0, plab, injectionPos, 0_ns});
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{beamCode, E0, plab, injectionPos,
+                                                        0_ns});
 
     auto const p = stack.GetNextParticle();
     HEPEnergyType dE = eLoss.TotalEnergyLoss(p, 1_g / square(1_cm));

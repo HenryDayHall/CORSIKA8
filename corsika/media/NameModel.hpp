@@ -19,4 +19,4 @@ namespace corsika {
     virtual ~NameModel() = default;
   };
 
-} // namespace corsika::environment
+} // namespace corsika

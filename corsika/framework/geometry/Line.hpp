@@ -32,23 +32,22 @@ namespace corsika {
     VelocityVec const v0;
 
   public:
-
     Line(Point const& pR0, VelocityVec const& pV0)
         : r0(pR0)
         , v0(pV0) {}
 
-    inline Point GetPosition(units::si::TimeType t) const ;
+    inline Point GetPosition(units::si::TimeType t) const;
 
-    inline Point PositionFromArclength(units::si::LengthType l) const ;
+    inline Point PositionFromArclength(units::si::LengthType l) const;
 
-    inline units::si::LengthType ArcLength(units::si::TimeType t1, units::si::TimeType t2) const ;
+    inline units::si::LengthType ArcLength(units::si::TimeType t1,
+                                           units::si::TimeType t2) const;
 
-    inline units::si::TimeType TimeFromArclength( units::si::LengthType t) const ;
+    inline units::si::TimeType TimeFromArclength(units::si::LengthType t) const;
 
-    inline const Point& GetR0() const ;
+    inline const Point& GetR0() const;
 
-    inline const VelocityVec& GetV0() const ;
-
+    inline const VelocityVec& GetV0() const;
   };
 
 } // namespace corsika

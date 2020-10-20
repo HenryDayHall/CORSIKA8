@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
@@ -22,23 +22,19 @@ namespace corsika {
     DimLessVec const fNormal;
 
   public:
-
     Plane(Point const& vCenter, DimLessVec const& vNormal)
         : fCenter(vCenter)
         , fNormal(vNormal.normalized()) {}
 
-    bool IsAbove(Point const& vP) const ;
+    bool IsAbove(Point const& vP) const;
 
-    units::si::LengthType DistanceTo(corsika::Point const& vP) const ;
+    units::si::LengthType DistanceTo(corsika::Point const& vP) const;
 
+    Point const& GetCenter() const;
 
-    Point const& GetCenter() const ;
-
-    DimLessVec const& GetNormal() const ;
-
+    DimLessVec const& GetNormal() const;
   };
 
 } // namespace corsika
 
 #include <corsika/detail/framework/geometry/Plane.inl>
-

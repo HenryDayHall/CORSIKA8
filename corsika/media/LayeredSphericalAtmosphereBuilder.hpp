@@ -8,12 +8,12 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/Point.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
-#include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <functional>
 #include <memory>
@@ -23,16 +23,14 @@
 
 namespace corsika {
 
-  class LayeredSphericalAtmosphereBuilder
-  {
+  class LayeredSphericalAtmosphereBuilder {
     std::unique_ptr<NuclearComposition> composition_;
     Point center_;
     units::si::LengthType previousRadius_{units::si::LengthType::zero()};
     units::si::LengthType earthRadius_;
     std::tuple<TModelArgs...> const additionalModelArgs_;
 
-    std::stack<VolumeTreeNode<IMediumModel>::VTNUPtr>
-        layers_; // innermost layer first
+    std::stack<VolumeTreeNode<IMediumModel>::VTNUPtr> layers_; // innermost layer first
 
     void checkRadius(units::si::LengthType r) const {
       if (r <= previousRadius_) {
@@ -41,7 +39,6 @@ namespace corsika {
     }
 
   public:
-
     static auto constexpr earthRadius = 6'371'000 * units::si::meter;
 
     LayeredSphericalAtmosphereBuilder(corsika::Point center,
@@ -154,9 +151,8 @@ namespace corsika {
     void assemble(Environment<IMediumModel>&);
 
     Environment<IMediumModel> assemble();
-
   };
 
-} // namespace corsika::environment
+} // namespace corsika
 
 #include <corsika/detail/media/LayeredSphericalAtmosphereBuilder.inl>

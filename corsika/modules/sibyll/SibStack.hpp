@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/modules/sibyll/ParticleConversion.hpp>
 #include <corsika/framework/stack/Stack.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/sibyll/ParticleConversion.hpp>
 
 #include <sibyll2.3d.hpp>
 
@@ -131,8 +131,7 @@ namespace corsika::sibyll {
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
 
     corsika::sibyll::SibyllCode GetPID() const {
-      return static_cast<corsika::sibyll::SibyllCode>(
-          GetStackData().GetId(GetIndex()));
+      return static_cast<corsika::sibyll::SibyllCode>(GetStackData().GetId(GetIndex()));
     }
 
     MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }

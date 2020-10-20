@@ -58,4 +58,3 @@ namespace corsika {
   template <class Trait>
   using disable_if = typename std::enable_if<(Trait::value == false)>::type;
 } // namespace corsika
-

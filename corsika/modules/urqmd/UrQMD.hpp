@@ -11,10 +11,10 @@
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/setup/SetupStack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/setup/SetupStack.hpp>
 
 #include <array>
 #include <utility>
@@ -32,16 +32,14 @@ namespace corsika::urqmd {
     corsika::units::si::CrossSectionType GetCrossSection(TParticle const&,
                                                          corsika::Code) const;
 
-    corsika::EProcessReturn DoInteraction(
-        corsika::setup::StackView::StackIterator&);
+    corsika::EProcessReturn DoInteraction(corsika::setup::StackView::StackIterator&);
 
     bool CanInteract(corsika::Code) const;
 
   private:
     static corsika::units::si::CrossSectionType GetCrossSection(
         corsika::Code, corsika::Code, corsika::units::si::HEPEnergyType, int);
-    corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream("UrQMD");
+    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("UrQMD");
 
     std::uniform_int_distribution<int> fBooleanDist{0, 1};
   };

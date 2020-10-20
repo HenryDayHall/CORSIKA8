@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <corsika/framework/utility/Singleton.hpp>
 #include <map>
 #include <random>
 #include <string>
-#include <corsika/framework/utility/Singleton.hpp>
 
 /*!
  * With this class modules can register streams of random numbers.
@@ -19,10 +19,10 @@
 
 namespace corsika {
 
-  //FIXME: This while facility needs to re-designed.
-  //It is not parallel friendly neither polymorphic
-  //and the streaming management is prone to produce
-  //huge correlation between the streams
+  // FIXME: This while facility needs to re-designed.
+  // It is not parallel friendly neither polymorphic
+  // and the streaming management is prone to produce
+  // huge correlation between the streams
 
   using RNG = std::mt19937; //!< the actual RNG type that will be used
 
@@ -34,7 +34,6 @@ namespace corsika {
     std::map<std::string, std::seed_seq> seeds;
 
   protected:
-
     RNGManager() {} // why ?
 
   public:

@@ -10,11 +10,11 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/sequence/ContinuousProcess.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <fstream>
 
@@ -44,6 +44,6 @@ namespace corsika::observation_plane {
     std::ofstream outputStream_;
     bool const deleteOnHit_;
   };
-} // namespace corsika::process::observation_plane
+} // namespace corsika::observation_plane
 
 #include <corsika/detail/modules/observation_plane/ObservationPlane.inl>

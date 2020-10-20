@@ -16,16 +16,14 @@
 
 namespace corsika::pythia8 {
 
-    class Random : public Pythia8::RndmEngine {
-      double flat();
+  class Random : public Pythia8::RndmEngine {
+    double flat();
 
-    private:
-      std::uniform_real_distribution<double> fDist;
-      corsika::RNG& fRNG =
-          corsika::RNGManager::GetInstance().GetRandomStream("pythia");
-    };
+  private:
+    std::uniform_real_distribution<double> fDist;
+    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("pythia");
+  };
 
 } // namespace corsika::pythia8
-
 
 #include <corsika/detail/modules/pythia8/Random.inl>

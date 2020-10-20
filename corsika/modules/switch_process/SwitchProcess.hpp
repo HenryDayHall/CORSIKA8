@@ -10,10 +10,10 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/sequence/InteractionProcess.hpp>
 #include <corsika/framework/sequence/ProcessSequence.hpp>
 #include <corsika/setup/SetupStack.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika::switch_process {
 
@@ -103,4 +103,3 @@ namespace corsika::switch_process {
     }
   };
 } // namespace corsika::switch_process
-

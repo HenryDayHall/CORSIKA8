@@ -10,9 +10,9 @@
 
 #include <Eigen/Dense>
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <iostream>
 #include <utility>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
@@ -46,46 +46,45 @@ namespace corsika {
     QuantityVector(Eigen::Vector3d pBareVector)
         : eVector(pBareVector) {}
 
-    auto operator[](size_t index) const ;
+    auto operator[](size_t index) const;
 
-    auto GetX() const ;
+    auto GetX() const;
 
-    auto GetY() const ;
+    auto GetY() const;
 
-    auto GetZ() const ;
+    auto GetZ() const;
 
-    auto norm() const ;
+    auto norm() const;
 
-    auto squaredNorm() const ;
+    auto squaredNorm() const;
 
-    auto operator+(QuantityVector<dim> const& pQVec) const ;
+    auto operator+(QuantityVector<dim> const& pQVec) const;
 
-    auto operator-(QuantityVector<dim> const& pQVec) const ;
-
-    template <typename ScalarDim>
-    auto operator*(phys::units::quantity<ScalarDim, double> const p) const ;
+    auto operator-(QuantityVector<dim> const& pQVec) const;
 
     template <typename ScalarDim>
-    auto operator/(phys::units::quantity<ScalarDim, double> const p) const ;
+    auto operator*(phys::units::quantity<ScalarDim, double> const p) const;
 
-    auto operator*(double const p) const ;
+    template <typename ScalarDim>
+    auto operator/(phys::units::quantity<ScalarDim, double> const p) const;
 
-    auto operator/(double const p) const ;
+    auto operator*(double const p) const;
 
-    auto& operator/=(double const p) ;
+    auto operator/(double const p) const;
 
-    auto& operator*=(double const p) ;
+    auto& operator/=(double const p);
 
-    auto& operator+=(QuantityVector<dim> const& pQVec) ;
+    auto& operator*=(double const p);
 
-    auto& operator-=(QuantityVector<dim> const& pQVec) ;
+    auto& operator+=(QuantityVector<dim> const& pQVec);
 
-    auto& operator-() const ;
+    auto& operator-=(QuantityVector<dim> const& pQVec);
 
-    auto normalized() const ;
+    auto& operator-() const;
 
-    auto operator==(QuantityVector<dim> const& p) const ;
+    auto normalized() const;
 
+    auto operator==(QuantityVector<dim> const& p) const;
   };
 
   /*

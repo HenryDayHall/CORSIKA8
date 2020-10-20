@@ -109,9 +109,9 @@ int main() {
   std::cout << "input momentum: " << plab.GetComponents() / 1_GeV << std::endl;
 
   stack.AddParticle(
-      std::tuple<corsika::Code, units::si::HEPEnergyType,
-                 corsika::MomentumVector, corsika::Point, units::si::TimeType>{
-          beamCode, E0, plab, injectionPos, 0_ns});
+      std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                 corsika::Point, units::si::TimeType>{beamCode, E0, plab, injectionPos,
+                                                      0_ns});
   //  }
 
   Line const line(injectionPos, plab.normalized() * 1_m * 1_Hz);
@@ -158,9 +158,9 @@ int main() {
   const HEPEnergyType Efinal =
       cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
   std::cout << "total cut energy (GeV): " << Efinal / 1_GeV << std::endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << std::endl;
+            << "relative difference (%): " << (Efinal / E0 - 1) * 100 << std::endl;
   std::cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << std::endl
-       << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << std::endl;
+            << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << std::endl;
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;

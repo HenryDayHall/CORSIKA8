@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <iostream>
-#include <type_traits>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <iostream>
+#include <type_traits>
 
 namespace corsika {
 
@@ -34,11 +34,9 @@ namespace corsika {
    */
 
   template <typename TimeType, typename SpaceVecType>
-  class FourVector
-  {
+  class FourVector {
 
   public:
-
     using SpaceType = typename std::decay<SpaceVecType>::type::Quantity;
 
     //! check the types and the physical units here:
@@ -51,13 +49,11 @@ namespace corsika {
         "(e.g. GeV) or [E/c]=[p]");
 
   public:
-
     FourVector() = default;
 
-    FourVector(const TimeType& eT, const SpaceVecType& eS):
-    	fTimeLike(eT),
-		fSpaceLike(eS)
-    {}
+    FourVector(const TimeType& eT, const SpaceVecType& eS)
+        : fTimeLike(eT)
+        , fSpaceLike(eS) {}
 
     /*
      * FIXME: These Getters are mis-leading and does not favor
@@ -68,21 +64,21 @@ namespace corsika {
      *
      * @return fTimeLike
      */
-    TimeType GetTimeLikeComponent() const ;
+    TimeType GetTimeLikeComponent() const;
 
     /**
      * @brief
      *
      * @return fSpaceLike
      */
-    SpaceVecType& GetSpaceLikeComponents() ;
+    SpaceVecType& GetSpaceLikeComponents();
 
     /**
      * @brief
      *
      * @return fSpaceLike;
      */
-    const SpaceVecType& GetSpaceLikeComponents() const ;
+    const SpaceVecType& GetSpaceLikeComponents() const;
 
     /**
      * @brief
@@ -97,7 +93,6 @@ namespace corsika {
      * @return
      */
     SpaceType GetNorm() const;
-
 
     /*
      * FIXME: a better alternative would be to define an enumeration
@@ -118,7 +113,6 @@ namespace corsika {
      */
     bool IsSpacelike() const;
 
-
     FourVector& operator+=(const FourVector& b);
 
     FourVector& operator-=(const FourVector& b);
@@ -135,11 +129,9 @@ namespace corsika {
        for this. You cannot mix different conventions due to
        unit-checking.
      */
-    SpaceType operator*(const FourVector& b) ;
-
+    SpaceType operator*(const FourVector& b);
 
   protected:
-
     //! the data members
     TimeType fTimeLike;
     SpaceVecType fSpaceLike;
@@ -161,46 +153,48 @@ namespace corsika {
     friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
     operator/(const FourVector<T, U>&, const double);
 
-    private:
+  private:
     /**
        This function is automatically compiled to use of ignore the
        extra factor of "c" for the time-like quantity
      */
-    auto GetTimeSquared() const ;
-
+    auto GetTimeSquared() const;
   };
-
-
 
   /**
       The math operator+
    */
   template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type, typename std::decay<SpaceVecType>::type>
-  operator+(const FourVector<TimeType, SpaceVecType>& a,  const FourVector<TimeType, SpaceVecType>& b) ;
+  inline FourVector<typename std::decay<TimeType>::type,
+                    typename std::decay<SpaceVecType>::type>
+  operator+(const FourVector<TimeType, SpaceVecType>& a,
+            const FourVector<TimeType, SpaceVecType>& b);
 
   /**
      The math operator-
   */
   template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type, typename std::decay<SpaceVecType>::type>
-  operator-(const FourVector<TimeType, SpaceVecType>& a, const FourVector<TimeType, SpaceVecType>& b) ;
+  inline FourVector<typename std::decay<TimeType>::type,
+                    typename std::decay<SpaceVecType>::type>
+  operator-(const FourVector<TimeType, SpaceVecType>& a,
+            const FourVector<TimeType, SpaceVecType>& b);
 
   /**
      The math operator*
      FIXME: Add overload to deal with multiplication by a scalar and 3-vectors
   */
   template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type, typename std::decay<SpaceVecType>::type>
-  operator*(const FourVector<TimeType, SpaceVecType>& a, const double b) ;
+  inline FourVector<typename std::decay<TimeType>::type,
+                    typename std::decay<SpaceVecType>::type>
+  operator*(const FourVector<TimeType, SpaceVecType>& a, const double b);
 
   /**
       The math operator/
    */
   template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,typename std::decay<SpaceVecType>::type>
-  operator/(const FourVector<TimeType, SpaceVecType>& a, const double b) ;
-
+  inline FourVector<typename std::decay<TimeType>::type,
+                    typename std::decay<SpaceVecType>::type>
+  operator/(const FourVector<TimeType, SpaceVecType>& a, const double b);
 
 } // namespace corsika
 

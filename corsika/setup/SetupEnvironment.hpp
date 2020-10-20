@@ -15,5 +15,4 @@
 namespace corsika::setup {
   using IEnvironmentModel = corsika::IMediumModel;
   using SetupEnvironment = corsika::Environment<IEnvironmentModel>;
-} // namespace corsika
-
+} // namespace corsika::setup

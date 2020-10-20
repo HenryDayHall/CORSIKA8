@@ -10,8 +10,8 @@
 
 #include <type_traits>
 
-#include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 #include "corsika/framework/sequence/ProcessReturn.hpp" // for convenience
 
 namespace corsika {

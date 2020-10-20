@@ -12,10 +12,10 @@
 #include <random>
 
 namespace corsika {
-	  //FIXME: This whole facility needs to re-designed.
-	  //It is not parallel friendly neither polymorphic
-	  //and the streaming management is prone to produce
-	  //huge correlation between the streams
+  // FIXME: This whole facility needs to re-designed.
+  // It is not parallel friendly neither polymorphic
+  // and the streaming management is prone to produce
+  // huge correlation between the streams
 
   template <class TQuantity>
   class ExponentialDistribution {
@@ -35,4 +35,3 @@ namespace corsika {
   };
 
 } // namespace corsika
-

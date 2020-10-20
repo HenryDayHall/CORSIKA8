@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include <corsika/framework/sequence/BaseProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/sequence/BaseProcess.hpp>
 
 namespace corsika::null_model {
 
@@ -31,6 +31,6 @@ namespace corsika::null_model {
     corsika::units::si::LengthType MaxStepLength(Particle&, Track&) const;
   };
 
-} // namespace corsika::process::null_model
+} // namespace corsika::null_model
 
 #include <corsika/detail/modules/null_model/NullModel.inl>

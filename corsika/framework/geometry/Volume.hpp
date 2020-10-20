@@ -22,4 +22,3 @@ namespace corsika {
   };
 
 } // namespace corsika
-

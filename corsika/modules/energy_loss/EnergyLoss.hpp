@@ -10,10 +10,10 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/sequence/ContinuousProcess.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -73,7 +73,7 @@ namespace corsika::energy_loss {
     using namespace units::si;
     return 0.0001_g / square(1_cm);
   });
-  
+
 } // namespace corsika::energy_loss
 
 #include <corsika/detail/modules/energy_loss/EnergyLoss.inl>

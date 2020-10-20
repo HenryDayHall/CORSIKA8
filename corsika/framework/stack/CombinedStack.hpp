@@ -37,7 +37,7 @@ namespace corsika {
   class CombinedParticleInterface
       : public ParticleInterfaceB<ParticleInterfaceA<StackIterator>> {
 
-    //FIXME: class has no ctors, assignment operators etc.
+    // FIXME: class has no ctors, assignment operators etc.
 
     // template<template <typename> typename _PI>
     // template <typename StackDataType, template <typename> typename ParticleInterface>
@@ -70,17 +70,17 @@ namespace corsika {
      */
 
     template <typename... Args1>
-    void SetParticleData(const std::tuple<Args1...> vA) ;
+    void SetParticleData(const std::tuple<Args1...> vA);
 
     template <typename... Args1, typename... Args2>
-    void SetParticleData(const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) ;
+    void SetParticleData(const std::tuple<Args1...> vA, const std::tuple<Args2...> vB);
 
     template <typename... Args1>
-    void SetParticleData(PI_C& p, const std::tuple<Args1...> vA) ;
+    void SetParticleData(PI_C& p, const std::tuple<Args1...> vA);
 
     template <typename... Args1, typename... Args2>
     void SetParticleData(PI_C& p, const std::tuple<Args1...> vA,
-                         const std::tuple<Args2...> vB) ;
+                         const std::tuple<Args2...> vB);
     ///@}
 
     std::string as_string() const {
@@ -90,19 +90,19 @@ namespace corsika {
 
   namespace detail {
 
-  /**
-   * @class CombinedStackImpl
-   *
-   * Memory implementation of a combined data stack.
-   *
-   * The two stack data user objects Stack1Impl and Stack2Impl are
-   * merged into one consistent Stack container object providing
-   * access to the combined number of data entries.
-   */
-  template <typename Stack1Impl, typename Stack2Impl>
-  class CombinedStackImpl ;
+    /**
+     * @class CombinedStackImpl
+     *
+     * Memory implementation of a combined data stack.
+     *
+     * The two stack data user objects Stack1Impl and Stack2Impl are
+     * merged into one consistent Stack container object providing
+     * access to the combined number of data entries.
+     */
+    template <typename Stack1Impl, typename Stack2Impl>
+    class CombinedStackImpl;
 
-}  // namespace detail
+  } // namespace detail
 
   /**
    * Helper template alias `CombinedStack` to construct new combined

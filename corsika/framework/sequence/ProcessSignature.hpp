@@ -24,4 +24,3 @@
   }
 
 // FORCE_SIGNATURE(thisMustBeDefined, T::thisMustBeDefined, int(*)(void));
-

@@ -46,13 +46,12 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
     };
-    stack.AddParticle(
-        std::tuple<Code, units::si::HEPEnergyType, corsika::MomentumVector, Point,
-                   units::si::TimeType>{
-            Code::NuMu, 1_GeV,
-            corsika::MomentumVector(
-                rootCS, {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::GetMass())}),
-            Point(rootCS, {1_m, 1_m, 10_m}), 0_ns});
+    stack.AddParticle(std::tuple<Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                                 Point, units::si::TimeType>{
+        Code::NuMu, 1_GeV,
+        corsika::MomentumVector(rootCS,
+                                {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::GetMass())}),
+        Point(rootCS, {1_m, 1_m, 10_m}), 0_ns});
   }
   auto particle = stack.GetNextParticle();
 

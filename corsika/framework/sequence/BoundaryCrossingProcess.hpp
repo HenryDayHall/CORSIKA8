@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <corsika/media/Environment.hpp>
 #include <corsika/framework/sequence/ProcessReturn.hpp>
+#include <corsika/media/Environment.hpp>
 
 namespace corsika {
 
@@ -36,5 +36,3 @@ namespace corsika {
   std::true_type is_process_impl(BoundaryCrossingProcess<T> const* impl);
 
 } // namespace corsika
-
-

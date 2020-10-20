@@ -11,12 +11,12 @@
 
 #include <corsika/modules/particle_cut/ParticleCut.hpp>
 
-#include <corsika/media/Environment.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/media/Environment.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 
@@ -51,8 +51,8 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     // add primary particle to stack
     auto particle = stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{
             corsika::Code::Proton, Eabove,
             corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
@@ -64,11 +64,11 @@ TEST_CASE("ParticleCut", "[processes]") {
     // add secondaries, all with energies above the threshold
     // only cut is by species
     for (auto proType : particleList)
-      projectile.AddSecondary(std::tuple<corsika::Code, units::si::HEPEnergyType,
-                                         corsika::MomentumVector, corsika::Point,
-                                         units::si::TimeType>{
-          proType, Eabove, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-          corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+      projectile.AddSecondary(
+          std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                     corsika::Point, units::si::TimeType>{
+              proType, Eabove, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+              corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
 
     cut.DoSecondaries(view);
 
@@ -80,8 +80,8 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     // add primary particle to stack
     auto particle = stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{
             corsika::Code::Proton, Eabove,
             corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
             corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
@@ -93,11 +93,11 @@ TEST_CASE("ParticleCut", "[processes]") {
     // add secondaries, all with energies below the threshold
     // only cut is by species
     for (auto proType : particleList)
-      projectile.AddSecondary(std::tuple<corsika::Code, units::si::HEPEnergyType,
-                                         corsika::MomentumVector, corsika::Point,
-                                         units::si::TimeType>{
-          proType, Ebelow, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-          corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+      projectile.AddSecondary(
+          std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                     corsika::Point, units::si::TimeType>{
+              proType, Ebelow, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+              corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
 
     cut.DoSecondaries(view);
 

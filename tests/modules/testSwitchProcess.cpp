@@ -8,10 +8,10 @@
  * the license.
  */
 
-#include <corsika/modules/switch_process/SwitchProcess.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/stack/Stack.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/switch_process/SwitchProcess.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -59,8 +59,7 @@ private:
  *
  */
 template <typename StackIteratorInterface>
-class TestParticleInterface
-    : public corsika::ParticleBase<StackIteratorInterface> {
+class TestParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
 
 public:
   using corsika::ParticleBase<StackIteratorInterface>::GetStackData;

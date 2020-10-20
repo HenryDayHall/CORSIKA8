@@ -42,5 +42,3 @@ namespace corsika {
   std::true_type is_process_impl(const ContinuousProcess<T>* impl);
 
 } // namespace corsika
-
-

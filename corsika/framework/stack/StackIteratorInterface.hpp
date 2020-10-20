@@ -68,9 +68,8 @@ namespace corsika {
             StackIteratorInterface<TStackData, TParticleInterface, StackType>> {
 
   public:
-    using ParticleInterfaceType =
-        ParticleInterface<corsika::StackIteratorInterface<
-            StackDataType, ParticleInterface, StackType>>;
+    using ParticleInterfaceType = ParticleInterface<
+        corsika::StackIteratorInterface<StackDataType, ParticleInterface, StackType>>;
 
     // friends are needed for access to protected methods
     friend class Stack<TStackData,
@@ -356,4 +355,3 @@ namespace corsika {
   }; // end class ConstStackIterator
 
 } // namespace corsika
-

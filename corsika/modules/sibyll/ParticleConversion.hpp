@@ -57,14 +57,10 @@ namespace corsika::sibyll {
         corsika2sibyllXStype[static_cast<corsika::CodeIntType>(pCode)]);
   }
 
-  bool constexpr CanInteract(corsika::Code pCode) {
-    return GetSibyllXSCode(pCode) > 0;
-  }
+  bool constexpr CanInteract(corsika::Code pCode) { return GetSibyllXSCode(pCode) > 0; }
 
   corsika::units::si::HEPMassType GetSibyllMass(corsika::Code const);
 
 } // namespace corsika::sibyll
-
-
 
 #include <corsika/detail/modules/sibyll/ParticleConversion.inl>

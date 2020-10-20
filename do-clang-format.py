@@ -20,15 +20,14 @@ args = parser.parse_args()
 filelist = []
 if args.all:
     for dirpath, dirnames, filenames in os.walk("."):
-        doExclude = False
-        for exclude in ["ThirdParty", "PROPOSAL", "include", "build"]:
-            if exclude in dirpath:
-                doExclude = True
-                break
-        if doExclude:
-            continue
+        excl = False
+        excl_dirs = ["ThirdParty", "build", "externals"]
+        for excl_dir in excl_dirs:
+            if excl_dir in dirpath:
+                excl = True
+        if excl: continue
         for f in filenames:
-            if f.endswith(".h") or f.endswith(".cc") or f.endswith(".hpp") or f.endswith(".cpp") or f.endswith(".cxx"):
+            if f.endswith(".hpp") or f.endswith(".cpp"):
                 filename = os.path.join(dirpath, f)
                 if not os.path.islink(filename):
                     filelist.append(filename)

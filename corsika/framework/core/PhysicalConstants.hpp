@@ -64,4 +64,3 @@ namespace corsika::units::constants {
   // etc.
 
 } // namespace corsika::units::constants
-

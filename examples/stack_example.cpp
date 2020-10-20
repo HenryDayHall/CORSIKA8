@@ -25,8 +25,8 @@ void fill(corsika::super_stupid::SuperStupidStack& s) {
       corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   for (int i = 0; i < 11; ++i) {
     s.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType,
-                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType>{
             corsika::Code::Electron, 1.5_GeV * i,
             corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
             corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});

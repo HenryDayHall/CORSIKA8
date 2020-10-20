@@ -9,8 +9,8 @@
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/InteractionProcess.hpp>
 
 namespace corsika::sibyll {
 
@@ -32,7 +32,7 @@ namespace corsika::sibyll {
     ~NuclearInteraction();
 
     void Init();
-    
+
     void InitializeNuclearCrossSections();
     void PrintCrossSectionTable(corsika::Code);
     corsika::units::si::CrossSectionType ReadCrossSectionTable(
@@ -61,8 +61,7 @@ namespace corsika::sibyll {
     TEnvironment const& environment_;
     corsika::sibyll::Interaction& hadronicInteraction_;
     std::map<corsika::Code, int> targetComponentsIndex_;
-    corsika::RNG& RNG_ =
-        corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
+    corsika::RNG& RNG_ = corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
     static constexpr unsigned int gNSample_ =
         500; // number of samples in MC estimation of cross section
     static constexpr unsigned int gMaxNucleusAProjectile_ = 56;
@@ -77,6 +76,5 @@ namespace corsika::sibyll {
   };
 
 } // namespace corsika::sibyll
-
 
 #include <corsika/detail/modules/sibyll/NuclearInteraction.inl>

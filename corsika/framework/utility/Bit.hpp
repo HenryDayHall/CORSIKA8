@@ -89,4 +89,3 @@ namespace corsika {
   }
 
 } // namespace corsika
-

@@ -11,9 +11,9 @@
 #include <corsika/modules/sibyll/Random.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/InteractionProcess.hpp>
 #include <tuple>
 
 namespace corsika::sibyll {
@@ -66,21 +66,16 @@ namespace corsika::sibyll {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::RNG& RNG_ =
-        corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
+    corsika::RNG& RNG_ = corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
     // FOR NOW keep trackedParticles private, could be configurable
     std::vector<corsika::Code> const trackedParticles_ = {
-        corsika::Code::PiPlus,     corsika::Code::PiMinus,
-        corsika::Code::Pi0,        corsika::Code::KMinus,
-        corsika::Code::KPlus,      corsika::Code::K0Long,
-        corsika::Code::K0Short,    corsika::Code::SigmaPlus,
-        corsika::Code::Sigma0,     corsika::Code::Sigma0Bar,
-        corsika::Code::SigmaMinus, corsika::Code::Lambda0,
-        corsika::Code::Xi0,        corsika::Code::XiMinus,
-        corsika::Code::OmegaMinus, corsika::Code::DPlus,
-        corsika::Code::DMinus,     corsika::Code::D0,
-        corsika::Code::MuMinus,    corsika::Code::MuPlus,
-        corsika::Code::D0Bar};
+        corsika::Code::PiPlus,    corsika::Code::PiMinus,    corsika::Code::Pi0,
+        corsika::Code::KMinus,    corsika::Code::KPlus,      corsika::Code::K0Long,
+        corsika::Code::K0Short,   corsika::Code::SigmaPlus,  corsika::Code::Sigma0,
+        corsika::Code::Sigma0Bar, corsika::Code::SigmaMinus, corsika::Code::Lambda0,
+        corsika::Code::Xi0,       corsika::Code::XiMinus,    corsika::Code::OmegaMinus,
+        corsika::Code::DPlus,     corsika::Code::DMinus,     corsika::Code::D0,
+        corsika::Code::MuMinus,   corsika::Code::MuPlus,     corsika::Code::D0Bar};
     const bool internalDecays_ = true;
     const corsika::units::si::HEPEnergyType minEnergyCoM_ =
         10. * 1e9 * corsika::units::si::electronvolt;

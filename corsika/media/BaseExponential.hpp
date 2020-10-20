@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Trajectory.hpp>
-#include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <limits>
 
@@ -23,27 +23,23 @@ namespace corsika {
    * (locally) flat exponential atmospheres.
    */
   template <class TDerived>
-  class BaseExponential
-  {
+  class BaseExponential {
 
   public:
-
-	  BaseExponential(Point const& vP0, units::si::MassDensityType vRho,
-			  units::si::LengthType vLambda):
-				  fRho0(vRho),
-				  fLambda(vLambda),
-				  fInvLambda(1 / vLambda),
-				  fP0(vP0)
-  {}
+    BaseExponential(Point const& vP0, units::si::MassDensityType vRho,
+                    units::si::LengthType vLambda)
+        : fRho0(vRho)
+        , fLambda(vLambda)
+        , fInvLambda(1 / vLambda)
+        , fP0(vP0) {}
 
   protected:
-
     units::si::MassDensityType const fRho0;
     units::si::LengthType const fLambda;
     units::si::InverseLengthType const fInvLambda;
     Point const fP0;
 
-    auto const& GetImplementation() const ;
+    auto const& GetImplementation() const;
 
     // clang-format off
     /**
@@ -60,8 +56,7 @@ namespace corsika {
      */
     // clang-format on
     units::si::GrammageType IntegratedGrammage(
-        Trajectory<Line> const& vLine,
-		units::si::LengthType vL,
+        Trajectory<Line> const& vLine, units::si::LengthType vL,
         Vector<units::si::dimensionless_d> const& vAxis) const;
 
     // clang-format off
@@ -83,13 +78,10 @@ namespace corsika {
      */
     // clang-format on
     units::si::LengthType ArclengthFromGrammage(
-        Trajectory<Line> const& vLine,
-        units::si::GrammageType vGrammage,
+        Trajectory<Line> const& vLine, units::si::GrammageType vGrammage,
         Vector<units::si::dimensionless_d> const& vAxis) const;
-
-
   };
 
-} // namespace corsika::environment
+} // namespace corsika
 
 #include <corsika/detail/media/BaseExponential.inl>

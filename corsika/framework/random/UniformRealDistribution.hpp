@@ -13,10 +13,10 @@
 
 namespace corsika {
 
-	  //FIXME: This while facility needs to re-designed.
-	  //It is not parallel friendly neither polymorphic
-	  //and the streaming management is prone to produce
-	  //huge correlation between the streams
+  // FIXME: This while facility needs to re-designed.
+  // It is not parallel friendly neither polymorphic
+  // and the streaming management is prone to produce
+  // huge correlation between the streams
 
   template <class TQuantity>
   class UniformRealDistribution {
@@ -40,4 +40,3 @@ namespace corsika {
   };
 
 } // namespace corsika
-

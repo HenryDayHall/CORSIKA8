@@ -24,10 +24,10 @@ namespace corsika {
         , fRadius(pRadius) {}
 
     //! returns true if the Point p is within the sphere
-    inline bool Contains(Point const& p) const override ;
-    
+    inline bool Contains(Point const& p) const override;
+
     inline const Point& GetCenter() const;
-    
+
     inline units::si::LengthType GetRadius() const;
   };
 

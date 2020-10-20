@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Trajectory.hpp>
-#include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 
 #include <corsika/setup/SetupTrajectory.h>
 
@@ -32,39 +32,30 @@ namespace corsika {
     NuclearComposition const fNuclComp;
 
   public:
+    HomogeneousMedium(corsika::units::si::MassDensityType pDensity,
+                      NuclearComposition pNuclComp)
+        : fDensity(pDensity)
+        , fNuclComp(pNuclComp) {}
 
-    HomogeneousMedium(corsika::units::si::MassDensityType pDensity, NuclearComposition pNuclComp):
-        fDensity(pDensity),
-        fNuclComp(pNuclComp)
-  {}
-
-    corsika::units::si::MassDensityType
-	GetMassDensity( corsika::Point const&) const override
-    {
+    corsika::units::si::MassDensityType GetMassDensity(
+        corsika::Point const&) const override {
       return fDensity;
     }
 
-    NuclearComposition const&
-	GetNuclearComposition() const override
-    {
-    	return fNuclComp;
-    }
+    NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    corsika::units::si::GrammageType
-	IntegratedGrammage( corsika::Trajectory<corsika::Line> const&,
-        corsika::units::si::LengthType pTo) const override
-    {
+    corsika::units::si::GrammageType IntegratedGrammage(
+        corsika::Trajectory<corsika::Line> const&,
+        corsika::units::si::LengthType pTo) const override {
       using namespace corsika::units::si;
       return pTo * fDensity;
     }
 
-    corsika::units::si::LengthType
-	ArclengthFromGrammage(corsika::Trajectory<corsika::Line> const&,
-        corsika::units::si::GrammageType pGrammage) const override
-    {
+    corsika::units::si::LengthType ArclengthFromGrammage(
+        corsika::Trajectory<corsika::Line> const&,
+        corsika::units::si::GrammageType pGrammage) const override {
       return pGrammage / fDensity;
     }
   };
 
-} // namespace corsika::environment
-
+} // namespace corsika

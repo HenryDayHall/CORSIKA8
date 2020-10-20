@@ -60,15 +60,15 @@ namespace corsika {
      */
     auto norm() const;
 
-    auto GetNorm() const ;
+    auto GetNorm() const;
 
     /*!
      * returns the squared norm of the Vector. Before using this method,
      * think about whether norm() might be cheaper for your computation.
      */
-    auto squaredNorm() const ;
+    auto squaredNorm() const;
 
-    auto GetSquaredNorm() const ;
+    auto GetSquaredNorm() const;
     /*!
      * returns a Vector \f$ \vec{v}_{\parallel} \f$ which is the parallel projection
      * of this vector \f$ \vec{v}_1 \f$ along another Vector \f$ \vec{v}_2 \f$ given by
@@ -77,39 +77,39 @@ namespace corsika {
      *   \f]
      */
     template <typename dim2>
-    auto parallelProjectionOnto(Vector<dim2> const& pVec, CoordinateSystem const& pCS) const ;
+    auto parallelProjectionOnto(Vector<dim2> const& pVec,
+                                CoordinateSystem const& pCS) const;
     template <typename dim2>
-    auto parallelProjectionOnto(Vector<dim2> const& pVec) const ;
+    auto parallelProjectionOnto(Vector<dim2> const& pVec) const;
 
-    auto operator+(Vector<dim> const& pVec) const ;
+    auto operator+(Vector<dim> const& pVec) const;
 
-    auto operator-(Vector<dim> const& pVec) const ;
+    auto operator-(Vector<dim> const& pVec) const;
 
-    auto& operator*=(double const p) ;
+    auto& operator*=(double const p);
 
     template <typename ScalarDim>
-    auto operator*(phys::units::quantity<ScalarDim, double> const p) const ;
+    auto operator*(phys::units::quantity<ScalarDim, double> const p) const;
     template <typename ScalarDim>
-    auto operator/(phys::units::quantity<ScalarDim, double> const p) const ;
+    auto operator/(phys::units::quantity<ScalarDim, double> const p) const;
 
-    auto operator*(double const p) const ;
+    auto operator*(double const p) const;
 
-    auto operator/(double const p) const ;
+    auto operator/(double const p) const;
 
-    auto& operator+=(Vector<dim> const& pVec) ;
+    auto& operator+=(Vector<dim> const& pVec);
 
     auto& operator-=(Vector<dim> const& pVec);
 
-    auto& operator-() const ;
+    auto& operator-() const;
 
-    auto normalized() const ;
-
-    template <typename dim2>
-    auto cross(Vector<dim2> pV) const ;
+    auto normalized() const;
 
     template <typename dim2>
-    auto dot(Vector<dim2> pV) const ;
+    auto cross(Vector<dim2> pV) const;
 
+    template <typename dim2>
+    auto dot(Vector<dim2> pV) const;
   };
 
 } // namespace corsika

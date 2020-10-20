@@ -92,18 +92,17 @@ namespace corsika {
       return GetVelocity(u).normalized();
     }
 
-    Point GetPosition(double u) const ;
+    Point GetPosition(double u) const;
 
-    corsika::units::si::TimeType GetDuration() const ;
+    corsika::units::si::TimeType GetDuration() const;
 
-    corsika::units::si::LengthType GetLength() const ;
+    corsika::units::si::LengthType GetLength() const;
 
-    corsika::units::si::LengthType GetDistance(corsika::units::si::TimeType t) const ;
+    corsika::units::si::LengthType GetDistance(corsika::units::si::TimeType t) const;
 
-    void LimitEndTo(corsika::units::si::LengthType limit) ;
+    void LimitEndTo(corsika::units::si::LengthType limit);
 
-    auto NormalizedDirection() const ;
-
+    auto NormalizedDirection() const;
   };
 
 } // namespace corsika

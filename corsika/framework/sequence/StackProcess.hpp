@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/sequence/ProcessReturn.hpp> // for convenience
+#include <corsika/setup/SetupTrajectory.hpp>
 
 namespace corsika {
 

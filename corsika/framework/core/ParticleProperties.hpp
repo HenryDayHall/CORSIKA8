@@ -99,7 +99,8 @@ namespace corsika::particles {
   }
 
   inline corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
-    return particle::detail::lifetime[static_cast<CodeIntType>(p)] * corsika::units::si::second;
+    return particle::detail::lifetime[static_cast<CodeIntType>(p)] *
+           corsika::units::si::second;
   }
 
   inline bool constexpr IsHadron(Code const p) {
@@ -157,9 +158,9 @@ namespace corsika::particles {
   /**
    * Get mass of nucleus
    **/
-  inline corsika::units::si::HEPMassType constexpr GetNucleusMass(const int vA, const int vZ) {
+  inline corsika::units::si::HEPMassType constexpr GetNucleusMass(const int vA,
+                                                                  const int vZ) {
     return Proton::GetMass() * vZ + (vA - vZ) * Neutron::GetMass();
   }
 
 } // namespace corsika
-
