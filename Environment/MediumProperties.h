@@ -41,11 +41,12 @@ namespace corsika::environment {
     double corrected_density_;
     State state_;
     MediumType type_;
-    std::string symbol_;  
+    std::string symbol_;
     double Ieff_;
     double Cbar_;
     double x0_;
     double x1_;
+    double aa_;
     double sk_;
     double dlt0_;
 
@@ -63,11 +64,12 @@ namespace corsika::environment {
     double Ieff() const { return Ieff_; }
     double Cbar() const { return Cbar_; }
     double x0() const { return x0_; }
-    double x1() const { return x1_; }   
-    double sk() const { return sk_; }   
+    double x1() const { return x1_; }
+    double aa() const { return aa_; }
+    double sk() const { return sk_; }
     double dlt0() const { return dlt0_; }
   };
-  
+
 } // namespace corsika::environment
 
 

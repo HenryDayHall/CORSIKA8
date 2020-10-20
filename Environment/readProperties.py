@@ -299,20 +299,24 @@ def gen_classes(media_db):
      static State state() {{ return data_.state(); }}
      static MediumType type() {{ return data_.type(); }}
      static std::string const symbol() {{ return data_.symbol(); }}
-  
+
      static double Ieff() {{ return data_.Ieff(); }}
      static double Cbar() {{ return data_.Cbar(); }}
      static double x0() {{ return data_.x0(); }}
      static double x1() {{ return data_.x1(); }}
+     static double aa() {{ return data_.aa(); }}
      static double sk() {{ return data_.sk(); }}
      static double dlt0() {{ return data_.dlt0(); }}
 
      //static constexpr Constituents constituents() {{ return {constituents}; }}
      //static constexpr Properties properties() {{ return {properties}; }}
 
-     inline static const MediumData data_ {{ "{name}", "{nice_name}", {weight}, {weight_significant_figure}, {weight_error_last_digit}, {Z_over_A}, {sternheimer_density}, {corrected_density}, State::{state}, MediumType::{type}, "{symbol}", {Ieff}, {Cbar}, {x0}, {x1}, {sk}, {dlt0} }};
+     inline static const MediumData data_ {{ "{name}", "{nice_name}", {weight},
+     {weight_significant_figure}, {weight_error_last_digit}, {Z_over_A},
+     {sternheimer_density}, {corrected_density}, State::{state},
+     MediumType::{type}, "{symbol}", {Ieff}, {Cbar}, {x0}, {x1}, {aa}, {sk}, {dlt0} }};
   }};
-        
+
         """.format(cname=cname,
                    stern_label=entry["sternheimer_label"],
                    stern_index=entry["sternheimer_index"],
@@ -349,15 +353,16 @@ def gen_classes(media_db):
      # static constexpr State state() {{ return State::{state}; }}
      # static constexpr MediumType type() {{ return MediumType::{type}; }}
      # static std::string const symbol() {{ return "{symbol}"; }}
-  
+
      # static constexpr double Ieff() {{ return {Ieff}; }}
      # static constexpr double Cbar() {{ return {Cbar}; }}
      # static constexpr double x0() {{ return {x0}; }}
      # static constexpr double x1() {{ return {x1}; }}
+     # static constexpr double aa() {{ return {aa}; }}
      # static constexpr double sk() {{ return {sk}; }}
      # static constexpr double dlt0() {{ return {dlt0}; }}
 
-        
+
         string += class_string
 
 
