@@ -4,7 +4,7 @@ set (test_modules_sources
   testSibyll.cpp
   testNullModel.cpp
   testObservationPlane.cpp
-  #testParticleCut.cpp
+  testParticleCut.cpp
   #testPythia.cpp
   #testQGSJetII.cpp
   #testSibyll.cpp
