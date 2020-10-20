@@ -493,7 +493,7 @@ namespace corsika::sibyll {
     fragm_(kATarget, kAProj, nIntProj, impactPar, nFragments, AFragments);
 
     // this should not occur but well :)
-    if (nFragments > GetMaxNFragments())
+    if (nFragments > (int)GetMaxNFragments())
       throw std::runtime_error("Number of nuclear fragments in NUCLIB exceeded!");
 
     std::cout << "number of fragments: " << nFragments << std::endl;

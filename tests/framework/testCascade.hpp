@@ -9,11 +9,10 @@
 #pragma once
 
 #include <corsika/media/Environment.hpp>
-
 #include <corsika/setup/SetupStack.hpp>
 
-using TestEnvironmentInterface = corsika::environment::IEmpty;
-using TestEnvironmentType = corsika::environment::Environment<TestEnvironmentInterface>;
+using TestEnvironmentType =
+    corsika::Environment<corsika::IMediumModel>;
 
 template <typename T>
 using SetupGeometryDataInterface =
@@ -22,11 +21,11 @@ using SetupGeometryDataInterface =
 // combine particle data stack with geometry information for tracking
 template <typename StackIter>
 using StackWithGeometryInterface =
-    corsika::CombinedParticleInterface<corsika::detail::ParticleDataStack::PIType,
+  corsika::CombinedParticleInterface<corsika::setup::detail::ParticleDataStack::PIType,
                                        SetupGeometryDataInterface, StackIter>;
 
 using TestCascadeStack =
-    corsika::CombinedStack<typename corsika::detail::ParticleDataStack::StackImpl,
+  corsika::CombinedStack<typename corsika::setup::detail::ParticleDataStack::StackImpl,
                            GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
 
 /*

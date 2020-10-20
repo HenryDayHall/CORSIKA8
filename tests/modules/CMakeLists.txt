@@ -7,8 +7,8 @@ set (test_modules_sources
   testParticleCut.cpp
   testPythia8.cpp
   #testQGSJetII.cpp
-  #testStackInspector.cpp
-  #testSwitchProcess.cpp
+  testStackInspector.cpp
+  testSwitchProcess.cpp
   #testTrackingLine.cpp
   #testUrQMD.cpp
   )
