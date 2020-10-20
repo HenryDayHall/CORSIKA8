@@ -6,14 +6,13 @@
  * the license.
  */
 
-#include <corsika/stack/NuclearStackExtension.h>
-#include <corsika/stack/SuperStupidStack.h>
+#include <corsika/stack/NuclearStackExtension.hpp>
+#include <corsika/stack/SuperStupidStack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
 using namespace corsika;
 using namespace corsika::nuclear_extension;
-using namespace corsika;
 using namespace corsika::units::si;
 
 #include <catch2/catch.hpp>

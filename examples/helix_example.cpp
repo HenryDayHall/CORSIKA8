@@ -6,25 +6,22 @@
  * the license.
  */
 
-#include <array>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
+#include <array>
 #include <cstdlib>
 #include <iostream>
 
 using namespace corsika;
-using namespace corsika;
 using namespace corsika::units::si;
 
 int main() {
-
-  std::cout << "helix_example" << std::endl;
-
-  geometry::CoordinateSystem& root =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  corsika::CoordinateSystem& root =
+      corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;

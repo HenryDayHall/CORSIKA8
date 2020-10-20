@@ -12,9 +12,6 @@
 #include <cmath>
 #include <limits>
 
-//FIXME: importing what from BOOST ?
-#include <boost/type_index.hpp>
-
 #include <corsika/media/Environment.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -24,11 +21,6 @@
 #include <corsika/framework/sequence/ProcessReturn.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-
-//FIXME: importing what from BOOST ?
-//using boost::typeindex::type_id_with_cvr;
-
-#include <fstream>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -58,7 +50,7 @@ namespace corsika {
    *
    */
   template <typename TTracking, typename TProcessList, typename TStack,
-  	  	  	  typename TStackView = corsika::StackView>
+	    typename TStackView = corsika::setup::StackView>
   class Cascade
   {
 
@@ -109,7 +101,7 @@ namespace corsika {
 
     auto decay(Particle& particle, decltype(std::declval<TStackView>().GetProjectile()) projectile);
 
-    auto interaction(particle_type& particle, decltype(std::declval<TStackView>().GetProjectile()) projectile) ;
+    auto interaction(Particle& particle, decltype(std::declval<TStackView>().GetProjectile()) projectile) ;
 
     corsika::Environment<MediumInterface> const& fEnvironment;
     TTracking& fTracking;

@@ -6,17 +6,16 @@
  * the license.
  */
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <cstdlib>
 #include <iostream>
 #include <typeinfo>
 
-using namespace corsika;
 using namespace corsika;
 using namespace corsika::units::si;
 
@@ -25,8 +24,8 @@ int main() {
   std::cout << "geometry_example" << std::endl;
 
   // define the root coordinate system
-  geometry::CoordinateSystem& root =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  corsika::CoordinateSystem& root =
+      corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
 
   // another CS defined by a translation relative to the root CS
   CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});

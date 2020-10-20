@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <corsika/modules/sibyll/Random.hpp>
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/sequence/InteractionProcess.hpp>
 #include <corsika/framework/random/RNGManager.hpp>

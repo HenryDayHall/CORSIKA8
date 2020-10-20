@@ -6,19 +6,18 @@
  * the license.
  */
 
-#include <array>
-#include <iomanip>
-#include <iostream>
-
 #include <corsika/framework/sequence/ProcessSequence.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
+#include <array>
+#include <iomanip>
+#include <iostream>
+
 using namespace corsika;
 using namespace corsika::units::si;
-using namespace corsika;
 using namespace std;
 
 const int nData = 10;

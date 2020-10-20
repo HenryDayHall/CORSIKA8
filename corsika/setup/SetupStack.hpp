@@ -9,19 +9,20 @@
 #pragma once
 
 // the basic particle data stack:
-#include <corsika/stack/SuperStupidStack.h>
+#include <corsika/stack/SuperStupidStack.hpp>
 
 // extension with nuclear data for Code::Nucleus
-#include <corsika/stack/NuclearStackExtension.h>
+#include <corsika/stack/NuclearStackExtension.hpp>
 
 // extension with geometry information for tracking
 #include <corsika/media/Environment.hpp>
 #include <corsika/framework/stack/CombinedStack.hpp>
 
+#include <corsika/setup/SetupEnvironment.hpp>
+
 #include <tuple>
 #include <utility>
 #include <vector>
-#include <corsika/setup/SetupEnvironment.hpp>
 
   namespace detail {
 

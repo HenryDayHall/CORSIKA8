@@ -6,6 +6,8 @@
  * the license.
  */
 
+#pragma once
+
 #include <corsika/framework/random/RNGManager.hpp>
 #include <random>
 

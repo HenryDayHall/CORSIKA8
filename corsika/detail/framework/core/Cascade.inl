@@ -151,9 +151,9 @@ namespace corsika {
       step.LimitEndTo(min_distance);
 
       // apply all continuous processes on particle + track
-      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
+      corsika::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
 
-      if (status == process::EProcessReturn::eParticleAbsorbed) {
+      if (status == corsika::EProcessReturn::eParticleAbsorbed) {
         std::cout << "Cascade: delete absorbed particle " << vParticle.GetPID() << " "
                   << vParticle.GetEnergy() / 1_GeV << "GeV" << std::endl;
         vParticle.Delete();
@@ -232,7 +232,7 @@ namespace corsika {
       units::si::InverseTimeType const actual_decay_time =
           fProcessSequence.GetTotalInverseLifetime(particle);
 
-      random::UniformRealDistribution<units::si::InverseTimeType> uniDist(
+      corsika::UniformRealDistribution<units::si::InverseTimeType> uniDist(
           actual_decay_time);
       const auto sample_process = uniDist(fRNG);
       units::si::InverseTimeType inv_decay_count = units::si::InverseTimeType::zero();
@@ -241,7 +241,7 @@ namespace corsika {
     }
 
     template <typename TTracking, typename TProcessList, typename TStack, typename TStackView>
-    auto Cascade<TTracking, TProcessList, TStack, TStackView >::interaction(particle_type& particle,
+    auto Cascade<TTracking, TProcessList, TStack, TStackView >::interaction(Particle& particle,
                      decltype(std::declval<TStackView>().GetProjectile()) projectile)
     {
       std::cout << "collide" << std::endl;
@@ -249,7 +249,7 @@ namespace corsika {
       units::si::InverseGrammageType const current_inv_length =
           fProcessSequence.GetTotalInverseInteractionLength(particle);
 
-      random::UniformRealDistribution<units::si::InverseGrammageType> uniDist(
+      corsika::UniformRealDistribution<units::si::InverseGrammageType> uniDist(
           current_inv_length);
       const auto sample_process = uniDist(fRNG);
       auto inv_lambda_count = units::si::InverseGrammageType::zero();

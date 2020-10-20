@@ -1,195 +1,30 @@
+add_executable (helix_example helix_example.cpp)
+target_link_libraries (helix_example CORSIKA8)
 
-CORSIKA_ADD_EXAMPLE (helix_example)
-target_link_libraries (helix_example CORSIKAgeometry CORSIKAunits)
+add_executable (geometry_example geometry_example.cpp)
+target_link_libraries (geometry_example CORSIKA8)
 
-CORSIKA_ADD_EXAMPLE (particle_list_example)
-target_link_libraries (particle_list_example CORSIKAparticles CORSIKAunits CORSIKAprocesses ProcessSibyll ProcessQGSJetII)
+# loggin back in March was not used
+#add_executable (logger_example logger_example.cpp)
+#target_link_libraries (logger_example CORSIKA8)
 
-CORSIKA_ADD_EXAMPLE (geometry_example)
-target_link_libraries (geometry_example CORSIKAgeometry CORSIKAunits)
+add_executable (stack_example stack_example.cpp)
+target_link_libraries (stack_example CORSIKA8)
 
-CORSIKA_ADD_EXAMPLE (stack_example)
-target_link_libraries (stack_example CORSIKAsetup CORSIKAunits)
+add_executable (cascade_example cascade_example.cpp)
+target_link_libraries (cascade_example CORSIKA8)
 
-# address sanitizer is making this example too slow, so we only do "undefined"
-CORSIKA_ADD_EXAMPLE (boundary_example)
-target_link_libraries (boundary_example
-  CORSIKAsetup
-  CORSIKAunits
-  CORSIKAlogging
-  CORSIKArandom
-  ProcessSibyll
-  CORSIKAcascade
-  ProcessTrackWriter
-  ProcessParticleCut
-  ProcessTrackingLine
-  ProcessPythia8
-  CORSIKAprocesses
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  C8::ext::boost # boost::histogram
-  )
+add_executable (boundary_example boundary_example.cpp)
+target_link_libraries (boundary_example CORSIKA8)
 
-CORSIKA_ADD_EXAMPLE (cascade_example)
-target_link_libraries (cascade_example
-  CORSIKAsetup
-  CORSIKAunits
-  CORSIKAlogging
-  CORSIKArandom
-  ProcessSibyll
-  ProcessProposal
-  CORSIKAcascade
-  ProcessEnergyLoss
-  ProcessTrackWriter
-  ProcessStackInspector
-  ProcessTrackingLine
-  ProcessParticleCut
-  ProcessHadronicElasticModel
-  ProcessStackInspector
-  CORSIKAprocesses
-  CORSIKAcascade
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  )
+add_executable (cascade_proton_example cascade_proton_example.cpp)
+target_link_libraries (cascade_proton_example CORSIKA8)
 
-if (Pythia8_FOUND)
-  CORSIKA_ADD_EXAMPLE (cascade_proton_example)
-  target_link_libraries (cascade_proton_example
-    CORSIKAsetup
-    CORSIKAunits
-    CORSIKAlogging
-    CORSIKArandom
-    ProcessSibyll
-    ProcessPythia8
-    ProcessUrQMD
-    CORSIKAcascade
-    ProcessEnergyLoss
-    ProcessTrackWriter
-    ProcessStackInspector
-    ProcessTrackingLine
-    ProcessParticleCut
-    ProcessOnShellCheck
-    ProcessHadronicElasticModel
-    ProcessStackInspector
-    CORSIKAprocesses
-    CORSIKAcascade
-    CORSIKAparticles
-    CORSIKAgeometry
-    CORSIKAenvironment
-    CORSIKAprocesssequence
-    )
+add_executable (vertical_EAS vertical_EAS.cpp)
+target_link_libraries (vertical_EAS CORSIKA8)
 
-  CORSIKA_ADD_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
-  target_link_libraries (vertical_EAS
-    CORSIKAsetup
-    CORSIKAunits
-    CORSIKAlogging
-    CORSIKArandom
-    CORSIKAhistory
-    ProcessSibyll
-    ProcessPythia8
-    ProcessUrQMD
-    CORSIKAcascade
-    ProcessProposal
-    ProcessPythia8
-    ProcessObservationPlane
-    ProcessInteractionCounter
-    ProcessTrackWriter
-    ProcessEnergyLoss
-    ProcessTrackingLine
-    ProcessParticleCut
-    ProcessOnShellCheck
-    ProcessStackInspector
-    ProcessLongitudinalProfile
-    CORSIKAprocesses
-    CORSIKAcascade
-    CORSIKAparticles
-    CORSIKAgeometry
-    CORSIKAenvironment
-    CORSIKAprocesssequence
-    CORSIKAhistory # for HistoryObservationPlane
-    )
+add_executable (stopping_power stopping_power.cpp)
+target_link_libraries (stopping_power CORSIKA8)
 
-  CORSIKA_ADD_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
-  target_link_libraries (hybrid_MC
-    CORSIKAsetup
-    CORSIKAunits
-    CORSIKAlogging
-    CORSIKArandom
-    CORSIKAhistory
-    ProcessCONEXSourceCut
-    ProcessInteractionCounter
-    ProcessSibyll
-    ProcessPythia8
-    ProcessUrQMD
-    CORSIKAcascade
-    ProcessPythia8
-    ProcessObservationPlane
-    ProcessInteractionCounter
-    ProcessTrackWriter
-    ProcessEnergyLoss
-    ProcessTrackingLine
-    ProcessParticleCut
-    ProcessOnShellCheck
-    ProcessStackInspector
-    ProcessLongitudinalProfile
-    CORSIKAprocesses
-    CORSIKAcascade
-    CORSIKAparticles
-    CORSIKAgeometry
-    CORSIKAenvironment
-    CORSIKAprocesssequence
-    CORSIKAhistory # for HistoryObservationPlane
-    )
-endif()
-
-CORSIKA_ADD_EXAMPLE (stopping_power stopping_power)
-target_link_libraries (stopping_power
-  CORSIKAsetup
-  CORSIKAunits
-  CORSIKAlogging
-  ProcessEnergyLoss
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  )
-
-CORSIKA_ADD_EXAMPLE (staticsequence_example)
-target_link_libraries (staticsequence_example
-  CORSIKAprocesssequence
-  CORSIKAunits
-  CORSIKAgeometry
-  CORSIKAlogging)
-
-
-CORSIKA_ADD_EXAMPLE (em_shower RUN_OPTIONS "100.")
-target_link_libraries (em_shower
-  SuperStupidStack
-  CORSIKAunits
-  CORSIKAlogging
-  CORSIKArandom
-  ProcessSibyll
-  ProcessPythia8
-  ProcessUrQMD
-  CORSIKAcascade
-  ProcessEnergyLoss
-  ProcessObservationPlane
-  ProcessInteractionCounter
-  ProcessTrackWriter
-  ProcessProposal
-  ProcessTrackingLine
-  ProcessParticleCut
-  ProcessOnShellCheck
-  ProcessStackInspector
-  ProcessLongitudinalProfile
-  CORSIKAprocesses
-  CORSIKAcascade
-  CORSIKAparticles
-  CORSIKAgeometry
-  CORSIKAenvironment
-  CORSIKAprocesssequence
-  )
+add_executable (staticsequence_example staticsequence_example.cpp)
+target_link_libraries (staticsequence_example CORSIKA8)

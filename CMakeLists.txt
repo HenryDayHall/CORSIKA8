@@ -140,7 +140,7 @@ add_subdirectory (tests/modules)
 #+++++++++++++++++++++++++++++++
 # examples
 # 
-#add_subdirectory (examples)
+add_subdirectory (examples)
 #
 #+++++++++++++++++++++++++++++++
 #
