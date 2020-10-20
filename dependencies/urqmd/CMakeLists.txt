@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-
-project(libUrQMD)
+#cmake_minimum_required(VERSION 3.1)
+#project(libUrQMD)
 
 set (
   MODEL_SOURCES
@@ -49,3 +48,6 @@ add_library (UrQMD_static STATIC ${MODEL_SOURCES})
 set_property(TARGET UrQMD_static PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 
+# add UrQMD to CORSIKA8 build
+add_dependencies (CORSIKA8 UrQMD_static)
+target_link_libraries (CORSIKA8 INTERFACE UrQMD_static)

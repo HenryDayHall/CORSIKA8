@@ -9,8 +9,8 @@ set (test_modules_sources
   #testQGSJetII.cpp
   testStackInspector.cpp
   testSwitchProcess.cpp
-  #testTrackingLine.cpp
-  #testUrQMD.cpp
+  testTrackingLine.cpp
+  testUrQMD.cpp
   )
 
 add_executable (testModules ${test_modules_sources})

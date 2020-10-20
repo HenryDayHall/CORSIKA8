@@ -8,32 +8,31 @@
  * the license.
  */
 
-#include <corsika/process/tracking_line/TrackingLine.h>
-#include <testTrackingLineStack.h> // test-build, and include file is obtained from CMAKE_CURRENT_SOURCE_DIR
+#include <corsika/modules/tracking_line/TrackingLine.hpp>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/particles/ParticleProperties.h>
+#include <testTrackingLineStack.hpp> // test-build, and include file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
-#include <corsika/geometry/Point.h>
-#include <corsika/geometry/Sphere.h>
-#include <corsika/geometry/Vector.h>
+#include <corsika/media/Environment.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
 
-#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+
+#include <corsika/setup/SetupTrajectory.hpp>
 using corsika::setup::Trajectory;
 
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika::process;
 using namespace corsika::units;
-using namespace corsika::geometry;
 
 #include <iostream>
 using namespace std;
 using namespace corsika::units::si;
 
 TEST_CASE("TrackingLine") {
-  environment::Environment<environment::Empty> env; // dummy environment
+  corsika::Environment<corsika::Empty> env; // dummy environment
   auto const& cs = env.GetCoordinateSystem();
 
   tracking_line::TrackingLine tracking;
@@ -66,16 +65,16 @@ TEST_CASE("TrackingLine") {
 
     auto const radius = 20_m;
 
-    auto theMedium = environment::Environment<environment::Empty>::CreateNode<Sphere>(
+    auto theMedium = corsika::Environment<corsika::Empty>::CreateNode<Sphere>(
         Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
     auto const* theMediumPtr = theMedium.get();
     universe.AddChild(std::move(theMedium));
 
     TestTrackingLineStack stack;
     stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::MuPlus,
+        std::tuple<corsika::Code, units::si::HEPEnergyType,
+                   corsika::MomentumVector, corsika::Point, units::si::TimeType>{
+            corsika::Code::MuPlus,
             1_GeV,
             {cs, {0_GeV, 0_GeV, 1_GeV}},
             {cs, {0_m, 0_m, 0_km}},

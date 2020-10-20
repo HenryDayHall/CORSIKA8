@@ -93,6 +93,7 @@ endif(Pythia_FOUND)
 # get UrQMD
 #
 #find_package( UrQMD REQUIRED )
+add_subdirectory(dependencies/urqmd)
 if(UrQMD_FOUND)
 include_directories(${UrQMD_INCLUDE_DIR})
 endif(UrQMD_FOUND)

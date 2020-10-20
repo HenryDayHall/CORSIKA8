@@ -8,25 +8,25 @@
  * the license.
  */
 
-#include <corsika/process/urqmd/UrQMD.h>
-#include <corsika/random/RNGManager.h>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/modules/urqmd/UrQMD.hpp>
 
-#include <corsika/geometry/Point.h>
-#include <corsika/geometry/RootCoordinateSystem.h>
-#include <corsika/geometry/Vector.h>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
 
-#include <corsika/units/PhysicalConstants.h>
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/framework/core/PhysicalConstants.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/utl/CorsikaFenv.h>
+#include <corsika/framework/utility/CorsikaFenv.hpp>
 
-#include <corsika/particles/ParticleProperties.h>
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 
 #include <tuple>
 #include <utility>
@@ -34,43 +34,43 @@
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika::process::UrQMD;
+using namespace corsika::urqmd;
 using namespace corsika::units::si;
 
 template <typename TStackView>
 auto sumCharge(TStackView const& view) {
   int totalCharge = 0;
 
-  for (auto const& p : view) { totalCharge += particles::GetChargeNumber(p.GetPID()); }
+  for (auto const& p : view) { totalCharge += corsika::GetChargeNumber(p.GetPID()); }
 
   return totalCharge;
 }
 
 template <typename TStackView>
-auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
-  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+auto sumMomentum(TStackView const& view, corsika::CoordinateSystem const& vCS) {
+  corsika::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
 
   for (auto const& p : view) { sum += p.GetMomentum(); }
 
   return sum;
 }
 
-auto setupEnvironment(particles::Code vTargetCode) {
+auto setupEnvironment(corsika::Code vTargetCode) {
   // setup environment, geometry
-  auto env = std::make_unique<environment::Environment<environment::IMediumModel>>();
+  auto env = std::make_unique<corsika::Environment<corsika::IMediumModel>>();
   auto& universe = *(env->GetUniverse());
-  const geometry::CoordinateSystem& cs = env->GetCoordinateSystem();
+  const corsika::CoordinateSystem& cs = env->GetCoordinateSystem();
 
   auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{cs, 0_m, 0_m, 0_m},
+      corsika::Environment<corsika::IMediumModel>::CreateNode<corsika::Sphere>(
+          corsika::Point{cs, 0_m, 0_m, 0_m},
           1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
+  using MyHomogeneousModel = corsika::HomogeneousMedium<corsika::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(std::vector<particles::Code>{vTargetCode},
-                                      std::vector<float>{1.}));
+      corsika::NuclearComposition(std::vector<corsika::Code>{vTargetCode},
+                                  std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
@@ -80,102 +80,98 @@ auto setupEnvironment(particles::Code vTargetCode) {
 
 template <typename TNodeType>
 auto setupStack(int vA, int vZ, HEPEnergyType vMomentum, TNodeType* vNodePtr,
-                geometry::CoordinateSystem const& cs) {
+                corsika::CoordinateSystem const& cs) {
   auto stack = std::make_unique<setup::Stack>();
   auto constexpr mN = corsika::units::constants::nucleonMass;
 
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
-  corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+  corsika::Point const origin(cs, {0_m, 0_m, 0_m});
+  corsika::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
   HEPEnergyType const E0 =
       sqrt(units::si::detail::static_pow<2>(mN * vA) + pLab.squaredNorm());
-  auto particle =
-      stack->AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                    corsika::stack::MomentumVector, geometry::Point,
-                                    units::si::TimeType, unsigned short, unsigned short>{
-          particles::Code::Nucleus, E0, pLab, origin, 0_ns, vA, vZ});
+  auto particle = stack->AddParticle(
+      std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                 corsika::Point, units::si::TimeType, unsigned short, unsigned short>{
+          corsika::Code::Nucleus, E0, pLab, origin, 0_ns, vA, vZ});
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
       std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::make_unique<decltype(corsika::SecondaryView(particle))>(particle));
 }
 
 template <typename TNodeType>
-auto setupStack(particles::Code vProjectileType, HEPEnergyType vMomentum,
-                TNodeType* vNodePtr, geometry::CoordinateSystem const& cs) {
+auto setupStack(corsika::Code vProjectileType, HEPEnergyType vMomentum,
+                TNodeType* vNodePtr, corsika::CoordinateSystem const& cs) {
   auto stack = std::make_unique<setup::Stack>();
 
-  geometry::Point const origin(cs, {0_m, 0_m, 0_m});
-  corsika::stack::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
+  corsika::Point const origin(cs, {0_m, 0_m, 0_m});
+  corsika::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
   HEPEnergyType const E0 =
-      sqrt(units::si::detail::static_pow<2>(particles::GetMass(vProjectileType)) +
+      sqrt(units::si::detail::static_pow<2>(corsika::GetMass(vProjectileType)) +
            pLab.squaredNorm());
   auto particle = stack->AddParticle(
-      std::tuple<particles::Code, units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          vProjectileType, E0, pLab, origin, 0_ns});
+      std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                 corsika::Point, units::si::TimeType>{vProjectileType, E0, pLab, origin,
+                                                      0_ns});
 
   particle.SetNode(vNodePtr);
   return std::make_tuple(
       std::move(stack),
-      std::make_unique<decltype(corsika::stack::SecondaryView(particle))>(particle));
+      std::make_unique<decltype(corsika::SecondaryView(particle))>(particle));
 }
 
 TEST_CASE("UrQMD") {
   SECTION("conversion") {
-    REQUIRE_THROWS(process::UrQMD::ConvertFromUrQMD(106, 0));
-    REQUIRE(process::UrQMD::ConvertFromUrQMD(101, 0) == particles::Code::Pi0);
-    REQUIRE(process::UrQMD::ConvertToUrQMD(particles::Code::PiPlus) ==
+    REQUIRE_THROWS(corsika::urqmd::ConvertFromUrQMD(106, 0));
+    REQUIRE(corsika::urqmd::ConvertFromUrQMD(101, 0) == corsika::Code::Pi0);
+    REQUIRE(corsika::urqmd::ConvertToUrQMD(corsika::Code::PiPlus) ==
             std::make_pair<int, int>(101, 2));
   }
 
   feenableexcept(FE_INVALID);
-  corsika::random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  corsika::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
   UrQMD urqmd;
 
   SECTION("cross sections") {
-    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Unknown);
+    auto [env, csPtr, nodePtr] = setupEnvironment(corsika::Code::Unknown);
     auto const& cs = *csPtr;
 
-    particles::Code validProjectileCodes[] = {
-        particles::Code::PiPlus,  particles::Code::PiMinus, particles::Code::Proton,
-        particles::Code::Neutron, particles::Code::KPlus,   particles::Code::KMinus,
-        particles::Code::K0,      particles::Code::K0Bar,   particles::Code::K0Long};
+    corsika::Code validProjectileCodes[] = {
+        corsika::Code::PiPlus,  corsika::Code::PiMinus, corsika::Code::Proton,
+        corsika::Code::Neutron, corsika::Code::KPlus,   corsika::Code::KMinus,
+        corsika::Code::K0,      corsika::Code::K0Bar,   corsika::Code::K0Long};
 
     for (auto code : validProjectileCodes) {
       auto [stack, view] = setupStack(code, 100_GeV, nodePtr, cs);
       REQUIRE(stack->GetSize() == 1);
 
       // simple check whether the cross-section is non-vanishing
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Proton) /
+      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Proton) / 1_mb >
+              0);
+      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Nitrogen) /
                   1_mb >
               0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Nitrogen) /
-                  1_mb >
+      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Oxygen) / 1_mb >
               0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Oxygen) /
-                  1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), particles::Code::Argon) /
-                  1_mb >
+      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Argon) / 1_mb >
               0);
     }
   }
 
   SECTION("nucleon projectile") {
-    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setupEnvironment(corsika::Code::Oxygen);
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setupStack(A, Z, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
-            Z + particles::GetChargeNumber(particles::Code::Oxygen));
+            Z + corsika::GetChargeNumber(corsika::Code::Oxygen));
 
     auto const secMomSum =
         sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
@@ -184,19 +180,19 @@ TEST_CASE("UrQMD") {
   }
 
   SECTION("\"special\" projectile") {
-    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setupEnvironment(corsika::Code::Oxygen);
     auto [stackPtr, secViewPtr] =
-        setupStack(particles::Code::PiPlus, 400_GeV, nodePtr, *csPtr);
+        setupStack(corsika::Code::PiPlus, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
-            particles::GetChargeNumber(particles::Code::PiPlus) +
-                particles::GetChargeNumber(particles::Code::Oxygen));
+            corsika::GetChargeNumber(corsika::Code::PiPlus) +
+                corsika::GetChargeNumber(corsika::Code::Oxygen));
 
     auto const secMomSum =
         sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
@@ -205,19 +201,19 @@ TEST_CASE("UrQMD") {
   }
 
   SECTION("K0Long projectile") {
-    auto [env, csPtr, nodePtr] = setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setupEnvironment(corsika::Code::Oxygen);
     auto [stackPtr, secViewPtr] =
-        setupStack(particles::Code::K0Long, 400_GeV, nodePtr, *csPtr);
+        setupStack(corsika::Code::K0Long, 400_GeV, nodePtr, *csPtr);
 
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) ==
-            particles::GetChargeNumber(particles::Code::K0Long) +
-                particles::GetChargeNumber(particles::Code::Oxygen));
+            corsika::GetChargeNumber(corsika::Code::K0Long) +
+                corsika::GetChargeNumber(corsika::Code::Oxygen));
 
     auto const secMomSum =
         sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());

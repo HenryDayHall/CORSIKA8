@@ -8,10 +8,10 @@
  * the license.
  */
 
-#include <corsika/process/switch_process/SwitchProcess.h>
-#include <corsika/stack/SecondaryView.h>
-#include <corsika/stack/Stack.h>
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/modules/switch_process/SwitchProcess.hpp>
+#include <corsika/framework/stack/SecondaryView.hpp>
+#include <corsika/framework/stack/Stack.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -19,7 +19,6 @@
 #include <random>
 
 using namespace corsika;
-using namespace corsika::process;
 using namespace corsika::units::si;
 
 class TestStackData {
@@ -61,11 +60,11 @@ private:
  */
 template <typename StackIteratorInterface>
 class TestParticleInterface
-    : public corsika::stack::ParticleBase<StackIteratorInterface> {
+    : public corsika::ParticleBase<StackIteratorInterface> {
 
 public:
-  using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
-  using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
+  using corsika::ParticleBase<StackIteratorInterface>::GetStackData;
+  using corsika::ParticleBase<StackIteratorInterface>::GetIndex;
 
   /*
      The SetParticleData methods are called for creating new entries
@@ -85,13 +84,13 @@ public:
   HEPEnergyType GetEnergy() const { return GetStackData().GetData(GetIndex()); }
 };
 
-using SimpleStack = corsika::stack::Stack<TestStackData, TestParticleInterface>;
+using SimpleStack = corsika::Stack<TestStackData, TestParticleInterface>;
 
 // see issue 161
 #if defined(__clang__)
-using StackTestView = corsika::stack::SecondaryView<TestStackData, TestParticleInterface>;
+using StackTestView = corsika::SecondaryView<TestStackData, TestParticleInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-using StackTestView = corsika::stack::MakeView<SimpleStack>::type;
+using StackTestView = corsika::MakeView<SimpleStack>::type;
 #endif
 
 auto constexpr kgMSq = 1_kg / (1_m * 1_m);
@@ -106,7 +105,7 @@ struct DummyProcess : InteractionProcess<DummyProcess<N>> {
   }
 
   template <typename TSecondaries>
-  corsika::process::EProcessReturn DoInteraction(TSecondaries& vSec) {
+  corsika::EProcessReturn DoInteraction(TSecondaries& vSec) {
     // to figure out which process was selected in the end, we produce N
     // secondaries for DummyProcess<N>
 
