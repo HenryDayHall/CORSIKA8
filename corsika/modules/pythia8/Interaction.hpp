@@ -1,6 +1,8 @@
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
+ * See file AUTHORS for a list of contributors.
+ *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -8,15 +10,15 @@
 
 #pragma once
 
-#include <Pythia8/Pythia.h>
-
+#include <corsika/modules/pythia8/Pythia8.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
 #include <tuple>
 
-namespace corsika::pythia {
+namespace corsika::pythia8 {
 
   class Interaction : public corsika::InteractionProcess<Interaction> {
 
@@ -24,10 +26,12 @@ namespace corsika::pythia {
     bool fInitialized = false;
 
   public:
-    Interaction();
+    Interaction() {}
     ~Interaction();
 
-    void SetParticleListStable(std::vector<Code> const&);
+    void Init();
+
+    void SetParticleListStable(std::vector<corsika::Code> const&);
     void SetUnstable(const corsika::Code);
     void SetStable(const corsika::Code);
 
@@ -38,10 +42,12 @@ namespace corsika::pythia {
     }
 
     bool CanInteract(const corsika::Code);
-    void ConfigureLabFrameCollision(const corsika::Code, const corsika::Code,
+    void ConfigureLabFrameCollision(const corsika::Code,
+                                    const corsika::Code,
                                     const corsika::units::si::HEPEnergyType);
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
+    GetCrossSection(const corsika::Code BeamId,
+                    const corsika::Code TargetId,
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
     template <typename TParticle>
@@ -52,15 +58,17 @@ namespace corsika::pythia {
        event is copied (and boosted) into the shower lab frame.
      */
 
-    template <typename TSecondaryView>
-    corsika::EProcessReturn DoInteraction(TSecondaryView&);
+    template <typename TProjectile>
+    corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("pythia");
+    corsika::RNG& fRNG =
+        corsika::RNGManager::GetInstance().GetRandomStream("pythia");
     Pythia8::Pythia fPythia;
     Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;
   };
 
-} // namespace corsika::pythia
+} // namespace corsika::pythia8
+
+#include <corsika/detail/modules/pythia8/Interaction.inl>

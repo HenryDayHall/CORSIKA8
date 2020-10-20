@@ -37,15 +37,15 @@ namespace corsika {
             corsika::Vector<corsika::units::si::hepmomentum_d>>& Pprojectile,
         const corsika::units::si::HEPEnergyType massTarget);
 
-    auto const& GetRotationMatrix() const;
+    inline auto const& GetRotationMatrix() const;
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     template <typename FourVector>
-    FourVector toCoM(const FourVector& p) const ;
+    inline FourVector toCoM(const FourVector& p) const ;
 
     //! transforms a 4-momentum from the center-of-mass frame back to lab frame
     template <typename FourVector>
-    FourVector fromCoM(const FourVector& p) const ;
+    inline FourVector fromCoM(const FourVector& p) const ;
   };
 } // namespace corsika
 

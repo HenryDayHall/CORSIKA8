@@ -5,9 +5,8 @@ set (test_modules_sources
   testNullModel.cpp
   testObservationPlane.cpp
   testParticleCut.cpp
-  #testPythia.cpp
+  testPythia8.cpp
   #testQGSJetII.cpp
-  #testSibyll.cpp
   #testStackInspector.cpp
   #testSwitchProcess.cpp
   #testTrackingLine.cpp
@@ -16,7 +15,7 @@ set (test_modules_sources
 
 add_executable (testModules ${test_modules_sources})
 
-target_link_libraries (testModules CORSIKA8 Sibyll_static Catch2)
+target_link_libraries (testModules CORSIKA8 Catch2)
 
 target_compile_options (testModules PRIVATE -g) # do not skip asserts
 

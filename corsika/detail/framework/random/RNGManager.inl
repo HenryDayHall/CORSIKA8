@@ -10,50 +10,42 @@
 
 #pragma once
 
-
 namespace corsika {
 
-	void RNGManager::RegisterRandomStream(std::string const& pStreamName)
-	{
-	  RNG rng;
+  inline void RNGManager::RegisterRandomStream(std::string const& pStreamName) {
+    RNG rng;
 
-	  if (auto const& it = seeds.find(pStreamName); it != seeds.end()) {
-	    rng.seed(it->second);
-	  }
+    if (auto const& it = seeds.find(pStreamName); it != seeds.end()) {
+      rng.seed(it->second);
+    }
 
-	  rngs[pStreamName] = std::move(rng);
-	}
+    rngs[pStreamName] = std::move(rng);
+  }
 
-	RNG& RNGManager::GetRandomStream
-	(
-	    std::string const& pStreamName) {
-	  return rngs.at(pStreamName);
-	}
+  inline RNG& RNGManager::GetRandomStream(std::string const& pStreamName) {
+    return rngs.at(pStreamName);
+  }
 
-	std::stringstream RNGManager::dumpState() const
-	{
-	  std::stringstream buffer;
-	  for (auto const& [streamName, rng] : rngs) {
-	    buffer << '"' << streamName << "\" = \"" << rng << '"' << std::endl;
-	  }
+  inline std::stringstream RNGManager::dumpState() const {
+    std::stringstream buffer;
+    for (auto const& [streamName, rng] : rngs) {
+      buffer << '"' << streamName << "\" = \"" << rng << '"' << std::endl;
+    }
 
-	  return buffer;
-	}
+    return buffer;
+  }
 
-	void RNGManager::SeedAll(uint64_t vSeed)
-	{
-	  for (auto& entry : rngs) { entry.second.seed(vSeed++); }
-	}
+  inline void RNGManager::SeedAll(uint64_t vSeed) {
+    for (auto& entry : rngs) { entry.second.seed(vSeed++); }
+  }
 
-	void RNGManager::SeedAll()
-	{
-	  std::random_device rd;
+  inline void RNGManager::SeedAll() {
+    std::random_device rd;
 
-	  for (auto& entry : rngs) {
-	    std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
-	    entry.second.seed(sseq);
-	  }
-	}
+    for (auto& entry : rngs) {
+      std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
+      entry.second.seed(sseq);
+    }
+  }
 
 } // namespace corsika
-

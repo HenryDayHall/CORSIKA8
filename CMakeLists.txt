@@ -83,7 +83,8 @@ find_package( PhysUnits REQUIRED )
 #+++++++++++++++++++++++++++++
 # get Pythia
 #
-find_package( Pythia8 REQUIRED )
+#find_package( Pythia8 REQUIRED )
+add_subdirectory(dependencies/pythia)
 if(Pythia_FOUND)
 include_directories(${Pythia_INCLUDE_DIR})
 endif(Pythia_FOUND)
