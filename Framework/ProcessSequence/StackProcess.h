@@ -26,7 +26,8 @@ namespace corsika::process {
 
   template <typename TDerived>
   class StackProcess : public BaseProcess<TDerived> {
-
+  private:
+  protected:
   public:
     StackProcess() = delete;
     StackProcess(const unsigned int nStep)
@@ -51,9 +52,5 @@ namespace corsika::process {
     unsigned long int fIStep = 0;
     //! @}
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const StackProcess<T>* impl);
 
 } // namespace corsika::process

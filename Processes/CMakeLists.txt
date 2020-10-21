@@ -1,4 +1,7 @@
 # general
+add_subdirectory (AnalyticProcessors)
+add_subdirectory (ExampleProcessors)
+
 add_subdirectory (NullModel)
 # tracking
 add_subdirectory (TrackingLine)
@@ -29,6 +32,7 @@ add_subdirectory (OnShellCheck)
 # meta-processes
 add_subdirectory (InteractionCounter)
 add_subdirectory (SwitchProcess)
+
 
 ##########################################
 # add_custom_target(CORSIKAprocesses)

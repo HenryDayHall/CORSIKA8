@@ -26,7 +26,6 @@
 
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-
 namespace corsika::environment {
 
   /**

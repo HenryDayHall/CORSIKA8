@@ -11,11 +11,15 @@
 #include <corsika/process/BaseProcess.h>
 #include <corsika/process/ProcessReturn.h>
 
+#include <type_traits>
+
 namespace corsika::process {
 
   template <typename TDerived>
-  struct BoundaryCrossingProcess : public BaseProcess<TDerived> {
-
+  class BoundaryCrossingProcess : public BaseProcess<TDerived> {
+  private:
+  protected:
+  public:
     /**
      * This method is called when a particle crosses the boundary between the nodes
      * \p from and \p to.

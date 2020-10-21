@@ -26,7 +26,7 @@ namespace corsika::process {
 
   template <typename TDerived>
   struct DecayProcess : BaseProcess<TDerived> {
-
+  public:
     using BaseProcess<TDerived>::GetRef;
 
     /// here starts the interface-definition part
