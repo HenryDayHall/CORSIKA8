@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -12,17 +10,15 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/sequence/ProcessSequence.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
-#include <corsika/modules/energy_loss/EnergyLoss.hpp>
-#include <corsika/modules/particle_cut/ParticleCut.hpp>
-#include <corsika/modules/sibyll/Decay.hpp>
-#include <corsika/modules/sibyll/Interaction.hpp>
-#include <corsika/modules/sibyll/NuclearInteraction.hpp>
-#include <corsika/modules/stack_inspector/StackInspector.hpp>
-#include <corsika/modules/track_writer/TrackWriter.hpp>
-#include <corsika/modules/tracking_line/TrackingLine.hpp>
+#include <corsika/modules/BetheBlochPDG.hpp>
+#include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/StackInspector.hpp>
+#include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/TrackingLine.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -36,7 +32,6 @@
 #include <limits>
 
 using namespace corsika;
-using namespace corsika::units::si;
 using namespace corsika::setup;
 using namespace std;
 
@@ -111,8 +106,8 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
     stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                   corsika::Point, units::si::TimeType, unsigned short, unsigned short>{
+        std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector, corsika::Point,
+                   TimeType, unsigned short, unsigned short>{
             beamCode, E0, plab, injectionPos, 0_ns, nuclA, nuclZ});
   }
 
@@ -129,7 +124,7 @@ int main() {
   corsika::particle_cut::ParticleCut cut(80_GeV);
 
   corsika::track_writer::TrackWriter trackWriter("tracks.dat");
-  corsika::energy_loss::EnergyLoss eLoss(
+  corsika::energy_loss::BetheBlochPDG eLoss(
       injectionPos, corsika::Vector<dimensionless_d>(rootCS, {0, 0, -1}));
 
   // assemble all processes into an ordered process list

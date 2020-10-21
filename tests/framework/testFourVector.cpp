@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -75,7 +75,7 @@ TEST_CASE("four vectors") {
    */
   SECTION("Energy momentum in SI-units") {
 
-    auto E1 = 100_GeV / corsika::units::constants::c;
+    auto E1 = 100_GeV / constants::c;
     Vector<hepmomentum_d> P1(rootCS, {10_GeV, 5_GeV, 15_GeV});
 
     FourVector p1(E1, P1);
@@ -92,7 +92,7 @@ TEST_CASE("four vectors") {
    */
   SECTION("Spacetime in SI-units") {
 
-    TimeType T2 = 10_m / corsika::units::constants::c;
+    TimeType T2 = 10_m / constants::c;
     Vector<length_d> P2(rootCS, {10_m, 5_m, 5_m});
 
     const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
@@ -160,10 +160,10 @@ TEST_CASE("four vectors") {
 
   SECTION("Use as wrapper") {
 
-    TimeType T = 10_m / corsika::units::constants::c;
+    TimeType T = 10_m / constants::c;
     Vector<length_d> P(rootCS, {10_m, 5_m, 5_m});
 
-    const TimeType T_c = 10_m / corsika::units::constants::c;
+    const TimeType T_c = 10_m / constants::c;
     const Vector<length_d> P_c(rootCS, {10_m, 5_m, 5_m});
 
     // FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c); // this does not compile,

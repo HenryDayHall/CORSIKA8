@@ -23,12 +23,13 @@ liability and licensing question are only handled by the adopted
 software license.
 
 ## The software license of the CORSIKA project
+
 The license adopted for the CORSIKA project is the explicit copyleft
 license GPLv3, as copied in full in the file
 [LICENSE](LICENSE). Each source file of the CORSIKA project contains a
 short statement of the copyright and this license. Each binary or
 source code release of CORSIKA contains the file LICENSE. The
-code, documentation and content in the folder [ThirdParty](ThirdParty)
+code, documentation and content in the folder [externals](externals)
 is not integral part of the CORSIKA project and can be based on, or
 include, other licenses, which must be compatible with GPLv3. Check the
 content of this folder for details and additional license information. It depends on the configuration of

@@ -9,16 +9,25 @@
 
 #pragma once
 
-#include <phys/units/quantity.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
-namespace corsika::units::constants {
+/**
+ * \file PhysicalConstants.hpp
+ *
+ * Constants are defined with static units, based on the package
+ * (namespace) phys::units, imported in PhysicsUnits.hpp
+ *
+ * \namespace corsika::constants
+ *
+ * Physical and mathematical constants with units.
+ */
+
+namespace corsika::constants {
 
   using namespace phys::units;
 
   // acceleration of free-fall, standard
-  constexpr phys::units::quantity<phys::units::acceleration_d> g_sub_n{
-      phys::units::Rep(9.80665L) * phys::units::meter /
-      phys::units::square(phys::units::second)};
+  constexpr quantity<acceleration_d> g_sub_n{Rep(9.80665L) * meter / square(second)};
 
   // Avogadro constant
   constexpr quantity<dimensions<0, 0, 0, 0, 0, -1>> N_sub_A{Rep(6.02214199e+23L) / mole};
@@ -63,4 +72,4 @@ namespace corsika::units::constants {
 
   // etc.
 
-} // namespace corsika::units::constants
+} // namespace corsika::constants

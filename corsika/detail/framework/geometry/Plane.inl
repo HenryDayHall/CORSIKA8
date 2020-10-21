@@ -16,27 +16,16 @@
 
 namespace corsika {
 
+  inline bool Plane::IsAbove(Point const& vP) const {
+    return fNormal.dot(vP - fCenter) > LengthType::zero();
+  }
 
-    inline bool Plane::IsAbove(Point const& vP) const
-    {
-      return fNormal.dot(vP - fCenter) > corsika::units::si::LengthType::zero();
-    }
+  inline LengthType Plane::DistanceTo(corsika::Point const& vP) const {
+    return (fNormal * (vP - fCenter).dot(fNormal)).norm();
+  }
 
-    inline units::si::LengthType Plane::DistanceTo(corsika::Point const& vP) const
-    {
-      return (fNormal * (vP - fCenter).dot(fNormal)).norm();
-    }
+  inline Point const& Plane::GetCenter() const { return fCenter; }
 
-    inline Point const& Plane::GetCenter() const
-    {
-    	return fCenter;
-    }
-
-    inline Plane::DimLessVec const& Plane::GetNormal() const
-    {
-    	return fNormal;
-    }
-
+  inline Plane::DimLessVec const& Plane::GetNormal() const { return fNormal; }
 
 } // namespace corsika
-

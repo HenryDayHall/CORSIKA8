@@ -14,50 +14,45 @@
 
 namespace corsika {
 
+  template <class TDerived>
+  auto const& BaseExponential<TDerived>::GetImplementation() const {
+    return *static_cast<TDerived const*>(this);
+  }
 
   template <class TDerived>
-    auto const& BaseExponential<TDerived>::GetImplementation() const 
-{ return *static_cast<TDerived const*>(this); }
+  GrammageType BaseExponential<TDerived>::IntegratedGrammage(
+      Trajectory<Line> const& vLine, LengthType vL,
+      Vector<dimensionless_d> const& vAxis) const {
+    if (vL == LengthType::zero()) { return GrammageType::zero(); }
+
+    auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
+    auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
+
+    if (uDotA == 0) {
+      return vL * rhoStart;
+    } else {
+      return rhoStart * (fLambda / uDotA) * (exp(uDotA * vL * fInvLambda) - 1);
+    }
+  }
 
   template <class TDerived>
-    units::si::GrammageType BaseExponential<TDerived>::IntegratedGrammage(
-        Trajectory<Line> const& vLine,
-		units::si::LengthType vL,
-        Vector<units::si::dimensionless_d> const& vAxis) const {
-      if (vL == units::si::LengthType::zero()) { return units::si::GrammageType::zero(); }
+  LengthType BaseExponential<TDerived>::ArclengthFromGrammage(
+      Trajectory<Line> const& vLine, GrammageType vGrammage,
+      Vector<dimensionless_d> const& vAxis) const {
+    auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
+    auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
 
-      auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
-      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
-
-      if (uDotA == 0) {
-        return vL * rhoStart;
+    if (uDotA == 0) {
+      return vGrammage / rhoStart;
+    } else {
+      auto const logArg = vGrammage * fInvLambda * uDotA / rhoStart + 1;
+      if (logArg > 0) {
+        return fLambda / uDotA * log(logArg);
       } else {
-        return rhoStart * (fLambda / uDotA) * (exp(uDotA * vL * fInvLambda) - 1);
+        return std::numeric_limits<typename decltype(vGrammage)::value_type>::infinity() *
+               meter;
       }
     }
-
-  template <class TDerived>
-    units::si::LengthType BaseExponential<TDerived>::ArclengthFromGrammage(
-        Trajectory<Line> const& vLine,
-        units::si::GrammageType vGrammage,
-        Vector<units::si::dimensionless_d> const& vAxis) const {
-      auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
-      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
-
-      if (uDotA == 0) {
-        return vGrammage / rhoStart;
-      } else {
-        auto const logArg = vGrammage * fInvLambda * uDotA / rhoStart + 1;
-        if (logArg > 0) {
-          return fLambda / uDotA * log(logArg);
-        } else {
-          return std::numeric_limits<typename decltype(
-                     vGrammage)::value_type>::infinity() *
-                 units::si::meter;
-        }
-      }
-    }
-
+  }
 
 } // namespace corsika
-

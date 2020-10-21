@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/stack/Stack.hpp>
@@ -17,7 +18,6 @@
 
 namespace corsika {
 
-  namespace dummy {
 
     /**
      * Example of a particle object on the stack, with NO DATA.
@@ -33,19 +33,13 @@ namespace corsika {
     };
 
     template <typename StackIteratorInterface>
-    class ParticleInterface
-        : public corsika::stack::ParticleBase<StackIteratorInterface> {
+    struct ParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
 
-    protected:
-      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStack;
-      using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
-
-    public:
-      using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
+    	typedef corsika::ParticleBase<StackIteratorInterface> super_type;
 
     public:
       void SetParticleData(const std::tuple<NoData>& /*v*/) {}
-      void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
+      void SetParticleData(super_type& /*parent*/,
                            const std::tuple<NoData>& /*v*/) {}
 
       std::string as_string() const { return "dummy-data"; }
@@ -59,20 +53,38 @@ namespace corsika {
     class DummyStackImpl {
 
     public:
-      void Init() { entries_ = 0; }
+    DummyStackImpl()=default;
 
-      void Clear() { entries_ = 0; }
+    DummyStackImpl( DummyStackImpl const&)=default;
 
-      int GetSize() const { return entries_; }
-      int GetCapacity() const { return entries_; }
+    DummyStackImpl(DummyStackImpl &&)=default;
+
+    DummyStackImpl& operator=( DummyStackImpl const& )=default;
+    DummyStackImpl& operator=( DummyStackImpl && )=default;
+
+
+      void init() { entries_ = 0; }
+
+      void clear() { entries_ = 0; }
+
+      int getSize() const { return entries_; }
+      int getCapacity() const { return entries_; }
 
       /**
        *   Function to copy particle at location i2 in stack to i1
        */
-      void Copy(const int /*i1*/, const int /*i2*/) {}
+      void copy(const int /*i1*/, const int /*i2*/) {}
 
-      void IncrementSize() { entries_++; }
-      void DecrementSize() { entries_--; }
+      void incrementSize() { entries_++; }
+      void decrementSize() { entries_--; }
+
+	int getEntries() const {
+		return entries_;
+	}
+
+	void setEntries(int entries = 0) {
+		entries_ = entries;
+	}
 
     private:
       int entries_ = 0;
@@ -81,6 +93,5 @@ namespace corsika {
 
     typedef Stack<DummyStackImpl, ParticleInterface> DummyStack;
 
-  } // namespace dummy
 
 } // namespace corsika

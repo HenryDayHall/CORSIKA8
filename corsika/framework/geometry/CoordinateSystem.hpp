@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -27,11 +27,6 @@ namespace corsika {
 
   template <typename T>
   class Vector;
-
-  /*
-   * FIXME this statement should be scoped.
-   */
-  using corsika::units::si::length_d;
 
   class CoordinateSystem {
 
@@ -62,7 +57,7 @@ namespace corsika {
     auto rotate(QuantityVector<TDim> axis, double angle) const;
 
     template <typename TDim>
-    auto translateAndRotate(QuantityVector<phys::units::length_d> translation,
+    auto translateAndRotate(QuantityVector<length_d> translation,
                             QuantityVector<TDim> axis, double angle);
 
     inline CoordinateSystem const* GetReference() const;

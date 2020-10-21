@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -26,7 +26,7 @@ namespace corsika {
 
   class Line {
 
-    using VelocityVec = Vector<units::si::SpeedType::dimension_type>;
+    using VelocityVec = Vector<SpeedType::dimension_type>;
 
     Point const r0;
     VelocityVec const v0;
@@ -36,14 +36,13 @@ namespace corsika {
         : r0(pR0)
         , v0(pV0) {}
 
-    inline Point GetPosition(units::si::TimeType t) const;
+    inline Point GetPosition(TimeType t) const;
 
-    inline Point PositionFromArclength(units::si::LengthType l) const;
+    inline Point PositionFromArclength(LengthType l) const;
 
-    inline units::si::LengthType ArcLength(units::si::TimeType t1,
-                                           units::si::TimeType t2) const;
+    inline LengthType ArcLength(TimeType t1, TimeType t2) const;
 
-    inline units::si::TimeType TimeFromArclength(units::si::LengthType t) const;
+    inline TimeType TimeFromArclength(LengthType t) const;
 
     inline const Point& GetR0() const;
 

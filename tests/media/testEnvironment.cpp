@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -46,7 +46,7 @@ TEST_CASE("FlatExponential") {
 
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
   LengthType const lambda = 3_m;
-  auto const rho0 = 1_g / units::static_pow<3>(1_cm);
+  auto const rho0 = 1_g / static_pow<3>(1_cm);
   FlatExponential<IMediumModel> const medium(gOrigin, axis, rho0, lambda,
                                              protonComposition);
   auto const tEnd = 5_s;
@@ -100,7 +100,7 @@ TEST_CASE("SlidingPlanarExponential") {
                                              std::vector<float>{1.f});
 
   LengthType const lambda = 3_m;
-  auto const rho0 = 1_g / units::static_pow<3>(1_cm);
+  auto const rho0 = 1_g / static_pow<3>(1_cm);
   auto const tEnd = 5_s;
 
   SlidingPlanarExponential<IMediumModel> const medium(gOrigin, rho0, lambda,
@@ -139,7 +139,7 @@ struct Exponential {
 
   template <int N>
   auto Derivative(Point const& p, Vector<dimensionless_d> const& v) const {
-    return v.GetComponents()[0] * (*this)(p) / corsika::units::static_pow<N>(1_m);
+    return v.GetComponents()[0] * (*this)(p) / static_pow<N>(1_m);
   }
 
   auto FirstDerivative(Point const& p, Vector<dimensionless_d> const& v) const {

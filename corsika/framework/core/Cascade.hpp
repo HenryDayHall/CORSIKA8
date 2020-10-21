@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -8,19 +8,23 @@
 
 #pragma once
 
-#include <cassert>
-#include <cmath>
-#include <limits>
+#include <corsika/framework/process/ProcessReturn.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
-#include <corsika/framework/sequence/ProcessReturn.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/media/Environment.hpp>
+
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
+
+#include <cassert>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <type_traits>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.

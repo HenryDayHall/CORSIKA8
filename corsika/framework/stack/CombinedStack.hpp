@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -8,9 +8,10 @@
 
 #pragma once
 
+//#include <corsika/logging/Logging.h>
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/stack/Stack.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
@@ -33,36 +34,20 @@ namespace corsika {
    *
    */
   template <template <typename> typename ParticleInterfaceA,
-            template <typename> typename ParticleInterfaceB, typename StackIterator>
-  class CombinedParticleInterface
+            template <typename> class ParticleInterfaceB, typename StackIterator>
+  struct CombinedParticleInterface
       : public ParticleInterfaceB<ParticleInterfaceA<StackIterator>> {
 
-    // FIXME: class has no ctors, assignment operators etc.
-
-    // template<template <typename> typename _PI>
-    // template <typename StackDataType, template <typename> typename ParticleInterface>
-    // template<typename T1, template <typename> typename T2> friend class Stack<T1, T2>;
-
-    using PI_C =
-        CombinedParticleInterface<ParticleInterfaceA, ParticleInterfaceB, StackIterator>;
-    using PI_A = ParticleInterfaceA<StackIterator>;
-    using PI_B = ParticleInterfaceB<ParticleInterfaceA<StackIterator>>;
-
-  protected:
-    using PI_B::GetIndex;     // choose B, A would also work
-    using PI_B::GetStackData; // choose B, A would also work
-
-  public:
     /**
      * @name wrapper for user functions
      * @{
      *
      * In this set of functions we call the user-provide
-     * ParticleInterface SetParticleData(...) methods, either with
+     * ParticleInterface setParticleData(...) methods, either with
      * parent particle reference, or w/o.
      *
      * There is one implicit assumption here: if only one data tuple
-     * is provided for SetParticleData, the data is passed on to
+     * is provided for setParticleData, the data is passed on to
      * ParticleInterfaceA and the ParticleInterfaceB is
      * default-initialized. There are many occasions where this is the
      * desired behaviour, e.g. for thinning etc.
@@ -70,39 +55,103 @@ namespace corsika {
      */
 
     template <typename... Args1>
-    void SetParticleData(const std::tuple<Args1...> vA);
-
+    void setParticleData(const std::tuple<Args1...> vA) {
+    	pi_a_type::setParticleData(vA);
+    	pi_b_type::setParticleData();
+    }
     template <typename... Args1, typename... Args2>
-    void SetParticleData(const std::tuple<Args1...> vA, const std::tuple<Args2...> vB);
+    void setParticleData(const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
+    	pi_a_type::setParticleData(vA);
+        pi_b_type::setParticleData(vB);
+    }
 
     template <typename... Args1>
-    void SetParticleData(PI_C& p, const std::tuple<Args1...> vA);
-
+    void setParticleData(pi_a_type& p, const std::tuple<Args1...> vA) {
+      // static_assert(MT<I>::has_not, "error");
+    	pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA); // original stack
+        pi_b_type::setParticleData(static_cast<pi_b_type&>(p));     // addon stack
+    }
     template <typename... Args1, typename... Args2>
-    void SetParticleData(PI_C& p, const std::tuple<Args1...> vA,
-                         const std::tuple<Args2...> vB);
+    void setParticleData(pi_c_type& p, const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
+
+    	pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA);
+        pi_b_type::setParticleData(static_cast<pi_b_type&>(p), vB);
+    }
     ///@}
 
     std::string as_string() const {
-      return fmt::format("[[{}][{}]]", PI_A::as_string(), PI_B::as_string());
+      return fmt::format("[[{}][{}]]", pi_a_type::as_string(), pi_b_type::as_string());
     }
+
+  private:
+    typedef CombinedParticleInterface<ParticleInterfaceA, ParticleInterfaceB, StackIterator> pi_c_type ;
+    typedef ParticleInterfaceA<StackIterator> pi_a_type;
+    typedef ParticleInterfaceB<ParticleInterfaceA<StackIterator>> pi_b_type;
+
+  protected:
+    using pi_b_type::getIndex;     // choose B, A would also work
+    using pi_b_type::getStackData; // choose B, A would also work
+
   };
 
-  namespace detail {
+  /**
+   * @class CombinedStackImpl
+   *
+   * Memory implementation of a combined data stack.
+   *
+   * The two stack data user objects Stack1Impl and Stack2Impl are
+   * merged into one consistent Stack container object providing
+   * access to the combined number of data entries.
+   */
+  template <typename Stack1Impl, typename Stack2Impl>
+  class CombinedStackImpl : public Stack1Impl, public Stack2Impl {
+
+  public:
+    void clear() {
+      Stack1Impl::clear();
+      Stack2Impl::clear();
+    }
+
+    unsigned int getSize() const { return Stack1Impl::getSize(); }
+    unsigned int getCapacity() const { return Stack1Impl::getCapacity(); }
 
     /**
-     * @class CombinedStackImpl
-     *
-     * Memory implementation of a combined data stack.
-     *
-     * The two stack data user objects Stack1Impl and Stack2Impl are
-     * merged into one consistent Stack container object providing
-     * access to the combined number of data entries.
+     *   Function to copy particle at location i1 in stack to i2
      */
-    template <typename Stack1Impl, typename Stack2Impl>
-    class CombinedStackImpl;
+    void copy(const unsigned int i1, const unsigned int i2) {
+      if (i1 >= getSize() || i2 >= getSize()) {
+        std::ostringstream err;
+        err << "CombinedStack: trying to access data beyond size of stack!";
+        throw std::runtime_error(err.str());
+      }
+      Stack1Impl::copy(i1, i2);
+      Stack2Impl::copy(i1, i2);
+    }
 
-  } // namespace detail
+    /**
+     *   Function to copy particle at location i2 in stack to i1
+     */
+    void swap(const unsigned int i1, const unsigned int i2) {
+      if (i1 >= getSize() || i2 >= getSize()) {
+        std::ostringstream err;
+        err << "CombinedStack: trying to access data beyond size of stack!";
+        throw std::runtime_error(err.str());
+      }
+      Stack1Impl::swap(i1, i2);
+      Stack2Impl::swap(i1, i2);
+    }
+
+    void incrementSize() {
+      Stack1Impl::incrementSize();
+      Stack2Impl::incrementSize();
+    }
+
+    void decrementSize() {
+      Stack1Impl::decrementSize();
+      Stack2Impl::decrementSize();
+    }
+
+  }; // end class CombinedStackImpl
 
   /**
    * Helper template alias `CombinedStack` to construct new combined
@@ -113,9 +162,9 @@ namespace corsika {
    * initialization are forwarded to Stack1Impl (first).
    */
 
-  template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _PI>
-  using CombinedStack = Stack<detail::CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI>;
+  template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _Pi>
+  typedef  Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, Pi> combined_stack_type;
 
 } // namespace corsika
 
-#include <corsika/detail/framework/stack/CombinedStack.inl>
+//#include <corsika/detail/framework/stack/CombinedStack.inl>

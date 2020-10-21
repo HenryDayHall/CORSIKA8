@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -40,11 +40,11 @@ namespace corsika {
 
   // forward declarations to be used in GeneratedParticleProperties
   int16_t constexpr GetChargeNumber(Code const);
-  corsika::units::si::ElectricChargeType constexpr GetCharge(Code const);
-  corsika::units::si::HEPMassType constexpr GetMass(Code const);
+  ElectricChargeType constexpr GetCharge(Code const);
+  HEPMassType constexpr GetMass(Code const);
   PDGCode constexpr GetPDG(Code const);
   constexpr std::string const& GetName(Code const);
-  corsika::units::si::TimeType constexpr GetLifetime(Code const);
+  TimeType constexpr GetLifetime(Code const);
 
   bool constexpr IsNucleus(Code const);
   bool constexpr IsHadron(Code const);
@@ -61,7 +61,7 @@ namespace corsika::particles {
   /*!
    * returns mass of particle in natural units
    */
-  corsika::units::si::HEPMassType constexpr GetMass(Code const p) {
+  HEPMassType constexpr GetMass(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     return particle::detail::masses[static_cast<CodeIntType>(p)];
@@ -88,19 +88,18 @@ namespace corsika::particles {
   /*!
    * returns electric charge of particle, e.g. return 1.602e-19_C for a proton.
    */
-  corsika::units::si::ElectricChargeType constexpr GetCharge(Code const p) {
+  ElectricChargeType constexpr GetCharge(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetCharge() of particle::Nucleus -> unspecified");
-    return GetChargeNumber(p) * corsika::units::constants::e;
+    return GetChargeNumber(p) * constants::e;
   }
 
   constexpr std::string const& GetName(Code const p) {
     return particle::detail::names[static_cast<CodeIntType>(p)];
   }
 
-  inline corsika::units::si::TimeType constexpr GetLifetime(Code const p) {
-    return particle::detail::lifetime[static_cast<CodeIntType>(p)] *
-           corsika::units::si::second;
+  inline TimeType constexpr GetLifetime(Code const p) {
+    return particle::detail::lifetime[static_cast<CodeIntType>(p)] * second;
   }
 
   inline bool constexpr IsHadron(Code const p) {
@@ -158,8 +157,7 @@ namespace corsika::particles {
   /**
    * Get mass of nucleus
    **/
-  inline corsika::units::si::HEPMassType constexpr GetNucleusMass(const int vA,
-                                                                  const int vZ) {
+  inline HEPMassType constexpr GetNucleusMass(const int vA, const int vZ) {
     return Proton::GetMass() * vZ + (vA - vZ) * Neutron::GetMass();
   }
 

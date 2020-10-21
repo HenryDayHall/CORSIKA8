@@ -10,7 +10,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/framework/process/InteractionProcess.hpp>
 
 namespace corsika::sibyll {
 
@@ -35,24 +35,19 @@ namespace corsika::sibyll {
 
     void InitializeNuclearCrossSections();
     void PrintCrossSectionTable(corsika::Code);
-    corsika::units::si::CrossSectionType ReadCrossSectionTable(
-        const int, corsika::Code, corsika::units::si::HEPEnergyType);
-    corsika::units::si::HEPEnergyType GetMinEnergyPerNucleonCoM() {
-      return gMinEnergyPerNucleonCoM_;
-    }
-    corsika::units::si::HEPEnergyType GetMaxEnergyPerNucleonCoM() {
-      return gMaxEnergyPerNucleonCoM_;
-    }
+    CrossSectionType ReadCrossSectionTable(const int, corsika::Code, HEPEnergyType);
+    HEPEnergyType GetMinEnergyPerNucleonCoM() { return gMinEnergyPerNucleonCoM_; }
+    HEPEnergyType GetMaxEnergyPerNucleonCoM() { return gMaxEnergyPerNucleonCoM_; }
     unsigned int constexpr GetMaxNucleusAProjectile() { return gMaxNucleusAProjectile_; }
     unsigned int constexpr GetMaxNFragments() { return gMaxNFragments_; }
     unsigned int constexpr GetNEnergyBins() { return gNEnBins_; }
 
     template <typename Particle>
-    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(Particle const& p, const corsika::Code TargetId);
+    std::tuple<CrossSectionType, CrossSectionType> GetCrossSection(
+        Particle const& p, const corsika::Code TargetId);
 
     template <typename Particle>
-    corsika::units::si::GrammageType GetInteractionLength(Particle const&);
+    GrammageType GetInteractionLength(Particle const&);
 
     template <typename TSecondaryView>
     corsika::EProcessReturn DoInteraction(TSecondaryView&);
@@ -69,10 +64,8 @@ namespace corsika::sibyll {
     static constexpr unsigned int gMaxNFragments_ = 60;
     // energy limits defined by table used for cross section in signuc.f
     // 10**1 GeV to 10**6 GeV
-    static constexpr corsika::units::si::HEPEnergyType gMinEnergyPerNucleonCoM_ =
-        10. * 1e9 * corsika::units::si::electronvolt;
-    static constexpr corsika::units::si::HEPEnergyType gMaxEnergyPerNucleonCoM_ =
-        1.e6 * 1e9 * corsika::units::si::electronvolt;
+    static constexpr HEPEnergyType gMinEnergyPerNucleonCoM_ = 10. * 1e9 * electronvolt;
+    static constexpr HEPEnergyType gMaxEnergyPerNucleonCoM_ = 1.e6 * 1e9 * electronvolt;
   };
 
 } // namespace corsika::sibyll

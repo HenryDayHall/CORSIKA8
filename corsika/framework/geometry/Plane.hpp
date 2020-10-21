@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -16,7 +16,7 @@ namespace corsika {
 
   class Plane {
 
-    using DimLessVec = Vector<corsika::units::si::dimensionless_d>;
+    using DimLessVec = Vector<dimensionless_d>;
 
     Point const fCenter;
     DimLessVec const fNormal;
@@ -28,7 +28,7 @@ namespace corsika {
 
     bool IsAbove(Point const& vP) const;
 
-    units::si::LengthType DistanceTo(corsika::Point const& vP) const;
+    LengthType DistanceTo(corsika::Point const& vP) const;
 
     Point const& GetCenter() const;
 

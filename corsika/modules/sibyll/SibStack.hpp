@@ -18,7 +18,7 @@
 
 namespace corsika::sibyll {
 
-  typedef corsika::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
+  typedef corsika::Vector<hepmomentum_d> MomentumVector;
 
   class SibStackData {
 
@@ -30,34 +30,21 @@ namespace corsika::sibyll {
     unsigned int GetCapacity() const { return 8000; }
 
     void SetId(const unsigned int i, const int v) { s_plist_.llist[i] = v; }
-    void SetEnergy(const unsigned int i, const corsika::units::si::HEPEnergyType v) {
-      using namespace corsika::units::si;
+    void SetEnergy(const unsigned int i, const HEPEnergyType v) {
       s_plist_.p[3][i] = v / 1_GeV;
     }
-    void SetMass(const unsigned int i, const corsika::units::si::HEPMassType v) {
-      using namespace corsika::units::si;
+    void SetMass(const unsigned int i, const HEPMassType v) {
       s_plist_.p[4][i] = v / 1_GeV;
     }
     void SetMomentum(const unsigned int i, const MomentumVector& v) {
-      using namespace corsika::units::si;
       auto tmp = v.GetComponents();
       for (int idx = 0; idx < 3; ++idx) s_plist_.p[idx][i] = tmp[idx] / 1_GeV;
     }
 
     int GetId(const unsigned int i) const { return s_plist_.llist[i]; }
-    corsika::units::si::HEPEnergyType GetEnergy(const int i) const {
-      using namespace corsika::units::si;
-      return s_plist_.p[3][i] * 1_GeV;
-    }
-    corsika::units::si::HEPEnergyType GetMass(const unsigned int i) const {
-      using namespace corsika::units::si;
-      return s_plist_.p[4][i] * 1_GeV;
-    }
+    HEPEnergyType GetEnergy(const int i) const { return s_plist_.p[3][i] * 1_GeV; }
+    HEPEnergyType GetMass(const unsigned int i) const { return s_plist_.p[4][i] * 1_GeV; }
     MomentumVector GetMomentum(const unsigned int i) const {
-      using corsika::CoordinateSystem;
-      using corsika::QuantityVector;
-      using corsika::RootCoordinateSystem;
-      using namespace corsika::units::si;
       CoordinateSystem& rootCS =
           RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
       QuantityVector<hepmomentum_d> components = {
@@ -90,9 +77,8 @@ namespace corsika::sibyll {
 
   public:
     void SetParticleData(const int vID, // corsika::sibyll::SibyllCode vID,
-                         const corsika::units::si::HEPEnergyType vE,
-                         const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType vM) {
+                         const HEPEnergyType vE, const MomentumVector& vP,
+                         const HEPMassType vM) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
@@ -101,32 +87,23 @@ namespace corsika::sibyll {
 
     void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
                          const int vID, //  corsika::sibyll::SibyllCode vID,
-                         const corsika::units::si::HEPEnergyType vE,
-                         const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType vM) {
+                         const HEPEnergyType vE, const MomentumVector& vP,
+                         const HEPMassType vM) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
       SetMass(vM);
     }
 
-    void SetEnergy(const corsika::units::si::HEPEnergyType v) {
-      GetStackData().SetEnergy(GetIndex(), v);
-    }
+    void SetEnergy(const HEPEnergyType v) { GetStackData().SetEnergy(GetIndex(), v); }
 
-    corsika::units::si::HEPEnergyType GetEnergy() const {
-      return GetStackData().GetEnergy(GetIndex());
-    }
+    HEPEnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
 
     bool HasDecayed() const { return abs(GetStackData().GetId(GetIndex())) > 100; }
 
-    void SetMass(const corsika::units::si::HEPMassType v) {
-      GetStackData().SetMass(GetIndex(), v);
-    }
+    void SetMass(const HEPMassType v) { GetStackData().SetMass(GetIndex(), v); }
 
-    corsika::units::si::HEPEnergyType GetMass() const {
-      return GetStackData().GetMass(GetIndex());
-    }
+    HEPEnergyType GetMass() const { return GetStackData().GetMass(GetIndex()); }
 
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
 

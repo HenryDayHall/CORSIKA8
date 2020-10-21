@@ -13,7 +13,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/framework/process/InteractionProcess.hpp>
 #include <tuple>
 
 namespace corsika::sibyll {
@@ -39,23 +39,22 @@ namespace corsika::sibyll {
     void SetAllStable();
 
     bool WasInitialized() { return initialized_; }
-    bool IsValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) const {
+    bool IsValidCoMEnergy(HEPEnergyType ecm) const {
       return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
     int GetMaxTargetMassNumber() const { return maxTargetMassNumber_; }
-    corsika::units::si::HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
-    corsika::units::si::HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
+    HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
+    HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
     bool IsValidTarget(corsika::Code TargetId) const {
       return (corsika::GetNucleusA(TargetId) < maxTargetMassNumber_) &&
              corsika::IsNucleus(TargetId);
     }
 
-    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(const corsika::Code, const corsika::Code,
-                    const corsika::units::si::HEPEnergyType) const;
+    std::tuple<CrossSectionType, CrossSectionType> GetCrossSection(
+        const corsika::Code, const corsika::Code, const HEPEnergyType) const;
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
+    GrammageType GetInteractionLength(TParticle const&) const;
 
     /**
        In this function SIBYLL is called to produce one event. The
@@ -77,10 +76,8 @@ namespace corsika::sibyll {
         corsika::Code::DPlus,     corsika::Code::DMinus,     corsika::Code::D0,
         corsika::Code::MuMinus,   corsika::Code::MuPlus,     corsika::Code::D0Bar};
     const bool internalDecays_ = true;
-    const corsika::units::si::HEPEnergyType minEnergyCoM_ =
-        10. * 1e9 * corsika::units::si::electronvolt;
-    const corsika::units::si::HEPEnergyType maxEnergyCoM_ =
-        1.e6 * 1e9 * corsika::units::si::electronvolt;
+    const HEPEnergyType minEnergyCoM_ = 10. * 1e9 * electronvolt;
+    const HEPEnergyType maxEnergyCoM_ = 1.e6 * 1e9 * electronvolt;
     const int maxTargetMassNumber_ = 18;
   };
 

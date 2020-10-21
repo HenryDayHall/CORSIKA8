@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -15,6 +15,8 @@
 
 namespace corsika {
   /*!
+   * \class Helix
+   *
    * A Helix is defined by the cyclotron frequency \f$ \omega_c \f$, the initial
    * Point r0 and
    * the velocity vectors \f$ \vec{v}_{\parallel} \f$ and \f$ \vec{v}_{\perp} \f$
@@ -28,17 +30,17 @@ namespace corsika {
 
   class Helix {
 
-    using VelocityVec = Vector<units::si::SpeedType::dimension_type>;
+    using VelocityVec = Vector<SpeedType::dimension_type> ;
 
     Point const r0;
-    units::si::FrequencyType const omegaC;
+    FrequencyType const omegaC;
     VelocityVec const vPar;
     VelocityVec const vPerp, uPerp;
 
-    corsika::units::si::LengthType const radius;
+    LengthType const radius;
 
   public:
-    Helix(Point const& pR0, units::si::FrequencyType pOmegaC, VelocityVec const& pvPar,
+    Helix(Point const& pR0, FrequencyType pOmegaC, VelocityVec const& pvPar,
           VelocityVec const& pvPerp)
         : r0(pR0)
         , omegaC(pOmegaC)
@@ -47,16 +49,15 @@ namespace corsika {
         , uPerp(vPerp.cross(vPar.normalized()))
         , radius(pvPar.norm() / abs(pOmegaC)) {}
 
-    inline Point GetPosition(units::si::TimeType t) const;
+    inline Point GetPosition(TimeType t) const;
 
-    inline Point PositionFromArclength(units::si::LengthType l) const;
+    inline Point PositionFromArclength(LengthType l) const;
 
-    inline units::si::LengthType GetRadius() const;
+    inline LengthType GetRadius() const;
 
-    inline units::si::LengthType ArcLength(units::si::TimeType t1,
-                                           units::si::TimeType t2) const;
+    inline LengthType ArcLength(TimeType t1, TimeType t2) const;
 
-    inline units::si::TimeType TimeFromArclength(units::si::LengthType l) const;
+    inline TimeType TimeFromArclength(LengthType l) const;
   };
 
 } // namespace corsika

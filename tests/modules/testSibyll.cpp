@@ -6,18 +6,13 @@
  * the license.
  */
 
-#include <corsika/modules/sibyll/Decay.hpp>
-#include <corsika/modules/sibyll/Interaction.hpp>
-#include <corsika/modules/sibyll/NuclearInteraction.hpp>
+#include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
-#include <corsika/modules/sibyll/Random.hpp>
-
-#include <corsika/framework/random/RNGManager.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
 
 #include <catch2/catch.hpp>
 #include <tuple>

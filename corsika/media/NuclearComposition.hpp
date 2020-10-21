@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -75,8 +75,7 @@ namespace corsika {
                 if (IsNucleus(compID)) {
                   return GetNucleusA(compID) * fraction;
                 } else {
-                  return GetMass(compID) /
-                         units::si::ConvertSIToHEP(units::constants::u) * fraction;
+                  return GetMass(compID) / ConvertSIToHEP(constants::u) * fraction;
                 }
               })) {
       assert(pComponents.size() == pFractions.size());
@@ -116,10 +115,8 @@ namespace corsika {
     auto const GetAverageMassNumber() const { return fAvgMassNumber; }
 
     template <class TRNG>
-    corsika::Code SampleTarget(
-        std::vector<corsika::units::si::CrossSectionType> const& sigma,
-        TRNG& randomStream) const {
-      using namespace corsika::units::si;
+    corsika::Code SampleTarget(std::vector<CrossSectionType> const& sigma,
+                               TRNG& randomStream) const {
 
       assert(sigma.size() == fNumberFractions.size());
 

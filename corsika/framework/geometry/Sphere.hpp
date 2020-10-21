@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -16,10 +16,10 @@ namespace corsika {
 
   class Sphere : public Volume {
     Point const fCenter;
-    units::si::LengthType const fRadius;
+    LengthType const fRadius;
 
   public:
-    Sphere(Point const& pCenter, units::si::LengthType const pRadius)
+    Sphere(Point const& pCenter, LengthType const pRadius)
         : fCenter(pCenter)
         , fRadius(pRadius) {}
 
@@ -28,7 +28,7 @@ namespace corsika {
 
     inline const Point& GetCenter() const;
 
-    inline units::si::LengthType GetRadius() const;
+    inline LengthType GetRadius() const;
   };
 
 } // namespace corsika

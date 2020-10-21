@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -26,17 +26,16 @@ namespace corsika {
   class BaseExponential {
 
   public:
-    BaseExponential(Point const& vP0, units::si::MassDensityType vRho,
-                    units::si::LengthType vLambda)
+    BaseExponential(Point const& vP0, MassDensityType vRho, LengthType vLambda)
         : fRho0(vRho)
         , fLambda(vLambda)
         , fInvLambda(1 / vLambda)
         , fP0(vP0) {}
 
   protected:
-    units::si::MassDensityType const fRho0;
-    units::si::LengthType const fLambda;
-    units::si::InverseLengthType const fInvLambda;
+    MassDensityType const fRho0;
+    LengthType const fLambda;
+    InverseLengthType const fInvLambda;
     Point const fP0;
 
     auto const& GetImplementation() const;
@@ -55,9 +54,8 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    units::si::GrammageType IntegratedGrammage(
-        Trajectory<Line> const& vLine, units::si::LengthType vL,
-        Vector<units::si::dimensionless_d> const& vAxis) const;
+    GrammageType IntegratedGrammage(Trajectory<Line> const& vLine, LengthType vL,
+                                    Vector<dimensionless_d> const& vAxis) const;
 
     // clang-format off
     /**
@@ -77,9 +75,9 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    units::si::LengthType ArclengthFromGrammage(
-        Trajectory<Line> const& vLine, units::si::GrammageType vGrammage,
-        Vector<units::si::dimensionless_d> const& vAxis) const;
+    LengthType ArclengthFromGrammage(Trajectory<Line> const& vLine,
+                                     GrammageType vGrammage,
+                                     Vector<dimensionless_d> const& vAxis) const;
   };
 
 } // namespace corsika

@@ -15,22 +15,21 @@
 namespace corsika {
 
   template <class T>
-  units::si::MassDensityType SlidingPlanarExponential<T>::GetMassDensity(
-      Point const& p) const {
+  MassDensityType SlidingPlanarExponential<T>::GetMassDensity(Point const& p) const {
     auto const height = (p - Base::fP0).norm() - referenceHeight_;
     return Base::fRho0 * exp(Base::fInvLambda * height);
   }
 
   template <class T>
-  units::si::GrammageType SlidingPlanarExponential<T>::IntegratedGrammage(
-      Trajectory<Line> const& line, units::si::LengthType l) const {
+  GrammageType SlidingPlanarExponential<T>::IntegratedGrammage(
+      Trajectory<Line> const& line, LengthType l) const {
     auto const axis = (line.GetR0() - Base::fP0).normalized();
     return Base::IntegratedGrammage(line, l, axis);
   }
 
   template <class T>
-  units::si::LengthType SlidingPlanarExponential<T>::ArclengthFromGrammage(
-      Trajectory<Line> const& line, units::si::GrammageType grammage) const {
+  LengthType SlidingPlanarExponential<T>::ArclengthFromGrammage(
+      Trajectory<Line> const& line, GrammageType grammage) const {
     auto const axis = (line.GetR0() - Base::fP0).normalized();
     return Base::ArclengthFromGrammage(line, grammage, axis);
   }

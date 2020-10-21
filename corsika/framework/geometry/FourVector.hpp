@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -43,8 +43,7 @@ namespace corsika {
     static_assert(
         std::is_same<typename std::decay<TimeType>::type, SpaceType>::value ||
             std::is_same<typename std::decay<TimeType>::type,
-                         decltype(std::declval<SpaceType>() / corsika::units::si::meter *
-                                  corsika::units::si::second)>::value,
+                         decltype(std::declval<SpaceType>() / meter * second)>::value,
         "Units of time-like and space-like coordinates must either be idential "
         "(e.g. GeV) or [E/c]=[p]");
 

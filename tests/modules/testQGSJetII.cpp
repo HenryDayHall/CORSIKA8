@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -68,8 +66,6 @@ TEST_CASE("QgsjetII", "[processes]") {
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-using namespace corsika::units::si;
-
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
   // setup environment, geometry
@@ -103,11 +99,9 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                   corsika::Point, units::si::TimeType, unsigned int, unsigned int>{
-            corsika::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
-    // corsika::stack::MomentumVector, corsika::Point, units::si::TimeType>{
-    //	  corsika::Code::PiPlus, E0, plab, pos, 0_ns});
+        std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector, corsika::Point,
+                   TimeType, unsigned int, unsigned int>{corsika::Code::Nucleus, E0, plab,
+                                                         pos, 0_ns, 16, 8});
 
     particle.SetNode(nodePtr);
     corsika::SecondaryView view(particle);

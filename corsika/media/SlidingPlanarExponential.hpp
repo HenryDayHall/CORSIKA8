@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -24,30 +24,29 @@ namespace corsika {
                                    public T {
 
     NuclearComposition const nuclComp_;
-    units::si::LengthType const referenceHeight_;
+    LengthType const referenceHeight_;
 
     using Base = BaseExponential<SlidingPlanarExponential<T>>;
 
   public:
-    SlidingPlanarExponential(
-        Point const& p0, units::si::MassDensityType rho0, units::si::LengthType lambda,
-        NuclearComposition nuclComp,
-        units::si::LengthType referenceHeight = units::si::LengthType::zero())
+    SlidingPlanarExponential(Point const& p0, MassDensityType rho0, LengthType lambda,
+                             NuclearComposition nuclComp,
+                             LengthType referenceHeight = LengthType::zero())
         : Base(p0, rho0, lambda)
         , nuclComp_(nuclComp)
         , referenceHeight_(referenceHeight) {}
 
-    inline units::si::MassDensityType GetMassDensity(Point const& p) const override;
+    inline MassDensityType GetMassDensity(Point const& p) const override;
 
     inline NuclearComposition const& GetNuclearComposition() const override {
       return nuclComp_;
     }
 
-    inline units::si::GrammageType IntegratedGrammage(
-        Trajectory<Line> const& line, units::si::LengthType l) const override;
+    inline GrammageType IntegratedGrammage(Trajectory<Line> const& line,
+                                           LengthType l) const override;
 
-    inline units::si::LengthType ArclengthFromGrammage(
-        Trajectory<Line> const& line, units::si::GrammageType grammage) const override;
+    inline LengthType ArclengthFromGrammage(Trajectory<Line> const& line,
+                                            GrammageType grammage) const override;
   };
 
 } // namespace corsika

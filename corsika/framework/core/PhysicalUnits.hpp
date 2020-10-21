@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -8,11 +8,18 @@
 
 #pragma once
 
-#include <corsika/framework/core/PhysicalConstants.hpp>
-
-// FIXME: What package is this?
+// the templated static-unit package we use:
 #include <phys/units/io.hpp>
 #include <phys/units/quantity.hpp>
+
+#include <corsika/framework/core/PhysicalConstants.hpp>
+
+/**
+ * \file PhysicalUnits.hpp
+ *
+ * Import and extend the phys::units package. The SI units are also imported into the
+ * `\namespace corsika`, since they are used everywhere as integral part of the framework.
+ */
 
 /*
   It is essentially a bug of the phys/units package to define the
@@ -24,10 +31,9 @@ namespace phys::units {
 } // namespace phys::units
 
 /**
- * @file PhysicalUnits
+ * \namespace corsika::units
  *
- * Add new units and types we need. Units are compile-time. Literals are
- * used for optimal coding style.
+ * Extension of the phys::units package.
  *
  */
 
@@ -44,10 +50,19 @@ namespace corsika::units {
   }
 } // namespace corsika::units
 
+/**
+ * \namespace corsika::units::si
+ *
+ * SI units as used mainly in CORSIKA8 as basedline.
+ *
+ */
+
 namespace corsika::units::si {
+
   using namespace phys::units;
   using namespace phys::units::literals;
   using namespace phys::units::io;
+
   using phys::units::io::operator<<;
 
   /// defining momentum you suckers
@@ -78,8 +93,6 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
-  using MagneticFluxType =
-      phys::units::quantity<phys::units::magnetic_flux_density_d, double>;
 
   template <typename DimFrom, typename DimTo>
   auto constexpr ConversionFactorHEPToSI() {
@@ -102,10 +115,8 @@ namespace corsika::units::si {
     int constexpr q = -m - t;
     static_assert(q == l + e - 2 * m, "HEP/SI dimension mismatch!");
 
-    using namespace detail;
-    return static_pow<-e>(corsika::units::constants::hBarC) *
-           static_pow<p>(corsika::units::constants::hBar) *
-           static_pow<q>(corsika::units::constants::c);
+    return static_pow<-e>(constants::hBarC) * static_pow<p>(constants::hBar) *
+           static_pow<q>(constants::c);
   }
 
   template <typename DimFrom>
@@ -122,10 +133,8 @@ namespace corsika::units::si {
     int constexpr q = m + t;
     int constexpr e = m - t - l;
 
-    using namespace detail;
-    return static_pow<e>(corsika::units::constants::hBarC) *
-           static_pow<p>(corsika::units::constants::hBar) *
-           static_pow<q>(corsika::units::constants::c);
+    return static_pow<e>(constants::hBarC) * static_pow<p>(constants::hBar) *
+           static_pow<q>(constants::c);
   }
 
   template <typename DimTo, typename DimFrom>
@@ -156,8 +165,18 @@ namespace phys {
       QUANTITY_DEFINE_SCALING_LITERALS(eV, hepenergy_d, 1)
 
       QUANTITY_DEFINE_SCALING_LITERALS(b, corsika::units::si::sigma_d,
-                                       magnitude(corsika::units::constants::barn))
+                                       magnitude(corsika::constants::barn))
 
     } // namespace literals
   }   // namespace units
 } // namespace phys
+
+// import into main \namespace corsika here:
+namespace corsika {
+  using namespace units;
+  using namespace units::si;
+  using namespace phys::units;
+  using namespace phys::units::literals;
+  using namespace phys::units::io;
+  using phys::units::io::operator<<;
+} // namespace corsika

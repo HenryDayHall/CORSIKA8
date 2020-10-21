@@ -16,21 +16,13 @@
 
 namespace corsika {
 
-    //! returns true if the Point p is within the sphere
-    bool Sphere::Contains(Point const& p) const
-    {
-      return fRadius * fRadius > (fCenter - p).squaredNorm();
-    }
+  //! returns true if the Point p is within the sphere
+  bool Sphere::Contains(Point const& p) const {
+    return fRadius * fRadius > (fCenter - p).squaredNorm();
+  }
 
-    const Point& Sphere::GetCenter() const
-    {
-    	return fCenter;
-    }
+  const Point& Sphere::GetCenter() const { return fCenter; }
 
-    units::si::LengthType Sphere::GetRadius() const
-    {
-    	return fRadius;
-    }
+  LengthType Sphere::GetRadius() const { return fRadius; }
 
 } // namespace corsika
-

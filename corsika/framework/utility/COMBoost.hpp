@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -31,10 +29,9 @@ namespace corsika {
 
   public:
     //! construct a COMBoost given four-vector of prjectile and mass of target
-    COMBoost(const corsika::FourVector<
-                 corsika::units::si::HEPEnergyType,
-                 corsika::Vector<corsika::units::si::hepmomentum_d>>& Pprojectile,
-             const corsika::units::si::HEPEnergyType massTarget);
+    COMBoost(const corsika::FourVector<HEPEnergyType, corsika::Vector<hepmomentum_d>>&
+                 Pprojectile,
+             const HEPEnergyType massTarget);
 
     inline auto const& GetRotationMatrix() const;
 

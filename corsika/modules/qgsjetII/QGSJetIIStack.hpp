@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -15,11 +13,12 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
-#include <corsika/modules/qgsjetII/qgsjet-II-04.hpp>
+
+#include <qgsjet-II-04.hpp>
 
 namespace corsika::qgsjetII {
 
-  typedef corsika::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
+  typedef corsika::Vector<hepmomentum_d> MomentumVector;
 
   class QGSJetIIStackData {
 
@@ -36,13 +35,11 @@ namespace corsika::qgsjetII {
     unsigned int GetCapacity() const { return nptmax; }
 
     void SetId(const unsigned int i, const int v) { qgarr14_.ich[i] = v; }
-    void SetEnergy(const unsigned int i, const corsika::units::si::HEPEnergyType v) {
-      using namespace corsika::units::si;
+    void SetEnergy(const unsigned int i, const HEPEnergyType v) {
       qgarr14_.esp[i][0] = v / 1_GeV;
     }
 
     void SetMomentum(const unsigned int i, const MomentumVector& v) {
-      using namespace corsika::units::si;
       auto tmp = v.GetComponents();
       qgarr14_.esp[i][2] = tmp[0] / 1_GeV;
       qgarr14_.esp[i][3] = tmp[1] / 1_GeV;
@@ -50,13 +47,9 @@ namespace corsika::qgsjetII {
     }
 
     int GetId(const unsigned int i) const { return qgarr14_.ich[i]; }
-    corsika::units::si::HEPEnergyType GetEnergy(const int i) const {
-      using namespace corsika::units::si;
-      return qgarr14_.esp[i][0] * 1_GeV;
-    }
+    HEPEnergyType GetEnergy(const int i) const { return qgarr14_.esp[i][0] * 1_GeV; }
     MomentumVector GetMomentum(const unsigned int i,
                                const corsika::CoordinateSystem& CS) const {
-      using namespace corsika::units::si;
       corsika::QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
                                                            qgarr14_.esp[i][3] * 1_GeV,
                                                            qgarr14_.esp[i][1] * 1_GeV};
@@ -87,30 +80,24 @@ namespace corsika::qgsjetII {
     using corsika::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
-    void SetParticleData(const int vID, const corsika::units::si::HEPEnergyType vE,
-                         const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType vM) {
+    void SetParticleData(const int vID, const HEPEnergyType vE, const MomentumVector& vP,
+                         const HEPMassType vM) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
     }
 
     void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
-                         const int vID, const corsika::units::si::HEPEnergyType vE,
-                         const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType vM) {
+                         const int vID, const HEPEnergyType vE, const MomentumVector& vP,
+                         const HEPMassType vM) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
     }
 
-    void SetEnergy(const corsika::units::si::HEPEnergyType v) {
-      GetStackData().SetEnergy(GetIndex(), v);
-    }
+    void SetEnergy(const HEPEnergyType v) { GetStackData().SetEnergy(GetIndex(), v); }
 
-    corsika::units::si::HEPEnergyType GetEnergy() const {
-      return GetStackData().GetEnergy(GetIndex());
-    }
+    HEPEnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
 
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
 

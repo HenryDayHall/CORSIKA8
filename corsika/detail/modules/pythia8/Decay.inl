@@ -59,8 +59,7 @@ namespace corsika::pythia8 {
   }
 
   template <typename TParticle>
-  units::si::TimeType Decay::GetLifetime(TParticle const& p) {
-    using namespace units::si;
+  TimeType Decay::GetLifetime(TParticle const& p) {
 
     HEPEnergyType E = p.GetEnergy();
     HEPMassType m = p.GetMass();
@@ -76,7 +75,6 @@ namespace corsika::pythia8 {
   template <typename TProjectile>
   void Decay::DoDecay(TProjectile& vP) {
     using corsika::Point;
-    using namespace units::si;
 
     auto const decayPoint = vP.GetPosition();
     auto const t0 = vP.GetTime();
@@ -124,17 +122,17 @@ namespace corsika::pythia8 {
         MomentumVector pyP(rootCS, {event[i].px() * 1_GeV, event[i].py() * 1_GeV,
                                     event[i].pz() * 1_GeV});
 
-        std::cout << "particle: id=" << pyId << " momentum=" << pyP.GetComponents() / 1_GeV
-             << " energy=" << pyEn << std::endl;
+        std::cout << "particle: id=" << pyId
+                  << " momentum=" << pyP.GetComponents() / 1_GeV << " energy=" << pyEn
+                  << std::endl;
 
         vP.AddSecondary(
-            std::tuple<corsika::Code, units::si::HEPEnergyType,
-                  corsika::MomentumVector, corsika::Point, units::si::TimeType>{
-                pyId, pyEn, pyP, decayPoint, t0});
+            std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
+                       corsika::Point, TimeType>{pyId, pyEn, pyP, decayPoint, t0});
       }
 
     // set particle stable
     Decay::SetStable(vP.GetPID());
   }
 
-} // namespace corsika::process::pythia
+} // namespace corsika::pythia8

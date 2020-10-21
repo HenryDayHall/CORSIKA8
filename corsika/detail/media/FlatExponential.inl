@@ -15,7 +15,7 @@
 namespace corsika {
 
   template <class T>
-  units::si::MassDensityType FlatExponential<T>::GetMassDensity(Point const& vP) const {
+  MassDensityType FlatExponential<T>::GetMassDensity(Point const& vP) const {
     return Base::fRho0 * exp(Base::fInvLambda * (vP - Base::fP0).dot(fAxis));
   }
 
@@ -25,14 +25,14 @@ namespace corsika {
   }
 
   template <class T>
-  units::si::GrammageType FlatExponential<T>::IntegratedGrammage(
-      Trajectory<Line> const& vLine, units::si::LengthType vTo) const {
+  GrammageType FlatExponential<T>::IntegratedGrammage(Trajectory<Line> const& vLine,
+                                                      LengthType vTo) const {
     return Base::IntegratedGrammage(vLine, vTo, fAxis);
   }
 
   template <class T>
-  units::si::LengthType FlatExponential<T>::ArclengthFromGrammage(
-      Trajectory<Line> const& vLine, units::si::GrammageType vGrammage) const {
+  LengthType FlatExponential<T>::ArclengthFromGrammage(Trajectory<Line> const& vLine,
+                                                       GrammageType vGrammage) const {
     return Base::ArclengthFromGrammage(vLine, vGrammage, fAxis);
   }
 

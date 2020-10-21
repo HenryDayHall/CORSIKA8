@@ -1,5 +1,5 @@
-/*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+n/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -20,28 +20,28 @@ namespace corsika {
 
   template <class T>
   class FlatExponential : public BaseExponential<FlatExponential<T>>, public T {
-    Vector<units::si::dimensionless_d> const fAxis;
+    Vector<dimensionless_d> const fAxis;
     NuclearComposition const fNuclComp;
 
     using Base = BaseExponential<FlatExponential<T>>;
 
   public:
-    FlatExponential(Point const& vP0, Vector<units::si::dimensionless_d> const& vAxis,
-                    units::si::MassDensityType vRho, units::si::LengthType vLambda,
+    FlatExponential(Point const& vP0, Vector<dimensionless_d> const& vAxis,
+                    MassDensityType vRho, LengthType vLambda,
                     NuclearComposition vNuclComp)
         : Base(vP0, vRho, vLambda)
         , fAxis(vAxis)
         , fNuclComp(vNuclComp) {}
 
-    units::si::MassDensityType GetMassDensity(Point const& vP) const override;
+    MassDensityType GetMassDensity(Point const& vP) const override;
 
     NuclearComposition const& GetNuclearComposition() const override;
 
-    units::si::GrammageType IntegratedGrammage(Trajectory<Line> const& vLine,
-                                               units::si::LengthType vTo) const override;
+    GrammageType IntegratedGrammage(Trajectory<Line> const& vLine,
+                                    LengthType vTo) const override;
 
-    units::si::LengthType ArclengthFromGrammage(
-        Trajectory<Line> const& vLine, units::si::GrammageType vGrammage) const override;
+    LengthType ArclengthFromGrammage(Trajectory<Line> const& vLine,
+                                     GrammageType vGrammage) const override;
   };
 
 } // namespace corsika

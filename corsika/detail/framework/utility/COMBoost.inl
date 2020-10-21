@@ -24,7 +24,6 @@ namespace corsika {
   //! transforms a 4-momentum from lab frame to the center-of-mass frame
   template <typename FourVector>
   inline FourVector COMBoost::toCoM(const FourVector& p) const {
-    using namespace corsika::units::si;
     auto pComponents = p.GetSpaceLikeComponents().GetComponents(fCS);
     Eigen::Vector3d eVecRotated = fRotation * pComponents.eVector;
     Eigen::Vector2d lab;
@@ -37,14 +36,12 @@ namespace corsika {
 
     eVecRotated(2) = boostedZ(1) * (1_GeV).magnitude();
 
-    return FourVector(
-        E_CoM, corsika::Vector<corsika::units::si::hepmomentum_d>(fCS, eVecRotated));
+    return FourVector(E_CoM, corsika::Vector<hepmomentum_d>(fCS, eVecRotated));
   }
 
   //! transforms a 4-momentum from the center-of-mass frame back to lab frame
   template <typename FourVector>
   inline FourVector COMBoost::fromCoM(const FourVector& p) const {
-    using namespace corsika::units::si;
     Eigen::Vector2d com;
     com << (p.GetTimeLikeComponent() * (1 / 1_GeV)),
         (p.GetSpaceLikeComponents().GetComponents().eVector(2) * (1 / 1_GeV).magnitude());
@@ -71,9 +68,8 @@ namespace corsika {
   }
 
   inline COMBoost::COMBoost(
-      FourVector<corsika::units::si::HEPEnergyType,
-                 Vector<corsika::units::si::hepmomentum_d>> const& Pprojectile,
-      const corsika::units::si::HEPMassType massTarget)
+      FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
+      const HEPMassType massTarget)
       : fCS(Pprojectile.GetSpaceLikeComponents().GetCoordinateSystem()) {
     auto const pProjectile = Pprojectile.GetSpaceLikeComponents();
     auto const pProjNorm = pProjectile.norm();

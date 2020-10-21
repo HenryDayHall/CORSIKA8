@@ -75,11 +75,10 @@ namespace corsika::sibyll {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
   }
 
-  tuple<units::si::CrossSectionType, units::si::CrossSectionType>
+  tuple<corsika::CrossSectionType, corsika::CrossSectionType>
   Interaction::GetCrossSection(const corsika::Code BeamId,
                                const corsika::Code TargetId,
-                               const units::si::HEPEnergyType CoMenergy) const {
-    using namespace units::si;
+                               const corsika::HEPEnergyType CoMenergy) const {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
     const int iBeam = corsika::sibyll::GetSibyllXSCode(BeamId);
@@ -106,11 +105,8 @@ namespace corsika::sibyll {
 
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(
+  corsika::GrammageType Interaction::GetInteractionLength(
       SetupParticle const& vP) const {
-
-    using namespace units;
-    using namespace units::si;
 
     // coordinate system, get global frame of reference
     CoordinateSystem& rootCS =
@@ -166,7 +162,7 @@ namespace corsika::sibyll {
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.GetAverageMassNumber() *
-                                      units::constants::u / weightedProdCrossSection;
+                                      constants::u / weightedProdCrossSection;
       std::cout << "Interaction: "
            << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
            << std::endl;
@@ -182,10 +178,8 @@ namespace corsika::sibyll {
      event is copied (and boosted) into the shower lab frame.
    */
 
-  template <>
-  corsika::EProcessReturn Interaction::DoInteraction(SetupProjectile& vP) {
-
-    using namespace units::si;
+  template <typename TProjectile>
+  corsika::EProcessReturn Interaction::DoInteraction(TProjectile& vP) {
 
     const auto corsikaBeamId = vP.GetPID();
     std::cout << "ProcessSibyll: "
@@ -208,7 +202,7 @@ namespace corsika::sibyll {
       // define target
       // for Sibyll is always a single nucleon
       // FOR NOW: target is always at rest
-      const auto eTargetLab = 0_GeV + corsika::units::constants::nucleonMass;
+      const auto eTargetLab = 0_GeV + constants::nucleonMass;
       const auto pTargetLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
@@ -227,7 +221,7 @@ namespace corsika::sibyll {
       // define target kinematics in lab frame
       // define boost to and from CoM frame
       // CoM frame definition in Sibyll projectile: +z
-      COMBoost const boost(PprojLab, corsika::units::constants::nucleonMass);
+      COMBoost const boost(PprojLab, constants::nucleonMass);
 
       // just for show:
       // boost projecticle
@@ -264,7 +258,7 @@ namespace corsika::sibyll {
        */
       //#warning reading interaction cross section again, should not be necessary
       auto const& compVec = mediumComposition.GetComponents();
-      std::vector<corsika::units::si::CrossSectionType> cross_section_of_components(compVec.size());
+      std::vector<si::CrossSectionType> cross_section_of_components(compVec.size());
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
@@ -332,7 +326,7 @@ namespace corsika::sibyll {
 
         MomentumVector Plab_final(rootCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
         HEPEnergyType Elab_final = 0_GeV, Ecm_final = 0_GeV;
-        for (auto& psib : ss) {
+        for (const auto& psib : ss) {
 
           // skip corsika that have decayed in Sibyll
           if (psib.HasDecayed()) continue;
@@ -344,8 +338,8 @@ namespace corsika::sibyll {
 
           // add to corsika stack
           auto pnew = vP.AddSecondary(
-          std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                    corsika::Point, units::si::TimeType>{
+          std::tuple<corsika::Code, corsika::HEPEnergyType, corsika::MomentumVector,
+                    corsika::Point, corsika::TimeType>{
                   corsika::sibyll::ConvertFromSibyll(psib.GetPID()),
                   Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
                   tOrig});

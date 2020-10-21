@@ -59,11 +59,12 @@ private:
  *
  */
 template <typename StackIteratorInterface>
-class TestParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
+class TestParticleInterface
+    : public corsika::stack::ParticleBase<StackIteratorInterface> {
 
 public:
-  using corsika::ParticleBase<StackIteratorInterface>::GetStackData;
-  using corsika::ParticleBase<StackIteratorInterface>::GetIndex;
+  using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
+  using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   /*
      The SetParticleData methods are called for creating new entries

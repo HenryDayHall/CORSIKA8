@@ -59,7 +59,7 @@ namespace corsika::sibyll {
 
   bool constexpr CanInteract(corsika::Code pCode) { return GetSibyllXSCode(pCode) > 0; }
 
-  corsika::units::si::HEPMassType GetSibyllMass(corsika::Code const);
+  HEPMassType GetSibyllMass(corsika::Code const);
 
 } // namespace corsika::sibyll
 

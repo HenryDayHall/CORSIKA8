@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -15,7 +13,8 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
-#include <corsika/modules/qgsjetII/qgsjet-II-04.hpp>
+
+#include <qgsjet-II-04.hpp>
 
 namespace corsika::qgsjetII {
 

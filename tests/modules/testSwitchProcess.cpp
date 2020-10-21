@@ -1,17 +1,16 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
 
+#include <corsika/modules/SwitchProcess.hpp>
+
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/stack/Stack.hpp>
-#include <corsika/modules/switch_process/SwitchProcess.hpp>
 
 #include <catch2/catch.hpp>
 

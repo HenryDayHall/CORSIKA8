@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -13,7 +11,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/modules/pythia8/Pythia8.hpp>
 
 #include <tuple>
@@ -36,20 +34,17 @@ namespace corsika::pythia8 {
     void SetStable(const corsika::Code);
 
     bool WasInitialized() { return fInitialized; }
-    bool ValidCoMEnergy(corsika::units::si::HEPEnergyType ecm) {
-      using namespace corsika::units::si;
-      return (10_GeV < ecm) && (ecm < 1_PeV);
-    }
+    bool ValidCoMEnergy(HEPEnergyType ecm) { return (10_GeV < ecm) && (ecm < 1_PeV); }
 
     bool CanInteract(const corsika::Code);
     void ConfigureLabFrameCollision(const corsika::Code, const corsika::Code,
-                                    const corsika::units::si::HEPEnergyType);
-    std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
-                    const corsika::units::si::HEPEnergyType CoMenergy);
+                                    const HEPEnergyType);
+    std::tuple<CrossSectionType, CrossSectionType> GetCrossSection(
+        const corsika::Code BeamId, const corsika::Code TargetId,
+        const HEPEnergyType CoMenergy);
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle&);
+    GrammageType GetInteractionLength(TParticle&);
 
     /**
        In this function PYTHIA is called to produce one event. The

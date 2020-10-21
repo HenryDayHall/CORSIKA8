@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -130,17 +130,17 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     REQUIRE((length / 1_fm) == Approx(1));
 
     TimeType const time = ConvertHEPToSI<TimeType::dimension_type>(invEnergy);
-    REQUIRE((time / (1_fm / corsika::units::constants::c)) == Approx(1));
+    REQUIRE((time / (1_fm / constants::c)) == Approx(1));
 
     auto const protonMass = 938.272'081'3_MeV; // convertible to mass or SI energy
     MassType protonMassSI = ConvertHEPToSI<MassType::dimension_type>(protonMass);
     REQUIRE((protonMassSI / 1.672'621'898e-27_kg) == Approx(1));
-    REQUIRE((protonMassSI / (1.007'276 * corsika::units::constants::u)) == Approx(1));
+    REQUIRE((protonMassSI / (1.007'276 * constants::u)) == Approx(1));
   }
 
   SECTION("SI/HEP conversion") {
-    REQUIRE(ConvertSIToHEP(units::constants::c) == Approx(1));
-    REQUIRE(ConvertSIToHEP(units::constants::hBar) == Approx(1));
+    REQUIRE(ConvertSIToHEP(constants::c) == Approx(1));
+    REQUIRE(ConvertSIToHEP(constants::hBar) == Approx(1));
 
     {
       auto const invLength = 1 / 197.326978_fm; // should be convertible to HEPEnergy

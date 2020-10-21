@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -11,13 +9,15 @@
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/DecayProcess.hpp>
+#include <corsika/framework/process/DecayProcess.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <corsika/modules/pythia8/Pythia8.hpp>
 
 namespace corsika::pythia8 {
 
-  typedef corsika::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
+  typedef corsika::Vector<hepmomentum_d> MomentumVector;
 
   class Decay : public corsika::DecayProcess<Decay> {
     const std::vector<corsika::Code> fTrackedParticles;
@@ -33,7 +33,7 @@ namespace corsika::pythia8 {
     void SetStable(const corsika::Code);
 
     template <typename TParticle>
-    corsika::units::si::TimeType GetLifetime(TParticle const&);
+    TimeType GetLifetime(TParticle const&);
 
     template <typename TProjectile>
     void DoDecay(TProjectile&);

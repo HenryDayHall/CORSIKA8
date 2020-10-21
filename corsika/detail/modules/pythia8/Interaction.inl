@@ -25,7 +25,7 @@ using Particle = corsika::setup::Stack::ParticleType;
 
 namespace corsika::pythia8 {
 
-  typedef corsika::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
+  typedef corsika::Vector<corsika::hepmomentum_d> MomentumVector;
 
   Interaction::~Interaction() {
     std::cout << "Pythia::Interaction n=" << fCount << std::endl;
@@ -85,10 +85,9 @@ namespace corsika::pythia8 {
     fPythia.particleData.mayDecay(static_cast<int>(corsika::GetPDG(pCode)), false);
   }
 
-  void Interaction::ConfigureLabFrameCollision(
-      const corsika::Code BeamId, const corsika::Code TargetId,
-      const units::si::HEPEnergyType BeamEnergy) {
-    using namespace units::si;
+  void Interaction::ConfigureLabFrameCollision(const corsika::Code BeamId,
+                                               const corsika::Code TargetId,
+                                               const HEPEnergyType BeamEnergy) {
     // Pythia configuration of the current event
     // very clumsy. I am sure this can be done better..
 
@@ -125,11 +124,9 @@ namespace corsika::pythia8 {
            pCode == corsika::Code::PiMinus || pCode == corsika::Code::PiPlus;
   }
 
-  std::tuple<units::si::CrossSectionType, units::si::CrossSectionType>
-  Interaction::GetCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
-                               const units::si::HEPEnergyType CoMenergy) {
-    using namespace units::si;
-
+  std::tuple<CrossSectionType, CrossSectionType> Interaction::GetCrossSection(
+      const corsika::Code BeamId, const corsika::Code TargetId,
+      const HEPEnergyType CoMenergy) {
     // interaction possible in pythia?
     if (TargetId == corsika::Code::Proton || TargetId == corsika::Code::Hydrogen) {
       if (CanInteract(BeamId) && ValidCoMEnergy(CoMenergy)) {
@@ -159,10 +156,7 @@ namespace corsika::pythia8 {
   }
 
   template <>
-  units::si::GrammageType Interaction::GetInteractionLength(Particle& p) {
-
-    using namespace units;
-    using namespace units::si;
+  GrammageType Interaction::GetInteractionLength(Particle& p) {
 
     // coordinate system, get global frame of reference
     CoordinateSystem& rootCS =
@@ -218,7 +212,7 @@ namespace corsika::pythia8 {
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.GetAverageMassNumber() *
-                                      units::constants::u / weightedProdCrossSection;
+                                      constants::u / weightedProdCrossSection;
       std::cout << "Interaction: "
                 << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
                 << std::endl;
@@ -236,9 +230,6 @@ namespace corsika::pythia8 {
 
   template <>
   corsika::EProcessReturn Interaction::DoInteraction(Projectile& vP) {
-
-    using namespace units;
-    using namespace units::si;
 
     const auto corsikaBeamId = vP.GetPID();
     std::cout << "Pythia::Interaction: "
@@ -376,9 +367,8 @@ namespace corsika::pythia8 {
 
           // add to corsika stack
           auto pnew = vP.AddSecondary(
-              std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                         corsika::Point, units::si::TimeType>{pyId, pyEn, pyPlab, pOrig,
-                                                              tOrig});
+              std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
+                         corsika::Point, TimeType>{pyId, pyEn, pyPlab, pOrig, tOrig});
 
           Plab_final += pnew.GetMomentum();
           Elab_final += pnew.GetEnergy();

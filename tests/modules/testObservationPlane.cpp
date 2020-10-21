@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -10,7 +8,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <corsika/modules/observation_plane/ObservationPlane.hpp>
+#include <corsika/modules/ObservationPlane.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
@@ -19,7 +17,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-using namespace corsika::units::si;
 using namespace corsika::observation_plane;
 using namespace corsika;
 
@@ -34,10 +31,10 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
    */
 
   Point const start(rootCS, {0_m, 1_m, 10_m});
-  Vector<units::si::SpeedType::dimension_type> vec(rootCS, 0_m / second, 0_m / second,
-                                                   -units::constants::c);
+  Vector<SpeedType::dimension_type> vec(rootCS, 0_m / second, 0_m / second,
+                                        -constants::c);
   Line line(start, vec);
-  Trajectory<Line> track(line, 12_m / units::constants::c);
+  Trajectory<Line> track(line, 12_m / constants::c);
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -46,12 +43,12 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
     };
-    stack.AddParticle(std::tuple<Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                                 Point, units::si::TimeType>{
-        Code::NuMu, 1_GeV,
-        corsika::MomentumVector(rootCS,
-                                {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::GetMass())}),
-        Point(rootCS, {1_m, 1_m, 10_m}), 0_ns});
+    stack.AddParticle(
+        std::tuple<Code, HEPEnergyType, corsika::MomentumVector, Point, TimeType>{
+            Code::NuMu, 1_GeV,
+            corsika::MomentumVector(rootCS,
+                                    {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::GetMass())}),
+            Point(rootCS, {1_m, 1_m, 10_m}), 0_ns});
   }
   auto particle = stack.GetNextParticle();
 

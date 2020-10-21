@@ -16,46 +16,37 @@
 
 namespace corsika {
 
-    template <typename T>
-    Point Trajectory<T>::GetPosition(double u) const
-    {
-    	return T::GetPosition(fTimeLength * u);
-    }
+  template <typename T>
+  Point Trajectory<T>::GetPosition(double u) const {
+    return T::GetPosition(fTimeLength * u);
+  }
 
-    template <typename T>
-    corsika::units::si::TimeType Trajectory<T>::GetDuration() const
-    {
-    	return fTimeLength;
-    }
+  template <typename T>
+  TimeType Trajectory<T>::GetDuration() const {
+    return fTimeLength;
+  }
 
-    template <typename T>
-    corsika::units::si::LengthType Trajectory<T>::GetLength() const
-    {
-    	return GetDistance(fTimeLength);
-    }
+  template <typename T>
+  LengthType Trajectory<T>::GetLength() const {
+    return GetDistance(fTimeLength);
+  }
 
-    template <typename T>
-    corsika::units::si::LengthType Trajectory<T>::GetDistance(corsika::units::si::TimeType t) const
-    {
-      assert(t <= fTimeLength);
-      assert(t >= 0 * corsika::units::si::second);
-      return T::ArcLength(0 * corsika::units::si::second, t);
-    }
+  template <typename T>
+  LengthType Trajectory<T>::GetDistance(TimeType t) const {
+    assert(t <= fTimeLength);
+    assert(t >= 0 * second);
+    return T::ArcLength(0 * second, t);
+  }
 
-    template <typename T>
-    void Trajectory<T>::LimitEndTo(corsika::units::si::LengthType limit)
-    {
-      fTimeLength = T::TimeFromArclength(limit);
-    }
+  template <typename T>
+  void Trajectory<T>::LimitEndTo(LengthType limit) {
+    fTimeLength = T::TimeFromArclength(limit);
+  }
 
-    template <typename T>
-    auto Trajectory<T>::NormalizedDirection() const
-    {
-      static_assert(std::is_same_v<T, corsika::Line>);
-      return T::GetV0().normalized();
-    }
-
+  template <typename T>
+  auto Trajectory<T>::NormalizedDirection() const {
+    static_assert(std::is_same_v<T, corsika::Line>);
+    return T::GetV0().normalized();
+  }
 
 } // namespace corsika
-
-

@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -14,7 +12,7 @@
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
-#include <corsika/modules/energy_loss/EnergyLoss.hpp>
+#include <corsika/modules/BetheBlochPDG.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 
@@ -44,7 +42,7 @@ int main() {
 
   Vector<dimensionless_d> showerAxis(rootCS, {0, 0, -1});
 
-  corsika::energy_loss::EnergyLoss eLoss(injectionPos, showerAxis);
+  corsika::energy_loss::BetheBlochPDG eLoss(injectionPos, showerAxis);
 
   setup::Stack stack;
 

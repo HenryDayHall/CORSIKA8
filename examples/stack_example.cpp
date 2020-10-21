@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -37,10 +37,11 @@ void read(corsika::super_stupid::SuperStupidStack& s) {
   assert(s.GetSize() == 11); // stack has 11 particles
 
   HEPEnergyType total_energy;
-  for (auto& p : s) {
+  int i = 0;
+  for (const auto& p : s) {
     total_energy += p.GetEnergy();
     // particles are electrons with 1.5 GeV energy times i
-    assert(p.GetPID() == particles::Code::Electron);
+    assert(p.GetPID() == corsika::Code::Electron);
     assert(p.GetEnergy() == 1.5_GeV * (i++));
   }
 }

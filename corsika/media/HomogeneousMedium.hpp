@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -28,32 +28,27 @@ namespace corsika {
 
   template <class T>
   class HomogeneousMedium : public T {
-    corsika::units::si::MassDensityType const fDensity;
+    MassDensityType const fDensity;
     NuclearComposition const fNuclComp;
 
   public:
-    HomogeneousMedium(corsika::units::si::MassDensityType pDensity,
-                      NuclearComposition pNuclComp)
+    HomogeneousMedium(MassDensityType pDensity, NuclearComposition pNuclComp)
         : fDensity(pDensity)
         , fNuclComp(pNuclComp) {}
 
-    corsika::units::si::MassDensityType GetMassDensity(
-        corsika::Point const&) const override {
+    MassDensityType GetMassDensity(corsika::Point const&) const override {
       return fDensity;
     }
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::Trajectory<corsika::Line> const&,
-        corsika::units::si::LengthType pTo) const override {
-      using namespace corsika::units::si;
+    GrammageType IntegratedGrammage(corsika::Trajectory<corsika::Line> const&,
+                                    LengthType pTo) const override {
       return pTo * fDensity;
     }
 
-    corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::Trajectory<corsika::Line> const&,
-        corsika::units::si::GrammageType pGrammage) const override {
+    LengthType ArclengthFromGrammage(corsika::Trajectory<corsika::Line> const&,
+                                     GrammageType pGrammage) const override {
       return pGrammage / fDensity;
     }
   };

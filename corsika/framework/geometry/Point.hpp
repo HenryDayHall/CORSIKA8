@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -14,10 +14,6 @@
 #include <corsika/framework/geometry/Vector.hpp>
 
 namespace corsika {
-
-  // FIXME: remove aliasing here
-  using corsika::units::si::length_d;
-  using corsika::units::si::LengthType;
 
   /*!
    * A Point represents a point in position space. It is defined by its

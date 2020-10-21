@@ -17,15 +17,18 @@ parser.add_argument("--all", action="store_true",
 
 args = parser.parse_args()
 
+excludeDirs = ["./modules", "./externals", "build", "install", "git"]
+
 filelist = []
 if args.all:
     for dirpath, dirnames, filenames in os.walk("."):
         excl = False
-        excl_dirs = ["ThirdParty", "build", "externals"]
-        for excl_dir in excl_dirs:
+        for excl_dir in excludeDirs:
             if excl_dir in dirpath:
                 excl = True
-        if excl: continue
+                break
+        if excl:
+            continue
         for f in filenames:
             if f.endswith(".hpp") or f.endswith(".cpp"):
                 filename = os.path.join(dirpath, f)
@@ -46,7 +49,9 @@ else:
     cmd = "git ls-files --exclude-standard --others"
     filelist += subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n")
     filelist = [x for x in filelist
-                if "ThirdParty" not in x and (x.endswith(".h") or x.endswith(".cc"))]
+                if "./externals" not in x and
+                   "./modules" not in x and
+                   (x.endswith(".hpp") or x.endswith(".cpp"))]
 
 cmd = "clang-format"
 if "CLANG_FORMAT" in os.environ:
@@ -55,6 +60,7 @@ cmd +=  " -style=file"
 if args.apply:
     for filename in filelist:
         subp.check_call(cmd.split() + ["-i", filename])
+
 else:
     # only print files which need formatting
     files_need_formatting = 0

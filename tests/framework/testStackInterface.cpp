@@ -6,13 +6,13 @@
  * the license.
  */
 
+#define protected public // to also test the internal state of objects
+
 #include <corsika/framework/stack/Stack.hpp>
 
-#include <boost/type_index.hpp>
-#include <type_traits>
-
-#include <tests/framework/testTestStack.h> // simple test-stack for testing. This is
-using boost::typeindex::type_id_with_cvr;
+#include <testTestStack.h> // simple test-stack for testing. This is
+                           // for testing only: include from
+                           // CMAKE_CURRENT_SOURCE_DIR
 
 #include <iomanip>
 #include <tuple>
@@ -20,7 +20,6 @@ using boost::typeindex::type_id_with_cvr;
 
 #include <catch2/catch.hpp>
 
-using namespace corsika;
 using namespace corsika;
 using namespace std;
 

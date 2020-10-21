@@ -6,22 +6,20 @@
  * the license.
  */
 
+#define protected public // to also test the internal state of objects
+
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 
-#include <boost/type_index.hpp>
-#include <type_traits>
-
-#include <tests/framework/testTestStack.h> // for testing: simple stack. This is a
-using boost::typeindex::type_id_with_cvr;
+#include <testTestStack.h> // for testing: simple stack. This is a
+// test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
 #include <iomanip>
 #include <vector>
 
 #include <catch2/catch.hpp>
 
-using namespace corsika;
 using namespace corsika;
 using namespace std;
 
@@ -82,8 +80,8 @@ public:
 // combined stack: StackTest = (TestStackData + TestStackData2)
 template <typename StackIter>
 using CombinedTestInterfaceType =
-    corsika::CombinedParticleInterface<TestParticleInterface, TestParticleInterface2,
-                                       StackIter>;
+    corsika::CombinedParticleInterface<TestParticleInterface,
+                                              TestParticleInterface2, StackIter>;
 
 using StackTest = CombinedStack<TestStackData, TestStackData2, CombinedTestInterfaceType>;
 
@@ -277,8 +275,8 @@ public:
 // combined stack
 template <typename StackIter>
 using CombinedTestInterfaceType2 =
-    corsika::CombinedParticleInterface<StackTest::PIType, TestParticleInterface3,
-                                       StackIter>;
+    corsika::CombinedParticleInterface<StackTest::MPIType, TestParticleInterface3,
+                                              StackIter>;
 
 using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
                                  CombinedTestInterfaceType2>;
@@ -363,8 +361,8 @@ TEST_CASE("Combined Stack - multi", "[stack]") {
  */
 template <typename StackIter>
 using CombinedTestInterfaceType2 =
-    corsika::CombinedParticleInterface<StackTest::PIType, TestParticleInterface3,
-                                       StackIter>;
+    corsika::CombinedParticleInterface<StackTest::MPIType, TestParticleInterface3,
+                                              StackIter>;
 
 using StackTest2 = CombinedStack<typename StackTest::StackImpl, TestStackData3,
                                  CombinedTestInterfaceType2>;

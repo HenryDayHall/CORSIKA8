@@ -24,7 +24,7 @@ namespace corsika {
    template <class TDerived>
     auto LinearApproximationIntegrator<TDerived>::IntegrateGrammage(
         corsika::Trajectory<corsika::Line> const& line,
-        corsika::units::si::LengthType length) const {
+        LengthType length) const {
       auto const c0 = GetImplementation().EvaluateAt(line.GetPosition(0));
       auto const c1 = GetImplementation().fRho.FirstDerivative(
           line.GetPosition(0), line.NormalizedDirection());
@@ -34,7 +34,7 @@ namespace corsika {
    template <class TDerived>
     auto LinearApproximationIntegrator<TDerived>::ArclengthFromGrammage(
         corsika::Trajectory<corsika::Line> const& line,
-        corsika::units::si::GrammageType grammage) const {
+        GrammageType grammage) const {
       auto const c0 = GetImplementation().fRho(line.GetPosition(0));
       auto const c1 = GetImplementation().fRho.FirstDerivative(
           line.GetPosition(0), line.NormalizedDirection());
@@ -45,7 +45,6 @@ namespace corsika {
    template <class TDerived>
     auto LinearApproximationIntegrator<TDerived>::MaximumLength(corsika::Trajectory<corsika::Line> const& line,
                        [[maybe_unused]] double relError) const {
-      using namespace corsika::units::si;
       [[maybe_unused]] auto const c1 = GetImplementation().fRho.SecondDerivative(
           line.GetPosition(0), line.NormalizedDirection());
 

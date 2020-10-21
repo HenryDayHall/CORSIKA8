@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -13,7 +11,10 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
+#include <corsika/framework/process/InteractionProcess.hpp>
+
+#include <corsika/modules/qgsjetII/Random.hpp>
+#include <qgsjet-II-04.hpp>
 
 #include <string>
 
@@ -38,12 +39,12 @@ namespace corsika::qgsjetII {
              corsika::IsNucleus(TargetId);
     }
 
-    corsika::units::si::CrossSectionType GetCrossSection(
-        const corsika::Code, const corsika::Code, const corsika::units::si::HEPEnergyType,
-        const unsigned int Abeam = 0, const unsigned int Atarget = 0) const;
+    CrossSectionType GetCrossSection(const corsika::Code, const corsika::Code,
+                                     const HEPEnergyType, const unsigned int Abeam = 0,
+                                     const unsigned int Atarget = 0) const;
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
+    GrammageType GetInteractionLength(TParticle const&) const;
 
     /**
        In this function QGSJETII is called to produce one event. The

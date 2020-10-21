@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -30,9 +30,8 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(Electron::GetMass() / (511_keV) == Approx(1));
     CHECK(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
 
-    CHECK((Proton::GetMass() + Neutron::GetMass()) /
-              corsika::units::constants::nucleonMass ==
-          Approx(2));
+    REQUIRE((Proton::GetMass() + Neutron::GetMass()) / constants::nucleonMass ==
+            Approx(2));
   }
 
   SECTION("Charges") {
@@ -69,15 +68,15 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Lifetimes") {
-    CHECK(GetLifetime(Code::Electron) ==
-          std::numeric_limits<double>::infinity() * corsika::units::si::second);
-    CHECK(GetLifetime(Code::DPlus) < GetLifetime(Code::Gamma));
-    CHECK(GetLifetime(Code::RhoPlus) / corsika::units::si::second ==
-          (Approx(4.414566727909413e-24).epsilon(1e-3)));
-    CHECK(GetLifetime(Code::SigmaMinusBar) / corsika::units::si::second ==
-          (Approx(8.018880848563575e-11).epsilon(1e-5)));
-    CHECK(GetLifetime(Code::MuPlus) / corsika::units::si::second ==
-          (Approx(2.1970332555864364e-06).epsilon(1e-5)));
+    REQUIRE(GetLifetime(Code::Electron) ==
+            std::numeric_limits<double>::infinity() * si::second);
+    REQUIRE(GetLifetime(Code::DPlus) < GetLifetime(Code::Gamma));
+    REQUIRE(GetLifetime(Code::RhoPlus) / si::second ==
+            (Approx(4.414566727909413e-24).epsilon(1e-3)));
+    REQUIRE(GetLifetime(Code::SigmaMinusBar) / si::second ==
+            (Approx(8.018880848563575e-11).epsilon(1e-5)));
+    REQUIRE(GetLifetime(Code::MuPlus) / si::second ==
+            (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
   SECTION("Particle groups: electromagnetic") {

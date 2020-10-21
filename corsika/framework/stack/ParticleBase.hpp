@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -7,8 +7,6 @@
  */
 
 #pragma once
-
-#include <type_traits>
 
 namespace corsika {
 
@@ -41,27 +39,34 @@ namespace corsika {
   */
 
   template <typename StackIterator>
-  class ParticleBase {
+  struct ParticleBase {
 
   public:
-    using StackIteratorType = StackIterator;
+
+    typedef StackIterator stack_iterator_type;
+
     ParticleBase() = default;
 
-  private:
-    // those copy constructors and assigments should never be implemented
-    ParticleBase(ParticleBase&) = delete;
-    ParticleBase operator=(ParticleBase&) = delete;
-    ParticleBase(ParticleBase&&) = delete;
-    ParticleBase operator=(ParticleBase&&) = delete;
+     // those copy constructors and assigments should never be implemented
+    ParticleBase(ParticleBase&)       = delete;
+    ParticleBase(ParticleBase&&)      = delete;
     ParticleBase(const ParticleBase&) = delete;
+
+    ParticleBase operator=(ParticleBase&)       = delete;
+    ParticleBase operator=(ParticleBase&&)      = delete;
     ParticleBase operator=(const ParticleBase&) = delete;
 
-  public:
+
     /**
      * Delete this particle on the stack. The corresponding iterator
      * will be invalidated by this operation
      */
-    void Delete() { GetIterator().GetStack().Delete(GetIterator()); }
+    void erase() { this->getIterator().getStack().erase(this->getIterator()); }
+
+    /**
+     * Method to retrieve the status of the Particle. Is it already deleted? Or not.
+     */
+    bool isDeleted() const { return this->getIterator().getStack().isDeleted(this->getIterator()); }
 
     /**
      * Method to retrieve the status of the Particle. Is it already deleted? Or not.
@@ -74,8 +79,9 @@ namespace corsika {
      * function description in the user defined ParticleInterface::AddSecondary(...)
      */
     template <typename... TArgs>
-    StackIterator AddSecondary(const TArgs... args) {
-      return GetStack().AddSecondary(GetIterator(), args...);
+    stack_iterator_type addSecondary(const TArgs... args) {
+
+      return this->getStack().addSecondary(this->getIterator(), args...);
     }
 
     // protected: // todo should [MAY]be proteced, but don't now how to 'friend Stack'
@@ -83,27 +89,43 @@ namespace corsika {
     /**
      * return the corresponding StackIterator for this particle
      */
-    StackIterator& GetIterator() { return static_cast<StackIterator&>(*this); }
-    const StackIterator& GetIterator() const {
-      return static_cast<const StackIterator&>(*this);
+    stack_iterator_type& getIterator() {
+    	return static_cast<stack_iterator_type&>(*this);
+    }
+
+    const stack_iterator_type& getIterator() const {
+      return static_cast<const stack_iterator_type&>(*this);
     }
 
   protected:
     /**
         @name Access to underlying stack fData, these are service
-        function for user classes. User code can only rely on GetIndex
-        and GetStackData to retrieve data
+        function for user classes. User code can only rely on getIndex
+        and getStackData to retrieve data
         @{
     */
-    auto& GetStackData() { return GetIterator().GetStackData(); }
-    const auto& GetStackData() const { return GetIterator().GetStackData(); }
-    auto& GetStack() { return GetIterator().GetStack(); }
-    const auto& GetStack() const { return GetIterator().GetStack(); }
+    auto& getStackData() {
+    	return this->getIterator().getStackData();
+    }
+
+    const auto& getStackData() const {
+    	return this->getIterator().getStackData();
+    }
+
+    auto& getStack() {
+    	return this->getIterator().getStack();
+    }
+
+    const auto& getStack() const {
+    	return this->getIterator().getStack();
+    }
 
     /**
      * return the index number of the underlying iterator object
      */
-    unsigned int GetIndex() const { return GetIterator().GetIndexFromIterator(); }
+    size_t getIndex() const {
+    	return this->getIterator().getIndexFromIterator();
+    }
     ///@}
   };
 

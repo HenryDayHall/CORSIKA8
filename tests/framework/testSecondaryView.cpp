@@ -6,14 +6,13 @@
  * the license.
  */
 
+#define protected public // to also test the internal state of objects
+
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 
-#include <boost/type_index.hpp>
-#include <type_traits>
-
-#include <tests/framework/testTestStack.h> // for testing: simple stack. This is a
-using boost::typeindex::type_id_with_cvr;
+#include <testTestStack.h> // for testing: simple stack. This is a
+// test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
 #include <iomanip>
 #include <vector>
@@ -21,7 +20,7 @@ using boost::typeindex::type_id_with_cvr;
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika;
+using namespace corsika::stack;
 using namespace std;
 
 typedef Stack<TestStackData, TestParticleInterface> StackTest;

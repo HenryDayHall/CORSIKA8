@@ -11,7 +11,7 @@
 #include <corsika/modules/sibyll/Random.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/DecayProcess.hpp>
+#include <corsika/framework/process/DecayProcess.hpp>
 
 #include <set>
 #include <vector>
@@ -64,7 +64,7 @@ namespace corsika::sibyll {
     void SetHandleAllDecay();
 
     template <typename TParticle>
-    corsika::units::si::TimeType GetLifetime(TParticle const&) const;
+    TimeType GetLifetime(TParticle const&) const;
 
     /**
      In this function SIBYLL is called to produce to decay the input particle.

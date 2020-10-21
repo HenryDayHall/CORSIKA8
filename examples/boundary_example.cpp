@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -10,10 +8,9 @@
 
 #include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-
 #include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/framework/sequence/ProcessSequence.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
@@ -24,12 +21,10 @@
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <corsika/modules/particle_cut/ParticleCut.hpp>
-#include <corsika/modules/sibyll/Decay.hpp>
-#include <corsika/modules/sibyll/Interaction.hpp>
-#include <corsika/modules/sibyll/NuclearInteraction.hpp>
-#include <corsika/modules/track_writer/TrackWriter.hpp>
-#include <corsika/modules/tracking_line/TrackingLine.hpp>
+#include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/TrackWriter.hpp>
+#include <corsika/modules/TrackingLine.hpp>
 
 #include <iostream>
 #include <limits>

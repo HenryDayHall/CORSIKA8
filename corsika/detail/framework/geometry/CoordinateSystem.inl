@@ -78,7 +78,7 @@ namespace corsika {
     }
 
     template <typename TDim>
-    auto CoordinateSystem::translateAndRotate(QuantityVector<phys::units::length_d> translation, QuantityVector<TDim> axis, double angle)
+    auto CoordinateSystem::translateAndRotate(QuantityVector<length_d> translation, QuantityVector<TDim> axis, double angle)
     {
       if (axis.eVector.isZero()) {
         throw std::runtime_error("null-vector given as axis parameter");

@@ -17,35 +17,23 @@
 
 namespace corsika {
 
+  Point Helix::GetPosition(TimeType t) const {
+    return r0 + vPar * t +
+           (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
+  }
 
-    Point Helix::GetPosition(corsika::units::si::TimeType t) const
-    {
-      return r0 + vPar * t +
-             (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
-    }
+  Point Helix::PositionFromArclength(LengthType l) const {
+    return GetPosition(TimeFromArclength(l));
+  }
 
-    Point Helix::PositionFromArclength(corsika::units::si::LengthType l) const
-    {
-      return GetPosition(TimeFromArclength(l));
-    }
+  LengthType Helix::GetRadius() const { return radius; }
 
-    units::si::LengthType Helix::GetRadius() const
-    {
-    	return radius;
-    }
+  LengthType Helix::ArcLength(TimeType t1, TimeType t2) const {
+    return (vPar + vPerp).norm() * (t2 - t1);
+  }
 
-    corsika::units::si::LengthType
-    Helix::ArcLength(corsika::units::si::TimeType t1, corsika::units::si::TimeType t2) const
-    {
-      return (vPar + vPerp).norm() * (t2 - t1);
-    }
-
-    corsika::units::si::TimeType
-	Helix::TimeFromArclength(corsika::units::si::LengthType l) const
-    {
-      return l / (vPar + vPerp).norm();
-    }
-
+  TimeType Helix::TimeFromArclength(LengthType l) const {
+    return l / (vPar + vPerp).norm();
+  }
 
 } // namespace corsika
-

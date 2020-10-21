@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -37,22 +37,19 @@ namespace corsika {
         : fNuclComp(pNuclComp)
         , fDensityFunction(rhoArgs...) {}
 
-    corsika::units::si::MassDensityType GetMassDensity(
-        corsika::Point const& p) const override {
+    MassDensityType GetMassDensity(Point const& p) const override {
       return fDensityFunction.EvaluateAt(p);
     }
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::Trajectory<corsika::Line> const& pLine,
-        corsika::units::si::LengthType pTo) const override {
+    GrammageType IntegratedGrammage(Trajectory<Line> const& pLine,
+                                    LengthType pTo) const override {
       return fDensityFunction.IntegrateGrammage(pLine, pTo);
     }
 
-    corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::Trajectory<corsika::Line> const& pLine,
-        corsika::units::si::GrammageType pGrammage) const override {
+    LengthType ArclengthFromGrammage(Trajectory<Line> const& pLine,
+                                     GrammageType pGrammage) const override {
       return fDensityFunction.ArclengthFromGrammage(pLine, pGrammage);
     }
   };

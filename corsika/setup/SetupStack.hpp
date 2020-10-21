@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -186,8 +186,9 @@ namespace corsika::setup {
       actually needed. Keep an eye on this!
     */
 #if defined(__clang__)
-  using StackView = corsika::SecondaryView<typename corsika::Stack::StackImpl,
-                                           corsika::detail::StackWithGeometryInterface>;
+  using StackView =
+      corsika::SecondaryView<typename corsika::setup::Stack::StackImpl,
+                             corsika::setup::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
   using StackView = corsika::MakeView<corsika::setup::Stack>::type;
 #endif
