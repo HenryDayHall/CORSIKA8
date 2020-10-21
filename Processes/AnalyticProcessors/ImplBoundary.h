@@ -36,11 +36,12 @@ namespace corsika::process {
       EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
                                         VTNType const& to) {
 
-        // Use of the ClassTimer function -> see ClassTimer for documentation                                          
+        // Use of the ClassTimer function -> see ClassTimer for documentation
         auto tc = corsika::analytics::ClassTimer<
             EProcessReturn (detail::ExecTimeImpl<T>::_T::*)(Particle&, VTNType const&,
-                                                    VTNType const&),
-            &detail::ExecTimeImpl<T>::_T::template DoBoundaryCrossing<Particle, VTNType>>(*this);
+                                                            VTNType const&),
+            &detail::ExecTimeImpl<T>::_T::template DoBoundaryCrossing<Particle, VTNType>>(
+            *this);
 
         EProcessReturn r = tc.call(p, from, to);
         this->update(

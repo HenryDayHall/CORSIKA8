@@ -48,13 +48,14 @@ TEST_CASE("Dummy Processes") {
             Approx(1000).margin(1));
 
     start = std::chrono::steady_clock::now();
-    REQUIRE(dc.MaxStepLength(nullptr, nullptr) == units::si::meter * std::numeric_limits<double>::infinity());
+    REQUIRE(dc.MaxStepLength(nullptr, nullptr) ==
+            units::si::meter * std::numeric_limits<double>::infinity());
     end = std::chrono::steady_clock::now();
     REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
             Approx(1000).margin(1));
   }
 
-   SECTION("Decay") {
+  SECTION("Decay") {
     auto start = std::chrono::steady_clock::now();
     REQUIRE(dd.DoDecay(tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
@@ -62,13 +63,14 @@ TEST_CASE("Dummy Processes") {
             Approx(1000).margin(1));
 
     start = std::chrono::steady_clock::now();
-    REQUIRE(dd.GetLifetime(tmp) == units::si::second * std::numeric_limits<double>::infinity());
+    REQUIRE(dd.GetLifetime(tmp) ==
+            units::si::second * std::numeric_limits<double>::infinity());
     end = std::chrono::steady_clock::now();
     REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
             Approx(1000).margin(1));
   }
 
-   SECTION("Interaction") {
+  SECTION("Interaction") {
     auto start = std::chrono::steady_clock::now();
     REQUIRE(di.DoInteraction(tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
@@ -76,18 +78,18 @@ TEST_CASE("Dummy Processes") {
             Approx(1000).margin(1));
 
     start = std::chrono::steady_clock::now();
-    REQUIRE(di.GetInteractionLength(tmp) ==  (units::si::gram / 1_cm / 1_cm) * std::numeric_limits<double>::infinity());
+    REQUIRE(di.GetInteractionLength(tmp) ==
+            (units::si::gram / 1_cm / 1_cm) * std::numeric_limits<double>::infinity());
     end = std::chrono::steady_clock::now();
     REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
             Approx(1000).margin(1));
   }
 
-   SECTION("Secondaries") {
+  SECTION("Secondaries") {
     auto start = std::chrono::steady_clock::now();
     REQUIRE(dse.DoSecondaries(tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
     REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
             Approx(1000).margin(1));
-   
   }
 }

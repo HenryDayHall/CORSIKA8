@@ -18,9 +18,9 @@
 #include <corsika/process/example_processors/DummyInteractionProcess.h>
 #include <corsika/process/example_processors/DummySecondariesProcess.h>
 
+#include <cmath>
 #include <random>
 #include <vector>
-#include <cmath>
 
 using namespace corsika::process;
 using namespace corsika::process::analytic_processors;

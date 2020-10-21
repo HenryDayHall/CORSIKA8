@@ -23,9 +23,9 @@ namespace corsika::process::longitudinal_profile {
   /**
    * \class LongitudinalProfile
    *
-   * is a ContinuousProcess, which is constructed from an environment::ShowerAxis 
+   * is a ContinuousProcess, which is constructed from an environment::ShowerAxis
    * object, and a dX in units of g/cm2
-   * (corsika::units::si::GrammageType). 
+   * (corsika::units::si::GrammageType).
    *
    * LongitudinalProfile does then convert each single Track of the
    * simulation into a projected grammage range and counts for

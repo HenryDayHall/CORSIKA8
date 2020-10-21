@@ -23,7 +23,6 @@ int testFunc() {
 
 class TestClass {
 public:
-
   int operator()() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return 31415;
@@ -46,5 +45,4 @@ TEST_CASE("Analytics", "[Timer]") {
     std::cout << test() << std::endl;
     std::cout << test.getTime().count() << std::endl;
   }
- 
 }

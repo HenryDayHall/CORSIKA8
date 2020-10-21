@@ -31,11 +31,13 @@ namespace corsika::process {
 
     namespace detail {
 
-      /// Process type independent functionality of the Process runtime measurement class ExecTime
-      /** Inherits all functionality of the class that should be sampled, this includes special functions for getters and setters
-       * 
-       * 
-       * 
+      /// Process type independent functionality of the Process runtime measurement class
+      /// ExecTime
+      /** Inherits all functionality of the class that should be sampled, this includes
+       * special functions for getters and setters
+       *
+       *
+       *
        */
       template <typename T>
       class ExecTimeImpl : public T {
@@ -74,7 +76,8 @@ namespace corsika::process {
           this->update(timeDiv);
         }
 
-        /// Updates the floating mean and variance as well as the global min and max of the sampled runtimes
+        /// Updates the floating mean and variance as well as the global min and max of
+        /// the sampled runtimes
         void update(std::chrono::duration<double, std::micro> timeDif) {
 
           cumulatedTime_ += timeDif;

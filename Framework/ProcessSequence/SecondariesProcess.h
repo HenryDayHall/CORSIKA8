@@ -26,8 +26,7 @@ namespace corsika::process {
 
   template <typename TDerived>
   class SecondariesProcess : public BaseProcess<TDerived> {
-    public:
-       
+  public:
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoSecondaries...
     template <typename TSecondaries>

@@ -20,23 +20,25 @@
 namespace corsika::analytics {
 
   /// Measure the runtime of a single class function
-  /** 
+  /**
    * @tparam TClassFunc Type of the member function pointer that should be wrapped
    * @tparam TFunc Actual function of the type defined in TClass
    */
   template <typename TClassFunc, TClassFunc TFunc>
   class ClassTimer;
 
-
   /// Measure the runtime of a single class function
-  /** Specialisation to capture exact information about the composition of the member function pointer used.
-   * 
-   *  This class wrapes a single function and allowes the measureing of its runtime if it called via the "call(...)" function
-   * 
+  /** Specialisation to capture exact information about the composition of the member
+   * function pointer used.
+   *
+   *  This class wrapes a single function and allowes the measureing of its runtime if it
+   * called via the "call(...)" function
+   *
    * @tparam TClass Class of the function that should be wrapped
    * @tparam TRet   Return value of the wrapped function
    * @tparam TArgs  Arguments passed to the wrapped function
-   * @tparam TFuncPtr Actual function of the type defined by TRet TClass::TFuncPtr(TArgs...)
+   * @tparam TFuncPtr Actual function of the type defined by TRet
+   * TClass::TFuncPtr(TArgs...)
    */
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...)>
@@ -54,11 +56,13 @@ namespace corsika::analytics {
     ClassTimer(TClass& obj)
         : vObj(obj) {}
 
-    /// Executes the wrapped function 
-    /** This function executes and measure the runtime of the wrapped function with the highest precision available (high_resolution_clock).
-     * 
+    /// Executes the wrapped function
+    /** This function executes and measure the runtime of the wrapped function with the
+     * highest precision available (high_resolution_clock).
+     *
      * @param args Arguments are perfect forwarded to the wrapped function.
-     * @return Returns the return value of the wrapped function. This value get copied during the process and therefore must be copie constructible!
+     * @return Returns the return value of the wrapped function. This value get copied
+     * during the process and therefore must be copie constructible!
      */
     TRet call(TArgs... args) {
       vStart = TClock::now();
@@ -97,7 +101,6 @@ namespace corsika::analytics {
     inline TDuration getTime() const { return vDiff; }
   };
 
-
   /// Specialisation for const member functions
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...) const>
@@ -124,7 +127,6 @@ namespace corsika::analytics {
 
     inline TDuration getTime() const { return vDiff; }
   };
-
 
   /// Specialisation for const member functions without return value
   template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const>

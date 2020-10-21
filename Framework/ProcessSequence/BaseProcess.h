@@ -22,7 +22,7 @@ namespace corsika::process {
      are of type BaseProcess<T>
 
    */
-  class _BaseProcess{};
+  class _BaseProcess {};
 
   template <typename TDerived>
   class BaseProcess : _BaseProcess {
@@ -36,9 +36,9 @@ namespace corsika::process {
     TDerived& GetRef() { return static_cast<TDerived&>(*this); }
     const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
 
-    public:
-      // Base processor type for use in other template classes
-      using TProcessType = TDerived;
+  public:
+    // Base processor type for use in other template classes
+    using TProcessType = TDerived;
   };
 
 } // namespace corsika::process

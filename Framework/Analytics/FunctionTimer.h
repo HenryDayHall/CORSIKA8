@@ -13,12 +13,12 @@
 namespace corsika::analytics {
 
   /// Wraps and measures the runtime of a single function type object
-  /** 
-  * 
-  * @tparam TFunc funtion pointer that should be wrapped
-  * @tparam TClock type of the clock that should be used for measurements
-  * @tparam TDuration type of std::duration to measure the elapsed time
-  */
+  /**
+   *
+   * @tparam TFunc funtion pointer that should be wrapped
+   * @tparam TClock type of the clock that should be used for measurements
+   * @tparam TDuration type of std::duration to measure the elapsed time
+   */
   template <typename TFunc, typename TClock = std::chrono::high_resolution_clock,
             typename TDuration = std::chrono::microseconds>
   class FunctionTimer {
@@ -29,7 +29,6 @@ namespace corsika::analytics {
     TFunc function_;
 
   public:
-
     /// Constructs the wrapper with the given functionpointer
     FunctionTimer(TFunc f)
         : function_(f) {}

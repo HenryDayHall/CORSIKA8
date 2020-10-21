@@ -25,11 +25,10 @@ namespace corsika::process {
    */
 
   template <typename TDerived>
-  class StackProcess : public BaseProcess<TDerived>{
+  class StackProcess : public BaseProcess<TDerived> {
   private:
   protected:
   public:
-       
     StackProcess() = delete;
     StackProcess(const unsigned int nStep)
         : fNStep(nStep) {}
