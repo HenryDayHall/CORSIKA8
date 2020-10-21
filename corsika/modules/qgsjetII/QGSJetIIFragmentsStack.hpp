@@ -10,12 +10,12 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/stack/Stack.hpp>
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 #include <corsika/modules/qgsjetII/qgsjet-II-04.hpp>
-#include <corsika/framework/stack/Stack.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika::qgsjetII {
 

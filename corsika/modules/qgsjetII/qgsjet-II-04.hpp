@@ -110,8 +110,6 @@ void lzmafillarray_(const double& dum, const int& idum);
 
 #include <corsika/detail/modules/qgsjetII/qgsjet-II-04.inl>
 
-
-
 /**
  * WARNING, TODO, FIXME: this below here has to go away, this is just a dummy until
  * we "properly" link to the external corsika-data submodule
@@ -120,23 +118,30 @@ void lzmafillarray_(const double& dum, const int& idum);
 namespace corsika_data {
 
   void CorDataOpenFile(const std::string&) {
-    throw std::runtime_error("CorDataOpenFile: Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "CorDataOpenFile: Cannot read compressed data files with dummy library.");
   }
   void CorDataFillArray(double*, const int&) {
-    throw std::runtime_error("CorDataFillArray: Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "CorDataFillArray: Cannot read compressed data files with dummy library.");
   }
   void CorDataCloseFile() {
-    throw std::runtime_error("CorDataCloseFile: Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "CorDataCloseFile: Cannot read compressed data files with dummy library.");
   }
   double CorDataNextNumber() {
-    throw std::runtime_error("CorDataNextNumber: Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "CorDataNextNumber: Cannot read compressed data files with dummy library.");
     return 0;
   }
   void CorDataNextText(std::string&) {
-    throw std::runtime_error("CorDataNextText(string&): Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "CorDataNextText(string&): Cannot read compressed data files with dummy "
+        "library.");
   }
   void CorDataNextText(char*, int) {
-    throw std::runtime_error("CorDataNextText(char*): Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "CorDataNextText(char*): Cannot read compressed data files with dummy library.");
   }
   bool CorDataCanDeCompress() { return false; }
 
@@ -149,7 +154,8 @@ namespace corsika_data {
   void cordataclosefile_() { CorDataCloseFile(); }
   double cordatanextnumber_() { return CorDataNextNumber(); }
   void cordatanexttext_(char*, int) {
-    throw std::runtime_error("cordatanexttext_: Cannot read compressed data files with dummy library.");
+    throw std::runtime_error(
+        "cordatanexttext_: Cannot read compressed data files with dummy library.");
   }
   int cordatacandecompress_() { return 0; }
   }

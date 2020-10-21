@@ -11,14 +11,14 @@
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/InteractionProcess.hpp>
 
 #include <corsika/framework/core/PhysicalConstants.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika::hadronic_elastic_model {
-  
+
   /**
    * A simple model for elastic hadronic interactions based on the formulas
    * in Gaisser, Engel, Resconi, Cosmic Rays and Particle Physics (Cambridge Univ. Press,
@@ -43,8 +43,7 @@ namespace corsika::hadronic_elastic_model {
     using inveV2 = decltype(1 / units::si::square(units::si::electronvolt));
 
     corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream(
-            "HadronicElasticModel");
+        corsika::RNGManager::GetInstance().GetRandomStream("HadronicElasticModel");
 
     inveV2 B(eV2 s) const;
     corsika::units::si::CrossSectionType CrossSection(SquaredHEPEnergyType s) const;

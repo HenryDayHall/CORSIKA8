@@ -11,9 +11,9 @@
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/sequence/InteractionProcess.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/sequence/InteractionProcess.hpp>
 
 #include <string>
 
@@ -39,9 +39,8 @@ namespace corsika::qgsjetII {
     }
 
     corsika::units::si::CrossSectionType GetCrossSection(
-        const corsika::Code, const corsika::Code,
-        const corsika::units::si::HEPEnergyType, const unsigned int Abeam = 0,
-        const unsigned int Atarget = 0) const;
+        const corsika::Code, const corsika::Code, const corsika::units::si::HEPEnergyType,
+        const unsigned int Abeam = 0, const unsigned int Atarget = 0) const;
 
     template <typename TParticle>
     corsika::units::si::GrammageType GetInteractionLength(TParticle const&) const;
@@ -55,11 +54,10 @@ namespace corsika::qgsjetII {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream("qgran");
+    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("qgran");
     const int maxMassNumber_ = 208;
   };
 
-} // namespace corsika::process::qgsjetII
+} // namespace corsika::qgsjetII
 
 #include <corsika/detail/modules/qgsjetII/Interaction.inl>

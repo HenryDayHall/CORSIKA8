@@ -58,8 +58,8 @@ TEST_CASE("QgsjetII", "[processes]") {
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -85,7 +85,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
       corsika::NuclearComposition(std::vector<corsika::Code>{corsika::Code::Oxygen},
-                                      std::vector<float>{1.}));
+                                  std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
