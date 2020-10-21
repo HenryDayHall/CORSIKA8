@@ -3,7 +3,6 @@ set (
   SetupStack.h
   SetupEnvironment.h
   SetupTrajectory.h
-  GeometryNodeStackExtension.h
   )
 
 set (
