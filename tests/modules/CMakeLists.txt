@@ -6,7 +6,7 @@ set (test_modules_sources
   testObservationPlane.cpp
   testParticleCut.cpp
   testPythia8.cpp
-  #testQGSJetII.cpp
+  testQGSJetII.cpp
   testStackInspector.cpp
   testSwitchProcess.cpp
   testTrackingLine.cpp

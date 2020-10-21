@@ -1,6 +1,8 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
+ * See file AUTHORS for a list of contributors.
+ *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -8,11 +10,11 @@
 
 #pragma once
 
-#include <corsika/framework/geometry/CoordinateSystem.h>
-#include <corsika/framework/geometry/Vector.h>
-#include <corsika/process/qgsjetII/ParticleConversion.h>
-#include <corsika/process/qgsjetII/qgsjet-II-04.h>
-#include <corsika/stack/Stack.h>
+#include <corsika/framework/geometry/CoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/modules/qgsjetII/ParticleConversion.hpp>
+#include <corsika/modules/qgsjetII/qgsjet-II-04.hpp>
+#include <corsika/framework/stack/Stack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika::qgsjetII {
@@ -22,6 +24,7 @@ namespace corsika::qgsjetII {
   class QGSJetIIStackData {
 
   public:
+    void Init();
     void Dump() const {}
 
     void Clear() {
@@ -51,12 +54,11 @@ namespace corsika::qgsjetII {
       using namespace corsika::units::si;
       return qgarr14_.esp[i][0] * 1_GeV;
     }
-    MomentumVector GetMomentum(const unsigned int i,
-                               const corsika::CoordinateSystem& CS) const {
+    MomentumVector GetMomentum(const unsigned int i, const corsika::CoordinateSystem& CS) const {
       using namespace corsika::units::si;
-      geometry::QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
-                                                            qgarr14_.esp[i][3] * 1_GeV,
-                                                            qgarr14_.esp[i][1] * 1_GeV};
+      corsika::QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
+                                                  qgarr14_.esp[i][3] * 1_GeV,
+                                                  qgarr14_.esp[i][1] * 1_GeV};
       return MomentumVector(CS, components);
     }
 
@@ -78,24 +80,26 @@ namespace corsika::qgsjetII {
   };
 
   template <typename StackIteratorInterface>
-  class ParticleInterface : public corsika::stack::ParticleBase<StackIteratorInterface> {
+  class ParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
 
-    using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
-    using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
+    using corsika::ParticleBase<StackIteratorInterface>::GetStackData;
+    using corsika::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
-    void SetParticleData(const int vID, const corsika::units::si::HEPEnergyType vE,
+    void SetParticleData(const int vID, 
+                         const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType) {
+                         const corsika::units::si::HEPMassType vM) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
     }
 
     void SetParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
-                         const int vID, const corsika::units::si::HEPEnergyType vE,
+                         const int vID, 
+                         const corsika::units::si::HEPEnergyType vE,
                          const MomentumVector& vP,
-                         const corsika::units::si::HEPMassType) {
+                         const corsika::units::si::HEPMassType vM) {
       SetPID(vID);
       SetEnergy(vE);
       SetMomentum(vP);
@@ -116,15 +120,15 @@ namespace corsika::qgsjetII {
           GetStackData().GetId(GetIndex()));
     }
 
-    MomentumVector GetMomentum(const corsika::CoordinateSystem& CS) const {
-      return GetStackData().GetMomentum(GetIndex(), CS);
-    }
+    MomentumVector GetMomentum(const corsika::CoordinateSystem& CS) const { return GetStackData().GetMomentum(GetIndex(), CS); }
 
     void SetMomentum(const MomentumVector& v) {
       GetStackData().SetMomentum(GetIndex(), v);
     }
   };
 
-  typedef corsika::stack::Stack<QGSJetIIStackData, ParticleInterface> QGSJetIIStack;
+  typedef corsika::Stack<QGSJetIIStackData, ParticleInterface> QGSJetIIStack;
 
 } // end namespace corsika::qgsjetII
+
+//#include <corsika/detail/modules/qgsjetII/QGSJetIIStack.inl>

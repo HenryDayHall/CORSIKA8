@@ -1,6 +1,8 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
+ * See file AUTHORS for a list of contributors.
+ *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -8,11 +10,11 @@
 
 #pragma once
 
-#include <corsika/framework/geometry/RootCoordinateSystem.h>
-#include <corsika/framework/geometry/Vector.h>
-#include <corsika/process/qgsjetII/ParticleConversion.h>
-#include <corsika/process/qgsjetII/qgsjet-II-04.h>
-#include <corsika/stack/Stack.h>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/modules/qgsjetII/ParticleConversion.hpp>
+#include <corsika/modules/qgsjetII/qgsjet-II-04.hpp>
+#include <corsika/framework/stack/Stack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika::qgsjetII {
@@ -20,6 +22,7 @@ namespace corsika::qgsjetII {
   class QGSJetIIFragmentsStackData {
 
   public:
+    void Init();
     void Dump() const {}
 
     void Clear() {
@@ -50,10 +53,10 @@ namespace corsika::qgsjetII {
   };
 
   template <typename StackIteratorInterface>
-  class FragmentsInterface : public corsika::stack::ParticleBase<StackIteratorInterface> {
+  class FragmentsInterface : public corsika::ParticleBase<StackIteratorInterface> {
 
-    using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
-    using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
+    using corsika::ParticleBase<StackIteratorInterface>::GetStackData;
+    using corsika::ParticleBase<StackIteratorInterface>::GetIndex;
 
   public:
     void SetParticleData(const int vSize) { SetFragmentSize(vSize); }
@@ -68,7 +71,9 @@ namespace corsika::qgsjetII {
     double GetFragmentSize() const { return GetStackData().GetFragmentSize(GetIndex()); }
   };
 
-  typedef corsika::stack::Stack<QGSJetIIFragmentsStackData, FragmentsInterface>
+  typedef corsika::Stack<QGSJetIIFragmentsStackData, FragmentsInterface>
       QGSJetIIFragmentsStack;
 
 } // end namespace corsika::qgsjetII
+
+//#include <corsika/detail/modules/qgsjetII/QGSJetIIFragmentsStack.inl>

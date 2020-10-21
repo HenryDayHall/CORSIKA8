@@ -57,6 +57,7 @@ include_directories(${CORSIKA8_INCLUDE_DIR})
 # those are needed, since some headers (namely GeneratedParticleProperties.inc) are produced by python script from ParticleData.xml
 add_subdirectory(corsika/framework) 
 add_subdirectory(corsika/modules/sibyll) 
+add_subdirectory(corsika/modules/qgsjetII) 
 #
 #+++++++++++++++++++++++++++++
 # get Eigen3 
@@ -111,6 +112,7 @@ endif(Sibyll_FOUND)
 # get QGSJETII
 #
 #find_package( QGSJETII REQUIRED )
+add_subdirectory (dependencies/qgsjetII)
 if(QGSJETII_FOUND)
 include_directories(${QGSJETII_INCLUDE_DIR})
 endif(QGSJETII_FOUND)

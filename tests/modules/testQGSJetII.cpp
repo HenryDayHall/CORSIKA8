@@ -8,119 +8,114 @@
  * the license.
  */
 
-#include <corsika/process/qgsjetII/Interaction.h>
-#include <corsika/process/qgsjetII/ParticleConversion.h>
+#include <corsika/modules/qgsjetII/Interaction.hpp>
+#include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 
-#include <corsika/random/RNGManager.h>
-
-#include <corsika/particles/ParticleProperties.h>
-
-#include <corsika/geometry/Point.h>
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
 
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika::process::qgsjetII;
+using namespace corsika::qgsjetII;
 
 TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("QgsjetII -> Corsika") {
-    REQUIRE(particles::PiPlus::GetCode() == process::qgsjetII::ConvertFromQgsjetII(
-                                                process::qgsjetII::QgsjetIICode::PiPlus));
+    REQUIRE(corsika::PiPlus::GetCode() == corsika::qgsjetII::ConvertFromQgsjetII(
+                                              corsika::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
-    REQUIRE(process::qgsjetII::ConvertToQgsjetII(particles::PiMinus::GetCode()) ==
-            process::qgsjetII::QgsjetIICode::PiMinus);
-    REQUIRE(process::qgsjetII::ConvertToQgsjetIIRaw(particles::Proton::GetCode()) == 2);
+    REQUIRE(corsika::qgsjetII::ConvertToQgsjetII(corsika::PiMinus::GetCode()) ==
+            corsika::qgsjetII::QgsjetIICode::PiMinus);
+    REQUIRE(corsika::qgsjetII::ConvertToQgsjetIIRaw(corsika::Proton::GetCode()) == 2);
   }
 
   SECTION("canInteractInQgsjetII") {
 
-    REQUIRE(process::qgsjetII::CanInteract(particles::Proton::GetCode()));
-    REQUIRE(process::qgsjetII::CanInteract(particles::Code::KPlus));
-    REQUIRE(process::qgsjetII::CanInteract(particles::Nucleus::GetCode()));
-    // REQUIRE(process::qgsjetII::CanInteract(particles::Helium::GetCode()));
+    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Proton::GetCode()));
+    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::KPlus));
+    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Nucleus::GetCode()));
+    // REQUIRE(corsika::qgsjetII::CanInteract(corsika::Helium::GetCode()));
 
-    REQUIRE_FALSE(process::qgsjetII::CanInteract(particles::EtaC::GetCode()));
-    REQUIRE_FALSE(process::qgsjetII::CanInteract(particles::SigmaC0::GetCode()));
+    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::EtaC::GetCode()));
+    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::SigmaC0::GetCode()));
   }
 
   SECTION("cross-section type") {
 
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Neutron) == 2);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::K0Long) == 3);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::Proton) == 2);
-    REQUIRE(process::qgsjetII::GetQgsjetIIXSCode(particles::Code::PiMinus) == 1);
+    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::Neutron) == 2);
+    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::K0Long) == 3);
+    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::Proton) == 2);
+    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::PiMinus) == 1);
   }
 }
 
-#include <corsika/geometry/Point.h>
-#include <corsika/geometry/RootCoordinateSystem.h>
-#include <corsika/geometry/Vector.h>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
 
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
 
-#include <corsika/particles/ParticleProperties.h>
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
-#include <corsika/process/qgsjetII/qgsjet-II-04.h>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 
 using namespace corsika::units::si;
-using namespace corsika::units;
 
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
   // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
+  corsika::Environment<corsika::IMediumModel> env;
   auto& universe = *(env.GetUniverse());
 
   auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
+      corsika::Environment<corsika::IMediumModel>::CreateNode<corsika::Sphere>(
+          corsika::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
           1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
+  using MyHomogeneousModel = corsika::HomogeneousMedium<corsika::IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
       1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
+      corsika::NuclearComposition(std::vector<corsika::Code>{corsika::Code::Oxygen},
+                                      std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
 
-  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
+  const corsika::CoordinateSystem& cs = env.GetCoordinateSystem();
 
-  random::RNGManager::GetInstance().RegisterRandomStream("qgran");
+  corsika::RNGManager::GetInstance().RegisterRandomStream("qgran");
 
   SECTION("InteractionInterface") {
 
     setup::Stack stack;
     const HEPEnergyType E0 = 100_GeV;
     HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                     corsika::stack::MomentumVector, geometry::Point,
-                                     units::si::TimeType, unsigned int, unsigned int>{
-            particles::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
-    // corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-    //	  particles::Code::PiPlus, E0, plab, pos, 0_ns});
+        sqrt(E0 * E0 - corsika::Proton::GetMass() * corsika::Proton::GetMass());
+    auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    corsika::Point pos(cs, 0_m, 0_m, 0_m);
+    auto particle = stack.AddParticle(
+        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
+                   corsika::Point, units::si::TimeType, unsigned int, unsigned int>{
+            corsika::Code::Nucleus, E0, plab, pos, 0_ns, 16, 8});
+    // corsika::stack::MomentumVector, corsika::Point, units::si::TimeType>{
+    //	  corsika::Code::PiPlus, E0, plab, pos, 0_ns});
 
     particle.SetNode(nodePtr);
-    corsika::stack::SecondaryView view(particle);
+    corsika::SecondaryView view(particle);
     auto projectile = view.GetProjectile();
 
     Interaction model;
     model.Init();
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(projectile);
+    [[maybe_unused]] const corsika::EProcessReturn ret = model.DoInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 }
