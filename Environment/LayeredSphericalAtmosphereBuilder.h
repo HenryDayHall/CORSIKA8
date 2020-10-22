@@ -18,8 +18,10 @@
 #include <corsika/units/PhysicalConstants.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <functional>
 #include <memory>
 #include <stack>
+#include <tuple>
 #include <type_traits>
 
 namespace corsika::environment {
@@ -52,12 +54,14 @@ namespace corsika::environment {
   } // namespace detail
 
   template <typename TMediumInterface = environment::IMediumModel,
-            template <typename> typename TMediumModelExtra = detail::NoExtraModel>
+            template <typename> typename TMediumModelExtra = detail::NoExtraModel,
+            typename... TModelArgs>
   class LayeredSphericalAtmosphereBuilder {
     std::unique_ptr<NuclearComposition> composition_;
     geometry::Point center_;
     units::si::LengthType previousRadius_{units::si::LengthType::zero()};
     units::si::LengthType earthRadius_;
+    std::tuple<TModelArgs...> const additionalModelArgs_;
 
     std::stack<typename VolumeTreeNode<TMediumInterface>::VTNUPtr>
         layers_; // innermost layer first
@@ -76,18 +80,18 @@ namespace corsika::environment {
 
   public:
     LayeredSphericalAtmosphereBuilder(
-        corsika::geometry::Point center,
+        TModelArgs... args, corsika::geometry::Point center,
         units::si::LengthType earthRadius = units::constants::EarthRadius::Mean)
         : center_(center)
-        , earthRadius_(earthRadius) {}
+        , earthRadius_(earthRadius)
+        , additionalModelArgs_{args...} {}
 
     void setNuclearComposition(NuclearComposition composition) {
       composition_ = std::make_unique<NuclearComposition>(composition);
     }
 
-    template <typename... TArgs>
     void addExponentialLayer(units::si::GrammageType b, units::si::LengthType c,
-                             units::si::LengthType upperBoundary, TArgs&&... args) {
+                             units::si::LengthType upperBoundary) {
       using namespace units::si;
 
       auto const radius = earthRadius_ + upperBoundary;
@@ -100,43 +104,56 @@ namespace corsika::environment {
       auto const rho0 = b / c;
       std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
 
-      if constexpr (detail::has_extra_models<TMediumModelExtra>::value)
-        node->template SetModelProperties<
-            TMediumModelExtra<environment::SlidingPlanarExponential<TMediumInterface>>>(
-            args..., center_, rho0, -c, *composition_, earthRadius_);
-      else
-        node->template SetModelProperties<
-            environment::SlidingPlanarExponential<TMediumInterface>>(
+      if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
+        // helper lambda in which the last 5 arguments to make_shared<...> are bound
+        auto lastBound = [&](auto... argPack) {
+          return std::make_shared<
+              TMediumModelExtra<environment::SlidingPlanarExponential<TMediumInterface>>>(
+              argPack..., center_, rho0, -c, *composition_, earthRadius_);
+        };
+
+        // now unpack the additional arguments
+        auto model = std::apply(lastBound, additionalModelArgs_);
+        node->SetModelProperties(std::move(model));
+      } else {
+        node->template SetModelProperties<SlidingPlanarExponential<TMediumInterface>>(
             center_, rho0, -c, *composition_, earthRadius_);
+      }
 
       layers_.push(std::move(node));
     }
 
-    template <typename... TArgs>
-    void addLinearLayer(units::si::LengthType c, units::si::LengthType upperBoundary,
-                        TArgs&&... args) {
+    void addLinearLayer(units::si::LengthType c, units::si::LengthType upperBoundary) {
       using namespace units::si;
 
       auto const radius = earthRadius_ + upperBoundary;
       checkRadius(radius);
       previousRadius_ = radius;
 
+      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
+          std::make_unique<geometry::Sphere>(center_, radius));
+
       units::si::GrammageType constexpr b = 1 * 1_g / (1_cm * 1_cm);
       auto const rho0 = b / c;
 
       std::cout << "rho0 = " << rho0;
 
-      auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
-          std::make_unique<geometry::Sphere>(center_, radius));
+      if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
+        // helper lambda in which the last 2 arguments to make_shared<...> are bound
+        auto lastBound = [&](auto... argPack) {
+          return std::make_shared<
+              TMediumModelExtra<environment::HomogeneousMedium<TMediumInterface>>>(
+              argPack..., rho0, *composition_);
+        };
 
-      if constexpr (detail::has_extra_models<TMediumModelExtra>::value)
+        // now unpack the additional arguments
+        auto model = std::apply(lastBound, additionalModelArgs_);
+
+        node->SetModelProperties(std::move(model));
+      } else {
         node->template SetModelProperties<
-            TMediumModelExtra<environment::HomogeneousMedium<TMediumInterface>>>(
-            args..., rho0, *composition_);
-      else
-        node->template SetModelProperties<
-            environment::HomogeneousMedium<TMediumInterface>>(args..., rho0,
-                                                              *composition_);
+            environment::HomogeneousMedium<TMediumInterface>>(rho0, *composition_);
+      }
 
       layers_.push(std::move(node));
     }

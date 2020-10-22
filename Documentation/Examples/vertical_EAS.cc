@@ -78,6 +78,13 @@ void registerRandomStreams(const int seed) {
 template <typename T>
 using MEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
 
+template <typename... TArgs>
+auto make_builder(geometry::Point const& center, TArgs... args) {
+  return environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface, MEnv,
+                                                        TArgs...>{
+      args..., center, units::constants::EarthRadius::Mean};
+}
+
 int main(int argc, char** argv) {
 
   logging::SetLevel(logging::level::info);
@@ -101,26 +108,17 @@ int main(int argc, char** argv) {
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface, MEnv>
-      builder{center};
+  auto builder = make_builder(center, environment::Medium::AirDry1Atm,
+                              geometry::Vector{rootCS, 0_T, 0_T, 1_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addLinearLayer(1e9_cm, 112.8_km, environment::Medium::AirDry1Atm,
-                         geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km);
   builder.assemble(env);
 
   // setup particle stack, and add primary particle
