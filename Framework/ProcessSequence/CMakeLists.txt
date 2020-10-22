@@ -20,6 +20,7 @@ set (
   SwitchProcessSequence.h
   ProcessReturn.h
   ProcessTraits.h
+  NullModel.h
   )
 
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (CORSIKAprocesssequence ${CORSIKAprocesssequence_NAMESPACE} ${CORSIKAprocesssequence_HEADERS})
@@ -58,6 +59,17 @@ target_link_libraries (
   testProcessSequence
   CORSIKAgeometry
   CORSIKAprocesssequence
+  CORSIKAtesting
+  )
+
+# --------------------
+# code unit testing
+CORSIKA_ADD_TEST (testNullModel)
+target_link_libraries (
+  testNullModel
+  CORSIKAsetup
+  CORSIKAgeometry
+  CORSIKAunits
   CORSIKAtesting
   )
 

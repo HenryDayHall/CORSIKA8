@@ -261,9 +261,15 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process4 m4(3);
     CHECK(globalCount == 4);
 
-    auto sequence = m1 % m2 % m3 % m4;
-    CHECK(is_process_sequence_v<decltype(sequence)> == true);
+    auto sequence1 = process::sequence(m1, m2, m3, m4);
+    CHECK(is_process_sequence_v<decltype(sequence1)> == true);
     CHECK(is_process_sequence_v<decltype(m2)> == false);
+
+    auto sequence2 = process::sequence(m1, m2, m3);
+    CHECK(is_process_sequence_v<decltype(sequence2)> == true);
+
+    auto sequence3 = process::sequence(m4);
+    CHECK(is_process_sequence_v<decltype(sequence3)> == true);
   }
 
   SECTION("interaction length") {
@@ -274,7 +280,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     DummyData particle;
 
-    auto sequence2 = cp1 % m2 % m3;
+    auto sequence2 = sequence(cp1, m2, m3);
     GrammageType const tot = sequence2.GetInteractionLength(particle);
     InverseGrammageType const tot_inv = sequence2.GetInverseInteractionLength(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
@@ -290,7 +296,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     DummyData particle;
 
-    auto sequence2 = cp1 % m2 % m3 % d3;
+    auto sequence2 = sequence(cp1, m2, m3, d3);
     TimeType const tot = sequence2.GetLifetime(particle);
     InverseTimeType const tot_inv = sequence2.GetInverseLifetime(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
@@ -305,7 +311,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process2 m2(2);
     Process3 m3(3);
 
-    auto sequence2 = cp1 % m2 % m3 % cp2;
+    auto sequence2 = sequence(cp1, m2, m3, cp2);
 
     DummyData particle;
     DummyTrajectory track;
@@ -333,7 +339,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Stack1 s1(1);
     Stack1 s2(2);
 
-    auto sequence = s1 % s2;
+    auto sequence = process::sequence(s1, s2);
 
     DummyStack stack;
 
@@ -350,7 +356,7 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
   SECTION("Check construction") {
 
     struct TestSelect {
-      corsika::process::SwitchResult select(const DummyData& p) const {
+      corsika::process::SwitchResult operator()(const DummyData& p) const {
         std::cout << "TestSelect data=" << p.data_[0] << std::endl;
         if (p.data_[0] > 0) return corsika::process::SwitchResult::First;
         return corsika::process::SwitchResult::Second;
@@ -358,16 +364,18 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
     };
     TestSelect select;
 
-    auto sequence1 = Process1(0) % ContinuousProcess2(0) % Decay1(0);
-    auto sequence2 = ContinuousProcess3(0) % Process2(0) % Decay2(0);
+    auto sequence1 = process::sequence(Process1(0), ContinuousProcess2(0), Decay1(0));
+    auto sequence2 = process::sequence(ContinuousProcess3(0), Process2(0), Decay2(0));
 
-    auto sequence = ContinuousProcess1(0) % Process3(0) %
-                    SwitchProcessSequence(sequence1, sequence2, select);
+    auto sequence =
+        process::sequence(ContinuousProcess1(0), Process3(0),
+                          SwitchProcessSequence(sequence1, sequence2, select));
 
-    auto sequence_alt =
-        (ContinuousProcess1(0) % Process3(0)) %
-        process::select(Process1(0) % ContinuousProcess2(0) % Decay1(0),
-                        ContinuousProcess3(0) % Process2(0) % Decay2(0), select);
+    auto sequence_alt = process::sequence(
+        ContinuousProcess1(0), Process3(0),
+        process::select(process::sequence(Process1(0), ContinuousProcess2(0), Decay1(0)),
+                        process::sequence(ContinuousProcess3(0), Process2(0), Decay2(0)),
+                        select));
 
     // check that same process sequence can be build in different ways
     CHECK(typeid(sequence) == typeid(sequence_alt));

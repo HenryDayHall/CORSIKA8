@@ -2,7 +2,6 @@
 add_subdirectory (AnalyticProcessors)
 add_subdirectory (ExampleProcessors)
 
-add_subdirectory (NullModel)
 # tracking
 add_subdirectory (TrackingLine)
 # hadron interaction models
@@ -36,7 +35,6 @@ add_subdirectory (InteractionCounter)
 ##########################################
 # add_custom_target(CORSIKAprocesses)
 add_library (CORSIKAprocesses INTERFACE)
-add_dependencies (CORSIKAprocesses ProcessNullModel)
 add_dependencies (CORSIKAprocesses ProcessSibyll)
 add_dependencies (CORSIKAprocesses ProcessProposal)
 if (Pythia8_FOUND)

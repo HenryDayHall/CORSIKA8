@@ -150,7 +150,8 @@ int main() {
   process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect % sibyll % sibyllNuc % decay % eLoss % cut % trackWriter;
+  auto sequence =
+      process::sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);

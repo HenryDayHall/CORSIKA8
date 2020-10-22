@@ -17,6 +17,7 @@
 #include <corsika/process/ProcessReturn.h>
 #include <corsika/process/SecondariesProcess.h>
 #include <corsika/process/StackProcess.h>
+#include <corsika/process/NullModel.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/logging/Logging.h>
 
@@ -40,7 +41,7 @@ namespace corsika::process {
      \comment Using CRTP pattern,
      https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
    */
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2 = NullModel>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
     using TProcess1type = typename std::decay<TProcess1>::type;
@@ -294,14 +295,35 @@ namespace corsika::process {
     }
   };
 
-  // the % operator assembles many BaseProcess, ContinuousProcess, and
-  // Interaction/DecayProcess objects into a ProcessSequence, all combinatorics
-  // must be allowed, this is why we define a macro to define all
-  // combinations here:
+  /**
+   * \function sequence
+   *
+   * to construct ProcessSequences in a flexible and dynamic way the
+   * `sequence` factory functions are provided
+   *
+   * Any objects of type
+   *  - BaseProcess,
+   *  - ContinuousProcess, and
+   *  - Interaction/DecayProcess,
+   *  - StackProcess,
+   *  - SecondariesProcess
+   * can be assembled into a ProcessSequence, all
+   * combinatorics are allowed.
 
-  // enable the % operator to construct ProcessSequence from two
-  // Processes, only if both, Processes1 and Processes2, derive from
-  // BaseProcesses
+   * The sequence function checks that all its arguments are all of
+   * types derived from BaseProcess. Also the ProcessSequence itself
+   * is derived from type BaseProcess
+   **/
+
+  template <typename... TProcesses, typename TProcess1>
+  inline typename std::enable_if<
+      std::is_base_of<BaseProcess<typename std::decay<TProcess1>::type>,
+                      typename std::decay<TProcess1>::type>::value,
+      ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>>::type
+  sequence(TProcess1&& vA, TProcesses&&... vBs) {
+    return ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>(
+        vA, sequence(std::forward<TProcesses>(vBs)...));
+  }
 
   template <typename TProcess1, typename TProcess2>
   inline typename std::enable_if<
@@ -310,8 +332,21 @@ namespace corsika::process {
           std::is_base_of<BaseProcess<typename std::decay<TProcess2>::type>,
                           typename std::decay<TProcess2>::type>::value,
       ProcessSequence<TProcess1, TProcess2>>::type
-  operator%(TProcess1&& vA, TProcess2&& vB) {
+  sequence(TProcess1&& vA, TProcess2&& vB) {
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
+  }
+
+  /**
+   * also allow a single Process in ProcessSequence, accompany by
+   * `NullModel`
+   **/
+  template <typename TProcess>
+  inline typename std::enable_if<
+      std::is_base_of<BaseProcess<typename std::decay<TProcess>::type>,
+                      typename std::decay<TProcess>::type>::value,
+      ProcessSequence<TProcess, NullModel>>::type
+  sequence(TProcess&& vA) {
+    return ProcessSequence<TProcess, NullModel>(vA, NullModel());
   }
 
   /// traits marker to identify objectas ProcessSequence

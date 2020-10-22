@@ -84,7 +84,7 @@ void modular() {
   Process3 m3;      // * 1.0
   Process4 m4(1.5); // * 1.5
 
-  auto sequence = m1 % m2 % m3 % m4;
+  auto sequence = process::sequence(m1, m2, m3, m4);
 
   DummyData particle;
   DummyTrajectory track;

@@ -51,6 +51,5 @@ target_link_libraries (
   CORSIKAcascade
   ProcessStackInspector
   ProcessTrackingLine
-  ProcessNullModel
   CORSIKAtesting
   )

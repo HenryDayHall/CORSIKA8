@@ -220,18 +220,20 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    process::SwitchResult select(const Particle& p) {
+    process::SwitchResult operator()(const Particle& p) {
       if (p.GetEnergy() < cutE_)
         return process::SwitchResult::First;
       else
         return process::SwitchResult::Second;
     }
   };
-  auto hadronSequence = process::select(urqmdCounted, sibyllNucCounted % sibyllCounted,
-                                        EnergySwitch(55_GeV));
-  auto decaySequence = decayPythia % decaySibyll;
-  auto sequence = hadronSequence % reset_particle_mass % decaySequence % proposalCounted %
-                  em_continuous % cut % observationLevel % longprof;
+  auto hadronSequence =
+      process::select(urqmdCounted, process::sequence(sibyllNucCounted, sibyllCounted),
+                      EnergySwitch(55_GeV));
+  auto decaySequence = process::sequence(decayPythia, decaySibyll);
+  auto sequence =
+      process::sequence(hadronSequence, reset_particle_mass, decaySequence,
+                        proposalCounted, em_continuous, cut, observationLevel, longprof);
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;

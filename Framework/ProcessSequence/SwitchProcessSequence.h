@@ -40,7 +40,7 @@ namespace corsika::process {
      just classes. This allows us to handle both, rvalue as well as
      lvalue Processes in the SwitchProcessSequence.
 
-     TSelect has to implement a `select(const Particle&)` and has to
+     TSelect has to implement a `operator()(const Particle&)` and has to
      return either SwitchResult::First or SwitchResult::Second. Note:
      TSelect may absolutely also use random numbers to sample between
      its results. This can be used to achieve arbitrarily smooth
@@ -78,7 +78,7 @@ namespace corsika::process {
     EProcessReturn DoBoundaryCrossing(Particle& particle, VTNType const& from,
                                       VTNType const& to) {
 
-      switch (select_.select(particle)) {
+      switch (select_(particle)) {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<BoundaryCrossingProcess<TProcess1type>,
                                           TProcess1type> ||
@@ -101,7 +101,7 @@ namespace corsika::process {
 
     template <typename TParticle, typename TTrack>
     inline EProcessReturn DoContinuous(TParticle& particle, TTrack& vT) {
-      switch (select_.select(particle)) {
+      switch (select_(particle)) {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<ContinuousProcess<TProcess1type>,
                                           TProcess1type> ||
@@ -125,7 +125,7 @@ namespace corsika::process {
     template <typename TSecondaries>
     inline void DoSecondaries(TSecondaries& vS) {
       const auto& particle = vS.parent();
-      switch (select_.select(particle)) {
+      switch (select_(particle)) {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<SecondariesProcess<TProcess1type>,
                                           TProcess1type> ||
@@ -149,7 +149,7 @@ namespace corsika::process {
     inline corsika::units::si::LengthType MaxStepLength(TParticle& particle,
                                                         TTrack& vTrack) {
 
-      switch (select_.select(particle)) {
+      switch (select_(particle)) {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<ContinuousProcess<TProcess1type>,
                                           TProcess1type> ||
@@ -182,7 +182,7 @@ namespace corsika::process {
         TParticle&& particle) {
       using namespace corsika::units::si;
 
-      switch (select_.select(particle)) {
+      switch (select_(particle)) {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<InteractionProcess<TProcess1type>,
                                           TProcess1type> ||
@@ -210,7 +210,7 @@ namespace corsika::process {
         [[maybe_unused]] corsika::units::si::InverseGrammageType lambda_inv_sum =
             corsika::units::si::InverseGrammageType::zero()) {
 
-      switch (select_.select(view.parent())) {
+      switch (select_(view.parent())) {
         case SwitchResult::First: {
           if constexpr (t1ProcSeq) {
             // if A_ is a process sequence --> check inside
@@ -261,7 +261,7 @@ namespace corsika::process {
     inline corsika::units::si::InverseTimeType GetInverseLifetime(TParticle&& particle) {
       using namespace corsika::units::si;
 
-      switch (select_.select(particle)) {
+      switch (select_(particle)) {
         case SwitchResult::First: {
           if constexpr (std::is_base_of_v<DecayProcess<TProcess1type>, TProcess1type> ||
                         t1ProcSeq) {
@@ -289,7 +289,7 @@ namespace corsika::process {
         [[maybe_unused]] corsika::units::si::InverseTimeType decay_inv_sum =
             corsika::units::si::InverseTimeType::zero()) {
 
-      switch (select_.select(view.parent())) {
+      switch (select_(view.parent())) {
         case SwitchResult::First: {
           if constexpr (t1ProcSeq) {
             // if A_ is a process sequence --> check inside
