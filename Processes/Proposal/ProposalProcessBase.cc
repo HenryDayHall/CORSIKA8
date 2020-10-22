@@ -49,8 +49,9 @@ namespace corsika::process::proposal {
         }
 
         media[comp.hash()] =
-            PROPOSAL::Medium(medium.name(), medium.Ieff(), -medium.Cbar(), medium.aa(), medium.sk(),
-                             medium.x0(), medium.x1(), medium.dlt0(), medium.corrected_density(), comp_vec);
+            PROPOSAL::Medium(medium.name(), medium.Ieff(), -medium.Cbar(), medium.aa(),
+                             medium.sk(), medium.x0(), medium.x1(), medium.dlt0(),
+                             medium.corrected_density(), comp_vec);
       }
     });
 

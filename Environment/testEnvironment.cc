@@ -202,7 +202,7 @@ TEST_CASE("InhomogeneousMedium") {
 }
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder") {
-  LayeredSphericalAtmosphereBuilder builder(gOrigin);
+  LayeredSphericalAtmosphereBuilder builder(gOrigin, units::constants::EarthRadius::Mean);
   builder.setNuclearComposition(
       {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
 
@@ -306,17 +306,13 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
 
   // create magnetic field vectors
   Vector B0(gCS, 0_T, 0_T, 1_T);
-  Vector B1(gCS, 1_T, 1_T, 0_T);
 
-  LayeredSphericalAtmosphereBuilder<ModelInterface> builder(gOrigin);
+  LayeredSphericalAtmosphereBuilder<ModelInterface, UniformMagneticField> builder{
+      gOrigin};
   builder.setNuclearComposition(
       {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
-
-  builder.addLinearLayer<UniformMagneticField<HomogeneousMedium<ModelInterface>>>(
-      1_km, 10_km, B0);
-  builder.addExponentialLayer<
-      UniformMagneticField<SlidingPlanarExponential<ModelInterface>>>(
-      1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km, B1);
+  builder.addLinearLayer(1_km, 10_km, B0);
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km, B0);
 
   CHECK(builder.size() == 2);
 
@@ -334,7 +330,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
                                      .GetMagneticField(pTest)
                                      .GetComponents(gCS));
   const Point pTest2(gCS, 10_m, -4_m, R + 15_km);
-  CHECK(B1.GetComponents(gCS) == univ->GetContainingNode(pTest2)
+  CHECK(B0.GetComponents(gCS) == univ->GetContainingNode(pTest2)
                                      ->GetModelProperties()
                                      .GetMagneticField(pTest2)
                                      .GetComponents(gCS));
@@ -409,6 +405,7 @@ TEST_CASE("MediumProperties") {
   CHECK(air.Cbar() == 10.5961);
   CHECK(air.x0() == 1.7418);
   CHECK(air.x1() == 4.2759);
+  CHECK(air.aa() == 0.10914);
   CHECK(air.sk() == 3.3994);
   CHECK(air.dlt0() == 0.0);
 }

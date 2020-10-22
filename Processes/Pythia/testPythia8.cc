@@ -81,12 +81,6 @@ TEST_CASE("Pythia", "[processes]") {
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
-#include <corsika/environment/UniformMagneticField.h>
-#include <corsika/environment/UniformMediumType.h>
-
 using namespace corsika;
 using namespace corsika::units::si;
 

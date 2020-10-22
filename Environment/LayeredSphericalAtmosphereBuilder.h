@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <stack>
+#include <type_traits>
 
 namespace corsika::environment {
 
@@ -35,7 +36,23 @@ namespace corsika::environment {
    *
    */
 
-  template <typename TMediumInterface = environment::IMediumModel>
+  namespace detail {
+
+    struct NoExtraModelInner {};
+
+    template <typename M>
+    struct NoExtraModel {};
+
+    template <template <typename> typename M>
+    struct has_extra_models : std::true_type {};
+
+    template <>
+    struct has_extra_models<NoExtraModel> : std::false_type {};
+
+  } // namespace detail
+
+  template <typename TMediumInterface = environment::IMediumModel,
+            template <typename> typename TMediumModelExtra = detail::NoExtraModel>
   class LayeredSphericalAtmosphereBuilder {
     std::unique_ptr<NuclearComposition> composition_;
     geometry::Point center_;
@@ -51,6 +68,12 @@ namespace corsika::environment {
       }
     }
 
+    LayeredSphericalAtmosphereBuilder() = delete;
+    LayeredSphericalAtmosphereBuilder(const LayeredSphericalAtmosphereBuilder&) = delete;
+    LayeredSphericalAtmosphereBuilder(const LayeredSphericalAtmosphereBuilder&&) = delete;
+    LayeredSphericalAtmosphereBuilder& operator=(
+        const LayeredSphericalAtmosphereBuilder&) = delete;
+
   public:
     LayeredSphericalAtmosphereBuilder(
         corsika::geometry::Point center,
@@ -62,9 +85,7 @@ namespace corsika::environment {
       composition_ = std::make_unique<NuclearComposition>(composition);
     }
 
-    template <
-        typename TMediumModel = environment::SlidingPlanarExponential<TMediumInterface>,
-        typename... TArgs>
+    template <typename... TArgs>
     void addExponentialLayer(units::si::GrammageType b, units::si::LengthType c,
                              units::si::LengthType upperBoundary, TArgs&&... args) {
       using namespace units::si;
@@ -79,14 +100,19 @@ namespace corsika::environment {
       auto const rho0 = b / c;
       std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
 
-      node->template SetModelProperties<TMediumModel>(args..., center_, rho0, -c,
-                                                      *composition_, earthRadius_);
+      if constexpr (detail::has_extra_models<TMediumModelExtra>::value)
+        node->template SetModelProperties<
+            TMediumModelExtra<environment::SlidingPlanarExponential<TMediumInterface>>>(
+            args..., center_, rho0, -c, *composition_, earthRadius_);
+      else
+        node->template SetModelProperties<
+            environment::SlidingPlanarExponential<TMediumInterface>>(
+            center_, rho0, -c, *composition_, earthRadius_);
 
       layers_.push(std::move(node));
     }
 
-    template <typename TMediumModel = environment::HomogeneousMedium<TMediumInterface>,
-              typename... TArgs>
+    template <typename... TArgs>
     void addLinearLayer(units::si::LengthType c, units::si::LengthType upperBoundary,
                         TArgs&&... args) {
       using namespace units::si;
@@ -103,7 +129,14 @@ namespace corsika::environment {
       auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
           std::make_unique<geometry::Sphere>(center_, radius));
 
-      node->template SetModelProperties<TMediumModel>(args..., rho0, *composition_);
+      if constexpr (detail::has_extra_models<TMediumModelExtra>::value)
+        node->template SetModelProperties<
+            TMediumModelExtra<environment::HomogeneousMedium<TMediumInterface>>>(
+            args..., rho0, *composition_);
+      else
+        node->template SetModelProperties<
+            environment::HomogeneousMedium<TMediumInterface>>(args..., rho0,
+                                                              *composition_);
 
       layers_.push(std::move(node));
     }
