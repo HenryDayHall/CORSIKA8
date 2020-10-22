@@ -61,9 +61,9 @@ namespace corsika::process {
         : A_(in_A)
         , B_(in_B) {}
 
-    template <typename Particle, typename VTNType>
-    EProcessReturn DoBoundaryCrossing(Particle& particle, VTNType const& from,
-                                      VTNType const& to) {
+    template <typename TParticle, typename TVTNType>
+    EProcessReturn DoBoundaryCrossing(TParticle& particle, TVTNType const& from,
+                                      TVTNType const& to) {
       EProcessReturn ret = EProcessReturn::eOk;
 
       if constexpr (std::is_base_of_v<BoundaryCrossingProcess<TProcess1type>,

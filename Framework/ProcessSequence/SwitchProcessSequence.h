@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <limits>
+#include <type_traits>
 
 namespace corsika::process {
 
@@ -60,6 +61,11 @@ namespace corsika::process {
     using TProcess1type = typename std::decay<TProcess1>::type;
     using TProcess2type = typename std::decay<TProcess2>::type;
 
+    // static_assert(std::is_base_of_v<!StackProcess<TProcess1>, TProcess1type>, "canot
+    // use StackProcess in SwitchProcessSequence");
+    // static_assert(std::is_base_of_v<!StackProcess<TProcess2>, TProcess2type>, "canot
+    // use StackProcess in SwitchProcessSequence");
+
     static bool constexpr t1ProcSeq = is_process_sequence_v<TProcess1type>;
     static bool constexpr t2ProcSeq = is_process_sequence_v<TProcess2type>;
 
@@ -74,9 +80,9 @@ namespace corsika::process {
         , A_(in_A)
         , B_(in_B) {}
 
-    template <typename Particle, typename VTNType>
-    EProcessReturn DoBoundaryCrossing(Particle& particle, VTNType const& from,
-                                      VTNType const& to) {
+    template <typename TParticle, typename TVTNType>
+    EProcessReturn DoBoundaryCrossing(TParticle& particle, TVTNType const& from,
+                                      TVTNType const& to) {
 
       switch (select_(particle)) {
         case SwitchResult::First: {

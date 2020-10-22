@@ -287,8 +287,8 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     InverseGrammageType const tot_inv = sequence2.GetInverseInteractionLength(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
 
-    CHECK(tot/1_g*square(1_cm) == 12);
-    CHECK(tot_inv*1_g/square(1_cm) == 1./12);
+    CHECK(tot / 1_g * square(1_cm) == 12);
+    CHECK(tot_inv * 1_g / square(1_cm) == 1. / 12);
     globalCount = 0;
   }
 
@@ -306,8 +306,8 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     InverseTimeType const tot_inv = sequence2.GetInverseLifetime(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
 
-    CHECK(tot/1_s == 1);
-    CHECK(tot_inv*1_s == 1.);
+    CHECK(tot / 1_s == 1);
+    CHECK(tot_inv * 1_s == 1.);
     globalCount = 0;
   }
 
@@ -315,8 +315,8 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     globalCount = 0;
     ContinuousProcess1 cp1(0); // += 0.933
     ContinuousProcess2 cp2(1); // += 0.111
-    Process2 m2(2); //  /= 1.1
-    Process3 m3(3); //  *= 1.01
+    Process2 m2(2);            //  /= 1.1
+    Process3 m3(3);            //  *= 1.01
 
     auto sequence2 = sequence(cp1, m2, m3, cp2);
 
@@ -329,13 +329,11 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     // validation data
     double test_data[nData] = {0};
-    
+
     const int nLoop = 5;
     cout << "Running loop with n=" << nLoop << endl;
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
-      for (int i=0; i<nData; ++i) {
-	test_data[i] += 0.933 + 0.111;
-      }
+      for (int i = 0; i < nData; ++i) { test_data[i] += 0.933 + 0.111; }
       sequence2.DoContinuous(particle, track);
     }
     for (int i = 0; i < nData; i++) {

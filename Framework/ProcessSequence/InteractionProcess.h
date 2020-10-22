@@ -40,7 +40,6 @@ namespace corsika::process {
         const TParticle& particle) {
       return 1. / GetRef().GetInteractionLength(particle);
     }
-
   };
 
 } // namespace corsika::process
