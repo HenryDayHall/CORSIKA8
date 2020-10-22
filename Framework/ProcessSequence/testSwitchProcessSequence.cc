@@ -134,8 +134,8 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
 
     // low energy process returns 1 kg/m²
     SECTION("interaction length") {
-      REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(1));
-      REQUIRE(seq.GetInteractionLength(p) / kgMSq == Approx(3. / 4));
+      CHECK(switchProcess.GetInteractionLength(p) / kgMSq == Approx(1));
+      CHECK(seq.GetInteractionLength(p) / kgMSq == Approx(3. / 4));
     }
   }
 
@@ -145,8 +145,8 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
 
     // high energy process returns 2 kg/m²
     SECTION("interaction length") {
-      REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2));
-      REQUIRE(seq.GetInteractionLength(p) / kgMSq == Approx(6. / 5));
+      CHECK(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2));
+      CHECK(seq.GetInteractionLength(p) / kgMSq == Approx(6. / 5));
     }
 
     // high energy process creates 2 secondaries
@@ -159,7 +159,7 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
       InverseGrammageType invLambda = 0 / kgMSq;
       switchProcess.SelectInteraction(p, projectile, 0.01 / kgMSq, invLambda);
 
-      REQUIRE(view.getSize() == 2);
+      CHECK(view.getSize() == 2);
     }
   }
 }
@@ -182,8 +182,8 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
     auto p = stack.GetNextParticle();
 
     SECTION("interaction length") {
-      REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2. / 3));
-      REQUIRE(completeSeq.GetInteractionLength(p) / kgMSq == Approx(4. / 7));
+      CHECK(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2. / 3));
+      CHECK(completeSeq.GetInteractionLength(p) / kgMSq == Approx(4. / 7));
     }
 
     SECTION("SelectInteraction") {
@@ -207,7 +207,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
       auto const mean =
           std::accumulate(numberOfSecondaries.cbegin(), numberOfSecondaries.cend(), 0.) /
           numberOfSecondaries.size();
-      REQUIRE(mean == Approx(12. / 7.).margin(0.01));
+      CHECK(mean == Approx(12. / 7.).margin(0.01));
     }
   }
 
@@ -216,8 +216,8 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
     auto p = stack.GetNextParticle();
 
     SECTION("interaction length") {
-      REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(3));
-      REQUIRE(completeSeq.GetInteractionLength(p) / kgMSq == Approx(12. / 7.));
+      CHECK(switchProcess.GetInteractionLength(p) / kgMSq == Approx(3));
+      CHECK(completeSeq.GetInteractionLength(p) / kgMSq == Approx(12. / 7.));
     }
 
     SECTION("SelectInteraction") {
@@ -241,7 +241,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
       auto const mean =
           std::accumulate(numberOfSecondaries.cbegin(), numberOfSecondaries.cend(), 0.) /
           numberOfSecondaries.size();
-      REQUIRE(mean == Approx(24. / 7.).margin(0.01));
+      CHECK(mean == Approx(24. / 7.).margin(0.01));
     }
   }
 }
