@@ -41,12 +41,6 @@ namespace corsika::process {
       return 1. / GetRef().GetInteractionLength(particle);
     }
 
-    /*
-    template <typename TParticle>
-    corsika::units::si::InverseGrammageType GetInverseInteractionLength(TParticle&&
-    particle) { auto p = std::move(particle); return 1. /
-    GetRef().GetInteractionLength(p);
-      }*/
   };
 
 } // namespace corsika::process
