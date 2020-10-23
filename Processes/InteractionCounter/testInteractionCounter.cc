@@ -71,11 +71,15 @@ TEST_CASE("InteractionCounter") {
     REQUIRE(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
     // REQUIRE(h2.at(1'000'070'140, 92) == 1); // bin 1.584 .. 1.995 TeV √s
     REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
+
+    countedProcess.GetHistogram().saveLab("testInteractionCounter_file1.npz");
+    countedProcess.GetHistogram().saveCMS("testInteractionCounter_file2.npz");
   }
+
+  SECTION("check saving") {}
 
   SECTION("DoInteraction Lambda") {
     auto constexpr code = particles::Code::Lambda0;
-    auto constexpr codeInt = static_cast<particles::CodeIntType>(code);
     auto [stackPtr, secViewPtr] =
         setup::testing::setupStack(code, 0, 0, 105_TeV, nodePtr, *csPtr);
     REQUIRE(stackPtr->getEntries() == 1);

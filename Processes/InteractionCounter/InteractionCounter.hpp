@@ -56,7 +56,7 @@ namespace corsika::process::interaction_counter {
       return process_.GetInteractionLength(particle);
     }
 
-    auto const& GetHistogram() const { return histogram_; }
+    InteractionHistogram const& GetHistogram() const { return histogram_; }
   };
 
 } // namespace corsika::process::interaction_counter
