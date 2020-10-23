@@ -174,8 +174,8 @@ int main(int argc, char** argv) {
   em_continuous.Reset();
 
   auto const hists = proposalCounted.GetHistogram();
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
+  hists.saveLab("inthist_lab.npz");
+  hists.saveCMS("inthist_cms.npz");
 
   longprof.save("longprof.txt");
 
