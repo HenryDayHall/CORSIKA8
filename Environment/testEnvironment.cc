@@ -202,7 +202,11 @@ TEST_CASE("InhomogeneousMedium") {
 }
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder") {
-  LayeredSphericalAtmosphereBuilder builder(gOrigin, units::constants::EarthRadius::Mean);
+
+  LayeredSphericalAtmosphereBuilder builder =
+      environment::make_layered_spherical_atmosphere_builder<>::create(
+          gOrigin, units::constants::EarthRadius::Mean);
+
   builder.setNuclearComposition(
       {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
 
@@ -307,12 +311,15 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   // create magnetic field vectors
   Vector B0(gCS, 0_T, 0_T, 1_T);
 
-  LayeredSphericalAtmosphereBuilder<ModelInterface, UniformMagneticField> builder{
-      gOrigin};
+  LayeredSphericalAtmosphereBuilder builder =
+      environment::make_layered_spherical_atmosphere_builder<
+          ModelInterface,
+          UniformMagneticField>::create(gOrigin, units::constants::EarthRadius::Mean, B0);
+
   builder.setNuclearComposition(
       {{{particles::Code::Nitrogen, particles::Code::Oxygen}}, {{.6, .4}}});
-  builder.addLinearLayer(1_km, 10_km, B0);
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km, B0);
+  builder.addLinearLayer(1_km, 10_km);
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km);
 
   CHECK(builder.size() == 2);
 

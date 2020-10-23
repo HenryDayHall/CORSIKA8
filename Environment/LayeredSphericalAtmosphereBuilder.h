@@ -26,6 +26,10 @@
 
 namespace corsika::environment {
 
+  // forward-decl
+  template <typename TMediumInterface, template <typename> typename MExtraEnvirnoment>
+  struct make_layered_spherical_atmosphere_builder;
+
   /**
    * Helper class to setup concentric spheres of layered atmosphere
    * with spcified density profiles (exponential, linear, ...).
@@ -78,14 +82,18 @@ namespace corsika::environment {
     LayeredSphericalAtmosphereBuilder& operator=(
         const LayeredSphericalAtmosphereBuilder&) = delete;
 
-  public:
-    LayeredSphericalAtmosphereBuilder(
-        TModelArgs... args, corsika::geometry::Point center,
-        units::si::LengthType earthRadius = units::constants::EarthRadius::Mean)
+    // friend, to allow construction
+    template <typename, template <typename> typename>
+    friend struct make_layered_spherical_atmosphere_builder;
+
+  protected:
+    LayeredSphericalAtmosphereBuilder(TModelArgs... args, corsika::geometry::Point center,
+                                      units::si::LengthType earthRadius)
         : center_(center)
         , earthRadius_(earthRadius)
         , additionalModelArgs_{args...} {}
 
+  public:
     void setNuclearComposition(NuclearComposition composition) {
       composition_ = std::make_unique<NuclearComposition>(composition);
     }
@@ -185,5 +193,27 @@ namespace corsika::environment {
     units::si::LengthType getEarthRadius() const { return earthRadius_; }
 
   }; // end class LayeredSphericalAtmosphereBuilder
+
+  /**
+   * \class make_layered_spherical_atmosphere_builder
+   *
+   * Helper class to create LayeredSphericalAtmosphereBuilder, the
+   * extra environment models have to be passed as template-template
+   * argument to make_layered_spherical_atmosphere_builder, the member
+   * function `create` does then take an unspecified number of extra
+   * parameters to internalize those models for all layers later
+   * produced.
+   **/
+  template <typename TMediumInterface = environment::IMediumModel,
+            template <typename> typename MExtraEnvirnoment = detail::NoExtraModel>
+  struct make_layered_spherical_atmosphere_builder {
+    template <typename... TArgs>
+    static auto create(geometry::Point const& center, units::si::LengthType earthRadius,
+                       TArgs... args) {
+      return environment::LayeredSphericalAtmosphereBuilder<TMediumInterface,
+                                                            MExtraEnvirnoment, TArgs...>{
+          std::forward<TArgs>(args)..., center, earthRadius};
+    }
+  };
 
 } // namespace corsika::environment

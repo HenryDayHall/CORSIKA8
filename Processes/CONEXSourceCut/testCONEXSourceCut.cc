@@ -36,7 +36,8 @@ using namespace corsika::geometry;
 using namespace corsika::units::si;
 
 template <typename T>
-using MEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
+using MExtraEnvirnoment =
+    environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
 
 TEST_CASE("CONEXSourceCut") {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
@@ -49,27 +50,21 @@ TEST_CASE("CONEXSourceCut") {
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
 
-  environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface, MEnv>
-      builder{center, conex::earthRadius};
+  auto builder = environment::make_layered_spherical_atmosphere_builder<
+      setup::EnvironmentInterface,
+      MExtraEnvirnoment>::create(center, conex::earthRadius,
+                                 environment::Medium::AirDry1Atm,
+                                 geometry::Vector{rootCS, 0_T, 50_mT, 0_T});
 
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addLinearLayer(1e9_cm, 112.8_km, environment::Medium::AirDry1Atm,
-                         geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km);
 
   builder.assemble(env);
 

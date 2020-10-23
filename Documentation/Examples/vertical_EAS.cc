@@ -76,14 +76,7 @@ void registerRandomStreams(const int seed) {
 }
 
 template <typename T>
-using MEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
-
-template <typename... TArgs>
-auto make_builder(geometry::Point const& center, TArgs... args) {
-  return environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface, MEnv,
-                                                        TArgs...>{
-      args..., center, units::constants::EarthRadius::Mean};
-}
+using MyExtraEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
@@ -108,8 +101,11 @@ int main(int argc, char** argv) {
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  auto builder = make_builder(center, environment::Medium::AirDry1Atm,
-                              geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+  auto builder = environment::make_layered_spherical_atmosphere_builder<
+      setup::EnvironmentInterface,
+      MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
+                          environment::Medium::AirDry1Atm,
+                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now

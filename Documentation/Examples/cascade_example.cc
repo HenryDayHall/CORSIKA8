@@ -56,7 +56,7 @@ using namespace corsika::units::si;
 //
 int main() {
 
-  logging::SetLevel(logging::level::debug);
+  logging::SetLevel(logging::level::info);
 
   std::cout << "cascade_example" << std::endl;
 
@@ -72,7 +72,7 @@ int main() {
 
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  auto outerMedium = setup::Environment::CreateNode<Sphere>(
+  auto world = setup::Environment::CreateNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel =
@@ -81,7 +81,7 @@ int main() {
 
   // fraction of oxygen
   const float fox = 0.20946;
-  auto const props = outerMedium->SetModelProperties<MyHomogeneousModel>(
+  auto const props = world->SetModelProperties<MyHomogeneousModel>(
       environment::Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m),
       environment::NuclearComposition(
@@ -93,10 +93,8 @@ int main() {
       setup::Environment::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
 
   innerMedium->SetModelProperties(props);
-
-  outerMedium->AddChild(std::move(innerMedium));
-
-  universe.AddChild(std::move(outerMedium));
+  world->AddChild(std::move(innerMedium));
+  universe.AddChild(std::move(world));
 
   // setup particle stack, and add primary particle
   setup::Stack stack;

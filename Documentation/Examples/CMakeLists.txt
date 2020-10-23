@@ -126,7 +126,6 @@ if (Pythia8_FOUND)
     ProcessSibyll
     ProcessPythia8
     ProcessUrQMD
-    ProcessSwitch
     CORSIKAcascade
     ProcessPythia8
     ProcessObservationPlane

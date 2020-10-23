@@ -22,6 +22,7 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/logging/Logging.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/SwitchProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
@@ -33,7 +34,6 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/switch_process/SwitchProcess.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
@@ -73,7 +73,7 @@ void registerRandomStreams(const int seed) {
 }
 
 template <typename T>
-using MEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
+using MyExtraEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
@@ -98,26 +98,20 @@ int main(int argc, char** argv) {
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  environment::LayeredSphericalAtmosphereBuilder<setup::EnvironmentInterface, MEnv>
-      builder{center};
+  auto builder = environment::make_layered_spherical_atmosphere_builder<
+      setup::EnvironmentInterface,
+      MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
+                          environment::Medium::AirDry1Atm,
+                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km,
-                              environment::Medium::AirDry1Atm,
-                              geometry::Vector(rootCS, 0_T, 0_T, 1_T));
-  builder.addLinearLayer(1e9_cm, 112.8_km, environment::Medium::AirDry1Atm,
-                         geometry::Vector(rootCS, 0_T, 0_T, 1_T));
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km);
   builder.assemble(env);
 
   // setup particle stack, and add primary particle
@@ -228,14 +222,23 @@ int main(int argc, char** argv) {
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
   // assemble all processes into an ordered process list
-
-  auto sibyllSequence = sibyllNucCounted << sibyllCounted;
-  process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
-                                                       55_GeV);
-  auto decaySequence = decayPythia << decaySibyll;
-
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << eLoss << cut
-                                << conex << longprof << observationLevel;
+  struct EnergySwitch {
+    HEPEnergyType cutE_;
+    EnergySwitch(HEPEnergyType cutE)
+        : cutE_(cutE) {}
+    process::SwitchResult operator()(const setup::Stack::ParticleType& p) {
+      if (p.GetEnergy() < cutE_)
+        return process::SwitchResult::First;
+      else
+        return process::SwitchResult::Second;
+    }
+  };
+  auto hadronSequence =
+      process::select(urqmdCounted, process::sequence(sibyllNucCounted, sibyllCounted),
+                      EnergySwitch(55_GeV));
+  auto decaySequence = process::sequence(decayPythia, decaySibyll);
+  auto sequence = process::sequence(hadronSequence, reset_particle_mass, decaySequence,
+                                    eLoss, cut, conex, longprof, observationLevel);
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
