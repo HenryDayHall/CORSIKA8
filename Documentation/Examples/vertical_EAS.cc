@@ -22,6 +22,7 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/logging/Logging.h>
 #include <corsika/process/ProcessSequence.h>
+#include <corsika/process/SwitchProcessSequence.h>
 #include <corsika/process/StackProcess.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
@@ -34,7 +35,6 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/switch_process/SwitchProcess.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
@@ -59,6 +59,8 @@ using namespace corsika::environment;
 
 using namespace std;
 using namespace corsika::units::si;
+
+using Particle = setup::Stack::StackIterator;
 
 void registerRandomStreams(const int seed) {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
@@ -149,23 +151,20 @@ int main(int argc, char** argv) {
   std::cout << "point of injection: " << injectionPos.GetCoordinates() << std::endl;
 
   if (A != 1) {
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, injectionPos, 0_ns, A, Z});
+    stack.AddParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
     stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, injectionPos, 0_ns});
+        std::make_tuple(particles::Code::Proton, E0, plab, injectionPos, 0_ns));
   }
 
-  std::cout << "shower axis length: " << (showerCore - injectionPos).norm() * 1.02
+  // we make the axis much longer than the inj-core distance since the
+  // profile will go beyond the core, depending on zenith angle
+  std::cout << "shower axis length: " << (showerCore - injectionPos).norm() * 1.5
             << std::endl;
 
   environment::ShowerAxis const showerAxis{injectionPos,
-                                           (showerCore - injectionPos) * 1.02, env};
+                                           (showerCore - injectionPos) * 1.5, env};
 
   // setup processes, decays and interactions
 
@@ -200,7 +199,6 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-  // PROPOSAL processs proposal{...};
   process::particle_cut::ParticleCut cut{60_GeV, false, true};
   process::proposal::Interaction proposal(env, cut.GetECut());
   process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
@@ -218,21 +216,30 @@ int main(int argc, char** argv) {
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
 
   // assemble all processes into an ordered process list
-
-  auto sibyllSequence = sibyllNucCounted << sibyllCounted;
-  process::switch_process::SwitchProcess switchProcess(urqmdCounted, sibyllSequence,
-                                                       55_GeV);
-  auto decaySequence = decayPythia << decaySibyll;
-
-  auto sequence = switchProcess << reset_particle_mass << decaySequence << proposalCounted
-                                << em_continuous << cut << longprof << observationLevel;
+  struct EnergySwitch {
+    HEPEnergyType cutE_;
+    EnergySwitch(HEPEnergyType cutE)
+        : cutE_(cutE) {}
+    process::SwitchResult operator()(const Particle& p) {
+      if (p.GetEnergy() < cutE_)
+        return process::SwitchResult::First;
+      else
+        return process::SwitchResult::Second;
+    }
+  };
+  auto hadronSequence =
+      process::select(urqmdCounted, process::sequence(sibyllNucCounted, sibyllCounted),
+                      EnergySwitch(55_GeV));
+  auto decaySequence = process::sequence(decayPythia, decaySibyll);
+  auto sequence =
+      process::sequence(hadronSequence, reset_particle_mass, decaySequence,
+                        proposalCounted, em_continuous, cut, observationLevel, longprof);
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.SetNodes();
   //  EAS.forceInteraction();
 
   EAS.Run();
@@ -252,11 +259,7 @@ int main(int argc, char** argv) {
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
                      urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
 
-  hists.saveLab("inthist_lab.npz");
-  hists.saveCMS("inthist_cms.npz");
-
-  longprof.save("longprof.txt");
-
-  std::ofstream finish("finished");
-  finish << "run completed without error" << std::endl;
+  hists.saveLab("inthist_lab_verticalEAS.npz");
+  hists.saveCMS("inthist_cms_verticalEAS.npz");
+  longprof.save("longprof_verticalEAS.txt");
 }

@@ -39,8 +39,20 @@ namespace corsika::process {
     return (static_cast<int>(a) & static_cast<int>(b)) != 0;
   }
 
+  inline bool isOk(const EProcessReturn a) {
+    return static_cast<int>(a & EProcessReturn::eOk);
+  }
+
   inline bool isAbsorbed(const EProcessReturn a) {
     return static_cast<int>(a & EProcessReturn::eParticleAbsorbed);
+  }
+
+  inline bool isDecayed(const EProcessReturn a) {
+    return static_cast<int>(a & EProcessReturn::eDecayed);
+  }
+
+  inline bool isInteracted(const EProcessReturn a) {
+    return static_cast<int>(a & EProcessReturn::eInteracted);
   }
 
 } // namespace corsika::process

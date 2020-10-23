@@ -22,6 +22,7 @@ TARGET_LINK_LIBRARIES (
   CORSIKAunits
   CORSIKAthirdparty
   CORSIKAgeometry
+  CORSIKAlogging
   CORSIKAenvironment
   ProcessParticleCut
   PROPOSAL::PROPOSAL

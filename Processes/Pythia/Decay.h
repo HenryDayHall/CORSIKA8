@@ -11,6 +11,8 @@
 #include <Pythia8/Pythia.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/process/DecayProcess.h>
+#include <corsika/units/PhysicalUnits.h>
+#include <corsika/geometry/FourVector.h>
 
 namespace corsika::process {
 
@@ -21,9 +23,10 @@ namespace corsika::process {
     class Decay : public corsika::process::DecayProcess<Decay> {
       int fCount = 0;
       bool handleAllDecays_ = true;
+      bool print_listing_ = false;
 
     public:
-      Decay();
+      Decay(const bool print_listing = false);
       Decay(std::set<particles::Code>);
       ~Decay();
 

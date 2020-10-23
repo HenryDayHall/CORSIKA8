@@ -40,7 +40,7 @@ template <typename TStack>
 StackInspector<TStack>::~StackInspector() {}
 
 template <typename TStack>
-process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
+void StackInspector<TStack>::DoStack(const TStack& vS) {
   [[maybe_unused]] int i = 0;
   HEPEnergyType Etot = 0_GeV;
 
@@ -63,7 +63,7 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
   const std::chrono::duration<double> elapsed_seconds = now - StartTime_;
   std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
   auto const dE = E0_ - Etot;
-  if (dE < dE_threshold_) return process::EProcessReturn::eOk;
+  if (dE < dE_threshold_) return;
   double const progress = dE / E0_;
 
   double const eta_seconds = elapsed_seconds.count() / progress;
@@ -77,7 +77,7 @@ process::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
        << ", nStep=" << GetStep() << ", stackEntries=" << vS.getEntries()
        << ", Estack=" << Etot / 1_GeV << " GeV"
        << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << endl;
-  return process::EProcessReturn::eOk;
+  return;
 }
 
 #include <corsika/cascade/testCascade.h>

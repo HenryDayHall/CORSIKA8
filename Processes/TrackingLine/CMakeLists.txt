@@ -21,7 +21,6 @@ set_target_properties (
   PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
-#  PUBLIC_HEADER "${MODEL_HEADERS}"
   )
 
 # target dependencies on other libraries (also the header onlys)
@@ -33,6 +32,7 @@ target_link_libraries (
   CORSIKAunits
   CORSIKAenvironment
   CORSIKAgeometry
+  CORSIKAlogging
   )
 
 target_include_directories (

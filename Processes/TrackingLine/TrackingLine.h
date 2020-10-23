@@ -14,6 +14,8 @@
 #include <corsika/geometry/Trajectory.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/logging/Logging.h>
+
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -38,7 +40,7 @@ namespace corsika::process {
     class TrackingLine {
 
     public:
-      TrackingLine(){};
+      TrackingLine() = default;
 
       template <typename Particle> // was Stack previously, and argument was
                                    // Stack::StackIterator
@@ -49,27 +51,22 @@ namespace corsika::process {
             p.GetMomentum() / p.GetEnergy() * corsika::units::constants::c;
 
         auto const currentPosition = p.GetPosition();
-        std::cout << "TrackingLine pid: " << p.GetPID()
-                  << " , E = " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
-        std::cout << "TrackingLine pos: "
-                  << currentPosition.GetCoordinates()
-                  // << " [" << p.GetNode()->GetModelProperties().GetName() << "]"
-                  << std::endl;
-        std::cout << "TrackingLine   E: " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
-        std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
-                  << " GeV " << std::endl;
-        std::cout << "TrackingLine   v: " << velocity.GetComponents() << std::endl;
+        C8LOG_DEBUG(
+            "TrackingLine pid: {}"
+            " , E = {} GeV",
+            p.GetPID(), p.GetEnergy() / 1_GeV);
+        C8LOG_DEBUG("TrackingLine pos: {}", currentPosition.GetCoordinates());
+        C8LOG_DEBUG("TrackingLine   E: {} GeV", p.GetEnergy() / 1_GeV);
+        C8LOG_DEBUG("TrackingLine   p: {} GeV", p.GetMomentum().GetComponents() / 1_GeV);
+        C8LOG_DEBUG("TrackingLine   v: {} ", velocity.GetComponents());
 
         // to do: include effect of magnetic field
         geometry::Line line(currentPosition, velocity);
 
         auto const* currentLogicalVolumeNode = p.GetNode();
-        //~ auto const* currentNumericalVolumeNode =
-        //~ fEnvironment.GetUniverse()->GetContainingNode(currentPosition);
-        auto const numericallyInside =
-            currentLogicalVolumeNode->GetVolume().Contains(currentPosition);
 
-        std::cout << "numericallyInside = " << (numericallyInside ? "true" : "false");
+        C8LOG_DEBUG("numericallyInside = {} ",
+                    currentLogicalVolumeNode->GetVolume().Contains(currentPosition));
 
         auto const& children = currentLogicalVolumeNode->GetChildNodes();
         auto const& excluded = currentLogicalVolumeNode->GetExcludedNodes();
@@ -85,14 +82,11 @@ namespace corsika::process {
 
           if (auto opt = TimeOfIntersection(line, sphere); opt.has_value()) {
             auto const [t1, t2] = *opt;
-            std::cout << "intersection times: " << t1 / 1_s << "; "
-                      << t2 / 1_s
-                      // << " " << vtn.GetModelProperties().GetName()
-                      << std::endl;
+            C8LOG_DEBUG("intersection times: {} s; {} s", t1 / 1_s, t2 / 1_s);
             if (t1.magnitude() > 0)
               intersections.emplace_back(t1, &vtn);
             else if (t2.magnitude() > 0)
-              std::cout << "inside other volume" << std::endl;
+              C8LOG_DEBUG("inside other volume");
           }
         };
 
@@ -123,10 +117,7 @@ namespace corsika::process {
           min = minIter->first;
         }
 
-        std::cout << " t-intersect: "
-                  << min
-                  // << " " << minIter->second->GetModelProperties().GetName()
-                  << std::endl;
+        C8LOG_DEBUG(" t-intersect: {} ", min);
 
         return std::make_tuple(geometry::Trajectory<geometry::Line>(line, min),
                                velocity.norm() * min, minIter->second);

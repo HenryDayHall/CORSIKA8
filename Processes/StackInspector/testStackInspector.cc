@@ -46,7 +46,6 @@ TEST_CASE("StackInspector", "[processes]") {
   SECTION("interface") {
 
     StackInspector<TestCascadeStack> model(1, true, E0);
-
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoStack(stack);
+    model.DoStack(stack);
   }
 }

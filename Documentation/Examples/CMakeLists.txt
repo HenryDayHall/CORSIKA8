@@ -24,12 +24,12 @@ target_link_libraries (boundary_example
   ProcessParticleCut
   ProcessTrackingLine
   ProcessPythia8
-  ProcessProposal
   CORSIKAprocesses
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAenvironment
   CORSIKAprocesssequence
+  C8::ext::boost # boost::histogram
   )
 
 CORSIKA_ADD_EXAMPLE (cascade_example)
@@ -66,7 +66,6 @@ if (Pythia8_FOUND)
     ProcessSibyll
     ProcessPythia8
     ProcessUrQMD
-    ProcessSwitch
     CORSIKAcascade
     ProcessCONEXSourceCut
     ProcessEnergyLoss
@@ -95,7 +94,6 @@ if (Pythia8_FOUND)
     ProcessSibyll
     ProcessPythia8
     ProcessUrQMD
-    ProcessSwitch
     CORSIKAcascade
     ProcessProposal
     ProcessPythia8
@@ -123,6 +121,7 @@ CORSIKA_ADD_EXAMPLE (stopping_power stopping_power)
 target_link_libraries (stopping_power
   CORSIKAsetup
   CORSIKAunits
+  CORSIKAlogging
   ProcessEnergyLoss
   CORSIKAparticles
   CORSIKAgeometry
@@ -137,7 +136,7 @@ target_link_libraries (staticsequence_example
   CORSIKAlogging)
 
 
-CORSIKA_ADD_EXAMPLE (em_shower RUN_OPTIONS 100.)
+CORSIKA_ADD_EXAMPLE (em_shower RUN_OPTIONS "100.")
 target_link_libraries (em_shower
   SuperStupidStack
   CORSIKAunits
@@ -146,7 +145,6 @@ target_link_libraries (em_shower
   ProcessSibyll
   ProcessPythia8
   ProcessUrQMD
-  ProcessSwitch
   CORSIKAcascade
   ProcessCONEXSourceCut
   ProcessEnergyLoss

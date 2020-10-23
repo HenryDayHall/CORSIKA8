@@ -12,6 +12,7 @@
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/process/SecondariesProcess.h>
 #include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {
@@ -19,7 +20,7 @@ namespace corsika::process {
     class ParticleCut : public process::SecondariesProcess<ParticleCut>,
                         public corsika::process::ContinuousProcess<ParticleCut> {
 
-      units::si::HEPEnergyType const fECut;
+      units::si::HEPEnergyType const energy_cut_;
       bool bCutEm;
       bool bCutInv;
 
@@ -32,7 +33,7 @@ namespace corsika::process {
     public:
       ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv);
 
-      EProcessReturn DoSecondaries(corsika::setup::StackView&);
+      void DoSecondaries(corsika::setup::StackView&);
 
       EProcessReturn DoContinuous(corsika::setup::Stack::ParticleType& vParticle,
                                   corsika::setup::Trajectory const& vTrajectory);
@@ -42,7 +43,7 @@ namespace corsika::process {
         return units::si::meter * std::numeric_limits<double>::infinity();
       }
 
-      units::si::HEPEnergyType GetECut() const { return fECut; }
+      units::si::HEPEnergyType GetECut() const { return energy_cut_; }
       units::si::HEPEnergyType GetInvEnergy() const { return fInvEnergy; }
       units::si::HEPEnergyType GetCutEnergy() const { return fEnergy; }
       units::si::HEPEnergyType GetEmEnergy() const { return fEmEnergy; }

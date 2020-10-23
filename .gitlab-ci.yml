@@ -276,6 +276,8 @@ build_test-clang-8:
 # normal pipeline for each commit
 .example:
   stage: example
+  before_script:
+    - apt-get -qq update && apt-get -qq install -y gdb
   tags:
     - corsika
   script:
@@ -330,6 +332,8 @@ example-clang-8:
   stage: build_test_example
   tags:
     - corsika
+  before_script:
+    - apt-get -qq update && apt-get -qq install -y gdb
   script:
     - cd build
     - cmake --build . -- -j4
@@ -439,6 +443,8 @@ install-clang-8:
   stage: optional
   tags:
     - corsika
+  before_script:
+    - apt-get -qq update && apt-get -qq install -y gdb
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release

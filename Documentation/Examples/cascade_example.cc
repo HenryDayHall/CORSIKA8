@@ -35,6 +35,7 @@
 #include <corsika/random/RNGManager.h>
 
 #include <corsika/utl/CorsikaFenv.h>
+#include <corsika/logging/Logging.h>
 
 #include <iostream>
 #include <limits>
@@ -55,6 +56,8 @@ using namespace corsika::units::si;
 // The example main program for a particle cascade
 //
 int main() {
+
+  logging::SetLevel(logging::level::debug);
 
   std::cout << "cascade_example" << std::endl;
 
@@ -147,8 +150,8 @@ int main() {
   process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
-                               << trackWriter;
+  auto sequence =
+      process::sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);

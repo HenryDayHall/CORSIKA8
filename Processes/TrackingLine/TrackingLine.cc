@@ -12,6 +12,7 @@
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/logging/Logging.h>
 
 #include <limits>
 #include <stdexcept>

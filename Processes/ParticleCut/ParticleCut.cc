@@ -27,9 +27,9 @@ namespace corsika::process {
       if (vP.GetPID() == particles::Code::Nucleus) {
         // calculate energy per nucleon
         auto const ElabNuc = energyLab / vP.GetNuclearA();
-        return (ElabNuc <= fECut);
+        return (ElabNuc <= energy_cut_);
       } else {
-        return (energyLab <= fECut);
+        return (energyLab <= energy_cut_);
       }
     }
 
@@ -87,13 +87,12 @@ namespace corsika::process {
       return false; // this particle will not be removed/cut
     }
 
-    EProcessReturn ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {
+    void ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {
       auto particle = vS.begin();
       while (particle != vS.end()) {
         if (checkCutParticle(particle)) { particle.Delete(); }
         ++particle; // next entry in SecondaryView
       }
-      return EProcessReturn::eOk;
     }
 
     process::EProcessReturn ParticleCut::DoContinuous(
@@ -102,13 +101,15 @@ namespace corsika::process {
       C8LOG_TRACE("ParticleCut::DoContinuous");
       if (checkCutParticle(particle)) {
         C8LOG_TRACE("removing during continuous");
+        particle.Delete();
+        // signal to upstream code that this particle was deleted
         return process::EProcessReturn::eParticleAbsorbed;
       }
       return process::EProcessReturn::eOk;
     }
 
     ParticleCut::ParticleCut(const units::si::HEPEnergyType eCut, bool em, bool inv)
-        : fECut(eCut)
+        : energy_cut_(eCut)
         , bCutEm(em)
         , bCutInv(inv) {
       fEmEnergy = 0_GeV;

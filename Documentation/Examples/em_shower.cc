@@ -29,6 +29,8 @@
 #include <corsika/utl/CorsikaFenv.h>
 #include <corsika/process/interaction_counter/InteractionCounter.hpp>
 
+#include <corsika/logging/Logging.h>
+
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -54,6 +56,9 @@ void registerRandomStreams() {
 }
 
 int main(int argc, char** argv) {
+
+  logging::SetLevel(logging::level::info);
+
   if (argc != 2) {
     std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
     return 1;
@@ -144,8 +149,8 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane,
                                                                 "particles.dat");
 
-  auto sequence = proposalCounted << em_continuous << longprof << cut << observationLevel
-                                  << trackWriter;
+  auto sequence = process::sequence(proposalCounted, em_continuous, longprof, cut,
+                                    observationLevel, trackWriter);
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
@@ -169,11 +174,7 @@ int main(int argc, char** argv) {
   em_continuous.Reset();
 
   auto const hists = proposalCounted.GetHistogram();
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
-
-  longprof.save("longprof.txt");
-
-  std::ofstream finish("finished");
-  finish << "run completed without error" << std::endl;
+  hists.saveLab("inthist_lab_emShower.npz");
+  hists.saveCMS("inthist_cms_emShower.npz");
+  longprof.save("longprof_emShower.txt");
 }

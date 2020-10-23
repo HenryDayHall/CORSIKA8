@@ -22,10 +22,11 @@ namespace corsika::process::pythia {
 
     int fCount = 0;
     bool fInitialized = false;
+    bool print_listing_ = false;
 
   public:
-    Interaction();
-    ~Interaction();
+    Interaction(const bool print_listing = false);
+    ~Interaction() = default;
 
     void SetParticleListStable(std::vector<particles::Code> const&);
     void SetUnstable(const corsika::particles::Code);
@@ -47,7 +48,7 @@ namespace corsika::process::pythia {
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
     template <typename TParticle>
-    corsika::units::si::GrammageType GetInteractionLength(TParticle&);
+    corsika::units::si::GrammageType GetInteractionLength(const TParticle&);
 
     /**
        In this function PYTHIA is called to produce one event. The

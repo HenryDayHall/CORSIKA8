@@ -19,7 +19,6 @@
 #include <cmath>
 #include <fstream>
 #include <functional>
-#include <iostream>
 #include <random>
 #include <sstream>
 
@@ -39,10 +38,6 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,
                                                  corsika::particles::Code targetCode,
                                                  HEPEnergyType labEnergy) const {
   // translated to C++ from CORSIKA 7 subroutine cxtot_u
-
-  C8LOG_DEBUG("UrQMD::GetTabulatedCrossSection proj={}, targ={}, E={}GeV",
-              particles::GetName(projectileCode), particles::GetName(targetCode),
-              labEnergy / 1_GeV);
 
   auto const kinEnergy = labEnergy - particles::GetMass(projectileCode);
 
@@ -91,10 +86,10 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,
     case particles::Code::K0Bar:
       projectileIndex = 8;
       break;
-    default:
-      std::cout << "WARNING: UrQMD cross-section not tabulated for " << projectileCode
-                << std::endl;
+    default: {
+      C8LOG_WARN("WARNING: UrQMD cross-section not tabulated for {}", projectileCode);
       return CrossSectionType::zero();
+    }
   }
 
   int targetIndex;
@@ -119,6 +114,10 @@ CrossSectionType UrQMD::GetTabulatedCrossSection(particles::Code projectileCode,
     result +=
         xs_interp_support_table_[projectileIndex][targetIndex][je + i - 1 - 1] * w[i];
   }
+
+  C8LOG_DEBUG("UrQMD::GetTabulatedCrossSection proj={}, targ={}, E={}GeV, sigma={}",
+              particles::GetName(projectileCode), particles::GetName(targetCode),
+              labEnergy / 1_GeV, result);
 
   return result;
 }
@@ -256,6 +255,9 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupView& view) {
   auto const& projectilePosition = projectile.GetPosition();
   auto const projectileTime = projectile.GetTime();
 
+  C8LOG_DEBUG("UrQMD::DoInteraction pid={} E={} GeV", projectileCode,
+              projectileEnergyLab / 1_GeV);
+
   // sample target particle
   auto const& mediumComposition =
       projectile.GetNode()->GetModelProperties().GetNuclearComposition();
@@ -348,14 +350,14 @@ corsika::process::EProcessReturn UrQMD::DoInteraction(SetupView& view) {
     auto const energy = sqrt(momentum.squaredNorm() + square(particles::GetMass(code)));
 
     momentum.rebase(originalCS); // transform back into standard lab frame
-    std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
+    C8LOG_DEBUG(" Secondary {} code {} p={} GeV", i, code,
+                momentum.GetComponents() / 1_GeV);
 
     view.AddSecondary(
-        std::tuple<particles::Code, HEPEnergyType, stack::MomentumVector, geometry::Point,
-                   TimeType>{code, energy, momentum, projectilePosition, projectileTime});
+        std::make_tuple(code, energy, momentum, projectilePosition, projectileTime));
   }
 
-  std::cout << "UrQMD generated " << sys_.npart << " secondaries!" << std::endl;
+  C8LOG_DEBUG("UrQMD generated {} secondaries!", sys_.npart);
 
   return process::EProcessReturn::eOk;
 }

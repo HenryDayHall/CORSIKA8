@@ -11,7 +11,7 @@
 #include <corsika/cascade/Cascade.h>
 
 #include <corsika/process/ProcessSequence.h>
-#include <corsika/process/null_model/NullModel.h>
+#include <corsika/process/NullModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/tracking_line/TrackingLine.h>
 
@@ -132,13 +132,13 @@ TEST_CASE("Cascade", "[Cascade]") {
   tracking_line::TrackingLine tracking;
 
   stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
-  null_model::NullModel nullModel;
+  process::NullModel nullModel;
 
   const GrammageType X0 = 20_g / square(1_cm);
   const HEPEnergyType Ecrit = 85_MeV;
   ProcessSplit split(X0);
   ProcessCut cut(Ecrit);
-  auto sequence = nullModel << stackInspect << split << cut;
+  auto sequence = process::sequence(nullModel, stackInspect, split, cut);
   TestCascadeStack stack;
   stack.Clear();
   stack.AddParticle(
@@ -161,7 +161,6 @@ TEST_CASE("Cascade", "[Cascade]") {
   }
 
   SECTION("forced interaction") {
-    EAS.SetNodes();
     EAS.forceInteraction();
     CHECK(stack.getEntries() == 2);
     CHECK(split.GetCalls() == 1);

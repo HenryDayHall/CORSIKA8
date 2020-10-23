@@ -21,6 +21,7 @@ namespace corsika::process {
      ProcessSequence. Both, the ProcessSequence and all its elements
      are of type BaseProcess<T>
 
+     \todo rename BaseProcess into just Process
    */
   class _BaseProcess {};
 

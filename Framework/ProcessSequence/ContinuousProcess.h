@@ -9,7 +9,6 @@
 #pragma once
 
 #include <corsika/process/BaseProcess.h>
-#include <corsika/process/ProcessReturn.h> // for convenience
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::process {

@@ -15,6 +15,7 @@
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
+#include <corsika/logging/Logging.h>
 
 #include <iostream>
 
@@ -106,19 +107,6 @@ namespace corsika::process::proposal {
 
     // if the particle has a charge take multiple scattering into account
     if (vP.GetChargeNumber() != 0) Scatter(vP, dE, dX);
-
-    // Update the energy and absorbe the particle if it's below the energy
-    // threshold, because it will no longer propagated.
-    if (final_energy <= emCut_) {
-      vP.SetEnergy(emCut_);
-      vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
-      return process::EProcessReturn::eParticleAbsorbed;
-    }
-    if (final_energy <= emCut_) {
-      vP.SetEnergy(emCut_);
-      vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
-      return process::EProcessReturn::eParticleAbsorbed;
-    }
     vP.SetEnergy(final_energy);
     vP.SetMomentum(vP.GetMomentum() * vP.GetEnergy() / vP.GetMomentum().GetNorm());
     return process::EProcessReturn::eOk;
@@ -132,7 +120,7 @@ namespace corsika::process::proposal {
     if (!CanInteract(vP.GetPID()))
       return units::si::meter * std::numeric_limits<double>::infinity();
 
-    // Limit the step size of a conitnous loss. The maximal continuous loss seems to be a
+    // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
     //
     // in any case: never go below 0.99*emCut_ This needs to be
@@ -152,7 +140,10 @@ namespace corsika::process::proposal {
                     1_g / square(1_cm);
 
     // return it in distance aequivalent
-    return vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage);
+    auto dist = vP.GetNode()->GetModelProperties().ArclengthFromGrammage(vT, grammage);
+    C8LOG_TRACE("PROPOSAL::MaxStepLength X={} g/cm2, l={} m ",
+                grammage / 1_g * square(1_cm), dist / 1_m);
+    return dist;
   }
 
   void ContinuousProcess::ShowResults() const {

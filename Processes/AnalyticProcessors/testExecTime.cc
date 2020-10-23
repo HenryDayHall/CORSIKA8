@@ -33,86 +33,86 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
   SECTION("BoundaryCrossing") {
     ExecTime<DummyBoundaryCrossingProcess<10>> execTime;
     auto start = std::chrono::steady_clock::now();
-    REQUIRE(execTime.DoBoundaryCrossing(tmp, 0, 0) == EProcessReturn::eOk);
+    CHECK(execTime.DoBoundaryCrossing(tmp, 0, 0) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
-    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
-            Approx(10).margin(5));
+    CHECK(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+          Approx(10).margin(5));
 
     for (int i = 0; i < 100; i++) execTime.DoBoundaryCrossing(tmp, 0, 0);
 
-    REQUIRE(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
+    CHECK(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
 
-    REQUIRE(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
+    CHECK(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(fabs(execTime.var()) < 20000);
+    CHECK(fabs(execTime.var()) < 100000);
   }
 
   SECTION("Continuous") {
     ExecTime<DummyContinuousProcess<50>> execTime;
     auto start = std::chrono::steady_clock::now();
-    REQUIRE(execTime.DoContinuous(tmp, tmp) == EProcessReturn::eOk);
+    CHECK(execTime.DoContinuous(tmp, tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
-    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
-            Approx(50).margin(5));
+    CHECK(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+          Approx(50).margin(5));
 
     for (int i = 0; i < 100; i++) execTime.DoContinuous(tmp, tmp);
 
-    REQUIRE(execTime.mean() == Approx(50 * 1000).margin(2 * 1000));
+    CHECK(execTime.mean() == Approx(50 * 1000).margin(2 * 1000));
 
-    REQUIRE(execTime.sumTime() == Approx(50 * 100 * 1000).margin((10 * 100) * 1000));
+    CHECK(execTime.sumTime() == Approx(50 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(fabs(execTime.var()) < 20000);
+    CHECK(fabs(execTime.var()) < 100000);
   }
 
   SECTION("Decay") {
     ExecTime<DummyDecayProcess<10>> execTime;
     auto start = std::chrono::steady_clock::now();
-    REQUIRE(execTime.DoDecay(tmp) == EProcessReturn::eOk);
+    CHECK(execTime.DoDecay(tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
-    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
-            Approx(10).margin(5));
+    CHECK(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+          Approx(10).margin(5));
 
     for (int i = 0; i < 100; i++) execTime.DoDecay(tmp);
 
-    REQUIRE(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
+    CHECK(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
 
-    REQUIRE(execTime.sumTime() == Approx(10 * 100 * 100).margin((10 * 100) * 1000));
+    CHECK(execTime.sumTime() == Approx(10 * 100 * 100).margin((10 * 100) * 1000));
 
-    REQUIRE(fabs(execTime.var()) < 20000);
+    CHECK(fabs(execTime.var()) < 100000);
   }
 
   SECTION("Interaction") {
     ExecTime<DummyInteractionProcess<10>> execTime;
     auto start = std::chrono::steady_clock::now();
-    REQUIRE(execTime.DoInteraction(tmp) == EProcessReturn::eOk);
+    CHECK(execTime.DoInteraction(tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
-    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
-            Approx(10).margin(5));
+    CHECK(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+          Approx(10).margin(5));
 
     for (int i = 0; i < 100; i++) execTime.DoInteraction(tmp);
 
-    REQUIRE(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
+    CHECK(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
 
-    REQUIRE(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
+    CHECK(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(fabs(execTime.var()) < 20000);
+    CHECK(fabs(execTime.var()) < 100000);
   }
 
   SECTION("Secondaries") {
     ExecTime<DummySecondariesProcess<10>> execTime;
     auto start = std::chrono::steady_clock::now();
-    REQUIRE(execTime.DoSecondaries(tmp) == EProcessReturn::eOk);
+    CHECK(execTime.DoSecondaries(tmp) == EProcessReturn::eOk);
     auto end = std::chrono::steady_clock::now();
-    REQUIRE(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
-            Approx(10).margin(5));
+    CHECK(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() ==
+          Approx(10).margin(5));
 
     for (int i = 0; i < 100; i++) execTime.DoSecondaries(tmp);
 
-    REQUIRE(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
+    CHECK(execTime.mean() == Approx(10 * 1000).margin(2 * 1000));
 
-    REQUIRE(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
+    CHECK(execTime.sumTime() == Approx(10 * 100 * 1000).margin((10 * 100) * 1000));
 
-    REQUIRE(fabs(execTime.var()) < 20000);
+    CHECK(fabs(execTime.var()) < 100000);
   }
 
   SECTION("TestMeanAlgo") {
@@ -128,7 +128,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
     std::vector<double> elems;
 
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 1000; i++) {
       double timeDiv = distribution(generator);
 
       elems.push_back(timeDiv);
@@ -148,7 +148,7 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
       fMean2 += delta * delta2;
     }
 
-    REQUIRE(fN == 1000000);
+    CHECK(fN == 1000);
 
     double mean = 0;
     std::for_each(elems.begin(), elems.end(), [&](double i) { mean += i; });
@@ -159,10 +159,10 @@ TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
                   [&](double i) { var += (mean - i) * (mean - i); });
     var = var / fN;
 
-    REQUIRE(mean == Approx(10000.0).margin(10));
-    REQUIRE(var == Approx(200.0 * 200).margin(200));
+    CHECK(mean == Approx(10000.0).margin(10));
+    CHECK(var == Approx(200.0 * 200).margin(2000));
 
-    REQUIRE(fMean2 / fN == Approx(200 * 200).margin(200)); // Varianz
-    REQUIRE(fMean == Approx(10000).margin(10));
+    CHECK(fMean2 / fN == Approx(200 * 200).margin(2000)); // Varianz
+    CHECK(fMean == Approx(10000).margin(10));
   }
 }

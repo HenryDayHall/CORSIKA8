@@ -29,7 +29,7 @@ namespace corsika::process::observation_plane {
     ObservationPlane(geometry::Plane const&, std::string const&, bool = true);
 
     corsika::process::EProcessReturn DoContinuous(
-        corsika::setup::Stack::ParticleType const& vParticle,
+        corsika::setup::Stack::ParticleType& vParticle,
         corsika::setup::Trajectory const& vTrajectory);
 
     corsika::units::si::LengthType MaxStepLength(

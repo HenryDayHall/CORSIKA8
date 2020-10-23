@@ -235,7 +235,7 @@ namespace corsika::process::sibyll {
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.norm();
     // calculate cm. energy
-    const HEPEnergyType ECoM = sqrt(
+    [[maybe_unused]] const HEPEnergyType ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
     auto const ECoMNN = sqrt(2. * ElabNuc * constants::nucleonMass);
     C8LOG_DEBUG(
@@ -406,10 +406,10 @@ namespace corsika::process::sibyll {
     // define boost to NUCLEON-NUCLEON frame
     COMBoost const boost(PprojNucLab, constants::nucleonMass);
     // boost projecticle
-    auto const PprojNucCoM = boost.toCoM(PprojNucLab);
+    [[maybe_unused]] auto const PprojNucCoM = boost.toCoM(PprojNucLab);
 
     // boost target
-    auto const PtargNucCoM = boost.toCoM(PtargNucLab);
+    [[maybe_unused]] auto const PtargNucCoM = boost.toCoM(PtargNucLab);
 
     C8LOG_DEBUG(
         fmt::format("Interaction: ebeam CoM: {} "

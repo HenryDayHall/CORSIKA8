@@ -20,11 +20,12 @@ namespace corsika::process {
   namespace sibyll {
 
     class Decay : public corsika::process::DecayProcess<Decay> {
-      int fCount = 0;
+      int count_ = 0;
       bool handleAllDecays_ = true;
+      bool sibyll_listing_ = false;
 
     public:
-      Decay();
+      Decay(const bool sibyll_listing = false);
       Decay(std::set<particles::Code>);
       ~Decay();
 

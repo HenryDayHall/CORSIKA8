@@ -23,43 +23,43 @@ using namespace std;
 
 const int nData = 10;
 
-class Process1 : public BaseProcess<Process1> {
+class Process1 : public ContinuousProcess<Process1> {
 public:
   Process1() {}
-  template <typename D, typename T, typename S>
-  EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename T>
+  EProcessReturn DoContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) d.p[i] += 1;
     return EProcessReturn::eOk;
   }
 };
 
-class Process2 : public BaseProcess<Process2> {
+class Process2 : public ContinuousProcess<Process2> {
 public:
   Process2() {}
 
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename T>
+  inline EProcessReturn DoContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) d.p[i] -= 0.1 * i;
     return EProcessReturn::eOk;
   }
 };
 
-class Process3 : public BaseProcess<Process3> {
+class Process3 : public ContinuousProcess<Process3> {
 public:
   Process3() {}
 
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D&, T&, S&) const {
+  template <typename D, typename T>
+  inline EProcessReturn DoContinuous(D&, T&) const {
     return EProcessReturn::eOk;
   }
 };
 
-class Process4 : public BaseProcess<Process4> {
+class Process4 : public ContinuousProcess<Process4> {
 public:
   Process4(const double v)
       : fV(v) {}
-  template <typename D, typename T, typename S>
-  inline EProcessReturn DoContinuous(D& d, T&, S&) const {
+  template <typename D, typename T>
+  inline EProcessReturn DoContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) d.p[i] *= fV;
     return EProcessReturn::eOk;
   }
@@ -78,25 +78,31 @@ struct DummyTrajectory {};
 
 void modular() {
 
-  Process1 m1;
-  Process2 m2;
-  Process3 m3;
-  Process4 m4(0.9);
+  //              = 0
+  Process1 m1;      // + 1.0
+  Process2 m2;      // - (0.1*i)
+  Process3 m3;      // * 1.0
+  Process4 m4(1.5); // * 1.5
 
-  auto sequence = m1 << m2 << m3 << m4;
+  auto sequence = process::sequence(m1, m2, m3, m4);
 
   DummyData particle;
   DummyTrajectory track;
 
-  const int n = 1000;
-  for (int i = 0; i < n; ++i) { sequence.DoContinuous(particle, track); }
+  double check[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  for (int i = 0; i < nData; ++i) {
-    // cout << p.p[i] << endl;
-    // assert(p.p[i] == n-i*100);
+  const int nEv = 10;
+  for (int iEv = 0; iEv < nEv; ++iEv) {
+    sequence.DoContinuous(particle, track);
+    for (int i = 0; i < nData; ++i) {
+      check[i] += 1. - 0.1 * i;
+      check[i] *= 1.5;
+    }
   }
 
-  cout << " done (nothing...) " << endl;
+  for (int i = 0; i < nData; ++i) { assert(particle.p[i] == check[i]); }
+
+  cout << " done (checking...) " << endl;
 }
 
 int main() {

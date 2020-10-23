@@ -11,6 +11,7 @@
 #include <corsika/geometry/CoordinateSystem.h>
 #include <corsika/geometry/FourVector.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/logging/Logging.h>
 
 #include <Eigen/Dense>
 
@@ -69,10 +70,10 @@ namespace corsika::utl {
       Eigen::Vector2d com;
       com << (Ecm * (1 / 1_GeV)), (pCM.eVector(2) * (1 / 1_GeV).magnitude());
 
-      std::cout << "COMBoost::fromCoM Ecm=" << Ecm / 1_GeV << " GeV, "
-                << " pcm = " << pCM / 1_GeV << " (norm = " << pCM.norm() / 1_GeV
-                << " GeV), invariant mass = " << p.GetNorm() / 1_GeV << " GeV"
-                << std::endl;
+      C8LOG_TRACE(
+          "COMBoost::fromCoM Ecm={} GeV"
+          " pcm={} GeV (norm = {} GeV), invariant mass={} GeV",
+          Ecm / 1_GeV, pCM / 1_GeV, pCM.norm() / 1_GeV, p.GetNorm() / 1_GeV);
 
       auto const boostedZ = inverseBoost_ * com;
       auto const E_lab = boostedZ(0) * 1_GeV;
@@ -84,10 +85,11 @@ namespace corsika::utl {
 
       FourVector f(E_lab, pLab);
 
-      std::cout << "COMBoost::fromCoM --> Elab=" << E_lab / 1_GeV << "GeV, "
-                << " plab = " << pLab.GetComponents() << " (norm =" << pLab.norm() / 1_GeV
-                << " GeV), invariant mass = " << f.GetNorm() / 1_GeV << " GeV"
-                << std::endl;
+      C8LOG_TRACE("COMBoost::fromCoM --> Elab={} GeV",
+                  " plab={} GeV (norm={} GeV) "
+                  " GeV), invariant mass = {}",
+                  E_lab / 1_GeV, f.GetNorm() / 1_GeV, pLab.GetComponents(),
+                  pLab.norm() / 1_GeV);
 
       return f;
     }
