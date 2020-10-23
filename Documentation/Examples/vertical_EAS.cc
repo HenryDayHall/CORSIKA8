@@ -259,11 +259,7 @@ int main(int argc, char** argv) {
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
                      urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
 
-  hists.saveLab("inthist_lab.npz");
-  hists.saveCMS("inthist_cms.npz");
-
-  longprof.save("longprof.txt");
-
-  std::ofstream finish("finished");
-  finish << "run completed without error" << std::endl;
+  hists.saveLab("inthist_lab_verticalEAS.npz");
+  hists.saveCMS("inthist_cms_verticalEAS.npz");
+  longprof.save("longprof_verticalEAS.txt");
 }

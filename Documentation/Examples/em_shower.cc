@@ -174,11 +174,7 @@ int main(int argc, char** argv) {
   em_continuous.Reset();
 
   auto const hists = proposalCounted.GetHistogram();
-  hists.saveLab("inthist_lab.npz");
-  hists.saveCMS("inthist_cms.npz");
-
-  longprof.save("longprof.txt");
-
-  std::ofstream finish("finished");
-  finish << "run completed without error" << std::endl;
+  hists.saveLab("inthist_lab_emShower.npz");
+  hists.saveCMS("inthist_cms_emShower.npz");
+  longprof.save("longprof_emShower.txt");
 }
