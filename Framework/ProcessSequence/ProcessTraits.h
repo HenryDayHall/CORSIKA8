@@ -29,4 +29,13 @@ namespace corsika::process {
   template <typename TClass>
   bool constexpr is_switch_process_sequence_v = is_switch_process_sequence<TClass>::value;
 
+  /**
+   * A traits marker to identify ProcessSequence that contain a StackProcess
+   **/
+  template <typename TClass>
+  struct contains_stack_process : std::false_type {};
+
+  template <typename TClass>
+  bool constexpr contains_stack_process_v = contains_stack_process<TClass>::value;
+
 } // namespace corsika::process

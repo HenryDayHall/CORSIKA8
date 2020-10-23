@@ -266,6 +266,8 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     auto sequence1 = process::sequence(m1, m2, m3, m4);
     CHECK(is_process_sequence_v<decltype(sequence1)> == true);
     CHECK(is_process_sequence_v<decltype(m2)> == false);
+    CHECK(is_switch_process_sequence_v<decltype(sequence1)> == false);
+    CHECK(is_switch_process_sequence_v<decltype(m2)> == false);
 
     auto sequence2 = process::sequence(m1, m2, m3);
     CHECK(is_process_sequence_v<decltype(sequence2)> == true);
@@ -358,6 +360,16 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     CHECK(s1.GetCount() == 20);
     CHECK(s2.GetCount() == 10);
+
+    ContinuousProcess2 cp2(1); // += 0.111
+    Process2 m2(2);            //  /= 1.1
+    auto sequence2 = process::sequence(cp2, m2);
+    auto sequence3 = process::sequence(cp2, m2, s1);
+
+    CHECK(is_process_sequence_v<decltype(sequence2)> == true);
+    CHECK(is_process_sequence_v<decltype(sequence3)> == true);
+    CHECK(contains_stack_process_v<decltype(sequence2)> == false);
+    CHECK(contains_stack_process_v<decltype(sequence3)> == true);
   }
 }
 

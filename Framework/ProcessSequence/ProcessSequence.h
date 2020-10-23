@@ -44,8 +44,8 @@ namespace corsika::process {
   template <typename TProcess1, typename TProcess2 = NullModel>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
-    using TProcess1type = typename std::decay<TProcess1>::type;
-    using TProcess2type = typename std::decay<TProcess2>::type;
+    using TProcess1type = typename std::decay_t<TProcess1>;
+    using TProcess2type = typename std::decay_t<TProcess2>;
 
     static bool constexpr t1ProcSeq = is_process_sequence_v<TProcess1type>;
     static bool constexpr t2ProcSeq = is_process_sequence_v<TProcess2type>;
@@ -316,22 +316,22 @@ namespace corsika::process {
    **/
 
   template <typename... TProcesses, typename TProcess1>
-  inline typename std::enable_if<
-      std::is_base_of<BaseProcess<typename std::decay<TProcess1>::type>,
-                      typename std::decay<TProcess1>::type>::value,
-      ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>>::type
+  inline typename std::enable_if_t<
+      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
+                        typename std::decay_t<TProcess1>>,
+      ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>>
   sequence(TProcess1&& vA, TProcesses&&... vBs) {
     return ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>(
         vA, sequence(std::forward<TProcesses>(vBs)...));
   }
 
   template <typename TProcess1, typename TProcess2>
-  inline typename std::enable_if<
-      std::is_base_of<BaseProcess<typename std::decay<TProcess1>::type>,
-                      typename std::decay<TProcess1>::type>::value &&
-          std::is_base_of<BaseProcess<typename std::decay<TProcess2>::type>,
-                          typename std::decay<TProcess2>::type>::value,
-      ProcessSequence<TProcess1, TProcess2>>::type
+  inline typename std::enable_if_t<
+      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
+                        typename std::decay_t<TProcess1>> &&
+          std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess2>>,
+                            typename std::decay_t<TProcess2>>,
+      ProcessSequence<TProcess1, TProcess2>>
   sequence(TProcess1&& vA, TProcess2&& vB) {
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
@@ -341,17 +341,48 @@ namespace corsika::process {
    * `NullModel`
    **/
   template <typename TProcess>
-  inline typename std::enable_if<
-      std::is_base_of<BaseProcess<typename std::decay<TProcess>::type>,
-                      typename std::decay<TProcess>::type>::value,
-      ProcessSequence<TProcess, NullModel>>::type
+  inline typename std::enable_if_t<
+      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess>>,
+                        typename std::decay_t<TProcess>>,
+      ProcessSequence<TProcess, NullModel>>
   sequence(TProcess&& vA) {
     return ProcessSequence<TProcess, NullModel>(vA, NullModel());
   }
 
-  /// traits marker to identify objectas ProcessSequence
+  /**
+   * traits marker to identify objectas ProcessSequence
+   **/
   template <typename TProcess1, typename TProcess2>
-  struct is_process_sequence<corsika::process::ProcessSequence<TProcess1, TProcess2>>
+  struct is_process_sequence<ProcessSequence<TProcess1, TProcess2>> : std::true_type {
+    // only switch on for BaseProcesses
+    template <typename std::enable_if_t<
+        std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
+                          typename std::decay_t<TProcess1>> &&
+            std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess2>>,
+                              typename std::decay_t<TProcess2>>,
+        int>>
+    is_process_sequence() {}
+  };
+
+  /**
+   * traits marker to identify objects containing any StackProcesses
+   **/
+  namespace detail {
+    // need helper alias to achieve this:
+    template <typename TProcess1, typename TProcess2,
+              typename = typename std::enable_if_t<
+                  contains_stack_process_v<TProcess1> ||
+                      std::is_base_of_v<StackProcess<typename std::decay_t<TProcess1>>,
+                                        typename std::decay_t<TProcess1>> ||
+                      contains_stack_process_v<TProcess2> ||
+                      std::is_base_of_v<StackProcess<typename std::decay_t<TProcess2>>,
+                                        typename std::decay_t<TProcess2>>,
+                  int>>
+    using enable_if_stack = ProcessSequence<TProcess1, TProcess2>;
+  } // namespace detail
+
+  template <typename TProcess1, typename TProcess2>
+  struct contains_stack_process<detail::enable_if_stack<TProcess1, TProcess2>>
       : std::true_type {};
 
 } // namespace corsika::process
