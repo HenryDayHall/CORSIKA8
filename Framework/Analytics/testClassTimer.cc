@@ -110,7 +110,7 @@ TEST_CASE("Analytics", "[Timer]") {
 
     tc.call();
 
-    REQUIRE(tc.getTime().count() == Approx(100000).margin(1000));
+    CHECK(tc.getTime().count() == Approx(100000).margin(10000));
   }
 
   SECTION("Measure runtime of a function with arguments") {
@@ -120,7 +120,7 @@ TEST_CASE("Analytics", "[Timer]") {
 
     tc.call(1);
 
-    REQUIRE(tc.getTime().count() == Approx(100000).margin(1000));
+    CHECK(tc.getTime().count() == Approx(100000).margin(10000));
   }
 
   SECTION("Measure runtime of a const function without arguments") {
@@ -131,17 +131,17 @@ TEST_CASE("Analytics", "[Timer]") {
 
     tc.call();
 
-    REQUIRE(tc.getTime().count() == Approx(100000).margin(1000));
+    CHECK(tc.getTime().count() == Approx(100000).margin(10000));
   }
 
   SECTION("Measure runtime of function inside class") {
 
     auto test = foo();
-    REQUIRE(test.inside() == 123);
+    CHECK(test.inside() == 123);
   }
 
   SECTION("Measure runtime of function inside class") {
     auto test = fooT3<fooT1>();
-    REQUIRE(test.inside_t(1, 'a', 'b') == 123);
+    CHECK(test.inside_t(1, 'a', 'b') == 123);
   }
 }

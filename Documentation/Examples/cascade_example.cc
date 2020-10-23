@@ -57,7 +57,7 @@ using namespace corsika::units::si;
 //
 int main() {
 
-  logging::SetLevel(logging::level::info);
+  logging::SetLevel(logging::level::debug);
 
   std::cout << "cascade_example" << std::endl;
 

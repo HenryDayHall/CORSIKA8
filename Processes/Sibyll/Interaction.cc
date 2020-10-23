@@ -218,10 +218,10 @@ namespace corsika::process::sibyll {
 
     // just for show:
     // boost projecticle
-    auto const PprojCoM = boost.toCoM(PprojLab);
+    [[maybe_unused]] auto const PprojCoM = boost.toCoM(PprojLab);
 
     // boost target
-    auto const PtargCoM = boost.toCoM(PtargLab);
+    [[maybe_unused]] auto const PtargCoM = boost.toCoM(PtargLab);
 
     C8LOG_DEBUG(
         "Interaction: ebeam CoM: {} GeV "

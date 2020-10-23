@@ -18,123 +18,126 @@ using namespace corsika::particles;
 TEST_CASE("ParticleProperties", "[Particles]") {
 
   SECTION("Types") {
-    REQUIRE(Electron::GetCode() == Code::Electron);
-    REQUIRE(Positron::GetCode() == Code::Positron);
-    REQUIRE(Proton::GetCode() == Code::Proton);
-    REQUIRE(Neutron::GetCode() == Code::Neutron);
-    REQUIRE(Gamma::GetCode() == Code::Gamma);
-    REQUIRE(PiPlus::GetCode() == Code::PiPlus);
+    CHECK(Electron::GetCode() == Code::Electron);
+    CHECK(Positron::GetCode() == Code::Positron);
+    CHECK(Proton::GetCode() == Code::Proton);
+    CHECK(Neutron::GetCode() == Code::Neutron);
+    CHECK(Gamma::GetCode() == Code::Gamma);
+    CHECK(PiPlus::GetCode() == Code::PiPlus);
   }
 
   SECTION("Masses") {
-    REQUIRE(Electron::GetMass() / (511_keV) == Approx(1));
-    REQUIRE(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
+    CHECK(Electron::GetMass() / (511_keV) == Approx(1));
+    CHECK(Electron::GetMass() / GetMass(Code::Electron) == Approx(1));
 
-    REQUIRE((Proton::GetMass() + Neutron::GetMass()) /
-                corsika::units::constants::nucleonMass ==
-            Approx(2));
+    CHECK((Proton::GetMass() + Neutron::GetMass()) /
+              corsika::units::constants::nucleonMass ==
+          Approx(2));
   }
 
   SECTION("Charges") {
-    REQUIRE(Electron::GetCharge() / constants::e == Approx(-1));
-    REQUIRE(Positron::GetCharge() / constants::e == Approx(+1));
-    REQUIRE(GetCharge(Positron::GetAntiParticle()) / constants::e == Approx(-1));
+    CHECK(Electron::GetCharge() / constants::e == Approx(-1));
+    CHECK(Positron::GetCharge() / constants::e == Approx(+1));
+    CHECK(GetCharge(Positron::GetAntiParticle()) / constants::e == Approx(-1));
   }
 
   SECTION("Names") {
-    REQUIRE(Electron::GetName() == "e-");
-    REQUIRE(PiMinus::GetName() == "pi-");
-    REQUIRE(Nucleus::GetName() == "nucleus");
-    REQUIRE(Iron::GetName() == "iron");
+    CHECK(Electron::GetName() == "e-");
+    CHECK(PiMinus::GetName() == "pi-");
+    CHECK(Nucleus::GetName() == "nucleus");
+    CHECK(Iron::GetName() == "iron");
   }
 
   SECTION("PDG") {
-    REQUIRE(GetPDG(Code::PiPlus) == PDGCode::PiPlus);
-    REQUIRE(GetPDG(Code::DPlus) == PDGCode::DPlus);
-    REQUIRE(GetPDG(Code::NuMu) == PDGCode::NuMu);
-    REQUIRE(GetPDG(Code::NuE) == PDGCode::NuE);
-    REQUIRE(GetPDG(Code::MuMinus) == PDGCode::MuMinus);
+    CHECK(GetPDG(Code::PiPlus) == PDGCode::PiPlus);
+    CHECK(GetPDG(Code::DPlus) == PDGCode::DPlus);
+    CHECK(GetPDG(Code::NuMu) == PDGCode::NuMu);
+    CHECK(GetPDG(Code::NuE) == PDGCode::NuE);
+    CHECK(GetPDG(Code::MuMinus) == PDGCode::MuMinus);
 
-    REQUIRE(static_cast<int>(GetPDG(Code::PiPlus)) == 211);
-    REQUIRE(static_cast<int>(GetPDG(Code::DPlus)) == 411);
-    REQUIRE(static_cast<int>(GetPDG(Code::NuMu)) == 14);
-    REQUIRE(static_cast<int>(GetPDG(Code::NuEBar)) == -12);
-    REQUIRE(static_cast<int>(GetPDG(Code::MuMinus)) == 13);
+    CHECK(static_cast<int>(GetPDG(Code::PiPlus)) == 211);
+    CHECK(static_cast<int>(GetPDG(Code::DPlus)) == 411);
+    CHECK(static_cast<int>(GetPDG(Code::NuMu)) == 14);
+    CHECK(static_cast<int>(GetPDG(Code::NuEBar)) == -12);
+    CHECK(static_cast<int>(GetPDG(Code::MuMinus)) == 13);
   }
 
   SECTION("Conversion PDG -> internal") {
-    REQUIRE(ConvertFromPDG(PDGCode::KStarMinus) == Code::KStarMinus);
-    REQUIRE(ConvertFromPDG(PDGCode::MuPlus) == Code::MuPlus);
-    REQUIRE(ConvertFromPDG(PDGCode::SigmaStarCMinusBar) == Code::SigmaStarCMinusBar);
+    CHECK(ConvertFromPDG(PDGCode::KStarMinus) == Code::KStarMinus);
+    CHECK(ConvertFromPDG(PDGCode::MuPlus) == Code::MuPlus);
+    CHECK(ConvertFromPDG(PDGCode::SigmaStarCMinusBar) == Code::SigmaStarCMinusBar);
   }
 
   SECTION("Lifetimes") {
-    REQUIRE(GetLifetime(Code::Electron) ==
-            std::numeric_limits<double>::infinity() * corsika::units::si::second);
-    REQUIRE(GetLifetime(Code::DPlus) < GetLifetime(Code::Gamma));
-    REQUIRE(GetLifetime(Code::RhoPlus) / corsika::units::si::second ==
-            (Approx(4.414566727909413e-24).epsilon(1e-3)));
-    REQUIRE(GetLifetime(Code::SigmaMinusBar) / corsika::units::si::second ==
-            (Approx(8.018880848563575e-11).epsilon(1e-5)));
-    REQUIRE(GetLifetime(Code::MuPlus) / corsika::units::si::second ==
-            (Approx(2.1970332555864364e-06).epsilon(1e-5)));
+    CHECK(GetLifetime(Code::Electron) ==
+          std::numeric_limits<double>::infinity() * corsika::units::si::second);
+    CHECK(GetLifetime(Code::DPlus) < GetLifetime(Code::Gamma));
+    CHECK(GetLifetime(Code::RhoPlus) / corsika::units::si::second ==
+          (Approx(4.414566727909413e-24).epsilon(1e-3)));
+    CHECK(GetLifetime(Code::SigmaMinusBar) / corsika::units::si::second ==
+          (Approx(8.018880848563575e-11).epsilon(1e-5)));
+    CHECK(GetLifetime(Code::MuPlus) / corsika::units::si::second ==
+          (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
   SECTION("Particle groups: electromagnetic") {
-    REQUIRE(IsEM(Code::Gamma));
-    REQUIRE(IsEM(Code::Electron));
-    REQUIRE_FALSE(IsEM(Code::MuPlus));
-    REQUIRE_FALSE(IsEM(Code::NuE));
-    REQUIRE_FALSE(IsEM(Code::Proton));
-    REQUIRE_FALSE(IsEM(Code::PiPlus));
-    REQUIRE_FALSE(IsEM(Code::Oxygen));
+    CHECK(IsEM(Code::Gamma));
+    CHECK(IsEM(Code::Electron));
+    CHECK_FALSE(IsEM(Code::MuPlus));
+    CHECK_FALSE(IsEM(Code::NuE));
+    CHECK_FALSE(IsEM(Code::Proton));
+    CHECK_FALSE(IsEM(Code::PiPlus));
+    CHECK_FALSE(IsEM(Code::Oxygen));
   }
 
   SECTION("Particle groups: hadrons") {
-    REQUIRE_FALSE(IsHadron(Code::Gamma));
-    REQUIRE_FALSE(IsHadron(Code::Electron));
-    REQUIRE_FALSE(IsHadron(Code::MuPlus));
-    REQUIRE_FALSE(IsHadron(Code::NuE));
-    REQUIRE(IsHadron(Code::Proton));
-    REQUIRE(IsHadron(Code::PiPlus));
-    REQUIRE(IsHadron(Code::Oxygen));
-    REQUIRE(IsHadron(Code::Nucleus));
+    CHECK_FALSE(IsHadron(Code::Gamma));
+    CHECK_FALSE(IsHadron(Code::Electron));
+    CHECK_FALSE(IsHadron(Code::MuPlus));
+    CHECK_FALSE(IsHadron(Code::NuE));
+    CHECK(IsHadron(Code::Proton));
+    CHECK(IsHadron(Code::PiPlus));
+    CHECK(IsHadron(Code::Oxygen));
+    CHECK(IsHadron(Code::Nucleus));
   }
 
   SECTION("Particle groups: muons") {
-    REQUIRE_FALSE(IsMuon(Code::Gamma));
-    REQUIRE_FALSE(IsMuon(Code::Electron));
-    REQUIRE(IsMuon(Code::MuPlus));
-    REQUIRE_FALSE(IsMuon(Code::NuE));
-    REQUIRE_FALSE(IsMuon(Code::Proton));
-    REQUIRE_FALSE(IsMuon(Code::PiPlus));
-    REQUIRE_FALSE(IsMuon(Code::Oxygen));
+    CHECK_FALSE(IsMuon(Code::Gamma));
+    CHECK_FALSE(IsMuon(Code::Electron));
+    CHECK(IsMuon(Code::MuPlus));
+    CHECK_FALSE(IsMuon(Code::NuE));
+    CHECK_FALSE(IsMuon(Code::Proton));
+    CHECK_FALSE(IsMuon(Code::PiPlus));
+    CHECK_FALSE(IsMuon(Code::Oxygen));
   }
 
   SECTION("Particle groups: neutrinos") {
-    REQUIRE_FALSE(IsNeutrino(Code::Gamma));
-    REQUIRE_FALSE(IsNeutrino(Code::Electron));
-    REQUIRE_FALSE(IsNeutrino(Code::MuPlus));
-    REQUIRE(IsNeutrino(Code::NuE));
-    REQUIRE_FALSE(IsNeutrino(Code::Proton));
-    REQUIRE_FALSE(IsNeutrino(Code::PiPlus));
-    REQUIRE_FALSE(IsNeutrino(Code::Oxygen));
+    CHECK_FALSE(IsNeutrino(Code::Gamma));
+    CHECK_FALSE(IsNeutrino(Code::Electron));
+    CHECK_FALSE(IsNeutrino(Code::MuPlus));
+    CHECK(IsNeutrino(Code::NuE));
+    CHECK_FALSE(IsNeutrino(Code::Proton));
+    CHECK_FALSE(IsNeutrino(Code::PiPlus));
+    CHECK_FALSE(IsNeutrino(Code::Oxygen));
   }
 
   SECTION("Nuclei") {
-    REQUIRE_FALSE(IsNucleus(Code::Gamma));
-    REQUIRE(IsNucleus(Code::Argon));
-    REQUIRE_FALSE(IsNucleus(Code::Proton));
-    REQUIRE(IsNucleus(Code::Hydrogen));
-    REQUIRE(Argon::IsNucleus());
-    REQUIRE_FALSE(EtaC::IsNucleus());
+    CHECK_FALSE(IsNucleus(Code::Gamma));
+    CHECK(IsNucleus(Code::Argon));
+    CHECK_FALSE(IsNucleus(Code::Proton));
+    CHECK(IsNucleus(Code::Hydrogen));
+    CHECK(Argon::IsNucleus());
+    CHECK_FALSE(EtaC::IsNucleus());
 
-    REQUIRE(GetNucleusA(Code::Hydrogen) == 1);
-    REQUIRE(GetNucleusA(Code::Tritium) == 3);
-    REQUIRE(Hydrogen::GetNucleusZ() == 1);
-    REQUIRE(Tritium::GetNucleusA() == 3);
+    CHECK(GetNucleusA(Code::Hydrogen) == 1);
+    CHECK(GetNucleusA(Code::Tritium) == 3);
+    CHECK(Hydrogen::GetNucleusZ() == 1);
+    CHECK(Tritium::GetNucleusA() == 3);
 
-    REQUIRE_THROWS(GetNucleusA(Code::Nucleus));
-    REQUIRE_THROWS(GetNucleusZ(Code::Nucleus));
+    // Nucleus is a generic object, it has no specific properties
+    CHECK_THROWS(GetNucleusA(Code::Nucleus));
+    CHECK_THROWS(GetNucleusZ(Code::Nucleus));
+    CHECK_THROWS(GetMass(Code::Nucleus));
+    CHECK_THROWS(GetCharge(Code::Nucleus));
   }
 }

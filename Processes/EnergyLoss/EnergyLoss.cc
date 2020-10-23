@@ -170,7 +170,7 @@ process::EProcessReturn EnergyLoss::DoContinuous(SetupParticle& p, SetupTrack co
               dX / 1_g * square(1_cm));
   HEPEnergyType dE = TotalEnergyLoss(p, dX);
   auto E = p.GetEnergy();
-  const auto Ekin = E - p.GetMass();
+  [[maybe_unused]] const auto Ekin = E - p.GetMass();
   auto Enew = E + dE;
   C8LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV", dE / 1_MeV,
               E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
@@ -220,31 +220,33 @@ void EnergyLoss::FillProfile(SetupTrack const& vTrack, const HEPEnergyType dE) {
   GrammageType const grammageEnd = shower_axis_.projectedX(vTrack.GetPosition(1));
   const auto deltaX = grammageEnd - grammageStart;
 
-  const int binStart = grammageStart / dX_;
-  const int binEnd = grammageEnd / dX_;
+  int binStart = grammageStart / dX_;
+  if (binStart < 0) return;
+  int binEnd = grammageEnd / dX_;
+  if (binEnd > int(profile_.size() - 1)) return;
+  if (deltaX < dX_threshold_) return;
 
   C8LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
               grammageEnd);
 
   auto energyCount = HEPEnergyType::zero();
 
-  auto fill = [&](int bin, GrammageType weight) {
-    if (deltaX > dX_threshold_) {
-      auto const increment = -dE * weight / deltaX;
-      profile_[bin] += increment;
-      energyCount += increment;
+  auto fill = [&](const int bin, const double weight) {
+    auto const increment = -dE * weight;
+    profile_[bin] += increment;
+    energyCount += increment;
 
-      C8LOG_DEBUG("filling bin {} with weight {} : {} ", bin, weight, increment);
-    }
+    C8LOG_DEBUG("filling bin {} with weight {} : {} ", bin, weight, increment);
   };
 
   // fill longitudinal profile
-  fill(binStart, (1 + binStart) * dX_ - grammageStart);
-  fill(binEnd, grammageEnd - binEnd * dX_);
-
-  if (binStart == binEnd) { fill(binStart, -dX_); }
-
-  for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
+  if (binStart == binEnd) {
+    fill(binStart, 1);
+  } else {
+    fill(binStart, ((1 + binStart) * dX_ - grammageStart) / deltaX);
+    fill(binEnd, (grammageEnd - binEnd * dX_) / deltaX);
+    for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, 1); }
+  }
 
   C8LOG_DEBUG("total energy added to histogram: {} ", energyCount);
 }

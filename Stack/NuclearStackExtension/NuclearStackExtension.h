@@ -190,7 +190,9 @@ namespace corsika::stack {
         return InnerParticleInterface<StackIteratorInterface>::GetChargeNumber();
       }
 
-      int GetNucleusRef() const { return GetStackData().GetNucleusRef(GetIndex()); }
+      int GetNucleusRef() const {
+        return GetStackData().GetNucleusRef(GetIndex());
+      } // LCOV_EXCL_LINE
 
     protected:
       void SetNucleusRef(const int vR) { GetStackData().SetNucleusRef(GetIndex(), vR); }

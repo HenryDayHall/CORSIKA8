@@ -122,9 +122,9 @@ namespace corsika::process::sibyll {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
   }
 
-  void Decay::PrintDecayConfig(const particles::Code vCode) {
-    const int sibCode = process::sibyll::ConvertToSibyllRaw(vCode);
-    const int absSibCode = abs(sibCode);
+  void Decay::PrintDecayConfig([[maybe_unused]] const particles::Code vCode) {
+    [[maybe_unused]] const int sibCode = process::sibyll::ConvertToSibyllRaw(vCode);
+    [[maybe_unused]] const int absSibCode = abs(sibCode);
     C8LOG_DEBUG("Decay: Sibyll decay configuration: {} is {}", vCode,
                 (s_csydec_.idb[absSibCode - 1] <= 0) ? "stable" : "unstable");
   }
@@ -134,7 +134,7 @@ namespace corsika::process::sibyll {
     if (handleAllDecays_) {
       C8LOG_DEBUG("     all particles known to Sibyll are handled by Sibyll::Decay!");
     } else {
-      for (auto& pCode : handledDecays_) {
+      for ([[maybe_unused]] auto& pCode : handledDecays_) {
         C8LOG_DEBUG("      Decay of {}  is handled by Sibyll!", pCode);
       }
     }
@@ -154,7 +154,7 @@ namespace corsika::process::sibyll {
       const TimeType t0 = particles::GetLifetime(vP.GetPID());
       auto const lifetime = gamma * t0;
 
-      const auto mkin =
+      [[maybe_unused]] const auto mkin =
           (E * E - vP.GetMomentum().squaredNorm()); // delta_mass(vP.GetMomentum(), E, m);
       C8LOG_DEBUG("Sibyll::Decay: code: {} ", vP.GetPID());
       C8LOG_DEBUG("Sibyll::Decay: MinStep: t0: {} ", t0);
@@ -163,7 +163,7 @@ namespace corsika::process::sibyll {
                   vP.GetMomentum().GetComponents() / 1_GeV);
       C8LOG_DEBUG("Sibyll::Decay: momentum: shell mass-kin. inv. mass {} {}",
                   mkin / 1_GeV / 1_GeV, m / 1_GeV * m / 1_GeV);
-      auto sib_id = process::sibyll::ConvertToSibyllRaw(vP.GetPID());
+      [[maybe_unused]] auto sib_id = process::sibyll::ConvertToSibyllRaw(vP.GetPID());
       C8LOG_DEBUG("Sibyll::Decay: sib mass: {}", get_sibyll_mass2(sib_id));
       C8LOG_DEBUG("Sibyll::Decay: MinStep: gamma:  {}", gamma);
       C8LOG_DEBUG("Sibyll::Decay: MinStep: tau {} s: ", lifetime / 1_s);

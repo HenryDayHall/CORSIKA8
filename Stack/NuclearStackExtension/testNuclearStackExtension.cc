@@ -119,6 +119,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
     ParticleDataStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
+    // i=9, 19, 29, etc. are nuclei
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {
         s.AddParticle(std::make_tuple(
@@ -167,6 +168,21 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
       CHECK(p93.GetTime() == 100_s);
     }
 
+    // copy
+    {
+      s.Copy(s.begin() + 89, s.begin() + 79); // nuclei to nuclei
+      const auto& p89 = s.cbegin() + 89;
+      const auto& p79 = s.cbegin() + 79;
+
+      CHECK(p89.GetPID() == particles::Code::Nucleus);
+      CHECK(p89.GetEnergy() == 89 * 15_GeV);
+      CHECK(p89.GetTime() == 100_s);
+
+      CHECK(p79.GetPID() == particles::Code::Nucleus);
+      CHECK(p79.GetEnergy() == 89 * 15_GeV);
+      CHECK(p79.GetTime() == 100_s);
+    }
+
     // swap
     {
       s.Swap(s.begin() + 11, s.begin() + 10);
@@ -205,5 +221,38 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
     for (int i = 0; i < 99; ++i) s.last().Delete();
     CHECK(s.getEntries() == 0);
+  }
+
+  SECTION("not allowed") {
+    NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,
+                          ExtendedParticleInterfaceType>
+        s;
+
+    // not valid:
+    CHECK_THROWS(s.AddParticle(std::make_tuple(
+        particles::Code::Oxygen, 1.5_GeV,
+        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 16, 8)));
+
+    // valid
+    auto particle = s.AddParticle(
+        std::make_tuple(particles::Code::Nucleus, 1.5_GeV,
+                        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
+
+    // not valid
+    CHECK_THROWS(particle.AddSecondary(std::make_tuple(
+        particles::Code::Oxygen, 1.5_GeV,
+        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 16, 8)));
+
+    // add a another nucleus, so there are two now
+    s.AddParticle(
+        std::make_tuple(particles::Code::Nucleus, 1.5_GeV,
+                        corsika::stack::MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
+
+    // not valid, since end() is not a valid entry
+    CHECK_THROWS(s.Swap(s.begin(), s.end()));
   }
 }
