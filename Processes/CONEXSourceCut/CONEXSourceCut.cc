@@ -191,7 +191,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
                                units::si::LengthType groundDist,
                                units::si::LengthType injectionHeight,
                                units::si::HEPEnergyType primaryEnergy,
-                               particles::Code primaryPID)
+                               particles::PDGCode primaryPDG)
     : center_{center}
     , showerAxis_{showerAxis}
     , groundDist_{groundDist}
@@ -283,7 +283,7 @@ CONEXSourceCut::CONEXSourceCut(geometry::Point center,
 
   std::cout << "theta (deg) = " << theta << "; phi (deg) = " << phi << std::endl;
 
-  int ipart = static_cast<int>(particles::GetPDG(primaryPID));
+  int ipart = static_cast<int>(primaryPDG);
   auto rng = corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
 
   double dimpact = 0.; // valid only if shower core is fixed on the observation plane; for

@@ -31,7 +31,7 @@ namespace corsika::process {
       CONEXSourceCut(geometry::Point center, environment::ShowerAxis const& showerAxis,
                      units::si::LengthType groundDist,
                      units::si::LengthType injectionHeight,
-                     units::si::HEPEnergyType primaryEnergy, particles::Code pid);
+                     units::si::HEPEnergyType primaryEnergy, particles::PDGCode pdg);
       corsika::process::EProcessReturn DoSecondaries(corsika::setup::StackView&);
 
       void SolveCE();

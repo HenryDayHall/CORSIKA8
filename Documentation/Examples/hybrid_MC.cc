@@ -208,7 +208,8 @@ int main(int argc, char** argv) {
   process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
 
   corsika::process::conex_source_cut::CONEXSourceCut conex(
-      center, showerAxis, t, injectionHeight, E0, particles::Code::Proton);
+      center, showerAxis, t, injectionHeight, E0,
+      particles::GetPDG(particles::Code::Proton));
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 

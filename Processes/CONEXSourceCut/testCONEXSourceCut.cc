@@ -90,7 +90,8 @@ TEST_CASE("CONEXSourceCut") {
   [[maybe_unused]] process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
 
   corsika::process::conex_source_cut::CONEXSourceCut conex(
-      center, showerAxis, t, injectionHeight, E0, particles::Code::Proton);
+      center, showerAxis, t, injectionHeight, E0,
+      particles::GetPDG(particles::Code::Proton));
 
   HEPEnergyType const Eem{1_PeV};
   auto const momentum = showerAxis.GetDirection() * Eem;
