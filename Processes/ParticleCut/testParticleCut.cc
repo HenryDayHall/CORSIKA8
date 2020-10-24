@@ -16,6 +16,7 @@
 #include <corsika/utl/CorsikaFenv.h>
 
 #include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupTrajectory.h>
 
 #include <catch2/catch.hpp>
 
@@ -44,6 +45,9 @@ TEST_CASE("ParticleCut", "[processes]") {
       particles::Code::Electron, particles::Code::MuPlus,  particles::Code::NuE,
       particles::Code::Neutron,  particles::Code::NuMu};
 
+  // common staring point
+  const geometry::Point point0(rootCS, 0_m, 0_m, 0_m);
+
   SECTION("cut on particle type: inv") {
 
     ParticleCut cut(20_GeV, false, true);
@@ -54,8 +58,7 @@ TEST_CASE("ParticleCut", "[processes]") {
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
             particles::Code::Proton, Eabove,
-            corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-            geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+            corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns});
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -66,7 +69,9 @@ TEST_CASE("ParticleCut", "[processes]") {
     for (auto proType : particleList)
       projectile.AddSecondary(std::make_tuple(
           proType, Eabove, corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-          geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
+          point0, 0_ns));
+    CHECK(view.getEntries() == 11);
+    CHECK(stack.getEntries() == 12);
 
     cut.DoSecondaries(view);
 
@@ -80,10 +85,9 @@ TEST_CASE("ParticleCut", "[processes]") {
     ParticleCut cut(20_GeV, true, false);
 
     // add primary particle to stack
-    auto particle = stack.AddParticle(
-        std::make_tuple(particles::Code::Proton, Eabove,
-                        corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                        geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
+    auto particle = stack.AddParticle(std::make_tuple(
+        particles::Code::Proton, Eabove,
+        corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
     // view on secondary particles
     corsika::setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -94,7 +98,7 @@ TEST_CASE("ParticleCut", "[processes]") {
     for (auto proType : particleList) {
       projectile.AddSecondary(std::make_tuple(
           proType, Eabove, corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-          geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
+          point0, 0_ns));
     }
     cut.DoSecondaries(view);
 
@@ -107,10 +111,9 @@ TEST_CASE("ParticleCut", "[processes]") {
     ParticleCut cut(20_GeV, true, true);
 
     // add primary particle to stack
-    auto particle = stack.AddParticle(
-        std::make_tuple(particles::Code::Proton, Eabove,
-                        corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                        geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
+    auto particle = stack.AddParticle(std::make_tuple(
+        particles::Code::Proton, Eabove,
+        corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
     // view on secondary particles
     setup::StackView view{particle};
     // ref. to primary particle through the secondary view.
@@ -121,17 +124,17 @@ TEST_CASE("ParticleCut", "[processes]") {
     for (auto proType : particleList)
       projectile.AddSecondary(std::make_tuple(
           proType, Ebelow, corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-          geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
+          point0, 0_ns));
     unsigned short A = 18;
     unsigned short Z = 8;
     projectile.AddSecondary(
         std::make_tuple(particles::Code::Nucleus, Eabove * A,
                         corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                        geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns, A, Z));
+                        point0, 0_ns, A, Z));
     projectile.AddSecondary(
         std::make_tuple(particles::Code::Nucleus, Ebelow * A,
                         corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                        geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns, A, Z));
+                        point0, 0_ns, A, Z));
 
     cut.DoSecondaries(view);
 
@@ -144,10 +147,9 @@ TEST_CASE("ParticleCut", "[processes]") {
     const TimeType too_late = 1_s;
 
     // add primary particle to stack
-    auto particle = stack.AddParticle(
-        std::make_tuple(particles::Code::Proton, Eabove,
-                        corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                        geometry::Point(rootCS, 0_m, 0_m, 0_m), 1_ns));
+    auto particle = stack.AddParticle(std::make_tuple(
+        particles::Code::Proton, Eabove,
+        corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 1_ns));
     // view on secondary particles
     corsika::setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -158,7 +160,7 @@ TEST_CASE("ParticleCut", "[processes]") {
     for (auto proType : particleList) {
       projectile.AddSecondary(std::make_tuple(
           proType, Eabove, corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-          geometry::Point(rootCS, 0_m, 0_m, 0_m), too_late));
+          point0, too_late));
     }
     cut.DoSecondaries(view);
 
@@ -166,5 +168,30 @@ TEST_CASE("ParticleCut", "[processes]") {
     CHECK(cut.GetCutEnergy() / 1_GeV == 11000);
     cut.Reset();
     CHECK(cut.GetCutEnergy() == 0_GeV);
+  }
+
+  corsika::setup::Trajectory const track{
+      geometry::Line{point0,
+                     geometry::Vector<units::si::SpeedType::dimension_type>{
+                         rootCS, {0_m / second, 0_m / second, -units::constants::c}}},
+      12_m / units::constants::c};
+
+  SECTION("cut on DoContinous, just invisibles") {
+
+    ParticleCut cut(20_GeV, false, true);
+    CHECK(cut.GetECut() == 20_GeV);
+
+    // add particles, all with energies above the threshold
+    // only cut is by species
+    for (auto proType : particleList) {
+      auto particle = stack.AddParticle(std::make_tuple(
+          proType, Eabove, corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+          point0, 0_ns));
+      cut.DoContinuous(particle, track);
+    }
+
+    CHECK(stack.getEntries() == 9);
+    CHECK(cut.GetNumberInvParticles() == 2);
+    CHECK(cut.GetInvEnergy() / 1_GeV == 2000);
   }
 }

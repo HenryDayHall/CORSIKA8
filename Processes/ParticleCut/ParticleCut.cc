@@ -119,6 +119,7 @@ namespace corsika::process {
       fEnergy = 0_GeV;
     }
 
+    // LCOV_EXCL_START 
     void ParticleCut::ShowResults() const {
       C8LOG_INFO(fmt::format(
           " ******************************\n"
@@ -131,6 +132,7 @@ namespace corsika::process {
           " ******************************",
           fEmEnergy / 1_GeV, uiEmCount, fInvEnergy / 1_GeV, uiInvCount, fEnergy / 1_GeV));
     }
+    // LCOV_EXCL_STOP
 
     void ParticleCut::Reset() {
       fEmEnergy = 0_GeV;
