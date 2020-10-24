@@ -27,6 +27,8 @@ using namespace corsika::process::interaction_counter;
 using namespace corsika::units;
 using namespace corsika::units::si;
 
+const std::string refDataDir = std::string(REFDATADIR);
+
 struct DummyProcess {
   template <typename TParticle>
   GrammageType GetInteractionLength([[maybe_unused]] TParticle const& particle) {
@@ -39,7 +41,7 @@ struct DummyProcess {
   }
 };
 
-TEST_CASE("InteractionCounter") {
+TEST_CASE("InteractionCounter", "[process]") {
 
   logging::SetLevel(logging::level::debug);
 
@@ -69,14 +71,13 @@ TEST_CASE("InteractionCounter") {
 
     auto const& h2 = countedProcess.GetHistogram().CMSHist();
     REQUIRE(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
-    // REQUIRE(h2.at(1'000'070'140, 92) == 1); // bin 1.584 .. 1.995 TeV √s
     REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
 
-    countedProcess.GetHistogram().saveLab("testInteractionCounter_file1.npz");
-    countedProcess.GetHistogram().saveCMS("testInteractionCounter_file2.npz");
+    countedProcess.GetHistogram().saveLab("testInteractionCounter_file1.npz",
+                                          utl::SaveMode::overwrite);
+    countedProcess.GetHistogram().saveCMS("testInteractionCounter_file2.npz",
+                                          utl::SaveMode::overwrite);
   }
-
-  SECTION("check saving") {}
 
   SECTION("DoInteraction Lambda") {
     auto constexpr code = particles::Code::Lambda0;
@@ -95,5 +96,40 @@ TEST_CASE("InteractionCounter") {
     auto const& h2 = countedProcess.GetHistogram().CMSHist();
     REQUIRE(h2.at(h2.axis(0).index(3122), h2.axis(1).index(1.6e12)) == 1);
     REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
+  }
+}
+
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <fstream>
+
+TEST_CASE("InteractionCounterOutput", "[output validation]") {
+
+  auto file = GENERATE(as<std::string>{}, "testInteractionCounter_file1",
+                       "testInteractionCounter_file2");
+
+  SECTION(std::string("check saved data, ") + file + ".npz") {
+
+    std::cout << file + ".npz vs " << refDataDir + "/" + file + "_REF.npz" << std::endl;
+
+    // compare to binary reference data
+    std::ifstream file1(file + ".npz");
+    std::ifstream file1ref(refDataDir + "/" + file + "_REF.npz");
+
+    std::istreambuf_iterator<char> begin1(file1);
+    std::istreambuf_iterator<char> begin1ref(file1ref);
+
+    std::istreambuf_iterator<char> end;
+
+    while (begin1 != end && begin1ref != end) {
+      CHECK(*begin1 == *begin1ref);
+      ++begin1;
+      ++begin1ref;
+    }
+    CHECK(begin1 == end);
+    CHECK(begin1ref == end);
+    file1.close();
+    file1ref.close();
   }
 }
