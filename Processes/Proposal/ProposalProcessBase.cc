@@ -34,13 +34,13 @@ namespace corsika::process::proposal {
     using namespace corsika::units::si; // required for operator::_MeV
     _env.GetUniverse()->walk([&](auto& vtn) {
       if (vtn.HasModelProperties()) {
-        auto prop = &vtn.GetModelProperties();
-        auto medium = mediumData(prop->medium(corsika::geometry::Point(
+        const auto& prop = vtn.GetModelProperties();
+        const auto& medium = mediumData(prop.medium(corsika::geometry::Point(
             geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem(), 0_cm,
             0_cm, 0_cm)));
 
         auto comp_vec = std::vector<PROPOSAL::Components::Component>();
-        auto comp = prop->GetNuclearComposition();
+        const auto& comp = prop.GetNuclearComposition();
         auto frac_iter = comp.GetFractions().cbegin();
         for (auto& pcode : comp.GetComponents()) {
           comp_vec.emplace_back(GetName(pcode), GetNucleusZ(pcode), GetNucleusA(pcode),
