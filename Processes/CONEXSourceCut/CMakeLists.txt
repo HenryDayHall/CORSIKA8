@@ -56,6 +56,12 @@ CORSIKA_ADD_TEST(testCONEXSourceCut SOURCES
   ${MODEL_HEADERS}
 )
 # 
+target_compile_definitions (
+  testCONEXSourceCut
+  PRIVATE
+  REFDATADIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+#
 target_link_libraries (
   testCONEXSourceCut
   ProcessCONEXSourceCut

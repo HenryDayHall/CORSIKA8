@@ -27,7 +27,7 @@ using namespace corsika::process::interaction_counter;
 using namespace corsika::units;
 using namespace corsika::units::si;
 
-const std::string refDataDir = std::string(REFDATADIR);
+const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 struct DummyProcess {
   template <typename TParticle>

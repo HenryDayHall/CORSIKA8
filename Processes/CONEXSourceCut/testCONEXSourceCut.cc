@@ -35,6 +35,8 @@ using namespace corsika::environment;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
+const std::string refDataDir = std::string(REFDATADIR); // from cmake
+
 template <typename T>
 using MExtraEnvirnoment =
     environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
@@ -108,6 +110,41 @@ TEST_CASE("CONEXSourceCut") {
 
   conex.addParticle(particles::Code::Proton, Eem, 0_eV, emPosition, momentum.normalized(),
                     0_s);
-
+  // supperimpose a photon
+  auto const momentumPhoton = showerAxis.GetDirection() * 1_TeV;
+  conex.addParticle(particles::Code::Gamma, 1_TeV, 0_eV, emPosition,
+                    momentumPhoton.normalized(), 0_s);
   conex.SolveCE();
+}
+
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <fstream>
+
+TEST_CASE("ConexOutput", "[output validation]") {
+
+  auto file = GENERATE(as<std::string>{}, "conex_fit", "conex_output");
+
+  SECTION(std::string("check saved data, ") + file + ".txt") {
+
+    // compare to binary reference data
+    std::ifstream file1(file + ".txt");
+    std::ifstream file1ref(refDataDir + "/" + file + "_REF.txt");
+
+    std::istreambuf_iterator<char> begin1(file1);
+    std::istreambuf_iterator<char> begin1ref(file1ref);
+
+    std::istreambuf_iterator<char> end;
+
+    while (begin1 != end && begin1ref != end) {
+      CHECK(*begin1 == *begin1ref);
+      ++begin1;
+      ++begin1ref;
+    }
+    CHECK(begin1 == end);
+    CHECK(begin1ref == end);
+    file1.close();
+    file1ref.close();
+  }
 }
