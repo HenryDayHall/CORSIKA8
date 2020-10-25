@@ -15,7 +15,7 @@
 
 namespace corsika::output {
 
-  class ObservationPlaneWriterParquet : public BaseOutput {
+  class ObservationPlaneWriterParquet : public BaseOutput, private ParquetStreamer {
 
   public:
     /**
@@ -24,7 +24,8 @@ namespace corsika::output {
      * @param name    The name of this output.
      */
     ObservationPlaneWriterParquet(std::string const& name)
-        : name_(name)
+        : ParquetStreamer()
+        , name_(name)
         , event_(0){};
 
     /**
@@ -33,20 +34,21 @@ namespace corsika::output {
     void StartOfRun(std::filesystem::path const& directory) final {
 
       // setup the streamer
-      streamer_.Init((directory / "particles.parquet").string());
+      InitStreamer((directory / "particles.parquet").string());
 
       // build the schema
-      streamer_.AddField("event", parquet::Repetition::REQUIRED, parquet::Type::INT32,
-                         parquet::ConvertedType::INT_32);
-      streamer_.AddField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
-                         parquet::ConvertedType::INT_32);
-      streamer_.AddField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-                         parquet::ConvertedType::NONE);
-      streamer_.AddField("radius", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-                         parquet::ConvertedType::NONE);
+      AddField("event", parquet::Repetition::REQUIRED, parquet::Type::INT32,
+               parquet::ConvertedType::INT_32);
+      AddField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
+               parquet::ConvertedType::INT_32);
+      AddField("energy", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+               parquet::ConvertedType::NONE);
+      AddField("radius", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+               parquet::ConvertedType::NONE);
 
       // and build the streamer
-      streamer_.Build();
+      BuildStreamer();
+
     }
 
     /**
@@ -62,7 +64,7 @@ namespace corsika::output {
     /**
      * Called at the end of each run.
      */
-    void EndOfRun() final { streamer_.Close(); }
+    void EndOfRun() final { writer_.reset(); outfile_->Close(); }
 
     /**
      * Get final text outputs for the config file.
@@ -75,20 +77,17 @@ namespace corsika::output {
      */
     void Write(particles::Code const& pid, units::si::HEPEnergyType const& energy,
                units::si::LengthType const& distance) {
-
       using namespace units::si;
 
       // write the next row
-      writer_ << event_ << static_cast<int>(particles::GetPDG(pid)) << energy / 1_eV
-              << distance / 1_m << parquet::EndRow;
+      (*writer_) << event_ << static_cast<int>(particles::GetPDG(pid)) << energy / 1_eV
+                 << distance / 1_m << parquet::EndRow;
     }
 
     std::string const name_; ///< The name of this output.
 
   private:
-    int event_;                    ///< The current event number we are processing.
-    ParquetStreamer streamer_;     ///< A parquet stream writer helper
-    parquet::StreamWriter writer_; ///< The writer for this file.
+    int event_; ///< The current event number we are processing.
 
   }; // class ObservationPlaneWriterParquet
 

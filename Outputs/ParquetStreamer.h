@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2019 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -23,12 +23,15 @@ namespace corsika::output {
    * This class automates the construction of simple tabular
    * Parquet files using the parquet::StreamWriter.
    */
-  class ParquetStreamer final {
+  class ParquetStreamer {
 
   public:
-    ParquetStreamer() {}
+    ParquetStreamer() = default;
 
-    void Init(std::string const& filepath) {
+    /**
+     * Initialize the streamer to write to a given file.
+     */
+    void InitStreamer(std::string const& filepath) {
 
       // open the file and connect it to our pointer
       PARQUET_ASSIGN_OR_THROW(outfile_, arrow::io::FileOutputStream::Open(filepath));
@@ -42,40 +45,29 @@ namespace corsika::output {
      */
     template <typename... TArgs>
     void AddField(TArgs&&... args) {
-      nodes_.push_back(parquet::schema::PrimitiveNode::Make(args...));
+      fields_.push_back(parquet::schema::PrimitiveNode::Make(args...));
     }
 
     /**
      * Finalize the streamer construction.
      */
-    void Build() {
+    void BuildStreamer() {
 
       // build the top level schema
-      auto schema = std::static_pointer_cast<parquet::schema::GroupNode>(
+      schema_ = std::static_pointer_cast<parquet::schema::GroupNode>(
           parquet::schema::GroupNode::Make("schema", parquet::Repetition::REQUIRED,
-                                           nodes_));
+                                           fields_));
 
       // and build the writer
-      writer_ = parquet::StreamWriter(
-          parquet::ParquetFileWriter::Open(outfile_, schema, builder_.build()));
+      writer_ = std::make_shared<parquet::StreamWriter>(
+          parquet::ParquetFileWriter::Open(outfile_, schema_, builder_.build()));
     }
 
-    /**
-     * Get a reference to the writer for this stream.
-     */
-    parquet::StreamWriter& GetWriter() { return writer_; }
-
-    /**
-     * Close the file.
-     */
-    void Close() { outfile_->Close(); }
-
-    ///
-  private:
-    parquet::StreamWriter writer_;
-    parquet::StreamWriter stream_;               ///< The stream writer to 'outfile'
+  protected:
+    std::shared_ptr<parquet::StreamWriter> writer_;               ///< The stream writer to 'outfile'
     parquet::WriterProperties::Builder builder_; ///< The writer properties builder.
-    parquet::schema::NodeVector nodes_;
+    parquet::schema::NodeVector fields_;         ///< The fields in this file.
+    std::shared_ptr<parquet::schema::GroupNode> schema_;   ///< The schema for this file.
     std::shared_ptr<arrow::io::FileOutputStream> outfile_; ///< The output file.
 
   }; // class ParquetHelper

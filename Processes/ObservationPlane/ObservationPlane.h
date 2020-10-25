@@ -35,10 +35,10 @@ namespace corsika::process::observation_plane {
         : TOutputWriter(args...)
         , plane_(plane)
         , deleteOnHit_(deleteOnHit)
-        , energy_ground_(0_GeV)
+        , energy_ground_(units::si::HEPEnergyType::zero())
         , count_ground_(0) {}
 
-    process::EProcessReturn DoContinuous(setup::Stack::ParticleType const& particle,
+    process::EProcessReturn DoContinuous(setup::Stack::ParticleType& particle,
                                          setup::Trajectory const& trajectory) {
 
       using namespace units::si;
@@ -53,15 +53,23 @@ namespace corsika::process::observation_plane {
         return process::EProcessReturn::eOk;
       }
 
+      const auto energy = particle.GetEnergy();
+
       // write the data to the output
-      this->Write(particle.GetPID(), particle.GetEnergy(),
+      this->Write(particle.GetPID(), energy,
                   (trajectory.GetPosition(1) - plane_.GetCenter()).norm());
 
-      if (deleteOnHit_) { return process::EProcessReturn::eParticleAbsorbed; }
-      return process::EProcessReturn::eOk;
+      if (deleteOnHit_) {
+        count_ground_++;
+        energy_ground_ += energy;
+        particle.Delete();
+        return process::EProcessReturn::eParticleAbsorbed;
+      } else {
+        return process::EProcessReturn::eOk;
+      }
     }
 
-    units::si::LengthType MaxStepLength(setup::Stack::ParticleType const&,
+    units::si::LengthType MaxStepLength(setup::Stack::ParticleType& particle,
                                         setup::Trajectory const& trajectory) {
 
       using namespace units::si;
@@ -74,7 +82,9 @@ namespace corsika::process::observation_plane {
       }
 
       auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
-      return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+      auto dist = (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+      C8LOG_TRACE("ObservationPlane::MaxStepLength l={} m", dist / 1_m);
+      return dist;
     }
 
     YAML::Node GetConfig() const {
@@ -105,20 +115,22 @@ namespace corsika::process::observation_plane {
       return node;
     }
 
-void ObservationPlane::ShowResults() const {
-  C8LOG_INFO(
-      " ******************************\n"
-      " ObservationPlane: \n"
-      " energy in ground (GeV)     :  {}\n"
-      " no. of particles in ground :  {}\n"
-      " ******************************",
-      energy_ground_ / 1_GeV, count_ground_);
-}
+    void ShowResults() const {
+      using namespace units::si;
+      C8LOG_INFO(
+          " ******************************\n"
+          " ObservationPlane: \n"
+          " energy in ground (GeV)     :  {}\n"
+          " no. of particles in ground :  {}\n"
+          " ******************************",
+          energy_ground_ / 1_GeV, count_ground_);
+    }
 
-void ObservationPlane::Reset() {
-  energy_ground_ = 0_GeV;
-  count_ground_ = 0;
-}
+    void Reset() {
+      using namespace units::si;
+      energy_ground_ = 0_GeV;
+      count_ground_ = 0;
+    }
     corsika::units::si::HEPEnergyType GetEnergyGround() const { return energy_ground_; }
 
   private:

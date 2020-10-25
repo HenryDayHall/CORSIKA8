@@ -21,6 +21,9 @@ namespace corsika::output {
    */
   class OutputManager final {
 
+    /**
+     * Indicates the current state of this manager.
+     */
     enum class OutputState {
       RunNoInit,
       RunInitialized,
@@ -31,7 +34,7 @@ namespace corsika::output {
     OutputState state_{OutputState::RunNoInit}; ///< The current state of this manager.
     std::string const name_;                    ///< The name of this simulation file.
     std::filesystem::path const root_; ///< The top-level directory for the output.
-    inline static auto logger{logging::GetLogger("output_manager")}; ///< A custom logger.
+    inline static auto logger{logging::GetLogger("output")}; ///< A custom logger.
 
     /**
      * The outputs that have been registered with us.
@@ -156,7 +159,7 @@ namespace corsika::output {
     /**
      * Called at the start of each run.
      */
-      void StartOfRun() {
+    void StartOfRun() {
       for (auto& [name, output] : outputs_) {
 
         // construct the path to this output subdirectory
@@ -173,7 +176,7 @@ namespace corsika::output {
     /**
      * Called at the start of each event/shower.
      */
-      void StartOfEvent() {
+    void StartOfEvent() {
 
       // if this is called but we are still in the initialized state,
       // make sure that we transition to RunInProgress
@@ -186,7 +189,7 @@ namespace corsika::output {
     /**
      * Called at the end of each event/shower.
      */
-      void EndOfEvent() {
+    void EndOfEvent() {
 
       for (auto& [name, output] : outputs_) { output.get().EndOfEvent(); }
     }
@@ -195,10 +198,15 @@ namespace corsika::output {
      * Called at the end of each run.
      */
     void EndOfRun() {
-      for (auto& [name, output] : outputs_) { output.get().EndOfRun(); }
+      for (auto& [name, output] : outputs_) {
+        output.get().EndOfRun();
+      }
 
       // and the run has finished
       state_ = OutputState::RunFinished;
+
+      // write any final state information into the config files
+      // for (auto& [name, output] : outputs_) { output.get().EndOfRun(); }
     }
 
   }; // class OutputManager
