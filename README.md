@@ -50,7 +50,10 @@ which are very useful also for us.
     touch with the project
 
 
-## Prerequisites
+
+## Installation (from source)
+
+### Prerequisites
 
 CORSIKA 8 is tested regularly via gitlab-CI using recent gcc and clang
 versions.  Additional software prerequisites: cmake, g++, git.
@@ -62,20 +65,21 @@ those; we test with Pythia version 8.235.
 
 On a bare Ubuntu 18.04, just add:
 ```
-sudo apt install cmake g++ git
+sudo apt install binutils gfortran make python3 cmake gcc g++ git libz-dev libspdlog-dev libeigen3-dev libboost-iostreams-dev
 ```
-add ```libeigen3-dev``` if you want to use system version of eigen3.
+
+Furthermore these packages are also reqommended:
+add ```gcc ssh-client less rsync libboost-dev```
 
 If you work with FreeBSD, run:
 ```
-pkg install git cmake python3 flang
+pkg install git cmake python3 flang eigen
 ```
-or add ```boost-libs``` and ```eigen``` if you want to use the system versions. 
+or add ```boost-libs``` if you want to use the system versions. 
 
-## Installation
+### Compiling
 
-
-Follow these steps to download and install CORSIKA 8 milestone2
+Follow these steps to download and install CORSIKA 8, master development version
 ```
 git clone --recursive https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
 cd corsika
@@ -84,9 +88,39 @@ cd ../corsika-build
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
 make -j8
 make install
-make test
 ```
-and if you want to see how the first simple hadron cascade develops, 
+
+Type `make test` to run the unit test suite.
+
+## Installation (using docker containers)
+
+There are docker containers prepared that bring all the environment and packages you need to run CORSIKA. See [docker hub](https://hub.docker.com/repository/docker/corsika/devel) for a complete overview. 
+
+### Prerequisites
+
+You only need docker, e.g. on Ubunut: `sudo apt-get install docker` and of course root access.
+
+## Compiling
+
+Follow these steps to download and install CORSIKA 8, master development version
+```
+git clone --recursive https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
+cd corsika
+sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=../install
+make -j8
+make install
+```
+
+Type `make test` to run the unit test suite.
+
+## Running, Examples
+
+There are various examples in the folder `Documentation/Examples`. 
+
+If you want to see how the first simple hadron cascade develops, 
 see `Documentation/Examples/cascade_example.cc` for a starting point. 
 
 Run the cascade_example with: 
@@ -101,13 +135,14 @@ bash share/tools/plot_tracks.sh tracks.dat
 firefox tracks.dat.gif 
 ```
 
-Or also consider the `vertical_eas` example in the same directory, which can 
+Or also consider the `vertical_EAS` example in the same directory, which can 
 be configured with command line options. 
 
 
 ### Generating doxygen documentation
 
-To generate the documentation, you need doxygen and graphviz. On Ubuntu 18.04, do:
+To generate the documentation, you need doxygen and graphviz. If you work with the docker corsika/devel containers this is already included. 
+Otherwise, e.g. on Ubuntu 18.04, do:
 ```
 sudo apt-get install doxygen graphviz
 ```
