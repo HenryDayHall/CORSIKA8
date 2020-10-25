@@ -34,7 +34,7 @@ message (STATUS "USE_BOOST_C8='${USE_BOOST_C8}'")
 
 add_library (C8::ext::boost INTERFACE IMPORTED GLOBAL)
 if ("x_${USE_BOOST_C8}" STREQUAL "x_SYSTEM")
-  find_package (Boost REQUIRED COMPONENTS mp11 iterator core format interval optional type_index histogram multi_array)
+  find_package (Boost REQUIRED COMPONENTS mp11 iterator core format interval optional type_index histogram multi_array filesystem)
 
   message (STATUS "Using system-level boost version ${Boost_VERSION} at ${Boost_INCLUDE_DIR}")
   set_target_properties (
@@ -304,8 +304,58 @@ endif (Boost_IOSTREAMS_FOUND)
 find_package (ZLIB QUIET)
 
 if (ZLIB_FOUND)
-  message (STATUS "Found ZLIB. Build cnpy for SaveHistograms")  
+  message (STATUS "Found ZLIB. Build cnpy for SaveHistograms")
+
+  # cnpy reports warnings and errors with our compiler settings
+  # We add the cnpy include as a SYSTEM directory *before*
+  # adding the subdirectory will silence cnpy-only warnings
+  target_include_directories(CORSIKAthirdparty
+  SYSTEM
+  INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}/cnpy/"
+)
+
+  # now we can add cnpy
   add_subdirectory (cnpy)
+
 else (ZLIB_FOUND)
   message (WARNING "Did not find ZLIB. Cannot build cnpy for SaveHistograms")  
 endif (ZLIB_FOUND)
+
+
+########## YAML CPP ##########
+
+# add YAML-CPP as a SYSTEM directory to ignore internal warnings/errors
+target_include_directories(CORSIKAthirdparty SYSTEM INTERFACE yaml-cpp/include/)
+
+# disable the unecessary parts of the build
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable building YAML parsing tools.")
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "Disable YAML contrib/ tools.")
+add_subdirectory (yaml-cpp)
+
+# and link it into CORSIKAthirdparty
+target_link_libraries(CORSIKAthirdparty INTERFACE yaml-cpp)
+
+########## Apache Arrow ##########
+
+# add_subdirectory(arrow/cpp/)
+
+# set(ARROW_COMPUTE OFF)
+# set(ARROW_CSV OFF)
+# set(ARROW_CUDA OFF)
+# set(ARROW_FLIGHT OFF)
+# set(ARROW_GANDIVA OFF)
+# set(ARROW_HDFS OFF)
+# set(ARROW_PLASMA OFF)
+# target_link_libraries(CORSIKAthirdparty INTERFACE arrow)
+
+
+target_include_directories(CORSIKAthirdparty
+  INTERFACE
+  "/home/rprechelt/.local/lib/python3.8/site-packages/pyarrow/include")
+target_link_directories(CORSIKAthirdparty
+  INTERFACE
+  "/home/rprechelt/.local/lib/python3.8/site-packages/pyarrow/")
+target_link_libraries(CORSIKAthirdparty
+  INTERFACE
+  arrow)

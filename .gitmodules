@@ -9,4 +9,11 @@
 [submodule "Processes/Proposal/PROPOSAL"]
 	path = Processes/Proposal/PROPOSAL
 	url = https://github.com/tudo-astroparticlephysics/PROPOSAL.git
+[submodule "ThirdParty/yaml-cpp"]
+	path = ThirdParty/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp
+	shallow = true
+[submodule "ThirdParty/arrow"]
+	path = ThirdParty/arrow
+	url = https://github.com/apache/arrow
 	shallow = true

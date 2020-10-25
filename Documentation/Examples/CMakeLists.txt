@@ -28,6 +28,7 @@ target_link_libraries (boundary_example
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAenvironment
+  CORSIKAoutput
   CORSIKAprocesssequence
   C8::ext::boost # boost::histogram
   )
@@ -53,6 +54,7 @@ target_link_libraries (cascade_example
   CORSIKAparticles
   CORSIKAgeometry
   CORSIKAenvironment
+  CORSIKAoutput
   CORSIKAprocesssequence
   )
 
@@ -80,6 +82,7 @@ if (Pythia8_FOUND)
     CORSIKAcascade
     CORSIKAparticles
     CORSIKAgeometry
+    CORSIKAoutput
     CORSIKAenvironment
     CORSIKAprocesssequence
     )
@@ -111,6 +114,7 @@ if (Pythia8_FOUND)
     CORSIKAcascade
     CORSIKAparticles
     CORSIKAgeometry
+    CORSIKAoutput
     CORSIKAenvironment
     CORSIKAprocesssequence
     CORSIKAhistory # for HistoryObservationPlane
@@ -125,6 +129,7 @@ target_link_libraries (stopping_power
   ProcessEnergyLoss
   CORSIKAparticles
   CORSIKAgeometry
+  CORSIKAoutput
   CORSIKAenvironment
   )
 
@@ -132,6 +137,7 @@ CORSIKA_ADD_EXAMPLE (staticsequence_example)
 target_link_libraries (staticsequence_example
   CORSIKAprocesssequence
   CORSIKAunits
+  CORSIKAoutput
   CORSIKAgeometry
   CORSIKAlogging)
 

@@ -20,6 +20,7 @@ CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessObservationPlane ${MODEL_NAMESPACE} ${
 target_link_libraries (
   ProcessObservationPlane
   CORSIKAgeometry
+  CORSIKAthirdparty
   CORSIKAprocesssequence
   CORSIKAlogging
   )
@@ -40,5 +41,6 @@ target_link_libraries (
   testObservationPlane
   ProcessObservationPlane
   CORSIKAstackinterface
+  CORSIKAoutput
   CORSIKAthirdparty # for catch2
 )

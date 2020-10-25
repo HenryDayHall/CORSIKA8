@@ -21,6 +21,7 @@
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/logging/Logging.h>
+#include <corsika/output/OutputManager.h>
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/SwitchProcessSequence.h>
 #include <corsika/process/StackProcess.h>
@@ -55,6 +56,7 @@ using namespace corsika::particles;
 using namespace corsika::random;
 using namespace corsika::setup;
 using namespace corsika::geometry;
+using namespace corsika::output;
 using namespace corsika::environment;
 
 using namespace std;
@@ -166,6 +168,9 @@ int main(int argc, char** argv) {
   environment::ShowerAxis const showerAxis{injectionPos,
                                            (showerCore - injectionPos) * 1.5, env};
 
+  // setup the output manager
+  OutputManager outputs("vertical_EAS_outputs");
+
   // setup processes, decays and interactions
 
   process::sibyll::Interaction sibyll;
@@ -209,8 +214,16 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  process::observation_plane::ObservationPlane observationLevel(obsPlane, false,
+                                                                "particles");
+
+  // outputs.Create<process::observation_plane::ObservationPlane>("particles", obsPlane, false, "particles");
+
+  // auto observationLevel = outputs.Get<process::observation_plane::ObservationPlane>("plane");
+
+  // register the observation plane with the manager
+  outputs.Register("obsplane", observationLevel);
+
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
@@ -237,7 +250,7 @@ int main(int argc, char** argv) {
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
-  cascade::Cascade EAS(env, tracking, sequence, stack);
+  cascade::Cascade EAS(env, tracking, sequence, stack, outputs);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.forceInteraction();

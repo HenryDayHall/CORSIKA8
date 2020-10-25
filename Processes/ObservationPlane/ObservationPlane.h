@@ -9,12 +9,12 @@
 #pragma once
 
 #include <corsika/geometry/Plane.h>
+#include <corsika/output/ObservationPlaneWriterParquet.h>
 #include <corsika/process/ContinuousProcess.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
-
-#include <fstream>
+#include <corsika/logging/Logging.h>
 
 namespace corsika::process::observation_plane {
 
@@ -23,26 +23,106 @@ namespace corsika::process::observation_plane {
    * central point of the plane into its output file. The particles are considered
    * "absorbed" afterwards.
    */
-  class ObservationPlane : public corsika::process::ContinuousProcess<ObservationPlane> {
+  template <typename TOutputWriter = output::ObservationPlaneWriterParquet>
+  class ObservationPlane final
+      : public process::ContinuousProcess<ObservationPlane<TOutputWriter>>,
+        public TOutputWriter {
 
   public:
-    ObservationPlane(geometry::Plane const&, std::string const&, bool = true);
+    template <typename... TArgs>
+    ObservationPlane(geometry::Plane const& plane, bool const deleteOnHit,
+                     TArgs&&... args)
+        : TOutputWriter(args...)
+        , plane_(plane)
+        , deleteOnHit_(deleteOnHit)
+        , energy_ground_(0_GeV)
+        , count_ground_(0) {}
 
-    corsika::process::EProcessReturn DoContinuous(
-        corsika::setup::Stack::ParticleType& vParticle,
-        corsika::setup::Trajectory const& vTrajectory);
+    process::EProcessReturn DoContinuous(setup::Stack::ParticleType const& particle,
+                                         setup::Trajectory const& trajectory) {
 
-    corsika::units::si::LengthType MaxStepLength(
-        corsika::setup::Stack::ParticleType const&,
-        corsika::setup::Trajectory const& vTrajectory);
+      using namespace units::si;
+      TimeType const timeOfIntersection =
+          (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
+          trajectory.GetV0().dot(plane_.GetNormal());
 
-    void ShowResults() const;
-    void Reset();
+      if (timeOfIntersection < TimeType::zero()) { return process::EProcessReturn::eOk; }
+
+      if (plane_.IsAbove(trajectory.GetR0()) ==
+          plane_.IsAbove(trajectory.GetPosition(1))) {
+        return process::EProcessReturn::eOk;
+      }
+
+      // write the data to the output
+      this->Write(particle.GetPID(), particle.GetEnergy(),
+                  (trajectory.GetPosition(1) - plane_.GetCenter()).norm());
+
+      if (deleteOnHit_) { return process::EProcessReturn::eParticleAbsorbed; }
+      return process::EProcessReturn::eOk;
+    }
+
+    units::si::LengthType MaxStepLength(setup::Stack::ParticleType const&,
+                                        setup::Trajectory const& trajectory) {
+
+      using namespace units::si;
+      TimeType const timeOfIntersection =
+          (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
+          trajectory.GetV0().dot(plane_.GetNormal());
+
+      if (timeOfIntersection < TimeType::zero()) {
+        return std::numeric_limits<double>::infinity() * 1_m;
+      }
+
+      auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
+      return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+    }
+
+    YAML::Node GetConfig() const {
+      using namespace units::si;
+
+      // construct the top-level node
+      YAML::Node node;
+
+      // basic info
+      node["name"] = this->name_;
+      node["type"] = "ObservationPlane";
+
+      // the center of the plane
+      auto const center{plane_.GetCenter()};
+      node["plane"]["center"].push_back(center.GetX() / 1_m);
+      node["plane"]["center"].push_back(center.GetY() / 1_m);
+      node["plane"]["center"].push_back(center.GetZ() / 1_m);
+      node["plane"]["center.units"] = "m";
+
+      // the normal vector
+      auto const normal{plane_.GetNormal().GetComponents()};
+      node["plane"]["normal"].push_back(normal.GetX().magnitude());
+      node["plane"]["normal"].push_back(normal.GetY().magnitude());
+      node["plane"]["normal"].push_back(normal.GetZ().magnitude());
+
+      node["delete_on_hit"] = deleteOnHit_;
+
+      return node;
+    }
+
+void ObservationPlane::ShowResults() const {
+  C8LOG_INFO(
+      " ******************************\n"
+      " ObservationPlane: \n"
+      " energy in ground (GeV)     :  {}\n"
+      " no. of particles in ground :  {}\n"
+      " ******************************",
+      energy_ground_ / 1_GeV, count_ground_);
+}
+
+void ObservationPlane::Reset() {
+  energy_ground_ = 0_GeV;
+  count_ground_ = 0;
+}
     corsika::units::si::HEPEnergyType GetEnergyGround() const { return energy_ground_; }
 
   private:
     geometry::Plane const plane_;
-    std::ofstream outputStream_;
     bool const deleteOnHit_;
 
     units::si::HEPEnergyType energy_ground_ = 0 * units::si::electronvolt;
