@@ -52,6 +52,11 @@ namespace corsika::output {
      * Get the configuration of this output.
      */
     virtual YAML::Node GetConfig() const = 0;
+
+    /**
+     * Get final text outputs for the config file.
+     */
+    virtual YAML::Node GetOutput() = 0;
   };
 
 } // namespace corsika::output

@@ -52,20 +52,22 @@ namespace corsika::output {
     /**
      * Called at the start of each event/shower.
      */
-      void StartOfEvent() final { ++event_;
-      }
+    void StartOfEvent() final { ++event_; }
 
     /**
      * Called at the end of each event/shower.
      */
-      void EndOfEvent() final {
-      }
+    void EndOfEvent() final {}
 
     /**
      * Called at the end of each run.
      */
-      void EndOfRun() final { streamer_.Close();
-      }
+    void EndOfRun() final { streamer_.Close(); }
+
+    /**
+     * Get final text outputs for the config file.
+     */
+    YAML::Node GetOutput() final { return YAML::Node(); }
 
   protected:
     /**
@@ -79,9 +81,7 @@ namespace corsika::output {
       // write the next row
       writer_ << event_ << static_cast<int>(particles::GetPDG(pid)) << energy / 1_eV
               << distance / 1_m << parquet::EndRow;
-
     }
-
 
     std::string const name_; ///< The name of this output.
 
