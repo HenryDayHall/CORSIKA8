@@ -72,7 +72,7 @@ namespace corsika::output {
       config["version"] = "8.0.0-prealpha"; // the current version
 
       // write the node to a file
-      WriteNode(config, root_ / (name_ + ".yaml"));
+      WriteNode(config, root_ / ("config.yaml"));
     }
 
     void InitOutput(std::string const& name) const {
