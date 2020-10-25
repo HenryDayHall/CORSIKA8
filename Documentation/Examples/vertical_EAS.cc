@@ -217,13 +217,8 @@ int main(int argc, char** argv) {
   process::observation_plane::ObservationPlane observationLevel(obsPlane, false,
                                                                 "particles");
 
-  // outputs.Create<process::observation_plane::ObservationPlane>("particles", obsPlane, false, "particles");
-
-  // auto observationLevel = outputs.Get<process::observation_plane::ObservationPlane>("plane");
-
   // register the observation plane with the manager
   outputs.Register("obsplane", observationLevel);
-
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
@@ -262,9 +257,6 @@ int main(int argc, char** argv) {
 
   // and end this run
   outputs.EndOfRun();
-
-  eLoss.PrintProfile(); // print longitudinal profile
-  conexSource.SolveCE();
 
   cut.ShowResults();
   em_continuous.ShowResults();

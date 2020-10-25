@@ -59,8 +59,7 @@ namespace corsika::cascade {
    *
    */
 
-  template <typename TTracking, typename TProcessList, typename TStack,
-            typename TOutput,
+  template <typename TTracking, typename TProcessList, typename TStack, typename TOutput,
             /*
               TStackView is needed as explicit template parameter because
               of issue 161 and the
@@ -79,6 +78,7 @@ namespace corsika::cascade {
     TTracking& tracking_;
     TProcessList& process_sequence_;
     TStack& stack_;
+    TOutput& output_;
     corsika::random::RNG& rng_ =
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
     unsigned int count_ = 0;
@@ -98,13 +98,12 @@ namespace corsika::cascade {
         , tracking_(tr)
         , process_sequence_(pl)
         , stack_(stack)
-          , output_(output)
+        , output_(output)
         , count_(0) {
       C8LOG_INFO(c8_ascii_);
       if constexpr (TStackView::has_event) {
         C8LOG_INFO(" - With full cascade HISTORY.");
       }
-
     }
 
     /**
@@ -115,7 +114,7 @@ namespace corsika::cascade {
       setNodes();
 
       // start a new event
-      fOutput.StartOfEvent();
+      output_.StartOfEvent();
 
       while (!stack_.IsEmpty()) {
         while (!stack_.IsEmpty()) {
@@ -136,7 +135,7 @@ namespace corsika::cascade {
       }
 
       // and end the event
-      fOutput.EndOfEvent();
+      output_.EndOfEvent();
     }
 
     /**
@@ -345,7 +344,6 @@ namespace corsika::cascade {
       return returnCode;
     }
 
-<<<<<<< HEAD
     /**
      * set the nodes for all particles on the stack according to their numerical
      * position
@@ -377,16 +375,5 @@ Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8"
   `"Y8888Y"'     `"Y8888Y"'    88      `8b   "Y88888P"   88  88       Y8b  d8'          `8b       "Y88888P"
 	)V0G0N";
   };
-=======
-  private:
-    corsika::environment::Environment<MediumInterface> const& fEnvironment;
-    TTracking& fTracking;
-    TProcessList& fProcessSequence;
-    TStack& fStack;
-    TOutput& fOutput;
-    corsika::random::RNG& fRNG =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
-  }; // namespace corsika::cascade
->>>>>>> d1b56063... Initial draft of output hierarchy and writers.
 
 } // namespace corsika::cascade
