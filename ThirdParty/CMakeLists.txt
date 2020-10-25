@@ -326,7 +326,10 @@ endif (ZLIB_FOUND)
 ########## YAML CPP ##########
 
 # add YAML-CPP as a SYSTEM directory to ignore internal warnings/errors
-target_include_directories(CORSIKAthirdparty SYSTEM INTERFACE yaml-cpp/include/)
+target_include_directories(CORSIKAthirdparty
+  SYSTEM
+  INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp/include/")
 
 # disable the unecessary parts of the build
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable building YAML parsing tools.")
@@ -338,24 +341,11 @@ target_link_libraries(CORSIKAthirdparty INTERFACE yaml-cpp)
 
 ########## Apache Arrow ##########
 
-# add_subdirectory(arrow/cpp/)
+find_package(Arrow REQUIRED CONFIG)
 
-# set(ARROW_COMPUTE OFF)
-# set(ARROW_CSV OFF)
-# set(ARROW_CUDA OFF)
-# set(ARROW_FLIGHT OFF)
-# set(ARROW_GANDIVA OFF)
-# set(ARROW_HDFS OFF)
-# set(ARROW_PLASMA OFF)
-# target_link_libraries(CORSIKAthirdparty INTERFACE arrow)
+message(STATUS "Arrow version: ${ARROW_VERSION}")
 
-
-target_include_directories(CORSIKAthirdparty
-  INTERFACE
-  "/home/rprechelt/.local/lib/python3.8/site-packages/pyarrow/include")
-target_link_directories(CORSIKAthirdparty
-  INTERFACE
-  "/home/rprechelt/.local/lib/python3.8/site-packages/pyarrow/")
 target_link_libraries(CORSIKAthirdparty
   INTERFACE
-  arrow)
+  arrow
+  parquet)

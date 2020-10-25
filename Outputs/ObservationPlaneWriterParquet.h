@@ -9,16 +9,13 @@
 #pragma once
 
 #include <corsika/output/BaseOutput.h>
+#include <corsika/output/ParquetStreamer.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 
-#include <arrow/io/file.h>
-#include <parquet/arrow/schema.h>
-#include <parquet/stream_writer.h>
-
 namespace corsika::output {
 
-  class ObservationPlaneWriterParquet : public BaseOutput, private ParquetStreamer {
+  class ObservationPlaneWriterParquet : public BaseOutput {
 
   public:
     /**
@@ -27,49 +24,71 @@ namespace corsika::output {
      * @param name    The name of this output.
      */
     ObservationPlaneWriterParquet(std::string const& name)
-        : name_(name){};
+        : name_(name)
+        , event_(0){};
 
     /**
      * Called at the start of each run.
      */
     void StartOfRun(std::filesystem::path const& directory) final {
 
-      // (directory / "particles.parquet").string()
+      // setup the streamer
+      streamer_.Init((directory / "particles.parquet").string());
 
-      // construct the schema
-      auto schema = arrow::schema({arrow::field("pdg", arrow::int64()),
-                                   arrow::field("energy", arrow::float64()),
-                                   arrow::field("radius", arrow::float64())});
+      // build the schema
+      streamer_.AddField("event", parquet::Repetition::REQUIRED, parquet::Type::INT32,
+                         parquet::ConvertedType::INT_32);
+      streamer_.AddField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
+                         parquet::ConvertedType::INT_32);
+      streamer_.AddField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                         parquet::ConvertedType::NONE);
+      streamer_.AddField("radius", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                         parquet::ConvertedType::NONE);
 
-      auto properties = builder.build();
+      // and build the streamer
+      streamer_.Build();
     }
 
     /**
      * Called at the start of each event/shower.
      */
-    void StartOfEvent() final {}
+      void StartOfEvent() final { ++event_;
+      }
 
     /**
      * Called at the end of each event/shower.
      */
-    void EndOfEvent() final {}
+      void EndOfEvent() final {
+      }
 
     /**
      * Called at the end of each run.
      */
-    void EndOfRun() final {}
+      void EndOfRun() final { streamer_.Close();
+      }
 
   protected:
+    /**
+     * Write a particle to the file.
+     */
     void Write(particles::Code const& pid, units::si::HEPEnergyType const& energy,
                units::si::LengthType const& distance) {
 
-      // outputStream_ << static_cast<int>(particles::GetPDG(pid)) << ' '
-      //               << particle.GetEnergy() / 1_eV << ' '
-      //               << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
-      //               << std::endl;
+      using namespace units::si;
+
+      // write the next row
+      writer_ << event_ << static_cast<int>(particles::GetPDG(pid)) << energy / 1_eV
+              << distance / 1_m << parquet::EndRow;
+
     }
 
+
     std::string const name_; ///< The name of this output.
+
+  private:
+    int event_;                    ///< The current event number we are processing.
+    ParquetStreamer streamer_;     ///< A parquet stream writer helper
+    parquet::StreamWriter writer_; ///< The writer for this file.
 
   }; // class ObservationPlaneWriterParquet
 

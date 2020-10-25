@@ -2,6 +2,7 @@
   MODEL_HEADERS
   BaseOutput.h
   OutputManager.h
+  ParquetStreamer.h
   ObservationPlaneWriterParquet.h
   )
 

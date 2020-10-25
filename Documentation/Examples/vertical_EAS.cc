@@ -255,7 +255,16 @@ int main(int argc, char** argv) {
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.forceInteraction();
 
+  // start a new run
+  outputs.StartOfRun();
+
   EAS.Run();
+
+  // and end this run
+  outputs.EndOfRun();
+
+  eLoss.PrintProfile(); // print longitudinal profile
+  conexSource.SolveCE();
 
   cut.ShowResults();
   em_continuous.ShowResults();

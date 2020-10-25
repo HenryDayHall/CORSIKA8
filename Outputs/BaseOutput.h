@@ -51,7 +51,6 @@ namespace corsika::output {
     /**
      * Get the configuration of this output.
      */
-    // virtual void WriteConfig(YAML::Emitter&) const = 0;
     virtual YAML::Node GetConfig() const = 0;
   };
 

@@ -156,7 +156,7 @@ namespace corsika::output {
     /**
      * Called at the start of each run.
      */
-    void StartOfRun() {
+      void StartOfRun() {
       for (auto& [name, output] : outputs_) {
 
         // construct the path to this output subdirectory
@@ -173,7 +173,7 @@ namespace corsika::output {
     /**
      * Called at the start of each event/shower.
      */
-    void StartOfEvent() {
+      void StartOfEvent() {
 
       // if this is called but we are still in the initialized state,
       // make sure that we transition to RunInProgress
@@ -186,7 +186,8 @@ namespace corsika::output {
     /**
      * Called at the end of each event/shower.
      */
-    void EndOfEvent() {
+      void EndOfEvent() {
+
       for (auto& [name, output] : outputs_) { output.get().EndOfEvent(); }
     }
 
