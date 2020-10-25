@@ -72,6 +72,7 @@ namespace corsika::output {
 
       // some basic info
       config["name"] = name_;               // the simulation name
+      config["creator"] = "CORSIKA8";       // a tag to identify C8 libraries
       config["version"] = "8.0.0-prealpha"; // the current version
 
       // write the node to a file
