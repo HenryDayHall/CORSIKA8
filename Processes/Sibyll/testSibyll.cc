@@ -74,13 +74,14 @@ TEST_CASE("Sibyll", "[processes]") {
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
-#include <corsika/process/sibyll/sibyll2.3d.h>
+#include <corsika/environment/UniformMagneticField.h>
 
 using namespace corsika::units::si;
 using namespace corsika::units;
@@ -94,40 +95,23 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
-  // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
-  auto& universe = *(env.GetUniverse());
-
-  auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
-
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
-
-  auto const* nodePtr = theMedium.get();
-  universe.AddChild(std::move(theMedium));
-
-  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
+  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
+  auto const& cs = *csPtr;
+  [[maybe_unused]] auto const& env_dummy = env;
+  [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
 
   SECTION("InteractionInterface - low energy") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 60_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stack.AddParticle(std::make_tuple(particles::Code::Proton, E0, plab, pos, 0_ns));
-    particle.SetNode(nodePtr);
-    corsika::setup::StackView view(particle);
+    const HEPEnergyType P0 = 60_GeV;
+    auto [stack, viewPtr] =
+        setup::testing::setupStack(particles::Code::Proton, 0, 0, P0, nodePtr, cs);
+    const auto plab = corsika::stack::MomentumVector(
+        cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    setup::StackView& view = *viewPtr;
+
+    auto particle = stack->first();
 
     Interaction model;
 
@@ -197,75 +181,39 @@ TEST_CASE("SibyllInterface", "[processes]") {
     CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.05 / 1_GeV));
     CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
-  }
-
-  SECTION("InteractionInterface - high energy") {
-
-    setup::Stack stack;
-    const HEPEnergyType E0 = 60_EeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {P0, 0_eV, 0_eV});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stack.AddParticle(std::make_tuple(particles::Code::Proton, E0, plab, pos, 0_ns));
-    particle.SetNode(nodePtr);
-    corsika::setup::StackView view(particle);
-
-    Interaction model;
-
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
-    auto const pSum = sumMomentum(view, cs);
-    CHECK(pSum.GetComponents(cs).GetX() / P0 == Approx(1).margin(0.001));
-    CHECK(pSum.GetComponents(cs).GetY() / 1_GeV == Approx(0).margin(1e-4));
-    CHECK(pSum.GetComponents(cs).GetZ() / 1_GeV == Approx(0).margin(1e-4));
-
-    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(plab.norm() * 0.001 / 1_GeV));
-    CHECK(pSum.norm() / P0 == Approx(1).margin(0.05));
-    [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+    CHECK(length / 1_g * 1_cm * 1_cm == Approx(88.7).margin(0.1));
+    CHECK(view.getSize() == 20);
   }
 
   SECTION("NuclearInteractionInterface") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 400_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-
-    auto particle = stack.AddParticle(
-        std::make_tuple(particles::Code::Nucleus, E0, plab, pos, 0_ns, 4, 2));
-    particle.SetNode(nodePtr);
-    corsika::setup::StackView view(particle);
+    auto [stack, viewPtr] =
+        setup::testing::setupStack(particles::Code::Nucleus, 4, 2, 500_GeV, nodePtr, cs);
+    setup::StackView& view = *viewPtr;
+    auto particle = stack->first();
 
     Interaction hmodel;
-    NuclearInteraction model(hmodel, env);
+    NuclearInteraction model(hmodel, *env);
 
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+    CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
+    CHECK(view.getSize() == 11);
   }
 
   SECTION("DecayInterface") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 10_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stack.AddParticle(std::make_tuple(particles::Code::Lambda0, E0, plab, pos, 0_ns));
-    corsika::setup::StackView view(particle);
+    auto [stackPtr, viewPtr] =
+        setup::testing::setupStack(particles::Code::Lambda0, 0, 0, 10_GeV, nodePtr, cs);
+    setup::StackView& view = *viewPtr;
+    auto& stack = *stackPtr;
+    auto particle = stack.first();
 
     Decay model;
-
     model.PrintDecayConfig();
-
     [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
 
     /*[[maybe_unused]] const process::EProcessReturn ret =*/model.DoDecay(view);
-
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
     CHECK(stack.getEntries() == 3);

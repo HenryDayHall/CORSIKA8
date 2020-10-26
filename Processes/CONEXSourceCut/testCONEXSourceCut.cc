@@ -6,24 +6,40 @@
  * the license.
  */
 
+#include <corsika/setup/SetupEnvironment.h>
+
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
+#include <corsika/environment/MediumPropertyModel.h>
+#include <corsika/environment/UniformMagneticField.h>
+
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>
 #include <corsika/geometry/Vector.h>
+
 #include <corsika/particles/ParticleProperties.h>
+
 #include <corsika/process/conex_source_cut/CONEXSourceCut.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
+
 #include <corsika/random/RNGManager.h>
+
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/CorsikaFenv.h>
+
 #include <catch2/catch.hpp>
 
 using namespace corsika;
 using namespace corsika::environment;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
+
+const std::string refDataDir = std::string(REFDATADIR); // from cmake
+
+template <typename T>
+using MExtraEnvirnoment =
+    environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
 
 TEST_CASE("CONEXSourceCut") {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
@@ -32,11 +48,16 @@ TEST_CASE("CONEXSourceCut") {
   feenableexcept(FE_INVALID);
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
-  EnvType env;
+  setup::Environment env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  environment::LayeredSphericalAtmosphereBuilder builder{center, conex::earthRadius};
+
+  auto builder = environment::make_layered_spherical_atmosphere_builder<
+      setup::EnvironmentInterface,
+      MExtraEnvirnoment>::create(center, conex::earthRadius,
+                                 environment::Medium::AirDry1Atm,
+                                 geometry::Vector{rootCS, 0_T, 50_mT, 0_T});
+
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -87,7 +108,43 @@ TEST_CASE("CONEXSourceCut") {
   std::cout << "position EM: " << emPosition.GetCoordinates(conex.GetObserverCS()) << " "
             << emPosition.GetCoordinates(rootCS) << std::endl;
 
-  conex.addParticle(0, Eem, 0_eV, emPosition, momentum.normalized(), 0_s);
-
+  conex.addParticle(particles::Code::Proton, Eem, 0_eV, emPosition, momentum.normalized(),
+                    0_s);
+  // supperimpose a photon
+  auto const momentumPhoton = showerAxis.GetDirection() * 1_TeV;
+  conex.addParticle(particles::Code::Gamma, 1_TeV, 0_eV, emPosition,
+                    momentumPhoton.normalized(), 0_s);
   conex.SolveCE();
+}
+
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <fstream>
+
+TEST_CASE("ConexOutput", "[output validation]") {
+
+  auto file = GENERATE(as<std::string>{}, "conex_fit", "conex_output");
+
+  SECTION(std::string("check saved data, ") + file + ".txt") {
+
+    // compare to binary reference data
+    std::ifstream file1(file + ".txt");
+    std::ifstream file1ref(refDataDir + "/" + file + "_REF.txt");
+
+    std::istreambuf_iterator<char> begin1(file1);
+    std::istreambuf_iterator<char> begin1ref(file1ref);
+
+    std::istreambuf_iterator<char> end;
+
+    while (begin1 != end && begin1ref != end) {
+      CHECK(*begin1 == *begin1ref);
+      ++begin1;
+      ++begin1ref;
+    }
+    CHECK(begin1 == end);
+    CHECK(begin1ref == end);
+    file1.close();
+    file1ref.close();
+  }
 }

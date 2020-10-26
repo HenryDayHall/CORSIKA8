@@ -107,7 +107,7 @@ namespace corsika::environment {
     template <typename ModelProperties, typename... Args>
     auto SetModelProperties(Args&&... args) {
       static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
-                    "unusable type provided");
+                    "unusable model properties type provided");
 
       fModelProperties = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
       return fModelProperties;

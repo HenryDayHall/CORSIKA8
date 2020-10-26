@@ -37,11 +37,9 @@ TEST_CASE("StackInspector", "[processes]") {
   stack.Clear();
   HEPEnergyType E0 = 100_GeV;
   stack.AddParticle(
-      std::tuple<particles::Code, units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          particles::Code::Electron, E0,
-          corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-          Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
+      std::make_tuple(particles::Code::Electron, E0,
+                      corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+                      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   SECTION("interface") {
 

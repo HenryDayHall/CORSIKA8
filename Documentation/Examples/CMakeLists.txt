@@ -67,7 +67,6 @@ if (Pythia8_FOUND)
     ProcessPythia8
     ProcessUrQMD
     CORSIKAcascade
-    ProcessCONEXSourceCut
     ProcessEnergyLoss
     ProcessTrackWriter
     ProcessStackInspector
@@ -106,7 +105,38 @@ if (Pythia8_FOUND)
     ProcessOnShellCheck
     ProcessStackInspector
     ProcessLongitudinalProfile
+    CORSIKAprocesses
+    CORSIKAcascade
+    CORSIKAparticles
+    CORSIKAgeometry
+    CORSIKAenvironment
+    CORSIKAprocesssequence
+    CORSIKAhistory # for HistoryObservationPlane
+    )
+
+  CORSIKA_ADD_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
+  target_link_libraries (hybrid_MC
+    CORSIKAsetup
+    CORSIKAunits
+    CORSIKAlogging
+    CORSIKArandom
+    CORSIKAhistory
     ProcessCONEXSourceCut
+    ProcessInteractionCounter
+    ProcessSibyll
+    ProcessPythia8
+    ProcessUrQMD
+    CORSIKAcascade
+    ProcessPythia8
+    ProcessObservationPlane
+    ProcessInteractionCounter
+    ProcessTrackWriter
+    ProcessEnergyLoss
+    ProcessTrackingLine
+    ProcessParticleCut
+    ProcessOnShellCheck
+    ProcessStackInspector
+    ProcessLongitudinalProfile
     CORSIKAprocesses
     CORSIKAcascade
     CORSIKAparticles
@@ -146,7 +176,6 @@ target_link_libraries (em_shower
   ProcessPythia8
   ProcessUrQMD
   CORSIKAcascade
-  ProcessCONEXSourceCut
   ProcessEnergyLoss
   ProcessObservationPlane
   ProcessInteractionCounter

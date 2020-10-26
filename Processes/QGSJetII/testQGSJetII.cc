@@ -110,57 +110,29 @@ TEST_CASE("QgsjetII", "[processes]") {
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
-#include <corsika/process/qgsjetII/qgsjet-II-04.h>
-
 using namespace corsika::units::si;
 using namespace corsika::units;
+using namespace corsika;
 
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
-  // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
-  auto& universe = *(env.GetUniverse());
-
-  auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
-
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Oxygen}, std::vector<float>{1.}));
-
-  auto const* nodePtr = theMedium.get();
-  universe.AddChild(std::move(theMedium));
-
-  const geometry::CoordinateSystem& cs = env.GetCoordinateSystem();
+  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
+  [[maybe_unused]] auto const& env_dummy = env;
+  [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   corsika::random::RNGManager::GetInstance().RegisterRandomStream("qgsjet");
 
   SECTION("InteractionInterface") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 100_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::Proton::GetMass() * particles::Proton::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Proton, E0, plab, pos, 0_ns});
-
-    particle.SetNode(nodePtr);
-    setup::StackView view(particle);
-    auto projectile = view.GetProjectile();
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::Proton, 0,
+                                                             0, 110_GeV, nodePtr, *csPtr);
+    setup::StackView& view = *(secViewPtr.get());
+    auto particle = stackPtr->first();
+    auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
     Interaction model;
@@ -168,7 +140,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
 
-    CHECK(length / (1_g / square(1_cm)) == Approx(93.47).margin(0.1));
+    CHECK(length / (1_g / square(1_cm)) == Approx(93.04).margin(0.1));
 
     /***********************************
      It as turned out already two times (#291 and #307) that the detailed output of

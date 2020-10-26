@@ -15,6 +15,7 @@
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/utl/COMBoost.h>
 #include <cstdlib>
+#include <iostream>
 #include <limits>
 #include <memory>
 #include <random>
@@ -26,28 +27,34 @@ namespace corsika::process::proposal {
     return false;
   }
 
-  ProposalProcessBase::ProposalProcessBase(setup::SetupEnvironment const& _env,
+  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env,
                                            corsika::units::si::HEPEnergyType _emCut)
       : emCut_(_emCut)
       , fRNG(corsika::random::RNGManager::GetInstance().GetRandomStream("proposal")) {
-    auto all_compositions = std::vector<const environment::NuclearComposition*>();
+    using namespace corsika::units::si; // required for operator::_MeV
     _env.GetUniverse()->walk([&](auto& vtn) {
-      if (vtn.HasModelProperties())
-        all_compositions.push_back(&vtn.GetModelProperties().GetNuclearComposition());
-    });
-    for (auto& ncarg : all_compositions) {
-      auto comp_vec = std::vector<PROPOSAL::Components::Component>();
-      auto frac_iter = ncarg->GetFractions().cbegin();
-      for (auto& pcode : ncarg->GetComponents()) {
-        comp_vec.emplace_back(GetName(pcode), GetNucleusZ(pcode), GetNucleusA(pcode),
-                              *frac_iter);
-        ++frac_iter;
+      if (vtn.HasModelProperties()) {
+        const auto& prop = vtn.GetModelProperties();
+        const auto& medium = mediumData(prop.medium(corsika::geometry::Point(
+            geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem(), 0_cm,
+            0_cm, 0_cm)));
+
+        auto comp_vec = std::vector<PROPOSAL::Components::Component>();
+        const auto& comp = prop.GetNuclearComposition();
+        auto frac_iter = comp.GetFractions().cbegin();
+        for (auto& pcode : comp.GetComponents()) {
+          comp_vec.emplace_back(GetName(pcode), GetNucleusZ(pcode), GetNucleusA(pcode),
+                                *frac_iter);
+          ++frac_iter;
+        }
+
+        media[comp.hash()] =
+            PROPOSAL::Medium(medium.name(), medium.Ieff(), -medium.Cbar(), medium.aa(),
+                             medium.sk(), medium.x0(), medium.x1(), medium.dlt0(),
+                             medium.corrected_density(), comp_vec);
       }
-      media[ncarg->hash()] = PROPOSAL::Medium(
-          "Modified Air", PROPOSAL::Air().GetI(), PROPOSAL::Air().GetC(),
-          PROPOSAL::Air().GetA(), PROPOSAL::Air().GetM(), PROPOSAL::Air().GetX0(),
-          PROPOSAL::Air().GetX1(), PROPOSAL::Air().GetD0(), 1.0, comp_vec);
-    }
+    });
+
     PROPOSAL::InterpolationDef::order_of_interpolation = 2;
     PROPOSAL::InterpolationDef::nodes_cross_section = 100;
     PROPOSAL::InterpolationDef::nodes_propagate = 1000;

@@ -72,9 +72,6 @@ namespace corsika::process {
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 2");
 
-    // make sure TSelect is a function
-    static_assert(!std::is_function_v<TSelect>, "TSelect must be a function type");
-
     // make sure none of TProcess1/2 is a StackProcess
     static_assert(!std::is_base_of_v<StackProcess<TProcess1type>, TProcess1type>,
                   "cannot use StackProcess in SwitchProcessSequence, for Process 1");
@@ -82,14 +79,10 @@ namespace corsika::process {
                   "cannot use StackProcess in SwitchProcessSequence, for Process 2");
 
     // if TProcess1/2 are already ProcessSequences, make sure they do not contain
-    // StackProcess
-    // if constexpr (t1ProcSeq) {
+    // any StackProcess
     static_assert(!contains_stack_process_v<TProcess1type>,
                   "cannot use StackProcess in SwitchProcessSequence, remove from "
                   "ProcessSequence 1");
-    //}
-
-    // if constexpr (t2ProcSeq)
     static_assert(!contains_stack_process_v<TProcess2type>,
                   "cannot use StackProcess in SwitchProcessSequence, remove from "
                   "ProcessSequence 2");

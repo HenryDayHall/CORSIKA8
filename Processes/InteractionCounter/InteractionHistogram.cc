@@ -41,12 +41,14 @@ void InteractionHistogram::fill(particles::Code projectile_id,
   }
 }
 
-void InteractionHistogram::saveLab(std::string const& filename) const {
-  corsika::utl::save_hist(inthist_lab_, filename);
+void InteractionHistogram::saveLab(std::string const& filename,
+                                   utl::SaveMode mode) const {
+  corsika::utl::save_hist(inthist_lab_, filename, mode);
 }
 
-void InteractionHistogram::saveCMS(std::string const& filename) const {
-  corsika::utl::save_hist(inthist_cms_, filename);
+void InteractionHistogram::saveCMS(std::string const& filename,
+                                   utl::SaveMode mode) const {
+  corsika::utl::save_hist(inthist_cms_, filename, mode);
 }
 
 InteractionHistogram& InteractionHistogram::operator+=(

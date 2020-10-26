@@ -54,9 +54,11 @@ namespace corsika::process::interaction_counter {
 
     hist_type const& labHist() const { return inthist_lab_; }
 
-    void saveLab(std::string const& filename) const;
+    void saveLab(std::string const& filename,
+                 utl::SaveMode mode = utl::SaveMode::append) const;
 
-    void saveCMS(std::string const& filename) const;
+    void saveCMS(std::string const& filename,
+                 utl::SaveMode mode = utl::SaveMode::append) const;
 
     InteractionHistogram& operator+=(InteractionHistogram const& other);
 

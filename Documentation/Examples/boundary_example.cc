@@ -45,7 +45,6 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
-using namespace corsika::setup;
 using namespace corsika::geometry;
 using namespace corsika::environment;
 
@@ -95,7 +94,7 @@ int main() {
   random::RNGManager::GetInstance().RegisterRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = setup::Environment;
   EnvType env;
   auto& universe = *(env.GetUniverse());
 
@@ -105,12 +104,16 @@ int main() {
   auto world = EnvType::CreateNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  auto const props =
-      world->SetModelProperties<environment::HomogeneousMedium<setup::IEnvironmentModel>>(
-          1_kg / (1_m * 1_m * 1_m),
-          environment::NuclearComposition(
-              std::vector<particles::Code>{particles::Code::Proton},
-              std::vector<float>{1.f}));
+  using MyHomogeneousModel =
+      environment::MediumPropertyModel<environment::UniformMagneticField<
+          environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
+
+  auto const props = world->SetModelProperties<MyHomogeneousModel>(
+      environment::Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T),
+      1_kg / (1_m * 1_m * 1_m),
+      environment::NuclearComposition(
+          std::vector<particles::Code>{particles::Code::Proton},
+          std::vector<float>{1.f}));
 
   // add a "target" sphere with 5km readius at 0,0,0
   auto target = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);

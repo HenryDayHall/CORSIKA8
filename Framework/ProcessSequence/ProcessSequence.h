@@ -53,6 +53,14 @@ namespace corsika::process {
     static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<TProcess1type>;
     static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<TProcess2type>;
 
+    // make sure only BaseProcess types TProcess1/2 are passed
+    static_assert(std::is_base_of_v<BaseProcess<TProcess1type>, TProcess1type>,
+                  "can only use process derived from BaseProcess in "
+                  "ProcessSequence, for Process 1");
+    static_assert(std::is_base_of_v<BaseProcess<TProcess2type>, TProcess2type>,
+                  "can only use process derived from BaseProcess in "
+                  "ProcessSequence, for Process 2");
+
     TProcess1 A_; // this is a reference, if possible
     TProcess2 B_; // this is a reference, if possible
 

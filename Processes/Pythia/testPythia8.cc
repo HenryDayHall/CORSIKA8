@@ -15,9 +15,11 @@
 #include <corsika/particles/ParticleProperties.h>
 
 #include <corsika/geometry/Point.h>
+
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/utl/CorsikaFenv.h>
+
 #include <catch2/catch.hpp>
 
 TEST_CASE("Pythia", "[processes]") {
@@ -75,12 +77,9 @@ TEST_CASE("Pythia", "[processes]") {
 #include <corsika/units/PhysicalUnits.h>
 
 #include <corsika/particles/ParticleProperties.h>
+#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
-
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
 
 using namespace corsika;
 using namespace corsika::units::si;
@@ -96,41 +95,23 @@ auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) 
 
 TEST_CASE("pythia process") {
 
-  // setup environment, geometry
-  environment::Environment<environment::IMediumModel> env;
-
-  geometry::CoordinateSystem const& cs = env.GetCoordinateSystem();
-
-  auto theMedium =
-      environment::Environment<environment::IMediumModel>::CreateNode<geometry::Sphere>(
-          geometry::Point{cs, 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
-
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Hydrogen},
-          std::vector<float>{1.}));
-
-  auto const* nodePtr = theMedium.get(); // save the medium for later use before moving it
+  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Proton);
+  auto const& cs = *csPtr;
+  [[maybe_unused]] auto const& env_dummy = env;
+  [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   SECTION("pythia decay") {
     feenableexcept(FE_INVALID);
-    setup::Stack stack;
-    const HEPEnergyType E0 = 10_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::PiPlus::GetMass() * particles::PiPlus::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::PiPlus, E0, plab, pos, 0_ns});
+    const HEPEnergyType P0 = 10_GeV;
+    auto [stackPtr, secViewPtr] =
+        setup::testing::setupStack(particles::Code::PiPlus, 0, 0, P0, nodePtr, *csPtr);
+    const auto plab = corsika::stack::MomentumVector(
+        cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    auto& stack = *stackPtr;
+    auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
 
     random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-
-    setup::StackView view(particle);
 
     process::pythia::Decay model;
 
@@ -168,18 +149,11 @@ TEST_CASE("pythia process") {
 
   SECTION("pythia interaction") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 100_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - particles::PiPlus::GetMass() * particles::PiPlus::GetMass());
-    auto plab = corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    geometry::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::PiPlus, E0, plab, pos, 0_ns});
-    particle.SetNode(nodePtr);
-    setup::StackView view(particle);
+    feenableexcept(FE_INVALID);
+    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0,
+                                                             0, 100_GeV, nodePtr, *csPtr);
+    auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
 
     process::pythia::Interaction model;
 

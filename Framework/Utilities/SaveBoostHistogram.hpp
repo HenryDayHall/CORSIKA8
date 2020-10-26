@@ -15,10 +15,14 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+#include <string>
 
 #pragma once
 
 namespace corsika::utl {
+
+  enum class SaveMode { overwrite, append };
+
   /**
    * This functions saves a boost::histogram into a numpy file. Only rather basic axis
    * types are supported: regular, variable, integer, category<int>. Only "ordinary" bin
@@ -29,8 +33,11 @@ namespace corsika::utl {
    */
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
-                        std::string const& filename) {
+                        std::string const& filename, SaveMode mode = SaveMode::append) {
     unsigned const rank = h.rank();
+
+    // append vs. overwrite
+    const std::string mode_str = (mode == SaveMode::append ? "a" : "w");
 
     std::vector<size_t> axes_dims;
     axes_dims.reserve(rank);
@@ -41,7 +48,7 @@ namespace corsika::utl {
     std::vector<char> axis_types;
     axis_types.reserve(rank);
 
-    for (int i = 0; i < rank; ++i) {
+    for (unsigned int i = 0; i < rank; ++i) {
       auto const& ax = h.axis(i);
       unsigned const has_underflow = (ax.options() & 0x01) ? 1 : 0;
       unsigned const has_overflow = (ax.options() & 0x02) ? 1 : 0;
@@ -61,7 +68,7 @@ namespace corsika::utl {
         ax_edges.push_back(ax.bin(ax.size() - 1).upper());
 
         cnpy::npz_save(filename, std::string{"binedges_"} + std::to_string(i),
-                       ax_edges.data(), {ax_edges.size()}, "a");
+                       ax_edges.data(), {ax_edges.size()}, mode_str);
       } else {
         axis_types.push_back('d');
         std::vector<int64_t> bins; // we assume that discrete axes have integer bins
@@ -70,13 +77,14 @@ namespace corsika::utl {
         for (int j = 0; j < ax.size(); ++j) { bins.push_back(ax.bin(j).lower()); }
 
         cnpy::npz_save(filename, std::string{"bins_"} + std::to_string(i), bins.data(),
-                       {bins.size()}, "a");
+                       {bins.size()}, mode_str);
       }
     }
 
-    cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(), {rank}, "a");
-    cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(), {rank}, "a");
-    cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(), {rank}, "a");
+    cnpy::npz_save(filename, std::string{"axistypes"}, axis_types.data(), {rank},
+                   mode_str);
+    cnpy::npz_save(filename, std::string{"overflow"}, overflow.get(), {rank}, mode_str);
+    cnpy::npz_save(filename, std::string{"underflow"}, underflow.get(), {rank}, mode_str);
 
     auto const prod_axis_size = std::accumulate(axes_dims.cbegin(), axes_dims.cend(),
                                                 unsigned{1}, std::multiplies<>());
@@ -100,7 +108,7 @@ namespace corsika::utl {
       temp[p] = *x;
     }
 
-    cnpy::npz_save(filename, "data", temp.get(), axes_dims, "a");
+    cnpy::npz_save(filename, "data", temp.get(), axes_dims, mode_str);
     // In Python this array can directly be assigned to a histogram view if that
     // histogram has its axes correspondingly: hist.view(flow=True)[:] = file['data']
   }

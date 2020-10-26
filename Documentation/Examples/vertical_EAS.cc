@@ -53,7 +53,6 @@ using namespace corsika::process;
 using namespace corsika::units;
 using namespace corsika::particles;
 using namespace corsika::random;
-using namespace corsika::setup;
 using namespace corsika::geometry;
 using namespace corsika::environment;
 
@@ -76,6 +75,9 @@ void registerRandomStreams(const int seed) {
     random::RNGManager::GetInstance().SeedAll(seed);
 }
 
+template <typename T>
+using MyExtraEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
+
 int main(int argc, char** argv) {
 
   logging::SetLevel(logging::level::info);
@@ -95,11 +97,15 @@ int main(int argc, char** argv) {
   registerRandomStreams(seed);
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = setup::Environment;
   EnvType env;
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  environment::LayeredSphericalAtmosphereBuilder builder{center};
+  auto builder = environment::make_layered_spherical_atmosphere_builder<
+      setup::EnvironmentInterface,
+      MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
+                          environment::Medium::AirDry1Atm,
+                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -109,7 +115,6 @@ int main(int argc, char** argv) {
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
   builder.addLinearLayer(1e9_cm, 112.8_km);
-
   builder.assemble(env);
 
   // setup particle stack, and add primary particle
@@ -245,16 +250,16 @@ int main(int argc, char** argv) {
   EAS.Run();
 
   cut.ShowResults();
-  em_continuous.ShowResults();
+  em_continuous.showResults();
   observationLevel.ShowResults();
   const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
-                               cut.GetEmEnergy() + em_continuous.GetEnergyLost() +
+                               cut.GetEmEnergy() + em_continuous.energyLost() +
                                observationLevel.GetEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.Reset();
   cut.Reset();
-  em_continuous.Reset();
+  em_continuous.reset();
 
   auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
                      urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();

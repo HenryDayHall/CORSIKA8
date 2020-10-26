@@ -265,3 +265,15 @@ void EnergyLoss::PrintProfile() const {
 HEPEnergyType EnergyLoss::GetTotal() const {
   return std::accumulate(profile_.cbegin(), profile_.cend(), HEPEnergyType::zero());
 }
+
+void EnergyLoss::showResults() const {
+  using namespace corsika::units::si; // required for operator::_MeV
+  std::cout << " ******************************" << std::endl
+            << " PROCESS::ContinuousProcess: " << std::endl;
+  std::cout << " energy lost dE (GeV)      :  " << energy_lost_ / 1_GeV << std::endl;
+}
+
+void EnergyLoss::reset() {
+  using namespace corsika::units::si; // required for operator::_MeV
+  energy_lost_ = 0_GeV;
+}

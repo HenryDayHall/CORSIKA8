@@ -77,7 +77,7 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 # enable warnings and disallow non-standard language
 # configure the various build types here, too
 # FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
-# debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
+# debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults), coverage -> O0
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
 set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
 
@@ -104,7 +104,9 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   find_package (Perl REQUIRED)
 
   # compile coverage under -O2 to remove unused functions
-  add_compile_options ("-O2")
+  #  add_compile_options ("-O2")
+  # compile coverage under -O0 to avoid any optimization, function elimation etc.
+  add_compile_options ("-O0")
   
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
   set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/ThirdParty/lcov/bin")

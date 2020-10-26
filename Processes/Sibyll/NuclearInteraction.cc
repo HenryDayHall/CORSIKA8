@@ -29,21 +29,20 @@ using std::tuple;
 using std::vector;
 
 using namespace corsika;
-using namespace corsika::setup;
 using Particle = corsika::setup::Stack::ParticleType; // StackIterator; // ParticleType;
 using View = corsika::setup::StackView;               // StackView::ParticleType;
-using Track = Trajectory;
+using Track = setup::Trajectory;
 
 namespace corsika::process::sibyll {
 
   template <>
-  NuclearInteraction<SetupEnvironment>::~NuclearInteraction() {
+  NuclearInteraction<setup::Environment>::~NuclearInteraction() {
     C8LOG_DEBUG(
         fmt::format("Nuclib::NuclearInteraction n={} Nnuc={}", count_, nucCount_));
   }
 
   template <>
-  void NuclearInteraction<SetupEnvironment>::PrintCrossSectionTable(
+  void NuclearInteraction<setup::Environment>::PrintCrossSectionTable(
       corsika::particles::Code pCode) {
     using namespace corsika::particles;
     const int k = targetComponentsIndex_.at(pCode);
@@ -68,7 +67,7 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  void NuclearInteraction<SetupEnvironment>::InitializeNuclearCrossSections() {
+  void NuclearInteraction<setup::Environment>::InitializeNuclearCrossSections() {
     using namespace corsika::particles;
     using namespace units::si;
 
@@ -134,7 +133,8 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  units::si::CrossSectionType NuclearInteraction<SetupEnvironment>::ReadCrossSectionTable(
+  units::si::CrossSectionType
+  NuclearInteraction<setup::Environment>::ReadCrossSectionTable(
       const int ia, particles::Code pTarget, units::si::HEPEnergyType elabnuc) {
     using namespace corsika::particles;
     using namespace units::si;
@@ -154,8 +154,8 @@ namespace corsika::process::sibyll {
   template <>
   template <>
   tuple<units::si::CrossSectionType, units::si::CrossSectionType>
-  NuclearInteraction<SetupEnvironment>::GetCrossSection(Particle const& vP,
-                                                        const particles::Code TargetId) {
+  NuclearInteraction<setup::Environment>::GetCrossSection(
+      Particle const& vP, const particles::Code TargetId) {
     using namespace units::si;
     if (vP.GetPID() != particles::Code::Nucleus)
       throw std::runtime_error(
@@ -195,7 +195,7 @@ namespace corsika::process::sibyll {
 
   template <>
   template <>
-  units::si::GrammageType NuclearInteraction<SetupEnvironment>::GetInteractionLength(
+  units::si::GrammageType NuclearInteraction<setup::Environment>::GetInteractionLength(
       Particle const& vP) {
 
     using namespace units;
@@ -306,7 +306,7 @@ namespace corsika::process::sibyll {
 
   template <>
   template <>
-  process::EProcessReturn NuclearInteraction<SetupEnvironment>::DoInteraction(
+  process::EProcessReturn NuclearInteraction<setup::Environment>::DoInteraction(
       View& view) {
 
     // this routine superimposes different nucleon-nucleon interactions
@@ -615,8 +615,8 @@ namespace corsika::process::sibyll {
   }
 
   template <>
-  NuclearInteraction<SetupEnvironment>::NuclearInteraction(
-      process::sibyll::Interaction& hadint, SetupEnvironment const& env)
+  NuclearInteraction<setup::Environment>::NuclearInteraction(
+      process::sibyll::Interaction& hadint, setup::Environment const& env)
       : environment_(env)
       , hadronicInteraction_(hadint) {
 

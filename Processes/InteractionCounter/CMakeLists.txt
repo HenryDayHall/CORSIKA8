@@ -49,7 +49,13 @@ CORSIKA_ADD_TEST(testInteractionCounter SOURCES
   testInteractionCounter.cc
   ${MODEL_HEADERS}
 )
-
+#
+target_compile_definitions (
+  testInteractionCounter
+  PRIVATE
+  REFDATADIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+#
 target_link_libraries (
   testInteractionCounter
   ProcessInteractionCounter

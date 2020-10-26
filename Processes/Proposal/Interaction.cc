@@ -22,7 +22,7 @@
 namespace corsika::process::proposal {
 
   template <>
-  Interaction::Interaction(setup::SetupEnvironment const& _env,
+  Interaction::Interaction(setup::Environment const& _env,
                            corsika::units::si::HEPEnergyType _emCut)
       : ProposalProcessBase(_env, _emCut) {}
 
