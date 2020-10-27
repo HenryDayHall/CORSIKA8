@@ -87,7 +87,7 @@ namespace corsika::output {
       std::filesystem::create_directory(path);
 
       // write the config for this output to the file
-      WriteNode(outputs_.at(name).get().GetConfig(), path / (name + ".yaml"));
+      WriteNode(outputs_.at(name).get().GetConfig(), path / "config.yaml");
     }
 
   public:
