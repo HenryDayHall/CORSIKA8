@@ -9,8 +9,9 @@
 """
 
 from . import io
+from .io.library import Library
 
 # all imported objects
-__all__ = ["io"]
+__all__ = ["io", "Library"]
 
 __version__: str = "8.0.0-alpha"

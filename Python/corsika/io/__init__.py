@@ -9,6 +9,7 @@
 """
 
 from .hist import read_hist
+from .library import Library
 
 # all exported objects
-__all__ = ["read_hist"]
+__all__ = ["read_hist", "Library"]

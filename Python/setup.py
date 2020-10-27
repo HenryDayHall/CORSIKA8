@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 setup(
     name="corsika",
     version=__version__,
-    description="A Python package for working with CORSIKA 8",
+    description="A Python package for working with CORSIKA 8.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika",
@@ -32,7 +32,7 @@ setup(
     keywords=["cosmic ray", "physics", "astronomy", "simulation"],
     packages=["corsika"],
     python_requires=">=3.6*, <4",
-    install_requires=["numpy", "pyyaml", "boost_histogram"],
+    install_requires=["numpy", "pyyaml", "pyarrow", "boost_histogram"],
     extras_require={
         "test": [
             "pytest",
@@ -43,6 +43,7 @@ setup(
             "pytest-cov",
             "flake8",
         ],
+        "pandas": ["pandas"],
     },
     scripts=[],
     project_urls={"code": "https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika"},
