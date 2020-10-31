@@ -63,10 +63,19 @@ namespace corsika::output {
           parquet::ParquetFileWriter::Open(outfile_, schema_, builder_.build()));
     }
 
+    /**
+     * Finish writing this stream.
+     *
+     */
+    void CloseStreamer() {
+      writer_.reset();
+      outfile_->Close();
+    }
+
   protected:
-    std::shared_ptr<parquet::StreamWriter> writer_;               ///< The stream writer to 'outfile'
-    parquet::WriterProperties::Builder builder_; ///< The writer properties builder.
-    parquet::schema::NodeVector fields_;         ///< The fields in this file.
+    std::shared_ptr<parquet::StreamWriter> writer_; ///< The stream writer to 'outfile'
+    parquet::WriterProperties::Builder builder_;    ///< The writer properties builder.
+    parquet::schema::NodeVector fields_;            ///< The fields in this file.
     std::shared_ptr<parquet::schema::GroupNode> schema_;   ///< The schema for this file.
     std::shared_ptr<arrow::io::FileOutputStream> outfile_; ///< The output file.
 

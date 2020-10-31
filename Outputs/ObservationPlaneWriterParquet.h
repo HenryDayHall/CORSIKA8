@@ -23,9 +23,8 @@ namespace corsika::output {
      *
      * @param name    The name of this output.
      */
-    ObservationPlaneWriterParquet(std::string const& name)
+    ObservationPlaneWriterParquet()
         : ParquetStreamer()
-        , name_(name)
         , event_(0){};
 
     /**
@@ -48,7 +47,6 @@ namespace corsika::output {
 
       // and build the streamer
       BuildStreamer();
-
     }
 
     /**
@@ -64,7 +62,7 @@ namespace corsika::output {
     /**
      * Called at the end of each run.
      */
-    void EndOfRun() final { writer_.reset(); outfile_->Close(); }
+    void EndOfRun() final { CloseStreamer(); }
 
     /**
      * Get final text outputs for the config file.
@@ -83,8 +81,6 @@ namespace corsika::output {
       (*writer_) << event_ << static_cast<int>(particles::GetPDG(pid)) << energy / 1_eV
                  << distance / 1_m << parquet::EndRow;
     }
-
-    std::string const name_; ///< The name of this output.
 
   private:
     int event_; ///< The current event number we are processing.

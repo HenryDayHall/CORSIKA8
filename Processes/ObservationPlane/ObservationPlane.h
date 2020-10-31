@@ -94,7 +94,6 @@ namespace corsika::process::observation_plane {
       YAML::Node node;
 
       // basic info
-      node["name"] = this->name_;
       node["type"] = "ObservationPlane";
 
       // the center of the plane

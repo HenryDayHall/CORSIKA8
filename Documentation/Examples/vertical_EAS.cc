@@ -214,8 +214,7 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane, false,
-                                                                "particles");
+  process::observation_plane::ObservationPlane observationLevel(obsPlane, false);
 
   // register the observation plane with the manager
   outputs.Register("obsplane", observationLevel);
