@@ -55,16 +55,16 @@ namespace corsika::environment {
     NuclearComposition const& GetNuclearComposition() const override { return nuclComp_; }
 
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
+        geometry::LineTrajectory const& line,
         units::si::LengthType l) const override {
-      auto const axis = (line.GetR0() - Base::fP0).normalized();
+      auto const axis = (line.GetLine().GetR0() - Base::fP0).normalized();
       return Base::IntegratedGrammage(line, l, axis);
     }
 
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<geometry::Line> const& line,
+        geometry::LineTrajectory const& line,
         units::si::GrammageType grammage) const override {
-      auto const axis = (line.GetR0() - Base::fP0).normalized();
+      auto const axis = (line.GetLine().GetR0() - Base::fP0).normalized();
       return Base::ArclengthFromGrammage(line, grammage, axis);
     }
   };

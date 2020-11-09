@@ -21,6 +21,7 @@ namespace corsika::environment {
   class VolumeTreeNode {
   public:
     using IModelProperties = TModelProperties;
+    using VTN_type = VolumeTreeNode<IModelProperties>;
     using VTNUPtr = std::unique_ptr<VolumeTreeNode<IModelProperties>>;
     using IMPSharedPtr = std::shared_ptr<IModelProperties>;
     using VolUPtr = std::unique_ptr<corsika::geometry::Volume>;
@@ -91,8 +92,8 @@ namespace corsika::environment {
     void ExcludeOverlapWith(VTNUPtr const& pNode) {
       fExcludedNodes.push_back(pNode.get());
     }
-
-    auto* GetParent() const { return fParentNode; };
+    
+    const VTN_type* GetParent() const { return fParentNode; };
 
     auto const& GetChildNodes() const { return fChildNodes; }
 

@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/process/tracking_line/Tracking.h>
 #include <testTrackingLineStack.h> // test-build, and include file is obtained from CMAKE_CURRENT_SOURCE_DIR
 
 #include <corsika/environment/Environment.h>
@@ -15,6 +15,7 @@
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
+#include <corsika/geometry/Intersections.hpp>
 
 #include <corsika/setup/SetupTrajectory.h>
 using corsika::setup::Trajectory;
@@ -30,74 +31,5 @@ using namespace corsika::geometry;
 using namespace std;
 using namespace corsika::units::si;
 
-
 TEST_CASE("TrackingLine") {
-  environment::Environment<TestMagneticField> env; // dummy environment
-  auto const& cs = env.GetCoordinateSystem();
-
-  tracking_line::TrackingLine tracking;
-
-  SECTION("intersection with sphere") {
-    Point const origin(cs, {0_m, 0_m, -5_m});
-    Point const center(cs, {0_m, 0_m, 10_m});
-    Sphere const sphere(center, 1_m);
-    Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
-                                                            0_m / second, 1_m / second);
-    Line line(origin, v);
-
-    setup::Trajectory traj(line, 12345_s);
-
-    auto const opt =
-        tracking_line::TimeOfIntersection(traj, Sphere(Point(cs, {0_m, 0_m, 10_m}), 1_m));
-    REQUIRE(opt.has_value());
-
-    auto [t1, t2] = opt.value();
-    REQUIRE(t1 / 14_s == Approx(1));
-    REQUIRE(t2 / 16_s == Approx(1));
-
-    auto const optNoIntersection =
-        tracking_line::TimeOfIntersection(traj, Sphere(Point(cs, {5_m, 0_m, 10_m}), 1_m));
-    REQUIRE_FALSE(optNoIntersection.has_value());
-  }
-
-  SECTION("maximally possible propagation") {
-    auto& universe = *(env.GetUniverse());
-
-    auto const radius = 20_m;
-
-    auto theMedium = environment::Environment<TestMagneticField>::CreateNode<Sphere>(
-        Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m}, radius);
-    auto const* theMediumPtr = theMedium.get();
-    universe.AddChild(std::move(theMedium));
-
-    TestTrackingLineStack stack;
-    stack.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::MuPlus,
-            1_GeV,
-            {cs, {0_GeV, 0_GeV, 1_GeV}},
-            {cs, {0_m, 0_m, 0_km}},
-            0_ns});
-    auto p = stack.GetNextParticle();
-    p.SetNode(theMediumPtr);
-
-    Point const origin(cs, {0_m, 0_m, 0_m});
-    Vector<corsika::units::si::SpeedType::dimension_type> v(cs, 0_m / second,
-                                                            0_m / second, 1_m / second);
-    Line line(origin, v);
-
-    const auto [stepWithoutB, stepWithB, geomMaxLength, magMaxLength, nextVol] = tracking.GetTrack(p);
-    //auto const [traj, geomMaxLength, nextVol, magMaxLength, beforeDirection,
-    //          afterDirection] = tracking.GetTrack(p);
-    [[maybe_unused]] auto& dummy_1 = stepWithB;
-    [[maybe_unused]] auto& dummy_2 = magMaxLength;
-    [[maybe_unused]] auto& dummy_geomMaxLength = geomMaxLength;
-    [[maybe_unused]] auto& dummy_nextVol = nextVol;
-
-    REQUIRE((stepWithoutB.GetPosition(1.) - Point(cs, 0_m, 0_m, radius))
-                .GetComponents(cs)
-                .norm()
-                .magnitude() == Approx(0).margin(1e-4));
-  }
 }

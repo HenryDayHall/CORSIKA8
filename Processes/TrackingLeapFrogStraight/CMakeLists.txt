@@ -5,17 +5,16 @@ set (
 
 set (
   MODEL_NAMESPACE
-  corsika/process/tracking_line
+  corsika/process/tracking_leapfrag_straight
   )
 
-add_library (ProcessTrackingLine INTERFACE)
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessTrackingLine ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+add_library (ProcessTrackingLeapFrogStraight INTERFACE)
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessTrackingLeapFrogStraight ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
-  ProcessTrackingLine
+  ProcessTrackingLeapFrogStraight
   INTERFACE
-  ProcessTrackingIntersects
   CORSIKAsetup
   CORSIKAutilities
   CORSIKAenvironment
@@ -26,7 +25,7 @@ target_link_libraries (
   )
 
 target_include_directories (
-  ProcessTrackingLine 
+  ProcessTrackingLeapFrogStraight 
   INTERFACE 
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
@@ -36,9 +35,9 @@ install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
 # #-- -- -- -- -- -- -- -- -- --
 # #code unit testing
-CORSIKA_ADD_TEST (testTrackingLine)
+CORSIKA_ADD_TEST (testTrackingLeapFrogStraight)
 target_link_libraries (
-   testTrackingLine
-   ProcessTrackingLine
+   testTrackingLeapFrogStraight
+   ProcessTrackingLeapFrogStraight
    CORSIKAtesting
 )

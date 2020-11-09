@@ -10,6 +10,7 @@
 
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/Volume.h>
+#include <corsika/geometry/Line.h>
 #include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::geometry {
@@ -28,8 +29,9 @@ namespace corsika::geometry {
       return fRadius * fRadius > (fCenter - p).squaredNorm();
     }
 
-    auto& GetCenter() const { return fCenter; }
-    auto GetRadius() const { return fRadius; }
+    const Point& GetCenter() const { return fCenter; }
+    LengthType GetRadius() const { return fRadius; }
+
   };
 
 } // namespace corsika::geometry

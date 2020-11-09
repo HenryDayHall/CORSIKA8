@@ -52,6 +52,10 @@ namespace corsika::geometry {
              (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t)) / omegaC;
     }
 
+    VelocityVec GetVelocity(corsika::units::si::TimeType t) const {
+      return vPar + (vPerp * (cos(omegaC * t) - 1) + uPerp * sin(omegaC * t));
+    }
+
     Point PositionFromArclength(corsika::units::si::LengthType l) const {
       return GetPosition(TimeFromArclength(l));
     }

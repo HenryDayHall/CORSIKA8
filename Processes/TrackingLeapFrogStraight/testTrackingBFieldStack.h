@@ -21,8 +21,27 @@
 
 #include <corsika/units/PhysicalUnits.h>
 
-using TestEnvironmentType =
-    corsika::environment::Environment<corsika::environment::Empty>;
+class TestMagneticField {
+  using MagneticFieldVector =
+      corsika::geometry::Vector<corsika::units::si::magnetic_flux_density_d>;
+
+  TestMagneticField() = delete;
+  
+public:
+  TestMagneticField(const corsika::units::si::MagneticFluxType& field)
+    : Bz_(field) {}
+
+  void SetMagneticField(const corsika::units::si::MagneticFluxType& field) { Bz_ = field; }
+  MagneticFieldVector GetMagneticField(corsika::geometry::Point const& p) const {
+    using namespace corsika::units::si;
+    return MagneticFieldVector(p.GetCoordinateSystem(), 0_T, 0_T, Bz_);
+  }
+
+private:
+  corsika::units::si::MagneticFluxType Bz_;
+};
+
+using TestEnvironmentType = corsika::environment::Environment<TestMagneticField>;
 
 template <typename T>
 using SetupGeometryDataInterface =
@@ -34,6 +53,6 @@ using StackWithGeometryInterface = corsika::stack::CombinedParticleInterface<
     corsika::stack::nuclear_extension::ParticleDataStack::MPIType,
     SetupGeometryDataInterface, StackIter>;
 
-using TestTrackingLineStack = corsika::stack::CombinedStack<
+using TestTrackingBFieldStack = corsika::stack::CombinedStack<
     typename corsika::stack::nuclear_extension::ParticleDataStack::StackImpl,
     corsika::stack::node::GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;

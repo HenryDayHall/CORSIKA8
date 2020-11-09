@@ -33,13 +33,14 @@
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/process/tracking_line/Tracking.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
@@ -109,7 +110,7 @@ int main(int argc, char** argv) {
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -147,11 +148,12 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
        << endl;
 
-  auto const observationHeight = 1.4_km + seaLevel;
-  auto const injectionHeight = 112.75_km + seaLevel;
+  auto const observationHeight = 0_km + builder.getEarthRadius();
+  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
                       units::static_pow<2>(injectionHeight));
+
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +
@@ -225,10 +227,6 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-  process::particle_cut::ParticleCut cut{60_GeV, false, true};
-  process::proposal::Interaction proposal(env, cut.GetECut());
-  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
-  process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
@@ -263,7 +261,7 @@ int main(int argc, char** argv) {
                         proposalCounted, em_continuous, cut, observationLevel, longprof);
 
   // define air shower object, run simulation
-  tracking_line::TrackingLine tracking;
+  tracking_line::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

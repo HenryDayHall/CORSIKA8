@@ -31,12 +31,13 @@ ObservationPlane::ObservationPlane(
 corsika::process::EProcessReturn ObservationPlane::DoContinuous(
     setup::Stack::ParticleType& particle, setup::Trajectory const& trajectory) {
   TimeType const timeOfIntersection =
-      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-      trajectory.GetV0().dot(plane_.GetNormal());
+      (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) { return process::EProcessReturn::eOk; }
 
-  if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
+  if (plane_.IsAbove(trajectory.GetLine().GetR0()) ==
+      plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
 
@@ -44,8 +45,8 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
   auto const displacement = trajectory.GetPosition(1) - plane_.GetCenter();
 
   outputStream_ << static_cast<int>(particles::GetPDG(particle.GetPID())) << ' '
-                << energy / 1_eV << ' '
-                << displacement.dot(xAxis_) / 1_m << ' ' << displacement.dot(yAxis_) / 1_m
+                << energy / 1_eV << ' ' << displacement.dot(xAxis_) / 1_m << ' '
+                << displacement.dot(yAxis_) / 1_m
                 << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                 << std::endl;
 
@@ -68,56 +69,69 @@ LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vPa
     chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
   }
   auto const* currentLogicalVolumeNode = vParticle.GetNode();
-  auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-  auto direction = trajectory.GetV0().normalized();
-  
-  if (chargeNumber != 0 && abs(plane_.GetNormal().dot(trajectory.GetV0().cross(magneticfield))) * 1_s / 1_m / 1_T > 1e-6) {
-    auto const* currentLogicalVolumeNode = vParticle.GetNode();
-    auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-    auto k = chargeNumber * corsika::units::constants::c * 1_eV / (vParticle.GetMomentum().norm() * 1_V);
+  auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(
+      vParticle.GetPosition());
+  auto direction = trajectory.GetLine().GetV0().normalized();
 
-	if (direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
-		(plane_.GetNormal().dot(trajectory.GetR0() - plane_.GetCenter()) *
-			plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k) < 0) 
-	{
-		return std::numeric_limits<double>::infinity() * 1_m;
-	}
-    
-    LengthType MaxStepLength1 = 
-      ( sqrt(direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) - 
-      (plane_.GetNormal().dot(trajectory.GetR0() - plane_.GetCenter()) * 
-      plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k)) - 
-      direction.dot(plane_.GetNormal()) / direction.GetNorm() ) / 
-      (plane_.GetNormal().dot(direction.cross(magneticfield)) * k);
-      
-    LengthType MaxStepLength2 = 
-      ( - sqrt(direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) - 
-      (plane_.GetNormal().dot(trajectory.GetR0() - plane_.GetCenter()) * 
-      plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k)) - 
-      direction.dot(plane_.GetNormal()) / direction.GetNorm() ) / 
-      (plane_.GetNormal().dot(direction.cross(magneticfield)) * k);
-      
+  if (chargeNumber != 0 &&
+      abs(plane_.GetNormal().dot(trajectory.GetLine().GetV0().cross(magneticfield))) *
+              1_s / 1_m / 1_T >
+          1e-6) {
+    auto const* currentLogicalVolumeNode = vParticle.GetNode();
+    auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(
+        vParticle.GetPosition());
+    auto k = chargeNumber * corsika::units::constants::c * 1_eV /
+             (vParticle.GetMomentum().norm() * 1_V);
+
+    if (direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+            (plane_.GetNormal().dot(trajectory.GetLine().GetR0() - plane_.GetCenter()) *
+             plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k) <
+        0) {
+      return std::numeric_limits<double>::infinity() * 1_m;
+    }
+
+    LengthType MaxStepLength1 =
+        (sqrt(direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+              (plane_.GetNormal().dot(trajectory.GetLine().GetR0() - plane_.GetCenter()) *
+               plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+         direction.dot(plane_.GetNormal()) / direction.GetNorm()) /
+        (plane_.GetNormal().dot(direction.cross(magneticfield)) * k);
+
+    LengthType MaxStepLength2 =
+        (-sqrt(
+             direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+             (plane_.GetNormal().dot(trajectory.GetLine().GetR0() - plane_.GetCenter()) *
+              plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+         direction.dot(plane_.GetNormal()) / direction.GetNorm()) /
+        (plane_.GetNormal().dot(direction.cross(magneticfield)) * k);
+
     if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
       return std::numeric_limits<double>::infinity() * 1_m;
     } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
-	  std::cout << " steplength to obs plane 2: " << MaxStepLength2 << std::endl;
-      return MaxStepLength2 * (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2).norm() * 1.001;
+      std::cout << " steplength to obs plane 2: " << MaxStepLength2 << std::endl;
+      return MaxStepLength2 *
+             (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+                 .norm() *
+             1.001;
     } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
-	  std::cout << " steplength to obs plane 1: " << MaxStepLength1 << std::endl;
-      return MaxStepLength1 * (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2).norm() * 1.001;
+      std::cout << " steplength to obs plane 1: " << MaxStepLength1 << std::endl;
+      return MaxStepLength1 *
+             (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+                 .norm() *
+             1.001;
     }
-  } 
+  }
   TimeType const timeOfIntersection =
-    (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-    trajectory.GetV0().dot(plane_.GetNormal());
+      (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) {
     return std::numeric_limits<double>::infinity() * 1_m;
   }
 
-  auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
+  auto const pointOfIntersection = trajectory.GetLine().GetPosition(timeOfIntersection);
   std::cout << " obs plane non b-field " << std::endl;
-  return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+  return (trajectory.GetLine().GetR0() - pointOfIntersection).norm() * 1.0001;
 }
 
 void ObservationPlane::ShowResults() const {

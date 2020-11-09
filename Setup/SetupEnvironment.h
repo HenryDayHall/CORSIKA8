@@ -40,7 +40,9 @@ namespace corsika::setup {
  */
 namespace corsika::setup::testing {
 
-  inline auto setupEnvironment(particles::Code vTargetCode) {
+  inline auto setupEnvironment(particles::Code vTargetCode,
+                               const corsika::units::si::MagneticFluxType BfieldZ =
+                                   corsika::units::si::MagneticFluxType::zero()) {
 
     using namespace corsika::units::si;
     using namespace corsika;
@@ -53,8 +55,7 @@ namespace corsika::setup::testing {
      * our world is a sphere at 0,0,0 with R=infty
      */
     auto world = setup::Environment::CreateNode<geometry::Sphere>(
-        geometry::Point{cs, 0_m, 0_m, 0_m},
-        1_km * std::numeric_limits<double>::infinity());
+        geometry::Point{cs, 0_m, 0_m, 0_m}, 100_km);
 
     /**
      * construct suited environment medium model:
@@ -64,12 +65,12 @@ namespace corsika::setup::testing {
             environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
 
     world->SetModelProperties<MyHomogeneousModel>(
-        environment::Medium::AirDry1Atm, geometry::Vector(cs, 0_T, 0_T, 1_T),
+        environment::Medium::AirDry1Atm, geometry::Vector(cs, 0_T, 0_T, BfieldZ),
         1_kg / (1_m * 1_m * 1_m),
         environment::NuclearComposition(std::vector<particles::Code>{vTargetCode},
                                         std::vector<float>{1.}));
 
-    auto const* nodePtr = world.get();
+    auto* nodePtr = world.get();
     universe.AddChild(std::move(world));
 
     return std::make_tuple(std::move(env), &cs, nodePtr);

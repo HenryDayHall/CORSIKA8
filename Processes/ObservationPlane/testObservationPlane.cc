@@ -51,7 +51,7 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
   Vector<units::si::SpeedType::dimension_type> vec(cs, 0_m / second, 0_m / second,
                                                    -units::constants::c);
   Line line(start, vec);
-  Trajectory<Line> track(line, 12_m / units::constants::c);
+  LineTrajectory track(line, 12_m / units::constants::c);
 
   particle.SetPosition(Point(cs, {1_m, 1_m, 10_m})); // moving already along -z
 

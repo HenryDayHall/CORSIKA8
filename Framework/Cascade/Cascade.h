@@ -37,53 +37,6 @@
 using boost::typeindex::type_id_with_cvr;
 
 #include <fstream>
-#include <boost/histogram.hpp>
-#include <boost/histogram/ostream.hpp>
-#include <corsika/process/tracking_line/dump_bh.hpp>
-using namespace boost::histogram;
-/*static auto histL2 = make_histogram(axis::regular<>(100, 0, 60000, "L'"));
-static auto histS2 = make_histogram(axis::regular<>(100, 0, 60000, "S"));
-static auto histB2 = make_histogram(axis::regular<>(100, 0, 60000, "Bogenlänge"));*/
-static auto histLlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLlog2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-
-/*static auto histSlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Direct Length S"));
-static auto histBlog2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Arc Length B"));
-static auto histLB2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - B"));
-static auto histLS2 = make_histogram(axis::regular<>(100, 0, 0.01, "L - S"));
-static auto histLBrel2 = make_histogram(axis::regular<double, axis::transform::log> (20,1e-11,1e-6,"L/B -1"));
-static auto histLSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"));
-static auto histELSrel2 = make_histogram(axis::regular<double, axis::transform::log>(20,1e-11,1e-6, "L/S -1"),axis::regular<double, axis::transform::log>(20, 0.1, 1e4, "E / GeV"));
-static auto histBS2 = make_histogram(axis::regular<>(100, 0, 0.01, "B - S")); */
-
-static auto histLp2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Protonen"));
-static auto histLpi2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Pionen"));
-static auto histLpi2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLpi2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLpi2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLpi2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLpi2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLmu2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Myonen"));
-static auto histLmu2int = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLmu2dec = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLmu2max = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLmu2geo = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLmu2mag = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "Leap-Frog-length L'"));
-static auto histLe2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Elektronen"));
-static auto histLy2 = make_histogram(axis::regular<double, axis::transform::log>(100, 1e-3, 1e7, "L' für Photonen"));
-
-static double stepradius = 0;
-static int N = 0;
-static double stepradiusp = 0;
-static int Np = 0;
-static double stepradiuspi = 0;
-static int Npi = 0;
-static double stepradiusmu = 0;
-static int Nmu = 0;
 
 
 /**
@@ -125,17 +78,6 @@ namespace corsika::cascade {
         std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>;
     using MediumInterface = typename VolumeTreeNode::IModelProperties;
 
-  private:
-    // Data members
-    corsika::environment::Environment<MediumInterface> const& environment_;
-    TTracking& tracking_;
-    TProcessList& process_sequence_;
-    TStack& stack_;
-    corsika::random::RNG& rng_ =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
-    unsigned int count_ = 0;
-
-  private:
     // we only want fully configured objects
     Cascade() = delete;
 
@@ -158,132 +100,8 @@ namespace corsika::cascade {
     }
     
     ~Cascade(){    
-		  /*std::ofstream myfile;
-          myfile.open ("stepradius.txt");
-          myfile << "All charged particles " << stepradius/N << std::endl;
-          myfile << "Protons " << stepradiusp/Np << std::endl;
-          myfile << "Pions " << stepradiuspi/Npi << std::endl;
-          myfile << "Muons " << stepradiusmu/Nmu << std::endl;
-          myfile.close();
-		  
-		  /*std::cout << histLBrel << std::endl;
-		  std::cout << histLSrel << std::endl;*/
-
-		  
-		      /*std::ofstream file1("histL2.json");
-          dump_bh(file1, histL2);
-          file1.close();
-          std::ofstream file2("histS2.json");
-          dump_bh(file2, histS2);
-          file2.close();
-          std::ofstream file3("histB2.json");
-          dump_bh(file3, histB2);
-          file3.close();
-          std::ofstream file4("histLB.json");
-          dump_bh(file4, histLB);
-          file4.close();
-          std::ofstream file5("histLS.json");
-          dump_bh(file5, histLS);
-          file5.close();
-          std::ofstream file6("histBS.json");
-          dump_bh(file6, histBS);
-          file6.close();
-          std::ofstream file7("histLBrel.json");
-          dump_bh(file7, histLBrel);
-          file7.close();
-          std::ofstream file8("histLSrel.json");
-          dump_bh(file8, histLSrel);
-          file8.close();
-          
-          std::ofstream file10("histELSrel.json");
-          dump_bh(file10, histELSrel);
-          file10.close(); //hier ende
-          std::ofstream file19("histLy2.json");
-          dump_bh(file19, histLy2);
-          file19.close();
-          std::ofstream file10("histLe2.json");
-          dump_bh(file10, histLe2);
-          file10.close();
-          std::ofstream file11("histLmu2.json");
-          dump_bh(file11, histLmu2);
-          file11.close();
-          std::ofstream file12("histLpi2.json");
-          dump_bh(file12, histLpi2);
-          file12.close();
-          std::ofstream file13("histLp2.json");
-          dump_bh(file13, histLp2);
-          file13.close();
-          std::ofstream file14("histLlog2.json");
-          dump_bh(file14, histLlog2);
-          file14.close();
-          /*std::ofstream file15("histBlog2.json");
-          dump_bh(file15, histBlog2);
-          file15.close();
-          std::ofstream file16("histSlog2.json");
-          dump_bh(file16, histSlog2);
-          file16.close(); //hier ende
-          std::ofstream file17("histLlog2int.json");
-          dump_bh(file17, histLlog2int);
-          file17.close();
-          std::ofstream file18("histLlog2dec.json");
-          dump_bh(file18, histLlog2dec);
-          file18.close();
-          
-          std::ofstream file20("histLlog2mag.json");
-          dump_bh(file20, histLlog2mag);
-          file20.close();
-          std::ofstream file21("histLlog2geo.json");
-          dump_bh(file21, histLlog2geo);
-          file21.close();
-          std::ofstream file22("histLlog2max.json");
-          dump_bh(file22, histLlog2max);
-          file22.close();
-          
-          std::ofstream filepi1("histLpi2int.json");
-          dump_bh(filepi1, histLpi2int);
-          filepi1.close();
-          std::ofstream filepi2("histLpi2dec.json");
-          dump_bh(filepi2, histLpi2dec);
-          filepi2.close();
-          std::ofstream filepi3("histLpi2mag.json");
-          dump_bh(filepi3, histLpi2mag);
-          filepi3.close();
-          std::ofstream filepi4("histLpi2geo.json");
-          dump_bh(filepi4, histLpi2geo);
-          filepi4.close();
-          std::ofstream filepi5("histLpi2max.json");
-          dump_bh(filepi5, histLpi2max);
-          filepi5.close();
-          
-          std::ofstream filemu1("histLmu2int.json");
-          dump_bh(filemu1, histLmu2int);
-          filemu1.close();
-          std::ofstream filemu2("histLmu2dec.json");
-          dump_bh(filemu2, histLmu2dec);
-          filemu2.close();
-          std::ofstream filemu3("histLmu2mag.json");
-          dump_bh(filemu3, histLmu2mag);
-          filemu3.close();
-          std::ofstream filemu4("histLmu2geo.json");
-          dump_bh(filemu4, histLmu2geo);
-          filemu4.close();
-          std::ofstream filemu5("histLmu2max.json");
-          dump_bh(filemu5, histLmu2max);
-          filemu5.close();*/
-		  
 		  };
 
-    /**
-     * set the nodes for all particles on the stack according to their numerical
-     * position
-     */
-    void SetNodes() {
-      std::for_each(fStack.begin(), fStack.end(), [&](auto& p) {
-        auto const* numericalNode =
-            fEnvironment.GetUniverse()->GetContainingNode(p.GetPosition());
-        p.SetNode(numericalNode);
-      });
-    }
 
     /**
      * The Run function is the main simulation loop, which processes
@@ -341,10 +159,6 @@ namespace corsika::cascade {
       using namespace corsika;
       using namespace corsika::units::si;
 
-      // determine geometric tracking
-      auto [step, geomMaxLength, nextVol] = tracking_.GetTrack(vParticle);
-      [[maybe_unused]] auto const& dummy_nextVol = nextVol;
-
       // determine combined total interaction length (inverse)
       InverseGrammageType const total_inv_lambda =
           process_sequence_.GetInverseInteractionLength(vParticle);
@@ -383,8 +197,8 @@ namespace corsika::cascade {
                                         vParticle.GetEnergy() * units::constants::c;
                                     
       // determine geometric tracking
-      auto [step, geomMaxLength, magMaxLength, nextVol] = fTracking.GetTrack(vParticle);
-      [[maybe_unused]] auto const& dummy_nextVol = nextVol;
+      auto [step, nextVol] = tracking_.GetTrack(vParticle);
+      auto geomMaxLength = step.GetLength(1);
       
       // convert next_step from grammage to length
       LengthType const distance_interact =
@@ -392,138 +206,28 @@ namespace corsika::cascade {
                                                                          next_interact);
       
       // determine the maximum geometric step length
-      LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, stepWithoutB);
+      LengthType const distance_max = process_sequence_.MaxStepLength(vParticle, step);
       C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
 
       // take minimum of geometry, interaction, decay for next step
       auto min_distance = std::min(
-          {distance_interact, distance_decay, distance_max, geomMaxLength, magMaxLength});
+          {distance_interact, distance_decay, distance_max, geomMaxLength});
 
       C8LOG_DEBUG("transport particle by : {} m "
-		  "Max Displacement after: {} m "
 		  "Medium transition after: {} m "
 		  "Decay after: {} m "
 		  "Interaction after: {} m", 
-		  min_distance/1_m, magMaxLength/1_m, geomMaxLength/1_m, distance_decay/1_m, distance_interact/1_m);
+		  min_distance/1_m, geomMaxLength/1_m, distance_decay/1_m, distance_interact/1_m);
 
-      // determine steplength for the magnetic field
-      // because Steplength should not be min_distance
-	    
-      auto [position, direction, L2] = fTracking.MagneticStep(vParticle, min_distance);
-      
-      
-      int chargeNumber;
-	    if (corsika::particles::IsNucleus(vParticle.GetPID())) {
-	      chargeNumber = vParticle.GetNuclearZ();
-	    } else {
-	      chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
-	    }
-      //histL2(L2);
-      histLlog2(L2);
-      int pdg = static_cast<int>(particles::GetPDG(vParticle.GetPID()));
-      if (min_distance == distance_interact){
-        histLlog2int(L2);
-        if (abs(pdg) == 13)
-              histLmu2int(L2);
-      
-        if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi2int(L2);
-      }
-      if (min_distance == distance_decay) {
-        histLlog2dec(L2);
-        if (abs(pdg) == 13)
-              histLmu2dec(L2);
-        if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi2dec(L2);
-      }
-      if (min_distance == distance_max) {
-        histLlog2max(L2);
-        if (abs(pdg) == 13)
-              histLmu2max(L2);
-        if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi2max(L2);
-      }
-      if (min_distance == geomMaxLength) {
-        histLlog2geo(L2);
-        if (abs(pdg) == 13)
-              histLmu2geo(L2);
-        if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi2geo(L2);
-      }
-      if (min_distance == magMaxLength) {
-        histLlog2mag(L2);
-        if (abs(pdg) == 13)
-              histLmu2mag(L2);
-        if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi2mag(L2);
-      }
-            if (abs(pdg) == 13)
-              histLmu2(L2);
-            if (abs(pdg) == 11)
-              histLe2(L2);
-            if (abs(pdg) == 22)
-              histLy2(L2);
-            if (abs(pdg) == 211 || abs(pdg) == 111)
-              histLpi2(L2);
-            if (abs(pdg) == 2212 || abs(pdg) == 2112)
-              histLp2(L2);
-              
-              
-              
-     //int chargeNumber = 0;
-        if (corsika::particles::IsNucleus(vParticle.GetPID())) {
-        	chargeNumber = vParticle.GetNuclearZ();
-        } else {
-        	chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
-        }
-     if(chargeNumber != 0) {
-     auto const* currentLogicalVolumeNode = vParticle.GetNode();
-     auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(vParticle.GetPosition());
-             geometry::Vector<SpeedType::dimension_type> velocity =
-            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
-              geometry::Vector<SpeedType::dimension_type> const velocityVerticalMag = velocity -
-                   velocity.parallelProjectionOnto(magneticfield);
-              LengthType const gyroradius = vParticle.GetEnergy() * velocityVerticalMag.GetNorm() * 1_V / 
-                                            (corsika::units::constants::cSquared * abs(chargeNumber) * 
-                                            magneticfield.GetNorm() * 1_eV);
-     stepradius = stepradius + min_distance/gyroradius;
-     N ++;
-     if (abs(pdg) == 13) {
-       stepradiusmu += min_distance/gyroradius;
-       Nmu ++;
-     }
-     if (abs(pdg) == 211 || abs(pdg) == 111) {
-       stepradiuspi += min_distance/gyroradius;
-       Npi ++;
-     }
-     if (abs(pdg) == 2212 || abs(pdg) == 2112) {
-       stepradiusp += min_distance/gyroradius;
-       Np ++;
-     }
-     }         
-              
-              
-      auto distance = position - vParticle.GetPosition();
-      
-      //Building Trajectory for Continuous processes
-      //could also be done in MagneticStep
-      geometry::Vector<SpeedType::dimension_type> velocity =
-            vParticle.GetMomentum() / vParticle.GetEnergy() * corsika::units::constants::c;
-      if (distance.norm() != 0_m) {
-        velocity = distance.normalized() * velocity.norm();
-      }
-      geometry::Line line(vParticle.GetPosition(), velocity);
-      geometry::Trajectory<geometry::Line> stepNew(line, distance.norm() / line.GetV0().norm());
-      
       // here the particle is actually moved along the trajectory to new position:
-      // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
-      vParticle.SetMomentum(direction * vParticle.GetMomentum().norm());
-      vParticle.SetPosition(position);
-      vParticle.SetTime(vParticle.GetTime() + distance.norm() / velocity.norm());
+      step.SetLength(min_distance);
+      vParticle.SetPosition(step.GetPosition(1));
+      vParticle.SetMomentum(step.GetDirection(1)*vParticle.GetMomentum().norm());
+      vParticle.SetTime(vParticle.GetTime() + step.GetDuration());
       std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
 
       // apply all continuous processes on particle + track
-      process::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, stepNew);
+      process::EProcessReturn status = process_sequence_.DoContinuous(vParticle, step);
 
       if (status == process::EProcessReturn::eParticleAbsorbed) {
         C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
@@ -544,7 +248,7 @@ namespace corsika::cascade {
 
         TStackView secondaries(vParticle);
 
-        if (min_distance != distance_max && min_distance != magMaxLength) {
+        if (min_distance != distance_max) {
           /*
             Create SecondaryView object on Stack. The data container
             remains untouched and identical, and 'projectil' is identical
@@ -665,6 +369,18 @@ Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8"
  Y8a.    .a8P   Y8a.    .a8P   88     `8b   Y8a     a8P  88  88     "88,    d8'        `8b       Y8a     a8P  
   `"Y8888Y"'     `"Y8888Y"'    88      `8b   "Y88888P"   88  88       Y8b  d8'          `8b       "Y88888P"
 	)V0G0N";
-  };
+
+  private:
+    // Data members
+    corsika::environment::Environment<MediumInterface> const& environment_;
+    TTracking& tracking_;
+    TProcessList& process_sequence_;
+    TStack& stack_;
+    corsika::random::RNG& rng_ =
+        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+    unsigned int count_ = 0;
+
+    
+  }; // end class Cascade
 
 } // namespace corsika::cascade

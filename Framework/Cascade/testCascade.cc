@@ -13,7 +13,8 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/NullModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/process/tracking_line/Tracking.h>
+//#include <corsika/process/tracking_bfield/Tracking.h>
 
 #include <corsika/particles/ParticleProperties.h>
 
@@ -132,7 +133,7 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   auto env = MakeDummyEnv();
   auto const& rootCS = env.GetCoordinateSystem();
-  tracking_line::TrackingLine tracking;
+  tracking_line::Tracking tracking;
 
   stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
   process::NullModel nullModel;
@@ -152,7 +153,7 @@ TEST_CASE("Cascade", "[Cascade]") {
                                        particles::GetMass(particles::Code::Electron)))}),
       Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
-  cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
+  cascade::Cascade<tracking_line::Tracking, decltype(sequence), TestCascadeStack,
                    TestCascadeStackView>
       EAS(env, tracking, sequence, stack);
 

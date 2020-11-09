@@ -26,11 +26,11 @@ namespace corsika::environment {
     // todo: think about the mixin inheritance of the trajectory vs the BaseTrajectory
     // approach; for now, only lines are supported
     virtual corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
+        corsika::geometry::LineTrajectory const&,
         corsika::units::si::LengthType) const = 0;
 
     virtual corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
+        corsika::geometry::LineTrajectory const&,
         corsika::units::si::GrammageType) const = 0;
 
     virtual NuclearComposition const& GetNuclearComposition() const = 0;

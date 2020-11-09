@@ -57,8 +57,6 @@ namespace corsika::units::si {
   /// defining cross section as area
   using sigma_d = phys::units::area_d;
 
-  // constexpr quantity<area_d> barn{Rep(1e-28L) * square(meter)};
-
   /// add the unit-types
   using LengthType = phys::units::quantity<phys::units::length_d, double>;
   using TimeType = phys::units::quantity<phys::units::time_interval_d, double>;
@@ -79,6 +77,8 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<0, 0, -1>, double>;
   using InverseGrammageType =
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
+  using MagneticFluxType =
+      phys::units::quantity<phys::units::magnetic_flux_density_d, double>;
 
   template <typename DimFrom, typename DimTo>
   auto constexpr ConversionFactorHEPToSI() {

@@ -18,6 +18,7 @@ set (
   QuantityVector.h
   Trajectory.h
   FourVector.h
+  Intersections.hpp
   )
 
 set (

@@ -1,32 +1,30 @@
 set (
   MODEL_HEADERS
-  Tracking.h
+  Intersect.hpp
   )
 
 set (
   MODEL_NAMESPACE
-  corsika/process/tracking_line
+  corsika/process/tracking
   )
 
-add_library (ProcessTrackingLine INTERFACE)
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessTrackingLine ${MODEL_NAMESPACE} ${MODEL_HEADERS})
+add_library (ProcessTrackingIntersects INTERFACE)
+CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessTrackingIntersects ${MODEL_NAMESPACE} ${MODEL_HEADERS})
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
-  ProcessTrackingLine
-  INTERFACE
   ProcessTrackingIntersects
+  INTERFACE
   CORSIKAsetup
   CORSIKAutilities
   CORSIKAenvironment
   CORSIKAunits
-  CORSIKAenvironment
   CORSIKAgeometry
   CORSIKAlogging
   )
 
 target_include_directories (
-  ProcessTrackingLine 
+  ProcessTrackingIntersects
   INTERFACE 
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/include>
@@ -34,11 +32,3 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
-# #-- -- -- -- -- -- -- -- -- --
-# #code unit testing
-CORSIKA_ADD_TEST (testTrackingLine)
-target_link_libraries (
-   testTrackingLine
-   ProcessTrackingLine
-   CORSIKAtesting
-)

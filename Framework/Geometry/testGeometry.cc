@@ -226,12 +226,10 @@ TEST_CASE("Trajectories") {
               .magnitude() == Approx(0).margin(absMargin));
 
     auto const t = 1_s;
-    Trajectory<Line> base(line, t);
+    LineTrajectory base(line, t);
     CHECK(line.GetPosition(t).GetCoordinates() == base.GetPosition(1.).GetCoordinates());
 
-    CHECK(base.ArcLength(1_s, 2_s) / 1_m == Approx(3));
-
-    CHECK((base.NormalizedDirection().GetComponents(rootCS) -
+    CHECK((base.GetVelocity(0).normalized().GetComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
               .eVector.norm() == Approx(0).margin(absMargin));
   }
@@ -263,10 +261,5 @@ TEST_CASE("Trajectories") {
             .norm()
             .magnitude() == Approx(0).margin(absMargin));
 
-    auto const t = 1234_s;
-    Trajectory<Helix> const base(helix, t);
-    CHECK(helix.GetPosition(t).GetCoordinates() == base.GetPosition(1.).GetCoordinates());
-
-    CHECK(base.ArcLength(0_s, 1_s) / 1_m == Approx(5));
   }
 }

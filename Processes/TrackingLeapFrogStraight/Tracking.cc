@@ -13,7 +13,7 @@
 #include <corsika/geometry/QuantityVector.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/geometry/Vector.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/process/tracking_bfield/Tracking.h>
 
 #include <limits>
 #include <stdexcept>
@@ -22,7 +22,7 @@
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
-namespace corsika::process::tracking_line {
+namespace corsika::process::tracking_bfield {
 
   std::optional<std::pair<TimeType, TimeType>> TimeOfIntersection(Line const& line,
                                                                   Sphere const& sphere) {
@@ -58,4 +58,4 @@ namespace corsika::process::tracking_line {
       return n.dot(delta) / c;
     }
   }
-} // namespace corsika::process::tracking_line
+} // namespace corsika::process::tracking_bfield

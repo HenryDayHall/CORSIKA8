@@ -28,12 +28,12 @@ HistoryObservationPlane::HistoryObservationPlane(setup::Stack const& stack,
 corsika::process::EProcessReturn HistoryObservationPlane::DoContinuous(
     setup::Stack::ParticleType const& particle, setup::Trajectory const& trajectory) {
   TimeType const timeOfIntersection =
-      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-      trajectory.GetV0().dot(plane_.GetNormal());
+    (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) { return process::EProcessReturn::eOk; }
 
-  if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
+  if (plane_.IsAbove(trajectory.GetLine().GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
 
@@ -53,15 +53,15 @@ corsika::process::EProcessReturn HistoryObservationPlane::DoContinuous(
 LengthType HistoryObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
                                                   setup::Trajectory const& trajectory) {
   TimeType const timeOfIntersection =
-      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-      trajectory.GetV0().dot(plane_.GetNormal());
+      (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) {
     return std::numeric_limits<double>::infinity() * 1_m;
   }
 
-  auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
-  return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+  auto const pointOfIntersection = trajectory.GetLine().GetPosition(timeOfIntersection);
+  return (trajectory.GetLine().GetR0() - pointOfIntersection).norm() * 1.0001;
 }
 
 void HistoryObservationPlane::fillHistoryHistogram(

@@ -52,13 +52,13 @@ namespace corsika::environment {
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& vLine,
+        geometry::LineTrajectory const& vLine,
         units::si::LengthType vTo) const override {
       return Base::IntegratedGrammage(vLine, vTo, fAxis);
     }
 
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<geometry::Line> const& vLine,
+        geometry::LineTrajectory const& vLine,
         units::si::GrammageType vGrammage) const override {
       return Base::ArclengthFromGrammage(vLine, vGrammage, fAxis);
     }
