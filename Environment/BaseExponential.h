@@ -80,8 +80,7 @@ namespace corsika::environment {
      */
     // clang-format on
     units::si::LengthType ArclengthFromGrammage(
-        geometry::LineTrajectory const& vLine,
-        units::si::GrammageType vGrammage,
+        geometry::LineTrajectory const& vLine, units::si::GrammageType vGrammage,
         geometry::Vector<units::si::dimensionless_d> const& vAxis) const {
       auto const uDotA = vLine.GetDirection(0).dot(vAxis).magnitude();
       auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetLine().GetR0());

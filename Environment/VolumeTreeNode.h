@@ -92,7 +92,7 @@ namespace corsika::environment {
     void ExcludeOverlapWith(VTNUPtr const& pNode) {
       fExcludedNodes.push_back(pNode.get());
     }
-    
+
     const VTN_type* GetParent() const { return fParentNode; };
 
     auto const& GetChildNodes() const { return fChildNodes; }

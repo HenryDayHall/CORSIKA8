@@ -16,7 +16,7 @@ namespace corsika::geometry {
 
   /**
    * \class Line
-   * 
+   *
    * A Line describes a movement in three dimensional space. It
    * consists of a Point `$\vec{p_0}$` and and a speed-Vector
    * `$\vec{v}$`, so that it can return GetPosition as
@@ -30,7 +30,7 @@ namespace corsika::geometry {
 
     Point const r0;
     VelocityVec const v0;
-    
+
   public:
     Line() = delete;
     Line(const Line&) = default;

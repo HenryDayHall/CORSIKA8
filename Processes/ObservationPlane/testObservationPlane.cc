@@ -43,10 +43,10 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
    */
 
   auto [stack, viewPtr] =
-        setup::testing::setupStack(particles::Code::NuE, 0, 0, 1_GeV, nodePtr, cs);
+      setup::testing::setupStack(particles::Code::NuE, 0, 0, 1_GeV, nodePtr, cs);
   [[maybe_unused]] setup::StackView& view = *viewPtr;
-  auto particle  = stack->GetNextParticle();
-  
+  auto particle = stack->GetNextParticle();
+
   Point const start(cs, {0_m, 1_m, 10_m});
   Vector<units::si::SpeedType::dimension_type> vec(cs, 0_m / second, 0_m / second,
                                                    -units::constants::c);

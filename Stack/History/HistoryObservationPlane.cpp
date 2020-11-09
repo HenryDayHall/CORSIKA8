@@ -28,12 +28,13 @@ HistoryObservationPlane::HistoryObservationPlane(setup::Stack const& stack,
 corsika::process::EProcessReturn HistoryObservationPlane::DoContinuous(
     setup::Stack::ParticleType const& particle, setup::Trajectory const& trajectory) {
   TimeType const timeOfIntersection =
-    (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
       trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) { return process::EProcessReturn::eOk; }
 
-  if (plane_.IsAbove(trajectory.GetLine().GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
+  if (plane_.IsAbove(trajectory.GetLine().GetR0()) ==
+      plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
 

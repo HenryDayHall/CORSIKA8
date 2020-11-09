@@ -192,10 +192,9 @@ def next_file(dir_name, files, justCheck, forYear, updateMessage):
     excludes if wished, process otherwise
     """
     for check in excludeDirs :
-        print (dir_name)
         if check in dir_name:
-           # if Debug>1:
-            print ("exclude-dir: " + check)
+            if Debug>1:
+                print ("exclude-dir: " + check)
             return True
     for check in files :
         if (os.path.isdir(check)):

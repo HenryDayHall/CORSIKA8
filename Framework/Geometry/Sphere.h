@@ -31,7 +31,6 @@ namespace corsika::geometry {
 
     const Point& GetCenter() const { return fCenter; }
     LengthType GetRadius() const { return fRadius; }
-
   };
 
 } // namespace corsika::geometry

@@ -162,14 +162,15 @@ namespace corsika::geometry {
       return initialVelocity_ +
              initialVelocity_.cross(magneticfield_) * timeStep_ * u * k_;
     }
-    
+
     Vector<corsika::units::si::dimensionless_d> GetDirection(double u) const {
       return GetVelocity(u).normalized();
     }
 
     ///! duration along potentially bend trajectory
     corsika::units::si::TimeType GetDuration(double u = 1) const {
-      return u * timeStep_ * (double(GetVelocity(u).norm()/initialVelocity_.norm()) + 1.0) / 2;
+      return u * timeStep_ *
+             (double(GetVelocity(u).norm() / initialVelocity_.norm()) + 1.0) / 2;
     }
 
     ///! total length along potentially bend trajectory

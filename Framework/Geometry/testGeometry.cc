@@ -260,6 +260,5 @@ TEST_CASE("Trajectories") {
         (helix.GetPosition(7_s) - helix.PositionFromArclength(helix.ArcLength(0_s, 7_s)))
             .norm()
             .magnitude() == Approx(0).margin(absMargin));
-
   }
 }

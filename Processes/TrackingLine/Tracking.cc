@@ -21,6 +21,4 @@
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
-namespace corsika::process::tracking_line {
-
-} // namespace corsika::process::tracking_line
+namespace corsika::process::tracking_line {} // namespace corsika::process::tracking_line

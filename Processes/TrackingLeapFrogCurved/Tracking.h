@@ -182,7 +182,7 @@ namespace corsika::process {
 
         if (first != 2) {
           C8LOG_DEBUG("no intersection! count={}", first);
-          return geometry::Intersections(); 
+          return geometry::Intersections();
         }
         return geometry::Intersections(d_enter / absVelocity, d_exit / absVelocity);
       }

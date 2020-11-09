@@ -194,16 +194,17 @@ namespace corsika::cascade {
       // convert next_decay from time to length [m]
       LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
                                         vParticle.GetEnergy() * units::constants::c;
-                                    
+
       // determine geometric tracking
-      auto [step, geomMaxLength, nextVol, magMaxLength, directionBefore, directionAfter] = fTracking.GetTrack(vParticle);
+      auto [step, geomMaxLength, nextVol, magMaxLength, directionBefore, directionAfter] =
+          fTracking.GetTrack(vParticle);
       [[maybe_unused]] auto const& dummy_nextVol = nextVol;
-      
+
       // convert next_step from grammage to length
       LengthType const distance_interact =
           currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
                                                                          next_interact);
-      
+
       // determine the maximum geometric step length
       LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
       std::cout << "distance_max=" << distance_max << std::endl;
@@ -217,9 +218,10 @@ namespace corsika::cascade {
       // here the particle is actually moved along the trajectory to new position:
       // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
       vParticle.SetPosition(step.PositionFromArclength(min_distance));
-      // .... also update time, momentum, direction, ...  
-	  vParticle.SetMomentum((directionBefore * (1 - min_distance / magMaxLength) + 
-	  	directionAfter * min_distance /magMaxLength) * vParticle.GetMomentum().GetNorm());
+      // .... also update time, momentum, direction, ...
+      vParticle.SetMomentum((directionBefore * (1 - min_distance / magMaxLength) +
+                             directionAfter * min_distance / magMaxLength) *
+                            vParticle.GetMomentum().GetNorm());
       vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
 
       step.LimitEndTo(min_distance);

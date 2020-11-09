@@ -54,9 +54,9 @@ namespace corsika::process {
                     particle.GetMomentum().GetComponents() / 1_GeV);
         C8LOG_DEBUG("Tracking   v: {} ", initialVelocity.GetComponents());
 
-	// traverse the environment volume tree and find next
-	// intersection
-	auto [minTime, minNode] = tracking::Intersect<Tracking>::nextIntersect(particle);	
+        // traverse the environment volume tree and find next
+        // intersection
+        auto [minTime, minNode] = tracking::Intersect<Tracking>::nextIntersect(particle);
 
         return std::make_tuple(
             geometry::LineTrajectory(geometry::Line(initialPosition, initialVelocity),
@@ -64,61 +64,58 @@ namespace corsika::process {
             minNode);                          // next volume node
       }
 
+      template <typename TParticle, typename TMedium>
+      static geometry::Intersections Intersect(const TParticle& particle,
+                                               const corsika::geometry::Sphere& sphere,
+                                               const TMedium&) {
+        using namespace corsika::units::si;
+        auto const delta = particle.GetPosition() - sphere.GetCenter();
+        auto const velocity =
+            particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
+        auto const vSqNorm = velocity.squaredNorm();
+        auto const R = sphere.GetRadius();
 
+        auto const vDotDelta = velocity.dot(delta);
+        auto const discriminant =
+            vDotDelta * vDotDelta - vSqNorm * (delta.squaredNorm() - R * R);
+
+        if (discriminant.magnitude() > 0) {
+          auto const sqDisc = sqrt(discriminant);
+          auto const invDenom = 1 / vSqNorm;
+          return geometry::Intersections((-vDotDelta - sqDisc) * invDenom,
+                                         (-vDotDelta + sqDisc) * invDenom);
+        }
+        return geometry::Intersections();
+      }
+
+      template <typename TParticle, typename TBaseNodeType>
+      static geometry::Intersections Intersect(const TParticle& particle,
+                                               const TBaseNodeType& volumeNode) {
+        const geometry::Sphere* sphere =
+            dynamic_cast<const geometry::Sphere*>(&volumeNode.GetVolume());
+        if (sphere) {
+          return Intersect(particle, *sphere, volumeNode.GetModelProperties());
+        }
+        throw std::runtime_error(
+            "The Volume type provided is not supported in Intersect(particle, node)");
+      }
 
       template <typename TParticle, typename TMedium>
       static geometry::Intersections Intersect(const TParticle& particle,
-					const corsika::geometry::Sphere& sphere,
-					const TMedium&) {
-      using namespace corsika::units::si;
-      auto const delta = particle.GetPosition() - sphere.GetCenter();
-      auto const velocity =
-          particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
-      auto const vSqNorm = velocity.squaredNorm();
-      auto const R = sphere.GetRadius();
+                                               const geometry::Plane& plane,
+                                               const TMedium& medium) {
+        using namespace corsika::units::si;
+        auto const delta = plane.GetCenter() - particle.GetPosition();
+        auto const velocity =
+            particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
+        auto const n = plane.GetNormal();
+        auto const c = n.dot(velocity);
 
-      auto const vDotDelta = velocity.dot(delta);
-      auto const discriminant =
-          vDotDelta * vDotDelta - vSqNorm * (delta.squaredNorm() - R * R);
-
-      if (discriminant.magnitude() > 0) {
-        auto const sqDisc = sqrt(discriminant);
-        auto const invDenom = 1 / vSqNorm;
-        return geometry::Intersections((-vDotDelta - sqDisc) * invDenom,
-                                       (-vDotDelta + sqDisc) * invDenom);
+        return Intersections(c.magnitude() == 0
+                                 ? std::numeric_limits<TimeType::value_type>::infinity() *
+                                       1_s
+                                 : n.dot(delta) / c);
       }
-      return geometry::Intersections();
-    }
-
-    template <typename TParticle, typename TBaseNodeType>
-    static geometry::Intersections Intersect(const TParticle& particle,
-                                      const TBaseNodeType& volumeNode) {
-      const geometry::Sphere* sphere =
-          dynamic_cast<const geometry::Sphere*>(&volumeNode.GetVolume());
-      if (sphere) {
-        return Intersect(particle, *sphere, volumeNode.GetModelProperties());
-      }
-      throw std::runtime_error(
-          "The Volume type provided is not supported in Intersect(particle, node)");
-    }
-
-
-    template <typename TParticle, typename TMedium>
-    static geometry::Intersections Intersect(const TParticle& particle,
-                                      const geometry::Plane& plane,
-                                      const TMedium& medium) {
-      using namespace corsika::units::si;
-      auto const delta = plane.GetCenter() - particle.GetPosition();
-      auto const velocity =
-          particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
-      auto const n = plane.GetNormal();
-      auto const c = n.dot(velocity);
-
-      return Intersections(
-          c.magnitude() == 0 ? std::numeric_limits<TimeType::value_type>::infinity() * 1_s
-                             : n.dot(delta) / c);
-    }
-
     };
 
   } // namespace tracking_line

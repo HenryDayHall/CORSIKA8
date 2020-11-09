@@ -38,8 +38,7 @@ namespace corsika::environment {
      */
     template <typename... Args>
     NoMagneticField(Args&&... args)
-        : T(std::forward<Args>(args)...)
-         {}
+        : T(std::forward<Args>(args)...) {}
 
     /**
      * Evaluate the magnetic field at a given location.
@@ -50,7 +49,7 @@ namespace corsika::environment {
     MagneticFieldVector GetMagneticField(
         corsika::geometry::Point const&) const final override {
       CoordinateSystem const& gCS =
-	RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+          RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
       return MagneticFieldVector(gCS, {0_T, 0_T, 0_T});
     }
 

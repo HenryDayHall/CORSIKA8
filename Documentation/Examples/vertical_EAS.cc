@@ -227,7 +227,6 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");

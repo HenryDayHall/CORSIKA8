@@ -16,7 +16,8 @@
 #include <corsika/stack/node/GeometryNodeStackExtension.h>
 #include <corsika/stack/nuclear_extension/NuclearStackExtension.h>
 
-using TestEnvironmentInterface = corsika::environment::IMagneticFieldModel<corsika::environment::IMediumModel>;
+using TestEnvironmentInterface =
+    corsika::environment::IMagneticFieldModel<corsika::environment::IMediumModel>;
 using TestEnvironmentType = corsika::environment::Environment<TestEnvironmentInterface>;
 
 template <typename T>

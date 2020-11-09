@@ -62,8 +62,8 @@ TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
       []([[maybe_unused]] MagneticFluxType v) {
         if constexpr (std::is_same_v<TestType, tracking_line::Tracking>)
           return v == 0_uT;
-	else 
-	  return true;
+        else
+          return true;
       },
       values<MagneticFluxType>({50_uT, 0_uT, -50_uT})));
   // particle --> (world) --> | --> (target)

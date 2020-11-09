@@ -51,9 +51,8 @@ namespace corsika::environment {
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    units::si::GrammageType IntegratedGrammage(
-        geometry::LineTrajectory const& vLine,
-        units::si::LengthType vTo) const override {
+    units::si::GrammageType IntegratedGrammage(geometry::LineTrajectory const& vLine,
+                                               units::si::LengthType vTo) const override {
       return Base::IntegratedGrammage(vLine, vTo, fAxis);
     }
 

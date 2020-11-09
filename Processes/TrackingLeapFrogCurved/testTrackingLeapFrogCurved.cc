@@ -57,7 +57,7 @@ TEST_CASE("TrackingLeapfrog_Curved") {
     if (chargeNumber != 0 and Bfield != 0_T) {
       deflect = -sgn(chargeNumber) * sgn(Bfield / 1_T); // direction of deflection
       LengthType const gyroradius =
-	P0 * 1_V / (constants::c * abs(chargeNumber) * abs(Bfield) * 1_eV);
+          P0 * 1_V / (constants::c * abs(chargeNumber) * abs(Bfield) * 1_eV);
       radius = gyroradius;
     }
 
@@ -115,13 +115,14 @@ TEST_CASE("TrackingLeapfrog_Curved") {
       particle.SetMomentum(traj2.GetDirection(1) * particle.GetMomentum().norm());
     }
     CHECK(nextVol == worldPtr);
- 
+
     Point pointCheck(cs, (deflect == 0 ? radius : 0_m), (deflect * radius), 0_m);
 
     C8LOG_DEBUG("testTrackingLineStack: deflect={}, momentum={}, pos={}, pos_check={}",
                 deflect, particle.GetMomentum().GetComponents(),
                 particle.GetPosition().GetCoordinates(), pointCheck.GetCoordinates());
 
-    CHECK((particle.GetPosition() - pointCheck).norm() / radius == Approx(0).margin(1e-3));
+    CHECK((particle.GetPosition() - pointCheck).norm() / radius ==
+          Approx(0).margin(1e-3));
   }
 }

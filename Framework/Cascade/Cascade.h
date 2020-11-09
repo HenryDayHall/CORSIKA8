@@ -38,7 +38,6 @@ using boost::typeindex::type_id_with_cvr;
 
 #include <fstream>
 
-
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
  */
@@ -98,10 +97,8 @@ namespace corsika::cascade {
         C8LOG_INFO(" - With full cascade HISTORY.");
       }
     }
-    
-    ~Cascade(){    
-		  };
 
+    ~Cascade(){};
 
     /**
      * The Run function is the main simulation loop, which processes
@@ -195,36 +192,39 @@ namespace corsika::cascade {
       // convert next_decay from time to length [m]
       LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
                                         vParticle.GetEnergy() * units::constants::c;
-                                    
+
       // determine geometric tracking
       auto [step, nextVol] = tracking_.GetTrack(vParticle);
       auto geomMaxLength = step.GetLength(1);
-      
+
       // convert next_step from grammage to length
       LengthType const distance_interact =
           currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
                                                                          next_interact);
-      
+
       // determine the maximum geometric step length
       LengthType const distance_max = process_sequence_.MaxStepLength(vParticle, step);
       C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
 
       // take minimum of geometry, interaction, decay for next step
-      auto min_distance = std::min(
-          {distance_interact, distance_decay, distance_max, geomMaxLength});
+      auto min_distance =
+          std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
 
-      C8LOG_DEBUG("transport particle by : {} m "
-		  "Medium transition after: {} m "
-		  "Decay after: {} m "
-		  "Interaction after: {} m", 
-		  min_distance/1_m, geomMaxLength/1_m, distance_decay/1_m, distance_interact/1_m);
+      C8LOG_DEBUG(
+          "transport particle by : {} m "
+          "Medium transition after: {} m "
+          "Decay after: {} m "
+          "Interaction after: {} m",
+          min_distance / 1_m, geomMaxLength / 1_m, distance_decay / 1_m,
+          distance_interact / 1_m);
 
       // here the particle is actually moved along the trajectory to new position:
       step.SetLength(min_distance);
       vParticle.SetPosition(step.GetPosition(1));
-      vParticle.SetMomentum(step.GetDirection(1)*vParticle.GetMomentum().norm());
+      vParticle.SetMomentum(step.GetDirection(1) * vParticle.GetMomentum().norm());
       vParticle.SetTime(vParticle.GetTime() + step.GetDuration());
-      std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates() << std::endl;
+      std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates()
+                << std::endl;
 
       // apply all continuous processes on particle + track
       process::EProcessReturn status = process_sequence_.DoContinuous(vParticle, step);
@@ -380,7 +380,6 @@ Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8"
         corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
     unsigned int count_ = 0;
 
-    
   }; // end class Cascade
 
 } // namespace corsika::cascade

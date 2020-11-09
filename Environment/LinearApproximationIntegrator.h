@@ -20,21 +20,19 @@ namespace corsika::environment {
     auto const& GetImplementation() const { return *static_cast<TDerived const*>(this); }
 
   public:
-    auto IntegrateGrammage(
-        corsika::geometry::LineTrajectory const& line,
-        corsika::units::si::LengthType length) const {
+    auto IntegrateGrammage(corsika::geometry::LineTrajectory const& line,
+                           corsika::units::si::LengthType length) const {
       auto const c0 = GetImplementation().EvaluateAt(line.GetPosition(0));
-      auto const c1 = GetImplementation().fRho.FirstDerivative(
-          line.GetPosition(0), line.GetDirection(0));
+      auto const c1 = GetImplementation().fRho.FirstDerivative(line.GetPosition(0),
+                                                               line.GetDirection(0));
       return (c0 + 0.5 * c1 * length) * length;
     }
 
-    auto ArclengthFromGrammage(
-        corsika::geometry::LineTrajectory const& line,
-        corsika::units::si::GrammageType grammage) const {
+    auto ArclengthFromGrammage(corsika::geometry::LineTrajectory const& line,
+                               corsika::units::si::GrammageType grammage) const {
       auto const c0 = GetImplementation().fRho(line.GetPosition(0));
-      auto const c1 = GetImplementation().fRho.FirstDerivative(
-          line.GetPosition(0), line.GetDirection(0));
+      auto const c1 = GetImplementation().fRho.FirstDerivative(line.GetPosition(0),
+                                                               line.GetDirection(0));
 
       return (1 - 0.5 * grammage * c1 / (c0 * c0)) * grammage / c0;
     }

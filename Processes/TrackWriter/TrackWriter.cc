@@ -28,8 +28,9 @@ namespace corsika::process::track_writer {
     using namespace std::string_literals;
 
     fFile.open(fFilename);
-    fFile << "# PID, E / eV, start coordinates / m, displacement vector to end / m, steplength / m "s
-          << '\n';
+    fFile
+        << "# PID, E / eV, start coordinates / m, displacement vector to end / m, steplength / m "s
+        << '\n';
   }
 
   template <>
