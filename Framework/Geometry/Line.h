@@ -35,7 +35,7 @@ namespace corsika::geometry {
     Line() = delete;
     Line(const Line&) = default;
     Line(Line&&) = default;
-    Line& operator=(const Line&) = default;
+    Line& operator=(const Line&) = delete;
     Line(Point const& pR0, VelocityVec const& pV0)
         : r0(pR0)
         , v0(pV0) {}

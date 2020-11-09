@@ -135,7 +135,7 @@ namespace corsika::geometry {
     LeapFrogTrajectory() = delete;
     LeapFrogTrajectory(const LeapFrogTrajectory&) = default;
     LeapFrogTrajectory(LeapFrogTrajectory&&) = default;
-    LeapFrogTrajectory& operator=(const LeapFrogTrajectory&) = default;
+    LeapFrogTrajectory& operator=(const LeapFrogTrajectory&) = delete;
     LeapFrogTrajectory(const Point& pos, const VelocityVec& initialVelocity,
                        MagneticFieldVector Bfield,
                        const decltype(square(corsika::units::si::meter) /
