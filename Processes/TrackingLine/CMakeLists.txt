@@ -34,11 +34,4 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
-# #-- -- -- -- -- -- -- -- -- --
-# #code unit testing
-CORSIKA_ADD_TEST (testTrackingLine)
-target_link_libraries (
-   testTrackingLine
-   ProcessTrackingLine
-   CORSIKAtesting
-)
+# Note: all Tracking Algorithms are tested in testTracking

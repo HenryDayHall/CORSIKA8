@@ -5,7 +5,7 @@ set (
 
 set (
   MODEL_NAMESPACE
-  corsika/process/tracking_leapfrag_straight
+  corsika/process/tracking_leapfrog_straight
   )
 
 add_library (ProcessTrackingLeapFrogStraight INTERFACE)
@@ -33,11 +33,4 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
-# #-- -- -- -- -- -- -- -- -- --
-# #code unit testing
-CORSIKA_ADD_TEST (testTrackingLeapFrogStraight)
-target_link_libraries (
-   testTrackingLeapFrogStraight
-   ProcessTrackingLeapFrogStraight
-   CORSIKAtesting
-)
+# Note: all Tracking Algorithms are tested in testTracking

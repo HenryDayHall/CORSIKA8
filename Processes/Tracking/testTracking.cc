@@ -6,7 +6,9 @@
  * the license.
  */
 
-#include <corsika/process/tracking_bfield/Tracking.h>
+#include <corsika/process/tracking_leapfrog_curved/Tracking.h>
+#include <corsika/process/tracking_leapfrog_straight/Tracking.h>
+#include <corsika/process/tracking_line/Tracking.h>
 
 #include <corsika/particles/ParticleProperties.h>
 
@@ -28,19 +30,45 @@ using namespace corsika::units;
 using namespace corsika::geometry;
 using namespace corsika::units::si;
 
+typedef corsika::geometry::Vector<corsika::units::si::magnetic_flux_density_d>
+    MagneticFieldVector;
+
 template <typename T>
 int sgn(T val) {
   return (T(0) < val) - (val < T(0));
 }
 
-TEST_CASE("TrackingBField") {
+/*
+  This is the unified and commond unit test for Tracking:
+
+  - tracking_leapfrog_curved::Tracking
+  - tracking_leapfrog_straight::Tracking
+  - tracking_line::Tracking
+
+ */
+
+TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
+                   tracking_leapfrog_curved::Tracking,
+                   tracking_leapfrog_straight::Tracking, tracking_line::Tracking) {
 
   logging::SetLevel(logging::level::trace);
 
   const HEPEnergyType P0 = 10_GeV;
 
   auto PID = GENERATE(as<Code>{}, Code::MuPlus, Code::MuPlus, Code::Gamma);
-  auto Bfield = GENERATE(as<MagneticFluxType>{}, 0_T, 50_uT, -50_uT);
+  // for algorithms that know magnetic deflections choose: +-50uT, 0uT
+  // otherwise just 0uT
+  auto Bfield = GENERATE(filter(
+      []([[maybe_unused]] MagneticFluxType v) {
+        if constexpr (std::is_same_v<TestType, tracking_line::Tracking>)
+          return v == 0_uT;
+	else 
+	  return true;
+      },
+      values<MagneticFluxType>({50_uT, 0_uT, -50_uT})));
+  // particle --> (world) --> | --> (target)
+  // true: start inside "world" volume
+  // false: start inside "target" volume
   auto outer = GENERATE(as<bool>{}, true, false);
 
   SECTION(fmt::format("Tracking PID={}, Bfield={} uT, from outside={}", PID,
@@ -57,7 +85,7 @@ TEST_CASE("TrackingBField") {
     if (chargeNumber != 0 and Bfield != 0_T) {
       deflect = -sgn(chargeNumber) * sgn(Bfield / 1_T); // direction of deflection
       LengthType const gyroradius =
-	P0 * 1_V / (constants::c * abs(chargeNumber) * abs(Bfield) * 1_eV);
+          P0 * 1_V / (constants::c * abs(chargeNumber) * abs(Bfield) * 1_eV);
       radius = gyroradius;
     }
 
@@ -65,8 +93,7 @@ TEST_CASE("TrackingBField") {
     { [[maybe_unused]] const auto& env_dummy = env; }
     auto const& cs = *csPtr;
 
-    tracking_leapfrog_straight::Tracking tracking;
-    using tracking_leapfrog_straight::MagneticFieldVector;
+    TestType tracking;
     Point const center(cs, {0_m, 0_m, 0_m});
     auto target = setup::Environment::CreateNode<geometry::Sphere>(center, radius);
 
@@ -122,6 +149,7 @@ TEST_CASE("TrackingBField") {
                 deflect, particle.GetMomentum().GetComponents(),
                 particle.GetPosition().GetCoordinates(), pointCheck.GetCoordinates());
 
-    CHECK((particle.GetPosition() - pointCheck).norm() / radius == Approx(0).margin(1e-3));
+    CHECK((particle.GetPosition() - pointCheck).norm() / radius ==
+          Approx(0).margin(1e-3));
   }
 }

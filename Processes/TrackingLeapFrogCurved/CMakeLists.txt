@@ -34,11 +34,4 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
-# #-- -- -- -- -- -- -- -- -- --
-# #code unit testing
-CORSIKA_ADD_TEST (testTrackingLeapFrogCurved)
-target_link_libraries (
-   testTrackingLeapFrogCurved
-   ProcessTrackingLeapFrogCurved
-   CORSIKAtesting
-)
+# Note: all Tracking Algorithms are tested in testTracking
