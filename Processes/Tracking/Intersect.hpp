@@ -14,12 +14,25 @@
 #include <corsika/logging/Logging.h>
 #include <corsika/geometry/Intersections.hpp>
 
+#include <limits>
+
 namespace corsika::process::tracking {
 
   /**
    * \class Intersect
    *
+   * This is a CRTP class to provide a generic volume-tree
+   * intersection for the purpose of tracking.
    *
+   * It return the closest distance in time to the next geometric
+   * intersection, as well as a pointer to the corresponding new
+   * volume.
+   *
+   * User may provide an optional global step-length limit as
+   * parameter. This may be needd for (simpler) algorithms in magnetic
+   * fields, where tracking errors grow linearly with step-length.
+   * Obviously, in the case of the step-length limit, the returend
+   * "next" volume is just the current one.
    *
    **/
 
@@ -28,45 +41,23 @@ namespace corsika::process::tracking {
 
   protected:
     template <typename TParticle>
-    auto nextIntersect(const TParticle& particle) const {
+    auto nextIntersect(
+        const TParticle& particle,
+        corsika::units::si::TimeType step_limit =
+            std::numeric_limits<corsika::units::si::TimeType::value_type>::infinity() *
+            corsika::units::si::second) const {
       using namespace corsika::units::si;
       using namespace corsika::geometry;
 
-      const Point& initialPosition = particle.GetPosition();
-
       typedef
           typename std::remove_reference<decltype(*particle.GetNode())>::type node_type;
-      node_type& volumeNode = *particle.GetNode();
+      node_type& volumeNode =
+          *particle.GetNode(); // current "logical" node, from previous tracking step
       C8LOG_DEBUG("volumeNode={}, numericallyInside={} ", fmt::ptr(&volumeNode),
-                  volumeNode.GetVolume().Contains(initialPosition));
-
-      auto const velocity =
-          particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
-
-      // for the event of magnetic fields and curved trajectories, we need to limit
-      // maximum step-length since we need to follow curved
-      // trajectories segment-wise -- at least if we don't employ concepts as "Helix
-      // Trajectories" or similar
-      const auto& magneticfield =
-          volumeNode.GetModelProperties().GetMagneticField(initialPosition);
-      const auto magnitudeB = magneticfield.norm();
-      const int chargeNumber = particle.GetChargeNumber();
-      auto const momentumVerticalMag =
-          particle.GetMomentum() -
-          particle.GetMomentum().parallelProjectionOnto(magneticfield);
-      LengthType const gyroradius =
-          (chargeNumber == 0 || magnitudeB == 0_T
-               ? std::numeric_limits<TimeType::value_type>::infinity() * 1_m
-               : momentumVerticalMag.norm() * 1_V /
-                     (corsika::units::constants::c * abs(chargeNumber) * magnitudeB *
-                      1_eV));
-      const double maxRadians = 0.01;
-      const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
-      C8LOG_DEBUG("gyroradius {}, steplimit: {} m = {} s", gyroradius, steplimit,
-                  steplimit / velocity.norm());
+                  volumeNode.GetVolume().Contains(particle.GetPosition()));
 
       // start values:
-      TimeType minTime = steplimit / velocity.norm();
+      TimeType minTime = step_limit;
       node_type* minNode = &volumeNode;
 
       // determine the first geometric collision with any other Volume boundary

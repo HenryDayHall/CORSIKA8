@@ -107,13 +107,34 @@ namespace corsika::process {
             typename std::remove_reference<decltype(*particle.GetNode())>::type node_type;
         node_type& volumeNode = *particle.GetNode();
 
-        // traverse the environment volume tree and find next
-        // intersection
-        auto [minTime, minNode] = tracking::Intersect<Tracking>::nextIntersect(particle);
-
-        const int chargeNumber = particle.GetChargeNumber();
+        // for the event of magnetic fields and curved trajectories, we need to limit
+        // maximum step-length since we need to follow curved
+        // trajectories segment-wise -- at least if we don't employ concepts as "Helix
+        // Trajectories" or similar
         const auto& magneticfield =
             volumeNode.GetModelProperties().GetMagneticField(position);
+        const auto magnitudeB = magneticfield.norm();
+        const int chargeNumber = particle.GetChargeNumber();
+        auto const momentumVerticalMag =
+            particle.GetMomentum() -
+            particle.GetMomentum().parallelProjectionOnto(magneticfield);
+        LengthType const gyroradius =
+            (chargeNumber == 0 || magnitudeB == 0_T
+                 ? std::numeric_limits<TimeType::value_type>::infinity() * 1_m
+                 : momentumVerticalMag.norm() * 1_V /
+                       (corsika::units::constants::c * abs(chargeNumber) * magnitudeB *
+                        1_eV));
+        const double maxRadians = 0.01;
+        const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
+        const TimeType steplimit_time = steplimit / initialVelocity.norm();
+        C8LOG_DEBUG("gyroradius {}, steplimit: {} m = {} s", gyroradius, steplimit,
+                    steplimit_time);
+
+        // traverse the environment volume tree and find next
+        // intersection
+        auto [minTime, minNode] =
+            tracking::Intersect<Tracking>::nextIntersect(particle, steplimit_time);
+
         const auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV /
                        (particle.GetEnergy() * 1_V);
         return std::make_tuple(

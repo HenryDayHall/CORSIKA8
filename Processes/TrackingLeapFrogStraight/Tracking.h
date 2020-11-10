@@ -39,14 +39,14 @@ namespace corsika::process {
      * tracking_line::Tracking and adds a (two-step) Leap-Frog
      * algorithms with two halve-steps and magnetic deflection.
      *
-     * The two halve steps are implemented as two
+     * The two halve steps are implemented as two straight explicit
      * `tracking_line::Tracking`s and all geometry intersections are,
      * thus, based on those two straight line elements.
      *
      * As a precaution for numerical instability, the steplength is
      * limited to correspond to a straight line distance to the next
      * volume intersection. In typical situations this leads to about
-     * one full leap-frog step to the next volume boundary.
+     * (at least) one full leap-frog step to the next volume boundary.
      *
      **/
 

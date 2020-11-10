@@ -19,8 +19,6 @@
 #include <corsika/stack/history/EventType.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 
-#include <corsika/setup/SetupTrajectory.h>
-
 /*  see Issue 161, we need to include SetupStack only because we need
     to globally define StackView. This is clearly not nice and should
     be changed, when possible. It might be that StackView needs to be
@@ -174,8 +172,9 @@ namespace corsika::cascade {
 
       // assert that particle stays outside void Universe if it has no
       // model properties set
-      assert(currentLogicalNode != &*environment_.GetUniverse() ||
-             environment_.GetUniverse()->HasModelProperties());
+      assert((currentLogicalNode != &*environment_.GetUniverse() ||
+              environment_.GetUniverse()->HasModelProperties()) &&
+             "FATAL: The environment model has no valid properties set!");
 
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
@@ -237,9 +236,9 @@ namespace corsika::cascade {
       }
 
       C8LOG_DEBUG("sth. happening before geometric limit ? {}",
-                  ((min_distance < geomMaxLength) ? "yes" : "no"));
+                  ((min_distance <= geomMaxLength) ? "yes" : "no"));
 
-      if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
+      if (min_distance <= geomMaxLength) { // interaction to happen within geometric limit
 
         // check whether decay or interaction limits this step the
         // outcome of decay or interaction MAY be a) new particles in
@@ -333,7 +332,7 @@ namespace corsika::cascade {
       const auto sample_process = uniDist(rng_);
       auto const returnCode = process_sequence_.SelectInteraction(view, sample_process);
       if (returnCode != process::EProcessReturn::eInteracted) {
-        C8LOG_WARN("Particle did not interace!");
+        C8LOG_WARN("Particle did not interact!");
       }
       SetEventType(view, history::EventType::Interaction);
       return returnCode;

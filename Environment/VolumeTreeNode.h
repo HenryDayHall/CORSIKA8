@@ -8,16 +8,14 @@
 
 #pragma once
 
-#include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/IEmpty.hpp>
 #include <corsika/geometry/Volume.h>
 #include <memory>
 #include <vector>
 
 namespace corsika::environment {
 
-  class Empty {}; //<! intended for usage as default template argument
-
-  template <typename TModelProperties = Empty>
+  template <typename TModelProperties = IEmpty>
   class VolumeTreeNode {
   public:
     using IModelProperties = TModelProperties;
@@ -116,14 +114,15 @@ namespace corsika::environment {
 
     void SetModelProperties(IMPSharedPtr ptr) { fModelProperties = ptr; }
 
+    /*
     template <class MediumType, typename... Args>
     static auto CreateMedium(Args&&... args) {
-      static_assert(std::is_base_of_v<IMediumModel, MediumType>,
+      static_assert(std::is_base_of_v<, MediumType>,
                     "unusable type provided, needs to be derived from \"IMediumModel\"");
 
       return std::make_shared<MediumType>(std::forward<Args>(args)...);
     }
-
+    */
   private:
     std::vector<VTNUPtr> fChildNodes;
     std::vector<VolumeTreeNode<IModelProperties> const*> fExcludedNodes;
