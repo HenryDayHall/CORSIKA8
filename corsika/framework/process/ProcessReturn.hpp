@@ -16,43 +16,43 @@ namespace corsika {
      that can be accumulated easily with "|="
    */
 
-  enum class EProcessReturn : int {
-    eOk = (1 << 0),
-    eParticleAbsorbed = (1 << 2),
-    eInteracted = (1 << 3),
-    eDecayed = (1 << 4),
+  enum class ProcessReturn : int {
+    Ok = (1 << 0),
+    ParticleAbsorbed = (1 << 2),
+    Interacted = (1 << 3),
+    Decayed = (1 << 4),
   };
 
-  inline EProcessReturn operator|(EProcessReturn a, EProcessReturn b) {
-    return static_cast<EProcessReturn>(static_cast<int>(a) | static_cast<int>(b));
+  inline ProcessReturn operator|(ProcessReturn a, ProcessReturn b) {
+    return static_cast<ProcessReturn>(static_cast<int>(a) | static_cast<int>(b));
   }
 
-  inline EProcessReturn& operator|=(EProcessReturn& a, const EProcessReturn b) {
+  inline ProcessReturn& operator|=(ProcessReturn& a, const ProcessReturn b) {
     return a = a | b;
   }
 
-  inline EProcessReturn operator&(const EProcessReturn a, const EProcessReturn b) {
-    return static_cast<EProcessReturn>(static_cast<int>(a) & static_cast<int>(b));
+  inline ProcessReturn operator&(const ProcessReturn a, const ProcessReturn b) {
+    return static_cast<ProcessReturn>(static_cast<int>(a) & static_cast<int>(b));
   }
 
-  inline bool operator==(const EProcessReturn a, const EProcessReturn b) {
+  inline bool operator==(const ProcessReturn a, const ProcessReturn b) {
     return (static_cast<int>(a) & static_cast<int>(b)) != 0;
   }
 
-  inline bool isOk(const EProcessReturn a) {
-    return static_cast<int>(a & EProcessReturn::eOk);
+  inline bool isOk(const ProcessReturn a) {
+    return static_cast<int>(a & ProcessReturn::Ok);
   }
 
-  inline bool isAbsorbed(const EProcessReturn a) {
-    return static_cast<int>(a & EProcessReturn::eParticleAbsorbed);
+  inline bool isAbsorbed(const ProcessReturn a) {
+    return static_cast<int>(a & ProcessReturn::ParticleAbsorbed);
   }
 
-  inline bool isDecayed(const EProcessReturn a) {
-    return static_cast<int>(a & EProcessReturn::eDecayed);
+  inline bool isDecayed(const ProcessReturn a) {
+    return static_cast<int>(a & ProcessReturn::Decayed);
   }
 
-  inline bool isInteracted(const EProcessReturn a) {
-    return static_cast<int>(a & EProcessReturn::eInteracted);
+  inline bool isInteracted(const ProcessReturn a) {
+    return static_cast<int>(a & ProcessReturn::Interacted);
   }
 
 } // namespace corsika

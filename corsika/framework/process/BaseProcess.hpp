@@ -40,7 +40,7 @@ namespace corsika {
 
   public:
     // Base processor type for use in other template classes
-    using TProcessType = TDerived;
+    using process_type = TDerived;
   };
 
 } // namespace corsika

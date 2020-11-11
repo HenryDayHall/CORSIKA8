@@ -21,8 +21,8 @@ namespace corsika {
      * \p from and \p to.
      */
     template <typename TParticle, typename TVolumeNode>
-    EProcessReturn DoBoundaryCrossing(TParticle&, TVolumeNode const& from,
-                                      TVolumeNode const& to);
+    ProcessReturn DoBoundaryCrossing(TParticle&, TVolumeNode const& from,
+                                     TVolumeNode const& to);
   };
 
 } // namespace corsika

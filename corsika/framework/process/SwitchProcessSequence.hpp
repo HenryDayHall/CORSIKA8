@@ -99,11 +99,11 @@ namespace corsika {
         , B_(in_B) {}
 
     template <typename TParticle, typename TVTNType>
-    EProcessReturn doBoundaryCrossing(TParticle& particle, TVTNType const& from,
-                                      TVTNType const& to);
+    ProcessReturn doBoundaryCrossing(TParticle& particle, TVTNType const& from,
+                                     TVTNType const& to);
 
     template <typename TParticle, typename TTrack>
-    inline EProcessReturn doContinuous(TParticle& particle, TTrack& vT);
+    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT);
 
     template <typename TSecondaries>
     inline void doSecondaries(TSecondaries& vS);
@@ -120,7 +120,7 @@ namespace corsika {
     inline InverseGrammageType getInverseInteractionLength(TParticle&& particle);
 
     template <typename TSecondaryView>
-    inline EProcessReturn selectInteraction(
+    inline ProcessReturn selectInteraction(
         TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
         [[maybe_unused]] InverseGrammageType lambda_inv_sum =
             InverseGrammageType::zero());
@@ -135,7 +135,7 @@ namespace corsika {
 
     // select decay process
     template <typename TSecondaryView>
-    inline EProcessReturn selectDecay(
+    inline ProcessReturn selectDecay(
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
   };

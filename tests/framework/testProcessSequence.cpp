@@ -30,76 +30,76 @@ int checkSec = 0;      // use this as a bit field
 int checkCont = 0;     // use this as a bit field
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
-  [[maybe_unused]] int fV = 0;
+  [[maybe_unused]] int v_ = 0;
 
 public:
   ContinuousProcess1(const int v)
-      : fV(v) {
+      : v_(v) {
 
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename D, typename T>
-  inline EProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&) const {
     cout << "ContinuousProcess1::DoContinuous" << endl;
     checkCont |= 1;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
-  [[maybe_unused]] int fV = 0;
+  [[maybe_unused]] int v_ = 0;
 
 public:
   ContinuousProcess2(const int v)
-      : fV(v) {
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+      : v_(v) {
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename D, typename T>
-  inline EProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&) const {
     cout << "ContinuousProcess2::DoContinuous" << endl;
     checkCont |= 2;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
-  int fV = 0;
+  int v_ = 0;
 
 public:
   ContinuousProcess3(const int v)
-      : fV(v) {
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+      : v_(v) {
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename D, typename T>
-  inline EProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&) const {
     cout << "ContinuousProcess3::DoContinuous" << endl;
     checkCont |= 4;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
 class Process1 : public InteractionProcess<Process1> {
 public:
   Process1(const int v)
-      : fV(v) {
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+      : v_(v) {
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename TView>
-  inline EProcessReturn doInteraction(TView& v) const {
+  inline ProcessReturn doInteraction(TView& v) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   template <typename TParticle>
@@ -108,25 +108,25 @@ public:
   }
 
 private:
-  [[maybe_unused]] int fV;
+  [[maybe_unused]] int v_;
 };
 
 class Process2 : public InteractionProcess<Process2> {
-  [[maybe_unused]] int fV = 0;
+  [[maybe_unused]] int v_ = 0;
 
 public:
   Process2(const int v)
-      : fV(v) {
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+      : v_(v) {
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename TView>
-  inline EProcessReturn doInteraction(TView& v) const {
+  inline ProcessReturn doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     cout << "Process2::DoInteraction" << endl;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
@@ -136,21 +136,21 @@ public:
 };
 
 class Process3 : public InteractionProcess<Process3> {
-  [[maybe_unused]] int fV = 0;
+  [[maybe_unused]] int v_ = 0;
 
 public:
   Process3(const int v)
-      : fV(v) {
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+      : v_(v) {
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename TView>
-  inline EProcessReturn doInteraction(TView& v) const {
+  inline ProcessReturn doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     cout << "Process3::DoInteraction" << endl;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
@@ -160,26 +160,26 @@ public:
 };
 
 class Process4 : public BaseProcess<Process4> {
-  [[maybe_unused]] int fV = 0;
+  [[maybe_unused]] int v_ = 0;
 
 public:
   Process4(const int v)
-      : fV(v) {
-    cout << "globalCount: " << globalCount << ", fV: " << fV << std::endl;
+      : v_(v) {
+    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename D, typename T>
-  inline EProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&) const {
     std::cout << "Base::DoContinuous" << std::endl;
     checkCont |= 8;
     for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
   template <typename TView>
-  EProcessReturn doInteraction(TView&) const {
+  ProcessReturn doInteraction(TView&) const {
     checkInteract |= 8;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
@@ -194,9 +194,9 @@ class Decay1 : public DecayProcess<Decay1> {
     return 1_s;
   }
   template <typename TView>
-  EProcessReturn doDecay(TView&) const {
+  ProcessReturn doDecay(TView&) const {
     checkDecay |= 1;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
@@ -213,24 +213,24 @@ public:
     return 2_s;
   }
   template <typename TView>
-  EProcessReturn doDecay(TView&) const {
+  ProcessReturn doDecay(TView&) const {
     checkDecay |= 2;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
 class Stack1 : public StackProcess<Stack1> {
-  int fCount = 0;
+  int count_ = 0;
 
 public:
   Stack1(const int n)
       : StackProcess(n) {}
   template <typename TStack>
-  EProcessReturn doStack(TStack&) {
-    fCount++;
-    return EProcessReturn::eOk;
+  ProcessReturn doStack(TStack&) {
+    count_++;
+    return ProcessReturn::Ok;
   }
-  int getCount() const { return fCount; }
+  int getCount() const { return count_; }
 };
 
 struct DummyStack {};

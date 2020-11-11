@@ -27,7 +27,7 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
   template <typename TParticle, typename TVTNType>
-  EProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doBoundaryCrossing(
+  ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doBoundaryCrossing(
       TParticle& particle, TVTNType const& from, TVTNType const& to) {
     switch (select_(particle)) {
       case SwitchResult::First: {
@@ -47,14 +47,13 @@ namespace corsika {
         break;
       }
     }
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
   template <typename TParticle, typename TTrack>
-  inline EProcessReturn
-  SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doContinuous(TParticle& particle,
-                                                                     TTrack& vT) {
+  inline ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doContinuous(
+      TParticle& particle, TTrack& vT) {
     switch (select_(particle)) {
       case SwitchResult::First: {
         if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>,
@@ -73,7 +72,7 @@ namespace corsika {
         break;
       }
     }
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
@@ -157,7 +156,7 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
   template <typename TSecondaryView>
-  inline EProcessReturn
+  inline ProcessReturn
   SwitchProcessSequence<TProcess1, TProcess2, TSelect>::selectInteraction(
       TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
       [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
@@ -165,10 +164,10 @@ namespace corsika {
       case SwitchResult::First: {
         if constexpr (t1ProcSeq) {
           // if A_ is a process sequence --> check inside
-          EProcessReturn const ret =
+          ProcessReturn const ret =
               A_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
           // if A_ did succeed, stop routine. Not checking other static branch B_.
-          if (ret != EProcessReturn::eOk) { return ret; }
+          if (ret != ProcessReturn::Ok) { return ret; }
         } else if constexpr (std::is_base_of_v<InteractionProcess<process1_type>,
                                                process1_type>) {
           // if this is not a ContinuousProcess --> evaluate probability
@@ -176,7 +175,7 @@ namespace corsika {
           // check if we should execute THIS process and then EXIT
           if (lambda_inv_select < lambda_inv_sum) {
             A_.doInteraction(view);
-            return EProcessReturn::eInteracted;
+            return ProcessReturn::Interacted;
           }
         } // end branch A_
         break;
@@ -194,13 +193,13 @@ namespace corsika {
           // check if we should execute THIS process and then EXIT
           if (lambda_inv_select < lambda_inv_sum) {
             B_.doInteraction(view);
-            return EProcessReturn::eInteracted;
+            return ProcessReturn::Interacted;
           }
         } // end branch B_
         break;
       }
     }
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
@@ -232,17 +231,16 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, typename TSelect>
   // select decay process
   template <typename TSecondaryView>
-  inline EProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::selectDecay(
+  inline ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::selectDecay(
       TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
       [[maybe_unused]] InverseTimeType decay_inv_sum) {
     switch (select_(view.parent())) {
       case SwitchResult::First: {
         if constexpr (t1ProcSeq) {
           // if A_ is a process sequence --> check inside
-          EProcessReturn const ret =
-              A_.selectDecay(view, decay_inv_select, decay_inv_sum);
+          ProcessReturn const ret = A_.selectDecay(view, decay_inv_select, decay_inv_sum);
           // if A_ did succeed, stop routine here (not checking other static branch B_)
-          if (ret != EProcessReturn::eOk) { return ret; }
+          if (ret != ProcessReturn::Ok) { return ret; }
         } else if constexpr (std::is_base_of_v<DecayProcess<process1_type>,
                                                process1_type>) {
           // if this is not a ContinuousProcess --> evaluate probability
@@ -251,7 +249,7 @@ namespace corsika {
           if (decay_inv_select < decay_inv_sum) {
             // more pedagogical: rndm_select < decay_inv_sum / decay_inv_tot
             A_.doDecay(view);
-            return EProcessReturn::eDecayed;
+            return ProcessReturn::Decayed;
           }
         } // end branch A_
         break;
@@ -269,13 +267,13 @@ namespace corsika {
           // check if we should execute THIS process and then EXIT
           if (decay_inv_select < decay_inv_sum) {
             B_.doDecay(view);
-            return EProcessReturn::eDecayed;
+            return ProcessReturn::Decayed;
           }
         } // end branch B_
         break;
       }
     }
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   /// traits marker to identify objectas ProcessSequence

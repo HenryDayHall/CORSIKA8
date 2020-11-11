@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -28,10 +26,9 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2>
   template <typename Particle, typename VTNType>
-  EProcessReturn ProcessSequence<TProcess1, TProcess2>::doBoundaryCrossing(Particle& particle,
-                                                             VTNType const& from,
-                                                             VTNType const& to) {
-    EProcessReturn ret = EProcessReturn::eOk;
+  ProcessReturn ProcessSequence<TProcess1, TProcess2>::doBoundaryCrossing(
+      Particle& particle, VTNType const& from, VTNType const& to) {
+    ProcessReturn ret = ProcessReturn::Ok;
 
     if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
                                     process1_type> ||
@@ -50,8 +47,9 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2>
   template <typename TParticle, typename TTrack>
-  EProcessReturn ProcessSequence<TProcess1, TProcess2>::doContinuous(TParticle& particle, TTrack& vT) {
-    EProcessReturn ret = EProcessReturn::eOk;
+  ProcessReturn ProcessSequence<TProcess1, TProcess2>::doContinuous(TParticle& particle,
+                                                                    TTrack& vT) {
+    ProcessReturn ret = ProcessReturn::Ok;
     if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
       ret |= A_.doContinuous(particle, vT);
@@ -105,7 +103,8 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2>
   template <typename TParticle, typename TTrack>
-  LengthType ProcessSequence<TProcess1, TProcess2>::maxStepLength(TParticle& particle, TTrack& vTrack) {
+  LengthType ProcessSequence<TProcess1, TProcess2>::maxStepLength(TParticle& particle,
+                                                                  TTrack& vTrack) {
     LengthType max_length = // if no other process in the sequence implements it
         std::numeric_limits<double>::infinity() * meter;
 
@@ -142,7 +141,7 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2>
   template <typename TSecondaryView>
-  inline EProcessReturn ProcessSequence<TProcess1, TProcess2>::selectInteraction(
+  inline ProcessReturn ProcessSequence<TProcess1, TProcess2>::selectInteraction(
       TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
       [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
 
@@ -150,10 +149,10 @@ namespace corsika {
 
     if constexpr (t1ProcSeq) {
       // if A is a process sequence --> check inside
-      EProcessReturn const ret =
+      ProcessReturn const ret =
           A_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
       // if A_ did succeed, stop routine. Not checking other static branch B_.
-      if (ret != EProcessReturn::eOk) { return ret; }
+      if (ret != ProcessReturn::Ok) { return ret; }
     } else if constexpr (std::is_base_of_v<InteractionProcess<process1_type>,
                                            process1_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
@@ -162,9 +161,9 @@ namespace corsika {
       // check if we should execute THIS process and then EXIT
       if (lambda_inv_select < lambda_inv_sum) {
         A_.doInteraction(view);
-        return EProcessReturn::eInteracted;
+        return ProcessReturn::Interacted;
       }
-    } // end branch A_
+    } // end branch A
 
     if constexpr (t2ProcSeq) {
       // if B_ is a process sequence --> check inside
@@ -176,10 +175,10 @@ namespace corsika {
       // check if we should execute THIS process and then EXIT
       if (lambda_inv_select < lambda_inv_sum) {
         B_.doInteraction(view);
-        return EProcessReturn::eInteracted;
+        return ProcessReturn::Interacted;
       }
     } // end branch B_
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   template <typename TProcess1, typename TProcess2>
@@ -203,7 +202,7 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2>
   // select decay process
   template <typename TSecondaryView>
-  inline EProcessReturn ProcessSequence<TProcess1, TProcess2>::selectDecay(
+  inline ProcessReturn ProcessSequence<TProcess1, TProcess2>::selectDecay(
       TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
       [[maybe_unused]] InverseTimeType decay_inv_sum) {
 
@@ -211,9 +210,9 @@ namespace corsika {
 
     if constexpr (t1ProcSeq) {
       // if A_ is a process sequence --> check inside
-      EProcessReturn const ret = A_.selectDecay(view, decay_inv_select, decay_inv_sum);
+      ProcessReturn const ret = A_.selectDecay(view, decay_inv_select, decay_inv_sum);
       // if A_ did succeed, stop routine here (not checking other static branch B_)
-      if (ret != EProcessReturn::eOk) { return ret; }
+      if (ret != ProcessReturn::Ok) { return ret; }
     } else if constexpr (std::is_base_of_v<DecayProcess<process1_type>, process1_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
       decay_inv_sum += A_.getInverseLifetime(view.parent());
@@ -221,7 +220,7 @@ namespace corsika {
       if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
                                               // decay_inv_sum / decay_inv_tot
         A_.doDecay(view);
-        return EProcessReturn::eDecayed;
+        return ProcessReturn::Decayed;
       }
     } // end branch A_
 
@@ -234,10 +233,10 @@ namespace corsika {
       // check if we should execute THIS process and then EXIT
       if (decay_inv_select < decay_inv_sum) {
         B_.doDecay(view);
-        return EProcessReturn::eDecayed;
+        return ProcessReturn::Decayed;
       }
     } // end branch B_
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   /**

@@ -30,7 +30,7 @@ namespace corsika {
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoDecay...
     template <typename TParticle>
-    EProcessReturn doDecay(TParticle&);
+    ProcessReturn doDecay(TParticle&);
 
     template <typename TParticle>
     TimeType getLifetime(TParticle const&);
