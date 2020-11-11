@@ -8,9 +8,6 @@ n/*
 
 #pragma once
 
-#include <corsika/framework/process/ProcessReturn.hpp> // for convenience
-#include <type_traits>
-
 namespace corsika {
 
   class TDerived; // fwd decl
@@ -23,11 +20,14 @@ namespace corsika {
      are of type BaseProcess<T>
 
      \todo rename BaseProcess into just Process
+     \todo rename _BaseProcess, or find better alternative in
+     ./Processes/AnalyticProcessors/ExecTime.h, see e.g. how this is done in
+     ProcessSequence.hpp/make_sequence
    */
   class _BaseProcess {};
 
   template <typename TDerived>
-  class BaseProcess : _BaseProcess {
+  struct BaseProcess : _BaseProcess {
   protected:
     friend TDerived;
 
@@ -35,16 +35,12 @@ namespace corsika {
                              // derived classes to be created, not
                              // BaseProcess itself
 
-    TDerived& GetRef() { return static_cast<TDerived&>(*this); }
-    const TDerived& GetRef() const { return static_cast<const TDerived&>(*this); }
+    TDerived& ref() { return static_cast<TDerived&>(*this); }
+    const TDerived& ref() const { return static_cast<const TDerived&>(*this); }
 
   public:
     // Base processor type for use in other template classes
     using TProcessType = TDerived;
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const BaseProcess<T>* impl);
 
 } // namespace corsika

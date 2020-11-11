@@ -26,233 +26,239 @@
 
 namespace corsika {
 
-  template <typename T1, typename T2>
+  template <typename TProcess1, typename TProcess2>
   template <typename Particle, typename VTNType>
-  EProcessReturn ProcessSequence<T1, T2>::DoBoundaryCrossing(Particle& p,
+  EProcessReturn ProcessSequence<TProcess1, TProcess2>::doBoundaryCrossing(Particle& particle,
                                                              VTNType const& from,
                                                              VTNType const& to) {
     EProcessReturn ret = EProcessReturn::eOk;
 
-    if constexpr (std::is_base_of<BoundaryCrossingProcess<T1type>, T1type>::value ||
+    if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
+                                    process1_type> ||
                   t1ProcSeq) {
-      ret |= A.DoBoundaryCrossing(p, from, to);
+      ret |= A_.doBoundaryCrossing(particle, from, to);
     }
 
-    if constexpr (std::is_base_of<BoundaryCrossingProcess<T2type>, T2type>::value ||
+    if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process2_type>,
+                                    process2_type> ||
                   t2ProcSeq) {
-      ret |= B.DoBoundaryCrossing(p, from, to);
+      ret |= B_.doBoundaryCrossing(particle, from, to);
     }
 
     return ret;
   }
 
-  template <typename T1, typename T2>
+  template <typename TProcess1, typename TProcess2>
   template <typename TParticle, typename TTrack>
-  EProcessReturn ProcessSequence<T1, T2>::DoContinuous(TParticle& vP, TTrack& vT) {
+  EProcessReturn ProcessSequence<TProcess1, TProcess2>::doContinuous(TParticle& particle, TTrack& vT) {
     EProcessReturn ret = EProcessReturn::eOk;
-    if constexpr (std::is_base_of<ContinuousProcess<T1type>, T1type>::value ||
+    if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
-
-      ret |= A.DoContinuous(vP, vT);
+      ret |= A_.doContinuous(particle, vT);
     }
-    if constexpr (std::is_base_of<ContinuousProcess<T2type>, T2type>::value ||
+    if constexpr (std::is_base_of_v<ContinuousProcess<process2_type>, process2_type> ||
                   t2ProcSeq) {
-      ret |= B.DoContinuous(vP, vT);
+      if (!isAbsorbed(ret)) { ret |= B_.doContinuous(particle, vT); }
     }
     return ret;
   }
 
-  template <typename T1, typename T2>
+  template <typename TProcess1, typename TProcess2>
   template <typename TSecondaries>
-  EProcessReturn ProcessSequence<T1, T2>::DoSecondaries(TSecondaries& vS) {
-    EProcessReturn ret = EProcessReturn::eOk;
-    if constexpr (std::is_base_of<SecondariesProcess<T1type>, T1type>::value ||
+  void ProcessSequence<TProcess1, TProcess2>::doSecondaries(TSecondaries& vS) {
+    if constexpr (std::is_base_of_v<SecondariesProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
-      ret |= A.DoSecondaries(vS);
+      A_.doSecondaries(vS);
     }
-    if constexpr (std::is_base_of<SecondariesProcess<T2type>, T2type>::value ||
+    if constexpr (std::is_base_of_v<SecondariesProcess<process2_type>, process2_type> ||
                   t2ProcSeq) {
-      ret |= B.DoSecondaries(vS);
+      B_.doSecondaries(vS);
     }
-    return ret;
   }
 
-  template <typename T1, typename T2>
-  bool ProcessSequence<T1, T2>::CheckStep() {
+  template <typename TProcess1, typename TProcess2>
+  bool ProcessSequence<TProcess1, TProcess2>::checkStep() {
     bool ret = false;
-    if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value || t1ProcSeq) {
-      ret |= A.CheckStep();
+    if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
+                  (t1ProcSeq && !t1SwitchProcSeq)) {
+      ret |= A_.checkStep();
     }
-    if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value || t2ProcSeq) {
-      ret |= B.CheckStep();
+    if constexpr (std::is_base_of_v<StackProcess<process2_type>, process2_type> ||
+                  (t2ProcSeq && !t2SwitchProcSeq)) {
+      ret |= B_.checkStep();
     }
     return ret;
   }
 
-  template <typename T1, typename T2>
+  template <typename TProcess1, typename TProcess2>
   template <typename TStack>
-  EProcessReturn ProcessSequence<T1, T2>::DoStack(TStack& vS) {
-    EProcessReturn ret = EProcessReturn::eOk;
-    if constexpr (std::is_base_of<StackProcess<T1type>, T1type>::value || t1ProcSeq) {
-      if (A.CheckStep()) { ret |= A.DoStack(vS); }
+  void ProcessSequence<TProcess1, TProcess2>::doStack(TStack& stack) {
+    if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
+                  (t1ProcSeq && !t1SwitchProcSeq)) {
+      if (A_.checkStep()) { A_.doStack(stack); }
     }
-    if constexpr (std::is_base_of<StackProcess<T2type>, T2type>::value || t2ProcSeq) {
-      if (B.CheckStep()) { ret |= B.DoStack(vS); }
+    if constexpr (std::is_base_of_v<StackProcess<process2_type>, process2_type> ||
+                  (t2ProcSeq && !t2SwitchProcSeq)) {
+      if (B_.checkStep()) { B_.doStack(stack); }
     }
-    return ret;
   }
 
-  template <typename T1, typename T2>
+  template <typename TProcess1, typename TProcess2>
   template <typename TParticle, typename TTrack>
-  LengthType ProcessSequence<T1, T2>::MaxStepLength(TParticle& vP, TTrack& vTrack) {
+  LengthType ProcessSequence<TProcess1, TProcess2>::maxStepLength(TParticle& particle, TTrack& vTrack) {
     LengthType max_length = // if no other process in the sequence implements it
         std::numeric_limits<double>::infinity() * meter;
 
-    if constexpr (std::is_base_of<ContinuousProcess<T1type>, T1type>::value ||
+    if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
-      LengthType const len = A.MaxStepLength(vP, vTrack);
+      LengthType const len = A_.maxStepLength(particle, vTrack);
       max_length = std::min(max_length, len);
     }
-    if constexpr (std::is_base_of<ContinuousProcess<T2type>, T2type>::value ||
+    if constexpr (std::is_base_of_v<ContinuousProcess<process2_type>, process2_type> ||
                   t2ProcSeq) {
-      LengthType const len = B.MaxStepLength(vP, vTrack);
+      LengthType const len = B_.maxStepLength(particle, vTrack);
       max_length = std::min(max_length, len);
     }
     return max_length;
   }
 
-  template <typename T1, typename T2>
+  template <typename TProcess1, typename TProcess2>
   template <typename TParticle>
-  GrammageType ProcessSequence<T1, T2>::GetTotalInteractionLength(TParticle& vP) {
-    return 1. / GetInverseInteractionLength(vP);
-  }
+  InverseGrammageType ProcessSequence<TProcess1, TProcess2>::getInverseInteractionLength(
+      TParticle&& particle) {
 
-  template <typename T1, typename T2>
-  template <typename TParticle>
-  InverseGrammageType ProcessSequence<T1, T2>::GetTotalInverseInteractionLength(
-      TParticle& vP) {
-    return GetInverseInteractionLength(vP);
-  }
+    InverseGrammageType tot = 0 * meter * meter / gram; // default value
 
-  template <typename T1, typename T2>
-  template <typename TParticle>
-  InverseGrammageType ProcessSequence<T1, T2>::GetInverseInteractionLength(
-      TParticle& vP) {
-    InverseGrammageType tot = 0 * meter * meter / gram;
-
-    if constexpr (std::is_base_of<InteractionProcess<T1type>, T1type>::value ||
-                  t1ProcSeq || t1SwitchProc) {
-      tot += A.GetInverseInteractionLength(vP);
+    if constexpr (std::is_base_of_v<InteractionProcess<process1_type>, process1_type> ||
+                  t1ProcSeq) {
+      tot += A_.getInverseInteractionLength(particle);
     }
-    if constexpr (std::is_base_of<InteractionProcess<T2type>, T2type>::value ||
-                  t2ProcSeq || t2SwitchProc) {
-      tot += B.GetInverseInteractionLength(vP);
+    if constexpr (std::is_base_of_v<InteractionProcess<process2_type>, process2_type> ||
+                  t2ProcSeq) {
+      tot += B_.getInverseInteractionLength(particle);
     }
     return tot;
   }
 
-  template <typename T1, typename T2>
-  template <typename TParticle, typename TSecondaries>
-  EProcessReturn ProcessSequence<T1, T2>::SelectInteraction(
-      TParticle& vP, TSecondaries& vS, [[maybe_unused]] InverseGrammageType lambda_select,
-      InverseGrammageType& lambda_inv_count) {
+  template <typename TProcess1, typename TProcess2>
+  template <typename TSecondaryView>
+  inline EProcessReturn ProcessSequence<TProcess1, TProcess2>::selectInteraction(
+      TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
+      [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
 
-    if constexpr (t1ProcSeq || t1SwitchProc) {
-      // if A is a process sequence --> check inside
-      const EProcessReturn ret =
-          A.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
-      // if A did succeed, stop routine
-      if (ret != EProcessReturn::eOk) { return ret; }
-    } else if constexpr (std::is_base_of<InteractionProcess<T1type>, T1type>::value) {
-      // if this is not a ContinuousProcess --> evaluate probability
-      lambda_inv_count += A.GetInverseInteractionLength(vP);
-      // check if we should execute THIS process and then EXIT
-      if (lambda_select < lambda_inv_count) {
-        A.DoInteraction(vS);
-        return EProcessReturn::eInteracted;
-      }
-    } // end branch A
+    // TODO: add check for lambda_inv_select>lambda_inv_tot
 
-    if constexpr (t2ProcSeq || t2SwitchProc) {
-      // if A is a process sequence --> check inside
-      const EProcessReturn ret =
-          B.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
-      // if A did succeed, stop routine
-      if (ret != EProcessReturn::eOk) { return ret; }
-    } else if constexpr (std::is_base_of<InteractionProcess<T2type>, T2type>::value) {
-      // if this is not a ContinuousProcess --> evaluate probability
-      lambda_inv_count += B.GetInverseInteractionLength(vP);
-      // check if we should execute THIS process and then EXIT
-      if (lambda_select < lambda_inv_count) {
-        B.DoInteraction(vS);
-        return EProcessReturn::eInteracted;
-      }
-    } // end branch A
-    return EProcessReturn::eOk;
-  }
-
-  template <typename T1, typename T2>
-  template <typename TParticle>
-  TimeType ProcessSequence<T1, T2>::GetTotalLifetime(TParticle& p) {
-    return 1. / GetInverseLifetime(p);
-  }
-
-  template <typename T1, typename T2>
-  template <typename TParticle>
-  InverseTimeType ProcessSequence<T1, T2>::GetTotalInverseLifetime(TParticle& p) {
-    return GetInverseLifetime(p);
-  }
-
-  template <typename T1, typename T2>
-  template <typename TParticle>
-  InverseTimeType ProcessSequence<T1, T2>::GetInverseLifetime(TParticle& p) {
-    InverseTimeType tot = 0 / second;
-
-    if constexpr (std::is_base_of<DecayProcess<T1type>, T1type>::value || t1ProcSeq) {
-      tot += A.GetInverseLifetime(p);
-    }
-    if constexpr (std::is_base_of<DecayProcess<T2type>, T2type>::value || t2ProcSeq) {
-      tot += B.GetInverseLifetime(p);
-    }
-    return tot;
-  }
-
-  template <typename T1, typename T2>
-  template <typename TParticle, typename TSecondaries>
-  EProcessReturn ProcessSequence<T1, T2>::SelectDecay(
-      TParticle& vP, TSecondaries& vS, [[maybe_unused]] InverseTimeType decay_select,
-      InverseTimeType& decay_inv_count) {
     if constexpr (t1ProcSeq) {
       // if A is a process sequence --> check inside
-      const EProcessReturn ret = A.SelectDecay(vP, vS, decay_select, decay_inv_count);
-      // if A did succeed, stop routine
+      EProcessReturn const ret =
+          A_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
+      // if A_ did succeed, stop routine. Not checking other static branch B_.
       if (ret != EProcessReturn::eOk) { return ret; }
-    } else if constexpr (std::is_base_of<DecayProcess<T1type>, T1type>::value) {
+    } else if constexpr (std::is_base_of_v<InteractionProcess<process1_type>,
+                                           process1_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
-      decay_inv_count += A.GetInverseLifetime(vP);
+      auto const particle = view.parent();
+      lambda_inv_sum += A_.getInverseInteractionLength(particle);
       // check if we should execute THIS process and then EXIT
-      if (decay_select < decay_inv_count) { // more pedagogical: rndm_select <
-        // decay_inv_count / decay_inv_tot
-        A.DoDecay(vS);
-        return EProcessReturn::eDecayed;
+      if (lambda_inv_select < lambda_inv_sum) {
+        A_.doInteraction(view);
+        return EProcessReturn::eInteracted;
       }
-    } // end branch A
+    } // end branch A_
 
     if constexpr (t2ProcSeq) {
-      // if A is a process sequence --> check inside
-      const EProcessReturn ret = B.SelectDecay(vP, vS, decay_select, decay_inv_count);
-      // if A did succeed, stop routine
-      if (ret != EProcessReturn::eOk) { return ret; }
-    } else if constexpr (std::is_base_of<DecayProcess<T2type>, T2type>::value) {
+      // if B_ is a process sequence --> check inside
+      return B_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
+    } else if constexpr (std::is_base_of_v<InteractionProcess<process2_type>,
+                                           process2_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
-      decay_inv_count += B.GetInverseLifetime(vP);
+      lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
       // check if we should execute THIS process and then EXIT
-      if (decay_select < decay_inv_count) {
-        B.DoDecay(vS);
-        return EProcessReturn::eDecayed;
+      if (lambda_inv_select < lambda_inv_sum) {
+        B_.doInteraction(view);
+        return EProcessReturn::eInteracted;
       }
-    } // end branch B
+    } // end branch B_
     return EProcessReturn::eOk;
   }
+
+  template <typename TProcess1, typename TProcess2>
+  template <typename TParticle>
+  inline InverseTimeType ProcessSequence<TProcess1, TProcess2>::getInverseLifetime(
+      TParticle&& particle) {
+
+    InverseTimeType tot = 0 / second; // default value
+
+    if constexpr (std::is_base_of_v<DecayProcess<process1_type>, process1_type> ||
+                  t1ProcSeq) {
+      tot += A_.getInverseLifetime(particle);
+    }
+    if constexpr (std::is_base_of_v<DecayProcess<process2_type>, process2_type> ||
+                  t2ProcSeq) {
+      tot += B_.getInverseLifetime(particle);
+    }
+    return tot;
+  }
+
+  template <typename TProcess1, typename TProcess2>
+  // select decay process
+  template <typename TSecondaryView>
+  inline EProcessReturn ProcessSequence<TProcess1, TProcess2>::selectDecay(
+      TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
+      [[maybe_unused]] InverseTimeType decay_inv_sum) {
+
+    // TODO: add check for decay_inv_select>decay_inv_tot
+
+    if constexpr (t1ProcSeq) {
+      // if A_ is a process sequence --> check inside
+      EProcessReturn const ret = A_.selectDecay(view, decay_inv_select, decay_inv_sum);
+      // if A_ did succeed, stop routine here (not checking other static branch B_)
+      if (ret != EProcessReturn::eOk) { return ret; }
+    } else if constexpr (std::is_base_of_v<DecayProcess<process1_type>, process1_type>) {
+      // if this is not a ContinuousProcess --> evaluate probability
+      decay_inv_sum += A_.getInverseLifetime(view.parent());
+      // check if we should execute THIS process and then EXIT
+      if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
+                                              // decay_inv_sum / decay_inv_tot
+        A_.doDecay(view);
+        return EProcessReturn::eDecayed;
+      }
+    } // end branch A_
+
+    if constexpr (t2ProcSeq) {
+      // if B_ is a process sequence --> check inside
+      return B_.selectDecay(view, decay_inv_select, decay_inv_sum);
+    } else if constexpr (std::is_base_of_v<DecayProcess<process2_type>, process2_type>) {
+      // if this is not a ContinuousProcess --> evaluate probability
+      decay_inv_sum += B_.getInverseLifetime(view.parent());
+      // check if we should execute THIS process and then EXIT
+      if (decay_inv_select < decay_inv_sum) {
+        B_.doDecay(view);
+        return EProcessReturn::eDecayed;
+      }
+    } // end branch B_
+    return EProcessReturn::eOk;
+  }
+
+  /**
+   * traits marker to identify objects containing any StackProcesses
+   **/
+  namespace detail {
+    // need helper alias to achieve this:
+    template <typename TProcess1, typename TProcess2,
+              typename = typename std::enable_if_t<
+                  contains_stack_process_v<TProcess1> ||
+                      std::is_base_of_v<StackProcess<typename std::decay_t<TProcess1>>,
+                                        typename std::decay_t<TProcess1>> ||
+                      contains_stack_process_v<TProcess2> ||
+                      std::is_base_of_v<StackProcess<typename std::decay_t<TProcess2>>,
+                                        typename std::decay_t<TProcess2>>,
+                  int>>
+    using enable_if_stack = ProcessSequence<TProcess1, TProcess2>;
+  } // namespace detail
+
+  template <typename TProcess1, typename TProcess2>
+  struct contains_stack_process<detail::enable_if_stack<TProcess1, TProcess2>>
+      : std::true_type {};
 
 } // namespace corsika

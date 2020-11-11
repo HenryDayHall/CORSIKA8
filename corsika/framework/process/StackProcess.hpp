@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/process/ProcessReturn.hpp> // for convenience
 
 namespace corsika {
 
@@ -29,15 +29,15 @@ namespace corsika {
   public:
     StackProcess() = delete;
     StackProcess(const unsigned int nStep)
-        : fNStep(nStep) {}
+        : nStep_(nStep) {}
 
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoStack...
     template <typename TStack>
-    inline void DoStack(TStack&);
+    inline void doStack(TStack&);
 
-    int GetStep() const { return fIStep; }
-    bool CheckStep() { return !((++fIStep) % fNStep); }
+    int getStep() const { return iStep_; }
+    bool checkStep() { return !((++iStep_) % nStep_); }
 
   private:
     /**
@@ -46,13 +46,9 @@ namespace corsika {
        "fIStep modulo fNStep"
        @{
      */
-    unsigned int fNStep = 0;
-    unsigned long int fIStep = 0;
+    unsigned int nStep_ = 0;
+    unsigned long int iStep_ = 0;
     //! @}
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const StackProcess<T>* impl);
 
 } // namespace corsika

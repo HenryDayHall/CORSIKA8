@@ -7,6 +7,8 @@
  */
 
 #include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -15,8 +17,6 @@
 #include <iostream>
 #include <typeinfo>
 
-using namespace corsika;
-using namespace corsika::units::si;
 using namespace corsika;
 using namespace std;
 
@@ -41,7 +41,7 @@ public:
   }
 
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D& d, T&) const {
+  inline EProcessReturn doContinuous(D& d, T&) const {
     cout << "ContinuousProcess1::DoContinuous" << endl;
     checkCont |= 1;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
@@ -60,7 +60,7 @@ public:
   }
 
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D& d, T&) const {
+  inline EProcessReturn doContinuous(D& d, T&) const {
     cout << "ContinuousProcess2::DoContinuous" << endl;
     checkCont |= 2;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
@@ -79,7 +79,7 @@ public:
   }
 
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D& d, T&) const {
+  inline EProcessReturn doContinuous(D& d, T&) const {
     cout << "ContinuousProcess3::DoContinuous" << endl;
     checkCont |= 4;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
@@ -96,11 +96,17 @@ public:
   }
 
   template <typename TView>
-  inline EProcessReturn DoInteraction(TView& v) const {
+  inline EProcessReturn doInteraction(TView& v) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
     return EProcessReturn::eOk;
   }
+
+  template <typename TParticle>
+  GrammageType getInteractionLength(TParticle&) const {
+    return 10_g / square(1_cm);
+  }
+
 private:
   [[maybe_unused]] int fV;
 };
@@ -116,14 +122,14 @@ public:
   }
 
   template <typename TView>
-  inline EProcessReturn DoInteraction(TView& v) const {
+  inline EProcessReturn doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     cout << "Process2::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
   template <typename Particle>
-  GrammageType GetInteractionLength(Particle&) const {
+  GrammageType getInteractionLength(Particle&) const {
     cout << "Process2::GetInteractionLength" << endl;
     return 20_g / (1_cm * 1_cm);
   }
@@ -140,14 +146,14 @@ public:
   }
 
   template <typename TView>
-  inline EProcessReturn DoInteraction(TView& v) const {
+  inline EProcessReturn doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     cout << "Process3::DoInteraction" << endl;
     return EProcessReturn::eOk;
   }
   template <typename Particle>
-  GrammageType GetInteractionLength(Particle&) const {
+  GrammageType getInteractionLength(Particle&) const {
     cout << "Process3::GetInteractionLength" << endl;
     return 30_g / (1_cm * 1_cm);
   }
@@ -164,34 +170,31 @@ public:
   }
 
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D& d, T&) const {
+  inline EProcessReturn doContinuous(D& d, T&) const {
     std::cout << "Base::DoContinuous" << std::endl;
     checkCont |= 8;
     for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }
     return EProcessReturn::eOk;
   }
   template <typename TView>
-  EProcessReturn DoInteraction(TView&) const {
+  EProcessReturn doInteraction(TView&) const {
     checkInteract |= 8;
     return EProcessReturn::eOk;
   }
 };
 
 class Decay1 : public DecayProcess<Decay1> {
-  [[maybe_unused]] int fV = 0;
-
-public:
   Decay1(const int) {
     cout << "Decay1()" << endl;
     globalCount++;
   }
 
   template <typename Particle>
-  TimeType GetLifetime(Particle&) const {
+  TimeType getLifetime(Particle&) const {
     return 1_s;
   }
   template <typename TView>
-  EProcessReturn DoDecay(TView&) const {
+  EProcessReturn doDecay(TView&) const {
     checkDecay |= 1;
     return EProcessReturn::eOk;
   }
@@ -206,11 +209,11 @@ public:
   }
 
   template <typename Particle>
-  TimeType GetLifetime(Particle&) const {
+  TimeType getLifetime(Particle&) const {
     return 2_s;
   }
   template <typename TView>
-  EProcessReturn DoDecay(TView&) const {
+  EProcessReturn doDecay(TView&) const {
     checkDecay |= 2;
     return EProcessReturn::eOk;
   }
@@ -223,11 +226,11 @@ public:
   Stack1(const int n)
       : StackProcess(n) {}
   template <typename TStack>
-  EProcessReturn DoStack(TStack&) {
+  EProcessReturn doStack(TStack&) {
     fCount++;
     return EProcessReturn::eOk;
   }
-  int GetCount() const { return fCount; }
+  int getCount() const { return fCount; }
 };
 
 struct DummyStack {};
@@ -256,16 +259,16 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process4 m4(3);
     CHECK(globalCount == 4);
 
-    auto sequence1 = process::sequence(m1, m2, m3, m4);
+    auto sequence1 = make_sequence(m1, m2, m3, m4);
     CHECK(is_process_sequence_v<decltype(sequence1)> == true);
     CHECK(is_process_sequence_v<decltype(m2)> == false);
     CHECK(is_switch_process_sequence_v<decltype(sequence1)> == false);
     CHECK(is_switch_process_sequence_v<decltype(m2)> == false);
 
-    auto sequence2 = process::sequence(m1, m2, m3);
+    auto sequence2 = make_sequence(m1, m2, m3);
     CHECK(is_process_sequence_v<decltype(sequence2)> == true);
 
-    auto sequence3 = process::sequence(m4);
+    auto sequence3 = make_sequence(m4);
     CHECK(is_process_sequence_v<decltype(sequence3)> == true);
   }
 
@@ -277,9 +280,9 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     DummyData particle;
 
-    auto sequence2 = sequence(cp1, m2, m3);
-    GrammageType const tot = sequence2.GetInteractionLength(particle);
-    InverseGrammageType const tot_inv = sequence2.GetInverseInteractionLength(particle);
+    auto sequence2 = make_sequence(cp1, m2, m3);
+    GrammageType const tot = sequence2.getInteractionLength(particle);
+    InverseGrammageType const tot_inv = sequence2.getInverseInteractionLength(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
 
     CHECK(tot / 1_g * square(1_cm) == 12);
@@ -296,9 +299,9 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 
     DummyData particle;
 
-    auto sequence2 = sequence(cp1, m2, m3, d3);
-    TimeType const tot = sequence2.GetLifetime(particle);
-    InverseTimeType const tot_inv = sequence2.GetInverseLifetime(particle);
+    auto sequence2 = make_sequence(cp1, m2, m3, d3);
+    TimeType const tot = sequence2.getLifetime(particle);
+    InverseTimeType const tot_inv = sequence2.getInverseLifetime(particle);
     cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
 
     CHECK(tot / 1_s == 1);
@@ -313,7 +316,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Process2 m2(2);            //  /= 1.1
     Process3 m3(3);            //  *= 1.01
 
-    auto sequence2 = sequence(cp1, m2, m3, cp2);
+    auto sequence2 = make_sequence(cp1, m2, m3, cp2);
 
     DummyData particle;
     DummyTrajectory track;
@@ -329,7 +332,7 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     cout << "Running loop with n=" << nLoop << endl;
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
       for (int i = 0; i < nData; ++i) { test_data[i] += 0.933 + 0.111; }
-      sequence2.DoContinuous(particle, track);
+      sequence2.doContinuous(particle, track);
     }
     for (int i = 0; i < nData; i++) {
       cout << "data_[" << i << "]=" << particle.data_[i] << endl;
@@ -344,20 +347,20 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
     Stack1 s1(1);
     Stack1 s2(2);
 
-    auto sequence = process::sequence(s1, s2);
+    auto sequence1 = make_sequence(s1, s2);
 
     DummyStack stack;
 
     const int nLoop = 20;
-    for (int i = 0; i < nLoop; ++i) { sequence.DoStack(stack); }
+    for (int i = 0; i < nLoop; ++i) { sequence1.doStack(stack); }
 
-    CHECK(s1.GetCount() == 20);
-    CHECK(s2.GetCount() == 10);
+    CHECK(s1.getCount() == 20);
+    CHECK(s2.getCount() == 10);
 
     ContinuousProcess2 cp2(1); // += 0.111
     Process2 m2(2);            //  /= 1.1
-    auto sequence2 = process::sequence(cp2, m2);
-    auto sequence3 = process::sequence(cp2, m2, s1);
+    auto sequence2 = make_sequence(cp2, m2);
+    auto sequence3 = make_sequence(cp2, m2, s1);
 
     CHECK(is_process_sequence_v<decltype(sequence2)> == true);
     CHECK(is_process_sequence_v<decltype(sequence3)> == true);
@@ -366,14 +369,106 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
   }
 }
 
-/*
-  Note: there is a fine-grained dedicated test-suite for SwitchProcess
-  in Processes/SwitchProcess/testSwtichProcess
- */
-/*
-TEST_CASE("SwitchProcess") {
-  Process1 p1(0);
-  Process2 p2(0);
-  switch_process::SwitchProcess s(p1, p2, 10_GeV);
-  REQUIRE(is_switch_process_v<decltype(s)>);
-  }*/
+TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
+
+  SECTION("Check construction") {
+
+    struct TestSelect {
+      SwitchResult operator()(const DummyData& p) const {
+        std::cout << "TestSelect data=" << p.data_[0] << std::endl;
+        if (p.data_[0] > 0) return SwitchResult::First;
+        return SwitchResult::Second;
+      }
+    };
+    TestSelect select1;
+
+    auto sequence1 = make_sequence(Process1(0), ContinuousProcess2(0), Decay1(0));
+    auto sequence2 = make_sequence(ContinuousProcess3(0), Process2(0), Decay2(0));
+
+    auto sequence3 = make_sequence(ContinuousProcess1(0), Process3(0),
+                                   SwitchProcessSequence(sequence1, sequence2, select1));
+
+    auto sequence_alt = make_sequence(
+        ContinuousProcess1(0), Process3(0),
+        make_select(make_sequence(Process1(0), ContinuousProcess2(0), Decay1(0)),
+                    make_sequence(ContinuousProcess3(0), Process2(0), Decay2(0)),
+                    select1));
+
+    // check that same process sequence can be build in different ways
+    CHECK(typeid(sequence3) == typeid(sequence_alt));
+    CHECK(is_process_sequence_v<decltype(sequence3)> == true);
+    CHECK(is_process_sequence_v<decltype(
+              SwitchProcessSequence(sequence1, sequence2, select1))> == true);
+
+    DummyData particle;
+    DummyTrajectory track;
+    DummyView view(particle);
+
+    checkDecay = 0;
+    checkInteract = 0;
+    checkSec = 0;
+    checkCont = 0;
+    particle.data_[0] = 100; // data positive
+    sequence3.doContinuous(particle, track);
+    CHECK(checkInteract == 0);
+    CHECK(checkDecay == 0);
+    CHECK(checkCont == 0b011);
+    CHECK(checkSec == 0);
+
+    checkDecay = 0;
+    checkInteract = 0;
+    checkSec = 0;
+    checkCont = 0;
+    particle.data_[0] = -100; // data negative
+    sequence_alt.doContinuous(particle, track);
+    CHECK(checkInteract == 0);
+    CHECK(checkDecay == 0);
+    CHECK(checkCont == 0b101);
+    CHECK(checkSec == 0);
+
+    // 1/(30g/cm2) is Process3
+    InverseGrammageType lambda_select = .9 / 30. * square(1_cm) / 1_g;
+    InverseTimeType time_select = 0.1 / second;
+
+    checkDecay = 0;
+    checkInteract = 0;
+    checkSec = 0;
+    checkCont = 0;
+    particle.data_[0] = 100; // data positive
+    sequence3.selectInteraction(view, lambda_select);
+    sequence3.selectDecay(view, time_select);
+    CHECK(checkInteract == 0b100); // this is Process3
+    CHECK(checkDecay == 0b001);    // this is Decay1
+    CHECK(checkCont == 0);
+    CHECK(checkSec == 0);
+    lambda_select = 1.01 / 30. * square(1_cm) / 1_g;
+    checkInteract = 0;
+    sequence3.selectInteraction(view, lambda_select);
+    CHECK(checkInteract == 0b001); // this is Process1
+
+    checkDecay = 0;
+    checkInteract = 0;
+    checkSec = 0;
+    checkCont = 0;
+    particle.data_[0] = -100; // data negative
+    sequence3.selectInteraction(view, lambda_select);
+    sequence3.selectDecay(view, time_select);
+    CHECK(checkInteract == 0b010); // this is Process2
+    CHECK(checkDecay == 0b010);    // this is Decay2
+    CHECK(checkCont == 0);
+    CHECK(checkSec == 0);
+
+    checkDecay = 0;
+    checkInteract = 0;
+    checkSec = 0;
+    checkCont = 0;
+    particle.data_[0] = -100; // data negative
+    sequence3.doSecondaries(view);
+    Stack1 stack(0);
+    sequence3.doStack(stack);
+    CHECK(checkInteract == 0);
+    CHECK(checkDecay == 0);
+    CHECK(checkCont == 0);
+    CHECK(checkSec == 0);
+  }
+}

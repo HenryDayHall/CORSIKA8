@@ -11,9 +11,9 @@
 #include <corsika/framework/core/Cascade.hpp>
 
 #include <corsika/framework/sequence/ProcessSequence.hpp>
-#include <corsika/process/NullModel.hpp>
-#include <corsika/process/StackInspector.hpp>
-#include <corsika/process/TrackingLine.hpp>
+#include <corsika/framework/sequence/NullModel.hpp>
+#include <corsika/modules/StackInspector.hpp>
+#include <corsika/modules/TrackingLine.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 

@@ -8,10 +8,8 @@ n/*
 
 #pragma once
 
-#include <type_traits>
-
+#include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/process/ProcessReturn.hpp>
 
 namespace corsika {
 
@@ -27,25 +25,19 @@ namespace corsika {
   template <typename TDerived>
   struct DecayProcess : BaseProcess<TDerived> {
   public:
-    using BaseProcess<TDerived>::GetRef;
+    using BaseProcess<TDerived>::ref;
 
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoDecay...
     template <typename TParticle>
-    EProcessReturn DoDecay(TParticle&);
+    EProcessReturn doDecay(TParticle&);
 
-    template <typename Particle>
-    TimeType GetLifetime(Particle& p);
+    template <typename TParticle>
+    TimeType getLifetime(TParticle const&);
 
-    template <typename Particle>
-    InverseTimeType GetInverseLifetime(Particle& vP) {
-      return 1. / GetRef().GetLifetime(vP);
+    template <typename TParticle>
+    InverseTimeType getInverseLifetime(TParticle const& particle) {
+      return 1. / ref().getLifetime(particle);
     }
-
-    /*    template <typename TParticle>
-    corsika::units::si::InverseTimeType GetInverseInteractionLength(TParticle&& particle)
-    { auto p = std::move(particle); return 1. / GetRef().GetLifetime(p);
-      }*/
-  };
 
 } // namespace corsika

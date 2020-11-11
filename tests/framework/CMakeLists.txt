@@ -12,7 +12,8 @@ set (test_framework_sources
   testLogging.cpp
   TestMain.cpp
   testParticles.cpp
-  #testProcessSequence.cpp #FIXME: reenable this
+  testNullModel.cpp
+  testProcessSequence.cpp
   testRandom.cpp
   testSecondaryView.cpp
   testStackInterface.cpp

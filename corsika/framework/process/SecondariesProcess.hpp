@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/process/ProcessReturn.hpp>
 
 namespace corsika {
 
@@ -28,11 +28,7 @@ namespace corsika {
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoSecondaries...
     template <typename TSecondaries>
-    inline void DoSecondaries(TSecondaries&);
+    inline void doSecondaries(TSecondaries&);
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const SecondariesProcess<T>* impl);
 
 } // namespace corsika

@@ -8,9 +8,8 @@ n/*
 
 #pragma once
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
-
 #include <corsika/framework/process/BaseProcess.hpp>
+#include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
@@ -18,15 +17,13 @@ n/*
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/StackProcess.hpp>
-
-#include <cmath>
-#include <limits>
-#include <type_traits>
+#include <corsika/framework/process/NullModel.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
   /**
-   * FIXME
+   *
      \class ProcessSequence
 
      A compile time static list of processes. The compiler will
@@ -38,26 +35,26 @@ namespace corsika {
      they are just classes. This allows us to handle both, rvalue as
      well as lvalue Processes in the ProcessSequence.
 
-     \comment Using CRTP pattern,
-     https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern
+     The sequence, and the processes use CRTP.
    */
+
   template <typename TProcess1, typename TProcess2 = NullModel>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
-    using TProcess1type = typename std::decay_t<TProcess1>;
-    using TProcess2type = typename std::decay_t<TProcess2>;
+    using process1_type = typename std::decay_t<TProcess1>;
+    using process2_type = typename std::decay_t<TProcess2>;
 
-    static bool constexpr t1ProcSeq = is_process_sequence_v<TProcess1type>;
-    static bool constexpr t2ProcSeq = is_process_sequence_v<TProcess2type>;
+    static bool constexpr t1ProcSeq = is_process_sequence_v<process1_type>;
+    static bool constexpr t2ProcSeq = is_process_sequence_v<process2_type>;
 
-    static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<TProcess1type>;
-    static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<TProcess2type>;
+    static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<process1_type>;
+    static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<process2_type>;
 
     // make sure only BaseProcess types TProcess1/2 are passed
-    static_assert(std::is_base_of_v<BaseProcess<TProcess1type>, TProcess1type>,
+    static_assert(std::is_base_of_v<BaseProcess<process1_type>, process1_type>,
                   "can only use process derived from BaseProcess in "
                   "ProcessSequence, for Process 1");
-    static_assert(std::is_base_of_v<BaseProcess<TProcess2type>, TProcess2type>,
+    static_assert(std::is_base_of_v<BaseProcess<process2_type>, process2_type>,
                   "can only use process derived from BaseProcess in "
                   "ProcessSequence, for Process 2");
 
@@ -69,18 +66,15 @@ namespace corsika {
         : A_(in_A)
         , B_(in_B) {}
 
-    // example for a trait-based call:
-    // void Hello() const  { detail::CallHello<T1,T2>::Call(A, B); }
-
-    template <typename Particle, typename VTNType>
-    EProcessReturn DoBoundaryCrossing(Particle& p, VTNType const& from,
-                                      VTNType const& to);
+    template <typename TParticle, typename TVTNType>
+    EProcessReturn doBoundaryCrossing(TParticle& particle, TVTNType const& from,
+                                      TVTNType const& to);
 
     template <typename TParticle, typename TTrack>
-    EProcessReturn DoContinuous(TParticle& vP, TTrack& vT);
+    inline EProcessReturn doContinuous(TParticle& particle, TTrack& vT);
 
     template <typename TSecondaries>
-    EProcessReturn DoSecondaries(TSecondaries& vS);
+    inline void doSecondaries(TSecondaries& vS);
 
     /**
        The processes of type StackProcess do have an internal counter,
@@ -90,53 +84,48 @@ namespace corsika {
        tested if either A_ or B_ are StackProcess and if they are due
        for execution.
      */
-    bool CheckStep();
+    inline bool checkStep();
 
     /**
        Execute the StackProcess-es in the ProcessSequence
      */
     template <typename TStack>
-    EProcessReturn DoStack(TStack& vS);
+    inline void doStack(TStack& stack);
 
     template <typename TParticle, typename TTrack>
-    LengthType MaxStepLength(TParticle& vP, TTrack& vTrack);
-    template <typename TParticle>
-    GrammageType GetTotalInteractionLength(TParticle& vP);
+    inline LengthType maxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
-    inline InverseGrammageType GetTotalInverseInteractionLength(TParticle& vP);
+    inline GrammageType getInteractionLength(TParticle&& particle) {
+      return 1. / getInverseInteractionLength(particle);
+    }
 
     template <typename TParticle>
-    inline InverseGrammageType GetInverseInteractionLength(TParticle& vP);
+    inline InverseGrammageType getInverseInteractionLength(TParticle&& particle);
 
-    template <typename TParticle, typename TSecondaries>
-    EProcessReturn SelectInteraction(TParticle& vP, TSecondaries& vS,
-                                     [[maybe_unused]] InverseGrammageType lambda_select,
-                                     InverseGrammageType& lambda_inv_count);
-
-    template <typename TParticle>
-    TimeType GetTotalLifetime(TParticle& p);
+    template <typename TSecondaryView>
+    inline EProcessReturn selectInteraction(
+        TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
+        [[maybe_unused]] InverseGrammageType lambda_inv_sum =
+            InverseGrammageType::zero());
 
     template <typename TParticle>
-    InverseTimeType GetTotalInverseLifetime(TParticle& p);
+    inline TimeType getLifetime(TParticle& particle) {
+      return 1. / getInverseLifetime(particle);
+    }
 
     template <typename TParticle>
-    InverseTimeType GetInverseLifetime(TParticle& p);
+    inline InverseTimeType getInverseLifetime(TParticle&& particle);
 
     // select decay process
-    template <typename TParticle, typename TSecondaries>
-    EProcessReturn SelectDecay(TParticle& vP, TSecondaries& vS,
-                               [[maybe_unused]] InverseTimeType decay_select,
-                               InverseTimeType& decay_inv_count);
-
-    void Init() {
-      A.Init();
-      B.Init();
-    }
+    template <typename TSecondaryView>
+    inline EProcessReturn selectDecay(
+        TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
+        [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
   };
 
   /**
-   * \function sequence
+   * \function make_sequence
    *
    * to construct ProcessSequences in a flexible and dynamic way the
    * `sequence` factory functions are provided
@@ -159,15 +148,55 @@ namespace corsika {
   inline typename std::enable_if_t<
       std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
                         typename std::decay_t<TProcess1>>,
-      ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>>
-  sequence(TProcess1&& vA, TProcesses&&... vBs) {
-    return ProcessSequence<TProcess1, decltype(sequence(std::declval<TProcesses>()...))>(
-        vA, sequence(std::forward<TProcesses>(vBs)...));
+      ProcessSequence<TProcess1, decltype(make_sequence(std::declval<TProcesses>()...))>>
+  make_sequence(TProcess1&& vA, TProcesses&&... vBs) {
+    return ProcessSequence<TProcess1,
+                           decltype(make_sequence(std::declval<TProcesses>()...))>(
+        vA, make_sequence(std::forward<TProcesses>(vBs)...));
   }
 
-  /// marker to identify objectas ProcessSequence
-  template <typename A, typename B>
-  struct is_process_sequence<corsika::ProcessSequence<A, B>> : std::true_type {};
+  template <typename TProcess1, typename TProcess2>
+  inline typename std::enable_if_t<
+      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
+                        typename std::decay_t<TProcess1>> &&
+          std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess2>>,
+                            typename std::decay_t<TProcess2>>,
+      ProcessSequence<TProcess1, TProcess2>>
+  make_sequence(TProcess1&& vA, TProcess2&& vB) {
+    return ProcessSequence<TProcess1, TProcess2>(vA, vB);
+  }
+
+  /**
+   * \ function make_sequence
+   *
+   * also allow a single Process in ProcessSequence, accompany by
+   * `NullModel`
+   **/
+  template <typename TProcess>
+  inline typename std::enable_if_t<
+      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess>>,
+                        typename std::decay_t<TProcess>>,
+      ProcessSequence<TProcess, NullModel>>
+  make_sequence(TProcess&& vA) {
+    return ProcessSequence<TProcess, NullModel>(vA, NullModel());
+  }
+
+  /**
+   * \class is_process_sequence
+   *
+   * traits marker to identify objectas ProcessSequence
+   **/
+  template <typename TProcess1, typename TProcess2>
+  struct is_process_sequence<ProcessSequence<TProcess1, TProcess2>> : std::true_type {
+    // only switch on for BaseProcesses
+    template <typename std::enable_if_t<
+        std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
+                          typename std::decay_t<TProcess1>> &&
+            std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess2>>,
+                              typename std::decay_t<TProcess2>>,
+        int>>
+    is_process_sequence() {}
+  };
 
 } // namespace corsika
 

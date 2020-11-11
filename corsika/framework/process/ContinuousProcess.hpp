@@ -8,8 +8,8 @@ n/*
 
 #pragma once
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/process/ProcessReturn.hpp> // for convenience
+#include <corsika/framework/process/BaseProcess.hpp>
+#include <corsika/framework/process/ProcessReturn.hpp>
 
 namespace corsika {
 
@@ -30,15 +30,11 @@ namespace corsika {
     // here starts the interface part
     // -> enforce TDerived to implement DoContinuous...
     template <typename TParticle, typename TTrack>
-    EProcessReturn DoContinuous(TParticle&, TTrack const&) const;
+    EProcessReturn doContinuous(TParticle&, TTrack const&) const;
 
-    // -> enforce derived to implement MaxStepLength...
-    template <typename Particle, typename Track>
-    LengthType MaxStepLength(Particle const& p, Track const& track) const;
+    // -> enforce TDerived to implement MaxStepLength...
+    template <typename TParticle, typename TTrack>
+    units::si::LengthType maxStepLength(TParticle const& p, TTrack const& track) const;
   };
-
-  // overwrite the default trait class, to mark BaseProcess<T> as useful process
-  template <class T>
-  std::true_type is_process_impl(const ContinuousProcess<T>* impl);
 
 } // namespace corsika

@@ -14,14 +14,7 @@ n/*
 namespace corsika {
 
   template <typename TDerived>
-  struct BoundaryCrossingProcess {
-    auto& GetRef() { return static_cast<TDerived&>(*this); }
-    auto const& GetRef() const { return static_cast<const TDerived&>(*this); }
-
-  template <typename TDerived>
   class BoundaryCrossingProcess : public BaseProcess<TDerived> {
-  private:
-  protected:
   public:
     /**
      * This method is called when a particle crosses the boundary between the nodes
@@ -31,8 +24,5 @@ namespace corsika {
     EProcessReturn DoBoundaryCrossing(TParticle&, TVolumeNode const& from,
                                       TVolumeNode const& to);
   };
-
-  template <class T>
-  std::true_type is_process_impl(BoundaryCrossingProcess<T> const* impl);
 
 } // namespace corsika
