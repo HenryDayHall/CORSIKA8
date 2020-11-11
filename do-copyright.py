@@ -24,7 +24,7 @@ Debug = 0
 excludeDirs = ["./modules", "./externals", "build", "install", "git"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h', 'quartic.h']
 
-extensions = [".cpp", ".hpp"]
+extensions = [".cpp", ".inl", ".hpp"]
 
 """
 justCheck: T: only checking, F: also changing files 
