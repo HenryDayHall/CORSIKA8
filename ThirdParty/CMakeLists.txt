@@ -228,14 +228,6 @@ endif (NOT (${USE_CONEX_C8} IN_LIST ThirdPartyChoiceValues))
 message (STATUS "USE_CONEX_C8='${USE_CONEX_C8}'")
 
 add_library (C8::ext::conex STATIC IMPORTED GLOBAL)
-# this is from the corsika-data/readLib submodule:
-get_directory_property (Boost_IOSTREAMS_FOUND DIRECTORY ${CORSIKA_DATA}/readLib DEFINITION Boost_IOSTREAMS_FOUND)
-set (conex_boost "")
-set (boost_lib "boost_iostreams")
-if (NOT Boost_IOSTREAMS_FOUND)
-  set (conex_boost "NO_BOOST=1")
-  set (boost_lib "")
-endif (NOT Boost_IOSTREAMS_FOUND)
 if ("x_${USE_CONEX_C8}" STREQUAL "x_SYSTEM")
   
   find_package (CONEX REQUIRED) 
@@ -260,7 +252,7 @@ else ()
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/cxroot/source
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND make CX_NO_ROOT=1 CORSIKA_8=1 ${conex_boost} CORSIKA_DATA=${CORSIKA_DATA} all
+    BUILD_COMMAND make CX_NO_ROOT=1 CORSIKA_8=1 CORSIKA_DATA=${CORSIKA_DATA} all
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
@@ -278,26 +270,15 @@ else ()
     
 endif ()
 
-if (Boost_IOSTREAMS_FOUND)
-  set_target_properties (
-    C8::ext::conex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
-    IMPORTED_NO_SONAME 1
-    SKIP_BUILD_RPATH FALSE
-    IMPORTED_LINK_INTERFACE_LIBRARIES boost_iostreams
-    INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
-    )
-else (Boost_IOSTREAMS_FOUND)
-  set_target_properties (
-    C8::ext::conex PROPERTIES
-    IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
-    IMPORTED_NO_SONAME 1
-    SKIP_BUILD_RPATH FALSE
-    INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
-    )
-endif (Boost_IOSTREAMS_FOUND)
+set_target_properties (
+  C8::ext::conex PROPERTIES
+  IMPORTED_LOCATION ${CONEX_PREFIX}/lib/${CMAKE_SYSTEM_NAME}/libCONEXsibyll.a
+  IMPORTED_NO_SONAME 1
+  SKIP_BUILD_RPATH FALSE
+  IMPORTED_LINK_INTERFACE_LIBRARIES bz2
+  INTERFACE_INCLUDE_DIRECTORIES
+  $<BUILD_INTERFACE:${CONEX_INCLUDE_DIR}>    
+  )
 
 
 # libz needed for cnpy, used for SaveHistograms
