@@ -43,7 +43,7 @@ namespace corsika::geometry {
     LineTrajectory() = delete;
     LineTrajectory(const LineTrajectory&) = default;
     LineTrajectory(LineTrajectory&&) = default;
-    LineTrajectory& operator=(const LineTrajectory&) = default;
+    LineTrajectory& operator=(const LineTrajectory&) = delete;
     LineTrajectory(Line const& theLine, corsika::units::si::TimeType timeLength)
         : line_(theLine)
         , timeLength_(timeLength)
