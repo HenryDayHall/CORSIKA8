@@ -31,6 +31,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <utility> // std::declval
+#include <type_traits> // std::enable_if
 
 /// namespace phys.
 
@@ -358,6 +359,10 @@ namespace phys {
       static constexpr quantity zero() { return quantity{value_type(0.0)}; }
       //    static constexpr quantity zero = quantity{ value_type( 0.0 ) };
 
+      // RU, added conversion to T (often: double) for dimensionless_d
+      template <typename DIM=Dims, std::enable_if_t<std::is_same_v<DIM, dimensionless_d>, int> = 0>
+      operator T() { return m_value; }
+      
     private:
       /**
        * private initializing constructor.
