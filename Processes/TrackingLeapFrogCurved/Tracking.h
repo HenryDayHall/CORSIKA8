@@ -67,7 +67,7 @@ namespace corsika::process {
       direction =
           direction + direction.cross(magneticfield) * steplength * k; // Second Movement
       position = position + direction * steplength / 2;
-      auto steplength_true = steplength * (1.0 + double(direction.norm())) / 2;
+      auto steplength_true = steplength * (1.0 + (double)direction.norm()) / 2;
       return std::make_tuple(position, direction.normalized(), steplength_true);
     }
 
