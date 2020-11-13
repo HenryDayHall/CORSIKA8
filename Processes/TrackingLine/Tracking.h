@@ -103,7 +103,7 @@ namespace corsika::process {
       template <typename TParticle, typename TMedium>
       static geometry::Intersections Intersect(const TParticle& particle,
                                                const geometry::Plane& plane,
-                                               const TMedium& medium) {
+                                               const TMedium&) {
         using namespace corsika::units::si;
         auto const delta = plane.GetCenter() - particle.GetPosition();
         auto const velocity =
