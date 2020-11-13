@@ -6,7 +6,7 @@ set (test_framework_sources
   #testCorsikaFenv.cpp # does not work because of use of exceptions in catch2
   testFourVector.cpp
   testGeometry.cpp
-  #testLogging.cpp # irrelevant -> not used back in March
+  testLogging.cpp
   TestMain.cpp
   testParticles.cpp
   testProcessSequence.cpp

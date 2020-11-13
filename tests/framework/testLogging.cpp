@@ -6,14 +6,14 @@
  * the license.
  */
 
-#include <corsika/framework/logging/Logger.h>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <catch2/catch.hpp>
 
 using namespace corsika;
 
 TEST_CASE("Logging", "[Logging]") {
-  SECTION("top level functions using corsika logger") {
+  SECTION("top level functions using default corsika logger") {
     logging::info("This is an info message!");
     logging::warn("This is a warning message!");
     logging::debug("This is a debug message!");
@@ -24,7 +24,7 @@ TEST_CASE("Logging", "[Logging]") {
   SECTION("create a specific logger") {
 
     // create a logger manually
-    auto logger = logging::CreateLogger("loggerA");
+    auto logger = create_logger("loggerA");
 
     // set a custom pattern for this logger
     logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
@@ -37,7 +37,7 @@ TEST_CASE("Logging", "[Logging]") {
     logger->critical("This is a critical error message!");
 
     // get a reference to the logger using Get
-    auto other = logging::GetLogger("loggerA");
+    auto other = get_logger("loggerA");
 
     // and make sure we can use this other reference to log
     other->info("This is an info message!");
@@ -50,7 +50,7 @@ TEST_CASE("Logging", "[Logging]") {
   SECTION("get a new logger") {
 
     // get a reference to an unknown logger
-    auto logger = logging::GetLogger("loggerB");
+    auto logger = get_logger("loggerB");
 
     // and make sure we can log with this created object
     logger->info("This is an info message!");
@@ -63,7 +63,7 @@ TEST_CASE("Logging", "[Logging]") {
   SECTION("test log level") {
 
     // set the default log level
-    logging::SetDefaultLevel(logging::level::critical);
+    logging::set_default_level(logging::level::critical);
 
     // and make sure we can log with this created object
     logging::info("This should NOT be printed!");
@@ -73,10 +73,10 @@ TEST_CASE("Logging", "[Logging]") {
     logging::critical("This SHOULD BE printed!!");
 
     // get a reference to an unknown logger
-    auto logger = logging::GetLogger("loggerD");
+    auto logger = get_logger("loggerD");
 
     // now set the default log level for this logger
-    logging::SetLevel(logger, logging::level::critical);
+    logger->set_level(logging::level::critical);
 
     // now try the various logging functions
     logger->info("This should NOT be printed!");
@@ -86,32 +86,32 @@ TEST_CASE("Logging", "[Logging]") {
     logger->critical("This SHOULD BE printed!!");
 
     // and reset it for the next tests
-    logging::SetDefaultLevel(logging::level::debug);
-    logging::SetLevel(logging::level::debug);
+    logging::set_default_level(logging::level::debug);
+    logger->set_level(logging::level::critical);
   }
 
   SECTION("test macro style logging") {
 
     // these print with the "corsika" logger
-    C8LOG_INFO("test macro style logging");
-    C8LOG_DEBUG("test macro style logging");
-    C8LOG_ERROR("test macro style logging");
-    C8LOG_CRITICAL("test macro style logging");
+    CORSIKA_LOG_INFO("test macro style logging");
+    CORSIKA_LOG_DEBUG("test macro style logging");
+    CORSIKA_LOG_ERROR("test macro style logging");
+    CORSIKA_LOG_CRITICAL("test macro style logging");
 
     // get a reference to an unknown logger
-    auto logger = logging::GetLogger("loggerE");
+    auto logger = get_logger("loggerE");
 
     // add the filename, source information to this logger
-    logging::AddSourceInfo(logger);
+    logging::add_source_info(logger);
 
     // these print with the "loggerE" logger
-    C8LOG_LOGGER_INFO(logger, "test macro style logging");
-    C8LOG_LOGGER_WARN(logger, "test macro style logging");
+    CORSIKA_LOGGER_INFO(logger, "test macro style logging");
+    CORSIKA_LOGGER_WARN(logger, "test macro style logging");
 
     // reset the logging pattern
-    logging::ResetPattern(logger);
+    logging::reset_pattern(logger);
 
     // these trace macros should not print file, function, and line
-    C8LOG_LOGGER_TRACE(logger, "test macro style logging:");
+    CORSIKA_LOGGER_TRACE(logger, "test macro style logging:");
   }
 }
