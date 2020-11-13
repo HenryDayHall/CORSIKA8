@@ -30,7 +30,7 @@ namespace corsika::environment {
     virtual corsika::units::si::LengthType ArclengthFromGrammage(
         corsika::geometry::LineTrajectory const&,
         corsika::units::si::GrammageType) const = 0;
-    
+
     virtual ~IEmpty() {}
   };
 
