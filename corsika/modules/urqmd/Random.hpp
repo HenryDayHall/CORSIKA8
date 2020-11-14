@@ -17,7 +17,7 @@ namespace urqmd {
    * the random number generator function of UrQMD
    */
   double rndm_interface() {
-    static corsika::RNG& rng =
+    static corsika::default_prng_type& rng =
         corsika::RNGManager::getInstance().getRandomStream("UrQMD");
     static std::uniform_real_distribution<double> dist;
     return dist(rng);

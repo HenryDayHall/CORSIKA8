@@ -55,7 +55,7 @@ namespace corsika::qgsjetII {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::RNG& fRNG = corsika::RNGManager::getInstance().getRandomStream("qgran");
+    corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("qgran");
     const int maxMassNumber_ = 208;
   };
 

@@ -39,7 +39,7 @@ namespace corsika::hadronic_elastic_model {
     using eV2 = decltype(square(electronvolt));
     using inveV2 = decltype(1 / square(electronvolt));
 
-    corsika::RNG& fRNG =
+    corsika::default_prng_type& fRNG =
         corsika::RNGManager::getInstance().getRandomStream("HadronicElasticModel");
 
     inveV2 B(eV2 s) const;

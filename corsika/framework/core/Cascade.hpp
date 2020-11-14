@@ -110,7 +110,7 @@ namespace corsika {
     TTracking& fTracking;
     TProcessList& fProcessSequence;
     TStack& fStack;
-    corsika::RNG& fRNG = corsika::RNGManager::getInstance().getRandomStream("cascade");
+    corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("cascade");
   };
 
 } // namespace corsika

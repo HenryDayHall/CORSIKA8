@@ -12,8 +12,8 @@
 
 namespace corsika {
 
-  inline void RNGManager::registerRandomStream(std::string const& pStreamName) {
-    RNG rng;
+  inline void RNGManager::registerRandomStream(string_type const& pStreamName) {
+    prng_type rng;
 
     if (auto const& it = seeds_.find(pStreamName); it != seeds_.end()) {
       rng.seed(it->second);
@@ -22,7 +22,7 @@ namespace corsika {
     rngs_[pStreamName] = std::move(rng);
   }
 
-  inline RNG& RNGManager::getRandomStream(std::string const& pStreamName)  {
+  inline RNGManager::prng_type& RNGManager::getRandomStream(string_type const& pStreamName)  {
 	  if (isRegistered(pStreamName)) {
 	    return rngs_.at(pStreamName);
 	  } else { // this stream name is not in the map
@@ -31,7 +31,7 @@ namespace corsika {
 	}
 
 
-  inline bool RNGManager::isRegistered(std::string const& pStreamName) const {
+  inline bool RNGManager::isRegistered(string_type const& pStreamName) const {
     return rngs_.count(pStreamName) > 0;
   }
 
@@ -45,7 +45,7 @@ namespace corsika {
     return buffer;
   }
 
-  inline void RNGManager::seedAll(uint64_t vSeed) {
+  inline void RNGManager::seedAll(seed_type vSeed) {
     for (auto& entry : rngs_) { entry.second.seed(vSeed++); }
   }
 
