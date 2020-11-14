@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/framework/utility/Singleton.hpp>
+#include <corsika/framework/logging/Logging.h>
 #include <map>
 #include <random>
 #include <string>
