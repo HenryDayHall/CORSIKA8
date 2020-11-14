@@ -123,7 +123,7 @@ TEST_CASE("UrQMD") {
   }
 
   feenableexcept(FE_INVALID);
-  corsika::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  corsika::RNGManager::getInstance().registerRandomStream("UrQMD");
   UrQMD urqmd;
 
   SECTION("cross sections") {

@@ -56,7 +56,7 @@ namespace corsika::sibyll {
     TEnvironment const& environment_;
     corsika::sibyll::Interaction& hadronicInteraction_;
     std::map<corsika::Code, int> targetComponentsIndex_;
-    corsika::RNG& RNG_ = corsika::RNGManager::GetInstance().GetRandomStream("s_rndm");
+    corsika::RNG& RNG_ = corsika::RNGManager::getInstance().getRandomStream("s_rndm");
     static constexpr unsigned int gNSample_ =
         500; // number of samples in MC estimation of cross section
     static constexpr unsigned int gMaxNucleusAProjectile_ = 56;

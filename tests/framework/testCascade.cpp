@@ -153,8 +153,8 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   HEPEnergyType E0 = 100_GeV;
 
-  random::RNGManager& rmng = random::RNGManager::GetInstance();
-  rmng.RegisterRandomStream("cascade");
+  random::RNGManager& rmng = random::RNGManager::getInstance();
+  rmng.registerRandomStream("cascade");
 
   auto env = MakeDummyEnv();
   auto const& rootCS = env.GetCoordinateSystem();

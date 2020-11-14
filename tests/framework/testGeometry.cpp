@@ -25,7 +25,7 @@ double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("transformations between CoordinateSystems") {
   CoordinateSystem& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   REQUIRE(getTransformation(rootCS, rootCS).isApprox(EigenTransform::Identity()));
 
@@ -182,7 +182,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 
 TEST_CASE("Sphere") {
   CoordinateSystem& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
@@ -202,7 +202,7 @@ TEST_CASE("Sphere") {
 
 TEST_CASE("Trajectories") {
   CoordinateSystem& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {

@@ -25,7 +25,7 @@ TEST_CASE("four vectors") {
 
   // this is just needed as a baseline
   CoordinateSystem& rootCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   /*
     Test: P2 = E2 - p2 all in [GeV]

@@ -30,7 +30,7 @@ datadir::datadir(const std::string& dir) {
 
 double qgran_(int&) {
   static corsika::RNG& rng =
-      corsika::RNGManager::GetInstance().GetRandomStream("qgran");
+      corsika::RNGManager::getInstance().GetRandomStream("qgran");
 
   std::uniform_real_distribution<double> dist;
   return dist(rng);

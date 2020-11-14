@@ -24,7 +24,7 @@ using namespace corsika;
 
 TEST_CASE("StackInspector", "[processes]") {
 
-  auto const& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  auto const& rootCS = RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
   Point const origin(rootCS, {0_m, 0_m, 0_m});
   Vector<units::si::SpeedType::dimension_type> v(rootCS, 0_m / second, 0_m / second,
                                                  1_m / second);

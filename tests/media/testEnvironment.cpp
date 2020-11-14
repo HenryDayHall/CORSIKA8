@@ -30,7 +30,7 @@ using namespace corsika;
 using namespace corsika::units::si;
 
 CoordinateSystem const& gCS =
-    RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+    RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
 Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 

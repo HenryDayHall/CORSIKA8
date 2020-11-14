@@ -22,259 +22,193 @@
 
 namespace corsika {
 
+  typedef corsika::Vector<hepmomentum_d> MomentumVector;
 
-/**
- * Example of a particle object on the stack.
- */
+  namespace super_stupid {
 
-template <typename StackIteratorInterface>
-struct ParticleInterface : public ParticleBase<StackIteratorInterface> {
+    /**
+     * Example of a particle object on the stack.
+     */
 
-private:
+    template <typename StackIteratorInterface>
+    class ParticleInterface : public ParticleBase<StackIteratorInterface> {
 
-	typedef corsika::ParticleBase<StackIteratorInterface> super_type;
+    protected:
+      using corsika::ParticleBase<StackIteratorInterface>::GetStack;
+      using corsika::ParticleBase<StackIteratorInterface>::GetStackData;
 
-public:
+    public:
+      using corsika::ParticleBase<StackIteratorInterface>::GetIndex;
 
-	typedef corsika::Vector<corsika::units::si::hepmomentum_d> momentum_vector_type;
+    public:
+      void SetParticleData(const std::tuple<corsika::Code, HEPEnergyType, MomentumVector,
+                                            corsika::Point, TimeType>& v) {
+        SetPID(std::get<0>(v));
+        SetEnergy(std::get<1>(v));
+        SetMomentum(std::get<2>(v));
+        SetPosition(std::get<3>(v));
+        SetTime(std::get<4>(v));
+      }
+      /*
+    void SetParticleData(const corsika::Code vDataPID,
+                         const HEPEnergyType vDataE,
+                         const MomentumVector& vMomentum,
+                         const corsika::Point& vPosition,
+                         const TimeType vTime) {
+      }*/
 
-	std::string as_string() const {
-		using namespace corsika::units::si;
-		return fmt::format("particle: i={}, PID={}, E={}GeV", super_type::GetIndex(),
-				particles::GetName(this->getPID()), this->getEnergy() / 1_GeV);
-	}
+      void SetParticleData(ParticleInterface<StackIteratorInterface>&,
+                           const std::tuple<corsika::Code, HEPEnergyType, MomentumVector,
+                                            corsika::Point, TimeType>& v) {
+        SetPID(std::get<0>(v));
+        SetEnergy(std::get<1>(v));
+        SetMomentum(std::get<2>(v));
+        SetPosition(std::get<3>(v));
+        SetTime(std::get<4>(v));
+      }
+      /*      void SetParticleData(ParticleInterface<StackIteratorInterface>&,
+                           const corsika::Code vDataPID,
+                           const HEPEnergyType vDataE,
+                           const MomentumVector& vMomentum,
+                           const corsika::Point& vPosition,
+                           const TimeType vTime) {
+        SetPID(vDataPID);
+        SetEnergy(vDataE);
+        SetMomentum(vMomentum);
+        SetPosition(vPosition);
+        SetTime(vTime);
+      }*/
 
-	void setParticleData( std::tuple<corsika::Code, corsika::units::si::HEPEnergyType,
-			momentum_vector_type, corsika::Point, corsika::units::si::TimeType> const& v) {
-		this->setPID(std::get<0>(v));
-		this->setEnergy(std::get<1>(v));
-		this->setMomentum(std::get<2>(v));
-		this->setPosition(std::get<3>(v));
-		this->setTime(std::get<4>(v));
-	}
+      /// individual setters
+      void SetPID(const corsika::Code id) { GetStackData().SetPID(GetIndex(), id); }
+      void SetEnergy(const HEPEnergyType& e) { GetStackData().SetEnergy(GetIndex(), e); }
+      void SetMomentum(const MomentumVector& v) {
+        GetStackData().SetMomentum(GetIndex(), v);
+      }
+      void SetPosition(const corsika::Point& v) {
+        GetStackData().SetPosition(GetIndex(), v);
+      }
+      void SetTime(const TimeType& v) { GetStackData().SetTime(GetIndex(), v); }
 
-	void setParticleData( ParticleInterface<StackIteratorInterface> const&,
-			std::tuple<corsika::Code, corsika::units::si::HEPEnergyType,
-			momentum_vector_type, corsika::Point, corsika::units::si::TimeType> const& v) {
-		this->setPID(std::get<0>(v));
-		this->setEnergy(std::get<1>(v));
-		this->setMomentum(std::get<2>(v));
-		this->setPosition(std::get<3>(v));
-		this->setTime(std::get<4>(v));
-	}
+      /// individual getters
+      corsika::Code GetPID() const { return GetStackData().GetPID(GetIndex()); }
+      HEPEnergyType GetEnergy() const { return GetStackData().GetEnergy(GetIndex()); }
+      MomentumVector GetMomentum() const {
+        return GetStackData().GetMomentum(GetIndex());
+      }
+      corsika::Point GetPosition() const {
+        return GetStackData().GetPosition(GetIndex());
+      }
+      TimeType GetTime() const { return GetStackData().GetTime(GetIndex()); }
+      /**
+       * @name derived quantities
+       *
+       * @{
+       */
+      corsika::Vector<dimensionless_d> GetDirection() const {
+        return GetMomentum() / GetEnergy();
+      }
+      HEPMassType GetMass() const { return corsika::GetMass(GetPID()); }
+      int16_t GetChargeNumber() const { return corsika::GetChargeNumber(GetPID()); }
+      ///@}
+    };
 
-	/// individual setters
-	void setPID(const corsika::Code id) {
-		super_type::GetStackData().setPID(super_type::GetIndex(), id);
-	}
-	void setEnergy(const corsika::units::si::HEPEnergyType& e) {
-		super_type::GetStackData().setEnergy(super_type::GetIndex(), e);
-	}
-	void setMomentum(const momentum_vector_type& v) {
-		super_type::GetStackData().setMomentum(super_type::GetIndex(), v);
-	}
-	void setPosition(const corsika::Point& v) {
-		super_type::GetStackData().setPosition(super_type::GetIndex(), v);
-	}
-	void setTime(const corsika::units::si::TimeType& v) {
-		super_type::GetStackData().setTime(super_type::GetIndex(), v);
-	}
+    /**
+     * Memory implementation of the most simple (stupid) particle stack object.
+     */
 
-	/// individual getters
-	corsika::Code getPID() const {
-		return super_type::GetStackData().getPID(super_type::GetIndex());
-	}
-	corsika::units::si::HEPEnergyType getEnergy() const {
-		return super_type::GetStackData().getEnergy(super_type::GetIndex());
-	}
-	momentum_vector_type getMomentum() const {
-		return super_type::GetStackData().getMomentum(super_type::GetIndex());
-	}
-	corsika::Point getPosition() const {
-		return super_type::GetStackData().getPosition(super_type::GetIndex());
-	}
-	corsika::units::si::TimeType getTime() const {
-		return super_type::GetStackData().getTime(super_type::GetIndex());
-	}
-	/**
-	 * @name derived quantities
-	 *
-	 * @{
-	 */
-	corsika::Vector<corsika::units::si::dimensionless_d> getDirection() const {
-		return  this->getMomentum() /  this->getEnergy();
-	}
+    class SuperStupidStackImpl {
 
-	corsika::units::si::HEPMassType getMass() const {
-		return corsika::GetMass(this->getPID());
-	}
+    public:
+      void Init() {}
+      void Dump() const {}
 
-	int16_t getChargeNumber() const {
-		return corsika::GetChargeNumber(this->getPID());
-	}
-	///@}
-};
+      void Clear() {
+        fDataPID.clear();
+        fDataE.clear();
+        fMomentum.clear();
+        fPosition.clear();
+        fTime.clear();
+      }
 
-/**
- * Memory implementation of the most simple (stupid) particle stack object.
- *
- */
+      unsigned int GetSize() const { return fDataPID.size(); }
+      unsigned int GetCapacity() const { return fDataPID.size(); }
 
-class SuperStupidStackImpl {
+      void SetPID(const unsigned int i, const corsika::Code id) { fDataPID[i] = id; }
+      void SetEnergy(const unsigned int i, const HEPEnergyType e) { fDataE[i] = e; }
+      void SetMomentum(const unsigned int i, const MomentumVector& v) {
+        fMomentum[i] = v;
+      }
+      void SetPosition(const unsigned int i, const corsika::Point& v) {
+        fPosition[i] = v;
+      }
+      void SetTime(const unsigned int i, const TimeType& v) { fTime[i] = v; }
 
-public:
+      corsika::Code GetPID(const unsigned int i) const { return fDataPID[i]; }
+      HEPEnergyType GetEnergy(const unsigned int i) const { return fDataE[i]; }
+      MomentumVector GetMomentum(const unsigned int i) const { return fMomentum[i]; }
+      corsika::Point GetPosition(const unsigned int i) const { return fPosition[i]; }
+      TimeType GetTime(const unsigned int i) const { return fTime[i]; }
 
-	typedef  corsika::Vector<corsika::units::si::hepmomentum_d>        momentum_type;
-	typedef  std::vector<corsika::Code>                             code_vector_type;
-	typedef  std::vector<corsika::units::si::HEPEnergyType>       energy_vector_type;
-	typedef  std::vector<corsika::Point>                           point_vector_type;
-	typedef  std::vector<corsika::units::si::TimeType>              time_vector_type;
-	typedef  std::vector<momentum_type>                         momentum_vector_type;
+      /**
+       *   Function to copy particle at location i2 in stack to i1
+       */
+      void Copy(const unsigned int i1, const unsigned int i2) {
+        fDataPID[i2] = fDataPID[i1];
+        fDataE[i2] = fDataE[i1];
+        fMomentum[i2] = fMomentum[i1];
+        fPosition[i2] = fPosition[i1];
+        fTime[i2] = fTime[i1];
+      }
 
-	SuperStupidStackImpl()=default;
+      /**
+       *   Function to copy particle at location i2 in stack to i1
+       */
+      void Swap(const unsigned int i1, const unsigned int i2) {
+        std::swap(fDataPID[i2], fDataPID[i1]);
+        std::swap(fDataE[i2], fDataE[i1]);
+        std::swap(fMomentum[i2], fMomentum[i1]);
+        std::swap(fPosition[i2], fPosition[i1]);
+        std::swap(fTime[i2], fTime[i1]);
+      }
 
-	SuperStupidStackImpl( SuperStupidStackImpl const& other)=default;
+      void IncrementSize() {
+        using corsika::Code;
+        using corsika::Point;
+        fDataPID.push_back(Code::Unknown);
+        fDataE.push_back(0 * electronvolt);
+        CoordinateSystem& dummyCS =
+            RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+        fMomentum.push_back(MomentumVector(
+            dummyCS, {0 * electronvolt, 0 * electronvolt, 0 * electronvolt}));
+        fPosition.push_back(Point(dummyCS, {0 * meter, 0 * meter, 0 * meter}));
+        fTime.push_back(0 * second);
+      }
 
-	SuperStupidStackImpl( SuperStupidStackImpl && other)=default;
+      void DecrementSize() {
+        if (fDataE.size() > 0) {
+          fDataPID.pop_back();
+          fDataE.pop_back();
+          fMomentum.pop_back();
+          fPosition.pop_back();
+          fTime.pop_back();
+        }
+      }
 
+    private:
+      /// the actual memory to store particle data
 
-	SuperStupidStackImpl& operator=( SuperStupidStackImpl const& other)=default;
+      std::vector<corsika::Code> fDataPID;
+      std::vector<HEPEnergyType> fDataE;
+      std::vector<MomentumVector> fMomentum;
+      std::vector<corsika::Point> fPosition;
+      std::vector<TimeType> fTime;
 
-	SuperStupidStackImpl& operator=( SuperStupidStackImpl && other)=default;
+    }; // end class SuperStupidStackImpl
 
+    typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
 
-	void init() {}
-	void dump() const {}
-
-	void clear() {
-		dataPID_.clear();
-		dataE_.clear();
-		momentum_.clear();
-		position_.clear();
-		time_.clear();
-	}
-
-	unsigned int getSize() const { return dataPID_.size(); }
-	unsigned int getCapacity() const { return dataPID_.size(); }
-
-	void setPID(size_t i, const corsika::Code id) {
-		dataPID_[i] = id;
-	}
-	void setEnergy(size_t i,  corsika::units::si::HEPEnergyType  const& e) {
-		dataE_[i] = e;
-	}
-	void setMomentum(size_t i, momentum_type const& v) {
-		momentum_[i] = v;
-	}
-	void setPosition(size_t i, corsika::Point const& v) {
-		position_[i] = v;
-	}
-	void setTime(size_t i, corsika::units::si::TimeType const& v) {
-		time_[i] = v;
-	}
-
-	corsika::Code getPID(size_t i) const {
-		return dataPID_[i];
-	}
-
-	corsika::units::si::HEPEnergyType getEnergy(size_t i) const {
-		return dataE_[i];
-	}
-
-	momentum_type getMomentum(size_t i) const {
-		return momentum_[i];
-	}
-
-	corsika::Point getPosition(size_t i) const {
-		return position_[i];
-	}
-	corsika::units::si::TimeType getTime(size_t i) const {
-		return time_[i];
-	}
-
-	corsika::units::si::HEPEnergyType getDataE(size_t i) const {
-		return dataE_[i];
-	}
-
-	void setDataE(size_t i, corsika::units::si::HEPEnergyType const& dataE) {
-		dataE_[i] = dataE;
-	}
-
-	corsika::Code getDataPid(size_t i) const {
-		return dataPID_;
-	}
-
-	void setDataPid(size_t i, corsika::Code  const& dataPid) {
-		dataPID_[i] = dataPid;
-	}
-	/**
-	 *   Function to copy particle at location i2 in stack to i1
-	 */
-	 void copy(size_t i1, size_t i2) {
-		dataPID_[i2]  = dataPID_[i1];
-		dataE_[i2]    = dataE_[i1];
-		momentum_[i2] = momentum_[i1];
-		position_[i2] = position_[i1];
-		time_[i2]     = time_[i1];
-	 }
-
-
-	 /**
-	  *   FIXME: change to iterators.
-	  *   Function to copy particle at location i2 in stack to i1
-	  */
-	 void swap(size_t i1, size_t i2) {
-		 std::swap(dataPID_[i2] , dataPID_[i1]);
-		 std::swap(dataE_[i2]   , dataE_[i1]);
-		 std::swap(momentum_[i2], momentum_[i1]);
-		 std::swap(position_[i2], position_[i1]);
-		 std::swap(time_[i2]    , time_[i1]);
-	 }
-
-	 void incrementSize() {
-		 using corsika::Point;
-		 using corsika::Code;
-
-		 dataPID_.push_back(Code::Unknown);
-		 dataE_.push_back(0 * corsika::units::si::electronvolt);
-
-		 CoordinateSystem& dummyCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
-
-		 momentum_.push_back(momentum_type( dummyCS,
-				 {0 * corsika::units::si::electronvolt, 0 * corsika::units::si::electronvolt,
-						 0 * corsika::units::si::electronvolt}));
-
-		 position_.push_back(
-				 Point(dummyCS, {0 * corsika::units::si::meter, 0 * corsika::units::si::meter,
-						 0 * corsika::units::si::meter}));
-		 time_.push_back(0 * corsika::units::si::second);
-	 }
-
-	 void decrementSize() {
-		 if (dataE_.size() > 0) {
-			 dataPID_.pop_back();
-			 dataE_.pop_back();
-			 momentum_.pop_back();
-			 position_.pop_back();
-			 time_.pop_back();
-		 }
-	 }
-
-
-private:
-
-	 /// the actual memory to store particle data
-	 code_vector_type dataPID_;
-	 energy_vector_type dataE_;
-	 momentum_vector_type momentum_;
-	 point_vector_type position_;
-	 time_vector_type time_;
-
-}; // end class SuperStupidStackImpl
-
-
-typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
-
+  } // namespace super_stupid
 
 } // namespace corsika
 

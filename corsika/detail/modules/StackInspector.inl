@@ -47,7 +47,7 @@ namespace corsika::stack_inspector {
       Etot += E;
       if (ReportStack_) {
         corsika::CoordinateSystem& rootCS =
-            corsika::RootCoordinateSystem::GetInstance()
+            corsika::RootCoordinateSystem::getInstance()
                 .GetRootCoordinateSystem(); // for printout
         auto pos = iterP.GetPosition().GetCoordinates(rootCS);
         std::cout << "StackInspector: i=" << std::setw(5) << std::fixed << (i++)

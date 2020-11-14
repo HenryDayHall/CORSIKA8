@@ -15,7 +15,7 @@ namespace qgsjetII {
 
   double rndm_interface() {
     static corsika::RNG& rng =
-        corsika::RNGManager::GetInstance().GetRandomStream("qgran");
+        corsika::RNGManager::getInstance().getRandomStream("qgran");
     std::uniform_real_distribution<double> dist;
     return dist(rng);
   }

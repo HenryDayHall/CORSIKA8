@@ -31,8 +31,8 @@ namespace corsika {
 
     friend class corsika::Singleton<RNGManager>;
 
-    std::map<std::string, RNG> rngs;
-    std::map<std::string, std::seed_seq> seeds;
+    std::map<std::string, RNG> rngs_;
+    std::map<std::string, std::seed_seq> seeds_;
 
   protected:
     RNGManager() {} // why ?
@@ -44,18 +44,18 @@ namespace corsika {
      *
      * \throws sth. when stream \a pModuleName is already registered
      */
-    void RegisterRandomStream(std::string const& pStreamName);
+    void registerRandomStream(std::string const& pStreamName);
 
     /*!
      * returns the pre-stored stream of given name \a pStreamName if
      * available
      */
-    RNG& GetRandomStream(std::string const& pStreamName);
+    RNG& getRandomStream(std::string const& pStreamName);
 
     /*!
      * Check whether a stream has been registered.
      */
-    bool IsRegistered(std::string const& pStreamName) const;
+    bool isRegistered(std::string const& pStreamName) const;
 
     /*!
      * dumps the names and states of all registered random-number streams
@@ -67,9 +67,9 @@ namespace corsika {
      * Set explicit seeds for all currently registered streams. The actual seed values
      * are incremented from \a vSeed.
      */
-    void SeedAll(uint64_t vSeed);
+    void seedAll(uint64_t vSeed);
 
-    void SeedAll(); //!< seed all currently registered streams with "real" randomness
+    void seedAll(void); //!< seed all currently registered streams with "real" randomness
   };
 
 } // namespace corsika

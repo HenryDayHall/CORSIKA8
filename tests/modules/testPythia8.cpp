@@ -61,7 +61,7 @@ TEST_CASE("Pythia", "[processes]") {
         corsika::Code::PiPlus, corsika::Code::PiMinus, corsika::Code::KPlus,
         corsika::Code::KMinus, corsika::Code::K0Long,  corsika::Code::K0Short};
 
-    corsika::RNGManager::GetInstance().RegisterRandomStream("pythia");
+    corsika::RNGManager::getInstance().registerRandomStream("pythia");
 
     corsika::pythia8::Decay model(particleList);
 
@@ -123,7 +123,7 @@ TEST_CASE("pythia process") {
         corsika::Code::PiPlus, corsika::Code::PiMinus, corsika::Code::KPlus,
         corsika::Code::KMinus, corsika::Code::K0Long,  corsika::Code::K0Short};
 
-    corsika::RNGManager::GetInstance().RegisterRandomStream("pythia");
+    corsika::RNGManager::getInstance().registerRandomStream("pythia");
 
     corsika::SecondaryView view(particle);
     auto projectile = view.GetProjectile();

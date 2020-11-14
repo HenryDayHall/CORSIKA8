@@ -21,7 +21,7 @@ using namespace corsika::units::si;
 
 int main() {
   corsika::CoordinateSystem& root =
-      corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;

@@ -12,47 +12,47 @@
 
 namespace corsika {
 
-  inline void RNGManager::RegisterRandomStream(std::string const& pStreamName) {
+  inline void RNGManager::registerRandomStream(std::string const& pStreamName) {
     RNG rng;
 
-    if (auto const& it = seeds.find(pStreamName); it != seeds.end()) {
+    if (auto const& it = seeds_.find(pStreamName); it != seeds_.end()) {
       rng.seed(it->second);
     }
 
-    rngs[pStreamName] = std::move(rng);
+    rngs_[pStreamName] = std::move(rng);
   }
 
-  inline RNG& RNGManager::GetRandomStream(std::string const& pStreamName)  {
-	  if (IsRegistered(pStreamName)) {
-	    return rngs.at(pStreamName);
+  inline RNG& RNGManager::getRandomStream(std::string const& pStreamName)  {
+	  if (isRegistered(pStreamName)) {
+	    return rngs_.at(pStreamName);
 	  } else { // this stream name is not in the map
 	    throw std::runtime_error("'" + pStreamName + "' is not a registered stream.");
 	  }
 	}
 
 
-  inline bool RNGManager::IsRegistered(std::string const& pStreamName) const {
-    return rngs.count(pStreamName) > 0;
+  inline bool RNGManager::isRegistered(std::string const& pStreamName) const {
+    return rngs_.count(pStreamName) > 0;
   }
 
 
   inline std::stringstream RNGManager::dumpState() const {
     std::stringstream buffer;
-    for (auto const& [streamName, rng] : rngs) {
+    for (auto const& [streamName, rng] : rngs_) {
       buffer << '"' << streamName << "\" = \"" << rng << '"' << std::endl;
     }
 
     return buffer;
   }
 
-  inline void RNGManager::SeedAll(uint64_t vSeed) {
-    for (auto& entry : rngs) { entry.second.seed(vSeed++); }
+  inline void RNGManager::seedAll(uint64_t vSeed) {
+    for (auto& entry : rngs_) { entry.second.seed(vSeed++); }
   }
 
-  inline void RNGManager::SeedAll() {
+  inline void RNGManager::seedAll(void) {
     std::random_device rd;
     std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
-    for (auto& entry : rngs) {
+    for (auto& entry : rngs_) {
       std::vector<std::uint32_t> seeds(1);
       sseq.generate(seeds.begin(), seeds.end());
       std::uint32_t seed = seeds[0];

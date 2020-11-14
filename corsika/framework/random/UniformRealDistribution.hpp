@@ -21,21 +21,21 @@ namespace corsika {
   template <class TQuantity>
   class UniformRealDistribution {
     using RealType = typename TQuantity::value_type;
-    std::uniform_real_distribution<RealType> dist{RealType(0.), RealType(1.)};
+    std::uniform_real_distribution<RealType> dist_{RealType(0.), RealType(1.)};
 
-    TQuantity const a, b;
+    TQuantity const min_, max_;
 
   public:
     UniformRealDistribution(TQuantity b)
-        : a{TQuantity(phys::units::detail::magnitude_tag, 0)}
-        , b(b) {}
+       : min_{TQuantity(phys::units::detail::magnitude_tag, 0)}
+       , max_(b) {}
     UniformRealDistribution(TQuantity a, TQuantity b)
-        : a(a)
-        , b(b) {}
+    : min_(a)
+    , max_(b) {}
 
     template <class Generator>
     TQuantity operator()(Generator& g) {
-      return a + dist(g) * (b - a);
+      return min_ + dist_(g) * (max_ - min_);
     }
   };
 

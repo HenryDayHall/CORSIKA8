@@ -81,7 +81,7 @@ namespace corsika::pythia8 {
 
     // coordinate system, get global frame of reference
     corsika::CoordinateSystem& rootCS =
-        corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+        corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
     fCount++;
 

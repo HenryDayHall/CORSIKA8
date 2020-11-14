@@ -44,7 +44,7 @@ int main() {
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  corsika::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  corsika::RNGManager::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
   using EnvType = corsika::Environment<setup::IEnvironmentModel>;
@@ -115,8 +115,8 @@ int main() {
   tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  corsika::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  corsika::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  corsika::RNGManager::getInstance().registerRandomStream("pythia");
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   corsika::sibyll::Decay decay;

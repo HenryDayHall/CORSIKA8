@@ -22,8 +22,8 @@ using namespace std;
 
 TEST_CASE("NuclearStackExtension", "[stack]") {
 
-  geometry::CoordinateSystem& dummyCS =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& dummyCS =
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   SECTION("write non nucleus") {
     NuclearStackExtension<corsika::stack::super_stupid::SuperStupidStack,

@@ -24,8 +24,8 @@ using namespace std;
 
 TEST_CASE("SuperStupidStack", "[stack]") {
 
-  geometry::CoordinateSystem& dummyCS =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  CoordinateSystem& dummyCS =
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   SECTION("read+write") {
 

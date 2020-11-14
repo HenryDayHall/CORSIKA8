@@ -22,28 +22,28 @@ using namespace corsika;
 
 SCENARIO("random-number streams can be registered and retrieved") {
   GIVEN("a RNGManager") {
-    RNGManager& rngManager = RNGManager::GetInstance();
+    RNGManager& rngManager = RNGManager::getInstance();
 
     WHEN("the sequence name is not registered") {
-      REQUIRE(rngManager.IsRegistered("stream_A") == false);
+      REQUIRE(rngManager.isRegistered("stream_A") == false);
 
       THEN("a sequence is registered by name") {
-        rngManager.RegisterRandomStream("stream_A");
+        rngManager.registerRandomStream("stream_A");
 
         THEN("the sequence can be retrieved") {
-          REQUIRE_NOTHROW(rngManager.GetRandomStream("stream_A"));
+          REQUIRE_NOTHROW(rngManager.getRandomStream("stream_A"));
 
           THEN("we can check that the sequence exists") {
-            REQUIRE_NOTHROW(rngManager.GetRandomStream("stream_A"));
+            REQUIRE_NOTHROW(rngManager.getRandomStream("stream_A"));
 
             THEN("an unknown sequence cannot be retrieved") {
-              REQUIRE(rngManager.IsRegistered("stream_A") == true);
+              REQUIRE(rngManager.isRegistered("stream_A") == true);
 
               THEN("an unknown sequence cannot be retrieved") {
-                REQUIRE_THROWS(rngManager.GetRandomStream("stream_UNKNOWN"));
+                REQUIRE_THROWS(rngManager.getRandomStream("stream_UNKNOWN"));
 
                 THEN("an unknown sequence is not registered") {
-                  REQUIRE(rngManager.IsRegistered("stream_UNKNOWN") == false);
+                  REQUIRE(rngManager.isRegistered("stream_UNKNOWN") == false);
                 }
               }
             }

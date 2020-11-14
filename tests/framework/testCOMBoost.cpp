@@ -21,7 +21,7 @@ using namespace corsika;
 double constexpr absMargin = 1e-6;
 
 CoordinateSystem const& rootCS =
-    RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+    RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
 // helper function for energy-momentum
 // relativistic energy

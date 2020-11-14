@@ -55,7 +55,7 @@ namespace corsika::pythia8 {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("pythia");
+    corsika::RNG& fRNG = corsika::RNGManager::getInstance().getRandomStream("pythia");
     Pythia8::Pythia fPythia;
     Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;

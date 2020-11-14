@@ -88,7 +88,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
   const corsika::CoordinateSystem& cs = env.GetCoordinateSystem();
 
-  corsika::RNGManager::GetInstance().RegisterRandomStream("qgran");
+  corsika::RNGManager::getInstance().registerRandomStream("qgran");
 
   SECTION("InteractionInterface") {
 

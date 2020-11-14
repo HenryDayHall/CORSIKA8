@@ -26,7 +26,7 @@ using namespace corsika;
 TEST_CASE("NullModel", "[processes]") {
 
   auto const& dummyCS =
-      corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
   corsika::Point const origin(dummyCS, {0_m, 0_m, 0_m});
   corsika::Vector<SpeedType::dimension_type> v(dummyCS, 0_m / second, 0_m / second,
                                                1_m / second);

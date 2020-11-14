@@ -96,7 +96,7 @@ namespace corsika::qgsjetII {
 
     // coordinate system, get global frame of reference
     CoordinateSystem& rootCS =
-        RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+        RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
     const corsika::Code corsikaBeamId = vP.GetPID();
 
@@ -171,7 +171,7 @@ namespace corsika::qgsjetII {
     if (corsika::qgsjetII::CanInteract(corsikaBeamId)) {
 
       const CoordinateSystem& rootCS =
-          RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+          RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
       // position and time of interaction, not used in QgsjetII
       Point pOrig = vP.GetPosition();

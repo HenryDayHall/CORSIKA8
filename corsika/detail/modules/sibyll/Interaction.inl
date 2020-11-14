@@ -110,7 +110,7 @@ namespace corsika::sibyll {
 
     // coordinate system, get global frame of reference
     CoordinateSystem& rootCS =
-        RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+        RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
     const corsika::Code corsikaBeamId = vP.GetPID();
 
@@ -193,7 +193,7 @@ namespace corsika::sibyll {
 
     if (corsika::sibyll::CanInteract(corsikaBeamId)) {
       const CoordinateSystem& rootCS =
-          RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+          RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
       // position and time of interaction, not used in Sibyll
       Point pOrig = vP.GetPosition();

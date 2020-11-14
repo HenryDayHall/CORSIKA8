@@ -44,7 +44,7 @@ using namespace std;
 int main() {
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  corsika::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  corsika::RNGManager::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
   using EnvType = Environment<setup::IEnvironmentModel>;
@@ -103,8 +103,8 @@ int main() {
       corsika::Code::PiPlus, corsika::Code::PiMinus, corsika::Code::KPlus,
       corsika::Code::KMinus, corsika::Code::K0Long,  corsika::Code::K0Short};
 
-  corsika::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  corsika::RNGManager::GetInstance().RegisterRandomStream("pythia");
+  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  corsika::RNGManager::getInstance().registerRandomStream("pythia");
   //  corsika::sibyll::Interaction sibyll(env);
   corsika::pythia8::Interaction pythia;
   //  corsika::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
@@ -112,7 +112,7 @@ int main() {
   corsika::pythia8::Decay decay(trackedHadrons);
   corsika::particle_cut::ParticleCut cut(20_GeV);
 
-  // corsika::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
+  // corsika::RNGManager::getInstance().registerRandomStream("HadronicElasticModel");
   // corsika::HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 

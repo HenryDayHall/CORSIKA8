@@ -20,17 +20,17 @@ namespace corsika {
   template <class TQuantity>
   class ExponentialDistribution {
     using RealType = typename TQuantity::value_type;
-    std::exponential_distribution<RealType> dist{1.};
+    std::exponential_distribution<RealType> dist_{1.};
 
-    TQuantity const fBeta;
+    TQuantity const beta_;
 
   public:
     ExponentialDistribution(TQuantity beta)
-        : fBeta(beta) {}
+        : beta_(beta) {}
 
     template <class Generator>
     TQuantity operator()(Generator& g) {
-      return fBeta * dist(g);
+      return beta_ * dist_(g);
     }
   };
 

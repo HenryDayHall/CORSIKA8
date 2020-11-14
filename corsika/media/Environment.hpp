@@ -25,7 +25,7 @@ namespace corsika {
 
     Environment()
         : fCoordinateSystem(
-              corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem())
+              corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem())
         , fUniverse(std::make_unique<BaseNodeType>(
               std::make_unique<Universe>(fCoordinateSystem))) {}
 

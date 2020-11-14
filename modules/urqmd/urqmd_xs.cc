@@ -20,7 +20,7 @@ using namespace corsika;
 using namespace corsika::units::si;
 
 int main() {
-  random::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  random::RNGManager::getInstance().registerRandomStream("UrQMD");
   corsika::UrQMD::UrQMD urqmd;
 
   std::vector<Code> const projectiles{{Code::Proton, Code::AntiProton, Code::Neutron,

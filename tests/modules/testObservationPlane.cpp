@@ -22,7 +22,7 @@ using namespace corsika;
 
 TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
-  auto const& rootCS = RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+  auto const& rootCS = RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   /*
     Test with downward going 1_GeV neutrino, starting at 0,1_m,10m

@@ -22,7 +22,7 @@ using namespace std;
 
 void fill(corsika::super_stupid::SuperStupidStack& s) {
   const corsika::CoordinateSystem& rootCS =
-      corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
   for (int i = 0; i < 11; ++i) {
     s.AddParticle(
         std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,

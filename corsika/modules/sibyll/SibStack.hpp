@@ -46,7 +46,7 @@ namespace corsika::sibyll {
     HEPEnergyType GetMass(const unsigned int i) const { return s_plist_.p[4][i] * 1_GeV; }
     MomentumVector GetMomentum(const unsigned int i) const {
       CoordinateSystem& rootCS =
-          RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+          RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
       QuantityVector<hepmomentum_d> components = {
           s_plist_.p[0][i] * 1_GeV, s_plist_.p[1][i] * 1_GeV, s_plist_.p[2][i] * 1_GeV};
       return MomentumVector(rootCS, components);

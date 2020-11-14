@@ -26,7 +26,7 @@ int main() {
     // logger<ostream,messageconst,StdBuffer> info(std::cout, StdBuffer(10000));
 
     /*
-      Logging& logs = Logging::GetInstance();
+      Logging& logs = Logging::getInstance();
       logs.AddLogger<>("info", info);
       auto& log_1 = logs.GetLogger("info"); // no so useful, since type of log_1 is
       std::any

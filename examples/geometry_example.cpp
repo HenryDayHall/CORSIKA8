@@ -25,7 +25,7 @@ int main() {
 
   // define the root coordinate system
   corsika::CoordinateSystem& root =
-      corsika::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   // another CS defined by a translation relative to the root CS
   CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});

@@ -42,12 +42,12 @@ using namespace corsika::setup;
 using namespace std;
 
 void registerRandomStreams() {
-  corsika::RNGManager::GetInstance().RegisterRandomStream("cascade");
-  corsika::RNGManager::GetInstance().RegisterRandomStream("s_rndm");
-  // corsika::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  corsika::RNGManager::GetInstance().RegisterRandomStream("UrQMD");
+  corsika::RNGManager::getInstance().registerRandomStream("cascade");
+  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  // corsika::RNGManager::getInstance().registerRandomStream("pythia");
+  corsika::RNGManager::getInstance().registerRandomStream("UrQMD");
 
-  corsika::RNGManager::GetInstance().SeedAll();
+  corsika::RNGManager::getInstance().seedAll();
 }
 
 int main() {
