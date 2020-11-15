@@ -36,6 +36,13 @@ namespace corsika {
 
     /// Measured runtime of the function
     TDuration timeDiff_;
+
+  public:
+    ClassTimerImpl(TClass& obj)
+        : obj_(obj){};
+
+    /// returns the last runtime of the wraped function accessed via call
+    inline TDuration getTime() const{return timeDiff_;}
   };
 
   /// Measure the runtime of a single class function
@@ -61,7 +68,7 @@ namespace corsika {
    */
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...)>
-  class ClassTimer<TRet (TClass::*)(TArgs...), TFuncPtr> : ClassTimerImpl<TClass>{
+  class ClassTimer<TRet (TClass::*)(TArgs...), TFuncPtr> : public ClassTimerImpl<TClass> {
   private:
   public:
     ClassTimer(TClass& obj);
@@ -75,14 +82,11 @@ namespace corsika {
      * during the process and therefore must be copy constructible!
      */
     TRet call(TArgs... args);
-
-    /// returns the last runtime of the wraped function accessed via call
-    inline TDuration getTime() const;
   };
 
   /// Specialisation for member functions without return value
   template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...)>
-  class ClassTimer<void (TClass::*)(TArgs...), TFuncPtr> : ClassTimerImpl<TClass> {
+  class ClassTimer<void (TClass::*)(TArgs...), TFuncPtr> : public ClassTimerImpl<TClass> {
   private:
     using TClock = std::chrono::high_resolution_clock;
     using TDuration = std::chrono::microseconds;
@@ -91,31 +95,27 @@ namespace corsika {
     ClassTimer(TClass& obj);
 
     void call(TArgs... args);
-
-    inline TDuration getTime() const;
   };
 
   /// Specialisation for const member functions
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...) const>
-  class ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr> : ClassTimerImpl<TClass>{
+  class ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr>
+      : public ClassTimerImpl<TClass> {
   public:
     ClassTimer(TClass& obj);
 
     TRet call(TArgs... args);
-
-    inline TDuration getTime() const;
   };
 
   /// Specialisation for const member functions without return value
   template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const>
-  class ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr> : ClassTimerImpl<TClass> {
+  class ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr>
+      : public ClassTimerImpl<TClass> {
   public:
     ClassTimer(TClass& obj);
 
     void call(TArgs... args);
-
-    inline TDuration getTime() const;
   };
 
 } // namespace corsika
