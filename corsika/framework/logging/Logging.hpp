@@ -36,8 +36,8 @@
 #ifdef DEBUG
 // trace is the highest level of logging (ALL messages will be printed)
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
-#else // otherwise, remove everything but "critical" messages
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_CRITICAL
+#else // otherwise, remove everything but "error" and worse messages
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
 #endif
 
 #include <spdlog/fmt/ostr.h> // will output whenerver a streaming operator is found
