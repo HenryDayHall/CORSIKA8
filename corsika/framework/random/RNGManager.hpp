@@ -46,18 +46,18 @@ namespace corsika {
      *
      * \throws sth. when stream \a pModuleName is already registered
      */
-    inline  void registerRandomStream(string_type const& vStreamName);
+    inline  void registerRandomStream(string_type const& streamName);
 
     /*!
      * returns the pre-stored stream of given name \a pStreamName if
      * available
      */
-    inline prng_type& getRandomStream(string_type const& vStreamName);
+    inline prng_type& getRandomStream(string_type const& streamName);
 
     /*!
      * Check whether a stream has been registered.
      */
-    inline bool isRegistered(string_type const& vStreamName) const;
+    inline bool isRegistered(string_type const& streamName) const;
 
     /*!
      * dumps the names and states of all registered random-number streams
@@ -69,7 +69,7 @@ namespace corsika {
      * Set explicit seeds for all currently registered streams. The actual seed values
      * are incremented from \a vSeed.
      */
-    inline void seedAll(seed_type vSeed);
+    inline void seedAll(seed_type seed);
 
     /**
      * Set seeds for all currently registered streams.
