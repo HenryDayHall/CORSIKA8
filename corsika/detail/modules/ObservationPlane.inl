@@ -35,7 +35,7 @@ namespace corsika::observation_plane {
       return corsika::EProcessReturn::eOk;
     }
 
-    outputStream_ << static_cast<int>(corsika::GetPDG(particle.GetPID())) << ' '
+    outputStream_ << static_cast<int>(corsika::PDG(particle.GetPID())) << ' '
                   << particle.GetEnergy() * (1 / 1_eV) << ' '
                   << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                   << std::endl;

@@ -70,7 +70,7 @@ namespace corsika::energy_loss {
     double const gamma = E / m;
     int const Z = p.GetChargeNumber();
     int const Z2 = Z * Z;
-    HEPMassType constexpr me = corsika::Electron::GetMass();
+    HEPMassType constexpr me = corsika::Electron::mass();
     auto const m2 = m * m;
     auto constexpr me2 = me * me;
     double const gamma2 = gamma * gamma;
