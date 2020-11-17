@@ -14,24 +14,45 @@
 
 namespace corsika {
 
-  template <class T>
-  MassDensityType SlidingPlanarExponential<T>::GetMassDensity(Point const& p) const {
-    auto const height = (p - Base::fP0).norm() - referenceHeight_;
-    return Base::fRho0 * exp(Base::fInvLambda * height);
+  template <typename T>
+  SlidingPlanarExponential<T>::SlidingPlanarExponential(
+      Point const& p0, units::si::MassDensityType rho0, units::si::LengthType lambda,
+      NuclearComposition nuclComp, units::si::LengthType referenceHeight)
+      : BaseExponential<SlidingPlanarExponential<T>>(p0, rho0, lambda)
+      , nuclComp_(nuclComp)
+      , referenceHeight_(referenceHeight) {}
+
+  template <typename T>
+  units::si::MassDensityType SlidingPlanarExponential<T>::getMassDensity(
+      Point const& point) const {
+    auto const height =
+        (point - BaseExponential<SlidingPlanarExponential<T>>::point_).norm() -
+        referenceHeight_;
+    return BaseExponential<SlidingPlanarExponential<T>>::rho0_ *
+           exp(BaseExponential<SlidingPlanarExponential<T>>::invLambda_ * height);
   }
 
-  template <class T>
-  GrammageType SlidingPlanarExponential<T>::IntegratedGrammage(
-      Trajectory<Line> const& line, LengthType l) const {
-    auto const axis = (line.GetR0() - Base::fP0).normalized();
-    return Base::IntegratedGrammage(line, l, axis);
+  template <typename T>
+  NuclearComposition const& SlidingPlanarExponential<T>::getNuclearComposition() const {
+    return nuclComp_;
   }
 
-  template <class T>
-  LengthType SlidingPlanarExponential<T>::ArclengthFromGrammage(
-      Trajectory<Line> const& line, GrammageType grammage) const {
-    auto const axis = (line.GetR0() - Base::fP0).normalized();
-    return Base::ArclengthFromGrammage(line, grammage, axis);
+  template <typename T>
+  units::si::GrammageType SlidingPlanarExponential<T>::integratedGrammage(
+      Trajectory<Line> const& line, units::si::LengthType l) const {
+    auto const axis =
+        (line.GetR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
+    return BaseExponential<SlidingPlanarExponential<T>>::integratedGrammage(line, l,
+                                                                            axis);
+  }
+
+  template <typename T>
+  units::si::LengthType SlidingPlanarExponential<T>::arclengthFromGrammage(
+      Trajectory<Line> const& line, units::si::GrammageType const grammage) const {
+    auto const axis =
+        (line.GetR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
+    return BaseExponential<SlidingPlanarExponential<T>>::arclengthFromGrammage(
+        line, grammage, axis);
   }
 
 } // namespace corsika

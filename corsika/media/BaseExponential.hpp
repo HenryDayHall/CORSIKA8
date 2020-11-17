@@ -22,23 +22,15 @@ namespace corsika {
    * This class provides the grammage/length conversion functionality for
    * (locally) flat exponential atmospheres.
    */
-  template <class TDerived>
+  template <typename TDerived>
   class BaseExponential {
-
-  public:
-    BaseExponential(Point const& vP0, MassDensityType vRho, LengthType vLambda)
-        : fRho0(vRho)
-        , fLambda(vLambda)
-        , fInvLambda(1 / vLambda)
-        , fP0(vP0) {}
-
   protected:
-    MassDensityType const fRho0;
-    LengthType const fLambda;
-    InverseLengthType const fInvLambda;
-    Point const fP0;
+    units::si::MassDensityType const rho0_;
+    units::si::LengthType const lambda_;
+    units::si::InverseLengthType const invLambda_;
+    Point const point_;
 
-    auto const& GetImplementation() const;
+    auto const& getImplementation() const;
 
     // clang-format off
     /**
@@ -47,15 +39,16 @@ namespace corsika {
      * \f[
      *   X = \frac{\varrho_0 \lambda}{\vec{u} \cdot \vec{a}} \left( \exp\left( \vec{u} \cdot \vec{a} \frac{l}{\lambda} \right) - 1 \right)
      * \f], where \f$ \varrho_0 \f$ is the density at the starting point.
-     * 
+     *
      * If \f$ \vec{u} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
      * \f[
      *   X = \varrho_0 l;
      * \f]
      */
     // clang-format on
-    GrammageType IntegratedGrammage(Trajectory<Line> const& vLine, LengthType vL,
-                                    Vector<dimensionless_d> const& vAxis) const;
+    units::si::GrammageType integratedGrammage(
+        Trajectory<Line> const& line, units::si::LengthType vL,
+        Vector<units::si::dimensionless_d> const& axis) const;
 
     // clang-format off
     /**
@@ -64,22 +57,27 @@ namespace corsika {
      * \f[
      *   l = \begin{cases}
      *   \frac{\lambda}{\vec{u} \cdot \vec{a}} \log\left(Y \right), & \text{if} Y :=  0 > 1 +
-     *     \vec{u} \cdot \vec{a} \frac{X}{\rho_0 \lambda} 
+     *     \vec{u} \cdot \vec{a} \frac{X}{\rho_0 \lambda}
      *   \infty & \text{else,}
      *   \end{cases}
      * \f] where \f$ \varrho_0 \f$ is the density at the starting point.
-     * 
+     *
      * If \f$ \vec{u} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
      * \f[
      *   l =  \frac{X}{\varrho_0}
      * \f]
      */
     // clang-format on
-    LengthType ArclengthFromGrammage(Trajectory<Line> const& vLine,
-                                     GrammageType vGrammage,
-                                     Vector<dimensionless_d> const& vAxis) const;
-  };
+    units::si::LengthType arclengthFromGrammage(
+        Trajectory<Line> const& line, units::si::GrammageType grammage,
+        Vector<units::si::dimensionless_d> const& axis) const;
 
-} // namespace corsika
+  public:
+    BaseExponential(Point const& point, units::si::MassDensityType rho0,
+                    units::si::LengthType lambda);
+
+  }; // class BaseExponential
+
+  } // namespace corsika
 
 #include <corsika/detail/media/BaseExponential.inl>

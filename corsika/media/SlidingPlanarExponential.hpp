@@ -19,34 +19,41 @@
 
 namespace corsika {
 
-  template <class T>
+  // clang-format off
+  /**
+   * The SlidingPlanarExponential models mass density as
+   * \f[
+   *   \varrho(r) = \varrho_0 \exp\left( \frac{|p_0 - r|}{\lambda} \right).
+   * \f]
+   * For grammage/length conversion, the density distribution is approximated as
+   * locally flat at the starting point \f$ r_0 \f$ of the trajectory with the axis pointing
+   * from \f$ p_0 \f$ to \f$ r_0 \f$.
+   */
+  // clang-format on
+
+  template <typename T>
   class SlidingPlanarExponential : public BaseExponential<SlidingPlanarExponential<T>>,
                                    public T {
-
     NuclearComposition const nuclComp_;
-    LengthType const referenceHeight_;
+    units::si::LengthType const referenceHeight_;
 
     using Base = BaseExponential<SlidingPlanarExponential<T>>;
 
   public:
-    SlidingPlanarExponential(Point const& p0, MassDensityType rho0, LengthType lambda,
-                             NuclearComposition nuclComp,
-                             LengthType referenceHeight = LengthType::zero())
-        : Base(p0, rho0, lambda)
-        , nuclComp_(nuclComp)
-        , referenceHeight_(referenceHeight) {}
+    SlidingPlanarExponential(
+        Point const& p0, units::si::MassDensityType rho0, units::si::LengthType lambda,
+        NuclearComposition nuclComp,
+        units::si::LengthType referenceHeight = units::si::LengthType::zero());
 
-    inline MassDensityType GetMassDensity(Point const& p) const override;
+    units::si::MassDensityType getMassDensity(Point const& point) const override;
 
-    inline NuclearComposition const& GetNuclearComposition() const override {
-      return nuclComp_;
-    }
+    NuclearComposition const& getNuclearComposition() const override;
 
-    inline GrammageType IntegratedGrammage(Trajectory<Line> const& line,
-                                           LengthType l) const override;
+    units::si::GrammageType integratedGrammage(Trajectory<Line> const& line,
+                                               units::si::LengthType l) const override;
 
-    inline LengthType ArclengthFromGrammage(Trajectory<Line> const& line,
-                                            GrammageType grammage) const override;
+    units::si::LengthType arclengthFromGrammage(
+        Trajectory<Line> const& line, units::si::GrammageType grammage) const override;
   };
 
 } // namespace corsika

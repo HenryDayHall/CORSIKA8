@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * See file AUTHORS for a list of contributors.
  *
@@ -10,30 +10,49 @@
 
 #pragma once
 
-#include <corsika/media/FlatExponential.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/Line.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/Trajectory.hpp>
+#include <corsika/media/BaseExponential.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 
 namespace corsika {
 
-  template <class T>
-  MassDensityType FlatExponential<T>::GetMassDensity(Point const& vP) const {
-    return Base::fRho0 * exp(Base::fInvLambda * (vP - Base::fP0).dot(fAxis));
+  template <typename T>
+  FlatExponential<T>::FlatExponential(Point const& point,
+                                      Vector<units::si::dimensionless_d> const& axis,
+                                      units::si::MassDensityType rho,
+                                      units::si::LengthType lambda,
+                                      NuclearComposition nuclComp)
+      : BaseExponential<FlatExponential<T>>(point, rho, lambda)
+      , axis_(axis)
+      , nuclComp_(nuclComp) {}
+
+  template <typename T>
+  units::si::MassDensityType FlatExponential<T>::getMassDensity(
+      Point const& point) const {
+    return BaseExponential<FlatExponential<T>>::rho0_ *
+           exp(BaseExponential<FlatExponential<T>>::invLambda_ *
+               (point - BaseExponential<FlatExponential<T>>::point_).dot(axis_));
   }
 
-  template <class T>
-  NuclearComposition const& FlatExponential<T>::GetNuclearComposition() const {
-    return fNuclComp;
+  template <typename T>
+  NuclearComposition const& FlatExponential<T>::getNuclearComposition() const {
+    return nuclComp_;
   }
 
-  template <class T>
-  GrammageType FlatExponential<T>::IntegratedGrammage(Trajectory<Line> const& vLine,
-                                                      LengthType vTo) const {
-    return Base::IntegratedGrammage(vLine, vTo, fAxis);
+  template <typename T>
+  units::si::GrammageType FlatExponential<T>::integratedGrammage(
+      Trajectory<Line> const& line, units::si::LengthType to) const {
+    return BaseExponential<FlatExponential<T>>::integratedGrammage(line, to, axis_);
   }
 
-  template <class T>
-  LengthType FlatExponential<T>::ArclengthFromGrammage(Trajectory<Line> const& vLine,
-                                                       GrammageType vGrammage) const {
-    return Base::ArclengthFromGrammage(vLine, vGrammage, fAxis);
+  template <typename T>
+  units::si::LengthType FlatExponential<T>::arclengthFromGrammage(
+      Trajectory<Line> const& line, units::si::GrammageType grammage) const {
+    return BaseExponential<FlatExponential<T>>::arclengthFromGrammage(line, grammage,
+                                                                      axis_);
   }
 
 } // namespace corsika

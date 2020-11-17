@@ -10,49 +10,62 @@
 
 #pragma once
 
-#include <corsika/media/BaseExponential.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/Line.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/Trajectory.hpp>
 
 namespace corsika {
 
-  template <class TDerived>
-  auto const& BaseExponential<TDerived>::GetImplementation() const {
+  template <typename TDerived>
+  auto const& BaseExponential<TDerived>::getImplementation() const {
     return *static_cast<TDerived const*>(this);
   }
 
-  template <class TDerived>
-  GrammageType BaseExponential<TDerived>::IntegratedGrammage(
-      Trajectory<Line> const& vLine, LengthType vL,
-      Vector<dimensionless_d> const& vAxis) const {
-    if (vL == LengthType::zero()) { return GrammageType::zero(); }
+  template <typename TDerived>
+  units::si::GrammageType BaseExponential<TDerived>::integratedGrammage(
+      Trajectory<Line> const& line, units::si::LengthType vL,
+      Vector<units::si::dimensionless_d> const& axis) const {
+    if (vL == units::si::LengthType::zero()) { return units::si::GrammageType::zero(); }
 
-    auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
-    auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
+    auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();
+    auto const rhoStart = getImplementation().getMassDensity(line.GetR0());
 
     if (uDotA == 0) {
       return vL * rhoStart;
     } else {
-      return rhoStart * (fLambda / uDotA) * (exp(uDotA * vL * fInvLambda) - 1);
+      return rhoStart * (lambda_ / uDotA) * (exp(uDotA * vL * invLambda_) - 1);
     }
   }
 
-  template <class TDerived>
-  LengthType BaseExponential<TDerived>::ArclengthFromGrammage(
-      Trajectory<Line> const& vLine, GrammageType vGrammage,
-      Vector<dimensionless_d> const& vAxis) const {
-    auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
-    auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
+  template <typename TDerived>
+  units::si::LengthType BaseExponential<TDerived>::arclengthFromGrammage(
+      Trajectory<Line> const& line, units::si::GrammageType grammage,
+      Vector<units::si::dimensionless_d> const& axis) const {
+    auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();
+    auto const rhoStart = getImplementation().getMassDensity(line.GetR0());
 
     if (uDotA == 0) {
-      return vGrammage / rhoStart;
+      return grammage / rhoStart;
     } else {
-      auto const logArg = vGrammage * fInvLambda * uDotA / rhoStart + 1;
+      auto const logArg = grammage * invLambda_ * uDotA / rhoStart + 1;
       if (logArg > 0) {
-        return fLambda / uDotA * log(logArg);
+        return lambda_ / uDotA * log(logArg);
       } else {
-        return std::numeric_limits<typename decltype(vGrammage)::value_type>::infinity() *
-               meter;
+        return std::numeric_limits<typename decltype(grammage)::value_type>::infinity() *
+               units::si::meter;
       }
     }
   }
+
+  template <typename TDerived>
+  BaseExponential<TDerived>::BaseExponential(Point const& point,
+                                             units::si::MassDensityType rho0,
+                                             units::si::LengthType lambda)
+      : rho0_(rho0)
+      , lambda_(lambda)
+      , invLambda_(1 / lambda)
+      , point_(point) {}
 
 } // namespace corsika
