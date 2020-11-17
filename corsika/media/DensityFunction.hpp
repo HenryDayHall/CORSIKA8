@@ -21,13 +21,13 @@ namespace corsika {
       : public TIntegrator<DensityFunction<TDerivableRho, TIntegrator>> {
     friend class TIntegrator<DensityFunction<TDerivableRho, TIntegrator>>;
 
-    TDerivableRho fRho; //!< functor for density
+    TDerivableRho rho_; //!< functor for density
 
   public:
     DensityFunction(TDerivableRho rho)
-        : fRho(rho) {}
+        : rho_(rho) {}
 
-    MassDensityType EvaluateAt(corsika::Point const& p) const { return fRho(p); }
+    MassDensityType evaluateAt(corsika::Point const& p) const { return rho_(p); }
   };
 
 } // namespace corsika

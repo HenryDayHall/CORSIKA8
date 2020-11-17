@@ -15,20 +15,19 @@
 
 namespace corsika {
 
-  template <class TDerived>
+  template <typename TDerived>
   class LinearApproximationIntegrator {
-
-    auto const& GetImplementation() const;
+    auto const& getImplementation() const;
 
   public:
-    inline auto IntegrateGrammage(corsika::Trajectory<corsika::Line> const& line,
-                                  LengthType length) const;
+    auto integrateGrammage(Trajectory<Line> const& line,
+                           units::si::LengthType length) const;
 
-    inline auto ArclengthFromGrammage(corsika::Trajectory<corsika::Line> const& line,
-                                      GrammageType grammage) const;
+    auto arclengthFromGrammage(Trajectory<Line> const& line,
+                               units::si::GrammageType grammage) const;
 
-    inline auto MaximumLength(corsika::Trajectory<corsika::Line> const& line,
-                              [[maybe_unused]] double relError) const;
+    auto maximumLength(Trajectory<Line> const& line,
+                       [[maybe_unused]] double relError) const;
   };
 
 } // namespace corsika

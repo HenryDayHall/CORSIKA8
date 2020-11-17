@@ -106,7 +106,7 @@ namespace corsika {
 
     // convert next_step from grammage to length
     LengthType const distance_interact =
-        currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
+        currentLogicalNode->GetModelProperties().arclengthFromGrammage(step,
                                                                        next_interact);
 
     // determine the maximum geometric step length
