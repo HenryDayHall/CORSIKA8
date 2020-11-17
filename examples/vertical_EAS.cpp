@@ -43,9 +43,9 @@ using namespace std;
 
 void registerRandomStreams() {
   corsika::RNGManager::getInstance().registerRandomStream("cascade");
-  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  corsika::RNGManager::getInstance().registerRandomStream("sibyll");
   // corsika::RNGManager::getInstance().registerRandomStream("pythia");
-  corsika::RNGManager::getInstance().registerRandomStream("UrQMD");
+  corsika::RNGManager::getInstance().registerRandomStream("urqmd");
 
   corsika::RNGManager::getInstance().seedAll();
 }

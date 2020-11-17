@@ -95,7 +95,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   const corsika::CoordinateSystem& cs = env.GetCoordinateSystem();
 
-  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  corsika::RNGManager::getInstance().registerRandomStream("sibyll");
 
   SECTION("InteractionInterface") {
 

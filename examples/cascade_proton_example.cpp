@@ -103,7 +103,7 @@ int main() {
       corsika::Code::PiPlus, corsika::Code::PiMinus, corsika::Code::KPlus,
       corsika::Code::KMinus, corsika::Code::K0Long,  corsika::Code::K0Short};
 
-  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  corsika::RNGManager::getInstance().registerRandomStream("sibyll");
   corsika::RNGManager::getInstance().registerRandomStream("pythia");
   //  corsika::sibyll::Interaction sibyll(env);
   corsika::pythia8::Interaction pythia;

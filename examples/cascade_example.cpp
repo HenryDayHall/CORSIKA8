@@ -115,7 +115,7 @@ int main() {
   tracking_line::TrackingLine tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  corsika::RNGManager::getInstance().registerRandomStream("s_rndm");
+  corsika::RNGManager::getInstance().registerRandomStream("sibyll");
   corsika::RNGManager::getInstance().registerRandomStream("pythia");
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);

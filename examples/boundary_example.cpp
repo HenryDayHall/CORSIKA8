@@ -100,7 +100,7 @@ int main() {
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
 
-  RNGManager::getInstance().registerRandomStream("s_rndm");
+  RNGManager::getInstance().registerRandomStream("sibyll");
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::Decay decay;
 

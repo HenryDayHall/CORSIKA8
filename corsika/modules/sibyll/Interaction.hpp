@@ -65,7 +65,7 @@ namespace corsika::sibyll {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::default_prng_type& RNG_ = corsika::RNGManager::getInstance().getRandomStream("s_rndm");
+    corsika::default_prng_type& RNG_ = corsika::RNGManager::getInstance().getRandomStream("sibyll");
     // FOR NOW keep trackedParticles private, could be configurable
     std::vector<corsika::Code> const trackedParticles_ = {
         corsika::Code::PiPlus,    corsika::Code::PiMinus,    corsika::Code::Pi0,

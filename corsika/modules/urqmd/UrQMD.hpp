@@ -38,7 +38,7 @@ namespace corsika::urqmd {
   private:
     static CrossSectionType GetCrossSection(corsika::Code, corsika::Code, HEPEnergyType,
                                             int);
-    corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("UrQMD");
+    corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("urqmd");
 
     std::uniform_int_distribution<int> fBooleanDist{0, 1};
   };
