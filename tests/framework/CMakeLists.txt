@@ -1,6 +1,5 @@
 
-set (test_framework_sources
-  testBitField.cpp
+set (test_framework_sources  
   # testCascade.cpp this is most important, but whole content of former Processes folder missing yet
   testCombinedStack.cpp
   testCOMBoost.cpp

@@ -44,6 +44,11 @@ set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 set (CMAKE_INSTALL_MESSAGE LAZY)
 #
 #+++++++++++++++++++++++++++++
+# Setup hardware and infrastructure dependent defines
+#
+include(CorsikaDefines)
+#
+#+++++++++++++++++++++++++++++
 # check if compiler is C++17 compliant
 #
 include (CheckCXXCompilerFlag)

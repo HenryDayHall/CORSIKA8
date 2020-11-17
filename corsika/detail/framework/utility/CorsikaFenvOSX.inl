@@ -10,7 +10,6 @@
  *
  */
 
-#include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <cfenv>
 
 // Implementation for OS X on intel X64_86

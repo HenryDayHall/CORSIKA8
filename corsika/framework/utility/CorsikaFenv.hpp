@@ -19,3 +19,13 @@ extern "C" {
 int feenableexcept(int excepts);
 int fedisableexcept(int excepts);
 }
+
+#ifdef CORSIKA_HAS_FEENABLEEXCEPT
+    // Nothing to do, OS privides the functions
+#elif
+    #ifdef CORSIKA_OS_MAC
+        #include <corsika/detail/framework/utility/CorsikaFenvOSX.inl>
+    #elif
+        #include <corsika/detail/framework/utility/CorsikaFenvFallback.inl>
+    #endif
+#endif
