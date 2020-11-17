@@ -50,12 +50,12 @@ namespace corsika::pythia8 {
 
   void Decay::SetUnstable(const corsika::Code pCode) {
     std::cout << "Pythia::Decay: setting " << pCode << " unstable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::GetPDG(pCode)), true);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), true);
   }
 
   void Decay::SetStable(const corsika::Code pCode) {
     std::cout << "Pythia::Decay: setting " << pCode << " stable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::GetPDG(pCode)), false);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), false);
   }
 
   template <typename TParticle>
@@ -66,7 +66,7 @@ namespace corsika::pythia8 {
 
     const double gamma = E / m;
 
-    const TimeType t0 = corsika::GetLifetime(p.GetPID());
+    const TimeType t0 = corsika::lifetime(p.GetPID());
     auto const lifetime = gamma * t0;
 
     return lifetime;
@@ -93,14 +93,14 @@ namespace corsika::pythia8 {
     Decay::SetUnstable(vP.GetPID());
 
     // input particle PDG
-    auto const pdgCode = static_cast<int>(corsika::GetPDG(vP.GetPID()));
+    auto const pdgCode = static_cast<int>(corsika::PDG(vP.GetPID()));
 
     auto const pcomp = vP.GetMomentum().GetComponents();
     double px = pcomp[0] / 1_GeV;
     double py = pcomp[1] / 1_GeV;
     double pz = pcomp[2] / 1_GeV;
     double en = vP.GetEnergy() / 1_GeV;
-    double m = corsika::GetMass(vP.GetPID()) / 1_GeV;
+    double m = corsika::mass(vP.GetPID()) / 1_GeV;
 
     // add particle to pythia stack
     event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
@@ -117,7 +117,7 @@ namespace corsika::pythia8 {
     for (int i = 0; i < event.size(); ++i)
       if (event[i].isFinal()) {
         auto const pyId =
-            corsika::ConvertFromPDG(static_cast<corsika::PDGCode>(event[i].id()));
+            corsika::convert_from_PDG(static_cast<corsika::PDGCode>(event[i].id()));
         HEPEnergyType pyEn = event[i].e() * 1_GeV;
         MomentumVector pyP(rootCS, {event[i].px() * 1_GeV, event[i].py() * 1_GeV,
                                     event[i].pz() * 1_GeV});

@@ -111,7 +111,7 @@ TEST_CASE("pythia process") {
     setup::Stack stack;
     const HEPEnergyType E0 = 10_GeV;
     HEPMomentumType P0 =
-        sqrt(E0 * E0 - corsika::PiPlus::GetMass() * corsika::PiPlus::GetMass());
+        sqrt(E0 * E0 - corsika::PiPlus::mass() * corsika::PiPlus::mass());
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(
@@ -139,7 +139,7 @@ TEST_CASE("pythia process") {
     setup::Stack stack;
     const HEPEnergyType E0 = 100_GeV;
     HEPMomentumType P0 =
-        sqrt(E0 * E0 - corsika::PiPlus::GetMass() * corsika::PiPlus::GetMass());
+        sqrt(E0 * E0 - corsika::PiPlus::mass() * corsika::PiPlus::mass());
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(

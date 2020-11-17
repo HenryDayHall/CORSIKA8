@@ -77,12 +77,12 @@ namespace corsika::pythia8 {
 
   void Interaction::SetUnstable(const corsika::Code pCode) {
     std::cout << "Pythia::Interaction: setting " << pCode << " unstable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::GetPDG(pCode)), true);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), true);
   }
 
   void Interaction::SetStable(const corsika::Code pCode) {
     std::cout << "Pythia::Interaction: setting " << pCode << " stable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::GetPDG(pCode)), false);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), false);
   }
 
   void Interaction::ConfigureLabFrameCollision(const corsika::Code BeamId,
@@ -93,15 +93,15 @@ namespace corsika::pythia8 {
 
     // set beam
     // beam id for pythia
-    auto const pdgBeam = static_cast<int>(corsika::GetPDG(BeamId));
+    auto const pdgBeam = static_cast<int>(corsika::PDG(BeamId));
     std::stringstream stBeam;
     stBeam << "Beams:idA = " << pdgBeam;
     fPythia.readString(stBeam.str());
     // set target
-    auto pdgTarget = static_cast<int>(corsika::GetPDG(TargetId));
+    auto pdgTarget = static_cast<int>(corsika::PDG(TargetId));
     // replace hydrogen with proton, otherwise pythia goes into heavy ion mode!
     if (TargetId == corsika::Code::Hydrogen)
-      pdgTarget = static_cast<int>(corsika::GetPDG(corsika::Code::Proton));
+      pdgTarget = static_cast<int>(corsika::PDG(corsika::Code::Proton));
     std::stringstream stTarget;
     stTarget << "Beams:idB = " << pdgTarget;
     fPythia.readString(stTarget.str());
@@ -131,8 +131,8 @@ namespace corsika::pythia8 {
     if (TargetId == corsika::Code::Proton || TargetId == corsika::Code::Hydrogen) {
       if (CanInteract(BeamId) && ValidCoMEnergy(CoMenergy)) {
         // input particle PDG
-        auto const pdgCodeBeam = static_cast<int>(corsika::GetPDG(BeamId));
-        auto const pdgCodeTarget = static_cast<int>(corsika::GetPDG(TargetId));
+        auto const pdgCodeBeam = static_cast<int>(corsika::PDG(BeamId));
+        auto const pdgCodeTarget = static_cast<int>(corsika::PDG(TargetId));
         const double ecm = CoMenergy / 1_GeV;
 
         // calculate cross section
@@ -236,7 +236,7 @@ namespace corsika::pythia8 {
               << "DoInteraction: " << corsikaBeamId << " interaction? "
               << corsika::pythia8::Interaction::CanInteract(corsikaBeamId) << std::endl;
 
-    if (corsika::IsNucleus(corsikaBeamId)) {
+    if (corsika::is_nucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
       throw std::runtime_error("Nuclear projectile are not handled by PYTHIA!");
     }
@@ -359,7 +359,7 @@ namespace corsika::pythia8 {
           if (!p8p.isFinal()) continue;
 
           auto const pyId =
-              corsika::ConvertFromPDG(static_cast<corsika::PDGCode>(p8p.id()));
+              corsika::convert_from_PDG(static_cast<corsika::PDGCode>(p8p.id()));
 
           const MomentumVector pyPlab(
               rootCS, {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
