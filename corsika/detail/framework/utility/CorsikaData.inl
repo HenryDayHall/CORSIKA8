@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <string>
 
-std::string corsika::CorsikaData(std::string const& key) {
+std::string corsika::corsika_data(std::string const& key) {
   if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
     auto const path = std::string(p) + "/" + key;
     return path;
