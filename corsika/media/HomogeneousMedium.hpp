@@ -8,17 +8,11 @@
 
 #pragma once
 
-#include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Trajectory.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-
-#include <corsika/setup/SetupTrajectory.h>
-
-#include <cassert>
 
 /**
  * a homogeneous medium
@@ -26,31 +20,27 @@
 
 namespace corsika {
 
-  template <class T>
+  template <typename T>
   class HomogeneousMedium : public T {
-    MassDensityType const fDensity;
-    NuclearComposition const fNuclComp;
+    units::si::MassDensityType const density_;
+    NuclearComposition const nuclComp_;
 
   public:
-    HomogeneousMedium(MassDensityType pDensity, NuclearComposition pNuclComp)
-        : fDensity(pDensity)
-        , fNuclComp(pNuclComp) {}
+    HomogeneousMedium(units::si::MassDensityType density, NuclearComposition nuclComp);
 
-    MassDensityType GetMassDensity(corsika::Point const&) const override {
-      return fDensity;
-    }
+      units::si::MassDensityType getMassDensity(Point const&) const override;
 
-    NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
+    NuclearComposition const& getNuclearComposition() const override;
 
-    GrammageType IntegratedGrammage(corsika::Trajectory<corsika::Line> const&,
-                                    LengthType pTo) const override {
-      return pTo * fDensity;
-    }
+    units::si::GrammageType integratedGrammage(
+        Trajectory<Line> const&,
+        units::si::LengthType to) const override;
 
-    LengthType ArclengthFromGrammage(corsika::Trajectory<corsika::Line> const&,
-                                     GrammageType pGrammage) const override {
-      return pGrammage / fDensity;
-    }
+    units::si::LengthType arclengthFromGrammage(
+        Trajectory<Line> const&,
+        units::si::GrammageType grammage) const override;
   };
 
 } // namespace corsika
+
+#include <corsika/detail/media/HomogeneousMedium.inl>
