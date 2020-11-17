@@ -46,7 +46,7 @@ struct MyBoundaryCrossingProcess
                                     typename Particle::BaseNodeType const& to) {
     std::cout << "boundary crossing! from: " << &from << "; to: " << &to << std::endl;
 
-    auto const& name = corsika::GetName(p.GetPID());
+    auto const& name = corsika::name(p.GetPID());
     auto const start = p.GetPosition().GetCoordinates();
 
     fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
@@ -116,7 +116,7 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const Code beamCode = Code::Proton;
-  const HEPMassType mass = corsika::GetMass(Code::Proton);
+  const HEPMassType mass = corsika::mass(Code::Proton);
   const HEPEnergyType E0 = 50_TeV;
 
   std::uniform_real_distribution distTheta(0., 180.);

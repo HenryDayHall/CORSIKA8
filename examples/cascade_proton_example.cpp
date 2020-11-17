@@ -69,7 +69,7 @@ int main() {
   setup::Stack stack;
   stack.Clear();
   const Code beamCode = Code::Proton;
-  const HEPMassType mass = corsika::Proton::GetMass();
+  const HEPMassType mass = corsika::mass(beamCode);
   const HEPEnergyType E0 = 100_GeV;
   double theta = 0.;
   double phi = 0.;

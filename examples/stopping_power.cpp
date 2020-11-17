@@ -52,7 +52,7 @@ int main() {
   for (HEPEnergyType E0 = 300_MeV; E0 < 1_PeV; E0 *= 1.05) {
     stack.Clear();
     const Code beamCode = Code::MuPlus;
-    const HEPMassType mass = GetMass(beamCode);
+    const HEPMassType mass = corsika::mass(beamCode);
     double theta = 0.;
     double phi = 0.;
 
