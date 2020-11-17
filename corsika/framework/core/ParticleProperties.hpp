@@ -16,6 +16,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cmath>
 #include <iosfwd>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -28,7 +29,6 @@
  */
 
 namespace corsika {
-
   /**
    * @enum Code
    * The Code enum is the actual place to define CORSIKA 8 particle codes.
@@ -39,126 +39,115 @@ namespace corsika {
   using PDGCodeType = std::underlying_type<PDGCode>::type;
 
   // forward declarations to be used in GeneratedParticleProperties
-  int16_t constexpr GetChargeNumber(Code const);
-  ElectricChargeType constexpr GetCharge(Code const);
-  HEPMassType constexpr GetMass(Code const);
-  PDGCode constexpr GetPDG(Code const);
-  constexpr std::string const& GetName(Code const);
-  TimeType constexpr GetLifetime(Code const);
+  int16_t constexpr charge_number(Code const);     //!< electric charge in units of e
+  ElectricChargeType constexpr charge(Code const); //!< electric charge
+  HEPMassType constexpr mass(Code const);          //!< mass
 
-  bool constexpr IsNucleus(Code const);
-  bool constexpr IsHadron(Code const);
-  bool constexpr IsEM(Code const);
-  bool constexpr IsMuon(Code const);
-  bool constexpr IsNeutrino(Code const);
-  int constexpr GetNucleusA(Code const);
-  int constexpr GetNucleusZ(Code const);
+  //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
+  PDGCode constexpr PDG(Code const);
+  constexpr std::string const& name(Code const); //!< name of the particle as string
+  TimeType constexpr lifetime(Code const);       //!< lifetime
+
+  //! true iff the particle is a hard-coded nucleus or Code::Nucleus
+  bool constexpr is_nucleus(Code const);
+  bool constexpr is_hadron(Code const); //!< true iff particle is hadron
+  bool constexpr is_em(Code const); //!< true iff particle is electron, positron or gamma
+  bool constexpr is_muon(Code const);     //!< true iff particle is mu+ or mu-
+  bool constexpr is_neutrino(Code const); //!< true iff particle is (anti-) neutrino
+  int constexpr nucleus_A(Code const); //!< returns A for hard-coded nucleus, otherwise 0
+  int constexpr nucleus_Z(Code const); //!< returns Z for hard-coded nucleus, otherwise 0
+} // namespace corsika
 
 #include <corsika/framework/core/GeneratedParticleProperties.inc>
 
-namespace corsika::particles {
+namespace corsika {
 
-  /*!
-   * returns mass of particle in natural units
-   */
-  HEPMassType constexpr GetMass(Code const p) {
+  HEPMassType constexpr mass(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     return particle::detail::masses[static_cast<CodeIntType>(p)];
   }
 
-  /*!
-   * returns PDG id
-   */
-  PDGCode constexpr GetPDG(Code const p) {
+  PDGCode constexpr PDG(Code const p) {
     return particle::detail::pdg_codes[static_cast<CodeIntType>(p)];
   }
 
-  /*!
-   * returns electric charge number of particle return 1 for a proton.
-   */
-  int16_t constexpr GetChargeNumber(Code const p) {
-    if (p == Code::Nucleus)
-      throw std::runtime_error(
-          "Cannot GetChargeNumber() of particle::Nucleus -> unspecified");
-    // electric_charges stores charges in units of (e/3), e.g. 3 for a proton
-    return particle::detail::electric_charges[static_cast<CodeIntType>(p)] / 3;
+  int16_t constexpr charge_number(Code const code) {
+    if (code == Code::Nucleus)
+      throw std::runtime_error("charge of particle::Nucleus undefined");
+    return particle::detail::electric_charges[static_cast<CodeIntType>(code)];
   }
 
-  /*!
-   * returns electric charge of particle, e.g. return 1.602e-19_C for a proton.
-   */
-  ElectricChargeType constexpr GetCharge(Code const p) {
-    if (p == Code::Nucleus)
+  ElectricChargeType constexpr charge(Code const code) {
+    if (code == Code::Nucleus)
       throw std::runtime_error("Cannot GetCharge() of particle::Nucleus -> unspecified");
-    return GetChargeNumber(p) * constants::e;
+    return charge_number(code) * constants::e;
   }
 
-  constexpr std::string const& GetName(Code const p) {
-    return particle::detail::names[static_cast<CodeIntType>(p)];
+  constexpr std::string const& name(Code const code) {
+    return particle::detail::names[static_cast<CodeIntType>(code)];
   }
 
-  inline TimeType constexpr GetLifetime(Code const p) {
+  TimeType constexpr lifetime(Code const p) {
     return particle::detail::lifetime[static_cast<CodeIntType>(p)] * second;
   }
 
-  inline bool constexpr IsHadron(Code const p) {
+  bool constexpr is_hadron(Code const p) {
     return particle::detail::isHadron[static_cast<CodeIntType>(p)];
   }
 
-  inline bool constexpr IsEM(Code c) {
+  bool constexpr is_em(Code c) {
     return c == Code::Electron || c == Code::Positron || c == Code::Gamma;
   }
 
-  inline bool constexpr IsMuon(Code c) { return c == Code::MuPlus || c == Code::MuMinus; }
+  bool constexpr is_muon(Code c) { return c == Code::MuPlus || c == Code::MuMinus; }
 
-  inline bool constexpr IsNeutrino(Code c) {
+  bool constexpr is_neutrino(Code c) {
     return c == Code::NuE || c == Code::NuMu || c == Code::NuTau || c == Code::NuEBar ||
            c == Code::NuMuBar || c == Code::NuTauBar;
   }
 
-  inline int constexpr GetNucleusA(Code const p) {
-    if (p == Code::Nucleus) {
-      throw std::runtime_error("GetNucleusA(Code::Nucleus) is impossible!");
+  int constexpr nucleus_A(Code const code) {
+    if (code == Code::Nucleus) {
+      throw std::runtime_error("nucleus_A(Code::Nucleus) is impossible!");
     }
-    return particle::detail::nucleusA[static_cast<CodeIntType>(p)];
+    return particle::detail::nucleusA[static_cast<CodeIntType>(code)];
   }
 
-  inline int constexpr GetNucleusZ(Code const p) {
-    if (p == Code::Nucleus) {
-      throw std::runtime_error("GetNucleusZ(Code::Nucleus) is impossible!");
+  int constexpr nucleus_Z(Code const code) {
+    if (code == Code::Nucleus) {
+      throw std::runtime_error("nucleus_Z(Code::Nucleus) is impossible!");
     }
-    return particle::detail::nucleusZ[static_cast<CodeIntType>(p)];
+    return particle::detail::nucleusZ[static_cast<CodeIntType>(code)];
   }
 
-  inline bool constexpr IsNucleus(Code const p) {
-    return (p == Code::Nucleus) || (GetNucleusA(p) != 0);
+  bool constexpr is_nucleus(Code const code) {
+    return (code == Code::Nucleus) || (nucleus_A(code) != 0);
   }
 
-  /**
-   * the output operator for humand-readable particle codes
-   **/
-
-  inline std::ostream& operator<<(std::ostream& stream, corsika::Code const p) {
-    return stream << corsika::GetName(p);
+  //! the output stream operator for human-readable particle codes
+  inline std::ostream& operator<<(std::ostream& stream, corsika::Code const code) {
+    return stream << name(code);
   }
 
-  inline Code ConvertFromPDG(PDGCode p) {
+  //! convert PDG code to CORSIKA 8 internal code
+  inline Code convert_from_PDG(PDGCode p) {
     static_assert(particle::detail::conversionArray.size() % 2 == 1);
     // this will fail, for the strange case where the maxPDG is negative...
-    unsigned int constexpr maxPDG{(particle::detail::conversionArray.size() - 1) >> 1};
-    auto k = static_cast<PDGCodeType>(p);
-    if ((unsigned int)abs(k) <= maxPDG) {
+    int constexpr maxPDG{(particle::detail::conversionArray.size() - 1) >> 1};
+    auto const k = static_cast<PDGCodeType>(p);
+    if (std::abs(k) <= maxPDG) {
       return particle::detail::conversionArray[k + maxPDG];
     } else {
       return particle::detail::conversionMap.at(p);
     }
   }
-  /**
-   * Get mass of nucleus
-   **/
-  inline HEPMassType constexpr GetNucleusMass(const int vA, const int vZ) {
-    return Proton::GetMass() * vZ + (vA - vZ) * Neutron::GetMass();
+
+  //! returns mass of (A,Z) nucleus, disregarding binding energy
+  HEPMassType constexpr nucleus_mass(const int A, const int Z) {
+    auto const absA = std::abs(A);
+    auto const absZ = std::abs(Z);
+    return Proton::mass() * absZ + (absA - absZ) * Neutron::mass();
   }
 
 } // namespace corsika
