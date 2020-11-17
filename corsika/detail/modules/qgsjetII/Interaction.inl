@@ -129,7 +129,7 @@ namespace corsika::qgsjetII {
 
       auto const* currentNode = vP.GetNode();
       const auto& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
 
       CrossSectionType weightedProdCrossSection =
           mediumComposition.WeightedSum([=](corsika::Code targetID) -> CrossSectionType {
@@ -205,7 +205,7 @@ namespace corsika::qgsjetII {
       // sample target mass number
       auto const* currentNode = vP.GetNode();
       auto const& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
       // get cross sections for target materials
       /*
         Here we read the cross section from the interaction model again,

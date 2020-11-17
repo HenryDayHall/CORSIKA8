@@ -146,7 +146,7 @@ namespace corsika::sibyll {
 
       auto const* currentNode = vP.GetNode();
       const auto& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
 
       si::CrossSectionType weightedProdCrossSection = mediumComposition.WeightedSum(
           [=](corsika::Code targetID) -> si::CrossSectionType {
@@ -249,7 +249,7 @@ namespace corsika::sibyll {
       // sample target mass number
       auto const* currentNode = vP.GetNode();
       auto const& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
       // get cross sections for target materials
       /*
         Here we read the cross section from the interaction model again,

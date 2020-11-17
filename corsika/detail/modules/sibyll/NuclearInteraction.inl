@@ -69,7 +69,7 @@ namespace corsika::sibyll {
       auto collectElements = [&](auto& vtn) {
         if (vtn.HasModelProperties()) {
           auto const& comp =
-              vtn.GetModelProperties().GetNuclearComposition().GetComponents();
+              vtn.GetModelProperties().getNuclearComposition().GetComponents();
           for (auto const c : comp) allElementsInUniverse.insert(c);
         }
       };
@@ -267,7 +267,7 @@ namespace corsika::sibyll {
       */
       auto const* const currentNode = vP.GetNode();
       auto const& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
       // determine average interaction length
       // weighted sum
       int i = -1;
@@ -415,7 +415,7 @@ namespace corsika::sibyll {
     const auto beamId = corsika::Code::Proton;
     auto const* const currentNode = vP.GetNode();
     const auto& mediumComposition =
-        currentNode->GetModelProperties().GetNuclearComposition();
+        currentNode->GetModelProperties().getNuclearComposition();
     std::cout << "get nucleon-nucleus cross sections for target materials.." << std::endl;
     // get cross sections for target materials
     // using nucleon-target-nucleus cross section!!!

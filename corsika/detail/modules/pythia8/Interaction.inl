@@ -197,7 +197,7 @@ namespace corsika::pythia8 {
       */
       const auto* currentNode = p.GetNode();
       const auto mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
       // determine average interaction length
 
       auto const weightedProdCrossSection =
@@ -302,7 +302,7 @@ namespace corsika::pythia8 {
       // sample target mass number
       const auto* currentNode = vP.GetNode();
       const auto& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->GetModelProperties().getNuclearComposition();
       // get cross sections for target materials
       /*
         Here we read the cross section from the interaction model again,

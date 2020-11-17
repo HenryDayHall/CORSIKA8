@@ -113,7 +113,7 @@ namespace corsika::urqmd {
     }
 
     auto const& mediumComposition =
-        vParticle.GetNode()->GetModelProperties().GetNuclearComposition();
+        vParticle.GetNode()->GetModelProperties().getNuclearComposition();
     using namespace std::placeholders;
 
     CrossSectionType const weightedProdCrossSection = mediumComposition.WeightedSum(
@@ -133,7 +133,7 @@ namespace corsika::urqmd {
 
     // sample target particle
     auto const& mediumComposition =
-        vProjectile.GetNode()->GetModelProperties().GetNuclearComposition();
+        vProjectile.GetNode()->GetModelProperties().getNuclearComposition();
     auto const componentCrossSections = std::invoke([&]() {
       auto const& components = mediumComposition.GetComponents();
       std::vector<CrossSectionType> crossSections;
