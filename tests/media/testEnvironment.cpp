@@ -54,9 +54,10 @@ TEST_CASE("FlatExponential") {
   SECTION("horizontal") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {20_cm / second, 0_m / second, 0_m / second}));
-    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
-    CHECK((medium.IntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
-    CHECK((medium.ArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
+    Trajectory<Line> const trajectory(line, tEnd);
+
+    REQUIRE((medium.integratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
+    REQUIRE((medium.arclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
   }
 
   SECTION("vertical") {
@@ -66,8 +67,8 @@ TEST_CASE("FlatExponential") {
     LengthType const length = 2 * lambda;
     GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
 
-    CHECK((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
-    CHECK((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+    REQUIRE((medium.integratedGrammage(trajectory, length) / exact) == Approx(1));
+    REQUIRE((medium.arclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 
   SECTION("escape grammage") {
@@ -77,9 +78,9 @@ TEST_CASE("FlatExponential") {
 
     GrammageType const escapeGrammage = rho0 * lambda;
 
-    CHECK(trajectory.GetDirection(0).dot(axis).magnitude() < 0);
-    CHECK(medium.ArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
-          std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
+    REQUIRE(trajectory.NormalizedDirection().dot(axis).magnitude() < 0);
+    REQUIRE(medium.arclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
+            std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
   }
 
   SECTION("inclined") {
@@ -90,8 +91,8 @@ TEST_CASE("FlatExponential") {
     LengthType const length = 2 * lambda;
     GrammageType const exact =
         rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
-    CHECK((medium.IntegratedGrammage(trajectory, length) / exact) == Approx(1));
-    CHECK((medium.ArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
+    REQUIRE((medium.integratedGrammage(trajectory, length) / exact) == Approx(1));
+    REQUIRE((medium.arclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 }
 
@@ -107,8 +108,8 @@ TEST_CASE("SlidingPlanarExponential") {
                                                       protonComposition);
 
   SECTION("density") {
-    CHECK(medium.GetMassDensity({gCS, {0_m, 0_m, 3_m}}) /
-              medium.GetMassDensity({gCS, {0_m, 3_m, 0_m}}) ==
+    CHECK(medium.getMassDensity({gCS, {0_m, 0_m, 3_m}}) /
+              medium.getMassDensity({gCS, {0_m, 3_m, 0_m}}) ==
           Approx(1));
   }
 
@@ -121,12 +122,12 @@ TEST_CASE("SlidingPlanarExponential") {
                         gCS, {0_m / second, 0_m / second, 5_m / second}));
     setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
-    CHECK(medium.GetMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
-          flat.GetMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
-    CHECK(medium.IntegratedGrammage(trajectory, 2_m).magnitude() ==
-          flat.IntegratedGrammage(trajectory, 2_m).magnitude());
-    CHECK(medium.ArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude() ==
-          flat.ArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude());
+    CHECK(medium.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
+          flat.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
+    CHECK(medium.integratedGrammage(trajectory, 2_m).magnitude() ==
+          flat.integratedGrammage(trajectory, 2_m).magnitude());
+    CHECK(medium.arclengthFromGrammage(trajectory, rho0 * 5_m).magnitude() ==
+          flat.arclengthFromGrammage(trajectory, rho0 * 5_m).magnitude());
   }
 }
 
@@ -164,9 +165,9 @@ TEST_CASE("InhomogeneousMedium") {
   DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);
 
   SECTION("DensityFunction") {
-    CHECK(e.Derivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
-          Approx(1));
-    CHECK(rho.EvaluateAt(gOrigin) == e(gOrigin));
+    REQUIRE(e.Derivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
+            Approx(1));
+    REQUIRE(rho.evaluateAt(gOrigin) == e(gOrigin));
   }
 
   auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };
@@ -178,18 +179,18 @@ TEST_CASE("InhomogeneousMedium") {
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
 
   SECTION("Integration") {
-    CHECK(rho.IntegrateGrammage(trajectory, l) / exactGrammage(l) ==
-          Approx(1).epsilon(1e-2));
-    CHECK(rho.ArclengthFromGrammage(trajectory, exactGrammage(l)) /
-              exactLength(exactGrammage(l)) ==
-          Approx(1).epsilon(1e-2));
-    CHECK(rho.MaximumLength(trajectory, 1e-2) >
-          l); // todo: write reasonable test when implementation is working
+    REQUIRE(rho.integrateGrammage(trajectory, l) / exactGrammage(l) ==
+            Approx(1).epsilon(1e-2));
+    REQUIRE(rho.arclengthFromGrammage(trajectory, exactGrammage(l)) /
+                exactLength(exactGrammage(l)) ==
+            Approx(1).epsilon(1e-2));
+    REQUIRE(rho.maximumLength(trajectory, 1e-2) >
+            l); // todo: write reasonable test when implementation is working
 
-    CHECK(rho.IntegrateGrammage(trajectory, l) ==
-          inhMedium.IntegratedGrammage(trajectory, l));
-    CHECK(rho.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
-          inhMedium.ArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
+    REQUIRE(rho.integrateGrammage(trajectory, l) ==
+            inhMedium.integratedGrammage(trajectory, l));
+    REQUIRE(rho.arclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
+            inhMedium.arclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
   }
 }
 
