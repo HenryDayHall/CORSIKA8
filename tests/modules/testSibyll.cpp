@@ -23,26 +23,26 @@ using namespace corsika::sibyll;
 TEST_CASE("Sibyll", "[processes]") {
 
   SECTION("Sibyll -> Corsika") {
-    REQUIRE(Electron::GetCode() ==
+    REQUIRE(Code::Electron ==
             corsika::sibyll::ConvertFromSibyll(corsika::sibyll::SibyllCode::Electron));
   }
 
   SECTION("Corsika -> Sibyll") {
-    REQUIRE(corsika::sibyll::ConvertToSibyll(Electron::GetCode()) ==
+    REQUIRE(corsika::sibyll::ConvertToSibyll(Code::Electron) ==
             corsika::sibyll::SibyllCode::Electron);
-    REQUIRE(corsika::sibyll::ConvertToSibyllRaw(Proton::GetCode()) == 13);
+    REQUIRE(corsika::sibyll::ConvertToSibyllRaw(Code::Proton) == 13);
   }
 
   SECTION("canInteractInSibyll") {
 
-    REQUIRE(corsika::sibyll::CanInteract(Proton::GetCode()));
+    REQUIRE(corsika::sibyll::CanInteract(Code::Proton));
     REQUIRE(corsika::sibyll::CanInteract(Code::XiCPlus));
 
-    REQUIRE_FALSE(corsika::sibyll::CanInteract(Electron::GetCode()));
-    REQUIRE_FALSE(corsika::sibyll::CanInteract(SigmaC0::GetCode()));
+    REQUIRE_FALSE(corsika::sibyll::CanInteract(Code::Electron));
+    REQUIRE_FALSE(corsika::sibyll::CanInteract(Code::SigmaC0));
 
-    REQUIRE_FALSE(corsika::sibyll::CanInteract(Nucleus::GetCode()));
-    REQUIRE_FALSE(corsika::sibyll::CanInteract(Helium::GetCode()));
+    REQUIRE_FALSE(corsika::sibyll::CanInteract(Code::Nucleus));
+    REQUIRE_FALSE(corsika::sibyll::CanInteract(Code::Helium));
   }
 
   SECTION("cross-section type") {
@@ -101,7 +101,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     corsika::setup::Stack stack;
     const HEPEnergyType E0 = 100_GeV;
-    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::mass() * Proton::mass());
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(
@@ -123,7 +123,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     setup::Stack stack;
     const HEPEnergyType E0 = 400_GeV;
-    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::mass() * Proton::mass());
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
 
@@ -147,7 +147,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     setup::Stack stack;
     const HEPEnergyType E0 = 10_GeV;
-    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::GetMass() * Proton::GetMass());
+    HEPMomentumType P0 = sqrt(E0 * E0 - Proton::mass() * Proton::mass());
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(

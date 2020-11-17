@@ -108,8 +108,8 @@ namespace corsika {
       corsika::Vector<dimensionless_d> GetDirection() const {
         return GetMomentum() / GetEnergy();
       }
-      HEPMassType GetMass() const { return corsika::GetMass(GetPID()); }
-      int16_t GetChargeNumber() const { return corsika::GetChargeNumber(GetPID()); }
+      HEPMassType GetMass() const { return corsika::mass(GetPID()); }
+      int16_t GetChargeNumber() const { return corsika::charge_number(GetPID()); }
       ///@}
     };
 

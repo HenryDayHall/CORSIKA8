@@ -90,7 +90,7 @@ namespace corsika::sibyll {
 
     const double gamma = E / m;
 
-    const TimeType t0 = corsika::GetLifetime(vP.GetPID());
+    const TimeType t0 = corsika::lifetime(vP.GetPID());
     auto const lifetime = gamma * t0;
 
     const auto mkin =
@@ -123,7 +123,7 @@ namespace corsika::sibyll {
                    vP.GetMomentum(),
                    // setting particle mass with Corsika values, may be inconsistent
                    // with sibyll internal values
-                   corsika::GetMass(pCode));
+                   corsika::mass(pCode));
     // remember position
     Point const decayPoint = vP.GetPosition();
     TimeType const t0 = vP.GetTime();

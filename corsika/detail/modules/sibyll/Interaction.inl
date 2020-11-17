@@ -87,13 +87,13 @@ namespace corsika::sibyll {
           "Interaction: GetCrossSection: CoM energy outside range for Sibyll!");
     }
     const double dEcm = CoMenergy / 1_GeV;
-    if (corsika::IsNucleus(TargetId)) {
-      const int iTarget = corsika::GetNucleusA(TargetId);
+    if (corsika::is_nucleus(TargetId)) {
+      const int iTarget = corsika::nucleus_A(TargetId);
       if (iTarget > maxTargetMassNumber_ || iTarget == 0)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 are allowed.");
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
-    } else if (TargetId == corsika::Proton::GetCode()) {
+    } else if (TargetId == corsika::Code::Proton) {
       sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
     } else {
       // no interaction in sibyll possible, return infinite cross section? or throw?
@@ -186,7 +186,7 @@ namespace corsika::sibyll {
          << "DoInteraction: " << corsikaBeamId << " interaction? "
          << corsika::sibyll::CanInteract(corsikaBeamId) << std::endl;
 
-    if (corsika::IsNucleus(corsikaBeamId)) {
+    if (corsika::is_nucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
       throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
     }
@@ -276,8 +276,8 @@ namespace corsika::sibyll {
         allowed air in atmosphere also contains some Argon.
       */
       int targetSibCode = -1;
-      if (IsNucleus(targetCode)) targetSibCode = GetNucleusA(targetCode);
-      if (targetCode == corsika::Proton::GetCode()) targetSibCode = 1;
+      if (is_nucleus(targetCode)) targetSibCode = nucleus_A(targetCode);
+      if (targetCode == corsika::Code::Proton) targetSibCode = 1;
       std::cout << "Interaction: sibyll code: " << targetSibCode << std::endl;
       if (targetSibCode > maxTargetMassNumber_ || targetSibCode < 1)
         throw std::runtime_error(

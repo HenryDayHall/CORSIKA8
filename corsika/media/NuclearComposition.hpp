@@ -72,10 +72,10 @@ namespace corsika {
         , fAvgMassNumber(std::inner_product(
               pComponents.cbegin(), pComponents.cend(), pFractions.cbegin(), 0.,
               std::plus<double>(), [](auto const compID, auto const fraction) -> double {
-                if (IsNucleus(compID)) {
-                  return GetNucleusA(compID) * fraction;
+                if (is_nucleus(compID)) {
+                  return nucleus_A(compID) * fraction;
                 } else {
-                  return GetMass(compID) / ConvertSIToHEP(constants::u) * fraction;
+                  return mass(compID) / ConvertSIToHEP(constants::u) * fraction;
                 }
               })) {
       assert(pComponents.size() == pFractions.size());

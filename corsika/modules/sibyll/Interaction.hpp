@@ -46,8 +46,7 @@ namespace corsika::sibyll {
     HEPEnergyType GetMinEnergyCoM() const { return minEnergyCoM_; }
     HEPEnergyType GetMaxEnergyCoM() const { return maxEnergyCoM_; }
     bool IsValidTarget(corsika::Code TargetId) const {
-      return (corsika::GetNucleusA(TargetId) < maxTargetMassNumber_) &&
-             corsika::IsNucleus(TargetId);
+      return corsika::is_nucleus(TargetId) && (corsika::nucleus_A(TargetId) < maxTargetMassNumber_);
     }
 
     std::tuple<CrossSectionType, CrossSectionType> GetCrossSection(
