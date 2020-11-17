@@ -38,9 +38,9 @@ namespace corsika::urqmd {
 
     // the following is a translation of ptsigtot() into C++
     if (vProjectileCode != corsika::Code::Nucleus &&
-        !IsNucleus(vTargetCode)) { // both particles are "special"
-      auto const mProj = corsika::GetMass(vProjectileCode);
-      auto const mTar = corsika::GetMass(vTargetCode);
+        !corsika::is_nucleus(vTargetCode)) { // both particles are "special"
+      auto const mProj = corsika::mass(vProjectileCode);
+      auto const mTar = corsika::mass(vTargetCode);
       double sqrtS =
           sqrt(static_pow<2>(mProj) + static_pow<2>(mTar) + 2 * vLabEnergy * mTar) *
           (1 / 1_GeV);
@@ -59,7 +59,7 @@ namespace corsika::urqmd {
       return ::urqmd::sigtot_(one, two, sqrtS) * 1_mb;
     } else {
       int const Ap = vAProjectile;
-      int const At = IsNucleus(vTargetCode) ? corsika::GetNucleusA(vTargetCode) : 1;
+      int const At = is_nucleus(vTargetCode) ? corsika::nucleus_A(vTargetCode) : 1;
 
       double const maxImpact = ::urqmd::nucrad_(Ap) + ::urqmd::nucrad_(At) +
                                2 * ::urqmd::options_.CTParam[30 - 1];
@@ -147,8 +147,8 @@ namespace corsika::urqmd {
     });
 
     auto const targetCode = mediumComposition.SampleTarget(componentCrossSections, fRNG);
-    auto const targetA = corsika::GetNucleusA(targetCode);
-    auto const targetZ = corsika::GetNucleusZ(targetCode);
+    auto const targetA = corsika::nucleus_A(targetCode);
+    auto const targetZ = corsika::nucleus_Z(targetCode);
 
     ::urqmd::inputs_.nevents = 1;
     ::urqmd::sys_.eos = 0; // could be configurable in principle
@@ -192,7 +192,7 @@ namespace corsika::urqmd {
     }
 
     // initilazation regarding target
-    if (corsika::IsNucleus(targetCode)) {
+    if (corsika::is_nucleus(targetCode)) {
       ::urqmd::sys_.Zt = targetZ;
       ::urqmd::sys_.At = targetA;
       ::urqmd::inputs_.trspflg = 0; // nucleus as target
@@ -226,7 +226,7 @@ namespace corsika::urqmd {
               ::urqmd::coor_.px[i], ::urqmd::coor_.py[i], ::urqmd::coor_.pz[i]} *
               1_GeV);
 
-      auto const energy = sqrt(momentum.squaredNorm() + square(corsika::GetMass(code)));
+      auto const energy = sqrt(momentum.squaredNorm() + square(corsika::mass(code)));
 
       momentum.rebase(originalCS); // transform back into standard lab frame
       std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
@@ -250,7 +250,7 @@ namespace corsika::urqmd {
       throw std::runtime_error("UrQMD pdgid() returned 0");
     }
     auto const pdg = static_cast<corsika::PDGCode>(pdgInt);
-    return corsika::ConvertFromPDG(pdg);
+    return corsika::convert_from_PDG(pdg);
   }
 
   std::pair<int, int> ConvertToUrQMD(corsika::Code code) {
@@ -310,7 +310,7 @@ namespace corsika::urqmd {
         {443, {135, 0}},     // jpsi
     };
 
-    return mapPDGToUrQMD.at(static_cast<int>(GetPDG(code)));
+    return mapPDGToUrQMD.at(static_cast<int>(PDG(code)));
   }
 
 } // namespace corsika::urqmd

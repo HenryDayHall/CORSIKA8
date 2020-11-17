@@ -36,7 +36,7 @@ template <typename TStackView>
 auto sumCharge(TStackView const& view) {
   int totalCharge = 0;
 
-  for (auto const& p : view) { totalCharge += corsika::GetChargeNumber(p.GetPID()); }
+  for (auto const& p : view) { totalCharge += corsika::charge_number(p.GetPID()); }
 
   return totalCharge;
 }
@@ -103,7 +103,7 @@ auto setupStack(corsika::Code vProjectileType, HEPEnergyType vMomentum,
   corsika::MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
   HEPEnergyType const E0 =
-      sqrt(static_pow<2>(corsika::GetMass(vProjectileType)) + pLab.squaredNorm());
+      sqrt(static_pow<2>(corsika::mass(vProjectileType)) + pLab.squaredNorm());
   auto particle = stack->AddParticle(
       std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector, corsika::Point,
                  TimeType>{vProjectileType, E0, pLab, origin, 0_ns});
@@ -165,8 +165,7 @@ TEST_CASE("UrQMD") {
     auto const projectileMomentum = projectile.GetMomentum();
     [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
-    REQUIRE(sumCharge(*secViewPtr) ==
-            Z + corsika::GetChargeNumber(corsika::Code::Oxygen));
+    REQUIRE(sumCharge(*secViewPtr) == Z + corsika::charge_number(corsika::Code::Oxygen));
 
     auto const secMomSum =
         sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
@@ -187,9 +186,8 @@ TEST_CASE("UrQMD") {
 
     [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
-    REQUIRE(sumCharge(*secViewPtr) ==
-            corsika::GetChargeNumber(corsika::Code::PiPlus) +
-                corsika::GetChargeNumber(corsika::Code::Oxygen));
+    REQUIRE(sumCharge(*secViewPtr) == corsika::charge_number(corsika::Code::PiPlus) +
+                                          corsika::charge_number(corsika::Code::Oxygen));
 
     auto const secMomSum =
         sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
@@ -210,9 +208,8 @@ TEST_CASE("UrQMD") {
 
     [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
 
-    REQUIRE(sumCharge(*secViewPtr) ==
-            corsika::GetChargeNumber(corsika::Code::K0Long) +
-                corsika::GetChargeNumber(corsika::Code::Oxygen));
+    REQUIRE(sumCharge(*secViewPtr) == corsika::charge_number(corsika::Code::K0Long) +
+                                          corsika::charge_number(corsika::Code::Oxygen));
 
     auto const secMomSum =
         sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
