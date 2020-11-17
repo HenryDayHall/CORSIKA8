@@ -35,8 +35,8 @@ namespace corsika::qgsjetII {
     bool WasInitialized() { return initialized_; }
     int GetMaxTargetMassNumber() const { return maxMassNumber_; }
     bool IsValidTarget(corsika::Code TargetId) const {
-      return (corsika::GetNucleusA(TargetId) < maxMassNumber_) &&
-             corsika::IsNucleus(TargetId);
+      return corsika::is_nucleus(TargetId) &&
+             (corsika::nucleus_A(TargetId) < maxMassNumber_);
     }
 
     CrossSectionType GetCrossSection(const corsika::Code, const corsika::Code,

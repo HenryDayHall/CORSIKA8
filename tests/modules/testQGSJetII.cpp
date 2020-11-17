@@ -22,25 +22,25 @@ using namespace corsika::qgsjetII;
 TEST_CASE("QgsjetII", "[processes]") {
 
   SECTION("QgsjetII -> Corsika") {
-    REQUIRE(corsika::PiPlus::GetCode() == corsika::qgsjetII::ConvertFromQgsjetII(
-                                              corsika::qgsjetII::QgsjetIICode::PiPlus));
+    REQUIRE(corsika::Code::PiPlus == corsika::qgsjetII::ConvertFromQgsjetII(
+                                         corsika::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
-    REQUIRE(corsika::qgsjetII::ConvertToQgsjetII(corsika::PiMinus::GetCode()) ==
+    REQUIRE(corsika::qgsjetII::ConvertToQgsjetII(corsika::Code::PiMinus) ==
             corsika::qgsjetII::QgsjetIICode::PiMinus);
-    REQUIRE(corsika::qgsjetII::ConvertToQgsjetIIRaw(corsika::Proton::GetCode()) == 2);
+    REQUIRE(corsika::qgsjetII::ConvertToQgsjetIIRaw(corsika::Code::Proton) == 2);
   }
 
   SECTION("canInteractInQgsjetII") {
 
-    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Proton::GetCode()));
+    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::Proton));
     REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::KPlus));
-    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Nucleus::GetCode()));
+    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::Nucleus));
     // REQUIRE(corsika::qgsjetII::CanInteract(corsika::Helium::GetCode()));
 
-    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::EtaC::GetCode()));
-    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::SigmaC0::GetCode()));
+    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::Code::EtaC));
+    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::Code::SigmaC0));
   }
 
   SECTION("cross-section type") {
@@ -95,7 +95,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     setup::Stack stack;
     const HEPEnergyType E0 = 100_GeV;
     HEPMomentumType P0 =
-        sqrt(E0 * E0 - corsika::Proton::GetMass() * corsika::Proton::GetMass());
+        sqrt(E0 * E0 - corsika::Proton::mass() * corsika::Proton::mass());
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(

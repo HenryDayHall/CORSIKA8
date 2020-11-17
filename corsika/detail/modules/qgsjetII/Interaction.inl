@@ -67,7 +67,7 @@ namespace corsika::qgsjetII {
 
       const int iBeam = corsika::qgsjetII::GetQgsjetIIXSCode(beamId);
       int iTarget = 1;
-      if (corsika::IsNucleus(targetId)) {
+      if (corsika::is_nucleus(targetId)) {
         iTarget = targetA;
         if (iTarget > maxMassNumber_ || iTarget <= 0) {
           std::ostringstream txt;
@@ -76,7 +76,7 @@ namespace corsika::qgsjetII {
         }
       }
       int iProjectile = 1;
-      if (corsika::IsNucleus(beamId)) {
+      if (corsika::is_nucleus(beamId)) {
         iProjectile = Abeam;
         if (iProjectile > maxMassNumber_ || iProjectile <= 0)
           throw std::runtime_error("QgsjetII target outside range. ");
@@ -118,7 +118,7 @@ namespace corsika::qgsjetII {
     if (kInteraction) {
 
       int Abeam = 0;
-      if (corsika::IsNucleus(vP.GetPID())) Abeam = vP.GetNuclearA();
+      if (corsika::is_nucleus(vP.GetPID())) Abeam = vP.GetNuclearA();
 
       // get target from environment
       /*
@@ -134,7 +134,7 @@ namespace corsika::qgsjetII {
       CrossSectionType weightedProdCrossSection =
           mediumComposition.WeightedSum([=](corsika::Code targetID) -> CrossSectionType {
             int targetA = 0;
-            if (corsika::IsNucleus(targetID)) targetA = corsika::GetNucleusA(targetID);
+            if (corsika::is_nucleus(targetID)) targetA = corsika::nucleus_A(targetID);
             return GetCrossSection(corsikaBeamId, targetID, Elab, Abeam, targetA);
           });
 
@@ -189,7 +189,7 @@ namespace corsika::qgsjetII {
       auto const projectileMomentumLab = vP.GetMomentum();
 
       int beamA = 0;
-      if (corsika::IsNucleus(corsikaBeamId)) beamA = vP.GetNuclearA();
+      if (corsika::is_nucleus(corsikaBeamId)) beamA = vP.GetNuclearA();
 
       std::cout << "Interaction: ebeam lab: " << projectileEnergyLab / 1_GeV << std::endl
                 << "Interaction: pbeam lab: "
@@ -217,7 +217,7 @@ namespace corsika::qgsjetII {
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
         int targetA = 0;
-        if (corsika::IsNucleus(targetId)) targetA = corsika::GetNucleusA(targetId);
+        if (corsika::is_nucleus(targetId)) targetA = corsika::nucleus_A(targetId);
         const auto sigProd =
             GetCrossSection(corsikaBeamId, targetId, projectileEnergyLab, beamA, targetA);
         cross_section_of_components[i] = sigProd;
@@ -228,15 +228,14 @@ namespace corsika::qgsjetII {
       std::cout << "Interaction: target selected: " << targetCode << std::endl;
 
       int targetQgsCode = -1;
-      if (corsika::IsNucleus(targetCode))
-        targetQgsCode = corsika::GetNucleusA(targetCode);
-      if (targetCode == corsika::Proton::GetCode()) targetQgsCode = 1;
+      if (corsika::is_nucleus(targetCode)) targetQgsCode = corsika::nucleus_A(targetCode);
+      if (targetCode == corsika::Code::Proton) targetQgsCode = 1;
       std::cout << "Interaction: target qgsjetII code/A: " << targetQgsCode << std::endl;
       if (targetQgsCode > maxMassNumber_ || targetQgsCode < 1)
         throw std::runtime_error("QgsjetII target outside range.");
 
       int projQgsCode = 1;
-      if (corsika::IsNucleus(corsikaBeamId)) projQgsCode = vP.GetNuclearA();
+      if (corsika::is_nucleus(corsikaBeamId)) projQgsCode = vP.GetNuclearA();
       std::cout << "Interaction: projectile qgsjetII code/A: " << projQgsCode << " "
                 << corsikaBeamId << std::endl;
       if (projQgsCode > maxMassNumber_ || projQgsCode < 1)
@@ -290,14 +289,13 @@ namespace corsika::qgsjetII {
             idFragm = corsika::Code::Proton;
 
             auto momentum = corsika::Vector(
-                zAxisFrame,
-                corsika::QuantityVector<hepmomentum_d>{
-                    0.0_GeV, 0.0_GeV,
-                    sqrt((projectileEnergyLab + corsika::Proton::GetMass()) *
-                         (projectileEnergyLab - corsika::Proton::GetMass()))});
+                zAxisFrame, corsika::QuantityVector<hepmomentum_d>{
+                                0.0_GeV, 0.0_GeV,
+                                sqrt((projectileEnergyLab + corsika::Proton::mass()) *
+                                     (projectileEnergyLab - corsika::Proton::mass()))});
 
             auto const energy =
-                sqrt(momentum.squaredNorm() + square(corsika::GetMass(idFragm)));
+                sqrt(momentum.squaredNorm() + square(corsika::mass(idFragm)));
             momentum.rebase(originalCS); // transform back into standard lab frame
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.GetComponents() << std::endl;
