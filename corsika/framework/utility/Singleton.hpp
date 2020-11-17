@@ -46,8 +46,9 @@ namespace corsika {
       return instance;
     }
 
-    Singleton(const Singleton&) = delete;
-    Singleton& operator=(const Singleton&) = delete;
+    Singleton(const Singleton&) = delete; //Singleton Classes should not be copied. Removes move constructor and move assignment as well
+    Singleton& operator=(const Singleton&) = delete; //Singleton Classes should not be copied.
+    
 
   protected:
     // derived class can call ctor and dtor
