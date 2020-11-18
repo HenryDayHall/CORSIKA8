@@ -66,11 +66,11 @@ namespace corsika {
   }
 
   /// Specialisation 3
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer = Timer<std::chrono::high_resolution_clock, std::chrono::microseconds>>
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
   ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::ClassTimer(TClass& obj)
       : ClassTimerImpl<TClass,TTimer>(obj) {}
 
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer = Timer<std::chrono::high_resolution_clock, std::chrono::microseconds>>
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
   void ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::call(TArgs... args) {
     this->start_ = ClassTimerImpl<TClass,TTimer>::clock_type::now();
     (this->obj_.*TFuncPtr)(std::forward<TArgs>(args)...);
