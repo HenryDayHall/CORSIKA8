@@ -17,32 +17,21 @@
 #include <chrono>
 #include <utility>
 
+#include <corsika/framework/analytics/Timer.hpp>
+
 namespace corsika {
 
-  template <class TClass>
-  class ClassTimerImpl {
-  protected:
-    /// Default clock used for time measurement
-    using TClock = std::chrono::high_resolution_clock;
+  template <class TClass, typename TTimer>
+  class ClassTimerImpl : public TTimer{
+    static_assert(is_timer_v<TTimer>, "TTimer is not a timer!"); // Better https://en.cppreference.com/w/cpp/language/constraints but not available in C++17
 
-    /// Internal resolution of the time measurement
-    using TDuration = std::chrono::microseconds;
-
+  protected:  
     /// Reference to the class object on which the function should be called
     TClass& obj_;
-
-    /// Startpoint of time measurement
-    typename TClock::time_point start_;
-
-    /// Measured runtime of the function
-    TDuration timeDiff_;
 
   public:
     ClassTimerImpl(TClass& obj)
         : obj_(obj){};
-
-    /// returns the last runtime of the wraped function accessed via call
-    inline TDuration getTime() const{return timeDiff_;}
   };
 
   /// Measure the runtime of a single class function
@@ -50,7 +39,7 @@ namespace corsika {
    * @tparam TClassFunc Type of the member function pointer that should be wrapped
    * @tparam TFunc Actual function of the type defined in TClass
    */
-  template <typename TClassFunc, TClassFunc TFunc>
+  template <typename TClassFunc, TClassFunc TFunc, typename TTimer = Timer<std::chrono::high_resolution_clock, std::chrono::microseconds>>
   class ClassTimer;
 
   /// Measure the runtime of a single class function
@@ -67,8 +56,8 @@ namespace corsika {
    * TClass::TFuncPtr(TArgs...)
    */
   template <typename TClass, typename TRet, typename... TArgs,
-            TRet (TClass::*TFuncPtr)(TArgs...)>
-  class ClassTimer<TRet (TClass::*)(TArgs...), TFuncPtr> : public ClassTimerImpl<TClass> {
+            TRet (TClass::*TFuncPtr)(TArgs...), typename TTimer>
+  class ClassTimer<TRet (TClass::*)(TArgs...), TFuncPtr, TTimer> : public ClassTimerImpl<TClass, TTimer> {
   private:
   public:
     ClassTimer(TClass& obj);
@@ -85,12 +74,8 @@ namespace corsika {
   };
 
   /// Specialisation for member functions without return value
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...)>
-  class ClassTimer<void (TClass::*)(TArgs...), TFuncPtr> : public ClassTimerImpl<TClass> {
-  private:
-    using TClock = std::chrono::high_resolution_clock;
-    using TDuration = std::chrono::microseconds;
-
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...), typename TTimer>
+  class ClassTimer<void (TClass::*)(TArgs...), TFuncPtr, TTimer> : public ClassTimerImpl<TClass, TTimer> {  
   public:
     ClassTimer(TClass& obj);
 
@@ -99,9 +84,9 @@ namespace corsika {
 
   /// Specialisation for const member functions
   template <typename TClass, typename TRet, typename... TArgs,
-            TRet (TClass::*TFuncPtr)(TArgs...) const>
-  class ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr>
-      : public ClassTimerImpl<TClass> {
+            TRet (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
+  class ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr, TTimer>
+      : public ClassTimerImpl<TClass, TTimer> {
   public:
     ClassTimer(TClass& obj);
 
@@ -109,9 +94,9 @@ namespace corsika {
   };
 
   /// Specialisation for const member functions without return value
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const>
-  class ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr>
-      : public ClassTimerImpl<TClass> {
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
+  class ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr, TTimer>
+      : public ClassTimerImpl<TClass, TTimer> {
   public:
     ClassTimer(TClass& obj);
 

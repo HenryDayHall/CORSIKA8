@@ -12,23 +12,18 @@
 
 namespace corsika {
 
-  template <typename TFunc, typename TClock, typename TDuration>
-  FunctionTimer<TFunc, TClock, TDuration>::FunctionTimer(TFunc f)
+  template <typename TFunc, typename TTime>
+  FunctionTimer<TFunc, TTime>::FunctionTimer(TFunc f)
       : function_(f) {}
 
-  template <typename TFunc, typename TClock, typename TDuration>
+  template <typename TFunc, typename TTime>
   template <typename... TArgs>
-  auto FunctionTimer<TFunc, TClock, TDuration>::operator()(TArgs&&... args)
+  auto FunctionTimer<TFunc, TTime>::operator()(TArgs&&... args)
       -> std::invoke_result_t<TFunc, TArgs...> {
-    start_ = TClock::now();
+    this->startTimer();
     auto tmp = function_(std::forward<TArgs>(args)...);
-    timeDiff_ = std::chrono::duration_cast<TDuration>(TClock::now() - start_);
+    this->stopTimer();
     return tmp;
-  }
-
-  template <typename TFunc, typename TClock, typename TDuration>
-  inline TDuration FunctionTimer<TFunc, TClock, TDuration>::getTime() const {
-    return timeDiff_;
   }
 
 } // namespace corsika
