@@ -528,41 +528,6 @@ coverage:
 
 
 
-##########################################################
-documentation:
-  image: corsika/devel:u-18.04
-  dependencies:
-    - config-u-18_04
-  stage: optional
-  tags:
-    - corsika
-  script:
-    - cd build
-    - cmake --build . --target doxygen -- -j4
-    - mkdir -p .public
-    - cp -r Documentation/Doxygen/html .public/
-    - mv .public ../public
-  rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-      allow_failure: true
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-      allow_failure: true
-    - if: $CI_COMMIT_TAG
-      when: manual
-      allow_failure: true
-  artifacts:
-    expire_in: 3 weeks
-    paths:
-      - ${CI_PROJECT_DIR}/public
-  cache:
-    paths:
-      - ${CI_PROJECT_DIR}/build/
-    untracked: true
-    policy: pull
-    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 
 

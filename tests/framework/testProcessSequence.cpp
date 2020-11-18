@@ -30,7 +30,7 @@ int checkSec = 0;      // use this as a bit field
 int checkCont = 0;     // use this as a bit field
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
-  int fV = 0;
+  [[maybe_unused]] int fV = 0;
 
 public:
   ContinuousProcess1(const int v)
@@ -50,7 +50,7 @@ public:
 };
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
-  int fV = 0;
+  [[maybe_unused]] int fV = 0;
 
 public:
   ContinuousProcess2(const int v)
@@ -101,18 +101,12 @@ public:
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
     return EProcessReturn::eOk;
   }
-
-  template <typename TParticle>
-  corsika::units::si::GrammageType GetInteractionLength(TParticle&) const {
-    return 10_g / square(1_cm);
-  }
-
 private:
-  int fV;
+  [[maybe_unused]] int fV;
 };
 
 class Process2 : public InteractionProcess<Process2> {
-  int fV = 0;
+  [[maybe_unused]] int fV = 0;
 
 public:
   Process2(const int v)
@@ -136,7 +130,7 @@ public:
 };
 
 class Process3 : public InteractionProcess<Process3> {
-  int fV = 0;
+  [[maybe_unused]] int fV = 0;
 
 public:
   Process3(const int v)
@@ -160,7 +154,7 @@ public:
 };
 
 class Process4 : public BaseProcess<Process4> {
-  int fV = 0;
+  [[maybe_unused]] int fV = 0;
 
 public:
   Process4(const int v)
@@ -184,6 +178,7 @@ public:
 };
 
 class Decay1 : public DecayProcess<Decay1> {
+  [[maybe_unused]] int fV = 0;
 
 public:
   Decay1(const int) {

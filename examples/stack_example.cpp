@@ -37,7 +37,7 @@ void read(corsika::super_stupid::SuperStupidStack& s) {
   assert(s.GetSize() == 11); // stack has 11 particles
 
   HEPEnergyType total_energy;
-  int i = 0;
+  [[maybe_unused]] int i = 0;
   for (const auto& p : s) {
     total_energy += p.GetEnergy();
     // particles are electrons with 1.5 GeV energy times i
