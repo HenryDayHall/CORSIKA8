@@ -404,6 +404,9 @@ def gen_classes(particle_db):
     string = "// list of C++ classes to access particle properties"
     
     for cname in particle_db:
+        if cname == "Nucleus":
+            string += "// skipping Nucleus"
+            continue
 
         antiP = 'Unknown'
         for cname_anti in particle_db:
@@ -426,15 +429,16 @@ def gen_classes(particle_db):
         string += "class " + cname + " {\n"
         string += "  public:\n"
         string += "   " + cname + "() = delete;\n"
-        string += "   static constexpr Code code = Code::" + cname + ";\n"
-        string += "   static constexpr HEPMassType mass() {return corsika::mass(code);}\n"
-        string += "   static constexpr ElectricChargeType charge() { return corsika::charge(code); }\n"
-        string += "   static constexpr int16_t charge_number() { return corsika::charge_number(code); }\n"
-        string += "   static std::string const& name() { return corsika::name(code); }\n"
-        string += "   static constexpr bool is_nucleus() { return corsika::is_nucleus(code); }\n"
-        string += "   static constexpr int16_t nucleus_A() { return corsika::nucleus_A(code); }\n"
-        string += "   static constexpr int16_t nucleus_Z() { return corsika::nucleus_Z(code); }\n"
-        string += "   static constexpr Code anti_code = Code::" + antiP + ";\n"
+        string += "   static constexpr Code code{Code::" + cname + "};\n"
+        string += "   static constexpr Code anti_code{Code::" + antiP + "};\n"
+        string += "   static constexpr HEPMassType mass{corsika::mass(code)};\n"
+        string += "   static constexpr ElectricChargeType charge{corsika::charge(code)};\n"
+        string += "   static constexpr int charge_number{corsika::charge_number(code)};\n"
+        string += "   inline static std::string const& name{corsika::name(code)};\n"
+        string += "   static constexpr bool is_nucleus{corsika::is_nucleus(code)};\n"
+        if particle_db[cname]['isNucleus']:
+            string += "   static constexpr int nucleus_A{corsika::nucleus_A(code)};\n"
+            string += "   static constexpr int nucleus_Z{corsika::nucleus_Z(code)};\n"
         string += " private:\n"
         string += "   static constexpr CodeIntType TypeIndex = static_cast<CodeIntType>(code);\n"
         string += "};\n"
@@ -509,8 +513,12 @@ if __name__ == "__main__":
         print(gen_properties(particle_db), file=f)
         print(gen_conversion_PDG_ngc(particle_db), file=f)
         print(detail_end(), file=f) 
+        print(inc_end(), file=f)
+
+    with open("GeneratedParticleClasses.inc", "w") as f:
+        print(inc_start(), file=f)
         print(gen_classes(particle_db), file=f)
-        print(inc_end(), file=f) 
+        print(inc_end(), file=f)
     
     with open("particle_db.pkl", "wb") as f:
         serialize_particle_db(particle_db, f)
