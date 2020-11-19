@@ -156,7 +156,7 @@ namespace corsika {
     } else if constexpr (std::is_base_of_v<InteractionProcess<process1_type>,
                                            process1_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
-// FIXME      lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
+      lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
       // check if we should execute THIS process and then EXIT
       if (lambda_inv_select < lambda_inv_sum) {
         A_.doInteraction(view);
@@ -170,7 +170,8 @@ namespace corsika {
     } else if constexpr (std::is_base_of_v<InteractionProcess<process2_type>,
                                            process2_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
-      //lambda_inv_sum += B_.getInverseInteractionLength(view.parent()); <--  FIXME as soon as SecondaryView::parent() is migrated!
+      lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
+      // soon as SecondaryView::parent() is migrated!
       // check if we should execute THIS process and then EXIT
       if (lambda_inv_select < lambda_inv_sum) {
         B_.doInteraction(view);
@@ -214,7 +215,7 @@ namespace corsika {
       if (ret != ProcessReturn::Ok) { return ret; }
     } else if constexpr (std::is_base_of_v<DecayProcess<process1_type>, process1_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
-      // FIXME      decay_inv_sum += A_.getInverseLifetime(view.parent());
+      decay_inv_sum += A_.getInverseLifetime(view.parent());
       // check if we should execute THIS process and then EXIT
       if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
                                               // decay_inv_sum / decay_inv_tot
@@ -228,7 +229,7 @@ namespace corsika {
       return B_.selectDecay(view, decay_inv_select, decay_inv_sum);
     } else if constexpr (std::is_base_of_v<DecayProcess<process2_type>, process2_type>) {
       // if this is not a ContinuousProcess --> evaluate probability
-      // FIXME      decay_inv_sum += B_.getInverseLifetime(view.parent());
+      decay_inv_sum += B_.getInverseLifetime(view.parent());
       // check if we should execute THIS process and then EXIT
       if (decay_inv_select < decay_inv_sum) {
         B_.doDecay(view);
