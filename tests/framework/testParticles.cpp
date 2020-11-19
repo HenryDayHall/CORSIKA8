@@ -25,23 +25,22 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Masses") {
-    REQUIRE(Electron::mass() / (511_keV) == Approx(1));
-    REQUIRE(Electron::mass() / mass(Code::Electron) == Approx(1));
+    REQUIRE(Electron::mass / (511_keV) == Approx(1));
+    REQUIRE(Electron::mass / mass(Code::Electron) == 1.);
 
-    REQUIRE((Proton::mass() + Neutron::mass()) / constants::nucleonMass == Approx(2));
+    REQUIRE((Proton::mass + Neutron::mass) / constants::nucleonMass == Approx(2));
   }
 
   SECTION("Charges") {
-    REQUIRE(Electron::charge() / constants::e == Approx(-1));
-    REQUIRE(Positron::charge() / constants::e == Approx(+1));
+    REQUIRE(Electron::charge / constants::e == Approx(-1));
+    REQUIRE(Positron::charge / constants::e == Approx(+1));
     REQUIRE(charge(Positron::anti_code) / constants::e == Approx(-1));
   }
 
   SECTION("Names") {
-    REQUIRE(Electron::name() == "e-");
-    REQUIRE(PiMinus::name() == "pi-");
-    REQUIRE(Nucleus::name() == "nucleus");
-    REQUIRE(Iron::name() == "iron");
+    REQUIRE(Electron::name == "e-");
+    REQUIRE(PiMinus::name == "pi-");
+    REQUIRE(Iron::name == "iron");
   }
 
   SECTION("PDG") {
@@ -129,13 +128,13 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(is_nucleus(Code::Argon));
     REQUIRE_FALSE(is_nucleus(Code::Proton));
     REQUIRE(is_nucleus(Code::Hydrogen));
-    REQUIRE(Argon::is_nucleus());
-    REQUIRE_FALSE(EtaC::is_nucleus());
+    REQUIRE(Argon::is_nucleus);
+    REQUIRE_FALSE(EtaC::is_nucleus);
 
     REQUIRE(nucleus_A(Code::Hydrogen) == 1);
     REQUIRE(nucleus_A(Code::Tritium) == 3);
-    REQUIRE(Hydrogen::nucleus_Z() == 1);
-    REQUIRE(Tritium::nucleus_A() == 3);
+    REQUIRE(Hydrogen::nucleus_Z == 1);
+    REQUIRE(Tritium::nucleus_A == 3);
 
     REQUIRE_THROWS(nucleus_Z(Code::Nucleus));
     REQUIRE_THROWS(nucleus_A(Code::Nucleus));
