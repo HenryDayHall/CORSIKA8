@@ -30,8 +30,6 @@ namespace corsika {
   }
 
   ElectricChargeType constexpr charge(Code const code) {
-    if (code == Code::Nucleus)
-      throw std::runtime_error("Cannot GetCharge() of particle::Nucleus -> unspecified");
     return charge_number(code) * constants::e;
   }
 
@@ -76,12 +74,10 @@ namespace corsika {
     return (code == Code::Nucleus) || (nucleus_A(code) != 0);
   }
 
-  //! the output stream operator for human-readable particle codes
   inline std::ostream& operator<<(std::ostream& stream, corsika::Code const code) {
     return stream << name(code);
   }
 
-  //! convert PDG code to CORSIKA 8 internal code
   inline Code convert_from_PDG(PDGCode p) {
     static_assert(particle::detail::conversionArray.size() % 2 == 1);
     // this will fail, for the strange case where the maxPDG is negative...
@@ -94,7 +90,6 @@ namespace corsika {
     }
   }
 
-  //! returns mass of (A,Z) nucleus, disregarding binding energy
   inline HEPMassType nucleus_mass(const int A, const int Z) {
     auto const absA = std::abs(A);
     auto const absZ = std::abs(Z);

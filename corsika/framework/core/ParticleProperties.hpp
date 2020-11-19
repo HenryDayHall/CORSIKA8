@@ -59,6 +59,12 @@ namespace corsika {
 
   //! returns mass of (A,Z) nucleus, disregarding binding energy
   inline HEPMassType nucleus_mass(int, int);
+
+  //! convert PDG code to CORSIKA 8 internal code
+  inline Code convert_from_PDG(PDGCode);
+
+  //! the output stream operator for human-readable particle codes
+  inline std::ostream& operator<<(std::ostream&, corsika::Code);
 } // namespace corsika
 
 // data arrays, etc.
