@@ -291,8 +291,8 @@ namespace corsika::qgsjetII {
             auto momentum = corsika::Vector(
                 zAxisFrame, corsika::QuantityVector<hepmomentum_d>{
                                 0.0_GeV, 0.0_GeV,
-                                sqrt((projectileEnergyLab + corsika::Proton::mass()) *
-                                     (projectileEnergyLab - corsika::Proton::mass()))});
+                                sqrt((projectileEnergyLab + corsika::Proton::mass) *
+                                     (projectileEnergyLab - corsika::Proton::mass))});
 
             auto const energy =
                 sqrt(momentum.squaredNorm() + square(corsika::mass(idFragm)));

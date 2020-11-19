@@ -7,7 +7,7 @@
  */
 
 /**
-   @file Particles.h
+   @file ParticleProperties.hpp
 
    Interface to particle properties
  */
@@ -56,8 +56,9 @@ namespace corsika {
   bool constexpr is_neutrino(Code); //!< true iff particle is (anti-) neutrino
   int constexpr nucleus_A(Code);    //!< returns A for hard-coded nucleus, otherwise 0
   int constexpr nucleus_Z(Code);    //!< returns Z for hard-coded nucleus, otherwise 0
-  inline HEPMassType nucleus_mass(
-      int, int); //! returns mass of (A,Z) nucleus, disregarding binding energy
+
+  //! returns mass of (A,Z) nucleus, disregarding binding energy
+  inline HEPMassType nucleus_mass(int, int);
 } // namespace corsika
 
 // data arrays, etc.

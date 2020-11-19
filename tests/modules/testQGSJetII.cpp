@@ -95,7 +95,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     setup::Stack stack;
     const HEPEnergyType E0 = 100_GeV;
     HEPMomentumType P0 =
-        sqrt(E0 * E0 - corsika::Proton::mass() * corsika::Proton::mass());
+        sqrt(E0 * E0 - corsika::Proton::mass * corsika::Proton::mass);
     auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
     corsika::Point pos(cs, 0_m, 0_m, 0_m);
     auto particle = stack.AddParticle(
