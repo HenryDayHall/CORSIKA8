@@ -144,7 +144,7 @@ namespace corsika {
   }
 
   //! returns mass of (A,Z) nucleus, disregarding binding energy
-  HEPMassType constexpr nucleus_mass(const int A, const int Z) {
+  HEPMassType nucleus_mass(const int A, const int Z) {
     auto const absA = std::abs(A);
     auto const absZ = std::abs(Z);
     return Proton::mass() * absZ + (absA - absZ) * Neutron::mass();
