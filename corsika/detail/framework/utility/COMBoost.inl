@@ -18,7 +18,6 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/logging/Logging.h>
-#include <corsika/framework/utility/sgn.hpp>
 
 // using namespace corsika::units::si;
 

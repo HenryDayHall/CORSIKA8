@@ -10,7 +10,6 @@ n/*
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
-#include <corsika/framework/utility/sgn.hpp>
 
 #include <Eigen/Dense>
 #include <stdexcept>

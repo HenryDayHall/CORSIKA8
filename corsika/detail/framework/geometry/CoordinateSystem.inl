@@ -14,7 +14,6 @@
 #include <Eigen/Dense>
 #include <stdexcept>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/utility/sgn.hpp>
 
 
 namespace corsika {
@@ -38,14 +37,12 @@ namespace corsika {
     auto CoordinateSystem::RotateToZ(Vector<TDim> vVec) const
     {
       auto const a = vVec.normalized().GetComponents(*this).eVector;
-      auto const a1 = a(0), a2 = a(1);
-
-      auto const s = corsika::sgn(a(2));
-      auto const c = 1 / (1 + s * a(2));
+      auto const a1 = a(0), a2 = a(1), a3 = a(2);
 
       Eigen::Matrix3d A, B;
 
-      if (s > 0) {
+      if (a3 > 0) {
+        auto const c = 1 / (1 + a3);
         A << 1, 0, -a1,                     // comment to prevent clang-format
             0, 1, -a2,                      // .
             a1, a2, 1;                      // .
@@ -54,6 +51,7 @@ namespace corsika {
             0, 0, -(a1 * a1 + a2 * a2) * c; // .
 
       } else {
+        auto const c = 1 / (1 - a3);
         A << 1, 0, a1,                      // .
             0, -1, -a2,                     // .
             a1, a2, -1;                     // .
