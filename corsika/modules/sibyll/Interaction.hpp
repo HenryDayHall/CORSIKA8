@@ -61,7 +61,7 @@ namespace corsika::sibyll {
      */
 
     template <typename TProjectile>
-    corsika::EProcessReturn DoInteraction(TProjectile&);
+    void doInteraction(TProjectile&);
 
   private:
     corsika::default_prng_type& RNG_ = corsika::RNGManager::getInstance().getRandomStream("sibyll");

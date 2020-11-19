@@ -128,8 +128,8 @@ int main() {
       injectionPos, corsika::Vector<dimensionless_d>(rootCS, {0, 0, -1}));
 
   // assemble all processes into an ordered process list
-  auto sequence = stackInspect << sibyll << sibyllNuc << decay << eLoss << cut
-                               << trackWriter;
+  auto sequence = corsika::make_sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut,
+					 trackWriter);
 
   // define air shower object, run simulation
   corsika::Cascade EAS(env, tracking, sequence, stack);

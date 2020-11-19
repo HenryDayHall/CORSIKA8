@@ -32,13 +32,6 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  void Cascade<TTracking, TProcessList, TStack, TStackView>::Init() {
-    fProcessSequence.Init();
-    fStack.Init();
-  }
-
-  template <typename TTracking, typename TProcessList, typename TStack,
-            typename TStackView>
   void Cascade<TTracking, TProcessList, TStack, TStackView>::SetNodes() {
     std::for_each(fStack.begin(), fStack.end(), [&](auto& p) {
       auto const* numericalNode =
@@ -58,7 +51,7 @@ namespace corsika {
         std::cout << "========= next: " << pNext.GetPID() << std::endl;
         Step(pNext);
         std::cout << "========= stack ============" << std::endl;
-        fProcessSequence.DoStack(fStack);
+        fProcessSequence.doStack(fStack);
       }
       // do cascade equations, which can put new particles on Stack,
       // thus, the double loop
@@ -88,7 +81,7 @@ namespace corsika {
 
     // determine combined total interaction length (inverse)
     InverseGrammageType const total_inv_lambda =
-        fProcessSequence.GetTotalInverseInteractionLength(vParticle);
+        fProcessSequence.getInverseInteractionLength(vParticle);
 
     // sample random exponential step length in grammage
     corsika::ExponentialDistribution expDist(1 / total_inv_lambda);
@@ -110,12 +103,12 @@ namespace corsika {
                                                                        next_interact);
 
     // determine the maximum geometric step length
-    LengthType const distance_max = fProcessSequence.MaxStepLength(vParticle, step);
+    LengthType const distance_max = fProcessSequence.maxStepLength(vParticle, step);
     std::cout << "distance_max=" << distance_max << std::endl;
 
     // determine combined total inverse decay time
     InverseTimeType const total_inv_lifetime =
-        fProcessSequence.GetTotalInverseLifetime(vParticle);
+        fProcessSequence.getInverseLifetime(vParticle);
 
     // sample random exponential decay time
     corsika::ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
@@ -142,9 +135,9 @@ namespace corsika {
     step.LimitEndTo(min_distance);
 
     // apply all continuous processes on particle + track
-    corsika::EProcessReturn status = fProcessSequence.DoContinuous(vParticle, step);
+    corsika::ProcessReturn status = fProcessSequence.doContinuous(vParticle, step);
 
-    if (status == corsika::EProcessReturn::eParticleAbsorbed) {
+    if (status == corsika::ProcessReturn::ParticleAbsorbed) {
       std::cout << "Cascade: delete absorbed particle " << vParticle.GetPID() << " "
                 << vParticle.GetEnergy() / 1_GeV << "GeV" << std::endl;
       vParticle.Delete();
@@ -239,12 +232,12 @@ namespace corsika {
     std::cout << "collide" << std::endl;
 
     InverseGrammageType const current_inv_length =
-        fProcessSequence.GetTotalInverseInteractionLength(particle);
+        fProcessSequence.getInverseInteractionLength(particle);
 
     corsika::UniformRealDistribution<InverseGrammageType> uniDist(current_inv_length);
     const auto sample_process = uniDist(fRNG);
     auto inv_lambda_count = InverseGrammageType::zero();
-    return fProcessSequence.SelectInteraction(particle, projectile, sample_process,
+    return fProcessSequence.selectInteraction(view, sample_process
                                               inv_lambda_count);
   }
 

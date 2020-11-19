@@ -52,7 +52,7 @@ namespace corsika::particle_cut {
     }
   }
 
-  EProcessReturn ParticleCut::DoSecondaries(corsika::setup::StackView& vS) {
+  void ParticleCut::doSecondaries(corsika::setup::StackView& vS) {
 
     auto p = vS.begin();
     while (p != vS.end()) {
@@ -83,7 +83,6 @@ namespace corsika::particle_cut {
         ++p; // next entry in SecondaryView
       }
     }
-    return EProcessReturn::eOk;
   }
 
   void ParticleCut::Init() {

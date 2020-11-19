@@ -60,10 +60,10 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
     obs.Init();
     const LengthType length = obs.MaxStepLength(particle, track);
-    const EProcessReturn ret = obs.DoContinuous(particle, track);
+    const ProcessReturn ret = obs.doContinuous(particle, track);
 
     REQUIRE(length / 10_m == Approx(1).margin(1e-4));
-    REQUIRE(ret == EProcessReturn::eParticleAbsorbed);
+    REQUIRE(ret == ProcessReturn::ParticleAbsorbed);
 
     /*
     SECTION("horizontal plane") {
@@ -82,9 +82,9 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
     obs.Init();
     const LengthType length = obs.MaxStepLength(particle, track);
-    const EProcessReturn ret = obs.DoContinuous(particle, track);
+    const ProcessReturn ret = obs.doContinuous(particle, track);
 
     REQUIRE(length / 10_m == Approx(1).margin(1e-4));
-    REQUIRE(ret == EProcessReturn::eOk);
+    REQUIRE(ret == ProcessReturn::Ok);
   }
 }

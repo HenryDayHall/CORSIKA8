@@ -31,8 +31,8 @@ namespace corsika::track_writer {
   }
 
   template <typename TParticle, typename TTrack>
-  corsika::EProcessReturn TrackWriter::DoContinuous(const TParticle& vP,
-                                                    const TTrack& vT) {
+  corsika::ProcessReturn TrackWriter::doContinuous(const TParticle& vP,
+                                                   const TTrack& vT) {
     auto const start = vT.GetPosition(0).GetCoordinates();
     auto const delta = vT.GetPosition(1).GetCoordinates() - start;
     auto const pdg = static_cast<int>(corsika::get_PDG(vP.GetPID()));
@@ -48,7 +48,7 @@ namespace corsika::track_writer {
           << std::setw(width) << std::scientific << std::setprecision(precision) << delta[2] / 1_m << '\n';
     // clang-format on
 
-    return corsika::EProcessReturn::eOk;
+    return corsika::ProcessReturn::Ok;
   }
 
   template <typename TParticle, typename TTrack>

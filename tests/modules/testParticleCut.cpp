@@ -67,7 +67,7 @@ TEST_CASE("ParticleCut", "[processes]") {
               proType, Eabove, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
               corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
 
-    cut.DoSecondaries(view);
+    cut.doSecondaries(view);
 
     REQUIRE(view.GetSize() == 8);
   }
@@ -90,13 +90,11 @@ TEST_CASE("ParticleCut", "[processes]") {
     // add secondaries, all with energies below the threshold
     // only cut is by species
     for (auto proType : particleList)
-      projectile.AddSecondary(
-          std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                     corsika::Point, units::si::TimeType>{
-              proType, Ebelow, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-              corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+      projectile.AddSecondary(std::make_tuple(
+          proType, Ebelow, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+          corsika::Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
 
-    cut.DoSecondaries(view);
+    cut.doSecondaries(view);
 
     REQUIRE(view.GetSize() == 0);
   }

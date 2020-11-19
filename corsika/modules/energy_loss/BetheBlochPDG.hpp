@@ -28,8 +28,7 @@ namespace corsika::energy_loss {
 
   public:
     template <typename TDim>
-    BetheBlochPDG(corsika::Point const& injectionPoint,
-                  corsika::Vector<TDim> const& direction)
+    BetheBlochPDG(Point const& injectionPoint, Vector<TDim> const& direction)
         : InjectionPoint_(injectionPoint)
         , ShowerAxisDirection_(direction.normalized()) {}
 
@@ -37,8 +36,7 @@ namespace corsika::energy_loss {
         : BetheBlochPDG(trajectory.GetPosition(0), trajectory.GetV0()){};
 
     void Init() {}
-    corsika::EProcessReturn DoContinuous(setup::Stack::ParticleType&,
-                                         setup::Trajectory const&);
+    ProcessReturn doContinuous(setup::Stack::ParticleType&, setup::Trajectory const&);
     LengthType MaxStepLength(setup::Stack::ParticleType const&,
                              setup::Trajectory const&) const;
     HEPEnergyType GetTotal() const { return BetheBlochPDGTot_; }

@@ -103,15 +103,13 @@ struct DummyProcess : InteractionProcess<DummyProcess<N>> {
   }
 
   template <typename TSecondaries>
-  corsika::EProcessReturn DoInteraction(TSecondaries& vSec) {
+  void doInteraction(TSecondaries&) {
     // to figure out which process was selected in the end, we produce N
     // secondaries for DummyProcess<N>
 
     for (int i = 0; i < N; ++i) {
-      vSec.AddSecondary(std::tuple<HEPEnergyType>{vSec.GetEnergy() / N});
+      // vSec.AddSecondary(std::make_tuple(vSec.GetEnergy() / N)); // <-- FIXME, when SwitchProcess is removedalter
     }
-
-    return EProcessReturn::eOk;
   }
 };
 
@@ -125,7 +123,7 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
   DummyAdditionalProcess proc;
 
   switch_process::SwitchProcess switchProcess(low, high, 1_TeV);
-  auto seq = switchProcess << proc;
+  auto seq = corsika::make_sequence(switchProcess, proc);
 
   SimpleStack stack;
 
@@ -136,7 +134,7 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
     // low energy process returns 1 kg/m²
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(1));
-      REQUIRE(seq.GetTotalInteractionLength(p) / kgMSq == Approx(3. / 4));
+      REQUIRE(seq.getInteractionLength(p) / kgMSq == Approx(3. / 4));
     }
 
     // low energy process creates 1 secondary
@@ -160,7 +158,7 @@ TEST_CASE("SwitchProcess from InteractionProcess") {
     // high energy process returns 2 kg/m²
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2));
-      REQUIRE(seq.GetTotalInteractionLength(p) / kgMSq == Approx(6. / 5));
+      REQUIRE(seq.getInteractionLength(p) / kgMSq == Approx(6. / 5));
     }
 
     // high energy process creates 2 secondaries
@@ -184,10 +182,10 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
   DummyProcess<3> outer;
   DummyProcess<4> additional;
 
-  auto seq = innerA << innerB;
+  auto seq = corsika::make_sequence(innerA, innerB);
 
   switch_process::SwitchProcess switchProcess(seq, outer, 1_TeV);
-  auto completeSeq = switchProcess << additional;
+  auto completeSeq = corsika::make_sequence(switchProcess, additional);
 
   SimpleStack stack;
 
@@ -197,7 +195,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
 
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(2. / 3));
-      REQUIRE(completeSeq.GetTotalInteractionLength(p) / kgMSq == Approx(4. / 7));
+      REQUIRE(completeSeq.getInteractionLength(p) / kgMSq == Approx(4. / 7));
     }
 
     SECTION("SelectInteraction") {
@@ -207,13 +205,12 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
         typename SimpleStack::ParticleType theParticle =
             stack.GetNextParticle(); // as in corsika::Cascade
         StackTestView view(theParticle);
-        auto projectile = view.GetProjectile();
 
         double r = i / 1000.;
         InverseGrammageType invLambda = r * 7. / 4 / kgMSq;
 
         InverseGrammageType accumulator = 0 / kgMSq;
-        completeSeq.SelectInteraction(p, projectile, invLambda, accumulator);
+        completeSeq.selectInteraction(view, invLambda, accumulator);
 
         numberOfSecondaries.push_back(view.GetSize());
       }
@@ -231,7 +228,7 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
 
     SECTION("interaction length") {
       REQUIRE(switchProcess.GetInteractionLength(p) / kgMSq == Approx(3));
-      REQUIRE(completeSeq.GetTotalInteractionLength(p) / kgMSq == Approx(12. / 7.));
+      REQUIRE(completeSeq.getInteractionLength(p) / kgMSq == Approx(12. / 7.));
     }
 
     SECTION("SelectInteraction") {
@@ -241,13 +238,12 @@ TEST_CASE("SwitchProcess from ProcessSequence") {
         typename SimpleStack::ParticleType theParticle =
             stack.GetNextParticle(); // as in corsika::Cascade
         StackTestView view(theParticle);
-        auto projectile = view.GetProjectile();
 
         double r = i / 1000.;
         InverseGrammageType invLambda = r * 7. / 12. / kgMSq;
 
         InverseGrammageType accumulator = 0 / kgMSq;
-        completeSeq.SelectInteraction(p, projectile, invLambda, accumulator);
+        completeSeq.selectInteraction(view, invLambda, accumulator);
 
         numberOfSecondaries.push_back(view.GetSize());
       }

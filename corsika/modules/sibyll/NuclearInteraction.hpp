@@ -50,7 +50,7 @@ namespace corsika::sibyll {
     GrammageType GetInteractionLength(Particle const&);
 
     template <typename TSecondaryView>
-    corsika::EProcessReturn DoInteraction(TSecondaryView&);
+    void doInteraction(TSecondaryView&);
 
   private:
     TEnvironment const& environment_;

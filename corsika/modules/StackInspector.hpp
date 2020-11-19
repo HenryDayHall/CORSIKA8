@@ -20,14 +20,14 @@ namespace corsika::stack_inspector {
 
     typedef typename TStack::ParticleType Particle;
 
-    using corsika::StackProcess<StackInspector<TStack>>::GetStep;
+    using corsika::StackProcess<StackInspector<TStack>>::getStep;
 
   public:
     StackInspector(const int vNStep, const bool vReportStack, const HEPEnergyType vE0);
     ~StackInspector();
 
     void Init();
-    EProcessReturn DoStack(const TStack&);
+    void doStack(const TStack&);
 
     /**
      * To set a new E0, for example when a new shower event is started

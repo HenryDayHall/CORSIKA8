@@ -31,7 +31,7 @@ namespace corsika::urqmd {
     template <typename TParticle>
     CrossSectionType GetCrossSection(TParticle const&, corsika::Code) const;
 
-    corsika::EProcessReturn DoInteraction(corsika::setup::StackView::StackIterator&);
+    void doInteraction(corsika::setup::StackView::StackIterator&);
 
     bool CanInteract(corsika::Code) const;
 

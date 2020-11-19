@@ -22,17 +22,17 @@ namespace corsika::observation_plane {
     outputStream_ << "#PDG code, energy / eV, distance to center / m" << std::endl;
   }
 
-  corsika::EProcessReturn ObservationPlane::DoContinuous(
+  corsika::ProcessReturn ObservationPlane::doContinuous(
       corsika::setup::Stack::ParticleType const& particle,
       corsika::setup::Trajectory const& trajectory) {
     TimeType const timeOfIntersection =
         (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
         trajectory.GetV0().dot(plane_.GetNormal());
 
-    if (timeOfIntersection < TimeType::zero()) { return corsika::EProcessReturn::eOk; }
+    if (timeOfIntersection < TimeType::zero()) { return corsika::ProcessReturn::Ok; }
 
     if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
-      return corsika::EProcessReturn::eOk;
+      return corsika::ProcessReturn::Ok;
     }
 
     outputStream_ << static_cast<int>(corsika::get_PDG(particle.GetPID())) << ' '
@@ -41,9 +41,9 @@ namespace corsika::observation_plane {
                   << std::endl;
 
     if (deleteOnHit_) {
-      return corsika::EProcessReturn::eParticleAbsorbed;
+      return corsika::ProcessReturn::ParticleAbsorbed;
     } else {
-      return corsika::EProcessReturn::eOk;
+      return corsika::ProcessReturn::Ok;
     }
   }
 

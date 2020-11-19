@@ -161,7 +161,7 @@ namespace corsika::qgsjetII {
    */
 
   template <typename TParticle>
-  corsika::EProcessReturn Interaction::DoInteraction(TParticle& vP) {
+  void Interaction::doInteraction(TParticle& vP) {
 
     const auto corsikaBeamId = vP.GetPID();
     std::cout << "ProcessQgsjetII: "
@@ -373,7 +373,6 @@ namespace corsika::qgsjetII {
                 << QGSJetIIFragmentsStackData::GetWoundedNucleonsProjectile()
                 << ", N_fragm,proj=" << qfs.GetSize() << std::endl;
     }
-    return corsika::EProcessReturn::eOk;
   }
 
 } // namespace corsika::qgsjetII

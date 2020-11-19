@@ -37,7 +37,7 @@ namespace corsika::stack_inspector {
   StackInspector<TStack>::~StackInspector() {}
 
   template <typename TStack>
-  corsika::EProcessReturn StackInspector<TStack>::DoStack(const TStack& vS) {
+  void StackInspector<TStack>::doStack(const TStack& vS) {
 
     [[maybe_unused]] int i = 0;
     HEPEnergyType Etot = 0_GeV;
@@ -64,7 +64,7 @@ namespace corsika::stack_inspector {
     const std::chrono::duration<double> elapsed_seconds = now - StartTime_;
     std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
     auto const dE = E0_ - Etot;
-    if (dE < dE_threshold_) return corsika::EProcessReturn::eOk;
+    if (dE < dE_threshold_) return;
     double const progress = dE / E0_;
 
     double const eta_seconds = elapsed_seconds.count() / progress;
@@ -75,11 +75,9 @@ namespace corsika::stack_inspector {
               << " time=" << std::put_time(std::localtime(&now_time), "%T")
               << ", running=" << elapsed_seconds.count() << " seconds"
               << " (" << std::setw(3) << int(progress * 100) << "%)"
-              << ", nStep=" << GetStep() << ", stackSize=" << vS.GetSize()
+              << ", nStep=" << getStep() << ", stackSize=" << vS.GetSize()
               << ", Estack=" << Etot / 1_GeV << " GeV"
               << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << std::endl;
-
-    return corsika::EProcessReturn::eOk;
   }
 
   template <typename TStack>

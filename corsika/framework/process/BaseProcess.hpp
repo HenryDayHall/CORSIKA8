@@ -20,7 +20,7 @@ namespace corsika {
      are of type BaseProcess<T>
 
      \todo rename BaseProcess into just Process
-     \todo rename _BaseProcess, or find better alternative in
+     \todo rename _BaseProcess, or find better alternative in FIXME
      ./Processes/AnalyticProcessors/ExecTime.h, see e.g. how this is done in
      ProcessSequence.hpp/make_sequence
    */

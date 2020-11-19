@@ -30,7 +30,7 @@ namespace corsika::particle_cut {
         : fECut(vCut) {}
 
     bool ParticleIsInvisible(corsika::Code) const;
-    EProcessReturn DoSecondaries(corsika::setup::StackView&);
+    void doSecondaries(corsika::setup::StackView&);
 
     template <typename TParticle>
     bool ParticleIsBelowEnergyCut(TParticle const&) const;

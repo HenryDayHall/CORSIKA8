@@ -123,7 +123,7 @@ namespace corsika::urqmd {
            weightedProdCrossSection;
   }
 
-  corsika::EProcessReturn UrQMD::DoInteraction(SetupProjectile& vProjectile) {
+  void UrQMD::doInteraction(SetupProjectile& vProjectile) {
 
     auto projectileCode = vProjectile.GetPID();
     auto const projectileEnergyLab = vProjectile.GetEnergy();
@@ -239,8 +239,6 @@ namespace corsika::urqmd {
 
     std::cout << "UrQMD generated " << ::urqmd::sys_.npart << " secondaries!"
               << std::endl;
-
-    return corsika::EProcessReturn::eOk;
   }
 
   corsika::Code ConvertFromUrQMD(int vItyp, int vIso3) {

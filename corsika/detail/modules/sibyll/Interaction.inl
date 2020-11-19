@@ -176,7 +176,7 @@ namespace corsika::sibyll {
    */
 
   template <typename TProjectile>
-  corsika::EProcessReturn Interaction::DoInteraction(TProjectile& vP) {
+  void Interaction::doInteraction(TProjectile& vP) {
 
     const auto corsikaBeamId = vP.GetPID();
     std::cout << "ProcessSibyll: "
@@ -354,7 +354,6 @@ namespace corsika::sibyll {
                   << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << std::endl;
       }
     }
-    return corsika::EProcessReturn::eOk;
   }
 
 } // namespace corsika::sibyll

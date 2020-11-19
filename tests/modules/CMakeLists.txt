@@ -7,7 +7,7 @@ set (test_modules_sources
   testPythia8.cpp
   testQGSJetII.cpp
   testStackInspector.cpp
-  testSwitchProcess.cpp
+# FIXME, remove entirly during migration:  testSwitchProcess.cpp
   testTrackingLine.cpp
   testUrQMD.cpp
   )

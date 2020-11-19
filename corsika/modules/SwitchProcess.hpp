@@ -49,15 +49,15 @@ namespace corsika::switch_process {
     GrammageType GetInteractionLength(TParticle& vParticle) {
       if (vParticle.GetEnergy() < fThresholdEnergy) {
         if constexpr (is_process_sequence_v<TLowEProcess>) {
-          return fLowEProcess.GetTotalInteractionLength(vParticle);
+          return fLowEProcess.getInteractionLength(vParticle);
         } else {
-          return fLowEProcess.GetInteractionLength(vParticle);
+          return fLowEProcess.getInteractionLength(vParticle);
         }
       } else {
         if constexpr (is_process_sequence_v<THighEProcess>) {
-          return fHighEProcess.GetTotalInteractionLength(vParticle);
+          return fHighEProcess.getInteractionLength(vParticle);
         } else {
-          return fHighEProcess.GetInteractionLength(vParticle);
+          return fHighEProcess.getInteractionLength(vParticle);
         }
       }
     }
@@ -66,33 +66,33 @@ namespace corsika::switch_process {
     // implement DoInteraction() because we want to call SelectInteraction
     // in case a member process is a ProcessSequence.
     template <typename TParticle, typename TSecondaries>
-    EProcessReturn SelectInteraction(TParticle& vP, TSecondaries& vS,
+    ProcessReturn SelectInteraction(TParticle& vP, TSecondaries& vS,
                                      [[maybe_unused]] InverseGrammageType lambda_select,
                                      InverseGrammageType& lambda_inv_count) {
       if (vP.GetEnergy() < fThresholdEnergy) {
         if constexpr (is_process_sequence_v<TLowEProcess>) {
           return fLowEProcess.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         } else {
-          lambda_inv_count += fLowEProcess.GetInverseInteractionLength(vP);
+          lambda_inv_count += fLowEProcess.getInverseInteractionLength(vP);
           // check if we should execute THIS process and then EXIT
           if (lambda_select < lambda_inv_count) {
-            fLowEProcess.DoInteraction(vS);
-            return EProcessReturn::eInteracted;
+            fLowEProcess.doInteraction(vS);
+            return ProcessReturn::Interacted;
           } else {
-            return EProcessReturn::eOk;
+            return ProcessReturn::Ok;
           }
         }
       } else {
         if constexpr (is_process_sequence_v<THighEProcess>) {
           return fHighEProcess.SelectInteraction(vP, vS, lambda_select, lambda_inv_count);
         } else {
-          lambda_inv_count += fHighEProcess.GetInverseInteractionLength(vP);
+          lambda_inv_count += fHighEProcess.getInverseInteractionLength(vP);
           // check if we should execute THIS process and then EXIT
           if (lambda_select < lambda_inv_count) {
-            fHighEProcess.DoInteraction(vS);
-            return EProcessReturn::eInteracted;
+            fHighEProcess.doInteraction(vS);
+            return ProcessReturn::Interacted;
           } else {
-            return EProcessReturn::eOk;
+            return ProcessReturn::Ok;
           }
         }
       }

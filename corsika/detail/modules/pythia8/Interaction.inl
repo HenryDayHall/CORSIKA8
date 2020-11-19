@@ -229,7 +229,7 @@ namespace corsika::pythia8 {
    */
 
   template <>
-  corsika::EProcessReturn Interaction::DoInteraction(Projectile& vP) {
+  void Interaction::doInteraction(Projectile& vP) {
 
     const auto corsikaBeamId = vP.GetPID();
     std::cout << "Pythia::Interaction: "
@@ -378,7 +378,6 @@ namespace corsika::pythia8 {
                   << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << std::endl;
       }
     }
-    return EProcessReturn::eOk;
   }
 
 } // namespace corsika::pythia8

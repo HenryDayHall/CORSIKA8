@@ -30,8 +30,6 @@ int checkSec = 0;      // use this as a bit field
 int checkCont = 0;     // use this as a bit field
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
-  [[maybe_unused]] int v_ = 0;
-
 public:
   ContinuousProcess1(const int v)
       : v_(v) {
@@ -47,11 +45,11 @@ public:
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
     return ProcessReturn::Ok;
   }
+private:
+  [[maybe_unused]] int v_ = 0;
 };
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
-  [[maybe_unused]] int v_ = 0;
-
 public:
   ContinuousProcess2(const int v)
       : v_(v) {
@@ -66,11 +64,11 @@ public:
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
     return ProcessReturn::Ok;
   }
+private:
+  [[maybe_unused]] int v_ = 0;
 };
 
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
-  int v_ = 0;
-
 public:
   ContinuousProcess3(const int v)
       : v_(v) {
@@ -85,6 +83,8 @@ public:
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
     return ProcessReturn::Ok;
   }
+private:
+  [[maybe_unused]] int v_ = 0;
 };
 
 class Process1 : public InteractionProcess<Process1> {
@@ -96,24 +96,20 @@ public:
   }
 
   template <typename TView>
-  inline ProcessReturn doInteraction(TView& v) const {
+  inline void doInteraction(TView& v) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
-    return ProcessReturn::Ok;
   }
 
   template <typename TParticle>
   GrammageType getInteractionLength(TParticle&) const {
     return 10_g / square(1_cm);
   }
-
 private:
   [[maybe_unused]] int v_;
 };
 
 class Process2 : public InteractionProcess<Process2> {
-  [[maybe_unused]] int v_ = 0;
-
 public:
   Process2(const int v)
       : v_(v) {
@@ -122,22 +118,21 @@ public:
   }
 
   template <typename TView>
-  inline ProcessReturn doInteraction(TView& v) const {
+  inline void  doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     cout << "Process2::DoInteraction" << endl;
-    return ProcessReturn::Ok;
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
     cout << "Process2::GetInteractionLength" << endl;
     return 20_g / (1_cm * 1_cm);
   }
+private:
+  [[maybe_unused]] int v_ = 0;
 };
 
 class Process3 : public InteractionProcess<Process3> {
-  [[maybe_unused]] int v_ = 0;
-
 public:
   Process3(const int v)
       : v_(v) {
@@ -146,22 +141,21 @@ public:
   }
 
   template <typename TView>
-  inline ProcessReturn doInteraction(TView& v) const {
+  inline void doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     cout << "Process3::DoInteraction" << endl;
-    return ProcessReturn::Ok;
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
     cout << "Process3::GetInteractionLength" << endl;
     return 30_g / (1_cm * 1_cm);
   }
+private:
+  [[maybe_unused]] int v_ = 0;
 };
 
 class Process4 : public BaseProcess<Process4> {
-  [[maybe_unused]] int v_ = 0;
-
 public:
   Process4(const int v)
       : v_(v) {
@@ -177,13 +171,15 @@ public:
     return ProcessReturn::Ok;
   }
   template <typename TView>
-  ProcessReturn doInteraction(TView&) const {
+  void doInteraction(TView&) const {
     checkInteract |= 8;
-    return ProcessReturn::Ok;
   }
+private:
+  [[maybe_unused]] int v_ = 0;
 };
 
 class Decay1 : public DecayProcess<Decay1> {
+public:
   Decay1(const int) {
     cout << "Decay1()" << endl;
     globalCount++;
@@ -194,14 +190,12 @@ class Decay1 : public DecayProcess<Decay1> {
     return 1_s;
   }
   template <typename TView>
-  ProcessReturn doDecay(TView&) const {
+  void doDecay(TView&) const {
     checkDecay |= 1;
-    return ProcessReturn::Ok;
   }
 };
 
 class Decay2 : public DecayProcess<Decay2> {
-
 public:
   Decay2(const int) {
     cout << "Decay2()" << endl;
@@ -213,15 +207,12 @@ public:
     return 2_s;
   }
   template <typename TView>
-  ProcessReturn doDecay(TView&) const {
+  void doDecay(TView&) const {
     checkDecay |= 2;
-    return ProcessReturn::Ok;
   }
 };
 
 class Stack1 : public StackProcess<Stack1> {
-  int count_ = 0;
-
 public:
   Stack1(const int n)
       : StackProcess(n) {}
@@ -231,6 +222,8 @@ public:
     return ProcessReturn::Ok;
   }
   int getCount() const { return count_; }
+private:
+  int count_ = 0;
 };
 
 struct DummyStack {};

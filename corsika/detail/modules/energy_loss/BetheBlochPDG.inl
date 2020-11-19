@@ -156,9 +156,9 @@ namespace corsika::energy_loss {
     return BetheBloch(vP, vDX) + RadiationLosses(vP, vDX);
   }
 
-  corsika::EProcessReturn BetheBlochPDG::DoContinuous(SetupParticle& p,
+  corsika::ProcessReturn BetheBlochPDG::doContinuous(SetupParticle& p,
                                                       SetupTrack const& t) {
-    if (p.GetChargeNumber() == 0) return corsika::EProcessReturn::eOk;
+    if (p.GetChargeNumber() == 0) return corsika::ProcessReturn::Ok;
 
     GrammageType const dX =
         p.GetNode()->GetModelProperties().getIntegratedGrammage(t, t.GetLength());
@@ -171,11 +171,11 @@ namespace corsika::energy_loss {
     std::cout << "BetheBlochPDG  dE=" << dE / 1_MeV << "MeV, "
               << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV
               << ", Enew=" << Enew / 1_GeV << "GeV" << std::endl;
-    auto status = corsika::EProcessReturn::eOk;
+    auto status = corsika::ProcessReturn::Ok;
     if (-dE > Ekin) {
       dE = -Ekin;
       Enew = p.GetMass();
-      status = corsika::EProcessReturn::eParticleAbsorbed;
+      status = corsika::ProcessReturn::ParticleAbsorbed;
     }
     p.SetEnergy(Enew);
     MomentumUpdate(p, Enew);

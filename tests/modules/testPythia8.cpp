@@ -152,7 +152,7 @@ TEST_CASE("pythia process") {
 
     corsika::pythia8::Interaction model;
     model.Init();
-    [[maybe_unused]] const corsika::EProcessReturn ret = model.DoInteraction(projectile);
+    model.doInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 }

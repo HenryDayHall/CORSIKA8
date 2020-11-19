@@ -52,7 +52,7 @@ namespace corsika::pythia8 {
      */
 
     template <typename TProjectile>
-    corsika::EProcessReturn DoInteraction(TProjectile&);
+    void doInteraction(TProjectile&);
 
   private:
     corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("pythia");

@@ -29,7 +29,7 @@ namespace corsika::observation_plane {
     ObservationPlane(corsika::Plane const&, std::string const&, bool = true);
     void Init() {}
 
-    corsika::EProcessReturn DoContinuous(
+    corsika::ProcessReturn doContinuous(
         corsika::setup::Stack::ParticleType const& vParticle,
         corsika::setup::Trajectory const& vTrajectory);
 

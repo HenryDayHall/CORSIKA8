@@ -163,7 +163,7 @@ TEST_CASE("UrQMD") {
     // must be assigned to variable, cannot be used as rvalue?!
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
-    [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    urqmd.doInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) == Z + corsika::charge_number(corsika::Code::Oxygen));
 
@@ -184,7 +184,7 @@ TEST_CASE("UrQMD") {
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
-    [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    urqmd.doInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) == corsika::charge_number(corsika::Code::PiPlus) +
                                           corsika::charge_number(corsika::Code::Oxygen));
@@ -206,7 +206,7 @@ TEST_CASE("UrQMD") {
     auto projectile = secViewPtr->GetProjectile();
     auto const projectileMomentum = projectile.GetMomentum();
 
-    [[maybe_unused]] corsika::EProcessReturn const ret = urqmd.DoInteraction(projectile);
+    urqmd.doInteraction(projectile);
 
     REQUIRE(sumCharge(*secViewPtr) == corsika::charge_number(corsika::Code::K0Long) +
                                           corsika::charge_number(corsika::Code::Oxygen));

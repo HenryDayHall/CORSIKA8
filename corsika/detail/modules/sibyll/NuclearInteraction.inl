@@ -307,8 +307,8 @@ namespace corsika::sibyll {
 
   template <>
   template <typename TProjectile>
-  corsika::EProcessReturn
-  NuclearInteraction<corsika::setup::SetupEnvironment>::DoInteraction(TProjectile& vP) {
+  void
+  NuclearInteraction<corsika::setup::SetupEnvironment>::doInteraction(TProjectile& vP) {
 
     using namespace si;
 
@@ -585,12 +585,10 @@ namespace corsika::sibyll {
               PprojNucLab.GetSpaceLikeComponents(), pOrig, tOrig});
       // create inelastic interaction
       std::cout << "calling HadronicInteraction..." << std::endl;
-      hadronicInteraction_.DoInteraction(inelasticNucleon);
+      hadronicInteraction_.doInteraction(inelasticNucleon);
     }
 
     std::cout << "NuclearInteraction: DoInteraction: done" << std::endl;
-
-    return corsika::EProcessReturn::eOk;
   }
 
 } // namespace corsika::sibyll

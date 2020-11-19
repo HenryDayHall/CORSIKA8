@@ -44,6 +44,6 @@ TEST_CASE("StackInspector", "[processes]") {
     StackInspector<TestCascadeStack> model(1, true, E0);
 
     model.Init();
-    [[maybe_unused]] const corsika::EProcessReturn ret = model.DoStack(stack);
+    model.doStack(stack);
   }
 }

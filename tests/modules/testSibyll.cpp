@@ -114,8 +114,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     Interaction model;
 
-    model.Init();
-    [[maybe_unused]] const corsika::EProcessReturn ret = model.DoInteraction(projectile);
+    model.doInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 
@@ -139,7 +138,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     NuclearInteraction model(hmodel, env);
 
     model.Init();
-    [[maybe_unused]] const corsika::EProcessReturn ret = model.DoInteraction(projectile);
+    model.doInteraction(projectile);
     [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
   }
 

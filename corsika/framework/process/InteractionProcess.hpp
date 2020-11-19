@@ -30,7 +30,7 @@ namespace corsika {
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoInteraction...
     template <typename TParticle>
-    ProcessReturn doInteraction(TParticle&);
+    void doInteraction(TParticle&);
 
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&);

@@ -36,6 +36,9 @@ namespace corsika {
      well as lvalue Processes in the ProcessSequence.
 
      The sequence, and the processes use CRTP.
+
+     \todo There are several FIXME's in the ProcessSequence.inl due to
+     outstanding migration of SecondaryView::parent()
    */
 
   template <typename TProcess1, typename TProcess2 = NullModel>
