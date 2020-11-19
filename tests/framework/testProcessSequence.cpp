@@ -121,7 +121,7 @@ public:
   inline void  doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
-    cout << "Process2::DoInteraction" << endl;
+    cout << "Process2::doInteraction" << endl;
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
@@ -144,7 +144,7 @@ public:
   inline void doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
-    cout << "Process3::DoInteraction" << endl;
+    cout << "Process3::doInteraction" << endl;
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
@@ -165,7 +165,7 @@ public:
 
   template <typename D, typename T>
   inline ProcessReturn doContinuous(D& d, T&) const {
-    std::cout << "Base::DoContinuous" << std::endl;
+    std::cout << "Base::doContinuous" << std::endl;
     checkCont |= 8;
     for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }
     return ProcessReturn::Ok;
