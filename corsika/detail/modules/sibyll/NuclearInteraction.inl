@@ -560,7 +560,7 @@ namespace corsika::sibyll {
       // CORSIKA 7 way
       // elastic nucleons inherit momentum from original projectile
       // neglecting momentum transfer in interaction
-      const double mass_ratio = corsika::mass(elaNucCode) / ProjMass;
+      const double mass_ratio = corsika::get_mass(elaNucCode) / ProjMass;
       auto const Plab = PprojLab * mass_ratio;
 
       vP.AddSecondary(std::tuple<corsika::Code, si::HEPEnergyType,

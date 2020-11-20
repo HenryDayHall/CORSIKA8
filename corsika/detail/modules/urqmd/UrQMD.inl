@@ -39,8 +39,8 @@ namespace corsika::urqmd {
     // the following is a translation of ptsigtot() into C++
     if (vProjectileCode != corsika::Code::Nucleus &&
         !corsika::is_nucleus(vTargetCode)) { // both particles are "special"
-      auto const mProj = corsika::mass(vProjectileCode);
-      auto const mTar = corsika::mass(vTargetCode);
+      auto const mProj = corsika::get_mass(vProjectileCode);
+      auto const mTar = corsika::get_mass(vTargetCode);
       double sqrtS =
           sqrt(static_pow<2>(mProj) + static_pow<2>(mTar) + 2 * vLabEnergy * mTar) *
           (1 / 1_GeV);
@@ -226,7 +226,7 @@ namespace corsika::urqmd {
               ::urqmd::coor_.px[i], ::urqmd::coor_.py[i], ::urqmd::coor_.pz[i]} *
               1_GeV);
 
-      auto const energy = sqrt(momentum.squaredNorm() + square(corsika::mass(code)));
+      auto const energy = sqrt(momentum.squaredNorm() + square(corsika::get_mass(code)));
 
       momentum.rebase(originalCS); // transform back into standard lab frame
       std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;

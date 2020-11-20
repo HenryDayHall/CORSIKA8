@@ -295,7 +295,7 @@ namespace corsika::qgsjetII {
                                      (projectileEnergyLab - corsika::Proton::mass))});
 
             auto const energy =
-                sqrt(momentum.squaredNorm() + square(corsika::mass(idFragm)));
+                sqrt(momentum.squaredNorm() + square(corsika::get_mass(idFragm)));
             momentum.rebase(originalCS); // transform back into standard lab frame
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.GetComponents() << std::endl;

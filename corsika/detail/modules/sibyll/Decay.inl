@@ -123,7 +123,7 @@ namespace corsika::sibyll {
                    vP.GetMomentum(),
                    // setting particle mass with Corsika values, may be inconsistent
                    // with sibyll internal values
-                   corsika::mass(pCode));
+                   corsika::get_mass(pCode));
     // remember position
     Point const decayPoint = vP.GetPosition();
     TimeType const t0 = vP.GetTime();

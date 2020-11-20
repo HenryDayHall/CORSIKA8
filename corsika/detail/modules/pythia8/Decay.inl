@@ -100,7 +100,7 @@ namespace corsika::pythia8 {
     double py = pcomp[1] / 1_GeV;
     double pz = pcomp[2] / 1_GeV;
     double en = vP.GetEnergy() / 1_GeV;
-    double m = corsika::mass(vP.GetPID()) / 1_GeV;
+    double m = corsika::get_mass(vP.GetPID()) / 1_GeV;
 
     // add particle to pythia stack
     event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
