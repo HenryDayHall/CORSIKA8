@@ -26,7 +26,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
 
   SECTION("Masses") {
     REQUIRE(Electron::mass / (511_keV) == Approx(1));
-    REQUIRE(Electron::mass / mass(Code::Electron) == 1.);
+    REQUIRE(Electron::mass / get_mass(Code::Electron) == 1.);
 
     REQUIRE((Proton::mass + Neutron::mass) / constants::nucleonMass == Approx(2));
   }
@@ -34,11 +34,12 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Charges") {
     REQUIRE(Electron::charge / constants::e == Approx(-1));
     REQUIRE(Positron::charge / constants::e == Approx(+1));
-    REQUIRE(charge(Positron::anti_code) / constants::e == Approx(-1));
+    REQUIRE(get_charge(Positron::anti_code) / constants::e == Approx(-1));
   }
 
   SECTION("Names") {
     REQUIRE(Electron::name == "e-");
+    REQUIRE(get_name(Code::Electron) == "e-");
     REQUIRE(PiMinus::name == "pi-");
     REQUIRE(Iron::name == "iron");
   }
@@ -64,14 +65,14 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Lifetimes") {
-    REQUIRE(lifetime(Code::Electron) ==
+    REQUIRE(get_lifetime(Code::Electron) ==
             std::numeric_limits<double>::infinity() * si::second);
-    REQUIRE(lifetime(Code::DPlus) < lifetime(Code::Gamma));
-    REQUIRE(lifetime(Code::RhoPlus) / si::second ==
+    REQUIRE(get_lifetime(Code::DPlus) < lifetime(Code::Gamma));
+    REQUIRE(get_lifetime(Code::RhoPlus) / si::second ==
             (Approx(4.414566727909413e-24).epsilon(1e-3)));
-    REQUIRE(lifetime(Code::SigmaMinusBar) / si::second ==
+    REQUIRE(get_lifetime(Code::SigmaMinusBar) / si::second ==
             (Approx(8.018880848563575e-11).epsilon(1e-5)));
-    REQUIRE(lifetime(Code::MuPlus) / si::second ==
+    REQUIRE(get_lifetime(Code::MuPlus) / si::second ==
             (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
@@ -131,12 +132,12 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     REQUIRE(Argon::is_nucleus);
     REQUIRE_FALSE(EtaC::is_nucleus);
 
-    REQUIRE(nucleus_A(Code::Hydrogen) == 1);
-    REQUIRE(nucleus_A(Code::Tritium) == 3);
+    REQUIRE(get_nucleus_A(Code::Hydrogen) == 1);
+    REQUIRE(get_nucleus_A(Code::Tritium) == 3);
     REQUIRE(Hydrogen::nucleus_Z == 1);
     REQUIRE(Tritium::nucleus_A == 3);
 
-    REQUIRE_THROWS(nucleus_Z(Code::Nucleus));
-    REQUIRE_THROWS(nucleus_A(Code::Nucleus));
+    REQUIRE_THROWS(get_nucleus_Z(Code::Nucleus));
+    REQUIRE_THROWS(get_nucleus_A(Code::Nucleus));
   }
 }

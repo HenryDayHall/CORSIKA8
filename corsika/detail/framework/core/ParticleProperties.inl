@@ -13,31 +13,31 @@
 
 namespace corsika {
 
-  HEPMassType constexpr mass(Code const p) {
+  HEPMassType constexpr get_mass(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     return particle::detail::masses[static_cast<CodeIntType>(p)];
   }
 
-  PDGCode constexpr PDG(Code const p) {
+  PDGCode constexpr get_PDG(Code const p) {
     return particle::detail::pdg_codes[static_cast<CodeIntType>(p)];
   }
 
-  int16_t constexpr charge_number(Code const code) {
+  int16_t constexpr get_charge_number(Code const code) {
     if (code == Code::Nucleus)
       throw std::runtime_error("charge of particle::Nucleus undefined");
     return particle::detail::electric_charges[static_cast<CodeIntType>(code)];
   }
 
-  ElectricChargeType constexpr charge(Code const code) {
+  ElectricChargeType constexpr get_charge(Code const code) {
     return charge_number(code) * constants::e;
   }
 
-  constexpr std::string const& name(Code const code) {
+  constexpr std::string const& get_name(Code const code) {
     return particle::detail::names[static_cast<CodeIntType>(code)];
   }
 
-  TimeType constexpr lifetime(Code const p) {
+  TimeType constexpr get_lifetime(Code const p) {
     return particle::detail::lifetime[static_cast<CodeIntType>(p)] * second;
   }
 
@@ -56,14 +56,14 @@ namespace corsika {
            c == Code::NuMuBar || c == Code::NuTauBar;
   }
 
-  int constexpr nucleus_A(Code const code) {
+  int constexpr get_nucleus_A(Code const code) {
     if (code == Code::Nucleus) {
       throw std::runtime_error("nucleus_A(Code::Nucleus) is impossible!");
     }
     return particle::detail::nucleusA[static_cast<CodeIntType>(code)];
   }
 
-  int constexpr nucleus_Z(Code const code) {
+  int constexpr get_nucleus_Z(Code const code) {
     if (code == Code::Nucleus) {
       throw std::runtime_error("nucleus_Z(Code::Nucleus) is impossible!");
     }
