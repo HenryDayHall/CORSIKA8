@@ -44,12 +44,26 @@ namespace corsika::geometry {
     LineTrajectory(const LineTrajectory&) = default;
     LineTrajectory(LineTrajectory&&) = default;
     LineTrajectory& operator=(const LineTrajectory&) = delete;
+
+    /**
+     * \param theLine The geometric \sa Line object that represents a straight-line
+     * connection \param timeLength The time duration to traverse the straight trajectory
+     * in units of \sa TimeType
+     */
     LineTrajectory(Line const& theLine, corsika::units::si::TimeType timeLength)
         : line_(theLine)
         , timeLength_(timeLength)
         , timeStep_(timeLength)
-        , initialVelocity_(theLine.GetVelocity(timeLength * 0))
-        , finalVelocity_(theLine.GetVelocity(timeLength * 1)) {}
+        , initialVelocity_(theLine.GetVelocity(corsika::units::si::TimeType::zero()))
+        , finalVelocity_(theLine.GetVelocity(timeLength)) {}
+
+    /**
+     * \param theLine The geometric \sa Line object that represents a straight-line
+     * connection \param timeLength The time duration to traverse the straight trajectory
+     * in units of \sa TimeType \param timeStep Time duration to folow eventually curved
+     * trajectory in units of \sa TimesType \param initialV Initial velocity vector at
+     * start of trajectory \param finalV Final velocity vector at start of trajectory
+     */
     LineTrajectory(
         Line const& theLine,
         corsika::units::si::TimeType timeLength, // length of theLine (straight)
@@ -77,6 +91,11 @@ namespace corsika::geometry {
     corsika::units::si::LengthType GetLength(double u = 1) const {
       using namespace corsika::units::si;
       if (timeLength_ == 0_s) return 0_m;
+      if (timeStep_ ==
+          std::numeric_limits<corsika::units::si::TimeType::value_type>::infinity() * 1_s)
+        return std::numeric_limits<
+                   corsika::units::si::LengthType::value_type>::infinity() *
+               1_m;
       return GetDistance(u) * timeStep_ / timeLength_;
     }
 
@@ -90,14 +109,32 @@ namespace corsika::geometry {
     void SetDuration(corsika::units::si::TimeType limit) {
       using namespace corsika::units::si;
       if (timeStep_ == 0_s) {
-        timeLength_ *= 0;
+        timeLength_ = 0_s;
         SetFinalVelocity(GetVelocity(0));
         timeStep_ = limit;
       } else {
-        const double scale = limit / timeStep_;
-        timeLength_ *= scale;
-        SetFinalVelocity(GetVelocity(scale));
-        timeStep_ = limit;
+        // for infinite steps there can't be a difference between
+        // curved and straight trajectory, this is fundamentally
+        // undefined: assume they are the same (which, i.e. is always correct for a
+        // straight line trajectory).
+        //
+        // Final note: only straight-line trajectories should have
+        // infinite steps! Everything else is ill-defined.
+        if (timeStep_ == std::numeric_limits<
+                             corsika::units::si::TimeType::value_type>::infinity() *
+                             1_s ||
+            timeLength_ == std::numeric_limits<
+                               corsika::units::si::TimeType::value_type>::infinity() *
+                               1_s) {
+          timeLength_ = limit;
+          timeStep_ = limit;
+          // ...and don't touch velocity
+        } else {
+          const double scale = limit / timeStep_;
+          timeLength_ *= scale;
+          SetFinalVelocity(GetVelocity(scale));
+          timeStep_ = limit;
+        }
       }
     }
 
@@ -113,8 +150,9 @@ namespace corsika::geometry {
 
   private:
     Line line_;
-    corsika::units::si::TimeType timeLength_;
-    corsika::units::si::TimeType timeStep_;
+    corsika::units::si::TimeType
+        timeLength_; ///! length of straight step (shortest connecting line)
+    corsika::units::si::TimeType timeStep_; ///! length of bend step (curved)
     VelocityVec initialVelocity_;
     VelocityVec finalVelocity_;
   };

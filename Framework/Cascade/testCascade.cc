@@ -75,9 +75,14 @@ public:
     geometry::Vector<SpeedType::dimension_type> const initialVelocity =
         particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
     return std::make_tuple(
-        geometry::LineTrajectory(geometry::Line(particle.GetPosition(), initialVelocity),
-                                 0_s), // trajectory
-        particle.GetNode());           // next volume node
+        geometry::LineTrajectory(
+            geometry::Line(particle.GetPosition(), initialVelocity),
+            std::numeric_limits<TimeType::value_type>::infinity() * 1_s), // trajectory,
+                                                                          // just
+                                                                          // go
+                                                                          // ahead
+                                                                          // forever
+        particle.GetNode()); // next volume node
   }
 };
 

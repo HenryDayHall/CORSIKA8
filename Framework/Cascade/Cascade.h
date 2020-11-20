@@ -213,9 +213,10 @@ namespace corsika::cascade {
           "transport particle by : {} m "
           "Medium transition after: {} m "
           "Decay after: {} m "
-          "Interaction after: {} m",
+          "Interaction after: {} m"
+          "Continuous limit: {} m",
           min_distance / 1_m, geomMaxLength / 1_m, distance_decay / 1_m,
-          distance_interact / 1_m);
+          distance_interact / 1_m, distance_max / 1_m);
 
       // here the particle is actually moved along the trajectory to new position:
       step.SetLength(min_distance);
@@ -236,9 +237,9 @@ namespace corsika::cascade {
       }
 
       C8LOG_DEBUG("sth. happening before geometric limit ? {}",
-                  ((min_distance <= geomMaxLength) ? "yes" : "no"));
+                  ((min_distance < geomMaxLength) ? "yes" : "no"));
 
-      if (min_distance <= geomMaxLength) { // interaction to happen within geometric limit
+      if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
 
         // check whether decay or interaction limits this step the
         // outcome of decay or interaction MAY be a) new particles in

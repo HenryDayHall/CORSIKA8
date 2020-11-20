@@ -60,7 +60,7 @@ using namespace corsika::units::si;
 //
 int main() {
 
-  logging::SetLevel(logging::level::info);
+  logging::SetLevel(logging::level::trace);
 
   std::cout << "cascade_proton_example" << std::endl;
 

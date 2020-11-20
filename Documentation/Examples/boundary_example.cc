@@ -85,7 +85,7 @@ private:
 //
 int main() {
 
-  logging::SetLevel(logging::level::info);
+  logging::SetLevel(logging::level::trace);
 
   C8LOG_INFO("boundary_example");
 
