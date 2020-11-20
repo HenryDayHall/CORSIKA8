@@ -58,20 +58,20 @@ namespace corsika {
 
   int constexpr get_nucleus_A(Code const code) {
     if (code == Code::Nucleus) {
-      throw std::runtime_error("nucleus_A(Code::Nucleus) is impossible!");
+      throw std::runtime_error("get_nucleus_A(Code::Nucleus) is impossible!");
     }
     return particle::detail::nucleusA[static_cast<CodeIntType>(code)];
   }
 
   int constexpr get_nucleus_Z(Code const code) {
     if (code == Code::Nucleus) {
-      throw std::runtime_error("nucleus_Z(Code::Nucleus) is impossible!");
+      throw std::runtime_error("get_nucleus_Z(Code::Nucleus) is impossible!");
     }
     return particle::detail::nucleusZ[static_cast<CodeIntType>(code)];
   }
 
   bool constexpr is_nucleus(Code const code) {
-    return (code == Code::Nucleus) || (nucleus_A(code) != 0);
+    return (code == Code::Nucleus) || (get_nucleus_A(code) != 0);
   }
 
   inline std::ostream& operator<<(std::ostream& stream, corsika::Code const code) {
@@ -93,7 +93,7 @@ namespace corsika {
   inline HEPMassType nucleus_mass(const int A, const int Z) {
     auto const absA = std::abs(A);
     auto const absZ = std::abs(Z);
-    return mass(Code::Proton) * absZ + (absA - absZ) * mass(Code::Neutron);
+    return get_mass(Code::Proton) * absZ + (absA - absZ) * get_mass(Code::Neutron);
   }
 
 } // namespace corsika

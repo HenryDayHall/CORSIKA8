@@ -90,7 +90,7 @@ namespace corsika::sibyll {
 
     const double gamma = E / m;
 
-    const TimeType t0 = corsika::lifetime(vP.GetPID());
+    const TimeType t0 = corsika::get_lifetime(vP.GetPID());
     auto const lifetime = gamma * t0;
 
     const auto mkin =

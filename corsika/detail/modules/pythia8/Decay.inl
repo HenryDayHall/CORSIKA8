@@ -66,7 +66,7 @@ namespace corsika::pythia8 {
 
     const double gamma = E / m;
 
-    const TimeType t0 = corsika::lifetime(p.GetPID());
+    const TimeType t0 = corsika::get_lifetime(p.GetPID());
     auto const lifetime = gamma * t0;
 
     return lifetime;

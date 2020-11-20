@@ -134,7 +134,7 @@ namespace corsika::qgsjetII {
       CrossSectionType weightedProdCrossSection =
           mediumComposition.WeightedSum([=](corsika::Code targetID) -> CrossSectionType {
             int targetA = 0;
-            if (corsika::is_nucleus(targetID)) targetA = corsika::nucleus_A(targetID);
+            if (corsika::is_nucleus(targetID)) targetA = corsika::get_nucleus_A(targetID);
             return GetCrossSection(corsikaBeamId, targetID, Elab, Abeam, targetA);
           });
 
@@ -217,7 +217,7 @@ namespace corsika::qgsjetII {
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
         int targetA = 0;
-        if (corsika::is_nucleus(targetId)) targetA = corsika::nucleus_A(targetId);
+        if (corsika::is_nucleus(targetId)) targetA = corsika::get_nucleus_A(targetId);
         const auto sigProd =
             GetCrossSection(corsikaBeamId, targetId, projectileEnergyLab, beamA, targetA);
         cross_section_of_components[i] = sigProd;
@@ -228,7 +228,8 @@ namespace corsika::qgsjetII {
       std::cout << "Interaction: target selected: " << targetCode << std::endl;
 
       int targetQgsCode = -1;
-      if (corsika::is_nucleus(targetCode)) targetQgsCode = corsika::nucleus_A(targetCode);
+      if (corsika::is_nucleus(targetCode))
+        targetQgsCode = corsika::get_nucleus_A(targetCode);
       if (targetCode == corsika::Code::Proton) targetQgsCode = 1;
       std::cout << "Interaction: target qgsjetII code/A: " << targetQgsCode << std::endl;
       if (targetQgsCode > maxMassNumber_ || targetQgsCode < 1)

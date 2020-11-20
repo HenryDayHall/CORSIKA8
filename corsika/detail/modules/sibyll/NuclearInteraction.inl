@@ -50,7 +50,7 @@ namespace corsika::sibyll {
     for (unsigned int i = 0; i < GetNEnergyBins(); ++i) {
       std::cout << " " << i << "  ";
       for (auto& n : pNuclei) {
-        auto const j = corsika::nucleus_A(n);
+        auto const j = corsika::get_nucleus_A(n);
         std::cout << " " << std::setprecision(5) << std::setw(8)
                   << cnucsignuc_.sigma[j - 1][k][i];
       }
@@ -85,7 +85,7 @@ namespace corsika::sibyll {
     for (auto& ptarg : allElementsInUniverse) {
       ++k;
       std::cout << "NuclearInteraction: init target component: " << ptarg << std::endl;
-      const int ib = corsika::nucleus_A(ptarg);
+      const int ib = corsika::get_nucleus_A(ptarg);
       if (!hadronicInteraction_.IsValidTarget(ptarg)) {
         std::cout
             << "NuclearInteraction::InitializeNuclearCrossSections: target nucleus? id="
@@ -445,8 +445,10 @@ namespace corsika::sibyll {
       allowed air in atmosphere also contains some Argon.
     */
     int kATarget = -1;
-    if (corsika::is_nucleus(targetCode)) kATarget = corsika::nucleus_A(targetCode);
-    else if (targetCode == corsika::Code::Proton) kATarget = 1;
+    if (corsika::is_nucleus(targetCode))
+      kATarget = corsika::get_nucleus_A(targetCode);
+    else if (targetCode == corsika::Code::Proton)
+      kATarget = 1;
     std::cout << "NuclearInteraction: nuclib target code: " << kATarget << std::endl;
     if (!hadronicInteraction_.IsValidTarget(targetCode))
       throw std::runtime_error("target outside range. ");

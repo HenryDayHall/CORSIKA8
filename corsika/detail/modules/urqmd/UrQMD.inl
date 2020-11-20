@@ -59,7 +59,7 @@ namespace corsika::urqmd {
       return ::urqmd::sigtot_(one, two, sqrtS) * 1_mb;
     } else {
       int const Ap = vAProjectile;
-      int const At = is_nucleus(vTargetCode) ? corsika::nucleus_A(vTargetCode) : 1;
+      int const At = is_nucleus(vTargetCode) ? corsika::get_nucleus_A(vTargetCode) : 1;
 
       double const maxImpact = ::urqmd::nucrad_(Ap) + ::urqmd::nucrad_(At) +
                                2 * ::urqmd::options_.CTParam[30 - 1];
@@ -147,8 +147,8 @@ namespace corsika::urqmd {
     });
 
     auto const targetCode = mediumComposition.SampleTarget(componentCrossSections, fRNG);
-    auto const targetA = corsika::nucleus_A(targetCode);
-    auto const targetZ = corsika::nucleus_Z(targetCode);
+    auto const targetA = corsika::get_nucleus_A(targetCode);
+    auto const targetZ = corsika::get_nucleus_Z(targetCode);
 
     ::urqmd::inputs_.nevents = 1;
     ::urqmd::sys_.eos = 0; // could be configurable in principle

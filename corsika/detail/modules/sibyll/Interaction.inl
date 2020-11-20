@@ -76,8 +76,7 @@ namespace corsika::sibyll {
   }
 
   tuple<corsika::CrossSectionType, corsika::CrossSectionType>
-  Interaction::GetCrossSection(const corsika::Code BeamId,
-                               const corsika::Code TargetId,
+  Interaction::GetCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
                                const corsika::HEPEnergyType CoMenergy) const {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
@@ -88,7 +87,7 @@ namespace corsika::sibyll {
     }
     const double dEcm = CoMenergy / 1_GeV;
     if (corsika::is_nucleus(TargetId)) {
-      const int iTarget = corsika::nucleus_A(TargetId);
+      const int iTarget = corsika::get_nucleus_A(TargetId);
       if (iTarget > maxTargetMassNumber_ || iTarget == 0)
         throw std::runtime_error(
             "Sibyll target outside range. Only nuclei with A<18 are allowed.");
@@ -103,10 +102,8 @@ namespace corsika::sibyll {
     return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
   }
 
-
   template <>
-  corsika::GrammageType Interaction::GetInteractionLength(
-      SetupParticle const& vP) const {
+  corsika::GrammageType Interaction::GetInteractionLength(SetupParticle const& vP) const {
 
     // coordinate system, get global frame of reference
     CoordinateSystem& rootCS =
@@ -132,9 +129,9 @@ namespace corsika::sibyll {
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
     std::cout << "Interaction: LambdaInt: \n"
-         << " input energy: " << vP.GetEnergy() / 1_GeV << std::endl
-         << " beam can interact:" << kInteraction << std::endl
-         << " beam pid:" << vP.GetPID() << std::endl;
+              << " input energy: " << vP.GetEnergy() / 1_GeV << std::endl
+              << " beam can interact:" << kInteraction << std::endl
+              << " beam pid:" << vP.GetPID() << std::endl;
 
     // TODO: move limits into variables
     // FR: removed && Elab >= 8.5_GeV
@@ -157,15 +154,15 @@ namespace corsika::sibyll {
           });
 
       std::cout << "Interaction: "
-           << "IntLength: weighted CrossSection (mb): " << weightedProdCrossSection / 1_mb
-           << std::endl;
+                << "IntLength: weighted CrossSection (mb): "
+                << weightedProdCrossSection / 1_mb << std::endl;
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.GetAverageMassNumber() *
                                       constants::u / weightedProdCrossSection;
       std::cout << "Interaction: "
-           << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
-           << std::endl;
+                << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
+                << std::endl;
 
       return int_length;
     }
@@ -183,8 +180,8 @@ namespace corsika::sibyll {
 
     const auto corsikaBeamId = vP.GetPID();
     std::cout << "ProcessSibyll: "
-         << "DoInteraction: " << corsikaBeamId << " interaction? "
-         << corsika::sibyll::CanInteract(corsikaBeamId) << std::endl;
+              << "DoInteraction: " << corsikaBeamId << " interaction? "
+              << corsika::sibyll::CanInteract(corsikaBeamId) << std::endl;
 
     if (corsika::is_nucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
@@ -211,10 +208,11 @@ namespace corsika::sibyll {
       auto const pProjectileLab = vP.GetMomentum();
 
       std::cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << std::endl
-           << "Interaction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
-           << std::endl;
+                << "Interaction: pbeam lab: " << pProjectileLab.GetComponents() / 1_GeV
+                << std::endl;
       std::cout << "Interaction: etarget lab: " << eTargetLab / 1_GeV << std::endl
-           << "Interaction: ptarget lab: " << pTargetLab.GetComponents() / 1_GeV << std::endl;
+                << "Interaction: ptarget lab: " << pTargetLab.GetComponents() / 1_GeV
+                << std::endl;
 
       const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
@@ -231,15 +229,16 @@ namespace corsika::sibyll {
       auto const PtargCoM = boost.toCoM(PtargLab);
 
       std::cout << "Interaction: ebeam CoM: " << PprojCoM.GetTimeLikeComponent() / 1_GeV
-           << std::endl
-           << "Interaction: pbeam CoM: "
-           << PprojCoM.GetSpaceLikeComponents().GetComponents() / 1_GeV << std::endl;
+                << std::endl
+                << "Interaction: pbeam CoM: "
+                << PprojCoM.GetSpaceLikeComponents().GetComponents() / 1_GeV << std::endl;
       std::cout << "Interaction: etarget CoM: " << PtargCoM.GetTimeLikeComponent() / 1_GeV
-           << std::endl
-           << "Interaction: ptarget CoM: "
-           << PtargCoM.GetSpaceLikeComponents().GetComponents() / 1_GeV << std::endl;
+                << std::endl
+                << "Interaction: ptarget CoM: "
+                << PtargCoM.GetSpaceLikeComponents().GetComponents() / 1_GeV << std::endl;
 
-      std::cout << "Interaction: position of interaction: " << pOrig.GetCoordinates() << std::endl;
+      std::cout << "Interaction: position of interaction: " << pOrig.GetCoordinates()
+                << std::endl;
       std::cout << "Interaction: time: " << tOrig << std::endl;
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
@@ -276,7 +275,7 @@ namespace corsika::sibyll {
         allowed air in atmosphere also contains some Argon.
       */
       int targetSibCode = -1;
-      if (is_nucleus(targetCode)) targetSibCode = nucleus_A(targetCode);
+      if (is_nucleus(targetCode)) targetSibCode = get_nucleus_A(targetCode);
       if (targetCode == corsika::Code::Proton) targetSibCode = 1;
       std::cout << "Interaction: sibyll code: " << targetSibCode << std::endl;
       if (targetSibCode > maxTargetMassNumber_ || targetSibCode < 1)
@@ -288,22 +287,23 @@ namespace corsika::sibyll {
       const int kBeam = corsika::sibyll::ConvertToSibyllRaw(corsikaBeamId);
 
       std::cout << "Interaction: "
-           << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
-           << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
+                << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
+                << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
       if (Ecm > GetMaxEnergyCoM())
         throw std::runtime_error("Interaction::DoInteraction: CoM energy too high!");
       // FR: removed eProjectileLab < 8.5_GeV ||
       if (Ecm < GetMinEnergyCoM()) {
         std::cout << "Interaction: "
-             << " DoInteraction: should have dropped particle.. "
-             << "THIS IS AN ERROR" << std::endl;
+                  << " DoInteraction: should have dropped particle.. "
+                  << "THIS IS AN ERROR" << std::endl;
         throw std::runtime_error("energy too low for SIBYLL");
       } else {
         count_++;
         // Sibyll does not know about units..
         const double sqs = Ecm / 1_GeV;
         // running sibyll, filling stack
-        std::cout << "kBeam " << kBeam << " targetSibCode " << targetSibCode << " sqs " << sqs << std::endl;
+        std::cout << "kBeam " << kBeam << " targetSibCode " << targetSibCode << " sqs "
+                  << sqs << std::endl;
         sibyll_(kBeam, targetSibCode, sqs);
         if (internalDecays_) {
           // corsika that decay internally will never appear on the corsika stack
@@ -338,8 +338,8 @@ namespace corsika::sibyll {
 
           // add to corsika stack
           auto pnew = vP.AddSecondary(
-          std::tuple<corsika::Code, corsika::HEPEnergyType, corsika::MomentumVector,
-                    corsika::Point, corsika::TimeType>{
+              std::tuple<corsika::Code, corsika::HEPEnergyType, corsika::MomentumVector,
+                         corsika::Point, corsika::TimeType>{
                   corsika::sibyll::ConvertFromSibyll(psib.GetPID()),
                   Plab.GetTimeLikeComponent(), Plab.GetSpaceLikeComponents(), pOrig,
                   tOrig});
@@ -348,9 +348,10 @@ namespace corsika::sibyll {
           Elab_final += pnew.GetEnergy();
           Ecm_final += psib.GetEnergy();
         }
-        std::cout << "conservation (all GeV): Ecm_final=" << Ecm_final / 1_GeV << std::endl
-             << "Elab_final=" << Elab_final / 1_GeV
-             << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << std::endl;
+        std::cout << "conservation (all GeV): Ecm_final=" << Ecm_final / 1_GeV
+                  << std::endl
+                  << "Elab_final=" << Elab_final / 1_GeV
+                  << ", Plab_final=" << (Plab_final / 1_GeV).GetComponents() << std::endl;
       }
     }
     return corsika::EProcessReturn::eOk;
