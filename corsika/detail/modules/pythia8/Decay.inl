@@ -50,12 +50,12 @@ namespace corsika::pythia8 {
 
   void Decay::SetUnstable(const corsika::Code pCode) {
     std::cout << "Pythia::Decay: setting " << pCode << " unstable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), true);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::get_PDG(pCode)), true);
   }
 
   void Decay::SetStable(const corsika::Code pCode) {
     std::cout << "Pythia::Decay: setting " << pCode << " stable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), false);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::get_PDG(pCode)), false);
   }
 
   template <typename TParticle>
@@ -93,7 +93,7 @@ namespace corsika::pythia8 {
     Decay::SetUnstable(vP.GetPID());
 
     // input particle PDG
-    auto const pdgCode = static_cast<int>(corsika::PDG(vP.GetPID()));
+    auto const pdgCode = static_cast<int>(corsika::get_PDG(vP.GetPID()));
 
     auto const pcomp = vP.GetMomentum().GetComponents();
     double px = pcomp[0] / 1_GeV;

@@ -310,7 +310,7 @@ namespace corsika::urqmd {
         {443, {135, 0}},     // jpsi
     };
 
-    return mapPDGToUrQMD.at(static_cast<int>(PDG(code)));
+    return mapPDGToUrQMD.at(static_cast<int>(get_PDG(code)));
   }
 
 } // namespace corsika::urqmd

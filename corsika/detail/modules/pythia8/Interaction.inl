@@ -77,12 +77,12 @@ namespace corsika::pythia8 {
 
   void Interaction::SetUnstable(const corsika::Code pCode) {
     std::cout << "Pythia::Interaction: setting " << pCode << " unstable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), true);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::get_PDG(pCode)), true);
   }
 
   void Interaction::SetStable(const corsika::Code pCode) {
     std::cout << "Pythia::Interaction: setting " << pCode << " stable.." << std::endl;
-    fPythia.particleData.mayDecay(static_cast<int>(corsika::PDG(pCode)), false);
+    fPythia.particleData.mayDecay(static_cast<int>(corsika::get_PDG(pCode)), false);
   }
 
   void Interaction::ConfigureLabFrameCollision(const corsika::Code BeamId,
@@ -93,15 +93,15 @@ namespace corsika::pythia8 {
 
     // set beam
     // beam id for pythia
-    auto const pdgBeam = static_cast<int>(corsika::PDG(BeamId));
+    auto const pdgBeam = static_cast<int>(corsika::get_PDG(BeamId));
     std::stringstream stBeam;
     stBeam << "Beams:idA = " << pdgBeam;
     fPythia.readString(stBeam.str());
     // set target
-    auto pdgTarget = static_cast<int>(corsika::PDG(TargetId));
+    auto pdgTarget = static_cast<int>(corsika::get_PDG(TargetId));
     // replace hydrogen with proton, otherwise pythia goes into heavy ion mode!
     if (TargetId == corsika::Code::Hydrogen)
-      pdgTarget = static_cast<int>(corsika::PDG(corsika::Code::Proton));
+      pdgTarget = static_cast<int>(corsika::get_PDG(corsika::Code::Proton));
     std::stringstream stTarget;
     stTarget << "Beams:idB = " << pdgTarget;
     fPythia.readString(stTarget.str());
@@ -131,8 +131,8 @@ namespace corsika::pythia8 {
     if (TargetId == corsika::Code::Proton || TargetId == corsika::Code::Hydrogen) {
       if (CanInteract(BeamId) && ValidCoMEnergy(CoMenergy)) {
         // input particle PDG
-        auto const pdgCodeBeam = static_cast<int>(corsika::PDG(BeamId));
-        auto const pdgCodeTarget = static_cast<int>(corsika::PDG(TargetId));
+        auto const pdgCodeBeam = static_cast<int>(corsika::get_PDG(BeamId));
+        auto const pdgCodeTarget = static_cast<int>(corsika::get_PDG(TargetId));
         const double ecm = CoMenergy / 1_GeV;
 
         // calculate cross section

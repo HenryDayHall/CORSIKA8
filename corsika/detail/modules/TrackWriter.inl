@@ -35,7 +35,7 @@ namespace corsika::track_writer {
                                                     const TTrack& vT) {
     auto const start = vT.GetPosition(0).GetCoordinates();
     auto const delta = vT.GetPosition(1).GetCoordinates() - start;
-    auto const pdg = static_cast<int>(corsika::PDG(vP.GetPID()));
+    auto const pdg = static_cast<int>(corsika::get_PDG(vP.GetPID()));
 
     // clang-format off
     fFile << std::setw(7) << pdg
