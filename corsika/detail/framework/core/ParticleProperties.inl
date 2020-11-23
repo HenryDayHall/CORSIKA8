@@ -30,7 +30,7 @@ namespace corsika {
   }
 
   ElectricChargeType constexpr get_charge(Code const code) {
-    return charge_number(code) * constants::e;
+    return get_charge_number(code) * constants::e;
   }
 
   constexpr std::string const& get_name(Code const code) {
@@ -75,7 +75,7 @@ namespace corsika {
   }
 
   inline std::ostream& operator<<(std::ostream& stream, corsika::Code const code) {
-    return stream << name(code);
+    return stream << get_name(code);
   }
 
   inline Code convert_from_PDG(PDGCode p) {

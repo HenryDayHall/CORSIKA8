@@ -45,17 +45,17 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("PDG") {
-    REQUIRE(PDG(Code::PiPlus) == PDGCode::PiPlus);
-    REQUIRE(PDG(Code::DPlus) == PDGCode::DPlus);
-    REQUIRE(PDG(Code::NuMu) == PDGCode::NuMu);
-    REQUIRE(PDG(Code::NuE) == PDGCode::NuE);
-    REQUIRE(PDG(Code::MuMinus) == PDGCode::MuMinus);
+    REQUIRE(get_PDG(Code::PiPlus) == PDGCode::PiPlus);
+    REQUIRE(get_PDG(Code::DPlus) == PDGCode::DPlus);
+    REQUIRE(get_PDG(Code::NuMu) == PDGCode::NuMu);
+    REQUIRE(get_PDG(Code::NuE) == PDGCode::NuE);
+    REQUIRE(get_PDG(Code::MuMinus) == PDGCode::MuMinus);
 
-    REQUIRE(static_cast<int>(PDG(Code::PiPlus)) == 211);
-    REQUIRE(static_cast<int>(PDG(Code::DPlus)) == 411);
-    REQUIRE(static_cast<int>(PDG(Code::NuMu)) == 14);
-    REQUIRE(static_cast<int>(PDG(Code::NuEBar)) == -12);
-    REQUIRE(static_cast<int>(PDG(Code::MuMinus)) == 13);
+    REQUIRE(static_cast<int>(get_PDG(Code::PiPlus)) == 211);
+    REQUIRE(static_cast<int>(get_PDG(Code::DPlus)) == 411);
+    REQUIRE(static_cast<int>(get_PDG(Code::NuMu)) == 14);
+    REQUIRE(static_cast<int>(get_PDG(Code::NuEBar)) == -12);
+    REQUIRE(static_cast<int>(get_PDG(Code::MuMinus)) == 13);
   }
 
   SECTION("Conversion PDG -> internal") {
@@ -67,7 +67,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Lifetimes") {
     REQUIRE(get_lifetime(Code::Electron) ==
             std::numeric_limits<double>::infinity() * si::second);
-    REQUIRE(get_lifetime(Code::DPlus) < lifetime(Code::Gamma));
+    REQUIRE(get_lifetime(Code::DPlus) < get_lifetime(Code::Gamma));
     REQUIRE(get_lifetime(Code::RhoPlus) / si::second ==
             (Approx(4.414566727909413e-24).epsilon(1e-3)));
     REQUIRE(get_lifetime(Code::SigmaMinusBar) / si::second ==
