@@ -42,8 +42,8 @@ namespace corsika {
 
     setBoost(coshEta, sinhEta);
 
-    CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta,
-                      coshEta, boost_.determinant() - 1);
+    CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta, coshEta,
+                boost_.determinant() - 1);
   }
 
   COMBoost::COMBoost(Vector<hepmomentum_d> const& momentum, HEPEnergyType mass)

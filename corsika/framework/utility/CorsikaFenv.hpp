@@ -22,10 +22,10 @@ int fedisableexcept(int excepts);
 
 #ifdef CORSIKA_HAS_FEENABLEEXCEPT
     // Nothing to do, OS privides the functions
-#elif
+#else
     #ifdef CORSIKA_OS_MAC
         #include <corsika/detail/framework/utility/CorsikaFenvOSX.inl>
-    #elif
+    #else
         #include <corsika/detail/framework/utility/CorsikaFenvFallback.inl>
     #endif
 #endif
