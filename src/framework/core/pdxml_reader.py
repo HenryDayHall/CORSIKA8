@@ -338,7 +338,7 @@ def gen_properties(particle_db):
     string += "};\n"
     
     # name string table
-    string += "static const std::array<std::string const, size> names = {\n"
+    string += "static constexpr std::array<std::string_view, size> names = {\n"
     for p in particle_db.values():
         string += "  \"{name:s}\",\n".format(name = p['name'])            
     string += "};\n"
@@ -434,7 +434,7 @@ def gen_classes(particle_db):
         string += "   static constexpr HEPMassType mass{corsika::get_mass(code)};\n"
         string += "   static constexpr ElectricChargeType charge{corsika::get_charge(code)};\n"
         string += "   static constexpr int charge_number{corsika::get_charge_number(code)};\n"
-        string += "   inline static std::string const& name{corsika::get_name(code)};\n"
+        string += "   static constexpr std::string_view name{corsika::get_name(code)};\n"
         string += "   static constexpr bool is_nucleus{corsika::is_nucleus(code)};\n"
         if particle_db[cname]['isNucleus']:
             string += "   static constexpr int nucleus_A{corsika::get_nucleus_A(code)};\n"

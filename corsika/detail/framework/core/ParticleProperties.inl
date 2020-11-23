@@ -33,7 +33,7 @@ namespace corsika {
     return get_charge_number(code) * constants::e;
   }
 
-  constexpr std::string const& get_name(Code const code) {
+  constexpr std::string_view get_name(Code const code) {
     return particle::detail::names[static_cast<CodeIntType>(code)];
   }
 
