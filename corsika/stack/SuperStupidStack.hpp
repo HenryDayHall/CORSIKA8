@@ -266,9 +266,9 @@ private:
 	 /// the actual memory to store particle data
 	 code_vector_type dataPID_;
 	 energy_vector_type dataE_;
-	 std::vector<momentum_type> momentum_;
-	 std::vector<corsika::Point> position_;
-	 std::vector<corsika::units::si::TimeType> time_;
+	 momentum_vector_type momentum_;
+	 point_vector_type position_;
+	 time_vector_type time_;
 
 }; // end class SuperStupidStackImpl
 
