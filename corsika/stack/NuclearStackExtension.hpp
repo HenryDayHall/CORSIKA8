@@ -15,350 +15,378 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/stack/SuperStupidStack.hpp>
 
-#include <corsika/logging/Logging.h>
-
 #include <algorithm>
 #include <tuple>
 #include <vector>
 
 namespace corsika {
 
-  /**
-   * @namespace nuclear_extension
-   *
-   * Add A and Z data to existing stack of particle properties.
-   *
-   * Only for Code::Nucleus particles A and Z are stored, not for all
-   * normal elementary particles.
-   *
-   * Thus in your code, make sure to always check <code>
-   * particle.GetPID()==Code::Nucleus </code> before attempting to
-   * read any nuclear information.
-   *
-   *
-   */
+/**
+ * @namespace nuclear_extension
+ *
+ * Add A and Z data to existing stack (currently SuperStupidStack) of particle
+ * properties. This is done via inheritance, not via CombinedStack since the nuclear
+ * data is stored ONLY when needed (for nuclei) and not for all particles. Thus, this is
+ * a new, derived Stack object.
+ *
+ * Only for Code::Nucleus particles A and Z are stored, not for all
+ * normal elementary particles.
+ *
+ * Thus in your code, make sure to always check <code>
+ * particle.GetPID()==Code::Nucleus </code> before attempting to
+ * read any nuclear information.
+ *
+ *
+ */
 
-  typedef corsika::Vector<hepmomentum_d> MomentumVector;
 
-  namespace nuclear_extension {
+/**
+ * @class NuclearParticleInterface
+ *
+ * Define ParticleInterface for NuclearStackExtension Stack derived from
+ * ParticleInterface of Inner stack class
+ */
+template < template <typename> class InnerParticleInterface, typename StackIteratorInterface>
+struct NuclearParticleInterface : public  InnerParticleInterface<StackIteratorInterface>  {
 
-    /**
-     * @class NuclearParticleInterface
-     *
-     * Define ParticleInterface for NuclearStackExtension Stack derived from
-     * ParticleInterface of Inner stack class
-     */
-    template <template <typename> typename InnerParticleInterface,
-              typename StackIteratorInterface>
-    class NuclearParticleInterface
-        : public InnerParticleInterface<StackIteratorInterface> {
+	typedef  InnerParticleInterface<StackIteratorInterface>  super_type;
 
-    protected:
-      using InnerParticleInterface<StackIteratorInterface>::GetStackData;
-      using InnerParticleInterface<StackIteratorInterface>::GetIndex;
 
-    public:
-      void SetParticleData(
-          const std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                           corsika::Point, TimeType>& v) {
-        if (std::get<0>(v) == corsika::Code::Nucleus) {
-          std::ostringstream err;
-          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
-          throw std::runtime_error(err.str());
-        }
-        InnerParticleInterface<StackIteratorInterface>::SetParticleData(v);
-        SetNucleusRef(-1); // this is not a nucleus
-      }
 
-      void SetParticleData(
-          const std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                           corsika::Point, TimeType, unsigned short, unsigned short>& v) {
-        const unsigned short A = std::get<5>(v);
-        const unsigned short Z = std::get<6>(v);
-        if (std::get<0>(v) != corsika::Code::Nucleus || A == 0 || Z == 0) {
-          std::ostringstream err;
-          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
-          throw std::runtime_error(err.str());
-        }
-        SetNucleusRef(GetStackData().GetNucleusNextRef()); // store this nucleus data ref
-        SetNuclearA(A);
-        SetNuclearZ(Z);
-        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
-            std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                       corsika::Point, TimeType>{std::get<0>(v), std::get<1>(v),
-                                                 std::get<2>(v), std::get<3>(v),
-                                                 std::get<4>(v)});
-      }
+public:
 
-      void SetParticleData(
-          InnerParticleInterface<StackIteratorInterface>& p,
-          const std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                           corsika::Point, TimeType>& v) {
-        if (std::get<0>(v) == corsika::Code::Nucleus) {
-          std::ostringstream err;
-          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
-          throw std::runtime_error(err.str());
-        }
-        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
-            p, std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                          corsika::Point, TimeType>{std::get<0>(v), std::get<1>(v),
-                                                    std::get<2>(v), std::get<3>(v),
-                                                    std::get<4>(v)});
-        SetNucleusRef(-1); // this is not a nucleus
-      }
 
-      void SetParticleData(
-          InnerParticleInterface<StackIteratorInterface>& p,
-          const std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                           corsika::Point, TimeType, unsigned short, unsigned short>& v) {
-        const unsigned short A = std::get<5>(v);
-        const unsigned short Z = std::get<6>(v);
-        if (std::get<0>(v) != corsika::Code::Nucleus || A == 0 || Z == 0) {
-          std::ostringstream err;
-          err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
-          throw std::runtime_error(err.str());
-        }
-        SetNucleusRef(GetStackData().GetNucleusNextRef()); // store this nucleus data ref
-        SetNuclearA(A);
-        SetNuclearZ(Z);
-        InnerParticleInterface<StackIteratorInterface>::SetParticleData(
-            p, std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                          corsika::Point, TimeType>{std::get<0>(v), std::get<1>(v),
-                                                    std::get<2>(v), std::get<3>(v),
-                                                    std::get<4>(v)});
-      }
+	typedef std::tuple<
+			corsika::Code, corsika::units::si::HEPEnergyType,
+			momentum_type, corsika::Point,
+		    corsika::units::si::TimeType> particle_data_type;
 
-      /**
-       * @name individual setters
-       * @{
-       */
-      void SetNuclearA(const unsigned short vA) {
-        GetStackData().SetNuclearA(GetIndex(), vA);
-      }
-      void SetNuclearZ(const unsigned short vZ) {
-        GetStackData().SetNuclearZ(GetIndex(), vZ);
-      }
-      /// @}
+	typedef std::tuple<
+			corsika::Code, corsika::units::si::HEPEnergyType,
+			momentum_type, corsika::Point,
+			corsika::units::si::TimeType,
+			unsigned short, unsigned short> altenative_particle_data_type;
 
-      /**
-       * @name individual getters
-       * @{
-       */
-      int GetNuclearA() const { return GetStackData().GetNuclearA(GetIndex()); }
-      int GetNuclearZ() const { return GetStackData().GetNuclearZ(GetIndex()); }
-      /// @}
 
-      /**
-       * Overwrite normal GetParticleMass function with nuclear version
-       */
-      HEPMassType GetMass() const {
-        if (InnerParticleInterface<StackIteratorInterface>::GetPID() ==
-            corsika::Code::Nucleus)
-          return corsika::nucleus_mass(GetNuclearA(), GetNuclearZ());
-        return InnerParticleInterface<StackIteratorInterface>::GetMass();
-      }
-      /**
-       * Overwirte normal GetChargeNumber function with nuclear version
-       **/
-      int16_t GetChargeNumber() const {
-        if (InnerParticleInterface<StackIteratorInterface>::GetPID() ==
-            corsika::Code::Nucleus)
-          return GetNuclearZ();
-        return InnerParticleInterface<StackIteratorInterface>::GetChargeNumber();
-      }
+	typedef corsika::Vector<corsika::units::si::hepmomentum_d> momentum_type;
 
-      int GetNucleusRef() const { return GetStackData().GetNucleusRef(GetIndex()); }
+	void setParticleData(particle_data_type const& v) {
 
-    protected:
-      void SetNucleusRef(const int vR) { GetStackData().SetNucleusRef(GetIndex(), vR); }
-    };
+		if (std::get<0>(v) == corsika::Code::Nucleus) {
+			std::ostringstream err;
+			err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+			throw std::runtime_error(err.str());
+		}
 
-    /**
-     * @class NuclearStackExtension
-     *
-     * Memory implementation of adding nuclear inforamtion to the
-     * existing particle stack defined in class InnerStackImpl.
-     *
-     * Inside the NuclearStackExtension class there is a dedicated
-     * fNucleusRef index, where fNucleusRef[i] is referring to the
-     * correct A and Z for a specific particle index i. fNucleusRef[i]
-     * == -1 means that this is not a nucleus, and a subsequent call to
-     * GetNucleusA would produce an exception.
-     */
-    template <typename InnerStackImpl>
-    class NuclearStackExtensionImpl : public InnerStackImpl {
+		super_type::setParticleData(v);
+		setNucleusRef(-1); // this is not a nucleus
+	}
 
-    public:
-      void Init() { InnerStackImpl::Init(); }
-      void Dump() { InnerStackImpl::Dump(); }
+	void setParticleData( altenative_particle_data_type const& v)
+	{
+		const unsigned short A = std::get<5>(v);
+		const unsigned short Z = std::get<6>(v);
+		if (std::get<0>(v) != corsika::Code::Nucleus || A == 0 || Z == 0) {
+			std::ostringstream err;
+			err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+			throw std::runtime_error(err.str());
+		}
+		setNucleusRef(super_type::GetStackData().getNucleusNextRef()); // store this nucleus data ref
+		setNuclearA(A);
+		setNuclearZ(Z);
+		super_type::setParticleData(particle_data_type{std::get<0>(v), std::get<1>(v),
+			std::get<2>(v), std::get<3>(v),	std::get<4>(v)});
+	}
 
-      void Clear() {
-        InnerStackImpl::Clear();
-        fNucleusRef.clear();
-        fNuclearA.clear();
-        fNuclearZ.clear();
-      }
+	void setParticleData( super_type& p, particle_data_type const& v)
+	{
+		if (std::get<0>(v) == corsika::Code::Nucleus) {
+			std::ostringstream err;
+			err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+			throw std::runtime_error(err.str());
+		}
 
-      unsigned int GetSize() const { return fNucleusRef.size(); }
-      unsigned int GetCapacity() const { return fNucleusRef.capacity(); }
+		super_type::setParticleData(p, particle_data_type{std::get<0>(v), std::get<1>(v),
+			std::get<2>(v), std::get<3>(v),	std::get<4>(v)});
 
-      void SetNuclearA(const unsigned int i, const unsigned short vA) {
-        fNuclearA[GetNucleusRef(i)] = vA;
-      }
-      void SetNuclearZ(const unsigned int i, const unsigned short vZ) {
-        fNuclearZ[GetNucleusRef(i)] = vZ;
-      }
-      void SetNucleusRef(const unsigned int i, const int v) { fNucleusRef[i] = v; }
+		setNucleusRef(-1); // this is not a nucleus
+	}
 
-      int GetNuclearA(const unsigned int i) const { return fNuclearA[GetNucleusRef(i)]; }
-      int GetNuclearZ(const unsigned int i) const { return fNuclearZ[GetNucleusRef(i)]; }
-      // this function will create new storage for Nuclear Properties, and return the
-      // reference to it
-      int GetNucleusNextRef() {
-        fNuclearA.push_back(0);
-        fNuclearZ.push_back(0);
-        return fNuclearA.size() - 1;
-      }
+	void setParticleData( super_type& p, altenative_particle_data_type const& v) {
 
-      int GetNucleusRef(const unsigned int i) const {
-        if (fNucleusRef[i] >= 0) return fNucleusRef[i];
-        std::ostringstream err;
-        err << "NuclearStackExtension: no nucleus at ref=" << i;
-        throw std::runtime_error(err.str());
-      }
+		const unsigned short A = std::get<5>(v);
+		const unsigned short Z = std::get<6>(v);
 
-      /**
-       *   Function to copy particle at location i1 in stack to i2
-       */
-      void Copy(const unsigned int i1, const unsigned int i2) {
-        // index range check
-        if (i1 >= GetSize() || i2 >= GetSize()) {
-          std::ostringstream err;
-          err << "NuclearStackExtension: trying to access data beyond size of stack!";
-          throw std::runtime_error(err.str());
-        }
-        // copy internal particle data p[i2] = p[i1]
-        InnerStackImpl::Copy(i1, i2);
-        // check if any of p[i1] or p[i2] was a Code::Nucleus
-        const int ref1 = fNucleusRef[i1];
-        const int ref2 = fNucleusRef[i2];
-        if (ref2 < 0) {
-          if (ref1 >= 0) {
-            // i1 is nucleus, i2 is not
-            fNucleusRef[i2] = GetNucleusNextRef();
-            fNuclearA[fNucleusRef[i2]] = fNuclearA[ref1];
-            fNuclearZ[fNucleusRef[i2]] = fNuclearZ[ref1];
-          } else {
-            // neither i1 nor i2 are nuclei
-          }
-        } else {
-          if (ref1 >= 0) {
-            // both are nuclei, i2 is overwritten with nucleus i1
-            // fNucleusRef stays the same, but A and Z data is overwritten
-            fNuclearA[ref2] = fNuclearA[ref1];
-            fNuclearZ[ref2] = fNuclearZ[ref1];
-          } else {
-            // i2 is overwritten with non-nucleus i1
-            fNucleusRef[i2] = -1;                       // flag as non-nucleus
-            fNuclearA.erase(fNuclearA.cbegin() + ref2); // remove data for i2
-            fNuclearZ.erase(fNuclearZ.cbegin() + ref2); // remove data for i2
-            const int n = fNucleusRef.size(); // update fNucleusRef: indices above ref2
-                                              // must be decremented by 1
-            for (int i = 0; i < n; ++i) {
-              if (fNucleusRef[i] > ref2) { fNucleusRef[i] -= 1; }
-            }
-          }
-        }
-      }
+		if (std::get<0>(v) != corsika::Code::Nucleus || A == 0 || Z == 0) {
+			std::ostringstream err;
+			err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+			throw std::runtime_error(err.str());
+		}
 
-      /**
-       *   Function to copy particle at location i2 in stack to i1
-       */
-      void Swap(const unsigned int i1, const unsigned int i2) {
-        // index range check
-        if (i1 >= GetSize() || i2 >= GetSize()) {
-          std::ostringstream err;
-          err << "NuclearStackExtension: trying to access data beyond size of stack!";
-          throw std::runtime_error(err.str());
-        }
-        // swap original particle data
-        InnerStackImpl::Swap(i1, i2);
-        // swap corresponding nuclear reference data
-        std::swap(fNucleusRef[i2], fNucleusRef[i1]);
-      }
+		setNucleusRef(super_type::GetStackData().getNucleusNextRef()); // store this nucleus data ref
+		setNuclearA(A);
+		setNuclearZ(Z);
+		super_type::setParticleData(p, particle_data_type{std::get<0>(v), std::get<1>(v),
+			std::get<2>(v), std::get<3>(v),
+			std::get<4>(v)});
+	}
 
-      void IncrementSize() {
-        InnerStackImpl::IncrementSize();
-        fNucleusRef.push_back(-1);
-      }
+	std::string as_string() const {
+		return fmt::format(
+				"{}, nuc({})", super_type::as_string(),
+				(isNucleus() ? fmt::format("A={}, Z={}", getNuclearA(), getNuclearZ())
+						: "n/a"));
+	}
 
-      void DecrementSize() {
-        InnerStackImpl::DecrementSize();
-        if (fNucleusRef.size() > 0) {
-          const int ref = fNucleusRef.back();
-          fNucleusRef.pop_back();
-          if (ref >= 0) {
-            fNuclearA.erase(fNuclearA.begin() + ref);
-            fNuclearZ.erase(fNuclearZ.begin() + ref);
-            const int n = fNucleusRef.size();
-            for (int i = 0; i < n; ++i) {
-              if (fNucleusRef[i] >= ref) { fNucleusRef[i] -= 1; }
-            }
-          }
-        }
-      }
+	/**
+	 * @name individual setters
+	 * @{
+	 */
+	void setNuclearA(const unsigned short vA) {
+		super_type::GetStackData().setNuclearA(super_type::GetIndex(), vA);
+	}
+	void setNuclearZ(const unsigned short vZ) {
+		super_type::GetStackData().setNuclearZ(super_type::GetIndex(), vZ);
+	}
+	/// @}
 
-    private:
-      /// the actual memory to store particle data
+	/**
+	 * @name individual getters
+	 * @{
+	 */
+	int getNuclearA() const { return super_type::GetStackData().getNuclearA(super_type::GetIndex()); }
+	int getNuclearZ() const { return super_type::GetStackData().getNuclearZ(super_type::GetIndex()); }
+	/// @}
 
-      std::vector<int> fNucleusRef;
-      std::vector<unsigned short> fNuclearA;
-      std::vector<unsigned short> fNuclearZ;
+	/**
+	 * Overwrite normal GetParticleMass function with nuclear version
+	 */
+	corsika::units::si::HEPMassType getMass() const {
+		if (super_type::GetPID() ==
+				corsika::Code::Nucleus)
+			return corsika::GetNucleusMass(getNuclearA(), getNuclearZ());
+		return super_type::getMass();
+	}
+	/**
+	 * Overwirte normal GetChargeNumber function with nuclear version
+	 **/
+	int16_t getChargeNumber() const {
+		if (super_type::GetPID() ==
+				corsika::Code::Nucleus)
+			return getNuclearZ();
+		return super_type::getChargeNumber();
+	}
 
-    }; // end class NuclearStackExtensionImpl
+	int getNucleusRef() const {
+		return super_type::GetStackData().getNucleusRef(GetIndex());
+	} // LCOV_EXCL_LINE
 
-    //    template<typename StackIteratorInterface>
-    // using NuclearParticleInterfaceType<StackIteratorInterface> =
-    // NuclearParticleInterface< ,StackIteratorInterface>
+protected:
 
-    // works, but requires stupd _PI class
-    // template<typename SS> using TEST =
-    // NuclearParticleInterface<corsika::super_stupid::SuperStupidStack::PIType,
-    // SS>;
-    template <typename InnerStack, template <typename> typename _PI>
-    using NuclearStackExtension =
-        Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, _PI>;
+	void setNucleusRef(const int vR) {
+		super_type::GetStackData().setNucleusRef(super_type::GetIndex(), vR);
+	}
 
-    // ----
+	bool isNucleus() const {
+		return super_type::GetStackData().isNucleus(super_type::GetIndex());
+	}
+};
 
-    // I'm dont't manage to do this properly.......
-    /*
-    template<typename TT, typename SS> using TESTi = typename
-    NuclearParticleInterface<TT::template PIType, SS>::ExtendedParticleInterface;
-    template<typename TT, typename SS> using TEST1 = TESTi<TT, SS>;
-    template<typename SS> using TEST2 = TEST1<typename
-    corsika::super_stupid::SuperStupidStack, SS>;
+/**
+ * @class NuclearStackExtension
+ *
+ * Memory implementation of adding nuclear inforamtion to the
+ * existing particle stack defined in class InnerStackImpl.
+ *
+ * Inside the NuclearStackExtension class there is a dedicated
+ * fNucleusRef index, where fNucleusRef[i] is referring to the
+ * correct A and Z for a specific particle index i. fNucleusRef[i]
+ * == -1 means that this is not a nucleus, and a subsequent call to
+ * GetNucleusA would produce an exception.
+ */
+template <typename InnerStackImpl>
+class NuclearStackExtensionImpl : public InnerStackImpl {
 
-    using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, TEST2>;
-    */
-    /*
-      // .... this should be fixed ....
+	typedef InnerStackImpl super_type;
 
-    template <typename InnerStack, typename SS=StackIteratorInterface>
-      //using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, NuclearParticleInterface<typename InnerStack::template PIType,
-    StackIteratorInterface>::ExtendedParticleInterface>; using NuclearStackExtension =
-    Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, TEST1<typename
-    corsika::super_stupid::SuperStupidStack, SS> >;
+public:
 
-    //template <typename InnerStack>
-      //  using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, TEST<typename
-    corsika::super_stupid::SuperStupidStack::PIType>>;
-    //using NuclearStackExtension = Stack<NuclearStackExtensionImpl<typename
-    InnerStack::StackImpl>, TEST>;
-    */
+	typedef std::vector<int>            nucleus_ref_type;
+	typedef std::vector<unsigned short>   nuclear_a_type;
+	typedef std::vector<unsigned short>   nuclear_z_type;
 
-  } // namespace nuclear_extension
+
+	NuclearStackExtensionImpl()= default;
+
+	NuclearStackExtensionImpl( NuclearStackExtensionImpl<InnerStackImpl> const&)= default;
+
+	NuclearStackExtensionImpl( NuclearStackExtensionImpl<InnerStackImpl> &&)= default;
+
+	NuclearStackExtensionImpl<InnerStackImpl>&
+	operator=( NuclearStackExtensionImpl<InnerStackImpl> const&)= default;
+
+	NuclearStackExtensionImpl<InnerStackImpl>&
+	operator=( NuclearStackExtensionImpl<InnerStackImpl> &&)= default;
+
+	void init() {
+		super_type::init();
+	}
+
+	void dump() {
+		super_type::dump();
+	}
+
+	void clear() {
+		super_type::clear();
+		nucleusRef_.clear();
+		nuclearA_.clear();
+		nuclearZ_.clear();
+	}
+
+	unsigned int getSize() const {
+		return nucleusRef_.size();
+	}
+
+	unsigned int getCapacity() const {
+		return nucleusRef_.capacity();
+	}
+
+	void setNuclearA(const unsigned int i, const unsigned short vA) {
+		nuclearA_[getNucleusRef(i)] = vA;
+	}
+
+	void setNuclearZ(const unsigned int i, const unsigned short vZ) {
+		nuclearZ_[getNucleusRef(i)] = vZ;
+	}
+
+	void setNucleusRef(const unsigned int i, const int v) {
+		nucleusRef_[i] = v;
+	}
+
+	int getNuclearA(const unsigned int i) const {
+		return nuclearA_[getNucleusRef(i)];
+	}
+
+	int getNuclearZ(const unsigned int i) const {
+		return nuclearZ_[getNucleusRef(i)];
+	}
+	// this function will create new storage for Nuclear Properties, and return the
+			// reference to it
+	int getNucleusNextRef() {
+		nuclearA_.push_back(0);
+		nuclearZ_.push_back(0);
+		return nuclearA_.size() - 1;
+	}
+
+	int getNucleusRef(const unsigned int i) const {
+		if (nucleusRef_[i] >= 0) return nucleusRef_[i];
+		std::ostringstream err;
+		err << "NuclearStackExtension: no nucleus at ref=" << i;
+		throw std::runtime_error(err.str());
+	}
+
+	bool isNucleus(const unsigned int i) const { return nucleusRef_[i] >= 0; }
+
+	/**
+	 *   Function to copy particle at location i1 in stack to i2
+	 */
+	void copy(const unsigned int i1, const unsigned int i2) {
+		// index range check
+		if (i1 >= getSize() || i2 >= getSize()) {
+			std::ostringstream err;
+			err << "NuclearStackExtension: trying to access data beyond size of stack!";
+			throw std::runtime_error(err.str());
+		}
+		// copy internal particle data p[i2] = p[i1]
+		super_type::copy(i1, i2);
+		// check if any of p[i1] or p[i2] was a Code::Nucleus
+		const int ref1 = nucleusRef_[i1];
+		const int ref2 = nucleusRef_[i2];
+		if (ref2 < 0) {
+			if (ref1 >= 0) {
+				// i1 is nucleus, i2 is not
+				nucleusRef_[i2] = getNucleusNextRef();
+				nuclearA_[nucleusRef_[i2]] = nuclearA_[ref1];
+				nuclearZ_[nucleusRef_[i2]] = nuclearZ_[ref1];
+			} else {
+				// neither i1 nor i2 are nuclei
+			}
+		} else {
+			if (ref1 >= 0) {
+				// both are nuclei, i2 is overwritten with nucleus i1
+				// fNucleusRef stays the same, but A and Z data is overwritten
+				nuclearA_[ref2] = nuclearA_[ref1];
+				nuclearZ_[ref2] = nuclearZ_[ref1];
+			} else {
+				// i2 is overwritten with non-nucleus i1
+				nucleusRef_[i2] = -1;                       // flag as non-nucleus
+				nuclearA_.erase(nuclearA_.cbegin() + ref2); // remove data for i2
+				nuclearZ_.erase(nuclearZ_.cbegin() + ref2); // remove data for i2
+				const int n = nucleusRef_.size(); // update fNucleusRef: indices above ref2
+				// must be decremented by 1
+				for (int i = 0; i < n; ++i) {
+					if (nucleusRef_[i] > ref2) { nucleusRef_[i] -= 1; }
+				}
+			}
+		}
+	}
+
+	/**
+	 *   Function to copy particle at location i2 in stack to i1
+	 */
+	void swap(const unsigned int i1, const unsigned int i2) {
+		// index range check
+		if (i1 >= getSize() || i2 >= getSize()) {
+			std::ostringstream err;
+			err << "NuclearStackExtension: trying to access data beyond size of stack!";
+			throw std::runtime_error(err.str());
+		}
+		// swap original particle data
+		super_type::swap(i1, i2);
+		// swap corresponding nuclear reference data
+		std::swap(nucleusRef_[i2], nucleusRef_[i1]);
+	}
+
+	void incrementSize() {
+		super_type::incrementSize();
+		nucleusRef_.push_back(-1);
+	}
+
+	void decrementSize() {
+		super_type::decrementSize();
+		if (nucleusRef_.size() > 0) {
+			const int ref = nucleusRef_.back();
+			nucleusRef_.pop_back();
+			if (ref >= 0) {
+				nuclearA_.erase(nuclearA_.begin() + ref);
+				nuclearZ_.erase(nuclearZ_.begin() + ref);
+				const int n = nucleusRef_.size();
+				for (int i = 0; i < n; ++i) {
+					if (nucleusRef_[i] >= ref) { nucleusRef_[i] -= 1; }
+				}
+			}
+		}
+	}
+
+private:
+	/// the actual memory to store particle data
+
+	nucleus_ref_type nucleusRef_;
+	nuclear_a_type     nuclearA_;
+	nuclear_z_type     nuclearZ_;
+
+}; // end class NuclearStackExtensionImpl
+
+template <typename InnerStack, template <typename> typename _PI>
+using NuclearStackExtension =
+		Stack<NuclearStackExtensionImpl<typename InnerStack::StackImpl>, _PI> ;
+
+//
+template <typename StackIter>
+using ExtendedParticleInterfaceType = NuclearParticleInterface<SuperStupidStack, StackIter>;
+
+// the particle data stack with extra nuclear information:
+using ParticleDataStack = NuclearStackExtension<SuperStupidStack, ExtendedParticleInterfaceType>;
+
+
 } // namespace corsika
