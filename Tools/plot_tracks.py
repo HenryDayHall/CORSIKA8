@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-# (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
-#
-# See file AUTHORS for a list of contributors.
+import os
+import sys, getopt
+import re
+
+# (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
 #
 # This software is distributed under the terms of the GNU General Public
 # Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -19,17 +21,16 @@ fi
 directory=$(dirname "$tracks_dat")
 hadrons_dat="$directory/hadrons.dat"
 muons_dat="$directory/muons.dat"
+electrons_dat="$directory/electrons.dat"
+gammas_dat="$directory/gammas.dat"
 
-if [ ! -e "$tracks_dat" ]; then
-  echo "$tracks_dat does not exist" >&2
-  exit 2
-fi
-
-if [ "$muons_dat" -ot "$tracks_dat" ] || [ "$hadrons_dat" -ot "$tracks_dat" ]; then
+#if [ "$muons_dat" -ot "$tracks_dat" -o "$hadrons_dat" -ot "$muons_dat" ]; then
   echo "splitting $tracks_dat into $muons_dat and $hadrons_dat."
   cat "$tracks_dat" | egrep '^\s+-*13\s' > "$muons_dat"
-  cat "$tracks_dat" | egrep -v '^\s+-*13\s' > "$hadrons_dat"
-fi
+  cat "$tracks_dat" | egrep '^\s+-*11\s' > "$electrons_dat"
+  cat "$tracks_dat" | egrep '^\s+-*22\s' > "$gammas_dat"
+  cat "$tracks_dat" | egrep -v '^\s+-*13\s' | egrep -v '^\s+-*11\s' | egrep -v '^\s+-*22\s' > "$hadrons_dat"
+#fi
 
 output="$2"
 if [ -z "$output" ]; then
@@ -55,7 +56,7 @@ do for [t=0:359:1] {
 #	set output sprintf("%03d_$output", t)
 
 	set view 80, t
-        splot "$muons_dat" u 3:4:5:6:7:8 w vectors nohead lt rgb "red" t "", "$hadrons_dat" u 3:4:5:6:7:8 w vectors nohead  lc rgb "black" t ""
+        splot "$gammas_dat" u 3:4:5:6:7:8 w vectors nohead lt rgb "orange" t "", "$electrons_dat" u 3:4:5:6:7:8 w vectors nohead lt rgb "blue" t "", "$muons_dat" u 3:4:5:6:7:8 w vectors nohead lt rgb "red" t "", "$hadrons_dat" u 3:4:5:6:7:8 w vectors nohead  lc rgb "black" t ""
 }
 EOF
 
