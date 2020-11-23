@@ -156,6 +156,8 @@ namespace corsika::process {
           return tracking_line::Tracking::Intersect(particle, sphere, medium);
         }
 
+        bool const numericallyInside = sphere.Contains(particle.GetPosition());
+
         const geometry::Vector<SpeedType::dimension_type> velocity =
             particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
         const auto absVelocity = velocity.norm();
@@ -181,27 +183,58 @@ namespace corsika::process {
                           k * 1_m * 1_m * 1_m * 1_m);
         std::complex<double>* solutions = solve_quartic(0, a, b, c);
         LengthType d_enter, d_exit;
-        int first = 0;
+        int first = 0, first_entry = 0, first_exit = 0;
         for (int i = 0; i < 4; i++) {
           if (solutions[i].imag() == 0) {
-            LengthType time = solutions[i].real() * 1_m;
-            C8LOG_TRACE("Solutions for current Volume: {} ", time);
-            if (first == 0) {
-              d_enter = time;
-            } else {
-              if (time < d_enter) {
-                d_exit = d_enter;
-                d_enter = time;
-              } else {
-                d_exit = time;
+            LengthType const dist = solutions[i].real() * 1_m;
+            C8LOG_TRACE("Solution (real) for current Volume: {} ", dist);
+            if (numericallyInside) {
+              // there must be an entry (negative) and exit (positive) solution
+              if (dist < -0.0001_m) { // security margin to assure transfer to next
+                                      // logical volume
+                if (first_entry == 0) {
+                  d_enter = dist;
+                } else {
+                  d_enter = std::max(d_enter, dist); // closest negative to zero (-1e-4) m
+                }
+                first_entry++;
+
+              } else { // thus, dist >= -0.0001_m
+
+                if (first_exit == 0) {
+                  d_exit = dist;
+                } else {
+                  d_exit = std::min(d_exit, dist); // closest positive to zero (-1e-4) m
+                }
+                first_exit++;
               }
+              first = int(first_exit > 0) + int(first_entry > 0);
+
+            } else { // thus, numericallyInside == false
+
+              // both physical solutions (entry, exit) must be positive, and as small as
+              // possible
+              if (dist < -0.0001_m) { // need small numerical margin, to assure transport
+                // into next logical volume
+                continue;
+              }
+              if (first == 0) {
+                d_enter = dist;
+              } else {
+                if (dist < d_enter) {
+                  d_exit = d_enter;
+                  d_enter = dist;
+                } else {
+                  d_exit = dist;
+                }
+              }
+              first++;
             }
-            first++;
-          }
+          } // loop over solutions
         }
         delete[] solutions;
 
-        if (first != 2) {
+        if (first != 2) { // entry and exit points found
           C8LOG_DEBUG("no intersection! count={}", first);
           return geometry::Intersections();
         }
@@ -219,7 +252,7 @@ namespace corsika::process {
         throw std::runtime_error(
             "The Volume type provided is not supported in Intersect(particle, node)");
       }
-    };
+    }; // namespace tracking_leapfrog_curved
 
   } // namespace tracking_leapfrog_curved
 

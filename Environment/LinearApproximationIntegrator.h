@@ -12,7 +12,7 @@
 
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Trajectory.h>
+#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::environment {
   template <class TDerived>
@@ -20,7 +20,7 @@ namespace corsika::environment {
     auto const& GetImplementation() const { return *static_cast<TDerived const*>(this); }
 
   public:
-    auto IntegrateGrammage(corsika::geometry::LineTrajectory const& line,
+    auto IntegrateGrammage(corsika::setup::Trajectory const& line,
                            corsika::units::si::LengthType length) const {
       auto const c0 = GetImplementation().EvaluateAt(line.GetPosition(0));
       auto const c1 = GetImplementation().fRho.FirstDerivative(line.GetPosition(0),
@@ -28,7 +28,7 @@ namespace corsika::environment {
       return (c0 + 0.5 * c1 * length) * length;
     }
 
-    auto ArclengthFromGrammage(corsika::geometry::LineTrajectory const& line,
+    auto ArclengthFromGrammage(corsika::setup::Trajectory const& line,
                                corsika::units::si::GrammageType grammage) const {
       auto const c0 = GetImplementation().fRho(line.GetPosition(0));
       auto const c1 = GetImplementation().fRho.FirstDerivative(line.GetPosition(0),
@@ -37,7 +37,7 @@ namespace corsika::environment {
       return (1 - 0.5 * grammage * c1 / (c0 * c0)) * grammage / c0;
     }
 
-    auto MaximumLength(corsika::geometry::LineTrajectory const& line,
+    auto MaximumLength(corsika::setup::Trajectory const& line,
                        [[maybe_unused]] double relError) const {
       using namespace corsika::units::si;
       [[maybe_unused]] auto const c1 = GetImplementation().fRho.SecondDerivative(

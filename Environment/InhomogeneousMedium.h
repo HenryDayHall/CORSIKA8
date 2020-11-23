@@ -41,13 +41,13 @@ namespace corsika::environment {
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
     corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::LineTrajectory const& pLine,
+        corsika::setup::Trajectory const& pLine,
         corsika::units::si::LengthType pTo) const override {
       return fDensityFunction.IntegrateGrammage(pLine, pTo);
     }
 
     corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::LineTrajectory const& pLine,
+        corsika::setup::Trajectory const& pLine,
         corsika::units::si::GrammageType pGrammage) const override {
       return fDensityFunction.ArclengthFromGrammage(pLine, pGrammage);
     }

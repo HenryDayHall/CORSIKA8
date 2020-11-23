@@ -18,7 +18,6 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/process/tracking_line/Tracking.h>
-#include <corsika/utl/quartic.h>
 
 #include <type_traits>
 #include <utility>
@@ -89,12 +88,12 @@ namespace corsika::process {
         auto const momentumVerticalMag =
             particle.GetMomentum() -
             particle.GetMomentum().parallelProjectionOnto(magneticfield);
+        bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
         LengthType const gyroradius =
-            (chargeNumber == 0 || magnitudeB == 0_T
-                 ? std::numeric_limits<TimeType::value_type>::infinity() * 1_m
-                 : momentumVerticalMag.norm() * 1_V /
-                       (corsika::units::constants::c * abs(chargeNumber) * magnitudeB *
-                        1_eV));
+            (no_deflection ? std::numeric_limits<TimeType::value_type>::infinity() * 1_m
+                           : momentumVerticalMag.norm() * 1_V /
+                                 (corsika::units::constants::c * abs(chargeNumber) *
+                                  magnitudeB * 1_eV));
         const double maxRadians = 0.01;
         const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
         C8LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
@@ -104,7 +103,7 @@ namespace corsika::process {
         const auto absMomentum = initialMomentum.norm();
         const auto absVelocity = initialVelocity.norm();
         const geometry::Vector<dimensionless_d> direction = initialVelocity.normalized();
-        ;
+
         // check if particle is moving at all
         if (absVelocity * 1_s == 0_m) {
           return std::make_tuple(
@@ -123,8 +122,15 @@ namespace corsika::process {
                     initialTrack.GetPosition(0).GetCoordinates(),
                     initialTrack.GetPosition(1).GetCoordinates(), initialTrackLength);
 
+        // if particle is non-deflectable, we are done:
+        if (no_deflection) {
+          C8LOG_DEBUG("no deflection. tracking finished");
+          return std::make_tuple(initialTrack, initialTrackNextVolume);
+        }
+
         // avoid any intersections within first halve steplength
-        LengthType firstHalveSteplength = std::min(steplimit, initialTrackLength) / 2;
+        LengthType const firstHalveSteplength =
+            std::min(steplimit, initialTrackLength) / 2;
 
         C8LOG_DEBUG("first halve step length {}, steplimit={}, initialTrackLength={}",
                     firstHalveSteplength, steplimit, initialTrackLength);
@@ -135,9 +141,12 @@ namespace corsika::process {
         const auto new_direction =
             direction + direction.cross(magneticfield) * firstHalveSteplength * 2 * k;
         const auto new_direction_norm = new_direction.norm(); // by design this is >1
-        C8LOG_DEBUG("position_mid={}, new_direction={}, new_direction_norm={}",
-                    position_mid.GetCoordinates(), new_direction.GetComponents(),
-                    new_direction_norm);
+        C8LOG_DEBUG(
+            "position_mid={}, new_direction={}, (new_direction_norm)={}, deflection={}",
+            position_mid.GetCoordinates(), new_direction.GetComponents(),
+            new_direction_norm,
+            acos(std::min(1.0, direction.dot(new_direction) / new_direction_norm)) * 180 /
+                M_PI);
 
         // check, where the second halve-step direction has geometric intersections
         particle.SetPosition(position_mid);
@@ -146,18 +155,38 @@ namespace corsika::process {
             tracking_line::Tracking::GetTrack(particle);
         particle.SetPosition(initialPosition); // this is not nice...
         particle.SetMomentum(initialMomentum); // this is not nice...
-        const auto finalTrackLength = finalTrack.GetLength(1);
 
-        C8LOG_DEBUG("finalTrack(0)={}, finalTrack(1)={}, finalTrackLength={}",
-                    finalTrack.GetPosition(0).GetCoordinates(),
-                    finalTrack.GetPosition(1).GetCoordinates(), finalTrackLength);
+        LengthType const finalTrackLength = finalTrack.GetLength(1);
+        LengthType const secondLeapFrogLength = firstHalveSteplength * new_direction_norm;
 
-        const LengthType secondLeapFrogLength = firstHalveSteplength * new_direction_norm;
-        const LengthType secondHalveStepLength =
+        // check if volume transition is obvious, OR
+        // for numerical reasons, particles slighly bend "away" from a
+        // volume boundary have a very hard time to cross the border,
+        // thus, if secondLeapFrogLength is just slighly shorter (1e-4m) than
+        // finalTrackLength we better just [extend the
+        // secondLeapFrogLength slightly and] force the volume
+        // crossing:
+        bool const switch_volume = finalTrackLength - 0.0001_m <= secondLeapFrogLength;
+        LengthType const secondHalveStepLength =
             std::min(secondLeapFrogLength, finalTrackLength);
 
+        C8LOG_DEBUG(
+            "finalTrack(0)={}, finalTrack(1)={}, finalTrackLength={}, "
+            "secondLeapFrogLength={}, secondHalveStepLength={}, "
+            "secondLeapFrogLength-finalTrackLength={}, "
+            "secondHalveStepLength-finalTrackLength={}, "
+            "nextVol={}, transition={}",
+            finalTrack.GetPosition(0).GetCoordinates(),
+            finalTrack.GetPosition(1).GetCoordinates(), finalTrackLength,
+            secondLeapFrogLength, secondHalveStepLength,
+            secondLeapFrogLength - finalTrackLength,
+            secondHalveStepLength - finalTrackLength, fmt::ptr(finalTrackNextVolume),
+            switch_volume);
+
         // perform the second halve-step
-        const Point finalPosition = position_mid + new_direction * secondHalveStepLength;
+        auto const new_direction_normalized = new_direction.normalized();
+        const Point finalPosition =
+            position_mid + new_direction_normalized * secondHalveStepLength;
 
         const LengthType totalStep = firstHalveSteplength + secondHalveStepLength;
         const auto delta_pos = finalPosition - initialPosition;
@@ -171,10 +200,8 @@ namespace corsika::process {
                 distance / absVelocity,  // straight distance
                 totalStep / absVelocity, // bend distance
                 initialVelocity,
-                new_direction.normalized() * absVelocity), // trajectory
-            (finalTrackLength > secondLeapFrogLength
-                 ? volumeNode
-                 : finalTrackNextVolume)); // next step volume
+                new_direction_normalized * absVelocity), // trajectory
+            (switch_volume ? finalTrackNextVolume : volumeNode));
       }
     };
 

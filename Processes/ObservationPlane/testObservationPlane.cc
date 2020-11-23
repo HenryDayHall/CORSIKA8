@@ -19,9 +19,8 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 
-//#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
-//#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/setup/SetupTrajectory.h>
 
 using namespace corsika::units::si;
 using namespace corsika::process::observation_plane;
@@ -51,7 +50,8 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
   Vector<units::si::SpeedType::dimension_type> vec(cs, 0_m / second, 0_m / second,
                                                    -units::constants::c);
   Line line(start, vec);
-  LineTrajectory track(line, 12_m / units::constants::c);
+  setup::Trajectory track =
+      setup::testing::make_track<setup::Trajectory>(line, 12_m / units::constants::c);
 
   particle.SetPosition(Point(cs, {1_m, 1_m, 10_m})); // moving already along -z
 

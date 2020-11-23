@@ -111,7 +111,7 @@ namespace corsika::cascade {
           count_++;
           auto pNext = stack_.GetNextParticle();
           C8LOG_DEBUG(
-              "============== next particle : count={}, pid={}, "
+              "============== next particle : count={}, pid={} "
               ", stack entries={}"
               ", stack deleted={}",
               count_, pNext.GetPID(), stack_.getEntries(), stack_.getDeleted());
@@ -202,21 +202,20 @@ namespace corsika::cascade {
                                                                          next_interact);
 
       // determine the maximum geometric step length
-      LengthType const distance_max = process_sequence_.MaxStepLength(vParticle, step);
-      C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
+      LengthType const continuous_max_dist = process_sequence_.MaxStepLength(vParticle, step);
 
       // take minimum of geometry, interaction, decay for next step
       auto min_distance =
-          std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
+          std::min({distance_interact, distance_decay, continuous_max_dist, geomMaxLength});
 
       C8LOG_DEBUG(
           "transport particle by : {} m "
           "Medium transition after: {} m "
           "Decay after: {} m "
-          "Interaction after: {} m"
-          "Continuous limit: {} m",
+          "Interaction after: {} m "
+          "Continuous limit: {} m ",
           min_distance / 1_m, geomMaxLength / 1_m, distance_decay / 1_m,
-          distance_interact / 1_m, distance_max / 1_m);
+          distance_interact / 1_m, continuous_max_dist / 1_m);
 
       // here the particle is actually moved along the trajectory to new position:
       step.SetLength(min_distance);
@@ -248,7 +247,7 @@ namespace corsika::cascade {
 
         TStackView secondaries(vParticle);
 
-        if (min_distance != distance_max) {
+        if (min_distance < continuous_max_dist) {
           /*
             Create SecondaryView object on Stack. The data container
             remains untouched and identical, and 'projectil' is identical
@@ -261,10 +260,9 @@ namespace corsika::cascade {
 
           [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
-          if (min_distance == distance_interact) {
+          if (distance_interact < distance_decay) {
             interaction(secondaries);
           } else {
-            assert(min_distance == distance_decay);
             decay(secondaries);
             // make sure particle actually did decay if it should have done so
             if (secondaries.getSize() == 1 &&
@@ -289,20 +287,32 @@ namespace corsika::cascade {
                       fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
           return numericalNodeAfterStep == currentLogicalNode;
         };
+        assert(assertion()); // numerical and logical nodes should
+                             // match, we did not cross any volume
+                             // boundary
 
-        assert(assertion()); // numerical and logical nodes don't match
-      } else {               // boundary crossing, step is limited by volume boundary
-        vParticle.SetNode(nextVol);
-        /*
-          DoBoundary may delete the particle (or not)
+      } else { // boundary crossing, step is limited by volume boundary
 
-          caveat: any changes to vParticle, or even the production
-          of new secondaries is currently not passed to ParticleCut,
-          thus, particles outside the desired phase space may be produced.
+	if (nextVol != currentLogicalNode) {
+	
+	  C8LOG_DEBUG("volume boundary crossing to {}", fmt::ptr(nextVol));
 
-          todo: this must be fixed.
-        */
-        process_sequence_.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+	  if (nextVol == environment_.GetUniverse().get()) {
+	    C8LOG_DEBUG("particle left physics world, is now in unknown space -> delete");
+	    vParticle.Delete();
+	  }
+	  vParticle.SetNode(nextVol);
+	  /*
+	    DoBoundary may delete the particle (or not)
+	    
+	    caveat: any changes to vParticle, or even the production
+	    of new secondaries is currently not passed to ParticleCut,
+	    thus, particles outside the desired phase space may be produced.
+	    
+	    todo: this must be fixed.
+	  */
+	  process_sequence_.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+	}
       }
     }
 

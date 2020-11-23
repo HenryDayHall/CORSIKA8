@@ -47,7 +47,9 @@ namespace corsika::geometry {
 
     /**
      * \param theLine The geometric \sa Line object that represents a straight-line
-     * connection \param timeLength The time duration to traverse the straight trajectory
+     * connection 
+     *
+     * \param timeLength The time duration to traverse the straight trajectory
      * in units of \sa TimeType
      */
     LineTrajectory(Line const& theLine, corsika::units::si::TimeType timeLength)
@@ -59,9 +61,15 @@ namespace corsika::geometry {
 
     /**
      * \param theLine The geometric \sa Line object that represents a straight-line
-     * connection \param timeLength The time duration to traverse the straight trajectory
-     * in units of \sa TimeType \param timeStep Time duration to folow eventually curved
-     * trajectory in units of \sa TimesType \param initialV Initial velocity vector at
+     * connection 
+     * 
+     * \param timeLength The time duration to traverse the straight trajectory
+     * in units of \sa TimeType 
+     * 
+     * \param timeStep Time duration to folow eventually curved
+     * trajectory in units of \sa TimesType 
+     * 
+     * \param initialV Initial velocity vector at
      * start of trajectory \param finalV Final velocity vector at start of trajectory
      */
     LineTrajectory(
@@ -187,14 +195,23 @@ namespace corsika::geometry {
         , k_(k)
         , timeStep_(timeStep) {}
 
-    const Line GetLine(double u) const { return Line(GetPosition(u), GetVelocity(u)); }
+    const Line GetLine() const {
+      using namespace corsika::units::si;
+      auto D = GetPosition(1) - GetPosition(0);
+      auto d = D.norm();
+      auto v = initialVelocity_;
+      if (d>1_um) { // if trajectory is ultra-short, we do not
+		    // re-calculate velocity, just use initial
+		    // value. Otherwise, this is numerically unstable
+	v = D/d * GetVelocity(0).norm();
+      }
+      return Line(GetPosition(0), v);
+    }
     Point GetPosition(double u) const {
       Point position = initialPosition_ + initialVelocity_ * timeStep_ * u / 2;
       VelocityVec velocity =
           initialVelocity_ + initialVelocity_.cross(magneticfield_) * timeStep_ * u * k_;
       return position + velocity * timeStep_ * u / 2;
-      //      auto steplength_true = steplength_true * (1.0 + double(direction.norm())) /
-      //      2;
     }
     VelocityVec GetVelocity(double u) const {
       return initialVelocity_ +

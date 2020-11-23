@@ -34,7 +34,6 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/tracking_line/Tracking.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
@@ -242,7 +241,7 @@ int main(int argc, char** argv) {
                                     eLoss, cut, conex, longprof, observationLevel);
 
   // define air shower object, run simulation
-  tracking_line::Tracking tracking;
+  setup::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

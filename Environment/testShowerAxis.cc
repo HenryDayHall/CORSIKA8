@@ -64,7 +64,9 @@ TEST_CASE("Homogeneous Density") {
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
   environment::ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos),
-                                           *env, 20};
+                                           *env,
+                                           false, // -> do not throw exceptions
+                                           20};   // -> number of bins
 
   CHECK(showerAxis.steplength() == 500_m);
 

@@ -8,7 +8,6 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
-#include <corsika/process/tracking_line/Tracking.h>
 
 #include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
@@ -123,7 +122,7 @@ int main() {
   universe.AddChild(std::move(world));
 
   // setup processes, decays and interactions
-  tracking_line::Tracking tracking;
+  setup::Tracking tracking;
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   process::sibyll::Interaction sibyll;

@@ -11,13 +11,12 @@
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
-#include <corsika/geometry/Trajectory.h>
 #include <corsika/geometry/Vector.h>
 #include <corsika/geometry/Intersections.hpp>
 #include <corsika/units/PhysicalUnits.h>
 #include <corsika/logging/Logging.h>
-#include <corsika/setup/SetupEnvironment.h>
 #include <corsika/process/tracking/Intersect.hpp>
+#include <corsika/geometry/Trajectory.h>
 
 #include <type_traits>
 #include <utility>

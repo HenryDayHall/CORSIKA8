@@ -67,15 +67,18 @@ namespace corsika::process::tracking {
       // thus, the last entry is always the exit point
       const Intersections time_intersections_curr =
           TDerived::Intersect(particle, volumeNode);
-      C8LOG_TRACE("curr node {}, parent node {} ", fmt::ptr(&volumeNode),
-                  fmt::ptr(volumeNode.GetParent()));
-      C8LOG_DEBUG("intersection times with currentLogicalVolumeNode: {} s and {} s",
-                  time_intersections_curr.getEntry() / 1_s,
-                  time_intersections_curr.getExit() / 1_s);
-      if (time_intersections_curr.getExit() <= minTime) {
-        minTime =
-            time_intersections_curr.getExit(); // we exit currentLogicalVolumeNode here
-        minNode = volumeNode.GetParent();
+      C8LOG_TRACE("curr node {}, parent node {}, hasIntersections={} ",
+                  fmt::ptr(&volumeNode), fmt::ptr(volumeNode.GetParent()),
+                  time_intersections_curr.hasIntersections());
+      if (time_intersections_curr.hasIntersections()) {
+        C8LOG_DEBUG("intersection times with currentLogicalVolumeNode: {} s and {} s",
+                    time_intersections_curr.getEntry() / 1_s,
+                    time_intersections_curr.getExit() / 1_s);
+        if (time_intersections_curr.getExit() <= minTime) {
+          minTime =
+              time_intersections_curr.getExit(); // we exit currentLogicalVolumeNode here
+          minNode = volumeNode.GetParent();
+        }
       }
 
       // where do we collide with any of the next-tree-level volumes
@@ -83,6 +86,7 @@ namespace corsika::process::tracking {
       for (const auto& node : volumeNode.GetChildNodes()) {
 
         const Intersections time_intersections = TDerived::Intersect(particle, *node);
+        if (!time_intersections.hasIntersections()) { continue; }
         C8LOG_DEBUG("intersection times with child volume {} : enter {} s, exit {} s",
                     fmt::ptr(node), time_intersections.getEntry() / 1_s,
                     time_intersections.getExit() / 1_s);
@@ -93,8 +97,13 @@ namespace corsika::process::tracking {
                     t_entry <= minTime);
         // note, theoretically t can even be smaller than 0 since we
         // KNOW we can't yet be in this volume yet, so we HAVE TO
-        // enter it IF exit point is not also in the "past"!
-        if (t_exit > 0_s && t_entry <= minTime) { // enter volumen child here
+        // enter it IF exit point is not also in the "past", AND if
+        // extry point is [[much much]] closer than exit point
+        // (because we might have already numerically "exited" it)!
+        if (t_exit > 0_s && t_entry <= minTime &&
+            -t_entry < t_exit) { // protection agains numerical problem, when we already
+                                 // _exited_ before
+                                 // enter chile volume here
           minTime = t_entry;
           minNode = node.get();
         }
@@ -105,6 +114,7 @@ namespace corsika::process::tracking {
       for (node_type* node : volumeNode.GetExcludedNodes()) {
 
         const Intersections time_intersections = TDerived::Intersect(particle, *node);
+        if (!time_intersections.hasIntersections()) { continue; }
         C8LOG_DEBUG("intersection times with exclusion volume {} : enter {} s, exit {} s",
                     fmt::ptr(node), time_intersections.getEntry() / 1_s,
                     time_intersections.getExit() / 1_s);

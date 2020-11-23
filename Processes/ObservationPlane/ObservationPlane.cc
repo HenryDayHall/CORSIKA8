@@ -30,6 +30,7 @@ ObservationPlane::ObservationPlane(
 
 corsika::process::EProcessReturn ObservationPlane::DoContinuous(
     setup::Stack::ParticleType& particle, setup::Trajectory const& trajectory) {
+  
   TimeType const timeOfIntersection =
       (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
       trajectory.GetLine().GetV0().dot(plane_.GetNormal());

@@ -38,9 +38,9 @@
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
+#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/tracking_line/Tracking.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
@@ -85,7 +85,7 @@ using MyExtraEnv = environment::MediumPropertyModel<environment::UniformMagnetic
 
 int main(int argc, char** argv) {
 
-  logging::SetLevel(logging::level::info);
+  logging::SetLevel(logging::level::trace);
 
   C8LOG_INFO("vertical_EAS");
 
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
+                          geometry::Vector{rootCS, 0_T, 5000_mT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -255,12 +255,13 @@ int main(int argc, char** argv) {
       process::select(urqmdCounted, process::sequence(sibyllNucCounted, sibyllCounted),
                       EnergySwitch(55_GeV));
   auto decaySequence = process::sequence(decayPythia, decaySibyll);
+  stack_inspector::StackInspector<setup::Stack> stackInspect(1000, false, E0);
   auto sequence =
-      process::sequence(hadronSequence, reset_particle_mass, decaySequence,
-                        proposalCounted, em_continuous, cut, observationLevel, longprof);
+    process::sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
+                        proposalCounted, em_continuous, cut, trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
-  tracking_line::Tracking tracking;
+  setup::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

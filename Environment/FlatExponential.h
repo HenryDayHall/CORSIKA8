@@ -12,9 +12,10 @@
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Trajectory.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
+
+#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::environment {
 
@@ -51,13 +52,13 @@ namespace corsika::environment {
 
     NuclearComposition const& GetNuclearComposition() const override { return fNuclComp; }
 
-    units::si::GrammageType IntegratedGrammage(geometry::LineTrajectory const& vLine,
+    units::si::GrammageType IntegratedGrammage(setup::Trajectory const& vLine,
                                                units::si::LengthType vTo) const override {
       return Base::IntegratedGrammage(vLine, vTo, fAxis);
     }
 
     units::si::LengthType ArclengthFromGrammage(
-        geometry::LineTrajectory const& vLine,
+        setup::Trajectory const& vLine,
         units::si::GrammageType vGrammage) const override {
       return Base::ArclengthFromGrammage(vLine, vGrammage, fAxis);
     }

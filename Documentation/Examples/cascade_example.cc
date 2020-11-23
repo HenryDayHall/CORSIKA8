@@ -10,7 +10,6 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
-#include <corsika/process/tracking_line/Tracking.h>
 
 #include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
@@ -135,7 +134,7 @@ int main() {
   }
 
   // setup processes, decays and interactions
-  tracking_line::Tracking tracking;
+  setup::Tracking tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");

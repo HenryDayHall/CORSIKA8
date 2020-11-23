@@ -21,7 +21,6 @@
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/track_writer/TrackWriter.h>
-#include <corsika/process/tracking_line/Tracking.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -157,7 +156,7 @@ int main(int argc, char** argv) {
   auto sequence = process::sequence(proposalCounted, em_continuous, longprof, cut,
                                     observationLevel, trackWriter);
   // define air shower object, run simulation
-  tracking_line::Tracking tracking;
+  setup::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

@@ -170,11 +170,11 @@ TEST_CASE("ParticleCut", "[processes]") {
     CHECK(cut.GetCutEnergy() == 0_GeV);
   }
 
-  corsika::setup::Trajectory const track{
+  corsika::setup::Trajectory const track = setup::testing::make_track<setup::Trajectory>(
       geometry::Line{point0,
                      geometry::Vector<units::si::SpeedType::dimension_type>{
                          rootCS, {0_m / second, 0_m / second, -units::constants::c}}},
-      12_m / units::constants::c};
+      12_m / units::constants::c);
 
   SECTION("cut on DoContinous, just invisibles") {
 
