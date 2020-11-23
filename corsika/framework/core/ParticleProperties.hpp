@@ -47,7 +47,7 @@ namespace corsika {
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
   PDGCode constexpr get_PDG(Code);
-  constexpr std::string_view get_name(Code); //!< name of the particle as string
+  std::string_view constexpr get_name(Code); //!< name of the particle as string
   TimeType constexpr get_lifetime(Code);       //!< lifetime
 
   //! true iff the particle is a hard-coded nucleus or Code::Nucleus
