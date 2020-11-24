@@ -312,7 +312,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
   CHECK(builder.size() == 2);
 
   auto const builtEnv = builder.assemble();
-  auto const& univ = builtEnv.GetUniverse();
+  auto const& univ = builtEnv.getUniverse();
 
   CHECK(builder.size() == 0);
   CHECK(univ->GetChildNodes().size() == 1);

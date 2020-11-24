@@ -70,7 +70,7 @@ namespace corsika {
   }
 
   void LayeredSphericalAtmosphereBuilder::assemble(Environment<IMediumModel>& env) {
-    auto& universe = env.GetUniverse();
+    auto& universe = env.getUniverse();
     auto* outmost = universe.get();
 
     while (!layers_.empty()) {

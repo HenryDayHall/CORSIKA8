@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/VolumeTreeNode.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/media/IMediumModel.hpp>
+
 #include <corsika/media/Universe.hpp>
-#include <corsika/media/VolumeTreeNode.hpp>
+
 #include <limits>
 
 namespace corsika {
@@ -23,31 +25,21 @@ namespace corsika {
   public:
     using BaseNodeType = VolumeTreeNode<IEnvironmentModel>;
 
-    Environment()
-        : fCoordinateSystem(
-              corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem())
-        , fUniverse(std::make_unique<BaseNodeType>(
-              std::make_unique<Universe>(fCoordinateSystem))) {}
+    Environment();
 
-    // using IEnvironmentModel = corsika::IEnvironmentModel;
+    typename BaseNodeType::VTNUPtr& getUniverse();
+    typename BaseNodeType::VTNUPtr const& getUniverse() const;
 
-    inline auto& GetUniverse();
-
-    inline auto const& GetUniverse() const;
-
-    inline auto const& GetCoordinateSystem() const;
+    CoordinateSystem const& getCoordinateSystem() const;
 
     // factory method for creation of VolumeTreeNodes
     template <class TVolumeType, typename... TVolumeArgs>
-    static auto CreateNode(TVolumeArgs&&... args);
+    static std::unique_ptr<BaseNodeType> CreateNode(TVolumeArgs&&... args);
 
   private:
-    corsika::CoordinateSystem const& fCoordinateSystem;
-    typename BaseNodeType::VTNUPtr fUniverse;
+    CoordinateSystem const& coordinateSystem_;
+    typename BaseNodeType::VTNUPtr universe_;
   };
-
-  // using SetupBaseNodeType = VolumeTreeNode<corsika::IEnvironmentModel>;
-  // using SetupEnvironment = Environment<corsika::IEnvironmentModel>;
 
 } // namespace corsika
 

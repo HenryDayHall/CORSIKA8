@@ -14,26 +14,37 @@
 
 namespace corsika {
 
-    template <typename IEnvironmentModel>
-    auto& Environment<IEnvironmentModel>::GetUniverse() {
- return fUniverse;     }
+  template <typename IEnvironmentModel>
+  Environment<IEnvironmentModel>::Environment()
+      : coordinateSystem_{RootCoordinateSystem::getInstance().GetRootCoordinateSystem()}
+      , universe_(std::make_unique<BaseNodeType>(
+            std::make_unique<Universe>(coordinateSystem_))) {}
 
-    template <typename IEnvironmentModel>
-    auto const& Environment<IEnvironmentModel>::GetUniverse() const {  return fUniverse; }
+  template <typename IEnvironmentModel>
+  typename Environment<IEnvironmentModel>::BaseNodeType::VTNUPtr& Environment<IEnvironmentModel>::getUniverse() {
+    return universe_;
+  }
 
-    template <typename IEnvironmentModel>
-    auto const& Environment<IEnvironmentModel>::GetCoordinateSystem() const { return fCoordinateSystem; }
+  template <typename IEnvironmentModel>
+  typename Environment<IEnvironmentModel>::BaseNodeType::VTNUPtr const& Environment<IEnvironmentModel>::getUniverse() const {
+    return universe_;
+  }
 
-    // factory method for creation of VolumeTreeNodes
-    template <typename IEnvironmentModel>
-    template <class TVolumeType, typename... TVolumeArgs>
-    auto Environment<IEnvironmentModel>::CreateNode(TVolumeArgs&&... args) {
-      static_assert(std::is_base_of_v<corsika::Volume, TVolumeType>,
-                    "unusable type provided, needs to be derived from "
-                    "\"corsika::Volume\"");
+  template <typename IEnvironmentModel>
+  CoordinateSystem const& Environment<IEnvironmentModel>::getCoordinateSystem() const {
+    return coordinateSystem_;
+  }
 
-      return std::make_unique<BaseNodeType>(
-          std::make_unique<TVolumeType>(std::forward<TVolumeArgs>(args)...));
-    }
+  // factory method for creation of VolumeTreeNodes
+  template <typename IEnvironmentModel>
+  template <class TVolumeType, typename... TVolumeArgs>
+  std::unique_ptr< VolumeTreeNode<IEnvironmentModel> > Environment<IEnvironmentModel>::CreateNode(TVolumeArgs&&... args) {
+    static_assert(std::is_base_of_v<corsika::Volume, TVolumeType>,
+                  "unusable type provided, needs to be derived from "
+                  "\"corsika::Volume\"");
 
-}
+    return std::make_unique<BaseNodeType>(
+        std::make_unique<TVolumeType>(std::forward<TVolumeArgs>(args)...));
+  }
+
+} // namespace corsika
