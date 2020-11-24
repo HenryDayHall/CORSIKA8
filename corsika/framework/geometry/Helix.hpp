@@ -14,8 +14,9 @@ n/*
 #include <corsika/framework/geometry/Vector.hpp>
 
 namespace corsika {
+
   /*!
-   * \class Helix
+   * Defines a helical path
    *
    * A Helix is defined by the cyclotron frequency \f$ \omega_c \f$, the initial
    * Point r0 and
@@ -30,34 +31,36 @@ namespace corsika {
 
   class Helix {
 
-    using VelocityVec = Vector<SpeedType::dimension_type> ;
-
-    Point const r0;
-    FrequencyType const omegaC;
-    VelocityVec const vPar;
-    VelocityVec const vPerp, uPerp;
-
-    LengthType const radius;
+    ///! \todo move VelocityVec into PhysicalUnits
+    using VelocityVec = Vector<SpeedType::dimension_type>;
 
   public:
     Helix(Point const& pR0, FrequencyType pOmegaC, VelocityVec const& pvPar,
           VelocityVec const& pvPerp)
-        : r0(pR0)
-        , omegaC(pOmegaC)
-        , vPar(pvPar)
-        , vPerp(pvPerp)
-        , uPerp(vPerp.cross(vPar.normalized()))
-        , radius(pvPar.norm() / abs(pOmegaC)) {}
+        : r0_(pR0)
+        , omegaC_(pOmegaC)
+        , vPar_(pvPar)
+        , vPerp_(pvPerp)
+        , uPerp_(vPerp_.cross(vPar_.normalized()))
+        , radius_(pvPar.norm() / abs(pOmegaC)) {}
 
-    inline Point GetPosition(TimeType t) const;
+    inline LengthType getRadius() const;
 
-    inline Point PositionFromArclength(LengthType l) const;
+    inline Point getPosition(TimeType t) const;
+    
+    inline Point getPositionFromArclength(LengthType l) const;
 
-    inline LengthType GetRadius() const;
+    inline LengthType getArcLength(TimeType t1, TimeType t2) const;
 
-    inline LengthType ArcLength(TimeType t1, TimeType t2) const;
+    inline TimeType getTimeFromArclength(LengthType l) const;
 
-    inline TimeType TimeFromArclength(LengthType l) const;
+  private:
+    Point r0_;             ///! origin of helix, but this is in the center of the
+                           ///! "cylinder" on which the helix rotates
+    FrequencyType omegaC_; ///! speed of angular rotation
+    VelocityVec vPar_;     ///! speed along direction of "cylinder"
+    VelocityVec vPerp_, uPerp_; 
+    LengthType radius_;
   };
 
 } // namespace corsika

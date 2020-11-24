@@ -11,7 +11,6 @@
 #include <cmath>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
-#include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
@@ -19,7 +18,6 @@
 #include <corsika/framework/geometry/Trajectory.hpp>
 
 using namespace corsika;
-using namespace corsika::units::si;
 
 double constexpr absMargin = 1.0e-8;
 
@@ -233,31 +231,4 @@ TEST_CASE("Trajectories") {
               .eVector.norm() == Approx(0).margin(absMargin));
   }
 
-  SECTION("Helix") {
-    Vector<SpeedType::dimension_type> const vPar(
-        rootCS, {0_m / second, 0_m / second, 4_m / second});
-
-    Vector<SpeedType::dimension_type> const vPerp(
-        rootCS, {3_m / second, 0_m / second, 0_m / second});
-
-    auto const T = 1_s;
-    auto const omegaC = 2 * M_PI / T;
-
-    Helix const helix(r0, omegaC, vPar, vPerp);
-
-    CHECK((helix.GetPosition(1_s).GetCoordinates() -
-           QuantityVector<length_d>(0_m, 0_m, 4_m))
-              .norm()
-              .magnitude() == Approx(0).margin(absMargin));
-
-    CHECK((helix.GetPosition(0.25_s).GetCoordinates() -
-           QuantityVector<length_d>(-3_m / (2 * M_PI), -3_m / (2 * M_PI), 1_m))
-              .norm()
-              .magnitude() == Approx(0).margin(absMargin));
-
-    CHECK(
-        (helix.GetPosition(7_s) - helix.PositionFromArclength(helix.ArcLength(0_s, 7_s)))
-            .norm()
-            .magnitude() == Approx(0).margin(absMargin));
-  }
 }

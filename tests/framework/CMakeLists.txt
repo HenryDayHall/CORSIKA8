@@ -6,6 +6,7 @@ set (test_framework_sources
   #testCOMBoost.cpp #FIXME: reenable this
   #testCorsikaFenv.cpp # does not work because of use of exceptions in catch2
   testFourVector.cpp
+  testHelix.cpp
   testFunctionTimer.cpp
   testGeometry.cpp
   testLogging.cpp
