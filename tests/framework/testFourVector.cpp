@@ -38,8 +38,8 @@ TEST_CASE("four vectors") {
 
     FourVector p0(E0, P0);
 
-    REQUIRE(p0.GetNormSqr() == -200_GeV * 1_GeV);
-    REQUIRE(p0.GetNorm() == sqrt(200_GeV * 1_GeV));
+    REQUIRE(p0.getNormSqr() == -200_GeV * 1_GeV);
+    REQUIRE(p0.getNorm() == sqrt(200_GeV * 1_GeV));
   }
 
   /*
@@ -56,17 +56,14 @@ TEST_CASE("four vectors") {
     FourVector p1(E0, P1);
     FourVector p2(E0, P2);
 
-    CHECK(p0.IsSpacelike());
-    CHECK(!p0.IsTimelike());
-    // CHECK(!p0.IsPhotonlike());
+    CHECK(p0.isSpacelike());
+    CHECK(!p0.isTimelike());
 
-    CHECK(!p1.IsSpacelike());
-    CHECK(p1.IsTimelike());
-    // CHECK(!p1.IsPhotonlike());
+    CHECK(!p1.isSpacelike());
+    CHECK(p1.isTimelike());
 
-    CHECK(!p2.IsSpacelike());
-    CHECK(!p2.IsTimelike());
-    // CHECK(p2.IsPhotonlike());
+    CHECK(!p2.isSpacelike());
+    CHECK(!p2.isTimelike());
   }
 
   /*
@@ -82,8 +79,8 @@ TEST_CASE("four vectors") {
 
     const double check = 100 * 100 - 10 * 10 - 5 * 5 - 15 * 15; // for dummies...
 
-    REQUIRE(p1.GetNormSqr() / 1_GeV / 1_GeV == Approx(check));
-    REQUIRE(p1.GetNorm() / 1_GeV == Approx(sqrt(check)));
+    REQUIRE(p1.getNormSqr() / 1_GeV / 1_GeV == Approx(check));
+    REQUIRE(p1.getNorm() / 1_GeV == Approx(sqrt(check)));
   }
 
   /**
@@ -99,8 +96,8 @@ TEST_CASE("four vectors") {
 
     FourVector p2(T2, P2);
 
-    REQUIRE(p2.GetNormSqr() == check * 1_m * 1_m);
-    REQUIRE(p2.GetNorm() == sqrt(abs(check)) * 1_m);
+    REQUIRE(p2.getNormSqr() == check * 1_m * 1_m);
+    REQUIRE(p2.getNorm() == sqrt(abs(check)) * 1_m);
   }
 
   /**
@@ -118,35 +115,35 @@ TEST_CASE("four vectors") {
     FourVector p1(E1, P1);
     const FourVector p2(E2, P2);
 
-    REQUIRE(p1.GetNorm() / 1_GeV == Approx(100.));
-    REQUIRE(p2.GetNorm() / 1_GeV == Approx(10.));
+    REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
+    REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
 
     SECTION("product") {
       FourVector p3 = p1 + p2;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
+      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
       p3 -= p2;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p1.GetNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p2.GetNorm() / 1_GeV == Approx(10.));
+      REQUIRE(p3.getNorm() / 1_GeV == Approx(100.));
+      REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
+      REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
     }
 
     SECTION("difference") {
       FourVector p3 = p1 - p2;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
+      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
       p3 += p2;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p1.GetNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p2.GetNorm() / 1_GeV == Approx(10.));
+      REQUIRE(p3.getNorm() / 1_GeV == Approx(100.));
+      REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
+      REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
     }
 
     SECTION("scale") {
       double s = 10;
       FourVector p3 = p1 * s;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100. * s * s)));
+      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. * s * s)));
       p3 /= 10;
-      REQUIRE(p3.GetNorm() / 1_GeV == Approx(sqrt(100. * 100.)));
-      REQUIRE(p1.GetNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p2.GetNorm() / 1_GeV == Approx(10.));
+      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100.)));
+      REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
+      REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
     }
   }
 
@@ -177,8 +174,8 @@ TEST_CASE("four vectors") {
     // p3 *= 10; // this does not compile, and it shoudn't !!
 
     const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
-    REQUIRE(p1.GetNormSqr() / (1_m * 1_m) == Approx(10. * 10. * check));
-    REQUIRE(p2.GetNorm() / 1_m == Approx(10 * sqrt(abs(check))));
-    REQUIRE(p3.GetNorm() / 1_m == Approx(sqrt(abs(check))));
+    REQUIRE(p1.getNormSqr() / (1_m * 1_m) == Approx(10. * 10. * check));
+    REQUIRE(p2.getNorm() / 1_m == Approx(10 * sqrt(abs(check))));
+    REQUIRE(p3.getNorm() / 1_m == Approx(sqrt(abs(check))));
   }
 }

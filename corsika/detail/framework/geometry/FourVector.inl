@@ -10,159 +10,109 @@
 
 #pragma once
 
-#include <iostream>
 #include <type_traits>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
 namespace corsika {
 
-  template <typename TimeType, typename SpaceVecType>
-  TimeType FourVector<TimeType, SpaceVecType>::GetTimeLikeComponent() const {
-    return fTimeLike;
+  template <typename TTimeType, typename TSpaceVecType>
+  TTimeType FourVector<TTimeType, TSpaceVecType>::getTimeLikeComponent() const {
+    return timeLike_;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  SpaceVecType& FourVector<TimeType, SpaceVecType>::GetSpaceLikeComponents() {
-    return fSpaceLike;
+  template <typename TTimeType, typename TSpaceVecType>
+  TSpaceVecType& FourVector<TTimeType, TSpaceVecType>::spaceLikeComponents() {
+    return spaceLike_;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  const SpaceVecType& FourVector<TimeType, SpaceVecType>::GetSpaceLikeComponents() const {
-    return fSpaceLike;
+  template <typename TTimeType, typename TSpaceVecType>
+  const TSpaceVecType& FourVector<TTimeType, TSpaceVecType>::getSpaceLikeComponents()
+      const {
+    return spaceLike_;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  auto FourVector<TimeType, SpaceVecType>::GetNormSqr() const {
-    return GetTimeSquared() - fSpaceLike.squaredNorm();
+  template <typename TTimeType, typename TSpaceVecType>
+  typename FourVector<TTimeType, TSpaceVecType>::norm_square_type
+  FourVector<TTimeType, TSpaceVecType>::getNormSqr() const {
+    return getTimeSquared() - spaceLike_.squaredNorm();
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  typename FourVector<TimeType, SpaceVecType>::SpaceType
-  FourVector<TimeType, SpaceVecType>::GetNorm() const {
+  template <typename TTimeType, typename TSpaceVecType>
+  typename FourVector<TTimeType, TSpaceVecType>::norm_type
+  FourVector<TTimeType, TSpaceVecType>::getNorm() const {
 
-    return sqrt(abs(GetNormSqr()));
+    return sqrt(abs(getNormSqr()));
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  bool FourVector<TimeType, SpaceVecType>::IsTimelike() const {
-    return GetTimeSquared() < fSpaceLike.squaredNorm();
+  template <typename TTimeType, typename TSpaceVecType>
+  bool FourVector<TTimeType, TSpaceVecType>::isTimelike() const {
+    return getTimeSquared() < spaceLike_.squaredNorm();
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  bool FourVector<TimeType, SpaceVecType>::IsSpacelike() const {
-    return GetTimeSquared() > fSpaceLike.squaredNorm();
+  template <typename TTimeType, typename TSpaceVecType>
+  bool FourVector<TTimeType, TSpaceVecType>::isSpacelike() const {
+    return getTimeSquared() > spaceLike_.squaredNorm();
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  FourVector<TimeType, SpaceVecType>& FourVector<TimeType, SpaceVecType>::operator+=(
+  template <typename TTimeType, typename TSpaceVecType>
+  FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator+=(
       const FourVector& b) {
-    fTimeLike += b.fTimeLike;
-    fSpaceLike += b.fSpaceLike;
+    timeLike_ += b.timeLike_;
+    spaceLike_ += b.spaceLike_;
 
     return *this;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  FourVector<TimeType, SpaceVecType>& FourVector<TimeType, SpaceVecType>::operator-=(
+  template <typename TTimeType, typename TSpaceVecType>
+  FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator-=(
       const FourVector& b) {
-    fTimeLike -= b.fTimeLike;
-    fSpaceLike -= b.fSpaceLike;
+    timeLike_ -= b.timeLike_;
+    spaceLike_ -= b.spaceLike_;
     return *this;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  FourVector<TimeType, SpaceVecType>& FourVector<TimeType, SpaceVecType>::operator*=(
+  template <typename TTimeType, typename TSpaceVecType>
+  FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator*=(
       const double b) {
-    fTimeLike *= b;
-    fSpaceLike *= b;
+    timeLike_ *= b;
+    spaceLike_ *= b;
     return *this;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  FourVector<TimeType, SpaceVecType>& FourVector<TimeType, SpaceVecType>::operator/=(
+  template <typename TTimeType, typename TSpaceVecType>
+  FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator/=(
       const double b) {
-    fTimeLike /= b;
-    fSpaceLike.GetComponents() /= b; // TODO: WHY IS THIS??????
+    timeLike_ /= b;
+    spaceLike_.GetComponents() /= b;
     return *this;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  FourVector<TimeType, SpaceVecType>& FourVector<TimeType, SpaceVecType>::operator/(
+  template <typename TTimeType, typename TSpaceVecType>
+  FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator/(
       const double b) {
     *this /= b;
     return *this;
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  typename FourVector<TimeType, SpaceVecType>::SpaceType
-      FourVector<TimeType, SpaceVecType>::operator*(const FourVector& b) {
-    if constexpr (std::is_same<typename std::decay<TimeType>::type,
-                               decltype(std::declval<SpaceType>() / meter *
-                                        second)>::value)
-      return fTimeLike * b.fTimeLike * (constants::c * constants::c) - fSpaceLike.norm();
+  template <typename TTimeType, typename TSpaceVecType>
+  typename FourVector<TTimeType, TSpaceVecType>::norm_type
+      FourVector<TTimeType, TSpaceVecType>::operator*(const FourVector& b) {
+    if constexpr (std::is_same<time_type, decltype(std::declval<space_type>() / meter *
+                                                   second)>::value)
+      return timeLike_ * b.timeLike_ * constants::cSquared - spaceLike_.norm();
     else
-      return fTimeLike * fTimeLike - fSpaceLike.norm();
+      return timeLike_ * timeLike_ - spaceLike_.norm();
   }
 
-  template <typename TimeType, typename SpaceVecType>
-  auto FourVector<TimeType, SpaceVecType>::GetTimeSquared() const {
-    if constexpr (std::is_same<typename std::decay<TimeType>::type,
-                               decltype(std::declval<SpaceType>() / meter *
-                                        second)>::value)
-      return fTimeLike * fTimeLike * constants::cSquared;
+  template <typename TTimeType, typename TSpaceVecType>
+  typename FourVector<TTimeType, TSpaceVecType>::norm_square_type
+  FourVector<TTimeType, TSpaceVecType>::getTimeSquared() const {
+    if constexpr (std::is_same<time_type, decltype(std::declval<space_type>() / meter *
+                                                   second)>::value)
+      return timeLike_ * timeLike_ * constants::cSquared;
     else
-      return fTimeLike * fTimeLike;
-  }
-
-  /**
-      The math operator+
-   */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator+(const FourVector<TimeType, SpaceVecType>& a,
-            const FourVector<TimeType, SpaceVecType>& b) {
-    return FourVector<typename std::decay<TimeType>::type,
-                      typename std::decay<SpaceVecType>::type>(
-        a.fTimeLike + b.fTimeLike, a.fSpaceLike + b.fSpaceLike);
-  }
-
-  /**
-     The math operator-
-  */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator-(const FourVector<TimeType, SpaceVecType>& a,
-            const FourVector<TimeType, SpaceVecType>& b) {
-    return FourVector<typename std::decay<TimeType>::type,
-                      typename std::decay<SpaceVecType>::type>(
-        a.fTimeLike - b.fTimeLike, a.fSpaceLike - b.fSpaceLike);
-  }
-
-  /**
-     The math operator*
-  */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator*(const FourVector<TimeType, SpaceVecType>& a, const double b) {
-    return FourVector<typename std::decay<TimeType>::type,
-                      typename std::decay<SpaceVecType>::type>(a.fTimeLike * b,
-                                                               a.fSpaceLike * b);
-  }
-
-  /**
-      The math operator/
-   */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator/(const FourVector<TimeType, SpaceVecType>& a, const double b) {
-    return FourVector<typename std::decay<TimeType>::type,
-                      typename std::decay<SpaceVecType>::type>(a.fTimeLike / b,
-                                                               a.fSpaceLike / b);
+      return timeLike_ * timeLike_;
   }
 
 } // namespace corsika

@@ -16,11 +16,16 @@
 namespace corsika {
 
   /**
-     FourVector supports "full" units, e.g. E in [GeV/c] and p in [GeV],
+     FourVector fully supports units, e.g. E in [GeV/c] and p in [GeV],
      or also t in [s] and r in [m], etc.
 
      However, for HEP applications it is also possible to use E and p
      both in [GeV].
+
+     Thus, the input units of time-like and space-like coordinates
+     must either be idential (e.g. GeV) or scaled by "c" as in
+     [E/c]=[p].
+
 
      The FourVector can return NormSqr and Norm, whereas Norm is
      sqrt(abs(NormSqr)). The physical units are always calculated and
@@ -28,172 +33,161 @@ namespace corsika {
 
      FourVector can also return if it is TimeLike, SpaceLike or PhotonLike.
 
-     When a FourVector is initialized with a lvalue reference, this is
-     also used for the internal storage, which should lead to complete
-     disappearance of the FourVector class during optimization.
+     When a FourVector is initialized with a lvalue references,
+     e.g. as `FourVector<TimeType&, Vector<length_d>&>`, references
+     are also used as internal data types, which should lead to
+     complete disappearance of the FourVector class during
+     optimization.
    */
 
-  template <typename TimeType, typename SpaceVecType>
+  template <typename TTimeType, typename TSpaceVecType>
   class FourVector {
 
   public:
-    using SpaceType = typename std::decay<SpaceVecType>::type::Quantity;
+    using space_vec_type = typename std::decay<TSpaceVecType>::type;
+    using space_type = typename space_vec_type::Quantity;
+    using time_type = typename std::decay<TTimeType>::type;
 
     //! check the types and the physical units here:
-    static_assert(
-        std::is_same<typename std::decay<TimeType>::type, SpaceType>::value ||
-            std::is_same<typename std::decay<TimeType>::type,
-                         decltype(std::declval<SpaceType>() / meter * second)>::value,
-        "Units of time-like and space-like coordinates must either be idential "
-        "(e.g. GeV) or [E/c]=[p]");
+    static_assert(std::is_same<time_type, space_type>::value ||
+                      std::is_same<time_type, decltype(std::declval<space_type>() /
+                                                       meter * second)>::value,
+                  "Units of time-like and space-like coordinates must either be idential "
+                  "(e.g. GeV) or [E/c]=[p]");
+
+    using norm_type = space_type;
+    using norm_square_type =
+        decltype(std::declval<norm_type>() * std::declval<norm_type>());
 
   public:
     FourVector() = default;
 
-    FourVector(const TimeType& eT, const SpaceVecType& eS)
-        : fTimeLike(eT)
-        , fSpaceLike(eS) {}
+    FourVector(TTimeType const& eT, TSpaceVecType const& eS)
+        : timeLike_(eT)
+        , spaceLike_(eS) {}
 
     /*
      * FIXME: These Getters are mis-leading and does not favor
      * locality. Adhere to Getter/Setter
      */
     /**
-     * @brief
      *
-     * @return fTimeLike
+     * @return timeLike_
      */
-    TimeType GetTimeLikeComponent() const;
+    TTimeType getTimeLikeComponent() const;
 
     /**
-     * @brief
      *
-     * @return fSpaceLike
+     * @return spaceLike_
      */
-    SpaceVecType& GetSpaceLikeComponents();
+    TSpaceVecType& spaceLikeComponents();
 
     /**
-     * @brief
      *
-     * @return fSpaceLike;
+     * @return spaceLike_;
      */
-    const SpaceVecType& GetSpaceLikeComponents() const;
+    TSpaceVecType const& getSpaceLikeComponents() const;
 
     /**
-     * @brief
      *
-     * @return
+     * @return $p_0^2 - \vec{p}^2$
      */
-    auto GetNormSqr() const;
+    norm_square_type getNormSqr() const;
 
     /**
-     * @brief
      *
-     * @return
+     * @return $sqrt(p_0^2 - \vec{p}^2)$
      */
-    SpaceType GetNorm() const;
+    norm_type getNorm() const;
 
     /*
      * FIXME: a better alternative would be to define an enumeration
      * enum { SpaceLike =-1, TimeLike, LightLike } V4R_Category;
      * and a method called  V4R_Category GetCategory() const;
+     *
+     * RU: then you have to decide in the constructor which avoids "lazyness"
      */
     /**
-     * @brief
      *
      * @return
      */
-    bool IsTimelike() const;
+    bool isTimelike() const;
 
     /**
-     * @brief
-     *
-     * @return
+     * @defgroup math operators (class members)
+     * @{
      */
-    bool IsSpacelike() const;
+    bool isSpacelike() const;
 
-    FourVector& operator+=(const FourVector& b);
-
-    FourVector& operator-=(const FourVector& b);
-
-    FourVector& operator*=(const double b);
-
-    FourVector& operator/=(const double b);
-
-    FourVector& operator/(const double b);
-
+    FourVector& operator+=(FourVector const&);
+    FourVector& operator-=(const FourVector&);
+    FourVector& operator*=(const double);
+    FourVector& operator/=(const double);
+    FourVector& operator/(const double);
+    
     /**
+       Scalar product of two FourVectors
+
        Note that the product between two 4-vectors assumes that you use
        the same "c" convention for both. Only the LHS vector is checked
        for this. You cannot mix different conventions due to
        unit-checking.
      */
-    SpaceType operator*(const FourVector& b);
-
+    norm_type operator*(const FourVector& b);
+    
+    /** @} */
+    
   protected:
     //! the data members
-    TimeType fTimeLike;
-    SpaceVecType fSpaceLike;
+    TTimeType timeLike_;
+    TSpaceVecType spaceLike_;
 
-    //! the friends: math operators
-    template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
-    operator+(const FourVector<T, U>&, const FourVector<T, U>&);
+    /**
+     * @defgroup the friends: (free) math operators
+     * @{
+     *
+     * We need to define them inline here since we do not want to
+     * implement them as template functions. They are valid only for
+     * the specific types as defined right here.
+     *
+     *
+     * Note, these are "free function" (event if they don't look as
+     *  such). Thus, even if the input object uses internal references
+     *  for storage, the free math operators, of course, must provide
+     *  value-copies.
+     *
+     **/
+    friend FourVector<time_type, space_vec_type> operator+(FourVector const& a,
+                                                           FourVector const& b) {
+      return FourVector<time_type, space_vec_type>(a.timeLike_ + b.timeLike_,
+                                                   a.spaceLike_ + b.spaceLike_);
+    }
 
-    template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
-    operator-(const FourVector<T, U>&, const FourVector<T, U>&);
+    friend FourVector<time_type, space_vec_type> operator-(FourVector const& a,
+                                                           FourVector const& b) {
+      return FourVector<time_type, space_vec_type>(a.timeLike_ - b.timeLike_,
+                                                   a.spaceLike_ - b.spaceLike_);
+    }
 
-    template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
-    operator*(const FourVector<T, U>&, const double);
+    friend FourVector<time_type, space_vec_type> operator*(FourVector const& a,
+                                                           const double b) {
+      return FourVector<time_type, space_vec_type>(a.timeLike_ * b, a.spaceLike_ * b);
+    }
 
-    template <typename T, typename U>
-    friend FourVector<typename std::decay<T>::type, typename std::decay<U>::type>
-    operator/(const FourVector<T, U>&, const double);
+    friend FourVector<time_type, space_vec_type> operator/(FourVector const& a,
+                                                           double b) {
+      return FourVector<time_type, space_vec_type>(a.timeLike_ / b, a.spaceLike_ / b);
+    }
+
+    /** @} */
 
   private:
     /**
-       This function is automatically compiled to use of ignore the
-       extra factor of "c" for the time-like quantity
+       This function is there to automatically remove the eventual
+       extra factor of "c" for the time-like quantity.
      */
-    auto GetTimeSquared() const;
+    norm_square_type getTimeSquared() const;
   };
-
-  /**
-      The math operator+
-   */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator+(const FourVector<TimeType, SpaceVecType>& a,
-            const FourVector<TimeType, SpaceVecType>& b);
-
-  /**
-     The math operator-
-  */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator-(const FourVector<TimeType, SpaceVecType>& a,
-            const FourVector<TimeType, SpaceVecType>& b);
-
-  /**
-     The math operator*
-     FIXME: Add overload to deal with multiplication by a scalar and 3-vectors
-  */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator*(const FourVector<TimeType, SpaceVecType>& a, const double b);
-
-  /**
-      The math operator/
-   */
-  template <typename TimeType, typename SpaceVecType>
-  inline FourVector<typename std::decay<TimeType>::type,
-                    typename std::decay<SpaceVecType>::type>
-  operator/(const FourVector<TimeType, SpaceVecType>& a, const double b);
 
 } // namespace corsika
 
