@@ -37,7 +37,7 @@ namespace corsika {
         std::make_unique<Sphere>(center_, radius));
 
     auto const rho0 = b / c;
-    std::cout << "rho0 = " << rho0 << ", c = " << c << std::endl;
+    CORSIKA_LOG_INFO("rho0 = {}, c = {}", rho0, c);
 
     node->SetModelProperties<SlidingPlanarExponential<IMediumModel>>(
         center_, rho0, -c, *composition_, seaLevel_);
@@ -54,7 +54,7 @@ namespace corsika {
     GrammageType constexpr b = 1 * 1_g / (1_cm * 1_cm);
     auto const rho0 = b / c;
 
-    std::cout << "rho0 = " << rho0;
+    CORSIKA_LOG_INFO("rho0 = {}", rho0);
 
     auto node = std::make_unique<VolumeTreeNode<IMediumModel>>(
         std::make_unique<Sphere>(center_, radius));
