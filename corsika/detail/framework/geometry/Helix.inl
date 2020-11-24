@@ -30,11 +30,11 @@ namespace corsika {
   }
 
   LengthType Helix::getArcLength(TimeType t1, TimeType t2) const {
-    return (vPar_ + vPerp_).norm() * (t2 - t1);
+    return (vPar_ + vPerp_).getNorm() * (t2 - t1);
   }
 
   TimeType Helix::getTimeFromArclength(LengthType l) const {
-    return l / (vPar_ + vPerp_).norm();
+    return l / (vPar_ + vPerp_).getNorm();
   }
 
 } // namespace corsika

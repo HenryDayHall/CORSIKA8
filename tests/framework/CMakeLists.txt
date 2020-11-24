@@ -3,7 +3,7 @@ set (test_framework_sources
   # testCascade.cpp this is most important, but whole content of former Processes folder missing yet
   testClassTimer.cpp
   #testCombinedStack.cpp #FIXME: reenable this
-  #testCOMBoost.cpp #FIXME: reenable this
+  testCOMBoost.cpp #FIXME: reenable this
   #testCorsikaFenv.cpp # does not work because of use of exceptions in catch2
   testFourVector.cpp
   testHelix.cpp

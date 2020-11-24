@@ -22,30 +22,29 @@ namespace corsika {
   class Point : public BaseVector<length_d> {
 
   public:
-    Point(CoordinateSystem const& pCS, QuantityVector<length_d> pQVector)
+    Point(CoordinateSystemPtr pCS, QuantityVector<length_d> const& pQVector)
         : BaseVector<length_d>(pCS, pQVector) {}
 
-    Point(CoordinateSystem const& cs, LengthType x, LengthType y, LengthType z)
+    Point(CoordinateSystemPtr cs, LengthType x, LengthType y, LengthType z)
         : BaseVector<length_d>(cs, {x, y, z}) {}
 
-    // TODO: this should be private or protected, we don NOT want to expose numbers
-    // without reference to outside:
-    inline auto GetCoordinates() const;
-
-    inline auto GetX() const;
-
-    inline auto GetY() const;
-
-    inline auto GetZ() const;
+    /** \todo TODO: this should be private or protected, we don NOT want to expose numbers
+     * without reference to outside:
+     */
+    inline auto getCoordinates() const;
 
     /// this always returns a QuantityVector as triple
-    inline auto GetCoordinates(CoordinateSystem const& pCS) const;
+    inline auto getCoordinates(CoordinateSystemPtr pCS) const;
+
+    inline LengthType getX(CoordinateSystemPtr pCS) const;
+    inline LengthType getY(CoordinateSystemPtr pCS) const;
+    inline LengthType getZ(CoordinateSystemPtr pCS) const;
 
     /*!
      * transforms the Point into another CoordinateSystem by changing its
      * coordinates interally
      */
-    inline void rebase(CoordinateSystem const& pCS);
+    inline void rebase(CoordinateSystemPtr pCS);
 
     inline Point operator+(Vector<length_d> const& pVec) const;
 

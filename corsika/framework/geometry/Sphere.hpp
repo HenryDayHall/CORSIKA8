@@ -10,25 +10,27 @@ n/*
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Volume.hpp>
+#include <corsika/framework/geometry/IVolume.hpp>
 
 namespace corsika {
 
-  class Sphere : public Volume {
-    Point const fCenter;
-    LengthType const fRadius;
+  class Sphere : public IVolume {
 
   public:
     Sphere(Point const& pCenter, LengthType const pRadius)
-        : fCenter(pCenter)
-        , fRadius(pRadius) {}
+        : center_(pCenter)
+        , radius_(pRadius) {}
 
     //! returns true if the Point p is within the sphere
-    inline bool Contains(Point const& p) const override;
+    inline bool isInside(Point const& p) const override;
 
-    inline const Point& GetCenter() const;
+    inline const Point& getCenter() const;
 
-    inline LengthType GetRadius() const;
+    inline LengthType getRadius() const;
+
+  private:
+    Point const center_;
+    LengthType const radius_;
   };
 
 } // namespace corsika

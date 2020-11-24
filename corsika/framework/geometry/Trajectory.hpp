@@ -14,34 +14,32 @@
 
 namespace corsika {
 
-  template <typename T>
-  class Trajectory : public T {
-
-    TimeType fTimeLength;
+  template <typename TType>
+  class Trajectory : public TType {
 
   public:
-    using T::ArcLength;
-    using T::GetPosition;
+    using TType::getArcLength;
+    using TType::getPosition;
 
-    Trajectory(T const& theT, TimeType timeLength)
-        : T(theT)
-        , fTimeLength(timeLength) {}
+    Trajectory(TType const& theT, TimeType timeLength)
+        : TType(theT)
+        , timeLength_(timeLength) {}
 
-    /*Point GetPosition(TimeType t) const {
-      return fTraj.GetPosition(t + fTStart);
-      }*/
+    Point getPosition(double u) const;
 
-    Point GetPosition(double u) const;
+    TimeType getDuration() const;
 
-    TimeType GetDuration() const;
+    LengthType getLength() const;
 
-    LengthType GetLength() const;
+    LengthType getDistance(TimeType t) const;
 
-    LengthType GetDistance(TimeType t) const;
+    void getLimitEndTo(LengthType limit);
 
-    void LimitEndTo(LengthType limit);
+    auto getNormalizedDirection() const;
 
-    auto NormalizedDirection() const;
+  private:
+    TimeType timeLength_;
+
   };
 
 } // namespace corsika

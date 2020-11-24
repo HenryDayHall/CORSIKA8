@@ -74,6 +74,7 @@ namespace corsika::units::si {
   using sigma_d = phys::units::area_d;
 
   /// add the unit-types
+  using DimensionlessType = phys::units::quantity<phys::units::dimensionless_d, double>;
   using LengthType = phys::units::quantity<phys::units::length_d, double>;
   using TimeType = phys::units::quantity<phys::units::time_interval_d, double>;
   using SpeedType = phys::units::quantity<phys::units::speed_d, double>;
@@ -95,7 +96,7 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
 
   template <typename DimFrom, typename DimTo>
-  auto constexpr ConversionFactorHEPToSI() {
+  auto constexpr conversion_factor_HEP_to_SI() {
     static_assert(DimFrom::dim1 == 0 && DimFrom::dim2 == 0 && DimFrom::dim3 == 0 &&
                       DimFrom::dim4 == 0 && DimFrom::dim5 == 0 && DimFrom::dim6 == 0 &&
                       DimFrom::dim7 == 0,
@@ -120,7 +121,7 @@ namespace corsika::units::si {
   }
 
   template <typename DimFrom>
-  auto constexpr ConversionFactorSIToHEP() {
+  auto constexpr conversion_factor_SI_to_HEP() {
     static_assert(DimFrom::dim4 == 0 && DimFrom::dim5 == 0 && DimFrom::dim6 == 0 &&
                       DimFrom::dim7 == 0 && DimFrom::dim8 == 0,
                   "must be pure L, M, T type");
@@ -138,14 +139,18 @@ namespace corsika::units::si {
   }
 
   template <typename DimTo, typename DimFrom>
-  auto constexpr ConvertHEPToSI(quantity<DimFrom> q) {
-    return ConversionFactorHEPToSI<DimFrom, DimTo>() * q;
+  auto constexpr convert_HEP_to_SI(quantity<DimFrom> q) {
+    return conversion_factor_HEP_to_SI<DimFrom, DimTo>() * q;
   }
 
   template <typename DimFrom>
-  auto constexpr ConvertSIToHEP(quantity<DimFrom> q) {
-    return ConversionFactorSIToHEP<DimFrom>() * q;
+  auto constexpr convert_SI_to_HEP(quantity<DimFrom> q) {
+    return conversion_factor_SI_to_HEP<DimFrom>() * q;
   }
+
+  template <typename T>
+  bool operator==(DimensionlessType a, T b){ return a.magnitude() == b; }
+  
 } // end namespace corsika::units::si
 
 /**

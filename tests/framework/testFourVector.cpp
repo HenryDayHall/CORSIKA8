@@ -8,20 +8,20 @@
 
 #include <catch2/catch.hpp>
 
-#include <cmath>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
+#include <cmath>
+
 using namespace corsika;
 
 TEST_CASE("four vectors") {
 
   // this is just needed as a baseline
-  CoordinateSystem& rootCS =
-      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
   /*
     Test: P2 = E2 - p2 all in [GeV]
@@ -73,7 +73,7 @@ TEST_CASE("four vectors") {
 
     FourVector p1(E1, P1);
 
-    const double check = 100 * 100 - 10 * 10 - 5 * 5 - 15 * 15; // for dummies...
+    double const check = 100 * 100 - 10 * 10 - 5 * 5 - 15 * 15; // for dummies...
 
     CHECK(p1.getNormSqr() / 1_GeV / 1_GeV == Approx(check));
     CHECK(p1.getNorm() / 1_GeV == Approx(sqrt(check)));
@@ -88,7 +88,7 @@ TEST_CASE("four vectors") {
     TimeType T2 = 10_m / constants::c;
     Vector<length_d> P2(rootCS, {10_m, 5_m, 5_m});
 
-    const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
+    double const check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
 
     FourVector p2(T2, P2);
 
@@ -108,8 +108,8 @@ TEST_CASE("four vectors") {
     HEPEnergyType E2 = 0_GeV;
     Vector<hepmomentum_d> P2(rootCS, {10_GeV, 0_GeV, 0_GeV});
 
-    FourVector p1(E1, P1);
-    const FourVector p2(E2, P2);
+    FourVector const p1(E1, P1);
+    FourVector const p2(E2, P2);
 
     CHECK(p1.getNorm() / 1_GeV == Approx(100.));
     CHECK(p2.getNorm() / 1_GeV == Approx(10.));
@@ -156,22 +156,22 @@ TEST_CASE("four vectors") {
     TimeType T = 10_m / constants::c;
     Vector<length_d> P(rootCS, {10_m, 5_m, 5_m});
 
-    const TimeType T_c = 10_m / constants::c;
-    const Vector<length_d> P_c(rootCS, {10_m, 5_m, 5_m});
+    TimeType const T_c = 10_m / constants::c;
+    Vector<length_d> const P_c(rootCS, {10_m, 5_m, 5_m});
 
     /*
       this does not compile, and it shoudn't!
       FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c);
     */
     FourVector<TimeType&, Vector<length_d>&> p1(T, P);
-    FourVector<const TimeType&, const Vector<length_d>&> p2(T, P);
-    FourVector<const TimeType&, const Vector<length_d>&> p3(T_c, P_c);
+    FourVector<TimeType const&, Vector<length_d> const&> p2(T, P);
+    FourVector<TimeType const&, Vector<length_d> const&> p3(T_c, P_c);
 
     p1 *= 10;
     // p2 *= 10; // this does not compile, and it shoudn't !
     // p3 *= 10; // this does not compile, and it shoudn't !!
 
-    const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
+    double const check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
     CHECK(p1.getNormSqr() / (1_m * 1_m) == Approx(10. * 10. * check));
     CHECK(p2.getNorm() / 1_m == Approx(10 * sqrt(abs(check))));
     CHECK(p3.getNorm() / 1_m == Approx(sqrt(abs(check))));

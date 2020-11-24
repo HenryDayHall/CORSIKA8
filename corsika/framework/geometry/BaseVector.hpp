@@ -11,33 +11,40 @@ n/*
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 
+#include <memory>
+
 namespace corsika {
 
   /*!
-   * Common base class for Vector and Point. Currently it does basically nothing.
+   * Common base class for Vector and Point.
+   *
+   * This holds a QuantityVector and a CoordinateSystem
+   *
    */
-  /*
-   * FIXME Many potential issues:
-   * 1. does this class really need to be templated ?
-   * 2. copy constructor, assignment operator not implemented
-   * 3. this member pointer is quite scary...
-   */
-  template <typename dim>
+  template <typename TDimension>
   class BaseVector {
 
   public:
-    /*
-     * FIXME Why to copy pQVector twice?
-     */
-    BaseVector(CoordinateSystem const& pCS, QuantityVector<dim> pQVector)
-        : qVector(pQVector)
-        , cs(&pCS) {}
+    BaseVector(CoordinateSystemPtr pCS, QuantityVector<TDimension> const& pQVector)
+        : quantityVector_(pQVector)
+        , cs_(pCS) {}
 
-    auto const& GetCoordinateSystem() const;
+    BaseVector() = delete;
+    BaseVector(BaseVector const&) = default;
+    BaseVector(BaseVector&& a) = default;
+    BaseVector& operator=(BaseVector const&) = default;
+    ~BaseVector() = default;
+
+    CoordinateSystemPtr getCoordinateSystem() const;
+    void setCoordinateSystem(CoordinateSystemPtr cs) { cs_ = cs; }
 
   protected:
-    QuantityVector<dim> qVector;
-    CoordinateSystem const* cs;
+    QuantityVector<TDimension> const& getQuantityVector() const;
+    QuantityVector<TDimension>& quantityVector();
+
+  private:
+    QuantityVector<TDimension> quantityVector_;
+    CoordinateSystemPtr cs_;
   };
 
 } // namespace corsika

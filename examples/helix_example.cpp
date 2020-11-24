@@ -20,8 +20,7 @@ using namespace corsika;
 using namespace corsika::units::si;
 
 int main() {
-  corsika::CoordinateSystem& root =
-      corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  corsika::CoordinateSystemPtr root = get_root_CoordinateSystem();
 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;
@@ -39,7 +38,7 @@ int main() {
   auto& positions = *arr;
 
   for (auto [t, i] = std::tuple{t0, 0}; t < t1; t += dt, ++i) {
-    auto const r = h.GetPosition(t).GetCoordinates();
+    auto const r = h.getPosition(t).getCoordinates();
 
     positions[i][0] = t / 1_s;
     positions[i][1] = r[0] / 1_m;

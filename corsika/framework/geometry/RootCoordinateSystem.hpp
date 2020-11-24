@@ -9,29 +9,23 @@ n/*
 #pragma once
 
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
-#include <corsika/framework/utility/Singleton.hpp>
 
-/*!
- * This is the only way to get a root-coordinate system, and it is a
- * singleton. All other CoordinateSystems must be relative to the
- * RootCoordinateSystem
- */
+#include <memory>
 
 namespace corsika {
 
-  class RootCoordinateSystem : public corsika::Singleton<RootCoordinateSystem> {
+  /*!
+   * Singleton factory function to produce the root CoordinateSystem
+   *
+   * This is the only way to get a root-coordinate system, and it is a
+   * singleton. All other CoordinateSystems must be relative to the
+   * RootCoordinateSystem
+   */
 
-    friend class corsika::Singleton<RootCoordinateSystem>;
-
-  protected:
-    RootCoordinateSystem() {}
-
-  public:
-    corsika::CoordinateSystem& GetRootCoordinateSystem() { return fRootCS; }
-    const corsika::CoordinateSystem& GetRootCoordinateSystem() const { return fRootCS; }
-
-  private:
-    corsika::CoordinateSystem fRootCS; // THIS IS IT
-  };
+  static std::shared_ptr<CoordinateSystem const> get_root_CoordinateSystem() {
+    static std::shared_ptr<CoordinateSystem const> rootCS(
+        new CoordinateSystem); // THIS IS IT
+    return rootCS;
+  }
 
 } // namespace corsika

@@ -13,65 +13,97 @@ n/*
 
 #include <Eigen/Dense>
 #include <stdexcept>
-
-/*
- * FIXME Review this global typedef.
- */
-typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
-typedef Eigen::Translation<double, 3> EigenTranslation;
+#include <memory>
 
 namespace corsika {
 
-  class RootCoordinateSystem;
+  typedef Eigen::Transform<double, 3, Eigen::Affine> EigenTransform;
+  typedef Eigen::Translation<double, 3> EigenTranslation;
 
   template <typename T>
-  class Vector;
+  class Vector; // fwd decl
+
+  class CoordinateSystem; // fwd decl
+  /**
+   * To refer to CoordinateSystems, only the CoordinateSystemPtr must be used.
+   */
+  using CoordinateSystemPtr = std::shared_ptr<CoordinateSystem const>;
+
+  class RootCoordinateSystem;                             // fwd decl
+  static CoordinateSystemPtr get_root_CoordinateSystem(); // fwd decl
+
+  /**
+   * A class to store the reference for a geometric object
+   *
+   * A CoordinateSystem can only be created in reference and relative
+   * to other CoordinateSystem sytems. Thus, the geometric
+   * transformation between all CoordinateSystems is known.
+   *
+   * Only the \sa RootCoordinateSystem can be created as a singleton
+   * as global main reference point.
+   *
+   * Thus, new CoordinateSystems can only be created using
+   * transformation: \sa rotateToZ, \sa rotate, \sa translateAndRotate
+   * below.
+   */
 
   class CoordinateSystem {
 
-    CoordinateSystem const* reference = nullptr;
-    EigenTransform transf;
+    /**
+     * Constructor only from referenceCS, given the transformation matrix transf
+     */
+    CoordinateSystem(CoordinateSystemPtr referenceCS, EigenTransform const& transf)
+        : referenceCS_(referenceCS)
+        , transf_(transf) {}
 
-    CoordinateSystem(CoordinateSystem const& reference, EigenTransform const& transf)
-        : reference(&reference)
-        , transf(transf) {}
-
+    /**
+     * for creating the root CS
+     */
     CoordinateSystem()
-        : // for creating the root CS
-        transf(EigenTransform::Identity()) {}
+        : referenceCS_(nullptr)
+        , transf_(EigenTransform::Identity()) {}
 
   public:
-    // FIXME missing test for self assignment
-    inline CoordinateSystem& operator=(const CoordinateSystem& pCS);
+    // default resource allocation
+    CoordinateSystem(CoordinateSystem const&) = default;
+    CoordinateSystem(CoordinateSystem&&) = default;
+    CoordinateSystem& operator=(CoordinateSystem const& pCS) = default;
+    ~CoordinateSystem() = default;
 
-    inline CoordinateSystem translate(QuantityVector<length_d> vector) const;
+    inline CoordinateSystemPtr translate(QuantityVector<length_d> vector) const;
 
     /**
      * creates a new CS in which vVec points in direction of the new z-axis
      */
     template <typename TDim>
-    auto RotateToZ(Vector<TDim> vVec) const;
+    CoordinateSystemPtr rotateToZ(Vector<TDim> vVec) const;
 
     template <typename TDim>
-    auto rotate(QuantityVector<TDim> axis, double angle) const;
+    CoordinateSystemPtr rotate(QuantityVector<TDim> axis, double angle) const;
 
     template <typename TDim>
-    auto translateAndRotate(QuantityVector<length_d> translation,
-                            QuantityVector<TDim> axis, double angle);
+    CoordinateSystemPtr translateAndRotate(QuantityVector<length_d> translation,
+                                           QuantityVector<TDim> axis, double angle);
 
-    inline CoordinateSystem const* GetReference() const;
+    inline CoordinateSystemPtr getReferenceCS() const;
 
-    inline const EigenTransform& GetTransform() const;
+    inline EigenTransform const& getTransform() const;
+
+    inline bool operator==(CoordinateSystem const&) const;
+    inline bool operator!=(CoordinateSystem const&) const;
 
   protected:
-    static CoordinateSystem CreateCS() { return CoordinateSystem(); }
+    static CoordinateSystem createCS() { return CoordinateSystem(); }
 
-    friend corsika::RootCoordinateSystem; /// this is the only class that can
-                                          /// create ONE unique root CS
+    friend CoordinateSystemPtr get_root_CoordinateSystem(); /// this is the only way to
+    /// create ONE unique root CS
+
+  private:
+    std::shared_ptr<CoordinateSystem const> referenceCS_;
+    EigenTransform transf_;
   };
 
-  EigenTransform getTransformation(CoordinateSystem const& c1,
-                                   CoordinateSystem const& c2);
+  EigenTransform getTransformation(CoordinateSystemPtr c1, CoordinateSystemPtr c2);
 
 } // namespace corsika
 

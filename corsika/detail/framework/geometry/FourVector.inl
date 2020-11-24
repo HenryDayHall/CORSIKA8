@@ -27,7 +27,7 @@ namespace corsika {
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  const TSpaceVecType& FourVector<TTimeType, TSpaceVecType>::getSpaceLikeComponents()
+  TSpaceVecType const& FourVector<TTimeType, TSpaceVecType>::getSpaceLikeComponents()
       const {
     return spaceLike_;
   }
@@ -35,7 +35,7 @@ namespace corsika {
   template <typename TTimeType, typename TSpaceVecType>
   typename FourVector<TTimeType, TSpaceVecType>::norm_square_type
   FourVector<TTimeType, TSpaceVecType>::getNormSqr() const {
-    return getTimeSquared() - spaceLike_.squaredNorm();
+    return getTimeSquared() - spaceLike_.getSquaredNorm();
   }
 
   template <typename TTimeType, typename TSpaceVecType>
@@ -47,17 +47,17 @@ namespace corsika {
 
   template <typename TTimeType, typename TSpaceVecType>
   bool FourVector<TTimeType, TSpaceVecType>::isTimelike() const {
-    return getTimeSquared() < spaceLike_.squaredNorm();
+    return getTimeSquared() < spaceLike_.getSquaredNorm();
   }
 
   template <typename TTimeType, typename TSpaceVecType>
   bool FourVector<TTimeType, TSpaceVecType>::isSpacelike() const {
-    return getTimeSquared() > spaceLike_.squaredNorm();
+    return getTimeSquared() > spaceLike_.getSquaredNorm();
   }
 
   template <typename TTimeType, typename TSpaceVecType>
   FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator+=(
-      const FourVector& b) {
+      FourVector const& b) {
     timeLike_ += b.timeLike_;
     spaceLike_ += b.spaceLike_;
 
@@ -66,7 +66,7 @@ namespace corsika {
 
   template <typename TTimeType, typename TSpaceVecType>
   FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator-=(
-      const FourVector& b) {
+      FourVector const& b) {
     timeLike_ -= b.timeLike_;
     spaceLike_ -= b.spaceLike_;
     return *this;
@@ -74,7 +74,7 @@ namespace corsika {
 
   template <typename TTimeType, typename TSpaceVecType>
   FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator*=(
-      const double b) {
+      double const b) {
     timeLike_ *= b;
     spaceLike_ *= b;
     return *this;
@@ -82,22 +82,22 @@ namespace corsika {
 
   template <typename TTimeType, typename TSpaceVecType>
   FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator/=(
-      const double b) {
+      double const b) {
     timeLike_ /= b;
-    spaceLike_.GetComponents() /= b;
+    spaceLike_.getComponents() /= b;
     return *this;
   }
 
   template <typename TTimeType, typename TSpaceVecType>
   FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::operator/(
-      const double b) {
+      double const b) {
     *this /= b;
     return *this;
   }
 
   template <typename TTimeType, typename TSpaceVecType>
   typename FourVector<TTimeType, TSpaceVecType>::norm_type
-      FourVector<TTimeType, TSpaceVecType>::operator*(const FourVector& b) {
+      FourVector<TTimeType, TSpaceVecType>::operator*(FourVector const& b) {
     if constexpr (std::is_same<time_type, decltype(std::declval<space_type>() / meter *
                                                    second)>::value)
       return timeLike_ * b.timeLike_ * constants::cSquared - spaceLike_.norm();

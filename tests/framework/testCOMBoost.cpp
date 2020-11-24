@@ -14,27 +14,140 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
-#include <iostream>
-
 using namespace corsika;
 
 double constexpr absMargin = 1e-6;
 
-CoordinateSystem const& rootCS =
-    RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
 // helper function for energy-momentum
 // relativistic energy
 auto const energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
-  return sqrt(m * m + p.squaredNorm());
+  return sqrt(m * m + p.getSquaredNorm());
 };
 
 auto const momentum = [](HEPEnergyType E, HEPMassType m) { return sqrt(E * E - m * m); };
 
 // helper function for mandelstam-s
 auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
-  return E * E - p.squaredNorm();
+  return E * E - p.getSquaredNorm();
 };
+
+TEST_CASE("rotation") {
+  // define projectile kinematics in lab frame
+  HEPMassType const projectileMass = 1_GeV;
+  HEPMassType const targetMass = 1.0e300_eV;
+  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, 1_GeV}};
+  HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
+  FourVector const PprojLab(eProjectileLab, pProjectileLab);
+
+  Vector<hepenergy_d> e1(rootCS, {1_GeV, 0_GeV, 0_GeV});
+  Vector<hepenergy_d> e2(rootCS, {0_GeV, 1_GeV, 0_GeV});
+  Vector<hepenergy_d> e3(rootCS, {0_GeV, 0_GeV, 1_GeV});
+
+  // define boost to com frame
+  SECTION("pos. z-axis") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, 1_GeV}}}, targetMass);
+    CoordinateSystemPtr rotCS = boost.getRotatedCS();
+
+    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getY(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+  }
+
+  SECTION("y-axis in upper half") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, 1_meV}}}, targetMass);
+    CoordinateSystemPtr rotCS = boost.getRotatedCS();
+
+    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+
+    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+  }
+
+  SECTION("x-axis in upper half") {
+    COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, 1_meV}}}, targetMass);
+    CoordinateSystemPtr rotCS = boost.getRotatedCS();
+
+    CHECK(e1.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+
+    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getY(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e3.getX(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+  }
+
+  SECTION("neg. z-axis") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, -1_GeV}}}, targetMass);
+    CoordinateSystemPtr rotCS = boost.getRotatedCS();
+
+    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+  }
+
+  SECTION("x-axis lower half") {
+    COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, -1_meV}}}, targetMass);
+    CoordinateSystemPtr rotCS = boost.getRotatedCS();
+
+    CHECK(e1.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+
+    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e3.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+  }
+
+  SECTION("y-axis lower half") {
+    COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, -1_meV}}}, targetMass);
+    CoordinateSystemPtr rotCS = boost.getRotatedCS();
+
+    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+
+    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
+
+    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(e3.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+  }
+}
 
 TEST_CASE("boosts") {
   // define target kinematics in lab frame
@@ -52,7 +165,7 @@ TEST_CASE("boosts") {
     HEPMassType const projectileMass = 1._GeV;
     Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 20_GeV, 0_GeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+    FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
     COMBoost boost(PprojLab, targetMass);
@@ -65,28 +178,28 @@ TEST_CASE("boosts") {
 
     // sum of momenta in CoM, should be 0
     auto const sumPCoM =
-        PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
-    CHECK(sumPCoM.norm() / 1_GeV == Approx(0).margin(absMargin));
+        PprojCoM.getSpaceLikeComponents() + PtargCoM.getSpaceLikeComponents();
+    CHECK(sumPCoM.getNorm() / 1_GeV == Approx(0).margin(absMargin));
 
     // mandelstam-s should be invariant under transformation
     CHECK(s(eProjectileLab + eTargetLab,
-            pProjectileLab.GetComponents() + pTargetLab.GetComponents()) /
+            pProjectileLab.getComponents() + pTargetLab.getComponents()) /
               1_GeV / 1_GeV ==
-          Approx(s(PprojCoM.GetTimeLikeComponent() + PtargCoM.GetTimeLikeComponent(),
-                   PprojCoM.GetSpaceLikeComponents().GetComponents() +
-                       PtargCoM.GetSpaceLikeComponents().GetComponents()) /
+          Approx(s(PprojCoM.getTimeLikeComponent() + PtargCoM.getTimeLikeComponent(),
+                   PprojCoM.getSpaceLikeComponents().getComponents() +
+                       PtargCoM.getSpaceLikeComponents().getComponents()) /
                  1_GeV / 1_GeV));
 
     // boost back...
     auto const PprojBack = boost.fromCoM(PprojCoM);
 
     // ...should yield original values before the boosts
-    CHECK(PprojBack.GetTimeLikeComponent() / PprojLab.GetTimeLikeComponent() ==
+    CHECK(PprojBack.getTimeLikeComponent() / PprojLab.getTimeLikeComponent() ==
           Approx(1));
-    CHECK(
-        (PprojBack.GetSpaceLikeComponents() - PprojLab.GetSpaceLikeComponents()).norm() /
-            PprojLab.GetSpaceLikeComponents().norm() ==
-        Approx(0).margin(absMargin));
+    CHECK((PprojBack.getSpaceLikeComponents() - PprojLab.getSpaceLikeComponents())
+                  .getNorm() /
+              PprojLab.getSpaceLikeComponents().getNorm() ==
+          Approx(0).margin(absMargin));
   }
 
   /*
@@ -99,7 +212,7 @@ TEST_CASE("boosts") {
     HEPMassType const projectileMass = 1_GeV;
     Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_GeV, -20_GeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+    FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
     auto const sqrt_s_lab =
         sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
@@ -120,8 +233,8 @@ TEST_CASE("boosts") {
 
     // sum of momenta in CoM, should be 0
     auto const sumPCoM =
-        PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
-    CHECK(sumPCoM.norm() / 1_GeV == Approx(0).margin(absMargin));
+        PprojCoM.getSpaceLikeComponents() + PtargCoM.getSpaceLikeComponents();
+    CHECK(sumPCoM.getNorm() / 1_GeV == Approx(0).margin(absMargin));
   }
 
   /*
@@ -130,7 +243,7 @@ TEST_CASE("boosts") {
 
   SECTION("Test boost along tilted axis") {
 
-    const HEPMomentumType P0 = 1_PeV;
+    HEPMomentumType const P0 = 1_PeV;
     double theta = 33.;
     double phi = -10.;
     auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
@@ -144,7 +257,7 @@ TEST_CASE("boosts") {
     HEPMassType const projectileMass = 1_GeV;
     Vector<hepmomentum_d> pProjectileLab(rootCS, {px, py, pz});
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+    FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
     COMBoost boost(PprojLab, targetMass);
@@ -157,8 +270,8 @@ TEST_CASE("boosts") {
 
     // sum of momenta in CoM, should be 0
     auto const sumPCoM =
-        PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
-    CHECK(sumPCoM.norm() / 1_GeV == Approx(0).margin(absMargin));
+        PprojCoM.getSpaceLikeComponents() + PtargCoM.getSpaceLikeComponents();
+    CHECK(sumPCoM.getNorm() / 1_GeV == Approx(0).margin(absMargin));
   }
 
   /*
@@ -171,7 +284,7 @@ TEST_CASE("boosts") {
     HEPMomentumType P0 = 1_ZeV;
     Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, -P0}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+    FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
     // define boost to com frame
     COMBoost boost(PprojLab, targetMass);
@@ -184,8 +297,8 @@ TEST_CASE("boosts") {
 
     // sum of momenta in CoM, should be 0
     auto const sumPCoM =
-        PprojCoM.GetSpaceLikeComponents() + PtargCoM.GetSpaceLikeComponents();
-    CHECK(sumPCoM.norm() / P0 == Approx(0).margin(absMargin)); // MAKE RELATIVE CHECK
+        PprojCoM.getSpaceLikeComponents() + PtargCoM.getSpaceLikeComponents();
+    CHECK(sumPCoM.getNorm() / P0 == Approx(0).margin(absMargin)); // MAKE RELATIVE CHECK
   }
 }
 

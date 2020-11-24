@@ -42,12 +42,12 @@ namespace corsika {
         , vPar_(pvPar)
         , vPerp_(pvPerp)
         , uPerp_(vPerp_.cross(vPar_.normalized()))
-        , radius_(pvPar.norm() / abs(pOmegaC)) {}
+        , radius_(pvPar.getNorm() / abs(pOmegaC)) {}
 
     inline LengthType getRadius() const;
 
     inline Point getPosition(TimeType t) const;
-    
+
     inline Point getPositionFromArclength(LengthType l) const;
 
     inline LengthType getArcLength(TimeType t1, TimeType t2) const;
@@ -59,7 +59,7 @@ namespace corsika {
                            ///! "cylinder" on which the helix rotates
     FrequencyType omegaC_; ///! speed of angular rotation
     VelocityVec vPar_;     ///! speed along direction of "cylinder"
-    VelocityVec vPerp_, uPerp_; 
+    VelocityVec vPerp_, uPerp_;
     LengthType radius_;
   };
 

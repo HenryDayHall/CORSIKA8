@@ -22,8 +22,7 @@ using namespace corsika;
 double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("transformations between CoordinateSystems") {
-  CoordinateSystem& rootCS =
-      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
   REQUIRE(getTransformation(rootCS, rootCS).isApprox(EigenTransform::Identity()));
 
@@ -33,68 +32,68 @@ TEST_CASE("transformations between CoordinateSystems") {
   QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla, 0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
 
-  REQUIRE((p1.GetCoordinates() - coordinates).norm().magnitude() ==
+  REQUIRE((p1.getCoordinates() - coordinates).getNorm().magnitude() ==
           Approx(0).margin(absMargin));
-  REQUIRE((p1.GetCoordinates(rootCS) - coordinates).norm().magnitude() ==
+  REQUIRE((p1.getCoordinates(rootCS) - coordinates).getNorm().magnitude() ==
           Approx(0).margin(absMargin));
 
   /*
   SECTION("unconnected CoordinateSystems") {
     CoordinateSystem rootCS2 = CoordinateSystem::CreateRootCS();
-    REQUIRE_THROWS(CoordinateSystem::GetTransformation(rootCS, rootCS2));
+    REQUIRE_THROWS(CoordinateSystem::getTransformation(rootCS, rootCS2));
     }*/
 
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
 
-    CoordinateSystem translatedCS = rootCS.translate(translationVector);
+    CoordinateSystemPtr translatedCS = rootCS->translate(translationVector);
 
-    REQUIRE(translatedCS.GetReference() == &rootCS);
+    REQUIRE(*translatedCS->getReferenceCS() == *rootCS);
 
-    REQUIRE((p1.GetCoordinates(translatedCS) + translationVector).norm().magnitude() ==
+    REQUIRE((p1.getCoordinates(translatedCS) + translationVector).getNorm().magnitude() ==
             Approx(0).margin(absMargin));
 
     // Vectors are not subject to translations
-    REQUIRE(
-        (v1.GetComponents(rootCS) - v1.GetComponents(translatedCS)).norm().magnitude() ==
-        Approx(0).margin(absMargin));
+    REQUIRE((v1.getComponents(rootCS) - v1.getComponents(translatedCS))
+                .getNorm()
+                .magnitude() == Approx(0).margin(absMargin));
 
     Point p2(translatedCS, {0_m, 0_m, 0_m});
-    REQUIRE(((p2 - p1).GetComponents() - translationVector).norm().magnitude() ==
+    REQUIRE(((p2 - p1).getComponents() - translationVector).getNorm().magnitude() ==
             Approx(0).margin(absMargin));
   }
 
   SECTION("multiple translations") {
     QuantityVector<length_d> const tv1{0_m, 5_m, 0_m};
-    CoordinateSystem cs2 = rootCS.translate(tv1);
+    CoordinateSystemPtr cs2 = rootCS->translate(tv1);
 
     QuantityVector<length_d> const tv2{3_m, 0_m, 0_m};
-    CoordinateSystem cs3 = rootCS.translate(tv2);
+    CoordinateSystemPtr cs3 = rootCS->translate(tv2);
 
     QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
-    CoordinateSystem cs4 = cs3.translate(tv3);
+    CoordinateSystemPtr cs4 = cs3->translate(tv3);
 
-    REQUIRE(cs4.GetReference()->GetReference() == &rootCS);
+    REQUIRE(*cs4->getReferenceCS()->getReferenceCS() == *rootCS);
 
     REQUIRE(getTransformation(cs3, cs2).isApprox(
-        rootCS.translate({3_m, -5_m, 0_m}).GetTransform()));
+        rootCS->translate({3_m, -5_m, 0_m})->getTransform()));
     REQUIRE(getTransformation(cs2, cs3).isApprox(
-        rootCS.translate({-3_m, +5_m, 0_m}).GetTransform()));
+        rootCS->translate({-3_m, +5_m, 0_m})->getTransform()));
   }
 
   SECTION("rotations") {
     QuantityVector<length_d> const axis{0_m, 0_m, 1_km};
     double const angle = 90. / 180. * M_PI;
 
-    CoordinateSystem rotatedCS = rootCS.rotate(axis, angle);
-    REQUIRE(rotatedCS.GetReference() == &rootCS);
+    CoordinateSystemPtr rotatedCS = rootCS->rotate(axis, angle);
+    REQUIRE(*rotatedCS->getReferenceCS() == *rootCS);
 
-    REQUIRE(v1.GetComponents(rotatedCS)[1].magnitude() ==
+    REQUIRE(v1.getComponents(rotatedCS)[1].magnitude() ==
             Approx((-1. * tesla).magnitude()));
 
     // vector norm invariant under rotation
-    REQUIRE(v1.GetComponents(rotatedCS).norm().magnitude() ==
-            Approx(v1.GetComponents(rootCS).norm().magnitude()));
+    REQUIRE(v1.getComponents(rotatedCS).getNorm().magnitude() ==
+            Approx(v1.getComponents(rootCS).getNorm().magnitude()));
   }
 
   SECTION("multiple rotations") {
@@ -108,15 +107,79 @@ TEST_CASE("transformations between CoordinateSystems") {
 
     double const angle = 90. / 180. * M_PI;
 
-    CoordinateSystem rotated1 = rootCS.rotate(zAxis, angle);
-    CoordinateSystem rotated2 = rotated1.rotate(yAxis, angle);
-    CoordinateSystem rotated3 = rotated2.rotate(zAxis, -angle);
+    CoordinateSystemPtr rotated1 = rootCS->rotate(zAxis, angle);
+    CoordinateSystemPtr rotated2 = rotated1->rotate(yAxis, angle);
+    CoordinateSystemPtr rotated3 = rotated2->rotate(zAxis, -angle);
 
-    CoordinateSystem combined = rootCS.rotate(xAxis, -angle);
+    CoordinateSystemPtr combined = rootCS->rotate(xAxis, -angle);
 
-    auto comp1 = v1.GetComponents(rotated3);
-    auto comp3 = v1.GetComponents(combined);
-    REQUIRE((comp1 - comp3).norm().magnitude() == Approx(0).margin(absMargin));
+    auto comp1 = v1.getComponents(rotated3);
+    auto comp3 = v1.getComponents(combined);
+    REQUIRE((comp1 - comp3).getNorm().magnitude() == Approx(0).margin(absMargin));
+  }
+
+  SECTION("RotateToZ positive") {
+    Vector const v{rootCS, 0_m, 1_m, 1_m};
+    auto const csPrime = rootCS->rotateToZ(v);
+    Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
+    Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
+    Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
+
+    CHECK(xPrime.dot(v).magnitude() == Approx(0).margin(absMargin));
+    CHECK(yPrime.dot(v).magnitude() == Approx(0).margin(absMargin));
+    CHECK((zPrime.dot(v) / 1_m).magnitude() == Approx(5 * sqrt(2)));
+
+    CHECK(zPrime.getComponents(rootCS)[1].magnitude() ==
+          Approx(zPrime.getComponents(rootCS)[2].magnitude()));
+    CHECK(zPrime.getComponents(rootCS)[0].magnitude() == Approx(0));
+
+    CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
+              yPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+    CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
+              xPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+    CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
+              zPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+
+    CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
+              yPrime.getComponents(rootCS).getEigenVector()) ==
+          Approx((5_m * 5_m).magnitude()));
+    CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
+              xPrime.getComponents(rootCS).getEigenVector()) ==
+          Approx((5_m * 5_m).magnitude()));
+    CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
+              zPrime.getComponents(rootCS).getEigenVector()) ==
+          Approx((5_m * 5_m).magnitude()));
+  }
+
+  SECTION("RotateToZ negative") {
+    Vector const v{rootCS, 0_m, 0_m, -1_m};
+    auto const csPrime = rootCS->rotateToZ(v);
+    Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
+    Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
+    Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
+
+    CHECK(zPrime.dot(v).magnitude() > 0);
+    CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
+              v.getComponents().getEigenVector()) == Approx(0));
+    CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
+              v.getComponents().getEigenVector()) == Approx(0));
+
+    CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
+              yPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+    CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
+              xPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+    CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
+              zPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+
+    CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
+              yPrime.getComponents(rootCS).getEigenVector()) ==
+          Approx((5_m * 5_m).magnitude()));
+    CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
+              xPrime.getComponents(rootCS).getEigenVector()) ==
+          Approx((5_m * 5_m).magnitude()));
+    CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
+              zPrime.getComponents(rootCS).getEigenVector()) ==
+          Approx((5_m * 5_m).magnitude()));
   }
 
   SECTION("RotateToZ positive") {
@@ -179,28 +242,26 @@ TEST_CASE("transformations between CoordinateSystems") {
 }
 
 TEST_CASE("Sphere") {
-  CoordinateSystem& rootCS =
-      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
-  SECTION("GetCenter") {
-    CHECK((sphere.GetCenter().GetCoordinates(rootCS) -
+  SECTION("getCenter") {
+    CHECK((sphere.getCenter().getCoordinates(rootCS) -
            QuantityVector<length_d>(0_m, 3_m, 4_m))
-              .norm()
+              .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
-    CHECK(sphere.GetRadius() / 5_m == Approx(1));
+    CHECK(sphere.getRadius() / 5_m == Approx(1));
   }
 
-  SECTION("Contains") {
-    REQUIRE_FALSE(sphere.Contains(Point(rootCS, {100_m, 0_m, 0_m})));
-    REQUIRE(sphere.Contains(Point(rootCS, {2_m, 3_m, 4_m})));
+  SECTION("isInside") {
+    REQUIRE_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
+    REQUIRE(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
   }
 }
 
 TEST_CASE("Trajectories") {
-  CoordinateSystem& rootCS =
-      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {
@@ -209,26 +270,28 @@ TEST_CASE("Trajectories") {
 
     Line const line(r0, v0);
     CHECK(
-        (line.GetPosition(2_s).GetCoordinates() - QuantityVector<length_d>(6_m, 0_m, 0_m))
-            .norm()
+        (line.getPosition(2_s).getCoordinates() - QuantityVector<length_d>(6_m, 0_m, 0_m))
+            .getNorm()
             .magnitude() == Approx(0).margin(absMargin));
 
-    CHECK((line.PositionFromArclength(4_m).GetCoordinates() -
+    CHECK((line.getPositionFromArclength(4_m).getCoordinates() -
            QuantityVector<length_d>(4_m, 0_m, 0_m))
-              .norm()
+              .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    CHECK((line.GetPosition(7_s) - line.PositionFromArclength(line.ArcLength(0_s, 7_s)))
-              .norm()
+    CHECK((line.getPosition(7_s) -
+           line.getPositionFromArclength(line.getArcLength(0_s, 7_s)))
+              .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
 
     auto const t = 1_s;
-    LineTrajectory base(line, t);
-    CHECK(line.GetPosition(t).GetCoordinates() == base.GetPosition(1.).GetCoordinates());
+    Trajectory<Line> base(line, t);
+    CHECK(line.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
 
-    CHECK((base.GetVelocity(0).normalized().GetComponents(rootCS) -
+    CHECK(base.getArcLength(1_s, 2_s) / 1_m == Approx(3));
+
+    CHECK((base.getNormalizedDirection().getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
-              .eVector.norm() == Approx(0).margin(absMargin));
+              .getNorm() == Approx(0).margin(absMargin));
   }
-
 }

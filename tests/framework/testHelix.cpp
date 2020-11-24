@@ -21,8 +21,7 @@ double constexpr absMargin = 1.0e-8;
 
 TEST_CASE("Helix class") {
 
-  CoordinateSystem& rootCS =
-    RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  const CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Helix") {
@@ -37,20 +36,20 @@ TEST_CASE("Helix class") {
 
     Helix const helix(r0, omegaC, vPar, vPerp);
 
-    CHECK((helix.getPosition(1_s).GetCoordinates() -
+    CHECK((helix.getPosition(1_s).getCoordinates() -
            QuantityVector<length_d>(0_m, 0_m, 4_m))
-              .norm()
+              .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    CHECK((helix.getPosition(0.25_s).GetCoordinates() -
+    CHECK((helix.getPosition(0.25_s).getCoordinates() -
            QuantityVector<length_d>(-3_m / (2 * M_PI), -3_m / (2 * M_PI), 1_m))
-              .norm()
+              .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
 
-    CHECK(
-        (helix.getPosition(7_s) - helix.getPositionFromArclength(helix.getArcLength(0_s, 7_s)))
-            .norm()
-            .magnitude() == Approx(0).margin(absMargin));
+    CHECK((helix.getPosition(7_s) -
+           helix.getPositionFromArclength(helix.getArcLength(0_s, 7_s)))
+              .getNorm()
+              .magnitude() == Approx(0).margin(absMargin));
 
     /*
     // we have to consider this, if we need it
@@ -61,6 +60,4 @@ TEST_CASE("Helix class") {
     CHECK(base.ArcLength(0_s, 1_s) / 1_m == Approx(5));
     */
   }
-
 }
-

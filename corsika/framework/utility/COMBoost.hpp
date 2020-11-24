@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -24,38 +23,33 @@ namespace corsika {
    */
 
   class COMBoost {
-    Eigen::Matrix2d boost_, inverseBoost_;
-    corsika::CoordinateSystem const &originalCS_, rotatedCS_;
-
-    void setBoost(double coshEta, double sinhEta);
 
   public:
     //! construct a COMBoost given four-vector of projectile and mass of target
-    COMBoost(
-        const corsika::geometry::FourVector<
-            corsika::units::si::HEPEnergyType,
-            corsika::geometry::Vector<corsika::units::si::hepmomentum_d>>& Pprojectile,
-        const corsika::units::si::HEPEnergyType massTarget);
+    COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
+             HEPEnergyType const massTarget);
 
     //! construct a COMBoost to boost into the rest frame given a 3-momentum and mass
-    COMBoost(Vector<units::si::hepmomentum_d> const& momentum,
-             units::si::HEPEnergyType mass);
+    COMBoost(Vector<hepmomentum_d> const& momentum, HEPEnergyType mass);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     template <typename FourVector>
-    FourVector toCoM(const FourVector& p) const;
-
+    FourVector toCoM(FourVector const& p) const;
 
     //! transforms a 4-momentum from the center-of-mass frame back to lab frame
     template <typename FourVector>
-    FourVector fromCoM(const FourVector& p) const;
+    FourVector fromCoM(FourVector const& p) const;
 
+    CoordinateSystemPtr getRotatedCS() const;
 
-    CoordinateSystem const& GetRotatedCS() const;
+  protected:
+    void setBoost(double coshEta, double sinhEta);
+
+  private:
+    Eigen::Matrix2d boost_, inverseBoost_;
+    CoordinateSystemPtr originalCS_, rotatedCS_;
+
   };
 } // namespace corsika
 
 #include <corsika/detail/framework/utility/COMBoost.inl>
-
-
-

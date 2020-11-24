@@ -24,15 +24,14 @@ int main() {
   std::cout << "geometry_example" << std::endl;
 
   // define the root coordinate system
-  corsika::CoordinateSystem& root =
-      corsika::RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  corsika::CoordinateSystemPtr root = get_root_CoordinateSystem();
 
   // another CS defined by a translation relative to the root CS
-  CoordinateSystem cs2 = root.translate({0_m, 0_m, 1_m});
+  CoordinateSystemPtr cs2 = root->translate({0_m, 0_m, 1_m});
 
   // rotations are possible, too; parameters are axis vector and angle
-  CoordinateSystem cs3 =
-      root.rotate(QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
+  CoordinateSystemPtr cs3 =
+      root->rotate(QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
 
   // now let's define some geometrical objects:
   Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
@@ -41,30 +40,30 @@ int main() {
   Vector<length_d> const diff =
       p2 -
       p1; // the distance between the points, basically the translation vector given above
-  auto const norm = diff.squaredNorm(); // squared length with the right dimension
+  auto const norm = diff.getSquaredNorm(); // squared length with the right dimension
 
   // print the components of the vector as given in the different CS
-  std::cout << "p2-p1 components in root: " << diff.GetComponents(root) << std::endl;
-  std::cout << "p2-p1 components in cs2: " << diff.GetComponents(cs2)
+  std::cout << "p2-p1 components in root: " << diff.getComponents(root) << std::endl;
+  std::cout << "p2-p1 components in cs2: " << diff.getComponents(cs2)
             << std::endl; // by definition invariant under translations
-  std::cout << "p2-p1 components in cs3: " << diff.GetComponents(cs3)
+  std::cout << "p2-p1 components in cs3: " << diff.getComponents(cs3)
             << std::endl; // but not under rotations
   std::cout << "p2-p1 norm^2: " << norm << std::endl;
   assert(norm == 1 * meter * meter);
 
   Sphere s(p1, 10_m); // define a sphere around a point with a radius
-  std::cout << "p1 inside s:  " << s.Contains(p2) << std::endl;
-  assert(s.Contains(p2) == 1);
+  std::cout << "p1 inside s:  " << s.isInside(p2) << std::endl;
+  assert(s.isInside(p2) == 1);
 
   Sphere s2(p1, 3_um); // another sphere
-  std::cout << "p1 inside s2: " << s2.Contains(p2) << std::endl;
-  assert(s2.Contains(p2) == 0);
+  std::cout << "p1 inside s2: " << s2.isInside(p2) << std::endl;
+  assert(s2.isInside(p2) == 0);
 
   // let's try parallel projections:
   auto const v1 = Vector<length_d>(root, {1_m, 1_m, 0_m});
   auto const v2 = Vector<length_d>(root, {1_m, 0_m, 0_m});
 
-  auto const v3 = v1.parallelProjectionOnto(v2);
+  auto const v3 = v1.getParallelProjectionOnto(v2);
 
   // cross product
   auto const cross =
@@ -72,10 +71,10 @@ int main() {
 
   // if a CS is not given as parameter for getComponents(), the components
   // in the "home" CS are returned
-  std::cout << "v1: " << v1.GetComponents() << std::endl;
-  std::cout << "v2: " << v2.GetComponents() << std::endl;
-  std::cout << "parallel projection of v1 onto v2: " << v3.GetComponents() << std::endl;
-  std::cout << "normalized cross product of v1 x v2" << cross.GetComponents()
+  std::cout << "v1: " << v1.getComponents() << std::endl;
+  std::cout << "v2: " << v2.getComponents() << std::endl;
+  std::cout << "parallel projection of v1 onto v2: " << v3.getComponents() << std::endl;
+  std::cout << "normalized cross product of v1 x v2" << cross.getComponents()
             << std::endl;
 
   return EXIT_SUCCESS;

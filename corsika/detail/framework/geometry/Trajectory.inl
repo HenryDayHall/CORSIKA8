@@ -16,37 +16,37 @@
 
 namespace corsika {
 
-  template <typename T>
-  Point Trajectory<T>::GetPosition(double u) const {
-    return T::GetPosition(fTimeLength * u);
+  template <typename TType>
+  Point Trajectory<TType>::getPosition(double u) const {
+    return TType::getPosition(timeLength_ * u);
   }
 
-  template <typename T>
-  TimeType Trajectory<T>::GetDuration() const {
-    return fTimeLength;
+  template <typename TType>
+  TimeType Trajectory<TType>::getDuration() const {
+    return timeLength_;
   }
 
-  template <typename T>
-  LengthType Trajectory<T>::GetLength() const {
-    return GetDistance(fTimeLength);
+  template <typename TType>
+  LengthType Trajectory<TType>::getLength() const {
+    return getDistance(timeLength_);
   }
 
-  template <typename T>
-  LengthType Trajectory<T>::GetDistance(TimeType t) const {
-    assert(t <= fTimeLength);
+  template <typename TType>
+  LengthType Trajectory<TType>::getDistance(TimeType t) const {
+    assert(t <= timeLength_);
     assert(t >= 0 * second);
-    return T::ArcLength(0 * second, t);
+    return TType::getArcLength(0 * second, t);
   }
 
-  template <typename T>
-  void Trajectory<T>::LimitEndTo(LengthType limit) {
-    fTimeLength = T::TimeFromArclength(limit);
+  template <typename TType>
+  void Trajectory<TType>::getLimitEndTo(LengthType limit) {
+    timeLength_ = TType::getTimeFromArclength(limit);
   }
 
-  template <typename T>
-  auto Trajectory<T>::NormalizedDirection() const {
-    static_assert(std::is_same_v<T, corsika::Line>);
-    return T::GetV0().normalized();
+  template <typename TType>
+  auto Trajectory<TType>::getNormalizedDirection() const {
+    static_assert(std::is_same_v<TType, corsika::Line>);
+    return TType::getVelocity().normalized();
   }
 
 } // namespace corsika

@@ -16,23 +16,25 @@ namespace corsika {
 
   class Plane {
 
+    ///! \todo move to PhysicalUnits
     using DimLessVec = Vector<dimensionless_d>;
-
-    Point const fCenter;
-    DimLessVec const fNormal;
 
   public:
     Plane(Point const& vCenter, DimLessVec const& vNormal)
-        : fCenter(vCenter)
-        , fNormal(vNormal.normalized()) {}
+        : center_(vCenter)
+        , normal_(vNormal.normalized()) {}
 
-    bool IsAbove(Point const& vP) const;
+    bool isAbove(Point const& vP) const;
 
-    LengthType DistanceTo(corsika::Point const& vP) const;
+    LengthType getDistanceTo(corsika::Point const& vP) const;
 
-    Point const& GetCenter() const;
+    Point const& getCenter() const;
 
-    DimLessVec const& GetNormal() const;
+    DimLessVec const& getNormal() const;
+
+  public:
+    Point const center_;
+    DimLessVec const normal_;
   };
 
 } // namespace corsika

@@ -12,13 +12,13 @@ n/*
 
 namespace corsika {
 
-  class Volume {
+  class IVolume {
 
   public:
     //! returns true if the Point p is within the volume
-    virtual bool Contains(Point const& p) const = 0;
+    virtual bool isInside(Point const& p) const = 0;
 
-    virtual ~Volume() = default;
+    virtual ~IVolume() = default;
   };
 
 } // namespace corsika

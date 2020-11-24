@@ -11,56 +11,63 @@ n/*
 #include <Eigen/Dense>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <iostream>
+#include <ostream>
 #include <utility>
 
 namespace corsika {
+
+  class CoordinateSystem; // fwd decl
+  class Point;
+  template <typename T>
+  class Vector;
 
   /*!
    * A QuantityVector is a three-component container based on Eigen::Vector3d
    * with a phys::units::si::dimension. Arithmethic operators are defined that
    * propagate the dimensions by dimensional analysis.
+   *
+   * \todo review QuantityVector: can this be a protected-only
+   * inheritance to other objects? We don't want to expose access to
+   * low-level Eigen objects anywhere.
    */
 
-  template <typename dim>
+  template <typename TDimension>
   class QuantityVector {
   public:
-    using Quantity = phys::units::quantity<dim, double>; //< the phys::units::quantity
-                                                         // corresponding to the dimension
+    using quantity_type =
+        phys::units::quantity<TDimension, double>; //< the phys::units::quantity
+                                                   // corresponding to the dimension
+
+    QuantityVector(Eigen::Vector3d pBareVector)
+        : eigenVector_(pBareVector) {}
 
   public:
-    Eigen::Vector3d eVector; //!< the actual container where the raw numbers are stored
+    typedef TDimension dimension_type; //!< should be a phys::units::dimension
 
-    typedef dim dimension; //!< should be a phys::units::dimension
-
-    QuantityVector(Quantity a, Quantity b, Quantity c)
-        : eVector{a.magnitude(), b.magnitude(), c.magnitude()} {}
+    QuantityVector(quantity_type a, quantity_type b, quantity_type c)
+        : eigenVector_{a.magnitude(), b.magnitude(), c.magnitude()} {}
 
     QuantityVector(double a, double b, double c)
-        : eVector{a, b, c} {
+        : eigenVector_{a, b, c} {
       static_assert(
-          std::is_same_v<dim, phys::units::dimensionless_d>,
+          std::is_same_v<TDimension, phys::units::dimensionless_d>,
           "initialization of dimensionful QuantityVector with pure numbers not allowed!");
     }
 
-    QuantityVector(Eigen::Vector3d pBareVector)
-        : eVector(pBareVector) {}
+    quantity_type operator[](size_t index) const;
+    quantity_type getX() const;
+    quantity_type getY() const;
+    quantity_type getZ() const;
+    Eigen::Vector3d const& getEigenVector() const { return eigenVector_; }
+    Eigen::Vector3d& eigenVector() { return eigenVector_; }
 
-    auto operator[](size_t index) const;
+    quantity_type getNorm() const;
 
-    auto GetX() const;
+    auto getSquaredNorm() const;
 
-    auto GetY() const;
+    QuantityVector operator+(QuantityVector<TDimension> const& pQVec) const;
 
-    auto GetZ() const;
-
-    auto norm() const;
-
-    auto squaredNorm() const;
-
-    auto operator+(QuantityVector<dim> const& pQVec) const;
-
-    auto operator-(QuantityVector<dim> const& pQVec) const;
+    QuantityVector operator-(QuantityVector<TDimension> const& pQVec) const;
 
     template <typename ScalarDim>
     auto operator*(phys::units::quantity<ScalarDim, double> const p) const;
@@ -76,23 +83,35 @@ namespace corsika {
 
     auto& operator*=(double const p);
 
-    auto& operator+=(QuantityVector<dim> const& pQVec);
+    auto& operator+=(QuantityVector<TDimension> const& pQVec);
 
-    auto& operator-=(QuantityVector<dim> const& pQVec);
+    auto& operator-=(QuantityVector<TDimension> const& pQVec);
 
     auto& operator-() const;
 
     auto normalized() const;
 
-    auto operator==(QuantityVector<dim> const& p) const;
+    auto operator==(QuantityVector<TDimension> const& p) const;
+
+    friend class CoordinateSystem;
+    friend class Point;
+    template <typename T>
+    friend class corsika::Vector;
+    template <typename dim>
+    friend std::ostream& operator<<(std::ostream& os, QuantityVector<dim> qv);
+
+  protected:
+    Eigen::Vector3d
+        eigenVector_; //!< the actual container where the raw numbers are stored
   };
 
   /*
-   * FIXME free function operators not implemented.
+   * streaming operator
    */
 
-  template <typename dim>
-  auto& operator<<(std::ostream& os, corsika::QuantityVector<dim> qv);
+  template <typename TDimension>
+  inline std::ostream& operator<<(std::ostream& os,
+                                  corsika::QuantityVector<TDimension> qv);
 
 } // namespace corsika
 

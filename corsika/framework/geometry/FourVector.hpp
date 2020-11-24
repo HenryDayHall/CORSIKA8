@@ -44,7 +44,7 @@ namespace corsika {
 
   public:
     using space_vec_type = typename std::decay<TSpaceVecType>::type;
-    using space_type = typename space_vec_type::Quantity;
+    using space_type = typename space_vec_type::quantity_type;
     using time_type = typename std::decay<TTimeType>::type;
 
     //! check the types and the physical units here:
@@ -119,11 +119,11 @@ namespace corsika {
     bool isSpacelike() const;
 
     FourVector& operator+=(FourVector const&);
-    FourVector& operator-=(const FourVector&);
-    FourVector& operator*=(const double);
-    FourVector& operator/=(const double);
-    FourVector& operator/(const double);
-    
+    FourVector& operator-=(FourVector const&);
+    FourVector& operator*=(double const);
+    FourVector& operator/=(double const);
+    FourVector& operator/(double const);
+
     /**
        Scalar product of two FourVectors
 
@@ -132,10 +132,10 @@ namespace corsika {
        for this. You cannot mix different conventions due to
        unit-checking.
      */
-    norm_type operator*(const FourVector& b);
-    
+    norm_type operator*(FourVector const& b);
+
     /** @} */
-    
+
   protected:
     //! the data members
     TTimeType timeLike_;
@@ -169,7 +169,7 @@ namespace corsika {
     }
 
     friend FourVector<time_type, space_vec_type> operator*(FourVector const& a,
-                                                           const double b) {
+                                                           double const b) {
       return FourVector<time_type, space_vec_type>(a.timeLike_ * b, a.spaceLike_ * b);
     }
 

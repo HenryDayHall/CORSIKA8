@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -12,17 +10,15 @@
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Volume.hpp>
 
 namespace corsika {
 
-  //! returns true if the Point p is within the sphere
-  bool Sphere::Contains(Point const& p) const {
-    return fRadius * fRadius > (fCenter - p).squaredNorm();
+  bool Sphere::isInside(Point const& p) const {
+    return radius_ * radius_ > (center_ - p).getSquaredNorm();
   }
 
-  const Point& Sphere::GetCenter() const { return fCenter; }
+  Point const& Sphere::getCenter() const { return center_; }
 
-  LengthType Sphere::GetRadius() const { return fRadius; }
+  LengthType Sphere::getRadius() const { return radius_; }
 
 } // namespace corsika
