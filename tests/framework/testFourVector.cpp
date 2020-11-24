@@ -16,7 +16,6 @@
 #include <corsika/framework/geometry/Vector.hpp>
 
 using namespace corsika;
-using namespace corsika::units::si;
 
 TEST_CASE("four vectors") {
 
