@@ -39,6 +39,8 @@ namespace corsika::process {
      * \function LeapFrogStep
      *
      * Performs one leap-frog step consistent of two halve-steps with steplength/2
+     * The step is caluculated analytically precisely to reach to the next volume
+     *boundary.
      **/
     template <typename TParticle>
     auto LeapFrogStep(const TParticle& particle,
@@ -50,7 +52,7 @@ namespace corsika::process {
       } // charge of the particle
       const int chargeNumber = particle.GetChargeNumber();
       auto const* currentLogicalVolumeNode = particle.GetNode();
-      auto magneticfield =
+      MagneticFieldVector const& magneticfield =
           currentLogicalVolumeNode->GetModelProperties().GetMagneticField(
               particle.GetPosition());
       geometry::Vector<SpeedType::dimension_type> velocity =
@@ -85,6 +87,9 @@ namespace corsika::process {
     class Tracking : public corsika::process::tracking::Intersect<Tracking> {
 
     public:
+      Tracking()
+          : straightTracking_{tracking_line::Tracking()} {}
+
       template <typename TParticle>
       auto GetTrack(TParticle const& particle) {
         using namespace corsika::units::si;
@@ -111,23 +116,34 @@ namespace corsika::process {
         // maximum step-length since we need to follow curved
         // trajectories segment-wise -- at least if we don't employ concepts as "Helix
         // Trajectories" or similar
-        const auto& magneticfield =
+        MagneticFieldVector const& magneticfield =
             volumeNode.GetModelProperties().GetMagneticField(position);
-        const auto magnitudeB = magneticfield.norm();
-        const int chargeNumber = particle.GetChargeNumber();
-        auto const momentumVerticalMag =
-            particle.GetMomentum() -
-            particle.GetMomentum().parallelProjectionOnto(magneticfield);
+        corsika::units::si::MagneticFluxType const magnitudeB = magneticfield.norm();
+        int const chargeNumber = particle.GetChargeNumber();
+        bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
+
+        if (no_deflection) { return GetLinearTrajectory(particle); }
+
+        HEPMomentumType const pAlongB_delta =
+            (particle.GetMomentum() -
+             particle.GetMomentum().parallelProjectionOnto(magneticfield))
+                .norm();
+
+        if (pAlongB_delta == 0_GeV) {
+          // particle travel along, parallel to magnetic field. Rg is
+          // "0", but for purpose of step limit we return infinity here.
+          C8LOG_TRACE("pAlongB_delta is 0_GeV --> parallel");
+          return GetLinearTrajectory(particle);
+        }
+
         LengthType const gyroradius =
-            (chargeNumber == 0 || magnitudeB == 0_T
-                 ? std::numeric_limits<TimeType::value_type>::infinity() * 1_m
-                 : momentumVerticalMag.norm() * 1_V /
-                       (corsika::units::constants::c * abs(chargeNumber) * magnitudeB *
-                        1_eV));
+            (pAlongB_delta * 1_V /
+             (corsika::units::constants::c * abs(chargeNumber) * magnitudeB * 1_eV));
+
         const double maxRadians = 0.01;
         const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
         const TimeType steplimit_time = steplimit / initialVelocity.norm();
-        C8LOG_DEBUG("gyroradius {}, steplimit: {} m = {} s", gyroradius, steplimit,
+        C8LOG_DEBUG("gyroradius {}, steplimit: {} = {}", gyroradius, steplimit,
                     steplimit_time);
 
         // traverse the environment volume tree and find next
@@ -148,39 +164,48 @@ namespace corsika::process {
                                                const corsika::geometry::Sphere& sphere,
                                                const TMedium& medium) {
         using namespace corsika::units::si;
+
+        if (sphere.GetRadius() == 1_km * std::numeric_limits<double>::infinity()) {
+          return geometry::Intersections();
+        }
+
         const int chargeNumber = particle.GetChargeNumber();
         const auto& position = particle.GetPosition();
-        const auto& magneticfield = medium.GetMagneticField(position);
+        MagneticFieldVector const& magneticfield = medium.GetMagneticField(position);
 
-        if (chargeNumber == 0 || magneticfield.norm() == 0_T) {
+        const geometry::Vector<SpeedType::dimension_type> velocity =
+            particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
+        const geometry::Vector<dimensionless_d> directionBefore =
+            velocity.normalized(); // determine steplength to next volume
+
+        auto const projectedDirection = directionBefore.cross(magneticfield);
+        auto const projectedDirectionSqrNorm = projectedDirection.GetSquaredNorm();
+        bool const isParallel = (projectedDirectionSqrNorm == 0 * square(1_T));
+
+        if (chargeNumber == 0 || magneticfield.norm() == 0_T || isParallel) {
           return tracking_line::Tracking::Intersect(particle, sphere, medium);
         }
 
         bool const numericallyInside = sphere.Contains(particle.GetPosition());
 
-        const geometry::Vector<SpeedType::dimension_type> velocity =
-            particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
         const auto absVelocity = velocity.norm();
         auto energy = particle.GetEnergy();
         auto k = chargeNumber * corsika::units::constants::cSquared * 1_eV /
                  (absVelocity * energy * 1_V);
-        const geometry::Vector<dimensionless_d> directionBefore =
-            velocity.normalized(); // determine steplength to next volume
 
+        auto const denom =
+            (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k;
         const double a =
             ((directionBefore.cross(magneticfield)).dot(position - sphere.GetCenter()) *
                  k +
              1) *
-            4 /
-            (1_m * 1_m * (directionBefore.cross(magneticfield)).GetSquaredNorm() * k * k);
+            4 / (1_m * 1_m * denom);
         const double b = directionBefore.dot(position - sphere.GetCenter()) * 8 /
-                         ((directionBefore.cross(magneticfield)).GetSquaredNorm() * k *
-                          k * 1_m * 1_m * 1_m);
+                         (denom * 1_m * 1_m * 1_m);
         const double c = ((position - sphere.GetCenter()).GetSquaredNorm() -
                           (sphere.GetRadius() * sphere.GetRadius())) *
-                         4 /
-                         ((directionBefore.cross(magneticfield)).GetSquaredNorm() * k *
-                          k * 1_m * 1_m * 1_m * 1_m);
+                         4 / (denom * 1_m * 1_m * 1_m * 1_m);
+        C8LOG_TRACE("denom={}, a={}, b={}, c={}", denom, a, b, c);
         std::complex<double>* solutions = solve_quartic(0, a, b, c);
         LengthType d_enter, d_exit;
         int first = 0, first_entry = 0, first_exit = 0;
@@ -252,6 +277,38 @@ namespace corsika::process {
         throw std::runtime_error(
             "The Volume type provided is not supported in Intersect(particle, node)");
       }
+
+    protected:
+      /**
+       * Use internally stored class tracking_line::Tracking to
+       * perform a straight line tracking, if no magnetic bendig was
+       * detected.
+       *
+       */
+      template <typename TParticle>
+      auto GetLinearTrajectory(TParticle& particle) {
+
+        using namespace corsika::units::si;
+
+        // perform simple linear tracking
+        auto [straightTrajectory, minNode] = straightTracking_.GetTrack(particle);
+
+        // return as leap-frog trajectory
+        return std::make_tuple(
+            geometry::LeapFrogTrajectory(
+                straightTrajectory.GetLine().GetR0(),
+                straightTrajectory.GetLine().GetV0(),
+                MagneticFieldVector(particle.GetPosition().GetCoordinateSystem(), 0_T,
+                                    0_T, 0_T),
+                square(0_m) / (square(1_s) * 1_V),
+                straightTrajectory.GetDuration()), // trajectory
+            minNode);                              // next volume node
+      }
+
+    protected:
+      tracking_line::Tracking
+          straightTracking_; ///! we want this for neutral and B=0T tracks
+
     }; // namespace tracking_leapfrog_curved
 
   } // namespace tracking_leapfrog_curved

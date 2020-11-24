@@ -20,14 +20,39 @@
 
 namespace corsika::setup {
 
-  // Note: Tracking and Trajectory must fit together !
+  /**
+    Note/Warning:     Tracking and Trajectory must fit together !
+
+    tracking_leapfrog_curved::Tracking is the result of the Bachelor
+    thesis of Andre Schmidt, KIT. This is a leap-frog algorithm with
+    an analytical, precise calculation of volume intersections. This
+    algorithm needs a LeapFrogTrajectory.
+
+    tracking_leapfrog_straight::Tracking is a more simple and direct
+    leap-frog implementation. The two halve steps are coded explicitly
+    as two straight segments. Intersections with other volumes are
+    calculate only on the straight segments. This algorithm is based
+    on LineTrajectory.
+
+    tracking_line::Tracking is a pure straight tracker. It is based on
+    LineTrajectory.
+   */  
   typedef corsika::process::tracking_leapfrog_curved::Tracking Tracking;
-  // tracking_leapfrog_straight::Tracking tracking;
+  //typedef corsika::process::tracking_leapfrog_straight::Tracking Tracking;
+  //typedef corsika::process::tracking_line::Tracking Tracking;
 
   /// definition of Trajectory base class, to be used in tracking and cascades
-  // typedef corsika::geometry::LineTrajectory Trajectory;
+  //typedef corsika::geometry::LineTrajectory Trajectory;
   typedef corsika::geometry::LeapFrogTrajectory Trajectory;
 
+  /**
+
+     The following section is for unit testing only. Eventually it should
+     be moved to "tests".
+    
+    
+   */
+  
   namespace testing {
 
     template <typename TTrack>

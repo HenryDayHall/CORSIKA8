@@ -52,6 +52,19 @@ namespace corsika::process {
     class Tracking : public tracking_line::Tracking {
 
     public:
+      /**
+       * \param firstFraction fraction of first leap-frog halve step
+       * relative to full linear step to next volume boundary. This
+       * should not be less than 0.5, otherwise you risk that
+       * particles will never travel from one volume to the next
+       * one. A cross should be possible (even likely). If
+       * firstFraction is too big (~1) the resulting calculated error
+       * will be largest.
+       *
+       */
+      Tracking(double firstFraction = 0.55)
+          : firstFraction_(firstFraction) {}
+
       template <typename Particle>
       auto GetTrack(Particle& particle) {
         using namespace corsika::units::si;
@@ -72,45 +85,24 @@ namespace corsika::process {
 
         typedef decltype(particle.GetNode()) node_type;
         const node_type volumeNode = particle.GetNode();
-        auto magneticfield =
-            volumeNode->GetModelProperties().GetMagneticField(initialPosition);
-
-        // charge of the particle
-        const int chargeNumber = particle.GetChargeNumber();
-        const auto magnitudeB = magneticfield.GetNorm();
-        C8LOG_DEBUG("field={} uT, chargeNumber={}, magnitudeB={} uT",
-                    magneticfield.GetComponents() / 1_uT, chargeNumber, magnitudeB / 1_T);
-
-        // we need to limit maximum step-length since we absolutely
-        // need to follow strongly curved trajectories segment-wise,
-        // at least if we don't employ concepts as "Helix
-        // Trajectories" or similar
-        auto const momentumVerticalMag =
-            particle.GetMomentum() -
-            particle.GetMomentum().parallelProjectionOnto(magneticfield);
-        bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
-        LengthType const gyroradius =
-            (no_deflection ? std::numeric_limits<TimeType::value_type>::infinity() * 1_m
-                           : momentumVerticalMag.norm() * 1_V /
-                                 (corsika::units::constants::c * abs(chargeNumber) *
-                                  magnitudeB * 1_eV));
-        const double maxRadians = 0.01;
-        const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
-        C8LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
-
-        // calculate first halve step for "steplimit"
-        const auto initialMomentum = particle.GetMomentum();
-        const auto absMomentum = initialMomentum.norm();
-        const auto absVelocity = initialVelocity.norm();
-        const geometry::Vector<dimensionless_d> direction = initialVelocity.normalized();
 
         // check if particle is moving at all
+        const auto absVelocity = initialVelocity.norm();
         if (absVelocity * 1_s == 0_m) {
           return std::make_tuple(
               geometry::LineTrajectory(geometry::Line(initialPosition, initialVelocity),
                                        0_s),
               volumeNode);
         }
+
+        // charge of the particle, and magnetic field
+        const int chargeNumber = particle.GetChargeNumber();
+        auto magneticfield =
+            volumeNode->GetModelProperties().GetMagneticField(initialPosition);
+        const auto magnitudeB = magneticfield.GetNorm();
+        C8LOG_DEBUG("field={} uT, chargeNumber={}, magnitudeB={} uT",
+                    magneticfield.GetComponents() / 1_uT, chargeNumber, magnitudeB / 1_T);
+        bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
 
         // check, where the first halve-step direction has geometric intersections
         const auto [initialTrack, initialTrackNextVolume] =
@@ -128,9 +120,39 @@ namespace corsika::process {
           return std::make_tuple(initialTrack, initialTrackNextVolume);
         }
 
+	HEPMomentumType const pAlongB_delta =
+	  (particle.GetMomentum() -
+	   particle.GetMomentum().parallelProjectionOnto(magneticfield))
+	  .norm();
+
+        if (pAlongB_delta == 0_GeV) {
+          // particle travel along, parallel to magnetic field. Rg is
+          // "0", but for purpose of step limit we return infinity here.
+          C8LOG_TRACE("pAlongB_delta is 0_GeV --> parallel");
+          return std::make_tuple(initialTrack, initialTrackNextVolume);
+        }
+
+        LengthType const gyroradius =
+            (pAlongB_delta * 1_V /
+             (corsika::units::constants::c * abs(chargeNumber) * magnitudeB * 1_eV));
+	
+        // we need to limit maximum step-length since we absolutely
+        // need to follow strongly curved trajectories segment-wise,
+        // at least if we don't employ concepts as "Helix
+        // Trajectories" or similar
+        const double maxRadians = 0.01;
+        const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
+        C8LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
+
+	
+        // calculate first halve step for "steplimit"
+        const auto initialMomentum = particle.GetMomentum();
+        const auto absMomentum = initialMomentum.norm();
+        const geometry::Vector<dimensionless_d> direction = initialVelocity.normalized();
+
         // avoid any intersections within first halve steplength
         LengthType const firstHalveSteplength =
-            std::min(steplimit, initialTrackLength) / 2;
+            std::min(steplimit, initialTrackLength * firstFraction_);
 
         C8LOG_DEBUG("first halve step length {}, steplimit={}, initialTrackLength={}",
                     firstHalveSteplength, steplimit, initialTrackLength);
@@ -203,6 +225,9 @@ namespace corsika::process {
                 new_direction_normalized * absVelocity), // trajectory
             (switch_volume ? finalTrackNextVolume : volumeNode));
       }
+
+    protected:
+      double firstFraction_;
     };
 
   } // namespace tracking_leapfrog_straight

@@ -35,6 +35,7 @@ namespace corsika::process {
     class Tracking : public corsika::process::tracking::Intersect<Tracking> {
 
     public:
+
       template <typename TParticle>
       auto GetTrack(TParticle const& particle) {
         using namespace corsika::units::si;
@@ -115,6 +116,7 @@ namespace corsika::process {
                                        1_s
                                  : n.dot(delta) / c);
       }
+
     };
 
   } // namespace tracking_line

@@ -101,7 +101,7 @@ int main() {
 
   // create "world" as infinite sphere filled with protons
   auto world = EnvType::CreateNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+      Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
   using MyHomogeneousModel =
       environment::MediumPropertyModel<environment::UniformMagneticField<

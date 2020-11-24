@@ -71,13 +71,13 @@ int main(int argc, char** argv) {
   // setup environment, geometry
   using EnvType = setup::Environment;
   EnvType env;
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
+  const CoordinateSystem& rootCS = env.GetCoordinateSystem(); 
   Point const center{rootCS, 0_m, 0_m, 0_m};
   auto builder = environment::make_layered_spherical_atmosphere_builder<
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now

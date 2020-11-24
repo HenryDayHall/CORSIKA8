@@ -85,7 +85,7 @@ using MyExtraEnv = environment::MediumPropertyModel<environment::UniformMagnetic
 
 int main(int argc, char** argv) {
 
-  logging::SetLevel(logging::level::trace);
+  logging::SetLevel(logging::level::info);
 
   C8LOG_INFO("vertical_EAS");
 
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 5000_mT, 0_T});
+                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -256,9 +256,9 @@ int main(int argc, char** argv) {
                       EnergySwitch(55_GeV));
   auto decaySequence = process::sequence(decayPythia, decaySibyll);
   stack_inspector::StackInspector<setup::Stack> stackInspect(1000, false, E0);
-  auto sequence =
-    process::sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
-                        proposalCounted, em_continuous, cut, trackWriter, observationLevel, longprof);
+  auto sequence = process::sequence(stackInspect, hadronSequence, reset_particle_mass,
+                                    decaySequence, proposalCounted, em_continuous, cut,
+                                    trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
