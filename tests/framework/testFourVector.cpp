@@ -15,9 +15,6 @@
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
-#include <boost/type_index.hpp>
-using boost::typeindex::type_id_with_cvr;
-
 using namespace corsika;
 using namespace corsika::units::si;
 
@@ -38,8 +35,8 @@ TEST_CASE("four vectors") {
 
     FourVector p0(E0, P0);
 
-    REQUIRE(p0.getNormSqr() == -200_GeV * 1_GeV);
-    REQUIRE(p0.getNorm() == sqrt(200_GeV * 1_GeV));
+    CHECK(p0.getNormSqr() == -200_GeV * 1_GeV);
+    CHECK(p0.getNorm() == sqrt(200_GeV * 1_GeV));
   }
 
   /*
@@ -79,8 +76,8 @@ TEST_CASE("four vectors") {
 
     const double check = 100 * 100 - 10 * 10 - 5 * 5 - 15 * 15; // for dummies...
 
-    REQUIRE(p1.getNormSqr() / 1_GeV / 1_GeV == Approx(check));
-    REQUIRE(p1.getNorm() / 1_GeV == Approx(sqrt(check)));
+    CHECK(p1.getNormSqr() / 1_GeV / 1_GeV == Approx(check));
+    CHECK(p1.getNorm() / 1_GeV == Approx(sqrt(check)));
   }
 
   /**
@@ -96,8 +93,8 @@ TEST_CASE("four vectors") {
 
     FourVector p2(T2, P2);
 
-    REQUIRE(p2.getNormSqr() == check * 1_m * 1_m);
-    REQUIRE(p2.getNorm() == sqrt(abs(check)) * 1_m);
+    CHECK(p2.getNormSqr() == check * 1_m * 1_m);
+    CHECK(p2.getNorm() == sqrt(abs(check)) * 1_m);
   }
 
   /**
@@ -115,35 +112,35 @@ TEST_CASE("four vectors") {
     FourVector p1(E1, P1);
     const FourVector p2(E2, P2);
 
-    REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
-    REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
+    CHECK(p1.getNorm() / 1_GeV == Approx(100.));
+    CHECK(p2.getNorm() / 1_GeV == Approx(10.));
 
     SECTION("product") {
       FourVector p3 = p1 + p2;
-      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
+      CHECK(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
       p3 -= p2;
-      REQUIRE(p3.getNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
+      CHECK(p3.getNorm() / 1_GeV == Approx(100.));
+      CHECK(p1.getNorm() / 1_GeV == Approx(100.));
+      CHECK(p2.getNorm() / 1_GeV == Approx(10.));
     }
 
     SECTION("difference") {
       FourVector p3 = p1 - p2;
-      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
+      CHECK(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. - 100.)));
       p3 += p2;
-      REQUIRE(p3.getNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
+      CHECK(p3.getNorm() / 1_GeV == Approx(100.));
+      CHECK(p1.getNorm() / 1_GeV == Approx(100.));
+      CHECK(p2.getNorm() / 1_GeV == Approx(10.));
     }
 
     SECTION("scale") {
       double s = 10;
       FourVector p3 = p1 * s;
-      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. * s * s)));
+      CHECK(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100. * s * s)));
       p3 /= 10;
-      REQUIRE(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100.)));
-      REQUIRE(p1.getNorm() / 1_GeV == Approx(100.));
-      REQUIRE(p2.getNorm() / 1_GeV == Approx(10.));
+      CHECK(p3.getNorm() / 1_GeV == Approx(sqrt(100. * 100.)));
+      CHECK(p1.getNorm() / 1_GeV == Approx(100.));
+      CHECK(p2.getNorm() / 1_GeV == Approx(10.));
     }
   }
 
@@ -163,8 +160,10 @@ TEST_CASE("four vectors") {
     const TimeType T_c = 10_m / constants::c;
     const Vector<length_d> P_c(rootCS, {10_m, 5_m, 5_m});
 
-    // FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c); // this does not compile,
-    // and it shoudn't!
+    /*
+      this does not compile, and it shoudn't!
+      FourVector<TimeType&, Vector<length_d>&> p0(T_c, P_c);
+    */
     FourVector<TimeType&, Vector<length_d>&> p1(T, P);
     FourVector<const TimeType&, const Vector<length_d>&> p2(T, P);
     FourVector<const TimeType&, const Vector<length_d>&> p3(T_c, P_c);
@@ -174,8 +173,8 @@ TEST_CASE("four vectors") {
     // p3 *= 10; // this does not compile, and it shoudn't !!
 
     const double check = 10 * 10 - 10 * 10 - 5 * 5 - 5 * 5; // for dummies...
-    REQUIRE(p1.getNormSqr() / (1_m * 1_m) == Approx(10. * 10. * check));
-    REQUIRE(p2.getNorm() / 1_m == Approx(10 * sqrt(abs(check))));
-    REQUIRE(p3.getNorm() / 1_m == Approx(sqrt(abs(check))));
+    CHECK(p1.getNormSqr() / (1_m * 1_m) == Approx(10. * 10. * check));
+    CHECK(p2.getNorm() / 1_m == Approx(10 * sqrt(abs(check))));
+    CHECK(p3.getNorm() / 1_m == Approx(sqrt(abs(check))));
   }
 }
