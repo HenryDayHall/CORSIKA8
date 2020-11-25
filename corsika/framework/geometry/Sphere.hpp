@@ -14,6 +14,11 @@ n/*
 
 namespace corsika {
 
+  /**
+   * Describes a sphere in space
+   *
+   **/
+  
   class Sphere : public IVolume {
 
   public:
@@ -24,13 +29,15 @@ namespace corsika {
     //! returns true if the Point p is within the sphere
     inline bool isInside(Point const& p) const override;
 
-    inline const Point& getCenter() const;
+    inline Point const& getCenter() const;
+    inline Point& getCenter() { return center_; }
 
     inline LengthType getRadius() const;
+    inline LengthType& getRadius() { return radius_; }
 
   private:
-    Point const center_;
-    LengthType const radius_;
+    Point center_;
+    LengthType radius_;
   };
 
 } // namespace corsika

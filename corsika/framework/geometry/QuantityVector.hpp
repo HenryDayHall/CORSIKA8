@@ -17,9 +17,9 @@ n/*
 namespace corsika {
 
   class CoordinateSystem; // fwd decl
-  class Point;
+  class Point; // fwd decl
   template <typename T>
-  class Vector;
+  class Vector; // fwd decl
 
   /*!
    * A QuantityVector is a three-component container based on Eigen::Vector3d
@@ -37,43 +37,45 @@ namespace corsika {
     using quantity_type =
         phys::units::quantity<TDimension, double>; //< the phys::units::quantity
                                                    // corresponding to the dimension
+    using quantity_square_type =
+        decltype(std::declval<quantity_type>() * std::declval<quantity_type>());
 
-    QuantityVector(Eigen::Vector3d pBareVector)
+    QuantityVector(Eigen::Vector3d const& pBareVector)
         : eigenVector_(pBareVector) {}
 
   public:
     typedef TDimension dimension_type; //!< should be a phys::units::dimension
 
-    QuantityVector(quantity_type a, quantity_type b, quantity_type c)
+    QuantityVector(quantity_type const a, quantity_type const b, quantity_type const c)
         : eigenVector_{a.magnitude(), b.magnitude(), c.magnitude()} {}
 
-    QuantityVector(double a, double b, double c)
+    QuantityVector(double const a, double const b, double const c)
         : eigenVector_{a, b, c} {
       static_assert(
           std::is_same_v<TDimension, phys::units::dimensionless_d>,
-          "initialization of dimensionful QuantityVector with pure numbers not allowed!");
+          "initialization of dimensionfull QuantityVector with pure numbers not allowed!");
     }
 
-    quantity_type operator[](size_t index) const;
+    quantity_type operator[](size_t const index) const;
     quantity_type getX() const;
     quantity_type getY() const;
     quantity_type getZ() const;
     Eigen::Vector3d const& getEigenVector() const { return eigenVector_; }
-    Eigen::Vector3d& eigenVector() { return eigenVector_; }
+    Eigen::Vector3d& getEigenVector() { return eigenVector_; }
 
     quantity_type getNorm() const;
 
-    auto getSquaredNorm() const;
+    quantity_square_type getSquaredNorm() const;
 
     QuantityVector operator+(QuantityVector<TDimension> const& pQVec) const;
 
     QuantityVector operator-(QuantityVector<TDimension> const& pQVec) const;
 
-    template <typename ScalarDim>
-    auto operator*(phys::units::quantity<ScalarDim, double> const p) const;
+    template <typename TScalarDim>
+    auto operator*(phys::units::quantity<TScalarDim, double> const p) const;
 
-    template <typename ScalarDim>
-    auto operator/(phys::units::quantity<ScalarDim, double> const p) const;
+    template <typename TScalarDim>
+    auto operator/(phys::units::quantity<TScalarDim, double> const p) const;
 
     auto operator*(double const p) const;
 
@@ -93,25 +95,26 @@ namespace corsika {
 
     auto operator==(QuantityVector<TDimension> const& p) const;
 
+    // friends:
     friend class CoordinateSystem;
     friend class Point;
     template <typename T>
     friend class corsika::Vector;
-    template <typename dim>
-    friend std::ostream& operator<<(std::ostream& os, QuantityVector<dim> qv);
+    template <typename TDim>
+    friend std::ostream& operator<<(std::ostream& os, QuantityVector<TDim> qv);
 
   protected:
     Eigen::Vector3d
         eigenVector_; //!< the actual container where the raw numbers are stored
   };
 
-  /*
+  /**
    * streaming operator
-   */
+   **/
 
   template <typename TDimension>
   inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::QuantityVector<TDimension> qv);
+                                  corsika::QuantityVector<TDimension> const qv);
 
 } // namespace corsika
 

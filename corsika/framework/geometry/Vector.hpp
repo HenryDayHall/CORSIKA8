@@ -15,7 +15,9 @@ n/*
 namespace corsika {
 
   /*!
-   * A Vector represents a 3-vector in Euclidean space. It is defined by components
+   * A Vector represents a 3-vector in Euclidean space.
+   *
+   * It is defined by components
    * given in a specific CoordinateSystem. It has a physical dimension ("unit")
    * as part of its type, so you cannot mix up e.g. electric with magnetic fields
    * (but you could calculate their cross-product to get an energy flux vector).
@@ -28,38 +30,61 @@ namespace corsika {
   class Vector : public BaseVector<TDimension> {
   public:
     using quantity_type = phys::units::quantity<TDimension, double>;
+    using quantity_square_type =
+        decltype(std::declval<quantity_type>() * std::declval<quantity_type>());
 
-  public:
-    Vector(CoordinateSystemPtr pCS, QuantityVector<TDimension> pQVector)
+    Vector(CoordinateSystemPtr const& pCS, QuantityVector<TDimension> const& pQVector)
         : BaseVector<TDimension>(pCS, pQVector) {}
 
-    Vector(CoordinateSystemPtr cs, quantity_type x, quantity_type y, quantity_type z)
+    Vector(CoordinateSystemPtr const& cs, quantity_type const x, quantity_type const y,
+           quantity_type const z)
         : BaseVector<TDimension>(cs, QuantityVector<TDimension>(x, y, z)) {}
 
     /*!
-     * returns a QuantityVector with the components given in the "home"
+     * \returns a QuantityVector with the components given in the "home"
      * CoordinateSystem of the Vector
      *
      * \todo this should best be protected, we don't want users to use
      * bare coordinates without reference frame
      */
-    QuantityVector<TDimension> getComponents() const;
+    inline QuantityVector<TDimension> const& getComponents() const;
+    inline QuantityVector<TDimension>& getComponents();
 
     /*!
      * returns a QuantityVector with the components given in an arbitrary
      * CoordinateSystem
      */
-    QuantityVector<TDimension> getComponents(CoordinateSystemPtr pCS) const;
+    inline QuantityVector<TDimension> getComponents(CoordinateSystemPtr const& pCS) const;
 
-    inline quantity_type getX(CoordinateSystemPtr pCS) const;
-    inline quantity_type getY(CoordinateSystemPtr pCS) const;
-    inline quantity_type getZ(CoordinateSystemPtr pCS) const;
+    /**
+     * this always returns a QuantityVector as triple
+     *
+     *  \returns A reference type QuantityVector&, but be aware, the underlying class data
+     *   is actually transformed to pCS, if needed. Thus, there may be an implicit call to
+     *   \sa rebase.
+     **/
+    inline QuantityVector<TDimension>& getComponents(CoordinateSystemPtr const& pCS);
+
+    /**
+     * \defgroup access coordinate components
+     * \{
+     *
+     * Note, if you access components in a different CoordinateSystem
+     * pCS than the stored data, internally a temporary object will be
+     * created and destroyed each call. This can be avoided by using
+     * \sa rebase first.
+     **/
+
+    inline quantity_type getX(CoordinateSystemPtr const& pCS) const;
+    inline quantity_type getY(CoordinateSystemPtr const& pCS) const;
+    inline quantity_type getZ(CoordinateSystemPtr const& pCS) const;
+    /** \} **/
 
     /*!
      * transforms the Vector into another CoordinateSystem by changing
      * its components internally
      */
-    inline void rebase(CoordinateSystemPtr pCS);
+    inline void rebase(CoordinateSystemPtr const& pCS);
 
     /*!
      * returns the norm/length of the Vector. Before using this method,
@@ -71,7 +96,8 @@ namespace corsika {
      * returns the squared norm of the Vector. Before using this method,
      * think about whether norm() might be cheaper for your computation.
      */
-    inline auto getSquaredNorm() const;
+    inline quantity_square_type getSquaredNorm() const;
+
     /*!
      * returns a Vector \f$ \vec{v}_{\parallel} \f$ which is the parallel projection
      * of this vector \f$ \vec{v}_1 \f$ along another Vector \f$ \vec{v}_2 \f$ given by
@@ -81,7 +107,7 @@ namespace corsika {
      */
     template <typename TDimension2>
     auto getParallelProjectionOnto(Vector<TDimension2> const& pVec,
-                                   CoordinateSystemPtr pCS) const;
+                                   CoordinateSystemPtr const& pCS) const;
     template <typename TDimension2>
     auto getParallelProjectionOnto(Vector<TDimension2> const& pVec) const;
 
@@ -109,10 +135,10 @@ namespace corsika {
     auto normalized() const;
 
     template <typename TDimension2>
-    auto cross(Vector<TDimension2> pV) const;
+    auto cross(Vector<TDimension2> const& pV) const;
 
     template <typename TDimension2>
-    auto dot(Vector<TDimension2> pV) const;
+    auto dot(Vector<TDimension2> const& pV) const;
   };
 
 } // namespace corsika

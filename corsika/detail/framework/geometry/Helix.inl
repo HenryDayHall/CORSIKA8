@@ -11,29 +11,29 @@
 #pragma once
 
 #include <corsika/framework/geometry/Point.hpp>
-#include <cmath>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <cmath>
 
 namespace corsika {
 
   LengthType Helix::getRadius() const { return radius_; }
 
-  Point Helix::getPosition(TimeType t) const {
+  Point Helix::getPosition(TimeType const t) const {
     return r0_ + vPar_ * t +
            (vPerp_ * (std::cos(omegaC_ * t) - 1) + uPerp_ * std::sin(omegaC_ * t)) /
                omegaC_;
   }
 
-  Point Helix::getPositionFromArclength(LengthType l) const {
+  Point Helix::getPositionFromArclength(LengthType const l) const {
     return getPosition(getTimeFromArclength(l));
   }
 
-  LengthType Helix::getArcLength(TimeType t1, TimeType t2) const {
+  LengthType Helix::getArcLength(TimeType const t1, TimeType const t2) const {
     return (vPar_ + vPerp_).getNorm() * (t2 - t1);
   }
 
-  TimeType Helix::getTimeFromArclength(LengthType l) const {
+  TimeType Helix::getTimeFromArclength(LengthType const l) const {
     return l / (vPar_ + vPerp_).getNorm();
   }
 

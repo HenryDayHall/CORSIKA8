@@ -22,29 +22,54 @@ namespace corsika {
   class Point : public BaseVector<length_d> {
 
   public:
-    Point(CoordinateSystemPtr pCS, QuantityVector<length_d> const& pQVector)
+    Point(CoordinateSystemPtr const& pCS, QuantityVector<length_d> const& pQVector)
         : BaseVector<length_d>(pCS, pQVector) {}
 
-    Point(CoordinateSystemPtr cs, LengthType x, LengthType y, LengthType z)
+    Point(CoordinateSystemPtr const& cs, LengthType x, LengthType y, LengthType z)
         : BaseVector<length_d>(cs, {x, y, z}) {}
 
     /** \todo TODO: this should be private or protected, we don NOT want to expose numbers
      * without reference to outside:
      */
-    inline auto getCoordinates() const;
+    inline QuantityVector<length_d> const& getCoordinates() const;
+    inline QuantityVector<length_d>& getCoordinates();
 
-    /// this always returns a QuantityVector as triple
-    inline auto getCoordinates(CoordinateSystemPtr pCS) const;
+    /**
+       this always returns a QuantityVector as triple
 
-    inline LengthType getX(CoordinateSystemPtr pCS) const;
-    inline LengthType getY(CoordinateSystemPtr pCS) const;
-    inline LengthType getZ(CoordinateSystemPtr pCS) const;
+       \returns A value type QuantityVector, since it may have to create a temporary
+       object to transform to pCS.
+    **/
+    inline QuantityVector<length_d> getCoordinates(CoordinateSystemPtr const& pCS) const;
+
+    /**
+     * this always returns a QuantityVector as triple
+     *
+     *  \returns A reference type QuantityVector&, but be aware, the underlying class data
+     *   is actually transformed to pCS, if needed. Thus, there may be an implicit call to
+     *   \sa rebase.
+     **/
+    inline QuantityVector<length_d>& getCoordinates(CoordinateSystemPtr const& pCS);
+
+    /**
+     * \defgroup access coordinate components
+     * \{
+     *
+     * Note, if you access components in a different CoordinateSystem
+     * pCS than the stored data, internally a temporary object will be
+     * created and destroyed each call. This can be avoided by using
+     * \sa rebase first.
+     **/
+    inline LengthType getX(CoordinateSystemPtr const& pCS) const;
+    inline LengthType getY(CoordinateSystemPtr const& pCS) const;
+    inline LengthType getZ(CoordinateSystemPtr const& pCS) const;
+    /** \} **/
 
     /*!
      * transforms the Point into another CoordinateSystem by changing its
      * coordinates interally
      */
-    inline void rebase(CoordinateSystemPtr pCS);
+    inline void rebase(CoordinateSystemPtr const& pCS);
 
     inline Point operator+(Vector<length_d> const& pVec) const;
 

@@ -17,7 +17,7 @@
 namespace corsika {
 
   template <typename TType>
-  Point Trajectory<TType>::getPosition(double u) const {
+  Point Trajectory<TType>::getPosition(double const u) const {
     return TType::getPosition(timeLength_ * u);
   }
 
@@ -32,14 +32,14 @@ namespace corsika {
   }
 
   template <typename TType>
-  LengthType Trajectory<TType>::getDistance(TimeType t) const {
+  LengthType Trajectory<TType>::getDistance(TimeType const t) const {
     assert(t <= timeLength_);
     assert(t >= 0 * second);
     return TType::getArcLength(0 * second, t);
   }
 
   template <typename TType>
-  void Trajectory<TType>::getLimitEndTo(LengthType limit) {
+  void Trajectory<TType>::getLimitEndTo(LengthType const limit) {
     timeLength_ = TType::getTimeFromArclength(limit);
   }
 

@@ -26,7 +26,7 @@ namespace corsika {
   COMBoost::COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
                      HEPMassType const massTarget)
       : originalCS_{Pprojectile.getSpaceLikeComponents().getCoordinateSystem()}
-      , rotatedCS_{originalCS_->rotateToZ(Pprojectile.getSpaceLikeComponents())} {
+      , rotatedCS_{make_rotationToZ(originalCS_, Pprojectile.getSpaceLikeComponents())} {
     auto const pProjectile = Pprojectile.getSpaceLikeComponents();
     auto const pProjNormSquared = pProjectile.getSquaredNorm();
     auto const pProjNorm = sqrt(pProjNormSquared);
@@ -48,7 +48,7 @@ namespace corsika {
 
   COMBoost::COMBoost(Vector<hepmomentum_d> const& momentum, HEPEnergyType mass)
       : originalCS_{momentum.getCoordinateSystem()}
-      , rotatedCS_{originalCS_->rotateToZ(momentum)} {
+      , rotatedCS_{make_rotationToZ(originalCS_, momentum)} {
     auto const squaredNorm = momentum.getSquaredNorm();
     auto const norm = sqrt(squaredNorm);
     auto const sinhEta = -norm / mass;
@@ -89,7 +89,7 @@ namespace corsika {
     auto const boostedZ = inverseBoost_ * com;
     auto const E_lab = boostedZ(0) * 1_GeV;
 
-    pCM.eigenVector()(2) = boostedZ(1) * (1_GeV).magnitude();
+    pCM.getEigenVector()[2] = boostedZ(1) * (1_GeV).magnitude();
 
     Vector<typename decltype(pCM)::dimension_type> pLab{rotatedCS_, pCM};
     pLab.rebase(originalCS_);

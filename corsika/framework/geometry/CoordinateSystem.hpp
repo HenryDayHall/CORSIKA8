@@ -10,6 +10,7 @@ n/*
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <Eigen/Dense>
 #include <stdexcept>
@@ -32,19 +33,48 @@ namespace corsika {
   class RootCoordinateSystem;                             // fwd decl
   static CoordinateSystemPtr get_root_CoordinateSystem(); // fwd decl
 
+  inline CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
+                                              QuantityVector<length_d> const& vector);
+
   /**
-   * A class to store the reference for a geometric object
+   * creates a new CS in which vVec points in direction of the new z-axis, \a vVec
+   */
+  template <typename TDim>
+  inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
+                                              Vector<TDim> const& vVec);
+
+  template <typename TDim>
+  inline CoordinateSystemPtr make_rotation(CoordinateSystemPtr const& cs,
+                                           QuantityVector<TDim> const& axis,
+                                           double const angle);
+
+  template <typename TDim>
+  inline CoordinateSystemPtr make_translationAndRotation(
+      CoordinateSystemPtr const& cs, QuantityVector<length_d> const& translation,
+      QuantityVector<TDim> const& axis, double const angle);
+
+  /**
+   * A class to store the reference coordinate system for a geometric object
    *
    * A CoordinateSystem can only be created in reference and relative
-   * to other CoordinateSystem sytems. Thus, the geometric
-   * transformation between all CoordinateSystems is known.
+   * to other CoordinateSystems. Thus, the geometric
+   * transformation between all CoordinateSystems is always known and stored.
    *
-   * Only the \sa RootCoordinateSystem can be created as a singleton
-   * as global main reference point.
+   * The static (sigleton) function \sa make_root_CoordinateSystem is
+   * the only way to create and access the global top-level
+   * CoordinateSystem obect. CoordinateSystem objects should be
+   * *abosulte* *only* handled in their form of CoordinateSystemPtr,
+   * which are shared_ptr that handle the lifetime of the entire
+   * CoordinateSystem hirarchy.
    *
-   * Thus, new CoordinateSystems can only be created using
-   * transformation: \sa rotateToZ, \sa rotate, \sa translateAndRotate
+   * Thus, new CoordinateSystem are only be created (via
+   * CoordinateSystemPtr) by transforing existing CoordinateSystem
+   * using: \sa rotateToZ, \sa rotate, or \sa translateAndRotate, see
    * below.
+   *
+   * Warning: As a consequence, never try to access, modify, copy, the raw
+   * CoordinateSystem objects directly, this will almost certainly result in undefined
+   * behaviour. Only access, copy, handle them via CoordinateSystemPtr.
    */
 
   class CoordinateSystem {
@@ -52,7 +82,7 @@ namespace corsika {
     /**
      * Constructor only from referenceCS, given the transformation matrix transf
      */
-    CoordinateSystem(CoordinateSystemPtr referenceCS, EigenTransform const& transf)
+    CoordinateSystem(CoordinateSystemPtr const& referenceCS, EigenTransform const& transf)
         : referenceCS_(referenceCS)
         , transf_(transf) {}
 
@@ -67,23 +97,14 @@ namespace corsika {
     // default resource allocation
     CoordinateSystem(CoordinateSystem const&) = default;
     CoordinateSystem(CoordinateSystem&&) = default;
-    CoordinateSystem& operator=(CoordinateSystem const& pCS) = default;
+    CoordinateSystem& operator=(CoordinateSystem const& pCS) =
+        delete; // avoid making copies
     ~CoordinateSystem() = default;
 
-    inline CoordinateSystemPtr translate(QuantityVector<length_d> vector) const;
-
     /**
-     * creates a new CS in which vVec points in direction of the new z-axis
+     * Checks, if this is the unique ROOT CS
      */
-    template <typename TDim>
-    CoordinateSystemPtr rotateToZ(Vector<TDim> vVec) const;
-
-    template <typename TDim>
-    CoordinateSystemPtr rotate(QuantityVector<TDim> axis, double angle) const;
-
-    template <typename TDim>
-    CoordinateSystemPtr translateAndRotate(QuantityVector<length_d> translation,
-                                           QuantityVector<TDim> axis, double angle);
+    inline bool isRoot() const { return !referenceCS_; }
 
     inline CoordinateSystemPtr getReferenceCS() const;
 
@@ -95,15 +116,46 @@ namespace corsika {
   protected:
     static CoordinateSystem createCS() { return CoordinateSystem(); }
 
-    friend CoordinateSystemPtr get_root_CoordinateSystem(); /// this is the only way to
-    /// create ONE unique root CS
+    /**
+     * \defgroup manipulation and creation function
+     * \{
+     **/
+
+    /** this is the only way to create ONE unique root CS **/
+    friend CoordinateSystemPtr get_root_CoordinateSystem();
+
+    friend CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
+                                                QuantityVector<length_d> const& vector);
+    template <typename TDim>
+    friend CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
+                                                Vector<TDim> const& vVec);
+    template <typename TDim>
+    friend CoordinateSystemPtr make_rotation(CoordinateSystemPtr const& cs,
+                                             QuantityVector<TDim> const& axis,
+                                             double const angle);
+    template <typename TDim>
+    friend CoordinateSystemPtr make_translationAndRotation(
+        CoordinateSystemPtr const& cs, QuantityVector<length_d> const& translation,
+        QuantityVector<TDim> const& axis, double const angle);
+
+    /** \} **/
 
   private:
-    std::shared_ptr<CoordinateSystem const> referenceCS_;
+    CoordinateSystemPtr referenceCS_;
     EigenTransform transf_;
   };
 
-  EigenTransform getTransformation(CoordinateSystemPtr c1, CoordinateSystemPtr c2);
+  /**
+   * Transformation matrix from one reference system to another.
+   *
+   * returns the transformation matrix necessary to transform primitives with coordinates
+   * in \a pFrom to \a pTo, e.g.
+   * \f$ \vec{v}^{\text{(to)}} = \mathcal{M} \vec{v}^{\text{(from)}} \f$
+   * (\f$ \vec{v}^{(.)} \f$ denotes the coordinates/components of the component in
+   * the indicated CoordinateSystem).
+   */
+  inline EigenTransform get_transformation(CoordinateSystemPtr const& c1,
+                                           CoordinateSystemPtr const& c2);
 
 } // namespace corsika
 

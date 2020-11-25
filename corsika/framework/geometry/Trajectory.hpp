@@ -25,15 +25,15 @@ namespace corsika {
         : TType(theT)
         , timeLength_(timeLength) {}
 
-    Point getPosition(double u) const;
+    Point getPosition(double const u) const;
 
     TimeType getDuration() const;
 
     LengthType getLength() const;
 
-    LengthType getDistance(TimeType t) const;
+    LengthType getDistance(TimeType const t) const;
 
-    void getLimitEndTo(LengthType limit);
+    void getLimitEndTo(LengthType const limit);
 
     auto getNormalizedDirection() const;
 

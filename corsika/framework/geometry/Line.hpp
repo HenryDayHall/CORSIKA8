@@ -15,15 +15,10 @@ n/*
 namespace corsika {
 
   /**
-   * \class Line
+   * Describes a straight line in space
    *
-   * A Line describes a movement in three dimensional space. It
-   * consists of a Point `$\vec{p_0}$` and and a speed-Vector
-   * `$\vec{v}$`, so that it can return GetPosition as
-   * `$\vec{p_0}*\vec{v}*t$` for any value of time `$t$`.
-   *
-   **/
-
+   */
+  
   class Line {
 
     ///! \toto move this to PhysicalUnits
@@ -34,21 +29,23 @@ namespace corsika {
         : start_point_(pR0)
         , velocity_(pV0) {}
 
-    inline Point getPosition(TimeType t) const;
+    inline Point getPosition(TimeType const t) const;
 
-    inline Point getPositionFromArclength(LengthType l) const;
+    inline Point getPositionFromArclength(LengthType const l) const;
 
-    inline LengthType getArcLength(TimeType t1, TimeType t2) const;
+    inline LengthType getArcLength(TimeType const t1, TimeType const t2) const;
 
-    inline TimeType getTimeFromArclength(LengthType t) const;
+    inline TimeType getTimeFromArclength(LengthType const t) const;
 
-    inline const Point& getStartPoint() const;
+    inline Point const& getStartPoint() const;
+    inline Point& startPoint() { return start_point_; }
 
-    inline const VelocityVec& getVelocity() const;
+    inline VelocityVec const& getVelocity() const;
+    inline VelocityVec& velocity() { return velocity_; }
 
   private:
-    Point const start_point_;
-    VelocityVec const velocity_;
+    Point start_point_;
+    VelocityVec velocity_;
   };
 
 } // namespace corsika

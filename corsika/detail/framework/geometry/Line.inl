@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -16,17 +14,17 @@
 
 namespace corsika {
 
-  Point Line::getPosition(TimeType t) const { return start_point_ + velocity_ * t; }
+  Point Line::getPosition(TimeType const t) const { return start_point_ + velocity_ * t; }
 
-  Point Line::getPositionFromArclength(LengthType l) const {
+  Point Line::getPositionFromArclength(LengthType const l) const {
     return start_point_ + velocity_.normalized() * l;
   }
 
-  LengthType Line::getArcLength(TimeType t1, TimeType t2) const {
+  LengthType Line::getArcLength(TimeType const t1, TimeType const t2) const {
     return velocity_.getNorm() * (t2 - t1);
   }
 
-  TimeType Line::getTimeFromArclength(LengthType t) const {
+  TimeType Line::getTimeFromArclength(LengthType const t) const {
     return t / velocity_.getNorm();
   }
 

@@ -18,29 +18,32 @@ namespace corsika {
   /*!
    * Common base class for Vector and Point.
    *
-   * This holds a QuantityVector and a CoordinateSystem
+   * This holds a QuantityVector and a CoordinateSystem. The
+   * BaseVector manages resources for many geometry objects.
    *
    */
   template <typename TDimension>
   class BaseVector {
 
   public:
-    BaseVector(CoordinateSystemPtr pCS, QuantityVector<TDimension> const& pQVector)
+    BaseVector(CoordinateSystemPtr const& pCS, QuantityVector<TDimension> const& pQVector)
         : quantityVector_(pQVector)
         , cs_(pCS) {}
 
-    BaseVector() = delete;
+    BaseVector() = delete; // we only want to creat initialized
+			   // objects
     BaseVector(BaseVector const&) = default;
     BaseVector(BaseVector&& a) = default;
     BaseVector& operator=(BaseVector const&) = default;
     ~BaseVector() = default;
 
     CoordinateSystemPtr getCoordinateSystem() const;
-    void setCoordinateSystem(CoordinateSystemPtr cs) { cs_ = cs; }
+    void setCoordinateSystem(CoordinateSystemPtr const&  cs) { cs_ = cs; }
 
   protected:
     QuantityVector<TDimension> const& getQuantityVector() const;
-    QuantityVector<TDimension>& quantityVector();
+    QuantityVector<TDimension>& getQuantityVector();
+    void setQuantityVector(QuantityVector<TDimension> const& v) { quantityVector_=v; }
 
   private:
     QuantityVector<TDimension> quantityVector_;

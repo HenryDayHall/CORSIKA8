@@ -232,7 +232,6 @@ add_subdirectory (documentation)
 #+++++++++++++++++++++++++++++
 # modules
 #
-set (NO_BOOST 1) # do not use libboost_iostream in CorsikaData
 add_subdirectory (modules/data)
 add_subdirectory (modules/pythia)
 add_subdirectory (modules/sibyll)

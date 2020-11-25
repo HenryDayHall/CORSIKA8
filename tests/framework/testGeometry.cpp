@@ -24,76 +24,68 @@ double constexpr absMargin = 1.0e-8;
 TEST_CASE("transformations between CoordinateSystems") {
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
-  REQUIRE(getTransformation(rootCS, rootCS).isApprox(EigenTransform::Identity()));
-
   QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point p1(rootCS, coordinates);
 
   QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla, 0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
 
-  REQUIRE((p1.getCoordinates() - coordinates).getNorm().magnitude() ==
-          Approx(0).margin(absMargin));
-  REQUIRE((p1.getCoordinates(rootCS) - coordinates).getNorm().magnitude() ==
-          Approx(0).margin(absMargin));
-
-  /*
-  SECTION("unconnected CoordinateSystems") {
-    CoordinateSystem rootCS2 = CoordinateSystem::CreateRootCS();
-    REQUIRE_THROWS(CoordinateSystem::getTransformation(rootCS, rootCS2));
-    }*/
+  CHECK((p1.getCoordinates() - coordinates).getNorm().magnitude() ==
+        Approx(0).margin(absMargin));
+  CHECK((p1.getCoordinates(rootCS) - coordinates).getNorm().magnitude() ==
+        Approx(0).margin(absMargin));
 
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
 
-    CoordinateSystemPtr translatedCS = rootCS->translate(translationVector);
+    CoordinateSystemPtr translatedCS = make_translation(rootCS, translationVector);
 
-    REQUIRE(*translatedCS->getReferenceCS() == *rootCS);
+    CHECK(*translatedCS->getReferenceCS() == *rootCS);
 
-    REQUIRE((p1.getCoordinates(translatedCS) + translationVector).getNorm().magnitude() ==
-            Approx(0).margin(absMargin));
+    CHECK((p1.getCoordinates(translatedCS) + translationVector).getNorm().magnitude() ==
+          Approx(0).margin(absMargin));
 
     // Vectors are not subject to translations
-    REQUIRE((v1.getComponents(rootCS) - v1.getComponents(translatedCS))
-                .getNorm()
-                .magnitude() == Approx(0).margin(absMargin));
+    CHECK((v1.getComponents(rootCS) - v1.getComponents(translatedCS))
+              .getNorm()
+              .magnitude() == Approx(0).margin(absMargin));
 
     Point p2(translatedCS, {0_m, 0_m, 0_m});
-    REQUIRE(((p2 - p1).getComponents() - translationVector).getNorm().magnitude() ==
-            Approx(0).margin(absMargin));
+    CHECK(((p2 - p1).getComponents() - translationVector).getNorm().magnitude() ==
+          Approx(0).margin(absMargin));
   }
 
   SECTION("multiple translations") {
     QuantityVector<length_d> const tv1{0_m, 5_m, 0_m};
-    CoordinateSystemPtr cs2 = rootCS->translate(tv1);
+    CoordinateSystemPtr cs2 = make_translation(rootCS, tv1);
 
     QuantityVector<length_d> const tv2{3_m, 0_m, 0_m};
-    CoordinateSystemPtr cs3 = rootCS->translate(tv2);
+    CoordinateSystemPtr cs3 = make_translation(rootCS, tv2);
 
     QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
-    CoordinateSystemPtr cs4 = cs3->translate(tv3);
+    CoordinateSystemPtr cs4 = make_translation(cs3, tv3);
 
-    REQUIRE(*cs4->getReferenceCS()->getReferenceCS() == *rootCS);
+    CHECK(*cs4->getReferenceCS()->getReferenceCS() == *rootCS);
 
-    REQUIRE(getTransformation(cs3, cs2).isApprox(
-        rootCS->translate({3_m, -5_m, 0_m})->getTransform()));
-    REQUIRE(getTransformation(cs2, cs3).isApprox(
-        rootCS->translate({-3_m, +5_m, 0_m})->getTransform()));
+    CHECK(get_transformation(cs3, cs2).isApprox(
+        make_translation(rootCS, {3_m, -5_m, 0_m})->getTransform()));
+    CHECK(get_transformation(cs2, cs3).isApprox(
+        make_translation(rootCS, {-3_m, +5_m, 0_m})->getTransform()));
   }
 
   SECTION("rotations") {
     QuantityVector<length_d> const axis{0_m, 0_m, 1_km};
     double const angle = 90. / 180. * M_PI;
 
-    CoordinateSystemPtr rotatedCS = rootCS->rotate(axis, angle);
-    REQUIRE(*rotatedCS->getReferenceCS() == *rootCS);
+    CoordinateSystemPtr rotatedCS = make_rotation(rootCS, axis, angle);
+    CHECK(*rotatedCS->getReferenceCS() == *rootCS);
 
-    REQUIRE(v1.getComponents(rotatedCS)[1].magnitude() ==
-            Approx((-1. * tesla).magnitude()));
+    CHECK(v1.getComponents(rotatedCS)[1].magnitude() ==
+          Approx((-1. * tesla).magnitude()));
 
     // vector norm invariant under rotation
-    REQUIRE(v1.getComponents(rotatedCS).getNorm().magnitude() ==
-            Approx(v1.getComponents(rootCS).getNorm().magnitude()));
+    CHECK(v1.getComponents(rotatedCS).getNorm().magnitude() ==
+          Approx(v1.getComponents(rootCS).getNorm().magnitude()));
   }
 
   SECTION("multiple rotations") {
@@ -107,20 +99,20 @@ TEST_CASE("transformations between CoordinateSystems") {
 
     double const angle = 90. / 180. * M_PI;
 
-    CoordinateSystemPtr rotated1 = rootCS->rotate(zAxis, angle);
-    CoordinateSystemPtr rotated2 = rotated1->rotate(yAxis, angle);
-    CoordinateSystemPtr rotated3 = rotated2->rotate(zAxis, -angle);
+    CoordinateSystemPtr rotated1 = make_rotation(rootCS, zAxis, angle);
+    CoordinateSystemPtr rotated2 = make_rotation(rotated1, yAxis, angle);
+    CoordinateSystemPtr rotated3 = make_rotation(rotated2, zAxis, -angle);
 
-    CoordinateSystemPtr combined = rootCS->rotate(xAxis, -angle);
+    CoordinateSystemPtr combined = make_rotation(rootCS, xAxis, -angle);
 
     auto comp1 = v1.getComponents(rotated3);
     auto comp3 = v1.getComponents(combined);
-    REQUIRE((comp1 - comp3).getNorm().magnitude() == Approx(0).margin(absMargin));
+    CHECK((comp1 - comp3).getNorm().magnitude() == Approx(0).margin(absMargin));
   }
 
   SECTION("RotateToZ positive") {
     Vector const v{rootCS, 0_m, 1_m, 1_m};
-    auto const csPrime = rootCS->rotateToZ(v);
+    auto const csPrime = make_rotationToZ(rootCS, v);
     Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
     Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
     Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
@@ -153,7 +145,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 
   SECTION("RotateToZ negative") {
     Vector const v{rootCS, 0_m, 0_m, -1_m};
-    auto const csPrime = rootCS->rotateToZ(v);
+    auto const csPrime = make_rotationToZ(rootCS, v);
     Vector const zPrime{csPrime, 0_m, 0_m, 5_m};
     Vector const xPrime{csPrime, 5_m, 0_m, 0_m};
     Vector const yPrime{csPrime, 0_m, 5_m, 0_m};
@@ -241,6 +233,52 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 }
 
+TEST_CASE("CoordinateSystem hirarchy") {
+
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+
+  CHECK(get_transformation(rootCS, rootCS).isApprox(EigenTransform::Identity()));
+
+  // define the root coordinate system
+  CoordinateSystemPtr root = get_root_CoordinateSystem();
+  Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
+
+  // root -> cs2
+  CoordinateSystemPtr cs2 = make_translation(root, {0_m, 0_m, 1_m});
+  Point const p2(cs2, {0_m, 0_m, -1_m});
+
+  // root -> cs2 -> cs3
+  CoordinateSystemPtr cs3 = make_translation(cs2, {0_m, 0_m, -1_m});
+  Point const p3(cs3, {0_m, 0_m, 0_m});
+
+  // root -> cs2 -> cs4
+  CoordinateSystemPtr cs4 = make_translation(cs2, {0_m, 0_m, -1_m});
+  Point const p4(cs4, {0_m, 0_m, 0_m});
+
+  // root -> cs2 -> cs4 -> cs5
+  CoordinateSystemPtr cs5 =
+      make_rotation(cs4, QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
+  Point const p5(cs5, {0_m, 0_m, 0_m});
+
+  // root -> cs6
+  CoordinateSystemPtr cs6 =
+      make_rotation(root, QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
+  Point const p6(cs6, {0_m, 0_m, 0_m}); // the origin of the root CS
+
+  // all points should be on top of each other
+
+  CHECK_FALSE(get_transformation(root, cs2).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(root, cs3).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(root, cs4).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(cs5, cs6).isApprox(EigenTransform::Identity()));
+
+  CHECK((p1 - p2).getNorm().magnitude() == Approx(0).margin(absMargin));
+  CHECK((p1 - p3).getNorm().magnitude() == Approx(0).margin(absMargin));
+  CHECK((p1 - p4).getNorm().magnitude() == Approx(0).margin(absMargin));
+  CHECK((p1 - p5).getNorm().magnitude() == Approx(0).margin(absMargin));
+  CHECK((p1 - p6).getNorm().magnitude() == Approx(0).margin(absMargin));
+}
+
 TEST_CASE("Sphere") {
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point center(rootCS, {0_m, 3_m, 4_m});
@@ -255,8 +293,8 @@ TEST_CASE("Sphere") {
   }
 
   SECTION("isInside") {
-    REQUIRE_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
-    REQUIRE(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
+    CHECK_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
+    CHECK(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
   }
 }
 

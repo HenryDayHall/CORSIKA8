@@ -26,7 +26,7 @@ namespace corsika {
   }
 
   template <typename TDimension>
-  QuantityVector<TDimension>& BaseVector<TDimension>::quantityVector() {
+  QuantityVector<TDimension>& BaseVector<TDimension>::getQuantityVector() {
     return quantityVector_;
   }
 

@@ -59,16 +59,17 @@ namespace corsika {
         decltype(std::declval<norm_type>() * std::declval<norm_type>());
 
   public:
+    // resource management
     FourVector() = default;
-
+    FourVector(FourVector&&) = default;
+    FourVector(FourVector const&) = default;
+    FourVector& operator=(const FourVector&) = default;
+    ~FourVector() = default;
+    
     FourVector(TTimeType const& eT, TSpaceVecType const& eS)
         : timeLike_(eT)
         , spaceLike_(eS) {}
 
-    /*
-     * FIXME: These Getters are mis-leading and does not favor
-     * locality. Adhere to Getter/Setter
-     */
     /**
      *
      * @return timeLike_
@@ -106,18 +107,13 @@ namespace corsika {
      *
      * RU: then you have to decide in the constructor which avoids "lazyness"
      */
-    /**
-     *
-     * @return
-     */
     bool isTimelike() const;
+    bool isSpacelike() const;
 
     /**
      * @defgroup math operators (class members)
      * @{
      */
-    bool isSpacelike() const;
-
     FourVector& operator+=(FourVector const&);
     FourVector& operator-=(FourVector const&);
     FourVector& operator*=(double const);
@@ -174,7 +170,7 @@ namespace corsika {
     }
 
     friend FourVector<time_type, space_vec_type> operator/(FourVector const& a,
-                                                           double b) {
+                                                           double const b) {
       return FourVector<time_type, space_vec_type>(a.timeLike_ / b, a.spaceLike_ / b);
     }
 
@@ -187,6 +183,14 @@ namespace corsika {
      */
     norm_square_type getTimeSquared() const;
   };
+
+  /**
+   * streaming operator
+   **/
+
+  template <typename TTimeType, typename TSpaceVecType>
+  inline std::ostream& operator<<(std::ostream& os,
+                                  corsika::FourVector<TTimeType, TSpaceVecType> const& qv);
 
 } // namespace corsika
 

@@ -20,19 +20,73 @@
 
 namespace corsika {
 
-  inline CoordinateSystemPtr CoordinateSystem::translate(
-      QuantityVector<length_d> vector) const {
-    EigenTransform const translation{EigenTranslation(vector.eigenVector_)};
+  CoordinateSystemPtr CoordinateSystem::getReferenceCS() const { return referenceCS_; }
 
-    return std::make_shared<CoordinateSystem const>(*(new CoordinateSystem(
-        std::make_shared<CoordinateSystem const>(*this), translation)));
+  EigenTransform const& CoordinateSystem::getTransform() const { return transf_; }
+
+  inline bool CoordinateSystem::operator==(CoordinateSystem const& cs) const {
+    return referenceCS_ == cs.referenceCS_ && transf_.matrix() == cs.transf_.matrix();
+  }
+
+  inline bool CoordinateSystem::operator!=(CoordinateSystem const& cs) const {
+    return !(cs == *this);
+  }
+
+  /// find transformation between two CS, using most optimal common base
+  inline EigenTransform get_transformation(CoordinateSystemPtr const& pFrom,
+                                           CoordinateSystemPtr const& pTo) {
+    CoordinateSystemPtr a{pFrom};
+    CoordinateSystemPtr b{pTo};
+    CoordinateSystemPtr commonBase{nullptr};
+
+    while (a != b && b) {
+
+      // traverse pFrom
+      a = pFrom;
+      while (a != b && a) {
+        a = a->getReferenceCS();
+      }
+
+      if (a == b) break;
+
+      b = b->getReferenceCS();
+    }
+
+    if (a == b && a) {
+      commonBase = a;
+
+    } else {
+      throw std::runtime_error("no connection between coordinate systems found!");
+    }
+
+    EigenTransform t = EigenTransform::Identity();
+    CoordinateSystemPtr p = pFrom;
+
+    while ((*p) != (*commonBase)) {
+      t = p->getTransform() * t;
+      p = p->getReferenceCS();
+    }
+
+    p = pTo;
+
+    while (*p != *commonBase) {
+      t = t * p->getTransform().inverse(Eigen::TransformTraits::Isometry);
+      p = p->getReferenceCS();
+    }
+
+    return t;
+  }
+
+  inline CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
+                                              QuantityVector<length_d> const& vector) {
+    EigenTransform const translation{EigenTranslation(vector.getEigenVector())};
+    return std::make_shared<CoordinateSystem const>(CoordinateSystem(cs, translation));
   }
 
   template <typename TDim>
-  CoordinateSystemPtr CoordinateSystem::rotateToZ(Vector<TDim> vVec) const {
-    auto const a = vVec.normalized()
-                       .getComponents(std::make_shared<CoordinateSystem const>(*this))
-                       .getEigenVector();
+  inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
+                                              Vector<TDim> const& vVec) {
+    auto const a = vVec.normalized().getComponents(cs).getEigenVector();
     auto const a1 = a(0), a2 = a(1), a3 = a(2);
 
     Eigen::Matrix3d A, B;
@@ -56,97 +110,37 @@ namespace corsika {
           0, 0, (a1 * a1 + a2 * a2) * c;  // .
     }
 
-    return std::make_shared<CoordinateSystem const>(*(new CoordinateSystem(
-        std::make_shared<CoordinateSystem const>(*this), EigenTransform(A + B))));
+    return std::make_shared<CoordinateSystem const>(
+        CoordinateSystem(cs, EigenTransform(A + B)));
   }
 
   template <typename TDim>
-  CoordinateSystemPtr CoordinateSystem::rotate(QuantityVector<TDim> axis,
-                                               double angle) const {
-    if (axis.eigenVector_.isZero()) {
+  inline CoordinateSystemPtr make_rotation(CoordinateSystemPtr const& cs,
+                                           QuantityVector<TDim> const& axis,
+                                           double const angle) {
+    if (axis.getEigenVector().isZero()) {
       throw std::runtime_error("null-vector given as axis parameter");
     }
 
     EigenTransform const rotation{
-        Eigen::AngleAxisd(angle, axis.eigenVector_.normalized())};
+        Eigen::AngleAxisd(angle, axis.getEigenVector().normalized())};
 
-    return std::make_shared<CoordinateSystem const>(
-        CoordinateSystem(std::make_shared<CoordinateSystem const>(*this), rotation));
+    return std::make_shared<CoordinateSystem const>(CoordinateSystem(cs, rotation));
   }
 
   template <typename TDim>
-  CoordinateSystemPtr CoordinateSystem::translateAndRotate(
-      QuantityVector<length_d> translation, QuantityVector<TDim> axis, double angle) {
-    if (axis.eigenVector_.isZero()) {
+  inline CoordinateSystemPtr make_translationAndRotation(
+      CoordinateSystemPtr const& cs, QuantityVector<length_d> const& translation,
+      QuantityVector<TDim> const& axis, double const angle) {
+    if (axis.getEigenVector().isZero()) {
       throw std::runtime_error("null-vector given as axis parameter");
     }
 
-    EigenTransform const transf{Eigen::AngleAxisd(angle, axis.eigenVector_.normalized()) *
-                                EigenTranslation(translation.eigenVector_)};
+    EigenTransform const transf{
+        Eigen::AngleAxisd(angle, axis.getEigenVector().normalized()) *
+        EigenTranslation(translation.getEigenVector())};
 
-    return std::make_shared<CoordinateSystem const>(CoordinateSystem(*this, transf));
-  }
-
-  CoordinateSystemPtr CoordinateSystem::getReferenceCS() const {
-    return referenceCS_; //*(referenceCS_.get());
-  }
-
-  EigenTransform const& CoordinateSystem::getTransform() const { return transf_; }
-
-  inline bool CoordinateSystem::operator==(CoordinateSystem const& cs) const {
-    return referenceCS_ == cs.referenceCS_ && transf_.matrix() == cs.transf_.matrix();
-  }
-
-  inline bool CoordinateSystem::operator!=(CoordinateSystem const& cs) const {
-    return !(cs == *this);
-  }
-
-  /**
-   * returns the transformation matrix necessary to transform primitives with coordinates
-   * in \a pFrom to \a pTo, e.g.
-   * \f$ \vec{v}^{\text{(to)}} = \mathcal{M} \vec{v}^{\text{(from)}} \f$
-   * (\f$ \vec{v}^{(.)} \f$ denotes the coordinates/components of the component in
-   * the indicated CoordinateSystem).
-   */
-  inline EigenTransform getTransformation(CoordinateSystemPtr pFrom,
-                                          CoordinateSystemPtr pTo) {
-    CoordinateSystemPtr a{pFrom};
-    CoordinateSystemPtr b{pTo};
-    CoordinateSystemPtr commonBase{nullptr};
-
-    while (a != b && b != nullptr) {
-      a = pFrom;
-
-      while (a != b && a != nullptr) { a = a->getReferenceCS(); }
-
-      if (a == b) break;
-
-      b = b->getReferenceCS();
-    }
-
-    if (a == b && a != nullptr) {
-      commonBase = a;
-
-    } else {
-      throw std::runtime_error("no connection between coordinate systems found!");
-    }
-
-    EigenTransform t = EigenTransform::Identity();
-    CoordinateSystemPtr p = pFrom;
-
-    while ((*p) != (*commonBase)) {
-      t = p->getTransform() * t;
-      p = p->getReferenceCS();
-    }
-
-    p = pTo;
-
-    while (*p != *commonBase) {
-      t = t * p->getTransform().inverse(Eigen::TransformTraits::Isometry);
-      p = p->getReferenceCS();
-    }
-
-    return t;
+    return std::make_shared<CoordinateSystem const>(CoordinateSystem(cs, transf));
   }
 
 } // namespace corsika

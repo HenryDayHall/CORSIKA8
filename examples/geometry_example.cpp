@@ -11,28 +11,26 @@ n/*
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <cstdlib>
 #include <iostream>
 #include <typeinfo>
 
 using namespace corsika;
-using namespace corsika::units::si;
 
 int main() {
 
-  std::cout << "geometry_example" << std::endl;
-
   // define the root coordinate system
-  corsika::CoordinateSystemPtr root = get_root_CoordinateSystem();
+  CoordinateSystemPtr root = get_root_CoordinateSystem();
 
   // another CS defined by a translation relative to the root CS
-  CoordinateSystemPtr cs2 = root->translate({0_m, 0_m, 1_m});
+  CoordinateSystemPtr cs2 = make_translation(root, {0_m, 0_m, 1_m});
 
   // rotations are possible, too; parameters are axis vector and angle
   CoordinateSystemPtr cs3 =
-      root->rotate(QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
-
+    make_rotation(root, QuantityVector<length_d>{1_m, 0_m, 0_m}, 90 * degree_angle);
+  
   // now let's define some geometrical objects:
   Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
   Point const p2(cs2, {0_m, 0_m, 0_m});  // the origin of cs2

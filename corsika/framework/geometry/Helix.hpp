@@ -46,13 +46,13 @@ namespace corsika {
 
     inline LengthType getRadius() const;
 
-    inline Point getPosition(TimeType t) const;
+    inline Point getPosition(TimeType const t) const;
 
-    inline Point getPositionFromArclength(LengthType l) const;
+    inline Point getPositionFromArclength(LengthType const l) const;
 
-    inline LengthType getArcLength(TimeType t1, TimeType t2) const;
+    inline LengthType getArcLength(TimeType const t1, TimeType const t2) const;
 
-    inline TimeType getTimeFromArclength(LengthType l) const;
+    inline TimeType getTimeFromArclength(LengthType const l) const;
 
   private:
     Point r0_;             ///! origin of helix, but this is in the center of the

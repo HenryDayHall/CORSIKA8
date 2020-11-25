@@ -18,58 +18,63 @@
 
 namespace corsika {
 
-  template <typename dim>
-  inline typename QuantityVector<dim>::quantity_type QuantityVector<dim>::operator[](
-      size_t index) const {
+  template <typename TDimension>
+  inline typename QuantityVector<TDimension>::quantity_type QuantityVector<TDimension>::
+  operator[](size_t const index) const {
     return quantity_type(phys::units::detail::magnitude_tag, eigenVector_[index]);
   }
 
-  template <typename dim>
-  inline typename QuantityVector<dim>::quantity_type QuantityVector<dim>::getX() const {
+  template <typename TDimension>
+  inline typename QuantityVector<TDimension>::quantity_type
+  QuantityVector<TDimension>::getX() const {
     return (*this)[0];
   }
 
-  template <typename dim>
-  inline typename QuantityVector<dim>::quantity_type QuantityVector<dim>::getY() const {
+  template <typename TDimension>
+  inline typename QuantityVector<TDimension>::quantity_type
+  QuantityVector<TDimension>::getY() const {
     return (*this)[1];
   }
 
-  template <typename dim>
-  inline typename QuantityVector<dim>::quantity_type QuantityVector<dim>::getZ() const {
+  template <typename TDimension>
+  inline typename QuantityVector<TDimension>::quantity_type
+  QuantityVector<TDimension>::getZ() const {
     return (*this)[2];
   }
 
-  template <typename dim>
-  inline typename QuantityVector<dim>::quantity_type QuantityVector<dim>::getNorm()
-      const {
+  template <typename TDimension>
+  inline typename QuantityVector<TDimension>::quantity_type
+  QuantityVector<TDimension>::getNorm() const {
     return quantity_type(phys::units::detail::magnitude_tag, eigenVector_.norm());
   }
 
-  template <typename dim>
-  inline auto QuantityVector<dim>::getSquaredNorm() const {
+  template <typename TDimension>
+  inline typename QuantityVector<TDimension>::quantity_square_type
+  QuantityVector<TDimension>::getSquaredNorm() const {
     using QuantitySquared =
         decltype(std::declval<quantity_type>() * std::declval<quantity_type>());
     return QuantitySquared(phys::units::detail::magnitude_tag,
                            eigenVector_.squaredNorm());
   }
 
-  template <typename dim>
-  inline QuantityVector<dim> QuantityVector<dim>::operator+(
-      QuantityVector<dim> const& pQVec) const {
-    return QuantityVector<dim>(eigenVector_ + pQVec.eigenVector_);
+  template <typename TDimension>
+  inline QuantityVector<TDimension> QuantityVector<TDimension>::operator+(
+      QuantityVector<TDimension> const& pQVec) const {
+    return QuantityVector<TDimension>(eigenVector_ + pQVec.eigenVector_);
   }
 
-  template <typename dim>
-  inline QuantityVector<dim> QuantityVector<dim>::operator-(
-      QuantityVector<dim> const& pQVec) const {
-    return QuantityVector<dim>(eigenVector_ - pQVec.eigenVector_);
+  template <typename TDimension>
+  inline QuantityVector<TDimension> QuantityVector<TDimension>::operator-(
+      QuantityVector<TDimension> const& pQVec) const {
+    return QuantityVector<TDimension>(eigenVector_ - pQVec.eigenVector_);
   }
 
-  template <typename dim>
-  template <typename ScalarDim>
-  inline auto QuantityVector<dim>::operator*(
-      phys::units::quantity<ScalarDim, double> const p) const {
-    using ResQuantity = phys::units::detail::Product<ScalarDim, dim, double, double>;
+  template <typename TDimension>
+  template <typename TScalarDim>
+  inline auto QuantityVector<TDimension>::operator*(
+      phys::units::quantity<TScalarDim, double> const p) const {
+    using ResQuantity =
+        phys::units::detail::Product<TScalarDim, TDimension, double, double>;
 
     if constexpr (std::is_same<ResQuantity, double>::value) // result dimensionless, not
                                                             // a "quantity_type" anymore
@@ -81,69 +86,73 @@ namespace corsika {
     }
   }
 
-  template <typename dim>
-  template <typename ScalarDim>
-  inline auto QuantityVector<dim>::operator/(
-      phys::units::quantity<ScalarDim, double> const p) const {
+  template <typename TDimension>
+  template <typename TScalarDim>
+  inline auto QuantityVector<TDimension>::operator/(
+      phys::units::quantity<TScalarDim, double> const p) const {
     return (*this) * (1 / p);
   }
 
-  template <typename dim>
-  inline auto QuantityVector<dim>::operator*(double const p) const {
-    return QuantityVector<dim>(eigenVector_ * p);
+  template <typename TDimension>
+  inline auto QuantityVector<TDimension>::operator*(double const p) const {
+    return QuantityVector<TDimension>(eigenVector_ * p);
   }
 
-  template <typename dim>
-  inline auto QuantityVector<dim>::operator/(double const p) const {
-    return QuantityVector<dim>(eigenVector_ / p);
+  template <typename TDimension>
+  inline auto QuantityVector<TDimension>::operator/(double const p) const {
+    return QuantityVector<TDimension>(eigenVector_ / p);
   }
 
-  template <typename dim>
-  inline auto& QuantityVector<dim>::operator/=(double const p) {
+  template <typename TDimension>
+  inline auto& QuantityVector<TDimension>::operator/=(double const p) {
     eigenVector_ /= p;
     return *this;
   }
 
-  template <typename dim>
-  inline auto& QuantityVector<dim>::operator*=(double const p) {
+  template <typename TDimension>
+  inline auto& QuantityVector<TDimension>::operator*=(double const p) {
     eigenVector_ *= p;
     return *this;
   }
 
-  template <typename dim>
-  inline auto& QuantityVector<dim>::operator+=(QuantityVector<dim> const& pQVec) {
+  template <typename TDimension>
+  inline auto& QuantityVector<TDimension>::operator+=(
+      QuantityVector<TDimension> const& pQVec) {
     eigenVector_ += pQVec.eigenVector_;
     return *this;
   }
 
-  template <typename dim>
-  inline auto& QuantityVector<dim>::operator-=(QuantityVector<dim> const& pQVec) {
+  template <typename TDimension>
+  inline auto& QuantityVector<TDimension>::operator-=(
+      QuantityVector<TDimension> const& pQVec) {
     eigenVector_ -= pQVec.eigenVector_;
     return *this;
   }
 
-  template <typename dim>
-  inline auto& QuantityVector<dim>::operator-() const {
-    return QuantityVector<dim>(-eigenVector_);
+  template <typename TDimension>
+  inline auto& QuantityVector<TDimension>::operator-() const {
+    return QuantityVector<TDimension>(-eigenVector_);
   }
 
-  template <typename dim>
-  inline auto QuantityVector<dim>::normalized() const {
-    return QuantityVector<dim>(eigenVector_.normalized());
+  template <typename TDimension>
+  inline auto QuantityVector<TDimension>::normalized() const {
+    return QuantityVector<TDimension>(eigenVector_.normalized());
   }
 
-  template <typename dim>
-  inline auto QuantityVector<dim>::operator==(QuantityVector<dim> const& p) const {
+  template <typename TDimension>
+  inline auto QuantityVector<TDimension>::operator==(
+      QuantityVector<TDimension> const& p) const {
     return eigenVector_ == p.eigenVector_;
   }
 
-  template <typename dim>
-  inline std::ostream& operator<<(std::ostream& os, corsika::QuantityVector<dim> qv) {
-    using quantity_type = phys::units::quantity<dim, double>;
+  template <typename TDimension>
+  inline std::ostream& operator<<(std::ostream& os,
+                                  corsika::QuantityVector<TDimension> const qv) {
+    using quantity_type = phys::units::quantity<TDimension, double>;
 
     os << '(' << qv.eigenVector_(0) << ' ' << qv.eigenVector_(1) << ' '
        << qv.eigenVector_(2) << ") "
-       << phys::units::to_unit_symbol<dim, double>(
+       << phys::units::to_unit_symbol<TDimension, double>(
               quantity_type(phys::units::detail::magnitude_tag, 1));
     return os;
   }
