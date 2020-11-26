@@ -12,6 +12,10 @@
 
 namespace corsika {
 
+  /**
+   * Process that does nothing
+   */
+  
   class NullModel : public BaseProcess<NullModel> {
 
   public:

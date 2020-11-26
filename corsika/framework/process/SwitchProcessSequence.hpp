@@ -8,6 +8,10 @@
 
 #pragma once
 
+/**
+ * \file SwitchProcessSequence.hpp
+ **/
+
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
@@ -25,14 +29,16 @@
 
 namespace corsika {
 
-  // enum for the process switch selection: identify if First or
-  // Second process branch should be used.
+  /**
+   * enum for the process switch selection: identify if First or
+   * Second process branch should be used.
+   **/
   enum class SwitchResult { First, Second };
 
   /**
-     \class SwitchProcessSequence
+     Class to switch between two process branches
 
-     A compile time static list of processes that uses an internal
+     A compile-time static list of processes that uses an internal
      TSelect class to switch between different versions of processes
      (or process sequence).
 
@@ -51,7 +57,7 @@ namespace corsika {
      since this makes no sense. The StackProcess acts on an entire
      particle stack and not on indiviidual particles.
 
-     \comment See also class ProcessSequence
+     See also class \sa ProcessSequence
   **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
@@ -87,12 +93,25 @@ namespace corsika {
                   "cannot use StackProcess in SwitchProcessSequence, remove from "
                   "ProcessSequence 2");
 
-    TSelect select_; // this is a reference, if possible
-
-    TProcess1 A_; // this is a reference, if possible
-    TProcess2 B_; // this is a reference, if possible
-
   public:
+    // resource management
+    SwitchProcessSequence() = delete; // only initialized objects
+    SwitchProcessSequence(SwitchProcessSequence const&) = default;
+    SwitchProcessSequence(SwitchProcessSequence&&) = default;
+    SwitchProcessSequence& operator=(SwitchProcessSequence const&) = default;
+    ~SwitchProcessSequence() = default;
+
+    /**
+     * Only valid user constructor will create fully initialized object
+     *
+     * SwitchProcessSequence supports and encourages move semantics. You can
+     * use object, l-value references or r-value references to
+     * construct sequences.
+     *
+     * \param in_A process branch A
+     * \param in_A process branch B
+     * \param sel functor to swtich between branch A and B
+     **/    
     SwitchProcessSequence(TProcess1 in_A, TProcess2 in_B, TSelect sel)
         : select_(sel)
         , A_(in_A)
@@ -138,10 +157,16 @@ namespace corsika {
     inline ProcessReturn selectDecay(
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
+
+  private:
+    TSelect select_; /// selector functor to switch between branch a and b, this is a
+                     /// reference, if possible
+
+    TProcess1 A_; /// process branch a, this is a reference, if possible
+    TProcess2 B_; /// process branch b, this is a reference, if possible
   };
 
   /**
-   * \function make_select
    *
    * the functin `make_select(proc1,proc1,selector)` assembles many
    * BaseProcesses, and ProcessSequences into a SwitchProcessSequence,

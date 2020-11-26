@@ -14,7 +14,7 @@ n/*
 namespace corsika {
 
   /**
-     \class InteractionProcess
+     Process describing the interaction of particles
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements

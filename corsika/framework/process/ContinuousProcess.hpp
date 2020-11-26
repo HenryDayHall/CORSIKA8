@@ -14,7 +14,7 @@ n/*
 namespace corsika {
 
   /**
-     \class ContinuousProcess
+     Processes with continuous effects along a particle Trajectory
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements

@@ -8,6 +8,10 @@
 
 #pragma once
 
+/**
+ * \file ProcessTraits.hpp
+ */
+
 #include <type_traits>
 
 namespace corsika {

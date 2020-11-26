@@ -14,7 +14,7 @@ n/*
 namespace corsika {
 
   /**
-     \class DecayProcess
+     Process decribing the decay of particles
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements

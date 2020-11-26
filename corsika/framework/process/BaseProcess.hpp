@@ -13,7 +13,7 @@ namespace corsika {
   class TDerived; // fwd decl
 
   /**
-     \class BaseProcess
+     Each process in C8 must derive from BaseProcess
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements

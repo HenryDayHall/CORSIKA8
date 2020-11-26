@@ -14,7 +14,7 @@
 namespace corsika {
 
   /**
-     \class StackProcess
+     Process to act on the entire particle stack
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements

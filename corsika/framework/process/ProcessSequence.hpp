@@ -8,6 +8,10 @@ n/*
 
 #pragma once
 
+/**
+ * \file ProcessSequence.hpp
+ */
+
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
@@ -24,22 +28,22 @@ namespace corsika {
 
   /**
    *
-     \class ProcessSequence
-
-     A compile time static list of processes. The compiler will
-     generate a new type based on template logic containing all the
-     elements provided by the user.
-
-     TProcess1 and TProcess2 must both be derived from BaseProcess,
-     and are both references if possible (lvalue), otherwise (rvalue)
-     they are just classes. This allows us to handle both, rvalue as
-     well as lvalue Processes in the ProcessSequence.
-
-     The sequence, and the processes use CRTP.
-
-     \todo There are several FIXME's in the ProcessSequence.inl due to
-     outstanding migration of SecondaryView::parent()
-   */
+   *  Definition of a static process list/sequence
+   *
+   *  A compile time static list of processes. The compiler will
+   *  generate a new type based on template logic containing all the
+   *  elements provided by the user.
+   *
+   *  TProcess1 and TProcess2 must both be derived from BaseProcess,
+   *  and are both references if possible (lvalue), otherwise (rvalue)
+   *  they are just classes. This allows us to handle both, rvalue as
+   *  well as lvalue Processes in the ProcessSequence.
+   *
+   *  The sequence, and the processes use CRTP.
+   *
+   *  \todo There are several FIXME's in the ProcessSequence.inl due to
+   *  outstanding migration of SecondaryView::parent()
+   **/
 
   template <typename TProcess1, typename TProcess2 = NullModel>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
@@ -61,10 +65,27 @@ namespace corsika {
                   "can only use process derived from BaseProcess in "
                   "ProcessSequence, for Process 2");
 
-    TProcess1 A_; // this is a reference, if possible
-    TProcess2 B_; // this is a reference, if possible
+    TProcess1 A_; /// process/list A, this is a reference, if possible
+    TProcess2 B_; /// process/list B, this is a reference, if possible
 
   public:
+    // resource management
+    ProcessSequence() = delete; // only initialized objects
+    ProcessSequence(ProcessSequence const&) = default;
+    ProcessSequence(ProcessSequence&&) = default;
+    ProcessSequence& operator=(ProcessSequence const&) = default;
+    ~ProcessSequence() = default;
+
+    /**
+     * Only valid user constructor will create fully initialized object
+     *
+     * ProcessSequence supports and encourages move semantics. You can
+     * use object, l-value references or r-value references to
+     * construct sequences.
+     *
+     * \param in_A process/list A
+     * \param in_A process/list B
+     **/        
     ProcessSequence(TProcess1 in_A, TProcess2 in_B)
         : A_(in_A)
         , B_(in_B) {}
@@ -128,7 +149,7 @@ namespace corsika {
   };
 
   /**
-   * \function make_sequence
+   * Factory function to create ProcessSequence
    *
    * to construct ProcessSequences in a flexible and dynamic way the
    * `sequence` factory functions are provided
@@ -145,6 +166,9 @@ namespace corsika {
    * The sequence function checks that all its arguments are all of
    * types derived from BaseProcess. Also the ProcessSequence itself
    * is derived from type BaseProcess
+   *
+   * \param vA needs to derive from BaseProcess or ProcessSequence
+   * \param vB paramter-pack, needs to derive BaseProcess or ProcessSequence
    **/
 
   template <typename... TProcesses, typename TProcess1>
@@ -158,6 +182,14 @@ namespace corsika {
         vA, make_sequence(std::forward<TProcesses>(vBs)...));
   }
 
+ /**
+   * Factory function to create ProcessSequence
+   *
+   * specialization for two input objects (no paramter pack in vB).
+   *
+   * \param vA needs to derive from BaseProcess or ProcessSequence
+   * \param vB needs to derive BaseProcess or ProcessSequence
+   **/
   template <typename TProcess1, typename TProcess2>
   inline typename std::enable_if_t<
       std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
@@ -170,10 +202,12 @@ namespace corsika {
   }
 
   /**
-   * \ function make_sequence
+   * Factory function to create ProcessSequence from a single BaseProcess
    *
    * also allow a single Process in ProcessSequence, accompany by
    * `NullModel`
+   *
+   * \param vA needs to derive from BaseProcess or ProcessSequence
    **/
   template <typename TProcess>
   inline typename std::enable_if_t<
@@ -185,8 +219,6 @@ namespace corsika {
   }
 
   /**
-   * \class is_process_sequence
-   *
    * traits marker to identify objectas ProcessSequence
    **/
   template <typename TProcess1, typename TProcess2>

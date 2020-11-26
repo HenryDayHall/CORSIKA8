@@ -14,7 +14,7 @@
 namespace corsika {
 
   /**
-     \class SecondariesProcess
+     Process that modifies a list of secondaries of other processes
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements
