@@ -19,7 +19,7 @@ namespace corsika {
 
   /**
      This utility class handles Lorentz boost between different
-     referenence frames, using FourVectors.
+     referenence frames, using FourVector.
    */
 
   class COMBoost {

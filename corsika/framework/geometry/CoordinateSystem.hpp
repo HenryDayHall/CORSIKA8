@@ -8,6 +8,10 @@ n/*
 
 #pragma once
 
+/**
+ * \file CoordinateSystem.hpp
+ **/
+
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/logging/Logging.hpp>
@@ -30,24 +34,33 @@ namespace corsika {
    */
   using CoordinateSystemPtr = std::shared_ptr<CoordinateSystem const>;
 
-  class RootCoordinateSystem;                             // fwd decl
-  static CoordinateSystemPtr get_root_CoordinateSystem(); // fwd decl
+  /// this is the only way to create ONE unique root CS
+  static CoordinateSystemPtr get_root_CoordinateSystem(); 
 
+  /**
+   * Creates new CoordinateSystemPtr by translation along \a vector
+   */
   inline CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
                                               QuantityVector<length_d> const& vector);
 
   /**
-   * creates a new CS in which vVec points in direction of the new z-axis, \a vVec
+   * creates a new CoordinateSystem in which vVec points in direction of the new z-axis, \a vVec
    */
   template <typename TDim>
   inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
                                               Vector<TDim> const& vVec);
 
+  /**
+   * creates a new CoordinateSystem, rotated around axis by angle.
+   */
   template <typename TDim>
   inline CoordinateSystemPtr make_rotation(CoordinateSystemPtr const& cs,
                                            QuantityVector<TDim> const& axis,
                                            double const angle);
 
+  /**
+   * creates a new CoordinateSystem, translated by \a translation and rotated around \a axis by \a angle.
+   */
   template <typename TDim>
   inline CoordinateSystemPtr make_translationAndRotation(
       CoordinateSystemPtr const& cs, QuantityVector<length_d> const& translation,
@@ -60,7 +73,7 @@ namespace corsika {
    * to other CoordinateSystems. Thus, the geometric
    * transformation between all CoordinateSystems is always known and stored.
    *
-   * The static (sigleton) function \sa make_root_CoordinateSystem is
+   * The static (singleton) function \ref make_root_CoordinateSystem is
    * the only way to create and access the global top-level
    * CoordinateSystem obect. CoordinateSystem objects should be
    * *abosulte* *only* handled in their form of CoordinateSystemPtr,
@@ -69,8 +82,8 @@ namespace corsika {
    *
    * Thus, new CoordinateSystem are only be created (via
    * CoordinateSystemPtr) by transforing existing CoordinateSystem
-   * using: \sa rotateToZ, \sa rotate, or \sa translateAndRotate, see
-   * below.
+   * using: \ref make_rotationToZ, \ref make_rotation, or \ref
+   * make_translationAndRotation, see below.
    *
    * Warning: As a consequence, never try to access, modify, copy, the raw
    * CoordinateSystem objects directly, this will almost certainly result in undefined
@@ -117,11 +130,11 @@ namespace corsika {
     static CoordinateSystem createCS() { return CoordinateSystem(); }
 
     /**
-     * \defgroup manipulation and creation function
+     * \name Friends
+     * Manipulation and creation functions.
      * \{
      **/
 
-    /** this is the only way to create ONE unique root CS **/
     friend CoordinateSystemPtr get_root_CoordinateSystem();
 
     friend CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,

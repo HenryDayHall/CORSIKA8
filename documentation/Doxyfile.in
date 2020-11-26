@@ -1,5 +1,6 @@
 PROJECT_NAME           = CORSIKA 8
 PROJECT_NUMBER         = 0.0.0
+PROJECT_BRIEF          = "The framework to simulate particle cascades for astroparticle physics"
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = YES
@@ -29,6 +30,17 @@ INCLUDE_GRAPH          = YES
 GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES
 GENERATE_LEGEND        = YES
+
 USE_MATHJAX            = YES
+MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
+
+#JAVADOC_BANNER         = YES 
+JAVADOC_AUTOBRIEF      = YES
+REPEAT_BRIEF          = YES
+ABBREVIATE_BRIEF       = YES
+MULTILINE_CPP_IS_BRIEF  = YES
+MARKDOWN_SUPPORT = YES
+BUILTIN_STL_SUPPORT = YES
+CLANG_ASSISTED_PARSING = YES
 
 SEARCHENGINE           = YES

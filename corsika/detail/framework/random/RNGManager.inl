@@ -56,7 +56,7 @@ namespace corsika {
       std::vector<std::uint32_t> seeds(1);
       sseq.generate(seeds.begin(), seeds.end());
       std::uint32_t seed = seeds[0];
-      C8LOG_TRACE("Random seed stream {} seed {}", entry.first, seed);
+      CORSIKA_LOG_TRACE("Random seed stream {} seed {}", entry.first, seed);
       entry.second.seed(seed);
     }
   }

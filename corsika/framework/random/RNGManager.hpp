@@ -14,7 +14,7 @@
 #include <string>
 
 #include <corsika/framework/utility/Singleton.hpp>
-#include <corsika/framework/logging/Logging.h>
+#include <corsika/framework/logging/Logging.hpp>
 
 
 /*!

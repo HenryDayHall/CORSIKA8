@@ -59,20 +59,21 @@ namespace corsika {
     /**
      * this always returns a QuantityVector as triple
      *
-     *  \returns A reference type QuantityVector&, but be aware, the underlying class data
+     *  \return A reference type QuantityVector&, but be aware, the underlying class data
      *   is actually transformed to pCS, if needed. Thus, there may be an implicit call to
-     *   \sa rebase.
+     *   \ref rebase.
      **/
     inline QuantityVector<TDimension>& getComponents(CoordinateSystemPtr const& pCS);
 
     /**
-     * \defgroup access coordinate components
-     * \{
+     * \name Access coordinate components
      *
      * Note, if you access components in a different CoordinateSystem
      * pCS than the stored data, internally a temporary object will be
      * created and destroyed each call. This can be avoided by using
-     * \sa rebase first.
+     * \ref rebase first.
+     *
+     * \{
      **/
 
     inline quantity_type getX(CoordinateSystemPtr const& pCS) const;

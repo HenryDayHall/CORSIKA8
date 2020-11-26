@@ -15,6 +15,8 @@
 namespace corsika {
 
   /**
+     Description of physical four-vectors
+
      FourVector fully supports units, e.g. E in [GeV/c] and p in [GeV],
      or also t in [s] and r in [m], etc.
 
@@ -26,9 +28,9 @@ namespace corsika {
      [E/c]=[p].
 
 
-     The FourVector can return NormSqr and Norm, whereas Norm is
-     sqrt(abs(NormSqr)). The physical units are always calculated and
-     returned properly.
+     The FourVector can return its squared-norm \ref getNormSqr and its
+     norm \ref getNorm, whereas norm is sqrt(abs(norm-squared)). The
+     physical units are always calculated and returned properly.
 
      FourVector can also return if it is TimeLike, SpaceLike or PhotonLike.
 
@@ -47,7 +49,7 @@ namespace corsika {
     using space_type = typename space_vec_type::quantity_type;
     using time_type = typename std::decay<TTimeType>::type;
 
-    //! check the types and the physical units here:
+    // check the types and the physical units here:
     static_assert(std::is_same<time_type, space_type>::value ||
                       std::is_same<time_type, decltype(std::declval<space_type>() /
                                                        meter * second)>::value,
@@ -65,7 +67,7 @@ namespace corsika {
     FourVector(FourVector const&) = default;
     FourVector& operator=(const FourVector&) = default;
     ~FourVector() = default;
-    
+
     FourVector(TTimeType const& eT, TSpaceVecType const& eS)
         : timeLike_(eT)
         , spaceLike_(eS) {}
@@ -90,28 +92,29 @@ namespace corsika {
 
     /**
      *
-     * @return $p_0^2 - \vec{p}^2$
+     * @return \f$p_0^2 - \vec{p}^2\f$
      */
     norm_square_type getNormSqr() const;
 
     /**
      *
-     * @return $sqrt(p_0^2 - \vec{p}^2)$
+     * @return \f$\sqrt(p_0^2 - \vec{p}^2)\f$
      */
     norm_type getNorm() const;
 
-    /*
-     * FIXME: a better alternative would be to define an enumeration
+    /**
+     * \todo FIXME: a better alternative would be to define an enumeration
      * enum { SpaceLike =-1, TimeLike, LightLike } V4R_Category;
-     * and a method called  V4R_Category GetCategory() const;
-     *
+     * and a method called  V4R_Category GetCategory() const;     
      * RU: then you have to decide in the constructor which avoids "lazyness"
-     */
+     **/
+    ///\return if \f$|p_0|>|\vec{p}|\f$     
     bool isTimelike() const;
+    ///\return if \f$|p_0|<|\vec{p}|\f$     
     bool isSpacelike() const;
 
     /**
-     * @defgroup math operators (class members)
+     * \name Math operators (class members)
      * @{
      */
     FourVector& operator+=(FourVector const&);
@@ -133,23 +136,21 @@ namespace corsika {
     /** @} */
 
   protected:
-    //! the data members
+    // the data members
     TTimeType timeLike_;
     TSpaceVecType spaceLike_;
 
     /**
-     * @defgroup the friends: (free) math operators
-     * @{
-     *
+     * \name Free math operators
      * We need to define them inline here since we do not want to
      * implement them as template functions. They are valid only for
      * the specific types as defined right here.
      *
-     *
-     * Note, these are "free function" (event if they don't look as
+     * Note, these are "free function" (even if they don't look as
      *  such). Thus, even if the input object uses internal references
      *  for storage, the free math operators, of course, must provide
      *  value-copies.
+     * @{
      *
      **/
     friend FourVector<time_type, space_vec_type> operator+(FourVector const& a,
@@ -189,8 +190,8 @@ namespace corsika {
    **/
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::FourVector<TTimeType, TSpaceVecType> const& qv);
+  inline std::ostream& operator<<(
+      std::ostream& os, corsika::FourVector<TTimeType, TSpaceVecType> const& qv);
 
 } // namespace corsika
 

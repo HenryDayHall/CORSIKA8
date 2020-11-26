@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
