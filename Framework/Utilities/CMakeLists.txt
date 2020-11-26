@@ -20,6 +20,7 @@ set (
   UTILITIES_SOURCES  
   COMBoost.cc
   CorsikaData.cc
+  quartic.cpp
   ${CORSIKA_FENV})
 
 set (
@@ -31,6 +32,7 @@ set (
   sgn.h
   CorsikaFenv.h
   MetaProgramming.h
+  quartic.h
   )
 
 set (

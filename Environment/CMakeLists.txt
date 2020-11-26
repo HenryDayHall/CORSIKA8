@@ -19,6 +19,7 @@ set (
 set (
   ENVIRONMENT_HEADERS
   VolumeTreeNode.h
+  IEmpty.hpp
   IMediumModel.h
   NuclearComposition.h
   HomogeneousMedium.h
@@ -35,6 +36,7 @@ set (
   ShowerAxis.h
   IMagneticFieldModel.h
   UniformMagneticField.h
+  NoMagneticField.h
   IRefractiveIndexModel.h
   UniformRefractiveIndex.h
   IMediumPropertyModel.h

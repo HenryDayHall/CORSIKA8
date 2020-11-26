@@ -8,7 +8,6 @@
 
 #include <corsika/cascade/Cascade.h>
 #include <corsika/process/ProcessSequence.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
@@ -85,7 +84,7 @@ private:
 //
 int main() {
 
-  logging::SetLevel(logging::level::info);
+  logging::SetLevel(logging::level::trace);
 
   C8LOG_INFO("boundary_example");
 
@@ -102,7 +101,7 @@ int main() {
 
   // create "world" as infinite sphere filled with protons
   auto world = EnvType::CreateNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+      Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
   using MyHomogeneousModel =
       environment::MediumPropertyModel<environment::UniformMagneticField<
@@ -123,7 +122,7 @@ int main() {
   universe.AddChild(std::move(world));
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
   process::sibyll::Interaction sibyll;

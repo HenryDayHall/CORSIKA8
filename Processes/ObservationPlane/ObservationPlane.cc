@@ -14,31 +14,40 @@
 using namespace corsika::process::observation_plane;
 using namespace corsika::units::si;
 
-ObservationPlane::ObservationPlane(geometry::Plane const& obsPlane,
-                                   std::string const& filename, bool deleteOnHit)
+ObservationPlane::ObservationPlane(
+    geometry::Plane const& obsPlane,
+    geometry::Vector<units::si::dimensionless_d> const& x_axis,
+    std::string const& filename, bool deleteOnHit)
     : plane_(obsPlane)
     , outputStream_(filename)
     , deleteOnHit_(deleteOnHit)
     , energy_ground_(0_GeV)
-    , count_ground_(0) {
-  outputStream_ << "#PDG code, energy / eV, distance to center / m" << std::endl;
+    , count_ground_(0)
+    , xAxis_(x_axis.normalized())
+    , yAxis_(obsPlane.GetNormal().cross(xAxis_)) {
+  outputStream_ << "#PDG code, energy / eV, x distance / m, y distance / m" << std::endl;
 }
 
 corsika::process::EProcessReturn ObservationPlane::DoContinuous(
     setup::Stack::ParticleType& particle, setup::Trajectory const& trajectory) {
+  
   TimeType const timeOfIntersection =
-      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-      trajectory.GetV0().dot(plane_.GetNormal());
+      (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) { return process::EProcessReturn::eOk; }
 
-  if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
+  if (plane_.IsAbove(trajectory.GetLine().GetR0()) ==
+      plane_.IsAbove(trajectory.GetPosition(1))) {
     return process::EProcessReturn::eOk;
   }
 
   const auto energy = particle.GetEnergy();
+  auto const displacement = trajectory.GetPosition(1) - plane_.GetCenter();
+
   outputStream_ << static_cast<int>(particles::GetPDG(particle.GetPID())) << ' '
-                << energy / 1_eV << ' '
+                << energy / 1_eV << ' ' << displacement.dot(xAxis_) / 1_m << ' '
+                << displacement.dot(yAxis_) / 1_m
                 << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
                 << std::endl;
 
@@ -52,20 +61,78 @@ corsika::process::EProcessReturn ObservationPlane::DoContinuous(
   }
 }
 
-LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
+LengthType ObservationPlane::MaxStepLength(setup::Stack::ParticleType const& vParticle,
                                            setup::Trajectory const& trajectory) {
+  int chargeNumber;
+  if (corsika::particles::IsNucleus(vParticle.GetPID())) {
+    chargeNumber = vParticle.GetNuclearZ();
+  } else {
+    chargeNumber = corsika::particles::GetChargeNumber(vParticle.GetPID());
+  }
+  auto const* currentLogicalVolumeNode = vParticle.GetNode();
+  auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(
+      vParticle.GetPosition());
+  auto direction = trajectory.GetLine().GetV0().normalized();
+
+  if (chargeNumber != 0 &&
+      abs(plane_.GetNormal().dot(trajectory.GetLine().GetV0().cross(magneticfield))) *
+              1_s / 1_m / 1_T >
+          1e-6) {
+    auto const* currentLogicalVolumeNode = vParticle.GetNode();
+    auto magneticfield = currentLogicalVolumeNode->GetModelProperties().GetMagneticField(
+        vParticle.GetPosition());
+    auto k = chargeNumber * corsika::units::constants::c * 1_eV /
+             (vParticle.GetMomentum().norm() * 1_V);
+
+    if (direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+            (plane_.GetNormal().dot(trajectory.GetLine().GetR0() - plane_.GetCenter()) *
+             plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k) <
+        0) {
+      return std::numeric_limits<double>::infinity() * 1_m;
+    }
+
+    LengthType MaxStepLength1 =
+        (sqrt(direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+              (plane_.GetNormal().dot(trajectory.GetLine().GetR0() - plane_.GetCenter()) *
+               plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+         direction.dot(plane_.GetNormal()) / direction.GetNorm()) /
+        (plane_.GetNormal().dot(direction.cross(magneticfield)) * k);
+
+    LengthType MaxStepLength2 =
+        (-sqrt(
+             direction.dot(plane_.GetNormal()) * direction.dot(plane_.GetNormal()) -
+             (plane_.GetNormal().dot(trajectory.GetLine().GetR0() - plane_.GetCenter()) *
+              plane_.GetNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+         direction.dot(plane_.GetNormal()) / direction.GetNorm()) /
+        (plane_.GetNormal().dot(direction.cross(magneticfield)) * k);
+
+    if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
+      return std::numeric_limits<double>::infinity() * 1_m;
+    } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
+      std::cout << " steplength to obs plane 2: " << MaxStepLength2 << std::endl;
+      return MaxStepLength2 *
+             (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+                 .norm() *
+             1.001;
+    } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
+      std::cout << " steplength to obs plane 1: " << MaxStepLength1 << std::endl;
+      return MaxStepLength1 *
+             (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+                 .norm() *
+             1.001;
+    }
+  }
   TimeType const timeOfIntersection =
-      (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-      trajectory.GetV0().dot(plane_.GetNormal());
+      (plane_.GetCenter() - trajectory.GetLine().GetR0()).dot(plane_.GetNormal()) /
+      trajectory.GetLine().GetV0().dot(plane_.GetNormal());
 
   if (timeOfIntersection < TimeType::zero()) {
     return std::numeric_limits<double>::infinity() * 1_m;
   }
 
-  auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
-  auto dist = (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
-  C8LOG_TRACE("ObservationPlane::MaxStepLength l={} m", dist / 1_m);
-  return dist;
+  auto const pointOfIntersection = trajectory.GetLine().GetPosition(timeOfIntersection);
+  std::cout << " obs plane non b-field " << std::endl;
+  return (trajectory.GetLine().GetR0() - pointOfIntersection).norm() * 1.0001;
 }
 
 void ObservationPlane::ShowResults() const {

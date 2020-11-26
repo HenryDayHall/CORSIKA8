@@ -4,10 +4,10 @@ cmake_minimum_required (VERSION 3.9)
 # prevent in-source builds and give warning message
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") 
   message (FATAL_ERROR "In-source builds are disabled.
-    Please create a subfolder and use `cmake ..` inside it.
+    Please create a build-dir and use `cmake <source-dir>` inside it.
     NOTE: cmake will now create CMakeCache.txt and CMakeFiles/*.
           You must delete them, or cmake will refuse to work.")
-endif () 
+endif ()
 
 project (
   corsika
@@ -47,7 +47,7 @@ set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
 enable_testing ()
 set (CTEST_OUTPUT_ON_FAILURE 1)
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
+list (APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 # Set the possible values of build type for cmake-gui and command line check
 set (ALLOWED_BUILD_TYPES Debug Release MinSizeRel RelWithDebInfo Coverage)
@@ -90,7 +90,7 @@ set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
 add_compile_options ("$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>")
 
 # set a flag to inform code that we are in debug mode
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 # COAST - interface, this requires CORSIKA7 to be installed first
 # COAST will allow you to program code in CORSIKA8 and execute it inside CORSIKA7

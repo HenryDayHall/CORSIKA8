@@ -16,14 +16,17 @@ using namespace corsika::units::si;
 using namespace corsika;
 
 GrammageType ShowerAxis::X(LengthType l) const {
-  auto const fractionalBin = l / steplength_;
+  double const fractionalBin = l / steplength_;
   int const lower = fractionalBin; // indices of nearest X support points
-  auto const lambda = fractionalBin - lower;
-  decltype(X_.size()) const upper = lower + 1;
+  double const frac = fractionalBin - lower;
+  unsigned int const upper = lower + 1;
 
-  if (lower < 0) {
+  if (fractionalBin < 0) {
     C8LOG_ERROR("cannot extrapolate to points behind point of injection l={} m", l / 1_m);
-    throw std::runtime_error("cannot extrapolate to points behind point of injection");
+    if (throw_) {
+      throw std::runtime_error("cannot extrapolate to points behind point of injection");
+    }
+    return minimumX();
   }
 
   if (upper >= X_.size()) {
@@ -31,16 +34,19 @@ GrammageType ShowerAxis::X(LengthType l) const {
         fmt::format("shower axis too short, cannot extrapolate (l / max_length_ = {} )",
                     l / max_length_);
     C8LOG_ERROR(err);
-    throw std::runtime_error(err.c_str());
+    if (throw_) { throw std::runtime_error(err.c_str()); }
+    return maximumX();
   }
 
-  assert(0 <= lambda && lambda <= 1.);
+  C8LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}", frac,
+              fractionalBin, lower, upper);
+  assert(0 <= frac && frac <= 1.);
 
-  C8LOG_TRACE("ShowerAxis::X l={} m, lower={}, lambda={}, upper={}", l / 1_m, lower,
-              lambda, upper);
+  C8LOG_TRACE("ShowerAxis::X l={} m, lower={}, frac={}, upper={}", l / 1_m, lower, frac,
+              upper);
 
   // linear interpolation between X[lower] and X[upper]
-  return X_[upper] * lambda + X_[lower] * (1 - lambda);
+  return X_[upper] * frac + X_[lower] * (1 - frac);
 }
 
 LengthType ShowerAxis::steplength() const { return steplength_; }

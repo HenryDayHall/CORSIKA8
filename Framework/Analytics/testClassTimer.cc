@@ -74,7 +74,7 @@ public:
 class fooT1 {
 public:
   template <typename T1, typename T2>
-  int inside_t(T1 a, T2 b, T2 c) {
+  int inside_t(T1, T2, T2) {
     return 123;
   }
 };

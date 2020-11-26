@@ -11,8 +11,9 @@
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Trajectory.h>
 #include <corsika/units/PhysicalUnits.h>
+
+#include <corsika/setup/SetupTrajectory.h>
 
 namespace corsika::environment {
 
@@ -26,11 +27,11 @@ namespace corsika::environment {
     // todo: think about the mixin inheritance of the trajectory vs the BaseTrajectory
     // approach; for now, only lines are supported
     virtual corsika::units::si::GrammageType IntegratedGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
+        corsika::setup::Trajectory const&,
         corsika::units::si::LengthType) const = 0;
 
     virtual corsika::units::si::LengthType ArclengthFromGrammage(
-        corsika::geometry::Trajectory<corsika::geometry::Line> const&,
+        corsika::setup::Trajectory const&,
         corsika::units::si::GrammageType) const = 0;
 
     virtual NuclearComposition const& GetNuclearComposition() const = 0;

@@ -12,47 +12,74 @@
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Trajectory.h>
 
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/process/tracking_line/Tracking.h>
+#include <corsika/process/tracking_leapfrog_curved/Tracking.h>
+#include <corsika/process/tracking_leapfrog_straight/Tracking.h>
 
-// #include <variant>
+#include <corsika/units/PhysicalUnits.h>
 
 namespace corsika::setup {
 
+  /**
+    Note/Warning:     Tracking and Trajectory must fit together !
+
+    tracking_leapfrog_curved::Tracking is the result of the Bachelor
+    thesis of Andre Schmidt, KIT. This is a leap-frog algorithm with
+    an analytical, precise calculation of volume intersections. This
+    algorithm needs a LeapFrogTrajectory.
+
+    tracking_leapfrog_straight::Tracking is a more simple and direct
+    leap-frog implementation. The two halve steps are coded explicitly
+    as two straight segments. Intersections with other volumes are
+    calculate only on the straight segments. This algorithm is based
+    on LineTrajectory.
+
+    tracking_line::Tracking is a pure straight tracker. It is based on
+    LineTrajectory.
+   */  
+  typedef corsika::process::tracking_leapfrog_curved::Tracking Tracking;
+  //typedef corsika::process::tracking_leapfrog_straight::Tracking Tracking;
+  //typedef corsika::process::tracking_line::Tracking Tracking;
+
   /// definition of Trajectory base class, to be used in tracking and cascades
-  typedef corsika::geometry::Trajectory<corsika::geometry::Line> Trajectory;
+  //typedef corsika::geometry::LineTrajectory Trajectory;
+  typedef corsika::geometry::LeapFrogTrajectory Trajectory;
 
-  /*
-  typedef std::variant<std::monostate, corsika::geometry::Trajectory<Line>,
-                       corsika::geometry::Trajectory<Helix>>
-                       Trajectory;
+  /**
 
-  /// helper visitor to modify Particle by moving along Trajectory
-  template <typename Particle>
-  class ParticleUpdate {
+     The following section is for unit testing only. Eventually it should
+     be moved to "tests".
+    
+    
+   */
+  
+  namespace testing {
 
-    Particle& fP;
+    template <typename TTrack>
+    TTrack make_track(const corsika::geometry::Line& line,
+                      const corsika::units::si::TimeType tEnd);
 
-  public:
-    ParticleUpdate(Particle& p)
-        : fP(p) {}
-    void operator()(std::monostate const&) {}
-
-    template <typename T>
-    void operator()(T const& trajectory) {
-      fP.SetPosition(trajectory.GetPosition(1));
+    template <>
+    inline corsika::geometry::LineTrajectory
+    make_track<corsika::geometry::LineTrajectory>(
+        const corsika::geometry::Line& line, const corsika::units::si::TimeType tEnd) {
+      return corsika::geometry::LineTrajectory(line, tEnd);
     }
-  };
 
-  /// helper visitor to modify Particle by moving along Trajectory
-  class GetDuration {
-  public:
-    corsika::units::si::TimeType operator()(std::monostate const&) {
-      return 0 * corsika::units::si::second;
+    template <>
+    inline corsika::geometry::LeapFrogTrajectory
+    make_track<corsika::geometry::LeapFrogTrajectory>(
+        const corsika::geometry::Line& line, const corsika::units::si::TimeType tEnd) {
+      using namespace corsika::units::si;
+      typedef corsika::geometry::Vector<magnetic_flux_density_d> MagneticFieldVector;
+
+      auto const k = square(0_m) / (square(1_s) * 1_V);
+      return corsika::geometry::LeapFrogTrajectory(
+          line.GetR0(), line.GetV0(),
+          MagneticFieldVector{line.GetR0().GetCoordinateSystem(), 0_T, 0_T, 0_T}, k,
+          tEnd);
     }
-    template <typename T>
-    corsika::units::si::TimeType operator()(T const& trajectory) {
-      return trajectory.GetDuration();
-    }
-  };
-  */
+
+  } // namespace testing
+
 } // namespace corsika::setup

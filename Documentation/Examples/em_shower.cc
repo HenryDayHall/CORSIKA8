@@ -21,7 +21,6 @@
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/track_writer/TrackWriter.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -72,13 +71,13 @@ int main(int argc, char** argv) {
   // setup environment, geometry
   using EnvType = setup::Environment;
   EnvType env;
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
+  const CoordinateSystem& rootCS = env.GetCoordinateSystem(); 
   Point const center{rootCS, 0_m, 0_m, 0_m};
   auto builder = environment::make_layered_spherical_atmosphere_builder<
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -151,13 +150,13 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  process::observation_plane::ObservationPlane observationLevel(
+      obsPlane, Vector<dimensionless_d>(rootCS, {1., 0., 0.}), "particles.dat");
 
   auto sequence = process::sequence(proposalCounted, em_continuous, longprof, cut,
                                     observationLevel, trackWriter);
   // define air shower object, run simulation
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

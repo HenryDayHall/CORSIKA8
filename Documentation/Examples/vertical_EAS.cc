@@ -15,9 +15,13 @@
 #include <corsika/cascade/Cascade.h>
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/FlatExponential.h>
+#include <corsika/environment/HomogeneousMedium.h>
+#include <corsika/environment/IMagneticFieldModel.h>
 #include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
 #include <corsika/environment/NuclearComposition.h>
 #include <corsika/environment/ShowerAxis.h>
+#include <corsika/environment/SlidingPlanarExponential.h>
+#include <corsika/environment/UniformMagneticField.h>
 #include <corsika/geometry/Plane.h>
 #include <corsika/geometry/Sphere.h>
 #include <corsika/logging/Logging.h>
@@ -29,13 +33,14 @@
 #include <corsika/process/observation_plane/ObservationPlane.h>
 #include <corsika/process/on_shell_check/OnShellCheck.h>
 #include <corsika/process/particle_cut/ParticleCut.h>
+#include <corsika/process/track_writer/TrackWriter.h>
 #include <corsika/process/proposal/ContinuousProcess.h>
 #include <corsika/process/proposal/Interaction.h>
 #include <corsika/process/pythia/Decay.h>
 #include <corsika/process/sibyll/Decay.h>
+#include <corsika/process/stack_inspector/StackInspector.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
@@ -105,7 +110,7 @@ int main(int argc, char** argv) {
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -148,6 +153,7 @@ int main(int argc, char** argv) {
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
                       units::static_pow<2>(injectionHeight));
+
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
       showerCore +
@@ -159,8 +165,20 @@ int main(int argc, char** argv) {
     stack.AddParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    stack.AddParticle(
-        std::make_tuple(particles::Code::Proton, E0, plab, injectionPos, 0_ns));
+    if (Z == 1) {
+      stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                   corsika::stack::MomentumVector, geometry::Point,
+                                   units::si::TimeType>{particles::Code::Proton, E0, plab,
+                                                        injectionPos, 0_ns});
+    } else if (Z == 0) {
+      stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
+                                   corsika::stack::MomentumVector, geometry::Point,
+                                   units::si::TimeType>{particles::Code::Neutron, E0,
+                                                        plab, injectionPos, 0_ns});
+    } else {
+      std::cerr << "illegal parameters" << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   // we make the axis much longer than the inj-core distance since the
@@ -172,6 +190,11 @@ int main(int argc, char** argv) {
                                            (showerCore - injectionPos) * 1.5, env};
 
   // setup processes, decays and interactions
+
+  process::particle_cut::ParticleCut cut{60_GeV, false, true};
+  process::proposal::Interaction proposal(env, cut.GetECut());
+  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
+  process::interaction_counter::InteractionCounter proposalCounted(proposal);
 
   process::sibyll::Interaction sibyll;
   process::interaction_counter::InteractionCounter sibyllCounted(sibyll);
@@ -204,18 +227,14 @@ int main(int argc, char** argv) {
 
   decaySibyll.PrintDecayConfig();
 
-  process::particle_cut::ParticleCut cut{60_GeV, false, true};
-  process::proposal::Interaction proposal(env, cut.GetECut());
-  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
-  process::interaction_counter::InteractionCounter proposalCounted(proposal);
-
   process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
+  process::track_writer::TrackWriter trackWriter("tracks.dat");
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  process::observation_plane::ObservationPlane observationLevel(
+      obsPlane, Vector<dimensionless_d>(rootCS, {1., 0., 0.}), "particles.dat");
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
@@ -236,12 +255,13 @@ int main(int argc, char** argv) {
       process::select(urqmdCounted, process::sequence(sibyllNucCounted, sibyllCounted),
                       EnergySwitch(55_GeV));
   auto decaySequence = process::sequence(decayPythia, decaySibyll);
-  auto sequence =
-      process::sequence(hadronSequence, reset_particle_mass, decaySequence,
-                        proposalCounted, em_continuous, cut, observationLevel, longprof);
+  stack_inspector::StackInspector<setup::Stack> stackInspect(1000, false, E0);
+  auto sequence = process::sequence(stackInspect, hadronSequence, reset_particle_mass,
+                                    decaySequence, proposalCounted, em_continuous, cut,
+                                    trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

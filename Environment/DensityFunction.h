@@ -11,7 +11,6 @@
 #include <corsika/environment/LinearApproximationIntegrator.h>
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Trajectory.h>
 
 namespace corsika::environment {
 

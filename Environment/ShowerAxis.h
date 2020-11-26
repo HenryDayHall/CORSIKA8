@@ -45,9 +45,11 @@ namespace corsika::environment {
     template <typename TEnvModel>
     ShowerAxis(geometry::Point const& pStart,
                geometry::Vector<units::si::length_d> length,
-               environment::Environment<TEnvModel> const& env, int steps = 10'000)
+               environment::Environment<TEnvModel> const& env, bool doThrow = false,
+               int steps = 10'000)
         : pointStart_(pStart)
         , length_(length)
+        , throw_(doThrow)
         , max_length_(length_.norm())
         , steplength_(max_length_ / steps)
         , axis_normalized_(length / max_length_)
@@ -104,6 +106,7 @@ namespace corsika::environment {
   private:
     geometry::Point const pointStart_;
     geometry::Vector<units::si::length_d> const length_;
+    bool throw_ = false;
     units::si::LengthType const max_length_, steplength_;
     geometry::Vector<units::si::dimensionless_d> const axis_normalized_;
     std::vector<units::si::GrammageType> X_;

@@ -3,7 +3,10 @@ add_subdirectory (AnalyticProcessors)
 add_subdirectory (ExampleProcessors)
 
 # tracking
+add_subdirectory (Tracking)
 add_subdirectory (TrackingLine)
+add_subdirectory (TrackingLeapFrogStraight)
+add_subdirectory (TrackingLeapFrogCurved)
 # hadron interaction models
 add_subdirectory (Sibyll)
 add_subdirectory (QGSJetII)

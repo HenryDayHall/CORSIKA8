@@ -21,10 +21,10 @@ Debug settings are 0: nothing, 1: checking, 2: filesystem
 """
 Debug = 0 
 
-excludeDirs = ["ThirdParty", "git", "build", "install", "PROPOSAL"]
-excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h']
+excludeDirs = ["modules", "git", "build", "install", "externals"]
+excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h', 'quartic.h']
 
-extensions = [".cc", ".h", ".test"]
+extensions = [".cpp", ".hpp"]
 
 """
 justCheck: T: only checking, F: also changing files 

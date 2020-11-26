@@ -19,8 +19,6 @@
 #include <corsika/stack/history/EventType.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 
-#include <corsika/setup/SetupTrajectory.h>
-
 /*  see Issue 161, we need to include SetupStack only because we need
     to globally define StackView. This is clearly not nice and should
     be changed, when possible. It might be that StackView needs to be
@@ -32,6 +30,11 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
+
+#include <boost/type_index.hpp>
+using boost::typeindex::type_id_with_cvr;
+
+#include <fstream>
 
 /**
  * The cascade namespace assembles all objects needed to simulate full particles cascades.
@@ -72,17 +75,6 @@ namespace corsika::cascade {
         std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>;
     using MediumInterface = typename VolumeTreeNode::IModelProperties;
 
-  private:
-    // Data members
-    corsika::environment::Environment<MediumInterface> const& environment_;
-    TTracking& tracking_;
-    TProcessList& process_sequence_;
-    TStack& stack_;
-    corsika::random::RNG& rng_ =
-        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
-    unsigned int count_ = 0;
-
-  private:
     // we only want fully configured objects
     Cascade() = delete;
 
@@ -104,6 +96,8 @@ namespace corsika::cascade {
       }
     }
 
+    ~Cascade(){};
+
     /**
      * The Run function is the main simulation loop, which processes
      * particles from the Stack until the Stack is empty.
@@ -117,7 +111,7 @@ namespace corsika::cascade {
           count_++;
           auto pNext = stack_.GetNextParticle();
           C8LOG_DEBUG(
-              "============== next particle : count={}, pid={}, "
+              "============== next particle : count={}, pid={} "
               ", stack entries={}"
               ", stack deleted={}",
               count_, pNext.GetPID(), stack_.getEntries(), stack_.getDeleted());
@@ -160,10 +154,6 @@ namespace corsika::cascade {
       using namespace corsika;
       using namespace corsika::units::si;
 
-      // determine geometric tracking
-      auto [step, geomMaxLength, nextVol] = tracking_.GetTrack(vParticle);
-      [[maybe_unused]] auto const& dummy_nextVol = nextVol;
-
       // determine combined total interaction length (inverse)
       InverseGrammageType const total_inv_lambda =
           process_sequence_.GetInverseInteractionLength(vParticle);
@@ -182,17 +172,9 @@ namespace corsika::cascade {
 
       // assert that particle stays outside void Universe if it has no
       // model properties set
-      assert(currentLogicalNode != &*environment_.GetUniverse() ||
-             environment_.GetUniverse()->HasModelProperties());
-
-      // convert next_step from grammage to length
-      LengthType const distance_interact =
-          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
-                                                                         next_interact);
-
-      // determine the maximum geometric step length from continuous processes
-      LengthType const distance_max = process_sequence_.MaxStepLength(vParticle, step);
-      C8LOG_DEBUG("distance_max={} m", distance_max / 1_m);
+      assert((currentLogicalNode != &*environment_.GetUniverse() ||
+              environment_.GetUniverse()->HasModelProperties()) &&
+             "FATAL: The environment model has no valid properties set!");
 
       // determine combined total inverse decay time
       InverseTimeType const total_inv_lifetime =
@@ -210,23 +192,43 @@ namespace corsika::cascade {
       LengthType const distance_decay = next_decay * vParticle.GetMomentum().norm() /
                                         vParticle.GetEnergy() * units::constants::c;
 
-      // take minimum of geometry, interaction, decay for next step
-      auto const min_distance =
-          std::min({distance_interact, distance_decay, distance_max, geomMaxLength});
+      // determine geometric tracking
+      auto [step, nextVol] = tracking_.GetTrack(vParticle);
+      auto geomMaxLength = step.GetLength(1);
 
-      C8LOG_DEBUG("transport particle by : {} m", min_distance / 1_m);
+      // convert next_step from grammage to length
+      LengthType const distance_interact =
+          currentLogicalNode->GetModelProperties().ArclengthFromGrammage(step,
+                                                                         next_interact);
+
+      // determine the maximum geometric step length
+      LengthType const continuous_max_dist = process_sequence_.MaxStepLength(vParticle, step);
+
+      // take minimum of geometry, interaction, decay for next step
+      auto min_distance =
+          std::min({distance_interact, distance_decay, continuous_max_dist, geomMaxLength});
+
+      C8LOG_DEBUG(
+          "transport particle by : {} m "
+          "Medium transition after: {} m "
+          "Decay after: {} m "
+          "Interaction after: {} m "
+          "Continuous limit: {} m ",
+          min_distance / 1_m, geomMaxLength / 1_m, distance_decay / 1_m,
+          distance_interact / 1_m, continuous_max_dist / 1_m);
 
       // here the particle is actually moved along the trajectory to new position:
-      // std::visit(setup::ParticleUpdate<Particle>{vParticle}, step);
-      vParticle.SetPosition(step.PositionFromArclength(min_distance));
-      // .... also update time, momentum, direction, ...
-      vParticle.SetTime(vParticle.GetTime() + min_distance / units::constants::c);
-
-      step.LimitEndTo(min_distance);
+      step.SetLength(min_distance);
+      vParticle.SetPosition(step.GetPosition(1));
+      vParticle.SetMomentum(step.GetDirection(1) * vParticle.GetMomentum().norm());
+      vParticle.SetTime(vParticle.GetTime() + step.GetDuration());
+      std::cout << "New Position: " << vParticle.GetPosition().GetCoordinates()
+                << std::endl;
 
       // apply all continuous processes on particle + track
-      if (process_sequence_.DoContinuous(vParticle, step) ==
-          process::EProcessReturn::eParticleAbsorbed) {
+      process::EProcessReturn status = process_sequence_.DoContinuous(vParticle, step);
+
+      if (status == process::EProcessReturn::eParticleAbsorbed) {
         C8LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                     vParticle.GetPID(), vParticle.GetEnergy() / 1_GeV);
         if (!vParticle.isDeleted()) vParticle.Delete();
@@ -245,7 +247,7 @@ namespace corsika::cascade {
 
         TStackView secondaries(vParticle);
 
-        if (min_distance != distance_max) {
+        if (min_distance < continuous_max_dist) {
           /*
             Create SecondaryView object on Stack. The data container
             remains untouched and identical, and 'projectil' is identical
@@ -258,10 +260,9 @@ namespace corsika::cascade {
 
           [[maybe_unused]] auto projectile = secondaries.GetProjectile();
 
-          if (min_distance == distance_interact) {
+          if (distance_interact < distance_decay) {
             interaction(secondaries);
           } else {
-            assert(min_distance == distance_decay);
             decay(secondaries);
             // make sure particle actually did decay if it should have done so
             if (secondaries.getSize() == 1 &&
@@ -286,20 +287,32 @@ namespace corsika::cascade {
                       fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
           return numericalNodeAfterStep == currentLogicalNode;
         };
+        assert(assertion()); // numerical and logical nodes should
+                             // match, we did not cross any volume
+                             // boundary
 
-        assert(assertion()); // numerical and logical nodes don't match
-      } else {               // boundary crossing, step is limited by volume boundary
-        vParticle.SetNode(nextVol);
-        /*
-          DoBoundary may delete the particle (or not)
+      } else { // boundary crossing, step is limited by volume boundary
 
-          caveat: any changes to vParticle, or even the production
-          of new secondaries is currently not passed to ParticleCut,
-          thus, particles outside the desired phase space may be produced.
+	if (nextVol != currentLogicalNode) {
+	
+	  C8LOG_DEBUG("volume boundary crossing to {}", fmt::ptr(nextVol));
 
-          todo: this must be fixed.
-        */
-        process_sequence_.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+	  if (nextVol == environment_.GetUniverse().get()) {
+	    C8LOG_DEBUG("particle left physics world, is now in unknown space -> delete");
+	    vParticle.Delete();
+	  }
+	  vParticle.SetNode(nextVol);
+	  /*
+	    DoBoundary may delete the particle (or not)
+	    
+	    caveat: any changes to vParticle, or even the production
+	    of new secondaries is currently not passed to ParticleCut,
+	    thus, particles outside the desired phase space may be produced.
+	    
+	    todo: this must be fixed.
+	  */
+	  process_sequence_.DoBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+	}
       }
     }
 
@@ -330,7 +343,7 @@ namespace corsika::cascade {
       const auto sample_process = uniDist(rng_);
       auto const returnCode = process_sequence_.SelectInteraction(view, sample_process);
       if (returnCode != process::EProcessReturn::eInteracted) {
-        C8LOG_WARN("Particle did not interace!");
+        C8LOG_WARN("Particle did not interact!");
       }
       SetEventType(view, history::EventType::Interaction);
       return returnCode;
@@ -366,6 +379,17 @@ Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8"
  Y8a.    .a8P   Y8a.    .a8P   88     `8b   Y8a     a8P  88  88     "88,    d8'        `8b       Y8a     a8P  
   `"Y8888Y"'     `"Y8888Y"'    88      `8b   "Y88888P"   88  88       Y8b  d8'          `8b       "Y88888P"
 	)V0G0N";
-  };
+
+  private:
+    // Data members
+    corsika::environment::Environment<MediumInterface> const& environment_;
+    TTracking& tracking_;
+    TProcessList& process_sequence_;
+    TStack& stack_;
+    corsika::random::RNG& rng_ =
+        corsika::random::RNGManager::GetInstance().GetRandomStream("cascade");
+    unsigned int count_ = 0;
+
+  }; // end class Cascade
 
 } // namespace corsika::cascade

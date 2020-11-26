@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include <corsika/environment/IMediumModel.h>
+#include <corsika/environment/IEmpty.hpp>
 #include <corsika/geometry/Volume.h>
 #include <memory>
 #include <vector>
 
 namespace corsika::environment {
 
-  class Empty {}; //<! intended for usage as default template argument
-
-  template <typename TModelProperties = Empty>
+  template <typename TModelProperties = IEmpty>
   class VolumeTreeNode {
   public:
     using IModelProperties = TModelProperties;
+    using VTN_type = VolumeTreeNode<IModelProperties>;
     using VTNUPtr = std::unique_ptr<VolumeTreeNode<IModelProperties>>;
     using IMPSharedPtr = std::shared_ptr<IModelProperties>;
     using VolUPtr = std::unique_ptr<corsika::geometry::Volume>;
@@ -92,7 +91,7 @@ namespace corsika::environment {
       fExcludedNodes.push_back(pNode.get());
     }
 
-    auto* GetParent() const { return fParentNode; };
+    const VTN_type* GetParent() const { return fParentNode; };
 
     auto const& GetChildNodes() const { return fChildNodes; }
 
@@ -115,14 +114,15 @@ namespace corsika::environment {
 
     void SetModelProperties(IMPSharedPtr ptr) { fModelProperties = ptr; }
 
+    /*
     template <class MediumType, typename... Args>
     static auto CreateMedium(Args&&... args) {
-      static_assert(std::is_base_of_v<IMediumModel, MediumType>,
+      static_assert(std::is_base_of_v<, MediumType>,
                     "unusable type provided, needs to be derived from \"IMediumModel\"");
 
       return std::make_shared<MediumType>(std::forward<Args>(args)...);
     }
-
+    */
   private:
     std::vector<VTNUPtr> fChildNodes;
     std::vector<VolumeTreeNode<IModelProperties> const*> fExcludedNodes;

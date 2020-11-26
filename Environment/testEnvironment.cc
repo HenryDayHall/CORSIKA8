@@ -28,6 +28,8 @@
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
 
+#include <corsika/setup/SetupTrajectory.h>
+
 #include <catch2/catch.hpp>
 
 using namespace corsika::geometry;
@@ -61,8 +63,7 @@ TEST_CASE("FlatExponential") {
   SECTION("horizontal") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {20_cm / second, 0_m / second, 0_m / second}));
-    Trajectory<Line> const trajectory(line, tEnd);
-
+    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
     CHECK((medium.IntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
     CHECK((medium.ArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
   }
@@ -70,7 +71,7 @@ TEST_CASE("FlatExponential") {
   SECTION("vertical") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 0_m / second, 5_m / second}));
-    Trajectory<Line> const trajectory(line, tEnd);
+    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
     LengthType const length = 2 * lambda;
     GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
 
@@ -81,11 +82,11 @@ TEST_CASE("FlatExponential") {
   SECTION("escape grammage") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 0_m / second, -5_m / second}));
-    Trajectory<Line> const trajectory(line, tEnd);
+    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
     GrammageType const escapeGrammage = rho0 * lambda;
 
-    CHECK(trajectory.NormalizedDirection().dot(axis).magnitude() < 0);
+    CHECK(trajectory.GetDirection(0).dot(axis).magnitude() < 0);
     CHECK(medium.ArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
           std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
   }
@@ -93,7 +94,7 @@ TEST_CASE("FlatExponential") {
   SECTION("inclined") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 5_m / second, 5_m / second}));
-    Trajectory<Line> const trajectory(line, tEnd);
+    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
     double const cosTheta = M_SQRT1_2;
     LengthType const length = 2 * lambda;
     GrammageType const exact =
@@ -127,7 +128,7 @@ TEST_CASE("SlidingPlanarExponential") {
     Line const line({gCS, {0_m, 0_m, 1_m}},
                     Vector<SpeedType::dimension_type>(
                         gCS, {0_m / second, 0_m / second, 5_m / second}));
-    Trajectory<Line> const trajectory(line, tEnd);
+    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
     CHECK(medium.GetMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
           flat.GetMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
@@ -166,7 +167,7 @@ TEST_CASE("InhomogeneousMedium") {
                          gCS, {20_m / second, 0_m / second, 0_m / second}));
 
   auto const tEnd = 5_s;
-  Trajectory<Line> const trajectory(line, tEnd);
+  setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   Exponential const e;
   DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);
@@ -292,7 +293,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   auto const tEnd = 1_s;
 
   // and the associated trajectory
-  Trajectory<Line> const trajectory(line, tEnd);
+  setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
   CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
@@ -395,7 +396,7 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   auto const tEnd = 1_s;
 
   // and the associated trajectory
-  Trajectory<Line> const trajectory(line, tEnd);
+  setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
   CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
@@ -469,7 +470,7 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   auto const tEnd = 1_s;
 
   // and the associated trajectory
-  Trajectory<Line> const trajectory(line, tEnd);
+  setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
   CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));

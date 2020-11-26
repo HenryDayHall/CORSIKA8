@@ -34,7 +34,6 @@
 #include <corsika/process/sibyll/Decay.h>
 #include <corsika/process/sibyll/Interaction.h>
 #include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
 #include <corsika/process/urqmd/UrQMD.h>
 #include <corsika/random/RNGManager.h>
 #include <corsika/setup/SetupStack.h>
@@ -102,7 +101,7 @@ int main(int argc, char** argv) {
       setup::EnvironmentInterface,
       MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
                           environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+                          geometry::Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{particles::Code::Nitrogen, particles::Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -216,8 +215,8 @@ int main(int argc, char** argv) {
   process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  process::observation_plane::ObservationPlane observationLevel(
+      obsPlane, Vector<dimensionless_d>(rootCS, {1., 0., 0.}), "particles.dat");
 
   process::UrQMD::UrQMD urqmd;
   process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
@@ -242,7 +241,7 @@ int main(int argc, char** argv) {
                                     eLoss, cut, conex, longprof, observationLevel);
 
   // define air shower object, run simulation
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   cascade::Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

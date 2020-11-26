@@ -10,7 +10,7 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/hadronic_elastic_model/HadronicElasticModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/process/energy_loss/EnergyLoss.h>
 
 #include <corsika/setup/SetupStack.h>
 #include <corsika/setup/SetupTrajectory.h>
@@ -18,6 +18,7 @@
 #include <corsika/environment/Environment.h>
 #include <corsika/environment/HomogeneousMedium.h>
 #include <corsika/environment/NuclearComposition.h>
+#include <corsika/environment/ShowerAxis.h>
 
 #include <corsika/geometry/Sphere.h>
 
@@ -74,20 +75,20 @@ int main() {
   auto& universe = *(env.GetUniverse());
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
-  auto theMedium = EnvType::CreateNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+  auto world = EnvType::CreateNode<Sphere>(
+      Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
   using MyHomogeneousModel =
       environment::MediumPropertyModel<environment::UniformMagneticField<
           environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
 
-  theMedium->SetModelProperties<MyHomogeneousModel>(
+  world->SetModelProperties<MyHomogeneousModel>(
       environment::Medium::AirDry1Atm, geometry::Vector(rootCS, 0_T, 0_T, 1_T),
       1_kg / (1_m * 1_m * 1_m),
       NuclearComposition(std::vector<particles::Code>{particles::Code::Hydrogen},
                          std::vector<float>{(float)1.}));
 
-  universe.AddChild(std::move(theMedium));
+  universe.AddChild(std::move(world));
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -98,6 +99,7 @@ int main() {
   double theta = 0.;
   double phi = 0.;
 
+  Point injectionPos(rootCS, 0_m, 0_m, 0_m);
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt(Elab * Elab - m * m);
@@ -113,15 +115,14 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m, 0_m);
     stack.AddParticle(
         std::tuple<particles::Code, units::si::HEPEnergyType,
                    corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            beamCode, E0, plab, pos, 0_ns});
+            beamCode, E0, plab, injectionPos, 0_ns});
   }
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
@@ -131,20 +132,19 @@ int main() {
   //  process::sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   //  process::sibyll::Decay decay;
   process::pythia::Decay decay;
-  process::particle_cut::ParticleCut cut(20_GeV, true, true);
+  process::particle_cut::ParticleCut cut(60_GeV, true, true);
 
   // random::RNGManager::GetInstance().RegisterRandomStream("HadronicElasticModel");
   // process::HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
   process::track_writer::TrackWriter trackWriter("tracks.dat");
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+  process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
 
   // assemble all processes into an ordered process list
   // auto sequence = sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = process::sequence(pythia, decay, cut, trackWriter, stackInspect);
-
-  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
-  // << "\n";
+  auto sequence = process::sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);
 
   // define air shower object, run simulation
   cascade::Cascade EAS(env, tracking, sequence, stack);

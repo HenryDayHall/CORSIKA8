@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <corsika/environment/IMediumModel.h>
 #include <corsika/environment/VolumeTreeNode.h>
 #include <corsika/geometry/Point.h>
 #include <corsika/geometry/RootCoordinateSystem.h>

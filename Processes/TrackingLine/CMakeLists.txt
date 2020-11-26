@@ -1,11 +1,6 @@
 set (
   MODEL_HEADERS
-  TrackingLine.h
-  )
-
-set (
-  MODEL_SOURCES
-  TrackingLine.cc
+  Tracking.h
   )
 
 set (
@@ -13,19 +8,14 @@ set (
   corsika/process/tracking_line
   )
 
-add_library (ProcessTrackingLine STATIC ${MODEL_SOURCES})
+add_library (ProcessTrackingLine INTERFACE)
 CORSIKA_COPY_HEADERS_TO_NAMESPACE (ProcessTrackingLine ${MODEL_NAMESPACE} ${MODEL_HEADERS})
-
-set_target_properties (
-  ProcessTrackingLine
-  PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  SOVERSION 1
-  )
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
   ProcessTrackingLine
+  INTERFACE
+  ProcessTrackingIntersects
   CORSIKAsetup
   CORSIKAutilities
   CORSIKAenvironment
@@ -44,11 +34,4 @@ target_include_directories (
 
 install (FILES ${MODEL_HEADERS} DESTINATION include/${MODEL_NAMESPACE})
 
-# #-- -- -- -- -- -- -- -- -- --
-# #code unit testing
-CORSIKA_ADD_TEST (testTrackingLine)
-target_link_libraries (
-   testTrackingLine
-   ProcessTrackingLine
-   CORSIKAtesting
-)
+# Note: all Tracking Algorithms are tested in testTracking

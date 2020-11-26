@@ -13,7 +13,6 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/NullModel.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/particles/ParticleProperties.h>
 
@@ -35,37 +34,66 @@ using namespace corsika::geometry;
 #include <limits>
 using namespace std;
 
+/**
+ * testCascade implements an e.m. Heitler model with energy splitting
+ * and a critical energy.
+ *
+ * It resembles one of the most simple cascades you can simulate with CORSIKA8.
+ **/
+
+/*
+  The dummy env (here) doesn't need to have any propoerties
+ */
 auto MakeDummyEnv() {
   TestEnvironmentType env; // dummy environment
   auto& universe = *(env.GetUniverse());
 
-  auto theMedium = TestEnvironmentType::CreateNode<Sphere>(
+  auto world = TestEnvironmentType::CreateNode<Sphere>(
       Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      100_km * std::numeric_limits<double>::infinity());
+      1_m * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_g / (1_cm * 1_cm * 1_cm),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Proton}, std::vector<float>{1.}));
+  using MyEmptyModel = environment::Empty<environment::IEmpty>;
+  world->SetModelProperties<MyEmptyModel>();
 
-  universe.AddChild(std::move(theMedium));
+  universe.AddChild(std::move(world));
 
   return env;
 }
 
+/**
+ * \class DummyTracking
+ *
+ * For the Heitler model we don't need particle transport.
+ **/
+class DummyTracking {
+
+public:
+  template <typename TParticle>
+  auto GetTrack(TParticle const& particle) {
+    using namespace corsika::units::si;
+    using namespace corsika::geometry;
+    geometry::Vector<SpeedType::dimension_type> const initialVelocity =
+        particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
+    return std::make_tuple(
+        geometry::LineTrajectory(
+            geometry::Line(particle.GetPosition(), initialVelocity),
+            std::numeric_limits<TimeType::value_type>::infinity() * 1_s), // trajectory,
+                                                                          // just
+                                                                          // go
+                                                                          // ahead
+                                                                          // forever
+        particle.GetNode()); // next volume node
+  }
+};
+
 class ProcessSplit : public process::InteractionProcess<ProcessSplit> {
 
   int fCalls = 0;
-  GrammageType fX0;
 
 public:
-  ProcessSplit(GrammageType const X0)
-      : fX0(X0) {}
-
   template <typename Particle>
   corsika::units::si::GrammageType GetInteractionLength(Particle const&) const {
-    return fX0;
+    return 0_g / square(1_cm);
   }
 
   template <typename TSecondaryView>
@@ -73,16 +101,12 @@ public:
     fCalls++;
     auto const projectile = view.GetProjectile();
     const HEPEnergyType E = projectile.GetEnergy();
-    view.AddSecondary(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            projectile.GetPID(), E / 2, projectile.GetMomentum(),
-            projectile.GetPosition(), projectile.GetTime()});
-    view.AddSecondary(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            projectile.GetPID(), E / 2, projectile.GetMomentum(),
-            projectile.GetPosition(), projectile.GetTime()});
+    view.AddSecondary(std::make_tuple(projectile.GetPID(), E / 2,
+                                      projectile.GetMomentum(), projectile.GetPosition(),
+                                      projectile.GetTime()));
+    view.AddSecondary(std::make_tuple(projectile.GetPID(), E / 2,
+                                      projectile.GetMomentum(), projectile.GetPosition(),
+                                      projectile.GetTime()));
     return EProcessReturn::eInteracted;
   }
 
@@ -122,6 +146,8 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
+  logging::SetLevel(logging::level::trace);
+
   HEPEnergyType E0 = 100_GeV;
 
   random::RNGManager& rmng = random::RNGManager::GetInstance();
@@ -129,26 +155,26 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   auto env = MakeDummyEnv();
   auto const& rootCS = env.GetCoordinateSystem();
-  tracking_line::TrackingLine tracking;
 
   stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
   process::NullModel nullModel;
 
-  const GrammageType X0 = 20_g / square(1_cm);
   const HEPEnergyType Ecrit = 85_MeV;
-  ProcessSplit split(X0);
+  ProcessSplit split;
   ProcessCut cut(Ecrit);
   auto sequence = process::sequence(nullModel, stackInspect, split, cut);
   TestCascadeStack stack;
   stack.Clear();
-  stack.AddParticle(
-      std::tuple<particles::Code, units::si::HEPEnergyType,
-                 corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-          particles::Code::Electron, E0,
-          corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-          Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
+  stack.AddParticle(std::make_tuple(
+      particles::Code::Electron, E0,
+      corsika::stack::MomentumVector(
+          rootCS, {0_GeV, 0_GeV,
+                   -sqrt(E0 * E0 - units::static_pow<2>(
+                                       particles::GetMass(particles::Code::Electron)))}),
+      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
-  cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
+  DummyTracking tracking;
+  cascade::Cascade<DummyTracking, decltype(sequence), TestCascadeStack,
                    TestCascadeStackView>
       EAS(env, tracking, sequence, stack);
 
@@ -156,7 +182,7 @@ TEST_CASE("Cascade", "[Cascade]") {
     EAS.Run();
 
     CHECK(cut.GetCount() == 2048);
-    CHECK(cut.GetCalls() == 2047);
+    CHECK(cut.GetCalls() == 2047); // final particle is still on stack and not yet deleted
     CHECK(split.GetCalls() == 2047);
   }
 

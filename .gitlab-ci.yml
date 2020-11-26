@@ -170,7 +170,7 @@ build-clang-8:
   script:
     - cd build
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz
+    - ctest -j4 
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -185,8 +185,6 @@ build-clang-8:
     reports:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
-    paths:
-      - ${CI_PROJECT_DIR}/build/test.log.gz
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -227,7 +225,7 @@ test-clang-8:
     - cd build
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz
+    - ctest -j4 
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
       allow_failure: false
@@ -241,8 +239,6 @@ test-clang-8:
     reports:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
-    paths:
-      - ${CI_PROJECT_DIR}/build/test.log.gz
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -338,7 +334,7 @@ example-clang-8:
     - cd build
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz
+    - ctest -j4 
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
@@ -357,7 +353,6 @@ example-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/examples.log.gz
-      - ${CI_PROJECT_DIR}/build/test.log.gz
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -450,7 +445,7 @@ install-clang-8:
     - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz
+    - ctest -j4 
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
@@ -475,7 +470,6 @@ install-clang-8:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/test.log.gz
       - ${CI_PROJECT_DIR}/build/examples.log.gz
 
 # release for gcc
@@ -513,7 +507,7 @@ coverage:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
     - cmake --build . -- -j4
-    - ctest -j4 -VV | gzip -v -9 > test.log.gz
+    - ctest -j4 
     - cmake --build . --target coverage
     - tar czf coverage-report.tar.gz coverage-report
   coverage: '/^.*functions\.+:\s(.*\%)\s/'
@@ -530,7 +524,6 @@ coverage:
     when: always
     expire_in: 1 year
     paths:
-      - ${CI_PROJECT_DIR}/build/test.log.gz
       - ${CI_PROJECT_DIR}/build/coverage-report.tar.gz
   cache:
     paths:

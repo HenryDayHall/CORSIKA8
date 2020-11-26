@@ -10,9 +10,9 @@
 
 #include <corsika/geometry/Line.h>
 #include <corsika/geometry/Point.h>
-#include <corsika/geometry/Trajectory.h>
 #include <corsika/particles/ParticleProperties.h>
 #include <corsika/units/PhysicalUnits.h>
+#include <corsika/setup/SetupTrajectory.h>
 
 #include <limits>
 
@@ -47,12 +47,12 @@ namespace corsika::environment {
      */
     // clang-format on
     units::si::GrammageType IntegratedGrammage(
-        geometry::Trajectory<geometry::Line> const& vLine, units::si::LengthType vL,
+        setup::Trajectory const& vLine, units::si::LengthType vL,
         geometry::Vector<units::si::dimensionless_d> const& vAxis) const {
       if (vL == units::si::LengthType::zero()) { return units::si::GrammageType::zero(); }
 
-      auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
-      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
+      auto const uDotA = vLine.GetDirection(0).dot(vAxis).magnitude();
+      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetLine().GetR0());
 
       if (uDotA == 0) {
         return vL * rhoStart;
@@ -80,11 +80,10 @@ namespace corsika::environment {
      */
     // clang-format on
     units::si::LengthType ArclengthFromGrammage(
-        geometry::Trajectory<geometry::Line> const& vLine,
-        units::si::GrammageType vGrammage,
+        setup::Trajectory const& vLine, units::si::GrammageType vGrammage,
         geometry::Vector<units::si::dimensionless_d> const& vAxis) const {
-      auto const uDotA = vLine.NormalizedDirection().dot(vAxis).magnitude();
-      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetR0());
+      auto const uDotA = vLine.GetDirection(0).dot(vAxis).magnitude();
+      auto const rhoStart = GetImplementation().GetMassDensity(vLine.GetLine().GetR0());
 
       if (uDotA == 0) {
         return vGrammage / rhoStart;

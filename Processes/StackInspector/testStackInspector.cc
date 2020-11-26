@@ -31,7 +31,7 @@ TEST_CASE("StackInspector", "[processes]") {
   geometry::Vector<units::si::SpeedType::dimension_type> v(rootCS, 0_m / second,
                                                            0_m / second, 1_m / second);
   geometry::Line line(origin, v);
-  geometry::Trajectory<geometry::Line> track(line, 10_s);
+  geometry::LineTrajectory track(line, 10_s);
 
   TestCascadeStack stack;
   stack.Clear();

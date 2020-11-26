@@ -10,7 +10,6 @@
 #include <corsika/process/ProcessSequence.h>
 #include <corsika/process/energy_loss/EnergyLoss.h>
 #include <corsika/process/stack_inspector/StackInspector.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
 
 #include <corsika/setup/SetupEnvironment.h>
 #include <corsika/setup/SetupStack.h>
@@ -58,6 +57,8 @@ int main() {
 
   logging::SetLevel(logging::level::info);
 
+  C8LOG_INFO("vertical_EAS");
+
   std::cout << "cascade_example" << std::endl;
 
   const LengthType height_atmosphere = 112.8_km;
@@ -73,7 +74,7 @@ int main() {
   const CoordinateSystem& rootCS = env.GetCoordinateSystem();
 
   auto world = setup::Environment::CreateNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+      Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
   using MyHomogeneousModel =
       environment::MediumPropertyModel<environment::UniformMagneticField<
@@ -111,7 +112,7 @@ int main() {
       rootCS, 0_m, 0_m,
       height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
 
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -5000_km}, env};
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -135,7 +136,7 @@ int main() {
   }
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   random::RNGManager::GetInstance().RegisterRandomStream("sibyll");

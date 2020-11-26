@@ -215,7 +215,7 @@ namespace corsika::process {
         const auto particle = view.parent();
         lambda_inv_sum += A_.GetInverseInteractionLength(particle);
         // check if we should execute THIS process and then EXIT
-        if (lambda_inv_select < lambda_inv_sum) {
+        if (lambda_inv_select <= lambda_inv_sum) {
           A_.DoInteraction(view);
           return EProcessReturn::eInteracted;
         }
@@ -229,7 +229,7 @@ namespace corsika::process {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_sum += B_.GetInverseInteractionLength(view.parent());
         // check if we should execute THIS process and then EXIT
-        if (lambda_inv_select < lambda_inv_sum) {
+        if (lambda_inv_select <= lambda_inv_sum) {
           B_.DoInteraction(view);
           return EProcessReturn::eInteracted;
         }
@@ -279,8 +279,8 @@ namespace corsika::process {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_sum += A_.GetInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
-        if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
-                                                // decay_inv_sum / decay_inv_tot
+        if (decay_inv_select <= decay_inv_sum) { // more pedagogical: rndm_select <
+                                                 // decay_inv_sum / decay_inv_tot
           A_.DoDecay(view);
           return EProcessReturn::eDecayed;
         }
@@ -294,7 +294,7 @@ namespace corsika::process {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_sum += B_.GetInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
-        if (decay_inv_select < decay_inv_sum) {
+        if (decay_inv_select <= decay_inv_sum) {
           B_.DoDecay(view);
           return EProcessReturn::eDecayed;
         }
