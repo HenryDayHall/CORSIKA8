@@ -221,6 +221,7 @@ target_link_libraries (
   )
 # those are needed, since some headers (namely GeneratedParticleProperties.inc) are produced by python script from ParticleData.xml
 add_subdirectory (src)
+add_subdirectory (documentation)
 #
 #
 #+++++++++++++++++++++++++++++
