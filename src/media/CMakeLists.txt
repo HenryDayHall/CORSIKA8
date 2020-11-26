@@ -3,7 +3,7 @@ set (output_dir ${PROJECT_BINARY_DIR}/corsika/media)
 
 file (MAKE_DIRECTORY ${output_dir})
 
-add_custom_command (
+add_custom_command (       
   OUTPUT  ${output_dir}/GeneratedMediaProperties.inc         
   COMMAND ${input_dir}/readProperties.py ${input_dir}/properties8.dat                                       
   DEPENDS ${input_dir}/readProperties.py

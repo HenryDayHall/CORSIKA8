@@ -38,7 +38,7 @@ namespace corsika {
   // factory method for creation of VolumeTreeNodes
   template <typename IEnvironmentModel>
   template <class TVolumeType, typename... TVolumeArgs>
-  std::unique_ptr< VolumeTreeNode<IEnvironmentModel> > Environment<IEnvironmentModel>::CreateNode(TVolumeArgs&&... args) {
+  std::unique_ptr< VolumeTreeNode<IEnvironmentModel> > Environment<IEnvironmentModel>::createNode(TVolumeArgs&&... args) {
     static_assert(std::is_base_of_v<corsika::Volume, TVolumeType>,
                   "unusable type provided, needs to be derived from "
                   "\"corsika::Volume\"");

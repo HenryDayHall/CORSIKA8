@@ -34,7 +34,7 @@ namespace corsika {
      * @param  point    The location to evaluate the field at.
      * @returns    The magnetic field vector at that point.
      */
-    virtual auto GetMagneticField(corsika::geometry::Point const&) const
+    virtual auto getMagneticField(corsika::geometry::Point const&) const
         -> MagneticFieldVector = 0;
 
     /**
@@ -44,4 +44,4 @@ namespace corsika {
 
   }; // END: class MagneticField
 
-} // namespace corsika::environment
+} // namespace corsika

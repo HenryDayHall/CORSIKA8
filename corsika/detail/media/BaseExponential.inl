@@ -24,7 +24,7 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  units::si::GrammageType BaseExponential<TDerived>::integratedGrammage(
+  GrammageType BaseExponential<TDerived>::integratedGrammage(
       Trajectory<Line> const& line, units::si::LengthType vL,
       Vector<units::si::dimensionless_d> const& axis) const {
     if (vL == units::si::LengthType::zero()) { return units::si::GrammageType::zero(); }
@@ -40,7 +40,7 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  units::si::LengthType BaseExponential<TDerived>::arclengthFromGrammage(
+  LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
       Trajectory<Line> const& line, units::si::GrammageType grammage,
       Vector<units::si::dimensionless_d> const& axis) const {
     auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();

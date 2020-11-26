@@ -32,7 +32,7 @@ auto setupEnvironment(Code vTargetCode) {
   const CoordinateSystem& cs = env->getCoordinateSystem();
 
   auto theMedium =
-      Environment<IMediumModel>::CreateNode<Sphere>(
+      Environment<IMediumModel>::createNode<Sphere>(
           Point{cs, 0_m, 0_m, 0_m},
           1_km * std::numeric_limits<double>::infinity());
 

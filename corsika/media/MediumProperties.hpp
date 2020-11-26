@@ -33,7 +33,7 @@ namespace corsika {
   enum class Medium : int16_t;
   using MediumIntType = std::underlying_type<Medium>::type;
 
-  /**
+  /** \todo documentation needs update ...
    * \struct MediumData
    *
    * Simple object to group together a number of properties
@@ -59,34 +59,34 @@ namespace corsika {
     double sk_;
     double dlt0_;
 
-    std::string name() const { return name_; }
-    std::string pretty_name() const { return pretty_name_; }
-    double weight() const { return weight_; }
-    int weight_significant_figure() const { return weight_significant_figure_; }
-    int weight_error_last_digit() const { return weight_error_last_digit_; }
-    double Z_over_A() const { return Z_over_A_; }
-    double sternheimer_density() const { return sternheimer_density_; }
-    double corrected_density() const { return corrected_density_; }
-    State state() const { return state_; }
-    MediumType type() const { return type_; }
-    std::string symbol() const { return symbol_; }
-    double Ieff() const { return Ieff_; }
-    double Cbar() const { return Cbar_; }
-    double x0() const { return x0_; }
-    double x1() const { return x1_; }
-    double aa() const { return aa_; }
-    double sk() const { return sk_; }
-    double dlt0() const { return dlt0_; }
+    std::string getName() const { return name_; }
+    std::string getPrettyName() const { return pretty_name_; }
+    double getWeight() const { return weight_; }
+    const int& weight_significant_figure() const { return weight_significant_figure_; }
+    const int& weight_error_last_digit() const { return weight_error_last_digit_; }
+    const double& Z_over_A() const { return Z_over_A_; }
+    double getSternheimerDensity() const { return sternheimer_density_; }
+    double getCorrectedDensity() const { return corrected_density_; }
+    State getState() const { return state_; }
+    MediumType getType() const { return type_; }
+    std::string getSymbol() const { return symbol_; }
+    double getIeff() const { return Ieff_; }
+    double getCbar() const { return Cbar_; }
+    double getX0() const { return x0_; }
+    double getX1() const { return x1_; }
+    double getAA() const { return aa_; }
+    double getSK() const { return sk_; }
+    double getDlt0() const { return dlt0_; }
   };
 
 } // namespace corsika
 
-#include <corsika/detail/media/GeneratedMediaProperties.inc>
+#include <corsika/media/GeneratedMediaProperties.inc>
 
-namespace corsika::environment {
+namespace corsika {
 
   constexpr MediumData const& mediumData(Medium const m) {
-    return detail::medium_data[static_cast<MediumIntType>(m)];
+    return corsika::detail::medium_data[static_cast<MediumIntType>(m)];
   }
 
-} // namespace corsika::environment
+} // namespace corsika::medium

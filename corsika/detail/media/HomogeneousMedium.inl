@@ -32,14 +32,13 @@ namespace corsika {
   }
 
   template <typename T>
-  units::si::GrammageType HomogeneousMedium<T>::integratedGrammage(
+  GrammageType HomogeneousMedium<T>::integratedGrammage(
       Trajectory<Line> const&, units::si::LengthType to) const {
-    using namespace units::si;
     return to * density_;
   }
 
   template <typename T>
-  units::si::LengthType HomogeneousMedium<T>::arclengthFromGrammage(
+  LengthType HomogeneousMedium<T>::getArclengthFromGrammage(
       Trajectory<Line> const&, units::si::GrammageType grammage) const {
     return grammage / density_;
   }

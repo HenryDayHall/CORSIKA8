@@ -31,8 +31,8 @@ namespace corsika {
   /**
    * \class ShowerAxis
    *
-   * The environment::ShowerAxis is created from a geometry::Point and
-   * a geometry::Vector and inside an Environment. It internally uses
+   * The environment::ShowerAxis is created from a Point and
+   * a Vector and inside an Environment. It internally uses
    * a table with steps=10000 (default) rows for interpolation.
    *
    * The shower axis can convert location in the shower into a
@@ -40,6 +40,7 @@ namespace corsika {
    *
    **/
 
+    ///\todo documentation needs update ...
   class ShowerAxis {
   public:
     template <typename TEnvModel>
@@ -55,7 +56,7 @@ namespace corsika {
 
     units::si::GrammageType projectedX(Point const& p) const;
 
-    units::si::GrammageType X(units::si::LengthType) const;
+    GrammageType getX(LengthType) const;
 
     Vector<units::si::dimensionless_d> const& getDirection() const;
 

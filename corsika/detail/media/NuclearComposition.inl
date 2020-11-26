@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -58,17 +58,18 @@ namespace corsika {
     return !(*this == other);
   }
 
-  NuclearComposition::NuclearComposition(std::vector<corsika::Code> pComponents,
-                                         std::vector<float> pFractions)
+  NuclearComposition::NuclearComposition(std::vector<corsika::Code> const& pComponents,
+                                         std::vector<float> const& pFractions)
       : numberFractions_(pFractions)
       , components_(pComponents)
       , avgMassNumber_(std::inner_product(
             pComponents.cbegin(), pComponents.cend(), pFractions.cbegin(), 0.,
             std::plus<double>(), [](auto const compID, auto const fraction) -> double {
-              if (IsNucleus(compID)) {
-                return GetNucleusA(compID) * fraction;
+              if (is_nucleus(compID)) {
+                return get_nucleus_A(compID) * fraction;
               } else {
-                return GetMass(compID) / units::si::ConvertSIToHEP(constants::u) * fraction;
+                return get_mass(compID) / units::si::ConvertSIToHEP(constants::u) *
+                       fraction;
               }
             })) {
     assert(pComponents.size() == pFractions.size());
@@ -78,11 +79,11 @@ namespace corsika {
     if (!(0.999f < sumFractions && sumFractions < 1.001f)) {
       throw std::runtime_error("element fractions do not add up to 1");
     }
-    updateHash();
+    this->updateHash();
   }
 
   template <typename TFunction>
-  auto NuclearComposition::WeightedSum(TFunction func) const {
+  auto NuclearComposition::weightedSum(TFunction const& func) const {
     using ResultQuantity = decltype(func(*components_.cbegin()));
 
     auto const prod = [&](auto const compID, auto const fraction) {
@@ -104,14 +105,19 @@ namespace corsika {
 
   auto NuclearComposition::size() const { return numberFractions_.size(); }
 
-  auto const& NuclearComposition::GetFractions() const { return numberFractions_; }
-  auto const& NuclearComposition::GetComponents() const { return components_; }
-  auto const NuclearComposition::GetAverageMassNumber() const { return avgMassNumber_; }
+  std::vector<float> const& NuclearComposition::getFractions() const {
+    return numberFractions_;
+  }
+  
+  std::vector<corsika::Code> const& NuclearComposition::getComponents() const {
+    return components_;
+  }
+
+  auto const NuclearComposition::getAverageMassNumber() const { return avgMassNumber_; }
 
   template <class TRNG>
-  corsika::Code NuclearComposition::SampleTarget(
-      std::vector<units::si::CrossSectionType> const& sigma,
-      TRNG& randomStream) const {
+  corsika::Code NuclearComposition::sampleTarget(
+      std::vector<units::si::CrossSectionType> const& sigma, TRNG& randomStream) const {
     using namespace units::si;
 
     assert(sigma.size() == numberFractions_.size());
@@ -133,10 +139,10 @@ namespace corsika {
 
   void NuclearComposition::updateHash() {
     std::vector<std::size_t> hashes;
-    for (float ifrac : GetFractions()) hashes.push_back(std::hash<float>{}(ifrac));
-    for (corsika::Code icode : GetComponents())
+    for (float ifrac : this->getFractions()) hashes.push_back(std::hash<float>{}(ifrac));
+    for (corsika::Code icode : this->getComponents())
       hashes.push_back(std::hash<int>{}(static_cast<int>(icode)));
-    std::size_t h = std::hash<double>{}(GetAverageMassNumber());
+    std::size_t h = std::hash<double>{}(this->getAverageMassNumber());
     for (std::size_t ih : hashes) h = h ^ (ih << 1);
     hash_ = h;
   }

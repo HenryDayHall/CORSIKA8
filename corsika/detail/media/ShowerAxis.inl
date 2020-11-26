@@ -15,7 +15,7 @@ namespace corsika {
 
   template <typename TEnvModel>
   ShowerAxis::ShowerAxis(Point const& pStart,
-                         corsika::Vector<units::si::length_d> length,
+                         corsika::Vector<units::si::length_d> const& length,
                          Environment<TEnvModel> const& env,
                          int steps)
       : pointStart_(pStart)
@@ -58,7 +58,7 @@ namespace corsika {
     assert(std::is_sorted(d_.cbegin(), d_.cend()));
   }
 
-  GrammageType ShowerAxis::X(LengthType l) const {
+  GrammageType ShowerAxis::getX(LengthType l) const {
     auto const fractionalBin = l / steplength_;
     int const lower = fractionalBin; // indices of nearest X support points
     auto const lambda = fractionalBin - lower;
@@ -87,11 +87,11 @@ namespace corsika {
     return X_[upper] * lambda + X_[lower] * (1 - lambda);
   }
 
-  LengthType ShowerAxis::steplength() const { return steplength_; }
+  LengthType ShowerAxis::getSteplength() const { return steplength_; }
 
-  GrammageType ShowerAxis::maximumX() const { return *X_.rbegin(); }
+  GrammageType ShowerAxis::getMaximumX() const { return *X_.rbegin(); }
 
-  GrammageType ShowerAxis::minimumX() const { return GrammageType::zero(); }
+  GrammageType ShowerAxis::getMinimumX() const { return GrammageType::zero(); }
 
   GrammageType ShowerAxis::projectedX(Point const& p) const {
     auto const projectedLength = (p - pointStart_).dot(axis_normalized_);

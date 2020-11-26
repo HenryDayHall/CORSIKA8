@@ -8,6 +8,10 @@
  * the license.
  */
 
+#pragma once
+
+#include <corsika/framework/logging/Logging.hpp>
+
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>

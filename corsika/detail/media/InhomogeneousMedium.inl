@@ -19,7 +19,7 @@ namespace corsika {
   template <typename T, typename TDensityFunction>
   template <typename... TArgs>
   InhomogeneousMedium<T, TDensityFunction>::InhomogeneousMedium(
-      NuclearComposition nuclComp, TArgs&&... rhoTArgs)
+      NuclearComposition const& nuclComp, TArgs&&... rhoTArgs)
       : nuclComp_(nuclComp)
       , densityFunction_(rhoTArgs...){}
 
@@ -36,15 +36,15 @@ namespace corsika {
   }
 
   template <typename T, typename TDensityFunction>
-  units::si::GrammageType InhomogeneousMedium<T, TDensityFunction>::integratedGrammage(
+  GrammageType InhomogeneousMedium<T, TDensityFunction>::integratedGrammage(
       Trajectory<Line> const& line, units::si::LengthType to) const {
     return densityFunction_.integrateGrammage(line, to);
   }
 
   template <typename T, typename TDensityFunction>
-  units::si::LengthType InhomogeneousMedium<T, TDensityFunction>::arclengthFromGrammage(
+  LengthType InhomogeneousMedium<T, TDensityFunction>::getArclengthFromGrammage(
       Trajectory<Line> const& line, units::si::GrammageType grammage) const {
-    return densityFunction_.arclengthFromGrammage(line, grammage);
+    return densityFunction_.getArclengthFromGrammage(line, grammage);
   }
 
 } // namespace corsika

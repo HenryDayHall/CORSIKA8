@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -19,15 +19,21 @@
 #include <vector>
 
 namespace corsika {
+
+  /** Describes the composition of matter
+   *  Allowes and handles the creation of custom matter compositions
+   **/
   class NuclearComposition {
-    std::vector<float> const numberFractions_; //!< relative fractions of number density
-    std::vector<corsika::Code> const
-        components_; //!< particle codes of consitutents
-
-    double const avgMassNumber_;
-
-    std::size_t hash_;
-
+  private:
+    /// TODO: replace with
+    /// https://www.boost.org/doc/libs/1_74_0/libs/iterator/doc/zip_iterator.html or
+    /// ranges zip
+    /** Double Iterator
+     * Iterator that allowes the iteration of two individual lists at the same time. The
+     *user needs to take care that booth lists have the same length.
+     *  @tparam AConstIterator Iterator Type of the first list
+     *  @tparam BConstIterator Iterator Type of the second list
+     **/
     template <class AConstIterator, class BConstIterator>
     class WeightProviderIterator {
       AConstIterator aIter_;
@@ -52,22 +58,43 @@ namespace corsika {
     };
 
   public:
+    /** Constructor
+     *  The constructore takes a list of elements and a list which describe the relative
+     *  amount. Booth lists need to have the same length and the sum all of fractions
+     *  should be 1. Otherwise an exception is thrown
+     *  @param pComponents List of particle types
+     *  @param pFractions List of fractions how much each particle contributes. The sum
+     *needs to add up to 1
+     **/
     NuclearComposition(std::vector<corsika::Code> pComponents,
                        std::vector<float> pFractions);
 
+    /** Sum all all relative composition weighted by func(element)
+     *  This function sums all relative compositions given during this classes
+     *construction. Each entry is weighted by the user defined function func given to this
+     *function.
+     *  @tparam TFunction Type of functions for the weights. The type should be
+     *corsika::Code -> float
+     *  @param func Functions for reweighting specific elements
+     *  @retval returns the weighted sum with the type defined by the return type of func
+     **/
     template <typename TFunction>
-    auto WeightedSum(TFunction func) const ;
+    auto weightedSum(TFunction func) const;
 
+    /** Number of elements in the composition array
+     *  @retval returns the number of elements in the composition array
+     **/
     auto size() const;
 
-    auto const& GetFractions() const;
-    auto const& GetComponents() const ;
-    auto const GetAverageMassNumber() const;
+    /// Returns a const reference to the fraction
+    std::vector<float> const& getFractions() const;
+    /// Returns a const reference to the fraction
+    std::vector<corsika::Code> const& getComponents() const;
+    auto const getAverageMassNumber() const;
 
     template <class TRNG>
-    Code SampleTarget(
-        std::vector<units::si::CrossSectionType> const& sigma,
-        TRNG& randomStream) const;
+    Code sampleTarget(std::vector<units::si::CrossSectionType> const& sigma,
+                      TRNG& randomStream) const;
 
     // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
@@ -75,6 +102,13 @@ namespace corsika {
 
   private:
     void updateHash();
+
+    std::vector<float> const numberFractions_; //!< relative fractions of number density
+    std::vector<corsika::Code> const components_; //!< particle codes of consitutents
+
+    double const avgMassNumber_;
+
+    std::size_t hash_;
   };
 
 } // namespace corsika

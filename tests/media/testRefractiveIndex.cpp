@@ -25,7 +25,7 @@ using namespace corsika::units::si;
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
 
   CoordinateSystem const& gCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 

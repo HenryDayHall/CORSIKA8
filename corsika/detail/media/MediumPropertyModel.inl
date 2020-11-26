@@ -19,7 +19,7 @@ namespace corsika {
       , medium_(medium) {}
 
   template <typename T>
-  Medium MediumPropertyModel<T>::getMedium(Point const&) const final override {
+  Medium MediumPropertyModel<T>::getMedium(Point const&) const {
     return medium_;
   }
 

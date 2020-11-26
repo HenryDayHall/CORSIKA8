@@ -26,8 +26,6 @@ namespace corsika {
     // a type-alias for a magnetic field vector
     using MagneticFieldVector = corsika::Vector<phys::units::magnetic_flux_density_d>;
 
-    MagneticFieldVector B_; ///< The constant magnetic field we use.
-
   public:
     /**
      * Construct a UniformMagneticField.
@@ -48,7 +46,7 @@ namespace corsika {
      * @param  point    The location to evaluate the field at.
      * @returns    The magnetic field vector.
      */
-    MagneticFieldVector GetMagneticField(
+    MagneticFieldVector getMagneticField(
         corsika::geometry::Point const&) const final override {
       return B_;
     }
@@ -59,7 +57,10 @@ namespace corsika {
      * @param  point    The location to evaluate the field at.
      * @returns    The magnetic field vector.
      */
-    auto SetMagneticField(MagneticFieldVector const& Bfield) -> void { B_ = Bfield; }
+    auto setMagneticField(MagneticFieldVector const& Bfield) -> void { B_ = Bfield; }
+
+  private:
+    MagneticFieldVector B_; ///< The constant magnetic field we use.
 
   }; // END: class MagneticField
 

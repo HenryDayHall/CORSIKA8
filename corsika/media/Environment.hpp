@@ -20,6 +20,9 @@
 
 namespace corsika {
 
+  /** Base Evnironment class
+   *  Describes the Environment in which the shower is propagated
+   **/
   template <typename IEnvironmentModel>
   class Environment {
   public:
@@ -27,14 +30,31 @@ namespace corsika {
 
     Environment();
 
+    /** Getters for the universe stored in the Environment
+     *
+     * @retval Retuns reference to a Universe object with infinite size
+     **/
+    ///@{
+    //* Get non const universe */
     typename BaseNodeType::VTNUPtr& getUniverse();
+    //* Get const universe */
     typename BaseNodeType::VTNUPtr const& getUniverse() const;
+    ///@}
 
+    /** Getter for the CoordinateSystem used in the Environment
+     *
+     * @retval Retuns a const reference to the CoordinateSystem used
+     **/
     CoordinateSystem const& getCoordinateSystem() const;
 
-    // factory method for creation of VolumeTreeNodes
+    /** Factory method for creation of VolumeTreeNodes
+     * @tparam TVolumeType Type of volume to be created
+     * @tparam TVolumeArgs Types to forward to the constructor
+     * @param args Parameter forwarded to the constructor of TVolumeType
+     * @retval Retuns unique pointer to a VolumeTreeNode with the same EnvitonmentModel as this class
+     **/
     template <class TVolumeType, typename... TVolumeArgs>
-    static std::unique_ptr<BaseNodeType> CreateNode(TVolumeArgs&&... args);
+    static std::unique_ptr<BaseNodeType> createNode(TVolumeArgs&&... args);
 
   private:
     CoordinateSystem const& coordinateSystem_;

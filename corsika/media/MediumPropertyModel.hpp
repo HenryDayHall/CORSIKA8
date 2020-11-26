@@ -44,7 +44,7 @@ namespace corsika {
      * @param  medium    The medium to store.
      * @returns    The medium type as enum environment::Medium
      */
-    void setMedium(Medium const medium) override;
+    void setMedium(Medium const medium);
 
   }; // END: class MediumPropertyModel
 

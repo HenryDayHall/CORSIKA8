@@ -16,6 +16,7 @@
 #include <corsika/media/InhomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/MediumProperties.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -25,7 +26,7 @@ using namespace corsika::units::si;
 TEST_CASE("MediumPropertyModel w/ Homogeneous") {
 
   CoordinateSystem const& gCS =
-      RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
 
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
@@ -41,35 +42,35 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
                                              std::vector<float>{1.f});
 
   // the refrative index that we use
-  const Medium type = Medium::AirDry1Atm;
+  const Medium type = corsika::Medium::AirDry1Atm;
 
   // create the atmospheric model
   AtmModel medium(type, density, protonComposition);
 
   // and require that it is constant
-  CHECK(type == medium.medium(Point(gCS, -10_m, 4_m, 35_km)));
-  CHECK(type == medium.medium(Point(gCS, +210_m, 0_m, 7_km)));
-  CHECK(type == medium.medium(Point(gCS, 0_m, 0_m, 0_km)));
-  CHECK(type == medium.medium(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(type == medium.getMedium(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(type == medium.getMedium(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(type == medium.getMedium(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(type == medium.getMedium(Point(gCS, 100_km, 400_km, 350_km)));
 
   // a new refractive index
-  const Medium type2 = Medium::StandardRock;
+  const Medium type2 = corsika::Medium::StandardRock;
 
   // update the refractive index of this atmospheric model
-  medium.set_medium(type2);
+  medium.setMedium(type2);
 
   // check that the returned refractive index is correct
-  CHECK(type2 == medium.medium(Point(gCS, -10_m, 4_m, 35_km)));
-  CHECK(type2 == medium.medium(Point(gCS, +210_m, 0_m, 7_km)));
-  CHECK(type2 == medium.medium(Point(gCS, 0_m, 0_m, 0_km)));
-  CHECK(type2 == medium.medium(Point(gCS, 100_km, 400_km, 350_km)));
+  CHECK(type2 == medium.getMedium(Point(gCS, -10_m, 4_m, 35_km)));
+  CHECK(type2 == medium.getMedium(Point(gCS, +210_m, 0_m, 7_km)));
+  CHECK(type2 == medium.getMedium(Point(gCS, 0_m, 0_m, 0_km)));
+  CHECK(type2 == medium.getMedium(Point(gCS, 100_km, 400_km, 350_km)));
 
   // define our axis vector
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
 
   // check the density and nuclear composition
-  CHECK(density == medium.GetMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
-  medium.GetNuclearComposition();
+  CHECK(density == medium.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.getNuclearComposition();
 
   // create a line of length 1 m
   Line const line(gOrigin, Vector<SpeedType::dimension_type>(
@@ -82,6 +83,6 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   Trajectory<Line> const trajectory(line, tEnd);
 
   // and check the integrated grammage
-  CHECK((medium.IntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
-  CHECK((medium.ArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+  CHECK((medium.integratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.arclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }
