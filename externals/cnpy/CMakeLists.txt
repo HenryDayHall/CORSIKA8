@@ -27,7 +27,7 @@ set_target_properties (
 target_link_libraries (
   cnpy
   PUBLIC
-  ZLIB::ZLIB
+  CONAN_PKG::zlib
   )
 
 target_include_directories (

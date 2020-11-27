@@ -113,6 +113,30 @@ else (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 #
 #+++++++++++++++++++++++++++++
+# Setup external dependencies.
+
+#
+# the version of the cmake-conan project we use for build.
+set (CMAKE_CONAN_VERSION "v0.13")
+
+# download the cmake-conan integration
+if (NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message (STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file (DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/${CMAKE_CONAN_VERSION}/conan.cmake"
+                  "${CMAKE_BINARY_DIR}/conan.cmake"
+                  TLS_VERIFY ON)
+endif ()
+
+# add the cmake-conan integration
+include (${CMAKE_BINARY_DIR}/conan.cmake)
+
+# download and build all dependencies
+conan_cmake_run (CONANFILE conanfile.txt
+                 BASIC_SETUP CMAKE_TARGETS
+                 BUILD missing)
+
+#
+#+++++++++++++++++++++++++++++
 # Coverage
 #
 # targets and settings needed to generate coverage reports
@@ -176,26 +200,6 @@ set (Python_ADDITIONAL_VERSIONS 3)
 find_package (PythonInterp 3 REQUIRED)
 #
 #+++++++++++++++++++++++++++++
-# get Eigen3 
-#
-find_package (Eigen3 3.3.4  REQUIRED)
-#
-#+++++++++++++++++++++++++++++
-# get catch2 
-#
-find_package (Catch2 2.13.2 REQUIRED)
-#
-#+++++++++++++++++++++++++++++
-# use spdlog
-#
-add_subdirectory (externals/spdlog)
-#
-#+++++++++++++++++++++++++++++
-# use zlib
-#
-find_package (ZLIB REQUIRED)
-#
-#+++++++++++++++++++++++++++++
 # get phys_units
 #
 find_package (PhysUnits REQUIRED)
@@ -216,8 +220,8 @@ target_link_libraries (
   CORSIKA8
   INTERFACE
   PhysUnits
-  Eigen3::Eigen
-  spdlog::spdlog
+  CONAN_PKG::eigen
+  CONAN_PKG::spdlog
   )
 # those are needed, since some headers (namely GeneratedParticleProperties.inc) are produced by python script from ParticleData.xml
 add_subdirectory (src)

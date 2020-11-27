@@ -57,8 +57,8 @@ function (CORSIKA_ADD_TEST)
   endif ()
 
   add_executable (${name} ${sources})
-  target_link_libraries (${name} CORSIKA8 Catch2 CorsikaTesting)
-  target_compile_options (${name} PRIVATE -g) # do not skip asserts  
+  target_link_libraries (${name} CORSIKA8 CONAN_PKG::catch2)
+  target_compile_options (${name} PRIVATE -g) # do not skip asserts
   target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
   if (CORSIKA_SANITIZERS_ENABLED)
