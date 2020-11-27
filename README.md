@@ -51,16 +51,27 @@ which are very useful also for us.
 
 
 
-CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0.
-Additional software prerequisites you need to install are: eigen3, zlib, libbz2, cmake, g++, git. 
+CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0. You will
+also need:
+
+- Python 3 (supported versions are Python >= 3.6)
+- cmake 
+- git
 
 On a bare Ubuntu 18.04, just add:
-```
-sudo apt install libeigen3-dev zlib1g-dev libbz2-dev cmake g++ git
+``` shell
+sudo apt-get install cmake g++ git
 ```
 
-Follow these steps to download and install CORSIKA 8
+CORSIKA 8 uses the [conan](https://conan.io/) package manager to manage our
+dependencies. If you do not have Conan installed, it can be installed with:
+
+``` shell
+pip install --user conan
 ```
+
+Once Conan is installed, follow these steps to download and install CORSIKA 8:
+``` shell
 git clone --recursive git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
 cd corsika
 mkdir ../corsika-build
