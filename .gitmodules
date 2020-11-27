@@ -3,10 +3,6 @@
 	url = ../../AirShowerPhysics/corsika-data
 	branch = master
         shallow = true
-[submodule "externals/spdlog"]
-	path = externals/spdlog
-	url = https://github.com/gabime/spdlog.git
-        shallow = true
 [submodule "modules/proposal"]
 	path = modules/proposal
 	url = https://github.com/tudo-astroparticlephysics/PROPOSAL.git
