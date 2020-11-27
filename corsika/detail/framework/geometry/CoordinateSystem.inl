@@ -34,45 +34,41 @@ namespace corsika {
   }
 
   /// find transformation between two CS, using most optimal common base
-  inline EigenTransform get_transformation(CoordinateSystemPtr const& pFrom,
-                                           CoordinateSystemPtr const& pTo) {
-    CoordinateSystemPtr a{pFrom};
-    CoordinateSystemPtr b{pTo};
-    CoordinateSystemPtr commonBase{nullptr};
+  inline EigenTransform get_transformation(CoordinateSystem const& pFrom,
+                                           CoordinateSystem const& pTo) {
+    CoordinateSystem const* a{&pFrom};
+    CoordinateSystem const* b{&pTo};
 
     while (a != b && b) {
 
       // traverse pFrom
-      a = pFrom;
+      a = &pFrom;
       while (a != b && a) {
-        a = a->getReferenceCS();
+        a = a->getReferenceCS().get();
       }
 
       if (a == b) break;
 
-      b = b->getReferenceCS();
+      b = b->getReferenceCS().get();
     }
 
-    if (a == b && a) {
-      commonBase = a;
-
-    } else {
+    if (a!=b || a == nullptr) {
       throw std::runtime_error("no connection between coordinate systems found!");
     }
 
+    CoordinateSystem const* commonBase = a;
+    CoordinateSystem const* p = &pFrom;
     EigenTransform t = EigenTransform::Identity();
-    CoordinateSystemPtr p = pFrom;
-
     while ((*p) != (*commonBase)) {
       t = p->getTransform() * t;
-      p = p->getReferenceCS();
+      p = p->getReferenceCS().get();
     }
 
-    p = pTo;
+    p = &pTo;
 
     while (*p != *commonBase) {
       t = t * p->getTransform().inverse(Eigen::TransformTraits::Isometry);
-      p = p->getReferenceCS();
+      p = p->getReferenceCS().get();
     }
 
     return t;

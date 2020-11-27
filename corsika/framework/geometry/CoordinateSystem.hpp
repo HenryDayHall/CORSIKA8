@@ -166,9 +166,11 @@ namespace corsika {
    * \f$ \vec{v}^{\text{(to)}} = \mathcal{M} \vec{v}^{\text{(from)}} \f$
    * (\f$ \vec{v}^{(.)} \f$ denotes the coordinates/components of the component in
    * the indicated CoordinateSystem).
+   *
+   * \todo make this a protected member of CoordinateSystem
    */
-  inline EigenTransform get_transformation(CoordinateSystemPtr const& c1,
-                                           CoordinateSystemPtr const& c2);
+  inline EigenTransform get_transformation(CoordinateSystem const& c1,
+                                           CoordinateSystem const& c2);
 
 } // namespace corsika
 

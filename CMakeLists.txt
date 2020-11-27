@@ -240,12 +240,9 @@ add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
 #
 #+++++++++++++++++++++++++++++++
-# tests
+# unit testing
 # 
-add_subdirectory (tests/framework)
-add_subdirectory (tests/media)
-add_subdirectory (tests/stack)
-add_subdirectory (tests/modules)
+add_subdirectory (tests)
 #
 #+++++++++++++++++++++++++++++++
 # examples

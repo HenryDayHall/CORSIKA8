@@ -17,7 +17,10 @@
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/Trajectory.hpp>
 
+#include <PhysicalUnitsCatch2.hpp> // namespace corsike::testing
+
 using namespace corsika;
+using namespace corsika::testing;
 
 double constexpr absMargin = 1.0e-8;
 
@@ -40,7 +43,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 
     CoordinateSystemPtr translatedCS = make_translation(rootCS, translationVector);
 
-    CHECK(*translatedCS->getReferenceCS() == *rootCS);
+    CHECK(translatedCS->getReferenceCS() == rootCS);
 
     CHECK((p1.getCoordinates(translatedCS) + translationVector).getNorm().magnitude() ==
           Approx(0).margin(absMargin));
@@ -65,11 +68,11 @@ TEST_CASE("transformations between CoordinateSystems") {
     QuantityVector<length_d> const tv3{0_m, 0_m, 2_m};
     CoordinateSystemPtr cs4 = make_translation(cs3, tv3);
 
-    CHECK(*cs4->getReferenceCS()->getReferenceCS() == *rootCS);
+    CHECK(cs4->getReferenceCS()->getReferenceCS() == rootCS);
 
-    CHECK(get_transformation(cs3, cs2).isApprox(
+    CHECK(get_transformation(*cs3.get(), *cs2.get()).isApprox(
         make_translation(rootCS, {3_m, -5_m, 0_m})->getTransform()));
-    CHECK(get_transformation(cs2, cs3).isApprox(
+    CHECK(get_transformation(*cs2.get(), *cs3.get()).isApprox(
         make_translation(rootCS, {-3_m, +5_m, 0_m})->getTransform()));
   }
 
@@ -78,7 +81,7 @@ TEST_CASE("transformations between CoordinateSystems") {
     double const angle = 90. / 180. * M_PI;
 
     CoordinateSystemPtr rotatedCS = make_rotation(rootCS, axis, angle);
-    CHECK(*rotatedCS->getReferenceCS() == *rootCS);
+    CHECK(rotatedCS->getReferenceCS() == rootCS);
 
     CHECK(v1.getComponents(rotatedCS)[1].magnitude() ==
           Approx((-1. * tesla).magnitude()));
@@ -237,7 +240,7 @@ TEST_CASE("CoordinateSystem hirarchy") {
 
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
-  CHECK(get_transformation(rootCS, rootCS).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(*rootCS.get(), *rootCS.get()).isApprox(EigenTransform::Identity()));
 
   // define the root coordinate system
   CoordinateSystemPtr root = get_root_CoordinateSystem();
@@ -267,10 +270,10 @@ TEST_CASE("CoordinateSystem hirarchy") {
 
   // all points should be on top of each other
 
-  CHECK_FALSE(get_transformation(root, cs2).isApprox(EigenTransform::Identity()));
-  CHECK(get_transformation(root, cs3).isApprox(EigenTransform::Identity()));
-  CHECK(get_transformation(root, cs4).isApprox(EigenTransform::Identity()));
-  CHECK(get_transformation(cs5, cs6).isApprox(EigenTransform::Identity()));
+  CHECK_FALSE(get_transformation(*root.get(), *cs2.get()).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(*root.get(), *cs3.get()).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(*root.get(), *cs4.get()).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(*cs5.get(), *cs6.get()).isApprox(EigenTransform::Identity()));
 
   CHECK((p1 - p2).getNorm().magnitude() == Approx(0).margin(absMargin));
   CHECK((p1 - p3).getNorm().magnitude() == Approx(0).margin(absMargin));
@@ -330,6 +333,6 @@ TEST_CASE("Trajectories") {
 
     CHECK((base.getNormalizedDirection().getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
-              .getNorm() == Approx(0).margin(absMargin));
+	  .getNorm() == Approx(0).margin(absMargin));
   }
 }

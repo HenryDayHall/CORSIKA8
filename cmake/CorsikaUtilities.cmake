@@ -57,8 +57,8 @@ function (CORSIKA_ADD_TEST)
   endif ()
 
   add_executable (${name} ${sources})
-  target_link_libraries (${name} CORSIKA8 Catch2)
-  target_compile_options (${name} PRIVATE -g) # do not skip asserts
+  target_link_libraries (${name} CORSIKA8 Catch2 CorsikaTesting)
+  target_compile_options (${name} PRIVATE -g) # do not skip asserts  
   target_include_directories (${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   file (MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test_outputs/)
   if (CORSIKA_SANITIZERS_ENABLED)
@@ -77,7 +77,7 @@ endfunction (CORSIKA_ADD_TEST)
 # Examples can be globally executed by 'make run_examples'
 #
 # 1) Simple use:
-# Pass the name of the test.cc file as the first
+# Pass the name of the source.cc file as the first
 # argument, without the ".cc" extention.
 #
 # Example: CORSIKA_REGISTER_EXAMPLE (doSomething)
@@ -85,12 +85,12 @@ endfunction (CORSIKA_ADD_TEST)
 # The TARGET doSomething must already exists,
 #    i.e. typically via add_executable (doSomething src.cc).
 #
-# Example: CORSIKA_ADD_EXAMPLE (testSomething
+# Example: CORSIKA_ADD_EXAMPLE (example_one
 #              RUN_OPTION "extra command line options"
 #              )
 #
 # In all cases, you can further customize the target with
-# target_link_libraries(testSomething ...) and so on.
+# target_link_libraries(example_one ...) and so on.
 #
 function (CORSIKA_REGISTER_EXAMPLE)
   cmake_parse_arguments (PARSE_ARGV 1 C8_EXAMPLE "" "" "RUN_OPTIONS")

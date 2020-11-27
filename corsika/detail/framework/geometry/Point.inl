@@ -31,7 +31,7 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector().getX();
     } else {
       return QuantityVector<length_d>(
-                 get_transformation(cs, pCS) *
+                 get_transformation(*cs.get(), *pCS.get()) *
                  BaseVector<length_d>::getQuantityVector().eigenVector_)
           .getX();
     }
@@ -43,7 +43,7 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector().getY();
     } else {
       return QuantityVector<length_d>(
-                 get_transformation(cs, pCS) *
+                 get_transformation(*cs.get(), *pCS.get()) *
                  BaseVector<length_d>::getQuantityVector().eigenVector_)
           .getY();
     }
@@ -55,7 +55,7 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector().getZ();
     } else {
       return QuantityVector<length_d>(
-                 get_transformation(cs, pCS) *
+                 get_transformation(*cs.get(), *pCS.get()) *
                  BaseVector<length_d>::getQuantityVector().eigenVector_)
           .getZ();
     }
@@ -68,7 +68,7 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector();
     } else {
       return QuantityVector<length_d>(
-          get_transformation(cs, pCS) *
+          get_transformation(*cs.get(), *pCS.get()) *
           BaseVector<length_d>::getQuantityVector().eigenVector_);
     }
   }
@@ -81,7 +81,8 @@ namespace corsika {
 
   void Point::rebase(CoordinateSystemPtr const& pCS) {
     BaseVector<length_d>::setQuantityVector(QuantityVector<length_d>(
-        get_transformation(BaseVector<length_d>::getCoordinateSystem(), pCS) *
+        get_transformation(*BaseVector<length_d>::getCoordinateSystem().get(),
+                           *pCS.get()) *
         BaseVector<length_d>::getQuantityVector().eigenVector_));
     BaseVector<length_d>::setCoordinateSystem(pCS);
   }

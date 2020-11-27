@@ -31,7 +31,8 @@ namespace corsika {
       return BaseVector<TDimension>::getQuantityVector();
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(BaseVector<TDimension>::getCoordinateSystem(), pCS)
+          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
+                             *pCS.get())
               .linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_);
     }
@@ -51,7 +52,8 @@ namespace corsika {
       return BaseVector<TDimension>::getQuantityVector()[0];
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(BaseVector<TDimension>::getCoordinateSystem(), pCS)
+          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
+                             *pCS.get())
               .linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_)[0];
     }
@@ -64,7 +66,8 @@ namespace corsika {
       return BaseVector<TDimension>::getQuantityVector()[1];
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(BaseVector<TDimension>::getCoordinateSystem(), pCS)
+          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
+                             *pCS.get())
               .linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_)[1];
     }
@@ -77,7 +80,8 @@ namespace corsika {
       return BaseVector<TDimension>::getQuantityVector()[2];
     } else {
       return QuantityVector<TDimension>(
-          get_transformation(BaseVector<TDimension>::getCoordinateSystem(), pCS)
+          get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
+                             *pCS.get())
               .linear() *
           BaseVector<TDimension>::getQuantityVector().eigenVector_)[2];
     }
@@ -86,7 +90,9 @@ namespace corsika {
   template <typename TDimension>
   void Vector<TDimension>::rebase(CoordinateSystemPtr const& pCS) {
     BaseVector<TDimension>::setQuantityVector(QuantityVector<TDimension>(
-        get_transformation(BaseVector<TDimension>::getCoordinateSystem(), pCS).linear() *
+        get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
+                           *pCS.get())
+            .linear() *
         BaseVector<TDimension>::getQuantityVector().eigenVector_));
     BaseVector<TDimension>::setCoordinateSystem(pCS);
   }

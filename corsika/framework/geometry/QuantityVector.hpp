@@ -53,7 +53,7 @@ namespace corsika {
         : eigenVector_{a, b, c} {
       static_assert(
           std::is_same_v<TDimension, phys::units::dimensionless_d>,
-          "initialization of dimensionfull QuantityVector with pure numbers not allowed!");
+          "initialization of dimensionful QuantityVector with pure numbers not allowed!");
     }
 
     quantity_type operator[](size_t const index) const;

@@ -20,6 +20,9 @@ double constexpr absMargin = 1e-6;
 
 CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
+/**
+ * \todo such helper functions should be moved to the FourVector class:
+ **/
 // helper function for energy-momentum
 // relativistic energy
 auto const energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
@@ -50,14 +53,16 @@ TEST_CASE("rotation") {
     COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, 1_GeV}}}, targetMass);
     CoordinateSystemPtr rotCS = boost.getRotatedCS();
 
-    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    e1.rebase(rotCS);
+    e2.rebase(rotCS);
+    e3.rebase(rotCS);
+    
+    // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
+    CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getNorm() / 1_GeV == Approx(1).margin(absMargin));
 
-    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e2.getY(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-
+    // z-axis is along z-boost
     CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e3.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
@@ -67,85 +72,95 @@ TEST_CASE("rotation") {
     COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, 1_meV}}}, targetMass);
     CoordinateSystemPtr rotCS = boost.getRotatedCS();
 
-    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    e1.rebase(rotCS);
+    e2.rebase(rotCS);
+    e3.rebase(rotCS);
 
+    // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
+    CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+
+    // z-axis is along y-boost
     CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e2.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e2.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-
-    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e3.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
-    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
   }
 
   SECTION("x-axis in upper half") {
     COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, 1_meV}}}, targetMass);
     CoordinateSystemPtr rotCS = boost.getRotatedCS();
 
+    e1.rebase(rotCS);
+    e2.rebase(rotCS);
+    e3.rebase(rotCS);
+
+    // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
+    CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+
+    // z-axis is along x-boost
     CHECK(e1.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e1.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-
-    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e2.getY(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-
-    CHECK(e3.getX(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
-    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
   }
 
   SECTION("neg. z-axis") {
     COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 0_GeV, -1_GeV}}}, targetMass);
     CoordinateSystemPtr rotCS = boost.getRotatedCS();
 
-    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    e1.rebase(rotCS);
+    e2.rebase(rotCS);
+    e3.rebase(rotCS);
 
-    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e2.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
-    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
+    CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getNorm() / 1_GeV == Approx(1).margin(absMargin));
 
-    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
+    // z-axis is along -z-boost
+    CHECK(-e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(-e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    CHECK(-e3.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
   }
 
   SECTION("x-axis lower half") {
     COMBoost boost({eProjectileLab, {rootCS, {1_GeV, 0_GeV, -1_meV}}}, targetMass);
     CoordinateSystemPtr rotCS = boost.getRotatedCS();
 
+    e1.rebase(rotCS);
+    e2.rebase(rotCS);
+    e3.rebase(rotCS);
+
+    // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
+    CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+
+    // z-axis is along x-boost
     CHECK(e1.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e1.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-
-    CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e2.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
-    CHECK(e2.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-
-    CHECK(e3.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e3.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
   }
 
   SECTION("y-axis lower half") {
     COMBoost boost({eProjectileLab, {rootCS, {0_GeV, 1_GeV, -1_meV}}}, targetMass);
     CoordinateSystemPtr rotCS = boost.getRotatedCS();
 
-    CHECK(e1.getX(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-    CHECK(e1.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e1.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
+    e1.rebase(rotCS);
+    e2.rebase(rotCS);
+    e3.rebase(rotCS);
 
+    // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
+    CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+    CHECK(e3.getNorm() / 1_GeV == Approx(1).margin(absMargin));
+
+    // z-axis is along y-boost
     CHECK(e2.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e2.getY(rotCS) / 1_GeV == Approx(0).margin(absMargin));
     CHECK(e2.getZ(rotCS) / 1_GeV == Approx(1).margin(absMargin));
-
-    CHECK(e3.getX(rotCS) / 1_GeV == Approx(0).margin(absMargin));
-    CHECK(e3.getY(rotCS) / 1_GeV == Approx(-1).margin(absMargin));
-    CHECK(e3.getZ(rotCS) / 1_GeV == Approx(0).margin(absMargin));
   }
 }
 

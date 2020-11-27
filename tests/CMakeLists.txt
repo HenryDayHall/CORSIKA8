@@ -1,0 +1,5 @@
+add_subdirectory (common)
+add_subdirectory (framework)
+add_subdirectory (media)
+add_subdirectory (stack)
+add_subdirectory (modules)

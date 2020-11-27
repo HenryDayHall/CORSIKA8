@@ -22,7 +22,7 @@ n/*
  */
 
 /*
-  It is essentially a bug of the phys/units package to define the
+  It is essentially a bug of the phys_units package to define the
   operator<< not in the same namespace as the types it is working
   on. This breaks ADL (argument-dependent lookup). Here we "fix" this:
  */
@@ -148,9 +148,6 @@ namespace corsika::units::si {
     return conversion_factor_SI_to_HEP<DimFrom>() * q;
   }
 
-  template <typename T>
-  bool operator==(DimensionlessType a, T b){ return a.magnitude() == b; }
-  
 } // end namespace corsika::units::si
 
 /**
