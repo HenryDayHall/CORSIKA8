@@ -66,13 +66,13 @@ namespace corsika {
     }
 
     template <typename... Args1>
-    void setParticleData(pi_a_type& p, const std::tuple<Args1...> vA) {
+    void setParticleData(PI_C& p, const std::tuple<Args1...> vA) {
       // static_assert(MT<I>::has_not, "error");
     	pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA); // original stack
         pi_b_type::setParticleData(static_cast<pi_b_type&>(p));     // addon stack
     }
     template <typename... Args1, typename... Args2>
-    void setParticleData(pi_c_type& p, const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
+    void setParticleData(PI_C& p, const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
 
     	pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA);
         pi_b_type::setParticleData(static_cast<pi_b_type&>(p), vB);
@@ -80,7 +80,7 @@ namespace corsika {
     ///@}
 
     std::string as_string() const {
-      return fmt::format("[[{}][{}]]", pi_a_type::as_string(), pi_b_type::as_string());
+      return fmt::format("[[{}][{}]]", PI_A::as_string(), pi_b_type::as_string());
     }
 
   private:

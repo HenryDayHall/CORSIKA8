@@ -69,11 +69,6 @@ namespace corsika {
     bool isDeleted() const { return this->getIterator().getStack().isDeleted(this->getIterator()); }
 
     /**
-     * Method to retrieve the status of the Particle. Is it already deleted? Or not.
-     */
-    bool isDeleted() const { return GetIterator().GetStack().isDeleted(GetIterator()); }
-
-    /**
      * Add a secondary particle based on *this on the stack @param
      * args is a variadic list of input data that has to match the
      * function description in the user defined ParticleInterface::AddSecondary(...)

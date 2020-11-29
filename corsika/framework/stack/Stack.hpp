@@ -239,24 +239,24 @@ namespace corsika {
      */
     template <typename... TArgs>
     stack_iterator_type addParticle(const TArgs... v) {
-      //C8LOG_TRACE("Stack::AddParticle");
+      C8LOG_TRACE("Stack::AddParticle");
       data_.incrementSize();
       deleted_.push_back(false);
       return stack_iterator_type(*this, getSize() - 1, v...);
     }
 
     void swap(stack_iterator_type a, stack_iterator_type b) {
-      //C8LOG_TRACE("Stack::Swap");
+      C8LOG_TRACE("Stack::Swap");
       swap(a.getIndex(), b.getIndex());
     }
 
     void copy(stack_iterator_type a, stack_iterator_type b) {
-      //C8LOG_TRACE("Stack::Copy");
+      C8LOG_TRACE("Stack::Copy");
       copy(a.getIndex(), b.getIndex());
     }
 
-    void copy(const_stack_iterator_type a, stack_iterator_type b) {
-      //C8LOG_TRACE("Stack::Copy");
+    void copy(stack_iterator_type a, stack_iterator_type b) {
+      C8LOG_TRACE("Stack::Copy");
       data_.copy(a.getIndex(), b.getIndex());
       if (deleted_[b.getIndex()] && !deleted_[a.getIndex()]) nDeleted_--;
       if (!deleted_[b.getIndex()] && deleted_[a.getIndex()]) nDeleted_++;
@@ -264,7 +264,7 @@ namespace corsika {
     }
 
     void erase(stack_iterator_type p) {
-      //C8LOG_TRACE("Stack::Delete");
+      C8LOG_TRACE("Stack::Delete");
       if (this->isEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
@@ -276,7 +276,7 @@ namespace corsika {
     /**
      * delete this particle
      */
-    void erase(particle_interface_type p) {
+    void erase(ParticleInterfaceType p) {
 
     	this->erase(p.getIterator());
     }
@@ -295,11 +295,11 @@ namespace corsika {
     	return isDeleted(p.getIndex());
     }
 
-    bool isDeleted(const const_stack_iterator_type& p) const {
+    bool isDeleted(const ConstStackIterator& p) const {
     	return isDeleted(p.getIndex());
     }
 
-    bool isDeleted(const particle_interface_type& p) const {
+    bool isDeleted(const ParticleInterfaceType& p) const {
       return isDeleted(p.getIterator());
     }
 
@@ -311,7 +311,7 @@ namespace corsika {
     bool purgeLastIfDeleted() {
       if (!deleted_.back())
         return false; // the last particle is not marked for deletion. Do nothing.
-      //C8LOG_TRACE("Stack::purgeLastIfDeleted: yes");
+      C8LOG_TRACE("Stack::purgeLastIfDeleted: yes");
       data_.decrementSize();
       nDeleted_--;
       deleted_.pop_back();
@@ -371,19 +371,19 @@ namespace corsika {
      */
     template <typename... TArgs>
     stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) {
-      //C8LOG_TRACE("Stack::AddSecondary");
+      C8LOG_TRACE("Stack::AddSecondary");
       data_.incrementSize();
       deleted_.push_back(false);
       return stack_iterator_type(*this, getSize() - 1, parent, v...);
     }
 
     void swap(unsigned int a, unsigned int b) {
-      //C8LOG_TRACE("Stack::Swap(unsigned int)");
+      C8LOG_TRACE("Stack::Swap(unsigned int)");
       data_.swap(a, b);
       std::swap(deleted_[a], deleted_[b]);
     }
     void copy(unsigned int a, unsigned int b) {
-      //C8LOG_TRACE("Stack::Copy");
+      C8LOG_TRACE("Stack::Copy");
       data_.copy(a, b);
       if (deleted_[b] && !deleted_[a]) nDeleted_--;
       if (!deleted_[b] && deleted_[a]) nDeleted_++;
@@ -423,7 +423,7 @@ namespace corsika {
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
     unsigned int getIndexFromIterator(const unsigned int vI) const {
-      // this is too much: //C8LOG_TRACE("Stack::getIndexFromIterator({})={}", vI, vI);
+      // this is too much: C8LOG_TRACE("Stack::getIndexFromIterator({})={}", vI, vI);
       return vI;
     }
 
