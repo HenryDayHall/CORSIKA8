@@ -8,7 +8,7 @@
 
 #pragma once
 
-//#include <corsika/logging/Logging.h>
+#include <corsika/framework/logging/Logging.hpp>
 #include <corsika/framework/stack/StackIteratorInterface.hpp>
 #include <corsika/framework/utility/MetaProgramming.hpp>
 
@@ -18,9 +18,6 @@
 #include <utility>
 #include <type_traits>
 
-/**
-   All classes around management of particles on a stack.
- */
 
 namespace corsika {
 
@@ -59,9 +56,8 @@ namespace corsika {
     typedef typename std::remove_reference<StackData>::type value_type;
 
   public:
-
-
-    typedef StackData  stack_implementation_type; ///< this is the type of the user-provided data structure
+    typedef StackData stack_implementation_type; ///< this is the type of the
+                                                 ///< user-provided data structure
 
     template <typename TSI>
     using mpi_type = MParticleInterface<TSI>;
@@ -73,9 +69,11 @@ namespace corsika {
      * object. Using CRTP, this also determines the type of
      * MParticleInterface template class simultaneously.
      */
-    typedef StackIteratorInterface<value_type, MParticleInterface, Stack> stack_iterator_type;
+    typedef StackIteratorInterface<value_type, MParticleInterface, Stack>
+        stack_iterator_type;
 
-    typedef ConstStackIteratorInterface<value_type, MParticleInterface, Stack> const_stack_iterator_type;
+    typedef ConstStackIteratorInterface<value_type, MParticleInterface, Stack>
+        const_stack_iterator_type;
 
     /**
      * this is the full type of the user-declared MParticleInterface
@@ -93,14 +91,15 @@ namespace corsika {
 
     Stack(Stack&) = delete; ///< since Stack can be very big, we don't want to copy it
 
-    Stack& operator=(Stack&) = delete; ///< since Stack can be very big, we don't want to copy it
+    Stack& operator=(Stack&) =
+        delete; ///< since Stack can be very big, we don't want to copy it
 
     /**
      * if StackData is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
      */
     template <typename UType = StackData,
-    		  typename = typename std::enable_if<std::is_reference<UType>::value>::type >
+              typename = typename std::enable_if<std::is_reference<UType>::value>::type>
     Stack(StackData vD)
         : data_(vD)
         , deleted_(std::vector<bool>(data_.getSize(), false))
@@ -116,29 +115,21 @@ namespace corsika {
      * and cannot be initialized here.
      */
     template <typename... TArgs, typename UType = StackData,
-              typename = typename std::enable_if< std::is_reference<UType>::value >::type >
+              typename = typename std::enable_if<std::is_reference<UType>::value>::type>
     Stack(TArgs... args)
         : data_(args...)
         , deleted_(std::vector<bool>(data_.getSize(), false))
         , nDeleted_(0) {}
 
-
-
     /**
      * @name Most generic proxy methods for StackData data_
      * @{
      */
-    unsigned int getCapacity() const {
-    	return data_.getCapacity();
-    }
+    unsigned int getCapacity() const { return data_.getCapacity(); }
 
-    unsigned int getDeleted() const {
-    	return nDeleted_;
-    }
+    unsigned int getDeleted() const { return nDeleted_; }
 
-    unsigned int getEntries() const {
-    	return getSize() - getDeleted();
-    }
+    unsigned int getEntries() const { return getSize() - getDeleted(); }
 
     template <typename... TArgs>
     void clear(TArgs... args) {
@@ -160,9 +151,7 @@ namespace corsika {
       return stack_iterator_type(*this, i);
     }
 
-    stack_iterator_type end() {
-    	return stack_iterator_type(*this, getSize());
-    }
+    stack_iterator_type end() { return stack_iterator_type(*this, getSize()); }
 
     stack_iterator_type last() {
       unsigned int i = 0;
@@ -181,7 +170,7 @@ namespace corsika {
     }
 
     const_stack_iterator_type end() const {
-    	return const_stack_iterator_type(*this, getSize());
+      return const_stack_iterator_type(*this, getSize());
     }
 
     const_stack_iterator_type last() const {
@@ -201,7 +190,7 @@ namespace corsika {
     }
 
     const_stack_iterator_type cend() const {
-    	return const_stack_iterator_type(*this, getSize());
+      return const_stack_iterator_type(*this, getSize());
     }
 
     const_stack_iterator_type clast() const {
@@ -212,20 +201,16 @@ namespace corsika {
       return const_stack_iterator_type(*this, getSize() - 1 - i);
     }
 
-    stack_iterator_type at(unsigned int i) {
-    	return stack_iterator_type(*this, i);
-    }
+    stack_iterator_type at(unsigned int i) { return stack_iterator_type(*this, i); }
 
     const_stack_iterator_type at(unsigned int i) const {
-    	return const_stack_iterator_type(*this, i);
+      return const_stack_iterator_type(*this, i);
     }
 
-    stack_iterator_type first() {
-    	return stack_iterator_type{*this, 0};
-    }
+    stack_iterator_type first() { return stack_iterator_type{*this, 0}; }
 
     const_stack_iterator_type cfirst() const {
-    	return const_stack_iterator_type{*this, 0};
+      return const_stack_iterator_type{*this, 0};
     }
     /// @}
 
@@ -239,24 +224,24 @@ namespace corsika {
      */
     template <typename... TArgs>
     stack_iterator_type addParticle(const TArgs... v) {
-      //C8LOG_TRACE("Stack::AddParticle");
+      // C8LOG_TRACE("Stack::AddParticle");
       data_.incrementSize();
       deleted_.push_back(false);
       return stack_iterator_type(*this, getSize() - 1, v...);
     }
 
     void swap(stack_iterator_type a, stack_iterator_type b) {
-      //C8LOG_TRACE("Stack::Swap");
+      // C8LOG_TRACE("Stack::Swap");
       swap(a.getIndex(), b.getIndex());
     }
 
     void copy(stack_iterator_type a, stack_iterator_type b) {
-      //C8LOG_TRACE("Stack::Copy");
+      // C8LOG_TRACE("Stack::Copy");
       copy(a.getIndex(), b.getIndex());
     }
 
     void copy(const_stack_iterator_type a, stack_iterator_type b) {
-      //C8LOG_TRACE("Stack::Copy");
+      // C8LOG_TRACE("Stack::Copy");
       data_.copy(a.getIndex(), b.getIndex());
       if (deleted_[b.getIndex()] && !deleted_[a.getIndex()]) nDeleted_--;
       if (!deleted_[b.getIndex()] && deleted_[a.getIndex()]) nDeleted_++;
@@ -264,7 +249,7 @@ namespace corsika {
     }
 
     void erase(stack_iterator_type p) {
-      //C8LOG_TRACE("Stack::Delete");
+      // C8LOG_TRACE("Stack::Delete");
       if (this->isEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
@@ -276,27 +261,20 @@ namespace corsika {
     /**
      * delete this particle
      */
-    void erase(particle_interface_type p) {
-
-    	this->erase(p.getIterator());
-    }
+    void erase(particle_interface_type p) { this->erase(p.getIterator()); }
 
     /**
      * check if there are no further non-deleted particles on stack
      */
-    bool isEmpty() {
-    	return getEntries() == 0;
-    }
+    bool isEmpty() { return getEntries() == 0; }
 
     /**
      * check if this particle was already deleted
      */
-    bool isDeleted(const stack_iterator_type& p) const {
-    	return isDeleted(p.getIndex());
-    }
+    bool isDeleted(const stack_iterator_type& p) const { return isDeleted(p.getIndex()); }
 
     bool isDeleted(const const_stack_iterator_type& p) const {
-    	return isDeleted(p.getIndex());
+      return isDeleted(p.getIndex());
     }
 
     bool isDeleted(const particle_interface_type& p) const {
@@ -311,7 +289,7 @@ namespace corsika {
     bool purgeLastIfDeleted() {
       if (!deleted_.back())
         return false; // the last particle is not marked for deletion. Do nothing.
-      //C8LOG_TRACE("Stack::purgeLastIfDeleted: yes");
+      // C8LOG_TRACE("Stack::purgeLastIfDeleted: yes");
       data_.decrementSize();
       nDeleted_--;
       deleted_.pop_back();
@@ -342,9 +320,7 @@ namespace corsika {
       nDeleted_ = 0;
     }
 
-    unsigned int getSize() const {
-    	return data_.getSize();
-    }
+    unsigned int getSize() const { return data_.getSize(); }
 
     std::string as_string() const {
       std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
@@ -361,7 +337,6 @@ namespace corsika {
     }
 
   protected:
-
     /**
      * increase stack size, create new particle at end of stack, related to parent
      * particle/projectile
@@ -371,19 +346,19 @@ namespace corsika {
      */
     template <typename... TArgs>
     stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) {
-      //C8LOG_TRACE("Stack::AddSecondary");
+      // C8LOG_TRACE("Stack::AddSecondary");
       data_.incrementSize();
       deleted_.push_back(false);
       return stack_iterator_type(*this, getSize() - 1, parent, v...);
     }
 
     void swap(unsigned int a, unsigned int b) {
-      //C8LOG_TRACE("Stack::Swap(unsigned int)");
+      // C8LOG_TRACE("Stack::Swap(unsigned int)");
       data_.swap(a, b);
       std::swap(deleted_[a], deleted_[b]);
     }
     void copy(unsigned int a, unsigned int b) {
-      //C8LOG_TRACE("Stack::Copy");
+      // C8LOG_TRACE("Stack::Copy");
       data_.copy(a, b);
       if (deleted_[b] && !deleted_[a]) nDeleted_--;
       if (!deleted_[b] && deleted_[a]) nDeleted_++;
@@ -431,20 +406,15 @@ namespace corsika {
      * @name Return reference to StackData object data_ for data access
      * @{
      */
-    value_type& getStackData() {
-    	return data_;
-    }
+    value_type& getStackData() { return data_; }
 
-    const value_type& getStackData() const {
-    	return data_;
-    }
+    const value_type& getStackData() const { return data_; }
     ///@}
     ///
 
     ///
     friend class StackIteratorInterface<value_type, MParticleInterface, Stack>;
-    friend class ConstStackIteratorInterface<value_type, MParticleInterface,
-                                             Stack>;
+    friend class ConstStackIteratorInterface<value_type, MParticleInterface, Stack>;
     template <typename T1, //=StackData,
               template <typename>
               typename M1, //=MParticleInterface,
@@ -456,14 +426,11 @@ namespace corsika {
     friend class ParticleBase<stack_iterator_type>;
 
   protected:
-
     unsigned int nDeleted_ = 0;
 
   private:
-
     StackData data_; ///< this in general holds all the data and can be quite big
     std::vector<bool> deleted_; ///< bit field to flag deleted entries
-
   };
 
 } // namespace corsika

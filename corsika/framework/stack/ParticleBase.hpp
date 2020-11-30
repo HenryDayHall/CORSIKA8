@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <cstdlib> // for size_t
+
 namespace corsika {
 
   /**
@@ -118,7 +120,7 @@ namespace corsika {
     /**
      * return the index number of the underlying iterator object
      */
-    size_t getIndex() const {
+    std::size_t getIndex() const {
     	return this->getIterator().getIndexFromIterator();
     }
     ///@}
