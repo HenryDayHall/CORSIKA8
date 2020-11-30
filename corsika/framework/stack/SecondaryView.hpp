@@ -549,4 +549,4 @@ namespace corsika {
 } // namespace corsika
 
 
-#include <corsika/detail/framework/stack/SecondaryView.inl>
+//#include <corsika/detail/framework/stack/SecondaryView.inl>
