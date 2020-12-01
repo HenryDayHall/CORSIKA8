@@ -335,6 +335,65 @@ namespace corsika {
     }
 
   protected:
+
+    /**
+     * increase stack size, create new particle at end of stack, related to parent
+     * particle/projectile
+     *
+     * This should only get internally called from a
+     * StackIterator::AddSecondary via ParticleBase
+     */
+    /*
+    template <typename... TArgs>
+    stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) {
+      CORSIKA_LOG_TRACE("Stack::AddSecondary");
+      data_.incrementSize();
+      deleted_.push_back(false);
+      return stack_iterator_type(*this, getSize() - 1, parent, v...);
+    }
+
+    void swap(unsigned int a, unsigned int b) {
+      CORSIKA_LOG_TRACE("Stack::Swap(unsigned int)");
+      data_.swap(a, b);
+      std::swap(deleted_[a], deleted_[b]);
+    }
+    void copy(unsigned int a, unsigned int b) {
+      CORSIKA_LOG_TRACE("Stack::Copy");
+      data_.copy(a, b);
+      if (deleted_[b] && !deleted_[a]) nDeleted_--;
+      if (!deleted_[b] && deleted_[a]) nDeleted_++;
+      deleted_[b] = deleted_[a];
+    }
+
+    bool isDeleted(unsigned int i) const {
+      if (i >= deleted_.size()) return false;
+      return deleted_.at(i);
+    }
+
+    void erase(unsigned int i) {
+      deleted_[i] = true;
+      nDeleted_++;
+    }
+    */
+
+    /*
+     * will remove from storage the element i. This is a helper
+     * function for SecondaryView.
+     */
+
+    /*
+    void purge(unsigned int i) {
+      unsigned int iStackBack = getSize() - 1;
+      // search for last non-deleted particle on stack
+      while (deleted_[iStackBack]) { iStackBack--; }
+      // copy entry from iStackBack to iStackFront
+      data_.copy(iStackBack, i);
+      if (deleted_[i]) nDeleted_--;
+      deleted_[i] = deleted_[iStackBack];
+      data_.decrementSize();
+      deleted_.pop_back();
+    }
+    */
     /**
      * increase stack size, create new particle at end of stack, related to parent
      * particle/projectile

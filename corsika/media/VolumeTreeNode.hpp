@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/framework/geometry/Volume.hpp>
+#include <corsika/framework/geometry/IVolume.hpp>
 #include <corsika/media/IMediumModel.hpp>
 #include <memory>
 #include <vector>
