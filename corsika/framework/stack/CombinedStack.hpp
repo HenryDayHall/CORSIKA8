@@ -8,7 +8,7 @@
 
 #pragma once
 
-//#include <corsika/logging/Logging.h>
+#include <corsika/framework/logging/Logging.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -16,7 +16,8 @@
 namespace corsika {
 
   /**
-   * @class CombinedParticleInterface
+   * CombinedParticleInterface can be used to combine the data of several StackData
+   * objects.
    *
    * You may combine two StackData object, see class CombinedStackImpl
    * below, into one Stack, using a combined StackIterator (aka
@@ -33,49 +34,61 @@ namespace corsika {
    * ParticleInterface classes.
    *
    */
-  template <template <typename> typename ParticleInterfaceA,
-            template <typename> class ParticleInterfaceB, typename StackIterator>
+  template <template <typename> typename TParticleInterfaceA,
+            template <typename> class TParticleInterfaceB, typename TStackIterator>
   struct CombinedParticleInterface
-      : public ParticleInterfaceB<ParticleInterfaceA<StackIterator>> {
+      : public TParticleInterfaceB<TParticleInterfaceA<TStackIterator>> {
 
+    typedef CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB,
+                                      TStackIterator>
+        pi_c_type;
+    typedef TParticleInterfaceA<TStackIterator> pi_a_type;
+    typedef TParticleInterfaceB<TParticleInterfaceA<TStackIterator>> pi_b_type;
+
+  protected:
+    using pi_b_type::getIndex;     // choose B, A would also work
+    using pi_b_type::getStackData; // choose B, A would also work
+
+  public:
     /**
      * @name wrapper for user functions
      * @{
      *
      * In this set of functions we call the user-provide
-     * ParticleInterface setParticleData(...) methods, either with
+     * TParticleInterface setParticleData(...) methods, either with
      * parent particle reference, or w/o.
      *
      * There is one implicit assumption here: if only one data tuple
      * is provided for setParticleData, the data is passed on to
-     * ParticleInterfaceA and the ParticleInterfaceB is
+     * TParticleInterfaceA and the TParticleInterfaceB is
      * default-initialized. There are many occasions where this is the
      * desired behaviour, e.g. for thinning etc.
      *
      */
 
-    template <typename... Args1>
-    void setParticleData(const std::tuple<Args1...> vA) {
-    	pi_a_type::setParticleData(vA);
-    	pi_b_type::setParticleData();
+    template <typename... TArgs1>
+    void setParticleData(std::tuple<TArgs1...> const vA) {
+      pi_a_type::setParticleData(vA);
+      pi_b_type::setParticleData();
     }
-    template <typename... Args1, typename... Args2>
-    void setParticleData(const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
-    	pi_a_type::setParticleData(vA);
-        pi_b_type::setParticleData(vB);
+    template <typename... TArgs1, typename... TArgs2>
+    void setParticleData(std::tuple<TArgs1...> const vA, std::tuple<TArgs2...> const vB) {
+      pi_a_type::setParticleData(vA);
+      pi_b_type::setParticleData(vB);
     }
 
-    template <typename... Args1>
-    void setParticleData(pi_a_type& p, const std::tuple<Args1...> vA) {
+    template <typename... TArgs1>
+    void setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA) {
       // static_assert(MT<I>::has_not, "error");
-    	pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA); // original stack
-        pi_b_type::setParticleData(static_cast<pi_b_type&>(p));     // addon stack
+      pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA); // original stack
+      pi_b_type::setParticleData(static_cast<pi_b_type&>(p));     // addon stack
     }
-    template <typename... Args1, typename... Args2>
-    void setParticleData(pi_c_type& p, const std::tuple<Args1...> vA, const std::tuple<Args2...> vB) {
+    template <typename... TArgs1, typename... TArgs2>
+    void setParticleData(pi_c_type& p, std::tuple<TArgs1...> const vA,
+                         std::tuple<TArgs2...> const vB) {
 
-    	pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA);
-        pi_b_type::setParticleData(static_cast<pi_b_type&>(p), vB);
+      pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA);
+      pi_b_type::setParticleData(static_cast<pi_b_type&>(p), vB);
     }
     ///@}
 
@@ -84,14 +97,7 @@ namespace corsika {
     }
 
   private:
-    typedef CombinedParticleInterface<ParticleInterfaceA, ParticleInterfaceB, StackIterator> pi_c_type ;
-    typedef ParticleInterfaceA<StackIterator> pi_a_type;
-    typedef ParticleInterfaceB<ParticleInterfaceA<StackIterator>> pi_b_type;
-
   protected:
-    using pi_b_type::getIndex;     // choose B, A would also work
-    using pi_b_type::getStackData; // choose B, A would also work
-
   };
 
   /**
@@ -162,9 +168,9 @@ namespace corsika {
    * initialization are forwarded to Stack1Impl (first).
    */
 
-  template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _Pi>
-  typedef  Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, Pi> combined_stack_type;
-
+  template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _PI>
+  using CombinedStack = Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI>;
+  
 } // namespace corsika
 
 //#include <corsika/detail/framework/stack/CombinedStack.inl>

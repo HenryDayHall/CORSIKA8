@@ -16,35 +16,36 @@ n/*
  * definition of stack-data object for unit tests
  *
  * TestStackData contain only a single variable "Data" stored in fData
- * with Get/SetData functions.
+ * with get/setData functions.
  */
 class TestStackData {
 
 public:
   // these functions are needed for the Stack interface
-  void Clear() { fData.clear(); }
-  unsigned int GetSize() const { return fData.size(); }
-  unsigned int GetCapacity() const { return fData.size(); }
-  void Copy(const unsigned int i1, const unsigned int i2) { fData[i2] = fData[i1]; }
-  void Swap(const unsigned int i1, const unsigned int i2) {
-    double tmp0 = fData[i1];
-    fData[i1] = fData[i2];
-    fData[i2] = tmp0;
+  void clear() { data_.clear(); }
+  unsigned int getSize() const { return data_.size(); }
+  unsigned int getCapacity() const { return data_.size(); }
+  void copy(const unsigned int i1, const unsigned int i2) { data_[i2] = data_[i1]; }
+  void swap(const unsigned int i1, const unsigned int i2) {
+    double tmp0 = data_[i1];
+    data_[i1] = data_[i2];
+    data_[i2] = tmp0;
   }
 
   // custom data access function
-  void SetData(const unsigned int i, const double v) { fData[i] = v; }
-  double GetData(const unsigned int i) const { return fData[i]; }
+  void setData(const unsigned int i, const double v) { data_[i] = v; }
+  double getData(const unsigned int i) const { return data_[i]; }
+
 
   // these functions are also needed by the Stack interface
-  void IncrementSize() { fData.push_back(0.); }
-  void DecrementSize() {
-    if (fData.size() > 0) { fData.pop_back(); }
+   void incrementSize() { data_.push_back(0.); }
+  void decrementSize() {
+    if (data_.size() > 0) { data_.pop_back(); }
   }
 
   // custom private data section
 private:
-  std::vector<double> fData;
+  std::vector<double> data_;
 };
 
 /**
@@ -54,17 +55,17 @@ private:
  *
  * It provides Get/Set methods to read and write data to the "Data"
  * storage of TestStackData obtained via
- * "StackIteratorInterface::GetStackData()", given the index of the
- * iterator "StackIteratorInterface::GetIndex()"
+ * "StackIteratorInterface::getStackData()", given the index of the
+ * iterator "StackIteratorInterface::getIndex()"
  *
  */
 template <typename StackIteratorInterface>
 class TestParticleInterface
-    : public corsika::stack::ParticleBase<StackIteratorInterface> {
-
+  : public corsika::ParticleBase<StackIteratorInterface> {
+  
+  typedef corsika::ParticleBase<StackIteratorInterface> super_type;
+  
 public:
-  using corsika::stack::ParticleBase<StackIteratorInterface>::GetStackData;
-  using corsika::stack::ParticleBase<StackIteratorInterface>::GetIndex;
 
   /*
      The SetParticleData methods are called for creating new entries
@@ -73,13 +74,13 @@ public:
   */
 
   // default version for particle-creation from input data
-  void SetParticleData(const std::tuple<double> v) { SetData(std::get<0>(v)); }
-  void SetParticleData(TestParticleInterface<StackIteratorInterface>& /*parent*/,
+  void setParticleData(const std::tuple<double> v) { setData(std::get<0>(v)); }
+  void setParticleData(TestParticleInterface<StackIteratorInterface>& /*parent*/,
                        std::tuple<double> v) {
-    SetData(std::get<0>(v));
+    setData(std::get<0>(v));
   }
 
   // here are the fundamental methods for access to TestStackData data
-  void SetData(const double v) { GetStackData().SetData(GetIndex(), v); }
-  double GetData() const { return GetStackData().GetData(GetIndex()); }
+  void setData(const double v) { super_type::getStackData().setData(super_type::getIndex(), v); }
+  double getData() const { return super_type::getStackData().getData(super_type::getIndex()); }
 };

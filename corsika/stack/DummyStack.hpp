@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/stack/Stack.hpp>
@@ -16,82 +15,74 @@
 #include <string>
 #include <tuple>
 
-namespace corsika {
+namespace corsika::dummy_stack {
 
+  /**
+   * Example of a particle object on the stack, with NO DATA.
+   */
+
+  /**
+     however, conceptually we need to provide fake data. A stack without data does not
+     work...
+   */
+
+  struct NoData { /* nothing */
+    int nothing = 0;
+  };
+
+  template <typename StackIteratorInterface>
+  struct ParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
+
+    typedef corsika::ParticleBase<StackIteratorInterface> super_type;
+
+  public:
+    void setParticleData(const std::tuple<NoData>& /*v*/) {}
+    void setParticleData(super_type& /*parent*/, const std::tuple<NoData>& /*v*/) {}
+
+    std::string as_string() const { return "dummy-data"; }
+  };
+
+  /**
+   *
+   * Memory implementation of the most simple (no-data) particle stack object.
+   */
+
+  class DummyStackImpl {
+
+  public:
+    DummyStackImpl() = default;
+
+    DummyStackImpl(DummyStackImpl const&) = default;
+
+    DummyStackImpl(DummyStackImpl&&) = default;
+
+    DummyStackImpl& operator=(DummyStackImpl const&) = default;
+    DummyStackImpl& operator=(DummyStackImpl&&) = default;
+
+    void init() { entries_ = 0; }
+
+    void clear() { entries_ = 0; }
+
+    int getSize() const { return entries_; }
+    int getCapacity() const { return entries_; }
 
     /**
-     * Example of a particle object on the stack, with NO DATA.
+     *   Function to copy particle at location i2 in stack to i1
      */
+    void copy(const int /*i1*/, const int /*i2*/) {}
 
-    /**
-       however, conceptually we need to provide fake data. A stack without data does not
-       work...
-     */
+    void incrementSize() { entries_++; }
+    void decrementSize() { entries_--; }
 
-    struct NoData { /* nothing */
-      int nothing = 0;
-    };
+    int getEntries() const { return entries_; }
 
-    template <typename StackIteratorInterface>
-    struct ParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
+    void setEntries(int entries = 0) { entries_ = entries; }
 
-    	typedef corsika::ParticleBase<StackIteratorInterface> super_type;
+  private:
+    int entries_ = 0;
 
-    public:
-      void SetParticleData(const std::tuple<NoData>& /*v*/) {}
-      void SetParticleData(super_type& /*parent*/,
-                           const std::tuple<NoData>& /*v*/) {}
+  }; // end class DummyStackImpl
 
-      std::string as_string() const { return "dummy-data"; }
-    };
+  typedef Stack<DummyStackImpl, ParticleInterface> DummyStack;
 
-    /**
-     *
-     * Memory implementation of the most simple (no-data) particle stack object.
-     */
-
-    class DummyStackImpl {
-
-    public:
-    DummyStackImpl()=default;
-
-    DummyStackImpl( DummyStackImpl const&)=default;
-
-    DummyStackImpl(DummyStackImpl &&)=default;
-
-    DummyStackImpl& operator=( DummyStackImpl const& )=default;
-    DummyStackImpl& operator=( DummyStackImpl && )=default;
-
-
-      void init() { entries_ = 0; }
-
-      void clear() { entries_ = 0; }
-
-      int getSize() const { return entries_; }
-      int getCapacity() const { return entries_; }
-
-      /**
-       *   Function to copy particle at location i2 in stack to i1
-       */
-      void copy(const int /*i1*/, const int /*i2*/) {}
-
-      void incrementSize() { entries_++; }
-      void decrementSize() { entries_--; }
-
-	int getEntries() const {
-		return entries_;
-	}
-
-	void setEntries(int entries = 0) {
-		entries_ = entries;
-	}
-
-    private:
-      int entries_ = 0;
-
-    }; // end class DummyStackImpl
-
-    typedef Stack<DummyStackImpl, ParticleInterface> DummyStack;
-
-
-} // namespace corsika
+} // namespace corsika::dummy_stack

@@ -8,26 +8,26 @@
 
 #pragma once
 
-//#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 
 #include <tuple>
 #include <utility>
 #include <vector>
 
-namespace corsika::stack::node {
+namespace corsika::node {
 
   /**
-   * @class GeometryDataInterface
-   *
-   * corresponding defintion of a stack-readout object, the iteractor
+   * Describe "volume node" data on a Stack.
+   * 
+   * Corresponding defintion of a stack-readout object, the iteractor
    * dereference operator will deliver access to these function
-  // defintion of a stack-readout object, the iteractor dereference
-  // operator will deliver access to these function
+   * defintion of a stack-readout object, the iteractor dereference
+   * operator will deliver access to these function
    */
 
   /**
-   * \fixme Document type T
+   * \todo fixme: Document type T
    */
   template <typename T, typename TEnvType>
   struct GeometryDataInterface : public T {
@@ -56,11 +56,11 @@ namespace corsika::stack::node {
     }
 
     void setNode(node_type const* v) {
-    	super_type::GetStackData().setNode(super_type::GetIndex(), v);
+    	super_type::getStackData().setNode(super_type::getIndex(), v);
     }
 
     node_type const* getNode() const {
-    	return super_type::GetStackData().getNode(super_type::GetIndex());
+    	return super_type::getStackData().getNode(super_type::getIndex());
     }
   };
 

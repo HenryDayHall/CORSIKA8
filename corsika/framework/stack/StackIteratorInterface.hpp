@@ -10,6 +10,11 @@
 
 #include <corsika/framework/stack/ParticleBase.hpp>
 
+namespace corsika::history {
+  template <typename T, template <typename> typename TParticleInterface>
+  class HistorySecondaryProducer; // forward decl.
+}
+
 namespace corsika {
 
   template <typename TStackData, template <typename> typename TParticleInterface>
@@ -24,10 +29,10 @@ namespace corsika {
   class ConstStackIteratorInterface; // forward decl
 
   /**
-     @class StackIteratorInterface
-
      The StackIteratorInterface is the main interface to iterator over
-     particles on a stack. At the same time StackIteratorInterface is a
+     particles on a stack.
+
+     At the same time StackIteratorInterface is a
      Particle object by itself, thus there is no difference between
      type and ref_type for convenience of the physicist.
 
@@ -47,14 +52,14 @@ namespace corsika {
      for a particle entry at any index index_.
 
      The TParticleInterface class must be written and provided by the
-     user, it contains methods like <code> auto GetData() const {
-     return GetStackData().GetData(GetIndex()); }</code>, where
-     StackIteratorInterface::GetStackData() return a reference to the
+     user, it contains methods like <code> auto getData() const {
+     return getStackData().getData(getIndex()); }</code>, where
+     StackIteratorInterface::getStackData() return a reference to the
      object storing the particle data of type TStackData. And
-     StackIteratorInterface::GetIndex() provides the iterator index to
+     StackIteratorInterface::getIndex() provides the iterator index to
      be readout. The TStackData is another user-provided class to
      store data and must implement functions compatible with
-     TParticleInterface, in this example TStackData::GetData(const unsigned int
+     TParticleInterface, in this example TStackData::getData(const unsigned int
      vIndex).
 
      For two examples see stack_example.cc, or the
@@ -62,43 +67,22 @@ namespace corsika {
   */
 
   template <typename TStackData, template <typename> typename TParticleInterface,
-            typename StackType = Stack<TStackData, TParticleInterface>>
+            typename TStackType = Stack<TStackData, TParticleInterface>>
   class StackIteratorInterface
       : public TParticleInterface<
-            StackIteratorInterface<TStackData, TParticleInterface, StackType>> {
+            StackIteratorInterface<TStackData, TParticleInterface, TStackType>> {
 
   public:
-    using ParticleInterfaceType = ParticleInterface<
-        corsika::StackIteratorInterface<StackDataType, ParticleInterface, StackType>>;
+    typedef TParticleInterface<
+        corsika::StackIteratorInterface<TStackData, TParticleInterface, TStackType>>
+        particle_interface_type;
 
-    // friends are needed for access to protected methods
-    friend class Stack<TStackData,
-                       TParticleInterface>; // for access to GetIndex for Stack
-    friend class Stack<TStackData&, TParticleInterface>; // for access to GetIndex
-                                                         // SecondaryView : public Stack
-    friend class ParticleBase<StackIteratorInterface>;   // for access to GetStackData
-
-    template <typename T1,                     // best fix this to: TStackData,
-              template <typename> typename M1, // best fix this to: TParticleInterface,
-              template <typename T, template <typename> typename T3> typename M2>
-    friend class SecondaryView; // access grant for SecondaryView
-
-    template <typename T, template <typename> typename ParticleInterface>
-    friend class corsika::history::HistorySecondaryProducer;
-
-    friend class ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>;
-
-  protected:
-    unsigned int index_ = 0;
-
-  private:
-    StackType* data_ = 0; // info: Particles and StackIterators become invalid when parent
-                          // Stack is copied or deleted!
+    // using ParticleInterfaceType = TParticleInterface<
+    //  corsika::StackIteratorInterface<TStackData, TParticleInterface, TStackType>>;
 
     // it is not allowed to create a "dangling" stack iterator
-    StackIteratorInterface() = delete;
+    StackIteratorInterface() = delete; //! \todo check rule of five
 
-  public:
     StackIteratorInterface(StackIteratorInterface&& rhs)
         : index_(std::move(rhs.index_))
         , data_(std::move(rhs.data_)) {}
@@ -108,16 +92,18 @@ namespace corsika {
         , data_(vR.data_) {}
 
     StackIteratorInterface& operator=(StackIteratorInterface const& vR) {
-      index_ = vR.index_;
-      data_ = vR.data_;
+      if (&vR != this) {
+        index_ = vR.index_;
+        data_ = vR.data_;
+      }
       return *this;
     }
 
     /** iterator must always point to data, with an index:
           @param data reference to the stack [rw]
           @param index index on stack
-    **/
-    StackIteratorInterface(StackType& data, const unsigned int index)
+       */
+    StackIteratorInterface(TStackType& data, unsigned int const index)
         : index_(index)
         , data_(&data) {}
 
@@ -126,13 +112,14 @@ namespace corsika {
         @param index index on stack
         @param args variadic list of data to initialize stack entry, this must be
        consistent with the definition of the user-provided
-       ParticleInterfaceType::SetParticleData(...) function
-    **/
-    template <typename... Args>
-    StackIteratorInterface(StackType& data, const unsigned int index, const Args... args)
+       particle_interface_type::SetParticleData(...) function
+     */
+    template <typename... TArgs>
+    StackIteratorInterface(TStackType& data, unsigned int const index,
+                           const TArgs... args)
         : index_(index)
         , data_(&data) {
-      (**this).SetParticleData(args...);
+      (**this).setParticleData(args...);
     }
 
     /** constructor that also sets new values on particle data object, including reference
@@ -143,17 +130,17 @@ namespace corsika {
        counting, history, etc.
         @param args variadic list of data to initialize stack entry, this must be
        consistent with the definition of the user-provided
-       ParticleInterfaceType::SetParticleData(...) function
-    **/
+       particle_interface_type::SetParticleData(...) function
+    */
     template <typename... Args>
-    StackIteratorInterface(StackType& data, const unsigned int index,
+    StackIteratorInterface(TStackType& data, unsigned int const index,
                            StackIteratorInterface& parent, const Args... args)
         : index_(index)
         , data_(&data) {
-      (**this).SetParticleData(*parent, args...);
+      (**this).setParticleData(*parent, args...);
     }
 
-    bool isDeleted() const { return GetStack().isDeleted(*this); }
+    bool isErased() const { return getStack().isErased(*this); }
 
   public:
     /** @name Iterator interface
@@ -163,7 +150,7 @@ namespace corsika {
       do {
         ++index_;
       } while (
-          GetStack().isDeleted(*this)); // this also check the allowed bounds of index_
+          getStack().isErased(*this)); // this also check the allowed bounds of index_
       return *this;
     }
     StackIteratorInterface operator++(int) {
@@ -171,39 +158,39 @@ namespace corsika {
       do {
         ++index_;
       } while (
-          GetStack().isDeleted(*this)); // this also check the allowed bounds of index_
+          getStack().isErased(*this)); // this also check the allowed bounds of index_
       return tmp;
     }
     StackIteratorInterface operator+(int delta) const {
       return StackIteratorInterface(*data_, index_ + delta);
     }
-    bool operator==(const StackIteratorInterface& rhs) const {
+    bool operator==(StackIteratorInterface const& rhs) const {
       return index_ == rhs.index_;
     }
-    bool operator!=(const StackIteratorInterface& rhs) const {
+    bool operator!=(StackIteratorInterface const& rhs) const {
       return index_ != rhs.index_;
     }
     bool operator==(
-        const ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>& rhs)
-        const; // implement below
+        const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
+            rhs) const; // implemented below
     bool operator!=(
-        const ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>& rhs)
-        const; // implement below
+        const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
+            rhs) const; // implemented below
 
     /**
      * Convert iterator to value type, where value type is the user-provided particle
      * readout class
      **/
-    ParticleInterfaceType& operator*() {
-      return static_cast<ParticleInterfaceType&>(*this);
+    particle_interface_type& operator*() {
+      return static_cast<particle_interface_type&>(*this);
     }
 
     /**
      * Convert iterator to const value type, where value type is the user-provided
      * particle readout class
      **/
-    const ParticleInterfaceType& operator*() const {
-      return static_cast<const ParticleInterfaceType&>(*this);
+    particle_interface_type const& operator*() const {
+      return static_cast<particle_interface_type const&>(*this);
     }
     ///@}
 
@@ -213,38 +200,140 @@ namespace corsika {
      * @{
      **/
     /// Get current particle index
-    inline unsigned int GetIndex() const { return index_; }
+    inline unsigned int getIndex() const { return index_; }
     /// Get current particle Stack object
-    inline StackType& GetStack() { return *data_; }
+    inline TStackType& getStack() { return *data_; }
     /// Get current particle const Stack object
-    inline const StackType& GetStack() const { return *data_; }
+    inline TStackType const& getStack() const { return *data_; }
     /// Get current user particle TStackData object
-    inline TStackData& GetStackData() { return data_->GetStackData(); }
+    inline TStackData& getStackData() { return data_->getStackData(); }
     /// Get current const user particle TStackData object
-    inline const TStackData& GetStackData() const { return data_->GetStackData(); }
+    inline TStackData const& getStackData() const { return data_->getStackData(); }
     /// Get data index as mapped in Stack class
-    inline unsigned int GetIndexFromIterator() const {
-      return data_->GetIndexFromIterator(index_);
+    inline unsigned int getIndexFromIterator() const {
+      return data_->getIndexFromIterator(index_);
     }
     ///@}
+
+    // friends are needed for access to protected methods
+    friend class Stack<TStackData,
+                       TParticleInterface>; // for access to getIndex for Stack
+    friend class Stack<TStackData&, TParticleInterface>; // for access to getIndex
+                                                         // SecondaryView : public Stack
+    friend class ParticleBase<StackIteratorInterface>;   // for access to getStackDataType
+
+    template <typename T1,                     // best fix this to: TStackData,
+              template <typename> typename M1, // best fix this to: TParticleInterface,
+              template <typename T, template <typename> typename T3> typename M2>
+    friend class SecondaryView; // access grant for SecondaryView
+
+    template <typename T, template <typename> typename TParticleInterface_>
+    friend class corsika::history::HistorySecondaryProducer;
+
+    friend class ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>;
+
+  protected:
+    unsigned int index_ = 0;
+
+  private:
+    TStackType* data_ = 0; // info: Particles and StackIterators become invalid when
+                           // parent Stack is copied or deleted!
+
   }; // end class StackIterator
 
   /**
-     @class ConstStackIteratorInterface
+     This is the iterator class for const-access to stack data.
 
-     This is the iterator class for const-access to stack data
-  **/
+     The const counterpart of StackIteratorInterface, which is used
+     for read-only iterator access on particle stack:
+
+     \verbatim
+     for (auto const& p : theStack) { E += p.getEnergy(); }
+     \endverbatim
+
+     See documentation of StackIteratorInterface for more details:
+     \sa StackIteratorInterface
+   */
 
   template <typename TStackData, template <typename> typename TParticleInterface,
-            typename StackType = Stack<TStackData, TParticleInterface>>
+            typename TStackType = Stack<TStackData, TParticleInterface>>
   class ConstStackIteratorInterface
       : public TParticleInterface<
-            ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>> {
+            ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>> {
 
   public:
     typedef TParticleInterface<
-        ConstStackIteratorInterface<TStackData, TParticleInterface, StackType>>
-        ParticleInterfaceType;
+        ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>>
+        particle_interface_type;
+
+    // we don't want to allow dangling iterators to exist
+    ConstStackIteratorInterface() = delete; //! \todo check rule of five
+
+  public:
+    ConstStackIteratorInterface(ConstStackIteratorInterface&& rhs)
+        : index_(std::move(rhs.index_))
+        , data_(std::move(rhs.data_)) {}
+
+    ConstStackIteratorInterface(TStackType const& data, unsigned int const index)
+        : index_(index)
+        , data_(&data) {}
+
+    bool isErased() const { return getStack().isErased(*this); }
+
+    /** @name Iterator interface
+        @{
+     */
+    ConstStackIteratorInterface& operator++() {
+      do {
+        ++index_;
+      } while (
+          getStack().isErased(*this)); // this also check the allowed bounds of index_
+      return *this;
+    }
+    ConstStackIteratorInterface operator++(int) {
+      ConstStackIteratorInterface tmp(*this);
+      do {
+        ++index_;
+      } while (
+          getStack().isErased(*this)); // this also check the allowed bounds of index_
+      return tmp;
+    }
+    ConstStackIteratorInterface operator+(int const delta) const {
+      return ConstStackIteratorInterface(*data_, index_ + delta);
+    }
+    bool operator==(ConstStackIteratorInterface const& rhs) const {
+      return index_ == rhs.index_;
+    }
+    bool operator!=(ConstStackIteratorInterface const& rhs) const {
+      return index_ != rhs.index_;
+    }
+    bool operator==(StackIteratorInterface<TStackData, TParticleInterface,
+                                           TStackType> const& rhs) const {
+      return index_ == rhs.index_;
+    }
+    bool operator!=(StackIteratorInterface<TStackData, TParticleInterface,
+                                           TStackType> const& rhs) const {
+      return index_ != rhs.index_;
+    }
+
+    particle_interface_type const& operator*() const {
+      return static_cast<particle_interface_type const&>(*this);
+    }
+    ///@}
+
+  protected:
+    /** @name Stack data access
+        Only the const versions for read-only access
+        @{
+     */
+    inline unsigned int getIndex() const { return index_; }
+    inline TStackType const& getStack() const { return *data_; }
+    inline TStackData const& getStackData() const { return data_->getStackData(); }
+    /// Get data index as mapped in Stack class
+    inline unsigned int getIndexFromIterator() const {
+      return data_->getIndexFromIterator(index_);
+    }
+    ///@}
 
     // friends are needed for access to protected methods
     friend class Stack<TStackData,
@@ -258,100 +347,18 @@ namespace corsika {
               template <class T2, template <class> class T3> class MSecondaryProducer>
     friend class SecondaryView; // access for SecondaryView
 
-    friend class StackIteratorInterface<TStackData, TParticleInterface, StackType>;
+    friend class StackIteratorInterface<TStackData, TParticleInterface, TStackType>;
 
-    template <typename T, template <typename> typename ParticleInterface>
+    template <typename T, template <typename> typename TParticleInterface_>
     friend class corsika::history::HistorySecondaryProducer;
 
   protected:
     unsigned int index_ = 0;
 
   private:
-    const StackType* data_ = 0; // info: Particles and StackIterators become invalid when
-                                // parent Stack is copied or deleted!
+    TStackType const* data_ = 0; // info: Particles and StackIterators become invalid when
+                                 // parent Stack is copied or deleted!
 
-    // we don't want to allow dangling iterators to exist
-    ConstStackIteratorInterface() = delete;
-
-  public:
-    ConstStackIteratorInterface(ConstStackIteratorInterface&& rhs)
-        : index_(std::move(rhs.index_))
-        , data_(std::move(rhs.data_)) {}
-
-    ConstStackIteratorInterface(const StackType& data, const unsigned int index)
-        : index_(index)
-        , data_(&data) {}
-
-    /**
-       @class ConstStackIteratorInterface
-
-       The const counterpart of StackIteratorInterface, which is used
-       for read-only iterator access on particle stack:
-
-       \verbatim
-       for (const auto& p : theStack) { E += p.GetEnergy(); }
-       \endverbatim
-
-       See documentation of StackIteratorInterface for more details.
-    **/
-
-    bool isDeleted() const { return GetStack().isDeleted(*this); }
-
-  public:
-    /** @name Iterator interface
-     **/
-    ///@{
-    ConstStackIteratorInterface& operator++() {
-      do {
-        ++index_;
-      } while (
-          GetStack().isDeleted(*this)); // this also check the allowed bounds of index_
-      return *this;
-    }
-    ConstStackIteratorInterface operator++(int) {
-      ConstStackIteratorInterface tmp(*this);
-      do {
-        ++index_;
-      } while (
-          GetStack().isDeleted(*this)); // this also check the allowed bounds of index_
-      return tmp;
-    }
-    ConstStackIteratorInterface operator+(const int delta) const {
-      return ConstStackIteratorInterface(*data_, index_ + delta);
-    }
-    bool operator==(const ConstStackIteratorInterface& rhs) const {
-      return index_ == rhs.index_;
-    }
-    bool operator!=(const ConstStackIteratorInterface& rhs) const {
-      return index_ != rhs.index_;
-    }
-    bool operator==(const StackIteratorInterface<TStackData, TParticleInterface,
-                                                 StackType>& rhs) const {
-      return index_ == rhs.index_;
-    }
-    bool operator!=(const StackIteratorInterface<TStackData, TParticleInterface,
-                                                 StackType>& rhs) const {
-      return index_ != rhs.index_;
-    }
-
-    const ParticleInterfaceType& operator*() const {
-      return static_cast<const ParticleInterfaceType&>(*this);
-    }
-    ///@}
-
-  protected:
-    /** @name Stack data access
-        Only the const versions for read-only access
-    **/
-    ///@{
-    inline unsigned int GetIndex() const { return index_; }
-    inline const StackType& GetStack() const { return *data_; }
-    inline const TStackData& GetStackData() const { return data_->GetStackData(); }
-    /// Get data index as mapped in Stack class
-    inline unsigned int GetIndexFromIterator() const {
-      return data_->GetIndexFromIterator(index_);
-    }
-    ///@}
   }; // end class ConstStackIterator
 
 } // namespace corsika

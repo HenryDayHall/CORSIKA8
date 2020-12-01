@@ -50,13 +50,11 @@ namespace corsika {
     ParticleBase() = default;
 
      // those copy constructors and assigments should never be implemented
-    ParticleBase(ParticleBase&)       = delete;
     ParticleBase(ParticleBase&&)      = delete;
-    ParticleBase(const ParticleBase&) = delete;
+    ParticleBase(ParticleBase const&) = delete;
 
-    ParticleBase operator=(ParticleBase&)       = delete;
     ParticleBase operator=(ParticleBase&&)      = delete;
-    ParticleBase operator=(const ParticleBase&) = delete;
+    ParticleBase operator=(ParticleBase const&) = delete;
 
 
     /**
@@ -68,7 +66,7 @@ namespace corsika {
     /**
      * Method to retrieve the status of the Particle. Is it already deleted? Or not.
      */
-    bool isDeleted() const { return this->getIterator().getStack().isDeleted(this->getIterator()); }
+    bool isErased() const { return this->getIterator().getStack().isErased(this->getIterator()); }
 
     /**
      * Add a secondary particle based on *this on the stack @param

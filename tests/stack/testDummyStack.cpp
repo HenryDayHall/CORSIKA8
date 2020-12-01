@@ -6,10 +6,9 @@
  * the license.
  */
 
-#include <corsika/stack/dummy/DummyStack.h>
+#include <corsika/stack/DummyStack.hpp>
 
 using namespace corsika;
-using namespace corsika::stack;
 
 #include <catch2/catch.hpp>
 
@@ -17,14 +16,14 @@ using namespace corsika::stack;
 
 TEST_CASE("DummyStack", "[stack]") {
 
-  using TestStack = dummy::DummyStack;
+  using TestStack = dummy_stack::DummyStack;
 
-  dummy::NoData noData;
+  dummy_stack::NoData noData;
 
   SECTION("write node") {
 
     TestStack s;
-    s.AddParticle(std::tuple<dummy::NoData>{noData});
+    s.addParticle(std::tuple<dummy_stack::NoData>{noData});
     CHECK(s.getEntries() == 1);
   }
 
@@ -32,10 +31,10 @@ TEST_CASE("DummyStack", "[stack]") {
 
     TestStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
-    for (int i = 0; i < 99; ++i) { s.AddParticle(std::tuple<dummy::NoData>{noData}); }
+    for (int i = 0; i < 99; ++i) { s.addParticle(std::tuple<dummy_stack::NoData>{noData}); }
 
     CHECK(s.getEntries() == 99);
-    for (int i = 0; i < 99; ++i) s.GetNextParticle().Delete();
+    for (int i = 0; i < 99; ++i) s.getNextParticle().erase();
     CHECK(s.getEntries() == 0);
   }
 }

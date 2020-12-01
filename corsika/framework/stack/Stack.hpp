@@ -10,14 +10,12 @@
 
 #include <corsika/framework/logging/Logging.hpp>
 #include <corsika/framework/stack/StackIteratorInterface.hpp>
-#include <corsika/framework/utility/MetaProgramming.hpp>
 
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <utility>
 #include <type_traits>
-
 
 namespace corsika {
 
@@ -60,7 +58,7 @@ namespace corsika {
                                                  ///< user-provided data structure
 
     template <typename TSI>
-    using mpi_type = MParticleInterface<TSI>;
+    using pi_type = MParticleInterface<TSI>;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
@@ -78,7 +76,7 @@ namespace corsika {
     /**
      * this is the full type of the user-declared MParticleInterface
      */
-    typedef typename stack_iterator_type::ParticleInterfaceType particle_interface_type;
+    typedef typename stack_iterator_type::particle_interface_type particle_interface_type;
     /**
      * In all programming context, the object to access, copy, and
      * transport particle data is via the stack_iterator_type
@@ -101,9 +99,9 @@ namespace corsika {
     template <typename UType = StackData,
               typename = typename std::enable_if<std::is_reference<UType>::value>::type>
     Stack(StackData vD)
-        : data_(vD)
-        , deleted_(std::vector<bool>(data_.getSize(), false))
-        , nDeleted_(0) {}
+        : nDeleted_(0)
+        , data_(vD)
+        , deleted_(std::vector<bool>(data_.getSize(), false)) {}
 
     /**
      * This constructor takes any argument and passes it on to the
@@ -117,9 +115,9 @@ namespace corsika {
     template <typename... TArgs, typename UType = StackData,
               typename = typename std::enable_if<std::is_reference<UType>::value>::type>
     Stack(TArgs... args)
-        : data_(args...)
-        , deleted_(std::vector<bool>(data_.getSize(), false))
-        , nDeleted_(0) {}
+        : nDeleted_(0)
+        , data_(args...)
+        , deleted_(std::vector<bool>(data_.getSize(), false)) {}
 
     /**
      * @name Most generic proxy methods for StackData data_
@@ -127,9 +125,9 @@ namespace corsika {
      */
     unsigned int getCapacity() const { return data_.getCapacity(); }
 
-    unsigned int getDeleted() const { return nDeleted_; }
+    unsigned int getErased() const { return nDeleted_; }
 
-    unsigned int getEntries() const { return getSize() - getDeleted(); }
+    unsigned int getEntries() const { return getSize() - getErased(); }
 
     template <typename... TArgs>
     void clear(TArgs... args) {
@@ -271,14 +269,14 @@ namespace corsika {
     /**
      * check if this particle was already deleted
      */
-    bool isDeleted(const stack_iterator_type& p) const { return isDeleted(p.getIndex()); }
+    bool isErased(const stack_iterator_type& p) const { return isErased(p.getIndex()); }
 
-    bool isDeleted(const const_stack_iterator_type& p) const {
-      return isDeleted(p.getIndex());
+    bool isErased(const const_stack_iterator_type& p) const {
+      return isErased(p.getIndex());
     }
 
-    bool isDeleted(const particle_interface_type& p) const {
-      return isDeleted(p.getIterator());
+    bool isErased(const particle_interface_type& p) const {
+      return isErased(p.getIterator());
     }
 
     /**
@@ -307,7 +305,7 @@ namespace corsika {
     void purge() {
       unsigned int iStackFront = 0;
       unsigned int iStackBack = getSize() - 1;
-      for (unsigned int iDeleted = 0; iDeleted < getDeleted(); ++iDeleted) {
+      for (unsigned int iDeleted = 0; iDeleted < getErased(); ++iDeleted) {
         // search first delete entry on stack
         while (!deleted_[iStackFront]) { iStackFront++; }
         // search for last non-deleted particle on stack
@@ -324,7 +322,7 @@ namespace corsika {
 
     std::string as_string() const {
       std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
-                                  getEntries(), getDeleted()));
+                                  getEntries(), getErased()));
       // we make our own begin/end since we want ALL entries
       std::string new_line = "     ";
       for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
@@ -352,12 +350,12 @@ namespace corsika {
       return stack_iterator_type(*this, getSize() - 1, parent, v...);
     }
 
-    void swap(unsigned int a, unsigned int b) {
+    void swap(unsigned int const a, unsigned int const b) {
       // C8LOG_TRACE("Stack::Swap(unsigned int)");
       data_.swap(a, b);
       std::swap(deleted_[a], deleted_[b]);
     }
-    void copy(unsigned int a, unsigned int b) {
+    void copy(unsigned int const a, unsigned int const b) {
       // C8LOG_TRACE("Stack::Copy");
       data_.copy(a, b);
       if (deleted_[b] && !deleted_[a]) nDeleted_--;
@@ -365,12 +363,12 @@ namespace corsika {
       deleted_[b] = deleted_[a];
     }
 
-    bool isDeleted(unsigned int i) const {
+    bool isErased(unsigned int const i) const {
       if (i >= deleted_.size()) return false;
       return deleted_.at(i);
     }
 
-    void erase(unsigned int i) {
+    void erase(unsigned int const i) {
       deleted_[i] = true;
       nDeleted_++;
     }

@@ -6,12 +6,11 @@
  * the license.
  */
 
-#include <corsika/stack/CombinedStack.h>
-#include <corsika/stack/dummy/DummyStack.h>
-#include <corsika/stack/node/GeometryNodeStackExtension.h>
+#include <corsika/framework/stack/CombinedStack.hpp>
+#include <corsika/stack/DummyStack.hpp>
+#include <corsika/stack/GeometryNodeStackExtension.hpp>
 
 using namespace corsika;
-using namespace corsika::stack;
 
 #include <catch2/catch.hpp>
 
@@ -27,29 +26,28 @@ public:
 // the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:
 template <typename TStackIter>
 using DummyGeometryDataInterface =
-    typename corsika::stack::node::MakeGeometryDataInterface<TStackIter, DummyEnv>::type;
+    typename node::MakeGeometryDataInterface<TStackIter, DummyEnv>::type;
 
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithGeometryInterface =
-    corsika::stack::CombinedParticleInterface<dummy::DummyStack::MPIType,
-                                              DummyGeometryDataInterface, TStackIter>;
+    CombinedParticleInterface<dummy_stack::DummyStack::pi_type,
+                              DummyGeometryDataInterface, TStackIter>;
 
 using TestStack =
-    corsika::stack::CombinedStack<typename stack::dummy::DummyStack::StackImpl,
-                                  stack::node::GeometryData<DummyEnv>,
-                                  StackWithGeometryInterface>;
+    CombinedStack<typename dummy_stack::DummyStack::stack_implementation_type,
+                  node::GeometryData<DummyEnv>, StackWithGeometryInterface>;
 
 TEST_CASE("GeometryNodeStackExtension", "[stack]") {
 
-  dummy::NoData noData;
+  dummy_stack::NoData noData;
 
   SECTION("write node") {
 
     const int data = 5;
 
     TestStack s;
-    s.AddParticle(std::make_tuple(noData), std::tuple<const int*>{&data});
+    s.addParticle(std::make_tuple(noData), std::tuple<const int*>{&data});
 
     CHECK(s.getEntries() == 1);
   }
@@ -58,12 +56,12 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
     const int data = 15;
 
     TestStack s;
-    auto p = s.AddParticle(std::make_tuple(noData));
-    p.SetNode(&data);
+    auto p = s.addParticle(std::make_tuple(noData));
+    p.setNode(&data);
     CHECK(s.getEntries() == 1);
 
-    const auto pout = s.GetNextParticle();
-    CHECK(*(pout.GetNode()) == 15);
+    const auto pout = s.getNextParticle();
+    CHECK(*(pout.getNode()) == 15);
   }
 
   SECTION("stack fill and cleanup") {
@@ -73,16 +71,16 @@ TEST_CASE("GeometryNodeStackExtension", "[stack]") {
     TestStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
-      auto p = s.AddParticle(std::tuple<dummy::NoData>{noData});
-      p.SetNode(&data);
+      auto p = s.addParticle(std::tuple<dummy_stack::NoData>{noData});
+      p.setNode(&data);
     }
 
     CHECK(s.getEntries() == 99);
     double v = 0;
     for (int i = 0; i < 99; ++i) {
-      auto p = s.GetNextParticle();
-      v += *(p.GetNode());
-      p.Delete();
+      auto p = s.getNextParticle();
+      v += *(p.getNode());
+      p.erase();
     }
     CHECK(v == 99 * data);
     CHECK(s.getEntries() == 0);

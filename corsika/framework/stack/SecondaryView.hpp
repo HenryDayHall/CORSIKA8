@@ -8,8 +8,7 @@
 #pragma once
 
 #include <corsika/framework/stack/Stack.hpp>
-
-//#include <corsika/logging/Logging.h>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <stdexcept>
 #include <vector>
@@ -58,121 +57,116 @@ namespace corsika {
      getIndexFromIterator.
    */
 
-  template <typename StackDataType,
-            template <typename> typename ParticleInterface,
-            template <typename T1, template <class> class T2> class MSecondaryProducer = DefaultSecondaryProducer>
-  class SecondaryView : public Stack<StackDataType&, ParticleInterface>,
-                        public MSecondaryProducer<StackDataType, ParticleInterface>
-  {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer =
+                DefaultSecondaryProducer>
+  class SecondaryView : public Stack<TStackDataType&, TParticleInterface>,
+                        public MSecondaryProducer<TStackDataType, TParticleInterface> {
 
-	//using ViewType = SecondaryView<StackDataType, ParticleInterface, MSecondaryProducer>;
-    typedef SecondaryView<StackDataType, ParticleInterface, MSecondaryProducer> view_type;
+    // using ViewType = SecondaryView<TStackDataType, TParticleInterface,
+    // MSecondaryProducer>;
+    typedef SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>
+        view_type;
     /**
      * Helper type for inside this class
      */
-    //using InnerStackTypeRef = Stack<StackDataType&, ParticleInterface>;
-    typedef Stack<StackDataType&, ParticleInterface> inner_stack_reference_type;
-
-    //using InnerStackTypeValue = Stack<StackDataType, ParticleInterface>;
-    typedef Stack<StackDataType, ParticleInterface>  inner_stack_value_type;
-
-    using inner_stack_reference_type::getDeleted;
+    // using InnerStackTypeRef = Stack<TStackDataType&, TParticleInterface>;
+    typedef Stack<TStackDataType&, TParticleInterface> inner_stack_reference_type;
 
     /**
-     * @name We need this "special" types with non-reference StackData for
+     * @name We need this "value" types with non-reference TStackData for
      * the constructor of the SecondaryView class
      * @{
      */
-
+    // using InnerStackTypeValue = Stack<TStackDataType, TParticleInterface>;
+    typedef Stack<TStackDataType, TParticleInterface> inner_stack_value_type;
 
   public:
+    //    using StackIteratorValue =
+    //        StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
+    //                               TParticleInterface, InnerStackTypeValue>;
+    typedef StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
+                                   TParticleInterface, inner_stack_value_type>
+        stack_value_iterator;
 
-//    using StackIteratorValue =
-//        StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-//                               ParticleInterface, InnerStackTypeValue>;
-   typedef  StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                   ParticleInterface, inner_stack_value_type> stack_value_iterator;
+    //    using ConstStackIteratorValue =
+    //        ConstStackIteratorInterface<typename
+    //        std::remove_reference<TStackDataType>::type,
+    //                                    TParticleInterface, inner_stack_value_type>;
 
-//    using ConstStackIteratorValue =
-//        ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-//                                    ParticleInterface, inner_stack_value_type>;
+    typedef ConstStackIteratorInterface<
+        typename std::remove_reference<TStackDataType>::type, TParticleInterface,
+        inner_stack_value_type>
+        const_stack_value_iterator;
+    /// @}
 
-   typedef ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                       ParticleInterface, inner_stack_value_type> const_stack_value_iterator;
-       /// @}
+    //    using StackIterator =
+    //        StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
+    //                               TParticleInterface, view_type>;
 
-//    using StackIterator =
-//        StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-//                               ParticleInterface, view_type>;
+    typedef StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
+                                   TParticleInterface, view_type>
+        stack_view_iterator;
 
-    typedef  StackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                               ParticleInterface, view_type> stack_view_iterator;
+    //    using ConstStackIterator =
+    //        ConstStackIteratorInterface<typename
+    //        std::remove_reference<TStackDataType>::type,
+    //                                    TParticleInterface, view_type>;
 
-//    using ConstStackIterator =
-//        ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-//                                    ParticleInterface, view_type>;
-
-    typedef ConstStackIteratorInterface<typename std::remove_reference<StackDataType>::type,
-                                    ParticleInterface, view_type> const_stack_view_iterator;
+    typedef ConstStackIteratorInterface<
+        typename std::remove_reference<TStackDataType>::type, TParticleInterface,
+        view_type>
+        const_stack_view_iterator;
 
     /**
-     * this is the full type of the declared ParticleInterface: typedef typename
+     * this is the full type of the declared TParticleInterface:
      */
-    using ParticleType = StackIterator;
-    using ParticleInterfaceType = typename StackIterator::ParticleInterfaceType;
-
-    friend class StackIteratorInterface<
-        typename std::remove_reference<StackDataType>::type, ParticleInterface, view_type>;
-
-    friend class ConstStackIteratorInterface<
-        typename std::remove_reference<StackDataType>::type, ParticleInterface, view_type>;
-
-    friend class ParticleBase<StackIterator>;
-
+    using ParticleType = stack_view_iterator;
+    using ParticleInterfaceType = typename stack_view_iterator::particle_interface_type;
 
     /**
      * This is not accessible, since we don't want to allow creating a
      * new stack.
      */
-    template <typename... Args>
-    SecondaryView(Args... args) = delete;
+    template <typename... TArgs>
+    SecondaryView(TArgs... args) = delete;
     SecondaryView() = delete;
 
-   /**
-       SecondaryView can only be constructed passing it a valid
-       StackIterator to another Stack object (here: lvalue)
-     **/
+    /**
+        SecondaryView can only be constructed passing it a valid
+        stack_view_iterator to another Stack object (here: lvalue)
+      **/
     SecondaryView(stack_value_iterator& particle)
-        : Stack<StackDataType&, ParticleInterface>(particle.getStackData())
-        , MSecondaryProducer<StackDataType, ParticleInterface>{particle}
+        : Stack<TStackDataType&, TParticleInterface>(particle.getStackData())
+        , MSecondaryProducer<TStackDataType, TParticleInterface>{particle}
         , inner_stack_(particle.getStack())
         , projectile_index_(particle.getIndex()) {
-      C8LOG_TRACE("SecondaryView::SecondaryView(particle&)");
+      CORSIKA_LOG_TRACE("SecondaryView::SecondaryView(particle&)");
     }
     /**
        SecondaryView can only be constructed passing it a valid
-       StackIterator to another Stack object (here: rvalue)
+       stack_view_iterator to another Stack object (here: rvalue)
      **/
     SecondaryView(stack_value_iterator&& particle)
-        : Stack<StackDataType&, ParticleInterface>(particle.getStackData())
-        , MSecondaryProducer<StackDataType, ParticleInterface>{particle}
+        : Stack<TStackDataType&, TParticleInterface>(particle.getStackData())
+        , MSecondaryProducer<TStackDataType, TParticleInterface>{particle}
         , inner_stack_(particle.getStack())
         , projectile_index_(particle.getIndex()) {
-      C8LOG_TRACE("SecondaryView::SecondaryView(particle&&)");
+      CORSIKA_LOG_TRACE("SecondaryView::SecondaryView(particle&&)");
     }
     /**
-     * Also allow to create a new View from a Projectile (StackIterator on View)
+     * Also allow to create a new View from a Projectile (stack_view_iterator on View)
      *
      * Note, the view generated this way will be equivalent to the orignal view in
      * terms of reference to the underlying data stack. It is not a "view to a view".
      */
     SecondaryView(view_type& view, stack_view_iterator& projectile)
-        : Stack<StackDataType&, ParticleInterface>{view.getStackData()}
-        , MSecondaryProducer<StackDataType, ParticleInterface>{stack_value_iterator{
+        : Stack<TStackDataType&, TParticleInterface>{view.getStackData()}
+        , MSecondaryProducer<TStackDataType, TParticleInterface>{stack_value_iterator{
               view.inner_stack_, view.getIndexFromIterator(projectile.getIndex())}}
         , inner_stack_{view.inner_stack_}
         , projectile_index_{view.getIndexFromIterator(projectile.getIndex())} {
-      C8LOG_TRACE("SecondaryView::SecondaryView(view, projectile)");
+      CORSIKA_LOG_TRACE("SecondaryView::SecondaryView(view, projectile)");
     }
 
     /**
@@ -207,24 +201,20 @@ namespace corsika {
      */
     template <typename... Args>
     stack_view_iterator addSecondary(const Args... v) {
-      C8LOG_TRACE("SecondaryView::addSecondary(Args&&)");
+      CORSIKA_LOG_TRACE("SecondaryView::addSecondary(Args&&)");
       stack_view_iterator proj = getProjectile(); // make this const
       return addSecondary(proj, v...);
     }
     /**
      * overwrite Stack::getSize to return actual number of secondaries
      */
-    unsigned int getSize() const {
-    	return indices_.size();
-    }
+    unsigned int getSize() const { return indices_.size(); }
 
     unsigned int getEntries() const {
-    	return getSize() - getDeleted();
+      return getSize() - inner_stack_reference_type::getErased();
     }
 
-    bool IsEmpty() const {
-    	return getEntries() == 0;
-    }
+    bool isEmpty() const { return getEntries() == 0; }
 
     /**
      * @name These are functions required by std containers and std loops
@@ -237,19 +227,17 @@ namespace corsika {
     stack_view_iterator begin() {
       unsigned int i = 0;
       for (; i < getSize(); ++i) {
-        if (!isDeleted(i)) break;
+        if (!isErased(i)) break;
       }
       return stack_view_iterator(*this, i + 1);
     }
 
-    auto end() {
-    	return stack_view_iterator(*this, getSize() + 1);
-    }
+    auto end() { return stack_view_iterator(*this, getSize() + 1); }
 
     auto last() {
       unsigned int i = 0;
       for (; i < getSize(); ++i) {
-        if (!isDeleted(getSize() - 1 - i)) break;
+        if (!isErased(getSize() - 1 - i)) break;
       }
       return stack_view_iterator(*this, getSize() - 1 - i + 1);
     }
@@ -257,20 +245,18 @@ namespace corsika {
     auto begin() const {
       unsigned int i = 0;
       for (; i < getSize(); ++i) {
-        if (!isDeleted(i)) break;
+        if (!isErased(i)) break;
       }
 
       return const_stack_view_iterator(*this, i + 1);
     }
 
-    auto end() const {
-    	return const_stack_view_iterator(*this, getSize() + 1);
-    }
+    auto end() const { return const_stack_view_iterator(*this, getSize() + 1); }
 
     auto last() const {
       unsigned int i = 0;
       for (; i < getSize(); ++i) {
-        if (!isDeleted(getSize() - 1 - i)) break;
+        if (!isErased(getSize() - 1 - i)) break;
       }
       return const_stack_view_iterator(*this, getSize() - 1 - i + 1);
     }
@@ -278,52 +264,46 @@ namespace corsika {
     auto cbegin() const {
       unsigned int i = 0;
       for (; i < getSize(); ++i) {
-        if (!isDeleted(i)) break;
+        if (!isErased(i)) break;
       }
       return const_stack_view_iterator(*this, i + 1);
     }
 
-    auto cend() const {
-    	return const_stack_view_iterator(*this, getSize());
-    }
+    auto cend() const { return const_stack_view_iterator(*this, getSize()); }
 
     auto clast() const {
       unsigned int i = 0;
       for (; i < getSize(); ++i) {
-        if (!isDeleted(getSize() - 1 - i)) break;
+        if (!isErased(getSize() - 1 - i)) break;
       }
       return const_stack_view_iterator(*this, getSize() - 1 - i + 1);
     }
 
-    stack_view_iterator at(unsigned int i) {
-    	return stack_view_iterator(*this, i);
-    }
+    stack_view_iterator at(unsigned int i) { return stack_view_iterator(*this, i); }
 
     const_stack_view_iterator at(unsigned int i) const {
-    	return const_stack_view_iterator(*this, i);
+      return const_stack_view_iterator(*this, i);
     }
 
-    stack_view_iterator first() {
-    	return stack_view_iterator{*this, 0};
-    }
+    stack_view_iterator first() { return stack_view_iterator{*this, 0}; }
 
     const_stack_view_iterator cfirst() const {
-    	return const_stack_view_iterator{*this, 0};
+      return const_stack_view_iterator{*this, 0};
     }
     /// @}
 
     void swap(stack_view_iterator a, stack_view_iterator b) {
-      C8LOG_TRACE("View::swap");
+      CORSIKA_LOG_TRACE("View::swap");
       inner_stack_.swap(getIndexFromIterator(a.getIndex()),
                         getIndexFromIterator(b.getIndex()));
     }
     void copy(stack_view_iterator a, stack_view_iterator b) {
-      C8LOG_TRACE("View::copy");
+      CORSIKA_LOG_TRACE("View::copy");
       inner_stack_.copy(getIndexFromIterator(a.getIndex()),
                         getIndexFromIterator(b.getIndex()));
     }
     void copy(const_stack_view_iterator a, stack_view_iterator b) {
-      C8LOG_TRACE("View::copy");
+      CORSIKA_LOG_TRACE("View::copy");
       inner_stack_.copy(getIndexFromIterator(a.getIndex()),
                         getIndexFromIterator(b.getIndex()));
     }
@@ -341,14 +321,14 @@ namespace corsika {
      *
      */
     void erase(stack_view_iterator p) {
-      C8LOG_TRACE("SecondaryView::Delete");
-      if (IsEmpty()) { /*error*/
+      CORSIKA_LOG_TRACE("SecondaryView::Delete");
+      if (isEmpty()) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since size is zero");
       }
-      if (isDeleted(p.getIndex() - 1)) { /*error*/
+      if (isErased(p.getIndex() - 1)) { /*error*/
         throw std::runtime_error("Stack, cannot delete entry since already deleted");
       }
-      inner_stack_.Delete(getIndexFromIterator(p.getIndex()));
+      inner_stack_.erase(getIndexFromIterator(p.getIndex()));
       inner_stack_reference_type::nDeleted_++; // also count in SecondaryView
     }
 
@@ -364,21 +344,21 @@ namespace corsika {
     /**
      * check if this particle was already deleted
      *
-     * need to re-implement for SecondaryView since StackIterator types are a bit
+     * need to re-implement for SecondaryView since stack_view_iterator types are a bit
      * different
      */
-    bool isDeleted(const stack_view_iterator& p) const {
-    	return isDeleted(p.getIndex() - 1);
+    bool isErased(const stack_view_iterator& p) const {
+      return isErased(p.getIndex() - 1);
     }
 
-    bool isDeleted(const const_stack_view_iterator& p) const {
-      return isDeleted(p.getIndex() - 1);
+    bool isErased(const const_stack_view_iterator& p) const {
+      return isErased(p.getIndex() - 1);
     }
     /**
      * delete this particle
      */
-    bool isDeleted(const ParticleInterfaceType& p) const {
-      return isDeleted(p.getIterator());
+    bool isErased(const ParticleInterfaceType& p) const {
+      return isErased(p.getIterator());
     }
 
     /**
@@ -387,8 +367,8 @@ namespace corsika {
      * the function will just return false and do nothing.
      */
     bool purgeLastIfDeleted() {
-      C8LOG_TRACE("SecondaryView::purgeLastIfDeleted");
-      if (!isDeleted(getSize() - 1))
+      CORSIKA_LOG_TRACE("SecondaryView::purgeLastIfDeleted");
+      if (!isErased(getSize() - 1))
         return false; // the last particle is not marked for deletion. Do nothing.
       inner_stack_.purge(getIndexFromIterator(getSize()));
       inner_stack_reference_type::nDeleted_--;
@@ -408,7 +388,7 @@ namespace corsika {
       unsigned int iStack = 0;
       unsigned int size = getSize();
       while (iStack < size) {
-        if (isDeleted(iStack)) {
+        if (isErased(iStack)) {
           inner_stack_.purge(iStack);
           indices_.erase(indices_.begin() + iStack);
         }
@@ -423,7 +403,7 @@ namespace corsika {
       // we make our own begin/end since we want ALL entries
       std::string new_line = "     ";
       for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
-    	  const_stack_view_iterator itPart(*this, iPart);
+        const_stack_view_iterator itPart(*this, iPart);
         str += fmt::format(
             "{}{}{}", new_line, itPart.as_string(),
             (inner_stack_.deleted_[getIndexFromIterator(itPart.getIndex())] ? " [deleted]"
@@ -434,39 +414,48 @@ namespace corsika {
     }
 
   protected:
+    friend class StackIteratorInterface<
+        typename std::remove_reference<TStackDataType>::type, TParticleInterface,
+        view_type>;
 
-     /**
-      * Overwrite of Stack::StackIterator
-      *
-      * increase stack size, create new particle at end of stack,
-      * related to parent particle/projectile
-      *
-      * This should only get internally called from a
-      * StackIterator::addSecondary via ParticleBase
-      */
-     template <typename... Args>
-     stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v) {
-       C8LOG_TRACE("SecondaryView::addSecondary(StackIterator&, Args&&)");
-       // make space on stack
-       inner_stack_reference_type::getStackData().IncrementSize();
-       inner_stack_.deleted_.push_back(false);
-       // get current number of secondaries on stack
-       const unsigned int idSec = getSize();
-       // determine index on (inner) stack where new particle will be located
-       const unsigned int index = inner_stack_reference_type::getStackData().getSize() - 1;
-       indices_.push_back(index);
-       // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
-       // getIndexFromIterator
-       auto sec = stack_view_iterator(*this, idSec + 1, proj, v...);
-       MSecondaryProducer<StackDataType, ParticleInterface>::new_secondary(sec);
-       return sec;
-     }
+    friend class ConstStackIteratorInterface<
+        typename std::remove_reference<TStackDataType>::type, TParticleInterface,
+        view_type>;
+
+    friend class ParticleBase<stack_view_iterator>;
+
+    /**
+     * Overwrite of Stack::stack_view_iterator
+     *
+     * increase stack size, create new particle at end of stack,
+     * related to parent particle/projectile
+     *
+     * This should only get internally called from a
+     * stack_view_iterator::addSecondary via ParticleBase
+     */
+    template <typename... Args>
+    stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v) {
+      CORSIKA_LOG_TRACE("SecondaryView::addSecondary(stack_view_iterator&, Args&&)");
+      // make space on stack
+      inner_stack_reference_type::getStackData().incrementSize();
+      inner_stack_.deleted_.push_back(false);
+      // get current number of secondaries on stack
+      const unsigned int idSec = getSize();
+      // determine index on (inner) stack where new particle will be located
+      const unsigned int index = inner_stack_reference_type::getStackData().getSize() - 1;
+      indices_.push_back(index);
+      // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
+      // getIndexFromIterator
+      auto sec = stack_view_iterator(*this, idSec + 1, proj, v...);
+      MSecondaryProducer<TStackDataType, TParticleInterface>::new_secondary(sec);
+      return sec;
+    }
 
     // forward to inner stack
     // this also checks the allowed bounds of 'i'
-    bool isDeleted(unsigned int i) const {
+    bool isErased(unsigned int i) const {
       if (i >= indices_.size()) return false;
-      return inner_stack_.isDeleted(getIndexFromIterator(i + 1));
+      return inner_stack_.isErased(getIndexFromIterator(i + 1));
     }
 
     /**
@@ -475,8 +464,8 @@ namespace corsika {
      * performed.
      */
     unsigned int getIndexFromIterator(const unsigned int vI) const {
-      // this is too much: C8LOG_TRACE("SecondaryView::getIndexFromIterator({})={}", vI,
-      // (vI?indices_[vI-1]:projectile_index_));
+      // this is too much: CORSIKA_LOG_TRACE("SecondaryView::getIndexFromIterator({})={}",
+      // vI, (vI?indices_[vI-1]:projectile_index_));
       if (vI == 0) return projectile_index_;
       return indices_[vI - 1];
     }
@@ -486,8 +475,6 @@ namespace corsika {
     unsigned int projectile_index_;
     std::vector<unsigned int> indices_;
   };
-
-
 
   /**
    * Class to handle the generation of new secondaries. Used as default mix-in for
@@ -509,7 +496,7 @@ namespace corsika {
      */
     template <typename Particle>
     auto new_secondary(Particle&&) const {
-      C8LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&&)");
+      CORSIKA_LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&&)");
     }
 
     /**
@@ -522,10 +509,8 @@ namespace corsika {
      */
     template <typename Particle>
     DefaultSecondaryProducer(Particle const&) {
-      C8LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
+      CORSIKA_LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
     }
-
-
   };
 
   /*
@@ -538,15 +523,15 @@ namespace corsika {
   */
 #if not defined(__clang__) && defined(__GNUC__) || defined(__GNUG__)
   template <typename TStack,
-            template <class TStack_, template <class> class MPIType_>
-            class MSecondaryProducer = corsika::stack::DefaultSecondaryProducer,
-            template <typename> typename MPIType_ = TStack::template MPIType>
+            template <class TStack_, template <class> class pi_type_>
+            class MSecondaryProducer = corsika::DefaultSecondaryProducer,
+            template <typename> typename pi_type_ = TStack::template pi_type>
   struct MakeView {
-    using type = corsika::stack::SecondaryView<typename TStack::StackImpl, MPIType_, MSecondaryProducer>;
+    using type = corsika::SecondaryView<typename TStack::stack_implementation_type,
+                                        pi_type_, MSecondaryProducer>;
   };
 #endif
 
 } // namespace corsika
-
 
 //#include <corsika/detail/framework/stack/SecondaryView.inl>
