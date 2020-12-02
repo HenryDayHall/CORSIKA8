@@ -83,8 +83,6 @@ namespace corsika {
      */
     typedef stack_iterator_type particle_type;
 
-    //========================
-
     Stack() = default;
 
     Stack(Stack&) = delete; ///< since Stack can be very big, we don't want to copy it
@@ -130,170 +128,82 @@ namespace corsika {
     unsigned int getEntries() const { return getSize() - getErased(); }
 
     template <typename... TArgs>
-    void clear(TArgs... args) {
-      data_.clear(args...);
-      deleted_ = std::vector<bool>(data_.getSize(), false);
-      nDeleted_ = 0;
-    }
+    void clear(TArgs... args);
     ///@}
 
     /**
      * @name These are functions required by std containers and std loops
      * @{
      */
-    stack_iterator_type begin() {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!deleted_[i]) break;
-      }
-      return stack_iterator_type(*this, i);
-    }
+    stack_iterator_type begin();
 
-    stack_iterator_type end() { return stack_iterator_type(*this, getSize()); }
+    stack_iterator_type end() ;
 
-    stack_iterator_type last() {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!deleted_[getSize() - 1 - i]) break;
-      }
-      return stack_iterator_type(*this, getSize() - 1 - i);
-    }
+    stack_iterator_type last();
 
-    const_stack_iterator_type begin() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!deleted_[i]) break;
-      }
-      return const_stack_iterator_type(*this, i);
-    }
+    const_stack_iterator_type begin() const;
 
-    const_stack_iterator_type end() const {
-      return const_stack_iterator_type(*this, getSize());
-    }
+    const_stack_iterator_type end() const ;
 
-    const_stack_iterator_type last() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!deleted_[getSize() - 1 - i]) break;
-      }
-      return const_stack_iterator_type(*this, getSize() - 1 - i);
-    }
+    const_stack_iterator_type last() const ;
 
-    const_stack_iterator_type cbegin() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!deleted_[i]) break;
-      }
-      return const_stack_iterator_type(*this, i);
-    }
+    const_stack_iterator_type cbegin() const;
 
-    const_stack_iterator_type cend() const {
-      return const_stack_iterator_type(*this, getSize());
-    }
+    const_stack_iterator_type cend() const;
 
-    const_stack_iterator_type clast() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!deleted_[getSize() - 1 - i]) break;
-      }
-      return const_stack_iterator_type(*this, getSize() - 1 - i);
-    }
+    const_stack_iterator_type clast() const;
 
-    stack_iterator_type at(unsigned int i) { return stack_iterator_type(*this, i); }
+    stack_iterator_type at(unsigned int i);
 
-    const_stack_iterator_type at(unsigned int i) const {
-      return const_stack_iterator_type(*this, i);
-    }
+    const_stack_iterator_type at(unsigned int i) const;
 
-    stack_iterator_type first() { return stack_iterator_type{*this, 0}; }
+    stack_iterator_type first();
 
-    const_stack_iterator_type cfirst() const {
-      return const_stack_iterator_type{*this, 0};
-    }
-    /// @}
+    const_stack_iterator_type cfirst() const;
 
-    stack_iterator_type getNextParticle() {
-      while (purgeLastIfDeleted()) {}
-      return last();
-    }
+    stack_iterator_type getNextParticle();
 
     /**
      * increase stack size, create new particle at end of stack
      */
     template <typename... TArgs>
-    stack_iterator_type addParticle(const TArgs... v) {
-      // C8LOG_TRACE("Stack::AddParticle");
-      data_.incrementSize();
-      deleted_.push_back(false);
-      return stack_iterator_type(*this, getSize() - 1, v...);
-    }
+    stack_iterator_type addParticle(const TArgs... v) ;
 
-    void swap(stack_iterator_type a, stack_iterator_type b) {
-      // C8LOG_TRACE("Stack::Swap");
-      swap(a.getIndex(), b.getIndex());
-    }
+    void swap(stack_iterator_type a, stack_iterator_type b);
 
-    void copy(stack_iterator_type a, stack_iterator_type b) {
-      // C8LOG_TRACE("Stack::Copy");
-      copy(a.getIndex(), b.getIndex());
-    }
+    void copy(stack_iterator_type a, stack_iterator_type b);
 
-    void copy(const_stack_iterator_type a, stack_iterator_type b) {
-      // C8LOG_TRACE("Stack::Copy");
-      data_.copy(a.getIndex(), b.getIndex());
-      if (deleted_[b.getIndex()] && !deleted_[a.getIndex()]) nDeleted_--;
-      if (!deleted_[b.getIndex()] && deleted_[a.getIndex()]) nDeleted_++;
-      deleted_[b.getIndex()] = deleted_[a.getIndex()];
-    }
+    void copy(const_stack_iterator_type a, stack_iterator_type b);
 
-    void erase(stack_iterator_type p) {
-      // C8LOG_TRACE("Stack::Delete");
-      if (this->isEmpty()) { /*error*/
-        throw std::runtime_error("Stack, cannot delete entry since size is zero");
-      }
-      if (deleted_[p.getIndex()]) { /*error*/
-        throw std::runtime_error("Stack, cannot delete entry since already deleted");
-      }
-      this->erase(p.getIndex());
-    }
+    void erase(stack_iterator_type p);
     /**
      * delete this particle
      */
-    void erase(particle_interface_type p) { this->erase(p.getIterator()); }
+
+    void erase(particle_interface_type p);
 
     /**
      * check if there are no further non-deleted particles on stack
      */
-    bool isEmpty() { return getEntries() == 0; }
+
+    bool isEmpty();
 
     /**
      * check if this particle was already deleted
      */
-    bool isErased(const stack_iterator_type& p) const { return isErased(p.getIndex()); }
 
-    bool isErased(const const_stack_iterator_type& p) const {
-      return isErased(p.getIndex());
-    }
+    bool isErased(const stack_iterator_type& p) const;
 
-    bool isErased(const particle_interface_type& p) const {
-      return isErased(p.getIterator());
-    }
+    bool isErased(const const_stack_iterator_type& p) const;
+
+    bool isErased(const particle_interface_type& p) const;
 
     /**
      * Function to ultimatively remove the last entry from the stack,
      * if it was marked as deleted before. If this is not the case,
      * the function will just return false and do nothing.
      */
-    bool purgeLastIfDeleted() {
-      if (!deleted_.back())
-        return false; // the last particle is not marked for deletion. Do nothing.
-      // C8LOG_TRACE("Stack::purgeLastIfDeleted: yes");
-      data_.decrementSize();
-      nDeleted_--;
-      deleted_.pop_back();
-      return true;
-    }
-
+    bool purgeLastIfDeleted();
     /**
      * Function to ultimatively remove all entries from the stack
      * marked as deleted.
@@ -302,37 +212,12 @@ namespace corsika {
      * "gaps" in the stack are filled with entries from the back
      * (copied).
      */
-    void purge() {
-      unsigned int iStackFront = 0;
-      unsigned int iStackBack = getSize() - 1;
-      for (unsigned int iDeleted = 0; iDeleted < getErased(); ++iDeleted) {
-        // search first delete entry on stack
-        while (!deleted_[iStackFront]) { iStackFront++; }
-        // search for last non-deleted particle on stack
-        while (deleted_[iStackBack]) { iStackBack--; }
-        // copy entry from iStackBack to iStackFront
-        data_.copy(iStackBack, iStackFront);
-        data_.decrementSize();
-      }
-      deleted_.clear();
-      nDeleted_ = 0;
-    }
+    void purge();
 
-    unsigned int getSize() const { return data_.getSize(); }
 
-    std::string as_string() const {
-      std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
-                                  getEntries(), getErased()));
-      // we make our own begin/end since we want ALL entries
-      std::string new_line = "     ";
-      for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
-        const_stack_iterator_type itPart(*this, iPart);
-        str += fmt::format("{}{}{}", new_line, itPart.as_string(),
-                           (deleted_[itPart.getIndex()] ? " [deleted]" : ""));
-        new_line = "\n     ";
-      }
-      return str;
-    }
+    unsigned int getSize() const;
+
+    std::string as_string() const;
 
   protected:
 
@@ -343,110 +228,22 @@ namespace corsika {
      * This should only get internally called from a
      * StackIterator::AddSecondary via ParticleBase
      */
-    /*
     template <typename... TArgs>
-    stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) {
-      CORSIKA_LOG_TRACE("Stack::AddSecondary");
-      data_.incrementSize();
-      deleted_.push_back(false);
-      return stack_iterator_type(*this, getSize() - 1, parent, v...);
-    }
+    stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) ;
 
-    void swap(unsigned int a, unsigned int b) {
-      CORSIKA_LOG_TRACE("Stack::Swap(unsigned int)");
-      data_.swap(a, b);
-      std::swap(deleted_[a], deleted_[b]);
-    }
-    void copy(unsigned int a, unsigned int b) {
-      CORSIKA_LOG_TRACE("Stack::Copy");
-      data_.copy(a, b);
-      if (deleted_[b] && !deleted_[a]) nDeleted_--;
-      if (!deleted_[b] && deleted_[a]) nDeleted_++;
-      deleted_[b] = deleted_[a];
-    }
+    void swap(unsigned int const a, unsigned int const b);
 
-    bool isDeleted(unsigned int i) const {
-      if (i >= deleted_.size()) return false;
-      return deleted_.at(i);
-    }
+    void copy(unsigned int const a, unsigned int const b);
 
-    void erase(unsigned int i) {
-      deleted_[i] = true;
-      nDeleted_++;
-    }
-    */
+    bool isErased(unsigned int const i) const;
 
-    /*
-     * will remove from storage the element i. This is a helper
-     * function for SecondaryView.
-     */
-
-    /*
-    void purge(unsigned int i) {
-      unsigned int iStackBack = getSize() - 1;
-      // search for last non-deleted particle on stack
-      while (deleted_[iStackBack]) { iStackBack--; }
-      // copy entry from iStackBack to iStackFront
-      data_.copy(iStackBack, i);
-      if (deleted_[i]) nDeleted_--;
-      deleted_[i] = deleted_[iStackBack];
-      data_.decrementSize();
-      deleted_.pop_back();
-    }
-    */
-    /**
-     * increase stack size, create new particle at end of stack, related to parent
-     * particle/projectile
-     *
-     * This should only get internally called from a
-     * StackIterator::AddSecondary via ParticleBase
-     */
-    template <typename... TArgs>
-    stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) {
-      // C8LOG_TRACE("Stack::AddSecondary");
-      data_.incrementSize();
-      deleted_.push_back(false);
-      return stack_iterator_type(*this, getSize() - 1, parent, v...);
-    }
-
-    void swap(unsigned int const a, unsigned int const b) {
-      // C8LOG_TRACE("Stack::Swap(unsigned int)");
-      data_.swap(a, b);
-      std::swap(deleted_[a], deleted_[b]);
-    }
-    void copy(unsigned int const a, unsigned int const b) {
-      // C8LOG_TRACE("Stack::Copy");
-      data_.copy(a, b);
-      if (deleted_[b] && !deleted_[a]) nDeleted_--;
-      if (!deleted_[b] && deleted_[a]) nDeleted_++;
-      deleted_[b] = deleted_[a];
-    }
-
-    bool isErased(unsigned int const i) const {
-      if (i >= deleted_.size()) return false;
-      return deleted_.at(i);
-    }
-
-    void erase(unsigned int const i) {
-      deleted_[i] = true;
-      nDeleted_++;
-    }
+    void erase(unsigned int const i) ;
 
     /**
      * will remove from storage the element i. This is a helper
      * function for SecondaryView.
      */
-    void purge(unsigned int i) {
-      unsigned int iStackBack = getSize() - 1;
-      // search for last non-deleted particle on stack
-      while (deleted_[iStackBack]) { iStackBack--; }
-      // copy entry from iStackBack to iStackFront
-      data_.copy(iStackBack, i);
-      if (deleted_[i]) nDeleted_--;
-      deleted_[i] = deleted_[iStackBack];
-      data_.decrementSize();
-      deleted_.pop_back();
-    }
+    void purge(unsigned int i);
 
     /**
      * Function to perform eventual transformation from
@@ -454,22 +251,16 @@ namespace corsika {
      * StackData data_. By default (and in almost all cases) this
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
-    unsigned int getIndexFromIterator(const unsigned int vI) const {
-      // this is too much: //C8LOG_TRACE("Stack::getIndexFromIterator({})={}", vI, vI);
-      return vI;
-    }
-
+    unsigned int getIndexFromIterator(const unsigned int vI) const;
     /**
      * @name Return reference to StackData object data_ for data access
      * @{
      */
-    value_type& getStackData() { return data_; }
 
-    const value_type& getStackData() const { return data_; }
-    ///@}
-    ///
+    value_type& getStackData();
 
-    ///
+    const value_type& getStackData() const;
+
     friend class StackIteratorInterface<value_type, MParticleInterface, Stack>;
     friend class ConstStackIteratorInterface<value_type, MParticleInterface, Stack>;
     template <typename T1, //=StackData,
@@ -491,3 +282,5 @@ namespace corsika {
   };
 
 } // namespace corsika
+
+#include <corsika/detail/framework/stack/Stack.inl>
