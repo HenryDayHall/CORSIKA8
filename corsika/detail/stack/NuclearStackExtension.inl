@@ -23,7 +23,7 @@ namespace corsika::nuclear_stack {
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(particle_data_type const& v)
+inline void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(particle_data_type const& v)
 {
 
       if (std::get<0>(v) == Code::Nucleus) {
@@ -38,7 +38,7 @@ void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::s
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(altenative_particle_data_type const& v)
+inline void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(altenative_particle_data_type const& v)
 {
       const unsigned short A = std::get<5>(v);
       const unsigned short Z = std::get<6>(v);
@@ -58,7 +58,7 @@ void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::s
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(super_type& p, particle_data_type const& v) {
+inline void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(super_type& p, particle_data_type const& v) {
     if (std::get<0>(v) == Code::Nucleus) {
       std::ostringstream err;
       err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
@@ -74,7 +74,7 @@ void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::s
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(super_type& p, altenative_particle_data_type const& v) {
+inline void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::setParticleData(super_type& p, altenative_particle_data_type const& v) {
 
     const unsigned short A = std::get<5>(v);
     const unsigned short Z = std::get<6>(v);
@@ -96,7 +96,7 @@ void NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::s
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-std::string NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::as_string() const {
+inline std::string NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::as_string() const {
     return fmt::format(
         "{}, nuc({})", super_type::as_string(),
         (isNucleus() ? fmt::format("A={}, Z={}", getNuclearA(), getNuclearZ())
@@ -106,7 +106,7 @@ std::string NuclearParticleInterface< InnerParticleInterface,StackIteratorInterf
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-HEPMassType NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::getMass() const {
+inline HEPMassType NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::getMass() const {
     if (super_type::getPID() == Code::Nucleus)
       return getNucleusMass(getNuclearA(), getNuclearZ());
     return super_type::getMass();
@@ -114,20 +114,20 @@ HEPMassType NuclearParticleInterface< InnerParticleInterface,StackIteratorInterf
 
 template <template <typename> class InnerParticleInterface,
           typename StackIteratorInterface>
-int16_t NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::getChargeNumber() const {
+inline int16_t NuclearParticleInterface< InnerParticleInterface,StackIteratorInterface>::getChargeNumber() const {
     if (super_type::getPID() == Code::Nucleus) return getNuclearZ();
     return super_type::getChargeNumber();
   }
 
 template <typename InnerStackImpl>
-int NuclearStackExtensionImpl<InnerStackImpl>::getNucleusNextRef(){
+inline int NuclearStackExtensionImpl<InnerStackImpl>::getNucleusNextRef(){
     nuclearA_.push_back(0);
     nuclearZ_.push_back(0);
     return nuclearA_.size() - 1;
   }
 
 template <typename InnerStackImpl>
-int NuclearStackExtensionImpl<InnerStackImpl>::getNucleusRef(const unsigned int i) const {
+inline int NuclearStackExtensionImpl<InnerStackImpl>::getNucleusRef(const unsigned int i) const {
     if (nucleusRef_[i] >= 0) return nucleusRef_[i];
     std::ostringstream err;
     err << "NuclearStackExtension: no nucleus at ref=" << i;
@@ -135,7 +135,7 @@ int NuclearStackExtensionImpl<InnerStackImpl>::getNucleusRef(const unsigned int 
   }
 
 template <typename InnerStackImpl>
-void NuclearStackExtensionImpl<InnerStackImpl>::copy(const unsigned int i1, const unsigned int i2) {
+inline void NuclearStackExtensionImpl<InnerStackImpl>::copy(const unsigned int i1, const unsigned int i2) {
     // index range check
     if (i1 >= getSize() || i2 >= getSize()) {
       std::ostringstream err;
@@ -177,7 +177,7 @@ void NuclearStackExtensionImpl<InnerStackImpl>::copy(const unsigned int i1, cons
   }
 
 template <typename InnerStackImpl>
-void NuclearStackExtensionImpl<InnerStackImpl>::clear() {
+inline void NuclearStackExtensionImpl<InnerStackImpl>::clear() {
     super_type::clear();
     nucleusRef_.clear();
     nuclearA_.clear();
@@ -185,7 +185,7 @@ void NuclearStackExtensionImpl<InnerStackImpl>::clear() {
   }
 
 template <typename InnerStackImpl>
-void NuclearStackExtensionImpl<InnerStackImpl>::swap(const unsigned int i1, const unsigned int i2) {
+inline void NuclearStackExtensionImpl<InnerStackImpl>::swap(const unsigned int i1, const unsigned int i2) {
     // index range check
     if (i1 >= getSize() || i2 >= getSize()) {
       std::ostringstream err;
@@ -200,13 +200,13 @@ void NuclearStackExtensionImpl<InnerStackImpl>::swap(const unsigned int i1, cons
 
 
 template <typename InnerStackImpl>
-void NuclearStackExtensionImpl<InnerStackImpl>::incrementSize() {
+inline void NuclearStackExtensionImpl<InnerStackImpl>::incrementSize() {
     super_type::incrementSize();
     nucleusRef_.push_back(-1);
   }
 
 template <typename InnerStackImpl>
-void NuclearStackExtensionImpl<InnerStackImpl>::decrementSize() {
+inline void NuclearStackExtensionImpl<InnerStackImpl>::decrementSize() {
     super_type::decrementSize();
     if (nucleusRef_.size() > 0) {
       const int ref = nucleusRef_.back();

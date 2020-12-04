@@ -121,89 +121,89 @@ namespace corsika {
      * @name Most generic proxy methods for StackData data_
      * @{
      */
-    unsigned int getCapacity() const { return data_.getCapacity(); }
+    inline unsigned int getCapacity() const { return data_.getCapacity(); }
 
-    unsigned int getErased() const { return nDeleted_; }
+    inline unsigned int getErased() const { return nDeleted_; }
 
-    unsigned int getEntries() const { return getSize() - getErased(); }
+    inline unsigned int getEntries() const { return getSize() - getErased(); }
 
     template <typename... TArgs>
-    void clear(TArgs... args);
+    inline void clear(TArgs... args);
     ///@}
 
     /**
      * @name These are functions required by std containers and std loops
      * @{
      */
-    stack_iterator_type begin();
+    inline stack_iterator_type begin();
 
-    stack_iterator_type end() ;
+    inline stack_iterator_type end() ;
 
-    stack_iterator_type last();
+    inline  stack_iterator_type last();
 
-    const_stack_iterator_type begin() const;
+    inline  const_stack_iterator_type begin() const;
 
-    const_stack_iterator_type end() const ;
+    inline const_stack_iterator_type end() const ;
 
-    const_stack_iterator_type last() const ;
+    inline const_stack_iterator_type last() const ;
 
-    const_stack_iterator_type cbegin() const;
+    inline  const_stack_iterator_type cbegin() const;
 
-    const_stack_iterator_type cend() const;
+    inline  const_stack_iterator_type cend() const;
 
-    const_stack_iterator_type clast() const;
+    inline  const_stack_iterator_type clast() const;
 
-    stack_iterator_type at(unsigned int i);
+    inline  stack_iterator_type at(unsigned int i);
 
-    const_stack_iterator_type at(unsigned int i) const;
+    inline  const_stack_iterator_type at(unsigned int i) const;
 
-    stack_iterator_type first();
+    inline stack_iterator_type first();
 
-    const_stack_iterator_type cfirst() const;
+    inline  const_stack_iterator_type cfirst() const;
 
-    stack_iterator_type getNextParticle();
+    inline  stack_iterator_type getNextParticle();
 
     /**
      * increase stack size, create new particle at end of stack
      */
     template <typename... TArgs>
-    stack_iterator_type addParticle(const TArgs... v) ;
+    inline  stack_iterator_type addParticle(const TArgs... v) ;
 
-    void swap(stack_iterator_type a, stack_iterator_type b);
+    inline void swap(stack_iterator_type a, stack_iterator_type b);
 
-    void copy(stack_iterator_type a, stack_iterator_type b);
+    inline void copy(stack_iterator_type a, stack_iterator_type b);
 
-    void copy(const_stack_iterator_type a, stack_iterator_type b);
+    inline void copy(const_stack_iterator_type a, stack_iterator_type b);
 
-    void erase(stack_iterator_type p);
+    inline void erase(stack_iterator_type p);
     /**
      * delete this particle
      */
 
-    void erase(particle_interface_type p);
+    inline void erase(particle_interface_type p);
 
     /**
      * check if there are no further non-deleted particles on stack
      */
 
-    bool isEmpty();
+    inline bool isEmpty();
 
     /**
      * check if this particle was already deleted
      */
 
-    bool isErased(const stack_iterator_type& p) const;
+    inline  bool isErased(const stack_iterator_type& p) const;
 
-    bool isErased(const const_stack_iterator_type& p) const;
+    inline bool isErased(const const_stack_iterator_type& p) const;
 
-    bool isErased(const particle_interface_type& p) const;
+    inline bool isErased(const particle_interface_type& p) const;
 
     /**
      * Function to ultimatively remove the last entry from the stack,
      * if it was marked as deleted before. If this is not the case,
      * the function will just return false and do nothing.
      */
-    bool purgeLastIfDeleted();
+    inline  bool purgeLastIfDeleted();
     /**
      * Function to ultimatively remove all entries from the stack
      * marked as deleted.
@@ -212,12 +212,12 @@ namespace corsika {
      * "gaps" in the stack are filled with entries from the back
      * (copied).
      */
-    void purge();
+    inline void purge();
 
 
-    unsigned int getSize() const;
+    inline  unsigned int getSize() const;
 
-    std::string as_string() const;
+    inline std::string as_string() const;
 
   protected:
 
@@ -229,21 +229,21 @@ namespace corsika {
      * StackIterator::AddSecondary via ParticleBase
      */
     template <typename... TArgs>
-    stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) ;
+    inline  stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) ;
 
-    void swap(unsigned int const a, unsigned int const b);
+    inline  void swap(unsigned int const a, unsigned int const b);
 
-    void copy(unsigned int const a, unsigned int const b);
+    inline  void copy(unsigned int const a, unsigned int const b);
 
-    bool isErased(unsigned int const i) const;
+    inline  bool isErased(unsigned int const i) const;
 
-    void erase(unsigned int const i) ;
+    inline  void erase(unsigned int const i) ;
 
     /**
      * will remove from storage the element i. This is a helper
      * function for SecondaryView.
      */
-    void purge(unsigned int i);
+    inline  void purge(unsigned int i);
 
     /**
      * Function to perform eventual transformation from
@@ -251,15 +251,15 @@ namespace corsika {
      * StackData data_. By default (and in almost all cases) this
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
-    unsigned int getIndexFromIterator(const unsigned int vI) const;
+    inline  unsigned int getIndexFromIterator(const unsigned int vI) const;
     /**
      * @name Return reference to StackData object data_ for data access
      * @{
      */
 
-    value_type& getStackData();
+    inline  value_type& getStackData();
 
-    const value_type& getStackData() const;
+    inline  const value_type& getStackData() const;
 
     friend class StackIteratorInterface<value_type, MParticleInterface, Stack>;
     friend class ConstStackIteratorInterface<value_type, MParticleInterface, Stack>;

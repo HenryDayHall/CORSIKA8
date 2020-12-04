@@ -19,7 +19,7 @@ namespace corsika {
    template <template <typename> class TParticleInterfaceA,
              template <typename> class TParticleInterfaceB, typename TStackIterator>
     template <typename... TArgs1>
-    void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(std::tuple<TArgs1...> const vA) {
+   inline  void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(std::tuple<TArgs1...> const vA) {
       pi_a_type::setParticleData(vA);
       pi_b_type::setParticleData();
     }
@@ -27,7 +27,7 @@ namespace corsika {
       template <template <typename> class TParticleInterfaceA,
                 template <typename> class TParticleInterfaceB, typename TStackIterator>
     template <typename... TArgs1, typename... TArgs2>
-    void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(std::tuple<TArgs1...> const vA, std::tuple<TArgs2...> const vB) {
+      inline  void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(std::tuple<TArgs1...> const vA, std::tuple<TArgs2...> const vB) {
       pi_a_type::setParticleData(vA);
       pi_b_type::setParticleData(vB);
     }
@@ -35,7 +35,7 @@ namespace corsika {
       template <template <typename> class TParticleInterfaceA,
                 template <typename> class TParticleInterfaceB, typename TStackIterator>
     template <typename... TArgs1>
-    void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA) {
+      inline  void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA) {
       // static_assert(MT<I>::has_not, "error");
       pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA); // original stack
       pi_b_type::setParticleData(static_cast<pi_b_type&>(p));     // addon stack
@@ -44,7 +44,7 @@ namespace corsika {
    template <template <typename> class TParticleInterfaceA,
              template <typename> class TParticleInterfaceB,typename TStackIterator>
     template <typename... TArgs1, typename... TArgs2>
-    void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(pi_c_type& p, std::tuple<TArgs1...> const vA,
+   inline  void CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::setParticleData(pi_c_type& p, std::tuple<TArgs1...> const vA,
                          std::tuple<TArgs2...> const vB) {
 
       pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA);
@@ -54,18 +54,18 @@ namespace corsika {
     ///@}
    template <template <typename> class TParticleInterfaceA,
              template <typename> class TParticleInterfaceB, typename TStackIterator>
-    std::string CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::as_string() const {
+   inline std::string CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::as_string() const {
       return fmt::format("[[{}][{}]]", pi_a_type::as_string(), pi_b_type::as_string());
     }
 
 
    template <typename Stack1Impl, typename Stack2Impl>
-    void CombinedStackImpl< Stack1Impl, Stack2Impl>::clear() {
+   inline  void CombinedStackImpl< Stack1Impl, Stack2Impl>::clear() {
       Stack1Impl::clear();
       Stack2Impl::clear();
     }
    template <typename Stack1Impl, typename Stack2Impl>
-    void CombinedStackImpl< Stack1Impl, Stack2Impl>::copy(const unsigned int i1, const unsigned int i2) {
+   inline  void CombinedStackImpl< Stack1Impl, Stack2Impl>::copy(const unsigned int i1, const unsigned int i2) {
       if (i1 >= getSize() || i2 >= getSize()) {
         std::ostringstream err;
         err << "CombinedStack: trying to access data beyond size of stack!";
@@ -76,7 +76,7 @@ namespace corsika {
     }
 
    template <typename Stack1Impl, typename Stack2Impl>
-    void CombinedStackImpl< Stack1Impl, Stack2Impl>::swap(const unsigned int i1, const unsigned int i2) {
+   inline   void CombinedStackImpl< Stack1Impl, Stack2Impl>::swap(const unsigned int i1, const unsigned int i2) {
       if (i1 >= getSize() || i2 >= getSize()) {
         std::ostringstream err;
         err << "CombinedStack: trying to access data beyond size of stack!";
@@ -87,13 +87,13 @@ namespace corsika {
     }
 
    template <typename Stack1Impl, typename Stack2Impl>
-    void CombinedStackImpl< Stack1Impl, Stack2Impl>::incrementSize() {
+   inline   void CombinedStackImpl< Stack1Impl, Stack2Impl>::incrementSize() {
       Stack1Impl::incrementSize();
       Stack2Impl::incrementSize();
     }
 
    template <typename Stack1Impl, typename Stack2Impl>
-    void CombinedStackImpl< Stack1Impl, Stack2Impl>::decrementSize() {
+   inline   void CombinedStackImpl< Stack1Impl, Stack2Impl>::decrementSize() {
       Stack1Impl::decrementSize();
       Stack2Impl::decrementSize();
     }

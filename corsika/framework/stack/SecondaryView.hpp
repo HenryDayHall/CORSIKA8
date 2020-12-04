@@ -174,7 +174,7 @@ namespace corsika {
      * SecondaryView is derived from. This projectile should not be
      * used to modify the Stack!
      */
-    stack_value_iterator parent()
+    inline  stack_value_iterator parent()
         const { // todo: check if this can't be Conststack_value_iterator
       return stack_value_iterator(inner_stack_, projectile_index_);
     }
@@ -184,7 +184,7 @@ namespace corsika {
      * SecondaryView is derived from. This projectile should not be
      * used to modify the Stack!
      */
-    stack_value_iterator asNewParent() const {
+    inline  stack_value_iterator asNewParent() const {
       return stack_value_iterator(inner_stack_, projectile_index_);
     }
 
@@ -192,7 +192,7 @@ namespace corsika {
      * This return a projectile of this SecondaryView, which can be
      * used to modify the SecondaryView
      */
-    stack_view_iterator getProjectile() {
+    inline  stack_view_iterator getProjectile() {
       // NOTE: 0 is special marker here for PROJECTILE, see getIndexFromIterator
       return stack_view_iterator(*this, 0);
     }
@@ -200,18 +200,18 @@ namespace corsika {
      * Method to add a new secondary particle on this SecondaryView
      */
     template <typename... Args>
-    stack_view_iterator addSecondary(const Args... v);
+    inline  stack_view_iterator addSecondary(const Args... v);
 
     /**
      * overwrite Stack::getSize to return actual number of secondaries
      */
-    unsigned int getSize() const { return indices_.size(); }
+    inline  unsigned int getSize() const { return indices_.size(); }
 
-    unsigned int getEntries() const {
+    inline  unsigned int getEntries() const {
       return getSize() - inner_stack_reference_type::getErased();
     }
 
-    bool isEmpty() const { return getEntries() == 0; }
+    inline  bool isEmpty() const { return getEntries() == 0; }
 
     /**
      * @name These are functions required by std containers and std loops
@@ -221,42 +221,42 @@ namespace corsika {
      */
     // NOTE: the "+1" is since "0" is special marker here for PROJECTILE, see
     // getIndexFromIterator
-    stack_view_iterator begin();
+    inline  stack_view_iterator begin();
 
-    stack_view_iterator end() { return stack_view_iterator(*this, getSize() + 1); }
+    inline  stack_view_iterator end() { return stack_view_iterator(*this, getSize() + 1); }
 
-    stack_view_iterator last();
+    inline  stack_view_iterator last();
 
-    const_stack_view_iterator begin() const ;
+    inline  const_stack_view_iterator begin() const ;
 
-    const_stack_view_iterator end() const { return const_stack_view_iterator(*this, getSize() + 1); }
+    inline  const_stack_view_iterator end() const { return const_stack_view_iterator(*this, getSize() + 1); }
 
-    const_stack_view_iterator last() const;
+    inline  const_stack_view_iterator last() const;
 
-    const_stack_view_iterator cbegin() const;
+    inline  const_stack_view_iterator cbegin() const;
 
-    auto cend() const { return const_stack_view_iterator(*this, getSize()); }
+    inline  const_stack_view_iterator cend() const { return const_stack_view_iterator(*this, getSize()); }
 
-    const_stack_view_iterator clast() const;
+    inline  const_stack_view_iterator clast() const;
 
-    stack_view_iterator at(unsigned int i) { return stack_view_iterator(*this, i); }
+    inline  stack_view_iterator at(unsigned int i) { return stack_view_iterator(*this, i); }
 
-    const_stack_view_iterator at(unsigned int i) const {
+    inline  const_stack_view_iterator at(unsigned int i) const {
       return const_stack_view_iterator(*this, i);
     }
 
-    stack_view_iterator first() { return stack_view_iterator{*this, 0}; }
+    inline  stack_view_iterator first() { return stack_view_iterator{*this, 0}; }
 
-    const_stack_view_iterator cfirst() const {
+    inline   const_stack_view_iterator cfirst() const {
       return const_stack_view_iterator{*this, 0};
     }
     /// @}
 
-    void swap(stack_view_iterator a, stack_view_iterator b) ;
+    inline void swap(stack_view_iterator a, stack_view_iterator b) ;
 
-    void copy(stack_view_iterator a, stack_view_iterator b);
+    inline void copy(stack_view_iterator a, stack_view_iterator b);
 
-    void copy(const_stack_view_iterator a, stack_view_iterator b);
+    inline void copy(const_stack_view_iterator a, stack_view_iterator b);
 
     /**
      * need overwrite Stack::Delete, since we want to call
@@ -270,13 +270,13 @@ namespace corsika {
      * remove the last particle.
      *
      */
-    void erase(stack_view_iterator p);
+    inline void erase(stack_view_iterator p);
 
     /**
      * return next particle from stack, need to overwrtie Stack::getNextParticle to get
      * right reference
      */
-    stack_view_iterator getNextParticle() {
+    inline stack_view_iterator getNextParticle() {
       while (purgeLastIfDeleted()) {}
       return last();
     }
@@ -287,26 +287,29 @@ namespace corsika {
      * need to re-implement for SecondaryView since stack_view_iterator types are a bit
      * different
      */
-    bool isErased(const stack_view_iterator& p) const {
+    inline bool isErased(const stack_view_iterator& p) const {
       return isErased(p.getIndex() - 1);
     }
 
-    bool isErased(const const_stack_view_iterator& p) const {
+    inline bool isErased(const const_stack_view_iterator& p) const {
       return isErased(p.getIndex() - 1);
     }
     /**
      * delete this particle
      */
-    bool isErased(const ParticleInterfaceType& p) const {
+    inline bool isErased(const ParticleInterfaceType& p) const {
       return isErased(p.getIterator());
     }
 
+    inline bool isDeleted(const const_stack_view_iterator& p) const {
+      return isDeleted(p.getIndex() - 1);
+    }
     /**
      * Function to ultimatively remove the last entry from the stack,
      * if it was marked as deleted before. If this is not the case,
      * the function will just return false and do nothing.
      */
-    bool purgeLastIfDeleted();
+    inline bool purgeLastIfDeleted();
 
     /**
      * Function to ultimatively remove all entries from the stack
@@ -316,9 +319,9 @@ namespace corsika {
      * "gaps" in the stack are filled with entries from the back
      * (copied).
      */
-    void purge() ;
+    inline void purge() ;
 
-    std::string as_string() const;
+    inline std::string as_string() const;
 
   protected:
     friend class StackIteratorInterface<
@@ -341,11 +344,11 @@ namespace corsika {
      * stack_view_iterator::addSecondary via ParticleBase
      */
     template <typename... Args>
-    stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v) ;
+    inline stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v) ;
 
     // forward to inner stack
     // this also checks the allowed bounds of 'i'
-    bool isErased(unsigned int i) const {
+    inline  bool isErased(unsigned int i) const {
       if (i >= indices_.size()) return false;
       return inner_stack_.isErased(getIndexFromIterator(i + 1));
     }
@@ -355,7 +358,7 @@ namespace corsika {
      * function the conversion form iterator-index to stack-index is
      * performed.
      */
-    unsigned int getIndexFromIterator(const unsigned int vI) const {
+    inline unsigned int getIndexFromIterator(const unsigned int vI) const {
       // this is too much: CORSIKA_LOG_TRACE("SecondaryView::getIndexFromIterator({})={}",
       // vI, (vI?indices_[vI-1]:projectile_index_));
       if (vI == 0) return projectile_index_;
@@ -387,7 +390,7 @@ namespace corsika {
      * is of course a reference into the SecondaryView itself.
      */
     template <typename Particle>
-    auto new_secondary(Particle&&) const {
+    inline void new_secondary(Particle&&) const {
       CORSIKA_LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&&)");
     }
 
@@ -400,7 +403,8 @@ namespace corsika {
      * itself.
      */
     template <typename Particle>
-    DefaultSecondaryProducer(Particle const&) {
+    inline DefaultSecondaryProducer(Particle const&) {
+
       CORSIKA_LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
     }
   };

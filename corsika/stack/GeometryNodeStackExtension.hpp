@@ -39,27 +39,28 @@ namespace corsika::node {
     typedef typename TEnvType::BaseNodeType node_type;
 
     // default version for particle-creation from input data
-    void setParticleData(const std::tuple<node_type const*> v) {
+    inline  void setParticleData(const std::tuple<node_type const*> v) {
       setNode(std::get<0>(v));
     }
-    void setParticleData(GeometryDataInterface& parent,
+    inline  void setParticleData(GeometryDataInterface& parent,
                          const std::tuple<node_type const*>) {
       setNode(parent.getNode()); // copy Node from parent particle!
     }
-    void setParticleData() { setNode(nullptr); }
-    void setParticleData(GeometryDataInterface& parent) {
+    inline  void setParticleData() { setNode(nullptr); }
+    inline  void setParticleData(GeometryDataInterface& parent) {
       setNode(parent.getNode()); // copy Node from parent particle!
     }
 
-    std::string as_string() const {
+    inline  std::string as_string() const {
     	return fmt::format("node={}", fmt::ptr(getNode()));
     }
 
-    void setNode(node_type const* v) {
+    inline  void setNode(node_type const* v) {
+
     	super_type::getStackData().setNode(super_type::getIndex(), v);
     }
 
-    node_type const* getNode() const {
+    inline  node_type const* getNode() const {
     	return super_type::getStackData().getNode(super_type::getIndex());
     }
   };
@@ -93,41 +94,41 @@ namespace corsika::node {
 	operator=( GeometryData<TEnvType> && )= default;
 
     // these functions are needed for the Stack interface
-    void clear() {
+	inline void clear() {
     	node_vector_.clear();
     }
 
-    unsigned int getSize() const {
+	inline  unsigned int getSize() const {
     	return node_vector_.size();
     }
 
-    unsigned int getCapacity() const {
+	inline  unsigned int getCapacity() const {
     	return node_vector_.size();
     }
 
-    void copy(const int i1, const int i2) {
+	inline void copy(const int i1, const int i2) {
     	node_vector_[i2] = node_vector_[i1];
     }
 
-    void swap(const int i1, const int i2) {
+	inline  void swap(const int i1, const int i2) {
     	std::swap(node_vector_[i1], node_vector_[i2]);
     }
 
     // custom data access function
-    void setNode(const int i, node_type const* v) {
+	inline  void setNode(const int i, node_type const* v) {
     	node_vector_[i] = v;
     }
 
-    node_type const* getNode(const int i) const {
+	inline  node_type const* getNode(const int i) const {
     	return node_vector_[i];
     }
 
     // these functions are also needed by the Stack interface
-    void incrementSize() {
+	inline  void incrementSize() {
     	node_vector_.push_back(nullptr);
     }
 
-    void decrementSize() {
+	inline  void decrementSize() {
       if (node_vector_.size() > 0) { node_vector_.pop_back(); }
     }
 

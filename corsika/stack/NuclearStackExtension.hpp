@@ -53,24 +53,24 @@ namespace corsika::nuclear_stack {
                        unsigned short, unsigned short>
         altenative_particle_data_type;
 
-    void setParticleData(particle_data_type const& v) ;
+    inline void setParticleData(particle_data_type const& v) ;
 
-    void setParticleData(altenative_particle_data_type const& v);
+    inline  void setParticleData(altenative_particle_data_type const& v);
 
-    void setParticleData(super_type& p, particle_data_type const& v);
+    inline void setParticleData(super_type& p, particle_data_type const& v);
 
-    void setParticleData(super_type& p, altenative_particle_data_type const& v);
+    inline void setParticleData(super_type& p, altenative_particle_data_type const& v);
 
-    std::string as_string() const;
+    inline  std::string as_string() const;
 
     /**
      * @name individual setters
      * @{
      */
-    void setNuclearA(const unsigned short vA) {
+    inline  void setNuclearA(const unsigned short vA) {
       super_type::getStackData().setNuclearA(super_type::getIndex(), vA);
     }
-    void setNuclearZ(const unsigned short vZ) {
+    inline  void setNuclearZ(const unsigned short vZ) {
       super_type::getStackData().setNuclearZ(super_type::getIndex(), vZ);
     }
     /// @}
@@ -79,10 +79,10 @@ namespace corsika::nuclear_stack {
      * @name individual getters
      * @{
      */
-    int getNuclearA() const {
+    inline  int getNuclearA() const {
       return super_type::getStackData().getNuclearA(super_type::getIndex());
     }
-    int getNuclearZ() const {
+    inline  int getNuclearZ() const {
       return super_type::getStackData().getNuclearZ(super_type::getIndex());
     }
     /// @}
@@ -90,22 +90,22 @@ namespace corsika::nuclear_stack {
     /**
      * Overwrite normal getParticleMass function with nuclear version
      */
-    HEPMassType getMass() const;
+    inline  HEPMassType getMass() const;
     /**
      * Overwirte normal getChargeNumber function with nuclear version
      **/
-    int16_t getChargeNumber() const;
+    inline  int16_t getChargeNumber() const;
 
-    int getNucleusRef() const {
+    inline  int getNucleusRef() const {
       return super_type::getStackData().getNucleusRef(super_type::getIndex());
     } // LCOV_EXCL_LINE
 
   protected:
-    void setNucleusRef(const int vR) {
+    inline  void setNucleusRef(const int vR) {
       super_type::getStackData().setNucleusRef(super_type::getIndex(), vR);
     }
 
-    bool isNucleus() const {
+    inline   bool isNucleus() const {
       return super_type::getStackData().isNucleus(super_type::getIndex());
     }
   };
@@ -148,45 +148,45 @@ namespace corsika::nuclear_stack {
 
     void dump() { super_type::dump(); }
 
-    void clear();
+    inline void clear();
 
     unsigned int getSize() const { return nucleusRef_.size(); }
 
     unsigned int getCapacity() const { return nucleusRef_.capacity(); }
 
-    void setNuclearA(const unsigned int i, const unsigned short vA) {
+    inline void setNuclearA(const unsigned int i, const unsigned short vA) {
       nuclearA_[getNucleusRef(i)] = vA;
     }
 
-    void setNuclearZ(const unsigned int i, const unsigned short vZ) {
+    inline  void setNuclearZ(const unsigned int i, const unsigned short vZ) {
       nuclearZ_[getNucleusRef(i)] = vZ;
     }
 
-    void setNucleusRef(const unsigned int i, const int v) { nucleusRef_[i] = v; }
+    inline   void setNucleusRef(const unsigned int i, const int v) { nucleusRef_[i] = v; }
 
-    int getNuclearA(const unsigned int i) const { return nuclearA_[getNucleusRef(i)]; }
+    inline  int getNuclearA(const unsigned int i) const { return nuclearA_[getNucleusRef(i)]; }
 
-    int getNuclearZ(const unsigned int i) const { return nuclearZ_[getNucleusRef(i)]; }
+    inline  int getNuclearZ(const unsigned int i) const { return nuclearZ_[getNucleusRef(i)]; }
     // this function will create new storage for Nuclear Properties, and return the
     // reference to it
-    int getNucleusNextRef() ;
+    inline  int getNucleusNextRef() ;
 
-    int getNucleusRef(const unsigned int i) const;
+    inline  int getNucleusRef(const unsigned int i) const;
 
-    bool isNucleus(const unsigned int i) const { return nucleusRef_[i] >= 0; }
+    inline  bool isNucleus(const unsigned int i) const { return nucleusRef_[i] >= 0; }
 
     /**
      *   Function to copy particle at location i1 in stack to i2
      */
-    void copy(const unsigned int i1, const unsigned int i2) ;
+    inline   void copy(const unsigned int i1, const unsigned int i2) ;
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    void swap(const unsigned int i1, const unsigned int i2) ;
+    inline  void swap(const unsigned int i1, const unsigned int i2) ;
 
-    void incrementSize() ;
+    inline  void incrementSize() ;
 
-    void decrementSize() ;
+    inline  void decrementSize() ;
 
   private:
     /// the actual memory to store particle data

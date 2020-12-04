@@ -43,23 +43,23 @@ namespace corsika::simple_stack {
     }
 
     void setParticleData(std::tuple<corsika::Code, HEPEnergyType, MomentumVector,
-                                    corsika::Point, TimeType> const& v) {
+                                    corsika::Point, TimeType> const& v);/* {
       this->setPID(std::get<0>(v));
       this->setEnergy(std::get<1>(v));
       this->setMomentum(std::get<2>(v));
       this->setPosition(std::get<3>(v));
       this->setTime(std::get<4>(v));
-    }
+    }*/
 
     void setParticleData(ParticleInterface<StackIteratorInterface> const&,
                          std::tuple<corsika::Code, HEPEnergyType, MomentumVector,
-                                    corsika::Point, TimeType> const& v) {
+                                    corsika::Point, TimeType> const& v);/* {
       this->setPID(std::get<0>(v));
       this->setEnergy(std::get<1>(v));
       this->setMomentum(std::get<2>(v));
       this->setPosition(std::get<3>(v));
       this->setTime(std::get<4>(v));
-    }
+    }*/
 
     /// individual setters
     void setPID(corsika::Code const id) {
@@ -137,13 +137,7 @@ namespace corsika::simple_stack {
     void init() {}
     void dump() const {}
 
-    void clear() {
-      dataPID_.clear();
-      dataE_.clear();
-      momentum_.clear();
-      position_.clear();
-      time_.clear();
-    }
+    inline void clear() ;
 
     unsigned int getSize() const { return dataPID_.size(); }
     unsigned int getCapacity() const { return dataPID_.size(); }
@@ -173,51 +167,17 @@ namespace corsika::simple_stack {
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    void copy(size_t i1, size_t i2) {
-      dataPID_[i2] = dataPID_[i1];
-      dataE_[i2] = dataE_[i1];
-      momentum_[i2] = momentum_[i1];
-      position_[i2] = position_[i1];
-      time_[i2] = time_[i1];
-    }
+    inline  void copy(size_t i1, size_t i2);
 
     /**
      *   FIXME: change to iterators.
      *   Function to copy particle at location i2 in stack to i1
      */
-    void swap(size_t i1, size_t i2) {
-      std::swap(dataPID_[i2], dataPID_[i1]);
-      std::swap(dataE_[i2], dataE_[i1]);
-      std::swap(momentum_[i2], momentum_[i1]);
-      std::swap(position_[i2], position_[i1]);
-      std::swap(time_[i2], time_[i1]);
-    }
+    inline void swap(size_t i1, size_t i2);
 
-    void incrementSize() {
-      using corsika::Code;
-      using corsika::Point;
+    inline void incrementSize() ;
 
-      dataPID_.push_back(Code::Unknown);
-      dataE_.push_back(0 * electronvolt);
-
-      CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
-
-      momentum_.push_back(
-          momentum_type(dummyCS, {0 * electronvolt, 0 * electronvolt, 0 * electronvolt}));
-
-      position_.push_back(Point(dummyCS, {0 * meter, 0 * meter, 0 * meter}));
-      time_.push_back(0 * second);
-    }
-
-    void decrementSize() {
-      if (dataE_.size() > 0) {
-        dataPID_.pop_back();
-        dataE_.pop_back();
-        momentum_.pop_back();
-        position_.pop_back();
-        time_.pop_back();
-      }
-    }
+    inline void decrementSize() ;
 
   private:
     /// the actual memory to store particle data
@@ -232,3 +192,5 @@ namespace corsika::simple_stack {
   typedef Stack<SuperStupidStackImpl, ParticleInterface> SuperStupidStack;
 
 } // namespace corsika::simple_stack
+
+#include <corsika/detail/stack/SuperStupidStack.inl>

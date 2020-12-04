@@ -61,12 +61,13 @@ namespace corsika {
      * Delete this particle on the stack. The corresponding iterator
      * will be invalidated by this operation
      */
-    void erase() { this->getIterator().getStack().erase(this->getIterator()); }
+    inline void erase() { this->getIterator().getStack().erase(this->getIterator()); }
 
     /**
      * Method to retrieve the status of the Particle. Is it already deleted? Or not.
      */
-    bool isErased() const { return this->getIterator().getStack().isErased(this->getIterator()); }
+
+    inline bool isErased() const { return this->getIterator().getStack().isErased(this->getIterator()); }
 
     /**
      * Add a secondary particle based on *this on the stack @param
@@ -74,7 +75,7 @@ namespace corsika {
      * function description in the user defined ParticleInterface::AddSecondary(...)
      */
     template <typename... TArgs>
-    stack_iterator_type addSecondary(const TArgs... args) {
+    inline  stack_iterator_type addSecondary(const TArgs... args) {
 
       return this->getStack().addSecondary(this->getIterator(), args...);
     }
@@ -84,11 +85,11 @@ namespace corsika {
     /**
      * return the corresponding StackIterator for this particle
      */
-    stack_iterator_type& getIterator() {
+    inline stack_iterator_type& getIterator() {
     	return static_cast<stack_iterator_type&>(*this);
     }
 
-    const stack_iterator_type& getIterator() const {
+    inline  const stack_iterator_type& getIterator() const {
       return static_cast<const stack_iterator_type&>(*this);
     }
 
@@ -99,26 +100,27 @@ namespace corsika {
         and getStackData to retrieve data
         @{
     */
-    auto& getStackData() {
+    inline auto& getStackData() {
     	return this->getIterator().getStackData();
     }
 
-    const auto& getStackData() const {
+    inline  const auto& getStackData() const {
     	return this->getIterator().getStackData();
     }
 
-    auto& getStack() {
+    inline auto& getStack() {
     	return this->getIterator().getStack();
     }
 
-    const auto& getStack() const {
+    inline const auto& getStack() const {
     	return this->getIterator().getStack();
     }
 
     /**
      * return the index number of the underlying iterator object
      */
-    std::size_t getIndex() const {
+
+    inline  std::size_t getIndex() const {
     	return this->getIterator().getIndexFromIterator();
     }
     ///@}
