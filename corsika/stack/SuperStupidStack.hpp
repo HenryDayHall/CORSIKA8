@@ -43,23 +43,11 @@ namespace corsika::simple_stack {
     }
 
     void setParticleData(std::tuple<corsika::Code, HEPEnergyType, MomentumVector,
-                                    corsika::Point, TimeType> const& v);/* {
-      this->setPID(std::get<0>(v));
-      this->setEnergy(std::get<1>(v));
-      this->setMomentum(std::get<2>(v));
-      this->setPosition(std::get<3>(v));
-      this->setTime(std::get<4>(v));
-    }*/
+                                    corsika::Point, TimeType> const& v);
 
     void setParticleData(ParticleInterface<StackIteratorInterface> const&,
                          std::tuple<corsika::Code, HEPEnergyType, MomentumVector,
-                                    corsika::Point, TimeType> const& v);/* {
-      this->setPID(std::get<0>(v));
-      this->setEnergy(std::get<1>(v));
-      this->setMomentum(std::get<2>(v));
-      this->setPosition(std::get<3>(v));
-      this->setTime(std::get<4>(v));
-    }*/
+                                    corsika::Point, TimeType> const& v);
 
     /// individual setters
     void setPID(corsika::Code const id) {
