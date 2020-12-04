@@ -67,34 +67,37 @@ namespace corsika {
      */
 
     template <typename... TArgs1>
-    void setParticleData(std::tuple<TArgs1...> const vA) {
+    void setParticleData(std::tuple<TArgs1...> const vA);
+    /* {
       pi_a_type::setParticleData(vA);
       pi_b_type::setParticleData();
-    }
+    }*/
+
     template <typename... TArgs1, typename... TArgs2>
-    void setParticleData(std::tuple<TArgs1...> const vA, std::tuple<TArgs2...> const vB) {
+    void setParticleData(std::tuple<TArgs1...> const vA, std::tuple<TArgs2...> const vB); /*{
       pi_a_type::setParticleData(vA);
       pi_b_type::setParticleData(vB);
-    }
+    }*/
 
     template <typename... TArgs1>
-    void setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA) {
+    void setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA);/* {
       // static_assert(MT<I>::has_not, "error");
       pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA); // original stack
       pi_b_type::setParticleData(static_cast<pi_b_type&>(p));     // addon stack
-    }
+    }*/
+
     template <typename... TArgs1, typename... TArgs2>
     void setParticleData(pi_c_type& p, std::tuple<TArgs1...> const vA,
-                         std::tuple<TArgs2...> const vB) {
+                         std::tuple<TArgs2...> const vB);/* {
 
       pi_a_type::setParticleData(static_cast<pi_a_type&>(p), vA);
       pi_b_type::setParticleData(static_cast<pi_b_type&>(p), vB);
-    }
+    }*/
     ///@}
 
-    std::string as_string() const {
+    std::string as_string() const;/* {
       return fmt::format("[[{}][{}]]", pi_a_type::as_string(), pi_b_type::as_string());
-    }
+    }*/
 
   private:
   protected:
@@ -110,13 +113,14 @@ namespace corsika {
    * access to the combined number of data entries.
    */
   template <typename Stack1Impl, typename Stack2Impl>
-  class CombinedStackImpl : public Stack1Impl, public Stack2Impl {
+  struct CombinedStackImpl : public Stack1Impl, public Stack2Impl {
 
   public:
-    void clear() {
+
+    void clear();/* {
       Stack1Impl::clear();
       Stack2Impl::clear();
-    }
+    }*/
 
     unsigned int getSize() const { return Stack1Impl::getSize(); }
     unsigned int getCapacity() const { return Stack1Impl::getCapacity(); }
@@ -124,7 +128,7 @@ namespace corsika {
     /**
      *   Function to copy particle at location i1 in stack to i2
      */
-    void copy(const unsigned int i1, const unsigned int i2) {
+    void copy(const unsigned int i1, const unsigned int i2);/* {
       if (i1 >= getSize() || i2 >= getSize()) {
         std::ostringstream err;
         err << "CombinedStack: trying to access data beyond size of stack!";
@@ -132,12 +136,12 @@ namespace corsika {
       }
       Stack1Impl::copy(i1, i2);
       Stack2Impl::copy(i1, i2);
-    }
+    }*/
 
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    void swap(const unsigned int i1, const unsigned int i2) {
+    void swap(const unsigned int i1, const unsigned int i2);/* {
       if (i1 >= getSize() || i2 >= getSize()) {
         std::ostringstream err;
         err << "CombinedStack: trying to access data beyond size of stack!";
@@ -145,17 +149,17 @@ namespace corsika {
       }
       Stack1Impl::swap(i1, i2);
       Stack2Impl::swap(i1, i2);
-    }
+    }*/
 
-    void incrementSize() {
+    void incrementSize();/* {
       Stack1Impl::incrementSize();
       Stack2Impl::incrementSize();
-    }
+    }*/
 
-    void decrementSize() {
+    void decrementSize();/* {
       Stack1Impl::decrementSize();
       Stack2Impl::decrementSize();
-    }
+    }*/
 
   }; // end class CombinedStackImpl
 
@@ -173,4 +177,4 @@ namespace corsika {
   
 } // namespace corsika
 
-//#include <corsika/detail/framework/stack/CombinedStack.inl>
+#include <corsika/detail/framework/stack/CombinedStack.inl>

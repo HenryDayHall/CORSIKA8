@@ -200,11 +200,8 @@ namespace corsika {
      * Method to add a new secondary particle on this SecondaryView
      */
     template <typename... Args>
-    stack_view_iterator addSecondary(const Args... v) {
-      CORSIKA_LOG_TRACE("SecondaryView::addSecondary(Args&&)");
-      stack_view_iterator proj = getProjectile(); // make this const
-      return addSecondary(proj, v...);
-    }
+    stack_view_iterator addSecondary(const Args... v);
+
     /**
      * overwrite Stack::getSize to return actual number of secondaries
      */
@@ -224,60 +221,23 @@ namespace corsika {
      */
     // NOTE: the "+1" is since "0" is special marker here for PROJECTILE, see
     // getIndexFromIterator
-    stack_view_iterator begin() {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!isErased(i)) break;
-      }
-      return stack_view_iterator(*this, i + 1);
-    }
+    stack_view_iterator begin();
 
-    auto end() { return stack_view_iterator(*this, getSize() + 1); }
+    stack_view_iterator end() { return stack_view_iterator(*this, getSize() + 1); }
 
-    auto last() {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!isErased(getSize() - 1 - i)) break;
-      }
-      return stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
+    stack_view_iterator last();
 
-    auto begin() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!isErased(i)) break;
-      }
+    const_stack_view_iterator begin() const ;
 
-      return const_stack_view_iterator(*this, i + 1);
-    }
+    const_stack_view_iterator end() const { return const_stack_view_iterator(*this, getSize() + 1); }
 
-    auto end() const { return const_stack_view_iterator(*this, getSize() + 1); }
+    const_stack_view_iterator last() const;
 
-    auto last() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!isErased(getSize() - 1 - i)) break;
-      }
-      return const_stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
-
-    auto cbegin() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!isErased(i)) break;
-      }
-      return const_stack_view_iterator(*this, i + 1);
-    }
+    const_stack_view_iterator cbegin() const;
 
     auto cend() const { return const_stack_view_iterator(*this, getSize()); }
 
-    auto clast() const {
-      unsigned int i = 0;
-      for (; i < getSize(); ++i) {
-        if (!isErased(getSize() - 1 - i)) break;
-      }
-      return const_stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
+    const_stack_view_iterator clast() const;
 
     stack_view_iterator at(unsigned int i) { return stack_view_iterator(*this, i); }
 
@@ -292,21 +252,11 @@ namespace corsika {
     }
     /// @}
 
-    void swap(stack_view_iterator a, stack_view_iterator b) {
-      CORSIKA_LOG_TRACE("View::swap");
-      inner_stack_.swap(getIndexFromIterator(a.getIndex()),
-                        getIndexFromIterator(b.getIndex()));
-    }
-    void copy(stack_view_iterator a, stack_view_iterator b) {
-      CORSIKA_LOG_TRACE("View::copy");
-      inner_stack_.copy(getIndexFromIterator(a.getIndex()),
-                        getIndexFromIterator(b.getIndex()));
-    }
-    void copy(const_stack_view_iterator a, stack_view_iterator b) {
-      CORSIKA_LOG_TRACE("View::copy");
-      inner_stack_.copy(getIndexFromIterator(a.getIndex()),
-                        getIndexFromIterator(b.getIndex()));
-    }
+    void swap(stack_view_iterator a, stack_view_iterator b) ;
+
+    void copy(stack_view_iterator a, stack_view_iterator b);
+
+    void copy(const_stack_view_iterator a, stack_view_iterator b);
 
     /**
      * need overwrite Stack::Delete, since we want to call
@@ -320,17 +270,7 @@ namespace corsika {
      * remove the last particle.
      *
      */
-    void erase(stack_view_iterator p) {
-      CORSIKA_LOG_TRACE("SecondaryView::Delete");
-      if (isEmpty()) { /*error*/
-        throw std::runtime_error("Stack, cannot delete entry since size is zero");
-      }
-      if (isErased(p.getIndex() - 1)) { /*error*/
-        throw std::runtime_error("Stack, cannot delete entry since already deleted");
-      }
-      inner_stack_.erase(getIndexFromIterator(p.getIndex()));
-      inner_stack_reference_type::nDeleted_++; // also count in SecondaryView
-    }
+    void erase(stack_view_iterator p);
 
     /**
      * return next particle from stack, need to overwrtie Stack::getNextParticle to get
@@ -366,15 +306,7 @@ namespace corsika {
      * if it was marked as deleted before. If this is not the case,
      * the function will just return false and do nothing.
      */
-    bool purgeLastIfDeleted() {
-      CORSIKA_LOG_TRACE("SecondaryView::purgeLastIfDeleted");
-      if (!isErased(getSize() - 1))
-        return false; // the last particle is not marked for deletion. Do nothing.
-      inner_stack_.purge(getIndexFromIterator(getSize()));
-      inner_stack_reference_type::nDeleted_--;
-      indices_.pop_back();
-      return true;
-    }
+    bool purgeLastIfDeleted();
 
     /**
      * Function to ultimatively remove all entries from the stack
@@ -384,34 +316,9 @@ namespace corsika {
      * "gaps" in the stack are filled with entries from the back
      * (copied).
      */
-    void purge() {
-      unsigned int iStack = 0;
-      unsigned int size = getSize();
-      while (iStack < size) {
-        if (isErased(iStack)) {
-          inner_stack_.purge(iStack);
-          indices_.erase(indices_.begin() + iStack);
-        }
-        size = getSize();
-        iStack++;
-      }
-      inner_stack_reference_type::nDeleted_ = 0;
-    }
+    void purge() ;
 
-    std::string as_string() const {
-      std::string str(fmt::format("size {}\n", getSize()));
-      // we make our own begin/end since we want ALL entries
-      std::string new_line = "     ";
-      for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
-        const_stack_view_iterator itPart(*this, iPart);
-        str += fmt::format(
-            "{}{}{}", new_line, itPart.as_string(),
-            (inner_stack_.deleted_[getIndexFromIterator(itPart.getIndex())] ? " [deleted]"
-                                                                            : ""));
-        new_line = "\n     ";
-      }
-      return str;
-    }
+    std::string as_string() const;
 
   protected:
     friend class StackIteratorInterface<
@@ -434,22 +341,7 @@ namespace corsika {
      * stack_view_iterator::addSecondary via ParticleBase
      */
     template <typename... Args>
-    stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v) {
-      CORSIKA_LOG_TRACE("SecondaryView::addSecondary(stack_view_iterator&, Args&&)");
-      // make space on stack
-      inner_stack_reference_type::getStackData().incrementSize();
-      inner_stack_.deleted_.push_back(false);
-      // get current number of secondaries on stack
-      const unsigned int idSec = getSize();
-      // determine index on (inner) stack where new particle will be located
-      const unsigned int index = inner_stack_reference_type::getStackData().getSize() - 1;
-      indices_.push_back(index);
-      // NOTE: "+1" is since "0" is special marker here for PROJECTILE, see
-      // getIndexFromIterator
-      auto sec = stack_view_iterator(*this, idSec + 1, proj, v...);
-      MSecondaryProducer<TStackDataType, TParticleInterface>::new_secondary(sec);
-      return sec;
-    }
+    stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v) ;
 
     // forward to inner stack
     // this also checks the allowed bounds of 'i'
@@ -534,4 +426,4 @@ namespace corsika {
 
 } // namespace corsika
 
-//#include <corsika/detail/framework/stack/SecondaryView.inl>
+#include <corsika/detail/framework/stack/SecondaryView.inl>
