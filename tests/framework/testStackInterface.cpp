@@ -10,9 +10,7 @@
 
 #include <corsika/framework/stack/Stack.hpp>
 
-#include <testTestStack.h> // simple test-stack for testing. This is
-                           // for testing only: include from
-                           // CMAKE_CURRENT_SOURCE_DIR
+#include <testTestStack.h> // from tests/common
 
 #include <iomanip>
 #include <tuple>
