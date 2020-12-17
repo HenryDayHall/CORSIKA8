@@ -46,7 +46,7 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    units::si::GrammageType integratedGrammage(
+    units::si::GrammageType getIntegratedGrammage(
         Trajectory<Line> const& line, units::si::LengthType vL,
         Vector<units::si::dimensionless_d> const& axis) const;
 
@@ -68,7 +68,7 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    units::si::LengthType arclengthFromGrammage(
+    units::si::LengthType getArclengthFromGrammage(
         Trajectory<Line> const& line, units::si::GrammageType grammage,
         Vector<units::si::dimensionless_d> const& axis) const;
 
@@ -78,6 +78,6 @@ namespace corsika {
 
   }; // class BaseExponential
 
-  } // namespace corsika
+} // namespace corsika
 
 #include <corsika/detail/media/BaseExponential.inl>

@@ -15,20 +15,20 @@
 
 namespace corsika {
 
-  //! convenience function equivalent to Volume::Contains
+  //! convenience function equivalent to Volume::isInside
   template <typename IModelProperties>
-  bool VolumeTreeNode<IModelProperties>::Contains(corsika::Point const& p) const {
-    return fGeoVolume->Contains(p);
+  bool VolumeTreeNode<IModelProperties>::isInside(Point const& p) const {
+    return geoVolume_->isInside(p);
   }
 
   template <typename IModelProperties>
   inline VolumeTreeNode<IModelProperties> const*
-  VolumeTreeNode<IModelProperties>::Excludes(corsika::Point const& p) const {
+  VolumeTreeNode<IModelProperties>::isExcluded(Point const& p) const {
     auto exclContainsIter =
-        std::find_if(fExcludedNodes.cbegin(), fExcludedNodes.cend(),
-                     [&](auto const& s) { return bool(s->Contains(p)); });
+        std::find_if(excludedNodes_.cbegin(), excludedNodes_.cend(),
+                     [&](auto const& s) { return bool(s->isInside(p)); });
 
-    return exclContainsIter != fExcludedNodes.cend() ? *exclContainsIter : nullptr;
+    return exclContainsIter != excludedNodes_.cend() ? *exclContainsIter : nullptr;
   }
 
   /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
@@ -36,22 +36,22 @@ namespace corsika {
    */
   template <typename IModelProperties>
   VolumeTreeNode<IModelProperties> const*
-  VolumeTreeNode<IModelProperties>::GetContainingNode(corsika::Point const& p) const {
-    if (!Contains(p)) { return nullptr; }
+  VolumeTreeNode<IModelProperties>::getContainingNode(Point const& p) const {
+    if (!isInside(p)) { return nullptr; }
 
     if (auto const childContainsIter =
-            std::find_if(fChildNodes.cbegin(), fChildNodes.cend(),
-                         [&](auto const& s) { return bool(s->Contains(p)); });
-        childContainsIter == fChildNodes.cend()) // not contained in any of the children
+            std::find_if(childNodes_.cbegin(), childNodes_.cend(),
+                         [&](auto const& s) { return bool(s->isInside(p)); });
+        childContainsIter == childNodes_.cend()) // not contained in any of the children
     {
-      if (auto const exclContainsIter = Excludes(p)) // contained in any excluded nodes
+      if (auto const exclContainsIter = isExcluded(p)) // contained in any excluded nodes
       {
-        return exclContainsIter->GetContainingNode(p);
+        return exclContainsIter->getContainingNode(p);
       } else {
         return this;
       }
     } else {
-      return (*childContainsIter)->GetContainingNode(p);
+      return (*childContainsIter)->getContainingNode(p);
     }
   }
 
@@ -60,29 +60,31 @@ namespace corsika {
   void VolumeTreeNode<IModelProperties>::walk(TCallable func) {
     if constexpr (preorder) { func(*this); }
 
-    std::for_each(fChildNodes.begin(), fChildNodes.end(),
+    std::for_each(childNodes_.begin(), childNodes_.end(),
                   [&](auto& v) { v->walk(func); });
 
     if constexpr (!preorder) { func(*this); };
   }
 
   template <typename IModelProperties>
-  void VolumeTreeNode<IModelProperties>::AddChild(typename VolumeTreeNode<IModelProperties>::VTNUPtr pChild) {
-    pChild->fParentNode = this;
-    fChildNodes.push_back(std::move(pChild));
+  void VolumeTreeNode<IModelProperties>::addChild(
+      typename VolumeTreeNode<IModelProperties>::VTNUPtr pChild) {
+    pChild->parentNode_ = this;
+    childNodes_.push_back(std::move(pChild));
     // It is a bad idea to return an iterator to the inserted element
     // because it might get invalidated when the vector needs to grow
     // later and the caller won't notice.
   }
 
   template <typename IModelProperties>
-  void VolumeTreeNode<IModelProperties>::ExcludeOverlapWith(typename VolumeTreeNode<IModelProperties>::VTNUPtr const& pNode) {
-    fExcludedNodes.push_back(pNode.get());
+  void VolumeTreeNode<IModelProperties>::excludeOverlapWith(
+      typename VolumeTreeNode<IModelProperties>::VTNUPtr const& pNode) {
+    excludedNodes_.push_back(pNode.get());
   }
 
   template <typename IModelProperties>
   template <class MediumType, typename... Args>
-  auto VolumeTreeNode<IModelProperties>::CreateMedium(Args&&... args) {
+  auto VolumeTreeNode<IModelProperties>::createMedium(Args&&... args) {
     static_assert(std::is_base_of_v<IMediumModel, MediumType>,
                   "unusable type provided, needs to be derived from \"IMediumModel\"");
 

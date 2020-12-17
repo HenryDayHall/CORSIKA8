@@ -23,7 +23,7 @@ namespace corsika {
   FlatExponential<T>::FlatExponential(Point const& point,
                                       Vector<dimensionless_d> const& axis,
                                       MassDensityType rho, LengthType lambda,
-                                      NuclearComposition nuclComp)
+                                      NuclearComposition const& nuclComp)
       : BaseExponential<FlatExponential<T>>(point, rho, lambda)
       , axis_(axis)
       , nuclComp_(nuclComp) {}

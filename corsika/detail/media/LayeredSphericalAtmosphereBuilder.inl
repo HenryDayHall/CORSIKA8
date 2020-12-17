@@ -43,7 +43,7 @@ namespace corsika {
     auto const rho0 = b / c;
     CORSIKA_LOG_INFO("rho0 = {}, c = {}", rho0, c);
 
-    node->SetModelProperties<SlidingPlanarExponential<IMediumModel>>(
+    node->setModelProperties<SlidingPlanarExponential<IMediumModel>>(
         center_, rho0, -c, *composition_, seaLevel_);
 
     layers_.push(std::move(node));
@@ -62,7 +62,7 @@ namespace corsika {
 
     auto node = std::make_unique<VolumeTreeNode<IMediumModel>>(
         std::make_unique<Sphere>(center_, radius));
-    node->SetModelProperties<HomogeneousMedium<IMediumModel>>(rho0, *composition_);
+    node->setModelProperties<HomogeneousMedium<IMediumModel>>(rho0, *composition_);
 
     layers_.push(std::move(node));
   }
@@ -80,7 +80,7 @@ namespace corsika {
     while (!layers_.empty()) {
       auto l = std::move(layers_.top());
       auto* tmp = l.get();
-      outmost->AddChild(std::move(l));
+      outmost->addChild(std::move(l));
       layers_.pop();
       outmost = tmp;
     }

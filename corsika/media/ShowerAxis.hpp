@@ -40,41 +40,37 @@ namespace corsika {
    *
    **/
 
-    ///\todo documentation needs update ...
+  ///\todo documentation needs update ...
   class ShowerAxis {
   public:
     template <typename TEnvModel>
-    ShowerAxis(corsika::Point const& pStart,
-               corsika::Vector<units::si::length_d> length,
+    ShowerAxis(Point const& pStart, Vector<length_d> length,
                Environment<TEnvModel> const& env, int steps = 10'000);
 
-    units::si::LengthType steplength() const;
+    LengthType getSteplength() const;
 
-    units::si::GrammageType maximumX() const;
+    GrammageType getMaximumX() const;
 
-    units::si::GrammageType minimumX() const;
+    GrammageType getMinimumX() const;
 
-    units::si::GrammageType projectedX(Point const& p) const;
+    GrammageType getProjectedX(Point const& p) const;
 
     GrammageType getX(LengthType) const;
 
-    Vector<units::si::dimensionless_d> const& getDirection() const;
+    Vector<dimensionless_d> const& getDirection() const;
 
     Point const& getStart() const;
 
   private:
     Point const pointStart_;
-    Vector<units::si::length_d> const length_;
-    units::si::LengthType const max_length_, steplength_;
-    Vector<units::si::dimensionless_d> const axis_normalized_;
-    std::vector<units::si::GrammageType> X_;
+    Vector<length_d> const length_;
+    LengthType const max_length_, steplength_;
+    Vector<dimensionless_d> const axis_normalized_;
+    std::vector<GrammageType> X_;
 
     // for storing the lengths corresponding to equidistant X values
-    units::si::GrammageType const X_binning_ = std::invoke([]() {
-      using namespace units::si;
-      return 1_g / 1_cm / 1_cm;
-    });
-    std::vector<units::si::LengthType> d_;
+    GrammageType const X_binning_ = 1_g / 1_cm / 1_cm;
+    std::vector<LengthType> d_;
   };
 } // namespace corsika
 

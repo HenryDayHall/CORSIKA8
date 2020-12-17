@@ -20,15 +20,15 @@ namespace corsika {
   public:
     virtual ~IMediumModel() = default; // LCOV_EXCL_LINE
 
-    virtual units::si::MassDensityType getMassDensity(Point const&) const = 0;
+    virtual MassDensityType getMassDensity(Point const&) const = 0;
 
     // todo: think about the mixin inheritance of the trajectory vs the BaseTrajectory
     // approach; for now, only lines are supported
-    virtual units::si::GrammageType integratedGrammage(
-        Trajectory<Line> const&, units::si::LengthType) const = 0;
+    virtual GrammageType getIntegratedGrammage(Trajectory<Line> const&,
+                                               LengthType) const = 0;
 
-    virtual units::si::LengthType arclengthFromGrammage(
-        Trajectory<Line> const&, units::si::GrammageType) const = 0;
+    virtual LengthType getArclengthFromGrammage(Trajectory<Line> const&,
+                                                GrammageType) const = 0;
 
     virtual NuclearComposition const& getNuclearComposition() const = 0;
   };

@@ -24,39 +24,6 @@ namespace corsika {
    *  Allowes and handles the creation of custom matter compositions
    **/
   class NuclearComposition {
-  private:
-    /// TODO: replace with
-    /// https://www.boost.org/doc/libs/1_74_0/libs/iterator/doc/zip_iterator.html or
-    /// ranges zip
-    /** Double Iterator
-     * Iterator that allowes the iteration of two individual lists at the same time. The
-     *user needs to take care that booth lists have the same length.
-     *  @tparam AConstIterator Iterator Type of the first list
-     *  @tparam BConstIterator Iterator Type of the second list
-     **/
-    template <class AConstIterator, class BConstIterator>
-    class WeightProviderIterator {
-      AConstIterator aIter_;
-      BConstIterator bIter_;
-
-    public:
-      using value_type = double;
-      using iterator_category = std::input_iterator_tag;
-      using pointer = value_type*;
-      using reference = value_type&;
-      using difference_type = ptrdiff_t;
-
-      WeightProviderIterator(AConstIterator a, BConstIterator b);
-
-      value_type operator*() const;
-
-      WeightProviderIterator& operator++();
-
-      auto operator==(WeightProviderIterator other);
-
-      auto operator!=(WeightProviderIterator other);
-    };
-
   public:
     /** Constructor
      *  The constructore takes a list of elements and a list which describe the relative
@@ -66,8 +33,8 @@ namespace corsika {
      *  @param pFractions List of fractions how much each particle contributes. The sum
      *needs to add up to 1
      **/
-    NuclearComposition(std::vector<corsika::Code> pComponents,
-                       std::vector<float> pFractions);
+    NuclearComposition(std::vector<corsika::Code> const& pComponents,
+                       std::vector<float> const& pFractions);
 
     /** Sum all all relative composition weighted by func(element)
      *  This function sums all relative compositions given during this classes
@@ -79,18 +46,18 @@ namespace corsika {
      *  @retval returns the weighted sum with the type defined by the return type of func
      **/
     template <typename TFunction>
-    auto weightedSum(TFunction func) const;
+    double getWeightedSum(TFunction const& func) const;
 
     /** Number of elements in the composition array
      *  @retval returns the number of elements in the composition array
      **/
-    auto size() const;
+    size_t getSize() const;
 
     /// Returns a const reference to the fraction
     std::vector<float> const& getFractions() const;
     /// Returns a const reference to the fraction
     std::vector<corsika::Code> const& getComponents() const;
-    auto const getAverageMassNumber() const;
+    double const getAverageMassNumber() const;
 
     template <class TRNG>
     Code sampleTarget(std::vector<units::si::CrossSectionType> const& sigma,
@@ -98,7 +65,7 @@ namespace corsika {
 
     // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
-    size_t hash() const;
+    size_t getHash() const;
 
   private:
     void updateHash();

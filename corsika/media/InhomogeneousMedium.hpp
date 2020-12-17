@@ -23,22 +23,24 @@ namespace corsika {
 
   template <typename T, typename TDensityFunction>
   class InhomogeneousMedium : public T {
-    NuclearComposition const nuclComp_;
-    TDensityFunction const densityFunction_;
 
   public:
     template <typename... TArgs>
-    InhomogeneousMedium(NuclearComposition nuclComp, TArgs&&... rhoTArgs);
+    InhomogeneousMedium(NuclearComposition const& nuclComp, TArgs&&... rhoTArgs);
 
-    units::si::MassDensityType getMassDensity(Point const& point) const override;
+    MassDensityType getMassDensity(Point const& point) const override;
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    units::si::GrammageType integratedGrammage(Trajectory<Line> const& line,
-                                               units::si::LengthType to) const override;
+    GrammageType getIntegratedGrammage(Trajectory<Line> const& line,
+                                       LengthType to) const override;
 
-    units::si::LengthType arclengthFromGrammage(
-        Trajectory<Line> const& pLine, units::si::GrammageType grammage) const override;
+    LengthType getArclengthFromGrammage(Trajectory<Line> const& pLine,
+                                        GrammageType grammage) const override;
+
+  private:
+    NuclearComposition const nuclComp_;
+    TDensityFunction const densityFunction_;
   };
 
 } // namespace corsika

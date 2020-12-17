@@ -46,7 +46,7 @@ namespace corsika {
 
     void addExponentialLayer(GrammageType, LengthType, LengthType);
 
-    auto size() const { return layers_.size(); }
+    size_t getSize() const { return layers_.size(); }
 
     void addLinearLayer(LengthType, LengthType);
 

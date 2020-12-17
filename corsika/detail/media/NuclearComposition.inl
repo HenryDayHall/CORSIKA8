@@ -11,6 +11,8 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
+#include <corsika/media/WeightProvider.hpp>
+
 #include <cassert>
 #include <functional>
 #include <numeric>
@@ -19,44 +21,6 @@
 #include <vector>
 
 namespace corsika {
-
-  template <class AConstIterator, class BConstIterator>
-  NuclearComposition::WeightProviderIterator<
-      AConstIterator, BConstIterator>::WeightProviderIterator(AConstIterator a,
-                                                              BConstIterator b)
-      : aIter_(a)
-      , bIter_(b) {}
-
-  template <class AConstIterator, class BConstIterator>
-  typename NuclearComposition::WeightProviderIterator<AConstIterator,
-                                                      BConstIterator>::value_type
-  NuclearComposition::WeightProviderIterator<AConstIterator, BConstIterator>::operator*()
-      const {
-    return ((*aIter_) * (*bIter_)).magnitude();
-  }
-
-  template <class AConstIterator, class BConstIterator>
-  NuclearComposition::WeightProviderIterator<AConstIterator, BConstIterator>&
-  NuclearComposition::WeightProviderIterator<AConstIterator,
-                                             BConstIterator>::operator++() { // prefix ++
-    ++aIter_;
-    ++bIter_;
-    return *this;
-  }
-
-  template <class AConstIterator, class BConstIterator>
-  auto
-  NuclearComposition::WeightProviderIterator<AConstIterator, BConstIterator>::operator==(
-      WeightProviderIterator other) {
-    return aIter_ == other.aIter_;
-  }
-
-  template <class AConstIterator, class BConstIterator>
-  auto
-  NuclearComposition::WeightProviderIterator<AConstIterator, BConstIterator>::operator!=(
-      WeightProviderIterator other) {
-    return !(*this == other);
-  }
 
   NuclearComposition::NuclearComposition(std::vector<corsika::Code> const& pComponents,
                                          std::vector<float> const& pFractions)
@@ -68,8 +32,7 @@ namespace corsika {
               if (is_nucleus(compID)) {
                 return get_nucleus_A(compID) * fraction;
               } else {
-                return get_mass(compID) / ConvertSIToHEP(constants::u) *
-                       fraction;
+                return get_mass(compID) / convert_SI_to_HEP(constants::u) * fraction;
               }
             })) {
     assert(pComponents.size() == pFractions.size());
@@ -83,7 +46,7 @@ namespace corsika {
   }
 
   template <typename TFunction>
-  auto NuclearComposition::weightedSum(TFunction const& func) const {
+  double NuclearComposition::getWeightedSum(TFunction const& func) const {
     using ResultQuantity = decltype(func(*components_.cbegin()));
 
     auto const prod = [&](auto const compID, auto const fraction) {
@@ -103,17 +66,17 @@ namespace corsika {
     }
   }
 
-  auto NuclearComposition::size() const { return numberFractions_.size(); }
+  size_t NuclearComposition::getSize() const { return numberFractions_.size(); }
 
   std::vector<float> const& NuclearComposition::getFractions() const {
     return numberFractions_;
   }
-  
+
   std::vector<corsika::Code> const& NuclearComposition::getComponents() const {
     return components_;
   }
 
-  auto const NuclearComposition::getAverageMassNumber() const { return avgMassNumber_; }
+  double const NuclearComposition::getAverageMassNumber() const { return avgMassNumber_; }
 
   template <class TRNG>
   corsika::Code NuclearComposition::sampleTarget(
@@ -135,7 +98,7 @@ namespace corsika {
 
   // Note: when this class ever modifies its internal data, the hash
   // must be updated, too!
-  size_t NuclearComposition::hash() const { return hash_; }
+  size_t NuclearComposition::getHash() const { return hash_; }
 
   void NuclearComposition::updateHash() {
     std::vector<std::size_t> hashes;

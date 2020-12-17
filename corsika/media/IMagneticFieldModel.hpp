@@ -25,7 +25,7 @@ namespace corsika {
 
     // a type-alias for a magnetic field vector
     using MagneticFieldVector =
-        corsika::geometry::Vector<corsika::phys::units::si::magnetic_flux_density_d>;
+        Vector<magnetic_flux_density_d>;
 
   public:
     /**
@@ -34,7 +34,7 @@ namespace corsika {
      * @param  point    The location to evaluate the field at.
      * @returns    The magnetic field vector at that point.
      */
-    virtual auto getMagneticField(corsika::geometry::Point const&) const
+    virtual auto getMagneticField(Point const&) const
         -> MagneticFieldVector = 0;
 
     /**

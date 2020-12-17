@@ -24,8 +24,7 @@ using namespace corsika::units::si;
 
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
 
-  CoordinateSystem const& gCS =
-      RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
@@ -82,6 +81,6 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   Trajectory<Line> const trajectory(line, tEnd);
 
   // and check the integrated grammage
-  CHECK((medium.integratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
-  CHECK((medium.arclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+  CHECK((medium.getIntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.getArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }

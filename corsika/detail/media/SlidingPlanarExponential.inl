@@ -17,16 +17,15 @@ namespace corsika {
   template <typename T>
   SlidingPlanarExponential<T>::SlidingPlanarExponential(
       Point const& p0, MassDensityType rho0, LengthType lambda,
-      NuclearComposition nuclComp, LengthType referenceHeight)
+      NuclearComposition const& nuclComp, LengthType referenceHeight)
       : BaseExponential<SlidingPlanarExponential<T>>(p0, rho0, lambda)
       , nuclComp_(nuclComp)
       , referenceHeight_(referenceHeight) {}
 
   template <typename T>
-  MassDensityType SlidingPlanarExponential<T>::getMassDensity(
-      Point const& point) const {
+  MassDensityType SlidingPlanarExponential<T>::getMassDensity(Point const& point) const {
     auto const height =
-        (point - BaseExponential<SlidingPlanarExponential<T>>::point_).norm() -
+        (point - BaseExponential<SlidingPlanarExponential<T>>::point_).getNorm() -
         referenceHeight_;
     return BaseExponential<SlidingPlanarExponential<T>>::rho0_ *
            exp(BaseExponential<SlidingPlanarExponential<T>>::invLambda_ * height);
@@ -38,20 +37,22 @@ namespace corsika {
   }
 
   template <typename T>
-  GrammageType SlidingPlanarExponential<T>::integratedGrammage(
+  GrammageType SlidingPlanarExponential<T>::getIntegratedGrammage(
       Trajectory<Line> const& line, LengthType l) const {
     auto const axis =
-        (line.getR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
-    return BaseExponential<SlidingPlanarExponential<T>>::integratedGrammage(line, l,
-                                                                            axis);
+        (line.getStartPoint() - BaseExponential<SlidingPlanarExponential<T>>::point_)
+            .normalized();
+    return BaseExponential<SlidingPlanarExponential<T>>::getIntegratedGrammage(line, l,
+                                                                               axis);
   }
 
   template <typename T>
-  LengthType SlidingPlanarExponential<T>::arclengthFromGrammage(
+  LengthType SlidingPlanarExponential<T>::getArclengthFromGrammage(
       Trajectory<Line> const& line, GrammageType const grammage) const {
     auto const axis =
-        (line.getR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
-    return BaseExponential<SlidingPlanarExponential<T>>::arclengthFromGrammage(
+        (line.getStartPoint() - BaseExponential<SlidingPlanarExponential<T>>::point_)
+            .normalized();
+    return BaseExponential<SlidingPlanarExponential<T>>::getArclengthFromGrammage(
         line, grammage, axis);
   }
 

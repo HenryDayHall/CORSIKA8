@@ -34,26 +34,27 @@ namespace corsika {
   template <typename T>
   class SlidingPlanarExponential : public BaseExponential<SlidingPlanarExponential<T>>,
                                    public T {
-    NuclearComposition const nuclComp_;
-    units::si::LengthType const referenceHeight_;
 
     using Base = BaseExponential<SlidingPlanarExponential<T>>;
 
   public:
-    SlidingPlanarExponential(
-        Point const& p0, units::si::MassDensityType rho0, units::si::LengthType lambda,
-        NuclearComposition nuclComp,
-        units::si::LengthType referenceHeight = units::si::LengthType::zero());
+    SlidingPlanarExponential(Point const& p0, MassDensityType rho0, LengthType lambda,
+                             NuclearComposition const& nuclComp,
+                             LengthType referenceHeight = LengthType::zero());
 
-    units::si::MassDensityType getMassDensity(Point const& point) const override;
+    MassDensityType getMassDensity(Point const& point) const override;
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    units::si::GrammageType integratedGrammage(Trajectory<Line> const& line,
-                                               units::si::LengthType l) const override;
+    GrammageType getIntegratedGrammage(Trajectory<Line> const& line,
+                                       LengthType l) const override;
 
-    units::si::LengthType arclengthFromGrammage(
-        Trajectory<Line> const& line, units::si::GrammageType grammage) const override;
+    LengthType getArclengthFromGrammage(Trajectory<Line> const& line,
+                                        GrammageType grammage) const override;
+
+  private:
+    NuclearComposition const nuclComp_;
+    LengthType const referenceHeight_;
   };
 
 } // namespace corsika

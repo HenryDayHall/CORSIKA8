@@ -14,152 +14,150 @@
 #include <vector>
 
 namespace corsika {
-/*
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::
+  /*
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::
 
-*/
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-template <typename... Args>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::addSecondary(const Args... v) {
-      CORSIKA_LOG_TRACE("SecondaryView::addSecondary(Args&&)");
-      stack_view_iterator proj = getProjectile(); // make this const
-      return addSecondary(proj, v...);
+  */
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  template <typename... Args>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::addSecondary(
+      const Args... v) {
+    CORSIKA_LOG_TRACE("SecondaryView::addSecondary(Args&&)");
+    stack_view_iterator proj = getProjectile(); // make this const
+    return addSecondary(proj, v...);
+  }
+
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::begin() {
+    unsigned int i = 0;
+    for (; i < getSize(); ++i) {
+
+      if (!isErased(i)) break;
+    }
+    return stack_view_iterator(*this, i + 1);
+  }
+
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::const_stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::begin() const {
+    unsigned int i = 0;
+    for (; i < getSize(); ++i) {
+      if (!isErased(i)) break;
     }
 
+    return const_stack_view_iterator(*this, i + 1);
+  }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::begin() {
-	 unsigned int i = 0;
-	      for (; i < getSize(); ++i) {
-
-	        if (!isErased(i)) break;
-	      }
-	      return stack_view_iterator(*this, i + 1);
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::const_stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::cbegin() const {
+    unsigned int i = 0;
+    for (; i < getSize(); ++i) {
+      if (!isErased(i)) break;
     }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::const_stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::begin() const {
-	 unsigned int i = 0;
-	      for (; i < getSize(); ++i) {
-	        if (!isErased(i)) break;
-	      }
+    return const_stack_view_iterator(*this, i + 1);
+  }
 
-	      return const_stack_view_iterator(*this, i + 1);
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::last() {
+    unsigned int i = 0;
+    for (; i < getSize(); ++i) {
+      if (!isErased(getSize() - 1 - i)) break;
     }
+    return stack_view_iterator(*this, getSize() - 1 - i + 1);
+  }
 
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::const_stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::cbegin() const {
-	 unsigned int i = 0;
-	      for (; i < getSize(); ++i) {
-	        if (!isErased(i)) break;
-	      }
-
-	      return const_stack_view_iterator(*this, i + 1);
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::const_stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::last() const {
+    unsigned int i = 0;
+    for (; i < getSize(); ++i) {
+      if (!isErased(getSize() - 1 - i)) break;
     }
+    return stack_view_iterator(*this, getSize() - 1 - i + 1);
+  }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::last()  {
-	  unsigned int i = 0;
-	      for (; i < getSize(); ++i) {
-	        if (!isErased(getSize() - 1 - i)) break;
-	      }
-	      return stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::const_stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::last() const  {
-	  unsigned int i = 0;
-	      for (; i < getSize(); ++i) {
-	        if (!isErased(getSize() - 1 - i)) break;
-	      }
-	      return stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::const_stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::last() const  {
-	  unsigned int i = 0;
-	      for (; i < getSize(); ++i) {
-	        if (!isErased(getSize() - 1 - i)) break;
-	      }
-	      return stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::const_stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::clast() const  {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::const_stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::clast() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
 
       if (!isErased(getSize() - 1 - i)) break;
     }
     return const_stack_view_iterator(*this, getSize() - 1 - i + 1);
-    }
+  }
 
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-void SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::swap(stack_view_iterator a, stack_view_iterator b) {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::swap(
+      stack_view_iterator a, stack_view_iterator b) {
 
     CORSIKA_LOG_TRACE("View::swap");
     inner_stack_.swap(getIndexFromIterator(a.getIndex()),
                       getIndexFromIterator(b.getIndex()));
-    }
+  }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-void SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::copy(stack_view_iterator a, stack_view_iterator b) {
-
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::copy(
+      stack_view_iterator a, stack_view_iterator b) {
 
     CORSIKA_LOG_TRACE("View::copy");
     inner_stack_.copy(getIndexFromIterator(a.getIndex()),
                       getIndexFromIterator(b.getIndex()));
+  }
+
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::copy(
+      const_stack_view_iterator a, stack_view_iterator b) {
+
+    CORSIKA_LOG_TRACE("View::copy");
+    inner_stack_.copy(getIndexFromIterator(a.getIndex()),
+                      getIndexFromIterator(b.getIndex()));
+  }
+
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::erase(
+      stack_view_iterator p) {
+
+    CORSIKA_LOG_TRACE("SecondaryView::Delete");
+    if (isEmpty()) { /*error*/
+      throw std::runtime_error("Stack, cannot delete entry since size is zero");
     }
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-void SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::copy(const_stack_view_iterator a, stack_view_iterator b) {
-
-	 CORSIKA_LOG_TRACE("View::copy");
-	      inner_stack_.copy(getIndexFromIterator(a.getIndex()),
-	                        getIndexFromIterator(b.getIndex()));
+    if (isErased(p.getIndex() - 1)) { /*error*/
+      throw std::runtime_error("Stack, cannot delete entry since already deleted");
     }
+    inner_stack_.erase(getIndexFromIterator(p.getIndex()));
+    inner_stack_reference_type::nDeleted_++; // also count in SecondaryView
+  }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-void SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::erase(stack_view_iterator p) {
-
-	 CORSIKA_LOG_TRACE("SecondaryView::Delete");
-	      if (isEmpty()) { /*error*/
-	        throw std::runtime_error("Stack, cannot delete entry since size is zero");
-	      }
-	      if (isErased(p.getIndex() - 1)) { /*error*/
-	        throw std::runtime_error("Stack, cannot delete entry since already deleted");
-	      }
-	      inner_stack_.erase(getIndexFromIterator(p.getIndex()));
-	      inner_stack_reference_type::nDeleted_++; // also count in SecondaryView
-    }
-
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-bool SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::purgeLastIfDeleted() {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  bool SecondaryView<TStackDataType, TParticleInterface,
+                     MSecondaryProducer>::purgeLastIfDeleted() {
     CORSIKA_LOG_TRACE("SecondaryView::purgeLastIfDeleted");
     if (!isErased(getSize() - 1))
       return false; // the last particle is not marked for deletion. Do nothing.
@@ -169,9 +167,9 @@ bool SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::purg
     return true;
   }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-void SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::purge() {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::purge() {
     unsigned int iStack = 0;
     unsigned int size = getSize();
     while (iStack < size) {
@@ -186,9 +184,10 @@ void SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::purg
     inner_stack_reference_type::nDeleted_ = 0;
   }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-std::string SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::as_string() const {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  std::string SecondaryView<TStackDataType, TParticleInterface,
+                            MSecondaryProducer>::as_string() const {
     std::string str(fmt::format("size {}\n", getSize()));
     // we make our own begin/end since we want ALL entries
     std::string new_line = "     ";
@@ -203,11 +202,13 @@ std::string SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer
     return str;
   }
 
-template <typename TStackDataType, template <typename> typename TParticleInterface,
-          template <typename T1, template <class> class T2> class MSecondaryProducer>
-template <typename... Args>
-typename SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::stack_view_iterator
-SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::addSecondary(stack_view_iterator& proj, const Args... v) {
+  template <typename TStackDataType, template <typename> typename TParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer>
+  template <typename... Args>
+  typename SecondaryView<TStackDataType, TParticleInterface,
+                         MSecondaryProducer>::stack_view_iterator
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::addSecondary(
+      stack_view_iterator& proj, const Args... v) {
     CORSIKA_LOG_TRACE("SecondaryView::addSecondary(stack_view_iterator&, Args&&)");
     // make space on stack
     inner_stack_reference_type::getStackData().incrementSize();

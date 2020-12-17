@@ -20,14 +20,13 @@ namespace corsika {
     auto const& getImplementation() const;
 
   public:
-    auto integrateGrammage(Trajectory<Line> const& line,
-                           units::si::LengthType length) const;
+    auto getIntegrateGrammage(Trajectory<Line> const& line, LengthType length) const;
 
-    auto arclengthFromGrammage(Trajectory<Line> const& line,
-                               units::si::GrammageType grammage) const;
+    auto getArclengthFromGrammage(Trajectory<Line> const& line,
+                                  GrammageType grammage) const;
 
-    auto maximumLength(Trajectory<Line> const& line,
-                       [[maybe_unused]] double relError) const;
+    auto getMaximumLength(Trajectory<Line> const& line,
+                          [[maybe_unused]] double relError) const;
   };
 
 } // namespace corsika

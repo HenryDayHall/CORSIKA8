@@ -30,25 +30,24 @@ namespace corsika {
   // clang-format on
   template <typename T>
   class FlatExponential : public BaseExponential<FlatExponential<T>>, public T {
-    Vector<units::si::dimensionless_d> const axis_;
+    Vector<dimensionless_d> const axis_;
     NuclearComposition const nuclComp_;
 
     using Base = BaseExponential<FlatExponential<T>>;
 
   public:
-    FlatExponential(Point const& point, Vector<units::si::dimensionless_d> const& axis,
-                    units::si::MassDensityType rho, units::si::LengthType lambda,
-                    NuclearComposition nuclComp);
+    FlatExponential(Point const& point, Vector<dimensionless_d> const& axis,
+                    MassDensityType rho, LengthType lambda,
+                    NuclearComposition const& nuclComp);
 
-    units::si::MassDensityType getMassDensity(Point const& point) const override;
+    MassDensityType getMassDensity(Point const& point) const override;
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    units::si::GrammageType integratedGrammage(Trajectory<Line> const& line,
-                                               units::si::LengthType to) const;
+    GrammageType getIntegratedGrammage(Trajectory<Line> const& line, LengthType to) const;
 
-    units::si::LengthType arclengthFromGrammage(Trajectory<Line> const& line,
-                                                units::si::GrammageType grammage) const;
+    LengthType getArclengthFromGrammage(Trajectory<Line> const& line,
+                                        GrammageType grammage) const;
   };
 
 } // namespace corsika

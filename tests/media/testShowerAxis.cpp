@@ -20,7 +20,7 @@
 
 #include <catch2/catch.hpp>
 
-//using namespace 
+// using namespace
 using namespace corsika;
 
 const auto density = 1_kg / (1_m * 1_m * 1_m);
@@ -31,15 +31,13 @@ auto setupEnvironment(Code vTargetCode) {
   auto& universe = *(env->getUniverse());
   const CoordinateSystem& cs = env->getCoordinateSystem();
 
-  auto theMedium =
-      Environment<IMediumModel>::createNode<Sphere>(
-          Point{cs, 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
+  auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
+      Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
   theMedium->SetModelProperties<MyHomogeneousModel>(
-      density, NuclearComposition(std::vector<Code>{vTargetCode},
-                                               std::vector<float>{1.}));
+      density,
+      NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.AddChild(std::move(theMedium));
@@ -59,22 +57,21 @@ TEST_CASE("Homogeneous Density") {
   Point const showerCore{cs, 0_m, 0_m, observationHeight};
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos),
-                                           *env, 20};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env, 20};
 
-  CHECK(showerAxis.steplength() == 500_m);
+  CHECK(showerAxis.getSteplength() == 500_m);
 
-  CHECK(showerAxis.maximumX() / (10_km * density) == Approx(1).epsilon(1e-8));
+  CHECK(showerAxis.getMaximumX() / (10_km * density) == Approx(1).epsilon(1e-8));
 
-  CHECK(showerAxis.minimumX() == 0_g / square(1_cm));
+  CHECK(showerAxis.getMinimumX() == 0_g / square(1_cm));
 
   const Point p{cs, 10_km, 20_km, 8.3_km};
-  CHECK(showerAxis.projectedX(p) / (1.7_km * density) == Approx(1).epsilon(1e-8));
+  CHECK(showerAxis.getProjectedX(p) / (1.7_km * density) == Approx(1).epsilon(1e-8));
 
-  const units::si::LengthType d = 6.789_km;
-  CHECK(showerAxis.X(d) / (d * density) == Approx(1).epsilon(1e-8));
+  const LengthType d = 6.789_km;
+  CHECK(showerAxis.getX(d) / (d * density) == Approx(1).epsilon(1e-8));
 
   const Vector<dimensionless_d> dir{cs, {0, 0, -1}};
-  CHECK(showerAxis.getDirection().GetComponents(cs) == dir.GetComponents(cs));
-  CHECK(showerAxis.getStart().GetCoordinates() == injectionPos.GetCoordinates());
+  CHECK(showerAxis.getDirection().getComponents(cs) == dir.getComponents(cs));
+  CHECK(showerAxis.getStart().getCoordinates() == injectionPos.getCoordinates());
 }

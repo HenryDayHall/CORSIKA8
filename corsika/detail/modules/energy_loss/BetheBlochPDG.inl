@@ -161,7 +161,7 @@ namespace corsika::energy_loss {
     if (p.GetChargeNumber() == 0) return corsika::EProcessReturn::eOk;
 
     GrammageType const dX =
-        p.GetNode()->GetModelProperties().integratedGrammage(t, t.GetLength());
+        p.GetNode()->GetModelProperties().getIntegratedGrammage(t, t.GetLength());
     std::cout << "BetheBlochPDG " << p.GetPID() << ", z=" << p.GetChargeNumber()
               << ", dX=" << dX / 1_g * square(1_cm) << "g/cm2" << std::endl;
     HEPEnergyType dE = TotalEnergyLoss(p, dX);
@@ -196,8 +196,9 @@ namespace corsika::energy_loss {
     auto const maxLoss = 0.01 * vParticle.GetEnergy();
     auto const maxGrammage = maxLoss / dE * dX;
 
-    return vParticle.GetNode()->GetModelProperties().arclengthFromGrammage(vTrack,
-                                                                           maxGrammage) *
+    return vParticle.GetNode()->GetModelProperties().getArclengthFromGrammage(
+               vTrack,
+               maxGrammage) *
            1.0001; // to make sure particle gets absorbed when DoContinuous() is called
   }
 
@@ -223,11 +224,11 @@ namespace corsika::energy_loss {
     SetupTrack const trajToEndBin(lineToEndBin, 1_s);
 
     GrammageType const grammageStart =
-        vP.GetNode()->GetModelProperties().integratedGrammage(trajToStartBin,
-                                                              trajToStartBin.GetLength());
+        vP.GetNode()->GetModelProperties().getIntegratedGrammage(
+            trajToStartBin, trajToStartBin.GetLength());
     GrammageType const grammageEnd =
-        vP.GetNode()->GetModelProperties().integratedGrammage(trajToEndBin,
-                                                              trajToEndBin.GetLength());
+        vP.GetNode()->GetModelProperties().getIntegratedGrammage(
+            trajToEndBin, trajToEndBin.GetLength());
 
     const int binStart = grammageStart / dX_;
     const int binEnd = grammageEnd / dX_;

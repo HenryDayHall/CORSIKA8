@@ -78,10 +78,10 @@ namespace corsika {
 
     assert(0 <= lambda && lambda <= 1.);
 
-    CORSIKA_LOG_TRACE("ShowerAxis::X l={} m, lower={}, lambda={}, upper={}", l / 1_m,
+    CORSIKA_LOG_TRACE("ShowerAxis::getX l={} m, lower={}, lambda={}, upper={}", l / 1_m,
                       lower, lambda, upper);
 
-    // linear interpolation between X[lower] and X[upper]
+    // linear interpolation between getX[lower] and X[upper]
     return X_[upper] * lambda + X_[lower] * (1 - lambda);
   }
 
@@ -91,12 +91,12 @@ namespace corsika {
 
   GrammageType ShowerAxis::getMinimumX() const { return GrammageType::zero(); }
 
-  GrammageType ShowerAxis::projectedX(Point const& p) const {
+  GrammageType ShowerAxis::getProjectedX(Point const& p) const {
     auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
-    return X(projectedLength);
+    return getX(projectedLength);
   }
 
-  corsika::Vector<dimensionless_d> const& ShowerAxis::getDirection() const {
+  Vector<dimensionless_d> const& ShowerAxis::getDirection() const {
     return axis_normalized_;
   }
 

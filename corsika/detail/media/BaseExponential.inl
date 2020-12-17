@@ -29,8 +29,8 @@ namespace corsika {
       Vector<dimensionless_d> const& axis) const {
     if (vL == LengthType::zero()) { return GrammageType::zero(); }
 
-    auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(line.getR0());
+    auto const uDotA = line.getNormalizedDirection().dot(axis).magnitude();
+    auto const rhoStart = getImplementation().getMassDensity(line.getStartPoint());
 
     if (uDotA == 0) {
       return vL * rhoStart;
@@ -43,8 +43,8 @@ namespace corsika {
   LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
       Trajectory<Line> const& line, GrammageType grammage,
       Vector<dimensionless_d> const& axis) const {
-    auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(line.getR0());
+    auto const uDotA = line.getNormalizedDirection().dot(axis).magnitude();
+    auto const rhoStart = getImplementation().getMassDensity(line.getStartPoint());
 
     if (uDotA == 0) {
       return grammage / rhoStart;

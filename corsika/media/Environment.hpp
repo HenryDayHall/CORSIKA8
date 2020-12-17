@@ -45,7 +45,7 @@ namespace corsika {
      *
      * @retval Retuns a const reference to the CoordinateSystem used
      **/
-    CoordinateSystem const& getCoordinateSystem() const;
+    CoordinateSystemPtr const& getCoordinateSystem() const;
 
     /** Factory method for creation of VolumeTreeNodes
      * @tparam TVolumeType Type of volume to be created
@@ -57,7 +57,7 @@ namespace corsika {
     static std::unique_ptr<BaseNodeType> createNode(TVolumeArgs&&... args);
 
   private:
-    CoordinateSystem const& coordinateSystem_;
+    CoordinateSystemPtr const coordinateSystem_;
     typename BaseNodeType::VTNUPtr universe_;
   };
 

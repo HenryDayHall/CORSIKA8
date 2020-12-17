@@ -16,7 +16,7 @@ namespace corsika {
 
   template <typename IEnvironmentModel>
   Environment<IEnvironmentModel>::Environment()
-      : coordinateSystem_{RootCoordinateSystem::getInstance().GetRootCoordinateSystem()}
+      : coordinateSystem_{get_root_CoordinateSystem()}
       , universe_(std::make_unique<BaseNodeType>(
             std::make_unique<Universe>(coordinateSystem_))) {}
 
@@ -31,7 +31,7 @@ namespace corsika {
   }
 
   template <typename IEnvironmentModel>
-  CoordinateSystem const& Environment<IEnvironmentModel>::getCoordinateSystem() const {
+  CoordinateSystemPtr const& Environment<IEnvironmentModel>::getCoordinateSystem() const {
     return coordinateSystem_;
   }
 
@@ -39,9 +39,9 @@ namespace corsika {
   template <typename IEnvironmentModel>
   template <class TVolumeType, typename... TVolumeArgs>
   std::unique_ptr< VolumeTreeNode<IEnvironmentModel> > Environment<IEnvironmentModel>::createNode(TVolumeArgs&&... args) {
-    static_assert(std::is_base_of_v<corsika::Volume, TVolumeType>,
+    static_assert(std::is_base_of_v<IVolume, TVolumeType>,
                   "unusable type provided, needs to be derived from "
-                  "\"corsika::Volume\"");
+                  "\"Volume\"");
 
     return std::make_unique<BaseNodeType>(
         std::make_unique<TVolumeType>(std::forward<TVolumeArgs>(args)...));

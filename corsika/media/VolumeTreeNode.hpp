@@ -25,22 +25,21 @@ namespace corsika {
     using VTN_type = VolumeTreeNode<IModelProperties>;
     using VTNUPtr = std::unique_ptr<VolumeTreeNode<IModelProperties>>;
     using IMPSharedPtr = std::shared_ptr<IModelProperties>;
-    using VolUPtr = std::unique_ptr<corsika::Volume>;
+    using VolUPtr = std::unique_ptr<IVolume>;
 
     VolumeTreeNode(VolUPtr pVolume = nullptr)
-        : fGeoVolume(std::move(pVolume)) {}
+        : geoVolume_(std::move(pVolume)) {}
 
-    //! convenience function equivalent to Volume::Contains
-    inline bool Contains(corsika::Point const& p) const;
+    //! convenience function equivalent to Volume::isInside
+    inline bool isInside(Point const& p) const;
 
-    inline VolumeTreeNode<IModelProperties> const* Excludes(
-        corsika::Point const& p) const;
+    inline VolumeTreeNode<IModelProperties> const* isExcluded(Point const& p) const;
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
      * \class Point \p p, or nullptr iff \p p is not contained in this volume.
      */
-    inline VolumeTreeNode<IModelProperties> const* GetContainingNode(
-        corsika::Point const& p) const;
+    inline VolumeTreeNode<IModelProperties> const* getContainingNode(
+        Point const& p) const;
 
     /**
      * Traverses the VolumeTree pre- or post-order and calls the functor  \p func for each
@@ -50,43 +49,43 @@ namespace corsika {
     template <typename TCallable, bool preorder = true>
     inline void walk(TCallable func);
 
-    inline void AddChild(VTNUPtr pChild);
+    inline void addChild(VTNUPtr pChild);
 
-    inline void ExcludeOverlapWith(VTNUPtr const& pNode);
+    inline void excludeOverlapWith(VTNUPtr const& pNode);
 
-    inline auto* GetParent() const { return fParentNode; };
+    inline auto* getParent() const { return parentNode_; };
 
-    inline auto const& GetChildNodes() const { return fChildNodes; }
+    inline auto const& getChildNodes() const { return childNodes_; }
 
-    inline auto const& GetExcludedNodes() const { return fExcludedNodes; }
+    inline auto const& getExcludedNodes() const { return excludedNodes_; }
 
-    inline auto const& GetVolume() const { return *fGeoVolume; }
+    inline auto const& getVolume() const { return *geoVolume_; }
 
-    inline auto const& GetModelProperties() const { return *fModelProperties; }
+    inline auto const& getModelProperties() const { return *modelProperties_; }
 
-    inline bool HasModelProperties() const { return fModelProperties.get() != nullptr; }
+    inline bool hasModelProperties() const { return modelProperties_.get() != nullptr; }
 
     template <typename ModelProperties, typename... Args>
-    inline auto SetModelProperties(Args&&... args) {
+    inline auto setModelProperties(Args&&... args) {
       static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
                     "unusable model properties type provided");
 
-      fModelProperties = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
-      return fModelProperties;
+      modelProperties_ = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
+      return modelProperties_;
     }
 
-    inline void SetModelProperties(IMPSharedPtr ptr) { fModelProperties = ptr; }
+    inline void setModelProperties(IMPSharedPtr ptr) { modelProperties_ = ptr; }
 
     /*
     template <class MediumType, typename... Args>
-    static auto CreateMedium(Args&&... args);
+    static auto createMedium(Args&&... args);
 
   private:
-    std::vector<VTNUPtr> fChildNodes;
-    std::vector<VolumeTreeNode<IModelProperties> const*> fExcludedNodes;
-    VolumeTreeNode<IModelProperties> const* fParentNode = nullptr;
-    VolUPtr fGeoVolume;
-    IMPSharedPtr fModelProperties;
+    std::vector<VTNUPtr> childNodes_;
+    std::vector<VolumeTreeNode<IModelProperties> const*> excludedNodes_;
+    VolumeTreeNode<IModelProperties> const* parentNode_ = nullptr;
+    VolUPtr geoVolume_;
+    IMPSharedPtr modelProperties_;
   };
 
 } // namespace corsika
