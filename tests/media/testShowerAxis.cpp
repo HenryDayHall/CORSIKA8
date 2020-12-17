@@ -29,18 +29,18 @@ auto setupEnvironment(Code vTargetCode) {
   // setup environment, geometry
   auto env = std::make_unique<Environment<IMediumModel>>();
   auto& universe = *(env->getUniverse());
-  const CoordinateSystem& cs = env->getCoordinateSystem();
+  const CoordinateSystemPtr& cs = env->getCoordinateSystem();
 
   auto theMedium = Environment<IMediumModel>::createNode<Sphere>(
       Point{cs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
   using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
+  theMedium->setModelProperties<MyHomogeneousModel>(
       density,
       NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<float>{1.}));
 
   auto const* nodePtr = theMedium.get();
-  universe.AddChild(std::move(theMedium));
+  universe.addChild(std::move(theMedium));
 
   return std::make_tuple(std::move(env), &cs, nodePtr);
 }

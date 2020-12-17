@@ -22,7 +22,7 @@
 
 namespace corsika {
 
-  NuclearComposition::NuclearComposition(std::vector<corsika::Code> const& pComponents,
+  NuclearComposition::NuclearComposition(std::vector<Code> const& pComponents,
                                          std::vector<float> const& pFractions)
       : numberFractions_(pFractions)
       , components_(pComponents)
@@ -46,7 +46,7 @@ namespace corsika {
   }
 
   template <typename TFunction>
-  double NuclearComposition::getWeightedSum(TFunction const& func) const {
+  inline double NuclearComposition::getWeightedSum(TFunction const& func) const {
     using ResultQuantity = decltype(func(*components_.cbegin()));
 
     auto const prod = [&](auto const compID, auto const fraction) {
@@ -66,22 +66,23 @@ namespace corsika {
     }
   }
 
-  size_t NuclearComposition::getSize() const { return numberFractions_.size(); }
+  inline size_t NuclearComposition::getSize() const { return numberFractions_.size(); }
 
-  std::vector<float> const& NuclearComposition::getFractions() const {
+  inline std::vector<float> const& NuclearComposition::getFractions() const {
     return numberFractions_;
   }
 
-  std::vector<corsika::Code> const& NuclearComposition::getComponents() const {
+  inline std::vector<Code> const& NuclearComposition::getComponents() const {
     return components_;
   }
 
-  double const NuclearComposition::getAverageMassNumber() const { return avgMassNumber_; }
+  inline double const NuclearComposition::getAverageMassNumber() const {
+    return avgMassNumber_;
+  }
 
   template <class TRNG>
-  corsika::Code NuclearComposition::sampleTarget(
-      std::vector<CrossSectionType> const& sigma, TRNG& randomStream) const {
-    using namespace units::si;
+  inline Code NuclearComposition::sampleTarget(std::vector<CrossSectionType> const& sigma,
+                                               TRNG& randomStream) const {
 
     assert(sigma.size() == numberFractions_.size());
 
@@ -98,12 +99,12 @@ namespace corsika {
 
   // Note: when this class ever modifies its internal data, the hash
   // must be updated, too!
-  size_t NuclearComposition::getHash() const { return hash_; }
+  inline size_t NuclearComposition::getHash() const { return hash_; }
 
-  void NuclearComposition::updateHash() {
+  inline void NuclearComposition::updateHash() {
     std::vector<std::size_t> hashes;
     for (float ifrac : this->getFractions()) hashes.push_back(std::hash<float>{}(ifrac));
-    for (corsika::Code icode : this->getComponents())
+    for (Code icode : this->getComponents())
       hashes.push_back(std::hash<int>{}(static_cast<int>(icode)));
     std::size_t h = std::hash<double>{}(this->getAverageMassNumber());
     for (std::size_t ih : hashes) h = h ^ (ih << 1);

@@ -14,11 +14,11 @@
 namespace corsika {
 
   template <typename TEnvModel>
-  ShowerAxis::ShowerAxis(Point const& pStart, corsika::Vector<length_d> const& length,
+  ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
                          Environment<TEnvModel> const& env, int steps)
       : pointStart_(pStart)
       , length_(length)
-      , max_length_(length_.norm())
+      , max_length_(length_.getNorm())
       , steplength_(max_length_ / steps)
       , axis_normalized_(length / max_length_)
       , X_(steps + 1) {

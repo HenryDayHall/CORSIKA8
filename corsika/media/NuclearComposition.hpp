@@ -31,47 +31,47 @@ namespace corsika {
      *  should be 1. Otherwise an exception is thrown
      *  @param pComponents List of particle types
      *  @param pFractions List of fractions how much each particle contributes. The sum
-     *needs to add up to 1
+     *         needs to add up to 1
      **/
-    NuclearComposition(std::vector<corsika::Code> const& pComponents,
-                       std::vector<float> const& pFractions);
+    inline NuclearComposition(std::vector<Code> const& pComponents,
+			      std::vector<float> const& pFractions);
 
     /** Sum all all relative composition weighted by func(element)
      *  This function sums all relative compositions given during this classes
      *construction. Each entry is weighted by the user defined function func given to this
      *function.
      *  @tparam TFunction Type of functions for the weights. The type should be
-     *corsika::Code -> float
+     *          Code -> float
      *  @param func Functions for reweighting specific elements
      *  @retval returns the weighted sum with the type defined by the return type of func
      **/
     template <typename TFunction>
-    double getWeightedSum(TFunction const& func) const;
+    inline double getWeightedSum(TFunction const& func) const;
 
     /** Number of elements in the composition array
      *  @retval returns the number of elements in the composition array
      **/
-    size_t getSize() const;
+    inline size_t getSize() const;
 
     /// Returns a const reference to the fraction
-    std::vector<float> const& getFractions() const;
+    inline std::vector<float> const& getFractions() const;
     /// Returns a const reference to the fraction
-    std::vector<corsika::Code> const& getComponents() const;
-    double const getAverageMassNumber() const;
+    inline std::vector<Code> const& getComponents() const;
+    inline double const getAverageMassNumber() const;
 
     template <class TRNG>
-    Code sampleTarget(std::vector<units::si::CrossSectionType> const& sigma,
-                      TRNG& randomStream) const;
+    inline Code sampleTarget(std::vector<CrossSectionType> const& sigma,
+                             TRNG& randomStream) const;
 
     // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
-    size_t getHash() const;
+    inline size_t getHash() const;
 
   private:
-    void updateHash();
+    inline void updateHash();
 
     std::vector<float> const numberFractions_; //!< relative fractions of number density
-    std::vector<corsika::Code> const components_; //!< particle codes of consitutents
+    std::vector<Code> const components_;       //!< particle codes of consitutents
 
     double const avgMassNumber_;
 
