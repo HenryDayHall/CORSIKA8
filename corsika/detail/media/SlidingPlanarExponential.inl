@@ -16,14 +16,14 @@ namespace corsika {
 
   template <typename T>
   SlidingPlanarExponential<T>::SlidingPlanarExponential(
-      Point const& p0, units::si::MassDensityType rho0, units::si::LengthType lambda,
-      NuclearComposition nuclComp, units::si::LengthType referenceHeight)
+      Point const& p0, MassDensityType rho0, LengthType lambda,
+      NuclearComposition nuclComp, LengthType referenceHeight)
       : BaseExponential<SlidingPlanarExponential<T>>(p0, rho0, lambda)
       , nuclComp_(nuclComp)
       , referenceHeight_(referenceHeight) {}
 
   template <typename T>
-  units::si::MassDensityType SlidingPlanarExponential<T>::getMassDensity(
+  MassDensityType SlidingPlanarExponential<T>::getMassDensity(
       Point const& point) const {
     auto const height =
         (point - BaseExponential<SlidingPlanarExponential<T>>::point_).norm() -
@@ -38,19 +38,19 @@ namespace corsika {
   }
 
   template <typename T>
-  units::si::GrammageType SlidingPlanarExponential<T>::integratedGrammage(
-      Trajectory<Line> const& line, units::si::LengthType l) const {
+  GrammageType SlidingPlanarExponential<T>::integratedGrammage(
+      Trajectory<Line> const& line, LengthType l) const {
     auto const axis =
-        (line.GetR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
+        (line.getR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
     return BaseExponential<SlidingPlanarExponential<T>>::integratedGrammage(line, l,
                                                                             axis);
   }
 
   template <typename T>
-  units::si::LengthType SlidingPlanarExponential<T>::arclengthFromGrammage(
-      Trajectory<Line> const& line, units::si::GrammageType const grammage) const {
+  LengthType SlidingPlanarExponential<T>::arclengthFromGrammage(
+      Trajectory<Line> const& line, GrammageType const grammage) const {
     auto const axis =
-        (line.GetR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
+        (line.getR0() - BaseExponential<SlidingPlanarExponential<T>>::point_).normalized();
     return BaseExponential<SlidingPlanarExponential<T>>::arclengthFromGrammage(
         line, grammage, axis);
   }

@@ -24,13 +24,13 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  GrammageType BaseExponential<TDerived>::integratedGrammage(
-      Trajectory<Line> const& line, units::si::LengthType vL,
-      Vector<units::si::dimensionless_d> const& axis) const {
-    if (vL == units::si::LengthType::zero()) { return units::si::GrammageType::zero(); }
+  GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
+      Trajectory<Line> const& line, LengthType vL,
+      Vector<dimensionless_d> const& axis) const {
+    if (vL == LengthType::zero()) { return GrammageType::zero(); }
 
     auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(line.GetR0());
+    auto const rhoStart = getImplementation().getMassDensity(line.getR0());
 
     if (uDotA == 0) {
       return vL * rhoStart;
@@ -41,10 +41,10 @@ namespace corsika {
 
   template <typename TDerived>
   LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
-      Trajectory<Line> const& line, units::si::GrammageType grammage,
-      Vector<units::si::dimensionless_d> const& axis) const {
+      Trajectory<Line> const& line, GrammageType grammage,
+      Vector<dimensionless_d> const& axis) const {
     auto const uDotA = line.NormalizedDirection().dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(line.GetR0());
+    auto const rhoStart = getImplementation().getMassDensity(line.getR0());
 
     if (uDotA == 0) {
       return grammage / rhoStart;
@@ -54,15 +54,14 @@ namespace corsika {
         return lambda_ / uDotA * log(logArg);
       } else {
         return std::numeric_limits<typename decltype(grammage)::value_type>::infinity() *
-               units::si::meter;
+               meter;
       }
     }
   }
 
   template <typename TDerived>
-  BaseExponential<TDerived>::BaseExponential(Point const& point,
-                                             units::si::MassDensityType rho0,
-                                             units::si::LengthType lambda)
+  BaseExponential<TDerived>::BaseExponential(Point const& point, MassDensityType rho0,
+                                             LengthType lambda)
       : rho0_(rho0)
       , lambda_(lambda)
       , invLambda_(1 / lambda)

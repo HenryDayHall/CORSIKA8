@@ -14,10 +14,8 @@
 namespace corsika {
 
   template <typename TEnvModel>
-  ShowerAxis::ShowerAxis(Point const& pStart,
-                         corsika::Vector<units::si::length_d> const& length,
-                         Environment<TEnvModel> const& env,
-                         int steps)
+  ShowerAxis::ShowerAxis(Point const& pStart, corsika::Vector<length_d> const& length,
+                         Environment<TEnvModel> const& env, int steps)
       : pointStart_(pStart)
       , length_(length)
       , max_length_(length_.norm())
@@ -28,14 +26,14 @@ namespace corsika {
 
     auto rho = [pStart, length, universe](double x) {
       auto const p = pStart + length * x;
-      auto const* node = universe->GetContainingNode(p);
-      return node->GetModelProperties().getMassDensity(p).magnitude();
+      auto const* node = universe->getContainingNode(p);
+      return node->getModelProperties().getMassDensity(p).magnitude();
     };
 
     double error;
     int k = 0;
-    X_[0] = units::si::GrammageType::zero();
-    auto sum = units::si::GrammageType::zero();
+    X_[0] = GrammageType::zero();
+    auto sum = GrammageType::zero();
 
     for (int i = 1; i <= steps; ++i) {
       auto const x_prev = (i - 1.) / steps;
@@ -44,7 +42,7 @@ namespace corsika {
       auto const r = boost::math::quadrature::gauss_kronrod<double, 15>::integrate(
           rho, x_prev, x, 15, 1e-9, &error);
       auto const result =
-          units::si::MassDensityType(phys::units::detail::magnitude_tag, r) * max_length_;
+          MassDensityType(phys::units::detail::magnitude_tag, r) * max_length_;
 
       sum += result;
       X_[i] = sum;
@@ -66,7 +64,7 @@ namespace corsika {
 
     if (lower < 0) {
       CORSIKA_LOG_ERROR("cannot extrapolate to points behind point of injection l={} m",
-                  l / 1_m);
+                        l / 1_m);
       throw std::runtime_error("cannot extrapolate to points behind point of injection");
     }
 
@@ -80,8 +78,8 @@ namespace corsika {
 
     assert(0 <= lambda && lambda <= 1.);
 
-    CORSIKA_LOG_TRACE("ShowerAxis::X l={} m, lower={}, lambda={}, upper={}", l / 1_m, lower,
-                lambda, upper);
+    CORSIKA_LOG_TRACE("ShowerAxis::X l={} m, lower={}, lambda={}, upper={}", l / 1_m,
+                      lower, lambda, upper);
 
     // linear interpolation between X[lower] and X[upper]
     return X_[upper] * lambda + X_[lower] * (1 - lambda);
@@ -98,7 +96,7 @@ namespace corsika {
     return X(projectedLength);
   }
 
-  corsika::Vector<units::si::dimensionless_d> const& ShowerAxis::getDirection() const {
+  corsika::Vector<dimensionless_d> const& ShowerAxis::getDirection() const {
     return axis_normalized_;
   }
 

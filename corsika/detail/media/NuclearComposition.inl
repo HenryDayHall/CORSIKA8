@@ -68,7 +68,7 @@ namespace corsika {
               if (is_nucleus(compID)) {
                 return get_nucleus_A(compID) * fraction;
               } else {
-                return get_mass(compID) / units::si::ConvertSIToHEP(constants::u) *
+                return get_mass(compID) / ConvertSIToHEP(constants::u) *
                        fraction;
               }
             })) {
@@ -117,7 +117,7 @@ namespace corsika {
 
   template <class TRNG>
   corsika::Code NuclearComposition::sampleTarget(
-      std::vector<units::si::CrossSectionType> const& sigma, TRNG& randomStream) const {
+      std::vector<CrossSectionType> const& sigma, TRNG& randomStream) const {
     using namespace units::si;
 
     assert(sigma.size() == numberFractions_.size());

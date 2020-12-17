@@ -24,7 +24,7 @@ namespace corsika {
       , densityFunction_(rhoTArgs...){}
 
   template <typename T, typename TDensityFunction>
-  units::si::MassDensityType InhomogeneousMedium<T, TDensityFunction>::getMassDensity(
+  MassDensityType InhomogeneousMedium<T, TDensityFunction>::getMassDensity(
       Point const& point) const {
     return densityFunction_.evaluateAt(point);
   }
@@ -36,14 +36,14 @@ namespace corsika {
   }
 
   template <typename T, typename TDensityFunction>
-  GrammageType InhomogeneousMedium<T, TDensityFunction>::integratedGrammage(
-      Trajectory<Line> const& line, units::si::LengthType to) const {
-    return densityFunction_.integrateGrammage(line, to);
+  GrammageType InhomogeneousMedium<T, TDensityFunction>::getIntegratedGrammage(
+      Trajectory<Line> const& line, LengthType to) const {
+    return densityFunction_.getIntegrateGrammage(line, to);
   }
 
   template <typename T, typename TDensityFunction>
   LengthType InhomogeneousMedium<T, TDensityFunction>::getArclengthFromGrammage(
-      Trajectory<Line> const& line, units::si::GrammageType grammage) const {
+      Trajectory<Line> const& line, GrammageType grammage) const {
     return densityFunction_.getArclengthFromGrammage(line, grammage);
   }
 

@@ -17,13 +17,13 @@
 namespace corsika {
 
   template <typename T>
-  HomogeneousMedium<T>::HomogeneousMedium(units::si::MassDensityType density,
+  HomogeneousMedium<T>::HomogeneousMedium(MassDensityType density,
                                           NuclearComposition nuclComp)
       : density_(density)
       , nuclComp_(nuclComp) {}
 
   template <typename T>
-  units::si::MassDensityType HomogeneousMedium<T>::getMassDensity(Point const&) const {
+  MassDensityType HomogeneousMedium<T>::getMassDensity(Point const&) const {
     return density_;
   }
   template <typename T>
@@ -33,13 +33,13 @@ namespace corsika {
 
   template <typename T>
   GrammageType HomogeneousMedium<T>::integratedGrammage(
-      Trajectory<Line> const&, units::si::LengthType to) const {
+      Trajectory<Line> const&, LengthType to) const {
     return to * density_;
   }
 
   template <typename T>
   LengthType HomogeneousMedium<T>::getArclengthFromGrammage(
-      Trajectory<Line> const&, units::si::GrammageType grammage) const {
+      Trajectory<Line> const&, GrammageType grammage) const {
     return grammage / density_;
   }
 } // namespace corsika
