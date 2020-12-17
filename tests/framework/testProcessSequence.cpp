@@ -46,7 +46,7 @@ public:
     return ProcessReturn::Ok;
   }
 private:
-  [[maybe_unused]] int v_ = 0;
+  int v_ = 0;
 };
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
@@ -65,7 +65,7 @@ public:
     return ProcessReturn::Ok;
   }
 private:
-  [[maybe_unused]] int v_ = 0;
+  int v_ = 0;
 };
 
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
@@ -84,7 +84,7 @@ public:
     return ProcessReturn::Ok;
   }
 private:
-  [[maybe_unused]] int v_ = 0;
+  int v_ = 0;
 };
 
 class Process1 : public InteractionProcess<Process1> {
@@ -106,7 +106,7 @@ public:
     return 10_g / square(1_cm);
   }
 private:
-  [[maybe_unused]] int v_;
+  int v_;
 };
 
 class Process2 : public InteractionProcess<Process2> {
@@ -129,7 +129,7 @@ public:
     return 20_g / (1_cm * 1_cm);
   }
 private:
-  [[maybe_unused]] int v_ = 0;
+  int v_ = 0;
 };
 
 class Process3 : public InteractionProcess<Process3> {
@@ -152,7 +152,7 @@ public:
     return 30_g / (1_cm * 1_cm);
   }
 private:
-  [[maybe_unused]] int v_ = 0;
+  int v_ = 0;
 };
 
 class Process4 : public BaseProcess<Process4> {
@@ -175,7 +175,7 @@ public:
     checkInteract |= 8;
   }
 private:
-  [[maybe_unused]] int v_ = 0;
+  int v_ = 0;
 };
 
 class Decay1 : public DecayProcess<Decay1> {
