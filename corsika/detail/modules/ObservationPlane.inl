@@ -66,7 +66,7 @@ namespace corsika::observation_plane {
 
     auto const pointOfIntersection = trajectory.getPosition(timeOfIntersection);
     auto dist = (trajectory.getStartPoint() - pointOfIntersection).getNorm() * 1.0001;
-    CORSIKA_LOG_TRACE("ObservationPlane::MaxStepLength l={} m", dist / 1_m);
+    CORSIKA_LOG_TRACE("ObservationPlane::getMaxStepLength l={} m", dist / 1_m);
     return dist;
   }
 

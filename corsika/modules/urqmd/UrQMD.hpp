@@ -22,26 +22,28 @@
 
 namespace corsika::urqmd {
 
-  class UrQMD : public corsika::InteractionProcess<UrQMD> {
+  class UrQMD : public InteractionProcess<UrQMD> {
   public:
     UrQMD();
-    void Init() {}
-    GrammageType GetInteractionLength(corsika::setup::Stack::StackIterator&) const;
 
     template <typename TParticle>
-    CrossSectionType GetCrossSection(TParticle const&, corsika::Code) const;
+    GrammageType getInteractionLength(TParticle const&) const;
 
-    void doInteraction(corsika::setup::StackView::StackIterator&);
+    template <typename TParticle>
+    CrossSectionType getCrossSection(TParticle const&, Code) const;
 
-    bool CanInteract(corsika::Code) const;
+    template <typename TView>
+    void doInteraction(TView&);
+
+    bool canInteract(Code) const;
 
   private:
-    static CrossSectionType GetCrossSection(corsika::Code, corsika::Code, HEPEnergyType,
-                                            int);
-    corsika::default_prng_type& fRNG =
-        corsika::RNGManager::getInstance().getRandomStream("urqmd");
+    static CrossSectionType getCrossSection(Code, Code, HEPEnergyType, int);
 
-    std::uniform_int_distribution<int> fBooleanDist{0, 1};
+    // data members
+    default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("urqmd");
+
+    std::uniform_int_distribution<int> booleanDist_{0, 1};
   };
 
   /**
@@ -49,8 +51,8 @@ namespace corsika::urqmd {
    *
    * In the current implementation a detour via the PDG code is made.
    */
-  std::pair<int, int> ConvertToUrQMD(corsika::Code);
-  corsika::Code ConvertFromUrQMD(int vItyp, int vIso3);
+  std::pair<int, int> convertToUrQMD(Code);
+  Code convertFromUrQMD(int vItyp, int vIso3);
 
 } // namespace corsika::urqmd
 

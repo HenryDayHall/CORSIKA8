@@ -18,9 +18,8 @@ namespace corsika::pythia8 {
     double flat();
 
   private:
-    std::uniform_real_distribution<double> fDist;
-    corsika::default_prng_type& fRNG =
-        corsika::RNGManager::getInstance().getRandomStream("pythia");
+    std::uniform_real_distribution<double> Dist_;
+    default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("pythia");
   };
 
 } // namespace corsika::pythia8

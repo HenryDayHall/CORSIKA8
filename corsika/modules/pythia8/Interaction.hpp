@@ -20,31 +20,25 @@ namespace corsika::pythia8 {
 
   class Interaction : public corsika::InteractionProcess<Interaction> {
 
-    int fCount = 0;
-    bool fInitialized = false;
-
   public:
-    Interaction() {}
+    Interaction(const bool print_listing = false);
     ~Interaction();
 
-    void Init();
+    void setStable(std::vector<Code> const&);
+    void setUnstable(const Code);
+    void setStable(const Code);
 
-    void SetParticleListStable(std::vector<corsika::Code> const&);
-    void SetUnstable(const corsika::Code);
-    void SetStable(const corsika::Code);
+    bool wasInitialized() { return initialized_; }
+    bool isValidCoMEnergy(HEPEnergyType ecm) { return (10_GeV < ecm) && (ecm < 1_PeV); }
 
-    bool WasInitialized() { return fInitialized; }
-    bool ValidCoMEnergy(HEPEnergyType ecm) { return (10_GeV < ecm) && (ecm < 1_PeV); }
+    bool canInteract(const Code);
+    void configureLabFrameCollision(const Code, const Code, const HEPEnergyType);
 
-    bool CanInteract(const corsika::Code);
-    void ConfigureLabFrameCollision(const corsika::Code, const corsika::Code,
-                                    const HEPEnergyType);
-    std::tuple<CrossSectionType, CrossSectionType> GetCrossSection(
-        const corsika::Code BeamId, const corsika::Code TargetId,
-        const HEPEnergyType CoMenergy);
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
+        const Code BeamId, const Code TargetId, const HEPEnergyType CoMenergy);
 
     template <typename TParticle>
-    GrammageType GetInteractionLength(TParticle&);
+    GrammageType getInteractionLength(TParticle&);
 
     /**
        In this function PYTHIA is called to produce one event. The
@@ -55,11 +49,13 @@ namespace corsika::pythia8 {
     void doInteraction(TProjectile&);
 
   private:
-    corsika::default_prng_type& fRNG =
-        corsika::RNGManager::getInstance().getRandomStream("pythia");
-    Pythia8::Pythia fPythia;
-    Pythia8::SigmaTotal fSigma;
-    const bool fInternalDecays = true;
+    default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("pythia");
+    Pythia8::Pythia pythia_;
+    Pythia8::SigmaTotal sigma_;
+    const bool internalDecays_ = true;
+    int count_ = 0;
+    bool initialized_ = false;
+    bool print_listing_ = false;
   };
 
 } // namespace corsika::pythia8

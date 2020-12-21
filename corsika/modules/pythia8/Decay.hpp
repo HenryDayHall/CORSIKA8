@@ -17,29 +17,52 @@
 
 namespace corsika::pythia8 {
 
-  typedef corsika::Vector<hepmomentum_d> MomentumVector;
-
-  class Decay : public corsika::DecayProcess<Decay> {
-    const std::vector<corsika::Code> fTrackedParticles;
-    int fCount = 0;
+  class Decay : public DecayProcess<Decay> {
 
   public:
-    Decay(std::vector<corsika::Code>);
+    Decay(bool const print_listing = false);
+    Decay(std::set<Code> const&);
     ~Decay();
-    void Init();
 
-    void SetParticleListStable(const std::vector<corsika::Code>);
-    void SetUnstable(const corsika::Code);
-    void SetStable(const corsika::Code);
+    // is Pythia::Decay set to handle the decay of this particle?
+    bool isDecayHandled(Code const);
+
+    //! is decay possible in principle?
+    bool canHandleDecay(Code const);
+
+    //! set Pythia::Decay to handle the decay of this particle!
+    void setHandleDecay(Code const);
+    //! set Pythia::Decay to handle the decay of this list of particles!
+    void setHandleDecay(std::vector<Code> const&);
+    //! set Pythia::Decay to handle all particle decays
+    void setHandleAllDecays();
+
+    //! print internal configuration for this particle
+    void printDecayConfig(Code const);
+    //! print configuration of decays in corsika
+    void printDecayConfig();
+
+    bool canDecay(Code const);
 
     template <typename TParticle>
-    TimeType GetLifetime(TParticle const&);
+    TimeType getLifetime(TParticle const&);
 
-    template <typename TProjectile>
-    void DoDecay(TProjectile&);
+    template <typename TView>
+    void doDecay(TView&);
 
   private:
-    Pythia8::Pythia fPythia;
+    bool isStable(Code const vCode);
+    void setStable(std::vector<Code> const&);
+    void setUnstable(Code const);
+    void setStable(Code const);
+
+    // data members
+    Pythia8::Pythia pythia_;
+
+    std::set<Code> handledDecays_;
+    int count_ = 0;
+    bool handleAllDecays_ = true;
+    bool print_listing_ = false;
   };
 
 } // namespace corsika::pythia8

@@ -7,10 +7,10 @@ set (test_modules_sources
   testObservationPlane.cpp
   testQGSJetII.cpp
   #    testSwitchProcess.cpp  -> gone
-  # testPythia8.cpp
+  #testPythia8.cpp
   #testUrQMD.cpp
   #testCONEXSourceCut.cpp
-  #testOnShellCheck.cpp
+  testOnShellCheck.cpp
   testParticleCut.cpp
   testSibyll.cpp
   #  testNullModel.cpp  -> gone

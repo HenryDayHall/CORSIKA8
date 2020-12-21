@@ -17,8 +17,8 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <SetupTestStack.hpp>
+#include <SetupTestEnvironment.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -35,136 +35,126 @@ using namespace corsika::urqmd;
 template <typename TStackView>
 auto sumCharge(TStackView const& view) {
   int totalCharge = 0;
-
-  for (auto const& p : view) { totalCharge += corsika::charge_number(p.GetPID()); }
-
+  for (auto const& p : view) { totalCharge += get_charge_number(p.getPID()); }
   return totalCharge;
 }
 
 template <typename TStackView>
-auto sumMomentum(TStackView const& view, corsika::CoordinateSystem const& vCS) {
-  corsika::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
-
-  for (auto const& p : view) { sum += p.GetMomentum(); }
-
+auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
+  MomentumVector sum{vCS, 0_eV, 0_eV, 0_eV};
+  for (auto const& p : view) { sum += p.getMomentum(); }
   return sum;
 }
 
 TEST_CASE("UrQMD") {
   SECTION("conversion") {
-    REQUIRE_THROWS(corsika::urqmd::ConvertFromUrQMD(106, 0));
-    REQUIRE(corsika::urqmd::ConvertFromUrQMD(101, 0) == corsika::Code::Pi0);
-    REQUIRE(corsika::urqmd::ConvertToUrQMD(corsika::Code::PiPlus) ==
-            std::make_pair<int, int>(101, 2));
+    CHECK_THROWS(corsika::urqmd::convertFromUrQMD(106, 0));
+    CHECK(corsika::urqmd::convertFromUrQMD(101, 0) == Code::Pi0);
+    CHECK(corsika::urqmd::convertToUrQMD(Code::PiPlus) ==
+          std::make_pair<int, int>(101, 2));
   }
 
   feenableexcept(FE_INVALID);
-  corsika::RNGManager::getInstance().registerRandomStream("urqmd");
+  RNGManager::getInstance().registerRandomStream("urqmd");
   UrQMD urqmd;
 
   SECTION("interaction length") {
-    auto [env, csPtr, nodePtr] =
-        setup::testing::setupEnvironment(particles::Code::Nitrogen);
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Nitrogen);
     auto const& cs = *csPtr;
     { [[maybe_unused]] auto const& env_dummy = env; }
 
-    corsika::Code validProjectileCodes[] = {
-        corsika::Code::PiPlus,  corsika::Code::PiMinus, corsika::Code::Proton,
-        corsika::Code::Neutron, corsika::Code::KPlus,   corsika::Code::KMinus,
-        corsika::Code::K0,      corsika::Code::K0Bar,   corsika::Code::K0Long};
+    Code validProjectileCodes[] = {Code::PiPlus,  Code::PiMinus, Code::Proton,
+                                   Code::Neutron, Code::KPlus,   Code::KMinus,
+                                   Code::K0,      Code::K0Bar,   Code::K0Long};
 
     for (auto code : validProjectileCodes) {
-      auto [stack, view] = setup::testing::setupStack(code, 0, 0, 100_GeV, nodePtr, cs);
-      REQUIRE(stack->getEntries() == 1);
-      REQUIRE(view->getEntries() == 0);
+      auto [stack, view] = setup::testing::setup_stack(
+          code, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+      CHECK(stack->getEntries() == 1);
+      CHECK(view->getEntries() == 0);
 
       // simple check whether the cross-section is non-vanishing
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Proton) / 1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Nitrogen) /
-                  1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Oxygen) / 1_mb >
-              0);
-      REQUIRE(urqmd.GetCrossSection(view->GetProjectile(), corsika::Code::Argon) / 1_mb >
-              0);
+      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Proton) / 1_mb > 0);
+      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Nitrogen) / 1_mb > 0);
+      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Oxygen) / 1_mb > 0);
+      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Argon) / 1_mb > 0);
     }
   }
 
   SECTION("nucleus projectile") {
-    auto [env, csPtr, nodePtr] =
-        setup::testing::setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     unsigned short constexpr A = 14, Z = 7;
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::Nucleus, A,
-                                                             Z, 400_GeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->getEntries() == 1);
-    REQUIRE(secViewPtr->getEntries() == 0);
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Nucleus, A, Z, 400_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
+    CHECK(stackPtr->getEntries() == 1);
+    CHECK(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile = secViewPtr->GetProjectile();
-    auto const projectileMomentum = projectile.GetMomentum();
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(*secViewPtr);
+    auto projectile = secViewPtr->getProjectile();
+    auto const projectileMomentum = projectile.getMomentum();
+    urqmd.doInteraction(*secViewPtr);
 
-    REQUIRE(sumCharge(*secViewPtr) == Z + corsika::charge_number(corsika::Code::Oxygen));
+    CHECK(sumCharge(*secViewPtr) == Z + get_charge_number(Code::Oxygen));
 
     auto const secMomSum =
-        sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
-    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
-            Approx(0).margin(1e-2));
+        sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
+    CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
+          Approx(0).margin(1e-2));
   }
 
   SECTION("\"special\" projectile") {
-    auto [env, csPtr, nodePtr] =
-        setup::testing::setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0,
-                                                             0, 400_GeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->getEntries() == 1);
-    REQUIRE(secViewPtr->getEntries() == 0);
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::PiPlus, 0, 0, 400_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
+    CHECK(stackPtr->getEntries() == 1);
+    CHECK(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile = secViewPtr->GetProjectile();
-    auto const projectileMomentum = projectile.GetMomentum();
+    auto projectile = secViewPtr->getProjectile();
+    auto const projectileMomentum = projectile.getMomentum();
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(*secViewPtr);
+    urqmd.doInteraction(*secViewPtr);
 
-    REQUIRE(sumCharge(*secViewPtr) == corsika::charge_number(corsika::Code::PiPlus) +
-                                          corsika::charge_number(corsika::Code::Oxygen));
+    CHECK(sumCharge(*secViewPtr) ==
+          get_charge_number(Code::PiPlus) + get_charge_number(Code::Oxygen));
 
     auto const secMomSum =
-        sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
-    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
-            Approx(0).margin(1e-2));
+        sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
+    CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
+          Approx(0).margin(1e-2));
   }
 
   SECTION("K0Long projectile") {
-    auto [env, csPtr, nodePtr] =
-        setup::testing::setupEnvironment(particles::Code::Oxygen);
+    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::K0Long, 0,
-                                                             0, 400_GeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->getEntries() == 1);
-    REQUIRE(secViewPtr->getEntries() == 0);
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::K0Long, 0, 0, 400_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
+    CHECK(stackPtr->getEntries() == 1);
+    CHECK(secViewPtr->getEntries() == 0);
 
     // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile = secViewPtr->GetProjectile();
-    auto const projectileMomentum = projectile.GetMomentum();
+    auto projectile = secViewPtr->getProjectile();
+    auto const projectileMomentum = projectile.getMomentum();
 
-    [[maybe_unused]] process::EProcessReturn const ret = urqmd.DoInteraction(*secViewPtr);
+    urqmd.doInteraction(*secViewPtr);
 
-    REQUIRE(sumCharge(*secViewPtr) == corsika::charge_number(corsika::Code::K0Long) +
-                                          corsika::charge_number(corsika::Code::Oxygen));
+    CHECK(sumCharge(*secViewPtr) ==
+          get_charge_number(Code::K0Long) + get_charge_number(Code::Oxygen));
 
     auto const secMomSum =
-        sumMomentum(*secViewPtr, projectileMomentum.GetCoordinateSystem());
-    REQUIRE((secMomSum - projectileMomentum).norm() / projectileMomentum.norm() ==
-            Approx(0).margin(1e-2));
+        sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
+    CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
+          Approx(0).margin(1e-2));
   }
 }

@@ -13,7 +13,12 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
+#include <SetupTestEnvironment.hpp>
+#include <SetupTestStack.hpp>
+
 #include <catch2/catch.hpp>
+
+using namespace corsika;
 
 TEST_CASE("Pythia", "[processes]") {
 
@@ -55,17 +60,11 @@ TEST_CASE("Pythia", "[processes]") {
   }
 
   SECTION("pythia interface") {
-    using namespace corsika;
 
-    const std::vector<corsika::Code> particleList = {
-        corsika::Code::PiPlus, corsika::Code::PiMinus, corsika::Code::KPlus,
-        corsika::Code::KMinus, corsika::Code::K0Long,  corsika::Code::K0Short};
-
-    corsika::RNGManager::getInstance().registerRandomStream("pythia");
-
+    std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
+                                         Code::KMinus, Code::K0Long,  Code::K0Short};
+    RNGManager::getInstance().registerRandomStream("pythia");
     corsika::pythia8::Decay model(particleList);
-
-    model.Init();
   }
 }
 
@@ -84,89 +83,86 @@ TEST_CASE("Pythia", "[processes]") {
 #include <corsika/media/NuclearComposition.hpp>
 
 using namespace corsika;
-using namespace corsika::units::si;
 
 template <typename TStackView>
-auto sumMomentum(TStackView const& view, geometry::CoordinateSystem const& vCS) {
-  geometry::Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
-
-  for (auto const& p : view) { sum += p.GetMomentum(); }
-
+auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
+  MomentumVector sum{vCS, 0_eV, 0_eV, 0_eV};
+  for (auto const& p : view) { sum += p.getMomentum(); }
   return sum;
 }
 
 TEST_CASE("pythia process") {
 
-  auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Proton);
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   SECTION("pythia decay") {
-    feenableexcept(FE_INVALID);
-    auto [stackPtr, secViewPtr] =
-        setup::testing::setupStack(particles::Code::PiPlus, 0, 0, P0, nodePtr, *csPtr);
-
     const HEPEnergyType E0 = 10_GeV;
-    HEPMomentumType P0 = sqrt(E0 * E0 - corsika::PiPlus::mass * corsika::PiPlus::mass);
-    auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    corsika::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                   corsika::Point, units::si::TimeType>{corsika::Code::PiPlus, E0, plab,
-                                                        pos, 0_ns});
+    HEPMomentumType P0 = sqrt(E0 * E0 - PiPlus::mass * PiPlus::mass);
 
-    const std::vector<corsika::Code> particleList = {
-        corsika::Code::PiPlus, corsika::Code::PiMinus, corsika::Code::KPlus,
-        corsika::Code::KMinus, corsika::Code::K0Long,  corsika::Code::K0Short};
+    // feenableexcept(FE_INVALID); \todo how does this work nowadays...???
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::PiPlus, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+    auto& stack = *stackPtr;
+    auto& view = *secViewPtr;
 
-    corsika::RNGManager::getInstance().registerRandomStream("pythia");
+    auto plab = MomentumVector(cs, {0_GeV, 0_GeV, -P0});
+    Point pos(cs, 0_m, 0_m, 0_m);
+    auto particle =
+        stackPtr->addParticle(std::make_tuple(Code::PiPlus, E0, plab, pos, 0_ns));
+
+    std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
+                                         Code::KMinus, Code::K0Long,  Code::K0Short};
+
+    RNGManager::getInstance().registerRandomStream("pythia");
 
     corsika::pythia8::Decay model(particleList);
 
-    [[maybe_unused]] const TimeType time = model.GetLifetime(particle);
-    model.DoDecay(view);
+    [[maybe_unused]] const TimeType time = model.getLifetime(particle);
+    model.doDecay(*secViewPtr);
     CHECK(stack.getEntries() == 3);
     auto const pSum = sumMomentum(view, cs);
-    CHECK((pSum - plab).norm() / 1_GeV == Approx(0).margin(1e-4));
-    CHECK((pSum.norm() - plab.norm()) / 1_GeV == Approx(0).margin(1e-4));
+    CHECK((pSum - plab).getNorm() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK((pSum.getNorm() - plab.getNorm()) / 1_GeV == Approx(0).margin(1e-4));
   }
 
   SECTION("pythia decay config") {
-    process::pythia::Decay model({particles::Code::PiPlus, particles::Code::PiMinus});
-    REQUIRE(model.IsDecayHandled(particles::Code::PiPlus));
-    REQUIRE(model.IsDecayHandled(particles::Code::PiMinus));
-    REQUIRE_FALSE(model.IsDecayHandled(particles::Code::KPlus));
+    corsika::pythia8::Decay model({Code::PiPlus, Code::PiMinus});
+    CHECK(model.isDecayHandled(Code::PiPlus));
+    CHECK(model.isDecayHandled(Code::PiMinus));
+    CHECK_FALSE(model.isDecayHandled(Code::KPlus));
 
-    const std::vector<particles::Code> particleTestList = {
-        particles::Code::PiPlus, particles::Code::PiMinus, particles::Code::KPlus,
-        particles::Code::Lambda0Bar, particles::Code::D0Bar};
+    const std::vector<Code> particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
+                                                Code::Lambda0Bar, Code::D0Bar};
 
     // setup decays
-    model.SetHandleDecay(particleTestList);
-    for (auto& pCode : particleTestList) REQUIRE(model.IsDecayHandled(pCode));
+    model.setHandleDecay(particleTestList);
+    for (auto& pCode : particleTestList) CHECK(model.isDecayHandled(pCode));
 
     // individually
-    model.SetHandleDecay(particles::Code::KMinus);
+    model.setHandleDecay(Code::KMinus);
 
     // possible decays
-    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Proton));
-    REQUIRE_FALSE(model.CanHandleDecay(particles::Code::Electron));
-    REQUIRE(model.CanHandleDecay(particles::Code::PiPlus));
-    REQUIRE(model.CanHandleDecay(particles::Code::MuPlus));
+    CHECK_FALSE(model.canHandleDecay(Code::Proton));
+    CHECK_FALSE(model.canHandleDecay(Code::Electron));
+    CHECK(model.canHandleDecay(Code::PiPlus));
+    CHECK(model.canHandleDecay(Code::MuPlus));
   }
 
   SECTION("pythia interaction") {
 
-    feenableexcept(FE_INVALID);
-    auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::PiPlus, 0,
-                                                             0, 100_GeV, nodePtr, *csPtr);
+    // feenableexcept(FE_INVALID); \todo how does this work nowadays
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::PiPlus, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
 
-    process::pythia::Interaction model;
-
-    [[maybe_unused]] const process::EProcessReturn ret = model.DoInteraction(view);
-    [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+    corsika::pythia8::Interaction model;
+    model.doInteraction(view);
+    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+    CHECK(length == 50_g / square(1_cm));
   }
 }

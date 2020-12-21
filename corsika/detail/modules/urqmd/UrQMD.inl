@@ -25,30 +25,25 @@ namespace corsika::urqmd {
 
   UrQMD::UrQMD() { ::urqmd::iniurqmdc8_(); }
 
-  using SetupStack = corsika::setup::Stack;
-  using SetupParticle = corsika::setup::Stack::StackIterator;
-  using SetupProjectile = corsika::setup::StackView::StackIterator;
-
-  CrossSectionType UrQMD::GetCrossSection(corsika::Code vProjectileCode,
-                                          corsika::Code vTargetCode,
+  CrossSectionType UrQMD::getCrossSection(Code vProjectileCode, Code vTargetCode,
                                           HEPEnergyType vLabEnergy,
                                           int vAProjectile = 1) {
 
     // the following is a translation of ptsigtot() into C++
-    if (vProjectileCode != corsika::Code::Nucleus &&
-        !corsika::is_nucleus(vTargetCode)) { // both particles are "special"
-      auto const mProj = corsika::get_mass(vProjectileCode);
-      auto const mTar = corsika::get_mass(vTargetCode);
+    if (vProjectileCode != Code::Nucleus &&
+        !is_nucleus(vTargetCode)) { // both particles are "special"
+      auto const mProj = get_mass(vProjectileCode);
+      auto const mTar = get_mass(vTargetCode);
       double sqrtS =
           sqrt(static_pow<2>(mProj) + static_pow<2>(mTar) + 2 * vLabEnergy * mTar) *
           (1 / 1_GeV);
 
       // we must set some UrQMD globals first...
-      auto const [ityp, iso3] = ConvertToUrQMD(vProjectileCode);
+      auto const [ityp, iso3] = convertToUrQMD(vProjectileCode);
       ::urqmd::inputs_.spityp[0] = ityp;
       ::urqmd::inputs_.spiso3[0] = iso3;
 
-      auto const [itypTar, iso3Tar] = ConvertToUrQMD(vTargetCode);
+      auto const [itypTar, iso3Tar] = convertToUrQMD(vTargetCode);
       ::urqmd::inputs_.spityp[1] = itypTar;
       ::urqmd::inputs_.spiso3[1] = iso3Tar;
 
@@ -57,7 +52,7 @@ namespace corsika::urqmd {
       return ::urqmd::sigtot_(one, two, sqrtS) * 1_mb;
     } else {
       int const Ap = vAProjectile;
-      int const At = is_nucleus(vTargetCode) ? corsika::get_nucleus_A(vTargetCode) : 1;
+      int const At = is_nucleus(vTargetCode) ? get_nucleus_A(vTargetCode) : 1;
 
       double const maxImpact = ::urqmd::nucrad_(Ap) + ::urqmd::nucrad_(At) +
                                2 * ::urqmd::options_.CTParam[30 - 1];
@@ -68,85 +63,86 @@ namespace corsika::urqmd {
 
   template <typename TParticle> // need template here, as this is called both with
                                 // SetupParticle as well as SetupProjectile
-  CrossSectionType UrQMD::GetCrossSection(TParticle const& vProjectile,
-                                          corsika::Code vTargetCode) const {
+  CrossSectionType UrQMD::getCrossSection(TParticle const& vProjectile,
+                                          Code vTargetCode) const {
     // TODO: return 0 for non-hadrons?
 
-    auto const projectileCode = vProjectile.GetPID();
-    auto const projectileEnergyLab = vProjectile.GetEnergy();
+    auto const projectileCode = vProjectile.getPID();
+    auto const projectileEnergyLab = vProjectile.getEnergy();
 
-    if (projectileCode == corsika::Code::K0Long) {
-      return 0.5 *
-             (GetCrossSection(corsika::Code::K0, vTargetCode, projectileEnergyLab) +
-              GetCrossSection(corsika::Code::K0Bar, vTargetCode, projectileEnergyLab));
+    if (projectileCode == Code::K0Long) {
+      return 0.5 * (getCrossSection(Code::K0, vTargetCode, projectileEnergyLab) +
+                    getCrossSection(Code::K0Bar, vTargetCode, projectileEnergyLab));
     }
 
-    int const Ap =
-        (projectileCode == corsika::Code::Nucleus) ? vProjectile.GetNuclearA() : 1;
-    return GetCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
+    int const Ap = (projectileCode == Code::Nucleus) ? vProjectile.getNuclearA() : 1;
+    return getCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
   }
 
-  bool UrQMD::CanInteract(corsika::Code vCode) const {
+  bool UrQMD::canInteract(Code vCode) const {
     // According to the manual, UrQMD can use all mesons, baryons and nucleons
     // which are modeled also as input particles. I think it is safer to accept
     // only the usual long-lived species as input.
     // TODO: Charmed mesons should be added to the list, too
 
-    static corsika::Code const validProjectileCodes[] = {
-        corsika::Code::Nucleus, corsika::Code::Proton,      corsika::Code::AntiProton,
-        corsika::Code::Neutron, corsika::Code::AntiNeutron, corsika::Code::PiPlus,
-        corsika::Code::PiMinus, corsika::Code::KPlus,       corsika::Code::KMinus,
-        corsika::Code::K0,      corsika::Code::K0Bar,       corsika::Code::K0Long};
+    static Code const validProjectileCodes[] = {
+        Code::Nucleus,     Code::Proton, Code::AntiProton, Code::Neutron,
+        Code::AntiNeutron, Code::PiPlus, Code::PiMinus,    Code::KPlus,
+        Code::KMinus,      Code::K0,     Code::K0Bar,      Code::K0Long};
 
     return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
                      vCode) != std::cend(validProjectileCodes);
   }
 
-  GrammageType UrQMD::GetInteractionLength(SetupParticle& vParticle) const {
+  template <typename TParticle>
+  GrammageType UrQMD::getInteractionLength(TParticle const& vParticle) const {
 
-    if (!CanInteract(vParticle.GetPID())) {
-      // we could do the canInteract check in GetCrossSection, too but if
+    if (!canInteract(vParticle.getPID())) {
+      // we could do the canInteract check in getCrossSection, too but if
       // we do it here we have the advantage of avoiding the loop
       return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
     }
 
     auto const& mediumComposition =
-        vParticle.GetNode()->GetModelProperties().getNuclearComposition();
+        vParticle.getNode()->getModelProperties().getNuclearComposition();
     using namespace std::placeholders;
 
     CrossSectionType const weightedProdCrossSection = mediumComposition.WeightedSum(
-        std::bind(&UrQMD::GetCrossSection<decltype(vParticle)>, this, vParticle, _1));
+        std::bind(&UrQMD::getCrossSection<decltype(vParticle)>, this, vParticle, _1));
 
-    return mediumComposition.GetAverageMassNumber() * constants::u /
+    return mediumComposition.getAverageMassNumber() * constants::u /
            weightedProdCrossSection;
   }
 
-  void UrQMD::doInteraction(SetupProjectile& vProjectile) {
+  template <typename TView>
+  void UrQMD::doInteraction(TView& view) {
 
-    auto projectileCode = vProjectile.GetPID();
-    auto const projectileEnergyLab = vProjectile.GetEnergy();
-    auto const& projectileMomentumLab = vProjectile.GetMomentum();
-    auto const& projectilePosition = vProjectile.GetPosition();
-    auto const projectileTime = vProjectile.GetTime();
+    auto projectile = view.getProjectile();
+
+    auto projectileCode = projectile.getPID();
+    auto const projectileEnergyLab = projectile.getEnergy();
+    auto const& projectileMomentumLab = projectile.getMomentum();
+    auto const& projectilePosition = projectile.getPosition();
+    auto const projectileTime = projectile.getTime();
 
     // sample target particle
     auto const& mediumComposition =
-        vProjectile.GetNode()->GetModelProperties().getNuclearComposition();
+        projectile.getNode()->getModelProperties().getNuclearComposition();
     auto const componentCrossSections = std::invoke([&]() {
-      auto const& components = mediumComposition.GetComponents();
+      auto const& components = mediumComposition.getComponents();
       std::vector<CrossSectionType> crossSections;
       crossSections.reserve(components.size());
 
       for (auto const c : components) {
-        crossSections.push_back(GetCrossSection(vProjectile, c));
+        crossSections.push_back(getCrossSection(projectile, c));
       }
 
       return crossSections;
     });
 
-    auto const targetCode = mediumComposition.SampleTarget(componentCrossSections, fRNG);
-    auto const targetA = corsika::get_nucleus_A(targetCode);
-    auto const targetZ = corsika::get_nucleus_Z(targetCode);
+    auto const targetCode = mediumComposition.sampleTarget(componentCrossSections, RNG_);
+    auto const targetA = get_nucleus_A(targetCode);
+    auto const targetZ = get_nucleus_Z(targetCode);
 
     ::urqmd::inputs_.nevents = 1;
     ::urqmd::sys_.eos = 0; // could be configurable in principle
@@ -154,14 +150,14 @@ namespace corsika::urqmd {
     ::urqmd::sys_.nsteps = 1;
 
     // initialization regarding projectile
-    if (corsika::Code::Nucleus == projectileCode) {
+    if (Code::Nucleus == projectileCode) {
       // is this everything?
       ::urqmd::inputs_.prspflg = 0;
 
-      ::urqmd::sys_.Ap = vProjectile.GetNuclearA();
-      ::urqmd::sys_.Zp = vProjectile.GetNuclearZ();
-      ::urqmd::rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV) /
-                             vProjectile.GetNuclearA();
+      ::urqmd::sys_.Ap = projectile.getNuclearA();
+      ::urqmd::sys_.Zp = projectile.getNuclearZ();
+      ::urqmd::rsys_.ebeam = (projectileEnergyLab - projectile.getMass()) * (1 / 1_GeV) /
+                             projectile.getNuclearA();
 
       ::urqmd::rsys_.bdist = ::urqmd::nucrad_(targetA) +
                              ::urqmd::nucrad_(::urqmd::sys_.Ap) +
@@ -175,22 +171,22 @@ namespace corsika::urqmd {
           1; // even for non-baryons this has to be set, see vanilla UrQMD.f
       ::urqmd::rsys_.bdist = ::urqmd::nucrad_(targetA) + ::urqmd::nucrad_(1) +
                              2 * ::urqmd::options_.CTParam[30 - 1];
-      ::urqmd::rsys_.ebeam = (projectileEnergyLab - vProjectile.GetMass()) * (1 / 1_GeV);
+      ::urqmd::rsys_.ebeam = (projectileEnergyLab - projectile.getMass()) * (1 / 1_GeV);
 
-      if (projectileCode == corsika::Code::K0Long) {
-        projectileCode = fBooleanDist(fRNG) ? corsika::Code::K0 : corsika::Code::K0Bar;
-      } else if (projectileCode == corsika::Code::K0Short) {
+      if (projectileCode == Code::K0Long) {
+        projectileCode = booleanDist_(RNG_) ? Code::K0 : Code::K0Bar;
+      } else if (projectileCode == Code::K0Short) {
         throw std::runtime_error("K0Short should not interact");
       }
 
-      auto const [ityp, iso3] = ConvertToUrQMD(projectileCode);
+      auto const [ityp, iso3] = convertToUrQMD(projectileCode);
       // todo: conversion of K_long/short into strong eigenstates;
       ::urqmd::inputs_.spityp[0] = ityp;
       ::urqmd::inputs_.spiso3[0] = iso3;
     }
 
     // initilazation regarding target
-    if (corsika::is_nucleus(targetCode)) {
+    if (is_nucleus(targetCode)) {
       ::urqmd::sys_.Zt = targetZ;
       ::urqmd::sys_.At = targetA;
       ::urqmd::inputs_.trspflg = 0; // nucleus as target
@@ -198,7 +194,7 @@ namespace corsika::urqmd {
       ::urqmd::cascinit_(::urqmd::sys_.Zt, ::urqmd::sys_.At, id);
     } else {
       ::urqmd::inputs_.trspflg = 1; // special particle as target
-      auto const [ityp, iso3] = ConvertToUrQMD(targetCode);
+      auto const [ityp, iso3] = convertToUrQMD(targetCode);
       ::urqmd::inputs_.spityp[1] = ityp;
       ::urqmd::inputs_.spiso3[1] = iso3;
     }
@@ -207,49 +203,47 @@ namespace corsika::urqmd {
     ::urqmd::urqmd_(iflb);
 
     // now retrieve secondaries from UrQMD
-    auto const& originalCS = projectileMomentumLab.GetCoordinateSystem();
-    corsika::CoordinateSystem const zAxisFrame =
-        originalCS.RotateToZ(projectileMomentumLab);
+    auto const& originalCS = projectileMomentumLab.getCoordinateSystem();
+    CoordinateSystemPtr const& zAxisFrame =
+        make_rotationToZ(originalCS, projectileMomentumLab);
 
     for (int i = 0; i < ::urqmd::sys_.npart; ++i) {
-      auto code = ConvertFromUrQMD(::urqmd::isys_.ityp[i], ::urqmd::isys_.iso3[i]);
-      if (code == corsika::Code::K0 || code == corsika::Code::K0Bar) {
-        code = fBooleanDist(fRNG) ? corsika::Code::K0Short : corsika::Code::K0Long;
+      auto code = convertFromUrQMD(::urqmd::isys_.ityp[i], ::urqmd::isys_.iso3[i]);
+      if (code == Code::K0 || code == Code::K0Bar) {
+        code = booleanDist_(RNG_) ? Code::K0Short : Code::K0Long;
       }
 
       // "coor_.p0[i] * 1_GeV" is likely off-shell as UrQMD doesn't preserve masses well
-      auto momentum = corsika::Vector(
-          zAxisFrame,
-          corsika::QuantityVector<dimensionless_d>{
-              ::urqmd::coor_.px[i], ::urqmd::coor_.py[i], ::urqmd::coor_.pz[i]} *
-              1_GeV);
+      auto momentum =
+          Vector(zAxisFrame,
+                 QuantityVector<dimensionless_d>{
+                     ::urqmd::coor_.px[i], ::urqmd::coor_.py[i], ::urqmd::coor_.pz[i]} *
+                     1_GeV);
 
-      auto const energy = sqrt(momentum.squaredNorm() + square(corsika::get_mass(code)));
+      auto const energy = sqrt(momentum.getSquaredNorm() + square(get_mass(code)));
 
       momentum.rebase(originalCS); // transform back into standard lab frame
-      std::cout << i << " " << code << " " << momentum.GetComponents() << std::endl;
+      std::cout << i << " " << code << " " << momentum.getComponents() << std::endl;
 
-      vProjectile.AddSecondary(
-          std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector,
-                     corsika::Point, TimeType>{code, energy, momentum, projectilePosition,
-                                               projectileTime});
+      projectile.addSecondary(
+          std::make_tuple(code, energy, momentum, projectilePosition, projectileTime));
     }
 
     std::cout << "UrQMD generated " << ::urqmd::sys_.npart << " secondaries!"
               << std::endl;
   }
 
-  corsika::Code ConvertFromUrQMD(int vItyp, int vIso3) {
+  Code convertFromUrQMD(int vItyp, int vIso3) {
     int const pdgInt =
         ::urqmd::pdgid_(vItyp, vIso3); // use the conversion function provided by UrQMD
     if (pdgInt == 0) {                 // ::urqmd::pdgid_ returns 0 on error
       throw std::runtime_error("UrQMD pdgid() returned 0");
     }
-    auto const pdg = static_cast<corsika::PDGCode>(pdgInt);
-    return corsika::convert_from_PDG(pdg);
+    auto const pdg = static_cast<PDGCode>(pdgInt);
+    return convert_from_PDG(pdg);
   }
 
-  std::pair<int, int> ConvertToUrQMD(corsika::Code code) {
+  std::pair<int, int> convertToUrQMD(Code code) {
     static const std::map<int, std::pair<int, int>> mapPDGToUrQMD{
         // data mostly from github.com/afedynitch/ParticleDataTool
         {22, {100, 0}},      // gamma
