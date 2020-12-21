@@ -4,7 +4,7 @@ set (test_modules_sources
   testStackInspector.cpp
   #testTrackingLine.cpp
   #testExecTime.cpp
-  #testObservationPlane.cpp
+  testObservationPlane.cpp
   testQGSJetII.cpp
   #    testSwitchProcess.cpp  -> gone
   # testPythia8.cpp

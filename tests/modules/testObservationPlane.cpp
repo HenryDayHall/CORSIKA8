@@ -22,7 +22,7 @@ using namespace corsika;
 
 TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
-  auto const& rootCS = RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  auto const& rootCS = get_root_CoordinateSystem();
 
   /*
     Test with downward going 1_GeV neutrino, starting at 0,1_m,10m
@@ -38,19 +38,17 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
-  stack.Clear();
+  stack.clear();
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
     };
-    stack.AddParticle(
-        std::tuple<Code, HEPEnergyType, corsika::MomentumVector, Point, TimeType>{
-            Code::NuMu, 1_GeV,
-            corsika::MomentumVector(rootCS,
-                                    {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::mass())}),
-            Point(rootCS, {1_m, 1_m, 10_m}), 0_ns});
+    stack.addParticle(std::make_tuple(
+        Code::NuMu, 1_GeV,
+        corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::mass)}),
+        Point(rootCS, {1_m, 1_m, 10_m}), 0_ns));
   }
-  auto particle = stack.GetNextParticle();
+  auto particle = stack.getNextParticle();
 
   SECTION("horizontal plane") {
 
@@ -58,15 +56,15 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
                          Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
     ObservationPlane obs(obsPlane, "particles.dat", true);
 
-    const LengthType length = obs.MaxStepLength(particle, track);
+    const LengthType length = obs.getMaxStepLength(particle, track);
     const ProcessReturn ret = obs.doContinuous(particle, track);
 
-    REQUIRE(length / 10_m == Approx(1).margin(1e-4));
-    REQUIRE(ret == ProcessReturn::ParticleAbsorbed);
+    CHECK(length / 10_m == Approx(1).margin(1e-4));
+    CHECK(ret == ProcessReturn::ParticleAbsorbed);
 
     /*
     SECTION("horizontal plane") {
-      REQUIRE(true); // todo: we have to check content of output file...
+      CHECK(true); // todo: we have to check content of output file...
 
     }
     */
@@ -79,10 +77,10 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
                          Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
     ObservationPlane obs(obsPlane, "particles.dat", false);
 
-    const LengthType length = obs.MaxStepLength(particle, track);
+    const LengthType length = obs.getMaxStepLength(particle, track);
     const ProcessReturn ret = obs.doContinuous(particle, track);
 
-    REQUIRE(length / 10_m == Approx(1).margin(1e-4));
-    REQUIRE(ret == ProcessReturn::Ok);
+    CHECK(length / 10_m == Approx(1).margin(1e-4));
+    CHECK(ret == ProcessReturn::Ok);
   }
 }

@@ -16,49 +16,73 @@ namespace corsika::observation_plane {
                                      std::string const& filename, bool deleteOnHit)
       : plane_(obsPlane)
       , outputStream_(filename)
-      , deleteOnHit_(deleteOnHit) {
+      , deleteOnHit_(deleteOnHit)
+      , energy_ground_(0_GeV)
+      , count_ground_(0) {
     outputStream_ << "#PDG code, energy / eV, distance to center / m" << std::endl;
   }
 
-  corsika::ProcessReturn ObservationPlane::doContinuous(
-      corsika::setup::Stack::ParticleType const& particle,
-      corsika::setup::Trajectory const& trajectory) {
+  ProcessReturn ObservationPlane::doContinuous(
+      corsika::setup::Stack::particle_type& particle,
+      corsika::setup::Trajectory& trajectory) {
     TimeType const timeOfIntersection =
-        (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-        trajectory.GetV0().dot(plane_.GetNormal());
+        (plane_.getCenter() - trajectory.getStartPoint()).dot(plane_.getNormal()) /
+        trajectory.getVelocity().dot(plane_.getNormal());
 
-    if (timeOfIntersection < TimeType::zero()) { return corsika::ProcessReturn::Ok; }
+    if (timeOfIntersection < TimeType::zero()) { return ProcessReturn::Ok; }
 
-    if (plane_.IsAbove(trajectory.GetR0()) == plane_.IsAbove(trajectory.GetPosition(1))) {
-      return corsika::ProcessReturn::Ok;
+    if (plane_.isAbove(trajectory.getStartPoint()) ==
+        plane_.isAbove(trajectory.getPosition(1))) {
+      return ProcessReturn::Ok;
     }
 
-    outputStream_ << static_cast<int>(corsika::get_PDG(particle.GetPID())) << ' '
-                  << particle.GetEnergy() * (1 / 1_eV) << ' '
-                  << (trajectory.GetPosition(1) - plane_.GetCenter()).norm() / 1_m
+    const auto energy = particle.getEnergy();
+    outputStream_ << static_cast<int>(corsika::get_PDG(particle.getPID())) << ' '
+                  << energy / 1_eV << ' '
+                  << (trajectory.getPosition(1) - plane_.getCenter()).getNorm() / 1_m
                   << std::endl;
 
     if (deleteOnHit_) {
-      return corsika::ProcessReturn::ParticleAbsorbed;
+      count_ground_++;
+      energy_ground_ += energy;
+      particle.erase();
+      return ProcessReturn::ParticleAbsorbed;
     } else {
-      return corsika::ProcessReturn::Ok;
+      return ProcessReturn::Ok;
     }
   }
 
-  corsika::LengthType ObservationPlane::MaxStepLength(
-      corsika::setup::Stack::ParticleType const&,
+  corsika::LengthType ObservationPlane::getMaxStepLength(
+      corsika::setup::Stack::particle_type const&,
       corsika::setup::Trajectory const& trajectory) {
 
     TimeType const timeOfIntersection =
-        (plane_.GetCenter() - trajectory.GetR0()).dot(plane_.GetNormal()) /
-        trajectory.GetV0().dot(plane_.GetNormal());
+        (plane_.getCenter() - trajectory.getStartPoint()).dot(plane_.getNormal()) /
+        trajectory.getVelocity().dot(plane_.getNormal());
 
     if (timeOfIntersection < TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
 
-    auto const pointOfIntersection = trajectory.GetPosition(timeOfIntersection);
-    return (trajectory.GetR0() - pointOfIntersection).norm() * 1.0001;
+    auto const pointOfIntersection = trajectory.getPosition(timeOfIntersection);
+    auto dist = (trajectory.getStartPoint() - pointOfIntersection).getNorm() * 1.0001;
+    CORSIKA_LOG_TRACE("ObservationPlane::MaxStepLength l={} m", dist / 1_m);
+    return dist;
+  }
+
+  void ObservationPlane::showResults() const {
+    CORSIKA_LOG_INFO(
+        " ******************************\n"
+        " ObservationPlane: \n"
+        " energy in ground (GeV)     :  {}\n"
+        " no. of particles in ground :  {}\n"
+        " ******************************",
+        energy_ground_ / 1_GeV, count_ground_);
+  }
+
+  void ObservationPlane::reset() {
+    energy_ground_ = 0_GeV;
+    count_ground_ = 0;
   }
 
 } // namespace corsika::observation_plane

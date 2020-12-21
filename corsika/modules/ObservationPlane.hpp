@@ -15,6 +15,7 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <fstream>
+#include <string>
 
 namespace corsika::observation_plane {
 
@@ -29,17 +30,22 @@ namespace corsika::observation_plane {
     ObservationPlane(corsika::Plane const&, std::string const&, bool = true);
     void Init() {}
 
-    corsika::ProcessReturn doContinuous(
-        corsika::setup::Stack::ParticleType const& vParticle,
-        corsika::setup::Trajectory const& vTrajectory);
+    corsika::ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
+                                        corsika::setup::Trajectory& vTrajectory);
 
-    LengthType MaxStepLength(corsika::setup::Stack::ParticleType const&,
-                             corsika::setup::Trajectory const& vTrajectory);
+    LengthType getMaxStepLength(corsika::setup::Stack::particle_type const&,
+                                corsika::setup::Trajectory const& vTrajectory);
+
+    void showResults() const;
+    void reset();
+    HEPEnergyType getEnergyGround() const { return energy_ground_; }
 
   private:
-    corsika::Plane const plane_;
+    Plane const plane_;
     std::ofstream outputStream_;
     bool const deleteOnHit_;
+    HEPEnergyType energy_ground_;
+    unsigned int count_ground_;
   };
 } // namespace corsika::observation_plane
 
