@@ -174,7 +174,7 @@ namespace corsika {
   template <typename TDimension>
   auto Vector<TDimension>::operator/(double const p) const {
     return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(),
-                              BaseVector<TDimension>::quantityVector() / p);
+                              BaseVector<TDimension>::getQuantityVector() / p);
   }
 
   template <typename TDimension>

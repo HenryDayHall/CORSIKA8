@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <cnpy/cnpy.hpp>
+#include <cnpy.hpp>
 
 #include <boost/histogram.hpp>
 
@@ -23,7 +23,7 @@ namespace corsika {
 
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
-                        std::string const& filename, SaveMode mode = SaveMode::append) {
+                        std::string const& filename, SaveMode mode) {
     unsigned const rank = h.rank();
 
     // append vs. overwrite

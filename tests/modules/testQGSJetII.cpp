@@ -16,39 +16,83 @@
 
 #include <catch2/catch.hpp>
 
+#include <string>
+#include <cstdlib>
+#include <experimental/filesystem>
+#include <iostream>
+
 using namespace corsika;
-using namespace corsika::qgsjetII;
+
+template <typename TStackView>
+auto sumCharge(TStackView const& view) {
+  int totalCharge = 0;
+  for (auto const& p : view) { totalCharge += get_charge_number(p.getPID()); }
+  return totalCharge;
+}
+
+template <typename TStackView>
+auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
+  Vector<hepenergy_d> sum{vCS, 0_eV, 0_eV, 0_eV};
+  for (auto const& p : view) { sum += p.getMomentum(); }
+  return sum;
+}
+
+TEST_CASE("CORSIKA_DATA", "[processes]") {
+
+  SECTION("check CORSIKA_DATA") {
+
+    const char* data = std::getenv("CORSIKA_DATA");
+    // these REQUIRES are needed:
+    REQUIRE(data != 0);
+    REQUIRE(std::experimental::filesystem::is_directory(
+        std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
+    std::cout << "data: " << data << " isDir: "
+              << std::experimental::filesystem::is_directory(std::string(data) +
+                                                             "/QGSJetII")
+              << std::endl;
+  }
+}
 
 TEST_CASE("QgsjetII", "[processes]") {
 
+  SECTION("Corsika -> QgsjetII") {
+    CHECK(corsika::qgsjetII::convertToQgsjetII(PiMinus::code) ==
+          corsika::qgsjetII::QgsjetIICode::PiMinus);
+    CHECK(corsika::qgsjetII::convertToQgsjetIIRaw(Proton::code) == 2);
+  }
+
   SECTION("QgsjetII -> Corsika") {
-    REQUIRE(corsika::Code::PiPlus == corsika::qgsjetII::ConvertFromQgsjetII(
-                                         corsika::qgsjetII::QgsjetIICode::PiPlus));
+    REQUIRE(Code::PiPlus == corsika::qgsjetII::convertFromQgsjetII(
+                                corsika::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
-    REQUIRE(corsika::qgsjetII::ConvertToQgsjetII(corsika::Code::PiMinus) ==
+    REQUIRE(corsika::qgsjetII::convertToQgsjetII(Code::PiMinus) ==
             corsika::qgsjetII::QgsjetIICode::PiMinus);
-    REQUIRE(corsika::qgsjetII::ConvertToQgsjetIIRaw(corsika::Code::Proton) == 2);
+    REQUIRE(corsika::qgsjetII::convertToQgsjetIIRaw(Code::Proton) == 2);
   }
 
   SECTION("canInteractInQgsjetII") {
 
-    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::Proton));
-    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::KPlus));
-    REQUIRE(corsika::qgsjetII::CanInteract(corsika::Code::Nucleus));
-    // REQUIRE(corsika::qgsjetII::CanInteract(corsika::Helium::GetCode()));
+    REQUIRE(corsika::qgsjetII::canInteract(Code::Proton));
+    REQUIRE(corsika::qgsjetII::canInteract(Code::KPlus));
+    REQUIRE(corsika::qgsjetII::canInteract(Code::Nucleus));
+    // REQUIRE(corsika::qgsjetII::canInteract(Helium::getCode()));
 
-    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::Code::EtaC));
-    REQUIRE_FALSE(corsika::qgsjetII::CanInteract(corsika::Code::SigmaC0));
+    REQUIRE_FALSE(corsika::qgsjetII::canInteract(Code::EtaC));
+    REQUIRE_FALSE(corsika::qgsjetII::canInteract(Code::SigmaC0));
   }
 
   SECTION("cross-section type") {
 
-    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::Neutron) == 2);
-    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::K0Long) == 3);
-    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::Proton) == 2);
-    REQUIRE(corsika::qgsjetII::GetQgsjetIIXSCode(corsika::Code::PiMinus) == 1);
+    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::Neutron) ==
+            corsika::qgsjetII::QgsjetIIXSClass::Baryons);
+    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::K0Long) ==
+            corsika::qgsjetII::QgsjetIIXSClass::Kaons);
+    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::Proton) ==
+            corsika::qgsjetII::QgsjetIIXSClass::Baryons);
+    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::PiMinus) ==
+            corsika::qgsjetII::QgsjetIIXSClass::LightMesons);
   }
 }
 
@@ -66,50 +110,45 @@ TEST_CASE("QgsjetII", "[processes]") {
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
+#include <SetupTestEnvironment.hpp>
+#include <SetupTestStack.hpp>
+
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
-  // setup environment, geometry
-  corsika::Environment<corsika::IMediumModel> env;
-  auto& universe = *(env.GetUniverse());
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
+  [[maybe_unused]] auto const& env_dummy = env;
+  [[maybe_unused]] auto const& node_dummy = nodePtr;
 
-  auto theMedium =
-      corsika::Environment<corsika::IMediumModel>::CreateNode<corsika::Sphere>(
-          corsika::Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-          1_km * std::numeric_limits<double>::infinity());
-
-  using MyHomogeneousModel = corsika::HomogeneousMedium<corsika::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
-      1_kg / (1_m * 1_m * 1_m),
-      corsika::NuclearComposition(std::vector<corsika::Code>{corsika::Code::Oxygen},
-                                  std::vector<float>{1.}));
-
-  auto const* nodePtr = theMedium.get();
-  universe.AddChild(std::move(theMedium));
-
-  const corsika::CoordinateSystem& cs = env.GetCoordinateSystem();
-
-  corsika::RNGManager::getInstance().registerRandomStream("qgsjet");
+  RNGManager::getInstance().registerRandomStream("qgsjet");
 
   SECTION("InteractionInterface") {
 
-    setup::Stack stack;
-    const HEPEnergyType E0 = 100_GeV;
-    HEPMomentumType P0 =
-        sqrt(E0 * E0 - corsika::Proton::mass * corsika::Proton::mass);
-    auto plab = corsika::MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    corsika::Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle = stack.AddParticle(
-        std::tuple<corsika::Code, HEPEnergyType, corsika::MomentumVector, corsika::Point,
-                   TimeType, unsigned int, unsigned int>{corsika::Code::Nucleus, E0, plab,
-                                                         pos, 0_ns, 16, 8});
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Proton, 0, 0, 110_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
+    setup::StackView& view = *(secViewPtr.get());
+    auto particle = stackPtr->first();
+    auto projectile = secViewPtr->getProjectile();
+    auto const projectileMomentum = projectile.getMomentum();
 
-    particle.SetNode(nodePtr);
-    corsika::SecondaryView view(particle);
-    auto projectile = view.GetProjectile();
-
-    Interaction model;
-    model.Init();
+    corsika::qgsjetII::Interaction model;
     model.doInteraction(projectile);
-    [[maybe_unused]] const GrammageType length = model.GetInteractionLength(particle);
+    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+
+    CHECK(length / (1_g / square(1_cm)) == Approx(93.04).margin(0.1));
+
+    /***********************************
+     It as turned out already two times (#291 and #307) that the detailed output of
+    QGSJetII event generation depends on the gfortran version used. This is not reliable
+    and cannot be tested in a unit test here. One related problem was already found (#291)
+    and is realted to undefined behaviour in the evaluation of functions in logical
+    expressions. It is not clear if #307 is the same issue.
+
+     CHECK(view.getSize() == 14);
+     CHECK(sumCharge(view) == 2);
+    ************************************/
+    auto const secMomSum = sumMomentum(view, projectileMomentum.getCoordinateSystem());
+    CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
+          Approx(0).margin(1e-2));
   }
 }

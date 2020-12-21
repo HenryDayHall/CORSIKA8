@@ -1,9 +1,10 @@
 set (test_media_sources
   TestMain.cpp
-  testMedium.cpp
   testEnvironment.cpp
-  testRefractiveIndex.cpp
   testShowerAxis.cpp
+  testMedium.cpp
+  testRefractiveIndex.cpp
+  testMagneticField.cpp
   )
 
 CORSIKA_ADD_TEST (testMedia SOURCES ${test_media_sources})

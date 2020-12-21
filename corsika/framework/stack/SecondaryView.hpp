@@ -321,7 +321,7 @@ namespace corsika {
      */
     inline void purge() ;
 
-    inline std::string as_string() const;
+    inline std::string asString() const;
 
   protected:
     friend class StackIteratorInterface<

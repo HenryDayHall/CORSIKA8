@@ -19,14 +19,14 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/logging/Logging.hpp>
 
-// using namespace corsika::units::si;
-
 namespace corsika {
 
-  COMBoost::COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
-                     HEPMassType const massTarget)
+  inline COMBoost::COMBoost(FourVector<HEPEnergyType, MomentumVector> const& Pprojectile,
+                            HEPMassType const massTarget)
       : originalCS_{Pprojectile.getSpaceLikeComponents().getCoordinateSystem()}
-      , rotatedCS_{make_rotationToZ(originalCS_, Pprojectile.getSpaceLikeComponents())} {
+      , rotatedCS_{
+            make_rotationToZ(Pprojectile.getSpaceLikeComponents().getCoordinateSystem(),
+                             Pprojectile.getSpaceLikeComponents())} {
     auto const pProjectile = Pprojectile.getSpaceLikeComponents();
     auto const pProjNormSquared = pProjectile.getSquaredNorm();
     auto const pProjNorm = sqrt(pProjNormSquared);
@@ -42,13 +42,13 @@ namespace corsika {
 
     setBoost(coshEta, sinhEta);
 
-    CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta, coshEta,
-                boost_.determinant() - 1);
+    CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta,
+                      coshEta, boost_.determinant() - 1);
   }
 
-  COMBoost::COMBoost(Vector<hepmomentum_d> const& momentum, HEPEnergyType mass)
+  inline COMBoost::COMBoost(MomentumVector const& momentum, HEPEnergyType mass)
       : originalCS_{momentum.getCoordinateSystem()}
-      , rotatedCS_{make_rotationToZ(originalCS_, momentum)} {
+      , rotatedCS_{make_rotationToZ(momentum.getCoordinateSystem(), momentum)} {
     auto const squaredNorm = momentum.getSquaredNorm();
     auto const norm = sqrt(squaredNorm);
     auto const sinhEta = -norm / mass;
@@ -57,7 +57,7 @@ namespace corsika {
   }
 
   template <typename FourVector>
-  FourVector COMBoost::toCoM(FourVector const& p) const {
+  inline FourVector COMBoost::toCoM(FourVector const& p) const {
     auto pComponents = p.getSpaceLikeComponents().getComponents(rotatedCS_);
     Eigen::Vector3d eVecRotated = pComponents.getEigenVector();
     Eigen::Vector2d lab;
@@ -70,11 +70,11 @@ namespace corsika {
 
     eVecRotated(2) = boostedZ(1) * (1_GeV).magnitude();
 
-    return FourVector(E_CoM, Vector<hepmomentum_d>(rotatedCS_, eVecRotated));
+    return FourVector(E_CoM, MomentumVector(rotatedCS_, eVecRotated));
   }
 
   template <typename FourVector>
-  FourVector COMBoost::fromCoM(FourVector const& p) const {
+  inline FourVector COMBoost::fromCoM(FourVector const& p) const {
     auto pCM = p.getSpaceLikeComponents().getComponents(rotatedCS_);
     auto const Ecm = p.getTimeLikeComponent();
 
@@ -105,7 +105,7 @@ namespace corsika {
     return f;
   }
 
-  void COMBoost::setBoost(double coshEta, double sinhEta) {
+  inline void COMBoost::setBoost(double coshEta, double sinhEta) {
     boost_ << coshEta, sinhEta, sinhEta, coshEta;
     inverseBoost_ << coshEta, -sinhEta, -sinhEta, coshEta;
   }

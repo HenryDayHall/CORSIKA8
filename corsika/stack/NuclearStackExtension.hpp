@@ -13,6 +13,7 @@
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/stack/SuperStupidStack.hpp>
 
 #include <algorithm>
@@ -46,10 +47,10 @@ namespace corsika::nuclear_stack {
     typedef InnerParticleInterface<StackIteratorInterface> super_type;
 
   public:
-    typedef std::tuple<Code, HEPEnergyType, simple_stack::MomentumVector, Point, TimeType>
+    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType>
         particle_data_type;
 
-    typedef std::tuple<Code, HEPEnergyType, simple_stack::MomentumVector, Point, TimeType,
+    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType,
                        unsigned short, unsigned short>
         altenative_particle_data_type;
 
@@ -61,7 +62,7 @@ namespace corsika::nuclear_stack {
 
     inline void setParticleData(super_type& p, altenative_particle_data_type const& v);
 
-    inline  std::string as_string() const;
+    inline  std::string asString() const;
 
     /**
      * @name individual setters

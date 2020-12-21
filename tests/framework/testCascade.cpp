@@ -6,12 +6,12 @@
  * the license.
  */
 
-#include <testCascade.h>
+#include <testCascade.hpp>
 
 #include <corsika/framework/core/Cascade.hpp>
 
-#include <corsika/framework/sequence/ProcessSequence.hpp>
-#include <corsika/framework/sequence/NullModel.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/NullModel.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackingLine.hpp>
 
@@ -27,99 +27,60 @@
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika;
-using namespace corsika::units;
-using namespace corsika::units::si;
-using namespace corsika;
 
 #include <limits>
 using namespace std;
 
-/**
- * testCascade implements an e.m. Heitler model with energy splitting
- * and a critical energy.
- *
- * It resembles one of the most simple cascades you can simulate with CORSIKA8.
- **/
-
-/*
-  The dummy env (here) doesn't need to have any propoerties
- */
-auto MakeDummyEnv() {
+auto make_dummy_env() {
   TestEnvironmentType env; // dummy environment
-  auto& universe = *(env.GetUniverse());
+  auto& universe = *(env.getUniverse());
 
-  auto world = TestEnvironmentType::CreateNode<Sphere>(
-      Point{env.GetCoordinateSystem(), 0_m, 0_m, 0_m},
-      1_m * std::numeric_limits<double>::infinity());
+  auto theMedium = TestEnvironmentType::createNode<Sphere>(
+      Point{env.getCoordinateSystem(), 0_m, 0_m, 0_m},
+      100_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = environment::HomogeneousMedium<environment::IMediumModel>;
-  theMedium->SetModelProperties<MyHomogeneousModel>(
+  using MyHomogeneousModel = corsika::HomogeneousMedium<IMediumModel>;
+  theMedium->setModelProperties<MyHomogeneousModel>(
       1_g / (1_cm * 1_cm * 1_cm),
-      environment::NuclearComposition(std::vector<Code>{Code::Proton},
-                                      std::vector<float>{1.}));
+      NuclearComposition(std::vector<Code>{Code::Proton}, std::vector<float>{1.}));
 
-  universe.AddChild(std::move(world));
-
+  universe.addChild(std::move(theMedium));
   return env;
 }
 
-/**
- * \class DummyTracking
- *
- * For the Heitler model we don't need particle transport.
- **/
-class DummyTracking {
+class ProcessSplit : public InteractionProcess<ProcessSplit> {
+
+  int calls_ = 0;
+  GrammageType X0_;
 
 public:
-  template <typename TParticle>
-  auto GetTrack(TParticle const& particle) {
-    using namespace corsika::units::si;
-    using namespace corsika::geometry;
-    geometry::Vector<SpeedType::dimension_type> const initialVelocity =
-        particle.GetMomentum() / particle.GetEnergy() * corsika::units::constants::c;
-    return std::make_tuple(
-        geometry::LineTrajectory(
-            geometry::Line(particle.GetPosition(), initialVelocity),
-            std::numeric_limits<TimeType::value_type>::infinity() * 1_s), // trajectory,
-                                                                          // just
-                                                                          // go
-                                                                          // ahead
-                                                                          // forever
-        particle.GetNode()); // next volume node
-  }
-};
+  ProcessSplit(GrammageType const X0)
+      : X0_(X0) {}
 
-class ProcessSplit : public process::InteractionProcess<ProcessSplit> {
-
-  int fCalls = 0;
-
-public:
   template <typename Particle>
-  corsika::units::si::GrammageType GetInteractionLength(Particle const&) const {
-    return 0_g / square(1_cm);
+  GrammageType getInteractionLength(Particle const&) const {
+    return X0_;
   }
 
-  template <typename TProjectile>
-  corsika::EProcessReturn DoInteraction(TProjectile& vP) {
-    fCalls++;
-    const HEPEnergyType E = vP.GetEnergy();
-    vP.AddSecondary(std::tuple<Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                               geometry::Point, units::si::TimeType>{
-        vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
-    vP.AddSecondary(std::tuple<Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                               geometry::Point, units::si::TimeType>{
-        vP.GetPID(), E / 2, vP.GetMomentum(), vP.GetPosition(), vP.GetTime()});
-    return EProcessReturn::eInteracted;
+  template <typename TView>
+  ProcessReturn doInteraction(TView& view) {
+    calls_++;
+    auto vP = view.getProjectile();
+    const HEPEnergyType E = vP.getEnergy();
+    vP.addSecondary(std::make_tuple(vP.getPID(), E / 2, vP.getMomentum(),
+                                    vP.getPosition(), vP.getTime()));
+    vP.addSecondary(std::make_tuple(vP.getPID(), E / 2, vP.getMomentum(),
+                                    vP.getPosition(), vP.getTime()));
+    return ProcessReturn::Interacted;
   }
 
-  int GetCalls() const { return fCalls; }
+  int getCalls() const { return calls_; }
 };
 
-class ProcessCut : public process::SecondariesProcess<ProcessCut> {
+class ProcessCut : public SecondariesProcess<ProcessCut> {
 
-  int fCount = 0;
-  int fCalls = 0;
+  int count_ = 0;
+  int calls_ = 0;
   HEPEnergyType fEcrit;
 
 public:
@@ -127,24 +88,24 @@ public:
       : fEcrit(e) {}
 
   template <typename TStack>
-  EProcessReturn DoSecondaries(TStack& vS) {
-    fCalls++;
+  void doSecondaries(TStack& vS) {
+    calls_++;
     auto p = vS.begin();
     while (p != vS.end()) {
-      HEPEnergyType E = p.GetEnergy();
+      HEPEnergyType E = p.getEnergy();
       if (E < fEcrit) {
-        p.Delete();
-        fCount++;
+        p.erase();
+        count_++;
       }
       ++p; // next particle
     }
-    C8LOG_INFO(fmt::format("ProcessCut::DoSecondaries size={} count={}", vS.getEntries(),
-                           fCount));
-    return EProcessReturn::eOk;
+    CORSIKA_LOG_INFO(fmt::format("ProcessCut::doSecondaries size={} count={}",
+                                 vS.getEntries(), count_));
+
   }
 
-  int GetCount() const { return fCount; }
-  int GetCalls() const { return fCalls; }
+  int getCount() const { return count_; }
+  int getCalls() const { return calls_; }
 };
 
 TEST_CASE("Cascade", "[Cascade]") {
@@ -153,41 +114,43 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   HEPEnergyType E0 = 100_GeV;
 
-  random::RNGManager& rmng = random::RNGManager::getInstance();
+  RNGManager& rmng = RNGManager::getInstance();
   rmng.registerRandomStream("cascade");
 
-  auto env = MakeDummyEnv();
-  auto const& rootCS = env.GetCoordinateSystem();
+  auto env = make_dummy_env();
+  auto const& rootCS = env.getCoordinateSystem();
+  tracking_line::TrackingLine tracking;
 
   stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
-  process::NullModel nullModel;
+  NullModel nullModel;
 
   const HEPEnergyType Ecrit = 85_MeV;
   ProcessSplit split;
   ProcessCut cut(Ecrit);
-  auto sequence = process::sequence(nullModel, stackInspect, split, cut);
+  auto sequence = make_sequence(nullModel, stackInspect, split, cut);
   TestCascadeStack stack;
-  stack.Clear();
-  stack.AddParticle(std::tuple<Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                               geometry::Point, units::si::TimeType>{
-      Code::Electron, E0, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
+  stack.clear();
+  stack.addParticle(std::make_tuple(Code::Electron, E0,
+                                    MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
-  cascade::Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
-                   TestCascadeStackView>
+  Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
+          TestCascadeStackView>
       EAS(env, tracking, sequence, stack);
 
   SECTION("full cascade") {
-    EAS.Run();
+    EAS.run();
 
-    CHECK(cut.GetCount() == 2048);
-    CHECK(cut.GetCalls() == 2047); // final particle is still on stack and not yet deleted
-    CHECK(split.GetCalls() == 2047);
+    CHECK(cut.getCount() == 2048);
+    CHECK(cut.getCalls() == 2047);
+    CHECK(split.getCalls() == 2047);
   }
 
   SECTION("forced interaction") {
+    EAS.setNodes();
     EAS.forceInteraction();
     CHECK(stack.getEntries() == 2);
-    CHECK(split.GetCalls() == 1);
+    CHECK(stack.getSize() == 3);
+    CHECK(split.getCalls() == 1);
   }
 }

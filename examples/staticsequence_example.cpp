@@ -1,23 +1,21 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
 
-#include <corsika/framework/process/ProcessSequence.hpp>
-
-#include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
-#include <corsika/framework/geometry/Vector.hpp>
-
 #include <array>
 #include <iomanip>
 #include <iostream>
 
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+
 using namespace corsika;
-using namespace corsika::units::si;
 using namespace std;
 
 const int nData = 10;
@@ -26,9 +24,9 @@ class Process1 : public ContinuousProcess<Process1> {
 public:
   Process1() {}
   template <typename D, typename T>
-  EProcessReturn DoContinuous(D& d, T&) const {
+  ProcessReturn doContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) d.p[i] += 1;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
@@ -37,9 +35,9 @@ public:
   Process2() {}
 
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) d.p[i] -= 0.1 * i;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 };
 
@@ -48,8 +46,8 @@ public:
   Process3() {}
 
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D&, T&) const {
-    return EProcessReturn::eOk;
+  inline ProcessReturn doContinuous(D&, T&) const {
+    return ProcessReturn::Ok;
   }
 };
 
@@ -58,9 +56,9 @@ public:
   Process4(const double v)
       : fV(v) {}
   template <typename D, typename T>
-  inline EProcessReturn DoContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&) const {
     for (int i = 0; i < nData; ++i) d.p[i] *= fV;
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
 private:
@@ -83,7 +81,7 @@ void modular() {
   Process3 m3;      // * 1.0
   Process4 m4(1.5); // * 1.5
 
-  auto sequence = process::sequence(m1, m2, m3, m4);
+  auto sequence = make_sequence(m1, m2, m3, m4);
 
   DummyData particle;
   DummyTrajectory track;
@@ -92,7 +90,7 @@ void modular() {
 
   const int nEv = 10;
   for (int iEv = 0; iEv < nEv; ++iEv) {
-    sequence.DoContinuous(particle, track);
+    sequence.doContinuous(particle, track);
     for (int i = 0; i < nData; ++i) {
       check[i] += 1. - 0.1 * i;
       check[i] *= 1.5;

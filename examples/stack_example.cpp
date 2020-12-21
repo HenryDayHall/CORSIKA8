@@ -1,51 +1,58 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
 
-#include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/stack/SuperStupidStack.hpp>
+#include <corsika/particles/ParticleProperties.h>
+#include <corsika/stack/super_stupid/SuperStupidStack.h>
 
-#include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/geometry/Point.h>
+#include <corsika/geometry/RootCoordinateSystem.h>
 
 #include <cassert>
 #include <iomanip>
 #include <iostream>
 
 using namespace corsika;
+using namespace corsika::units::si;
+using namespace corsika::stack;
+using namespace corsika::geometry;
 using namespace std;
 
-void fill(simple_stack::SuperStupidStack& s) {
-  const CoordinateSystemPtr& rootCS = get_root_CoordinateSystem();
+void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
+  const geometry::CoordinateSystem& rootCS =
+      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
   for (int i = 0; i < 11; ++i) {
-    s.addParticle(
-        std::tuple<Code, HEPEnergyType, simple_stack::MomentumVector, Point,
-                   TimeType>{Code::Electron, 1.5_GeV * i,
-                             simple_stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
-                             Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+    s.AddParticle(
+        std::tuple<particles::Code, units::si::HEPEnergyType,
+                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
+            particles::Code::Electron, 1.5_GeV * i,
+            corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
+            geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
   }
 }
 
-void read(simple_stack::SuperStupidStack& s) {
-  assert(s.getSize() == 11); // stack has 11 particles
+void read(corsika::stack::super_stupid::SuperStupidStack& s) {
+  assert(s.getEntries() == 11); // stack has 11 particles
 
   HEPEnergyType total_energy;
-  [[maybe_unused]] int i = 0;
-  for (const auto& p : s) {
-    total_energy += p.getEnergy();
+  int i = 0;
+  for (auto& p : s) {
+    total_energy += p.GetEnergy();
     // particles are electrons with 1.5 GeV energy times i
-    assert(p.getPID() == Code::Electron);
-    assert(p.getEnergy() == 1.5_GeV * (i++));
+    assert(p.GetPID() == particles::Code::Electron);
+    assert(p.GetEnergy() == 1.5_GeV * (i++));
   }
 }
 
 int main() {
-  simple_stack::SuperStupidStack s;
+
+  std::cout << "stack_example" << std::endl;
+
+  corsika::stack::super_stupid::SuperStupidStack s;
   fill(s);
   read(s);
   return 0;

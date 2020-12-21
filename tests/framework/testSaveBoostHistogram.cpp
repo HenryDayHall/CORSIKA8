@@ -7,7 +7,7 @@
  */
 
 #include <catch2/catch.hpp>
-#include <corsika/utl/SaveBoostHistogram.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
 
 #include <random>
 

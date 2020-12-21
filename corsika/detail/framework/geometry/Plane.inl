@@ -20,8 +20,8 @@ namespace corsika {
     return normal_.dot(vP - center_) > LengthType::zero();
   }
 
-  inline LengthType Plane::getDistanceTo(corsika::Point const& vP) const {
-    return (normal_ * (vP - center_).dot(normal_)).norm();
+  inline LengthType Plane::getDistanceTo(Point const& vP) const {
+    return (normal_ * (vP - center_).dot(normal_)).getNorm();
   }
 
   inline Point const& Plane::getCenter() const { return center_; }

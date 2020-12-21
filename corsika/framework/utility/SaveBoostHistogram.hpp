@@ -8,10 +8,7 @@
 
 #pragma once
 
-
-
 #include <boost/histogram.hpp>
-
 
 namespace corsika {
 
@@ -29,3 +26,6 @@ namespace corsika {
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
                         std::string const& filename, SaveMode mode = SaveMode::append);
 } // namespace corsika
+
+#include <corsika/detail/framework/utility/SaveBoostHistogram.inl>
+

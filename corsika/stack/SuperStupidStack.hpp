@@ -13,18 +13,16 @@
 #include <corsika/framework/stack/Stack.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/RootCoordinateSystem.hpp> // remove
+//#include <corsika/framework/geometry/RootCoordinateSystem.hpp> // remove
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 #include <string>
 #include <tuple>
 #include <vector>
 
 namespace corsika::simple_stack {
-
-  typedef corsika::Vector<hepmomentum_d>
-      MomentumVector; //! \todo this has to move to PhysicalUnits.hpp
-
+  
   /**
    * Example of a particle object on the stack.
    */
@@ -36,7 +34,7 @@ namespace corsika::simple_stack {
     typedef corsika::ParticleBase<StackIteratorInterface> super_type;
 
   public:
-    std::string as_string() const {
+    std::string asString() const {
       using namespace corsika::units::si;
       return fmt::format("particle: i={}, PID={}, E={}GeV", super_type::getIndex(),
                          corsika::get_name(this->getPID()), this->getEnergy() / 1_GeV);
@@ -122,7 +120,6 @@ namespace corsika::simple_stack {
 
     SuperStupidStackImpl& operator=(SuperStupidStackImpl&& other) = default;
 
-    void init() {}
     void dump() const {}
 
     inline void clear() ;

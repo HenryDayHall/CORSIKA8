@@ -18,65 +18,64 @@
 
 namespace corsika::sibyll {
 
-  class Decay : public corsika::DecayProcess<Decay> {
-    int fCount = 0;
-    bool handleAllDecays_ = true;
+  class Decay : public DecayProcess<Decay> {
 
   public:
-    Decay();
-    Decay(std::set<Code>);
+    Decay(const bool sibyll_listing = false);
+    Decay(std::set<Code> const&);
     ~Decay();
 
-    void Init();
-
-    void SetStable(const std::vector<Code>);
-    void SetUnstable(const std::vector<Code>);
-
-    void SetStable(const corsika::Code);
-    void SetUnstable(const corsika::Code);
-
-    // internally set all particles to decay/not to decay
-    void SetAllUnstable();
-    void SetAllStable();
-
-    // will this particle be stable in sibyll ?
-    bool IsStable(const corsika::Code);
-    // will this particle decay in sibyll ?
-    bool IsUnstable(const corsika::Code);
-    // set particle with input code to decay or not
-    void SetDecay(const Code, const bool);
-
-    void PrintDecayConfig(const corsika::Code);
-    void PrintDecayConfig();
-    void SetHadronsUnstable();
+    void printDecayConfig(const Code);
+    void printDecayConfig();
+    void setHadronsUnstable();
 
     // is Sibyll::Decay set to handle the decay of this particle?
-    bool IsDecayHandled(const corsika::Code);
+    bool isDecayHandled(const Code);
 
     // is decay possible in principle?
-    bool CanHandleDecay(const corsika::Code);
+    bool canHandleDecay(const Code);
 
     // set Sibyll::Decay to handle the decay of this particle!
-    void SetHandleDecay(const corsika::Code);
+    void setHandleDecay(const Code);
     // set Sibyll::Decay to handle the decay of this list of particles!
-    void SetHandleDecay(const std::vector<Code>);
+    void setHandleDecay(std::vector<Code> const&);
     // set Sibyll::Decay to handle all particle decays
-    void SetHandleAllDecay();
+    void setHandleAllDecay();
 
     template <typename TParticle>
-    TimeType GetLifetime(TParticle const&) const;
+    TimeType getLifetime(TParticle const&);
 
     /**
      In this function SIBYLL is called to produce to decay the input particle.
    */
 
-    template <typename TSecondaryParticle>
-    void DoDecay(TSecondaryParticle&);
+    template <typename TSecondaryView>
+    void doDecay(TSecondaryView&);
 
   private:
     // internal routines to set particles stable and unstable in the COMMON blocks in
     // sibyll
+    void setStable(std::vector<Code> const&);
+    void setUnstable(std::vector<Code> const&);
 
+    void setStable(Code const);
+    void setUnstable(Code const);
+
+    // internally set all particles to decay/not to decay
+    void setAllUnstable();
+    void setAllStable();
+
+    // will this particle be stable in sibyll ?
+    bool isStable(Code const);
+    // will this particle decay in sibyll ?
+    bool isUnstable(Code const);
+    // set particle with input code to decay or not
+    void setDecay(Code const, bool const);
+
+    // data members
+    int count_ = 0;
+    bool handleAllDecays_ = true;
+    bool sibyll_listing_ = false;
     std::set<Code> handledDecays_;
   };
 

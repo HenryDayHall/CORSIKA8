@@ -12,6 +12,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/Line.hpp>
+#include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
@@ -70,10 +71,10 @@ TEST_CASE("transformations between CoordinateSystems") {
 
     CHECK(cs4->getReferenceCS()->getReferenceCS() == rootCS);
 
-    CHECK(get_transformation(*cs3.get(), *cs2.get()).isApprox(
-        make_translation(rootCS, {3_m, -5_m, 0_m})->getTransform()));
-    CHECK(get_transformation(*cs2.get(), *cs3.get()).isApprox(
-        make_translation(rootCS, {-3_m, +5_m, 0_m})->getTransform()));
+    CHECK(get_transformation(*cs3.get(), *cs2.get())
+              .isApprox(make_translation(rootCS, {3_m, -5_m, 0_m})->getTransform()));
+    CHECK(get_transformation(*cs2.get(), *cs3.get())
+              .isApprox(make_translation(rootCS, {-3_m, +5_m, 0_m})->getTransform()));
   }
 
   SECTION("rotations") {
@@ -240,7 +241,8 @@ TEST_CASE("CoordinateSystem hirarchy") {
 
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
-  CHECK(get_transformation(*rootCS.get(), *rootCS.get()).isApprox(EigenTransform::Identity()));
+  CHECK(get_transformation(*rootCS.get(), *rootCS.get())
+            .isApprox(EigenTransform::Identity()));
 
   // define the root coordinate system
   CoordinateSystemPtr root = get_root_CoordinateSystem();
@@ -270,7 +272,8 @@ TEST_CASE("CoordinateSystem hirarchy") {
 
   // all points should be on top of each other
 
-  CHECK_FALSE(get_transformation(*root.get(), *cs2.get()).isApprox(EigenTransform::Identity()));
+  CHECK_FALSE(
+      get_transformation(*root.get(), *cs2.get()).isApprox(EigenTransform::Identity()));
   CHECK(get_transformation(*root.get(), *cs3.get()).isApprox(EigenTransform::Identity()));
   CHECK(get_transformation(*root.get(), *cs4.get()).isApprox(EigenTransform::Identity()));
   CHECK(get_transformation(*cs5.get(), *cs6.get()).isApprox(EigenTransform::Identity()));
@@ -333,6 +336,40 @@ TEST_CASE("Trajectories") {
 
     CHECK((base.getNormalizedDirection().getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
-	  .getNorm() == Approx(0).margin(absMargin));
+              .getNorm() == Approx(0).margin(absMargin));
+  }
+
+  SECTION("Helix") {
+    Vector<SpeedType::dimension_type> const vPar(
+        rootCS, {0_m / second, 0_m / second, 4_m / second});
+
+    Vector<SpeedType::dimension_type> const vPerp(
+        rootCS, {3_m / second, 0_m / second, 0_m / second});
+
+    auto const T = 1_s;
+    auto const omegaC = 2 * M_PI / T;
+
+    Helix const helix(r0, omegaC, vPar, vPerp);
+
+    CHECK((helix.getPosition(1_s).getCoordinates() -
+           QuantityVector<length_d>(0_m, 0_m, 4_m))
+              .getNorm()
+              .magnitude() == Approx(0).margin(absMargin));
+
+    CHECK((helix.getPosition(0.25_s).getCoordinates() -
+           QuantityVector<length_d>(-3_m / (2 * M_PI), -3_m / (2 * M_PI), 1_m))
+              .getNorm()
+              .magnitude() == Approx(0).margin(absMargin));
+
+    CHECK((helix.getPosition(7_s) -
+           helix.getPositionFromArclength(helix.getArcLength(0_s, 7_s)))
+              .getNorm()
+              .magnitude() == Approx(0).margin(absMargin));
+
+    auto const t = 1234_s;
+    Trajectory<Helix> const base(helix, t);
+    CHECK(helix.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
+
+    CHECK(base.getArcLength(0_s, 1_s) / 1_m == Approx(5));
   }
 }

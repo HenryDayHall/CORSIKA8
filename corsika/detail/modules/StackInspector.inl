@@ -43,19 +43,17 @@ namespace corsika::stack_inspector {
     HEPEnergyType Etot = 0_GeV;
 
     for (const auto& iterP : vS) {
-      HEPEnergyType E = iterP.GetEnergy();
+      HEPEnergyType E = iterP.getEnergy();
       Etot += E;
       if (ReportStack_) {
-        corsika::CoordinateSystem& rootCS =
-            corsika::RootCoordinateSystem::getInstance()
-                .GetRootCoordinateSystem(); // for printout
-        auto pos = iterP.GetPosition().GetCoordinates(rootCS);
+        CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem(); // for printout
+        auto pos = iterP.getPosition().getCoordinates(rootCS);
         std::cout << "StackInspector: i=" << std::setw(5) << std::fixed << (i++)
-                  << ", id=" << std::setw(30) << iterP.GetPID() << " E=" << std::setw(15)
+                  << ", id=" << std::setw(30) << iterP.getPID() << " E=" << std::setw(15)
                   << std::scientific << (E / 1_GeV) << " GeV, "
-                  << " pos=" << pos << " node = " << iterP.GetNode();
-        if (iterP.GetPID() == Code::Nucleus)
-          std::cout << " nuc_ref=" << iterP.GetNucleusRef();
+                  << " pos=" << pos << " node = " << iterP.getNode();
+        if (iterP.getPID() == Code::Nucleus)
+          std::cout << " nuc_ref=" << iterP.getNucleusRef();
         std::cout << std::endl;
       }
     }
@@ -75,15 +73,9 @@ namespace corsika::stack_inspector {
               << " time=" << std::put_time(std::localtime(&now_time), "%T")
               << ", running=" << elapsed_seconds.count() << " seconds"
               << " (" << std::setw(3) << int(progress * 100) << "%)"
-              << ", nStep=" << getStep() << ", stackSize=" << vS.GetSize()
+              << ", nStep=" << getStep() << ", stackSize=" << vS.getSize()
               << ", Estack=" << Etot / 1_GeV << " GeV"
               << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << std::endl;
-  }
-
-  template <typename TStack>
-  void StackInspector<TStack>::Init() {
-    ReportStack_ = false;
-    StartTime_ = std::chrono::system_clock::now();
   }
 
 } // namespace corsika::stack_inspector

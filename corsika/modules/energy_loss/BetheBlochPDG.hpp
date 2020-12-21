@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -20,44 +21,55 @@
 
 namespace corsika::energy_loss {
 
+    /**
+   *   PDG2018, passage of particles through matter
+   *
+   * Note, that \f$I_{\mathrm{eff}}\f$ of composite media a determined from \f$ \ln I =
+   * \sum_i a_i \ln(I_i) \f$ where \f$ a_i \f$ is the fraction of the electron population
+   * (\f$\sim Z_i\f$) of the \f$i\f$-th element. This can also be used for shell
+   * corrections or density effects.
+   *
+   * The \f$I_{\mathrm{eff}}\f$ of compounds is not better than a few percent, if not
+   * measured explicitly.
+   *
+   * For shell correction, see Sec 6 of https://www.nap.edu/read/20066/chapter/8#115
+   *
+   */
+
   class BetheBlochPDG : public corsika::ContinuousProcess<BetheBlochPDG> {
 
     using MeVgcm2 = decltype(1e6 * electronvolt / gram * square(1e-2 * meter));
 
-    void MomentumUpdate(setup::Stack::ParticleType&, HEPEnergyType Enew);
-
   public:
-    template <typename TDim>
-    BetheBlochPDG(Point const& injectionPoint, Vector<TDim> const& direction)
-        : InjectionPoint_(injectionPoint)
-        , ShowerAxisDirection_(direction.normalized()) {}
+    BetheBlochPDG(ShowerAxis const& showerAxis, HEPEnergyType emCut);
 
-    BetheBlochPDG(setup::Trajectory const& trajectory)
-        : BetheBlochPDG(trajectory.GetPosition(0), trajectory.GetV0()){};
+    ProcessReturn doContinuous(setup::Stack::particle_type&, setup::Trajectory const&);
+    LengthType getMaxStepLength(setup::Stack::particle_type const&,
+                                setup::Trajectory const&) const;
+    static HEPEnergyType getBetheBloch(setup::Stack::particle_type const&,
+                                       const GrammageType);
+    static HEPEnergyType getRadiationLosses(setup::Stack::particle_type const&,
+                                            const GrammageType);
+    static HEPEnergyType getTotalEnergyLoss(setup::Stack::particle_type const&,
+                                            const GrammageType);
 
-    void Init() {}
-    ProcessReturn doContinuous(setup::Stack::ParticleType&, setup::Trajectory const&);
-    LengthType MaxStepLength(setup::Stack::ParticleType const&,
-                             setup::Trajectory const&) const;
-    HEPEnergyType GetTotal() const { return BetheBlochPDGTot_; }
-    void PrintProfile() const;
-    static HEPEnergyType BetheBloch(setup::Stack::ParticleType const&,
-                                    const GrammageType);
-    static HEPEnergyType RadiationLosses(setup::Stack::ParticleType const&,
-                                         const GrammageType);
-    static HEPEnergyType TotalEnergyLoss(setup::Stack::ParticleType const&,
-                                         const GrammageType);
+    void showResults() const;
+    void reset();
+    HEPEnergyType energyLost() const { return energy_lost_; }
+    void printProfile() const;
+    HEPEnergyType getTotal() const;
 
+    
   private:
-    void FillProfile(setup::Stack::ParticleType const&, setup::Trajectory const&,
-                     HEPEnergyType);
+    void updateMomentum(corsika::setup::Stack::particle_type&, HEPEnergyType Enew);
+    void fillProfile(setup::Trajectory const&, HEPEnergyType);
 
-    HEPEnergyType BetheBlochPDGTot_ = HEPEnergyType::zero();
-    std::map<int, HEPEnergyType> Profile_; // longitudinal profile
-    corsika::Point const InjectionPoint_;
-    corsika::Vector<dimensionless_d> const ShowerAxisDirection_;
     GrammageType const dX_ = 10_g / square(1_cm); // profile binning
-    const GrammageType dX_threshold_ = 0.0001_g / square(1_cm);
+    GrammageType const dX_threshold_ = 0.0001_g / square(1_cm);
+    ShowerAxis const& shower_axis_;
+    corsika::units::si::HEPEnergyType emCut_;
+    units::si::HEPEnergyType energy_lost_ = HEPEnergyType::zero();
+    std::vector<units::si::HEPEnergyType> profile_; // longitudinal profile
   };
 
 } // namespace corsika::energy_loss

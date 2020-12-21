@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -7,11 +7,12 @@
  */
 
 #include <corsika/framework/core/Cascade.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -20,82 +21,89 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
 
-#include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/TrackingLine.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/TrackWriter.hpp>
-#include <corsika/modules/TrackingLine.hpp>
+#include <corsika/modules/ParticleCut.hpp>
 
 #include <iostream>
 #include <limits>
 #include <typeinfo>
 
 using namespace corsika;
-using namespace corsika::units::si;
 using namespace std;
 
 template <bool deleteParticle>
 struct MyBoundaryCrossingProcess
     : public BoundaryCrossingProcess<MyBoundaryCrossingProcess<deleteParticle>> {
 
-  MyBoundaryCrossingProcess(std::string const& filename) { fFile.open(filename); }
+  MyBoundaryCrossingProcess(std::string const& filename) { file_.open(filename); }
 
   template <typename Particle>
-  EProcessReturn DoBoundaryCrossing(Particle& p,
-                                    typename Particle::BaseNodeType const& from,
-                                    typename Particle::BaseNodeType const& to) {
-    std::cout << "boundary crossing! from: " << &from << "; to: " << &to << std::endl;
+  ProcessReturn doBoundaryCrossing(Particle& p, typename Particle::node_type const& from,
+                                   typename Particle::node_type const& to) {
 
-    auto const& name = corsika::name(p.GetPID());
-    auto const start = p.GetPosition().GetCoordinates();
+    CORSIKA_LOG_INFO("MyBoundaryCrossingProcess: crossing! from: {} to: {} ", fmt::ptr(&from),
+               fmt::ptr(&to));
 
-    fFile << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
+    auto const& name = get_name(p.getPID());
+    auto const start = p.getPosition().getCoordinates();
+
+    file_ << name << "    " << start[0] / 1_m << ' ' << start[1] / 1_m << ' '
           << start[2] / 1_m << '\n';
 
-    if constexpr (deleteParticle) { p.Delete(); }
+    if constexpr (deleteParticle) { p.erase(); }
 
-    return EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
-  void Init() {}
-
 private:
-  std::ofstream fFile;
+  std::ofstream file_;
 };
 
 //
 // The example main program for a particle cascade
 //
 int main() {
+
+  //logging::SetLevel(logging::level::info);
+
+  CORSIKA_LOG_INFO("boundary_example");
+
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  corsika::RNGManager::getInstance().registerRandomStream("cascade");
+  RNGManager::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
-  using EnvType = Environment<setup::IEnvironmentModel>;
+  using EnvType = setup::Environment;
   EnvType env;
-  auto& universe = *(env.GetUniverse());
+  auto& universe = *(env.getUniverse());
 
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
+  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  auto outerMedium = EnvType::CreateNode<Sphere>(
+  // create "world" as infinite sphere filled with protons
+  auto world = EnvType::createNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  auto const props =
-      outerMedium
-          ->SetModelProperties<corsika::HomogeneousMedium<setup::IEnvironmentModel>>(
-              1_kg / (1_m * 1_m * 1_m),
-              corsika::NuclearComposition(
-                  std::vector<corsika::Code>{corsika::Code::Proton},
-                  std::vector<float>{1.f}));
+  using MyHomogeneousModel =
+      MediumPropertyModel<UniformMagneticField<
+	HomogeneousMedium<setup::EnvironmentInterface>>>;
 
-  auto innerMedium = EnvType::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);
+  auto const props = world->setModelProperties<MyHomogeneousModel>(
+      Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T),
+      1_kg / (1_m * 1_m * 1_m),
+      NuclearComposition(std::vector<Code>{Code::Proton},
+                                      std::vector<float>{1.f}));
 
-  innerMedium->SetModelProperties(props);
+  // add a "target" sphere with 5km readius at 0,0,0
+  auto target = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);
+  target->setModelProperties(props);
 
-  outerMedium->AddChild(std::move(innerMedium));
-
-  universe.AddChild(std::move(outerMedium));
+  world->addChild(std::move(target));
+  universe.addChild(std::move(world));
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
@@ -104,28 +112,28 @@ int main() {
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::Decay decay;
 
-  corsika::particle_cut::ParticleCut cut(20_GeV);
+  particle_cut::ParticleCut cut(50_GeV, true, true);
 
-  corsika::track_writer::TrackWriter trackWriter("tracks.dat");
+  track_writer::TrackWriter trackWriter("boundary_tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = sibyll << decay << cut << boundaryCrossing << trackWriter;
+  auto sequence = make_sequence(sibyll, decay, cut, boundaryCrossing, trackWriter);
 
   // setup particle stack, and add primary particles
   setup::Stack stack;
-  stack.Clear();
-  const Code beamCode = Code::Proton;
-  const HEPMassType mass = corsika::mass(Code::Proton);
-  const HEPEnergyType E0 = 50_TeV;
+  stack.clear();
+  const Code beamCode = Code::MuPlus;
+  const HEPMassType mass = get_mass(beamCode);
+  const HEPEnergyType E0 = 100_GeV;
 
   std::uniform_real_distribution distTheta(0., 180.);
   std::uniform_real_distribution distPhi(0., 360.);
   std::mt19937 rng;
 
   for (int i = 0; i < 100; ++i) {
-    auto const theta = distTheta(rng);
-    auto const phi = distPhi(rng);
+    double const theta = distTheta(rng);
+    double const phi = distPhi(rng);
 
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt((Elab - m) * (Elab + m));
@@ -137,25 +145,26 @@ int main() {
     };
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = corsika::MomentumVector(rootCS, {px, py, pz});
-    cout << "input particle: " << beamCode << endl;
-    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-    cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
+    auto plab = MomentumVector(rootCS, {px, py, pz});
+    CORSIKA_LOG_INFO(
+        "input particle: {} "
+        "input angles: theta={} phi={}"
+        "input momentum: {} GeV",
+        beamCode, theta, phi, plab.getComponents() / 1_GeV);
+    // shoot particles from inside target out
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.AddParticle(
-        std::tuple<corsika::Code, units::si::HEPEnergyType, corsika::MomentumVector,
-                   corsika::Point, units::si::TimeType>{beamCode, E0, plab, pos, 0_ns});
+    stack.addParticle(std::make_tuple(beamCode, E0, plab, pos, 0_ns));
   }
 
   // define air shower object, run simulation
-  corsika::Cascade EAS(env, tracking, sequence, stack);
-  EAS.Init();
-  EAS.Run();
+  Cascade EAS(env, tracking, sequence, stack);
 
-  cout << "Result: E0=" << E0 / 1_GeV << endl;
-  cut.ShowResults();
-  const HEPEnergyType Efinal =
-      cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
-  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+  EAS.run();
+
+  CORSIKA_LOG_INFO("Result: E0={}GeV", E0 / 1_GeV);
+  cut.showResults();
+  [[maybe_unused]] const HEPEnergyType Efinal =
+      (cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy());
+  CORSIKA_LOG_INFO("Total energy (GeV): {} relative difference (%): {}", Efinal / 1_GeV,
+                   (Efinal / E0 - 1.) * 100);
 }

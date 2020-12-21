@@ -54,8 +54,8 @@ namespace corsika {
     ///@}
    template <template <typename> class TParticleInterfaceA,
              template <typename> class TParticleInterfaceB, typename TStackIterator>
-   inline std::string CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::as_string() const {
-      return fmt::format("[[{}][{}]]", pi_a_type::as_string(), pi_b_type::as_string());
+   inline std::string CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB, TStackIterator>::asString() const {
+      return fmt::format("[[{}][{}]]", pi_a_type::asString(), pi_b_type::asString());
     }
 
 

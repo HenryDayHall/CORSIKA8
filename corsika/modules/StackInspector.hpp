@@ -18,7 +18,7 @@ namespace corsika::stack_inspector {
   template <typename TStack>
   class StackInspector : public corsika::StackProcess<StackInspector<TStack>> {
 
-    typedef typename TStack::ParticleType Particle;
+    typedef typename TStack::particle_type Particle;
 
     using corsika::StackProcess<StackInspector<TStack>>::getStep;
 
@@ -26,18 +26,17 @@ namespace corsika::stack_inspector {
     StackInspector(const int vNStep, const bool vReportStack, const HEPEnergyType vE0);
     ~StackInspector();
 
-    void Init();
     void doStack(const TStack&);
 
     /**
      * To set a new E0, for example when a new shower event is started
      */
-    void SetE0(const HEPEnergyType vE0) { E0_ = vE0; }
+    void setE0(const HEPEnergyType vE0) { E0_ = vE0; }
 
   private:
     bool ReportStack_;
     HEPEnergyType E0_;
-    const HEPEnergyType dE_threshold_ = std::invoke([]() { return 1_eV; });
+    const HEPEnergyType dE_threshold_ =  1_eV; 
     decltype(std::chrono::system_clock::now()) StartTime_;
   };
 

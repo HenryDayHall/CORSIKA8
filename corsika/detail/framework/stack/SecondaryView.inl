@@ -187,14 +187,14 @@ namespace corsika {
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
   std::string SecondaryView<TStackDataType, TParticleInterface,
-                            MSecondaryProducer>::as_string() const {
+                            MSecondaryProducer>::asString() const {
     std::string str(fmt::format("size {}\n", getSize()));
     // we make our own begin/end since we want ALL entries
     std::string new_line = "     ";
     for (unsigned int iPart = 0; iPart != getSize(); ++iPart) {
       const_stack_view_iterator itPart(*this, iPart);
       str += fmt::format(
-          "{}{}{}", new_line, itPart.as_string(),
+          "{}{}{}", new_line, itPart.asString(),
           (inner_stack_.deleted_[getIndexFromIterator(itPart.getIndex())] ? " [deleted]"
                                                                           : ""));
       new_line = "\n     ";

@@ -10,6 +10,7 @@
 
 #include <corsika/framework/geometry/CoordinateSystem.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/logging/Logging.hpp>
 
@@ -26,28 +27,30 @@ namespace corsika {
 
   public:
     //! construct a COMBoost given four-vector of projectile and mass of target
-    COMBoost(FourVector<HEPEnergyType, Vector<hepmomentum_d>> const& Pprojectile,
+    COMBoost(FourVector<HEPEnergyType, MomentumVector> const& Pprojectile,
              HEPEnergyType const massTarget);
 
     //! construct a COMBoost to boost into the rest frame given a 3-momentum and mass
-    COMBoost(Vector<hepmomentum_d> const& momentum, HEPEnergyType mass);
+    COMBoost(MomentumVector const& momentum, HEPEnergyType mass);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     template <typename FourVector>
-    FourVector toCoM(FourVector const& p) const;
+    inline FourVector toCoM(FourVector const& p) const;
 
     //! transforms a 4-momentum from the center-of-mass frame back to lab frame
     template <typename FourVector>
-    FourVector fromCoM(FourVector const& p) const;
+    inline FourVector fromCoM(FourVector const& p) const;
 
-    CoordinateSystemPtr getRotatedCS() const;
+    inline CoordinateSystemPtr getRotatedCS() const;
 
   protected:
-    void setBoost(double coshEta, double sinhEta);
+    inline void setBoost(double coshEta, double sinhEta);
 
   private:
-    Eigen::Matrix2d boost_, inverseBoost_;
-    CoordinateSystemPtr originalCS_, rotatedCS_;
+    Eigen::Matrix2d boost_;
+    Eigen::Matrix2d inverseBoost_;
+    CoordinateSystemPtr originalCS_;
+    CoordinateSystemPtr rotatedCS_;
 
   };
 } // namespace corsika

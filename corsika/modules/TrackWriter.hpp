@@ -19,23 +19,20 @@ namespace corsika::track_writer {
   class TrackWriter : public corsika::ContinuousProcess<TrackWriter> {
 
   public:
-    TrackWriter(std::string const& filename)
-        : fFilename(filename) {}
+    TrackWriter(std::string const& filename);
 
-    void Init();
+    template <typename TParticle, typename TTrack>
+    ProcessReturn doContinuous(TParticle const&, TTrack const&);
 
-    template <typename Particle, typename Track>
-    ProcessReturn doContinuous(const Particle&, const Track&);
-
-    template <typename Particle, typename Track>
-    LengthType MaxStepLength(const Particle&, const Track&);
+    template <typename TParticle, typename TTrack>
+    LengthType getMaxStepLength(TParticle const&, TTrack const&);
 
   private:
-    std::string const fFilename;
-    std::ofstream fFile;
+    std::string const filename_;
+    std::ofstream file_;
 
-    int width = 14;
-    int precision = 6;
+    int width_ = 14;
+    int precision_ = 6;
   };
 
 } // namespace corsika::track_writer

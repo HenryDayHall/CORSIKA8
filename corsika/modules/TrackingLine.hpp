@@ -33,36 +33,36 @@ namespace corsika::tracking_line {
 
     template <typename Particle> // was Stack previously, and argument was
                                  // Stack::StackIterator
-    auto GetTrack(Particle const& p) {
+    auto getTrack(Particle const& p) {
       Vector<SpeedType::dimension_type> const velocity =
-          p.GetMomentum() / p.GetEnergy() * constants::c;
+          p.getMomentum() / p.getEnergy() * constants::c;
 
-      auto const currentPosition = p.GetPosition();
-      std::cout << "TrackingLine pid: " << p.GetPID()
-                << " , E = " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
-      std::cout << "TrackingLine pos: " << currentPosition.GetCoordinates() << std::endl;
-      std::cout << "TrackingLine   E: " << p.GetEnergy() / 1_GeV << " GeV" << std::endl;
-      std::cout << "TrackingLine   p: " << p.GetMomentum().GetComponents() / 1_GeV
+      auto const currentPosition = p.getPosition();
+      std::cout << "TrackingLine pid: " << p.getPID()
+                << " , E = " << p.getEnergy() / 1_GeV << " GeV" << std::endl;
+      std::cout << "TrackingLine pos: " << currentPosition.getCoordinates() << std::endl;
+      std::cout << "TrackingLine   E: " << p.getEnergy() / 1_GeV << " GeV" << std::endl;
+      std::cout << "TrackingLine   p: " << p.getMomentum().getComponents() / 1_GeV
                 << " GeV " << std::endl;
-      std::cout << "TrackingLine   v: " << velocity.GetComponents() << std::endl;
+      std::cout << "TrackingLine   v: " << velocity.getComponents() << std::endl;
 
       // to do: include effect of magnetic field
       Line line(currentPosition, velocity);
 
-      auto const* currentLogicalVolumeNode = p.GetNode();
+      auto const* currentLogicalVolumeNode = p.getNode();
       auto const numericallyInside =
-          currentLogicalVolumeNode->GetVolume().Contains(currentPosition);
+          currentLogicalVolumeNode->getVolume().isInside(currentPosition);
 
       std::cout << "numericallyInside = " << (numericallyInside ? "true" : "false");
 
-      auto const& children = currentLogicalVolumeNode->GetChildNodes();
-      auto const& excluded = currentLogicalVolumeNode->GetExcludedNodes();
+      auto const& children = currentLogicalVolumeNode->getChildNodes();
+      auto const& excluded = currentLogicalVolumeNode->getExcludedNodes();
 
-      std::vector<std::pair<TimeType, decltype(p.GetNode())>> intersections;
+      std::vector<std::pair<TimeType, decltype(p.getNode())>> intersections;
 
       // for entering from outside
       auto addIfIntersects = [&](auto const& vtn) {
-        auto const& volume = vtn.GetVolume();
+        auto const& volume = vtn.getVolume();
         auto const& sphere = dynamic_cast<Sphere const&>(
             volume); // for the moment we are a bit bold here and assume
         // everything is a sphere, crashes with exception if not
@@ -71,7 +71,7 @@ namespace corsika::tracking_line {
           auto const [t1, t2] = *opt;
           std::cout << "intersection times: " << t1 / 1_s << "; "
                     << t2 / 1_s
-                    // << " " << vtn.GetModelProperties().GetName()
+                    // << " " << vtn.getModelProperties().getName()
                     << std::endl;
           if (t1.magnitude() > 0)
             intersections.emplace_back(t1, &vtn);
@@ -85,12 +85,12 @@ namespace corsika::tracking_line {
 
       {
         auto const& sphere =
-            dynamic_cast<Sphere const&>(currentLogicalVolumeNode->GetVolume());
+            dynamic_cast<Sphere const&>(currentLogicalVolumeNode->getVolume());
         // for the moment we are a bit bold here and assume
         // everything is a sphere, crashes with exception if not
         [[maybe_unused]] auto const [t1, t2] = *TimeOfIntersection(line, sphere);
         [[maybe_unused]] auto dummy_t1 = t1;
-        intersections.emplace_back(t2, currentLogicalVolumeNode->GetParent());
+        intersections.emplace_back(t2, currentLogicalVolumeNode->getParent());
       }
 
       auto const minIter = std::min_element(
@@ -109,10 +109,10 @@ namespace corsika::tracking_line {
 
       std::cout << " t-intersect: "
                 << min
-                // << " " << minIter->second->GetModelProperties().GetName()
+                // << " " << minIter->second->getModelProperties().getName()
                 << std::endl;
 
-      return std::make_tuple(Trajectory<Line>(line, min), velocity.norm() * min,
+      return std::make_tuple(Trajectory<Line>(line, min), velocity.getNorm() * min,
                              minIter->second);
     }
   };

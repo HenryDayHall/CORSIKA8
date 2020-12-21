@@ -16,13 +16,13 @@
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/media/Environment.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <cassert>
 #include <cmath>
-#include <iostream>
 #include <limits>
 #include <type_traits>
 
@@ -33,7 +33,6 @@
 namespace corsika {
 
   /**
-   * \class Cascade
    *
    * The Cascade class is constructed from template arguments making
    * it very versatile. Via the template arguments physics models are
@@ -43,7 +42,7 @@ namespace corsika {
    * TrackingInterface providing the functions:
    *
    * <code>
-   * auto GetTrack(Particle const& p)</auto>,
+   * auto getTrack(Particle const& p)</auto>,
    * with the return type <code>geometry::Trajectory<corsika::Line>
    * </code>
    *
@@ -57,8 +56,8 @@ namespace corsika {
             typename TStackView = corsika::setup::StackView>
   class Cascade {
 
-    typedef typename TStack::ParticleType Particle;
-    typedef std::remove_pointer_t<decltype(((Particle*)nullptr)->GetNode())>
+    typedef typename TStack::particle_type Particle;
+    typedef std::remove_pointer_t<decltype(((Particle*)nullptr)->getNode())>
         VolumeTreeNode;
     typedef typename VolumeTreeNode::IModelProperties MediumInterface;
 
@@ -67,50 +66,69 @@ namespace corsika {
 
     Cascade(corsika::Environment<MediumInterface> const& env, TTracking& tr,
             TProcessList& pl, TStack& stack)
-        : fEnvironment(env)
-        , fTracking(tr)
-        , fProcessSequence(pl)
-        , fStack(stack) {}
+        : environment_(env)
+        , tracking_(tr)
+        , sequence_(pl)
+        , stack_(stack) {
+      CORSIKA_LOG_INFO(c8_ascii_);
+      if constexpr (TStackView::has_event) {
+        CORSIKA_LOG_INFO(" - With full cascade HISTORY.");
+      }
+    }
 
     /**
      * The Init function is called before the actual cascade simulations.
      * All components of the Cascade simulation must be configured here.
      */
-    void Init();
+    void init();
 
     /**
      * set the nodes for all particles on the stack according to their numerical
      * position
      */
-    void SetNodes();
+    void setNodes();
 
     /**
      * The Run function is the main simulation loop, which processes
      * particles from the Stack until the Stack is empty.
      */
-    void Run();
+    void run();
 
     /**
      * Force an interaction of the top particle of the stack at its current position.
-     * Note that SetNodes() or an equivalent procedure needs to be called first if you
+     * Note that setNodes() or an equivalent procedure needs to be called first if you
      * want to call forceInteraction() for the primary interaction.
      */
     void forceInteraction();
 
   private:
-    void Step(Particle& vParticle);
+    void step(Particle& vParticle);
 
-    auto decay(Particle& particle,
-               decltype(std::declval<TStackView>().GetProjectile()) projectile);
+    ProcessReturn decay(TStackView& view);
+    ProcessReturn interaction(TStackView& view);
+    void setEventType(TStackView& view, history::EventType);
 
-    auto interaction(Particle& particle,
-                     decltype(std::declval<TStackView>().GetProjectile()) projectile);
+    // data members
+    corsika::Environment<MediumInterface> const& environment_;
+    TTracking& tracking_;
+    TProcessList& sequence_;
+    TStack& stack_;
+    corsika::default_prng_type& rng_ =
+        corsika::RNGManager::getInstance().getRandomStream("cascade");
+    unsigned int count_ = 0;
 
-    corsika::Environment<MediumInterface> const& fEnvironment;
-    TTracking& fTracking;
-    TProcessList& fProcessSequence;
-    TStack& fStack;
-    corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("cascade");
+    // but this here temporarily. Should go into dedicated file later:
+    const char* c8_ascii_ =
+        R"V0G0N(
+  ,ad8888ba,     ,ad8888ba,    88888888ba    ad88888ba   88  88      a8P          db              ad88888ba   
+ d8"'    `"8b   d8"'    `"8b   88      "8b  d8"     "8b  88  88    ,88'          d88b            d8"     "8b  
+d8'            d8'        `8b  88      ,8P  Y8,          88  88  ,88"           d8'`8b           Y8a     a8P  
+88             88          88  88aaaaaa8P'  `Y8aaaaa,    88  88,d88'           d8'  `8b           "Y8aaa8P"   
+88             88          88  88""""88'      `"""""8b,  88  8888"88,         d8YaaaaY8b          ,d8"""8b,   
+Y8,            Y8,        ,8P  88    `8b            `8b  88  88P   Y8b       d8""""""""8b        d8"     "8b  
+ Y8a.    .a8P   Y8a.    .a8P   88     `8b   Y8a     a8P  88  88     "88,    d8'        `8b       Y8a     a8P  
+  `"Y8888Y"'     `"Y8888Y"'    88      `8b   "Y88888P"   88  88       Y8b  d8'          `8b       "Y88888P"
+       )V0G0N";
   };
 
 } // namespace corsika

@@ -21,7 +21,22 @@
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika::units::si;
+
+TEST_CASE("MediumProperties") {
+
+  // test access of medium properties via enum and class types
+
+  const Medium type = Medium::AirDry1Atm;
+  const MediumData& air = mediumData(type);
+  CHECK(air.getIeff() == 85.7);
+  CHECK(air.getCbar() == 10.5961);
+  CHECK(air.getX0() == 1.7418);
+  CHECK(air.getX1() == 4.2759);
+  CHECK(air.getAA() == 0.10914);
+  CHECK(air.getSK() == 3.3994);
+  CHECK(air.getDlt0() == 0.0);
+}
+
 
 TEST_CASE("MediumPropertyModel w/ Homogeneous") {
 

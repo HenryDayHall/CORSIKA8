@@ -14,20 +14,58 @@
 
 namespace corsika::qgsjetII {
 
+  /**
+     These are the possible secondaries produced by QGSJetII
+   */
   enum class QgsjetIICode : int8_t;
   using QgsjetIICodeIntType = std::underlying_type<QgsjetIICode>::type;
 
+  /**
+     These are the possible projectile for which QGSJetII knwos cross section
+   */
+  enum class QgsjetIIXSClass : int8_t {
+    CannotInteract = 0,
+    LightMesons = 1,
+    Baryons = 2,
+    Kaons = 3,
+  };
+  using QgsjetIIXSClassIntType = std::underlying_type<QgsjetIIXSClass>::type;
+
+  /**
+     These are the only possible projectile types in QGSJetII
+   */
+  enum class QgsjetIIHadronType : int8_t {
+    UndefinedType = 0,
+    PiPlusType = +1,
+    PiMinusType = -1,
+    ProtonType = +2,
+    AntiProtonType = -2,
+    NeutronType = +3,
+    AntiNeutronType = -3,
+    KaonPlusType = +4,
+    KaonMinusType = -4,
+    Kaon0LType = +5,
+    Kaon0SType = -5,
+    // special codes, not in QGSJetII
+    NucleusType = 100,
+    NeutralLightMesonType = 101,
+  };
+  using QgsjetIIHadronTypeIntType = std::underlying_type<QgsjetIIHadronType>::type;
+}
+
+// include automatically generated code:
 #include <corsika/modules/qgsjetII/Generated.inc>
 
-  QgsjetIICode constexpr ConvertToQgsjetII(corsika::Code pCode) {
-    return static_cast<QgsjetIICode>(
-        corsika2qgsjetII[static_cast<corsika::CodeIntType>(pCode)]);
+namespace corsika::qgsjetII {
+  
+  QgsjetIICode constexpr convertToQgsjetII(Code pCode) {
+    return corsika2qgsjetII[static_cast<CodeIntType>(pCode)];
   }
 
-  corsika::Code constexpr ConvertFromQgsjetII(QgsjetIICode pCode) {
+  Code constexpr convertFromQgsjetII(QgsjetIICode pCode) {
     auto const pCodeInt = static_cast<QgsjetIICodeIntType>(pCode);
     auto const corsikaCode = qgsjetII2corsika[pCodeInt - minQgsjetII];
-    if (corsikaCode == corsika::Code::Unknown) {
+    if (corsikaCode == Code::Unknown) {
       throw std::runtime_error(std::string("QGSJETII/CORSIKA conversion of pCodeInt=")
                                    .append(std::to_string(pCodeInt))
                                    .append(" impossible"));
@@ -35,19 +73,27 @@ namespace corsika::qgsjetII {
     return corsikaCode;
   }
 
-  int constexpr ConvertToQgsjetIIRaw(corsika::Code pCode) {
-    return static_cast<int>(ConvertToQgsjetII(pCode));
+  QgsjetIICodeIntType constexpr convertToQgsjetIIRaw(Code pCode) {
+    return static_cast<QgsjetIICodeIntType>(convertToQgsjetII(pCode));
   }
 
-  int constexpr GetQgsjetIIXSCode(corsika::Code pCode) {
-    if (pCode == corsika::Code::Nucleus) return 2;
-    return corsika2qgsjetIIXStype[static_cast<corsika::CodeIntType>(pCode)];
+  QgsjetIIXSClass constexpr getQgsjetIIXSCode(Code pCode) {
+    // if (pCode == corsika::particles::Code::Nucleus)
+    // static_cast(QgsjetIIXSClassIntType>();
+    return corsika2qgsjetIIXStype[static_cast<CodeIntType>(pCode)];
   }
 
-  bool constexpr CanInteract(corsika::Code pCode) {
-    return (GetQgsjetIIXSCode(pCode) > 0) && (ConvertToQgsjetIIRaw(pCode) <= 5);
+  QgsjetIIXSClassIntType constexpr getQgsjetIIXSCodeRaw(Code pCode) {
+    return static_cast<QgsjetIIXSClassIntType>(getQgsjetIIXSCode(pCode));
   }
 
-} // namespace corsika::qgsjetII
+  bool constexpr canInteract(Code pCode) {
+    return getQgsjetIIXSCode(pCode) != QgsjetIIXSClass::CannotInteract;
+  }
 
-#include <corsika/detail/modules/qgsjetII/ParticleConversion.inl>
+  QgsjetIIHadronType constexpr getQgsjetIIHadronType(Code pCode) {
+    return corsika2qgsjetIIHadronType[static_cast<CodeIntType>(
+        pCode)];
+  }
+
+} // namespace corsika::process::qgsjetII

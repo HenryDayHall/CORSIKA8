@@ -20,7 +20,7 @@ namespace corsika {
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  TSpaceVecType& FourVector<TTimeType, TSpaceVecType>::spaceLikeComponents() {
+  TSpaceVecType& FourVector<TTimeType, TSpaceVecType>::getSpaceLikeComponents() {
     return spaceLike_;
   }
 

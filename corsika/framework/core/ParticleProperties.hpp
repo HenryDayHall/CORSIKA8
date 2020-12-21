@@ -24,8 +24,9 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 /**
+ * \file ParticleProperties.hpp
  *
- * The properties of all elementary particles is stored here. The data
+ * The properties of all elementary particles are accessible here. The data
  * are taken from the Pythia ParticleData.xml file.
  *
  */
@@ -60,19 +61,21 @@ namespace corsika {
   int constexpr get_nucleus_Z(Code); //!< returns Z for hard-coded nucleus, otherwise 0
 
   //! returns mass of (A,Z) nucleus, disregarding binding energy
-  inline HEPMassType nucleus_mass(int, int);
+  inline HEPMassType get_nucleus_mass(unsigned int const, unsigned int const);
 
   //! convert PDG code to CORSIKA 8 internal code
   inline Code convert_from_PDG(PDGCode);
+
+  std::initializer_list<Code> constexpr get_all_particles();
 
   //! the output stream operator for human-readable particle codes
   inline std::ostream& operator<<(std::ostream&, corsika::Code);
 } // namespace corsika
 
-// data arrays, etc.
+// data arrays, etc., as generated automatically
 #include <corsika/framework/core/GeneratedParticleProperties.inc>
 
 #include <corsika/detail/framework/core/ParticleProperties.inl>
 
-// constants in namespaces-like static classes
+// constants in namespaces-like static classes, generated automatically
 #include <corsika/framework/core/GeneratedParticleClasses.inc>

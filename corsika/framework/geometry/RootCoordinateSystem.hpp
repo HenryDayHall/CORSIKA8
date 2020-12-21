@@ -14,6 +14,11 @@ n/*
 
 namespace corsika {
 
+  /**
+   * To refer to CoordinateSystems, only the CoordinateSystemPtr must be used.
+   */
+  using CoordinateSystemPtr = std::shared_ptr<CoordinateSystem const>;
+
   /*!
    * Singleton factory function to produce the root CoordinateSystem
    *
@@ -22,9 +27,8 @@ namespace corsika {
    * RootCoordinateSystem
    */
 
-  static std::shared_ptr<CoordinateSystem const> get_root_CoordinateSystem() {
-    static std::shared_ptr<CoordinateSystem const> rootCS(
-        new CoordinateSystem); // THIS IS IT
+  static CoordinateSystemPtr& get_root_CoordinateSystem() {
+    static CoordinateSystemPtr rootCS(new CoordinateSystem); // THIS IS IT
     return rootCS;
   }
 

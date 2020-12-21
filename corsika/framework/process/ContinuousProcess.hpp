@@ -34,7 +34,7 @@ namespace corsika {
 
     // -> enforce TDerived to implement MaxStepLength...
     template <typename TParticle, typename TTrack>
-    LengthType maxStepLength(TParticle const& p, TTrack const& track) const;
+    LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
   };
 
 } // namespace corsika

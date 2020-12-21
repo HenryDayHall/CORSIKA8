@@ -46,7 +46,7 @@ namespace corsika {
      *  @retval returns the weighted sum with the type defined by the return type of func
      **/
     template <typename TFunction>
-    inline double getWeightedSum(TFunction const& func) const;
+    inline auto getWeightedSum(TFunction const& func) const;
 
     /** Number of elements in the composition array
      *  @retval returns the number of elements in the composition array

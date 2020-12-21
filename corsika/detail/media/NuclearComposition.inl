@@ -46,7 +46,7 @@ namespace corsika {
   }
 
   template <typename TFunction>
-  inline double NuclearComposition::getWeightedSum(TFunction const& func) const {
+  inline auto NuclearComposition::getWeightedSum(TFunction const& func) const {
     using ResultQuantity = decltype(func(*components_.cbegin()));
 
     auto const prod = [&](auto const compID, auto const fraction) {

@@ -25,9 +25,10 @@
 namespace corsika {
 
   template <typename TProcess1, typename TProcess2>
-  template <typename Particle, typename VTNType>
+  template <typename TParticle>
   ProcessReturn ProcessSequence<TProcess1, TProcess2>::doBoundaryCrossing(
-      Particle& particle, VTNType const& from, VTNType const& to) {
+      TParticle& particle, typename TParticle::node_type const& from,
+      typename TParticle::node_type const& to) {
     ProcessReturn ret = ProcessReturn::Ok;
 
     if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
@@ -103,19 +104,19 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2>
   template <typename TParticle, typename TTrack>
-  LengthType ProcessSequence<TProcess1, TProcess2>::maxStepLength(TParticle& particle,
-                                                                  TTrack& vTrack) {
+  LengthType ProcessSequence<TProcess1, TProcess2>::getMaxStepLength(TParticle& particle,
+                                                                     TTrack& vTrack) {
     LengthType max_length = // if no other process in the sequence implements it
         std::numeric_limits<double>::infinity() * meter;
 
     if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
-      LengthType const len = A_.maxStepLength(particle, vTrack);
+      LengthType const len = A_.getMaxStepLength(particle, vTrack);
       max_length = std::min(max_length, len);
     }
     if constexpr (std::is_base_of_v<ContinuousProcess<process2_type>, process2_type> ||
                   t2ProcSeq) {
-      LengthType const len = B_.maxStepLength(particle, vTrack);
+      LengthType const len = B_.getMaxStepLength(particle, vTrack);
       max_length = std::min(max_length, len);
     }
     return max_length;

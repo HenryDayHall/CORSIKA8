@@ -10,22 +10,17 @@
 
 #pragma once
 
-#include <corsika/modules/energy_loss/BetheBlochPDG.hpp>
-
 #include <corsika/framework/core/ParticleProperties.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <corsika/framework/geometry/Line.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 
 #include <cmath>
 #include <fstream>
-#include <iostream>
 #include <limits>
-
-using SetupParticle = corsika::setup::Stack::ParticleType;
-using SetupTrack = corsika::setup::Trajectory;
 
 namespace corsika::energy_loss {
 
@@ -33,21 +28,15 @@ namespace corsika::energy_loss {
     return sqrt((Elab - m) * (Elab + m));
   };
 
-  /**
-   *   PDG2018, passage of particles through matter
-   *
-   * Note, that \f$I_{\mathrm{eff}}\f$ of composite media a determined from \f$ \ln I =
-   * \sum_i a_i \ln(I_i) \f$ where \f$ a_i \f$ is the fraction of the electron population
-   * (\f$\sim Z_i\f$) of the \f$i\f$-th element. This can also be used for shell
-   * corrections or density effects.
-   *
-   * The \f$I_{\mathrm{eff}}\f$ of compounds is not better than a few percent, if not
-   * measured explicitly.
-   *
-   * For shell correction, see Sec 6 of https://www.nap.edu/read/20066/chapter/8#115
-   *
-   */
-  HEPEnergyType BetheBlochPDG::BetheBloch(SetupParticle const& p, GrammageType const dX) {
+  BetheBlochPDG::BetheBlochPDG(ShowerAxis const& shower_axis, HEPEnergyType emCut)
+      : dX_(10_g / square(1_cm)) // profile binning
+      , dX_threshold_(0.0001_g / square(1_cm))
+      , shower_axis_(shower_axis)
+      , emCut_(emCut)
+      , profile_(int(shower_axis.getMaximumX() / dX_) + 1) {}
+
+  HEPEnergyType BetheBlochPDG::getBetheBloch(setup::Stack::particle_type const& p,
+                                             GrammageType const dX) {
 
     // all these are material constants and have to come through Environment
     // right now: values for nitrogen_D
@@ -65,12 +54,12 @@ namespace corsika::energy_loss {
 
     // this is the Bethe-Bloch coefficiet 4pi N_A r_e^2 m_e c^2
     auto constexpr K = 0.307075_MeV / 1_mol * square(1_cm);
-    HEPEnergyType const E = p.GetEnergy();
-    HEPMassType const m = p.GetMass();
+    HEPEnergyType const E = p.getEnergy();
+    HEPMassType const m = p.getMass();
     double const gamma = E / m;
-    int const Z = p.GetChargeNumber();
+    int const Z = p.getChargeNumber();
     int const Z2 = Z * Z;
-    HEPMassType constexpr me = corsika::Electron::mass;
+    HEPMassType constexpr me = Electron::mass;
     auto const m2 = m * m;
     auto constexpr me2 = me * me;
     double const gamma2 = gamma * gamma;
@@ -78,20 +67,20 @@ namespace corsika::energy_loss {
     double const beta2 = (gamma2 - 1) / gamma2; // 1-1/gamma2    (1-1/gamma)*(1+1/gamma);
                                                 // (gamma_2-1)/gamma_2 = (1-1/gamma2);
     double constexpr c2 = 1;                    // HEP convention here c=c2=1
-    std::cout << "BetheBloch beta2=" << beta2 << " gamma2=" << gamma2 << std::endl;
+    CORSIKA_LOG_DEBUG("BetheBloch beta2={}, gamma2={}", beta2, gamma2);
     [[maybe_unused]] double const eta2 = beta2 / (1 - beta2);
     HEPMassType const Wmax =
         2 * me * c2 * beta2 * gamma2 / (1 + 2 * gamma * me / m + me2 / m2);
     // approx, but <<1%    HEPMassType const Wmax = 2*me*c2*beta2*gamma2;      for HEAVY
     // PARTICLES Wmax ~ 2me v2 for non-relativistic particles
-    std::cout << "BetheBloch Wmax=" << Wmax << std::endl;
+    CORSIKA_LOG_DEBUG("BetheBloch Wmax={}", Wmax);
 
     // Sternheimer parameterization, density corrections towards high energies
     // NOTE/TODO: when Cbar is 0 it needs to be approximated from parameterization ->
     // MISSING
-    std::cout << "BetheBloch p.GetMomentum().GetNorm()/m="
-              << p.GetMomentum().GetNorm() / m << std::endl;
-    double const x = log10(p.GetMomentum().GetNorm() / m);
+    CORSIKA_LOG_DEBUG("BetheBloch p.getMomentum().getNorm()/m{}=",
+                      p.getMomentum().getNorm() / m);
+    double const x = log10(p.getMomentum().getNorm() / m);
     double delta = 0;
     if (x >= x1) {
       delta = 2 * (log(10)) * x - Cbar;
@@ -100,7 +89,7 @@ namespace corsika::energy_loss {
     } else if (x < x0) { // and IF conductor (otherwise, this is 0)
       delta = delta0 * pow(100, 2 * (x - x0));
     }
-    std::cout << "BetheBloch delta=" << delta << std::endl;
+    CORSIKA_LOG_DEBUG("BetheBloch delta={}", delta);
 
     // with further low energies correction, accurary ~1% down to beta~0.05 (1MeV for p)
 
@@ -120,8 +109,8 @@ namespace corsika::energy_loss {
     // Barkas correction O(Z3) higher-order Born approximation
     // see Appl. Phys. 85 (1999) 1249
     // double A = 1;
-    // if (p.GetPID() == corsika::Code::Nucleus) A = p.GetNuclearA();
-    // double const Erel = (p.GetEnergy()-p.GetMass()) / A / 1_keV;
+    // if (p.getPID() == Code::Nucleus) A = p.getNuclearA();
+    // double const Erel = (p.getEnergy()-p.getMass()) / A / 1_keV;
     // double const Llow = 0.01 * Erel;
     // double const Lhigh = 1.5/pow(Erel, 0.4) + 45000./Zmat * pow(Erel, 1.6);
     // double const barkas = Z * Llow*Lhigh/(Llow+Lhigh); // RU, I think the Z was
@@ -134,141 +123,141 @@ namespace corsika::energy_loss {
     double const y2 = Z * Z * alpha * alpha / beta2;
     double const bloch = -y2 * (1.202 - y2 * (1.042 - 0.855 * y2 + 0.343 * y2 * y2));
 
-    // std::cout << "BetheBloch Erel=" << Erel << " barkas=" << barkas << " bloch=" <<
-    // bloch << std::endl;
-
     double const aux = 2 * me * c2 * beta2 * gamma2 * Wmax / (Ieff * Ieff);
     return -K * Z2 * ZoverA / beta2 *
            (0.5 * log(aux) - beta2 - Cadj / Z - delta / 2 + barkas + bloch) * dX;
   }
 
   // radiation losses according to PDG 2018, ch. 33 ref. [5]
-  HEPEnergyType BetheBlochPDG::RadiationLosses(SetupParticle const& vP,
-                                               GrammageType const vDX) {
+  HEPEnergyType BetheBlochPDG::getRadiationLosses(setup::Stack::particle_type const& vP,
+                                                  GrammageType const vDX) {
     // simple-minded hard-coded value for b(E) inspired by data from
     // http://pdg.lbl.gov/2018/AtomicNuclearProperties/ for N and O.
     auto constexpr b = 3.0 * 1e-6 * square(1_cm) / 1_g;
-    return -vP.GetEnergy() * b * vDX;
+    return -vP.getEnergy() * b * vDX;
   }
 
-  HEPEnergyType BetheBlochPDG::TotalEnergyLoss(SetupParticle const& vP,
-                                               GrammageType const vDX) {
-    return BetheBloch(vP, vDX) + RadiationLosses(vP, vDX);
+  HEPEnergyType BetheBlochPDG::getTotalEnergyLoss(setup::Stack::particle_type const& vP,
+                                                  GrammageType const vDX) {
+    return getBetheBloch(vP, vDX) + getRadiationLosses(vP, vDX);
   }
 
-  corsika::ProcessReturn BetheBlochPDG::doContinuous(SetupParticle& p,
-                                                      SetupTrack const& t) {
-    if (p.GetChargeNumber() == 0) return corsika::ProcessReturn::Ok;
+  ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
+                                            setup::Trajectory const& t) {
+    if (p.getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
-        p.GetNode()->GetModelProperties().getIntegratedGrammage(t, t.GetLength());
-    std::cout << "BetheBlochPDG " << p.GetPID() << ", z=" << p.GetChargeNumber()
-              << ", dX=" << dX / 1_g * square(1_cm) << "g/cm2" << std::endl;
-    HEPEnergyType dE = TotalEnergyLoss(p, dX);
-    auto E = p.GetEnergy();
-    const auto Ekin = E - p.GetMass();
+        p.getNode()->getModelProperties().getIntegratedGrammage(t, t.getLength());
+    CORSIKA_LOG_DEBUG("EnergyLoss pid={}, z={}, dX={} g/cm2", p.getPID(),
+                      p.getChargeNumber(), dX / 1_g * square(1_cm));
+    HEPEnergyType dE = getTotalEnergyLoss(p, dX);
+    auto E = p.getEnergy();
+    const auto Ekin = E - p.getMass();
     auto Enew = E + dE;
-    std::cout << "BetheBlochPDG  dE=" << dE / 1_MeV << "MeV, "
-              << " E=" << E / 1_GeV << "GeV,  Ekin=" << Ekin / 1_GeV
-              << ", Enew=" << Enew / 1_GeV << "GeV" << std::endl;
-    auto status = corsika::ProcessReturn::Ok;
-    if (-dE > Ekin) {
-      dE = -Ekin;
-      Enew = p.GetMass();
-      status = corsika::ProcessReturn::ParticleAbsorbed;
-    }
-    p.SetEnergy(Enew);
-    MomentumUpdate(p, Enew);
-    BetheBlochPDGTot_ += dE;
-    FillProfile(p, t, dE);
-    return status;
+    CORSIKA_LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
+                      dE / 1_MeV, E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
+    p.setEnergy(Enew);
+    updateMomentum(p, Enew);
+    fillProfile(t, dE);
+    return ProcessReturn::Ok;
   }
 
-  LengthType BetheBlochPDG::MaxStepLength(SetupParticle const& vParticle,
-                                          SetupTrack const& vTrack) const {
-    if (vParticle.GetChargeNumber() == 0) {
+  LengthType BetheBlochPDG::getMaxStepLength(setup::Stack::particle_type const& vParticle,
+                                             setup::Trajectory const& vTrack) const {
+    if (vParticle.getChargeNumber() == 0) {
       return meter * std::numeric_limits<double>::infinity();
     }
 
     auto constexpr dX = 1_g / square(1_cm);
-    auto const dE = -TotalEnergyLoss(vParticle, dX); // dE > 0
-    //~ auto const Ekin = vParticle.GetEnergy() - vParticle.GetMass();
-    auto const maxLoss = 0.01 * vParticle.GetEnergy();
-    auto const maxGrammage = maxLoss / dE * dX;
+    auto const dEdX = -getTotalEnergyLoss(vParticle, dX) / dX; // dE > 0
+    //~ auto const Ekin = vParticle.getEnergy() - vParticle.getMass();
 
-    return vParticle.GetNode()->GetModelProperties().getArclengthFromGrammage(
-               vTrack,
-               maxGrammage) *
-           1.0001; // to make sure particle gets absorbed when DoContinuous() is called
+    // in any case: never go below 0.99*emCut_ This needs to be
+    // slightly smaller than emCut_ since, either this Step is limited
+    // by energy_lim, then the particle is stopped in a very short
+    // range (before doing anythin else) and is then removed
+    // instantly. The exact position where it reaches emCut is not
+    // important, the important fact is that its E_kin is zero
+    // afterwards.
+    //
+    const auto energy = vParticle.getEnergy();
+    auto energy_lim = std::max(0.9 * energy, 0.99 * emCut_);
+
+    auto const maxGrammage = (energy - energy_lim) / dEdX;
+
+    return vParticle.getNode()->getModelProperties().getArclengthFromGrammage(
+        vTrack, maxGrammage);
   }
 
-  void BetheBlochPDG::MomentumUpdate(corsika::setup::Stack::ParticleType& vP,
+  void BetheBlochPDG::updateMomentum(corsika::setup::Stack::particle_type& vP,
                                      HEPEnergyType Enew) {
-    HEPMomentumType Pnew = elab2plab(Enew, vP.GetMass());
-    auto pnew = vP.GetMomentum();
-    vP.SetMomentum(pnew * Pnew / pnew.GetNorm());
+    HEPMomentumType Pnew = elab2plab(Enew, vP.getMass());
+    auto pnew = vP.getMomentum();
+    vP.setMomentum(pnew * Pnew / pnew.getNorm());
   }
 
-  void BetheBlochPDG::FillProfile(SetupParticle const& vP, SetupTrack const& vTrack,
+  void BetheBlochPDG::fillProfile(setup::Trajectory const& vTrack,
                                   const HEPEnergyType dE) {
 
-    auto const toStart = vTrack.GetPosition(0) - InjectionPoint_;
-    auto const toEnd = vTrack.GetPosition(1) - InjectionPoint_;
+    GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
+    GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
+    const auto deltaX = grammageEnd - grammageStart;
 
-    auto const v1 = (toStart * 1_Hz).dot(ShowerAxisDirection_);
-    auto const v2 = (toEnd * 1_Hz).dot(ShowerAxisDirection_);
-    corsika::Line const lineToStartBin(InjectionPoint_, ShowerAxisDirection_ * v1);
-    corsika::Line const lineToEndBin(InjectionPoint_, ShowerAxisDirection_ * v2);
+    int binStart = grammageStart / dX_;
+    if (binStart < 0) return;
+    int binEnd = grammageEnd / dX_;
+    if (binEnd > int(profile_.size() - 1)) return;
+    if (deltaX < dX_threshold_) return;
 
-    SetupTrack const trajToStartBin(lineToStartBin, 1_s);
-    SetupTrack const trajToEndBin(lineToEndBin, 1_s);
-
-    GrammageType const grammageStart =
-        vP.GetNode()->GetModelProperties().getIntegratedGrammage(
-            trajToStartBin, trajToStartBin.GetLength());
-    GrammageType const grammageEnd =
-        vP.GetNode()->GetModelProperties().getIntegratedGrammage(
-            trajToEndBin, trajToEndBin.GetLength());
-
-    const int binStart = grammageStart / dX_;
-    const int binEnd = grammageEnd / dX_;
-
-    std::cout << "energy deposit of " << -dE << " between " << grammageStart << " and "
-              << grammageEnd << std::endl;
+    CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
+                      grammageEnd);
 
     auto energyCount = HEPEnergyType::zero();
 
-    auto fill = [&](int bin, GrammageType weight) {
-      const auto dX = grammageEnd - grammageStart;
-      if (dX > dX_threshold_) {
-        auto const increment = -dE * weight / (grammageEnd - grammageStart);
-        Profile_[bin] += increment;
-        energyCount += increment;
+    auto fill = [&](const int bin, const double weight) {
+      auto const increment = -dE * weight;
+      profile_[bin] += increment;
+      energyCount += increment;
 
-        std::cout << "filling bin " << bin << " with weight " << weight << ": "
-                  << increment << std::endl;
-      }
+      CORSIKA_LOG_DEBUG("filling bin {} with weight {} : {} ", bin, weight, increment);
     };
 
     // fill longitudinal profile
-    fill(binStart, (1 + binStart) * dX_ - grammageStart);
-    fill(binEnd, grammageEnd - binEnd * dX_);
-
-    if (binStart == binEnd) { fill(binStart, -dX_); }
-
-    for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
-
-    std::cout << "total energy added to histogram: " << energyCount << std::endl;
-  }
-
-  void BetheBlochPDG::PrintProfile() const {
-    std::ofstream file("BetheBlochPDGProfile.dat");
-    std::cout << "# BetheBlochPDG PrintProfile  X-bin [g/cm2]  dE/dX [GeV/g/cm2]  "
-              << std::endl;
-    double const deltaX = dX_ / 1_g * square(1_cm);
-    for (auto v : Profile_) {
-      file << v.first * deltaX << " " << v.second / (deltaX * 1_GeV) << std::endl;
+    if (binStart == binEnd) {
+      fill(binStart, 1);
+    } else {
+      fill(binStart, ((1 + binStart) * dX_ - grammageStart) / deltaX);
+      fill(binEnd, (grammageEnd - binEnd * dX_) / deltaX);
+      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, 1); }
     }
+
+    CORSIKA_LOG_DEBUG("total energy added to histogram: {} ", energyCount);
   }
+
+  void BetheBlochPDG::printProfile() const {
+    std::ofstream file("EnergyLossProfile.dat");
+    file << "# EnergyLoss profile" << std::endl
+         << "# lower X bin edge [g/cm2]  dE/dX [GeV/g/cm2]\n";
+    double const deltaX = dX_ / 1_g * square(1_cm);
+    for (size_t i = 0; i < profile_.size(); ++i) {
+      file << std::scientific << std::setw(15) << i * deltaX << std::setw(15)
+           << profile_.at(i) / (deltaX * 1_GeV) << '\n';
+    }
+    file.close();
+  }
+
+  HEPEnergyType BetheBlochPDG::getTotal() const {
+    return std::accumulate(profile_.cbegin(), profile_.cend(), HEPEnergyType::zero());
+  }
+
+  void BetheBlochPDG::showResults() const {
+    CORSIKA_LOG_INFO(
+        " ******************************\n"
+        " PROCESS::ContinuousProcess: \n"
+        " energy lost dE (GeV)      : {}\n  ",
+        energy_lost_ / 1_GeV);
+  }
+
+  void BetheBlochPDG::reset() { energy_lost_ = 0_GeV; }
 
 } // namespace corsika::energy_loss

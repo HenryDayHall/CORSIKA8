@@ -8,20 +8,7 @@ set (
   cnpy.hpp
   )
 
-set (
-  CNPY_NAMESPACE
-  corsika/third_party/cnpy
-  )
-
 add_library (cnpy STATIC ${CNPY_SOURCES})
-CORSIKA_COPY_HEADERS_TO_NAMESPACE (cnpy ${CNPY_NAMESPACE} ${CNPY_HEADERS})
-
-set_target_properties (
-  cnpy
-  PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  SOVERSION 1
-  )
 
 # target dependencies on other libraries (also the header onlys)
 target_link_libraries (
@@ -33,8 +20,8 @@ target_link_libraries (
 target_include_directories (
   cnpy 
   INTERFACE 
-  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include/externals/cnpy>
   )
 
 install (

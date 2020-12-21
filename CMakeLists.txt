@@ -114,11 +114,10 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 #
 #+++++++++++++++++++++++++++++
 # Setup external dependencies.
-
 #
 # the version of the cmake-conan project we use for build.
 set (CMAKE_CONAN_VERSION "v0.13")
-
+#
 # download the cmake-conan integration
 if (NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
    message (STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -126,15 +125,18 @@ if (NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
                   "${CMAKE_BINARY_DIR}/conan.cmake"
                   TLS_VERIFY ON)
 endif ()
-
+#
 # add the cmake-conan integration
 include (${CMAKE_BINARY_DIR}/conan.cmake)
-
+#
 # download and build all dependencies
 conan_cmake_run (CONANFILE conanfile.txt
                  BASIC_SETUP CMAKE_TARGETS
                  BUILD missing)
-
+#
+# add cnpy temporarily. As long as SaveBoostHistogram does not save to parquet directly
+#
+add_subdirectory (externals/cnpy)
 #
 #+++++++++++++++++++++++++++++
 # Coverage
@@ -216,12 +218,16 @@ target_include_directories (
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}>
   )
+# since CORSIKA8 is a header only library we must specify all link dependencies here:
 target_link_libraries (
   CORSIKA8
   INTERFACE
   PhysUnits
   CONAN_PKG::eigen
   CONAN_PKG::spdlog
+  CONAN_PKG::boost
+  cnpy # for SaveBoostHistogram
+  stdc++fs # experimental::filesystem
   )
 # those are needed, since some headers (namely GeneratedParticleProperties.inc) are produced by python script from ParticleData.xml
 add_subdirectory (src)

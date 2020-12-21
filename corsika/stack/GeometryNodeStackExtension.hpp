@@ -51,7 +51,7 @@ namespace corsika::node {
       setNode(parent.getNode()); // copy Node from parent particle!
     }
 
-    inline  std::string as_string() const {
+    inline  std::string asString() const {
     	return fmt::format("node={}", fmt::ptr(getNode()));
     }
 

@@ -83,7 +83,14 @@ namespace corsika {
      */
     typedef stack_iterator_type particle_type;
 
-    Stack() = default;
+    /**
+     * create a new Stack, if there is already data associated prepare
+     * needed initialization.
+     */
+    Stack()
+        : nDeleted_(0)
+	, data_()
+        , deleted_(std::vector<bool>(data_.getSize(), false)) {}
 
     Stack(Stack&) = delete; ///< since Stack can be very big, we don't want to copy it
 
@@ -137,37 +144,37 @@ namespace corsika {
      */
     inline stack_iterator_type begin();
 
-    inline stack_iterator_type end() ;
+    inline stack_iterator_type end();
 
-    inline  stack_iterator_type last();
+    inline stack_iterator_type last();
 
-    inline  const_stack_iterator_type begin() const;
+    inline const_stack_iterator_type begin() const;
 
-    inline const_stack_iterator_type end() const ;
+    inline const_stack_iterator_type end() const;
 
-    inline const_stack_iterator_type last() const ;
+    inline const_stack_iterator_type last() const;
 
-    inline  const_stack_iterator_type cbegin() const;
+    inline const_stack_iterator_type cbegin() const;
 
-    inline  const_stack_iterator_type cend() const;
+    inline const_stack_iterator_type cend() const;
 
-    inline  const_stack_iterator_type clast() const;
+    inline const_stack_iterator_type clast() const;
 
-    inline  stack_iterator_type at(unsigned int i);
+    inline stack_iterator_type at(unsigned int i);
 
-    inline  const_stack_iterator_type at(unsigned int i) const;
+    inline const_stack_iterator_type at(unsigned int i) const;
 
     inline stack_iterator_type first();
 
-    inline  const_stack_iterator_type cfirst() const;
+    inline const_stack_iterator_type cfirst() const;
 
-    inline  stack_iterator_type getNextParticle();
+    inline stack_iterator_type getNextParticle();
 
     /**
      * increase stack size, create new particle at end of stack
      */
     template <typename... TArgs>
-    inline  stack_iterator_type addParticle(const TArgs... v) ;
+    inline stack_iterator_type addParticle(const TArgs... v);
 
     inline void swap(stack_iterator_type a, stack_iterator_type b);
 
@@ -192,7 +199,7 @@ namespace corsika {
      * check if this particle was already deleted
      */
 
-    inline  bool isErased(const stack_iterator_type& p) const;
+    inline bool isErased(const stack_iterator_type& p) const;
 
     inline bool isErased(const const_stack_iterator_type& p) const;
 
@@ -203,7 +210,7 @@ namespace corsika {
      * if it was marked as deleted before. If this is not the case,
      * the function will just return false and do nothing.
      */
-    inline  bool purgeLastIfDeleted();
+    inline bool purgeLastIfDeleted();
     /**
      * Function to ultimatively remove all entries from the stack
      * marked as deleted.
@@ -214,13 +221,11 @@ namespace corsika {
      */
     inline void purge();
 
+    inline unsigned int getSize() const;
 
-    inline  unsigned int getSize() const;
-
-    inline std::string as_string() const;
+    inline std::string asString() const;
 
   protected:
-
     /**
      * increase stack size, create new particle at end of stack, related to parent
      * particle/projectile
@@ -229,21 +234,22 @@ namespace corsika {
      * StackIterator::AddSecondary via ParticleBase
      */
     template <typename... TArgs>
-    inline  stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v) ;
+    inline stack_iterator_type addSecondary(stack_iterator_type& parent,
+                                            const TArgs... v);
 
-    inline  void swap(unsigned int const a, unsigned int const b);
+    inline void swap(unsigned int const a, unsigned int const b);
 
-    inline  void copy(unsigned int const a, unsigned int const b);
+    inline void copy(unsigned int const a, unsigned int const b);
 
-    inline  bool isErased(unsigned int const i) const;
+    inline bool isErased(unsigned int const i) const;
 
-    inline  void erase(unsigned int const i) ;
+    inline void erase(unsigned int const i);
 
     /**
      * will remove from storage the element i. This is a helper
      * function for SecondaryView.
      */
-    inline  void purge(unsigned int i);
+    inline void purge(unsigned int i);
 
     /**
      * Function to perform eventual transformation from
@@ -251,15 +257,15 @@ namespace corsika {
      * StackData data_. By default (and in almost all cases) this
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
-    inline  unsigned int getIndexFromIterator(const unsigned int vI) const;
+    inline unsigned int getIndexFromIterator(const unsigned int vI) const;
     /**
      * @name Return reference to StackData object data_ for data access
      * @{
      */
 
-    inline  value_type& getStackData();
+    inline value_type& getStackData();
 
-    inline  const value_type& getStackData() const;
+    inline const value_type& getStackData() const;
 
     friend class StackIteratorInterface<value_type, MParticleInterface, Stack>;
     friend class ConstStackIteratorInterface<value_type, MParticleInterface, Stack>;

@@ -12,68 +12,112 @@
 
 #include <corsika/framework/logging/Logging.hpp>
 
-#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
 
 namespace corsika {
 
-  void LayeredSphericalAtmosphereBuilder::checkRadius(LengthType r) const {
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  void LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
+                                         TModelArgs...>::checkRadius(LengthType r) const {
     if (r <= previousRadius_) {
       throw std::runtime_error("radius must be greater than previous");
     }
   }
 
-  void LayeredSphericalAtmosphereBuilder::setNuclearComposition(
-      NuclearComposition composition) {
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  void LayeredSphericalAtmosphereBuilder<
+      TMediumInterface, TMediumModelExtra,
+      TModelArgs...>::setNuclearComposition(NuclearComposition const& composition) {
     composition_ = std::make_unique<NuclearComposition>(composition);
   }
 
-  void LayeredSphericalAtmosphereBuilder::addExponentialLayer(GrammageType b,
-                                                              LengthType c,
-                                                              LengthType upperBoundary) {
-    auto const radius = seaLevel_ + upperBoundary;
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  void LayeredSphericalAtmosphereBuilder<
+      TMediumInterface, TMediumModelExtra,
+      TModelArgs...>::addExponentialLayer(GrammageType b, LengthType c,
+                                          LengthType upperBoundary) {
+
+    auto const radius = earthRadius_ + upperBoundary;
     checkRadius(radius);
     previousRadius_ = radius;
 
-    auto node = std::make_unique<VolumeTreeNode<IMediumModel>>(
+    auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
         std::make_unique<Sphere>(center_, radius));
 
     auto const rho0 = b / c;
-    CORSIKA_LOG_INFO("rho0 = {}, c = {}", rho0, c);
 
-    node->setModelProperties<SlidingPlanarExponential<IMediumModel>>(
-        center_, rho0, -c, *composition_, seaLevel_);
+    if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
+      // helper lambda in which the last 5 arguments to make_shared<...> are bound
+      auto lastBound = [&](auto... argPack) {
+        return std::make_shared<
+            TMediumModelExtra<SlidingPlanarExponential<TMediumInterface>>>(
+            argPack..., center_, rho0, -c, *composition_, earthRadius_);
+      };
+
+      // now unpack the additional arguments
+      auto model = std::apply(lastBound, additionalModelArgs_);
+      node->setModelProperties(std::move(model));
+    } else {
+      node->template setModelProperties<SlidingPlanarExponential<TMediumInterface>>(
+          center_, rho0, -c, *composition_, earthRadius_);
+    }
 
     layers_.push(std::move(node));
   }
 
-  void LayeredSphericalAtmosphereBuilder::addLinearLayer(LengthType c,
-                                                         LengthType upperBoundary) {
-    auto const radius = seaLevel_ + upperBoundary;
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  void LayeredSphericalAtmosphereBuilder<
+      TMediumInterface, TMediumModelExtra,
+      TModelArgs...>::addLinearLayer(LengthType c, LengthType upperBoundary) {
+    auto const radius = earthRadius_ + upperBoundary;
     checkRadius(radius);
     previousRadius_ = radius;
 
-    GrammageType constexpr b = 1 * 1_g / (1_cm * 1_cm);
+    auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
+        std::make_unique<Sphere>(center_, radius));
+
+    units::si::GrammageType constexpr b = 1 * 1_g / (1_cm * 1_cm);
     auto const rho0 = b / c;
 
-    CORSIKA_LOG_INFO("rho0 = {}", rho0);
+    if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
+      // helper lambda in which the last 2 arguments to make_shared<...> are bound
+      auto lastBound = [&](auto... argPack) {
+        return std::make_shared<TMediumModelExtra<HomogeneousMedium<TMediumInterface>>>(
+            argPack..., rho0, *composition_);
+      };
 
-    auto node = std::make_unique<VolumeTreeNode<IMediumModel>>(
-        std::make_unique<Sphere>(center_, radius));
-    node->setModelProperties<HomogeneousMedium<IMediumModel>>(rho0, *composition_);
+      // now unpack the additional arguments
+      auto model = std::apply(lastBound, additionalModelArgs_);
+
+      node->setModelProperties(std::move(model));
+    } else {
+      node->template setModelProperties<HomogeneousMedium<TMediumInterface>>(
+          rho0, *composition_);
+    }
 
     layers_.push(std::move(node));
   }
 
-  Environment<IMediumModel> LayeredSphericalAtmosphereBuilder::assemble() {
-    Environment<IMediumModel> env;
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  Environment<TMediumInterface> LayeredSphericalAtmosphereBuilder<
+      TMediumInterface, TMediumModelExtra, TModelArgs...>::assemble() {
+    Environment<TMediumInterface> env;
     assemble(env);
     return env;
   }
 
-  void LayeredSphericalAtmosphereBuilder::assemble(Environment<IMediumModel>& env) {
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  void LayeredSphericalAtmosphereBuilder<
+      TMediumInterface, TMediumModelExtra,
+      TModelArgs...>::assemble(Environment<TMediumInterface>& env) {
     auto& universe = env.getUniverse();
     auto* outmost = universe.get();
 
@@ -85,5 +129,15 @@ namespace corsika {
       outmost = tmp;
     }
   }
+
+  template <typename TMediumInterface, template <typename> typename MExtraEnvirnoment>
+  struct make_layered_spherical_atmosphere_builder {
+    template <typename... TArgs>
+    static auto create(Point const& center, LengthType earthRadius, TArgs... args) {
+      return LayeredSphericalAtmosphereBuilder<TMediumInterface, MExtraEnvirnoment,
+                                               TArgs...>{std::forward<TArgs>(args)...,
+                                                         center, earthRadius};
+    }
+  };
 
 } // namespace corsika

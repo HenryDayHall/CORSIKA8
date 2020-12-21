@@ -33,11 +33,11 @@ namespace corsika::sibyll {
 
 #include <corsika/modules/sibyll/Generated.inc>
 
-  SibyllCode constexpr ConvertToSibyll(corsika::Code pCode) {
+  SibyllCode constexpr convertToSibyll(corsika::Code pCode) {
     return corsika2sibyll[static_cast<corsika::CodeIntType>(pCode)];
   }
 
-  corsika::Code constexpr ConvertFromSibyll(SibyllCode pCode) {
+  corsika::Code constexpr convertFromSibyll(SibyllCode pCode) {
     auto const s = static_cast<SibyllCodeIntType>(pCode);
     auto const corsikaCode = sibyll2corsika[s - minSibyll];
     if (corsikaCode == corsika::Code::Unknown) {
@@ -48,18 +48,18 @@ namespace corsika::sibyll {
     return corsikaCode;
   }
 
-  int constexpr ConvertToSibyllRaw(corsika::Code pCode) {
-    return static_cast<int>(ConvertToSibyll(pCode));
+  int constexpr convertToSibyllRaw(corsika::Code pCode) {
+    return static_cast<int>(convertToSibyll(pCode));
   }
 
-  int constexpr GetSibyllXSCode(corsika::Code pCode) {
+  int constexpr getSibyllXSCode(corsika::Code pCode) {
     return static_cast<SibyllXSClassIntType>(
         corsika2sibyllXStype[static_cast<corsika::CodeIntType>(pCode)]);
   }
 
-  bool constexpr CanInteract(corsika::Code pCode) { return GetSibyllXSCode(pCode) > 0; }
+  bool constexpr canInteract(corsika::Code pCode) { return getSibyllXSCode(pCode) > 0; }
 
-  HEPMassType GetSibyllMass(corsika::Code const);
+  HEPMassType getSibyllMass(corsika::Code const);
 
 } // namespace corsika::sibyll
 

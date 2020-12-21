@@ -27,27 +27,3 @@ namespace corsika::setup {
 
 } // end namespace corsika::setup
 
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/InhomogeneousMedium.hpp>
-#include <corsika/media/MediumPropertyModel.hpp>
-#include <corsika/media/UniformMagneticField.hpp>
-
-#include <tuple>
-#include <unique_ptr>
-
-/**
- * \function setup_environment
- *
- * standard environment for unit testing.
- *
- * \todo This can be moved to "test" directory, when available.
- */
-namespace corsika::setup::testing {
-
-  inline std::tuple<std::unique_ptr<setup::Environment>, CoordinateSystem const*,
-                    setup::Environment::BaseNodeType const*>
-  setup_environment(Code vTargetCode);
-
-} // namespace corsika::setup::testing
-
-#include <corsika/detail/setup/SetupEnvironment.inl>

@@ -14,20 +14,30 @@
 
 namespace corsika::particle_cut {
 
+  ParticleCut::ParticleCut(const HEPEnergyType eCut, bool em, bool inv)
+      : energy_cut_(eCut)
+      , doCutEm_(em)
+      , doCutInv_(inv)
+      , energy_(0_GeV)
+      , em_energy_(0_GeV)
+      , em_count_(0)
+      , inv_energy_(0_GeV)
+      , inv_count_(0) {}
+
   template <typename TParticle>
-  bool ParticleCut::ParticleIsBelowEnergyCut(TParticle const& vP) const {
-    auto const energyLab = vP.GetEnergy();
+  bool ParticleCut::isBelowEnergyCut(TParticle const& vP) const {
+    auto const energyLab = vP.getEnergy();
     // nuclei
-    if (vP.GetPID() == corsika::Code::Nucleus) {
+    if (vP.getPID() == Code::Nucleus) {
       // calculate energy per nucleon
-      auto const ElabNuc = energyLab / vP.GetNuclearA();
-      return (ElabNuc < fECut);
+      auto const ElabNuc = energyLab / vP.getNuclearA();
+      return (ElabNuc < energy_cut_);
     } else {
-      return (energyLab < fECut);
+      return (energyLab < energy_cut_);
     }
   }
 
-  bool ParticleCut::ParticleIsEmParticle(Code vCode) const {
+  bool ParticleCut::isEmParticle(Code vCode) const {
     // FOR NOW: switch
     switch (vCode) {
       case Code::Gamma:
@@ -39,7 +49,7 @@ namespace corsika::particle_cut {
     }
   }
 
-  bool ParticleCut::ParticleIsInvisible(Code vCode) const {
+  bool ParticleCut::isInvisible(Code vCode) const {
     switch (vCode) {
       case Code::NuE:
       case Code::NuEBar:
@@ -52,57 +62,74 @@ namespace corsika::particle_cut {
     }
   }
 
-  void ParticleCut::doSecondaries(corsika::setup::StackView& vS) {
+  template <typename TParticle>
+  bool ParticleCut::checkCutParticle(const TParticle& particle) {
 
-    auto p = vS.begin();
-    while (p != vS.end()) {
-      const Code pid = p.GetPID();
-      HEPEnergyType energy = p.GetEnergy();
-      std::cout << "ProcessCut: DoSecondaries: " << pid << " E= " << energy
-                << ", EcutTot=" << (fEmEnergy + fInvEnergy + fEnergy) / 1_GeV << " GeV"
-                << std::endl;
-      if (ParticleIsEmParticle(pid)) {
-        std::cout << "removing em. particle..." << std::endl;
-        fEmEnergy += energy;
-        fEmCount += 1;
-        p.Delete();
-      } else if (ParticleIsInvisible(pid)) {
-        std::cout << "removing inv. particle..." << std::endl;
-        fInvEnergy += energy;
-        fInvCount += 1;
-        p.Delete();
-      } else if (ParticleIsBelowEnergyCut(p)) {
-        std::cout << "removing low en. particle..." << std::endl;
-        fEnergy += energy;
-        p.Delete();
-      } else if (p.GetTime() > 10_ms) {
-        std::cout << "removing OLD particle..." << std::endl;
-        fEnergy += energy;
-        p.Delete();
-      } else {
-        ++p; // next entry in SecondaryView
-      }
+    const Code pid = particle.getPID();
+    HEPEnergyType energy = particle.getEnergy();
+    CORSIKA_LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV",
+                                  pid, energy / 1_GeV,
+                                  (em_energy_ + inv_energy_ + energy_) / 1_GeV));
+    if (doCutEm_ && isEmParticle(pid)) {
+      CORSIKA_LOG_DEBUG("removing em. particle...");
+      em_energy_ += energy;
+      em_count_ += 1;
+      return true;
+    } else if (doCutInv_ && isInvisible(pid)) {
+      CORSIKA_LOG_DEBUG("removing inv. particle...");
+      inv_energy_ += energy;
+      inv_count_ += 1;
+      return true;
+    } else if (isBelowEnergyCut(particle)) {
+      CORSIKA_LOG_DEBUG("removing low en. particle...");
+      energy_ += energy;
+      return true;
+    } else if (particle.getTime() > 10_ms) {
+      CORSIKA_LOG_DEBUG("removing OLD particle...");
+      energy_ += energy;
+      return true;
+    }
+    return false; // this particle will not be removed/cut
+  }
+
+  void ParticleCut::doSecondaries(corsika::setup::StackView& vS) {
+    auto particle = vS.begin();
+    while (particle != vS.end()) {
+      if (checkCutParticle(particle)) { particle.erase(); }
+      ++particle; // next entry in SecondaryView
     }
   }
 
-  void ParticleCut::Init() {
-    fEmEnergy = 0_GeV;
-    fEmCount = 0;
-    fInvEnergy = 0_GeV;
-    fInvCount = 0;
-    fEnergy = 0_GeV;
-    // defineEmParticles();
+  ProcessReturn ParticleCut::doContinuous(corsika::setup::Stack::particle_type& particle,
+                                          corsika::setup::Trajectory const&) {
+    CORSIKA_LOG_TRACE("ParticleCut::DoContinuous");
+    if (checkCutParticle(particle)) {
+      CORSIKA_LOG_TRACE("removing during continuous");
+      particle.erase();
+      // signal to upstream code that this particle was deleted
+      return ProcessReturn::ParticleAbsorbed;
+    }
+    return ProcessReturn::Ok;
   }
 
-  void ParticleCut::ShowResults() {
-    std::cout << " ******************************" << std::endl
-              << " ParticleCut: " << std::endl
-              << " energy in em.  component (GeV):  " << fEmEnergy / 1_GeV << std::endl
-              << " no. of em.  particles injected:  " << fEmCount << std::endl
-              << " energy in inv. component (GeV):  " << fInvEnergy / 1_GeV << std::endl
-              << " no. of inv. particles injected:  " << fInvCount << std::endl
-              << " energy below particle cut (GeV): " << fEnergy / 1_GeV << std::endl
-              << " ******************************" << std::endl;
+  void ParticleCut::showResults() {
+    CORSIKA_LOG_INFO(
+        " ******************************\n"
+        " energy in em.  component (GeV): {} \n "
+        " no. of em.  particles injected: {} \n "
+        " energy in inv. component (GeV): {} \n "
+        " no. of inv. particles injected: {} \n "
+        " energy below particle cut (GeV): {} \n"
+        " ******************************",
+        em_energy_ / 1_GeV, em_count_, inv_energy_ / 1_GeV, inv_count_, energy_ / 1_GeV);
+  }
+
+  void ParticleCut::reset() {
+    em_energy_ = 0_GeV;
+    em_count_ = 0;
+    inv_energy_ = 0_GeV;
+    inv_count_ = 0;
+    energy_ = 0_GeV;
   }
 
 } // namespace corsika::particle_cut

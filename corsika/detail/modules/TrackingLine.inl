@@ -26,15 +26,15 @@ namespace corsika::tracking_line {
 
   std::optional<std::pair<TimeType, TimeType>> TimeOfIntersection(
       corsika::Line const& line, corsika::Sphere const& sphere) {
-    auto const delta = line.GetR0() - sphere.GetCenter();
-    auto const v = line.GetV0();
+    auto const delta = line.getStartPoint() - sphere.getCenter();
+    auto const v = line.getVelocity();
     auto const vSqNorm =
-        v.squaredNorm(); // todo: get rid of this by having V0 normalized always
-    auto const R = sphere.GetRadius();
+        v.getSquaredNorm(); // todo: get rid of this by having V0 normalized always
+    auto const R = sphere.getRadius();
 
     auto const vDotDelta = v.dot(delta);
     auto const discriminant =
-        vDotDelta * vDotDelta - vSqNorm * (delta.squaredNorm() - R * R);
+        vDotDelta * vDotDelta - vSqNorm * (delta.getSquaredNorm() - R * R);
 
     if (discriminant.magnitude() > 0) {
       auto const sqDisc = sqrt(discriminant);
@@ -46,11 +46,11 @@ namespace corsika::tracking_line {
     }
   }
 
-  TimeType TimeOfIntersection(Line const& vLine, Plane const& vPlane) {
+  TimeType getTimeOfIntersection(Line const& vLine, Plane const& vPlane) {
 
-    auto const delta = vPlane.GetCenter() - vLine.GetR0();
-    auto const v = vLine.GetV0();
-    auto const n = vPlane.GetNormal();
+    auto const delta = vPlane.getCenter() - vLine.getStartPoint();
+    auto const v = vLine.getVelocity();
+    auto const n = vPlane.getNormal();
     auto const c = n.dot(v);
 
     if (c.magnitude() == 0) {

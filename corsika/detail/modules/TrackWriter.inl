@@ -22,37 +22,38 @@
 
 namespace corsika::track_writer {
 
-  void TrackWriter::Init() {
+  TrackWriter::TrackWriter(std::string const& filename)
+      : filename_(filename) {
     using namespace std::string_literals;
 
-    fFile.open(fFilename);
-    fFile << "# PID, E / eV, start coordinates / m, displacement vector to end / m "s
+    file_.open(filename_);
+    file_ << "# PID, E / eV, start coordinates / m, displacement vector to end / m "s
           << '\n';
   }
 
   template <typename TParticle, typename TTrack>
-  corsika::ProcessReturn TrackWriter::doContinuous(const TParticle& vP,
+  ProcessReturn TrackWriter::doContinuous(const TParticle& vP,
                                                    const TTrack& vT) {
-    auto const start = vT.GetPosition(0).GetCoordinates();
-    auto const delta = vT.GetPosition(1).GetCoordinates() - start;
-    auto const pdg = static_cast<int>(corsika::get_PDG(vP.GetPID()));
+    auto const start = vT.getPosition(0).getCoordinates();
+    auto const delta = vT.getPosition(1).getCoordinates() - start;
+    auto const pdg = static_cast<int>(get_PDG(vP.getPID()));
 
     // clang-format off
-    fFile << std::setw(7) << pdg
-          << std::setw(width) << std::scientific << std::setprecision(precision) << vP.GetEnergy() / 1_eV
-          << std::setw(width) << std::scientific << std::setprecision(precision) << start[0] / 1_m 
-          << std::setw(width) << std::scientific << std::setprecision(precision) << start[1] / 1_m
-          << std::setw(width) << std::scientific << std::setprecision(precision) << start[2] / 1_m
-          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[0] / 1_m
-          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[1] / 1_m
-          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[2] / 1_m << '\n';
+    file_ << std::setw(7) << pdg
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << vP.getEnergy() / 1_eV
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << start[0] / 1_m 
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << start[1] / 1_m
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << start[2] / 1_m
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[0] / 1_m
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[1] / 1_m
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[2] / 1_m << '\n';
     // clang-format on
 
-    return corsika::ProcessReturn::Ok;
+    return ProcessReturn::Ok;
   }
 
   template <typename TParticle, typename TTrack>
-  LengthType TrackWriter::MaxStepLength(const TParticle&, const TTrack&) {
+  LengthType TrackWriter::getMaxStepLength(const TParticle&, const TTrack&) {
     return meter * std::numeric_limits<double>::infinity();
   }
 

@@ -82,7 +82,7 @@ namespace corsika {
      *
      * @return spaceLike_
      */
-    TSpaceVecType& spaceLikeComponents();
+    TSpaceVecType& getSpaceLikeComponents();
 
     /**
      *
@@ -105,12 +105,12 @@ namespace corsika {
     /**
      * \todo FIXME: a better alternative would be to define an enumeration
      * enum { SpaceLike =-1, TimeLike, LightLike } V4R_Category;
-     * and a method called  V4R_Category GetCategory() const;     
+     * and a method called  V4R_Category GetCategory() const;
      * RU: then you have to decide in the constructor which avoids "lazyness"
      **/
-    ///\return if \f$|p_0|>|\vec{p}|\f$     
+    ///\return if \f$|p_0|>|\vec{p}|\f$
     bool isTimelike() const;
-    ///\return if \f$|p_0|<|\vec{p}|\f$     
+    ///\return if \f$|p_0|<|\vec{p}|\f$
     bool isSpacelike() const;
 
     /**

@@ -90,10 +90,12 @@ namespace corsika {
     }
   }
 
-  inline HEPMassType nucleus_mass(const int A, const int Z) {
-    auto const absA = std::abs(A);
-    auto const absZ = std::abs(Z);
-    return get_mass(Code::Proton) * absZ + (absA - absZ) * get_mass(Code::Neutron);
+  inline HEPMassType get_nucleus_mass(unsigned int const A, unsigned int const Z) {
+    return get_mass(Code::Proton) * Z + (A - Z) * get_mass(Code::Neutron);
+  }
+
+  std::initializer_list<Code> constexpr get_all_particles() {
+    return particle::detail::all_particles;
   }
 
 } // namespace corsika

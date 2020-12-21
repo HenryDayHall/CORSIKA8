@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
 using namespace corsika;
@@ -25,7 +26,7 @@ CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
  **/
 // helper function for energy-momentum
 // relativistic energy
-auto const energy = [](HEPMassType m, Vector<hepmomentum_d> const& p) {
+auto const energy = [](HEPMassType m, MomentumVector const& p) {
   return sqrt(m * m + p.getSquaredNorm());
 };
 
@@ -40,13 +41,13 @@ TEST_CASE("rotation") {
   // define projectile kinematics in lab frame
   HEPMassType const projectileMass = 1_GeV;
   HEPMassType const targetMass = 1.0e300_eV;
-  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, 1_GeV}};
+  MomentumVector pProjectileLab{rootCS, {0_GeV, 0_PeV, 1_GeV}};
   HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
   FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
-  Vector<hepenergy_d> e1(rootCS, {1_GeV, 0_GeV, 0_GeV});
-  Vector<hepenergy_d> e2(rootCS, {0_GeV, 1_GeV, 0_GeV});
-  Vector<hepenergy_d> e3(rootCS, {0_GeV, 0_GeV, 1_GeV});
+  MomentumVector e1(rootCS, {1_GeV, 0_GeV, 0_GeV});
+  MomentumVector e2(rootCS, {0_GeV, 1_GeV, 0_GeV});
+  MomentumVector e3(rootCS, {0_GeV, 0_GeV, 1_GeV});
 
   // define boost to com frame
   SECTION("pos. z-axis") {
@@ -167,7 +168,7 @@ TEST_CASE("rotation") {
 TEST_CASE("boosts") {
   // define target kinematics in lab frame
   HEPMassType const targetMass = 1_GeV;
-  Vector<hepmomentum_d> pTargetLab{rootCS, {0_eV, 0_eV, 0_eV}};
+  MomentumVector pTargetLab{rootCS, {0_eV, 0_eV, 0_eV}};
   HEPEnergyType const eTargetLab = energy(targetMass, pTargetLab);
 
   /*
@@ -177,8 +178,8 @@ TEST_CASE("boosts") {
   SECTION("General tests") {
 
     // define projectile kinematics in lab frame
-    HEPMassType const projectileMass = 1._GeV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 20_GeV, 0_GeV}};
+    HEPMassType const projectileMass = 1_GeV;
+    MomentumVector pProjectileLab{rootCS, {0_GeV, 1_PeV, 0_GeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
@@ -225,9 +226,13 @@ TEST_CASE("boosts") {
 
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1_GeV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_GeV, -20_GeV}};
+    MomentumVector pProjectileLab{rootCS, {0_GeV, 0_PeV, -1_PeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     FourVector const PprojLab(eProjectileLab, pProjectileLab);
+    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+
+    auto const sqrt_s_lab =
+        sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
 
     auto const sqrt_s_lab =
         sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
@@ -270,7 +275,7 @@ TEST_CASE("boosts") {
 
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1_GeV;
-    Vector<hepmomentum_d> pProjectileLab(rootCS, {px, py, pz});
+    MomentumVector pProjectileLab(rootCS, {px, py, pz});
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
@@ -297,7 +302,7 @@ TEST_CASE("boosts") {
     // define projectile kinematics in lab frame
     HEPMassType const projectileMass = 1_GeV;
     HEPMomentumType P0 = 1_ZeV;
-    Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, 0_PeV, -P0}};
+    MomentumVector pProjectileLab{rootCS, {0_GeV, 0_PeV, -P0}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
@@ -320,25 +325,25 @@ TEST_CASE("boosts") {
 TEST_CASE("rest frame") {
   HEPMassType const projectileMass = 1_GeV;
   HEPMomentumType const P0 = 1_TeV;
-  Vector<hepmomentum_d> pProjectileLab{rootCS, {0_GeV, P0, 0_GeV}};
+  MomentumVector pProjectileLab{rootCS, {0_GeV, P0, 0_GeV}};
   HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
   const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
   COMBoost boostRest(pProjectileLab, projectileMass);
-  auto const& csPrime = boostRest.GetRotatedCS();
+  auto const& csPrime = boostRest.getRotatedCS();
   FourVector const rest4Mom = boostRest.toCoM(PprojLab);
 
-  CHECK(rest4Mom.GetTimeLikeComponent() / 1_GeV == Approx(projectileMass / 1_GeV));
-  CHECK(rest4Mom.GetSpaceLikeComponents().norm() / 1_GeV == Approx(0).margin(absMargin));
+  CHECK(rest4Mom.getTimeLikeComponent() / 1_GeV == Approx(projectileMass / 1_GeV));
+  CHECK(rest4Mom.getSpaceLikeComponents().getNorm() / 1_GeV == Approx(0).margin(absMargin));
 
   FourVector const a{0_eV, Vector{csPrime, 0_eV, 5_GeV, 0_eV}};
   FourVector const b{0_eV, Vector{rootCS, 3_GeV, 0_eV, 0_eV}};
   auto const aLab = boostRest.fromCoM(a);
   auto const bLab = boostRest.fromCoM(b);
 
-  CHECK(aLab.GetNorm() / a.GetNorm() == Approx(1));
-  CHECK(aLab.GetSpaceLikeComponents().GetComponents(csPrime)[1].magnitude() ==
+  CHECK(aLab.getNorm() / a.getNorm() == Approx(1));
+  CHECK(aLab.getSpaceLikeComponents().getComponents(csPrime)[1].magnitude() ==
         Approx((5_GeV).magnitude()));
-  CHECK(bLab.GetSpaceLikeComponents().GetComponents(rootCS)[0].magnitude() ==
+  CHECK(bLab.getSpaceLikeComponents().getComponents(rootCS)[0].magnitude() ==
         Approx((3_GeV).magnitude()));
 }

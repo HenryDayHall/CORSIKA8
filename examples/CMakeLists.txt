@@ -38,3 +38,7 @@ CORSIKA_REGISTER_EXAMPLE (stopping_power)
 add_executable (staticsequence_example staticsequence_example.cpp)
 target_link_libraries (staticsequence_example CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (staticsequence_example)
+
+add_executable (particle_list_example particle_list_example.cpp)
+target_link_libraries (particle_list_example CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (particle_list_example)

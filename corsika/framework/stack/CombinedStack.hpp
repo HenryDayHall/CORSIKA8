@@ -67,23 +67,22 @@ namespace corsika {
      */
 
     template <typename... TArgs1>
-    inline  void setParticleData(std::tuple<TArgs1...> const vA);
-
+    inline void setParticleData(std::tuple<TArgs1...> const vA);
 
     template <typename... TArgs1, typename... TArgs2>
-    inline   void setParticleData(std::tuple<TArgs1...> const vA, std::tuple<TArgs2...> const vB);
+    inline void setParticleData(std::tuple<TArgs1...> const vA,
+                                std::tuple<TArgs2...> const vB);
 
     template <typename... TArgs1>
-    inline  void setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA);
+    inline void setParticleData(pi_a_type& p, std::tuple<TArgs1...> const vA);
 
     template <typename... TArgs1, typename... TArgs2>
-    inline   void setParticleData(pi_c_type& p, std::tuple<TArgs1...> const vA,
-                         std::tuple<TArgs2...> const vB);
+    inline void setParticleData(pi_c_type& p, std::tuple<TArgs1...> const vA,
+                                std::tuple<TArgs2...> const vB);
     ///@}
 
-    inline   std::string as_string() const;
+    inline std::string asString() const;
 
-  private:
   protected:
   };
 
@@ -100,25 +99,24 @@ namespace corsika {
   struct CombinedStackImpl : public Stack1Impl, public Stack2Impl {
 
   public:
+    inline void clear();
 
-	  inline   void clear();
-
-	  inline  unsigned int getSize() const { return Stack1Impl::getSize(); }
-	  inline  unsigned int getCapacity() const { return Stack1Impl::getCapacity(); }
+    inline unsigned int getSize() const { return Stack1Impl::getSize(); }
+    inline unsigned int getCapacity() const { return Stack1Impl::getCapacity(); }
 
     /**
      *   Function to copy particle at location i1 in stack to i2
      */
-	  inline  void copy(const unsigned int i1, const unsigned int i2);
+    inline void copy(const unsigned int i1, const unsigned int i2);
 
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-	  inline  void swap(const unsigned int i1, const unsigned int i2);
+    inline void swap(const unsigned int i1, const unsigned int i2);
 
-	  inline  void incrementSize();
+    inline void incrementSize();
 
-	  inline   void decrementSize();
+    inline void decrementSize();
 
   }; // end class CombinedStackImpl
 

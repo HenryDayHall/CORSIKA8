@@ -14,7 +14,13 @@
 #include <corsika/media/DensityFunction.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/IMediumModel.hpp>
+#include <corsika/media/IMediumPropertyModel.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/IRefractiveIndexModel.hpp>
 #include <corsika/media/InhomogeneousMedium.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/LinearApproximationIntegrator.hpp>
@@ -193,7 +199,11 @@ TEST_CASE("InhomogeneousMedium") {
 }
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder") {
-  LayeredSphericalAtmosphereBuilder builder(gOrigin);
+
+  LayeredSphericalAtmosphereBuilder builder =
+      make_layered_spherical_atmosphere_builder<>::create(gOrigin,
+                                                          constants::EarthRadius::Mean);
+
   builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
 
   builder.addLinearLayer(1_km, 10_km);
@@ -207,8 +217,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   CHECK(builder.getSize() == 0);
 
-  // the end time of our line
-  auto const tEnd = 1_s;
+  auto const R = builder.getEarthRadius();
 
   CHECK(univ->getChildNodes().size() == 1);
 
@@ -223,3 +232,45 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
             univ->getContainingNode(Point(gCS, 0_m, 0_m, R + 24_km))->getVolume())
             .getRadius() == R + 30_km);
 }
+
+TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
+  // setup our interface types
+  using ModelInterface = IMagneticFieldModel<IMediumModel>;
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // create magnetic field vectors
+  Vector B0(gCS, 0_T, 0_T, 1_T);
+
+  LayeredSphericalAtmosphereBuilder builder = make_layered_spherical_atmosphere_builder<
+      ModelInterface, UniformMagneticField>::create(gOrigin, constants::EarthRadius::Mean,
+                                                    B0);
+
+  builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
+  builder.addLinearLayer(1_km, 10_km);
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km);
+
+  CHECK(builder.getSize() == 2);
+
+  auto const builtEnv = builder.assemble();
+  auto const& univ = builtEnv.getUniverse();
+
+  CHECK(builder.getSize() == 0);
+  CHECK(univ->getChildNodes().size() == 1);
+  auto const R = builder.getEarthRadius();
+
+  // check magnetic field at several locations
+  const Point pTest(gCS, -10_m, 4_m, R + 35_m);
+  CHECK(B0.getComponents(gCS) == univ->getContainingNode(pTest)
+                                     ->getModelProperties()
+                                     .getMagneticField(pTest)
+                                     .getComponents(gCS));
+  const Point pTest2(gCS, 10_m, -4_m, R + 15_km);
+  CHECK(B0.getComponents(gCS) == univ->getContainingNode(pTest2)
+                                     ->getModelProperties()
+                                     .getMagneticField(pTest2)
+                                     .getComponents(gCS));
+}
+

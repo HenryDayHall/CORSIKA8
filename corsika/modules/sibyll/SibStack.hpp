@@ -45,13 +45,13 @@ namespace corsika::sibyll {
     HEPEnergyType getEnergy(const int i) const { return s_plist_.p[3][i] * 1_GeV; }
     HEPEnergyType getMass(const unsigned int i) const { return s_plist_.p[4][i] * 1_GeV; }
     MomentumVector getMomentum(const unsigned int i) const {
-      CoordinateSystemPtr& rootCS = get_root_CoordinateSystem();
+      CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
       QuantityVector<hepmomentum_d> components = {
           s_plist_.p[0][i] * 1_GeV, s_plist_.p[1][i] * 1_GeV, s_plist_.p[2][i] * 1_GeV};
       return MomentumVector(rootCS, components);
     }
 
-    void Copy(const unsigned int i1, const unsigned int i2) {
+    void copy(const unsigned int i1, const unsigned int i2) {
       s_plist_.llist[i2] = s_plist_.llist[i1];
       for (unsigned int i = 0; i < 5; ++i) s_plist_.p[i][i2] = s_plist_.p[i][i1];
     }

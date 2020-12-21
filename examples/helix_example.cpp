@@ -1,27 +1,29 @@
 /*
- * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <array>
 #include <cstdlib>
 #include <iostream>
 
 using namespace corsika;
-using namespace corsika::units::si;
 
 int main() {
-  corsika::CoordinateSystemPtr root = get_root_CoordinateSystem();
 
+  CORSIKA_LOG_INFO("helix_example");
+
+  CoordinateSystemPtr const& root = get_root_CoordinateSystem();
+ 
   Point const r0(root, {0_m, 0_m, 0_m});
   auto const omegaC = 2 * M_PI * 1_Hz;
   Vector<speed_d> vPar(root, {0_m / second, 0_m / second, 10_cm / second});
@@ -46,8 +48,8 @@ int main() {
     positions[i][3] = r[2] / 1_m;
   }
 
-  std::cout << positions[n - 2][0] << " " << positions[n - 2][1] << " "
-            << positions[n - 2][2] << " " << positions[n - 2][3] << std::endl;
+  CORSIKA_LOG_INFO("test: {} {} {} {} ", positions[n - 2][0], positions[n - 2][1],
+		   positions[n - 2][2], positions[n - 2][3]);
 
   return EXIT_SUCCESS;
 }

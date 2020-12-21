@@ -9,7 +9,7 @@
 #include <corsika/detail/setup/SetupStack.hpp>
 
 #include <array>
-#include <unique_ptr>
+#include <memory>
 
 namespace corsika::setup {
 
@@ -32,7 +32,7 @@ namespace corsika::setup {
    */
   using Stack = detail::StackWithGeometry;
   template <typename T1, template <typename> typename M2>
-  using StackViewProducer = corsika::stack::DefaultSecondaryProducer<T1, M2>;
+  using StackViewProducer = corsika::DefaultSecondaryProducer<T1, M2>;
 
 #endif
 
@@ -54,7 +54,7 @@ namespace corsika::setup {
 #ifdef WITH_HISTORY
 
 #if defined(__clang__)
-  using StackView = SecondaryView<typename Stack::StackImpl,
+  using StackView = SecondaryView<typename Stack::stack_implementation_type,
                                   // CHECK with CLANG: setup::Stack::MPIType>;
                                   detail::StackWithHistoryInterface, StackViewProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
@@ -64,12 +64,12 @@ namespace corsika::setup {
 #else // WITH_HISTORY
 
 #if defined(__clang__)
-  using StackView = SecondaryView<typename setup::Stack::StackImpl,
+  using StackView = SecondaryView<typename setup::Stack::stack_implementation_type,
                                   // CHECK with CLANG:
                                   // setup::Stack::MPIType>;
                                   setup::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-  using StackView = make_view<setup::Stack>::type;
+  using StackView = corsika::MakeView<setup::Stack>::type;
 #endif
   } // namespace detail
 
@@ -84,18 +84,3 @@ namespace corsika::setup {
 
 } // namespace corsika::setup
 
-/**
- * standard stack setup for unit tests. This can be moved to "test"
- * directory, when available.
- */
-
-namespace corsika::setup::testing {
-
-  inline std::tuple<std::unique_ptr<setup::Stack>, std::unique_ptr<setup::StackView>>
-  setup_stack(Code vProjectileType, int vA, int vZ, HEPEnergyType vMomentum,
-	      const setup::Environment::BaseNodeType* vNodePtr,
-	      CoordinateSystem const& cs);
-
-} // namespace corsika::setup::testing
-
-#include <corsika/detail/setup/SetupStack.inl>

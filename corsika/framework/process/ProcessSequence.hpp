@@ -90,9 +90,9 @@ namespace corsika {
         : A_(in_A)
         , B_(in_B) {}
 
-    template <typename TParticle, typename TVTNType>
-    ProcessReturn doBoundaryCrossing(TParticle& particle, TVTNType const& from,
-                                     TVTNType const& to);
+    template <typename TParticle>
+    ProcessReturn doBoundaryCrossing(TParticle& particle, typename TParticle::node_type const& from,
+                                     typename TParticle::node_type const& to);
 
     template <typename TParticle, typename TTrack>
     inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT);
@@ -117,7 +117,7 @@ namespace corsika {
     inline void doStack(TStack& stack);
 
     template <typename TParticle, typename TTrack>
-    inline LengthType maxStepLength(TParticle& particle, TTrack& vTrack);
+    inline LengthType  getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {

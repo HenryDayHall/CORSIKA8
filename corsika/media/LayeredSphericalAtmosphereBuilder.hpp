@@ -15,7 +15,9 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 
-#include <functional>
+// for detail namespace, NoExtraModelInner, NoExtraModel and traits
+#include <corsika/detail/media/LayeredSphericalAtmosphereBuilder.hpp>
+
 #include <memory>
 #include <stack>
 #include <tuple>
@@ -23,37 +25,82 @@
 
 namespace corsika {
 
+  /**
+   * \class make_layered_spherical_atmosphere_builder
+   *
+   * Helper class to create LayeredSphericalAtmosphereBuilder, the
+   * extra environment models have to be passed as template-template
+   * argument to make_layered_spherical_atmosphere_builder, the member
+   * function `create` does then take an unspecified number of extra
+   * parameters to internalize those models for all layers later
+   * produced.
+   **/
+  template <typename TMediumInterface = IMediumModel,
+            template <typename> typename MExtraEnvirnoment = detail::NoExtraModel>
+  struct make_layered_spherical_atmosphere_builder;
+
+  /**
+   * Helper class to setup concentric spheres of layered atmosphere
+   * with spcified density profiles (exponential, linear, ...).
+   *
+   * This can be used most importantly to replicate CORSIKA7
+   * atmospheres.
+   *
+   * Each layer by definition has a density profile and a (constant)
+   * nuclear composition model.
+   *
+   */
+
+  template <typename TMediumInterface = IMediumModel,
+            template <typename> typename TMediumModelExtra = detail::NoExtraModel,
+            typename... TModelArgs>
   class LayeredSphericalAtmosphereBuilder {
-    std::unique_ptr<NuclearComposition> composition_;
-    Point center_;
-    LengthType previousRadius_{LengthType::zero()};
-    LengthType seaLevel_;
 
-    std::stack<VolumeTreeNode<IMediumModel>::VTNUPtr> layers_; // innermost layer first
+    LayeredSphericalAtmosphereBuilder() = delete;
+    LayeredSphericalAtmosphereBuilder(const LayeredSphericalAtmosphereBuilder&) = delete;
+    LayeredSphericalAtmosphereBuilder(const LayeredSphericalAtmosphereBuilder&&) = delete;
+    LayeredSphericalAtmosphereBuilder& operator=(
+        const LayeredSphericalAtmosphereBuilder&) = delete;
 
-    void checkRadius(LengthType) const;
+    // friend, to allow construction
+    template <typename, template <typename> typename>
+    friend struct make_layered_spherical_atmosphere_builder;
 
-  public:
-    static auto constexpr earthRadius = 6'371'000 * meter;
-
-    LayeredSphericalAtmosphereBuilder(corsika::Point center,
-                                      LengthType seaLevel = earthRadius)
+  protected:
+    LayeredSphericalAtmosphereBuilder(TModelArgs... args, Point const& center,
+                                      LengthType earthRadius)
         : center_(center)
         , earthRadius_(earthRadius)
         , additionalModelArgs_{args...} {}
 
-    void setNuclearComposition(NuclearComposition);
+  public:
+    void setNuclearComposition(NuclearComposition const& composition);
+    void addExponentialLayer(GrammageType b, LengthType c, LengthType upperBoundary);
+    void addLinearLayer(LengthType c, LengthType upperBoundary);
 
-    void addExponentialLayer(GrammageType, LengthType, LengthType);
+    int getSize() const { return layers_.size(); }
 
-    size_t getSize() const { return layers_.size(); }
+    void assemble(Environment<TMediumInterface>& env);
+    Environment<TMediumInterface> assemble();
 
-    void addLinearLayer(LengthType, LengthType);
+    /**
+     * Get the current Earth radius.
+     */
+    LengthType getEarthRadius() const { return earthRadius_; }
 
-    void assemble(Environment<IMediumModel>&);
+  private:
+    void checkRadius(LengthType r) const;
 
-    Environment<IMediumModel> assemble();
-  };
+    std::unique_ptr<NuclearComposition> composition_;
+    Point center_;
+    LengthType previousRadius_{LengthType::zero()};
+    LengthType earthRadius_;
+    std::tuple<TModelArgs...> const additionalModelArgs_;
+
+    std::stack<typename VolumeTreeNode<TMediumInterface>::VTNUPtr>
+        layers_; // innermost layer first
+    
+  }; // end class LayeredSphericalAtmosphereBuilder
 
 } // namespace corsika
 

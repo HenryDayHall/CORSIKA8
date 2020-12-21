@@ -1,52 +1,44 @@
 # input file for particle conversion to/from QGSJet
-# the format of this file is: "corsika-identifier" "qgsjet-id" "hadron-class for x-section"
+# the format of this file is: "corsika-identifier" "qgsjet-id"  "xs-class"
 
-# class 0 (cannot interact)
-Electron    11 0
-Positron   -11 0
+# The 'Unknown' particle is needed to mark all particles qgsjetII does
+# not know
+# IMPORTANT Note: the code "20" MAY NOT BE USED by qgsjetII. Change to
+# another positive integer if a conflict arises. Since we use std::array
+# to store PID data keep the number as low as reasonable.  
+Unknown 20 CannotInteract
 
-# class 1
-Pi0          0 1
-PiPlus       1 1
-PiMinus     -1 1
-# in crmc: all particles from 100 to 999 ???
-Eta         10 1
-Rho0        -10 1
+# Note, we list here only the particles, which are produced by
+# QGSJetII as secondaries.  There is additional mapping of corsika
+# particles on QGSJetII "xs-class"es and "hadron-type"s, which are
+# programmed in code_generator.py
 
-# class 2
-#Nucleus      40 2
-Neutron      3 2
-AntiNeutron -3 2 
-Proton       2 2
-AntiProton  -2 2 
-# in crmc: 1000 to 9999 ???
-Lambda0      6 2
-Lambda0Bar  -6 2
-LambdaCPlus  9 2
-LambdaCMinusBar -9 2
+# class 1 (-> as pions)
+Pi0          0 LightMesons
+PiPlus       1 LightMesons
+PiMinus     -1 LightMesons
+Eta         10 LightMesons
+Rho0       -10 LightMesons
 
-# class 3
-K0Long      -5 3
-K0           5 3 
-K0Bar       -5 3 
-K0Short      5 3
-# ambiguity between the K0/b and K0s/l
-KPlus        4 3
-KMinus      -4 3
+# class 2 (-> as proton)
+Neutron      3 Baryons
+AntiNeutron -3 Baryons
+Proton       2 Baryons
+AntiProton  -2 Baryons 
+Lambda0      6 Baryons
+Lambda0Bar  -6 Baryons
+LambdaCPlus      9 Baryons
+LambdaCMinusBar -9 Baryons
 
-# class 4
-D0           8 4
-D0Bar        8 4
-DPlus        7 4
-DMinus      -7 4
-#DS+/- (340)
-#etac (440)
-#j/psi (441)
-#h_1c0
-#psi'
-#Xi_0c0
-#Xi_1c0
-#Xi_2c0
+# class 3 (-> as kaon)
+K0Short      5 Kaons
+K0Long      -5 Kaons
+KPlus        4 Kaons
+KMinus      -4 Kaons
 
-
+# class 4 (-> charmed mesons, not in qgsjetII)
+D0           8 Charmed
+D0Bar       -8 Charmed
+DPlus        7 Charmed
+DMinus      -7 Charmed
 

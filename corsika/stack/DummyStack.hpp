@@ -39,7 +39,7 @@ namespace corsika::dummy_stack {
     void setParticleData(const std::tuple<NoData>& /*v*/) {}
     void setParticleData(super_type& /*parent*/, const std::tuple<NoData>& /*v*/) {}
 
-    std::string as_string() const { return "dummy-data"; }
+    std::string asString() const { return "dummy-data"; }
   };
 
   /**

@@ -10,7 +10,7 @@
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
