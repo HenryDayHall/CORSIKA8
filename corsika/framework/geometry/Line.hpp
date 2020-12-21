@@ -18,7 +18,7 @@ namespace corsika {
    * Describes a straight line in space
    *
    */
-  
+
   class Line {
 
     ///! \toto move this to PhysicalUnits

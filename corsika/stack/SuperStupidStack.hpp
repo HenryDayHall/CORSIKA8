@@ -22,7 +22,7 @@
 #include <vector>
 
 namespace corsika::simple_stack {
-  
+
   /**
    * Example of a particle object on the stack.
    */
@@ -122,7 +122,7 @@ namespace corsika::simple_stack {
 
     void dump() const {}
 
-    inline void clear() ;
+    inline void clear();
 
     unsigned int getSize() const { return dataPID_.size(); }
     unsigned int getCapacity() const { return dataPID_.size(); }
@@ -152,7 +152,7 @@ namespace corsika::simple_stack {
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    inline  void copy(size_t i1, size_t i2);
+    inline void copy(size_t i1, size_t i2);
 
     /**
      *   FIXME: change to iterators.
@@ -160,9 +160,9 @@ namespace corsika::simple_stack {
      */
     inline void swap(size_t i1, size_t i2);
 
-    inline void incrementSize() ;
+    inline void incrementSize();
 
-    inline void decrementSize() ;
+    inline void decrementSize();
 
   private:
     /// the actual memory to store particle data

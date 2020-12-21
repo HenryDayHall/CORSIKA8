@@ -61,7 +61,7 @@ namespace corsika::dummy_stack {
 
     void init() { entries_ = 0; }
 
-    inline  void clear() { entries_ = 0; }
+    inline void clear() { entries_ = 0; }
 
     inline int getSize() const { return entries_; }
     inline int getCapacity() const { return entries_; }
@@ -69,7 +69,7 @@ namespace corsika::dummy_stack {
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    inline  void copy(const int /*i1*/, const int /*i2*/) {}
+    inline void copy(const int /*i1*/, const int /*i2*/) {}
 
     inline void incrementSize() { entries_++; }
     inline void decrementSize() { entries_--; }

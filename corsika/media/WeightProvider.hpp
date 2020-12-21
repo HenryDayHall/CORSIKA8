@@ -12,14 +12,14 @@
 
 namespace corsika {
 
-
   /** Double Iterator
    * Iterator that allowes the iteration of two individual lists at the same time. The
    *user needs to take care that booth lists have the same length.
    *  @tparam AConstIterator Iterator Type of the first list
    *  @tparam BConstIterator Iterator Type of the second list
 
-    \todo TODO: replace with https://www.boost.org/doc/libs/1_74_0/libs/iterator/doc/zip_iterator.html or ranges zip
+    \todo TODO: replace with
+   https://www.boost.org/doc/libs/1_74_0/libs/iterator/doc/zip_iterator.html or ranges zip
     \todo check resource allocation
    **/
   template <class AConstIterator, class BConstIterator>

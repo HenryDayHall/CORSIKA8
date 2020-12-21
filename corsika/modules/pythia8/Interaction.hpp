@@ -55,7 +55,8 @@ namespace corsika::pythia8 {
     void doInteraction(TProjectile&);
 
   private:
-    corsika::default_prng_type& fRNG = corsika::RNGManager::getInstance().getRandomStream("pythia");
+    corsika::default_prng_type& fRNG =
+        corsika::RNGManager::getInstance().getRandomStream("pythia");
     Pythia8::Pythia fPythia;
     Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;

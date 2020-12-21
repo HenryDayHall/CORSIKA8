@@ -89,4 +89,4 @@ namespace corsika {
     return corsika::detail::medium_data[static_cast<MediumIntType>(m)];
   }
 
-} // namespace corsika::medium
+} // namespace corsika

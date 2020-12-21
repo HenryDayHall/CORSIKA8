@@ -20,23 +20,21 @@ namespace corsika {
     typedef std::exponential_distribution<real_type> distribution_type;
 
   public:
-
     typedef Quantity value_type;
 
-    ExponentialDistribution()=delete;
+    ExponentialDistribution() = delete;
 
     ExponentialDistribution(value_type const& beta)
         : beta_(beta) {}
 
-    ExponentialDistribution(ExponentialDistribution<value_type>const& other):
-    beta_(other.getBeta())
-    {}
+    ExponentialDistribution(ExponentialDistribution<value_type> const& other)
+        : beta_(other.getBeta()) {}
 
-    ExponentialDistribution<value_type>&
-	operator=(ExponentialDistribution<value_type>const& other){
-    	if( this == &other) return *this;
-    	beta_ = other.getBeta();
-    	return *this;
+    ExponentialDistribution<value_type>& operator=(
+        ExponentialDistribution<value_type> const& other) {
+      if (this == &other) return *this;
+      beta_ = other.getBeta();
+      return *this;
     }
 
     /**
@@ -46,9 +44,7 @@ namespace corsika {
      * @post
      * @return  value_type
      */
-    value_type getBeta() const {
-		return beta_;
-	}
+    value_type getBeta() const { return beta_; }
 
     /**
      * @fn void setBeta(value_type)
@@ -58,27 +54,24 @@ namespace corsika {
      * @post
      * @param vBeta
      */
-	void setBeta(value_type const& beta) {
-		beta_ = beta;
-	}
+    void setBeta(value_type const& beta) { beta_ = beta; }
 
-	/**
+    /**
      * @fn value_type operator ()(Generator&)
-	 * @brief Generate a random number distributed like \f[ \beta e^{-X}\f]
-	 *
-	 * @pre
-	 * @post
-	 * @tparam Generator
-	 * @param g
-	 * @return
-	 */
+     * @brief Generate a random number distributed like \f[ \beta e^{-X}\f]
+     *
+     * @pre
+     * @post
+     * @tparam Generator
+     * @param g
+     * @return
+     */
     template <class Generator>
     value_type operator()(Generator& g) {
       return beta_ * dist_(g);
     }
 
   private:
-
     distribution_type dist_{1.};
     value_type beta_;
   };

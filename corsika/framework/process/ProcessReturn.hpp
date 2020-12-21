@@ -14,7 +14,7 @@ n/*
 
 namespace corsika {
 
-  /**   
+  /**
      since in a process sequence many status updates can accumulate
      for a single particle, this enum should define only bit-flags
      that can be accumulated easily with "|="

@@ -273,4 +273,3 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
                                      .getMagneticField(pTest2)
                                      .getComponents(gCS));
 }
-

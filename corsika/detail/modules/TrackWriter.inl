@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -32,8 +30,7 @@ namespace corsika::track_writer {
   }
 
   template <typename TParticle, typename TTrack>
-  ProcessReturn TrackWriter::doContinuous(const TParticle& vP,
-                                                   const TTrack& vT) {
+  ProcessReturn TrackWriter::doContinuous(const TParticle& vP, const TTrack& vT) {
     auto const start = vT.getPosition(0).getCoordinates();
     auto const delta = vT.getPosition(1).getCoordinates() - start;
     auto const pdg = static_cast<int>(get_PDG(vP.getPID()));

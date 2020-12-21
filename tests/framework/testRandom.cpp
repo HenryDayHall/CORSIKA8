@@ -16,9 +16,7 @@
 #include <limits>
 #include <random>
 
-
 using namespace corsika;
-
 
 SCENARIO("random-number streams can be registered and retrieved") {
   GIVEN("a RNGManager") {

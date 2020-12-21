@@ -44,8 +44,7 @@ namespace corsika::history {
     void setProjectileIndex(size_t i) { projectile_index_ = i; }
     size_t projectileIndex() const { return projectile_index_; }
 
-    size_t addSecondary(HEPEnergyType energy,
-                        Vector<hepmomentum_d> const& momentum,
+    size_t addSecondary(HEPEnergyType energy, Vector<hepmomentum_d> const& momentum,
                         Code pid) {
       secondaries_.emplace_back(energy, momentum, pid);
       return secondaries_.size() - 1;

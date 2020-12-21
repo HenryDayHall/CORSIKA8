@@ -18,7 +18,7 @@ namespace corsika {
    * Describes a sphere in space
    *
    **/
-  
+
   class Sphere : public IVolume {
 
   public:

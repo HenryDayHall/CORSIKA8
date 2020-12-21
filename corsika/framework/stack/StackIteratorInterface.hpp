@@ -146,14 +146,14 @@ namespace corsika {
     /** @name Iterator interface
         @{
     **/
-    inline  StackIteratorInterface& operator++() {
+    inline StackIteratorInterface& operator++() {
       do {
         ++index_;
       } while (
           getStack().isErased(*this)); // this also check the allowed bounds of index_
       return *this;
     }
-    inline   StackIteratorInterface operator++(int) {
+    inline StackIteratorInterface operator++(int) {
       StackIteratorInterface tmp(*this);
       do {
         ++index_;
@@ -161,19 +161,19 @@ namespace corsika {
           getStack().isErased(*this)); // this also check the allowed bounds of index_
       return tmp;
     }
-    inline   StackIteratorInterface operator+(int delta) const {
+    inline StackIteratorInterface operator+(int delta) const {
       return StackIteratorInterface(*data_, index_ + delta);
     }
-    inline   bool operator==(StackIteratorInterface const& rhs) const {
+    inline bool operator==(StackIteratorInterface const& rhs) const {
       return index_ == rhs.index_;
     }
-    inline   bool operator!=(StackIteratorInterface const& rhs) const {
+    inline bool operator!=(StackIteratorInterface const& rhs) const {
       return index_ != rhs.index_;
     }
-    inline   bool operator==(
+    inline bool operator==(
         const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
             rhs) const; // implemented below
-    inline  bool operator!=(
+    inline bool operator!=(
         const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
             rhs) const; // implemented below
 
@@ -181,7 +181,7 @@ namespace corsika {
      * Convert iterator to value type, where value type is the user-provided particle
      * readout class
      **/
-    inline   particle_interface_type& operator*() {
+    inline particle_interface_type& operator*() {
       return static_cast<particle_interface_type&>(*this);
     }
 
@@ -189,7 +189,7 @@ namespace corsika {
      * Convert iterator to const value type, where value type is the user-provided
      * particle readout class
      **/
-    inline   particle_interface_type const& operator*() const {
+    inline particle_interface_type const& operator*() const {
       return static_cast<particle_interface_type const&>(*this);
     }
     ///@}

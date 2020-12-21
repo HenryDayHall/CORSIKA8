@@ -34,7 +34,7 @@ namespace corsika {
      *         needs to add up to 1
      **/
     inline NuclearComposition(std::vector<Code> const& pComponents,
-			      std::vector<float> const& pFractions);
+                              std::vector<float> const& pFractions);
 
     /** Sum all all relative composition weighted by func(element)
      *  This function sums all relative compositions given during this classes

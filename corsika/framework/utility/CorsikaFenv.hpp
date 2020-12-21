@@ -21,11 +21,11 @@ int fedisableexcept(int excepts);
 }
 
 #ifdef CORSIKA_HAS_FEENABLEEXCEPT
-    // Nothing to do, OS privides the functions
+// Nothing to do, OS privides the functions
 #else
-    #ifdef CORSIKA_OS_MAC
-        #include <corsika/detail/framework/utility/CorsikaFenvOSX.inl>
-    #else
-        #include <corsika/detail/framework/utility/CorsikaFenvFallback.inl>
-    #endif
+#ifdef CORSIKA_OS_MAC
+#include <corsika/detail/framework/utility/CorsikaFenvOSX.inl>
+#else
+#include <corsika/detail/framework/utility/CorsikaFenvFallback.inl>
+#endif
 #endif

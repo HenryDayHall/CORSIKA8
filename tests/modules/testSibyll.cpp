@@ -24,7 +24,7 @@ TEST_CASE("Sibyll", "[processes]") {
 
   SECTION("Sibyll -> Corsika") {
     CHECK(Code::Electron ==
-            corsika::sibyll::convertFromSibyll(corsika::sibyll::SibyllCode::Electron));
+          corsika::sibyll::convertFromSibyll(corsika::sibyll::SibyllCode::Electron));
   }
 
   SECTION("Corsika -> Sibyll") {
@@ -189,8 +189,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     // Felix, are those changes OK? Below are the checks before refactory-2020
-    //CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
-    //CHECK(view.getSize() == 11);
+    // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
+    // CHECK(view.getSize() == 11);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(42.8).margin(.1));
     CHECK(view.getSize() == 40);
   }

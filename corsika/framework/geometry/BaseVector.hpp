@@ -31,19 +31,19 @@ namespace corsika {
         , cs_(pCS) {}
 
     BaseVector() = delete; // we only want to creat initialized
-			   // objects
+                           // objects
     BaseVector(BaseVector const&) = default;
     BaseVector(BaseVector&& a) = default;
     BaseVector& operator=(BaseVector const&) = default;
     ~BaseVector() = default;
 
     CoordinateSystemPtr getCoordinateSystem() const;
-    void setCoordinateSystem(CoordinateSystemPtr const&  cs) { cs_ = cs; }
+    void setCoordinateSystem(CoordinateSystemPtr const& cs) { cs_ = cs; }
 
   protected:
     QuantityVector<TDimension> const& getQuantityVector() const;
     QuantityVector<TDimension>& getQuantityVector();
-    void setQuantityVector(QuantityVector<TDimension> const& v) { quantityVector_=v; }
+    void setQuantityVector(QuantityVector<TDimension> const& v) { quantityVector_ = v; }
 
   private:
     QuantityVector<TDimension> quantityVector_;

@@ -85,13 +85,14 @@ namespace corsika {
      *
      * \param in_A process/list A
      * \param in_A process/list B
-     **/        
+     **/
     ProcessSequence(TProcess1 in_A, TProcess2 in_B)
         : A_(in_A)
         , B_(in_B) {}
 
     template <typename TParticle>
-    ProcessReturn doBoundaryCrossing(TParticle& particle, typename TParticle::node_type const& from,
+    ProcessReturn doBoundaryCrossing(TParticle& particle,
+                                     typename TParticle::node_type const& from,
                                      typename TParticle::node_type const& to);
 
     template <typename TParticle, typename TTrack>
@@ -117,7 +118,7 @@ namespace corsika {
     inline void doStack(TStack& stack);
 
     template <typename TParticle, typename TTrack>
-    inline LengthType  getMaxStepLength(TParticle& particle, TTrack& vTrack);
+    inline LengthType getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {
@@ -182,7 +183,7 @@ namespace corsika {
         vA, make_sequence(std::forward<TProcesses>(vBs)...));
   }
 
- /**
+  /**
    * Factory function to create ProcessSequence
    *
    * specialization for two input objects (no paramter pack in vB).

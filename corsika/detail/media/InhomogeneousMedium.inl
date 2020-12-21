@@ -21,7 +21,7 @@ namespace corsika {
   InhomogeneousMedium<T, TDensityFunction>::InhomogeneousMedium(
       NuclearComposition const& nuclComp, TArgs&&... rhoTArgs)
       : nuclComp_(nuclComp)
-      , densityFunction_(rhoTArgs...){}
+      , densityFunction_(rhoTArgs...) {}
 
   template <typename T, typename TDensityFunction>
   MassDensityType InhomogeneousMedium<T, TDensityFunction>::getMassDensity(

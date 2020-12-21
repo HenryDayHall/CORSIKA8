@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -138,9 +136,9 @@ namespace corsika::hadronic_elastic_model {
     }();
 
     std::cout << "HadronicElasticInteraction: s = " << s * constants::invGeVsq
-              << " GeV²; absT = " << absT * constants::invGeVsq
-              << " GeV² (max./GeV² = " << 4 * constants::invGeVsq * projectileMomentumSquaredNorm
-              << ')' << std::endl;
+              << " GeV²; absT = " << absT * constants::invGeVsq << " GeV² (max./GeV² = "
+              << 4 * constants::invGeVsq * projectileMomentumSquaredNorm << ')'
+              << std::endl;
 
     auto const theta = 2 * asin(sqrt(absT / (4 * pProjectileCoMSqNorm)));
     auto const phi = phiDist(fRNG);
@@ -166,7 +164,8 @@ namespace corsika::hadronic_elastic_model {
   HadronicElasticInteraction::inveV2 HadronicElasticInteraction::B(eV2 s) const {
     auto constexpr b_p = 2.3;
     auto const result =
-        (2 * b_p + 2 * b_p + 4 * pow(s * constants::invGeVsq, gfEpsilon) - 4.2) * constants::invGeVsq;
+        (2 * b_p + 2 * b_p + 4 * pow(s * constants::invGeVsq, gfEpsilon) - 4.2) *
+        constants::invGeVsq;
     std::cout << "B(" << s << ") = " << result / invGeVsq << " GeV¯²" << std::endl;
     return result;
   }
@@ -174,8 +173,8 @@ namespace corsika::hadronic_elastic_model {
   CrossSectionType HadronicElasticInteraction::CrossSection(
       SquaredHEPEnergyType s) const {
     // assuming every target behaves like a proton, fX and fY are universal
-    CrossSectionType const sigmaTotal =
-        fX * pow(s * constants::invGeVsq, gfEpsilon) + fY * pow(s * constants::invGeVsq, -gfEta);
+    CrossSectionType const sigmaTotal = fX * pow(s * constants::invGeVsq, gfEpsilon) +
+                                        fY * pow(s * constants::invGeVsq, -gfEta);
 
     // according to Schuler & Sjöstrand, PRD 49, 2257 (1994)
     // (we ignore rho because rho^2 is just ~2 %)

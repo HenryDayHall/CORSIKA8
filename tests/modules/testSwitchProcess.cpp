@@ -108,7 +108,8 @@ struct DummyProcess : InteractionProcess<DummyProcess<N>> {
     // secondaries for DummyProcess<N>
 
     for (int i = 0; i < N; ++i) {
-      // vSec.AddSecondary(std::make_tuple(vSec.GetEnergy() / N)); // <-- FIXME, when SwitchProcess is removedalter
+      // vSec.AddSecondary(std::make_tuple(vSec.GetEnergy() / N)); // <-- FIXME, when
+      // SwitchProcess is removedalter
     }
   }
 };

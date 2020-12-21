@@ -37,7 +37,6 @@ TEST_CASE("MediumProperties") {
   CHECK(air.getDlt0() == 0.0);
 }
 
-
 TEST_CASE("MediumPropertyModel w/ Homogeneous") {
 
   CoordinateSystemPtr gCS = get_root_CoordinateSystem();

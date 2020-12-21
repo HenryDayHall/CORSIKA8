@@ -38,7 +38,7 @@ namespace corsika {
 
   private:
     MassDensityType const density_;
-    NuclearComposition const nuclComp_;    
+    NuclearComposition const nuclComp_;
   };
 
 } // namespace corsika

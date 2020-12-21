@@ -126,8 +126,7 @@ TEST_CASE("ClassTimer", "[Timer]") {
   SECTION("Measure runtime of a const function without arguments") {
 
     auto test = foo();
-    auto tc =
-        corsika::ClassTimer<decltype(&foo::bar_const), &foo::bar_const>(test);
+    auto tc = corsika::ClassTimer<decltype(&foo::bar_const), &foo::bar_const>(test);
 
     tc.call();
 

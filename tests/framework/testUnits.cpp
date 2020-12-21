@@ -151,6 +151,6 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     CHECK(convert_SI_to_HEP(6.5823e-25_s) * 1_GeV == Approx(1).epsilon(1e-4));
 
     CHECK(convert_SI_to_HEP(3.8938e-32 * meter * meter) * 1_GeV * 1_GeV ==
-            Approx(1).epsilon(1e-4));
+          Approx(1).epsilon(1e-4));
   }
 }

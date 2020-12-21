@@ -1,3 +1,11 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #pragma once
 
 #include <corsika/framework/stack/CombinedStack.hpp>
@@ -29,7 +37,7 @@ namespace corsika {
 
     using StackWithGeometry = CombinedStack<
         typename nuclear_stack::ParticleDataStack::stack_implementation_type,
-      node::GeometryData<setup::Environment>, StackWithGeometryInterface>;
+        node::GeometryData<setup::Environment>, StackWithGeometryInterface>;
 
     // ------------------------------------------
     // Add [optional] history data to stack, too:
@@ -37,8 +45,8 @@ namespace corsika {
     // combine dummy stack with geometry information for tracking
     template <typename TStackIter>
     using StackWithHistoryInterface =
-      CombinedParticleInterface<StackWithGeometry::pi_type, history::HistoryEventDataInterface,
-                                  TStackIter>;
+        CombinedParticleInterface<StackWithGeometry::pi_type,
+                                  history::HistoryEventDataInterface, TStackIter>;
 
     using StackWithHistory =
         CombinedStack<typename StackWithGeometry::stack_implementation_type,

@@ -44,18 +44,17 @@ namespace corsika {
   struct ParticleBase {
 
   public:
-
     typedef StackIterator stack_iterator_type;
 
     ParticleBase() = default;
 
-     // those copy constructors and assigments should never be implemented
-    ParticleBase(ParticleBase&&)      = delete;
+    // those copy constructors and assigments should never be implemented
+
+    ParticleBase(ParticleBase&&) = delete;
     ParticleBase(ParticleBase const&) = delete;
 
-    ParticleBase operator=(ParticleBase&&)      = delete;
+    ParticleBase operator=(ParticleBase&&) = delete;
     ParticleBase operator=(ParticleBase const&) = delete;
-
 
     /**
      * Delete this particle on the stack. The corresponding iterator
@@ -67,7 +66,9 @@ namespace corsika {
      * Method to retrieve the status of the Particle. Is it already deleted? Or not.
      */
 
-    inline bool isErased() const { return this->getIterator().getStack().isErased(this->getIterator()); }
+    inline bool isErased() const {
+      return this->getIterator().getStack().isErased(this->getIterator());
+    }
 
     /**
      * Add a secondary particle based on *this on the stack @param
@@ -75,7 +76,7 @@ namespace corsika {
      * function description in the user defined ParticleInterface::AddSecondary(...)
      */
     template <typename... TArgs>
-    inline  stack_iterator_type addSecondary(const TArgs... args) {
+    inline stack_iterator_type addSecondary(const TArgs... args) {
 
       return this->getStack().addSecondary(this->getIterator(), args...);
     }
@@ -86,10 +87,10 @@ namespace corsika {
      * return the corresponding StackIterator for this particle
      */
     inline stack_iterator_type& getIterator() {
-    	return static_cast<stack_iterator_type&>(*this);
+      return static_cast<stack_iterator_type&>(*this);
     }
 
-    inline  const stack_iterator_type& getIterator() const {
+    inline const stack_iterator_type& getIterator() const {
       return static_cast<const stack_iterator_type&>(*this);
     }
 
@@ -100,28 +101,20 @@ namespace corsika {
         and getStackData to retrieve data
         @{
     */
-    inline auto& getStackData() {
-    	return this->getIterator().getStackData();
-    }
+    inline auto& getStackData() { return this->getIterator().getStackData(); }
 
-    inline  const auto& getStackData() const {
-    	return this->getIterator().getStackData();
-    }
+    inline const auto& getStackData() const { return this->getIterator().getStackData(); }
 
-    inline auto& getStack() {
-    	return this->getIterator().getStack();
-    }
+    inline auto& getStack() { return this->getIterator().getStack(); }
 
-    inline const auto& getStack() const {
-    	return this->getIterator().getStack();
-    }
+    inline const auto& getStack() const { return this->getIterator().getStack(); }
 
     /**
      * return the index number of the underlying iterator object
      */
 
-    inline  std::size_t getIndex() const {
-    	return this->getIterator().getIndexFromIterator();
+    inline std::size_t getIndex() const {
+      return this->getIterator().getIndexFromIterator();
     }
     ///@}
   };

@@ -24,8 +24,7 @@ namespace corsika {
   class IMagneticFieldModel : public Model {
 
     // a type-alias for a magnetic field vector
-    using MagneticFieldVector =
-        Vector<magnetic_flux_density_d>;
+    using MagneticFieldVector = Vector<magnetic_flux_density_d>;
 
   public:
     /**
@@ -34,8 +33,7 @@ namespace corsika {
      * @param  point    The location to evaluate the field at.
      * @returns    The magnetic field vector at that point.
      */
-    virtual auto getMagneticField(Point const&) const
-        -> MagneticFieldVector = 0;
+    virtual auto getMagneticField(Point const&) const -> MagneticFieldVector = 0;
 
     /**
      * A virtual default destructor.

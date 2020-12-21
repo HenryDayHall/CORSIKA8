@@ -51,13 +51,13 @@ namespace corsika::qgsjetII {
     NeutralLightMesonType = 101,
   };
   using QgsjetIIHadronTypeIntType = std::underlying_type<QgsjetIIHadronType>::type;
-}
+} // namespace corsika::qgsjetII
 
 // include automatically generated code:
 #include <corsika/modules/qgsjetII/Generated.inc>
 
 namespace corsika::qgsjetII {
-  
+
   QgsjetIICode constexpr convertToQgsjetII(Code pCode) {
     return corsika2qgsjetII[static_cast<CodeIntType>(pCode)];
   }
@@ -92,8 +92,7 @@ namespace corsika::qgsjetII {
   }
 
   QgsjetIIHadronType constexpr getQgsjetIIHadronType(Code pCode) {
-    return corsika2qgsjetIIHadronType[static_cast<CodeIntType>(
-        pCode)];
+    return corsika2qgsjetIIHadronType[static_cast<CodeIntType>(pCode)];
   }
 
-} // namespace corsika::process::qgsjetII
+} // namespace corsika::qgsjetII

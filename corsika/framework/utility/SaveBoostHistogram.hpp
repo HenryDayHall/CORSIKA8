@@ -28,4 +28,3 @@ namespace corsika {
 } // namespace corsika
 
 #include <corsika/detail/framework/utility/SaveBoostHistogram.inl>
-

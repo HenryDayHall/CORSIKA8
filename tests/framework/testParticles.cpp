@@ -66,14 +66,14 @@ TEST_CASE("ParticleProperties", "[Particles]") {
 
   SECTION("Lifetimes") {
     CHECK(get_lifetime(Code::Electron) ==
-            std::numeric_limits<double>::infinity() * si::second);
+          std::numeric_limits<double>::infinity() * si::second);
     CHECK(get_lifetime(Code::DPlus) < get_lifetime(Code::Gamma));
     CHECK(get_lifetime(Code::RhoPlus) / si::second ==
-            (Approx(4.414566727909413e-24).epsilon(1e-3)));
+          (Approx(4.414566727909413e-24).epsilon(1e-3)));
     CHECK(get_lifetime(Code::SigmaMinusBar) / si::second ==
-            (Approx(8.018880848563575e-11).epsilon(1e-5)));
+          (Approx(8.018880848563575e-11).epsilon(1e-5)));
     CHECK(get_lifetime(Code::MuPlus) / si::second ==
-            (Approx(2.1970332555864364e-06).epsilon(1e-5)));
+          (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
   SECTION("Particle groups: electromagnetic") {

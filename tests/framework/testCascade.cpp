@@ -101,7 +101,6 @@ public:
     }
     CORSIKA_LOG_INFO(fmt::format("ProcessCut::doSecondaries size={} count={}",
                                  vS.getEntries(), count_));
-
   }
 
   int getCount() const { return count_; }

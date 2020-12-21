@@ -51,7 +51,8 @@ namespace corsika {
      * @tparam TVolumeType Type of volume to be created
      * @tparam TVolumeArgs Types to forward to the constructor
      * @param args Parameter forwarded to the constructor of TVolumeType
-     * @retval Retuns unique pointer to a VolumeTreeNode with the same EnvitonmentModel as this class
+     * @retval Retuns unique pointer to a VolumeTreeNode with the same EnvitonmentModel as
+     *this class
      **/
     template <class TVolumeType, typename... TVolumeArgs>
     static std::unique_ptr<BaseNodeType> createNode(TVolumeArgs&&... args);

@@ -1,8 +1,6 @@
 /*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
- * See file AUTHORS for a list of contributors.
- *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
@@ -52,8 +50,7 @@ namespace corsika::qgsjetII {
     std::cout << "QgsjetII::Interaction n=" << count_ << std::endl;
   }
 
-  CrossSectionType Interaction::getCrossSection(const Code beamId,
-                                                const Code targetId,
+  CrossSectionType Interaction::getCrossSection(const Code beamId, const Code targetId,
                                                 const HEPEnergyType Elab,
                                                 const unsigned int Abeam,
                                                 const unsigned int targetA) const {
@@ -61,7 +58,8 @@ namespace corsika::qgsjetII {
 
     if (corsika::qgsjetII::canInteract(beamId)) {
 
-      int const iBeam = static_cast<QgsjetIIXSClassIntType>(corsika::qgsjetII::getQgsjetIIXSCode(beamId));
+      int const iBeam = static_cast<QgsjetIIXSClassIntType>(
+          corsika::qgsjetII::getQgsjetIIXSCode(beamId));
       int iTarget = 1;
       if (is_nucleus(targetId)) {
         iTarget = targetA;
@@ -165,7 +163,7 @@ namespace corsika::qgsjetII {
 
     if (corsika::qgsjetII::canInteract(corsikaBeamId)) {
 
-     CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
+      CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
 
       // position and time of interaction, not used in QgsjetII
       Point pOrig = vP.getPosition();
@@ -222,8 +220,7 @@ namespace corsika::qgsjetII {
       std::cout << "Interaction: target selected: " << targetCode << std::endl;
 
       int targetQgsCode = -1;
-      if (is_nucleus(targetCode))
-        targetQgsCode = get_nucleus_A(targetCode);
+      if (is_nucleus(targetCode)) targetQgsCode = get_nucleus_A(targetCode);
       if (targetCode == Code::Proton) targetQgsCode = 1;
       std::cout << "Interaction: target qgsjetII code/A: " << targetQgsCode << std::endl;
       if (targetQgsCode > maxMassNumber_ || targetQgsCode < 1)
@@ -271,7 +268,7 @@ namespace corsika::qgsjetII {
       // CoM frame definition in QgsjetII projectile: +z
       auto const& originalCS = projectileMomentumLab.getCoordinateSystem();
       CoordinateSystemPtr const zAxisFrame =
-        make_rotationToZ(originalCS, projectileMomentumLab);
+          make_rotationToZ(originalCS, projectileMomentumLab);
 
       // fragments
       QGSJetIIFragmentsStack qfs;
@@ -283,20 +280,19 @@ namespace corsika::qgsjetII {
           case 1: { // proton/neutron
             idFragm = Code::Proton;
 
-            auto momentum = Vector(
-                zAxisFrame, QuantityVector<hepmomentum_d>{
-                                0.0_GeV, 0.0_GeV,
-                                sqrt((projectileEnergyLab + Proton::mass) *
-                                     (projectileEnergyLab - Proton::mass))});
+            auto momentum =
+                Vector(zAxisFrame, QuantityVector<hepmomentum_d>{
+                                       0.0_GeV, 0.0_GeV,
+                                       sqrt((projectileEnergyLab + Proton::mass) *
+                                            (projectileEnergyLab - Proton::mass))});
 
             auto const energy =
                 sqrt(momentum.getSquaredNorm() + square(get_mass(idFragm)));
             momentum.rebase(originalCS); // transform back into standard lab frame
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.getComponents() << std::endl;
-            auto pnew = vP.addSecondary(
-                std::make_tuple(idFragm, energy, momentum, pOrig,
-                                                     tOrig));
+            auto pnew =
+                vP.addSecondary(std::make_tuple(idFragm, energy, momentum, pOrig, tOrig));
             Plab_final += pnew.getMomentum();
             Elab_final += pnew.getEnergy();
           } break;
@@ -329,8 +325,7 @@ namespace corsika::qgsjetII {
                     << " p=" << momentum.getComponents() << " A=" << A << " Z=" << Z
                     << std::endl;
           auto pnew = vP.addSecondary(
-              std::make_tuple(
-                  idFragm, energy, momentum, pOrig, tOrig, A, Z));
+              std::make_tuple(idFragm, energy, momentum, pOrig, tOrig, A, Z));
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }
@@ -347,10 +342,9 @@ namespace corsika::qgsjetII {
         std::cout << "secondary fragment> id="
                   << corsika::qgsjetII::convertFromQgsjetII(psec.getPID())
                   << " p=" << momentum.getComponents() << std::endl;
-        auto pnew =
-            vP.addSecondary(std::make_tuple(
-                corsika::qgsjetII::convertFromQgsjetII(psec.getPID()), energy, momentum,
-                pOrig, tOrig));
+        auto pnew = vP.addSecondary(
+            std::make_tuple(corsika::qgsjetII::convertFromQgsjetII(psec.getPID()), energy,
+                            momentum, pOrig, tOrig));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }

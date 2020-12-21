@@ -46,8 +46,8 @@ struct MyBoundaryCrossingProcess
   ProcessReturn doBoundaryCrossing(Particle& p, typename Particle::node_type const& from,
                                    typename Particle::node_type const& to) {
 
-    CORSIKA_LOG_INFO("MyBoundaryCrossingProcess: crossing! from: {} to: {} ", fmt::ptr(&from),
-               fmt::ptr(&to));
+    CORSIKA_LOG_INFO("MyBoundaryCrossingProcess: crossing! from: {} to: {} ",
+                     fmt::ptr(&from), fmt::ptr(&to));
 
     auto const& name = get_name(p.getPID());
     auto const start = p.getPosition().getCoordinates();
@@ -69,7 +69,7 @@ private:
 //
 int main() {
 
-  //logging::SetLevel(logging::level::info);
+  // logging::SetLevel(logging::level::info);
 
   CORSIKA_LOG_INFO("boundary_example");
 
@@ -88,15 +88,12 @@ int main() {
   auto world = EnvType::createNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel =
-      MediumPropertyModel<UniformMagneticField<
-	HomogeneousMedium<setup::EnvironmentInterface>>>;
+  using MyHomogeneousModel = MediumPropertyModel<
+      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
 
   auto const props = world->setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T),
-      1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(std::vector<Code>{Code::Proton},
-                                      std::vector<float>{1.f}));
+      Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
+      NuclearComposition(std::vector<Code>{Code::Proton}, std::vector<float>{1.f}));
 
   // add a "target" sphere with 5km readius at 0,0,0
   auto target = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);

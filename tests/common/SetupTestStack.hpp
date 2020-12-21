@@ -1,13 +1,23 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #pragma once
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
+#include <corsika/setup/SetupStack.hpp>
+
 /**
  * \file SetupTestStack
  *
- * standard stack setup for unit tests. 
+ * standard stack setup for unit tests.
  **/
 
 namespace corsika::setup::testing {
@@ -15,10 +25,10 @@ namespace corsika::setup::testing {
   /**
    * \function setup_stack
    *
-   * standard stack setup for unit tests. 
+   * standard stack setup for unit tests.
    *
    *
-   * 
+   *
    *
    * \return a tuple with element 0 being a Stack object filled with
    * one particle, and element 1 the StackView on it.

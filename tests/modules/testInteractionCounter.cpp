@@ -6,26 +6,23 @@
  * the license.
  */
 
-#include <corsika/process/interaction_counter/InteractionCounter.hpp>
+#include <corsika/modules/InteractionCounter.hpp>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
-#include <corsika/geometry/Point.h>
-#include <corsika/geometry/RootCoordinateSystem.h>
-#include <corsika/geometry/Vector.h>
-#include <corsika/units/PhysicalUnits.h>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/setup/SetupStack.h>
+#include <corsika/setup/SetupStack.hpp>
 
 #include <catch2/catch.hpp>
 
 #include <numeric>
 
 using namespace corsika;
-using namespace corsika::process::interaction_counter;
-using namespace corsika::units;
-using namespace corsika::units::si;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
 

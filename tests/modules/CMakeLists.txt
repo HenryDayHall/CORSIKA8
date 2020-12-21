@@ -1,9 +1,8 @@
 set (test_modules_sources
   TestMain.cpp
 #  ${CORSIKA_DATA}/readLib/source/testData.cc
-  #testStackInspector.cpp
+  testStackInspector.cpp
   #testTrackingLine.cpp
-  #testInteractionCounter.cpp
   #testExecTime.cpp
   #testObservationPlane.cpp
   testQGSJetII.cpp

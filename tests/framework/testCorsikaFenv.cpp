@@ -21,11 +21,8 @@ static void handle_fpe(int /*signo*/) { gRESULT = 0; }
 
 TEST_CASE("CorsikaFenv", "[fenv]") {
 
-  SECTION("Enable all exceptions")
-  {
-    feenableexcept(FE_ALL_EXCEPT);
-  }
-  
+  SECTION("Enable all exceptions") { feenableexcept(FE_ALL_EXCEPT); }
+
   signal(SIGFPE, handle_fpe);
 
   SECTION("exception") {
@@ -33,8 +30,6 @@ TEST_CASE("CorsikaFenv", "[fenv]") {
     [[maybe_unused]] auto trigger = std::log(0.);
     std::cout << "trigger: " << trigger << std::endl;
     CHECK(gRESULT == 0);
-  }  
-  
+  }
 }
-
 }

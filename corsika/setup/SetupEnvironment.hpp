@@ -26,4 +26,3 @@ namespace corsika::setup {
   using Environment = Environment<EnvironmentInterface>;
 
 } // end namespace corsika::setup
-

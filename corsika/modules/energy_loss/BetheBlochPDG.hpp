@@ -21,7 +21,7 @@
 
 namespace corsika::energy_loss {
 
-    /**
+  /**
    *   PDG2018, passage of particles through matter
    *
    * Note, that \f$I_{\mathrm{eff}}\f$ of composite media a determined from \f$ \ln I =
@@ -59,7 +59,6 @@ namespace corsika::energy_loss {
     void printProfile() const;
     HEPEnergyType getTotal() const;
 
-    
   private:
     void updateMomentum(corsika::setup::Stack::particle_type&, HEPEnergyType Enew);
     void fillProfile(setup::Trajectory const&, HEPEnergyType);

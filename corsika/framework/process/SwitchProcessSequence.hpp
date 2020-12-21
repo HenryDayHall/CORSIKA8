@@ -111,7 +111,7 @@ namespace corsika {
      * \param in_A process branch A
      * \param in_A process branch B
      * \param sel functor to swtich between branch A and B
-     **/    
+     **/
     SwitchProcessSequence(TProcess1 in_A, TProcess2 in_B, TSelect sel)
         : select_(sel)
         , A_(in_A)

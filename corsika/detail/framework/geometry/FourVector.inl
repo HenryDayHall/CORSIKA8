@@ -114,12 +114,11 @@ namespace corsika {
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::FourVector<TTimeType, TSpaceVecType> const qv) {
+  inline std::ostream& operator<<(
+      std::ostream& os, corsika::FourVector<TTimeType, TSpaceVecType> const qv) {
 
     os << '(' << qv.timeLike_ << ", " << qv.spaceLike_ << ") ";
     return os;
   }
-
 
 } // namespace corsika

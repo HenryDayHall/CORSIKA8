@@ -24,9 +24,14 @@ namespace corsika {
    * @tparam TDuration type of std::duration to measure the elapsed time, default is
    * microseconds
    */
-  template <typename TFunc, class TTimer = Timer<std::chrono::high_resolution_clock, std::chrono::microseconds>>
-  class FunctionTimer : public TTimer{
-    static_assert(is_timer_v<TTimer>, "TTimer is not a timer!"); // Better https://en.cppreference.com/w/cpp/language/constraints but not available in C++17
+  template <typename TFunc, class TTimer = Timer<std::chrono::high_resolution_clock,
+                                                 std::chrono::microseconds>>
+  class FunctionTimer : public TTimer {
+    static_assert(
+        is_timer_v<TTimer>,
+        "TTimer is not a timer!"); // Better
+                                   // https://en.cppreference.com/w/cpp/language/constraints
+                                   // but not available in C++17
   public:
     /** Constructs the wrapper with the given functionpointer
      *  @param f  Function or functor whose runtime should be measured
@@ -46,8 +51,7 @@ namespace corsika {
     template <typename... TArgs>
     auto operator()(TArgs&&... args) -> std::invoke_result_t<TFunc, TArgs...>;
 
-
-  private:   
+  private:
     TFunc function_;
   };
 

@@ -36,11 +36,10 @@ TEST_CASE("ParticleCut", "[processes]") {
   HEPEnergyType const Eabove = 1_TeV;
   HEPEnergyType const Ebelow = 10_GeV;
   // list of arbitrary particles
-  std::vector<Code> const particleList = {
-      Code::PiPlus,   Code::PiMinus, Code::KPlus,
-      Code::KMinus,   Code::K0Long,  Code::K0Short,
-      Code::Electron, Code::MuPlus,  Code::NuE,
-      Code::Neutron,  Code::NuMu};
+  std::vector<Code> const particleList = {Code::PiPlus,   Code::PiMinus, Code::KPlus,
+                                          Code::KMinus,   Code::K0Long,  Code::K0Short,
+                                          Code::Electron, Code::MuPlus,  Code::NuE,
+                                          Code::Neutron,  Code::NuMu};
 
   // common stating point
   const Point point0(rootCS, 0_m, 0_m, 0_m);

@@ -24,7 +24,7 @@ using namespace corsika;
 
 TEST_CASE("StackInspector", "[processes]") {
 
-  auto const& rootCS = RootCoordinateSystem::getInstance().GetRootCoordinateSystem();
+  auto const& rootCS = get_root_CoordinateSystem();
   Point const origin(rootCS, {0_m, 0_m, 0_m});
   Vector<units::si::SpeedType::dimension_type> v(rootCS, 0_m / second, 0_m / second,
                                                  1_m / second);
@@ -32,18 +32,15 @@ TEST_CASE("StackInspector", "[processes]") {
   Trajectory<Line> track(line, 10_s);
 
   TestCascadeStack stack;
-  stack.Clear();
+  stack.clear();
   HEPEnergyType E0 = 100_GeV;
-  stack.AddParticle(std::tuple<corsika::Code, units::si::HEPEnergyType,
-                               corsika::MomentumVector, Point, units::si::TimeType>{
+  stack.addParticle(std::make_tuple(
       Code::Electron, E0, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns});
+      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   SECTION("interface") {
 
     StackInspector<TestCascadeStack> model(1, true, E0);
-
-    model.Init();
     model.doStack(stack);
   }
 }

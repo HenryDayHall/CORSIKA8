@@ -17,7 +17,7 @@ n/*
 namespace corsika {
 
   class CoordinateSystem; // fwd decl
-  class Point; // fwd decl
+  class Point;            // fwd decl
   template <typename T>
   class Vector; // fwd decl
 

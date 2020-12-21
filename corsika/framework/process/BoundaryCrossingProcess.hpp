@@ -27,10 +27,9 @@ namespace corsika {
   template <typename TDerived>
   class BoundaryCrossingProcess : public BaseProcess<TDerived> {
 
-    /*    static_assert(std::is_invocable_v<decltype(&TDerived<>::doBoundaryCrossing), TDerived&,
-                                      passepartout>,
-                  "BoundaryCrossingProcess needs doBoundaryCrossing(TParticle, "
-                  "TParticle::node_type, TParticle::node_type)");*/
+    /*    static_assert(std::is_invocable_v<decltype(&TDerived<>::doBoundaryCrossing),
+       TDerived&, passepartout>, "BoundaryCrossingProcess needs
+       doBoundaryCrossing(TParticle, " "TParticle::node_type, TParticle::node_type)");*/
 
   public:
     /**
@@ -38,7 +37,8 @@ namespace corsika {
      * \p from and \p to.
      */
     template <typename TParticle>
-    ProcessReturn doBoundaryCrossing(TParticle&, typename TParticle::node_type const& from,
+    ProcessReturn doBoundaryCrossing(TParticle&,
+                                     typename TParticle::node_type const& from,
                                      typename TParticle::node_type const& to);
   };
 

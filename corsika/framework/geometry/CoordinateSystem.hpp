@@ -35,7 +35,7 @@ namespace corsika {
   using CoordinateSystemPtr = std::shared_ptr<CoordinateSystem const>;
 
   /// this is the only way to create ONE unique root CS
-  static CoordinateSystemPtr& get_root_CoordinateSystem(); 
+  static CoordinateSystemPtr& get_root_CoordinateSystem();
 
   /**
    * Creates new CoordinateSystemPtr by translation along \a vector
@@ -44,7 +44,8 @@ namespace corsika {
                                               QuantityVector<length_d> const& vector);
 
   /**
-   * creates a new CoordinateSystem in which vVec points in direction of the new z-axis, \a vVec
+   * creates a new CoordinateSystem in which vVec points in direction of the new z-axis,
+   * \a vVec
    */
   template <typename TDim>
   inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
@@ -59,7 +60,8 @@ namespace corsika {
                                            double const angle);
 
   /**
-   * creates a new CoordinateSystem, translated by \a translation and rotated around \a axis by \a angle.
+   * creates a new CoordinateSystem, translated by \a translation and rotated around \a
+   * axis by \a angle.
    */
   template <typename TDim>
   inline CoordinateSystemPtr make_translationAndRotation(

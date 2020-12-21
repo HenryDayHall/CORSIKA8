@@ -99,7 +99,7 @@ namespace corsika {
 
     std::stack<typename VolumeTreeNode<TMediumInterface>::VTNUPtr>
         layers_; // innermost layer first
-    
+
   }; // end class LayeredSphericalAtmosphereBuilder
 
 } // namespace corsika

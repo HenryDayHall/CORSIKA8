@@ -20,6 +20,13 @@ set (test_framework_sources
   testRandom.cpp
   testNullModel.cpp  
   testHelix.cpp
+  testInteractionCounter.cpp
   )
 
 CORSIKA_ADD_TEST (testFramework SOURCES ${test_framework_sources})
+
+target_compile_definitions (
+  testFramework
+  PRIVATE
+  REFDATADIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)

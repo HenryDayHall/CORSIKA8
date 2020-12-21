@@ -57,7 +57,7 @@ TEST_CASE("rotation") {
     e1.rebase(rotCS);
     e2.rebase(rotCS);
     e3.rebase(rotCS);
-    
+
     // length of e1, e2 and e3 must all be 1_GeV in rotated CS (not boosted!)
     CHECK(e1.getNorm() / 1_GeV == Approx(1).margin(absMargin));
     CHECK(e2.getNorm() / 1_GeV == Approx(1).margin(absMargin));
@@ -229,10 +229,9 @@ TEST_CASE("boosts") {
     MomentumVector pProjectileLab{rootCS, {0_GeV, 0_PeV, -1_PeV}};
     HEPEnergyType const eProjectileLab = energy(projectileMass, pProjectileLab);
     FourVector const PprojLab(eProjectileLab, pProjectileLab);
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
 
     auto const sqrt_s_lab =
-        sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
+        sqrt(s(eProjectileLab + targetMass, pProjectileLab.getComponents(rootCS)));
 
     auto const sqrt_s_lab =
         sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
@@ -242,14 +241,14 @@ TEST_CASE("boosts") {
 
     // boost projecticle
     auto const PprojCoM = boost.toCoM(PprojLab);
-    auto const a = PprojCoM.GetSpaceLikeComponents().GetComponents(boost.GetRotatedCS());
-    CHECK(a.GetX() / 1_GeV == Approx(0));
-    CHECK(a.GetY() / 1_GeV == Approx(0));
-    CHECK(a.GetZ() / (momentum(sqrt_s_lab / 2, projectileMass)) == Approx(1));
+    auto const a = PprojCoM.getSpaceLikeComponents().getComponents(boost.getRotatedCS());
+    CHECK(a.getX() / 1_GeV == Approx(0));
+    CHECK(a.getY() / 1_GeV == Approx(0));
+    CHECK(a.getZ() / (momentum(sqrt_s_lab / 2, projectileMass)) == Approx(1));
 
     // boost target
     auto const PtargCoM = boost.toCoM(FourVector(targetMass, pTargetLab));
-    CHECK(PtargCoM.GetTimeLikeComponent() / sqrt_s_lab == Approx(.5));
+    CHECK(PtargCoM.getTimeLikeComponent() / sqrt_s_lab == Approx(.5));
 
     // sum of momenta in CoM, should be 0
     auto const sumPCoM =
@@ -334,7 +333,8 @@ TEST_CASE("rest frame") {
   FourVector const rest4Mom = boostRest.toCoM(PprojLab);
 
   CHECK(rest4Mom.getTimeLikeComponent() / 1_GeV == Approx(projectileMass / 1_GeV));
-  CHECK(rest4Mom.getSpaceLikeComponents().getNorm() / 1_GeV == Approx(0).margin(absMargin));
+  CHECK(rest4Mom.getSpaceLikeComponents().getNorm() / 1_GeV ==
+        Approx(0).margin(absMargin));
 
   FourVector const a{0_eV, Vector{csPrime, 0_eV, 5_GeV, 0_eV}};
   FourVector const b{0_eV, Vector{rootCS, 3_GeV, 0_eV, 0_eV}};

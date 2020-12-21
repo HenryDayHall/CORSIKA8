@@ -89,7 +89,7 @@ namespace corsika {
      */
     Stack()
         : nDeleted_(0)
-	, data_()
+        , data_()
         , deleted_(std::vector<bool>(data_.getSize(), false)) {}
 
     Stack(Stack&) = delete; ///< since Stack can be very big, we don't want to copy it

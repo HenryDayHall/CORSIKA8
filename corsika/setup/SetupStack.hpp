@@ -83,4 +83,3 @@ namespace corsika::setup {
 #endif // WITH_HISTORY
 
 } // namespace corsika::setup
-

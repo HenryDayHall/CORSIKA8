@@ -1,3 +1,11 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #pragma once
 
 namespace corsika::qgsjetII {
@@ -28,8 +36,8 @@ namespace corsika::qgsjetII {
   HEPEnergyType QGSJetIIStackData::getEnergy(const int i) const {
     return qgarr14_.esp[i][0] * 1_GeV;
   }
-  MomentumVector QGSJetIIStackData::getMomentum(
-      const unsigned int i, const CoordinateSystemPtr& CS) const {
+  MomentumVector QGSJetIIStackData::getMomentum(const unsigned int i,
+                                                const CoordinateSystemPtr& CS) const {
     QuantityVector<hepmomentum_d> components = {qgarr14_.esp[i][2] * 1_GeV,
                                                 qgarr14_.esp[i][3] * 1_GeV,
                                                 qgarr14_.esp[i][1] * 1_GeV};

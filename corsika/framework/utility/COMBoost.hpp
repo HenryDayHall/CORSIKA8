@@ -51,7 +51,6 @@ namespace corsika {
     Eigen::Matrix2d inverseBoost_;
     CoordinateSystemPtr originalCS_;
     CoordinateSystemPtr rotatedCS_;
-
   };
 } // namespace corsika
 

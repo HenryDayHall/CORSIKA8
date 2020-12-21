@@ -56,6 +56,7 @@ namespace corsika {
   std::true_type is_timer_impl(Timer<T, U> const volatile&);
 
   template <typename T>
-  inline constexpr bool is_timer_v = std::is_same_v< decltype(is_timer_impl(std::declval<T&>())), std::true_type>;
+  inline constexpr bool is_timer_v =
+      std::is_same_v<decltype(is_timer_impl(std::declval<T&>())), std::true_type>;
 
 } // namespace corsika

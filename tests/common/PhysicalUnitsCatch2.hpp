@@ -10,7 +10,7 @@
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <catch2/catch.hpp> 
+#include <catch2/catch.hpp>
 
 namespace corsika::testing {
 
@@ -26,4 +26,4 @@ namespace corsika::testing {
     return a.magnitude() == b;
   }
 
-}
+} // namespace corsika::testing

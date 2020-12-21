@@ -45,8 +45,7 @@ int main() {
       rootCS, 0_m, 0_m,
       112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
 
-  ShowerAxis showerAxis{injectionPos,
-                                     Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env};
+  ShowerAxis showerAxis{injectionPos, Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env};
   energy_loss::BetheBlochPDG eLoss{showerAxis, 300_MeV};
 
   setup::Stack stack;

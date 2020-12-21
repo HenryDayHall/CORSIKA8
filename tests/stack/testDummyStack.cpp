@@ -31,7 +31,10 @@ TEST_CASE("DummyStack", "[stack]") {
 
     TestStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
-    for (int i = 0; i < 99; ++i) { s.addParticle(std::tuple<dummy_stack::NoData>{noData}); }
+
+    for (int i = 0; i < 99; ++i) {
+      s.addParticle(std::tuple<dummy_stack::NoData>{noData});
+    }
 
     CHECK(s.getEntries() == 99);
     for (int i = 0; i < 99; ++i) s.getNextParticle().erase();

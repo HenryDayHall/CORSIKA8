@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -43,16 +41,14 @@ namespace corsika {
 
       // traverse pFrom
       a = &pFrom;
-      while (a != b && a) {
-        a = a->getReferenceCS().get();
-      }
+      while (a != b && a) { a = a->getReferenceCS().get(); }
 
       if (a == b) break;
 
       b = b->getReferenceCS().get();
     }
 
-    if (a!=b || a == nullptr) {
+    if (a != b || a == nullptr) {
       throw std::runtime_error("no connection between coordinate systems found!");
     }
 

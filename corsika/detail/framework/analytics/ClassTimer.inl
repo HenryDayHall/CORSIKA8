@@ -29,23 +29,29 @@ namespace corsika {
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...), typename TTimer>
   TRet ClassTimer<TRet (TClass::*)(TArgs...), TFuncPtr, TTimer>::call(TArgs... args) {
-    this->start_ = ClassTimerImpl<TClass,TTimer>::clock_type::now();
+    this->start_ = ClassTimerImpl<TClass, TTimer>::clock_type::now();
     auto tmp = (this->obj_.*TFuncPtr)(std::forward<TArgs>(args)...);
-    this->timeDiff_ = std::chrono::duration_cast<typename ClassTimerImpl<TClass,TTimer>::duration_type>(ClassTimerImpl<TClass,TTimer>::clock_type::now() - this->start_);
+    this->timeDiff_ = std::chrono::duration_cast<
+        typename ClassTimerImpl<TClass, TTimer>::duration_type>(
+        ClassTimerImpl<TClass, TTimer>::clock_type::now() - this->start_);
     return tmp;
   }
 
   // Specialisation 1
 
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...), typename TTimer>
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...),
+            typename TTimer>
   ClassTimer<void (TClass::*)(TArgs...), TFuncPtr, TTimer>::ClassTimer(TClass& obj)
-      : ClassTimerImpl<TClass,TTimer>(obj) {}
+      : ClassTimerImpl<TClass, TTimer>(obj) {}
 
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...), typename TTimer>
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...),
+            typename TTimer>
   void ClassTimer<void (TClass::*)(TArgs...), TFuncPtr, TTimer>::call(TArgs... args) {
-    this->start_ = ClassTimerImpl<TClass,TTimer>::clock_type::now();
+    this->start_ = ClassTimerImpl<TClass, TTimer>::clock_type::now();
     (this->obj_.*TFuncPtr)(std::forward<TArgs>(args)...);
-    this->timeDiff_ = std::chrono::duration_cast<typename ClassTimerImpl<TClass,TTimer>::duration_type>(ClassTimerImpl<TClass,TTimer>::clock_type::now() - this->start_);
+    this->timeDiff_ = std::chrono::duration_cast<
+        typename ClassTimerImpl<TClass, TTimer>::duration_type>(
+        ClassTimerImpl<TClass, TTimer>::clock_type::now() - this->start_);
     return;
   }
 
@@ -54,27 +60,35 @@ namespace corsika {
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
   ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::ClassTimer(TClass& obj)
-      : ClassTimerImpl<TClass,TTimer>(obj) {}
+      : ClassTimerImpl<TClass, TTimer>(obj) {}
 
   template <typename TClass, typename TRet, typename... TArgs,
             TRet (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
-  TRet ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::call(TArgs... args) {
-    this->start_ = ClassTimerImpl<TClass,TTimer>::clock_type::now();
+  TRet ClassTimer<TRet (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::call(
+      TArgs... args) {
+    this->start_ = ClassTimerImpl<TClass, TTimer>::clock_type::now();
     auto tmp = (this->obj_.*TFuncPtr)(std::forward<TArgs>(args)...);
-    this->timeDiff_ = std::chrono::duration_cast<typename ClassTimerImpl<TClass,TTimer>::duration_type>(ClassTimerImpl<TClass,TTimer>::clock_type::now() - this->start_);
+    this->timeDiff_ = std::chrono::duration_cast<
+        typename ClassTimerImpl<TClass, TTimer>::duration_type>(
+        ClassTimerImpl<TClass, TTimer>::clock_type::now() - this->start_);
     return tmp;
   }
 
   /// Specialisation 3
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const,
+            typename TTimer>
   ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::ClassTimer(TClass& obj)
-      : ClassTimerImpl<TClass,TTimer>(obj) {}
+      : ClassTimerImpl<TClass, TTimer>(obj) {}
 
-  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const, typename TTimer>
-  void ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::call(TArgs... args) {
-    this->start_ = ClassTimerImpl<TClass,TTimer>::clock_type::now();
+  template <typename TClass, typename... TArgs, void (TClass::*TFuncPtr)(TArgs...) const,
+            typename TTimer>
+  void ClassTimer<void (TClass::*)(TArgs...) const, TFuncPtr, TTimer>::call(
+      TArgs... args) {
+    this->start_ = ClassTimerImpl<TClass, TTimer>::clock_type::now();
     (this->obj_.*TFuncPtr)(std::forward<TArgs>(args)...);
-    this->timeDiff_ = std::chrono::duration_cast<typename ClassTimerImpl<TClass,TTimer>::duration_type>(ClassTimerImpl<TClass,TTimer>::clock_type::now() - this->start_);
+    this->timeDiff_ = std::chrono::duration_cast<
+        typename ClassTimerImpl<TClass, TTimer>::duration_type>(
+        ClassTimerImpl<TClass, TTimer>::clock_type::now() - this->start_);
     return;
   }
 

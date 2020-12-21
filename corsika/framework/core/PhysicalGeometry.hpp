@@ -20,7 +20,6 @@
 
 namespace corsika {
 
-  typedef Vector<hepmomentum_d> MomentumVector; 
-
+  typedef Vector<hepmomentum_d> MomentumVector;
 
 } // namespace corsika

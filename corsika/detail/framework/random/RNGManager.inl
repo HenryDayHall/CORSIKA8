@@ -1,7 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
- *
- * See file AUTHORS for a list of contributors.
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -22,19 +20,18 @@ namespace corsika {
     rngs_[pStreamName] = std::move(rng);
   }
 
-  inline RNGManager::prng_type& RNGManager::getRandomStream(string_type const& pStreamName)  {
-	  if (isRegistered(pStreamName)) {
-	    return rngs_.at(pStreamName);
-	  } else { // this stream name is not in the map
-	    throw std::runtime_error("'" + pStreamName + "' is not a registered stream.");
-	  }
-	}
-
+  inline RNGManager::prng_type& RNGManager::getRandomStream(
+      string_type const& pStreamName) {
+    if (isRegistered(pStreamName)) {
+      return rngs_.at(pStreamName);
+    } else { // this stream name is not in the map
+      throw std::runtime_error("'" + pStreamName + "' is not a registered stream.");
+    }
+  }
 
   inline bool RNGManager::isRegistered(string_type const& pStreamName) const {
     return rngs_.count(pStreamName) > 0;
   }
-
 
   inline std::stringstream RNGManager::dumpState() const {
     std::stringstream buffer;
@@ -60,6 +57,5 @@ namespace corsika {
       entry.second.seed(seed);
     }
   }
-
 
 } // namespace corsika

@@ -39,7 +39,6 @@ namespace corsika {
 
   private:
     TimeType timeLength_;
-
   };
 
 } // namespace corsika

@@ -36,7 +36,7 @@ namespace corsika::stack_inspector {
   private:
     bool ReportStack_;
     HEPEnergyType E0_;
-    const HEPEnergyType dE_threshold_ =  1_eV; 
+    const HEPEnergyType dE_threshold_ = 1_eV;
     decltype(std::chrono::system_clock::now()) StartTime_;
   };
 

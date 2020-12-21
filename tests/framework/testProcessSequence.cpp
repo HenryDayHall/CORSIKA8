@@ -45,6 +45,7 @@ public:
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
     return ProcessReturn::Ok;
   }
+
 private:
   int v_ = 0;
 };
@@ -64,6 +65,7 @@ public:
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
     return ProcessReturn::Ok;
   }
+
 private:
   int v_ = 0;
 };
@@ -83,6 +85,7 @@ public:
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
     return ProcessReturn::Ok;
   }
+
 private:
   int v_ = 0;
 };
@@ -105,6 +108,7 @@ public:
   GrammageType getInteractionLength(TParticle&) const {
     return 10_g / square(1_cm);
   }
+
 private:
   int v_;
 };
@@ -118,7 +122,7 @@ public:
   }
 
   template <typename TView>
-  inline void  doInteraction(TView& v) const {
+  inline void doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     cout << "Process2::doInteraction" << endl;
@@ -128,6 +132,7 @@ public:
     cout << "Process2::GetInteractionLength" << endl;
     return 20_g / (1_cm * 1_cm);
   }
+
 private:
   int v_ = 0;
 };
@@ -151,6 +156,7 @@ public:
     cout << "Process3::GetInteractionLength" << endl;
     return 30_g / (1_cm * 1_cm);
   }
+
 private:
   int v_ = 0;
 };
@@ -174,6 +180,7 @@ public:
   void doInteraction(TView&) const {
     checkInteract |= 8;
   }
+
 private:
   int v_ = 0;
 };
@@ -222,6 +229,7 @@ public:
     return ProcessReturn::Ok;
   }
   int getCount() const { return count_; }
+
 private:
   int count_ = 0;
 };
