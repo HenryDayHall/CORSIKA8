@@ -17,7 +17,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-using namespace corsika::observation_plane;
 using namespace corsika;
 
 TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
@@ -31,8 +30,7 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
    */
 
   Point const start(rootCS, {0_m, 1_m, 10_m});
-  Vector<SpeedType::dimension_type> vec(rootCS, 0_m / second, 0_m / second,
-                                        -constants::c);
+  VelocityVector vec(rootCS, 0_m / second, 0_m / second, -constants::c);
   Line line(start, vec);
   Trajectory<Line> track(line, 12_m / constants::c);
 
@@ -45,7 +43,7 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
     };
     stack.addParticle(std::make_tuple(
         Code::NuMu, 1_GeV,
-        corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::mass)}),
+        MomentumVector(rootCS, {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::mass)}),
         Point(rootCS, {1_m, 1_m, 10_m}), 0_ns));
   }
   auto particle = stack.getNextParticle();
@@ -53,7 +51,7 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
   SECTION("horizontal plane") {
 
     Plane const obsPlane(Point(rootCS, {0_m, 0_m, 0_m}),
-                         Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
+                         DirectionVector(rootCS, {0., 0., 1.}));
     ObservationPlane obs(obsPlane, "particles.dat", true);
 
     const LengthType length = obs.getMaxStepLength(particle, track);
@@ -74,7 +72,7 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
   SECTION("transparent plane") {
     Plane const obsPlane(Point(rootCS, {0_m, 0_m, 0_m}),
-                         Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
+                         DirectionVector(rootCS, {0., 0., 1.}));
     ObservationPlane obs(obsPlane, "particles.dat", false);
 
     const LengthType length = obs.getMaxStepLength(particle, track);

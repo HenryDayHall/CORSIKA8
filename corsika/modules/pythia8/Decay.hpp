@@ -58,10 +58,9 @@ namespace corsika::pythia8 {
 
     // data members
     Pythia8::Pythia pythia_;
-
-    std::set<Code> handledDecays_;
     int count_ = 0;
     bool handleAllDecays_ = true;
+    std::set<Code> handledDecays_;
     bool print_listing_ = false;
   };
 

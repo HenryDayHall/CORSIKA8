@@ -22,7 +22,7 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   SECTION("write non nucleus") {
-    nuclear_stack::NuclearStackExtension<simple_stack::SuperStupidStack,
+    nuclear_stack::NuclearStackExtension<SuperStupidStack,
                                          nuclear_stack::ExtendedParticleInterfaceType>
         s;
     s.addParticle(std::make_tuple(
@@ -32,7 +32,8 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("write nucleus") {
-    nuclear_stack::NuclearStackExtension<simple_stack::SuperStupidStack,
+
+    nuclear_stack::NuclearStackExtension<SuperStupidStack,
                                          nuclear_stack::ExtendedParticleInterfaceType>
         s;
     s.addParticle(std::make_tuple(
@@ -210,7 +211,8 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("not allowed") {
-    nuclear_stack::NuclearStackExtension<simple_stack::SuperStupidStack,
+
+    nuclear_stack::NuclearStackExtension<SuperStupidStack,
                                          nuclear_stack::ExtendedParticleInterfaceType>
         s;
 

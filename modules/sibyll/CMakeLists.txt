@@ -13,7 +13,7 @@ set (
   nuclib.hpp
   )
 
-enable_language(Fortran)
+enable_language (Fortran)
 add_library (Sibyll SHARED ${MODEL_SOURCES})
 set_property(TARGET Sibyll PROPERTY POSITION_INDEPENDENT_CODE 1)
 

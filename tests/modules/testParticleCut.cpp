@@ -20,7 +20,6 @@
 #include <catch2/catch.hpp>
 
 using namespace corsika;
-using namespace corsika::particle_cut;
 
 TEST_CASE("ParticleCut", "[processes]") {
   feenableexcept(FE_INVALID);

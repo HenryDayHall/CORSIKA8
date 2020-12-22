@@ -9,6 +9,6 @@
 #include <urqmd.hpp>
 
 namespace urqmd {
-  double ranf_(int&) { return urqmd::rndm_interface(); }
+  double ranf_(int&) { return ::urqmd::rndm_interface(); }
 }
 

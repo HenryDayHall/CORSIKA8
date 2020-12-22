@@ -21,5 +21,8 @@
 namespace corsika {
 
   typedef Vector<hepmomentum_d> MomentumVector;
+  typedef Vector<dimensionless_d> DirectionVector;
+  typedef Vector<magnetic_flux_density_d> MagneticFieldVector;
+  typedef Vector<SpeedType::dimension_type> VelocityVector;
 
 } // namespace corsika

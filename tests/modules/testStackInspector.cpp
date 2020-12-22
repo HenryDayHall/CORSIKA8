@@ -13,30 +13,28 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <../framework/testCascade.hpp>
+#include <../framework/testCascade.hpp> //! \todo fix this
 
-using namespace corsika::units::si;
-using namespace corsika::stack_inspector;
 using namespace corsika;
 
 TEST_CASE("StackInspector", "[processes]") {
 
   auto const& rootCS = get_root_CoordinateSystem();
   Point const origin(rootCS, {0_m, 0_m, 0_m});
-  Vector<units::si::SpeedType::dimension_type> v(rootCS, 0_m / second, 0_m / second,
-                                                 1_m / second);
+  VelocityVector v(rootCS, 0_m / second, 0_m / second, 1_m / second);
   Line line(origin, v);
   Trajectory<Line> track(line, 10_s);
 
   TestCascadeStack stack;
   stack.clear();
   HEPEnergyType E0 = 100_GeV;
-  stack.addParticle(std::make_tuple(
-      Code::Electron, E0, corsika::MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+  stack.addParticle(std::make_tuple(Code::Electron, E0,
+                                    MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   SECTION("interface") {
 

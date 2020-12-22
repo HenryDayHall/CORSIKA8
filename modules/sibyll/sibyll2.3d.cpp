@@ -13,4 +13,4 @@
 int get_nwounded() { return s_chist_.nwd; }
 double get_sibyll_mass2(int& id) { return s_mass1_.am2[std::abs(id) - 1]; }
 
-double s_rndm_(int&) { return sibyll::rndm_interface(); }
+double s_rndm_(int&) { return ::sibyll::rndm_interface(); }

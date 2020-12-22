@@ -13,19 +13,18 @@
 #include <corsika/framework/stack/Stack.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/RootCoordinateSystem.hpp> // remove
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
 #include <string>
 #include <tuple>
 #include <vector>
 
-namespace corsika::simple_stack {
+namespace corsika {
 
   template <typename StackIteratorInterface>
   void ParticleInterface<StackIteratorInterface>::setParticleData(
-      std::tuple<corsika::Code, HEPEnergyType, MomentumVector, corsika::Point,
-                 TimeType> const& v) {
+      std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType> const& v) {
     this->setPID(std::get<0>(v));
     this->setEnergy(std::get<1>(v));
     this->setMomentum(std::get<2>(v));
@@ -36,8 +35,7 @@ namespace corsika::simple_stack {
   template <typename StackIteratorInterface>
   void ParticleInterface<StackIteratorInterface>::setParticleData(
       ParticleInterface<StackIteratorInterface> const&,
-      std::tuple<corsika::Code, HEPEnergyType, MomentumVector, corsika::Point,
-                 TimeType> const& v) {
+      std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType> const& v) {
     this->setPID(std::get<0>(v));
     this->setEnergy(std::get<1>(v));
     this->setMomentum(std::get<2>(v));
@@ -70,16 +68,13 @@ namespace corsika::simple_stack {
   }
 
   inline void SuperStupidStackImpl::incrementSize() {
-    using corsika::Code;
-    using corsika::Point;
-
     dataPID_.push_back(Code::Unknown);
     dataE_.push_back(0 * electronvolt);
 
     CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
     momentum_.push_back(
-        momentum_type(dummyCS, {0 * electronvolt, 0 * electronvolt, 0 * electronvolt}));
+        MomentumVector(dummyCS, {0 * electronvolt, 0 * electronvolt, 0 * electronvolt}));
 
     position_.push_back(Point(dummyCS, {0 * meter, 0 * meter, 0 * meter}));
     time_.push_back(0 * second);
@@ -95,4 +90,4 @@ namespace corsika::simple_stack {
     }
   }
 
-} // namespace corsika::simple_stack
+} // namespace corsika

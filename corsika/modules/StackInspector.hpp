@@ -13,14 +13,14 @@
 
 #include <chrono>
 
-namespace corsika::stack_inspector {
+namespace corsika {
 
   template <typename TStack>
-  class StackInspector : public corsika::StackProcess<StackInspector<TStack>> {
+  class StackInspector : public StackProcess<StackInspector<TStack>> {
 
     typedef typename TStack::particle_type Particle;
 
-    using corsika::StackProcess<StackInspector<TStack>>::getStep;
+    using StackProcess<StackInspector<TStack>>::getStep;
 
   public:
     StackInspector(const int vNStep, const bool vReportStack, const HEPEnergyType vE0);
@@ -40,6 +40,6 @@ namespace corsika::stack_inspector {
     decltype(std::chrono::system_clock::now()) StartTime_;
   };
 
-} // namespace corsika::stack_inspector
+} // namespace corsika
 
 #include <corsika/detail/modules/StackInspector.inl>

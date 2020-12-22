@@ -10,79 +10,85 @@
 // InteractionCounter used boost/histogram, which
 // fails if boost/type_traits have been included before. Thus, we have
 // to include it first...
-#include <corsika/process/interaction_counter/InteractionCounter.hpp>
+#include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
-#include <corsika/cascade/Cascade.h>
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/FlatExponential.h>
-#include <corsika/environment/LayeredSphericalAtmosphereBuilder.h>
-#include <corsika/environment/NuclearComposition.h>
-#include <corsika/environment/ShowerAxis.h>
-#include <corsika/geometry/Plane.h>
-#include <corsika/geometry/Sphere.h>
-#include <corsika/logging/Logging.h>
-#include <corsika/process/ProcessSequence.h>
-#include <corsika/process/SwitchProcessSequence.h>
-#include <corsika/process/StackProcess.h>
-#include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/longitudinal_profile/LongitudinalProfile.h>
-#include <corsika/process/observation_plane/ObservationPlane.h>
-#include <corsika/process/on_shell_check/OnShellCheck.h>
-#include <corsika/process/particle_cut/ParticleCut.h>
-#include <corsika/process/proposal/ContinuousProcess.h>
-#include <corsika/process/proposal/Interaction.h>
-#include <corsika/process/pythia/Decay.h>
-#include <corsika/process/sibyll/Decay.h>
-#include <corsika/process/sibyll/Interaction.h>
-#include <corsika/process/sibyll/NuclearInteraction.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
-#include <corsika/process/urqmd/UrQMD.h>
-#include <corsika/random/RNGManager.h>
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
-#include <corsika/units/PhysicalUnits.h>
-#include <corsika/utl/CorsikaFenv.h>
+#include <corsika/framework/geometry/Plane.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
+#include <corsika/framework/process/InteractionCounter.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
+
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/ShowerAxis.hpp>
+
+#include <corsika/modules/BetheBlochPDG.hpp>
+#include <corsika/modules/LongitudinalProfile.hpp>
+#include <corsika/modules/ObservationPlane.hpp>
+#include <corsika/modules/OnShellCheck.hpp>
+#include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/Pythia8.hpp>
+#include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/TrackingLine.hpp>
+#include <corsika/modules/UrQMD.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
+
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <string>
 
+/*
+  NOTE, WARNING, ATTENTION
+
+  The .../Random.hpppp implement the hooks of external modules to the C8 random
+  number generator. It has to occur excatly ONCE per linked
+  executable. If you include the header below multiple times and
+  link this togehter, it will fail.
+ */
+#include <corsika/modules/sibyll/Random.hpp>
+#include <corsika/modules/urqmd/Random.hpp>
+
 using namespace corsika;
-using namespace corsika::process;
-using namespace corsika::units;
-using namespace corsika::particles;
-using namespace corsika::random;
-using namespace corsika::geometry;
-using namespace corsika::environment;
-
 using namespace std;
-using namespace corsika::units::si;
 
-using Particle = setup::Stack::StackIterator;
+using Particle = setup::Stack::particle_type;
 
 void registerRandomStreams(const int seed) {
-  random::RNGManager::GetInstance().RegisterRandomStream("cascade");
-  random::RNGManager::GetInstance().RegisterRandomStream("qgsjet");
-  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
-  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  random::RNGManager::GetInstance().RegisterRandomStream("urqmd");
-  random::RNGManager::GetInstance().RegisterRandomStream("proposal");
+  RNGManager::getInstance().registerRandomStream("cascade");
+  RNGManager::getInstance().registerRandomStream("qgsjet");
+  RNGManager::getInstance().registerRandomStream("sibyll");
+  RNGManager::getInstance().registerRandomStream("pythia");
+  RNGManager::getInstance().registerRandomStream("urqmd");
+  RNGManager::getInstance().registerRandomStream("proposal");
 
   if (seed == 0)
-    random::RNGManager::GetInstance().SeedAll();
+    RNGManager::getInstance().seedAll();
   else
-    random::RNGManager::GetInstance().SeedAll(seed);
+    RNGManager::getInstance().seedAll(seed);
 }
 
 template <typename T>
-using MyExtraEnv = environment::MediumPropertyModel<environment::UniformMagneticField<T>>;
+using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::SetLevel(logging::level::info);
+  logging::set_level(logging::level::info);
 
-  C8LOG_INFO("vertical_EAS");
+  CORSIKA_LOG_INFO("vertical_EAS");
 
   if (argc < 4) {
     std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
@@ -99,15 +105,16 @@ int main(int argc, char** argv) {
   // setup environment, geometry
   using EnvType = setup::Environment;
   EnvType env;
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
+  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  auto builder = environment::make_layered_spherical_atmosphere_builder<
-      setup::EnvironmentInterface,
-      MyExtraEnv>::create(center, units::constants::EarthRadius::Mean,
-                          environment::Medium::AirDry1Atm,
-                          geometry::Vector{rootCS, 0_T, 0_T, 1_T});
+  auto builder = make_layered_spherical_atmosphere_builder<
+      setup::EnvironmentInterface, MyExtraEnv>::create(center,
+                                                       constants::EarthRadius::Mean,
+                                                       Medium::AirDry1Atm,
+                                                       MagneticFieldVector{rootCS, 0_T,
+                                                                           0_T, 1_T});
   builder.setNuclearComposition(
-      {{particles::Code::Nitrogen, particles::Code::Oxygen},
+      {{Code::Nitrogen, Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
@@ -119,11 +126,11 @@ int main(int argc, char** argv) {
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
-  stack.Clear();
+  stack.clear();
   const Code beamCode = Code::Nucleus;
   unsigned short const A = std::stoi(std::string(argv[1]));
   unsigned short Z = std::stoi(std::string(argv[2]));
-  auto const mass = particles::GetNucleusMass(A, Z);
+  auto const mass = get_nucleus_mass(A, Z);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
@@ -137,52 +144,49 @@ int main(int argc, char** argv) {
   };
 
   auto const [px, py, pz] = momentumComponents(thetaRad, P0);
-  auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
+  auto plab = MomentumVector(rootCS, {px, py, pz});
   cout << "input particle: " << beamCode << endl;
   cout << "input angles: theta=" << theta << endl;
-  cout << "input momentum: " << plab.GetComponents() / 1_GeV << ", norm = " << plab.norm()
-       << endl;
+  cout << "input momentum: " << plab.getComponents() / 1_GeV
+       << ", norm = " << plab.getNorm() << endl;
 
   auto const observationHeight = 0_km + builder.getEarthRadius();
   auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
-                 sqrt(-units::static_pow<2>(sin(thetaRad) * observationHeight) +
-                      units::static_pow<2>(injectionHeight));
+                 sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
+                      static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
-      showerCore +
-      Vector<dimensionless_d>{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+      showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
 
-  std::cout << "point of injection: " << injectionPos.GetCoordinates() << std::endl;
+  std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
   if (A != 1) {
-    stack.AddParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
+    stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    stack.AddParticle(
-        std::make_tuple(particles::Code::Proton, E0, plab, injectionPos, 0_ns));
+    stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
   }
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  std::cout << "shower axis length: " << (showerCore - injectionPos).norm() * 1.5
+  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.5
             << std::endl;
 
-  environment::ShowerAxis const showerAxis{injectionPos,
-                                           (showerCore - injectionPos) * 1.5, env};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env};
 
   // setup processes, decays and interactions
 
-  process::sibyll::Interaction sibyll;
-  process::interaction_counter::InteractionCounter sibyllCounted(sibyll);
+  corsika::sibyll::Interaction sibyll;
+  InteractionCounter sibyllCounted(sibyll);
 
-  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::interaction_counter::InteractionCounter sibyllNucCounted(sibyllNuc);
+  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  InteractionCounter sibyllNucCounted(sibyllNuc);
 
-  process::pythia::Decay decayPythia;
+  corsika::pythia8::Decay decayPythia;
 
   // use sibyll decay routine for decays of particles unknown to pythia
-  process::sibyll::Decay decaySibyll{{
+  corsika::sibyll::Decay decaySibyll{{
       Code::N1440Plus,
       Code::N1440MinusBar,
       Code::N1440_0,
@@ -202,67 +206,65 @@ int main(int argc, char** argv) {
       Code::KStar0_1430_MinusBar,
   }};
 
-  decaySibyll.PrintDecayConfig();
+  decaySibyll.printDecayConfig();
 
-  process::particle_cut::ParticleCut cut{60_GeV, false, true};
-  process::proposal::Interaction proposal(env, cut.GetECut());
-  process::proposal::ContinuousProcess em_continuous(env, cut.GetECut());
-  process::interaction_counter::InteractionCounter proposalCounted(proposal);
+  ParticleCut cut{60_GeV, false, true};
+  corsika::proposal::Interaction proposal(env, cut.getECut());
+  corsika::proposal::ContinuousProcess em_continuous(env, cut.getECut());
+  InteractionCounter proposalCounted(proposal);
 
-  process::on_shell_check::OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+  OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
-  process::longitudinal_profile::LongitudinalProfile longprof{showerAxis};
+  LongitudinalProfile longprof{showerAxis};
 
-  Plane const obsPlane(showerCore, Vector<dimensionless_d>(rootCS, {0., 0., 1.}));
-  process::observation_plane::ObservationPlane observationLevel(obsPlane,
-                                                                "particles.dat");
+  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
+  ObservationPlane observationLevel(obsPlane, "particles.dat");
 
-  process::UrQMD::UrQMD urqmd;
-  process::interaction_counter::InteractionCounter urqmdCounted{urqmd};
+  corsika::urqmd::UrQMD urqmd;
+  InteractionCounter urqmdCounted{urqmd};
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    process::SwitchResult operator()(const Particle& p) {
-      if (p.GetEnergy() < cutE_)
-        return process::SwitchResult::First;
+    SwitchResult operator()(const Particle& p) {
+      if (p.getEnergy() < cutE_)
+        return SwitchResult::First;
       else
-        return process::SwitchResult::Second;
+        return SwitchResult::Second;
     }
   };
-  auto hadronSequence =
-      process::select(urqmdCounted, process::sequence(sibyllNucCounted, sibyllCounted),
-                      EnergySwitch(55_GeV));
-  auto decaySequence = process::sequence(decayPythia, decaySibyll);
+  auto hadronSequence = make_select(
+      urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted), EnergySwitch(55_GeV));
+  auto decaySequence = make_sequence(decayPythia, decaySibyll);
   auto sequence =
-      process::sequence(hadronSequence, reset_particle_mass, decaySequence,
-                        proposalCounted, em_continuous, cut, observationLevel, longprof);
+      make_sequence(hadronSequence, reset_particle_mass, decaySequence, proposalCounted,
+                    em_continuous, cut, observationLevel, longprof);
 
   // define air shower object, run simulation
   tracking_line::TrackingLine tracking;
-  cascade::Cascade EAS(env, tracking, sequence, stack);
+  Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.forceInteraction();
 
-  EAS.Run();
+  EAS.run();
 
-  cut.ShowResults();
+  cut.showResults();
   em_continuous.showResults();
-  observationLevel.ShowResults();
-  const HEPEnergyType Efinal = cut.GetCutEnergy() + cut.GetInvEnergy() +
-                               cut.GetEmEnergy() + em_continuous.energyLost() +
-                               observationLevel.GetEnergyGround();
+  observationLevel.showResults();
+  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
+                               cut.getEmEnergy() + em_continuous.getEnergyLost() +
+                               observationLevel.getEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.Reset();
-  cut.Reset();
+  observationLevel.reset();
+  cut.reset();
   em_continuous.reset();
 
-  auto const hists = sibyllCounted.GetHistogram() + sibyllNucCounted.GetHistogram() +
-                     urqmdCounted.GetHistogram() + proposalCounted.GetHistogram();
+  auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
+                     urqmdCounted.getHistogram() + proposalCounted.getHistogram();
 
   hists.saveLab("inthist_lab_verticalEAS.npz");
   hists.saveCMS("inthist_cms_verticalEAS.npz");

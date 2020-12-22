@@ -10,10 +10,10 @@
 
 #include <fstream>
 
-namespace corsika::observation_plane {
+namespace corsika {
 
-  ObservationPlane::ObservationPlane(corsika::Plane const& obsPlane,
-                                     std::string const& filename, bool deleteOnHit)
+  ObservationPlane::ObservationPlane(Plane const& obsPlane, std::string const& filename,
+                                     bool deleteOnHit)
       : plane_(obsPlane)
       , outputStream_(filename)
       , deleteOnHit_(deleteOnHit)
@@ -37,8 +37,8 @@ namespace corsika::observation_plane {
     }
 
     const auto energy = particle.getEnergy();
-    outputStream_ << static_cast<int>(corsika::get_PDG(particle.getPID())) << ' '
-                  << energy / 1_eV << ' '
+    outputStream_ << static_cast<int>(get_PDG(particle.getPID())) << ' ' << energy / 1_eV
+                  << ' '
                   << (trajectory.getPosition(1) - plane_.getCenter()).getNorm() / 1_m
                   << std::endl;
 
@@ -52,7 +52,7 @@ namespace corsika::observation_plane {
     }
   }
 
-  corsika::LengthType ObservationPlane::getMaxStepLength(
+  LengthType ObservationPlane::getMaxStepLength(
       corsika::setup::Stack::particle_type const&,
       corsika::setup::Trajectory const& trajectory) {
 
@@ -85,4 +85,4 @@ namespace corsika::observation_plane {
     count_ground_ = 0;
   }
 
-} // namespace corsika::observation_plane
+} // namespace corsika

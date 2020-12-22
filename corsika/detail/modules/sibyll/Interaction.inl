@@ -30,7 +30,7 @@ using Track = setup::Trajectory;
 
 namespace corsika::sibyll {
 
-  Interaction::Interaction(const bool sibyll_printout_on)
+  inline Interaction::Interaction(const bool sibyll_printout_on)
       : sibyll_listing_(sibyll_printout_on) {
     // initialize Sibyll
     static bool initialized = false;
@@ -40,40 +40,40 @@ namespace corsika::sibyll {
     }
   }
 
-  Interaction::~Interaction() {
+  inline Interaction::~Interaction() {
     CORSIKA_LOG_DEBUG(
         fmt::format("Sibyll::Interaction n={}, Nnuc={}", count_, nucCount_));
   }
 
-  void Interaction::setStable(std::vector<corsika::Code> const& vParticleList) {
+  inline void Interaction::setStable(std::vector<corsika::Code> const& vParticleList) {
     for (auto p : vParticleList) Interaction::setStable(p);
   }
 
-  void Interaction::setUnstable(std::vector<corsika::Code> const& vParticleList) {
+  inline void Interaction::setUnstable(std::vector<corsika::Code> const& vParticleList) {
     for (auto p : vParticleList) Interaction::setUnstable(p);
   }
 
-  void Interaction::setUnstable(const corsika::Code vCode) {
+  inline void Interaction::setUnstable(const corsika::Code vCode) {
     std::cout << "Sibyll::Interaction: setting " << vCode << " unstable.." << std::endl;
     const int s_id = abs(corsika::sibyll::convertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Interaction::setStable(const corsika::Code vCode) {
+  inline void Interaction::setStable(const corsika::Code vCode) {
     std::cout << "Sibyll::Interaction: setting " << vCode << " stable.." << std::endl;
     const int s_id = abs(corsika::sibyll::convertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Interaction::setAllUnstable() {
+  inline void Interaction::setAllUnstable() {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
   }
 
-  void Interaction::setAllStable() {
+  inline void Interaction::setAllStable() {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
   }
 
-  std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
+  inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
   Interaction::getCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
                                const corsika::HEPEnergyType CoMenergy) const {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
@@ -101,7 +101,7 @@ namespace corsika::sibyll {
   }
 
   template <>
-  corsika::GrammageType Interaction::getInteractionLength(
+  inline corsika::GrammageType Interaction::getInteractionLength(
       SetupParticle const& projectile) const {
 
     const corsika::Code corsikaBeamId = projectile.getPID();
@@ -178,7 +178,7 @@ namespace corsika::sibyll {
    */
 
   template <typename TSecondaryView>
-  void Interaction::doInteraction(TSecondaryView& view) {
+  inline void Interaction::doInteraction(TSecondaryView& view) {
 
     auto const projectile = view.getProjectile();
     const auto corsikaBeamId = projectile.getPID();

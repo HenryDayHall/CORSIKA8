@@ -1,4 +1,5 @@
-include(ExternalProject)
+include (ExternalProject)
+
 # eventually add AUTO here, too:
 set (ThirdPartyChoiceValues "C8;SYSTEM" CACHE STRING
     "List of possible values for the ThirdParty package choice")

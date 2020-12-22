@@ -14,9 +14,9 @@
 #include <fstream>
 #include <string>
 
-namespace corsika::track_writer {
+namespace corsika {
 
-  class TrackWriter : public corsika::ContinuousProcess<TrackWriter> {
+  class TrackWriter : public ContinuousProcess<TrackWriter> {
 
   public:
     TrackWriter(std::string const& filename);
@@ -35,6 +35,6 @@ namespace corsika::track_writer {
     int precision_ = 6;
   };
 
-} // namespace corsika::track_writer
+} // namespace corsika
 
 #include <corsika/detail/modules/TrackWriter.inl>

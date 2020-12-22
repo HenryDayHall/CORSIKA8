@@ -10,12 +10,17 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 
-corsika::HEPMassType corsika::sibyll::getSibyllMass(corsika::Code const pCode) {
-  if (pCode == corsika::Code::Nucleus)
-    throw std::runtime_error("Cannot getMass() of particle::Nucleus -> unspecified");
-  auto sCode = convertToSibyllRaw(pCode);
-  if (sCode == 0)
-    throw std::runtime_error("getSibyllMass: unknown particle!");
-  else
-    return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
-}
+#include <sibyll2.3d.hpp>
+
+namespace corsika::sibyll {
+
+  inline HEPMassType getSibyllMass(Code const pCode) {
+    if (pCode == corsika::Code::Nucleus)
+      throw std::runtime_error("Cannot getMass() of particle::Nucleus -> unspecified");
+    auto sCode = convertToSibyllRaw(pCode);
+    if (sCode == 0)
+      throw std::runtime_error("getSibyllMass: unknown particle!");
+    else
+      return sqrt(get_sibyll_mass2(sCode)) * 1_GeV;
+  }
+} // namespace corsika::sibyll

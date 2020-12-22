@@ -210,11 +210,11 @@ namespace corsika::nuclear_stack {
   //
   template <typename TStackIter>
   using ExtendedParticleInterfaceType =
-      NuclearParticleInterface<simple_stack::SuperStupidStack::pi_type, TStackIter>;
+      NuclearParticleInterface<SuperStupidStack::pi_type, TStackIter>;
 
   // the particle data stack with extra nuclear information:
-  using ParticleDataStack = NuclearStackExtension<simple_stack::SuperStupidStack,
-                                                  ExtendedParticleInterfaceType>;
+  using ParticleDataStack =
+      NuclearStackExtension<SuperStupidStack, ExtendedParticleInterfaceType>;
 
 } // namespace corsika::nuclear_stack
 

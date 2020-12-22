@@ -19,7 +19,7 @@
 
 #include <map>
 
-namespace corsika::energy_loss {
+namespace corsika {
 
   /**
    *   PDG2018, passage of particles through matter
@@ -36,7 +36,7 @@ namespace corsika::energy_loss {
    *
    */
 
-  class BetheBlochPDG : public corsika::ContinuousProcess<BetheBlochPDG> {
+  class BetheBlochPDG : public ContinuousProcess<BetheBlochPDG> {
 
     using MeVgcm2 = decltype(1e6 * electronvolt / gram * square(1e-2 * meter));
 
@@ -55,7 +55,7 @@ namespace corsika::energy_loss {
 
     void showResults() const;
     void reset();
-    HEPEnergyType energyLost() const { return energy_lost_; }
+    HEPEnergyType getEnergyLost() const { return energy_lost_; }
     void printProfile() const;
     HEPEnergyType getTotal() const;
 
@@ -66,11 +66,11 @@ namespace corsika::energy_loss {
     GrammageType const dX_ = 10_g / square(1_cm); // profile binning
     GrammageType const dX_threshold_ = 0.0001_g / square(1_cm);
     ShowerAxis const& shower_axis_;
-    corsika::units::si::HEPEnergyType emCut_;
-    units::si::HEPEnergyType energy_lost_ = HEPEnergyType::zero();
-    std::vector<units::si::HEPEnergyType> profile_; // longitudinal profile
+    HEPEnergyType emCut_;
+    HEPEnergyType energy_lost_ = HEPEnergyType::zero();
+    std::vector<HEPEnergyType> profile_; // longitudinal profile
   };
 
-} // namespace corsika::energy_loss
+} // namespace corsika
 
 #include <corsika/detail/modules/energy_loss/BetheBlochPDG.inl>

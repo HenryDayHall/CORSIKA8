@@ -11,6 +11,14 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <random>
 
+/**
+ * \file sibyll/Random.hpp
+ *
+ * This file is an integral part of the sibyll interface. It must be
+ * linked to the executable linked to sibyll exactly once
+ *
+ */
+
 namespace sibyll {
 
   double rndm_interface() {

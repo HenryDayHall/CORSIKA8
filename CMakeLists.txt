@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.9)
-#
+
 #+++++++++++++++++++++++++++++
 # prevent in-source builds and give warning message
 #
@@ -9,7 +9,7 @@ if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     NOTE: cmake will now create CMakeCache.txt and CMakeFiles/*.
           You must delete them, or cmake will refuse to work.")
 endif ()
-#
+
 #+++++++++++++++++++++++++++++
 # project name
 #
@@ -19,20 +19,20 @@ project (
   DESCRIPTION "CORSIKA C++ project (alpha status)"
   LANGUAGES CXX
   )
-#
+
 #+++++++++++++++++++++++++++++
 # as long as there still are modules using it:
 #
 enable_language (Fortran)
 set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
-#
+
 #+++++++++++++++++++++++++++++
 # warn user if system is not UNIX
 #
 if (NOT UNIX)
   message (FATAL_ERROR "| CORSIKA8 > This is an unsupported system.")
 endif ()
-#
+
 #+++++++++++++++++++++++++++++
 # cmake path dir, and cmake config
 #
@@ -42,12 +42,12 @@ include (CorsikaUtilities) # extra cmake function
 set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
-#
+
 #+++++++++++++++++++++++++++++
 # Setup hardware and infrastructure dependent defines
 #
 include(CorsikaDefines)
-#
+
 #+++++++++++++++++++++++++++++
 # check if compiler is C++17 compliant
 #
@@ -59,7 +59,7 @@ endif ()
 # set CXX compile flags and options and warning settings
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
-#
+
 #+++++++++++++++++++++++++++++
 # Compiler and linker flags, settings
 #
@@ -70,12 +70,12 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
 set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
 set (DEFAULT_BUILD_TYPE "Release")
-#
+
 # clang produces a lot of unecessary warnings without this:
 add_compile_options (
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>
   )
-#
+
 #+++++++++++++++++++++++++++++
 # Build types settings
 #
@@ -85,7 +85,7 @@ set (CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
 set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
 # set a flag to inform code that we are in debug mode
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-#
+
 #+++++++++++++++++++++++++++++
 # Build type selection
 #
@@ -111,7 +111,7 @@ else (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   endif ()
   message (STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-#
+
 #+++++++++++++++++++++++++++++
 # Setup external dependencies.
 #
@@ -137,7 +137,7 @@ conan_cmake_run (CONANFILE conanfile.txt
 # add cnpy temporarily. As long as SaveBoostHistogram does not save to parquet directly
 #
 add_subdirectory (externals/cnpy)
-#
+
 #+++++++++++++++++++++++++++++
 # Coverage
 #
@@ -172,7 +172,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
     )
   add_custom_target (coverage DEPENDS coverage-report)
 endif ()
-#
+
 #+++++++++++++++++++++++++++++
 # CTest config
 #
@@ -188,25 +188,25 @@ if (NOT DEFINED ENV{CI})
   # add call to ./do-copyright.py to run as unit-test-case
   add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif (NOT DEFINED ENV{CI})
-#
+
 #+++++++++++++++++++++++++++++
 # Options
 #
 # HISTORY option selection
 option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
-#
+
 #+++++++++++++++++++++++++++++
 # Externals
 #
 set (Python_ADDITIONAL_VERSIONS 3)
 find_package (PythonInterp 3 REQUIRED)
-#
+
 #+++++++++++++++++++++++++++++
 # get phys_units
 #
 find_package (PhysUnits REQUIRED)
-#
-#
+
+
 #+++++++++++++++++++++++++++++
 # CORSIKA8
 #
@@ -229,19 +229,19 @@ target_link_libraries (
   cnpy # for SaveBoostHistogram
   stdc++fs # experimental::filesystem
   )
-# those are needed, since some headers (namely GeneratedParticleProperties.inc) are produced by python script from ParticleData.xml
+# "src" is needed, since some headers (namely GeneratedParticleProperties.inc ec.) are produced by python script from e.g. ParticleData.xml
 add_subdirectory (src)
 add_subdirectory (documentation)
-#
-#
+
 #+++++++++++++++++++++++++++++
 # =~~~~~~~~~~~~~~~~~~~~~~~~~=
 #  = Add of subdirectories =
 # =~~~~~~~~~~~~~~~~~~~~~~~~~=
-#
+
 #+++++++++++++++++++++++++++++
 # modules
 #
+set (CORSIKA_DATA_WITH_TEST ON) # we want to run the corsika-data unit test
 add_subdirectory (modules/data)
 add_subdirectory (modules/pythia)
 add_subdirectory (modules/sibyll)
@@ -249,16 +249,23 @@ add_subdirectory (modules/qgsjetII)
 add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
 #
+# we really need a better proposal CMakeList.txt files:
+set (ADD_PYTHON OFF)
+file(READ modules/CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
+file(WRITE modules/proposal/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
+add_subdirectory (modules/proposal)
+target_link_libraries (CORSIKA8 INTERFACE PROPOSAL)
+
 #+++++++++++++++++++++++++++++++
 # unit testing
 # 
 add_subdirectory (tests)
-#
+
 #+++++++++++++++++++++++++++++++
 # examples
 # 
 add_subdirectory (examples)
-#
+
 #+++++++++++++++++++++++++++++++
 #
 # final summary output

@@ -21,7 +21,7 @@
 #include <iostream>
 #include <limits>
 
-namespace corsika::stack_inspector {
+namespace corsika {
 
   template <typename TStack>
   StackInspector<TStack>::StackInspector(const int vNStep, const bool vReportStack,
@@ -76,4 +76,4 @@ namespace corsika::stack_inspector {
               << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << std::endl;
   }
 
-} // namespace corsika::stack_inspector
+} // namespace corsika

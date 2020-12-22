@@ -23,7 +23,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
 
   SECTION("read+write") {
 
-    simple_stack::SuperStupidStack s;
+    SuperStupidStack s;
     s.addParticle(std::make_tuple(
         Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
@@ -39,7 +39,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
 
   SECTION("write+delete") {
 
-    simple_stack::SuperStupidStack s;
+    SuperStupidStack s;
     for (int i = 0; i < 99; ++i)
 
       s.addParticle(std::make_tuple(

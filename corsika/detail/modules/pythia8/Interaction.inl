@@ -14,12 +14,10 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
+
 #include <corsika/setup/SetupStack.hpp>
 
 #include <tuple>
-
-using Projectile = corsika::setup::StackView::particle_type;
-using Particle = corsika::setup::Stack::particle_type;
 
 namespace corsika::pythia8 {
 
@@ -143,18 +141,19 @@ namespace corsika::pythia8 {
     }
   }
 
-  template <>
-  GrammageType Interaction::getInteractionLength(Particle& particle) {
+  //  template <>
+  GrammageType Interaction::getInteractionLength(
+      corsika::setup::Stack::particle_type const& particle) {
 
     // coordinate system, get global frame of reference
     MomentumVector const& pMomentum = particle.getMomentum();
     CoordinateSystemPtr const& labCS = pMomentum.getCoordinateSystem();
 
-    const Code corsikaBeamId = particle.getPID();
+    Code const corsikaBeamId = particle.getPID();
 
     // beam particles for pythia : 1, 2, 3 for p, pi, k
     // read from cross section code table
-    const bool kInteraction = canInteract(corsikaBeamId);
+    bool const kInteraction = canInteract(corsikaBeamId);
 
     // FOR NOW: assume target is at rest
     MomentumVector pTarget(labCS, {0_GeV, 0_GeV, 0_GeV});

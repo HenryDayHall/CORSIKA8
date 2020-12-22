@@ -102,14 +102,15 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
   template <typename TParticle, typename TTrack>
-  inline LengthType SwitchProcessSequence<TProcess1, TProcess2, TSelect>::maxStepLength(
-      TParticle& particle, TTrack& vTrack) {
+  inline LengthType SwitchProcessSequence<TProcess1, TProcess2,
+                                          TSelect>::getMaxStepLength(TParticle& particle,
+                                                                     TTrack& vTrack) {
     switch (select_(particle)) {
       case SwitchResult::First: {
         if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>,
                                         process1_type> ||
                       t1ProcSeq) {
-          return A_.maxStepLength(particle, vTrack);
+          return A_.getMaxStepLength(particle, vTrack);
         }
         break;
       }
@@ -117,7 +118,7 @@ namespace corsika {
         if constexpr (std::is_base_of_v<ContinuousProcess<process2_type>,
                                         process2_type> ||
                       t2ProcSeq) {
-          return B_.maxStepLength(particle, vTrack);
+          return B_.getMaxStepLength(particle, vTrack);
         }
         break;
       }

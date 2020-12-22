@@ -10,6 +10,7 @@
 
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 namespace corsika {
 
@@ -22,9 +23,6 @@ namespace corsika {
    */
   template <typename T>
   class UniformMagneticField : public T {
-
-    // a type-alias for a magnetic field vector
-    using MagneticFieldVector = Vector<magnetic_flux_density_d>;
 
   public:
     /**

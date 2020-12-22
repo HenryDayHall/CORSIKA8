@@ -24,7 +24,7 @@ using SetupParticle = corsika::setup::Stack::particle_type;
 
 namespace corsika::sibyll {
 
-  Decay::Decay(const bool sibyll_printout_on)
+  inline Decay::Decay(const bool sibyll_printout_on)
       : sibyll_listing_(sibyll_printout_on) {
     // switch off decays to avoid internal decay chains
     setAllStable();
@@ -32,15 +32,15 @@ namespace corsika::sibyll {
     handleAllDecays_ = true;
   }
 
-  Decay::Decay(std::set<Code> const& vHandled)
+  inline Decay::Decay(std::set<Code> const& vHandled)
       : handleAllDecays_(false)
       , handledDecays_(vHandled) {
     setAllStable();
   }
 
-  Decay::~Decay() { CORSIKA_LOG_DEBUG("Sibyll::Decay n={}", count_); }
+  inline Decay::~Decay() { CORSIKA_LOG_TRACE("Sibyll::Decay n={}", count_); }
 
-  bool Decay::canHandleDecay(const Code vParticleCode) {
+  inline bool Decay::canHandleDecay(const Code vParticleCode) {
     // if known to sibyll and not proton or neutrino it can decay
     if (vParticleCode == Code::Proton || vParticleCode == Code::AntiProton ||
         vParticleCode == Code::NuE || vParticleCode == Code::NuMu ||
@@ -55,7 +55,7 @@ namespace corsika::sibyll {
       return false;
   }
 
-  void Decay::setHandleDecay(const Code vParticleCode) {
+  inline void Decay::setHandleDecay(const Code vParticleCode) {
     handleAllDecays_ = false;
     CORSIKA_LOG_DEBUG("Sibyll::Decay: set to handle decay of {}", vParticleCode);
     if (Decay::canHandleDecay(vParticleCode))
@@ -64,12 +64,12 @@ namespace corsika::sibyll {
       throw std::runtime_error("this decay can not be handled by sibyll!");
   }
 
-  void Decay::setHandleDecay(std::vector<Code> const& vParticleList) {
+  inline void Decay::setHandleDecay(std::vector<Code> const& vParticleList) {
     handleAllDecays_ = false;
     for (auto p : vParticleList) Decay::setHandleDecay(p);
   }
 
-  bool Decay::isDecayHandled(corsika::Code const vParticleCode) {
+  inline bool Decay::isDecayHandled(corsika::Code const vParticleCode) {
     if (handleAllDecays_ && Decay::canHandleDecay(vParticleCode))
       return true;
     else
@@ -78,55 +78,55 @@ namespace corsika::sibyll {
                  : false;
   }
 
-  void Decay::setStable(std::vector<Code> const& vParticleList) {
+  inline void Decay::setStable(std::vector<Code> const& vParticleList) {
     for (auto p : vParticleList) Decay::setStable(p);
   }
 
-  void Decay::setUnstable(std::vector<Code> const& vParticleList) {
+  inline void Decay::setUnstable(std::vector<Code> const& vParticleList) {
     for (auto p : vParticleList) Decay::setUnstable(p);
   }
 
-  bool Decay::isStable(Code const vCode) {
+  inline bool Decay::isStable(Code const vCode) {
     return abs(sibyll::convertToSibyllRaw(vCode)) <= 0 ? true : false;
   }
 
-  bool Decay::isUnstable(Code const vCode) {
+  inline bool Decay::isUnstable(Code const vCode) {
     return abs(sibyll::convertToSibyllRaw(vCode)) > 0 ? true : false;
   }
 
-  void Decay::setDecay(const Code vCode, const bool vMakeUnstable) {
+  inline void Decay::setDecay(const Code vCode, const bool vMakeUnstable) {
     vMakeUnstable ? setUnstable(vCode) : setStable(vCode);
   }
 
-  void Decay::setUnstable(Code const vCode) {
+  inline void Decay::setUnstable(Code const vCode) {
     CORSIKA_LOG_DEBUG("Sibyll::Decay: setting {} unstable. ", vCode);
 
     const int s_id = abs(sibyll::convertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Decay::setStable(Code const vCode) {
+  inline void Decay::setStable(Code const vCode) {
     CORSIKA_LOG_DEBUG("Sibyll::Decay: setting {} stable. ", vCode);
 
     const int s_id = abs(sibyll::convertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
   }
 
-  void Decay::setAllStable() {
+  inline void Decay::setAllStable() {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
   }
 
-  void Decay::setAllUnstable() {
+  inline void Decay::setAllUnstable() {
     for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
   }
 
-  void Decay::printDecayConfig([[maybe_unused]] const Code vCode) {
+  inline void Decay::printDecayConfig([[maybe_unused]] const Code vCode) {
     [[maybe_unused]] const int sibCode = corsika::sibyll::convertToSibyllRaw(vCode);
     [[maybe_unused]] const int absSibCode = abs(sibCode);
     CORSIKA_LOG_DEBUG("Decay: Sibyll decay configuration: {} is {}", vCode,
                       (s_csydec_.idb[absSibCode - 1] <= 0) ? "stable" : "unstable");
   }
-  void Decay::printDecayConfig() {
+  inline void Decay::printDecayConfig() {
     CORSIKA_LOG_DEBUG("Sibyll::Decay: decay configuration:");
     if (handleAllDecays_) {
       CORSIKA_LOG_DEBUG(
@@ -140,7 +140,7 @@ namespace corsika::sibyll {
   }
 
   template <typename TParticle>
-  TimeType Decay::getLifetime(TParticle const& projectile) {
+  inline TimeType Decay::getLifetime(TParticle const& projectile) {
 
     const Code pid = projectile.getPID();
     if (Decay::isDecayHandled(pid)) {
@@ -170,7 +170,7 @@ namespace corsika::sibyll {
   } // namespace corsika::sibyll
 
   template <typename TSecondaryView>
-  void Decay::doDecay(TSecondaryView& view) {
+  inline void Decay::doDecay(TSecondaryView& view) {
 
     auto projectile = view.getProjectile();
     const Code pCode = projectile.getPID();

@@ -6,53 +6,45 @@
  * the license.
  */
 
-#include <corsika/particles/ParticleProperties.h>
-#include <corsika/stack/super_stupid/SuperStupidStack.h>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/stack/SuperStupidStack.hpp>
 
-#include <corsika/geometry/Point.h>
-#include <corsika/geometry/RootCoordinateSystem.h>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
 #include <cassert>
 #include <iomanip>
 #include <iostream>
 
 using namespace corsika;
-using namespace corsika::units::si;
-using namespace corsika::stack;
-using namespace corsika::geometry;
 using namespace std;
 
-void fill(corsika::stack::super_stupid::SuperStupidStack& s) {
-  const geometry::CoordinateSystem& rootCS =
-      geometry::RootCoordinateSystem::GetInstance().GetRootCoordinateSystem();
+void fill(SuperStupidStack& s) {
+  CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
   for (int i = 0; i < 11; ++i) {
-    s.AddParticle(
-        std::tuple<particles::Code, units::si::HEPEnergyType,
-                   corsika::stack::MomentumVector, geometry::Point, units::si::TimeType>{
-            particles::Code::Electron, 1.5_GeV * i,
-            corsika::stack::MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
-            geometry::Point(rootCS, 0_m, 0_m, 0_m), 0_ns});
+    s.addParticle(std::make_tuple(Code::Electron, 1.5_GeV * i,
+                                  MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
+                                  Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
   }
 }
 
-void read(corsika::stack::super_stupid::SuperStupidStack& s) {
+void read(SuperStupidStack& s) {
   assert(s.getEntries() == 11); // stack has 11 particles
 
   HEPEnergyType total_energy;
   int i = 0;
   for (auto& p : s) {
-    total_energy += p.GetEnergy();
+    total_energy += p.getEnergy();
     // particles are electrons with 1.5 GeV energy times i
-    assert(p.GetPID() == particles::Code::Electron);
-    assert(p.GetEnergy() == 1.5_GeV * (i++));
+    assert(p.getPID() == Code::Electron);
+    assert(p.getEnergy() == 1.5_GeV * (i++));
   }
 }
 
 int main() {
 
   std::cout << "stack_example" << std::endl;
-
-  corsika::stack::super_stupid::SuperStupidStack s;
+  SuperStupidStack s;
   fill(s);
   read(s);
   return 0;

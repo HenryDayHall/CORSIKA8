@@ -107,7 +107,7 @@ namespace corsika::urqmd {
         vParticle.getNode()->getModelProperties().getNuclearComposition();
     using namespace std::placeholders;
 
-    CrossSectionType const weightedProdCrossSection = mediumComposition.WeightedSum(
+    CrossSectionType const weightedProdCrossSection = mediumComposition.getWeightedSum(
         std::bind(&UrQMD::getCrossSection<decltype(vParticle)>, this, vParticle, _1));
 
     return mediumComposition.getAverageMassNumber() * constants::u /

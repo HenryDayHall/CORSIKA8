@@ -8,6 +8,13 @@
 
 #pragma once
 
+/**
+ * \file sibyll2.3d.hpp
+ *
+ * Interface definition to link to sibyll library.
+ *
+ */
+
 namespace sibyll {
 
   /**
@@ -17,7 +24,7 @@ namespace sibyll {
    *
    * CORSIKA8, for example, has to provide an implementation of this.
    **/
-  extern double rndm_interface();
+  double rndm_interface();
 
 } // namespace sibyll
 

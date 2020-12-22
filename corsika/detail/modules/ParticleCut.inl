@@ -10,7 +10,7 @@
 
 #include <corsika/modules/ParticleCut.hpp>
 
-namespace corsika::particle_cut {
+namespace corsika {
 
   ParticleCut::ParticleCut(const HEPEnergyType eCut, bool em, bool inv)
       : energy_cut_(eCut)
@@ -130,4 +130,4 @@ namespace corsika::particle_cut {
     energy_ = 0_GeV;
   }
 
-} // namespace corsika::particle_cut
+} // namespace corsika

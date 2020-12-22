@@ -11,14 +11,23 @@
 #include <array>
 
 /**
- * \function urqmd::rndm_interface
+ * \file urqmd.hpp
  *
- * this is the random number hook to external packages.
- *
- * CORSIKA8, for example, has to provide an implementation of this.
- **/
+ * Interface file for the urqmd library.
+ */
+
 namespace urqmd {
+  /**
+   * \function urqmd::rndm_interface
+   *
+   * this is the random number hook to external packages.
+   *
+   * CORSIKA8, for example, has to provide an implementation of this.
+   **/
   extern double rndm_interface();
+} // namespace urqmd
+
+namespace urqmd {
 
   namespace constants {
     // from coms.f

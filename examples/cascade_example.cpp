@@ -6,57 +6,56 @@
  * the license.
  */
 
-#include <corsika/cascade/Cascade.h>
-#include <corsika/process/ProcessSequence.h>
-#include <corsika/process/energy_loss/EnergyLoss.h>
-#include <corsika/process/stack_inspector/StackInspector.h>
-#include <corsika/process/tracking_line/TrackingLine.h>
+#include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
 
-#include <corsika/setup/SetupEnvironment.h>
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
+#include <corsika/framework/utility/CorsikaFenv.hpp>
+#include <corsika/framework/logging/Logging.hpp>
 
-#include <corsika/environment/Environment.h>
-#include <corsika/environment/HomogeneousMedium.h>
-#include <corsika/environment/NuclearComposition.h>
-#include <corsika/environment/ShowerAxis.h>
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/ShowerAxis.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
 
-#include <corsika/geometry/Sphere.h>
+#include <corsika/setup/SetupEnvironment.hpp>
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
-#include <corsika/process/sibyll/Decay.h>
-#include <corsika/process/sibyll/Interaction.h>
-#include <corsika/process/sibyll/NuclearInteraction.h>
+#include <corsika/modules/BetheBlochPDG.hpp>
+#include <corsika/modules/StackInspector.hpp>
+#include <corsika/modules/TrackingLine.hpp>
+#include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/TrackWriter.hpp>
 
-#include <corsika/process/particle_cut/ParticleCut.h>
-#include <corsika/process/track_writer/TrackWriter.h>
+/*
+  NOTE, WARNING, ATTENTION
 
-#include <corsika/units/PhysicalUnits.h>
-
-#include <corsika/random/RNGManager.h>
-
-#include <corsika/utl/CorsikaFenv.h>
-#include <corsika/logging/Logging.h>
+  The .../Random.hpppp implement the hooks of external modules to the C8 random
+  number generator. It has to occur excatly ONCE per linked
+  executable. If you include the header below multiple times and
+  link this togehter, it will fail.
+ */
+#include <corsika/modules/sibyll/Random.hpp>
+#include <corsika/modules/urqmd/Random.hpp>
 
 #include <iostream>
 #include <limits>
 
 using namespace corsika;
-using namespace corsika::process;
-using namespace corsika::units;
-using namespace corsika::particles;
-using namespace corsika::random;
-using namespace corsika::geometry;
-using namespace corsika::environment;
-
 using namespace std;
-using namespace corsika::units::si;
 
 //
 // The example main program for a particle cascade
 //
 int main() {
 
-  logging::SetLevel(logging::level::info);
+  logging::set_level(logging::level::info);
 
   std::cout << "cascade_example" << std::endl;
 
@@ -64,45 +63,42 @@ int main() {
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  random::RNGManager::GetInstance().RegisterRandomStream("cascade");
+  RNGManager::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
   setup::Environment env;
-  auto& universe = *(env.GetUniverse());
+  auto& universe = *(env.getUniverse());
 
-  const CoordinateSystem& rootCS = env.GetCoordinateSystem();
+  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  auto world = setup::Environment::CreateNode<Sphere>(
+  auto world = setup::Environment::createNode<Sphere>(
       Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel =
-      environment::MediumPropertyModel<environment::UniformMagneticField<
-          environment::HomogeneousMedium<setup::EnvironmentInterface>>>;
+  using MyHomogeneousModel = MediumPropertyModel<
+      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
 
   // fraction of oxygen
-  const float fox = 0.20946;
-  auto const props = world->SetModelProperties<MyHomogeneousModel>(
-      environment::Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T),
+  float const fox = 0.20946;
+  auto const props = world->setModelProperties<MyHomogeneousModel>(
+      Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m),
-      environment::NuclearComposition(
-          std::vector<particles::Code>{particles::Code::Nitrogen,
-                                       particles::Code::Oxygen},
-          std::vector<float>{1.f - fox, fox}));
+      NuclearComposition(std::vector<Code>{Code::Nitrogen, Code::Oxygen},
+                         std::vector<float>{1.f - fox, fox}));
 
   auto innerMedium =
-      setup::Environment::CreateNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
+      setup::Environment::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
 
-  innerMedium->SetModelProperties(props);
-  world->AddChild(std::move(innerMedium));
-  universe.AddChild(std::move(world));
+  innerMedium->setModelProperties(props);
+  world->addChild(std::move(innerMedium));
+  universe.addChild(std::move(world));
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
-  stack.Clear();
+  stack.clear();
   const Code beamCode = Code::Nucleus;
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = GetNucleusMass(nuclA, nuclZ);
+  const HEPMassType mass = get_nucleus_mass(nuclA, nuclZ);
   const HEPEnergyType E0 = nuclA * 1_TeV;
   double theta = 0.;
   double phi = 0.;
@@ -124,48 +120,46 @@ int main() {
     };
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = corsika::stack::MomentumVector(rootCS, {px, py, pz});
+    auto plab = MomentumVector(rootCS, {px, py, pz});
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-    cout << "input momentum: " << plab.GetComponents() / 1_GeV << endl;
-    stack.AddParticle(std::tuple<particles::Code, units::si::HEPEnergyType,
-                                 corsika::stack::MomentumVector, geometry::Point,
-                                 units::si::TimeType, unsigned short, unsigned short>{
-        beamCode, E0, plab, injectionPos, 0_ns, nuclA, nuclZ});
+    cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
+    stack.addParticle(
+        std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, nuclA, nuclZ));
   }
 
   // setup processes, decays and interactions
   tracking_line::TrackingLine tracking;
-  stack_inspector::StackInspector<setup::Stack> stackInspect(1, true, E0);
+  StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  random::RNGManager::GetInstance().RegisterRandomStream("sibyll");
-  random::RNGManager::GetInstance().RegisterRandomStream("pythia");
-  process::sibyll::Interaction sibyll;
-  process::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  process::sibyll::Decay decay;
+  RNGManager::getInstance().registerRandomStream("sibyll");
+  RNGManager::getInstance().registerRandomStream("pythia");
+  corsika::sibyll::Interaction sibyll;
+  corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  corsika::sibyll::Decay decay;
   // cascade with only HE model ==> HE cut
-  process::particle_cut::ParticleCut cut(80_GeV, true, true);
+  ParticleCut cut(80_GeV, true, true);
 
-  process::track_writer::TrackWriter trackWriter("tracks.dat");
-  process::energy_loss::EnergyLoss eLoss{showerAxis, cut.GetECut()};
+  TrackWriter trackWriter("tracks.dat");
+  BetheBlochPDG eLoss{showerAxis, cut.getECut()};
 
   // assemble all processes into an ordered process list
   auto sequence =
-      process::sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
+      make_sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
-  cascade::Cascade EAS(env, tracking, sequence, stack);
+  Cascade EAS(env, tracking, sequence, stack);
 
-  EAS.Run();
+  EAS.run();
 
-  eLoss.PrintProfile(); // print longitudinal profile
+  eLoss.printProfile(); // print longitudinal profile
 
-  cut.ShowResults();
+  cut.showResults();
   const HEPEnergyType Efinal =
-      cut.GetCutEnergy() + cut.GetInvEnergy() + cut.GetEmEnergy();
+      cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  cout << "total dEdX energy (GeV): " << eLoss.GetTotal() / 1_GeV << endl
-       << "relative difference (%): " << eLoss.GetTotal() / E0 * 100 << endl;
-  cut.Reset();
+  cout << "total dEdX energy (GeV): " << eLoss.getTotal() / 1_GeV << endl
+       << "relative difference (%): " << eLoss.getTotal() / E0 * 100 << endl;
+  cut.reset();
 }

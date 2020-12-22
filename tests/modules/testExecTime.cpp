@@ -6,17 +6,15 @@
  * the license.
  */
 
-#define CATCH_CONFIG_MAIN // This tells Catch to provide a main() - only do this in one
-                          // cpp file
 #include <catch2/catch.hpp>
 
-#include <corsika/process/analytic_processors/ExecTime.h>
+#include <corsika/modules/ExecTime.hpp>
 
-#include <corsika/process/example_processors/DummyBoundaryCrossingProcess.h>
-#include <corsika/process/example_processors/DummyContinuousProcess.h>
-#include <corsika/process/example_processors/DummyDecayProcess.h>
-#include <corsika/process/example_processors/DummyInteractionProcess.h>
-#include <corsika/process/example_processors/DummySecondariesProcess.h>
+#include <corsika/process/example_processors/DummyBoundaryCrossingProcess.hpp>
+#include <corsika/process/example_processors/DummyContinuousProcess.hpp>
+#include <corsika/process/example_processors/DummyDecayProcess.hpp>
+#include <corsika/process/example_processors/DummyInteractionProcess.hpp>
+#include <corsika/process/example_processors/DummySecondariesProcess.hpp>
 
 #include <cmath>
 #include <random>

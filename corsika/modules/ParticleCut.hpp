@@ -16,7 +16,7 @@
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
-namespace corsika::particle_cut {
+namespace corsika {
 
   class ParticleCut : public SecondariesProcess<ParticleCut>,
                       public ContinuousProcess<ParticleCut> {
@@ -62,6 +62,6 @@ namespace corsika::particle_cut {
     unsigned int inv_count_ = 0;
   };
 
-} // namespace corsika::particle_cut
+} // namespace corsika
 
 #include <corsika/detail/modules/ParticleCut.inl>

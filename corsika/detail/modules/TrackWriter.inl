@@ -18,7 +18,7 @@
 #include <iomanip>
 #include <limits>
 
-namespace corsika::track_writer {
+namespace corsika {
 
   TrackWriter::TrackWriter(std::string const& filename)
       : filename_(filename) {
@@ -54,4 +54,4 @@ namespace corsika::track_writer {
     return meter * std::numeric_limits<double>::infinity();
   }
 
-} // namespace corsika::track_writer
+} // namespace corsika

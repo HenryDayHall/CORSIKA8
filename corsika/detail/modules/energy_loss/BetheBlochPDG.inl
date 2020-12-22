@@ -20,7 +20,7 @@
 #include <fstream>
 #include <limits>
 
-namespace corsika::energy_loss {
+namespace corsika {
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
@@ -258,4 +258,4 @@ namespace corsika::energy_loss {
 
   void BetheBlochPDG::reset() { energy_lost_ = 0_GeV; }
 
-} // namespace corsika::energy_loss
+} // namespace corsika

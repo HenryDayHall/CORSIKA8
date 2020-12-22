@@ -120,7 +120,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto const& rootCS = env.getCoordinateSystem();
   tracking_line::TrackingLine tracking;
 
-  stack_inspector::StackInspector<TestCascadeStack> stackInspect(1, true, E0);
+  StackInspector<TestCascadeStack> stackInspect(1, true, E0);
   NullModel nullModel;
 
   const HEPEnergyType Ecrit = 85_MeV;

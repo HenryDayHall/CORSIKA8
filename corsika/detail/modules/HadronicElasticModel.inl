@@ -14,44 +14,42 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
-#include <corsika/framework/utilities/COMBoost.hpp>
+#include <corsika/framework/utility/COMBoost.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 
 #include <iomanip>
 #include <iostream>
 
-namespace corsika::hadronic_elastic_model {
-
-  void HadronicElasticInteraction::Init() {}
+namespace corsika {
 
   HadronicElasticInteraction::HadronicElasticInteraction(CrossSectionType x,
                                                          CrossSectionType y)
-      : fX(x)
-      , fY(y) {}
+      : parX_(x)
+      , parY_(y) {}
 
   template <>
-  GrammageType HadronicElasticInteraction::GetInteractionLength(SetupParticle const& p) {
-    if (p.GetPID() == particles::Code::Proton) {
-      auto const* currentNode = p.GetNode();
+  GrammageType HadronicElasticInteraction::getInteractionLength(SetupParticle const& p) {
+    if (p.getPID() == Code::Proton) {
+      auto const* currentNode = p.getNode();
       auto const& mediumComposition =
-          currentNode->GetModelProperties().GetNuclearComposition();
+          currentNode->getModelProperties().getNuclearComposition();
 
-      auto const& components = mediumComposition.GetComponents();
-      auto const& fractions = mediumComposition.GetFractions();
+      auto const& components = mediumComposition.getComponents();
+      auto const& fractions = mediumComposition.getFractions();
 
-      auto const projectileMomentum = p.GetMomentum();
-      auto const projectileMomentumSquaredNorm = projectileMomentum.squaredNorm();
-      auto const projectileEnergy = p.GetEnergy();
+      auto const projectileMomentum = p.getMomentum();
+      auto const projectileMomentumSquaredNorm = projectileMomentum.getSquaredNorm();
+      auto const projectileEnergy = p.getEnergy();
 
       auto const avgCrossSection = [&]() {
         CrossSectionType avgCrossSection = 0_b;
 
         for (size_t i = 0; i < fractions.size(); ++i) {
-          auto const targetMass = particles::GetMass(components[i]);
-          auto const s = detail::static_pow<2>(projectileEnergy + targetMass) -
+          auto const targetMass = get_mass(components[i]);
+          auto const s = static_pow<2>(projectileEnergy + targetMass) -
                          projectileMomentumSquaredNorm;
-          avgCrossSection += CrossSection(s) * fractions[i];
+          avgCrossSection += getCrossSection(s) * fractions[i];
         }
 
         std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb" << std::endl;
@@ -59,7 +57,7 @@ namespace corsika::hadronic_elastic_model {
         return avgCrossSection;
       }();
 
-      auto const avgTargetMassNumber = mediumComposition.GetAverageMassNumber();
+      auto const avgTargetMassNumber = mediumComposition.getAverageMassNumber();
 
       GrammageType const interactionLength =
           avgTargetMassNumber * constants::u / avgCrossSection;
@@ -70,66 +68,66 @@ namespace corsika::hadronic_elastic_model {
     }
   }
 
-  template <template TParticle>
-  corsika::EProcessReturn HadronicElasticInteraction::DoInteraction(TParticle& p) {
-    if (p.GetPID() != particles::Code::Proton) { return process::EProcessReturn::eOk; }
+  template <typename TParticle>
+  ProcessReturn HadronicElasticInteraction::doInteraction(TParticle& p) {
+    if (p.getPID() != Code::Proton) { return ProcessReturn::Ok; }
 
-    const auto* currentNode = p.GetNode();
-    const auto& composition = currentNode->GetModelProperties().GetNuclearComposition();
-    const auto& components = composition.GetComponents();
+    const auto* currentNode = p.getNode();
+    const auto& composition = currentNode->getModelProperties().getNuclearComposition();
+    const auto& components = composition.getComponents();
 
     std::vector<CrossSectionType> cross_section_of_components(
-        composition.GetComponents().size());
+        composition.getComponents().size());
 
-    auto const projectileMomentum = p.GetMomentum();
-    auto const projectileMomentumSquaredNorm = projectileMomentum.squaredNorm();
-    auto const projectileEnergy = p.GetEnergy();
+    auto const projectileMomentum = p.getMomentum();
+    auto const projectileMomentumSquaredNorm = projectileMomentum.getSquaredNorm();
+    auto const projectileEnergy = p.getEnergy();
 
     for (size_t i = 0; i < components.size(); ++i) {
-      auto const targetMass = corsika::GetMass(components[i]);
-      auto const s = detail::static_pow<2>(projectileEnergy + targetMass) -
-                     projectileMomentumSquaredNorm;
+      auto const targetMass = get_mass(components[i]);
+      auto const s =
+          static_pow<2>(projectileEnergy + targetMass) - projectileMomentumSquaredNorm;
       cross_section_of_components[i] = CrossSection(s);
     }
 
-    const auto targetCode = composition.SampleTarget(cross_section_of_components, fRNG);
+    const auto targetCode = composition.SampleTarget(cross_section_of_components, RNG_);
 
-    auto const targetMass = corsika::GetMass(targetCode);
+    auto const targetMass = get_mass(targetCode);
 
     std::uniform_real_distribution phiDist(0., 2 * M_PI);
 
-    geometry::FourVector const projectileLab(projectileEnergy, projectileMomentum);
-    geometry::FourVector const targetLab(
-        targetMass, corsika::Vector<hepmomentum_d>(
-                        projectileMomentum.GetCoordinateSystem(), {0_eV, 0_eV, 0_eV}));
-    utl::COMBoost const boost(projectileLab, targetMass);
+    FourVector const projectileLab(projectileEnergy, projectileMomentum);
+    FourVector const targetLab(
+        targetMass,
+        MomentumVector(projectileMomentum.getCoordinateSystem(), {0_eV, 0_eV, 0_eV}));
+    COMBoost const boost(projectileLab, targetMass);
 
     auto const projectileCoM = boost.toCoM(projectileLab);
     auto const targetCoM = boost.toCoM(targetLab);
 
     auto const pProjectileCoMSqNorm =
-        projectileCoM.GetSpaceLikeComponents().squaredNorm();
+        projectileCoM.getSpaceLikeComponents().getSquaredNorm();
     auto const pProjectileCoMNorm = sqrt(pProjectileCoMSqNorm);
 
-    auto const eProjectileCoM = projectileCoM.GetTimeLikeComponent();
-    auto const eTargetCoM = targetCoM.GetTimeLikeComponent();
+    auto const eProjectileCoM = projectileCoM.getTimeLikeComponent();
+    auto const eTargetCoM = targetCoM.getTimeLikeComponent();
 
     auto const sqrtS = eProjectileCoM + eTargetCoM;
-    auto const s = detail::static_pow<2>(sqrtS);
+    auto const s = static_pow<2>(sqrtS);
 
     auto const B = this->B(s);
     std::cout << B << std::endl;
 
-    random::ExponentialDistribution tDist(1 / B);
+    ExponentialDistribution tDist(1 / B);
     auto const absT = [&]() {
-      decltype(tDist(fRNG)) absT;
+      decltype(tDist(RNG_)) absT;
       auto const maxT = 4 * pProjectileCoMSqNorm;
 
       do {
         // |t| cannot become arbitrarily large, max. given by GER eq. (4.16), so we just
         // throw again until we have an acceptable value. Note that the formula holds in
         // any frame despite of what is stated in the book.
-        absT = tDist(fRNG);
+        absT = tDist(RNG_);
       } while (absT >= maxT);
 
       return absT;
@@ -141,24 +139,23 @@ namespace corsika::hadronic_elastic_model {
               << std::endl;
 
     auto const theta = 2 * asin(sqrt(absT / (4 * pProjectileCoMSqNorm)));
-    auto const phi = phiDist(fRNG);
+    auto const phi = phiDist(RNG_);
 
     auto const projectileScatteredLab =
-        boost.fromCoM(corsika::FourVector<HEPEnergyType, corsika::Vector<hepmomentum_d>>(
-            eProjectileCoM,
-            corsika::Vector<hepmomentum_d>(projectileMomentum.GetCoordinateSystem(),
+        boost.fromCoM(FourVector<HEPEnergyType, MomentumVector>(
+            eProjectileCoM, MomentumVector(projectileMomentum.getCoordinateSystem(),
                                            {pProjectileCoMNorm * sin(theta) * cos(phi),
                                             pProjectileCoMNorm * sin(theta) * sin(phi),
                                             pProjectileCoMNorm * cos(theta)})));
 
-    p.SetMomentum(projectileScatteredLab.GetSpaceLikeComponents());
-    p.SetEnergy(
-        sqrt(projectileScatteredLab.GetSpaceLikeComponents().squaredNorm() +
-             detail::static_pow<2>(particles::GetMass(
-                 p.GetPID())))); // Don't use energy from boost. It can be smaller than
+    p.setMomentum(projectileScatteredLab.getSpaceLikeComponents());
+    p.setEnergy(
+        sqrt(projectileScatteredLab.getSpaceLikeComponents().getSquaredNorm() +
+             static_pow<2>(get_mass(
+                 p.getPID())))); // Don't use energy from boost. It can be smaller than
                                  // the momentum due to limited numerical accuracy.
 
-    return process::EProcessReturn::eOk;
+    return ProcessReturn::Ok;
   }
 
   HadronicElasticInteraction::inveV2 HadronicElasticInteraction::B(eV2 s) const {
@@ -166,25 +163,26 @@ namespace corsika::hadronic_elastic_model {
     auto const result =
         (2 * b_p + 2 * b_p + 4 * pow(s * constants::invGeVsq, gfEpsilon) - 4.2) *
         constants::invGeVsq;
-    std::cout << "B(" << s << ") = " << result / invGeVsq << " GeV¯²" << std::endl;
+    std::cout << "B(" << s << ") = " << result / constants::invGeVsq << " GeV¯²"
+              << std::endl;
     return result;
   }
 
-  CrossSectionType HadronicElasticInteraction::CrossSection(
+  CrossSectionType HadronicElasticInteraction::getCrossSection(
       SquaredHEPEnergyType s) const {
-    // assuming every target behaves like a proton, fX and fY are universal
-    CrossSectionType const sigmaTotal = fX * pow(s * constants::invGeVsq, gfEpsilon) +
-                                        fY * pow(s * constants::invGeVsq, -gfEta);
+    // assuming every target behaves like a proton, parX_ and parY_ are universal
+    CrossSectionType const sigmaTotal = parX_ * pow(s * constants::invGeVsq, gfEpsilon) +
+                                        parY_ * pow(s * constants::invGeVsq, -gfEta);
 
     // according to Schuler & Sjöstrand, PRD 49, 2257 (1994)
     // (we ignore rho because rho^2 is just ~2 %)
     auto const sigmaElastic =
-        detail::static_pow<2>(sigmaTotal) /
-        (16 * constants::pi * ConvertHEPToSI<CrossSectionType::dimension_type>(B(s)));
+        static_pow<2>(sigmaTotal) /
+        (16 * constants::pi * convert_HEP_to_SI<CrossSectionType::dimension_type>(B(s)));
 
     std::cout << "HEM sigmaTot = " << sigmaTotal / 1_mb << " mb" << std::endl;
     std::cout << "HEM sigmaElastic = " << sigmaElastic / 1_mb << " mb" << std::endl;
     return sigmaElastic;
   }
 
-} // namespace corsika::hadronic_elastic_model
+} // namespace corsika

@@ -15,8 +15,6 @@
 
 #include <corsika/setup/SetupStack.hpp>
 
-#include <corsika/modules/urqmd/Random.hpp>
-
 #include <array>
 #include <utility>
 

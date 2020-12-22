@@ -12,7 +12,7 @@
 extern "C" {
 #warning No enabling/disabling of floating point exceptions - platform needs better implementation
 
-inline int feenableexcept(int excepts) { return -1; }
+inline int feenableexcept(int /*excepts*/) { return -1; }
 
-inline int fedisableexcept(int excepts) { return -1; }
+inline int fedisableexcept(int /*excepts*/) { return -1; }
 }

@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <corsika/modules/sibyll/Random.hpp>
-
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 

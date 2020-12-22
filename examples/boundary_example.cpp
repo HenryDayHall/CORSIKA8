@@ -29,6 +29,17 @@
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 
+/*
+  NOTE, WARNING, ATTENTION
+
+  The .../Random.hpp implement the hooks of external modules to the C8 random
+  number generator. It has to occur excatly ONCE per linked
+  executable. If you include the header below multiple times and
+  link this togehter, it will fail.
+ */
+#include <corsika/modules/sibyll/Random.hpp>
+#include <corsika/modules/urqmd/Random.hpp>
+
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -109,9 +120,9 @@ int main() {
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::Decay decay;
 
-  particle_cut::ParticleCut cut(50_GeV, true, true);
+  ParticleCut cut(50_GeV, true, true);
 
-  track_writer::TrackWriter trackWriter("boundary_tracks.dat");
+  TrackWriter trackWriter("boundary_tracks.dat");
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list

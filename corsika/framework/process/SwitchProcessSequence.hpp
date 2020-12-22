@@ -128,7 +128,7 @@ namespace corsika {
     inline void doSecondaries(TSecondaries& vS);
 
     template <typename TParticle, typename TTrack>
-    inline LengthType maxStepLength(TParticle& particle, TTrack& vTrack);
+    inline LengthType getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {
