@@ -120,7 +120,7 @@ TEST_CASE("ConexOutput", "[output validation]") {
 
   SECTION(std::string("check saved data, ") + file + ".txt") {
 
-    // compare to binary reference data
+    // compare to reference data
     std::ifstream file1(file + ".txt");
     std::ifstream file1ref(refDataDir + "/" + file + "_REF.txt");
 
@@ -129,7 +129,7 @@ TEST_CASE("ConexOutput", "[output validation]") {
 
     std::istreambuf_iterator<char> end;
 
-    while (begin1 != end && begin1ref != end) {
+    while (begin1 != end && begin1ref != end) {      
       CHECK(*begin1 == *begin1ref);
       ++begin1;
       ++begin1ref;
