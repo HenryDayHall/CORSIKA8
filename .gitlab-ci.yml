@@ -90,6 +90,7 @@ check-clang-format:
   tags:
     - corsika
   before_script:
+    - apt install -y -qq python3-pip
     - pip install conan
   script:
     - mkdir -p build
