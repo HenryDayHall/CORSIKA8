@@ -19,6 +19,20 @@ namespace corsika::pythia8 {
 
   Decay::Decay(const bool print_listing)
       : print_listing_(print_listing) {
+    init();
+  }
+
+  Decay::Decay(std::set<Code> const& those)
+      : handleAllDecays_(false)
+      , handledDecays_(those) {
+    init();
+  }
+
+  Decay::~Decay() { CORSIKA_LOG_INFO("Pythia::Decay n={}", count_); }
+
+  void Decay::init() {
+
+    // run this only once during construction
 
     // set random number generator in pythia
     Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
@@ -45,7 +59,7 @@ namespace corsika::pythia8 {
        according to the mass definition in pythia.
        the consistency of particle masses between event generators is an unsolved issues
     */
-    std::cout << "Pythia::Init: switching off event checking in pythia.." << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Init: switching off event checking in pythia..");
     pythia_.readString("Check:event = 1");
 
     pythia_.readString("ProcessLevel:all = off");
@@ -59,12 +73,6 @@ namespace corsika::pythia8 {
     if (!pythia_.init())
       throw std::runtime_error("Pythia::Decay: Initialization failed!");
   }
-
-  Decay::Decay(std::set<Code> const& those)
-      : handleAllDecays_(false)
-      , handledDecays_(those) {}
-
-  Decay::~Decay() { std::cout << "Pythia::Decay n=" << count_ << std::endl; }
 
   bool Decay::canHandleDecay(Code const vParticleCode) {
     // if known to pythia and not proton, electron or neutrino it can decay
@@ -82,7 +90,7 @@ namespace corsika::pythia8 {
 
   void Decay::setHandleDecay(Code const vParticleCode) {
     handleAllDecays_ = false;
-    std::cout << "Pythia::Decay: set to handle decay of " << vParticleCode << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Decay: set to handle decay of {} ", vParticleCode);
     if (Decay::canHandleDecay(vParticleCode))
       handledDecays_.insert(vParticleCode);
     else
@@ -106,12 +114,12 @@ namespace corsika::pythia8 {
   }
 
   void Decay::setUnstable(Code const pCode) {
-    std::cout << "Pythia::Decay: setting " << pCode << " unstable.." << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Decay: setting {} unstable..", pCode);
     pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
   void Decay::setStable(Code const pCode) {
-    std::cout << "Pythia::Decay: setting " << pCode << " stable.." << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Decay: setting {} stable..", pCode);
     pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
@@ -120,30 +128,24 @@ namespace corsika::pythia8 {
   }
 
   bool Decay::canDecay(Code const pCode) {
-    std::cout << "Pythia::Decay: checking if particle: " << pCode
-              << " can decay in PYTHIA? ";
     const bool ans = pythia_.particleData.canDecay(static_cast<int>(get_PDG(pCode)));
-    std::cout << ans << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Decay: checking if particle: {} can decay in PYTHIA? {} ",
+                     pCode, ans);
     return ans;
   }
 
   void Decay::printDecayConfig(const Code vCode) {
-    std::cout << "Decay: Pythia decay configuration:" << std::endl;
-    std::cout << vCode << " is ";
-    if (isStable(vCode))
-      std::cout << "stable" << std::endl;
-    else
-      std::cout << "unstable" << std::endl;
+    CORSIKA_LOG_INFO("Decay: Pythia decay configuration:");
+    CORSIKA_LOG_INFO(" {} is {} " , vCode, (isStable(vCode)?"stable":"unstable"));
   }
 
   void Decay::printDecayConfig() {
-    std::cout << "Pythia::Decay: decay configuration:" << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Decay: decay configuration:");
     if (handleAllDecays_)
-      std::cout << " all particles known to Pythia are handled by Pythia::Decay!"
-                << std::endl;
+      CORSIKA_LOG_INFO(" all particles known to Pythia are handled by Pythia::Decay!");
     else
       for (auto& pCode : handledDecays_)
-        std::cout << "Decay of " << pCode << " is handled by Pythia!" << std::endl;
+        CORSIKA_LOG_INFO("Decay of {} is handled by Pythia!", pCode);
   }
 
   template <typename TParticle>
@@ -158,13 +160,13 @@ namespace corsika::pythia8 {
 
       const TimeType t0 = get_lifetime(pid);
       auto const lifetime = gamma * t0;
-      std::cout << "Pythia::Decay: code: " << particle.getPID() << std::endl;
-      std::cout << "Pythia::Decay: MinStep: t0: " << t0 << std::endl;
-      std::cout << "Pythia::Decay: MinStep: energy: " << E / 1_GeV << " GeV" << std::endl;
-      std::cout << "Pythia::Decay: momentum: "
-                << particle.getMomentum().getComponents() / 1_GeV << " GeV" << std::endl;
-      std::cout << "Pythia::Decay: MinStep: gamma: " << gamma << std::endl;
-      std::cout << "Pythia::Decay: MinStep: tau: " << lifetime << std::endl;
+      CORSIKA_LOG_INFO("Pythia::Decay: code: {}", particle.getPID());
+      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: t0: {}", t0);
+      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: energy: {} GeV", E / 1_GeV);
+      CORSIKA_LOG_INFO("Pythia::Decay: momentum: {} GeV",
+                       particle.getMomentum().getComponents() / 1_GeV);
+      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: gamma: {}", gamma);
+      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: tau: {} ", lifetime);
 
       return lifetime;
     } else
@@ -214,7 +216,7 @@ namespace corsika::pythia8 {
     if (!pythia_.next())
       throw std::runtime_error("Pythia::Decay: decay failed!");
     else
-      std::cout << "Pythia::Decay: particles after decay: " << event.size() << std::endl;
+      CORSIKA_LOG_INFO("Pythia::Decay: particles after decay: {} ", event.size());
 
     if (print_listing_) {
       // list final state
@@ -232,9 +234,9 @@ namespace corsika::pythia8 {
         FourVector const fourMomRest{Erest, pRest};
         auto const fourMomLab = boost.fromCoM(fourMomRest);
 
-        std::cout << "particle: id=" << pyId << " momentum="
-                  << fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV
-                  << " energy=" << fourMomLab.getTimeLikeComponent() << std::endl;
+        CORSIKA_LOG_INFO("particle: id={} momentum={} energy={} ", pyId,
+                         fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
+                         fourMomLab.getTimeLikeComponent());
 
         view.addSecondary(std::make_tuple(pyId, fourMomLab.getTimeLikeComponent(),
                                           fourMomLab.getSpaceLikeComponents(), decayPoint,

@@ -89,7 +89,9 @@ check-clang-format:
   stage: config
   tags:
     - corsika
-  script:    
+  before_script:
+    - pip install conan
+  script:
     - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON

@@ -33,7 +33,10 @@ namespace corsika::pythia8 {
     // initialize Pythia
     if (!initialized_) {
 
-      pythia_.readString("Print:quiet = on");
+      pythia_.readString("Print:quiet = off");
+      pythia_.readString("Check:particleData = on"); // during init
+      pythia_.readString("Check:event = on"); // default: on
+      pythia_.readString("Check:levelParticleData = 12"); // 1 is default
       // TODO: proper process initialization for MinBias needed
       pythia_.readString("HardQCD:all = on");
       pythia_.readString("ProcessLevel:resonanceDecays = off");

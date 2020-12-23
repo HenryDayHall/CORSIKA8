@@ -36,6 +36,7 @@ TEST_CASE("Pythia", "[processes]") {
 
     pythia.readString("ProcessLevel:all = off");
 
+    
     pythia.init();
 
     Event& event = pythia.event;

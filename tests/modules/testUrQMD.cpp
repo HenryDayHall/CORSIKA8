@@ -98,7 +98,7 @@ TEST_CASE("UrQMD") {
 
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, A, Z, 400_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        Code::Nucleus, A, Z, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
@@ -122,7 +122,7 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, 0, 0, 400_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        Code::PiPlus, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
@@ -148,7 +148,7 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::K0Long, 0, 0, 400_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        Code::K0Long, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);

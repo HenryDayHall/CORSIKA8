@@ -25,11 +25,14 @@ if ("x_${USE_PYTHIA8_C8}" STREQUAL "x_SYSTEM")
   message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_INCLUDE_DIR}")
   set_target_properties (
     C8::ext::pythia8 PROPERTIES
-    IMPORTED_LOCATION ${Pythia8_LIBRARY}
+    IMPORTED_LOCATION ${Pythia8_LIBRARY}/libpythia8.a
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     INTERFACE_INCLUDE_DIRECTORIES ${Pythia8_INCLUDE_DIR}
     )
   set (Pythia8_FOUND 1 PARENT_SCOPE)
+
+  message ("Pythia8_LIBRARY=${Pythia8_LIBRARY}")
+  message ("Pythia8_INCLUDE_DIR=${Pythia8_INCLUDE_DIR}")
 
 else ()
 
