@@ -36,7 +36,6 @@ TEST_CASE("Pythia", "[processes]") {
 
     pythia.readString("ProcessLevel:all = off");
 
-    
     pythia.init();
 
     Event& event = pythia.event;
@@ -164,6 +163,6 @@ TEST_CASE("pythia process") {
     corsika::pythia8::Interaction model;
     model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length == 50_g / square(1_cm));
+    CHECK(length == 82.2524_kg / square(1_m));
   }
 }

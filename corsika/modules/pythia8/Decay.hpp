@@ -52,7 +52,7 @@ namespace corsika::pythia8 {
 
   private:
     void init();
-    
+
     bool isStable(Code const vCode);
     void setStable(std::vector<Code> const&);
     void setUnstable(Code const);

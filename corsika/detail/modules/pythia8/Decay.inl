@@ -136,7 +136,7 @@ namespace corsika::pythia8 {
 
   void Decay::printDecayConfig(const Code vCode) {
     CORSIKA_LOG_INFO("Decay: Pythia decay configuration:");
-    CORSIKA_LOG_INFO(" {} is {} " , vCode, (isStable(vCode)?"stable":"unstable"));
+    CORSIKA_LOG_INFO(" {} is {} ", vCode, (isStable(vCode) ? "stable" : "unstable"));
   }
 
   void Decay::printDecayConfig() {

@@ -129,7 +129,7 @@ TEST_CASE("ConexOutput", "[output validation]") {
 
     std::istreambuf_iterator<char> end;
 
-    while (begin1 != end && begin1ref != end) {      
+    while (begin1 != end && begin1ref != end) {
       CHECK(*begin1 == *begin1ref);
       ++begin1;
       ++begin1ref;
