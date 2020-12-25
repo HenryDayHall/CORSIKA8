@@ -115,19 +115,7 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 #+++++++++++++++++++++++++++++
 # Setup external dependencies.
 #
-# the version of the cmake-conan project we use for build.
-set (CMAKE_CONAN_VERSION "v0.13")
-#
-# download the cmake-conan integration
-if (NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-   message (STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-   file (DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/${CMAKE_CONAN_VERSION}/conan.cmake"
-                  "${CMAKE_BINARY_DIR}/conan.cmake"
-                  TLS_VERIFY ON)
-endif ()
-#
-# add the cmake-conan integration
-include (${CMAKE_BINARY_DIR}/conan.cmake)
+include (conan.cmake)
 #
 # download and build all dependencies
 conan_cmake_run (CONANFILE conanfile.txt
