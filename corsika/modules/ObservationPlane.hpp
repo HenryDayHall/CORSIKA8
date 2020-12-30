@@ -27,8 +27,8 @@ namespace corsika {
   class ObservationPlane : public ContinuousProcess<ObservationPlane> {
 
   public:
-    ObservationPlane(Plane const&, std::string const&, bool = true);
-    void Init() {}
+    ObservationPlane(Plane const&, DirectionVector const&, std::string const&,
+                     bool = true);
 
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
                                corsika::setup::Trajectory& vTrajectory);
@@ -46,6 +46,9 @@ namespace corsika {
     bool const deleteOnHit_;
     HEPEnergyType energy_ground_;
     unsigned int count_ground_;
+    DirectionVector const xAxis_;
+    DirectionVector const yAxis_;
+
   };
 } // namespace corsika
 

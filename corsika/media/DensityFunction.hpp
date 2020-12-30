@@ -10,7 +10,6 @@
 
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/media/LinearApproximationIntegrator.hpp>
 
 namespace corsika {
@@ -27,7 +26,7 @@ namespace corsika {
     DensityFunction(TDerivableRho rho)
         : rho_(rho) {}
 
-    MassDensityType evaluateAt(corsika::Point const& p) const { return rho_(p); }
+    MassDensityType evaluateAt(Point const& p) const { return rho_(p); }
   };
 
 } // namespace corsika

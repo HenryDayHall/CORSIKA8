@@ -25,8 +25,9 @@ namespace corsika {
     using namespace std::string_literals;
 
     file_.open(filename_);
-    file_ << "# PID, E / eV, start coordinates / m, displacement vector to end / m "s
-          << '\n';
+    file_
+        << "# PID, E / eV, start coordinates / m, displacement vector to end / m, steplength / m "s
+        << '\n';
   }
 
   template <typename TParticle, typename TTrack>
@@ -43,7 +44,9 @@ namespace corsika {
           << std::setw(width_) << std::scientific << std::setprecision(precision_) << start[2] / 1_m
           << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[0] / 1_m
           << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[1] / 1_m
-          << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[2] / 1_m << '\n';
+          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[2] / 1_m 
+          << std::setw(width) << std::scientific << std::setprecision(precision) << delta.norm() / 1_m
+          << '\n';
     // clang-format on
 
     return ProcessReturn::Ok;

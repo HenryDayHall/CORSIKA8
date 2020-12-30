@@ -12,108 +12,94 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/Intersections.hpp>
 
-#include <optional>
+#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/modules/tracking/Intersect.hpp>
+
 #include <type_traits>
 #include <utility>
 
 namespace corsika::tracking_line {
 
-  std::optional<std::pair<TimeType, TimeType>> TimeOfIntersection(Line const&,
-                                                                  Sphere const&);
+  /**
+   * \class Tracking
+   *
+   *
+   *
+   **/
 
-  TimeType TimeOfIntersection(Line const&, Plane const&);
-
-  class TrackingLine {
+  class Tracking : public Intersect<Tracking> {
 
   public:
-    TrackingLine(){};
+    template <typename TParticle>
+    auto getTrack(TParticle const& particle) {
+      VelocityVector const initialVelocity =
+          particle.getMomentum() / particle.getEnergy() * constants::c;
 
-    template <typename Particle> // was Stack previously, and argument was
-                                 // Stack::StackIterator
-    auto getTrack(Particle const& p) {
-      Vector<SpeedType::dimension_type> const velocity =
-          p.getMomentum() / p.getEnergy() * constants::c;
+      auto const initialPosition = particle.getPosition();
+      CORSIKA_LOG_DEBUG(
+          "Tracking pid: {}"
+          " , E = {} GeV",
+          particle.getPID(), particle.getEnergy() / 1_GeV);
+      CORSIKA_LOG_DEBUG("Tracking pos: {}", initialPosition.getCoordinates());
+      CORSIKA_LOG_DEBUG("Tracking   E: {} GeV", particle.getEnergy() / 1_GeV);
+      CORSIKA_LOG_DEBUG("Tracking   p: {} GeV", particle.getMomentum().getComponents() / 1_GeV);
+      CORSIKA_LOG_DEBUG("Tracking   v: {} ", initialVelocity.getComponents());
 
-      auto const currentPosition = p.getPosition();
-      std::cout << "TrackingLine pid: " << p.getPID()
-                << " , E = " << p.getEnergy() / 1_GeV << " GeV" << std::endl;
-      std::cout << "TrackingLine pos: " << currentPosition.getCoordinates() << std::endl;
-      std::cout << "TrackingLine   E: " << p.getEnergy() / 1_GeV << " GeV" << std::endl;
-      std::cout << "TrackingLine   p: " << p.getMomentum().getComponents() / 1_GeV
-                << " GeV " << std::endl;
-      std::cout << "TrackingLine   v: " << velocity.getComponents() << std::endl;
+      // traverse the environment volume tree and find next
+      // intersection
+      auto [minTime, minNode] = Intersect<Tracking>::nextIntersect(particle);
 
-      // to do: include effect of magnetic field
-      Line line(currentPosition, velocity);
+      return std::make_tuple(LineTrajectory(Line(initialPosition, initialVelocity),
+                                            minTime), // trajectory
+                             minNode);                // next volume node
+    }
 
-      auto const* currentLogicalVolumeNode = p.getNode();
-      auto const numericallyInside =
-          currentLogicalVolumeNode->getVolume().isInside(currentPosition);
+    template <typename TParticle, typename TMedium>
+    static Intersections intersect(TParticle const& particle, Sphere const& sphere,
+                                   TMedium const&) {
+      auto const delta = particle.getPosition() - sphere.getCenter();
+      auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
+      auto const vSqNorm = velocity.squaredNorm();
+      auto const R = sphere.getRadius();
 
-      std::cout << "numericallyInside = " << (numericallyInside ? "true" : "false");
+      auto const vDotDelta = velocity.dot(delta);
+      auto const discriminant =
+          vDotDelta * vDotDelta - vSqNorm * (delta.getSquaredNorm() - R * R);
 
-      auto const& children = currentLogicalVolumeNode->getChildNodes();
-      auto const& excluded = currentLogicalVolumeNode->getExcludedNodes();
-
-      std::vector<std::pair<TimeType, decltype(p.getNode())>> intersections;
-
-      // for entering from outside
-      auto addIfIntersects = [&](auto const& vtn) {
-        auto const& volume = vtn.getVolume();
-        auto const& sphere = dynamic_cast<Sphere const&>(
-            volume); // for the moment we are a bit bold here and assume
-        // everything is a sphere, crashes with exception if not
-
-        if (auto opt = TimeOfIntersection(line, sphere); opt.has_value()) {
-          auto const [t1, t2] = *opt;
-          std::cout << "intersection times: " << t1 / 1_s << "; "
-                    << t2 / 1_s
-                    // << " " << vtn.getModelProperties().getName()
-                    << std::endl;
-          if (t1.magnitude() > 0)
-            intersections.emplace_back(t1, &vtn);
-          else if (t2.magnitude() > 0)
-            std::cout << "inside other volume" << std::endl;
-        }
-      };
-
-      for (auto const& child : children) { addIfIntersects(*child); }
-      for (auto const* ex : excluded) { addIfIntersects(*ex); }
-
-      {
-        auto const& sphere =
-            dynamic_cast<Sphere const&>(currentLogicalVolumeNode->getVolume());
-        // for the moment we are a bit bold here and assume
-        // everything is a sphere, crashes with exception if not
-        [[maybe_unused]] auto const [t1, t2] = *TimeOfIntersection(line, sphere);
-        [[maybe_unused]] auto dummy_t1 = t1;
-        intersections.emplace_back(t2, currentLogicalVolumeNode->getParent());
+      if (discriminant.magnitude() > 0) {
+        auto const sqDisc = sqrt(discriminant);
+        auto const invDenom = 1 / vSqNorm;
+        return Intersections((-vDotDelta - sqDisc) * invDenom,
+                             (-vDotDelta + sqDisc) * invDenom);
       }
+      return Intersections();
+    }
 
-      auto const minIter = std::min_element(
-          intersections.cbegin(), intersections.cend(),
-          [](auto const& a, auto const& b) { return a.first < b.first; });
-
-      TimeType min;
-
-      if (minIter == intersections.cend()) {
-        min = 1_s; // todo: do sth. more reasonable as soon as tracking is able
-        // to handle the numerics properly
-        throw std::runtime_error("no intersection with anything!");
-      } else {
-        min = minIter->first;
+    template <typename TParticle, typename TBaseNodeType>
+    static Intersections intersect(TParticle const& particle,
+                                   TBaseNodeType const& volumeNode) {
+      Sphere const* sphere = dynamic_cast<Sphere const*>(&volumeNode.getVolume());
+      if (sphere) {
+        return Intersect(particle, *sphere, volumeNode.getModelProperties());
       }
+      throw std::runtime_error(
+          "The Volume type provided is not supported in Intersect(particle, node)");
+    }
 
-      std::cout << " t-intersect: "
-                << min
-                // << " " << minIter->second->getModelProperties().getName()
-                << std::endl;
+    template <typename TParticle, typename TMedium>
+    static Intersections intersect(TParticle const& particle, Plane const& plane,
+                                   TMedium const&) {
+      auto const delta = plane.getCenter() - particle.getPosition();
+      auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
+      auto const n = plane.getNormal();
+      auto const c = n.dot(velocity);
 
-      return std::make_tuple(Trajectory<Line>(line, min), velocity.getNorm() * min,
-                             minIter->second);
+      return Intersections(
+          c.magnitude() == 0 ? std::numeric_limits<TimeType::value_type>::infinity() * 1_s
+                             : n.dot(delta) / c);
     }
   };
 

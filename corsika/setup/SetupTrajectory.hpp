@@ -8,12 +8,51 @@ n/*
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
+#include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/Trajectory.hpp>
+
+#include <corsika/modules/TrackingLine.hpp>
+//#include <corsika/modules/TrackingCurved.hpp> // simple leap-frog implementation
+//#include <corsika/modules/TrackingLeapFrog.hpp> // more complete leap-frog
+// implementation
 
 namespace corsika::setup {
 
+  /**
+    \file SetupTrajectory.hpp
+
+    Note/Warning:     Tracking and Trajectory must fit together !
+
+    tracking_leapfrog_curved::Tracking is the result of the Bachelor
+    thesis of Andre Schmidt, KIT. This is a leap-frog algorithm with
+    an analytical, precise calculation of volume intersections. This
+    algorithm needs a LeapFrogTrajectory.
+
+    tracking_leapfrog_straight::Tracking is a more simple and direct
+    leap-frog implementation. The two halve steps are coded explicitly
+    as two straight segments. Intersections with other volumes are
+    calculate only on the straight segments. This algorithm is based
+    on LineTrajectory.
+
+    tracking_line::Tracking is a pure straight tracker. It is based on
+    LineTrajectory.
+   */
+
+  /**
+     The default tracking algorithm.
+   */
+
+  // typedef corsika::process::tracking_leapfrog_curved::Tracking Tracking;
+  // typedef corsika::process::tracking_leapfrog_straight::Tracking Tracking;
+  typedef corsika::tracking_line::Tracking Tracking;
+
+  /**
+   The default trajectory.
+  */
   /// definition of Trajectory base class, to be used in tracking and cascades
-  typedef corsika::Trajectory<corsika::Line> Trajectory;
+  typedef LineTrajectory Trajectory;
+  // typedef corsika::geometry::LeapFrogTrajectory Trajectory;
 
 } // namespace corsika::setup

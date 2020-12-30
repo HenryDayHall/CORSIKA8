@@ -14,22 +14,24 @@
 
 namespace corsika {
 
-  Point Line::getPosition(TimeType const t) const { return start_point_ + velocity_ * t; }
+  inline Point Line::getPosition(TimeType const t) const { return start_point_ + velocity_ * t; }
 
-  Point Line::getPositionFromArclength(LengthType const l) const {
+  inline VelocityVector const& Line::getVelocity(TimeType const) const { return velocity_; }
+
+  inline Point Line::getPositionFromArclength(LengthType const l) const {
     return start_point_ + velocity_.normalized() * l;
   }
 
-  LengthType Line::getArcLength(TimeType const t1, TimeType const t2) const {
+  inline LengthType Line::getArcLength(TimeType const t1, TimeType const t2) const {
     return velocity_.getNorm() * (t2 - t1);
   }
 
-  TimeType Line::getTimeFromArclength(LengthType const t) const {
+  inline TimeType Line::getTimeFromArclength(LengthType const t) const {
     return t / velocity_.getNorm();
   }
 
-  Point const& Line::getStartPoint() const { return start_point_; }
+  inline Point const& Line::getStartPoint() const { return start_point_; }
 
-  Line::VelocityVec const& Line::getVelocity() const { return velocity_; }
+  inline VelocityVector const& Line::getVelocity() const { return velocity_; }
 
 } // namespace corsika

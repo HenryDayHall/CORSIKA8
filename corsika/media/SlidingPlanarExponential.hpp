@@ -12,10 +12,10 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/NuclearComposition.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 namespace corsika {
 
@@ -46,10 +46,10 @@ namespace corsika {
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    GrammageType getIntegratedGrammage(Trajectory<Line> const& line,
+    GrammageType getIntegratedGrammage(setup::Trajectory const& line,
                                        LengthType l) const override;
 
-    LengthType getArclengthFromGrammage(Trajectory<Line> const& line,
+    LengthType getArclengthFromGrammage(setup::Trajectory const& line,
                                         GrammageType grammage) const override;
 
   private:

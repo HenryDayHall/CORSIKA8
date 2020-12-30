@@ -11,25 +11,29 @@ n/*
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 namespace corsika {
 
   /**
-   * Describes a straight line in space
    *
-   */
+   * A Line describes a movement in three dimensional space. It
+   * consists of a Point `$\vec{p_0}$` and and a speed-Vector
+   * `$\vec{v}$`, so that it can return GetPosition as
+   * `$\vec{p_0}*\vec{v}*t$` for any value of time `$t$`.
+   *
+   **/
 
   class Line {
 
-    ///! \toto move this to PhysicalUnits
-    using VelocityVec = Vector<SpeedType::dimension_type>;
-
   public:
-    Line(Point const& pR0, VelocityVec const& pV0)
+    Line(Point const& pR0, VelocityVector const& pV0)
         : start_point_(pR0)
         , velocity_(pV0) {}
 
     inline Point getPosition(TimeType const t) const;
+
+    inline VelocityVector const& getVelocity(TimeType const) const;
 
     inline Point getPositionFromArclength(LengthType const l) const;
 
@@ -38,14 +42,12 @@ namespace corsika {
     inline TimeType getTimeFromArclength(LengthType const t) const;
 
     inline Point const& getStartPoint() const;
-    inline Point& startPoint() { return start_point_; }
 
-    inline VelocityVec const& getVelocity() const;
-    inline VelocityVec& velocity() { return velocity_; }
+    inline VelocityVector const& getVelocity() const;
 
   private:
     Point start_point_;
-    VelocityVec velocity_;
+    VelocityVector velocity_;
   };
 
 } // namespace corsika

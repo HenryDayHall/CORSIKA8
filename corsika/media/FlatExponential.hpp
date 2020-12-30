@@ -11,9 +11,9 @@ n/*
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/media/BaseExponential.hpp>
 #include <corsika/media/NuclearComposition.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 namespace corsika {
 
@@ -30,10 +30,7 @@ namespace corsika {
   // clang-format on
   template <typename T>
   class FlatExponential : public BaseExponential<FlatExponential<T>>, public T {
-    Vector<dimensionless_d> const axis_;
-    NuclearComposition const nuclComp_;
-
-    using Base = BaseExponential<FlatExponential<T>>;
+    using base_type = BaseExponential<FlatExponential<T>>;
 
   public:
     FlatExponential(Point const& point, Vector<dimensionless_d> const& axis,
@@ -44,10 +41,15 @@ namespace corsika {
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    GrammageType getIntegratedGrammage(Trajectory<Line> const& line, LengthType to) const;
+    GrammageType getIntegratedGrammage(setup::Trajectory const& line,
+                                       LengthType to) const;
 
-    LengthType getArclengthFromGrammage(Trajectory<Line> const& line,
+    LengthType getArclengthFromGrammage(setup::Trajectory const& line,
                                         GrammageType grammage) const;
+
+  private:
+    DirectionVector const axis_;
+    NuclearComposition const nuclComp_;
   };
 
 } // namespace corsika

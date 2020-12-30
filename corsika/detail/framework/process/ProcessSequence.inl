@@ -159,7 +159,7 @@ namespace corsika {
       // if this is not a ContinuousProcess --> evaluate probability
       lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
       // check if we should execute THIS process and then EXIT
-      if (lambda_inv_select < lambda_inv_sum) {
+      if (lambda_inv_select <= lambda_inv_sum) {
         A_.doInteraction(view);
         return ProcessReturn::Interacted;
       }
@@ -174,7 +174,7 @@ namespace corsika {
       lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
       // soon as SecondaryView::parent() is migrated!
       // check if we should execute THIS process and then EXIT
-      if (lambda_inv_select < lambda_inv_sum) {
+      if (lambda_inv_select <= lambda_inv_sum) {
         B_.doInteraction(view);
         return ProcessReturn::Interacted;
       }
@@ -218,7 +218,7 @@ namespace corsika {
       // if this is not a ContinuousProcess --> evaluate probability
       decay_inv_sum += A_.getInverseLifetime(view.parent());
       // check if we should execute THIS process and then EXIT
-      if (decay_inv_select < decay_inv_sum) { // more pedagogical: rndm_select <
+      if (decay_inv_select <= decay_inv_sum) { // more pedagogical: rndm_select <
                                               // decay_inv_sum / decay_inv_tot
         A_.doDecay(view);
         return ProcessReturn::Decayed;
@@ -232,7 +232,7 @@ namespace corsika {
       // if this is not a ContinuousProcess --> evaluate probability
       decay_inv_sum += B_.getInverseLifetime(view.parent());
       // check if we should execute THIS process and then EXIT
-      if (decay_inv_select < decay_inv_sum) {
+      if (decay_inv_select <= decay_inv_sum) {
         B_.doDecay(view);
         return ProcessReturn::Decayed;
       }

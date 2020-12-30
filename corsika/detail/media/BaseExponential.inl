@@ -12,7 +12,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 
 namespace corsika {
 
@@ -23,8 +22,8 @@ namespace corsika {
 
   template <typename TDerived>
   GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
-      Trajectory<Line> const& line, LengthType vL,
-      Vector<dimensionless_d> const& axis) const {
+      setup::Trajectory const& line, LengthType vL,
+      DirectionVector const& axis) const {
     if (vL == LengthType::zero()) { return GrammageType::zero(); }
 
     auto const uDotA = line.getNormalizedDirection().dot(axis).magnitude();
@@ -39,8 +38,8 @@ namespace corsika {
 
   template <typename TDerived>
   LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
-      Trajectory<Line> const& line, GrammageType grammage,
-      Vector<dimensionless_d> const& axis) const {
+      setup::Trajectory const& line, GrammageType grammage,
+      DirectionVector const& axis) const {
     auto const uDotA = line.getNormalizedDirection().dot(axis).magnitude();
     auto const rhoStart = getImplementation().getMassDensity(line.getStartPoint());
 

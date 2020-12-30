@@ -18,43 +18,33 @@
 
 #include <functional>
 
+// the detail namespace: here the histrograms are defined
+//! \todo add options/parameters to 'detail::hist_factory()'
+#include <corsika/detail/stack/history/HistoryObservationPlane.hpp>
+
 namespace corsika::history {
-  namespace detail {
-    inline auto hist_factory() {
-      namespace bh = boost::histogram;
-      namespace bha = bh::axis;
-      auto h = bh::make_histogram(
-          bha::regular<float, bha::transform::log>{11 * 5, 1e0, 1e11, "muon energy"},
-          bha::regular<float, bha::transform::log>{11 * 5, 1e0, 1e11,
-                                                   "projectile energy"},
-          bha::category<int, bh::use_default, bha::option::growth_t>{
-              {211, -211, 2212, -2212}, "projectile PDG"});
-      return h;
-    }
-  } // namespace detail
 
-  class HistoryObservationPlane
-      : public corsika::process::ContinuousProcess<HistoryObservationPlane> {
+  class HistoryObservationPlane : public ContinuousProcess<HistoryObservationPlane> {
   public:
-    HistoryObservationPlane(setup::Stack const&, geometry::Plane const&, bool = true);
+    HistoryObservationPlane(setup::Stack const&, Plane const&, bool = true);
 
-    corsika::units::si::LengthType MaxStepLength(
-        corsika::setup::Stack::ParticleType const&,
-        corsika::setup::Trajectory const& vTrajectory);
+    LengthType getMaxStepLength(setup::Stack::particle_type const&,
+                                setup::Trajectory const& vTrajectory);
 
-    corsika::process::EProcessReturn DoContinuous(
-        corsika::setup::Stack::ParticleType const& vParticle,
-        corsika::setup::Trajectory const& vTrajectory);
+    ProcessReturn doContinuous(setup::Stack::particle_type const& vParticle,
+                               setup::Trajectory const& vTrajectory);
 
     auto const& histogram() const { return histogram_; }
 
   private:
-    void fillHistoryHistogram(setup::Stack::ParticleType const&);
+    void fillHistoryHistogram(setup::Stack::particle_type const&);
 
     setup::Stack const& stack_;
-    geometry::Plane const plane_;
+    Plane const plane_;
     bool const deleteOnHit_;
 
     decltype(detail::hist_factory()) histogram_ = detail::hist_factory();
   };
 } // namespace corsika::history
+
+#include <corsika/detail/stack/history/HistoryObservationPlane.inl>

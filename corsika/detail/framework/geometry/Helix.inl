@@ -22,16 +22,19 @@ namespace corsika {
            (vPerp_ * (std::cos(omegaC_ * t) - 1) + uPerp_ * std::sin(omegaC_ * t)) /
                omegaC_;
   }
-
-  Point Helix::getPositionFromArclength(LengthType const l) const {
-    return getPosition(getTimeFromArclength(l));
+  inline VelocityVector Helix::getVelocity(TimeType const t) const {
+    return vPar_ + (vPerp_ * (cos(omegaC_ * t) - 1) + uPerp_ * sin(omegaC_ * t));
   }
 
-  LengthType Helix::getArcLength(TimeType const t1, TimeType const t2) const {
+  inline  Point Helix::getPositionFromArclength(LengthType const l) const {
+    return getPosition(getTimeFromArclength(l));
+  }
+  
+  inline  LengthType Helix::getArcLength(TimeType const t1, TimeType const t2) const {
     return (vPar_ + vPerp_).getNorm() * (t2 - t1);
   }
 
-  TimeType Helix::getTimeFromArclength(LengthType const l) const {
+  inline  TimeType Helix::getTimeFromArclength(LengthType const l) const {
     return l / (vPar_ + vPerp_).getNorm();
   }
 

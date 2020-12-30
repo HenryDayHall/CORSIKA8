@@ -57,32 +57,42 @@ namespace corsika {
   }
 
   GrammageType ShowerAxis::getX(LengthType l) const {
-    auto const fractionalBin = l / steplength_;
+    double const fractionalBin = l / steplength_;
     int const lower = fractionalBin; // indices of nearest X support points
-    auto const lambda = fractionalBin - lower;
-    decltype(X_.size()) const upper = lower + 1;
+    double const fraction = fractionalBin - lower;
+    unsigned int const upper = lower + 1;
 
-    if (lower < 0) {
+    if (fractionalBin < 0) {
       CORSIKA_LOG_ERROR("cannot extrapolate to points behind point of injection l={} m",
                         l / 1_m);
-      throw std::runtime_error("cannot extrapolate to points behind point of injection");
+      if (throw_) {
+        throw std::runtime_error(
+            "cannot extrapolate to points behind point of injection");
+      }
+      return minimumX();
     }
 
     if (upper >= X_.size()) {
-      const std::string err =
-          fmt::format("shower axis too short, cannot extrapolate (l / max_length_ = {} )",
-                      l / max_length_);
-      CORSIKA_LOG_ERROR(err);
-      throw std::runtime_error(err.c_str());
+      CORSIKA_LOG_ERROR(
+          "shower axis too short, cannot extrapolate (l / max_length_ = {} )",
+          l / max_length_);
+      if (throw_) {
+        const std::string err = fmt::format(
+            "shower axis too short, cannot extrapolate (l / max_length_ = {} )",
+            l / max_length_);
+        throw std::runtime_error(err.c_str());
+      }
     }
+    CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}", fraction,
+                      fractionalBin, lower, upper);
 
-    assert(0 <= lambda && lambda <= 1.);
+    assert(0 <= fraction && fraction <= 1.);
 
-    CORSIKA_LOG_TRACE("ShowerAxis::getX l={} m, lower={}, lambda={}, upper={}", l / 1_m,
-                      lower, lambda, upper);
+    CORSIKA_LOG_TRACE("ShowerAxis::getX l={} m, lower={}, fraction={}, upper={}", l / 1_m,
+                      lower, fraction, upper);
 
     // linear interpolation between getX[lower] and X[upper]
-    return X_[upper] * lambda + X_[lower] * (1 - lambda);
+    return X_[upper] * fraction + X_[lower] * (1 - fraction);
   }
 
   LengthType ShowerAxis::getSteplength() const { return steplength_; }

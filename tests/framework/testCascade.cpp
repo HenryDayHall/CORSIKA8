@@ -118,7 +118,7 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   auto env = make_dummy_env();
   auto const& rootCS = env.getCoordinateSystem();
-  tracking_line::TrackingLine tracking;
+  tracking_line::Tracking tracking;
 
   StackInspector<TestCascadeStack> stackInspect(1, true, E0);
   NullModel nullModel;
@@ -133,7 +133,7 @@ TEST_CASE("Cascade", "[Cascade]") {
                                     MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
                                     Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
-  Cascade<tracking_line::TrackingLine, decltype(sequence), TestCascadeStack,
+  Cascade<tracking_line::Tracking, decltype(sequence), TestCascadeStack,
           TestCascadeStackView>
       EAS(env, tracking, sequence, stack);
 

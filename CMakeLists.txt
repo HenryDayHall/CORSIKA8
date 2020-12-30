@@ -115,7 +115,7 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 #+++++++++++++++++++++++++++++
 # Setup external dependencies.
 #
-include (conan.cmake)
+include (conan) # self-provided in 'cmake' directory
 #
 # download and build all dependencies
 conan_cmake_run (CONANFILE conanfile.txt

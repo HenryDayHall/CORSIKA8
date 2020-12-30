@@ -11,7 +11,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
 namespace corsika {
@@ -32,13 +31,13 @@ namespace corsika {
   }
 
   template <typename T>
-  GrammageType HomogeneousMedium<T>::getIntegratedGrammage(Trajectory<Line> const&,
+  GrammageType HomogeneousMedium<T>::getIntegratedGrammage(setup::Trajectory const&,
                                                            LengthType to) const {
     return to * density_;
   }
 
   template <typename T>
-  LengthType HomogeneousMedium<T>::getArclengthFromGrammage(Trajectory<Line> const&,
+  LengthType HomogeneousMedium<T>::getArclengthFromGrammage(setup::Trajectory const&,
                                                             GrammageType grammage) const {
     return grammage / density_;
   }

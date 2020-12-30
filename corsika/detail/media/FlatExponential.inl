@@ -11,7 +11,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/media/BaseExponential.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
@@ -39,13 +38,13 @@ namespace corsika {
   }
 
   template <typename T>
-  GrammageType FlatExponential<T>::getIntegratedGrammage(Trajectory<Line> const& line,
+  GrammageType FlatExponential<T>::getIntegratedGrammage(setup::Trajectory const& line,
                                                          LengthType to) const {
     return BaseExponential<FlatExponential<T>>::getIntegratedGrammage(line, to, axis_);
   }
 
   template <typename T>
-  LengthType FlatExponential<T>::getArclengthFromGrammage(Trajectory<Line> const& line,
+  LengthType FlatExponential<T>::getArclengthFromGrammage(setup::Trajectory const& line,
                                                           GrammageType grammage) const {
     return BaseExponential<FlatExponential<T>>::getArclengthFromGrammage(line, grammage,
                                                                          axis_);

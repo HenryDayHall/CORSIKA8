@@ -12,7 +12,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <limits>
 
@@ -25,10 +25,6 @@ namespace corsika {
   template <typename TDerived>
   class BaseExponential {
   protected:
-    units::si::MassDensityType const rho0_;
-    units::si::LengthType const lambda_;
-    units::si::InverseLengthType const invLambda_;
-    Point const point_;
 
     auto const& getImplementation() const;
 
@@ -46,9 +42,8 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    units::si::GrammageType getIntegratedGrammage(
-        Trajectory<Line> const& line, units::si::LengthType vL,
-        Vector<units::si::dimensionless_d> const& axis) const;
+    GrammageType getIntegratedGrammage(setup::Trajectory const& line, LengthType vL,
+                                       DirectionVector const& axis) const;
 
     // clang-format off
     /**
@@ -68,14 +63,19 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    units::si::LengthType getArclengthFromGrammage(
-        Trajectory<Line> const& line, units::si::GrammageType grammage,
-        Vector<units::si::dimensionless_d> const& axis) const;
+    LengthType getArclengthFromGrammage(setup::Trajectory const& line,
+                                        GrammageType grammage,
+                                        DirectionVector const& axis) const;
 
   public:
-    BaseExponential(Point const& point, units::si::MassDensityType rho0,
-                    units::si::LengthType lambda);
+    BaseExponential(Point const& point, MassDensityType rho0, LengthType lambda);
 
+  private:
+    MassDensityType const rho0_;
+    LengthType const lambda_;
+    InverseLengthType const invLambda_;
+    Point const point_;
+    
   }; // class BaseExponential
 
 } // namespace corsika

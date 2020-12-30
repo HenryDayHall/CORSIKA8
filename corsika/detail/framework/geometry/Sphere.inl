@@ -13,12 +13,16 @@
 
 namespace corsika {
 
-  bool Sphere::isInside(Point const& p) const {
+  inline bool Sphere::isInside(Point const& p) const {
     return radius_ * radius_ > (center_ - p).getSquaredNorm();
   }
 
-  Point const& Sphere::getCenter() const { return center_; }
+  inline Point const& Sphere::getCenter() const { return center_; }
 
-  LengthType Sphere::getRadius() const { return radius_; }
+  inline void Sphere::setCenter(Point const& p) { center_ = p; }
+
+  inline LengthType Sphere::getRadius() const { return radius_; }
+
+  inline void Sphere::setRadius(LengthType const r) { radius_ = r; }
 
 } // namespace corsika

@@ -18,8 +18,13 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/framework/logging/Logging.hpp>
 
+/*  see Issue 161, we need to include SetupStack only because we need
+    to globally define StackView. This is clearly not nice and should
+    be changed, when possible. It might be that StackView needs to be
+    templated in Cascade, but this would be even worse... so we don't
+    do that until it is really needed.
+ */
 #include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -43,7 +48,7 @@ namespace corsika {
    *
    * <code>
    * auto getTrack(Particle const& p)</auto>,
-   * with the return type <code>geometry::Trajectory<corsika::Line>
+   * with the return type <code>geometry::Trajectory<Line>
    * </code>
    *
    * <b>TProcessList</b> must be a ProcessSequence.   *
@@ -53,6 +58,11 @@ namespace corsika {
    *
    */
   template <typename TTracking, typename TProcessList, typename TStack,
+            /*
+             TStackView is needed as explicit template parameter because
+             of issue 161 and the
+             inability of clang to understand "stack::MakeView" so far.
+            */
             typename TStackView = corsika::setup::StackView>
   class Cascade {
 
@@ -62,10 +72,19 @@ namespace corsika {
     typedef typename VolumeTreeNode::IModelProperties MediumInterface;
 
   public:
+    /**
+     * \group constructors
+     * \{
+     * Cascade class cannot be default constructed, but needs a valid
+     * list of physics processes for configuration at construct time.
+     */
     Cascade() = delete;
-
-    Cascade(corsika::Environment<MediumInterface> const& env, TTracking& tr,
-            TProcessList& pl, TStack& stack)
+    Cascade(Cascade const&) = default;
+    Cascade(Cascade&&) = default;
+    ~Cascade() = default;
+    Cascade & operator=(Cascade const&)) = default;
+    Cascade(Environment<MediumInterface> const& env, TTracking& tr, TProcessList& pl,
+            TStack& stack)
         : environment_(env)
         , tracking_(tr)
         , sequence_(pl)
@@ -75,12 +94,7 @@ namespace corsika {
         CORSIKA_LOG_INFO(" - With full cascade HISTORY.");
       }
     }
-
-    /**
-     * The Init function is called before the actual cascade simulations.
-     * All components of the Cascade simulation must be configured here.
-     */
-    void init();
+    //! \}
 
     /**
      * set the nodes for all particles on the stack according to their numerical
@@ -102,6 +116,16 @@ namespace corsika {
     void forceInteraction();
 
   private:
+    /**
+     * The Step function is executed for each particle from the
+     * stack. It will calcualte geometric transport of the particles,
+     * and apply continuous and stochastic processes to it, which may
+     * lead to energy losses, scattering, absorption, decays and the
+     * production of secondary particles.
+     *
+     * New particles produced in one step are subject to further
+     * processing, e.g. thinning, etc.
+     */
     void step(Particle& vParticle);
 
     ProcessReturn decay(TStackView& view);
@@ -109,12 +133,11 @@ namespace corsika {
     void setEventType(TStackView& view, history::EventType);
 
     // data members
-    corsika::Environment<MediumInterface> const& environment_;
+    Environment<MediumInterface> const& environment_;
     TTracking& tracking_;
     TProcessList& sequence_;
     TStack& stack_;
-    corsika::default_prng_type& rng_ =
-        corsika::RNGManager::getInstance().getRandomStream("cascade");
+    default_prng_type& rng_ = RNGManager::getInstance().getRandomStream("cascade");
     unsigned int count_ = 0;
 
     // but this here temporarily. Should go into dedicated file later:

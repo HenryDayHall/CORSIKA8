@@ -9,21 +9,19 @@
 #pragma once
 
 #include <corsika/framework/geometry/IVolume.hpp>
-#include <corsika/media/IMediumModel.hpp>
+#include <corsika/environment/IEmpty.hpp>
 #include <memory>
 #include <vector>
 
 namespace corsika {
 
-  class Empty {}; //<! intended for usage as default template argument
-
-  template <typename TModelProperties = Empty>
+  template <typename TModelProperties = IEmpty>
   class VolumeTreeNode {
 
   public:
     using IModelProperties = TModelProperties;
     using VTN_type = VolumeTreeNode<IModelProperties>;
-    using VTNUPtr = std::unique_ptr<VolumeTreeNode<IModelProperties>>;
+    using VTNUPtr = std::unique_ptr<VTN_type>;
     using IMPSharedPtr = std::shared_ptr<IModelProperties>;
     using VolUPtr = std::unique_ptr<IVolume>;
 
@@ -53,7 +51,7 @@ namespace corsika {
 
     inline void excludeOverlapWith(VTNUPtr const& pNode);
 
-    inline auto* getParent() const { return parentNode_; };
+    inline VTN_type* getParent() const { return parentNode_; };
 
     inline auto const& getChildNodes() const { return childNodes_; }
 
@@ -67,23 +65,21 @@ namespace corsika {
 
     template <typename ModelProperties, typename... Args>
     inline auto setModelProperties(Args&&... args) {
-      static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
-                    "unusable model properties type provided");
-
+      //static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
+      //            "unusable type provided");
       modelProperties_ = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
       return modelProperties_;
     }
 
     inline void setModelProperties(IMPSharedPtr ptr) { modelProperties_ = ptr; }
 
-    /*
-    template <class MediumType, typename... Args>
-    static auto createMedium(Args&&... args);
+    //template <class MediumType, typename... Args>
+    //static auto createMedium(Args&&... args);
 
   private:
     std::vector<VTNUPtr> childNodes_;
-    std::vector<VolumeTreeNode<IModelProperties> const*> excludedNodes_;
-    VolumeTreeNode<IModelProperties> const* parentNode_ = nullptr;
+    std::vector<VTN_type const*> excludedNodes_;
+    VTN_type const* parentNode_ = nullptr;
     VolUPtr geoVolume_;
     IMPSharedPtr modelProperties_;
   };

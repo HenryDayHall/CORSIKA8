@@ -309,8 +309,7 @@ TEST_CASE("Trajectories") {
   Point r0(rootCS, {0_m, 0_m, 0_m});
 
   SECTION("Line") {
-    Vector<SpeedType::dimension_type> v0(rootCS,
-                                         {3_m / second, 0_m / second, 0_m / second});
+    VelocityVector v0(rootCS, {3_m / second, 0_m / second, 0_m / second});
 
     Line const line(r0, v0);
     CHECK(
@@ -329,22 +328,18 @@ TEST_CASE("Trajectories") {
               .magnitude() == Approx(0).margin(absMargin));
 
     auto const t = 1_s;
-    Trajectory<Line> base(line, t);
+    LineTrajectory base(line, t);
     CHECK(line.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
 
-    CHECK(base.getArcLength(1_s, 2_s) / 1_m == Approx(3));
-
-    CHECK((base.getNormalizedDirection().getComponents(rootCS) -
+    CHECK((base.getDirection(0).getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
               .getNorm() == Approx(0).margin(absMargin));
   }
 
   SECTION("Helix") {
-    Vector<SpeedType::dimension_type> const vPar(
-        rootCS, {0_m / second, 0_m / second, 4_m / second});
+    VelocityVector const vPar(rootCS, {0_m / second, 0_m / second, 4_m / second});
 
-    Vector<SpeedType::dimension_type> const vPerp(
-        rootCS, {3_m / second, 0_m / second, 0_m / second});
+    VelocityVector const vPerp(rootCS, {3_m / second, 0_m / second, 0_m / second});
 
     auto const T = 1_s;
     auto const omegaC = 2 * M_PI / T;
@@ -365,11 +360,5 @@ TEST_CASE("Trajectories") {
            helix.getPositionFromArclength(helix.getArcLength(0_s, 7_s)))
               .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
-
-    auto const t = 1234_s;
-    Trajectory<Helix> const base(helix, t);
-    CHECK(helix.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
-
-    CHECK(base.getArcLength(0_s, 1_s) / 1_m == Approx(5));
   }
 }
