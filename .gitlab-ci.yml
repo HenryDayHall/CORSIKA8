@@ -15,6 +15,7 @@ variables:
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
+  CONAN_USER_HOME: "$CI_BUILDS_DIR"
 
 
 #
@@ -108,8 +109,9 @@ check-clang-format:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
-    policy: pull-push
+    policy: pull-push    
 
 # config for gcc
 config-u-18_04:
@@ -137,6 +139,9 @@ config-clang-8:
   stage: build
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - cmake --build . -- -j4
@@ -151,6 +156,7 @@ config-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull-push
 
@@ -184,6 +190,9 @@ build-clang-8:
   stage: test
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - set -o pipefail
@@ -205,6 +214,7 @@ build-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull-push
 
@@ -238,6 +248,9 @@ test-clang-8:
   stage: build_test
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - cmake --build . -- -j4
@@ -259,6 +272,7 @@ test-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull-push
 
@@ -291,6 +305,9 @@ build_test-clang-8:
   stage: example
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - set -o pipefail
@@ -311,6 +328,7 @@ build_test-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull
 
@@ -343,6 +361,9 @@ example-clang-8:
   stage: build_test_example
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - cmake --build . -- -j4
@@ -369,6 +390,7 @@ example-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull
 
@@ -402,6 +424,9 @@ build_test_example-clang-8:
   stage: install
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - set -o pipefail
@@ -418,6 +443,7 @@ build_test_example-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull
 
@@ -451,6 +477,9 @@ install-clang-8:
   stage: optional
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -472,6 +501,7 @@ install-clang-8:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull
   artifacts:
@@ -514,6 +544,9 @@ coverage:
   stage: optional
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage
@@ -539,6 +572,7 @@ coverage:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
@@ -557,6 +591,9 @@ sanity:
   stage: optional
   tags:
     - corsika
+  before_script:
+    - apt-get update && apt-get install -y -qq python3-pip
+    - pip3 install conan
   script:
     - cd build
     - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON
@@ -575,6 +612,7 @@ sanity:
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
+      - ${CONAN_USER_HOME}/.conan/
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
