@@ -15,7 +15,7 @@ variables:
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
-  CONAN_USER_HOME: "$CI_BUILDS_DIR"
+  CONAN_USER_HOME: "${CI_PROJECT_DIR}"
 
 
 #
