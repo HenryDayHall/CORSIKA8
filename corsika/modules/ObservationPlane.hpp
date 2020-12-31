@@ -48,7 +48,6 @@ namespace corsika {
     unsigned int count_ground_;
     DirectionVector const xAxis_;
     DirectionVector const yAxis_;
-
   };
 } // namespace corsika
 

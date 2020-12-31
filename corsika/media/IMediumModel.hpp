@@ -9,11 +9,9 @@
 #pragma once
 
 #include <corsika/media/NuclearComposition.hpp>
-#include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-
 
 namespace corsika {
 

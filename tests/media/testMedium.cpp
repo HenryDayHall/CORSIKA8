@@ -20,6 +20,8 @@
 
 #include <catch2/catch.hpp>
 
+#include <SetupTestTrajectory.hpp>
+
 using namespace corsika;
 
 TEST_CASE("MediumProperties") {
@@ -86,14 +88,14 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   medium.getNuclearComposition();
 
   // create a line of length 1 m
-  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                               gCS, {1_m / second, 0_m / second, 0_m / second}));
+  Line const line(gOrigin,
+                  VelocityVector(gCS, {1_m / second, 0_m / second, 0_m / second}));
 
   // the end time of our line
   auto const tEnd = 1_s;
 
   // and the associated trajectory
-  Trajectory<Line> const trajectory(line, tEnd);
+  setup::Trajectory const trajectory(line, tEnd);
 
   // and check the integrated grammage
   CHECK((medium.getIntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));

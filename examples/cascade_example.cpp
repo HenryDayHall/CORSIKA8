@@ -28,7 +28,6 @@
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackingLine.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
@@ -71,8 +70,8 @@ int main() {
 
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  auto world = setup::Environment::createNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+  auto world =
+      setup::Environment::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
   using MyHomogeneousModel = MediumPropertyModel<
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
@@ -107,7 +106,7 @@ int main() {
       rootCS, 0_m, 0_m,
       height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
 
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -5000_km}, env};
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
 
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -129,7 +128,7 @@ int main() {
   }
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   RNGManager::getInstance().registerRandomStream("sibyll");

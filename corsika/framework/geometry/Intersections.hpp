@@ -37,8 +37,8 @@ namespace corsika {
 
     Intersections(TimeType&& t)
         : has_intersections_(true)
-        , intersections_(
-			 std::make_pair(t, std::numeric_limits<TimeType::value_type>::infinity() * second)) {}
+        , intersections_(std::make_pair(
+              t, std::numeric_limits<TimeType::value_type>::infinity() * second)) {}
 
     bool hasIntersections() const { return has_intersections_; }
 

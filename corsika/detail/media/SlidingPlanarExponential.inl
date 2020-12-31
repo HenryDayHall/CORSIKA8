@@ -23,10 +23,11 @@ namespace corsika {
   template <typename T>
   MassDensityType SlidingPlanarExponential<T>::getMassDensity(Point const& point) const {
     auto const height =
-        (point - BaseExponential<SlidingPlanarExponential<T>>::point_).getNorm() -
+        (point - BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
+            .getNorm() -
         referenceHeight_;
-    return BaseExponential<SlidingPlanarExponential<T>>::rho0_ *
-           exp(BaseExponential<SlidingPlanarExponential<T>>::invLambda_ * height);
+    return BaseExponential<SlidingPlanarExponential<T>>::getRho0() *
+           exp(BaseExponential<SlidingPlanarExponential<T>>::getInvLambda() * height);
   }
 
   template <typename T>
@@ -36,22 +37,22 @@ namespace corsika {
 
   template <typename T>
   GrammageType SlidingPlanarExponential<T>::getIntegratedGrammage(
-      Trajectory<Line> const& line, LengthType l) const {
-    auto const axis =
-        (line.getStartPoint() - BaseExponential<SlidingPlanarExponential<T>>::point_)
-            .normalized();
-    return BaseExponential<SlidingPlanarExponential<T>>::getIntegratedGrammage(line, l,
+      setup::Trajectory const& traj, LengthType l) const {
+    auto const axis = (traj.getPosition(0) -
+                       BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
+                          .normalized();
+    return BaseExponential<SlidingPlanarExponential<T>>::getIntegratedGrammage(traj, l,
                                                                                axis);
   }
 
   template <typename T>
   LengthType SlidingPlanarExponential<T>::getArclengthFromGrammage(
-      Trajectory<Line> const& line, GrammageType const grammage) const {
-    auto const axis =
-        (line.getStartPoint() - BaseExponential<SlidingPlanarExponential<T>>::point_)
-            .normalized();
+      setup::Trajectory const& traj, GrammageType const grammage) const {
+    auto const axis = (traj.getPosition(0) -
+                       BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
+                          .normalized();
     return BaseExponential<SlidingPlanarExponential<T>>::getArclengthFromGrammage(
-        line, grammage, axis);
+        traj, grammage, axis);
   }
 
 } // namespace corsika

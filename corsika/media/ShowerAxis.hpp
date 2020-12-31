@@ -45,7 +45,8 @@ namespace corsika {
   public:
     template <typename TEnvModel>
     ShowerAxis(Point const& pStart, Vector<length_d> const& length,
-               Environment<TEnvModel> const& env, bool doThrow = false, int steps = 10'000);
+               Environment<TEnvModel> const& env, bool const doThrow = false,
+               int const steps = 10'000);
 
     LengthType getSteplength() const;
 

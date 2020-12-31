@@ -80,13 +80,14 @@ namespace corsika {
     excludedNodes_.push_back(pNode.get());
   }
 
-  template <typename IModelProperties>
-  template <class MediumType, typename... Args>
-  auto VolumeTreeNode<IModelProperties>::createMedium(Args&&... args) {
-    static_assert(std::is_base_of_v<IMediumModel, MediumType>,
-                  "unusable type provided, needs to be derived from \"IMediumModel\"");
+  /*
+    template <typename IModelProperties>
+    template <class MediumType, typename... Args>
+    auto VolumeTreeNode<IModelProperties>::createMedium(Args&&... args) {
+      static_assert(std::is_base_of_v<IMediumModel, MediumType>,
+                    "unusable type provided, needs to be derived from \"IMediumModel\"");
 
-    return std::make_shared<MediumType>(std::forward<Args>(args)...);
-  }
-
+      return std::make_shared<MediumType>(std::forward<Args>(args)...);
+    }
+  */
 } // namespace corsika

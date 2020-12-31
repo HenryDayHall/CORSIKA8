@@ -9,13 +9,15 @@
 #pragma once
 
 #include <corsika/media/Environment.hpp>
+#include <corsika/media/IEmpty.hpp>
 
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/stack/GeometryNodeStackExtension.hpp>
 #include <corsika/stack/NuclearStackExtension.hpp>
 
-using TestEnvironmentType = corsika::Environment<corsika::IMediumModel>;
+using TestEnvironmentInterface = corsika::IEmpty;
+using TestEnvironmentType = corsika::Environment<TestEnvironmentInterface>;
 
 template <typename T>
 using SetupGeometryDataInterface =

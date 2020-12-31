@@ -28,7 +28,7 @@
 #include <corsika/media/SlidingPlanarExponential.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 
-#include <corsika/setup/SetupTrajectory.h>
+#include <SetupTestTrajectory.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -58,7 +58,8 @@ TEST_CASE("FlatExponential") {
   SECTION("horizontal") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {20_cm / second, 0_m / second, 0_m / second}));
-    Trajectory<Line> const trajectory(line, tEnd);
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
     CHECK((medium.getIntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
     CHECK((medium.getArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
@@ -67,7 +68,8 @@ TEST_CASE("FlatExponential") {
   SECTION("vertical") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 0_m / second, 5_m / second}));
-    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
     LengthType const length = 2 * lambda;
     GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
 
@@ -78,11 +80,11 @@ TEST_CASE("FlatExponential") {
   SECTION("escape grammage") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 0_m / second, -5_m / second}));
-    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
-
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
     GrammageType const escapeGrammage = rho0 * lambda;
 
-    CHECK(trajectory.getNormalizedDirection().dot(axis).magnitude() < 0);
+    CHECK(trajectory.getDirection(0).dot(axis).magnitude() < 0);
     CHECK(medium.getArclengthFromGrammage(trajectory, 1.2 * escapeGrammage) ==
           std::numeric_limits<typename GrammageType::value_type>::infinity() * 1_m);
   }
@@ -90,7 +92,8 @@ TEST_CASE("FlatExponential") {
   SECTION("inclined") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
                                  gCS, {0_m / second, 5_m / second, 5_m / second}));
-    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
     double const cosTheta = M_SQRT1_2;
     LengthType const length = 2 * lambda;
     GrammageType const exact =
@@ -124,7 +127,8 @@ TEST_CASE("SlidingPlanarExponential") {
     Line const line({gCS, {0_m, 0_m, 1_m}},
                     Vector<SpeedType::dimension_type>(
                         gCS, {0_m / second, 0_m / second, 5_m / second}));
-    setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
     CHECK(medium.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
           flat.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
@@ -143,15 +147,15 @@ struct Exponential {
   }
 
   template <int N>
-  auto getDerivative(Point const& p, Vector<dimensionless_d> const& v) const {
+  auto getDerivative(Point const& p, DirectionVector const& v) const {
     return v.getComponents()[0] * (*this)(p) / static_pow<N>(1_m);
   }
 
-  auto getFirstDerivative(Point const& p, Vector<dimensionless_d> const& v) const {
+  auto getFirstDerivative(Point const& p, DirectionVector const& v) const {
     return getDerivative<1>(p, v);
   }
 
-  auto getSecondDerivative(Point const& p, Vector<dimensionless_d> const& v) const {
+  auto getSecondDerivative(Point const& p, DirectionVector const& v) const {
     return getDerivative<2>(p, v);
   }
 };
@@ -163,7 +167,8 @@ TEST_CASE("InhomogeneousMedium") {
                          gCS, {20_m / second, 0_m / second, 0_m / second}));
 
   auto const tEnd = 5_s;
-  setup::Trajectory const trajectory = setup::testing::make_track<setup::Trajectory>(line, tEnd);
+  setup::Trajectory const trajectory =
+      setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   Exponential const e;
   DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);

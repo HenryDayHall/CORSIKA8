@@ -27,9 +27,10 @@ namespace corsika {
 
   template <typename T>
   MassDensityType FlatExponential<T>::getMassDensity(Point const& point) const {
-    return BaseExponential<FlatExponential<T>>::rho0_ *
-           exp(BaseExponential<FlatExponential<T>>::invLambda_ *
-               (point - BaseExponential<FlatExponential<T>>::point_).dot(axis_));
+    return BaseExponential<FlatExponential<T>>::getRho0() *
+           exp(BaseExponential<FlatExponential<T>>::getInvLambda() *
+               (point - BaseExponential<FlatExponential<T>>::getAnchorPoint())
+                   .dot(axis_));
   }
 
   template <typename T>

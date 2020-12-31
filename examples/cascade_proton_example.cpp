@@ -28,7 +28,6 @@
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackingLine.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
@@ -72,19 +71,18 @@ int main() {
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  auto theMedium = EnvType::createNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
   using MyHomogeneousModel = MediumPropertyModel<
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
 
-  theMedium->setModelProperties<MyHomogeneousModel>(
+  world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_T),
       1_kg / (1_m * 1_m * 1_m),
       NuclearComposition(std::vector<Code>{Code::Hydrogen},
                          std::vector<float>{(float)1.}));
 
-  universe.addChild(std::move(theMedium));
+  universe.addChild(std::move(world));
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -95,6 +93,7 @@ int main() {
   double theta = 0.;
   double phi = 0.;
 
+  Point injectionPos(rootCS, 0_m, 0_m, 0_m);
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt(Elab * Elab - m * m);
@@ -110,12 +109,11 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
-    Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.addParticle(std::make_tuple(beamCode, E0, plab, pos, 0_ns));
+    stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
   }
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   RNGManager::getInstance().registerRandomStream("sibyll");
@@ -125,20 +123,19 @@ int main() {
   //  sibyll::NuclearInteraction sibyllNuc(env, sibyll);
   //  sibyll::Decay decay;
   corsika::pythia8::Decay decay;
-  ParticleCut cut(20_GeV, true, true);
+  ParticleCut cut(60_GeV, true, true);
 
   // RNGManager::getInstance().registerRandomStream("HadronicElasticModel");
   // HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
   TrackWriter trackWriter("tracks.dat");
+  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+  BetheBlochPDG eLoss{showerAxis, cut.getECut()};
 
   // assemble all processes into an ordered process list
   // auto sequence = sibyll << decay << hadronicElastic << cut << trackWriter;
-  auto sequence = make_sequence(pythia, decay, cut, trackWriter, stackInspect);
-
-  // cout << "decltype(sequence)=" << type_id_with_cvr<decltype(sequence)>().pretty_name()
-  // << "\n";
+  auto sequence = make_sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, stack);

@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <corsika/modules/TrackingLine.hpp>
-
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>

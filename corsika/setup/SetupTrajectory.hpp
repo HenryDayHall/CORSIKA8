@@ -8,15 +8,8 @@ n/*
 
 #pragma once
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Line.hpp>
-#include <corsika/framework/geometry/Helix.hpp>
 #include <corsika/framework/geometry/Trajectory.hpp>
-
-#include <corsika/modules/TrackingLine.hpp>
-//#include <corsika/modules/TrackingCurved.hpp> // simple leap-frog implementation
-//#include <corsika/modules/TrackingLeapFrog.hpp> // more complete leap-frog
-// implementation
+#include <corsika/modules/Tracking.hpp>
 
 namespace corsika::setup {
 

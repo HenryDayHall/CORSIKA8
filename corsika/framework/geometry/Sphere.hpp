@@ -37,7 +37,7 @@ namespace corsika {
     LengthType getRadius() const;
 
     void setRadius(LengthType const);
-    
+
   private:
     Point center_;
     LengthType radius_;

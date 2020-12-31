@@ -13,8 +13,8 @@
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/Trajectory.hpp>
 #include <corsika/framework/geometry/Intersections.hpp>
-
 #include <corsika/framework/logging/Logging.hpp>
 #include <corsika/modules/tracking/Intersect.hpp>
 
@@ -32,6 +32,8 @@ namespace corsika::tracking_line {
 
   class Tracking : public Intersect<Tracking> {
 
+    using Intersect<Tracking>::nextIntersect;
+
   public:
     template <typename TParticle>
     auto getTrack(TParticle const& particle) {
@@ -45,12 +47,13 @@ namespace corsika::tracking_line {
           particle.getPID(), particle.getEnergy() / 1_GeV);
       CORSIKA_LOG_DEBUG("Tracking pos: {}", initialPosition.getCoordinates());
       CORSIKA_LOG_DEBUG("Tracking   E: {} GeV", particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("Tracking   p: {} GeV", particle.getMomentum().getComponents() / 1_GeV);
+      CORSIKA_LOG_DEBUG("Tracking   p: {} GeV",
+                        particle.getMomentum().getComponents() / 1_GeV);
       CORSIKA_LOG_DEBUG("Tracking   v: {} ", initialVelocity.getComponents());
 
       // traverse the environment volume tree and find next
       // intersection
-      auto [minTime, minNode] = Intersect<Tracking>::nextIntersect(particle);
+      auto [minTime, minNode] = nextIntersect(particle);
 
       return std::make_tuple(LineTrajectory(Line(initialPosition, initialVelocity),
                                             minTime), // trajectory
@@ -62,7 +65,7 @@ namespace corsika::tracking_line {
                                    TMedium const&) {
       auto const delta = particle.getPosition() - sphere.getCenter();
       auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
-      auto const vSqNorm = velocity.squaredNorm();
+      auto const vSqNorm = velocity.getSquaredNorm();
       auto const R = sphere.getRadius();
 
       auto const vDotDelta = velocity.dot(delta);
@@ -83,7 +86,7 @@ namespace corsika::tracking_line {
                                    TBaseNodeType const& volumeNode) {
       Sphere const* sphere = dynamic_cast<Sphere const*>(&volumeNode.getVolume());
       if (sphere) {
-        return Intersect(particle, *sphere, volumeNode.getModelProperties());
+        return intersect(particle, *sphere, volumeNode.getModelProperties());
       }
       throw std::runtime_error(
           "The Volume type provided is not supported in Intersect(particle, node)");
@@ -105,4 +108,4 @@ namespace corsika::tracking_line {
 
 } // namespace corsika::tracking_line
 
-#include <corsika/detail/modules/TrackingLine.inl>
+// #include <corsika/detail/modules/tracking/TrackingLine.inl>

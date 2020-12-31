@@ -43,6 +43,8 @@ namespace corsika {
 
     inline Point const& getStartPoint() const;
 
+    inline DirectionVector getDirection() const;
+
     inline VelocityVector const& getVelocity() const;
 
   private:

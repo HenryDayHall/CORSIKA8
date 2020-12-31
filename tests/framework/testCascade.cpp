@@ -13,7 +13,6 @@
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/NullModel.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackingLine.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 
@@ -31,35 +30,63 @@ using namespace corsika;
 #include <limits>
 using namespace std;
 
+/**
+ * testCascade implements an e.m. Heitler model with energy splitting
+ * and a critical energy.
+ *
+ * It resembles one of the most simple cascades you can simulate with CORSIKA8.
+ **/
+
+/*
+  The dummy env (here) doesn't need to have any propoerties
+ */
+
 auto make_dummy_env() {
   TestEnvironmentType env; // dummy environment
   auto& universe = *(env.getUniverse());
 
-  auto theMedium = TestEnvironmentType::createNode<Sphere>(
+  auto world = TestEnvironmentType::createNode<Sphere>(
       Point{env.getCoordinateSystem(), 0_m, 0_m, 0_m},
-      100_km * std::numeric_limits<double>::infinity());
+      1_km * std::numeric_limits<double>::infinity());
 
-  using MyHomogeneousModel = corsika::HomogeneousMedium<IMediumModel>;
-  theMedium->setModelProperties<MyHomogeneousModel>(
-      1_g / (1_cm * 1_cm * 1_cm),
-      NuclearComposition(std::vector<Code>{Code::Proton}, std::vector<float>{1.}));
+  using MyEmptyModel = Empty<IEmpty>;
+  world->setModelProperties<MyEmptyModel>();
 
-  universe.addChild(std::move(theMedium));
+  universe.addChild(std::move(world));
   return env;
 }
+
+/**
+ *
+ * For the Heitler model we don't need particle transport.
+ **/
+class DummyTracking {
+
+public:
+  template <typename TParticle>
+  auto getTrack(TParticle const& particle) {
+    VelocityVector const initialVelocity =
+        particle.getMomentum() / particle.getEnergy() * constants::c;
+    return std::make_tuple(
+        LineTrajectory(
+            Line(particle.getPosition(), initialVelocity),
+            std::numeric_limits<TimeType::value_type>::infinity() * 1_s), // trajectory,
+                                                                          // just
+                                                                          // go
+                                                                          // ahead
+                                                                          // forever
+        particle.getNode()); // next volume node
+  }
+};
 
 class ProcessSplit : public InteractionProcess<ProcessSplit> {
 
   int calls_ = 0;
-  GrammageType X0_;
 
 public:
-  ProcessSplit(GrammageType const X0)
-      : X0_(X0) {}
-
   template <typename Particle>
   GrammageType getInteractionLength(Particle const&) const {
-    return X0_;
+    return 0_g / square(1_cm);
   }
 
   template <typename TView>
@@ -109,7 +136,7 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  logging::SetLevel(logging::level::trace);
+  logging::set_level(logging::level::trace);
 
   HEPEnergyType E0 = 100_GeV;
 
@@ -118,7 +145,6 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   auto env = make_dummy_env();
   auto const& rootCS = env.getCoordinateSystem();
-  tracking_line::Tracking tracking;
 
   StackInspector<TestCascadeStack> stackInspect(1, true, E0);
   NullModel nullModel;
@@ -129,19 +155,21 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto sequence = make_sequence(nullModel, stackInspect, split, cut);
   TestCascadeStack stack;
   stack.clear();
-  stack.addParticle(std::make_tuple(Code::Electron, E0,
-                                    MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+  stack.addParticle(std::make_tuple(
+      Code::Electron, E0,
+      MomentumVector(rootCS, {0_GeV, 0_GeV,
+                              -sqrt(E0 * E0 - static_pow<2>(get_mass(Code::Electron)))}),
+      Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
-  Cascade<tracking_line::Tracking, decltype(sequence), TestCascadeStack,
-          TestCascadeStackView>
-      EAS(env, tracking, sequence, stack);
+  DummyTracking tracking;
+  Cascade<DummyTracking, decltype(sequence), TestCascadeStack, TestCascadeStackView> EAS(
+      env, tracking, sequence, stack);
 
   SECTION("full cascade") {
     EAS.run();
 
     CHECK(cut.getCount() == 2048);
-    CHECK(cut.getCalls() == 2047);
+    CHECK(cut.getCalls() == 2047); // final particle is still on stack and not yet deleted
     CHECK(split.getCalls() == 2047);
   }
 

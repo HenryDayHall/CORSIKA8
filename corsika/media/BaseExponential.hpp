@@ -13,7 +13,6 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-
 #include <limits>
 
 namespace corsika {
@@ -25,7 +24,6 @@ namespace corsika {
   template <typename TDerived>
   class BaseExponential {
   protected:
-
     auto const& getImplementation() const;
 
     // clang-format off
@@ -70,12 +68,16 @@ namespace corsika {
   public:
     BaseExponential(Point const& point, MassDensityType rho0, LengthType lambda);
 
+    Point const& getAnchorPoint() const { return point_; }
+    MassDensityType getRho0() const { return rho0_; }
+    InverseLengthType getInvLambda() const { return invLambda_; }
+
   private:
     MassDensityType const rho0_;
     LengthType const lambda_;
     InverseLengthType const invLambda_;
     Point const point_;
-    
+
   }; // class BaseExponential
 
 } // namespace corsika

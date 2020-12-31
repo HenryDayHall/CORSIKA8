@@ -26,20 +26,24 @@
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/ShowerAxis.hpp>
+#include <corsika/media/SlidingPlanarExponential.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/OnShellCheck.hpp>
+#include <corsika/modules/StackInspector.hpp>
+#include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
-#include <corsika/modules/TrackingLine.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 
@@ -112,7 +116,7 @@ int main(int argc, char** argv) {
                                                        constants::EarthRadius::Mean,
                                                        Medium::AirDry1Atm,
                                                        MagneticFieldVector{rootCS, 0_T,
-                                                                           0_T, 1_T});
+                                                                           50_uT, 0_T});
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -165,7 +169,14 @@ int main(int argc, char** argv) {
     stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+    if (Z == 1) {
+      stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+    } else if (Z == 0) {
+      stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+    } else {
+      std::cerr << "illegal parameters" << std::endl;
+      return EXIT_FAILURE;
+    }
   }
 
   // we make the axis much longer than the inj-core distance since the
@@ -214,14 +225,17 @@ int main(int argc, char** argv) {
   InteractionCounter proposalCounted(proposal);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+  TrackWriter trackWriter("tracks.dat");
 
   LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, "particles.dat");
+  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+                                    "particles.dat");
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
+  StackInspector<setup::Stack> stackInspect(1000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -238,12 +252,12 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(
       urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted), EnergySwitch(55_GeV));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence =
-      make_sequence(hadronSequence, reset_particle_mass, decaySequence, proposalCounted,
-                    em_continuous, cut, observationLevel, longprof);
+  auto sequence = make_sequence(stackInspect, hadronSequence, reset_particle_mass,
+                                decaySequence, proposalCounted, em_continuous, cut,
+                                trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

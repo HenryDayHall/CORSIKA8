@@ -82,7 +82,7 @@ namespace corsika {
     Cascade(Cascade const&) = default;
     Cascade(Cascade&&) = default;
     ~Cascade() = default;
-    Cascade & operator=(Cascade const&)) = default;
+    Cascade& operator=(Cascade const&) = default;
     Cascade(Environment<MediumInterface> const& env, TTracking& tr, TProcessList& pl,
             TStack& stack)
         : environment_(env)

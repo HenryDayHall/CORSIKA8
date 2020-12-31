@@ -118,8 +118,7 @@ namespace corsika {
                                                                           next_interact);
 
     // determine the maximum geometric step length
-    LengthType const continuous_max_dist =
-        process_sequence_.getMaxStepLength(vParticle, step);
+    LengthType const continuous_max_dist = sequence_.getMaxStepLength(vParticle, step);
 
     // take minimum of geometry, interaction, decay for next step
     auto const min_distance =
@@ -139,7 +138,7 @@ namespace corsika {
     step.setLength(min_distance);
     vParticle.setPosition(step.getPosition(1));
     // assumption: tracking does not change absolute momentum:
-    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().norm());
+    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
     vParticle.setTime(vParticle.getTime() + step.getDuration());
 
     // apply all continuous processes on particle + track
@@ -175,7 +174,7 @@ namespace corsika {
 
         [[maybe_unused]] auto projectile = secondaries.getProjectile();
 
-        if (distance_interat < distance_decay) {
+        if (distance_interact < distance_decay) {
           interaction(secondaries);
         } else {
           decay(secondaries);
@@ -231,63 +230,63 @@ namespace corsika {
         sequence_.doBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
       }
     }
+  }
 
-    template <typename TTracking, typename TProcessList, typename TStack,
-              typename TStackView>
-    ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::decay(TStackView &
-                                                                              view) {
-      CORSIKA_LOG_DEBUG("decay");
-      InverseTimeType const actual_decay_time =
-          sequence_.getInverseLifetime(view.parent());
+  template <typename TTracking, typename TProcessList, typename TStack,
+            typename TStackView>
+  ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::decay(
+      TStackView& view) {
+    CORSIKA_LOG_DEBUG("decay");
+    InverseTimeType const actual_decay_time = sequence_.getInverseLifetime(view.parent());
 
-      UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
-      const auto sample_process = uniDist(rng_);
+    UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
+    const auto sample_process = uniDist(rng_);
 
-      auto const returnCode = sequence_.selectDecay(view, sample_process);
-      if (returnCode != ProcessReturn::Decayed) {
-        CORSIKA_LOG_WARN("Particle did not decay!");
-      }
-      setEventType(view, history::EventType::Decay);
-      return returnCode;
+    auto const returnCode = sequence_.selectDecay(view, sample_process);
+    if (returnCode != ProcessReturn::Decayed) {
+      CORSIKA_LOG_WARN("Particle did not decay!");
     }
+    setEventType(view, history::EventType::Decay);
+    return returnCode;
+  }
 
-    template <typename TTracking, typename TProcessList, typename TStack,
-              typename TStackView>
-    ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::interaction(
-        TStackView & view) {
-      CORSIKA_LOG_DEBUG("collide");
+  template <typename TTracking, typename TProcessList, typename TStack,
+            typename TStackView>
+  ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::interaction(
+      TStackView& view) {
+    CORSIKA_LOG_DEBUG("collide");
 
-      InverseGrammageType const current_inv_length =
-          sequence_.getInverseInteractionLength(view.parent());
+    InverseGrammageType const current_inv_length =
+        sequence_.getInverseInteractionLength(view.parent());
 
-      UniformRealDistribution<InverseGrammageType> uniDist(current_inv_length);
+    UniformRealDistribution<InverseGrammageType> uniDist(current_inv_length);
 
-      const auto sample_process = uniDist(rng_);
-      auto const returnCode = sequence_.selectInteraction(view, sample_process);
-      if (returnCode != ProcessReturn::Interacted) {
-        CORSIKA_LOG_WARN("Particle did not interace!");
-      }
-      setEventType(view, history::EventType::Interaction);
-      return returnCode;
+    const auto sample_process = uniDist(rng_);
+    auto const returnCode = sequence_.selectInteraction(view, sample_process);
+    if (returnCode != ProcessReturn::Interacted) {
+      CORSIKA_LOG_WARN("Particle did not interace!");
     }
+    setEventType(view, history::EventType::Interaction);
+    return returnCode;
+  }
 
-    template <typename TTracking, typename TProcessList, typename TStack,
-              typename TStackView>
-    void Cascade<TTracking, TProcessList, TStack, TStackView>::setNodes() {
-      std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
-        auto const* numericalNode =
-            environment_.getUniverse()->getContainingNode(p.getPosition());
-        p.setNode(numericalNode);
-      });
+  template <typename TTracking, typename TProcessList, typename TStack,
+            typename TStackView>
+  void Cascade<TTracking, TProcessList, TStack, TStackView>::setNodes() {
+    std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
+      auto const* numericalNode =
+          environment_.getUniverse()->getContainingNode(p.getPosition());
+      p.setNode(numericalNode);
+    });
+  }
+
+  template <typename TTracking, typename TProcessList, typename TStack,
+            typename TStackView>
+  void Cascade<TTracking, TProcessList, TStack, TStackView>::setEventType(
+      TStackView& view, [[maybe_unused]] history::EventType eventType) {
+    if constexpr (TStackView::has_event) {
+      for (auto&& sec : view) { sec.getEvent()->setEventType(eventType); }
     }
+  }
 
-    template <typename TTracking, typename TProcessList, typename TStack,
-              typename TStackView>
-    void Cascade<TTracking, TProcessList, TStack, TStackView>::setEventType(
-        TStackView & view, [[maybe_unused]] history::EventType eventType) {
-      if constexpr (TStackView::has_event) {
-        for (auto&& sec : view) { sec.getEvent()->setEventType(eventType); }
-      }
-    }
-
-  } // namespace corsika
+} // namespace corsika

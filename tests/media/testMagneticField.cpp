@@ -15,6 +15,8 @@
 #include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 
+#include <SetupTestTrajectory.hpp>
+
 #include <catch2/catch.hpp>
 
 using namespace corsika;
@@ -77,9 +79,10 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   auto const tEnd = 1_s;
 
   // and the associated trajectory
-  Trajectory<Line> const trajectory(line, tEnd);
+  setup::Trajectory const track =
+      setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
-  CHECK((medium.getIntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
-  CHECK((medium.getArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
+  CHECK((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }

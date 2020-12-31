@@ -27,7 +27,7 @@ TEST_CASE("StackInspector", "[processes]") {
   Point const origin(rootCS, {0_m, 0_m, 0_m});
   VelocityVector v(rootCS, 0_m / second, 0_m / second, 1_m / second);
   Line line(origin, v);
-  Trajectory<Line> track(line, 10_s);
+  LineTrajectory track(line, 10_s);
 
   TestCascadeStack stack;
   stack.clear();

@@ -17,66 +17,60 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
+#include <SetupTestEnvironment.hpp>
+#include <SetupTestStack.hpp>
+#include <SetupTestTrajectory.hpp>
+
 using namespace corsika;
 
 TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
-  auto const& rootCS = get_root_CoordinateSystem();
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
+  auto const& cs = *csPtr;
+  [[maybe_unused]] auto const& env_dummy = env;
+  [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   /*
     Test with downward going 1_GeV neutrino, starting at 0,1_m,10m
 
     ObservationPlane has origin at 0,0,0
    */
+  auto [stack, viewPtr] =
+      setup::testing::setup_stack(Code::NuE, 0, 0, 1_GeV, nodePtr, cs);
+  [[maybe_unused]] setup::StackView& view = *viewPtr;
+  auto particle = stack->getNextParticle();
 
-  Point const start(rootCS, {0_m, 1_m, 10_m});
-  VelocityVector vec(rootCS, 0_m / second, 0_m / second, -constants::c);
+  Point const start(cs, {0_m, 1_m, 10_m});
+  VelocityVector vec(cs, 0_m / second, 0_m / second, -constants::c);
   Line line(start, vec);
-  Trajectory<Line> track(line, 12_m / constants::c);
 
-  // setup particle stack, and add primary particle
-  setup::Stack stack;
-  stack.clear();
-  {
-    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt((Elab - m) * (Elab + m));
-    };
-    stack.addParticle(std::make_tuple(
-        Code::NuMu, 1_GeV,
-        MomentumVector(rootCS, {0_GeV, 0_GeV, -elab2plab(1_GeV, NuMu::mass)}),
-        Point(rootCS, {1_m, 1_m, 10_m}), 0_ns));
-  }
-  auto particle = stack.getNextParticle();
+  setup::Trajectory track =
+      setup::testing::make_track<setup::Trajectory>(line, 12_m / constants::c);
+
+  particle.setPosition(Point(cs, {1_m, 1_m, 10_m})); // moving already along -z
 
   SECTION("horizontal plane") {
 
-    Plane const obsPlane(Point(rootCS, {0_m, 0_m, 0_m}),
-                         DirectionVector(rootCS, {0., 0., 1.}));
-    ObservationPlane obs(obsPlane, "particles.dat", true);
+    Plane const obsPlane(Point(cs, {0_m, 0_m, 0_m}), DirectionVector(cs, {0., 0., 1.}));
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {1., 0., 0.}), "particles.dat",
+                         true);
 
-    const LengthType length = obs.getMaxStepLength(particle, track);
-    const ProcessReturn ret = obs.doContinuous(particle, track);
+    LengthType const length = obs.getMaxStepLength(particle, track);
+    ProcessReturn const ret = obs.doContinuous(particle, track);
 
     CHECK(length / 10_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
-
-    /*
-    SECTION("horizontal plane") {
-      CHECK(true); // todo: we have to check content of output file...
-
-    }
-    */
   }
 
   SECTION("inclined plane") {}
 
   SECTION("transparent plane") {
-    Plane const obsPlane(Point(rootCS, {0_m, 0_m, 0_m}),
-                         DirectionVector(rootCS, {0., 0., 1.}));
-    ObservationPlane obs(obsPlane, "particles.dat", false);
+    Plane const obsPlane(Point(cs, {0_m, 0_m, 0_m}), DirectionVector(cs, {0., 0., 1.}));
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {1., 0., 0.}), "particles.dat",
+                         false);
 
-    const LengthType length = obs.getMaxStepLength(particle, track);
-    const ProcessReturn ret = obs.doContinuous(particle, track);
+    LengthType const length = obs.getMaxStepLength(particle, track);
+    ProcessReturn const ret = obs.doContinuous(particle, track);
 
     CHECK(length / 10_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::Ok);

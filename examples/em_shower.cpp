@@ -28,7 +28,6 @@
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
-#include <corsika/modules/TrackingLine.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
@@ -84,7 +83,7 @@ int main(int argc, char** argv) {
       setup::EnvironmentInterface, MyExtraEnv>::create(center,
                                                        constants::EarthRadius::Mean,
                                                        Medium::AirDry1Atm,
-                                                       Vector{rootCS, 0_T, 0_T, 1_T});
+                                                       Vector{rootCS, 0_T, 50_uT, 0_T});
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
@@ -152,12 +151,13 @@ int main(int argc, char** argv) {
   LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, "particles.dat");
+  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+                                    "particles.dat");
 
   auto sequence = make_sequence(proposalCounted, em_continuous, longprof, cut,
                                 observationLevel, trackWriter);
   // define air shower object, run simulation
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:

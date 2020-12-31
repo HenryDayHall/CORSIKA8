@@ -15,9 +15,11 @@ namespace corsika {
 
   template <typename TEnvModel>
   ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
-                         Environment<TEnvModel> const& env, int steps)
+                         Environment<TEnvModel> const& env, bool const doThrow,
+                         int const steps)
       : pointStart_(pStart)
       , length_(length)
+      , throw_(doThrow)
       , max_length_(length_.getNorm())
       , steplength_(max_length_ / steps)
       , axis_normalized_(length / max_length_)
@@ -69,7 +71,7 @@ namespace corsika {
         throw std::runtime_error(
             "cannot extrapolate to points behind point of injection");
       }
-      return minimumX();
+      return getMinimumX();
     }
 
     if (upper >= X_.size()) {
@@ -83,8 +85,8 @@ namespace corsika {
         throw std::runtime_error(err.c_str());
       }
     }
-    CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}", fraction,
-                      fractionalBin, lower, upper);
+    CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}",
+                      fraction, fractionalBin, lower, upper);
 
     assert(0 <= fraction && fraction <= 1.);
 

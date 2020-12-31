@@ -24,7 +24,6 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 
-#include <corsika/modules/TrackingLine.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
@@ -96,8 +95,7 @@ int main() {
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
   // create "world" as infinite sphere filled with protons
-  auto world = EnvType::createNode<Sphere>(
-      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 100_km);
 
   using MyHomogeneousModel = MediumPropertyModel<
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
@@ -114,7 +112,7 @@ int main() {
   universe.addChild(std::move(world));
 
   // setup processes, decays and interactions
-  tracking_line::TrackingLine tracking;
+  setup::Tracking tracking;
 
   RNGManager::getInstance().registerRandomStream("sibyll");
   corsika::sibyll::Interaction sibyll;

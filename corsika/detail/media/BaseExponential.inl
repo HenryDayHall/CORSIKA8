@@ -10,7 +10,6 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 
 namespace corsika {
@@ -22,12 +21,11 @@ namespace corsika {
 
   template <typename TDerived>
   GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
-      setup::Trajectory const& line, LengthType vL,
-      DirectionVector const& axis) const {
+      setup::Trajectory const& traj, LengthType vL, DirectionVector const& axis) const {
     if (vL == LengthType::zero()) { return GrammageType::zero(); }
 
-    auto const uDotA = line.getNormalizedDirection().dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(line.getStartPoint());
+    auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
+    auto const rhoStart = getImplementation().getMassDensity(traj.getPosition(0));
 
     if (uDotA == 0) {
       return vL * rhoStart;
@@ -38,10 +36,10 @@ namespace corsika {
 
   template <typename TDerived>
   LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
-      setup::Trajectory const& line, GrammageType grammage,
+      setup::Trajectory const& traj, GrammageType grammage,
       DirectionVector const& axis) const {
-    auto const uDotA = line.getNormalizedDirection().dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(line.getStartPoint());
+    auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
+    auto const rhoStart = getImplementation().getMassDensity(traj.getPosition(0));
 
     if (uDotA == 0) {
       return grammage / rhoStart;

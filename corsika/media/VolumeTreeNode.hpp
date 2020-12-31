@@ -9,7 +9,7 @@
 #pragma once
 
 #include <corsika/framework/geometry/IVolume.hpp>
-#include <corsika/environment/IEmpty.hpp>
+#include <corsika/media/IEmpty.hpp>
 #include <memory>
 #include <vector>
 
@@ -51,7 +51,7 @@ namespace corsika {
 
     inline void excludeOverlapWith(VTNUPtr const& pNode);
 
-    inline VTN_type* getParent() const { return parentNode_; };
+    inline VTN_type const* getParent() const { return parentNode_; };
 
     inline auto const& getChildNodes() const { return childNodes_; }
 
@@ -65,7 +65,7 @@ namespace corsika {
 
     template <typename ModelProperties, typename... Args>
     inline auto setModelProperties(Args&&... args) {
-      //static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
+      // static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
       //            "unusable type provided");
       modelProperties_ = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
       return modelProperties_;
@@ -73,8 +73,8 @@ namespace corsika {
 
     inline void setModelProperties(IMPSharedPtr ptr) { modelProperties_ = ptr; }
 
-    //template <class MediumType, typename... Args>
-    //static auto createMedium(Args&&... args);
+    // template <class MediumType, typename... Args>
+    // static auto createMedium(Args&&... args);
 
   private:
     std::vector<VTNUPtr> childNodes_;

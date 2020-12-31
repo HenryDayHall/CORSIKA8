@@ -44,8 +44,8 @@ namespace corsika {
           << std::setw(width_) << std::scientific << std::setprecision(precision_) << start[2] / 1_m
           << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[0] / 1_m
           << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[1] / 1_m
-          << std::setw(width) << std::scientific << std::setprecision(precision) << delta[2] / 1_m 
-          << std::setw(width) << std::scientific << std::setprecision(precision) << delta.norm() / 1_m
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta[2] / 1_m 
+          << std::setw(width_) << std::scientific << std::setprecision(precision_) << delta.getNorm() / 1_m
           << '\n';
     // clang-format on
 

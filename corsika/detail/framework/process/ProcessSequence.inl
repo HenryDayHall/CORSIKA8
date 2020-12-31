@@ -219,7 +219,7 @@ namespace corsika {
       decay_inv_sum += A_.getInverseLifetime(view.parent());
       // check if we should execute THIS process and then EXIT
       if (decay_inv_select <= decay_inv_sum) { // more pedagogical: rndm_select <
-                                              // decay_inv_sum / decay_inv_tot
+                                               // decay_inv_sum / decay_inv_tot
         A_.doDecay(view);
         return ProcessReturn::Decayed;
       }

@@ -14,9 +14,13 @@
 
 namespace corsika {
 
-  inline Point Line::getPosition(TimeType const t) const { return start_point_ + velocity_ * t; }
+  inline Point Line::getPosition(TimeType const t) const {
+    return start_point_ + velocity_ * t;
+  }
 
-  inline VelocityVector const& Line::getVelocity(TimeType const) const { return velocity_; }
+  inline VelocityVector const& Line::getVelocity(TimeType const) const {
+    return velocity_;
+  }
 
   inline Point Line::getPositionFromArclength(LengthType const l) const {
     return start_point_ + velocity_.normalized() * l;
@@ -31,6 +35,8 @@ namespace corsika {
   }
 
   inline Point const& Line::getStartPoint() const { return start_point_; }
+
+  inline DirectionVector Line::getDirection() const { return velocity_.normalized(); }
 
   inline VelocityVector const& Line::getVelocity() const { return velocity_; }
 

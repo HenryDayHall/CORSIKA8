@@ -15,7 +15,8 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/media/Environment.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
+#include <SetupTestStack.hpp>
+#include <SetupTestTrajectory.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -158,11 +159,9 @@ TEST_CASE("ParticleCut", "[processes]") {
     CHECK(cut.getCutEnergy() == 0_GeV);
   }
 
-  setup::Trajectory const track{
-      Line{point0,
-           Vector<SpeedType::dimension_type>{
-               rootCS, {0_m / second, 0_m / second, -constants::c}}},
-      12_m / constants::c};
+  setup::Trajectory const track = setup::testing::make_track<setup::Trajectory>(
+      Line{point0, VelocityVector{rootCS, {0_m / second, 0_m / second, -constants::c}}},
+      12_m / constants::c);
 
   SECTION("cut on DoContinous, just invisibles") {
 

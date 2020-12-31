@@ -99,8 +99,8 @@ TEST_CASE("pythia process") {
   [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   SECTION("pythia decay") {
-    const HEPEnergyType E0 = 10_GeV;
-    HEPMomentumType P0 = sqrt(E0 * E0 - PiPlus::mass * PiPlus::mass);
+    HEPEnergyType const P0 = 10_GeV;
+    //HEPMomentumType const E0 = sqrt(P0*P0 + PiPlus::mass*PiPlus::mass);
 
     // feenableexcept(FE_INVALID); \todo how does this work nowadays...???
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -108,10 +108,8 @@ TEST_CASE("pythia process") {
     auto& stack = *stackPtr;
     auto& view = *secViewPtr;
 
-    auto plab = MomentumVector(cs, {0_GeV, 0_GeV, -P0});
-    Point pos(cs, 0_m, 0_m, 0_m);
-    auto particle =
-        stackPtr->addParticle(std::make_tuple(Code::PiPlus, E0, plab, pos, 0_ns));
+    auto const& particle = stack.getNextParticle();
+    auto const  plab = MomentumVector(cs, {P0, 0_GeV, 0_GeV});
 
     std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                          Code::KMinus, Code::K0Long,  Code::K0Short};
@@ -163,6 +161,6 @@ TEST_CASE("pythia process") {
     corsika::pythia8::Interaction model;
     model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length == 82.2524_kg / square(1_m));
+    CHECK(length / 1_kg * square(1_m) == Approx(82.2524));
   }
 }

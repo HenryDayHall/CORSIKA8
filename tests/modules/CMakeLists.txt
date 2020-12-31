@@ -1,7 +1,7 @@
 set (test_modules_sources
   TestMain.cpp
   testStackInspector.cpp
-  # testTrackingLine.cpp -> wait !!!!
+  testTracking.cpp
   # testExecTime.cpp
   testObservationPlane.cpp
   testQGSJetII.cpp

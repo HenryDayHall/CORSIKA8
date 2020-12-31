@@ -48,7 +48,7 @@ namespace corsika {
 
     inline Point getPosition(TimeType const t) const;
 
-    VelocityVec getVelocity(TimeType const t) const; 
+    VelocityVec getVelocity(TimeType const t) const;
 
     inline Point getPositionFromArclength(LengthType const l) const;
 
