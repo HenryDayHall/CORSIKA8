@@ -1,0 +1,225 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/framework/geometry/Line.hpp>
+#include <corsika/framework/geometry/Plane.hpp>
+#include <corsika/framework/geometry/Sphere.hpp>
+#include <corsika/framework/geometry/Trajectory.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
+#include <corsika/modules/tracking/TrackingStraight.hpp>
+
+#include <type_traits>
+#include <utility>
+
+namespace corsika {
+
+  namespace tracking_leapfrog_straight {
+
+    /**
+     *
+     * The class tracking_leapfrog_straight::Tracking inherits from
+     * tracking_line::Tracking and adds a (two-step) Leap-Frog
+     * algorithms with two halve-steps and magnetic deflection.
+     *
+     * The two halve steps are implemented as two straight explicit
+     * `tracking_line::Tracking`s and all geometry intersections are,
+     * thus, based on those two straight line elements.
+     *
+     * As a precaution for numerical instability, the steplength is
+     * limited to correspond to a straight line distance to the next
+     * volume intersection. In typical situations this leads to about
+     * (at least) one full leap-frog step to the next volume boundary.
+     *
+     **/
+
+    class Tracking : public tracking_line::Tracking {
+
+    public:
+      /**
+       * \param firstFraction fraction of first leap-frog halve step
+       * relative to full linear step to next volume boundary. This
+       * should not be less than 0.5, otherwise you risk that
+       * particles will never travel from one volume to the next
+       * one. A cross should be possible (even likely). If
+       * firstFraction is too big (~1) the resulting calculated error
+       * will be largest.
+       *
+       */
+      Tracking(double const firstFraction = 0.55)
+          : firstFraction_(firstFraction) {}
+
+      template <typename Particle>
+      auto getTrack(Particle& particle) {
+        VelocityVector initialVelocity =
+            particle.getMomentum() / particle.getEnergy() * constants::c;
+
+        const Point initialPosition = particle.getPosition();
+        CORSIKA_LOG_DEBUG(
+            "TrackingB pid: {}"
+            " , E = {} GeV",
+            particle.getPID(), particle.getEnergy() / 1_GeV);
+        CORSIKA_LOG_DEBUG("TrackingB pos: {}", initialPosition.getCoordinates());
+        CORSIKA_LOG_DEBUG("TrackingB   E: {} GeV", particle.getEnergy() / 1_GeV);
+        CORSIKA_LOG_DEBUG("TrackingB   p: {} GeV",
+                          particle.getMomentum().getComponents() / 1_GeV);
+        CORSIKA_LOG_DEBUG("TrackingB   v: {} ", initialVelocity.getComponents());
+
+        typedef decltype(particle.getNode()) node_type;
+        node_type const volumeNode = particle.getNode();
+
+        // check if particle is moving at all
+        auto const absVelocity = initialVelocity.getNorm();
+        if (absVelocity * 1_s == 0_m) {
+          return std::make_tuple(
+              LineTrajectory(Line(initialPosition, initialVelocity), 0_s), volumeNode);
+        }
+
+        // charge of the particle, and magnetic field
+        const int chargeNumber = particle.getChargeNumber();
+        auto magneticfield =
+            volumeNode->getModelProperties().getMagneticField(initialPosition);
+        const auto magnitudeB = magneticfield.getNorm();
+        CORSIKA_LOG_DEBUG("field={} uT, chargeNumber={}, magnitudeB={} uT",
+                          magneticfield.getComponents() / 1_uT, chargeNumber,
+                          magnitudeB / 1_T);
+        bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
+
+        // check, where the first halve-step direction has geometric intersections
+        const auto [initialTrack, initialTrackNextVolume] =
+            tracking_line::Tracking::getTrack(particle);
+        { [[maybe_unused]] auto& initialTrackNextVolume_dum = initialTrackNextVolume; }
+        const auto initialTrackLength = initialTrack.getLength(1);
+
+        CORSIKA_LOG_DEBUG("initialTrack(0)={}, initialTrack(1)={}, initialTrackLength={}",
+                          initialTrack.getPosition(0).getCoordinates(),
+                          initialTrack.getPosition(1).getCoordinates(),
+                          initialTrackLength);
+
+        // if particle is non-deflectable, we are done:
+        if (no_deflection) {
+          CORSIKA_LOG_DEBUG("no deflection. tracking finished");
+          return std::make_tuple(initialTrack, initialTrackNextVolume);
+        }
+
+        HEPMomentumType const pAlongB_delta =
+            (particle.getMomentum() -
+             particle.getMomentum().getParallelProjectionOnto(magneticfield))
+                .getNorm();
+
+        if (pAlongB_delta == 0_GeV) {
+          // particle travel along, parallel to magnetic field. Rg is
+          // "0", but for purpose of step limit we return infinity here.
+          CORSIKA_LOG_TRACE("pAlongB_delta is 0_GeV --> parallel");
+          return std::make_tuple(initialTrack, initialTrackNextVolume);
+        }
+
+        LengthType const gyroradius =
+            (pAlongB_delta * 1_V /
+             (constants::c * abs(chargeNumber) * magnitudeB * 1_eV));
+
+        // we need to limit maximum step-length since we absolutely
+        // need to follow strongly curved trajectories segment-wise,
+        // at least if we don't employ concepts as "Helix
+        // Trajectories" or similar
+        const double maxRadians = 0.01;
+        const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
+        CORSIKA_LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
+
+        // calculate first halve step for "steplimit"
+        auto const initialMomentum = particle.getMomentum();
+        auto const absMomentum = initialMomentum.getNorm();
+        DirectionVector const direction = initialVelocity.normalized();
+
+        // avoid any intersections within first halve steplength
+        LengthType const firstHalveSteplength =
+            std::min(steplimit, initialTrackLength * firstFraction_);
+
+        CORSIKA_LOG_DEBUG(
+            "first halve step length {}, steplimit={}, initialTrackLength={}",
+            firstHalveSteplength, steplimit, initialTrackLength);
+        // perform the first halve-step
+        const Point position_mid = initialPosition + direction * firstHalveSteplength;
+        const auto k =
+            chargeNumber * constants::c * 1_eV / (particle.getMomentum().getNorm() * 1_V);
+        const auto new_direction =
+            direction + direction.cross(magneticfield) * firstHalveSteplength * 2 * k;
+        const auto new_direction_norm = new_direction.getNorm(); // by design this is >1
+        CORSIKA_LOG_DEBUG(
+            "position_mid={}, new_direction={}, (new_direction_norm)={}, deflection={}",
+            position_mid.getCoordinates(), new_direction.getComponents(),
+            new_direction_norm,
+            acos(std::min(1.0, direction.dot(new_direction) / new_direction_norm)) * 180 /
+                M_PI);
+
+        // check, where the second halve-step direction has geometric intersections
+        particle.setPosition(position_mid);
+        particle.setMomentum(new_direction * absMomentum);
+        const auto [finalTrack, finalTrackNextVolume] =
+            tracking_line::Tracking::getTrack(particle);
+        particle.setPosition(initialPosition); // this is not nice...
+        particle.setMomentum(initialMomentum); // this is not nice...
+
+        LengthType const finalTrackLength = finalTrack.getLength(1);
+        LengthType const secondLeapFrogLength = firstHalveSteplength * new_direction_norm;
+
+        // check if volume transition is obvious, OR
+        // for numerical reasons, particles slighly bend "away" from a
+        // volume boundary have a very hard time to cross the border,
+        // thus, if secondLeapFrogLength is just slighly shorter (1e-4m) than
+        // finalTrackLength we better just [extend the
+        // secondLeapFrogLength slightly and] force the volume
+        // crossing:
+        bool const switch_volume = finalTrackLength - 0.0001_m <= secondLeapFrogLength;
+        LengthType const secondHalveStepLength =
+            std::min(secondLeapFrogLength, finalTrackLength);
+
+        CORSIKA_LOG_DEBUG(
+            "finalTrack(0)={}, finalTrack(1)={}, finalTrackLength={}, "
+            "secondLeapFrogLength={}, secondHalveStepLength={}, "
+            "secondLeapFrogLength-finalTrackLength={}, "
+            "secondHalveStepLength-finalTrackLength={}, "
+            "nextVol={}, transition={}",
+            finalTrack.getPosition(0).getCoordinates(),
+            finalTrack.getPosition(1).getCoordinates(), finalTrackLength,
+            secondLeapFrogLength, secondHalveStepLength,
+            secondLeapFrogLength - finalTrackLength,
+            secondHalveStepLength - finalTrackLength, fmt::ptr(finalTrackNextVolume),
+            switch_volume);
+
+        // perform the second halve-step
+        auto const new_direction_normalized = new_direction.normalized();
+        const Point finalPosition =
+            position_mid + new_direction_normalized * secondHalveStepLength;
+
+        const LengthType totalStep = firstHalveSteplength + secondHalveStepLength;
+        const auto delta_pos = finalPosition - initialPosition;
+        const auto distance = delta_pos.getNorm();
+
+        return std::make_tuple(
+            LineTrajectory(Line(initialPosition,
+                                (distance == 0_m ? initialVelocity
+                                                 : delta_pos.normalized() * absVelocity)),
+                           distance / absVelocity,  // straight distance
+                           totalStep / absVelocity, // bend distance
+                           initialVelocity,
+                           new_direction_normalized * absVelocity), // trajectory
+            (switch_volume ? finalTrackNextVolume : volumeNode));
+      }
+
+    protected:
+      double firstFraction_;
+    };
+
+  } // namespace tracking_leapfrog_straight
+
+} // namespace corsika
