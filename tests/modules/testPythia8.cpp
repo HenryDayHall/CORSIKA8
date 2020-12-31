@@ -100,7 +100,7 @@ TEST_CASE("pythia process") {
 
   SECTION("pythia decay") {
     HEPEnergyType const P0 = 10_GeV;
-    //HEPMomentumType const E0 = sqrt(P0*P0 + PiPlus::mass*PiPlus::mass);
+    // HEPMomentumType const E0 = sqrt(P0*P0 + PiPlus::mass*PiPlus::mass);
 
     // feenableexcept(FE_INVALID); \todo how does this work nowadays...???
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -109,7 +109,7 @@ TEST_CASE("pythia process") {
     auto& view = *secViewPtr;
 
     auto const& particle = stack.getNextParticle();
-    auto const  plab = MomentumVector(cs, {P0, 0_GeV, 0_GeV});
+    auto const plab = MomentumVector(cs, {P0, 0_GeV, 0_GeV});
 
     std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                          Code::KMinus, Code::K0Long,  Code::K0Short};
