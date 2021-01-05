@@ -16,7 +16,7 @@ namespace corsika {
 
   public:
     //! returns true if the Point p is within the volume
-    virtual bool isInside(Point const& p) const = 0;
+    virtual bool contains(Point const& p) const = 0;
 
     virtual ~IVolume() = default;
   };

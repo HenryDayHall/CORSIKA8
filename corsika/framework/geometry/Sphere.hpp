@@ -28,7 +28,7 @@ namespace corsika {
         , radius_(pRadius) {}
 
     //! returns true if the Point p is within the sphere
-    bool isInside(Point const& p) const override;
+    bool contains(Point const& p) const override;
 
     Point const& getCenter() const;
 

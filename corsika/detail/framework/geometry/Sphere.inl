@@ -13,7 +13,7 @@
 
 namespace corsika {
 
-  inline bool Sphere::isInside(Point const& p) const {
+  inline bool Sphere::contains(Point const& p) const {
     return radius_ * radius_ > (center_ - p).getSquaredNorm();
   }
 

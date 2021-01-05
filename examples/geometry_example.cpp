@@ -51,12 +51,12 @@ int main() {
   assert(norm == 1 * meter * meter);
 
   Sphere s(p1, 10_m); // define a sphere around a point with a radius
-  CORSIKA_LOG_INFO("p1 inside s:{} ", s.isInside(p2));
-  assert(s.isInside(p2) == 1);
+  CORSIKA_LOG_INFO("p1 inside s:{} ", s.contains(p2));
+  assert(s.contains(p2) == 1);
 
   Sphere s2(p1, 3_um); // another sphere
-  CORSIKA_LOG_INFO("p1 inside s2: {}", s2.isInside(p2));
-  assert(s2.isInside(p2) == 0);
+  CORSIKA_LOG_INFO("p1 inside s2: {}", s2.contains(p2));
+  assert(s2.contains(p2) == 0);
 
   // let's try parallel projections:
   auto const v1 = Vector<length_d>(root, {1_m, 1_m, 0_m});

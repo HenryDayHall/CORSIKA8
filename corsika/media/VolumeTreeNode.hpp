@@ -29,9 +29,9 @@ namespace corsika {
         : geoVolume_(std::move(pVolume)) {}
 
     //! convenience function equivalent to Volume::isInside
-    inline bool isInside(Point const& p) const;
+    inline bool contains(Point const& p) const;
 
-    inline VolumeTreeNode<IModelProperties> const* isExcluded(Point const& p) const;
+    inline VolumeTreeNode<IModelProperties> const* excludes(Point const& p) const;
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
      * \class Point \p p, or nullptr iff \p p is not contained in this volume.

@@ -11,8 +11,9 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Helix.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
+#include <corsika/framework/geometry/StraightTrajectory.hpp>
 
+// #include <corsika/framework/geometry/LeapFrogTrajectory.hpp>
 // #include <corsika/modules/TrackingLine.hpp>
 // #include <corsika/modules/TrackingCurved.hpp> // simple leap-frog implementation
 // #include <corsika/modules/TrackingLeapFrog.hpp> // more complete leap-frog
@@ -24,9 +25,9 @@ namespace corsika::setup::testing {
   TTrack make_track(Line const& line, TimeType const tEnd);
 
   template <>
-  inline LineTrajectory make_track<LineTrajectory>(Line const& line,
-                                                   TimeType const tEnd) {
-    return LineTrajectory(line, tEnd);
+  inline StraightTrajectory make_track<StraightTrajectory>(Line const& line,
+                                                           TimeType const tEnd) {
+    return StraightTrajectory(line, tEnd);
   }
 
   /*

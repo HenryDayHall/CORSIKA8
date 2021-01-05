@@ -68,7 +68,7 @@ public:
     VelocityVector const initialVelocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
     return std::make_tuple(
-        LineTrajectory(
+        StraightTrajectory(
             Line(particle.getPosition(), initialVelocity),
             std::numeric_limits<TimeType::value_type>::infinity() * 1_s), // trajectory,
                                                                           // just

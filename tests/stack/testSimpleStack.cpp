@@ -9,7 +9,7 @@
 #define protected public // to also test the internal state of objects
 
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
-#include <corsika/stack/SuperStupidStack.hpp>
+#include <corsika/stack/SimpleStack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <catch2/catch.hpp>
@@ -17,13 +17,13 @@
 using namespace corsika;
 using namespace std;
 
-TEST_CASE("SuperStupidStack", "[stack]") {
+TEST_CASE("SimpleStack", "[stack]") {
 
   const CoordinateSystemPtr& dummyCS = get_root_CoordinateSystem();
 
   SECTION("read+write") {
 
-    SuperStupidStack s;
+    SimpleStack s;
     s.addParticle(std::make_tuple(
         Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
@@ -39,7 +39,7 @@ TEST_CASE("SuperStupidStack", "[stack]") {
 
   SECTION("write+delete") {
 
-    SuperStupidStack s;
+    SimpleStack s;
     for (int i = 0; i < 99; ++i)
 
       s.addParticle(std::make_tuple(

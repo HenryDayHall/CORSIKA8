@@ -16,7 +16,8 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-#include <corsika/framework/geometry/Trajectory.hpp>
+#include <corsika/framework/geometry/StraightTrajectory.hpp>
+#include <corsika/framework/geometry/LeapFrogTrajectory.hpp>
 
 #include <PhysicalUnitsCatch2.hpp> // namespace corsike::testing
 
@@ -228,7 +229,7 @@ TEST_CASE("CoordinateSystem hirarchy") {
 }
 
 TEST_CASE("Sphere") {
-  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
+  CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
 
@@ -241,8 +242,8 @@ TEST_CASE("Sphere") {
   }
 
   SECTION("isInside") {
-    CHECK_FALSE(sphere.isInside(Point(rootCS, {100_m, 0_m, 0_m})));
-    CHECK(sphere.isInside(Point(rootCS, {2_m, 3_m, 4_m})));
+    CHECK_FALSE(sphere.contains(Point(rootCS, {100_m, 0_m, 0_m})));
+    CHECK(sphere.contains(Point(rootCS, {2_m, 3_m, 4_m})));
   }
 }
 
@@ -270,7 +271,7 @@ TEST_CASE("Trajectories") {
               .magnitude() == Approx(0).margin(absMargin));
 
     auto const t = 1_s;
-    LineTrajectory base(line, t);
+    StraightTrajectory base(line, t);
     CHECK(line.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
 
     CHECK((base.getDirection(0).getComponents(rootCS) -

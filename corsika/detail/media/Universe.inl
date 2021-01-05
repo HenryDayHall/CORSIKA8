@@ -16,6 +16,6 @@ namespace corsika {
       : corsika::Sphere(Point{pCS, 0 * meter, 0 * meter, 0 * meter},
                         meter * std::numeric_limits<double>::infinity()) {}
 
-  bool Universe::isInside(corsika::Point const&) const { return true; }
+  bool Universe::contains(corsika::Point const&) const { return true; }
 
 } // namespace corsika

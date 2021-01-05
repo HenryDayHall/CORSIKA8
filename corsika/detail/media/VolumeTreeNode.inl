@@ -13,18 +13,17 @@
 
 namespace corsika {
 
-  //! convenience function equivalent to Volume::isInside
   template <typename IModelProperties>
-  bool VolumeTreeNode<IModelProperties>::isInside(Point const& p) const {
-    return geoVolume_->isInside(p);
+  bool VolumeTreeNode<IModelProperties>::contains(Point const& p) const {
+    return geoVolume_->contains(p);
   }
 
   template <typename IModelProperties>
   inline VolumeTreeNode<IModelProperties> const*
-  VolumeTreeNode<IModelProperties>::isExcluded(Point const& p) const {
+  VolumeTreeNode<IModelProperties>::excludes(Point const& p) const {
     auto exclContainsIter =
         std::find_if(excludedNodes_.cbegin(), excludedNodes_.cend(),
-                     [&](auto const& s) { return bool(s->isInside(p)); });
+                     [&](auto const& s) { return bool(s->contains(p)); });
 
     return exclContainsIter != excludedNodes_.cend() ? *exclContainsIter : nullptr;
   }
@@ -35,14 +34,14 @@ namespace corsika {
   template <typename IModelProperties>
   VolumeTreeNode<IModelProperties> const*
   VolumeTreeNode<IModelProperties>::getContainingNode(Point const& p) const {
-    if (!isInside(p)) { return nullptr; }
+    if (!contains(p)) { return nullptr; }
 
     if (auto const childContainsIter =
             std::find_if(childNodes_.cbegin(), childNodes_.cend(),
-                         [&](auto const& s) { return bool(s->isInside(p)); });
+                         [&](auto const& s) { return bool(s->contains(p)); });
         childContainsIter == childNodes_.cend()) // not contained in any of the children
     {
-      if (auto const exclContainsIter = isExcluded(p)) // contained in any excluded nodes
+      if (auto const exclContainsIter = excludes(p)) // contained in any excluded nodes
       {
         return exclContainsIter->getContainingNode(p);
       } else {

@@ -1,5 +1,5 @@
 /*
- * (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+ * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
@@ -46,7 +46,7 @@ TEST_CASE("InteractionCounter", "[process]") {
   InteractionCounter countedProcess(d);
 
   SECTION("GetInteractionLength") {
-    REQUIRE(countedProcess.GetInteractionLength(nullptr) == 100_g / 1_cm / 1_cm);
+    CHECK(countedProcess.GetInteractionLength(nullptr) == 100_g / 1_cm / 1_cm);
   }
 
   auto [env, csPtr, nodePtr] = setup::testing::setupEnvironment(particles::Code::Oxygen);
@@ -56,19 +56,19 @@ TEST_CASE("InteractionCounter", "[process]") {
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setup::testing::setupStack(particles::Code::Nucleus, A,
                                                              Z, 105_TeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->getEntries() == 1);
-    REQUIRE(secViewPtr->getEntries() == 0);
+    CHECK(stackPtr->getEntries() == 1);
+    CHECK(secViewPtr->getEntries() == 0);
 
     auto const ret = countedProcess.DoInteraction(*secViewPtr);
-    REQUIRE(ret == nullptr);
+    CHECK(ret == nullptr);
 
     auto const& h = countedProcess.GetHistogram().labHist();
-    REQUIRE(h.at(h.axis(0).index(1'000'070'140), h.axis(1).index(1.05e14)) == 1);
-    REQUIRE(std::accumulate(h.cbegin(), h.cend(), 0) == 1);
+    CHECK(h.at(h.axis(0).index(1'000'070'140), h.axis(1).index(1.05e14)) == 1);
+    CHECK(std::accumulate(h.cbegin(), h.cend(), 0) == 1);
 
     auto const& h2 = countedProcess.GetHistogram().CMSHist();
-    REQUIRE(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
-    REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
+    CHECK(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
+    CHECK(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
 
     countedProcess.GetHistogram().saveLab("testInteractionCounter_file1.npz",
                                           utl::SaveMode::overwrite);
@@ -80,19 +80,19 @@ TEST_CASE("InteractionCounter", "[process]") {
     auto constexpr code = particles::Code::Lambda0;
     auto [stackPtr, secViewPtr] =
         setup::testing::setupStack(code, 0, 0, 105_TeV, nodePtr, *csPtr);
-    REQUIRE(stackPtr->getEntries() == 1);
-    REQUIRE(secViewPtr->getEntries() == 0);
+    CHECK(stackPtr->getEntries() == 1);
+    CHECK(secViewPtr->getEntries() == 0);
 
     auto const ret = countedProcess.DoInteraction(*secViewPtr);
-    REQUIRE(ret == nullptr);
+    CHECK(ret == nullptr);
 
     auto const& h = countedProcess.GetHistogram().labHist();
-    REQUIRE(h.at(h.axis(0).index(3122), h.axis(1).index(1.05e14)) == 1);
-    REQUIRE(std::accumulate(h.cbegin(), h.cend(), 0) == 1);
+    CHECK(h.at(h.axis(0).index(3122), h.axis(1).index(1.05e14)) == 1);
+    CHECK(std::accumulate(h.cbegin(), h.cend(), 0) == 1);
 
     auto const& h2 = countedProcess.GetHistogram().CMSHist();
-    REQUIRE(h2.at(h2.axis(0).index(3122), h2.axis(1).index(1.6e12)) == 1);
-    REQUIRE(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
+    CHECK(h2.at(h2.axis(0).index(3122), h2.axis(1).index(1.6e12)) == 1);
+    CHECK(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
   }
 }
 

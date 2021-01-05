@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <corsika/framework/geometry/Trajectory.hpp>
+#include <corsika/framework/geometry/StraightTrajectory.hpp>
+#include <corsika/framework/geometry/LeapFrogTrajectory.hpp>
 #include <corsika/modules/Tracking.hpp>
 
 namespace corsika::setup {
@@ -45,7 +46,7 @@ namespace corsika::setup {
    The default trajectory.
   */
   /// definition of Trajectory base class, to be used in tracking and cascades
-  typedef LineTrajectory Trajectory;
+  typedef StraightTrajectory Trajectory;
   // typedef corsika::geometry::LeapFrogTrajectory Trajectory;
 
 } // namespace corsika::setup

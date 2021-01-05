@@ -13,7 +13,7 @@
 #include <corsika/framework/stack/Stack.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/stack/SuperStupidStack.hpp>
+#include <corsika/stack/SimpleStack.hpp>
 
 #include <algorithm>
 #include <tuple>

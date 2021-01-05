@@ -10,6 +10,11 @@
    @file ParticleProperties.hpp
 
    Interface to particle properties
+
+   The properties of all particles are saved in static and flat
+   arrays. There is a enum corsika::Code to identify each
+   particles, and each individual particles has its own static class,
+   which can be used to retrieve its physical properties.
  */
 
 #pragma once

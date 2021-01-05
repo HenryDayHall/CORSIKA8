@@ -42,9 +42,9 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
   SECTION("check CORSIKA_DATA") {
 
     const char* data = std::getenv("CORSIKA_DATA");
-    // these REQUIRES are needed:
-    REQUIRE(data != 0);
-    REQUIRE(std::experimental::filesystem::is_directory(
+    // these CHECKS are needed:
+    CHECK(data != 0);
+    CHECK(std::experimental::filesystem::is_directory(
         std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
     std::cout << "data: " << data << " isDir: "
               << std::experimental::filesystem::is_directory(std::string(data) +
@@ -62,37 +62,37 @@ TEST_CASE("QgsjetII", "[processes]") {
   }
 
   SECTION("QgsjetII -> Corsika") {
-    REQUIRE(Code::PiPlus == corsika::qgsjetII::convertFromQgsjetII(
-                                corsika::qgsjetII::QgsjetIICode::PiPlus));
+    CHECK(Code::PiPlus == corsika::qgsjetII::convertFromQgsjetII(
+                              corsika::qgsjetII::QgsjetIICode::PiPlus));
   }
 
   SECTION("Corsika -> QgsjetII") {
-    REQUIRE(corsika::qgsjetII::convertToQgsjetII(Code::PiMinus) ==
-            corsika::qgsjetII::QgsjetIICode::PiMinus);
-    REQUIRE(corsika::qgsjetII::convertToQgsjetIIRaw(Code::Proton) == 2);
+    CHECK(corsika::qgsjetII::convertToQgsjetII(Code::PiMinus) ==
+          corsika::qgsjetII::QgsjetIICode::PiMinus);
+    CHECK(corsika::qgsjetII::convertToQgsjetIIRaw(Code::Proton) == 2);
   }
 
   SECTION("canInteractInQgsjetII") {
 
-    REQUIRE(corsika::qgsjetII::canInteract(Code::Proton));
-    REQUIRE(corsika::qgsjetII::canInteract(Code::KPlus));
-    REQUIRE(corsika::qgsjetII::canInteract(Code::Nucleus));
-    // REQUIRE(corsika::qgsjetII::canInteract(Helium::getCode()));
+    CHECK(corsika::qgsjetII::canInteract(Code::Proton));
+    CHECK(corsika::qgsjetII::canInteract(Code::KPlus));
+    CHECK(corsika::qgsjetII::canInteract(Code::Nucleus));
+    // CHECK(corsika::qgsjetII::canInteract(Helium::getCode()));
 
-    REQUIRE_FALSE(corsika::qgsjetII::canInteract(Code::EtaC));
-    REQUIRE_FALSE(corsika::qgsjetII::canInteract(Code::SigmaC0));
+    CHECK_FALSE(corsika::qgsjetII::canInteract(Code::EtaC));
+    CHECK_FALSE(corsika::qgsjetII::canInteract(Code::SigmaC0));
   }
 
   SECTION("cross-section type") {
 
-    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::Neutron) ==
-            corsika::qgsjetII::QgsjetIIXSClass::Baryons);
-    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::K0Long) ==
-            corsika::qgsjetII::QgsjetIIXSClass::Kaons);
-    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::Proton) ==
-            corsika::qgsjetII::QgsjetIIXSClass::Baryons);
-    REQUIRE(corsika::qgsjetII::getQgsjetIIXSCode(Code::PiMinus) ==
-            corsika::qgsjetII::QgsjetIIXSClass::LightMesons);
+    CHECK(corsika::qgsjetII::getQgsjetIIXSCode(Code::Neutron) ==
+          corsika::qgsjetII::QgsjetIIXSClass::Baryons);
+    CHECK(corsika::qgsjetII::getQgsjetIIXSCode(Code::K0Long) ==
+          corsika::qgsjetII::QgsjetIIXSClass::Kaons);
+    CHECK(corsika::qgsjetII::getQgsjetIIXSCode(Code::Proton) ==
+          corsika::qgsjetII::QgsjetIIXSClass::Baryons);
+    CHECK(corsika::qgsjetII::getQgsjetIIXSCode(Code::PiMinus) ==
+          corsika::qgsjetII::QgsjetIIXSClass::LightMesons);
   }
 }
 

@@ -36,9 +36,8 @@ public:
   void setData(const unsigned int i, const double v) { data_[i] = v; }
   double getData(const unsigned int i) const { return data_[i]; }
 
-
   // these functions are also needed by the Stack interface
-   void incrementSize() { data_.push_back(0.); }
+  void incrementSize() { data_.push_back(0.); }
   void decrementSize() {
     if (data_.size() > 0) { data_.pop_back(); }
   }
@@ -60,13 +59,11 @@ private:
  *
  */
 template <typename StackIteratorInterface>
-class TestParticleInterface
-  : public corsika::ParticleBase<StackIteratorInterface> {
-  
-  typedef corsika::ParticleBase<StackIteratorInterface> super_type;
-  
-public:
+class TestParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
 
+  typedef corsika::ParticleBase<StackIteratorInterface> super_type;
+
+public:
   /*
      The SetParticleData methods are called for creating new entries
      on the stack. You can specifiy various parametric versions to
@@ -81,6 +78,10 @@ public:
   }
 
   // here are the fundamental methods for access to TestStackData data
-  void setData(const double v) { super_type::getStackData().setData(super_type::getIndex(), v); }
-  double getData() const { return super_type::getStackData().getData(super_type::getIndex()); }
+  void setData(const double v) {
+    super_type::getStackData().setData(super_type::getIndex(), v);
+  }
+  double getData() const {
+    return super_type::getStackData().getData(super_type::getIndex());
+  }
 };

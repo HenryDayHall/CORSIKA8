@@ -7,7 +7,7 @@
  */
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-#include <corsika/stack/SuperStupidStack.hpp>
+#include <corsika/stack/SimpleStack.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
@@ -19,7 +19,7 @@
 using namespace corsika;
 using namespace std;
 
-void fill(SuperStupidStack& s) {
+void fill(SimpleStack& s) {
   CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
   for (int i = 0; i < 11; ++i) {
     s.addParticle(std::make_tuple(Code::Electron, 1.5_GeV * i,
@@ -28,7 +28,7 @@ void fill(SuperStupidStack& s) {
   }
 }
 
-void read(SuperStupidStack& s) {
+void read(SimpleStack& s) {
   assert(s.getEntries() == 11); // stack has 11 particles
 
   HEPEnergyType total_energy;
@@ -44,7 +44,7 @@ void read(SuperStupidStack& s) {
 int main() {
 
   std::cout << "stack_example" << std::endl;
-  SuperStupidStack s;
+  SimpleStack s;
   fill(s);
   read(s);
   return 0;
