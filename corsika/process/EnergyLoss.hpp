@@ -28,7 +28,6 @@ namespace corsika {
     void MomentumUpdate(setup::Stack::ParticleType&, units::si::HEPEnergyType Enew);
 
   public:
-
     template <typename TDim>
     EnergyLoss(geometry::Point const& injectionPoint,
                geometry::Vector<TDim> const& direction)
@@ -75,4 +74,3 @@ namespace corsika {
     return 0.0001_g / square(1_cm);
   });
 } // namespace corsika
-

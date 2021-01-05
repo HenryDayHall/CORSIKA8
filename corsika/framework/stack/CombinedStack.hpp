@@ -131,7 +131,7 @@ namespace corsika {
 
   template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _PI>
   using CombinedStack = Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI>;
-  
+
 } // namespace corsika
 
 #include <corsika/detail/framework/stack/CombinedStack.inl>

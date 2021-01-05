@@ -38,4 +38,3 @@ namespace corsika::track_writer {
   };
 
 } // namespace corsika::track_writer
-

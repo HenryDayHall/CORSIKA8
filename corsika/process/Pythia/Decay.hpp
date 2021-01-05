@@ -23,18 +23,16 @@ namespace corsika {
 
     typedef corsika::Vector<corsika::units::si::hepmomentum_d> MomentumVector;
 
-    class Decay : public corsika::DecayProcess<Decay>
-    {
+    class Decay : public corsika::DecayProcess<Decay> {
 
-    const std::vector<particles::Code> fTrackedParticles;
-    int fCount = 0;
+      const std::vector<particles::Code> fTrackedParticles;
+      int fCount = 0;
 
     public:
-
       Decay(std::vector<corsika::Code>);
       ~Decay();
 
-      void SetParticleListStable(std::vector<particles::Code> const& );
+      void SetParticleListStable(std::vector<particles::Code> const&);
       void SetUnstable(const corsika::Code);
       void SetStable(const corsika::Code);
 

@@ -67,5 +67,3 @@ namespace corsika {
     };
   } // namespace particle_cut
 } // namespace corsika
-
-

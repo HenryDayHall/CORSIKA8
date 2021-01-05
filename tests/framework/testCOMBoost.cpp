@@ -233,9 +233,6 @@ TEST_CASE("boosts") {
     auto const sqrt_s_lab =
         sqrt(s(eProjectileLab + targetMass, pProjectileLab.getComponents(rootCS)));
 
-    auto const sqrt_s_lab =
-        sqrt(s(eProjectileLab + targetMass, pProjectileLab.GetComponents(rootCS)));
-
     // define boost to com frame
     COMBoost boost(PprojLab, targetMass);
 

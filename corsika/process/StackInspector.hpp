@@ -50,4 +50,3 @@ namespace corsika {
   } // namespace stack_inspector
 
 } // namespace corsika
-

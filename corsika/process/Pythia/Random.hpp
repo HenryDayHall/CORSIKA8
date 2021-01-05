@@ -20,8 +20,7 @@ namespace corsika {
 
     private:
       std::uniform_real_distribution<double> fDist;
-      corsika::RNG& fRNG =
-          corsika::RNGManager::GetInstance().GetRandomStream("pythia");
+      corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("pythia");
     };
 
   } // namespace pythia

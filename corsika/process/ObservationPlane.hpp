@@ -31,13 +31,11 @@ namespace corsika::observation_plane {
                      geometry::Vector<units::si::dimensionless_d> const&,
                      std::string const&, bool = true);
 
-    corsika::EProcessReturn DoContinuous(
-        corsika::Stack::ParticleType const& vParticle,
-        corsika::Trajectory const& vTrajectory);
+    corsika::EProcessReturn DoContinuous(corsika::Stack::ParticleType const& vParticle,
+                                         corsika::Trajectory const& vTrajectory);
 
-    corsika::units::si::LengthType MaxStepLength(
-        corsika::Stack::ParticleType const&,
-        corsika::Trajectory const& vTrajectory);
+    corsika::units::si::LengthType MaxStepLength(corsika::Stack::ParticleType const&,
+                                                 corsika::Trajectory const& vTrajectory);
 
     void ShowResults() const;
     void Reset();
@@ -53,5 +51,3 @@ namespace corsika::observation_plane {
     geometry::Vector<units::si::dimensionless_d> const xAxis_, yAxis_;
   };
 } // namespace corsika::observation_plane
-
-

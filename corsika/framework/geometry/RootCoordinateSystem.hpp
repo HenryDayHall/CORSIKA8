@@ -1,4 +1,4 @@
-n/*
+/*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public

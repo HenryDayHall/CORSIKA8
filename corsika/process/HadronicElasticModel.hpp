@@ -40,8 +40,7 @@ namespace corsika::HadronicElasticModel {
     using inveV2 = decltype(1 / units::si::square(units::si::electronvolt));
 
     corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream(
-            "HadronicElasticModel");
+        corsika::RNGManager::GetInstance().GetRandomStream("HadronicElasticModel");
 
     inveV2 B(eV2 s) const;
     corsika::units::si::CrossSectionType CrossSection(SquaredHEPEnergyType s) const;
@@ -59,4 +58,3 @@ namespace corsika::HadronicElasticModel {
   };
 
 } // namespace corsika::HadronicElasticModel
-

@@ -130,8 +130,7 @@ namespace corsika::sibyll {
     void SetPID(const int v) { GetStackData().SetId(GetIndex(), v); }
 
     corsika::sibyll::SibyllCode GetPID() const {
-      return static_cast<corsika::sibyll::SibyllCode>(
-          GetStackData().GetId(GetIndex()));
+      return static_cast<corsika::sibyll::SibyllCode>(GetStackData().GetId(GetIndex()));
     }
 
     MomentumVector GetMomentum() const { return GetStackData().GetMomentum(GetIndex()); }

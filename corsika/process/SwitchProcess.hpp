@@ -98,4 +98,3 @@ namespace corsika::switch_process {
     }
   };
 } // namespace corsika::switch_process
-

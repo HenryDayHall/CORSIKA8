@@ -39,12 +39,10 @@ namespace corsika::pythia {
     }
 
     bool CanInteract(const corsika::Code);
-    void ConfigureLabFrameCollision(const corsika::Code,
-                                    const corsika::Code,
+    void ConfigureLabFrameCollision(const corsika::Code, const corsika::Code,
                                     const corsika::units::si::HEPEnergyType);
     std::tuple<corsika::units::si::CrossSectionType, corsika::units::si::CrossSectionType>
-    GetCrossSection(const corsika::Code BeamId,
-                    const corsika::Code TargetId,
+    GetCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
                     const corsika::units::si::HEPEnergyType CoMenergy);
 
     template <typename TParticle>
@@ -59,8 +57,7 @@ namespace corsika::pythia {
     corsika::EProcessReturn DoInteraction(TProjectile&);
 
   private:
-    corsika::RNG& fRNG =
-        corsika::RNGManager::GetInstance().GetRandomStream("pythia");
+    corsika::RNG& fRNG = corsika::RNGManager::GetInstance().GetRandomStream("pythia");
     Pythia8::Pythia fPythia;
     Pythia8::SigmaTotal fSigma;
     const bool fInternalDecays = true;
