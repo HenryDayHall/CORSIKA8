@@ -71,14 +71,6 @@ namespace corsika::setup {
 #elif defined(__GNUC__) || defined(__GNUG__)
   using StackView = corsika::MakeView<setup::Stack>::type;
 #endif
-  } // namespace detail
-
-#endif
-
-  // ---------------------------------------
-  // this is the FINAL stackitertor (particle type) we use in C8:
-
-  using StackView = detail::TheStackView;
 
 #endif // WITH_HISTORY
 
