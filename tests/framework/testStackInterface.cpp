@@ -10,7 +10,7 @@
 
 #include <corsika/framework/stack/Stack.hpp>
 
-#include <testTestStack.h> // from tests/common
+#include <testTestStack.hpp> // from tests/common
 
 #include <iomanip>
 #include <tuple>
