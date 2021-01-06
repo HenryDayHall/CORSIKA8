@@ -1,4 +1,4 @@
-n#
+#
 # (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
 #
 # See file AUTHORS for a list of contributors.
@@ -47,6 +47,8 @@ set (_SEARCH_Pythia8_
   $ENV{PYTHIA8DIR}
   ${PYTHIA8_ROOT}
   $ENV{PYTHIA8_ROOT}
+  ${PYTHIA8_DIR}
+  $ENV{PYTHIA8_DIR}
   /opt/pythia8
   )
 
