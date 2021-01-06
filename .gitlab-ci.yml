@@ -237,7 +237,7 @@ test-clang-8:
     - corsika
   script:
     - cd build
-    - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON --build . -- -j4
+    - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 
   rules:
