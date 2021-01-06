@@ -13,8 +13,6 @@
 namespace corsika {
 
   /**
-   @class ParticleBase
-
    The base class to define the readout of particle properties from a
    particle stack. Every stack must implement this readout via the
    ParticleBase class.
@@ -41,7 +39,7 @@ namespace corsika {
   */
 
   template <typename StackIterator>
-  struct ParticleBase {
+  class ParticleBase {
 
   public:
     typedef StackIterator stack_iterator_type;

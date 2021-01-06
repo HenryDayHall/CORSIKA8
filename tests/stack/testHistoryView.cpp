@@ -48,8 +48,8 @@ using TestStack =
   */
 #if defined(__clang__)
 using TheTestStackView =
-    SecondaryView<typename TestStack::StackImpl, StackWithHistoryInterface,
-                  history::HistorySecondaryProducer>;
+    SecondaryView<typename TestStack::stack_implementation_type,
+                  StackWithHistoryInterface, history::HistorySecondaryProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using TheTestStackView = MakeView<TestStack, history::HistorySecondaryProducer>::type;
 #endif

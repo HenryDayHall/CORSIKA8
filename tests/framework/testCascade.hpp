@@ -37,8 +37,9 @@ using TestCascadeStack = corsika::CombinedStack<
   See also Issue 161
 */
 #if defined(__clang__)
-using TestCascadeStackView = corsika::SecondaryView<typename TestCascadeStack::StackImpl,
-                                                    StackWithGeometryInterface>;
+using TestCascadeStackView =
+    corsika::SecondaryView<typename TestCascadeStack::stack_implementation_type,
+                           StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using TestCascadeStackView = corsika::MakeView<TestCascadeStack>::type;
 #endif

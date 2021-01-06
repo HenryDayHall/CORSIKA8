@@ -27,7 +27,7 @@ namespace corsika {
    */
 
   template <typename StackIteratorInterface>
-  struct ParticleInterface : public ParticleBase<StackIteratorInterface> {
+  class ParticleInterface : public ParticleBase<StackIteratorInterface> {
 
   private:
     typedef ParticleBase<StackIteratorInterface> super_type;
