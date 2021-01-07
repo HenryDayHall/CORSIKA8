@@ -338,10 +338,10 @@ namespace corsika::pythia8 {
         // link to pythia stack
         Pythia8::Event& event = pythia_.event;
 
-	if (print_listing_) {
-	  // print final state
-	  event.list();
-	}
+        if (print_listing_) {
+          // print final state
+          event.list();
+        }
 
         MomentumVector Plab_final(labCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
         HEPEnergyType Elab_final = 0_GeV;

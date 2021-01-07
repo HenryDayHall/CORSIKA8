@@ -223,7 +223,7 @@ namespace corsika::qgsjetII {
           mediumComposition.sampleTarget(cross_section_of_components, rng_);
       std::cout << "Interaction: target selected: " << targetCode << std::endl;
 
-      int targetMassNumber = 1;               // proton
+      int targetMassNumber = 1;     // proton
       if (is_nucleus(targetCode)) { // nucleus
         targetMassNumber = get_nucleus_A(targetCode);
         if (targetMassNumber > maxMassNumber_)
@@ -232,7 +232,8 @@ namespace corsika::qgsjetII {
         if (targetCode != Proton::code)
           throw std::runtime_error("QgsjetII Taget not possible.");
       }
-      std::cout << "Interaction: target qgsjetII code/A: " << targetMassNumber << std::endl;
+      std::cout << "Interaction: target qgsjetII code/A: " << targetMassNumber
+                << std::endl;
 
       int projectileMassNumber = 1; // "1" means "hadron"
       QgsjetIIHadronType qgsjet_hadron_type =
@@ -322,8 +323,7 @@ namespace corsika::qgsjetII {
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.getComponents() << std::endl;
             auto pnew = view.addSecondary(
-                std::make_tuple(idFragm, energy, momentum,
-                                                            pOrig, tOrig));
+                std::make_tuple(idFragm, energy, momentum, pOrig, tOrig));
             Plab_final += pnew.getMomentum();
             Elab_final += pnew.getEnergy();
           } break;
@@ -343,8 +343,7 @@ namespace corsika::qgsjetII {
         }
 
         if (idFragm == Code::Nucleus) { // thus: not p or n
-          const HEPMassType nucleusMass =
-              Proton::mass * Z + Neutron::mass * (A - Z);
+          const HEPMassType nucleusMass = Proton::mass * Z + Neutron::mass * (A - Z);
           auto momentum = Vector(
               zAxisFrame, QuantityVector<hepmomentum_d>{
                               0.0_GeV, 0.0_GeV,
@@ -357,8 +356,7 @@ namespace corsika::qgsjetII {
                     << " p=" << momentum.getComponents() << " A=" << A << " Z=" << Z
                     << std::endl;
           auto pnew = view.addSecondary(
-              std::make_tuple(
-                  idFragm, energy, momentum, pOrig, tOrig, A, Z));
+              std::make_tuple(idFragm, energy, momentum, pOrig, tOrig, A, Z));
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }
