@@ -23,6 +23,10 @@
 using namespace corsika;
 
 TEST_CASE("OnShellCheck", "[processes]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   feenableexcept(FE_INVALID);
   using EnvType = setup::Environment;
   EnvType env;

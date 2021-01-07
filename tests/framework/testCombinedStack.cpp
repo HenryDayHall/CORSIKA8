@@ -11,6 +11,7 @@
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/stack/Stack.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <testTestStack.hpp> // for testing: simple stack. This is a
 // test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR
@@ -86,6 +87,9 @@ using CombinedTestInterfaceType =
 using StackTest = CombinedStack<TestStackData, TestStackData2, CombinedTestInterfaceType>;
 
 TEST_CASE("Combined Stack", "[stack]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   // helper function for sum over stack data
   auto sum = [](const StackTest& stack) {
@@ -283,6 +287,9 @@ using StackTest2 = CombinedStack<typename StackTest::stack_implementation_type,
 
 TEST_CASE("Combined Stack - multi", "[stack]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   SECTION("create secondaries") {
 
     StackTest2 s;
@@ -377,6 +384,9 @@ using StackTestView = corsika::MakeView<StackTest2>::type;
 using Particle2 = typename StackTest2::particle_type;
 
 TEST_CASE("Combined Stack - secondary view") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("create secondaries via secondaryview") {
 

@@ -26,6 +26,9 @@ using namespace corsika;
 
 TEST_CASE("MediumProperties") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   // test access of medium properties via enum and class types
 
   const Medium type = Medium::AirDry1Atm;
@@ -40,6 +43,9 @@ TEST_CASE("MediumProperties") {
 }
 
 TEST_CASE("MediumPropertyModel w/ Homogeneous") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CoordinateSystemPtr gCS = get_root_CoordinateSystem();
 

@@ -19,7 +19,10 @@ using namespace std;
 
 TEST_CASE("VectorStack", "[stack]") {
 
-  const CoordinateSystemPtr& dummyCS = get_root_CoordinateSystem();
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
+  CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   SECTION("read+write") {
 

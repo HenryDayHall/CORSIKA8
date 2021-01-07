@@ -16,6 +16,9 @@ using namespace corsika;
 
 TEST_CASE("DummyStack", "[stack]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   using TestStack = dummy_stack::DummyStack;
 
   dummy_stack::NoData noData;

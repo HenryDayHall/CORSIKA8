@@ -69,6 +69,9 @@ int count_generations(Event const* event) {
 
 TEST_CASE("HistoryStackExtensionView", "[stack]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   // in this test we only use one singel stack !

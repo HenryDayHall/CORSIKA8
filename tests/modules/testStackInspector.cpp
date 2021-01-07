@@ -23,6 +23,9 @@ using namespace corsika;
 
 TEST_CASE("StackInspector", "[processes]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   auto const& rootCS = get_root_CoordinateSystem();
   Point const origin(rootCS, {0_m, 0_m, 0_m});
   VelocityVector v(rootCS, 0_m / second, 0_m / second, 1_m / second);

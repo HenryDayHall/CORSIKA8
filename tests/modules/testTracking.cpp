@@ -42,6 +42,9 @@ TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
                    tracking_leapfrog_curved::Tracking,
                    tracking_leapfrog_straight::Tracking, tracking_line::Tracking) {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   logging::set_level(logging::level::trace);
 
   const HEPEnergyType P0 = 10_GeV;

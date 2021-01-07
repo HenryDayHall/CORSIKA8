@@ -20,6 +20,9 @@ using namespace corsika;
 
 TEST_CASE("four vectors") {
 
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  logging::set_level(logging::level::info);
+
   // this is just needed as a baseline
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 

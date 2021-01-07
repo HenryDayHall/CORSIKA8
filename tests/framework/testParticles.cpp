@@ -8,12 +8,16 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <catch2/catch.hpp>
 
 using namespace corsika;
 
 TEST_CASE("ParticleProperties", "[Particles]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Types") {
     CHECK(Electron::code == Code::Electron);

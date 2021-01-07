@@ -6,17 +6,20 @@
  * the license.
  */
 
-#include <catch2/catch.hpp>
-
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <array>
 #include <sstream>
 
+#include <catch2/catch.hpp>
+
 using namespace corsika;
-using namespace corsika::units::si;
 
 TEST_CASE("PhysicalUnits", "[Units]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Consistency") {
     CHECK(1_m / 1_m == Approx(1));
@@ -114,7 +117,6 @@ TEST_CASE("PhysicalUnits", "[Units]") {
   }
 
   SECTION("static_pow") {
-    using namespace corsika::units;
     double x = 235.7913;
     CHECK(1 == static_pow<0, double>(x));
     CHECK(x == static_pow<1, double>(x));

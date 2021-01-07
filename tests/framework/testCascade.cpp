@@ -15,6 +15,7 @@
 #include <corsika/modules/StackInspector.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
@@ -136,6 +137,7 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
   HEPEnergyType E0 = 100_GeV;

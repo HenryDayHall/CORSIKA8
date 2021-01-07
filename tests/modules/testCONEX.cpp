@@ -37,6 +37,10 @@ template <typename T>
 using MExtraEnvirnoment = MediumPropertyModel<UniformMagneticField<T>>;
 
 TEST_CASE("CONEXSourceCut") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   RNGManager::getInstance().registerRandomStream("cascade");
   RNGManager::getInstance().registerRandomStream("sibyll");
 
@@ -115,6 +119,9 @@ TEST_CASE("CONEXSourceCut") {
 #include <fstream>
 
 TEST_CASE("ConexOutput", "[output validation]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   auto file = GENERATE(as<std::string>{}, "conex_fit", "conex_output");
 

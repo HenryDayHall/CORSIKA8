@@ -57,6 +57,10 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 }
 
 TEST_CASE("UrQMD") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   SECTION("conversion") {
     CHECK_THROWS(corsika::urqmd::convertFromUrQMD(106, 0));
     CHECK(corsika::urqmd::convertFromUrQMD(101, 0) == Code::Pi0);

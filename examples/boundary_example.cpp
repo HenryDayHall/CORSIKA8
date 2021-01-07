@@ -79,7 +79,8 @@ private:
 //
 int main() {
 
-  // logging::SetLevel(logging::level::info);
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CORSIKA_LOG_INFO("boundary_example");
 

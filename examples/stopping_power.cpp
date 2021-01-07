@@ -29,7 +29,10 @@ using namespace std;
 //
 int main() {
 
-  std::cout << "stopping_power" << std::endl;
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
+  CORSIKA_LOG_INFO("stopping_power");
 
   feenableexcept(FE_INVALID);
 

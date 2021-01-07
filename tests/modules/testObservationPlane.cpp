@@ -25,6 +25,9 @@ using namespace corsika;
 
 TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;

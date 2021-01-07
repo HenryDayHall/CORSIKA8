@@ -39,12 +39,20 @@ CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
 TEST_CASE("HomogeneousMedium") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 }
 
 TEST_CASE("FlatExponential") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
 
@@ -104,6 +112,10 @@ TEST_CASE("FlatExponential") {
 }
 
 TEST_CASE("SlidingPlanarExponential") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
 
@@ -161,6 +173,10 @@ struct Exponential {
 };
 
 TEST_CASE("InhomogeneousMedium") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   Vector direction(gCS, QuantityVector<dimensionless_d>(1, 0, 0));
 
   Line line(gOrigin, Vector<SpeedType::dimension_type>(
@@ -205,6 +221,9 @@ TEST_CASE("InhomogeneousMedium") {
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   LayeredSphericalAtmosphereBuilder builder =
       make_layered_spherical_atmosphere_builder<>::create(gOrigin,
                                                           constants::EarthRadius::Mean);
@@ -239,6 +258,10 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 }
 
 TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   // setup our interface types
   using ModelInterface = IMagneticFieldModel<IMediumModel>;
 

@@ -8,4 +8,12 @@
 
 #pragma once
 
-namespace corsika {}
+namespace corsika::setup {
+
+  /**
+   * The default "corsika" logger.
+   */
+  static std::shared_ptr<spdlog::logger> corsika_logger = get_logger("corsika", true);
+  // corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
+}

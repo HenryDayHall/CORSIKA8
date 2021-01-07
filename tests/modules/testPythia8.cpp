@@ -22,6 +22,9 @@ using namespace corsika;
 
 TEST_CASE("Pythia", "[processes]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   SECTION("linking pythia") {
     using namespace Pythia8;
     using std::cout;
@@ -92,6 +95,9 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 }
 
 TEST_CASE("pythia process") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
   auto const& cs = *csPtr;

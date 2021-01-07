@@ -7,6 +7,7 @@
  */
 
 #include <corsika/framework/analytics/FunctionTimer.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -30,6 +31,10 @@ public:
 };
 
 TEST_CASE("FunctionTimer", "[Timer]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   SECTION("Measure runtime of a free function") {
 
     auto test = corsika::FunctionTimer(testFunc);

@@ -53,7 +53,10 @@ SCENARIO("random-number streams can be registered and retrieved") {
 }
 
 TEST_CASE("UniformRealDistribution") {
-  using namespace corsika::units::si;
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   std::mt19937 rng;
 
   corsika::UniformRealDistribution<LengthType> dist(1_m, 2_m);
@@ -96,7 +99,10 @@ TEST_CASE("UniformRealDistribution") {
 }
 
 TEST_CASE("ExponentialDistribution") {
-  using namespace corsika::units::si;
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   std::mt19937 rng;
 
   auto const beta = 15_m;

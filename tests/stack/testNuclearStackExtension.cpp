@@ -19,6 +19,9 @@ using namespace std;
 
 TEST_CASE("NuclearStackExtension", "[stack]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   SECTION("write non nucleus") {

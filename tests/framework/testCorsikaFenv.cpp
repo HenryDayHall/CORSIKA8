@@ -21,6 +21,9 @@ static void handle_fpe(int /*signo*/) { gRESULT = 0; }
 
 TEST_CASE("CorsikaFenv", "[fenv]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   SECTION("Enable all exceptions") { feenableexcept(FE_ALL_EXCEPT); }
 
   signal(SIGFPE, handle_fpe);

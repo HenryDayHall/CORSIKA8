@@ -249,6 +249,9 @@ struct DummyView {
 
 TEST_CASE("Process Sequence", "[Process Sequence]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   SECTION("Check construction") {
     globalCount = 0;
     Process1 m1(0);
@@ -371,6 +374,9 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
 }
 
 TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Check construction") {
 

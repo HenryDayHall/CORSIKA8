@@ -38,6 +38,10 @@ auto const s = [](HEPEnergyType E, QuantityVector<hepmomentum_d> const& p) {
 };
 
 TEST_CASE("rotation") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   // define projectile kinematics in lab frame
   HEPMassType const projectileMass = 1_GeV;
   HEPMassType const targetMass = 1.0e300_eV;
@@ -166,6 +170,10 @@ TEST_CASE("rotation") {
 }
 
 TEST_CASE("boosts") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  
   // define target kinematics in lab frame
   HEPMassType const targetMass = 1_GeV;
   MomentumVector pTargetLab{rootCS, {0_eV, 0_eV, 0_eV}};
@@ -319,6 +327,10 @@ TEST_CASE("boosts") {
 }
 
 TEST_CASE("rest frame") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   HEPMassType const projectileMass = 1_GeV;
   HEPMomentumType const P0 = 1_TeV;
   MomentumVector pProjectileLab{rootCS, {0_GeV, P0, 0_GeV}};

@@ -32,6 +32,9 @@ using namespace corsika::sibyll;
 
 TEST_CASE("Sibyll", "[processes]") {
 
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  logging::set_level(logging::level::trace);
+
   SECTION("Sibyll -> Corsika") {
     CHECK(Code::Electron ==
           corsika::sibyll::convertFromSibyll(corsika::sibyll::SibyllCode::Electron));
@@ -95,6 +98,9 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 }
 
 TEST_CASE("SibyllInterface", "[processes]") {
+
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  logging::set_level(logging::level::trace);
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;

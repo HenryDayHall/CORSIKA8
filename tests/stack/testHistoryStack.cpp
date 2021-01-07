@@ -48,6 +48,9 @@ using EvtPtr = std::shared_ptr<DummyEvent>;
 
 TEST_CASE("HistoryStackExtension", "[stack]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   [[maybe_unused]] CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   const dummy_stack::NoData noData;

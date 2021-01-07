@@ -39,6 +39,9 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 
 TEST_CASE("CORSIKA_DATA", "[processes]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   SECTION("check CORSIKA_DATA") {
 
     const char* data = std::getenv("CORSIKA_DATA");
@@ -54,6 +57,9 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
 }
 
 TEST_CASE("QgsjetII", "[processes]") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Corsika -> QgsjetII") {
     CHECK(corsika::qgsjetII::convertToQgsjetII(PiMinus::code) ==
@@ -115,6 +121,9 @@ TEST_CASE("QgsjetII", "[processes]") {
 
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
@@ -132,7 +141,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     auto const projectileMomentum = projectile.getMomentum();
 
     corsika::qgsjetII::Interaction model;
-    model.doInteraction(projectile);
+    model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
 
     CHECK(length / (1_g / square(1_cm)) == Approx(93.04).margin(0.1));

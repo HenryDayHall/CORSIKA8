@@ -25,6 +25,9 @@ using namespace corsika;
 
 TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
 
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
   CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});

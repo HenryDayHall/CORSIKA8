@@ -153,10 +153,12 @@ namespace corsika::qgsjetII {
      event is copied (and boosted) into the shower lab frame.
    */
 
-  template <typename TParticle>
-  void Interaction::doInteraction(TParticle& vP) {
+  template <typename TView>
+  void Interaction::doInteraction(TView& view) {
 
-    const auto corsikaBeamId = vP.getPID();
+    auto const projectile = view.getProjectile();
+
+    const auto corsikaBeamId = projectile.getPID();
     std::cout << "ProcessQgsjetII: "
               << "DoInteraction: " << corsikaBeamId << " interaction? "
               << corsika::qgsjetII::canInteract(corsikaBeamId) << std::endl;
@@ -166,22 +168,24 @@ namespace corsika::qgsjetII {
       CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
 
       // position and time of interaction, not used in QgsjetII
-      Point pOrig = vP.getPosition();
-      TimeType tOrig = vP.getTime();
+      Point pOrig = projectile.getPosition();
+      TimeType tOrig = projectile.getTime();
 
       // define target
       // for QgsjetII is always a single nucleon
       // FOR NOW: target is always at rest
-      const auto targetEnergyLab = 0_GeV + constants::nucleonMass;
-      const auto targetMomentumLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
-      const FourVector PtargLab(targetEnergyLab, targetMomentumLab);
+      auto const targetEnergyLab = 0_GeV + constants::nucleonMass;
+      auto const targetMomentumLab = MomentumVector(rootCS, 0_GeV, 0_GeV, 0_GeV);
+      FourVector const PtargLab(targetEnergyLab, targetMomentumLab);
 
       // define projectile
-      HEPEnergyType const projectileEnergyLab = vP.getEnergy();
-      auto const projectileMomentumLab = vP.getMomentum();
+      HEPEnergyType const projectileEnergyLab = projectile.getEnergy();
+      auto const projectileMomentumLab = projectile.getMomentum();
 
       int beamA = 0;
-      if (is_nucleus(corsikaBeamId)) beamA = vP.getNuclearA();
+      if (is_nucleus(corsikaBeamId)) beamA = projectile.getNuclearA();
+
+      HEPEnergyType const projectileEnergyLabPerNucleon = projectileEnergyLab / beamA;
 
       std::cout << "Interaction: ebeam lab: " << projectileEnergyLab / 1_GeV << std::endl
                 << "Interaction: pbeam lab: "
@@ -195,7 +199,7 @@ namespace corsika::qgsjetII {
       std::cout << "Interaction: time: " << tOrig << std::endl;
 
       // sample target mass number
-      auto const* currentNode = vP.getNode();
+      auto const* currentNode = projectile.getNode();
       auto const& mediumComposition =
           currentNode->getModelProperties().getNuclearComposition();
       // get cross sections for target materials
@@ -219,19 +223,37 @@ namespace corsika::qgsjetII {
           mediumComposition.sampleTarget(cross_section_of_components, rng_);
       std::cout << "Interaction: target selected: " << targetCode << std::endl;
 
-      int targetQgsCode = -1;
-      if (is_nucleus(targetCode)) targetQgsCode = get_nucleus_A(targetCode);
-      if (targetCode == Code::Proton) targetQgsCode = 1;
-      std::cout << "Interaction: target qgsjetII code/A: " << targetQgsCode << std::endl;
-      if (targetQgsCode > maxMassNumber_ || targetQgsCode < 1)
-        throw std::runtime_error("QgsjetII target outside range.");
+      int targetMassNumber = 1;               // proton
+      if (is_nucleus(targetCode)) { // nucleus
+        targetMassNumber = get_nucleus_A(targetCode);
+        if (targetMassNumber > maxMassNumber_)
+          throw std::runtime_error("QgsjetII target mass outside range.");
+      } else {
+        if (targetCode != Proton::code)
+          throw std::runtime_error("QgsjetII Taget not possible.");
+      }
+      std::cout << "Interaction: target qgsjetII code/A: " << targetMassNumber << std::endl;
 
-      int projQgsCode = 1;
-      if (is_nucleus(corsikaBeamId)) projQgsCode = vP.getNuclearA();
-      std::cout << "Interaction: projectile qgsjetII code/A: " << projQgsCode << " "
-                << corsikaBeamId << std::endl;
-      if (projQgsCode > maxMassNumber_ || projQgsCode < 1)
-        throw std::runtime_error("QgsjetII target outside range.");
+      int projectileMassNumber = 1; // "1" means "hadron"
+      QgsjetIIHadronType qgsjet_hadron_type =
+          qgsjetII::getQgsjetIIHadronType(corsikaBeamId);
+      if (qgsjet_hadron_type == QgsjetIIHadronType::NucleusType) {
+        projectileMassNumber = projectile.getNuclearA();
+        if (projectileMassNumber > maxMassNumber_)
+          throw std::runtime_error("QgsjetII projectile mass outside range.");
+        std::array<QgsjetIIHadronType, 2> constexpr nucleons = {
+            QgsjetIIHadronType::ProtonType, QgsjetIIHadronType::NeutronType};
+        std::uniform_int_distribution select(0, 1);
+        qgsjet_hadron_type = nucleons[select(rng_)];
+      } else {
+        // from conex: replace pi0 or rho0 with pi+/pi- in alternating sequence
+        if (qgsjet_hadron_type == QgsjetIIHadronType::NeutralLightMesonType) {
+          qgsjet_hadron_type = alternate_;
+          alternate_ = (alternate_ == QgsjetIIHadronType::PiPlusType
+                            ? QgsjetIIHadronType::PiMinusType
+                            : QgsjetIIHadronType::PiPlusType);
+        }
+      }
 
       // beam id for qgsjetII
       int kBeam = 2; // default: proton Shouldn't we randomize neutron/proton for nuclei?
@@ -254,9 +276,9 @@ namespace corsika::qgsjetII {
       std::cout << "Interaction: "
                 << " DoInteraction: E(GeV):" << projectileEnergyLab / 1_GeV << std::endl;
       count_++;
-      qgini_(projectileEnergyLab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
-      // this is from CRMC, is this REALLY needed ???
-      qgini_(projectileEnergyLab / 1_GeV, kBeam, projQgsCode, targetQgsCode);
+      int qgsjet_hadron_type_int = static_cast<QgsjetIICodeIntType>(qgsjet_hadron_type);
+      qgini_(projectileEnergyLab / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber,
+             targetMassNumber);
       qgconf_();
 
       // bookkeeping
@@ -278,21 +300,30 @@ namespace corsika::qgsjetII {
         int Z = 0;
         switch (A) {
           case 1: { // proton/neutron
-            idFragm = Code::Proton;
+            std::uniform_real_distribution<double> select;
+            if (select(rng_) > 0.5) {
+              idFragm = Code::Proton;
+              Z = 1;
+            } else {
+              idFragm = Code::Neutron;
+              Z = 0;
+            }
 
-            auto momentum =
-                Vector(zAxisFrame, QuantityVector<hepmomentum_d>{
-                                       0.0_GeV, 0.0_GeV,
-                                       sqrt((projectileEnergyLab + Proton::mass) *
-                                            (projectileEnergyLab - Proton::mass))});
+            const HEPMassType nucleonMass = get_mass(idFragm);
 
-            auto const energy =
-                sqrt(momentum.getSquaredNorm() + square(get_mass(idFragm)));
+            auto momentum = Vector(
+                zAxisFrame, corsika::QuantityVector<hepmomentum_d>{
+                                0.0_GeV, 0.0_GeV,
+                                sqrt((projectileEnergyLabPerNucleon + nucleonMass) *
+                                     (projectileEnergyLabPerNucleon - nucleonMass))});
+
+            auto const energy = sqrt(momentum.getSquaredNorm() + square(nucleonMass));
             momentum.rebase(originalCS); // transform back into standard lab frame
             std::cout << "secondary fragment> id=" << idFragm
                       << " p=" << momentum.getComponents() << std::endl;
-            auto pnew =
-                vP.addSecondary(std::make_tuple(idFragm, energy, momentum, pOrig, tOrig));
+            auto pnew = view.addSecondary(
+                std::make_tuple(idFragm, energy, momentum,
+                                                            pOrig, tOrig));
             Plab_final += pnew.getMomentum();
             Elab_final += pnew.getEnergy();
           } break;
@@ -311,21 +342,23 @@ namespace corsika::qgsjetII {
           }
         }
 
-        if (idFragm == Code::Nucleus) {
+        if (idFragm == Code::Nucleus) { // thus: not p or n
+          const HEPMassType nucleusMass =
+              Proton::mass * Z + Neutron::mass * (A - Z);
           auto momentum = Vector(
               zAxisFrame, QuantityVector<hepmomentum_d>{
                               0.0_GeV, 0.0_GeV,
-                              sqrt((projectileEnergyLab + constants::nucleonMass * A) *
-                                   (projectileEnergyLab - constants::nucleonMass * A))});
+                              sqrt((projectileEnergyLabPerNucleon * A + nucleusMass) *
+                                   (projectileEnergyLabPerNucleon * A - nucleusMass))});
 
-          auto const energy =
-              sqrt(momentum.getSquaredNorm() + square(constants::nucleonMass * A));
+          auto const energy = sqrt(momentum.getSquaredNorm() + square(nucleusMass));
           momentum.rebase(originalCS); // transform back into standard lab frame
           std::cout << "secondary fragment> id=" << idFragm
                     << " p=" << momentum.getComponents() << " A=" << A << " Z=" << Z
                     << std::endl;
-          auto pnew = vP.addSecondary(
-              std::make_tuple(idFragm, energy, momentum, pOrig, tOrig, A, Z));
+          auto pnew = view.addSecondary(
+              std::make_tuple(
+                  idFragm, energy, momentum, pOrig, tOrig, A, Z));
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }
@@ -342,7 +375,7 @@ namespace corsika::qgsjetII {
         std::cout << "secondary fragment> id="
                   << corsika::qgsjetII::convertFromQgsjetII(psec.getPID())
                   << " p=" << momentum.getComponents() << std::endl;
-        auto pnew = vP.addSecondary(
+        auto pnew = view.addSecondary(
             std::make_tuple(corsika::qgsjetII::convertFromQgsjetII(psec.getPID()), energy,
                             momentum, pOrig, tOrig));
         Plab_final += pnew.getMomentum();
