@@ -107,7 +107,7 @@ TEST_CASE("ClassTimer", "[Timer]") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  
+
   SECTION("Measure runtime of a function without arguments") {
 
     auto test = foo();

@@ -30,7 +30,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  
+
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
   QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};

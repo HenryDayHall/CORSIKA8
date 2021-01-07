@@ -40,7 +40,7 @@ TEST_CASE("CONEXSourceCut") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  
+
   RNGManager::getInstance().registerRandomStream("cascade");
   RNGManager::getInstance().registerRandomStream("sibyll");
 

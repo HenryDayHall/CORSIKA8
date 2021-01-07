@@ -49,7 +49,7 @@ TEST_CASE("Homogeneous Density") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  
+
   auto [env, csPtr, nodePtr] = setupEnvironment(Code::Nitrogen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;

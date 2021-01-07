@@ -13,9 +13,9 @@
 using namespace corsika;
 
 TEST_CASE("Logging", "[Logging]") {
-  
+
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-    
+
   SECTION("top level functions using default corsika logger") {
     logging::info("(1) This is an info message!");
     logging::warn("(1) This is a warning message!");

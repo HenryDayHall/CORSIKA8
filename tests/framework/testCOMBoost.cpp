@@ -173,7 +173,7 @@ TEST_CASE("boosts") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  
+
   // define target kinematics in lab frame
   HEPMassType const targetMass = 1_GeV;
   MomentumVector pTargetLab{rootCS, {0_eV, 0_eV, 0_eV}};

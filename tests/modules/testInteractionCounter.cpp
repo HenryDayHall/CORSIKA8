@@ -106,7 +106,7 @@ TEST_CASE("InteractionCounterOutput", "[output validation]") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  
+
   auto file = GENERATE(as<std::string>{}, "testInteractionCounter_file1",
                        "testInteractionCounter_file2");
 
