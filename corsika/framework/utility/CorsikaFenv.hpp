@@ -16,8 +16,8 @@
  */
 extern "C" {
 
-int feenableexcept(int excepts);
-int fedisableexcept(int excepts);
+int feenableexcept(int excepts) throw();
+int fedisableexcept(int excepts) throw();
 }
 
 #ifdef CORSIKA_HAS_FEENABLEEXCEPT

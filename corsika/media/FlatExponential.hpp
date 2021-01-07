@@ -42,10 +42,10 @@ namespace corsika {
     NuclearComposition const& getNuclearComposition() const override;
 
     GrammageType getIntegratedGrammage(setup::Trajectory const& line,
-                                       LengthType to) const;
+                                       LengthType to) const override;
 
     LengthType getArclengthFromGrammage(setup::Trajectory const& line,
-                                        GrammageType grammage) const;
+                                        GrammageType grammage) const override;
 
   private:
     DirectionVector const axis_;

@@ -52,7 +52,7 @@ namespace corsika {
       direction =
           direction + direction.cross(magneticfield) * steplength * k; // Second Movement
       position = position + direction * steplength / 2;
-      auto steplength_true = steplength * (1.0 + (double)direction.getNorm()) / 2;
+      auto const steplength_true = steplength * (1 + direction.getNorm()) / 2;
       return std::make_tuple(position, direction.normalized(), steplength_true);
     }
 

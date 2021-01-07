@@ -28,7 +28,7 @@
 
 extern "C" {
 
-int feenableexcept(int excepts) {
+int feenableexcept(int excepts) throw() {
   static fenv_t fenv;
   int new_excepts = excepts & FE_ALL_EXCEPT;
   // previous masks
@@ -44,7 +44,7 @@ int feenableexcept(int excepts) {
   return fesetenv(&fenv) ? -1 : old_excepts;
 }
 
-int fedisableexcept(int excepts) {
+int fedisableexcept(int excepts) throw() {
   static fenv_t fenv;
   int new_excepts = excepts & FE_ALL_EXCEPT;
   // all previous masks

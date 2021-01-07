@@ -190,11 +190,6 @@ option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
 set (Python_ADDITIONAL_VERSIONS 3)
 find_package (PythonInterp 3 REQUIRED)
 
-#+++++++++++++++++++++++++++++
-# get phys_units
-#
-find_package (PhysUnits REQUIRED)
-
 
 #+++++++++++++++++++++++++++++
 # CORSIKA8
@@ -211,7 +206,6 @@ target_include_directories (
 target_link_libraries (
   CORSIKA8
   INTERFACE
-  PhysUnits
   CONAN_PKG::eigen
   CONAN_PKG::spdlog
   CONAN_PKG::boost

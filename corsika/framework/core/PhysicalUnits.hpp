@@ -9,8 +9,8 @@
 #pragma once
 
 // the templated static-unit package we use:
-#include <phys/units/io.hpp>
-#include <phys/units/quantity.hpp>
+#include <corsika/framework/units/io.hpp>
+#include <corsika/framework/units/quantity.hpp>
 
 #include <corsika/framework/core/PhysicalConstants.hpp>
 

@@ -33,7 +33,7 @@ namespace corsika {
     typedef std::map<std::string, prng_type> streams_type;
     typedef std::map<std::string, std::seed_seq> seeds_type;
 
-    RNGManager(RNGManager const&) = default;
+    RNGManager(RNGManager const&) = delete; // since it is a singleton
 
     RNGManager& operator=(RNGManager const&) = delete;
 

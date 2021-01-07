@@ -54,7 +54,7 @@ TEST_CASE("ParticleCut", "[processes]") {
         Code::Proton, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
         Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
     // view on secondary particles
-    SecondaryView view(particle);
+    setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
@@ -107,7 +107,7 @@ TEST_CASE("ParticleCut", "[processes]") {
         std::make_tuple(Code::Proton, Eabove,
                         MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
     // view on secondary particles
-    SecondaryView view(particle);
+    setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
