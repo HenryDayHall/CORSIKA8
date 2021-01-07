@@ -18,7 +18,7 @@ parser.add_argument("--all", action="store_true",
 
 args = parser.parse_args()
 
-excludeDirs = [r"^(\./)?modules/", r"^(\./)?externals/", r"^(\./)?build", r"^(\./)?install", r"(\./)?\.git"]
+excludeDirs = [r"^(\./)?modules/", r"^(\./)?externals/", r"^(\./)?build", r"^(\./)?install", r"(\./)?\.git", r"^(\./)?corsika/framework/units",]
 
 filelist = []
 if args.all:

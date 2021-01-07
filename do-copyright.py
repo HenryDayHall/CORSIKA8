@@ -21,7 +21,7 @@ Debug settings are 0: nothing, 1: checking, 2: filesystem
 """
 Debug = 0 
 
-excludeDirs = ["./modules", "./externals", "build", "install", "git"]
+excludeDirs = ["./modules", "./externals", "build", "install", "git", "framework/units"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h', 'quartic.h']
 
 extensions = [".cpp", ".inl", ".hpp"]
