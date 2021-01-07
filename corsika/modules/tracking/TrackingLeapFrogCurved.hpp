@@ -18,7 +18,7 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/QuarticSolver.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 #include <corsika/modules/tracking/Intersect.hpp>
 
 #include <type_traits>

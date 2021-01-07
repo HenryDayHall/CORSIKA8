@@ -43,7 +43,7 @@ namespace corsika {
     this->setTime(std::get<4>(v));
   }
 
-  inline void SimpleStackImpl::clear() {
+  inline void VectorStackImpl::clear() {
     dataPID_.clear();
     dataE_.clear();
     momentum_.clear();
@@ -51,7 +51,7 @@ namespace corsika {
     time_.clear();
   }
 
-  inline void SimpleStackImpl::copy(size_t i1, size_t i2) {
+  inline void VectorStackImpl::copy(size_t i1, size_t i2) {
     dataPID_[i2] = dataPID_[i1];
     dataE_[i2] = dataE_[i1];
     momentum_[i2] = momentum_[i1];
@@ -59,7 +59,7 @@ namespace corsika {
     time_[i2] = time_[i1];
   }
 
-  inline void SimpleStackImpl::swap(size_t i1, size_t i2) {
+  inline void VectorStackImpl::swap(size_t i1, size_t i2) {
     std::swap(dataPID_[i2], dataPID_[i1]);
     std::swap(dataE_[i2], dataE_[i1]);
     std::swap(momentum_[i2], momentum_[i1]);
@@ -67,7 +67,7 @@ namespace corsika {
     std::swap(time_[i2], time_[i1]);
   }
 
-  inline void SimpleStackImpl::incrementSize() {
+  inline void VectorStackImpl::incrementSize() {
     dataPID_.push_back(Code::Unknown);
     dataE_.push_back(0 * electronvolt);
 
@@ -80,7 +80,7 @@ namespace corsika {
     time_.push_back(0 * second);
   }
 
-  inline void SimpleStackImpl::decrementSize() {
+  inline void VectorStackImpl::decrementSize() {
     if (dataE_.size() > 0) {
       dataPID_.pop_back();
       dataE_.pop_back();

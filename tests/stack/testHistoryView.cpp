@@ -14,7 +14,7 @@
 #include <corsika/stack/DummyStack.hpp>
 #include <corsika/stack/NuclearStackExtension.hpp>
 
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <catch2/catch.hpp>
 

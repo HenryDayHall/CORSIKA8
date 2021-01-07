@@ -11,7 +11,7 @@
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/stack/history/Event.hpp>
 
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <boost/type_index.hpp>
 

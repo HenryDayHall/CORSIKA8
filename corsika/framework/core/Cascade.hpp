@@ -16,7 +16,7 @@
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/media/Environment.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 /*  see Issue 161, we need to include SetupStack only because we need
     to globally define StackView. This is clearly not nice and should

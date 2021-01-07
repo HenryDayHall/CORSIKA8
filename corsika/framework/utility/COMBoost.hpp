@@ -12,7 +12,7 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <Eigen/Dense>
 

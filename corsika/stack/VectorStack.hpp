@@ -98,7 +98,7 @@ namespace corsika {
    *
    */
 
-  class SimpleStackImpl {
+  class VectorStackImpl {
 
   public:
     typedef std::vector<Code> code_vector_type;
@@ -107,15 +107,15 @@ namespace corsika {
     typedef std::vector<TimeType> time_vector_type;
     typedef std::vector<MomentumVector> momentum_vector_type;
 
-    SimpleStackImpl() = default;
+    VectorStackImpl() = default;
 
-    SimpleStackImpl(SimpleStackImpl const& other) = default;
+    VectorStackImpl(VectorStackImpl const& other) = default;
 
-    SimpleStackImpl(SimpleStackImpl&& other) = default;
+    VectorStackImpl(VectorStackImpl&& other) = default;
 
-    SimpleStackImpl& operator=(SimpleStackImpl const& other) = default;
+    VectorStackImpl& operator=(VectorStackImpl const& other) = default;
 
-    SimpleStackImpl& operator=(SimpleStackImpl&& other) = default;
+    VectorStackImpl& operator=(VectorStackImpl&& other) = default;
 
     void dump() const {}
 
@@ -167,10 +167,10 @@ namespace corsika {
     point_vector_type position_;
     time_vector_type time_;
 
-  }; // end class SimpleStackImpl
+  }; // end class VectorStackImpl
 
-  typedef Stack<SimpleStackImpl, ParticleInterface> SimpleStack;
+  typedef Stack<VectorStackImpl, ParticleInterface> VectorStack;
 
 } // namespace corsika
 
-#include <corsika/detail/stack/SimpleStack.inl>
+#include <corsika/detail/stack/VectorStack.inl>

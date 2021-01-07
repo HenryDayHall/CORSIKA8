@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/stack/history/EventType.hpp>
 #include <corsika/stack/history/SecondaryParticle.hpp>

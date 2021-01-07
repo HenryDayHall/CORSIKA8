@@ -14,7 +14,7 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
-#include <corsika/stack/SimpleStack.hpp>
+#include <corsika/stack/VectorStack.hpp>
 
 #include <algorithm>
 #include <tuple>
@@ -27,7 +27,7 @@ namespace corsika::nuclear_stack {
    * Define ParticleInterface for NuclearStackExtension Stack derived from
    * ParticleInterface of Inner stack class
    *
-   * Add A and Z data to existing stack (currently SimpleStack) of particle
+   * Add A and Z data to existing stack (currently VectorStack) of particle
    * properties. This is done via inheritance, not via CombinedStack since the nuclear
    * data is stored ONLY when needed (for nuclei) and not for all particles. Thus, this is
    * a new, derived Stack object.
@@ -210,11 +210,11 @@ namespace corsika::nuclear_stack {
   //
   template <typename TStackIter>
   using ExtendedParticleInterfaceType =
-      NuclearParticleInterface<SimpleStack::pi_type, TStackIter>;
+      NuclearParticleInterface<VectorStack::pi_type, TStackIter>;
 
   // the particle data stack with extra nuclear information:
   using ParticleDataStack =
-      NuclearStackExtension<SimpleStack, ExtendedParticleInterfaceType>;
+      NuclearStackExtension<VectorStack, ExtendedParticleInterfaceType>;
 
 } // namespace corsika::nuclear_stack
 

@@ -14,7 +14,7 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 #include <corsika/framework/geometry/Line.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <cmath>
 #include <fstream>

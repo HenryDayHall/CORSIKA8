@@ -4,7 +4,7 @@ set (test_stack_sources
   testHistoryView.cpp
   testGeometryNodeStackExtension.cpp
   testDummyStack.cpp
-  testSimpleStack.cpp
+  testVectorStack.cpp
   testNuclearStackExtension.cpp
   )
 

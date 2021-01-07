@@ -10,7 +10,7 @@
 
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/framework/stack/Stack.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <testTestStack.hpp> // for testing: simple stack. This is a
 // test-build, and inluce file is obtained from CMAKE_CURRENT_SOURCE_DIR

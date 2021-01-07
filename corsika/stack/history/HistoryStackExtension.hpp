@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/stack/Stack.hpp>
 
 #include <memory>

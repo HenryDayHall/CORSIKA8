@@ -15,7 +15,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/process/InteractionCounter.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>

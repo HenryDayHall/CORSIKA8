@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 #include <corsika/modules/conex/CONEXhybrid.hpp>
 #include <corsika/modules/conex/CONEX_f.hpp>
 #include <corsika/framework/random/RNGManager.hpp>

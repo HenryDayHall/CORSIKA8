@@ -14,7 +14,7 @@
 #include <string>
 
 #include <corsika/framework/utility/Singleton.hpp>
-#include <corsika/framework/logging/Logging.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 /*!
  * With this class modules can register streams of random numbers.
