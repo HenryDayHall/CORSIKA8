@@ -10,6 +10,7 @@
 
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/modules/OnShellCheck.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 namespace corsika {
 
@@ -18,19 +19,19 @@ namespace corsika {
       : mass_tolerance_(vMassTolerance)
       , energy_tolerance_(vEnergyTolerance)
       , throw_error_(vError) {
-    std::cout << "OnShellCheck: mass tolerance is set to " << mass_tolerance_ * 100 << "%"
-              << std::endl
-              << "              energy tolerance is set to " << energy_tolerance_ * 100
-              << "%" << std::endl;
+    CORSIKA_LOGGER_DEBUG(logger_, "mass tolerance is set to {:3.2f}%",
+                         mass_tolerance_ * 100);
+    CORSIKA_LOGGER_DEBUG(logger_, "energy tolerance is set to {:3.2f}%",
+                         energy_tolerance_ * 100);
   }
 
   OnShellCheck::~OnShellCheck() {
-    std::cout << "OnShellCheck: summary" << std::endl
-              << " particles shifted: " << int(count_) << std::endl;
-    if (count_)
-      std::cout << " average energy shift (%): " << average_shift_ / count_ * 100.
-                << std::endl
-                << " max. energy shift (%): " << max_shift_ * 100. << std::endl;
+    logger_->info(
+        " summary \n"
+        " particles shifted: {} \n"
+        " average energy shift (%): {} \n"
+        " max. energy shift (%): {} ",
+        int(count_), (count_ ? average_shift_ / count_ * 100 : 0), max_shift_ * 100.);
   }
 
   template <typename TView>
@@ -51,23 +52,24 @@ namespace corsika {
         count_ = count_ + 1;
         average_shift_ += abs(e_shift_relative);
         if (abs(e_shift_relative) > max_shift_) max_shift_ = abs(e_shift_relative);
-        std::cout << "OnShellCheck: shift particle mass for " << pid << std::endl
-                  << std::setw(40) << std::setfill(' ')
-                  << "corsika mass (GeV): " << m_corsika / 1_GeV << std::endl
-                  << std::setw(40) << std::setfill(' ')
-                  << "kinetic mass (GeV): " << m_kinetic / 1_GeV << std::endl
-                  << std::setw(40) << std::setfill(' ')
-                  << "m_kin-m_cor (GeV): " << m_err_abs / 1_GeV << std::endl
-                  << std::setw(40) << std::setfill(' ')
-                  << "mass tolerance (GeV): " << (m_corsika * mass_tolerance_) / 1_GeV
-                  << std::endl;
+        CORSIKA_LOGGER_TRACE(
+            logger_,
+            "shift particle mass for {} \n"
+            "{:>45} {:7.5f} \n"
+            "{:>45} {:7.5f} \n"
+            "{:>45} {:7.5f} \n"
+            "{:>45} {:7.5f} \n",
+            pid, "corsika mass (GeV):", m_corsika / 1_GeV,
+            "kinetic mass (GeV): ", m_kinetic / 1_GeV,
+            "m_kin-m_cor (GeV): ", m_err_abs / 1_GeV,
+            "mass tolerance (GeV): ", (m_corsika * mass_tolerance_) / 1_GeV);
         /*
           For now we warn if the necessary shift is larger than 1%.
           we could promote this to an error.
         */
         if (abs(e_shift_relative) > energy_tolerance_) {
-          std::cout << "OnShellCheck: warning! shifted particle energy by "
-                    << e_shift_relative * 100 << " %" << std::endl;
+          logger_->warn("warning! shifted particle energy by {} %",
+                        e_shift_relative * 100);
           if (throw_error_)
             throw std::runtime_error(
                 "OnShellCheck: error! shifted energy by large amount!");
@@ -76,7 +78,7 @@ namespace corsika {
         // reset energy
         p.setEnergy(e_shifted);
       } else
-        std::cout << "OnShellCheck: particle mass for " << pid << " OK" << std::endl;
+        CORSIKA_LOGGER_DEBUG(logger_, "OnShellCheck: particle mass for {} OK", pid);
     }
   }
 
