@@ -24,7 +24,7 @@ using namespace corsika;
 
 TEST_CASE("OnShellCheck", "[processes]") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::debug);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   feenableexcept(FE_INVALID);
@@ -38,9 +38,10 @@ TEST_CASE("OnShellCheck", "[processes]") {
   // two energies
   const HEPEnergyType E = 10_GeV;
   // list of arbitrary particles
-  std::array const particleList{Code::PiPlus, Code::PiMinus, Code::Helium, Code::Gamma};
+  std::array const particleList{Code::PiPlus, Code::PiMinus,  Code::Helium,
+                                Code::Gamma,  Code::Electron, Code::MuPlus};
 
-  std::array const mass_shifts{1.1, 1.001, 1.0, 1.0};
+  std::array const mass_shifts{1.1, 1.001, 1.0, 1.0, 1.01, 1.0};
 
   SECTION("check particle masses") {
 

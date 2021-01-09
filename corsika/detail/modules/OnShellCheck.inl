@@ -38,7 +38,7 @@ namespace corsika {
   void OnShellCheck::doSecondaries(TView& vS) {
     for (auto& p : vS) {
       auto const pid = p.getPID();
-      if (!is_hadron(pid) || is_nucleus(pid)) continue;
+      if (is_nucleus(pid)) continue;
       auto const e_original = p.getEnergy();
       auto const p_original = p.getMomentum();
       auto const Plab = FourVector(e_original, p_original);
