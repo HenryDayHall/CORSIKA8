@@ -24,7 +24,7 @@ using namespace corsika;
 
 TEST_CASE("ParticleCut", "[processes]") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::debug);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   feenableexcept(FE_INVALID);
@@ -51,7 +51,7 @@ TEST_CASE("ParticleCut", "[processes]") {
   SECTION("cut on particle type: inv") {
 
     ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getECut() == 20_GeV);
+    CHECK(cut.getHadronECut() == 20_GeV);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -135,6 +135,43 @@ TEST_CASE("ParticleCut", "[processes]") {
     CHECK(view.getSize() == 13);
   }
 
+  SECTION("cut low energy: electrons, photons, hadrons and muons") {
+    ParticleCut cut(5_MeV,5_MeV,5_GeV,5_GeV, true);
+
+    // add primary particle to stack
+    auto particle = stack.addParticle(
+        std::make_tuple(Code::Proton, Eabove,
+                        MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+    // view on secondary particles
+    setup::StackView view(particle);
+    // ref. to primary particle through the secondary view.
+    // only this way the secondary view is populated
+    auto projectile = view.getProjectile();
+    // add secondaries 
+    projectile.addSecondary(std::make_tuple(Code::Gamma, 3_MeV,
+                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+                                            point0, 0_ns));
+    projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
+                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+                                            point0, 0_ns));
+    projectile.addSecondary(std::make_tuple(Code::PiPlus, 4_GeV,
+                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+                                            point0, 0_ns));
+    unsigned short A = 18;
+    unsigned short Z = 8;
+    projectile.addSecondary(std::make_tuple(Code::Nucleus, 4_GeV * A,
+                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+                                            point0, 0_ns, A, Z));
+    projectile.addSecondary(std::make_tuple(Code::Nucleus, 6_GeV * A,
+                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+                                            point0, 0_ns, A, Z));
+
+    cut.doSecondaries(view);
+
+    CHECK(view.getEntries() == 1);
+    CHECK(view.getSize() == 5);
+  }
+
   SECTION("cut on time") {
     ParticleCut cut(20_GeV, false, false);
     const TimeType too_late = 1_s;
@@ -170,7 +207,7 @@ TEST_CASE("ParticleCut", "[processes]") {
   SECTION("cut on DoContinous, just invisibles") {
 
     ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getECut() == 20_GeV);
+    CHECK(cut.getHadronECut() == 20_GeV);
 
     // add particles, all with energies above the threshold
     // only cut is by species

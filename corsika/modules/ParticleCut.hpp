@@ -17,11 +17,29 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 namespace corsika {
-
+  /**
+     simple ParticleCut process. Goes through the secondaries of an interaction and
+   removes particles according to their energy. Particles with a time delay of more than
+   10ms are removed as well. Invisible particles (neutrinos) can be removed if selected.
+   **/
   class ParticleCut : public SecondariesProcess<ParticleCut>,
                       public ContinuousProcess<ParticleCut> {
 
   public:
+    /**
+     * particle cut with energy thresholds for electrons, photons,
+     *    hadrons (including nuclei with energy per nucleon) and muons
+     *    invisible particles (neutrinos) can be cut or not
+     **/
+    ParticleCut(const HEPEnergyType eEleCut, const HEPEnergyType ePhoCut,
+                const HEPEnergyType eHadCut, const HEPEnergyType eMuCut, bool inv);
+
+    //! simple cut. hadrons and muons are cut by threshold. EM particles are all
+    //! discarded.
+    ParticleCut(const HEPEnergyType eHadCut, const HEPEnergyType eMuCut, bool inv);
+
+    //! simplest cut. all particles have same threshold. EM particles can be set to be
+    //! discarded altogether.
     ParticleCut(const HEPEnergyType eCut, bool em, bool inv);
 
     void doSecondaries(corsika::setup::StackView&);
@@ -35,7 +53,10 @@ namespace corsika {
     void showResults();
     void reset();
 
-    HEPEnergyType getECut() const { return energy_cut_; }
+    HEPEnergyType getElectronECut() const { return electron_energy_cut_; }
+    HEPEnergyType getPhotonECut() const { return photon_energy_cut_; }
+    HEPEnergyType getMuonECut() const { return mu_energy_cut_; }
+    HEPEnergyType getHadronECut() const { return had_energy_cut_; }
     HEPEnergyType getInvEnergy() const { return inv_energy_; }
     HEPEnergyType getCutEnergy() const { return energy_; }
     HEPEnergyType getEmEnergy() const { return em_energy_; }
@@ -50,7 +71,10 @@ namespace corsika {
     bool isBelowEnergyCut(TParticle const&) const;
 
   private:
-    HEPEnergyType energy_cut_;
+    HEPEnergyType electron_energy_cut_;
+    HEPEnergyType photon_energy_cut_;
+    HEPEnergyType had_energy_cut_;
+    HEPEnergyType mu_energy_cut_;
     bool doCutEm_;
     bool doCutInv_;
     HEPEnergyType energy_ = 0 * electronvolt;

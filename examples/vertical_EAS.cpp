@@ -221,9 +221,9 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, false, true};
-  corsika::proposal::Interaction proposal(env, cut.getECut());
-  corsika::proposal::ContinuousProcess em_continuous(env, cut.getECut());
+  ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
+  corsika::proposal::Interaction proposal(env, cut.getElectronECut());
+  corsika::proposal::ContinuousProcess em_continuous(env, cut.getElectronECut());
   InteractionCounter proposalCounted(proposal);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);

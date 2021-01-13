@@ -12,8 +12,40 @@
 
 namespace corsika {
 
+  ParticleCut::ParticleCut(const HEPEnergyType eEleCut, const HEPEnergyType ePhoCut,
+                           const HEPEnergyType eHadCut, const HEPEnergyType eMuCut,
+                           bool inv)
+      : electron_energy_cut_(eEleCut)
+      , photon_energy_cut_(ePhoCut)
+      , had_energy_cut_(eHadCut)
+      , mu_energy_cut_(eMuCut)
+      , doCutEm_(false)
+      , doCutInv_(inv)
+      , energy_(0_GeV)
+      , em_energy_(0_GeV)
+      , em_count_(0)
+      , inv_energy_(0_GeV)
+      , inv_count_(0) {}
+
+  ParticleCut::ParticleCut(const HEPEnergyType eHadCut, const HEPEnergyType eMuCut,
+                           bool inv)
+      : electron_energy_cut_(0_eV)
+      , photon_energy_cut_(0_eV)
+      , had_energy_cut_(eHadCut)
+      , mu_energy_cut_(eMuCut)
+      , doCutEm_(true)
+      , doCutInv_(inv)
+      , energy_(0_GeV)
+      , em_energy_(0_GeV)
+      , em_count_(0)
+      , inv_energy_(0_GeV)
+      , inv_count_(0) {}
+
   ParticleCut::ParticleCut(const HEPEnergyType eCut, bool em, bool inv)
-      : energy_cut_(eCut)
+      : electron_energy_cut_(eCut)
+      , photon_energy_cut_(eCut)
+      , had_energy_cut_(eCut)
+      , mu_energy_cut_(eCut)
       , doCutEm_(em)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -25,13 +57,21 @@ namespace corsika {
   template <typename TParticle>
   bool ParticleCut::isBelowEnergyCut(TParticle const& vP) const {
     auto const energyLab = vP.getEnergy();
+    auto const pid = vP.getPID();
     // nuclei
-    if (vP.getPID() == Code::Nucleus) {
+    if (pid == Code::Nucleus) {
       // calculate energy per nucleon
       auto const ElabNuc = energyLab / vP.getNuclearA();
-      return (ElabNuc < energy_cut_);
+      return (ElabNuc < had_energy_cut_);
+    } else if (pid == Code::Gamma) {
+      return (energyLab < photon_energy_cut_);
+    } else if (pid == Code::Electron || pid == Code::Positron) {
+      return (energyLab < electron_energy_cut_);
+    } else if (is_muon(pid)) {
+      return (energyLab < mu_energy_cut_);
     } else {
-      return (energyLab < energy_cut_);
+      // assuming the rest are hadrons
+      return (energyLab < had_energy_cut_);
     }
   }
 

@@ -142,7 +142,7 @@ int main() {
   ParticleCut cut(80_GeV, true, true);
 
   TrackWriter trackWriter("tracks.dat");
-  BetheBlochPDG eLoss{showerAxis, cut.getECut()};
+  BetheBlochPDG eLoss{showerAxis, cut.getElectronECut()};
 
   // assemble all processes into an ordered process list
   auto sequence =
