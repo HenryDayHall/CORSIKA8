@@ -48,8 +48,6 @@ namespace corsika {
 
     template <typename TParticle>
     bool isBelowEnergyCut(TParticle const&) const;
-    bool isEmParticle(Code) const;
-    bool isInvisible(Code) const;
 
   private:
     HEPEnergyType energy_cut_;

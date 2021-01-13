@@ -35,31 +35,6 @@ namespace corsika {
     }
   }
 
-  bool ParticleCut::isEmParticle(Code vCode) const {
-    // FOR NOW: switch
-    switch (vCode) {
-      case Code::Gamma:
-      case Code::Electron:
-      case Code::Positron:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  bool ParticleCut::isInvisible(Code vCode) const {
-    switch (vCode) {
-      case Code::NuE:
-      case Code::NuEBar:
-      case Code::NuMu:
-      case Code::NuMuBar:
-        return true;
-
-      default:
-        return false;
-    }
-  }
-
   template <typename TParticle>
   bool ParticleCut::checkCutParticle(const TParticle& particle) {
 
@@ -68,12 +43,12 @@ namespace corsika {
     CORSIKA_LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV",
                                   pid, energy / 1_GeV,
                                   (em_energy_ + inv_energy_ + energy_) / 1_GeV));
-    if (doCutEm_ && isEmParticle(pid)) {
+    if (doCutEm_ && is_em(pid)) {
       CORSIKA_LOG_DEBUG("removing em. particle...");
       em_energy_ += energy;
       em_count_ += 1;
       return true;
-    } else if (doCutInv_ && isInvisible(pid)) {
+    } else if (doCutInv_ && is_neutrino(pid)) {
       CORSIKA_LOG_DEBUG("removing inv. particle...");
       inv_energy_ += energy;
       inv_count_ += 1;
