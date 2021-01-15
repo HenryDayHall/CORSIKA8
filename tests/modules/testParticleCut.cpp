@@ -136,7 +136,7 @@ TEST_CASE("ParticleCut", "[processes]") {
   }
 
   SECTION("cut low energy: electrons, photons, hadrons and muons") {
-    ParticleCut cut(5_MeV,5_MeV,5_GeV,5_GeV, true);
+    ParticleCut cut(5_MeV, 5_MeV, 5_GeV, 5_GeV, true);
 
     // add primary particle to stack
     auto particle = stack.addParticle(
@@ -147,10 +147,9 @@ TEST_CASE("ParticleCut", "[processes]") {
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
-    // add secondaries 
-    projectile.addSecondary(std::make_tuple(Code::Gamma, 3_MeV,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns));
+    // add secondaries
+    projectile.addSecondary(std::make_tuple(
+        Code::Gamma, 3_MeV, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
     projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
                                             MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
                                             point0, 0_ns));
