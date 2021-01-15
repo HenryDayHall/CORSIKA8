@@ -24,7 +24,7 @@ using namespace corsika;
 
 TEST_CASE("ParticleCut", "[processes]") {
 
-  logging::set_level(logging::level::debug);
+  logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   feenableexcept(FE_INVALID);
