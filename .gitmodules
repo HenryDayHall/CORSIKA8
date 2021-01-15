@@ -1,6 +1,6 @@
 [submodule "modules/data"]
 	path = modules/data
-	url = ../../AirShowerPhysics/corsika-data
+	url = ../../AirShowerPhysics/corsika-data.git
 	branch = master
         shallow = true
 [submodule "modules/proposal"]
@@ -10,6 +10,6 @@
         shallow = true
 [submodule "modules/conex"]
 	path = modules/conex
-	url = ../../AirShowerPhysics/cxroot
+	url = ../../AirShowerPhysics/cxroot.git
 	branch = master
         shallow = true
