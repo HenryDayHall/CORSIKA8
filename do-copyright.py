@@ -21,10 +21,10 @@ Debug settings are 0: nothing, 1: checking, 2: filesystem
 """
 Debug = 0 
 
-excludeDirs = ["modules", "git", "build", "install", "externals"]
+excludeDirs = ["./modules", "./externals", "build", "install", "git", "framework/units"]
 excludeFiles = ['PhysicalConstants.h','CorsikaFenvOSX.cc', 'sgn.h', 'quartic.h']
 
-extensions = [".cpp", ".hpp"]
+extensions = [".cpp", ".inl", ".hpp"]
 
 """
 justCheck: T: only checking, F: also changing files 
@@ -194,7 +194,7 @@ def next_file(dir_name, files, justCheck, forYear, updateMessage):
     for check in excludeDirs :
         if check in dir_name:
             if Debug>1:
-                print ("exclude-dir: " + check)
+                print ("exclude-dir: " + check, dir_name)
             return True
     for check in files :
         if (os.path.isdir(check)):

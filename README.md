@@ -51,37 +51,28 @@ which are very useful also for us.
 
 
 
-## Installation (from source)
+CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0. You will
+also need:
 
-### Prerequisites
-
-CORSIKA 8 is tested regularly via gitlab-CI using recent gcc and clang
-versions.  Additional software prerequisites: cmake, g++, git.
-Furthermore, eigen3, boost, catch2, spdlog are shipped in the
-ThirdParty directory, so an installation on the system is optional.
-Also Pythia 8, CONEX and PROPOSAL are distributed in the ThirdParty
-folder. You may also install those packages on your system and use
-those; we test with Pythia version 8.235.
+- Python 3 (supported versions are Python >= 3.6)
+- cmake 
+- git
 
 On a bare Ubuntu 18.04, just add:
-```
-sudo apt install binutils gfortran make python3 cmake gcc g++ git libz-dev libspdlog-dev libeigen3-dev libboost-iostreams-dev
+``` shell
+sudo apt-get install cmake g++ git
 ```
 
-Furthermore these packages are also reqommended:
-add ```gcc ssh-client less rsync libboost-dev```
+CORSIKA 8 uses the [conan](https://conan.io/) package manager to manage our
+dependencies. If you do not have Conan installed, it can be installed with:
 
-If you work with FreeBSD, run:
+``` shell
+pip install --user conan
 ```
-pkg install git cmake python3 flang eigen
-```
-or add ```boost-libs``` if you want to use the system versions. 
 
-### Compiling
-
-Follow these steps to download and install CORSIKA 8, master development version
-```
-git clone --recursive https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
+Once Conan is installed, follow these steps to download and install CORSIKA 8:
+``` shell
+git clone --recursive git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
 cd corsika
 mkdir ../corsika-build
 cd ../corsika-build
@@ -116,12 +107,9 @@ make install
 
 Type `make test` to run the unit test suite.
 
-## Running, Examples
+### Running examples
 
-There are various examples in the folder `Documentation/Examples`. 
-
-If you want to see how the first simple hadron cascade develops, 
-see `Documentation/Examples/cascade_example.cc` for a starting point. 
+and if you want to see how the first simple hadron cascade develops, see `Documentation/Examples/cascade_example.cc` for a starting point. 
 
 Run the cascade_example with: 
 ```

@@ -8,6 +8,7 @@ import argparse
 import subprocess as subp
 import os
 import sys
+import re
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--apply', action="store_true",
@@ -17,18 +18,20 @@ parser.add_argument("--all", action="store_true",
 
 args = parser.parse_args()
 
+excludeDirs = [r"^(\./)?modules/", r"^(\./)?externals/", r"^(\./)?build", r"^(\./)?install", r"(\./)?\.git", r"^(\./)?corsika/framework/units",]
+
 filelist = []
 if args.all:
     for dirpath, dirnames, filenames in os.walk("."):
-        doExclude = False
-        for exclude in ["ThirdParty", "PROPOSAL", "include", "build"]:
-            if exclude in dirpath:
-                doExclude = True
+        excl = False
+        for excl_dir in excludeDirs:
+            if re.findall(excl_dir, dirpath):
+                excl = True
                 break
-        if doExclude:
+        if excl:
             continue
         for f in filenames:
-            if f.endswith(".h") or f.endswith(".cc") or f.endswith(".hpp") or f.endswith(".cpp") or f.endswith(".cxx"):
+            if (f.endswith(".hpp") or f.endswith(".cpp") or f.endswith(".inl")):
                 filename = os.path.join(dirpath, f)
                 if not os.path.islink(filename):
                     filelist.append(filename)
@@ -45,17 +48,33 @@ else:
             filelist.append(line[1:].lstrip())
 
     cmd = "git ls-files --exclude-standard --others"
-    filelist += subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n")
-    filelist = [x for x in filelist
-                if "ThirdParty" not in x and (x.endswith(".h") or x.endswith(".cc"))]
+    filelist2 = subp.check_output(cmd, shell=True).decode("utf8").strip().split("\n")
+    filelist += filelist2
+    # some cleanup
+    filelist_clean = []
+    for f in filelist:
+        if not (f.endswith(".hpp") or f.endswith(".cpp") or f.endswith(".inl")):
+            continue
+        if os.path.islink(f):
+            continue
+        excl = False
+        for excl_dir in excludeDirs:
+            if re.findall(excl_dir, f):
+                excl = True
+                break
+        if excl:
+            continue
+        filelist_clean.append(f)
+    filelist = filelist_clean
 
 cmd = "clang-format"
 if "CLANG_FORMAT" in os.environ:
   cmd = os.environ["CLANG_FORMAT"]
 cmd +=  " -style=file"
 if args.apply:
-    for filename in filelist:
+    for filename in filelist:        
         subp.check_call(cmd.split() + ["-i", filename])
+
 else:
     # only print files which need formatting
     files_need_formatting = 0

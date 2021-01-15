@@ -1,0 +1,31 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/media/IRefractiveIndexModel.hpp>
+
+namespace corsika {
+
+  template <typename T>
+  template <typename... Args>
+  UniformRefractiveIndex<T>::UniformRefractiveIndex(double const n, Args&&... args)
+      : T(std::forward<Args>(args)...)
+      , n_(n) {}
+
+  template <typename T>
+  double UniformRefractiveIndex<T>::getRefractiveIndex(Point const&) const {
+    return n_;
+  }
+
+  template <typename T>
+  void UniformRefractiveIndex<T>::setRefractiveIndex(double const& n) {
+    n_ = n;
+  }
+
+} // namespace corsika

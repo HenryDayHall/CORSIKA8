@@ -1,0 +1,28 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+namespace corsika {
+
+  namespace detail {
+
+    struct NoExtraModelInner {};
+
+    template <typename M>
+    struct NoExtraModel {};
+
+    template <template <typename> typename M>
+    struct has_extra_models : std::true_type {};
+
+    template <>
+    struct has_extra_models<NoExtraModel> : std::false_type {};
+
+  } // namespace detail
+
+} // namespace corsika

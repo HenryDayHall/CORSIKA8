@@ -1,0 +1,79 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <random>
+
+namespace corsika {
+
+  template <typename Quantity>
+  class ExponentialDistribution {
+
+    typedef typename Quantity::value_type real_type;
+    typedef std::exponential_distribution<real_type> distribution_type;
+
+  public:
+    typedef Quantity value_type;
+
+    ExponentialDistribution() = delete;
+
+    ExponentialDistribution(value_type const& beta)
+        : beta_(beta) {}
+
+    ExponentialDistribution(ExponentialDistribution<value_type> const& other)
+        : beta_(other.getBeta()) {}
+
+    ExponentialDistribution<value_type>& operator=(
+        ExponentialDistribution<value_type> const& other) {
+      if (this == &other) return *this;
+      beta_ = other.getBeta();
+      return *this;
+    }
+
+    /**
+     * @fn value_type getBeta()const
+     * @brief Get parameter of exponential distribution \f[ \beta e^{-X}\f]
+     * @pre
+     * @post
+     * @return  value_type
+     */
+    value_type getBeta() const { return beta_; }
+
+    /**
+     * @fn void setBeta(value_type)
+     * @brief Set parameter of exponential distribution \f[ \beta e^{-X}\f]
+     *
+     * @pre
+     * @post
+     * @param vBeta
+     */
+    void setBeta(value_type const& beta) { beta_ = beta; }
+
+    /**
+     * @fn value_type operator ()(Generator&)
+     * @brief Generate a random number distributed like \f[ \beta e^{-X}\f]
+     *
+     * @pre
+     * @post
+     * @tparam Generator
+     * @param g
+     * @return
+     */
+    template <class Generator>
+    value_type operator()(Generator& g) {
+      return beta_ * dist_(g);
+    }
+
+  private:
+    distribution_type dist_{1.};
+    value_type beta_;
+  };
+
+} // namespace corsika

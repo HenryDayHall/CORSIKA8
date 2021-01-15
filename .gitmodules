@@ -1,12 +1,15 @@
-[submodule "Data"]
-	path = Data
+[submodule "modules/data"]
+	path = modules/data
 	url = ../../AirShowerPhysics/corsika-data
 	branch = master
-[submodule "ThirdParty/spdlog"]
-	path = ThirdParty/spdlog
-	url = https://github.com/gabime/spdlog.git
-	shallow = true
-[submodule "Processes/Proposal/PROPOSAL"]
-	path = Processes/Proposal/PROPOSAL
+        shallow = true
+[submodule "modules/proposal"]
+	path = modules/proposal
 	url = https://github.com/tudo-astroparticlephysics/PROPOSAL.git
-	shallow = true
+	branch = restructure_parametrization
+        shallow = true
+[submodule "modules/conex"]
+	path = modules/conex
+	url = ../../AirShowerPhysics/cxroot
+	branch = master
+        shallow = true

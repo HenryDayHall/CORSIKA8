@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.9)
-# we would need 3.16 to have CMP0097 for external subproject submodule (non) support
 
+#+++++++++++++++++++++++++++++
 # prevent in-source builds and give warning message
+#
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") 
   message (FATAL_ERROR "In-source builds are disabled.
     Please create a build-dir and use `cmake <source-dir>` inside it.
@@ -9,57 +10,94 @@ if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
           You must delete them, or cmake will refuse to work.")
 endif ()
 
+#+++++++++++++++++++++++++++++
+# project name
+#
 project (
   corsika
   VERSION 8.0.0
-  DESCRIPTION "CORSIKA C++ project"
+  DESCRIPTION "CORSIKA C++ project (alpha status)"
   LANGUAGES CXX
   )
 
-include (FeatureSummary)
-
+#+++++++++++++++++++++++++++++
 # as long as there still are modules using it:
+#
 enable_language (Fortran)
+set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
 
-# TEMPORARY: this should be removed, the sanitizers should be always enabled
-option (WITH_CORSIKA_SANITIZERS_ENABLED "temporary way to globally disable sanitizers until the currently failing tests are fixed" OFF)
-add_feature_info (CORSIKA_SANITIZERS_ENABLED WITH_CORSIKA_SANITIZERS_ENABLED "Switch to run c++ sanitzers on CORSIKA objects and code.")
+#+++++++++++++++++++++++++++++
+# warn user if system is not UNIX
+#
+if (NOT UNIX)
+  message (FATAL_ERROR "| CORSIKA8 > This is an unsupported system.")
+endif ()
 
-option (WITH_COAST "Flag to switch on/off COAST (reverse) interface" OFF)
-add_feature_info (COAST WITH_COAST "The COAST interface, so that you can write C8 processes to run inside C7.")
-
-# HISTORY option selection
-option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
-add_feature_info (HISTORY WITH_HISTORY "The Foo feature provides very cool stuffdddd.")
-
-# check for python
-set (Python_ADDITIONAL_VERSIONS 3)
-find_package (PythonInterp 3 REQUIRED)
-
+#+++++++++++++++++++++++++++++
+# cmake path dir, and cmake config
+#
+set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
+set (CMAKE_MODULE_PATH  "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
+include (CorsikaUtilities) # extra cmake function
+set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
 
-# directory for local cmake modules
-set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
-include (CorsikaUtilities) # a few cmake function
+#+++++++++++++++++++++++++++++
+# Setup hardware and infrastructure dependent defines
+#
+include(CorsikaDefines)
 
+#+++++++++++++++++++++++++++++
+# check if compiler is C++17 compliant
+#
+include (CheckCXXCompilerFlag)
+check_CXX_compiler_flag ("--std=c++17" COMPILER_SUPPORTS_CXX17)
+if (NOT COMPILER_SUPPORTS_CXX17)
+ message (FATAL "| CORSIKA8 > The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
+endif ()
+# set CXX compile flags and options and warning settings
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_EXTENSIONS OFF)
-enable_testing ()
-set (CTEST_OUTPUT_ON_FAILURE 1)
-list (APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
+#+++++++++++++++++++++++++++++
+# Compiler and linker flags, settings
+#
+# enable warnings and disallow non-standard language
+# configure the various build types here, too
+# FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
+# debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
+set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
+set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
+set (DEFAULT_BUILD_TYPE "Release")
+
+# clang produces a lot of unecessary warnings without this:
+add_compile_options (
+  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>
+  )
+
+#+++++++++++++++++++++++++++++
+# Build types settings
+#
+# setup coverage build type
+set (CMAKE_CXX_FLAGS_COVERAGE "-g --coverage")
+set (CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
+set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
+# set a flag to inform code that we are in debug mode
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
+#+++++++++++++++++++++++++++++
+# Build type selection
+#
 # Set the possible values of build type for cmake-gui and command line check
 set (ALLOWED_BUILD_TYPES Debug Release MinSizeRel RelWithDebInfo Coverage)
 set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${ALLOWED_BUILD_TYPES})
-
 # Set a default build type if none was specified
 # by default: "Debug", if local ".git" directory is found, otherwise "Release"
 set (DEFAULT_BUILD_TYPE "Release")
 if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
   set (DEFAULT_BUILD_TYPE "Debug")
 endif ()
-
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message (STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as no other was specified.")
   set (CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE
@@ -74,42 +112,33 @@ else (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message (STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 
-# enable warnings and disallow non-standard language
-# configure the various build types here, too
-# FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
-# debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults), coverage -> O0
-set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
-set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
+#+++++++++++++++++++++++++++++
+# Setup external dependencies.
+#
+include (conan) # self-provided in 'cmake' directory
+#
+# download and build all dependencies
+conan_cmake_run (CONANFILE conanfile.txt
+                 BASIC_SETUP CMAKE_TARGETS
+                 BUILD missing
+                 BUILD_TYPE "Release")
+#
+# add cnpy temporarily. As long as SaveBoostHistogram does not save to parquet directly
+#
+add_subdirectory (externals/cnpy)
 
-# setup coverage build type
-set (CMAKE_CXX_FLAGS_COVERAGE "-g --coverage")
-set (CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
-set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
-
-# clang produces a lot of unecessary warnings without this:
-add_compile_options ("$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>")
-
-# set a flag to inform code that we are in debug mode
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-
-# COAST - interface, this requires CORSIKA7 to be installed first
-# COAST will allow you to program code in CORSIKA8 and execute it inside CORSIKA7
-if (WITH_COAST)
-  message (STATUS "Compiling CORSIKA8 for the use with COAST/corsika7.")
-  add_compile_options ("-fPIC")
-endif ()
-
+#+++++++++++++++++++++++++++++
+# Coverage
+#
 # targets and settings needed to generate coverage reports
 if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   find_package (Perl REQUIRED)
 
-  # compile coverage under -O2 to remove unused functions
-  #  add_compile_options ("-O2")
   # compile coverage under -O0 to avoid any optimization, function elimation etc.
   add_compile_options ("-O0")
   
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
-  set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/ThirdParty/lcov/bin")
+  set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/externals/lcov/bin")
   # collect coverage data
   add_custom_command (
     OUTPUT raw-coverage.info
@@ -119,8 +148,8 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   # remove uninteresting entries
   add_custom_command (
     OUTPUT coverage.info
-    COMMAND ${LCOV_BIN_DIR}/lcov -q --remove raw-coverage.info "*/usr/*" --output-file coverage2.info
-    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info "*/ThirdParty/*" --output-file coverage.info
+    COMMAND ${LCOV_BIN_DIR}/lcov -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
+    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" "*/include/Pythia8/*" "${CMAKE_CURRENT_SOURCE_DIR}/modules/*" "${CMAKE_CURRENT_BINARY_DIR}/modules/*" --output-file coverage.info
     COMMAND ${CMAKE_COMMAND} -E remove coverage2.info
     DEPENDS raw-coverage.info
     )
@@ -133,39 +162,97 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   add_custom_target (coverage DEPENDS coverage-report)
 endif ()
 
-# include this test only if NOT run on gitlab-ci, since there we have a dedicated job for it:
+#+++++++++++++++++++++++++++++
+# CTest config
+#
+enable_testing ()
+if (${CMAKE_VERSION} VERSION_LESS "3.12.0")  
+  list (APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
+else (${CMAKE_VERSION} VERSION_LESS "3.12.0")
+  set (CTEST_OUTPUT_ON_FAILURE 1) # this is for new versions of cmake
+endif (${CMAKE_VERSION} VERSION_LESS "3.12.0")
+set (CTEST_CUSTOM_COVERAGE_EXCLUDE "./tests/" "./examples/" "./modules/" "test*.(hpp/cpp)$")
+# include this test only if NOT run on gitlab-ci; On CI this is a dedicated job:
 if (NOT DEFINED ENV{CI})
   # add call to ./do-copyright.py to run as unit-test-case
   add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif (NOT DEFINED ENV{CI})
-  
-if (DEFINED ENV{CORSIKA_DATA})
-  message ("Found  corsika-data in $ENV{CORSIKA_DATA}")
-  set (CORSIKA_DATA $ENV{CORSIKA_DATA})
-  add_subdirectory ($ENV{CORSIKA_DATA} corsika_data)
-else ()
-  message ("CORSIKA_DATA not defined: NEED to download AirShowerPhysics/corsika-data via git submodule")
-  message ("cmake will fail if you did not do this already.")
-  set (CORSIKA_DATA ${PROJECT_SOURCE_DIR}/Data)
-  add_subdirectory (Data)
-endif ()
 
-# include potential ThirdParty code provided with CORSIKA
-add_subdirectory (ThirdParty)
+#+++++++++++++++++++++++++++++
+# Options
+#
+# HISTORY option selection
+option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
 
-# order of subdirectories
-add_subdirectory (Framework)
-add_subdirectory (Environment)
-add_subdirectory (Stack)
-add_subdirectory (Setup)
-add_subdirectory (Processes)
-add_subdirectory (Documentation)
-add_subdirectory (Main)
-add_subdirectory (Tools)
-if (WITH_COAST)
-  add_subdirectory (COAST)
-endif ()
+#+++++++++++++++++++++++++++++
+# Externals
+#
+set (Python_ADDITIONAL_VERSIONS 3)
+find_package (PythonInterp 3 REQUIRED)
 
 
+#+++++++++++++++++++++++++++++
+# CORSIKA8
+#
+add_library (CORSIKA8 INTERFACE)
+target_include_directories (
+  CORSIKA8
+  INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}>
+  )
+# since CORSIKA8 is a header only library we must specify all link dependencies here:
+target_link_libraries (
+  CORSIKA8
+  INTERFACE
+  CONAN_PKG::eigen
+  CONAN_PKG::spdlog
+  CONAN_PKG::boost
+  cnpy # for SaveBoostHistogram
+  stdc++fs # experimental::filesystem
+  )
+# "src" is needed, since some headers (namely GeneratedParticleProperties.inc ec.) are produced by python script from e.g. ParticleData.xml
+add_subdirectory (src)
+add_subdirectory (documentation)
+
+#+++++++++++++++++++++++++++++
+# =~~~~~~~~~~~~~~~~~~~~~~~~~=
+#  = Add of subdirectories =
+# =~~~~~~~~~~~~~~~~~~~~~~~~~=
+
+#+++++++++++++++++++++++++++++
+# modules
+#
+set (CORSIKA_DATA_WITH_TEST ON) # we want to run the corsika-data unit test
+add_subdirectory (modules/data)
+add_subdirectory (modules/pythia)
+add_subdirectory (modules/sibyll)
+add_subdirectory (modules/qgsjetII)
+add_subdirectory (modules/urqmd)
+add_subdirectory (modules/conex)
+#
+# we really need a better proposal CMakeList.txt files:
+set (ADD_PYTHON OFF)
+file(READ modules/CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
+file(WRITE modules/proposal/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
+add_subdirectory (modules/proposal)
+target_link_libraries (CORSIKA8 INTERFACE PROPOSAL)
+
+#+++++++++++++++++++++++++++++++
+# unit testing
+# 
+add_subdirectory (tests)
+
+#+++++++++++++++++++++++++++++++
+# examples
+# 
+add_subdirectory (examples)
+
+#+++++++++++++++++++++++++++++++
+#
 # final summary output
+#
+include (FeatureSummary)
+add_feature_info (HISTORY WITH_HISTORY "Full information on cascade history for particles.")
 feature_summary (WHAT ALL)

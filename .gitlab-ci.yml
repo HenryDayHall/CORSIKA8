@@ -11,7 +11,7 @@ variables:
   LSAN_OPTIONS: "log_threads=1"
   ASAN_OPTIONS: "detect_leaks=0:detect_stack_use_after_return=1"
   # location of AirShowerPhysics/corsika-data
-  CORSIKA_DATA: "${CI_PROJECT_DIR}/Data" # the git submodule
+  CORSIKA_DATA: "${CI_PROJECT_DIR}/modules/data" # the git submodule
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
@@ -29,7 +29,6 @@ stages:
   - build
   - test
   - build_test
-  - python
   - example
   - build_test_example
   - install
@@ -68,8 +67,18 @@ check-clang-format:
     - if: $CI_COMMIT_BRANCH
   allow_failure: true
 
-
-
+### CodeQuality tool ####
+#include:
+#  - template: Code-Quality.gitlab-ci.yml
+#
+#code_quality:
+#  stage: quality
+#  rules:
+#    - if: '$CODE_QUALITY_DISABLED'
+#      when: never
+#    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Run code quality job in merge request pipelines
+#    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'      # Run code quality job in pipelines on the master branch (but not in other branch pipelines)
+#    - if: '$CI_COMMIT_TAG'                               # Run code quality job in pipelines for tags
 
 ####### CONFIG ##############
 
@@ -80,19 +89,24 @@ check-clang-format:
   stage: config
   tags:
     - corsika
-  script:    
+  script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DWITH_PYTHIA=ON
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_PYTHIA8_C8=SYSTEM
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH
+  artifacts:
+    when: on_failure
+    expire_in: 3 days
+    paths:
+      - ${CI_PROJECT_DIR}/build/CMakeFiles/CMakeOutput.log
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
     untracked: true
-    policy: pull-push
+    policy: pull-push    
 
 # config for gcc
 config-u-18_04:
@@ -272,8 +286,6 @@ build_test-clang-8:
 # normal pipeline for each commit
 .example:
   stage: example
-  before_script:
-    - apt-get -qq update && apt-get -qq install -y gdb
   tags:
     - corsika
   script:
@@ -328,8 +340,6 @@ example-clang-8:
   stage: build_test_example
   tags:
     - corsika
-  before_script:
-    - apt-get -qq update && apt-get -qq install -y gdb
   script:
     - cd build
     - cmake --build . -- -j4
@@ -438,11 +448,9 @@ install-clang-8:
   stage: optional
   tags:
     - corsika
-  before_script:
-    - apt-get -qq update && apt-get -qq install -y gdb
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_PYTHIA8_C8=SYSTEM
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 
@@ -505,7 +513,7 @@ coverage:
     - corsika
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Coverage
+    - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_PYTHIA8_C8=SYSTEM
     - cmake --build . -- -j4
     - ctest -j4 
     - cmake --build . --target coverage
@@ -535,41 +543,6 @@ coverage:
 
 
 
-##########################################################
-documentation:
-  image: corsika/devel:u-18.04
-  dependencies:
-    - config-u-18_04
-  stage: optional
-  tags:
-    - corsika
-  script:
-    - cd build
-    - cmake --build . --target doxygen -- -j4
-    - mkdir -p .public
-    - cp -r Documentation/Doxygen/html .public/
-    - mv .public ../public
-  rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-      allow_failure: true
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-      allow_failure: true
-    - if: $CI_COMMIT_TAG
-      when: manual
-      allow_failure: true
-  artifacts:
-    expire_in: 3 weeks
-    paths:
-      - ${CI_PROJECT_DIR}/public
-  cache:
-    paths:
-      - ${CI_PROJECT_DIR}/build/
-    untracked: true
-    policy: pull
-    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 
 
@@ -604,36 +577,3 @@ sanity:
     key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 
-
-##########################################################
-# template for all Python jobs
-.python:
-  stage: python
-  tags:
-    - corsika
-  script:
-    - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
-    - pip install --user -e '.[test]'  # install the package + test deps
-    - make all 2&>1 | tee python-test.log  # this runs all of the Python tests
-    - echo "finished" >> python-test.log # create even an empty file...
-    - cd ${CI_PROJECT_DIR}  # reset the directory    
-  artifacts:
-    when: always
-    expire_in: 1 year
-    paths:
-      - ${CI_PROJECT_DIR}/Python/python-test.log
-  allow_failure: true
-
-# we now configure the jobs for the three
-# supported Python versions
-python-3.6:
-  extends: .python
-  image: python:3.6
-
-python-3.7:
-  extends: .python
-  image: python:3.7
-
-python-3.8:
-  extends: .python
-  image: python:3.8
