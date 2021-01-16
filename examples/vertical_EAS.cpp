@@ -46,7 +46,7 @@
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
-#include <corsika/modules/PROPOSAL.hpp>
+//#include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
       urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted), EnergySwitch(55_GeV));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
   auto sequence = make_sequence(stackInspect, hadronSequence, reset_particle_mass,
-                                decaySequence, proposalCounted, em_continuous, cut,
+                                decaySequence, em_continuous, cut,
                                 trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
   em_continuous.reset();
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                     urqmdCounted.getHistogram() + proposalCounted.getHistogram();
+                     urqmdCounted.getHistogram();
 
   save_hist(hists.labHist(), "inthist_lab_verticalEAS.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_verticalEAS.npz", true);
