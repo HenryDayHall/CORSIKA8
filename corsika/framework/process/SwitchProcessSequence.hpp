@@ -16,6 +16,7 @@
 #include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/process/ContinuousProcessIndex.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
@@ -28,6 +29,32 @@
 #include <type_traits>
 
 namespace corsika {
+
+  /*
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart = 0,
+            int IndexProcess1 = count_continuous<TProcess1>::count,
+            int IndexProcess2 = count_continuous<TProcess2>::count>
+  class SwitchProcessSequence;
+  */
+
+  /**
+   * traits class to count ContinuousProcess-es, specialized for ProcessSequence-es
+   **/
+
+  /*  template <typename TProcess1, typename TProcess2, typename TSelect, int N>
+  struct count_continuous<SwitchProcessSequence<TProcess1, TProcess2, TSelect>, N> {
+    enum {
+      count = N + SwitchProcessSequence<TProcess1, TProcess2, TSelect>::nContinuous
+    };
+    };*/
+
+  /*
+  template <typename TSProcess, int N>
+  struct count_continuous<
+      TSProcess, N, typename std::enable_if_t<is_switch_process_sequence_v<TSProcess>>> {
+    enum { count = N + TSProcess::nContinuous };
+  };
+  */
 
   /**
    * enum for the process switch selection: identify if First or
@@ -57,13 +84,19 @@ namespace corsika {
      since this makes no sense. The StackProcess acts on an entire
      particle stack and not on indiviidual particles.
 
+     Template parameters:
+      - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      - IndexStart, IndexProcess1, IndexProcess2 are to count and index each
+  ContinuousProcess in the entire process-chain
+
+
      See also class \sa ProcessSequence
   **/
 
-  template <typename TProcess1, typename TProcess2, typename TSelect,
-            int IndexStart = 0, 
-            int IndexProcess1 = count_continuous<TProcess1>::count, 
-            int IndexProcess2 = count_continuous<TProcess1, count_continuous<TProcess2>::count>::count>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart = 0,
+            int IndexProcess1 = count_continuous<TProcess1, IndexStart>::count,
+            int IndexProcess2 = count_continuous<TProcess2, IndexProcess1>::count>
   class SwitchProcessSequence
       : public BaseProcess<SwitchProcessSequence<TProcess1, TProcess2, TSelect>> {
 
@@ -74,10 +107,10 @@ namespace corsika {
     static bool constexpr t2ProcSeq = is_process_sequence_v<process2_type>;
 
     // make sure only BaseProcess types TProcess1/2 are passed
-    static_assert(std::is_base_of_v<BaseProcess<process1_type>, process1_type>,
+    static_assert(is_base_process_v<process1_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 1");
-    static_assert(std::is_base_of_v<BaseProcess<process2_type>, process2_type>,
+    static_assert(is_base_process_v<process2_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 2");
 
@@ -97,7 +130,10 @@ namespace corsika {
                   "ProcessSequence 2");
 
   public:
-    enum { nContinuous = IndexProcess1+IndexProcess2 };  // static counter to index continuous processes
+    /**
+     * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
+     **/
+    enum { nContinuous = IndexProcess2 };
 
     // resource management
     SwitchProcessSequence() = delete; // only initialized objects
@@ -127,13 +163,15 @@ namespace corsika {
                                      TVTNType const& to);
 
     template <typename TParticle, typename TTrack>
-    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT);
+    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
+                                      ContinuousProcessIndex const limitId);
 
     template <typename TSecondaries>
     inline void doSecondaries(TSecondaries& vS);
 
     template <typename TParticle, typename TTrack>
-    inline LengthType getMaxStepLength(TParticle& particle, TTrack& vTrack);
+    inline ContinuousProcessStepLength getMaxStepLength(TParticle& particle,
+                                                        TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {
@@ -183,16 +221,13 @@ namespace corsika {
    **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
-  inline typename std::enable_if_t<
-      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
-                        typename std::decay_t<TProcess1>> &&
-          std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess2>>,
-                            typename std::decay_t<TProcess2>>,
-      SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
-  make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
+  inline
+      typename std::enable_if_t<is_base_process_v<typename std::decay_t<TProcess1>> &&
+                                    is_base_process_v<typename std::decay_t<TProcess2>>,
+                                SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
+      make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }
-
 
 } // namespace corsika
 

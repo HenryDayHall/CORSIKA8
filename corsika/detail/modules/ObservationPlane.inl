@@ -28,34 +28,30 @@ namespace corsika {
   }
 
   ProcessReturn ObservationPlane::doContinuous(
-      corsika::setup::Stack::particle_type& particle,
-      corsika::setup::Trajectory& trajectory,
+      corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory&,
       bool const stepLimit) {
 
-      auto const* volumeNode = particle.getNode();
+    /*
+       The current step did not yet reach the ObservationPlane, do nothing now and wait:
+     */
+    if (!stepLimit) { return ProcessReturn::Ok; }
 
-      if (!stepLimit) {
-	return ProcessReturn::Ok;
-      }
+    HEPEnergyType const energy = particle.getEnergy();
+    Point const pointOfIntersection = particle.getPosition();
+    Vector const displacement = pointOfIntersection - plane_.getCenter();
 
-      HEPEnergyType const energy = particle.getEnergy();
-      TimeType const timeOfIntersection = particle.getTime();
-      Point const pointOfIntersection = particle.getPosition();
-      Vector const displacement = pointOfIntersection - plane_.getCenter();
+    outputStream_ << static_cast<int>(get_PDG(particle.getPID())) << ' ' << energy / 1_eV
+                  << ' ' << displacement.dot(xAxis_) / 1_m << ' '
+                  << displacement.dot(yAxis_) / 1_m
+                  << (pointOfIntersection - plane_.getCenter()).getNorm() / 1_m << '\n';
 
-      outputStream_ << static_cast<int>(get_PDG(particle.getPID())) << ' ' << energy / 1_eV
-		    << ' ' << displacement.dot(xAxis_) / 1_m << ' '
-		    << displacement.dot(yAxis_) / 1_m
-		    << (pointOfIntersection - plane_.getCenter()).getNorm() / 1_m
-		    << '\n';
-      
-      if (deleteOnHit_) {
-	count_ground_++;
-	energy_ground_ += energy;
-	particle.erase();
-	return ProcessReturn::ParticleAbsorbed;
-      } else {
-	return ProcessReturn::Ok;
+    if (deleteOnHit_) {
+      count_ground_++;
+      energy_ground_ += energy;
+      particle.erase();
+      return ProcessReturn::ParticleAbsorbed;
+    } else {
+      return ProcessReturn::Ok;
     }
   }
 
@@ -66,18 +62,22 @@ namespace corsika {
     auto const& volumeNode = particle.getNode();
 
     typedef typename std::remove_const_t<
-      std::remove_reference_t<decltype(volumeNode->getModelProperties())>>
-      medium_type;
-    
-    Intersections const intersection = setup::Tracking::intersect<corsika::setup::Stack::particle_type, medium_type>(particle, plane_,
-															    volumeNode->getModelProperties());
+        std::remove_reference_t<decltype(volumeNode->getModelProperties())>>
+        medium_type;
 
+    Intersections const intersection =
+        setup::Tracking::intersect<corsika::setup::Stack::particle_type, medium_type>(
+            particle, plane_, volumeNode->getModelProperties());
 
     TimeType const timeOfIntersection = intersection.getEntry();
-    
-    if (timeOfIntersection < TimeType::zero()) { 
+
+    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}, timeOfIntersection={}",
+                      particle.asString(), particle.getPosition(),
+                      particle.getDirection(), plane_.asString(), timeOfIntersection);
+
+    if (timeOfIntersection < TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
-    }    
+    }
     if (timeOfIntersection > trajectory.getDuration()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
@@ -85,9 +85,8 @@ namespace corsika {
     double const fractionOfIntersection = timeOfIntersection / trajectory.getDuration();
 
     auto const pointOfIntersection = trajectory.getPosition(fractionOfIntersection);
-    auto dist = (trajectory.getPosition(0) - pointOfIntersection).getNorm() * 1.001; // make max. step length a bit longer, to assure crossing
-    CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength l={} m",
-                      dist / 1_m);
+    auto dist = (trajectory.getPosition(0) - pointOfIntersection).getNorm();
+    CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength l={} m", dist / 1_m);
     return dist;
   }
 

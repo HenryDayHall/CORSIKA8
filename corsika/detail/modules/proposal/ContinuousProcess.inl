@@ -88,7 +88,7 @@ namespace corsika::proposal {
 
   template <>
   ProcessReturn ContinuousProcess::doContinuous(setup::Stack::particle_type& vP,
-                                                setup::Trajectory const& vT) {
+                                                setup::Trajectory const& vT, bool const) {
 
     if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
     if (vT.getLength() == 0_m) return ProcessReturn::Ok;

@@ -101,7 +101,7 @@ namespace corsika {
     template <typename T>
     friend class corsika::Vector;
     template <typename TDim>
-    friend std::ostream& operator<<(std::ostream& os, QuantityVector<TDim> qv);
+    friend std::ostream& operator<<(std::ostream& os, QuantityVector<TDim> const& qv);
 
   protected:
     Eigen::Vector3d
@@ -114,7 +114,7 @@ namespace corsika {
 
   template <typename TDimension>
   inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::QuantityVector<TDimension> const qv);
+                                  corsika::QuantityVector<TDimension> const& qv);
 
 } // namespace corsika
 

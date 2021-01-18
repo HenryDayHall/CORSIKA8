@@ -10,6 +10,7 @@
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/ProcessTraits.hpp>
+#include <corsika/framework/process/ContinuousProcessStepLength.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -18,10 +19,12 @@
 #include <iostream>
 #include <typeinfo>
 
+#include <boost/type_index.hpp>
+
 using namespace corsika;
 using namespace std;
 
-static const int nData = 10;
+static int const nData = 10;
 
 int globalCount = 0; // simple counter
 
@@ -32,68 +35,110 @@ int checkCont = 0;     // use this as a bit field
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
 public:
-  ContinuousProcess1(const int v)
-      : v_(v) {
+  ContinuousProcess1(int const v, LengthType const step)
+      : v_(v)
+      , step_(step) {
 
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
+  void setStep(LengthType const v) { step_ = v; }
+
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+    flag_ = flag;
     cout << "ContinuousProcess1::DoContinuous" << endl;
     checkCont |= 1;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
     return ProcessReturn::Ok;
   }
 
+  template <typename TParticle, typename TTrack>
+  inline LengthType getMaxStepLength(TParticle&, TTrack&) {
+    return step_;
+  }
+
+  bool getFlag() const { return flag_; }
+  void resetFlag() { flag_ = false; }
+
 private:
   int v_ = 0;
+  LengthType step_ = 0_m;
+  mutable bool flag_ = false;
 };
 
 class ContinuousProcess2 : public ContinuousProcess<ContinuousProcess2> {
 public:
-  ContinuousProcess2(const int v)
-      : v_(v) {
+  ContinuousProcess2(int const v, LengthType const step)
+      : v_(v)
+      , step_(step) {
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
+  void setStep(LengthType const v) { step_ = v; }
+
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+    flag_ = flag;
     cout << "ContinuousProcess2::DoContinuous" << endl;
     checkCont |= 2;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
     return ProcessReturn::Ok;
   }
 
+  template <typename TParticle, typename TTrack>
+  inline LengthType getMaxStepLength(TParticle&, TTrack&) {
+    return step_;
+  }
+
+  bool getFlag() const { return flag_; }
+  void resetFlag() { flag_ = false; }
+
 private:
   int v_ = 0;
+  LengthType step_ = 0_m;
+  mutable bool flag_ = false;
 };
 
 class ContinuousProcess3 : public ContinuousProcess<ContinuousProcess3> {
 public:
-  ContinuousProcess3(const int v)
-      : v_(v) {
+  ContinuousProcess3(int const v, LengthType const step)
+      : v_(v)
+      , step_(step) {
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
+  void setStep(LengthType const v) { step_ = v; }
+
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+    flag_ = flag;
     cout << "ContinuousProcess3::DoContinuous" << endl;
     checkCont |= 4;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
     return ProcessReturn::Ok;
   }
 
+  template <typename TParticle, typename TTrack>
+  inline LengthType getMaxStepLength(TParticle&, TTrack&) {
+    return step_;
+  }
+
+  bool getFlag() const { return flag_; }
+  void resetFlag() { flag_ = false; }
+
 private:
   int v_ = 0;
+  LengthType step_ = 0_m;
+  mutable bool flag_ = false;
 };
 
 class Process1 : public InteractionProcess<Process1> {
 public:
-  Process1(const int v)
+  Process1(int const v)
       : v_(v) {
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
@@ -116,7 +161,7 @@ private:
 
 class Process2 : public InteractionProcess<Process2> {
 public:
-  Process2(const int v)
+  Process2(int const v)
       : v_(v) {
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
@@ -140,7 +185,7 @@ private:
 
 class Process3 : public InteractionProcess<Process3> {
 public:
-  Process3(const int v)
+  Process3(int const v)
       : v_(v) {
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
@@ -164,14 +209,14 @@ private:
 
 class Process4 : public BaseProcess<Process4> {
 public:
-  Process4(const int v)
+  Process4(int const v)
       : v_(v) {
     cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
     globalCount++;
   }
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&, bool const) const {
     std::cout << "Base::doContinuous" << std::endl;
     checkCont |= 8;
     for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }
@@ -188,7 +233,7 @@ private:
 
 class Decay1 : public DecayProcess<Decay1> {
 public:
-  Decay1(const int) {
+  Decay1(int const) {
     cout << "Decay1()" << endl;
     globalCount++;
   }
@@ -205,7 +250,7 @@ public:
 
 class Decay2 : public DecayProcess<Decay2> {
 public:
-  Decay2(const int) {
+  Decay2(int const) {
     cout << "Decay2()" << endl;
     globalCount++;
   }
@@ -222,7 +267,7 @@ public:
 
 class Stack1 : public StackProcess<Stack1> {
 public:
-  Stack1(const int n)
+  Stack1(int const n)
       : StackProcess(n) {}
   template <typename TStack>
   ProcessReturn doStack(TStack&) {
@@ -235,12 +280,16 @@ private:
   int count_ = 0;
 };
 
+// The stack is non-existent for this example
 struct DummyStack {};
+// our data object (particle) is a simple arrary of doubles
 struct DummyData {
   double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
+// there is no real trajectory/track
 struct DummyTrajectory {};
-
+// since there is no stack, there is also no view. This is a simplistic dummy object
+// sufficient here.
 struct DummyView {
   DummyView(DummyData& p)
       : p_(p) {}
@@ -252,6 +301,18 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
+
+  SECTION("BaseProcess") {
+
+    Process1 m1(0);
+    const Process4 m4(3);
+
+    CHECK(is_base_process_v<Process1>);
+    CHECK_FALSE(is_base_process_v<DummyData>);
+    CHECK(is_base_process_v<decltype(m4)>);
+    CHECK(is_base_process_v<decltype(Decay1(1))>);
+    CHECK(is_base_process_v<decltype(ContinuousProcess3{3, 3_m})>);
+  }
 
   SECTION("Check construction") {
     globalCount = 0;
@@ -265,10 +326,15 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
     CHECK(globalCount == 4);
 
     auto sequence1 = make_sequence(m1, m2, m3, m4);
-    CHECK(is_process_sequence_v<decltype(sequence1)> == true);
-    CHECK(is_process_sequence_v<decltype(m2)> == false);
-    CHECK(is_switch_process_sequence_v<decltype(sequence1)> == false);
-    CHECK(is_switch_process_sequence_v<decltype(m2)> == false);
+    CHECK(is_base_process_v<decltype(sequence1)>);
+    CHECK(is_base_process_v<decltype(m2)>);
+    CHECK(is_process_sequence_v<decltype(sequence1)>);
+    CHECK_FALSE(is_process_sequence_v<decltype(m2)>);
+    CHECK_FALSE(is_switch_process_sequence_v<decltype(sequence1)>);
+    CHECK_FALSE(is_switch_process_sequence_v<decltype(m2)>);
+
+    CHECK_FALSE(is_process_sequence_v<decltype(Decay1(7))>);
+    CHECK_FALSE(is_switch_process_sequence_v<decltype(Decay1(7))>);
 
     auto sequence2 = make_sequence(m1, m2, m3);
     CHECK(is_process_sequence_v<decltype(sequence2)> == true);
@@ -279,7 +345,7 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
 
   SECTION("interaction length") {
     globalCount = 0;
-    ContinuousProcess1 cp1(0);
+    ContinuousProcess1 cp1(0, 1_m);
     Process2 m2(1);
     Process3 m3(2);
 
@@ -297,7 +363,7 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
 
   SECTION("lifetime") {
     globalCount = 0;
-    ContinuousProcess1 cp1(0);
+    ContinuousProcess1 cp1(0, 1_m);
     Process2 m2(1);
     Process3 m3(2);
     Decay1 d3(3);
@@ -314,30 +380,61 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
     globalCount = 0;
   }
 
-  SECTION("sectionTwo") {
+  SECTION("ContinousProcess") {
     globalCount = 0;
-    ContinuousProcess1 cp1(0); // += 0.933
-    ContinuousProcess2 cp2(1); // += 0.111
-    Process2 m2(2);            //  /= 1.1
-    Process3 m3(3);            //  *= 1.01
+    ContinuousProcess1 cp1(0, 1_m);   // += 0.933
+    ContinuousProcess2 cp2(1, 1.1_m); // += 0.111
+    Process2 m2(2);                   //  /= 1.1
+    Process3 m3(3);                   //  *= 1.01
 
     auto sequence2 = make_sequence(cp1, m2, m3, cp2);
+
+    std::cout << boost::typeindex::type_id<decltype(sequence2)>().pretty_name()
+              << std::endl;
 
     DummyData particle;
     DummyTrajectory track;
 
+    cp1.resetFlag();
+    cp2.resetFlag();
+
+    ContinuousProcessStepLength const step1 = sequence2.getMaxStepLength(particle, track);
+    CHECK(LengthType(step1) == 1_m);
+    sequence2.doContinuous(particle, track, step1);
+    CHECK(cp1.getFlag());
+    CHECK_FALSE(cp2.getFlag());
+    CORSIKA_LOG_INFO("step1, l={}, i={}", LengthType(step1),
+                     ContinuousProcessIndex(step1).getIndex());
+
+    cp1.resetFlag();
+    cp2.resetFlag();
+
+    cp1.setStep(10_m);
+    ContinuousProcessStepLength const step2 = sequence2.getMaxStepLength(particle, track);
+    CHECK(LengthType(step2) == 1.1_m);
+    CHECK(ContinuousProcessIndex(step1) != ContinuousProcessIndex(step2));
+    sequence2.doContinuous(particle, track, step2);
+    CHECK_FALSE(cp1.getFlag());
+    CHECK(cp2.getFlag());
+    CORSIKA_LOG_INFO("step2, l={}, i={}", LengthType(step2),
+                     ContinuousProcessIndex(step2).getIndex());
+
     cout << "-->init sequence2" << endl;
     globalCount = 0;
-    cout << "-->docont" << endl;
+    cout << "-->docontinuous" << endl;
 
     // validation data
     double test_data[nData] = {0};
 
-    const int nLoop = 5;
+    // reset
+    particle = DummyData();
+    track = DummyTrajectory();
+
+    int const nLoop = 5;
     cout << "Running loop with n=" << nLoop << endl;
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
       for (int i = 0; i < nData; ++i) { test_data[i] += 0.933 + 0.111; }
-      sequence2.doContinuous(particle, track);
+      sequence2.doContinuous(particle, track, ContinuousProcessIndex(1));
     }
     for (int i = 0; i < nData; i++) {
       cout << "data_[" << i << "]=" << particle.data_[i] << endl;
@@ -356,14 +453,14 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
 
     DummyStack stack;
 
-    const int nLoop = 20;
+    int const nLoop = 20;
     for (int i = 0; i < nLoop; ++i) { sequence1.doStack(stack); }
 
     CHECK(s1.getCount() == 20);
     CHECK(s2.getCount() == 10);
 
-    ContinuousProcess2 cp2(1); // += 0.111
-    Process2 m2(2);            //  /= 1.1
+    ContinuousProcess2 cp2(1, 2_m); // += 0.111
+    Process2 m2(2);                 //  /= 1.1
     auto sequence2 = make_sequence(cp2, m2);
     auto sequence3 = make_sequence(cp2, m2, s1);
 
@@ -379,34 +476,59 @@ TEST_CASE("Switch Process Sequence", "ProcessSequence") {
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
+  /**
+   * In this example switching is done only by "data_[0]>0", where
+   * data in an arrray of doubles, DummyData.
+   */
+
+  struct SwitchSelect {
+    SwitchResult operator()(DummyData const& p) const {
+      if (p.data_[0] > 0) return SwitchResult::First;
+      return SwitchResult::Second;
+    }
+  };
+  SwitchSelect select1;
+
+  auto cp1 = ContinuousProcess1(0, 1_m);
+  auto cp2 = ContinuousProcess2(0, 2_m);
+  auto cp3 = ContinuousProcess3(0, 3_m);
+
+  auto sequence1 = make_sequence(Process1(0), cp2, Decay1(0));
+  auto sequence2 = make_sequence(cp3, Process2(0), Decay2(0));
+
+  auto sequence3 = make_sequence(cp1, Process3(0),
+                                 SwitchProcessSequence(sequence1, sequence2, select1));
+
   SECTION("Check construction") {
 
-    struct TestSelect {
-      SwitchResult operator()(const DummyData& p) const {
-        std::cout << "TestSelect data=" << p.data_[0] << std::endl;
-        if (p.data_[0] > 0) return SwitchResult::First;
-        return SwitchResult::Second;
-      }
-    };
-    TestSelect select1;
+    auto sequence_alt =
+        make_sequence(cp1, Process3(0),
+                      make_select(make_sequence(Process1(0), cp2, Decay1(0)),
+                                  make_sequence(cp3, Process2(0), Decay2(0)), select1));
 
-    auto sequence1 = make_sequence(Process1(0), ContinuousProcess2(0), Decay1(0));
-    auto sequence2 = make_sequence(ContinuousProcess3(0), Process2(0), Decay2(0));
+    auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
+    CHECK(is_process_sequence_v<decltype(switch_seq)>);
+    CHECK(is_switch_process_sequence_v<decltype(switch_seq)>);
+    // CHECK(is_switch_process_sequence_v<decltype(&switch_seq)>);
+    CHECK(is_switch_process_sequence_v<decltype(
+              SwitchProcessSequence(sequence1, sequence2, select1))>);
 
-    auto sequence3 = make_sequence(ContinuousProcess1(0), Process3(0),
-                                   SwitchProcessSequence(sequence1, sequence2, select1));
+    CHECK(is_process_sequence_v<decltype(sequence3)>);
+    CHECK_FALSE(is_switch_process_sequence_v<decltype(sequence3)>);
 
-    auto sequence_alt = make_sequence(
-        ContinuousProcess1(0), Process3(0),
-        make_select(make_sequence(Process1(0), ContinuousProcess2(0), Decay1(0)),
-                    make_sequence(ContinuousProcess3(0), Process2(0), Decay2(0)),
-                    select1));
+    CHECK(is_process_sequence_v<decltype(
+              SwitchProcessSequence(sequence1, sequence2, select1))>);
+    CHECK(is_switch_process_sequence_v<decltype(
+              SwitchProcessSequence(sequence1, sequence2, select1))>);
 
     // check that same process sequence can be build in different ways
     CHECK(typeid(sequence3) == typeid(sequence_alt));
-    CHECK(is_process_sequence_v<decltype(sequence3)> == true);
+    CHECK(is_process_sequence_v<decltype(sequence3)>);
     CHECK(is_process_sequence_v<decltype(
-              SwitchProcessSequence(sequence1, sequence2, select1))> == true);
+              SwitchProcessSequence(sequence1, sequence2, select1))>);
+  }
+
+  SECTION("Check interfaces") {
 
     DummyData particle;
     DummyTrajectory track;
@@ -417,7 +539,7 @@ TEST_CASE("Switch Process Sequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = 100; // data positive
-    sequence3.doContinuous(particle, track);
+    sequence3.doContinuous(particle, track, ContinuousProcessIndex(1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b011);
@@ -428,7 +550,7 @@ TEST_CASE("Switch Process Sequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative
-    sequence_alt.doContinuous(particle, track);
+    sequence3.doContinuous(particle, track, ContinuousProcessIndex(1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0b101);
@@ -479,6 +601,95 @@ TEST_CASE("Switch Process Sequence", "ProcessSequence") {
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
   }
+
+  SECTION("Check ContinuousProcesses in SwitchProcessSequence") {
+
+    DummyData particle;
+    DummyTrajectory track;
+
+    particle.data_[0] =
+        100; // data positive, selects particular branch on SwitchProcessSequence
+
+    cp1.setStep(10_m);
+    cp2.setStep(15_m);
+    cp3.setStep(100_m);
+
+    cp1.resetFlag();
+    cp2.resetFlag();
+    cp3.resetFlag();
+
+    ContinuousProcessStepLength const step1 = sequence3.getMaxStepLength(particle, track);
+    CHECK(LengthType(step1) == 10_m);
+    sequence3.doContinuous(particle, track, step1);
+    CHECK(cp1.getFlag());
+    CHECK_FALSE(cp2.getFlag());
+    CHECK_FALSE(cp3.getFlag());
+    CORSIKA_LOG_INFO("step1, l={}, i={}", LengthType(step1),
+                     ContinuousProcessIndex(step1).getIndex());
+
+    particle.data_[0] =
+        100; // data positive, selects particular branch on SwitchProcessSequence
+
+    cp1.setStep(50_m);
+    cp2.setStep(15_m);
+    cp3.setStep(100_m);
+
+    cp1.resetFlag();
+    cp2.resetFlag();
+    cp3.resetFlag();
+
+    ContinuousProcessStepLength const step2 = sequence3.getMaxStepLength(particle, track);
+    CHECK(LengthType(step2) == 15_m);
+    sequence3.doContinuous(particle, track, step2);
+    CHECK_FALSE(cp1.getFlag());
+    CHECK(cp2.getFlag());
+    CHECK_FALSE(cp3.getFlag());
+    CORSIKA_LOG_INFO("step2, len_cont={}, indexLimit={} type={}", LengthType(step2),
+                     ContinuousProcessIndex(step2).getIndex(),
+                     boost::typeindex::type_id<decltype(sequence3)>().pretty_name());
+
+    particle.data_[0] =
+        -100; // data positive, selects particular branch on SwitchProcessSequence
+
+    cp1.setStep(11_m);
+    cp2.setStep(15_m);
+    cp3.setStep(100_m);
+
+    cp1.resetFlag();
+    cp2.resetFlag();
+    cp3.resetFlag();
+
+    ContinuousProcessStepLength const step3 = sequence3.getMaxStepLength(particle, track);
+    CHECK(LengthType(step3) == 11_m);
+    sequence3.doContinuous(particle, track, step3);
+    CHECK(cp1.getFlag());
+    CHECK_FALSE(cp2.getFlag());
+    CHECK_FALSE(cp3.getFlag());
+    CORSIKA_LOG_INFO("step3, len_cont={}, indexLimit={} type={}", LengthType(step3),
+                     ContinuousProcessIndex(step3).getIndex(),
+                     boost::typeindex::type_id<decltype(sequence3)>().pretty_name());
+
+    particle.data_[0] =
+        -100; // data positive, selects particular branch on SwitchProcessSequence
+
+    cp1.setStep(11_m);
+    cp2.setStep(15_m);
+    cp3.setStep(2_m);
+
+    cp1.resetFlag();
+    cp2.resetFlag();
+    cp3.resetFlag();
+
+    ContinuousProcessStepLength const step4 = sequence3.getMaxStepLength(particle, track);
+    CHECK(LengthType(step4) == 2_m);
+    sequence3.doContinuous(particle, track, step4);
+    CHECK_FALSE(cp1.getFlag());
+    CHECK_FALSE(cp2.getFlag());
+    CHECK(cp3.getFlag());
+    CORSIKA_LOG_INFO("step4, len_cont={}, indexLimit={} type={}", LengthType(step4),
+                     ContinuousProcessIndex(step4).getIndex(),
+                     boost::typeindex::type_id<decltype(sequence3)>().pretty_name());
+  }
 }
 
 TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
@@ -486,16 +697,24 @@ TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
-  SECTION("Counting") {
+  SECTION("Indexing") {
 
     int const n0 = count_continuous<Decay2>::count;
     int const n1 = count_continuous<ContinuousProcess3>::count;
-    int const n2 = count_continuous<ContinuousProcess2, count_continuous<ContinuousProcess3>::count>::count;
-    int const n1_b = count_continuous<Process2, count_continuous<ContinuousProcess3>::count>::count;
-    int const n1_c = count_continuous<ContinuousProcess3, count_continuous<Process2>::count>::count;
-    int const n12 = count_continuous<ContinuousProcess2, count_continuous<ContinuousProcess3, 10>::count>::count;
-    int const n11_b = count_continuous<Process1, count_continuous<ContinuousProcess3, 10>::count>::count;
-    int const n11_c = count_continuous<ContinuousProcess3, count_continuous<Process1, 10>::count>::count;
+    int const n2 = count_continuous<ContinuousProcess2,
+                                    count_continuous<ContinuousProcess3>::count>::count;
+    int const n1_b =
+        count_continuous<Process2, count_continuous<ContinuousProcess3>::count>::count;
+    int const n1_c =
+        count_continuous<ContinuousProcess3, count_continuous<Process2>::count>::count;
+    int const n12 =
+        count_continuous<ContinuousProcess2,
+                         count_continuous<ContinuousProcess3, 10>::count>::count;
+    int const n11_b =
+        count_continuous<Process1,
+                         count_continuous<ContinuousProcess3, 10>::count>::count;
+    int const n11_c = count_continuous<ContinuousProcess3,
+                                       count_continuous<Process1, 10>::count>::count;
 
     CHECK(n0 == 0);
     CHECK(n1 == 1);
@@ -506,30 +725,44 @@ TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
     CHECK(n11_c == 11);
     CHECK(n12 == 12);
 
+    std::cout << count_continuous<ContinuousProcess3>::count << std::endl;
+    std::cout << count_continuous<Process3>::count << std::endl;
 
-    struct TestSelect {
-      SwitchResult operator()(const DummyData& p) const {
-        std::cout << "TestSelect data=" << p.data_[0] << std::endl;
+    struct SwitchSelect {
+      SwitchResult operator()(DummyData const& p) const {
+        std::cout << "SwitchSelect data=" << p.data_[0] << std::endl;
         if (p.data_[0] > 0) return SwitchResult::First;
         return SwitchResult::Second;
       }
     };
-    TestSelect select1;
 
-    auto sequence1 = make_sequence(Process1(0), ContinuousProcess2(0), Decay1(0));
-    auto sequence2 = make_sequence(ContinuousProcess3(0), Process2(0), Decay2(0));
+    auto sequence1 = make_sequence(Process1(0), ContinuousProcess2(0, 2_m), Decay1(0));
+    auto sequence2 = make_sequence(ContinuousProcess3(0, 3_m), Process2(0), Decay2(0),
+                                   ContinuousProcess1(0, 1_m));
 
+    SwitchSelect select1;
     auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
 
-    auto sequence3 = make_sequence(ContinuousProcess1(0), Process3(0),
-                                   switch_seq);
+    auto sequence3 = make_sequence(ContinuousProcess1(0, 1_m), Process3(0), switch_seq);
+    auto sequence4 = make_sequence(ContinuousProcess1(0, 1_m), Process3(0),
+                                   SwitchProcessSequence(sequence1, sequence2, select1));
 
+    int const switch_seq_n = count_continuous<decltype(switch_seq)>::count;
+    int const sequence3_n = count_continuous<decltype(sequence3)>::count;
 
     CHECK(decltype(sequence1)::nContinuous == 1);
     CHECK(count_continuous<decltype(sequence1)>::count == 1);
-    CHECK(count_continuous<decltype(sequence2)>::count == 1);
-    CHECK(count_continuous<decltype(switch_seq)>::count == 2);
-    CHECK(count_continuous<decltype(sequence3)>::count == 3);
+    CHECK(count_continuous<decltype(sequence2)>::count == 2);
+    CHECK(switch_seq_n == 3);
+    CHECK(sequence3_n == 4);
+    CHECK(count_continuous<decltype(sequence4)>::count == 4);
 
+    std::cout << "switch_seq "
+              << boost::typeindex::type_id<decltype(switch_seq)>().pretty_name()
+              << std::endl;
+
+    std::cout << "sequence3 "
+              << boost::typeindex::type_id<decltype(sequence3)>().pretty_name()
+              << std::endl;
   }
 }

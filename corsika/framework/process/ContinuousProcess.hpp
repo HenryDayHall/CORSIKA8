@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/ProcessTraits.hpp>
@@ -29,11 +30,23 @@ namespace corsika {
   protected:
   public:
     // here starts the interface part
-    // -> enforce TDerived to implement DoContinuous...
+    /**
+     * Applies the effects of this ContinuousProcess on a Particle on a Track.
+     *
+     * Note, the stepLimit is a flag, if this particular process was responsible for the
+     * track-length limit. This can be used by the process to trigger activity.
+     *
+     * \todo -> enforce TDerived to implement doContinuous...
+     **/
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(TParticle&, TTrack const&, bool const stepLimit) const;
 
-    // -> enforce TDerived to implement MaxStepLength...
+    /**
+     * Calculates/returns a possible step length limitation of this continuousprocess.
+     *
+     *
+     * \todo -> enforce TDerived to implement getMaxStepLength...
+     **/
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
   };
@@ -41,12 +54,20 @@ namespace corsika {
   /**
    * ProcessTraits specialization
    **/
-  /*
-    template <typename TProcess, int N>
-    struct count_continuous<TProcess, N, 
-                           typename std::enable_if_t<std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess>>, 
-                                                                       typename std::decay_t<TProcess>>>> {
-      enum { count = N+1 };
-    };
-  */
+  template <typename TProcess>
+  struct is_continuous_process<
+      TProcess, std::enable_if_t<
+                    std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess>>,
+                                      typename std::decay_t<TProcess>>>>
+      : std::true_type {};
+
+  template <typename TProcess, int N>
+  struct count_continuous<TProcess, N,
+                          typename std::enable_if_t<is_continuous_process_v<TProcess>>> {
+    // std::is_base_of_v<
+    //                      ContinuousProcess<typename std::decay_t<TProcess>>,
+    //                      typename std::decay_t<TProcess>>>> {
+    enum { count = N + 1 };
+  };
+
 } // namespace corsika

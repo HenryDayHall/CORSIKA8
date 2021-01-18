@@ -8,6 +8,10 @@
 
 #pragma once
 
+//#include <corsika/framework/process/ProcessTraits.hpp>
+
+#include <type_traits>
+
 namespace corsika {
 
   class TDerived; // fwd decl

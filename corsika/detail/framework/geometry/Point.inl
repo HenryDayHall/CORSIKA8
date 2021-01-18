@@ -95,4 +95,10 @@ namespace corsika {
     return Vector<length_d>(cs, getCoordinates() - pB.getCoordinates(cs));
   }
 
+  inline std::ostream& operator<<(std::ostream& os, corsika::Point const& p) {
+    auto const& qv = p.getCoordinates();
+    os << qv << " m";
+    return os;
+  }
+
 } // namespace corsika

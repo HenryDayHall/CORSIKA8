@@ -22,7 +22,7 @@ namespace corsika {
     TrackWriter(std::string const& filename);
 
     template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle const&, TTrack const&);
+    ProcessReturn doContinuous(TParticle const&, TTrack const&, bool const limitFlag);
 
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&);

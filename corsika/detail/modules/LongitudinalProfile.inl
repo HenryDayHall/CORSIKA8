@@ -27,7 +27,7 @@ namespace corsika {
 
   template <typename TParticle, typename TTrack>
   ProcessReturn LongitudinalProfile::doContinuous(TParticle const& vP,
-                                                  TTrack const& vTrack) {
+                                                  TTrack const& vTrack, bool const) {
     auto const pid = vP.getPID();
 
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));

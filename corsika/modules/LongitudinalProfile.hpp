@@ -41,7 +41,9 @@ namespace corsika {
                         GrammageType dX = 10_g / square(1_cm)); // profile binning);
 
     template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle const&, TTrack const&);
+    ProcessReturn doContinuous(
+        TParticle const&, TTrack const&,
+        bool const flagLimit = false); // not needed for LongitudinalProfile
 
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&) {

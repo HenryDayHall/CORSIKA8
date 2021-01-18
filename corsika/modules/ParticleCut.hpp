@@ -50,8 +50,10 @@ namespace corsika {
                 bool const em, bool const inv);
 
     void doSecondaries(corsika::setup::StackView&);
-    ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
-                               corsika::setup::Trajectory const& vTrajectory);
+    ProcessReturn doContinuous(
+        corsika::setup::Stack::particle_type& vParticle,
+        corsika::setup::Trajectory const& vTrajectory,
+        const bool limitFlag = false); // this is not used for ParticleCut
     LengthType getMaxStepLength(corsika::setup::Stack::particle_type const&,
                                 corsika::setup::Trajectory const&) {
       return meter * std::numeric_limits<double>::infinity();

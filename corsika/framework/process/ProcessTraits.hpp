@@ -12,11 +12,39 @@
  * \file ProcessTraits.hpp
  */
 
-#include <corsika/framework/process/ProcessTraits.hpp>
+//#include <corsika/framework/process/BaseProcess.hpp>
+//#include <corsika/framework/process/ProcessSequence.hpp>
+//#include <corsika/framework/process/SwitchProcessSequence.hpp>
+//#include <corsika/framework/process/ContinuousProcess.hpp>
 
 #include <type_traits>
 
 namespace corsika {
+
+  /**
+   * A traits marker to identify BaseProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_base_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_base_process_v = is_base_process<TProcess>::value;
+
+  template <typename TProcess>
+  struct is_base_process<
+      TProcess,
+      std::enable_if_t<std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess>>,
+                                         typename std::decay_t<TProcess>>>>
+      : std::true_type {};
+
+  /**
+   * A traits marker to identify ContinuousProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_continuous_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_continuous_process_v = is_continuous_process<TProcess>::value;
 
   /**
    *  A traits marker to track which BaseProcess is also a ProcessSequence
@@ -47,34 +75,11 @@ namespace corsika {
   bool constexpr contains_stack_process_v = contains_stack_process<TClass>::value;
 
   /**
-   * traits class to count ContinuousProcess-es
+   * traits class to count ContinuousProcess-es, general version
    **/
-    template <typename TProcess, int N=0, typename Enable=void>
-    struct count_continuous {
-      enum { count = N };
-    }; 
-
-
-  /**
-   * traits class to count ContinuousProcess-es
-   **/
-    template <typename TProcessSequence, int N>
-    struct count_continuous<TProcessSequence, N, 
-                           typename std::enable_if_t<is_process_sequence_v<TProcessSequence>>> {
-      enum { count = N+TProcessSequence::nContinuous };
-    };
-
-  /**
-   * traits class to count ContinuousProcess-es
-   **/
-
-    template <typename TSwitchProcessSequence, int N>
-    struct count_continuous<TSwitchProcessSequence, N, 
-                           typename std::enable_if_t<is_switch_process_sequence_v<TSwitchProcessSequence>>> {
-      enum { count = N+TSwitchProcessSequence::nContinuous };
-    };
-
-
-
+  template <typename TProcess, int N = 0, typename Enable = void>
+  struct count_continuous {
+    enum { count = N };
+  };
 
 } // namespace corsika

@@ -14,6 +14,7 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/media/Environment.hpp>
+#include <corsika/framework/process/ContinuousProcessIndex.hpp>
 
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>
