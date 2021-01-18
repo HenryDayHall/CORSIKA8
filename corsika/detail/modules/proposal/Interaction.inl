@@ -24,8 +24,8 @@
 namespace corsika::proposal {
 
   template <>
-  Interaction::Interaction(setup::Environment const& _env, HEPEnergyType _emCut)
-      : ProposalProcessBase(_env, _emCut) {}
+  Interaction::Interaction(setup::Environment const& _env)
+      : ProposalProcessBase(_env) {}
 
   void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
@@ -36,7 +36,10 @@ namespace corsika::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto c = p_cross->second(media.at(comp.getHash()), emCut_);
+    auto const emCut = get_energy_threshold(
+        code); //! energy thresholds globally defined for individual particles
+
+    auto c = p_cross->second(media.at(comp.getHash()), emCut);
 
     // Look which interactions take place and build the corresponding
     // interaction and secondarie builder. The interaction integral will

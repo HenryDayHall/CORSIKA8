@@ -30,10 +30,9 @@ namespace corsika::proposal {
     return false;
   }
 
-  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env,
-                                           HEPEnergyType _emCut)
-      : emCut_(_emCut)
-      , RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
+  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env
+                                           )
+      : RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {
         const auto& prop = vtn.getModelProperties();

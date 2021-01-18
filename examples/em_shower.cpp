@@ -143,8 +143,8 @@ int main(int argc, char** argv) {
 
   // PROPOSAL processs proposal{...};
   ParticleCut cut(10_GeV, 10_GeV, 100_PeV, 100_PeV, true);
-  corsika::proposal::Interaction proposal(env, cut.getElectronECut());
-  corsika::proposal::ContinuousProcess em_continuous(env, cut.getElectronECut());
+  corsika::proposal::Interaction proposal(env);
+  corsika::proposal::ContinuousProcess em_continuous(env);
   InteractionCounter proposalCounted(proposal);
 
   TrackWriter trackWriter("tracks.dat");

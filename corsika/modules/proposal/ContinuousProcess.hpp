@@ -52,7 +52,7 @@ namespace corsika::proposal {
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    ContinuousProcess(TEnvironment const&, HEPEnergyType _emCut);
+    ContinuousProcess(TEnvironment const&);
 
     //!
     //! Multiple Scattering of the lepton. Stochastic deflection is not yet taken into
