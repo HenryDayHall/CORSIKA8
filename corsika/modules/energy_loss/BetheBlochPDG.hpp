@@ -41,11 +41,13 @@ namespace corsika {
     using MeVgcm2 = decltype(1e6 * electronvolt / gram * square(1e-2 * meter));
 
   public:
-    BetheBlochPDG(ShowerAxis const& showerAxis, HEPEnergyType emCut);
+    BetheBlochPDG(ShowerAxis const& showerAxis);
 
     ProcessReturn doContinuous(setup::Stack::particle_type&, setup::Trajectory const&);
     LengthType getMaxStepLength(setup::Stack::particle_type const&,
-                                setup::Trajectory const&) const;
+                                setup::Trajectory const&)
+        const; //! limited by the energy threshold! By default the limit is the particle
+               //! rest mass, i.e. kinetic energy is zero
     static HEPEnergyType getBetheBloch(setup::Stack::particle_type const&,
                                        const GrammageType);
     static HEPEnergyType getRadiationLosses(setup::Stack::particle_type const&,
@@ -66,7 +68,6 @@ namespace corsika {
     GrammageType const dX_ = 10_g / square(1_cm); // profile binning
     GrammageType const dX_threshold_ = 0.0001_g / square(1_cm);
     ShowerAxis const& shower_axis_;
-    HEPEnergyType emCut_;
     HEPEnergyType energy_lost_ = HEPEnergyType::zero();
     std::vector<HEPEnergyType> profile_; // longitudinal profile
   };

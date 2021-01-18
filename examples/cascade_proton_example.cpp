@@ -132,7 +132,7 @@ int main() {
 
   TrackWriter trackWriter("tracks.dat");
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
-  BetheBlochPDG eLoss{showerAxis, cut.getElectronECut()};
+  BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
   // auto sequence = sibyll << decay << hadronicElastic << cut << trackWriter;
