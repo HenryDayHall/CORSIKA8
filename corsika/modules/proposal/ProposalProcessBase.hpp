@@ -48,7 +48,6 @@ namespace corsika::proposal {
          corsika::units::si::HEPEnergyType
              emCut) { //!< Stochastic losses smaller than the given cut
                       //!< will be handeled continuously.
-
         using namespace corsika::units::si;
         auto p_cut =
             std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, true);

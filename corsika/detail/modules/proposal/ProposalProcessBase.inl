@@ -30,8 +30,7 @@ namespace corsika::proposal {
     return false;
   }
 
-  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env
-                                           )
+  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env)
       : RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {
