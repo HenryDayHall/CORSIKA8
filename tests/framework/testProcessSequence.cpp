@@ -247,10 +247,10 @@ struct DummyView {
   DummyData& parent() { return p_; }
 };
 
-TEST_CASE("Process Sequence", "[Process Sequence]") {
+TEST_CASE("Process Sequence General", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   SECTION("Check construction") {
     globalCount = 0;
@@ -373,10 +373,10 @@ TEST_CASE("Process Sequence", "[Process Sequence]") {
   }
 }
 
-TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
+TEST_CASE("Switch Process Sequence", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   SECTION("Check construction") {
 
@@ -477,5 +477,15 @@ TEST_CASE("Switch Process Sequence", "[Process Sequence]") {
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
+  }
+}
+
+TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
+
+  SECTION("Check construction") {
+
   }
 }

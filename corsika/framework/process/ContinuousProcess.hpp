@@ -30,7 +30,7 @@ namespace corsika {
     // here starts the interface part
     // -> enforce TDerived to implement DoContinuous...
     template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle&, TTrack const&) const;
+    ProcessReturn doContinuous(TParticle&, TTrack const&, bool const stepLimit) const;
 
     // -> enforce TDerived to implement MaxStepLength...
     template <typename TParticle, typename TTrack>

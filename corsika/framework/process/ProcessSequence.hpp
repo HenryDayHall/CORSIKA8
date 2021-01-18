@@ -26,6 +26,21 @@
 
 namespace corsika {
 
+  namespace detail {
+    template <typename TProcess, int N=0, typename Enable=void>
+    struct CountContinuous {
+      enum { count = N };
+    }; 
+
+    template <typename TProcess, int N=0>              
+    struct CountContinuous<TProcess, N, 
+                           typename std::enable_if_t<std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess>>>> {
+      enum { count = N+1 };
+    };
+  }
+
+    
+
   /**
    *
    *  Definition of a static process list/sequence
@@ -39,13 +54,12 @@ namespace corsika {
    *  they are just classes. This allows us to handle both, rvalue as
    *  well as lvalue Processes in the ProcessSequence.
    *
-   *  The sequence, and the processes use CRTP.
+   *  (The sequence, and the processes use the CRTP, curiously recurring template pattern).
    *
-   *  \todo There are several FIXME's in the ProcessSequence.inl due to
-   *  outstanding migration of SecondaryView::parent()
    **/
 
-  template <typename TProcess1, typename TProcess2 = NullModel>
+  template <typename TProcess1, typename TProcess2 = NullModel, 
+            int NContinuous = detail::CountContinuous<TProcess1, detail::CountContinous<TProcess1>::count>::count>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
     using process1_type = typename std::decay_t<TProcess1>;
@@ -57,6 +71,9 @@ namespace corsika {
     static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<process1_type>;
     static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<process2_type>;
 
+    // we want to count continuous processes, to each one has a unique index
+    if constexpr (std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess1>>   )
+
     // make sure only BaseProcess types TProcess1/2 are passed
     static_assert(std::is_base_of_v<BaseProcess<process1_type>, process1_type>,
                   "can only use process derived from BaseProcess in "
@@ -64,9 +81,6 @@ namespace corsika {
     static_assert(std::is_base_of_v<BaseProcess<process2_type>, process2_type>,
                   "can only use process derived from BaseProcess in "
                   "ProcessSequence, for Process 2");
-
-    TProcess1 A_; /// process/list A, this is a reference, if possible
-    TProcess2 B_; /// process/list B, this is a reference, if possible
 
   public:
     // resource management
@@ -118,7 +132,7 @@ namespace corsika {
     inline void doStack(TStack& stack);
 
     template <typename TParticle, typename TTrack>
-    inline LengthType getMaxStepLength(TParticle& particle, TTrack& vTrack);
+      inline std::pair<LengthType,void*> getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {
@@ -147,6 +161,12 @@ namespace corsika {
     inline ProcessReturn selectDecay(
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
+
+  private:
+    int countContinuous_ = Ncontinuous;
+    TProcess1 A_; /// process/list A, this is a reference, if possible
+    TProcess2 B_; /// process/list B, this is a reference, if possible
+
   };
 
   /**
