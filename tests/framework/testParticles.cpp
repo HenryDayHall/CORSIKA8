@@ -80,6 +80,15 @@ TEST_CASE("ParticleProperties", "[Particles]") {
           (Approx(2.1970332555864364e-06).epsilon(1e-5)));
   }
 
+  SECTION("Energy threshold") {
+    //! by default energy thresholds are set to particle mass
+    CHECK(get_energy_threshold(Electron::code) / Electron::mass == Approx(1));
+
+    set_energy_threshold(Electron::code,10_GeV);
+    CHECK_FALSE(get_energy_threshold(Code::Electron) == 1_GeV);
+    CHECK(get_energy_threshold(Code::Electron) == 10_GeV);
+  }
+
   SECTION("Particle groups: electromagnetic") {
     CHECK(is_em(Code::Gamma));
     CHECK(is_em(Code::Electron));
