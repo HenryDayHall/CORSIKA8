@@ -70,6 +70,13 @@ install(
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+else (NOT IN_CORSIKA8)
+install(
+    TARGETS PROPOSAL
+    EXPORT CORSIKA8
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
 endif (NOT IN_CORSIKA8)
 
 # input version from the project call, so the library knows its own version

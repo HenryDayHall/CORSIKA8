@@ -26,6 +26,7 @@ target_include_directories (
 
 install (
   TARGETS cnpy
+  EXPORT CORSIKA8
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   )

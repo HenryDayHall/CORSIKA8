@@ -13,9 +13,10 @@ endif ()
 #+++++++++++++++++++++++++++++
 # project name
 #
+set (c8_version 8.0.0)
 project (
   corsika
-  VERSION 8.0.0
+  VERSION ${c8_version}
   DESCRIPTION "CORSIKA C++ project (alpha status)"
   LANGUAGES CXX
   )
@@ -195,13 +196,20 @@ find_package (PythonInterp 3 REQUIRED)
 # CORSIKA8
 #
 add_library (CORSIKA8 INTERFACE)
+set_target_properties (
+  CORSIKA8
+  PROPERTIES
+  INTERFACE_CORSIKA8_MAJOR_VERSION 0
+  COMPATIBLE_INTERFACE_STRING CORSIKA8_MAJOR_VERSION
+  )
+#  
 target_include_directories (
   CORSIKA8
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}>
-  )
+  ) 
 # since CORSIKA8 is a header only library we must specify all link dependencies here:
 target_link_libraries (
   CORSIKA8
@@ -217,9 +225,8 @@ add_subdirectory (src)
 add_subdirectory (documentation)
 
 #+++++++++++++++++++++++++++++
-# =~~~~~~~~~~~~~~~~~~~~~~~~~=
 #  = Add of subdirectories =
-# =~~~~~~~~~~~~~~~~~~~~~~~~~=
+#
 
 #+++++++++++++++++++++++++++++
 # modules
@@ -249,6 +256,36 @@ add_subdirectory (tests)
 # 
 add_subdirectory (examples)
 
+
+#+++++++++++++++++++++++++++++++
+# export CMake targets
+#
+include(CMakePackageConfigHelpers)
+install (
+  TARGETS CORSIKA8
+  EXPORT CORSIKA8
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
+#  
+install (
+  EXPORT CORSIKA8
+  FILE CORSIKA8.cmake
+  NAMESPACE CORSIKA8::
+  DESTINATION lib/cmake/CORSIKA8
+  )
+#
+write_basic_package_version_file (
+  "${CMAKE_CURRENT_BINARY_DIR}/CORSIKA8ConfigVersion.cmake"
+  VERSION ${c8_version}
+  COMPATIBILITY SameMajorVersion
+  )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CORSIKA8Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/CORSIKA8ConfigVersion.cmake
+        DESTINATION ${LIB_INSTALL_DIR}/CORSIKA8/cmake )
+        
 #+++++++++++++++++++++++++++++++
 #
 # final summary output

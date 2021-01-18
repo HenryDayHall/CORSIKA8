@@ -40,6 +40,18 @@ target_link_libraries (
   gfortran
   )
 
+install (
+  TARGETS Sibyll
+  EXPORT CORSIKA8
+  DESTINATION lib
+  )
+
+install (
+  TARGETS Sibyll_static
+  EXPORT CORSIKA8
+  DESTINATION lib
+  )
+
 # add sibyll to corsika8 build
 add_dependencies (CORSIKA8 Sibyll_static)
 target_link_libraries (CORSIKA8 INTERFACE Sibyll_static)

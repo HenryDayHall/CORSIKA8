@@ -36,6 +36,17 @@ target_include_directories (
   )
 target_link_libraries (QGSJetII_static CorsikaData)
 
+install (
+  TARGETS QGSJetII
+  EXPORT CORSIKA8
+  DESTINATION lib
+  )
+
+install (
+  TARGETS QGSJetII_static
+  EXPORT CORSIKA8
+  DESTINATION lib
+  )
 
 # add qgsjetII to corsika8 build
 add_dependencies (CORSIKA8 QGSJetII_static)
