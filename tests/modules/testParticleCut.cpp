@@ -173,10 +173,10 @@ TEST_CASE("ParticleCut", "[processes]") {
 
   SECTION("cut low energy:  reset thresholds of arbitrary set of particles") {
     ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false, true);
-    CHECK(get_energy_threshold(Code::Electron)!=get_energy_threshold(Code::Positron));
-    CHECK_FALSE(get_energy_threshold(Code::Electron)==Electron::mass);
+    CHECK(get_energy_threshold(Code::Electron) != get_energy_threshold(Code::Positron));
+    CHECK_FALSE(get_energy_threshold(Code::Electron) == Electron::mass);
     // test default values still correct
-    CHECK(get_energy_threshold(Code::Proton)==5_GeV);
+    CHECK(get_energy_threshold(Code::Proton) == 5_GeV);
   }
 
   SECTION("cut on time") {

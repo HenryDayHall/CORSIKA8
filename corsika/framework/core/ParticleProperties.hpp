@@ -25,6 +25,7 @@
 #include <iosfwd>
 #include <string_view>
 #include <type_traits>
+#include <unordered_map>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -57,10 +58,11 @@ namespace corsika {
       Code const, HEPEnergyType const); //!< set energy threshold below which the particle
                                         //!< is discarded
 
-  inline void set_energy_threshold(std::pair<Code const, HEPEnergyType const>p){
+  inline void set_energy_threshold(std::pair<Code const, HEPEnergyType const> p) {
     set_energy_threshold(p.first, p.second);
   }
-  inline void set_energy_thresholds(std::unordered_map<Code const,HEPEnergyType const> const& eCuts){
+  inline void set_energy_thresholds(
+      std::unordered_map<Code const, HEPEnergyType const> const& eCuts) {
     for (auto v : eCuts) set_energy_threshold(v);
   }
 

@@ -155,10 +155,11 @@ namespace corsika {
   }
 
   void ParticleCut::printThresholds() {
-    for(auto p : get_all_particles())
-      CORSIKA_LOG_DEBUG("energy threshold for particle {} is {} GeV", p, get_energy_threshold(p) / 1_GeV);
+    for (auto p : get_all_particles())
+      CORSIKA_LOG_DEBUG("energy threshold for particle {} is {} GeV", p,
+                        get_energy_threshold(p) / 1_GeV);
   }
-  
+
   void ParticleCut::showResults() {
     CORSIKA_LOG_INFO(
         " ******************************\n"

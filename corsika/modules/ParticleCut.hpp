@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
@@ -44,8 +46,9 @@ namespace corsika {
 
     //! threshold for specific particles redefined. EM and invisible particles can be set
     //! to be discarded altogether.
-    ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const&eCuts, bool em, bool inv);
-    
+    ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool em,
+                bool inv);
+
     void doSecondaries(corsika::setup::StackView&);
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
                                corsika::setup::Trajectory const& vTrajectory);
