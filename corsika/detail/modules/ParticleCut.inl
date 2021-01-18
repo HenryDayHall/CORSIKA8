@@ -15,44 +15,80 @@ namespace corsika {
   ParticleCut::ParticleCut(const HEPEnergyType eEleCut, const HEPEnergyType ePhoCut,
                            const HEPEnergyType eHadCut, const HEPEnergyType eMuCut,
                            bool inv)
-      : electron_energy_cut_(eEleCut)
-      , photon_energy_cut_(ePhoCut)
-      , had_energy_cut_(eHadCut)
-      , mu_energy_cut_(eMuCut)
-      , doCutEm_(false)
+      : doCutEm_(false)
       , doCutInv_(inv)
       , energy_(0_GeV)
       , em_energy_(0_GeV)
       , em_count_(0)
       , inv_energy_(0_GeV)
-      , inv_count_(0) {}
+      , inv_count_(0) {
+    for (auto p : get_all_particles())
+      if (is_hadron(p))
+        set_energy_threshold(p, eHadCut);
+      else if (is_muon(p))
+        set_energy_threshold(p, eMuCut);
+      else if (p == Code::Electron || p == Code::Positron)
+        set_energy_threshold(p, eEleCut);
+      else if (p == Code::Gamma)
+        set_energy_threshold(p, ePhoCut);
+      else if (p == Code::Nucleus)
+        // nuclei have same threshold as hadrons on the nucleon level.
+        set_energy_threshold(p, eHadCut);
+    CORSIKA_LOG_DEBUG(
+        "setting thresholds: electrons = {} GeV, photons = {} GeV, hadrons = {} GeV, "
+        "muons = {} GeV",
+        eEleCut / 1_GeV, ePhoCut / 1_GeV, eHadCut / 1_GeV, eMuCut / 1_GeV);
+    printThresholds();
+  }
 
   ParticleCut::ParticleCut(const HEPEnergyType eHadCut, const HEPEnergyType eMuCut,
                            bool inv)
-      : electron_energy_cut_(0_eV)
-      , photon_energy_cut_(0_eV)
-      , had_energy_cut_(eHadCut)
-      , mu_energy_cut_(eMuCut)
-      , doCutEm_(true)
+      : doCutEm_(true)
       , doCutInv_(inv)
       , energy_(0_GeV)
       , em_energy_(0_GeV)
       , em_count_(0)
       , inv_energy_(0_GeV)
-      , inv_count_(0) {}
+      , inv_count_(0) {
+
+    for (auto p : get_all_particles())
+      if (is_hadron(p))
+        set_energy_threshold(p, eHadCut);
+      else if (is_muon(p))
+        set_energy_threshold(p, eMuCut);
+    CORSIKA_LOG_DEBUG(
+        "setting thresholds: hadrons = {} GeV, "
+        "muons = {} GeV",
+        eHadCut / 1_GeV, eMuCut / 1_GeV);
+    printThresholds();
+  }
 
   ParticleCut::ParticleCut(const HEPEnergyType eCut, bool em, bool inv)
-      : electron_energy_cut_(eCut)
-      , photon_energy_cut_(eCut)
-      , had_energy_cut_(eCut)
-      , mu_energy_cut_(eCut)
-      , doCutEm_(em)
+      : doCutEm_(em)
       , doCutInv_(inv)
       , energy_(0_GeV)
       , em_energy_(0_GeV)
       , em_count_(0)
       , inv_energy_(0_GeV)
-      , inv_count_(0) {}
+      , inv_count_(0) {
+    for (auto p : get_all_particles()) set_energy_threshold(p, eCut);
+    CORSIKA_LOG_DEBUG("setting threshold for all particles to {} GeV", eCut / 1_GeV);
+    printThresholds();
+  }
+
+  ParticleCut::ParticleCut(
+      std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool em, bool inv)
+      : doCutEm_(em)
+      , doCutInv_(inv)
+      , energy_(0_GeV)
+      , em_energy_(0_GeV)
+      , em_count_(0)
+      , inv_energy_(0_GeV)
+      , inv_count_(0) {
+    set_energy_thresholds(eCuts);
+    CORSIKA_LOG_DEBUG("setting threshold particles individually");
+    printThresholds();
+  }
 
   template <typename TParticle>
   bool ParticleCut::isBelowEnergyCut(TParticle const& vP) const {
@@ -62,16 +98,9 @@ namespace corsika {
     if (pid == Code::Nucleus) {
       // calculate energy per nucleon
       auto const ElabNuc = energyLab / vP.getNuclearA();
-      return (ElabNuc < had_energy_cut_);
-    } else if (pid == Code::Gamma) {
-      return (energyLab < photon_energy_cut_);
-    } else if (pid == Code::Electron || pid == Code::Positron) {
-      return (energyLab < electron_energy_cut_);
-    } else if (is_muon(pid)) {
-      return (energyLab < mu_energy_cut_);
+      return (ElabNuc < get_energy_threshold(pid));
     } else {
-      // assuming the rest are hadrons
-      return (energyLab < had_energy_cut_);
+      return (energyLab < get_energy_threshold(pid));
     }
   }
 
@@ -125,6 +154,11 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
+  void ParticleCut::printThresholds() {
+    for(auto p : get_all_particles())
+      CORSIKA_LOG_DEBUG("energy threshold for particle {} is {} GeV", p, get_energy_threshold(p) / 1_GeV);
+  }
+  
   void ParticleCut::showResults() {
     CORSIKA_LOG_INFO(
         " ******************************\n"

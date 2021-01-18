@@ -42,6 +42,10 @@ namespace corsika {
     //! discarded altogether.
     ParticleCut(const HEPEnergyType eCut, bool em, bool inv);
 
+    //! threshold for specific particles redefined. EM and invisible particles can be set
+    //! to be discarded altogether.
+    ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const&eCuts, bool em, bool inv);
+    
     void doSecondaries(corsika::setup::StackView&);
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
                                corsika::setup::Trajectory const& vTrajectory);
@@ -50,13 +54,14 @@ namespace corsika {
       return meter * std::numeric_limits<double>::infinity();
     }
 
+    void printThresholds();
     void showResults();
     void reset();
 
-    HEPEnergyType getElectronECut() const { return electron_energy_cut_; }
-    HEPEnergyType getPhotonECut() const { return photon_energy_cut_; }
-    HEPEnergyType getMuonECut() const { return mu_energy_cut_; }
-    HEPEnergyType getHadronECut() const { return had_energy_cut_; }
+    HEPEnergyType getElectronECut() const { return get_energy_threshold(Code::Electron); }
+    HEPEnergyType getPhotonECut() const { return get_energy_threshold(Code::Gamma); }
+    HEPEnergyType getMuonECut() const { return get_energy_threshold(Code::MuPlus); }
+    HEPEnergyType getHadronECut() const { return get_energy_threshold(Code::Proton); }
     HEPEnergyType getInvEnergy() const { return inv_energy_; }
     HEPEnergyType getCutEnergy() const { return energy_; }
     HEPEnergyType getEmEnergy() const { return em_energy_; }
@@ -71,10 +76,6 @@ namespace corsika {
     bool isBelowEnergyCut(TParticle const&) const;
 
   private:
-    HEPEnergyType electron_energy_cut_;
-    HEPEnergyType photon_energy_cut_;
-    HEPEnergyType had_energy_cut_;
-    HEPEnergyType mu_energy_cut_;
     bool doCutEm_;
     bool doCutInv_;
     HEPEnergyType energy_ = 0 * electronvolt;

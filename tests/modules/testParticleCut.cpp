@@ -25,7 +25,7 @@ using namespace corsika;
 TEST_CASE("ParticleCut", "[processes]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
 
   feenableexcept(FE_INVALID);
   using EnvType = setup::Environment;
@@ -169,6 +169,14 @@ TEST_CASE("ParticleCut", "[processes]") {
 
     CHECK(view.getEntries() == 1);
     CHECK(view.getSize() == 5);
+  }
+
+  SECTION("cut low energy:  reset thresholds of arbitrary set of particles") {
+    ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false, true);
+    CHECK(get_energy_threshold(Code::Electron)!=get_energy_threshold(Code::Positron));
+    CHECK_FALSE(get_energy_threshold(Code::Electron)==Electron::mass);
+    // test default values still correct
+    CHECK(get_energy_threshold(Code::Proton)==5_GeV);
   }
 
   SECTION("cut on time") {
