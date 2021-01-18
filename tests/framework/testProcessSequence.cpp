@@ -9,6 +9,7 @@
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/process/ProcessTraits.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -485,7 +486,50 @@ TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
-  SECTION("Check construction") {
+  SECTION("Counting") {
+
+    int const n0 = count_continuous<Decay2>::count;
+    int const n1 = count_continuous<ContinuousProcess3>::count;
+    int const n2 = count_continuous<ContinuousProcess2, count_continuous<ContinuousProcess3>::count>::count;
+    int const n1_b = count_continuous<Process2, count_continuous<ContinuousProcess3>::count>::count;
+    int const n1_c = count_continuous<ContinuousProcess3, count_continuous<Process2>::count>::count;
+    int const n12 = count_continuous<ContinuousProcess2, count_continuous<ContinuousProcess3, 10>::count>::count;
+    int const n11_b = count_continuous<Process1, count_continuous<ContinuousProcess3, 10>::count>::count;
+    int const n11_c = count_continuous<ContinuousProcess3, count_continuous<Process1, 10>::count>::count;
+
+    CHECK(n0 == 0);
+    CHECK(n1 == 1);
+    CHECK(n1_b == 1);
+    CHECK(n1_c == 1);
+    CHECK(n2 == 2);
+    CHECK(n11_b == 11);
+    CHECK(n11_c == 11);
+    CHECK(n12 == 12);
+
+
+    struct TestSelect {
+      SwitchResult operator()(const DummyData& p) const {
+        std::cout << "TestSelect data=" << p.data_[0] << std::endl;
+        if (p.data_[0] > 0) return SwitchResult::First;
+        return SwitchResult::Second;
+      }
+    };
+    TestSelect select1;
+
+    auto sequence1 = make_sequence(Process1(0), ContinuousProcess2(0), Decay1(0));
+    auto sequence2 = make_sequence(ContinuousProcess3(0), Process2(0), Decay2(0));
+
+    auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
+
+    auto sequence3 = make_sequence(ContinuousProcess1(0), Process3(0),
+                                   switch_seq);
+
+
+    CHECK(decltype(sequence1)::nContinuous == 1);
+    CHECK(count_continuous<decltype(sequence1)>::count == 1);
+    CHECK(count_continuous<decltype(sequence2)>::count == 1);
+    CHECK(count_continuous<decltype(switch_seq)>::count == 2);
+    CHECK(count_continuous<decltype(sequence3)>::count == 3);
 
   }
 }

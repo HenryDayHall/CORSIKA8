@@ -10,6 +10,7 @@
 
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
+#include <corsika/framework/process/ProcessTraits.hpp>
 
 namespace corsika {
 
@@ -37,4 +38,15 @@ namespace corsika {
     LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
   };
 
+  /**
+   * ProcessTraits specialization
+   **/
+  /*
+    template <typename TProcess, int N>
+    struct count_continuous<TProcess, N, 
+                           typename std::enable_if_t<std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess>>, 
+                                                                       typename std::decay_t<TProcess>>>> {
+      enum { count = N+1 };
+    };
+  */
 } // namespace corsika

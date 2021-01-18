@@ -60,7 +60,10 @@ namespace corsika {
      See also class \sa ProcessSequence
   **/
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect,
+            int IndexStart = 0, 
+            int IndexProcess1 = count_continuous<TProcess1>::count, 
+            int IndexProcess2 = count_continuous<TProcess1, count_continuous<TProcess2>::count>::count>
   class SwitchProcessSequence
       : public BaseProcess<SwitchProcessSequence<TProcess1, TProcess2, TSelect>> {
 
@@ -94,6 +97,8 @@ namespace corsika {
                   "ProcessSequence 2");
 
   public:
+    enum { nContinuous = IndexProcess1+IndexProcess2 };  // static counter to index continuous processes
+
     // resource management
     SwitchProcessSequence() = delete; // only initialized objects
     SwitchProcessSequence(SwitchProcessSequence const&) = default;
@@ -187,6 +192,7 @@ namespace corsika {
   make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }
+
 
 } // namespace corsika
 

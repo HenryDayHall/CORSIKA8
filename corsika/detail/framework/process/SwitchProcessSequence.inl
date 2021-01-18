@@ -25,9 +25,10 @@
 
 namespace corsika {
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, 
+            int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TParticle, typename TVTNType>
-  ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doBoundaryCrossing(
+  ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::doBoundaryCrossing(
       TParticle& particle, TVTNType const& from, TVTNType const& to) {
     switch (select_(particle)) {
       case SwitchResult::First: {
@@ -50,9 +51,9 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TParticle, typename TTrack>
-  inline ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doContinuous(
+  inline ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::doContinuous(
       TParticle& particle, TTrack& vT) {
     switch (select_(particle)) {
       case SwitchResult::First: {
@@ -75,9 +76,9 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TSecondaries>
-  inline void SwitchProcessSequence<TProcess1, TProcess2, TSelect>::doSecondaries(
+  inline void SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::doSecondaries(
       TSecondaries& vS) {
     const auto& particle = vS.parent();
     switch (select_(particle)) {
@@ -100,10 +101,10 @@ namespace corsika {
     }
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TParticle, typename TTrack>
   inline LengthType SwitchProcessSequence<TProcess1, TProcess2,
-                                          TSelect>::getMaxStepLength(TParticle& particle,
+                                          TSelect, IndexStart, IndexProcess1, IndexProcess2>::getMaxStepLength(TParticle& particle,
                                                                      TTrack& vTrack) {
     switch (select_(particle)) {
       case SwitchResult::First: {
@@ -128,10 +129,10 @@ namespace corsika {
     return std::numeric_limits<double>::infinity() * meter;
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TParticle>
   inline InverseGrammageType
-  SwitchProcessSequence<TProcess1, TProcess2, TSelect>::getInverseInteractionLength(
+  SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::getInverseInteractionLength(
       TParticle&& particle) {
 
     switch (select_(particle)) {
@@ -155,10 +156,10 @@ namespace corsika {
     return 0 * meter * meter / gram; // default value
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TSecondaryView>
   inline ProcessReturn
-  SwitchProcessSequence<TProcess1, TProcess2, TSelect>::selectInteraction(
+  SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::selectInteraction(
       TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
       [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
     switch (select_(view.parent())) {
@@ -203,10 +204,10 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   template <typename TParticle>
   inline InverseTimeType
-  SwitchProcessSequence<TProcess1, TProcess2, TSelect>::getInverseLifetime(
+  SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::getInverseLifetime(
       TParticle&& particle) {
 
     switch (select_(particle)) {
@@ -229,10 +230,10 @@ namespace corsika {
     return 0 / second; // default value
   }
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart, int IndexProcess1, int IndexProcess2>
   // select decay process
   template <typename TSecondaryView>
-  inline ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect>::selectDecay(
+  inline ProcessReturn SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1, IndexProcess2>::selectDecay(
       TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
       [[maybe_unused]] InverseTimeType decay_inv_sum) {
     switch (select_(view.parent())) {

@@ -26,21 +26,6 @@
 
 namespace corsika {
 
-  namespace detail {
-    template <typename TProcess, int N=0, typename Enable=void>
-    struct CountContinuous {
-      enum { count = N };
-    }; 
-
-    template <typename TProcess, int N=0>              
-    struct CountContinuous<TProcess, N, 
-                           typename std::enable_if_t<std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess>>>> {
-      enum { count = N+1 };
-    };
-  }
-
-    
-
   /**
    *
    *  Definition of a static process list/sequence
@@ -59,7 +44,9 @@ namespace corsika {
    **/
 
   template <typename TProcess1, typename TProcess2 = NullModel, 
-            int NContinuous = detail::CountContinuous<TProcess1, detail::CountContinous<TProcess1>::count>::count>
+            int IndexStart = 0, 
+            int IndexProcess1 = count_continuous<TProcess1>::count, 
+            int IndexProcess2 = count_continuous<TProcess1, count_continuous<TProcess2>::count>::count>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
     using process1_type = typename std::decay_t<TProcess1>;
@@ -71,9 +58,6 @@ namespace corsika {
     static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<process1_type>;
     static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<process2_type>;
 
-    // we want to count continuous processes, to each one has a unique index
-    if constexpr (std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess1>>   )
-
     // make sure only BaseProcess types TProcess1/2 are passed
     static_assert(std::is_base_of_v<BaseProcess<process1_type>, process1_type>,
                   "can only use process derived from BaseProcess in "
@@ -83,6 +67,8 @@ namespace corsika {
                   "ProcessSequence, for Process 2");
 
   public:
+    enum { nContinuous = IndexProcess2 };  // static counter to index continuous processes
+
     // resource management
     ProcessSequence() = delete; // only initialized objects
     ProcessSequence(ProcessSequence const&) = default;
@@ -132,7 +118,8 @@ namespace corsika {
     inline void doStack(TStack& stack);
 
     template <typename TParticle, typename TTrack>
-      inline std::pair<LengthType,void*> getMaxStepLength(TParticle& particle, TTrack& vTrack);
+      inline LengthType getMaxStepLength(TParticle& particle, TTrack& vTrack);
+    //inline std::pair<LengthType,int> getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {
@@ -163,7 +150,6 @@ namespace corsika {
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
 
   private:
-    int countContinuous_ = Ncontinuous;
     TProcess1 A_; /// process/list A, this is a reference, if possible
     TProcess2 B_; /// process/list B, this is a reference, if possible
 
@@ -253,6 +239,7 @@ namespace corsika {
         int>>
     is_process_sequence() {}
   };
+
 
 } // namespace corsika
 
