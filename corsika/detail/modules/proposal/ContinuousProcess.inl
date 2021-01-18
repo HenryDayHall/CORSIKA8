@@ -28,7 +28,7 @@ namespace corsika::proposal {
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
       throw std::runtime_error("PROPOSAL could not find corresponding builder");
-    
+
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
