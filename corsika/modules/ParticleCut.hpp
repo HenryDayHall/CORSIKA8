@@ -79,8 +79,8 @@ namespace corsika {
     bool isBelowEnergyCut(TParticle const&) const;
 
     //! defines which particles are invisible, by default only neutrinos
-    bool isInvisible(Code const &) const;
-    
+    bool isInvisible(Code const&) const;
+
   private:
     bool doCutEm_;
     bool doCutInv_;
