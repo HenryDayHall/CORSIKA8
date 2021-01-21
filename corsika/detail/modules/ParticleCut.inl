@@ -104,14 +104,18 @@ namespace corsika {
     }
   }
 
+  bool ParticleCut::isInvisible(Code const &vCode) const {
+    return is_neutrino(vCode);
+  }
+  
   template <typename TParticle>
   bool ParticleCut::checkCutParticle(const TParticle& particle) {
 
     const Code pid = particle.getPID();
     HEPEnergyType energy = particle.getEnergy();
-    CORSIKA_LOG_DEBUG(fmt::format("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV",
+    CORSIKA_LOG_DEBUG("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV",
                                   pid, energy / 1_GeV,
-                                  (em_energy_ + inv_energy_ + energy_) / 1_GeV));
+                                  (em_energy_ + inv_energy_ + energy_) / 1_GeV);
     if (doCutEm_ && is_em(pid)) {
       CORSIKA_LOG_DEBUG("removing em. particle...");
       em_energy_ += energy;
