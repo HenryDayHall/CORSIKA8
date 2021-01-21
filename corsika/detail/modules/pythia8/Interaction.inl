@@ -22,15 +22,14 @@
 namespace corsika::pythia8 {
 
   Interaction::~Interaction() {
-    std::cout << "Pythia::Interaction n=" << count_ << std::endl;
+    CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_);
   }
 
   Interaction::Interaction(bool const print_listing)
       : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
       , print_listing_(print_listing) {
 
-    std::cout << "Configuring Pythia8 from: " << CORSIKA_Pythia8_XML_DIR << std::endl;
-    std::cout << "Pythia::Interaction n=" << count_ << std::endl;
+    CORSIKA_LOG_INFO("Configuring Pythia8 from: {}", CORSIKA_Pythia8_XML_DIR);
 
     // initialize Pythia
 
@@ -72,13 +71,13 @@ namespace corsika::pythia8 {
   }
 
   void Interaction::setUnstable(Code const pCode) {
-    std::cout << "Pythia::Interaction: setting " << pCode << " unstable.." << std::endl;
-    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
+    CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} unstable..", pCode);
+    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
   void Interaction::setStable(Code const pCode) {
-    std::cout << "Pythia::Interaction: setting " << pCode << " stable.." << std::endl;
-    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
+    CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode );
+    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
   void Interaction::configureLabFrameCollision(Code const BeamId, Code const TargetId,
@@ -175,10 +174,12 @@ namespace corsika::pythia8 {
     HEPEnergyType const ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
-    std::cout << "Interaction: LambdaInt: \n"
-              << " input energy: " << particle.getEnergy() / 1_GeV << std::endl
-              << " beam can interact:" << kInteraction << std::endl
-              << " beam pid:" << particle.getPID() << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "Interaction: LambdaInt: \n"
+        " input energy: {} GeV"
+        " beam can interact: {}"
+        " beam pid: {}",
+        particle.getEnergy() / 1_GeV, kInteraction, particle.getPID());
 
     // TODO: move limits into variables
     if (kInteraction && Elab >= 8.5_GeV && isValidCoMEnergy(ECoM)) {
@@ -199,17 +200,16 @@ namespace corsika::pythia8 {
             return std::get<0>(this->getCrossSection(corsikaBeamId, vTargetID, ECoM));
           });
 
-      std::cout << "Interaction: IntLength: weighted CrossSection (mb): "
-                << weightedProdCrossSection / 1_mb << std::endl
-                << "Interaction: IntLength: average mass number: "
-                << mediumComposition.getAverageMassNumber() << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: IntLength: weighted CrossSection (mb): {} "
+          "Interaction: IntLength: average mass number: {} ",
+          weightedProdCrossSection / 1_mb, mediumComposition.getAverageMassNumber());
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.getAverageMassNumber() *
                                       constants::u / weightedProdCrossSection;
-      std::cout << "Interaction: "
-                << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
-                << std::endl;
+      CORSIKA_LOG_DEBUG("Interaction: interaction length (g/cm2): {} ",
+                        int_length / (0.001_kg) * 1_cm * 1_cm);
 
       return int_length;
     }
@@ -222,10 +222,11 @@ namespace corsika::pythia8 {
 
     auto projectile = view.getProjectile();
 
-    auto const corsikaBeamId = projectile.getPID();
-    std::cout << "Pythia::Interaction: "
-              << "DoInteraction: " << corsikaBeamId << " interaction? "
-              << corsika::pythia8::Interaction::canInteract(corsikaBeamId) << std::endl;
+    const auto corsikaBeamId = projectile.getPID();
+    CORSIKA_LOG_DEBUG(
+        "Pythia::Interaction: "
+        "DoInteraction: {} interaction? ",
+        corsikaBeamId, corsika::pythia8::Interaction::canInteract(corsikaBeamId));
 
     if (is_nucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
@@ -249,12 +250,15 @@ namespace corsika::pythia8 {
       auto const pTargetLab = MomentumVector(labCS, 0_GeV, 0_GeV, 0_GeV);
       FourVector const PtargLab(eTargetLab, pTargetLab);
 
-      std::cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << std::endl
-                << "Interaction: pbeam lab: " << pProjectileLab.getComponents() / 1_GeV
-                << std::endl;
-      std::cout << "Interaction: etarget lab: " << eTargetLab / 1_GeV << std::endl
-                << "Interaction: ptarget lab: " << pTargetLab.getComponents() / 1_GeV
-                << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: ebeam lab: {} GeV"
+          "Interaction: pbeam lab: {} GeV",
+          eProjectileLab / 1_GeV, pProjectileLab.getComponents() / 1_GeV);
+
+      CORSIKA_LOG_DEBUG(
+          "Interaction: etarget lab: {} GeV"
+          "Interaction: ptarget lab: {} GeV ",
+          eTargetLab / 1_GeV, pTargetLab.getComponents() / 1_GeV);
 
       FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
@@ -270,18 +274,20 @@ namespace corsika::pythia8 {
       // boost target
       auto const PtargCoM = boost.toCoM(PtargLab);
 
-      std::cout << "Interaction: ebeam CoM: " << PprojCoM.getTimeLikeComponent() / 1_GeV
-                << std::endl
-                << "Interaction: pbeam CoM: "
-                << PprojCoM.getSpaceLikeComponents().getComponents() / 1_GeV << std::endl;
-      std::cout << "Interaction: etarget CoM: " << PtargCoM.getTimeLikeComponent() / 1_GeV
-                << std::endl
-                << "Interaction: ptarget CoM: "
-                << PtargCoM.getSpaceLikeComponents().getComponents() / 1_GeV << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: ebeam CoM: {} GeV"
+          "Interaction: pbeam CoM: {} GeV",
+          PprojCoM.getTimeLikeComponent() / 1_GeV,
+          PprojCoM.getSpaceLikeComponents().getComponents() / 1_GeV);
 
-      std::cout << "Interaction: position of interaction: " << pOrig.getCoordinates()
-                << std::endl;
-      std::cout << "Interaction: time: " << tOrig << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: etarget CoM: {} GeV"
+          "Interaction: ptarget CoM: {} GeV",
+          PtargCoM.getTimeLikeComponent() / 1_GeV,
+          PtargCoM.getSpaceLikeComponents().getComponents() / 1_GeV);
+
+      CORSIKA_LOG_DEBUG("Interaction: position of interaction: ", pOrig.getCoordinates());
+      CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig );
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
       MomentumVector Ptot = projectile.getMomentum();
@@ -310,20 +316,23 @@ namespace corsika::pythia8 {
 
       auto const corsikaTargetId =
           mediumComposition.sampleTarget(cross_section_of_components, RNG_);
-      std::cout << "Interaction: target selected: " << corsikaTargetId << std::endl;
+      CORSIKA_LOG_DEBUG("Interaction: target selected: {}", corsikaTargetId );
 
       if (corsikaTargetId != Code::Hydrogen && corsikaTargetId != Code::Neutron &&
           corsikaTargetId != Code::Proton)
         throw std::runtime_error("DoInteraction: wrong target for PYTHIA");
 
-      std::cout << "Interaction: "
-                << " DoInteraction: E(GeV):" << eProjectileLab / 1_GeV
-                << " Ecm(GeV): " << Ecm / 1_GeV << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: "
+          " DoInteraction: E(GeV): {}"
+          " Ecm(GeV): {}",
+          eProjectileLab / 1_GeV, Ecm / 1_GeV);
 
       if (eProjectileLab < 8.5_GeV || !isValidCoMEnergy(Ecm)) {
-        std::cout << "Interaction: "
-                  << " DoInteraction: should have dropped particle.. "
-                  << "THIS IS AN ERROR" << std::endl;
+        CORSIKA_LOG_DEBUG(
+            "Interaction: "
+            " DoInteraction: should have dropped particle.. "
+            "THIS IS AN ERROR");
         throw std::runtime_error("energy too low for PYTHIA");
 
       } else {
@@ -363,9 +372,11 @@ namespace corsika::pythia8 {
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }
-        std::cout << "conservation (all GeV): "
-                  << "Elab_final=" << Elab_final / 1_GeV
-                  << ", Plab_final=" << (Plab_final / 1_GeV).getComponents() << std::endl;
+        CORSIKA_LOG_DEBUG(
+            "conservation (all GeV): "
+            "Elab_final= {}"
+            ", Plab_final= {}",
+            Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
       }
     }
   }
