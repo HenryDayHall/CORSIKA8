@@ -76,7 +76,7 @@ namespace corsika::pythia8 {
   }
 
   void Interaction::setStable(Code const pCode) {
-    CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode );
+    CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode);
     pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
@@ -287,7 +287,7 @@ namespace corsika::pythia8 {
           PtargCoM.getSpaceLikeComponents().getComponents() / 1_GeV);
 
       CORSIKA_LOG_DEBUG("Interaction: position of interaction: ", pOrig.getCoordinates());
-      CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig );
+      CORSIKA_LOG_DEBUG("Interaction: time: {}", tOrig);
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
       MomentumVector Ptot = projectile.getMomentum();
@@ -316,7 +316,7 @@ namespace corsika::pythia8 {
 
       auto const corsikaTargetId =
           mediumComposition.sampleTarget(cross_section_of_components, RNG_);
-      CORSIKA_LOG_DEBUG("Interaction: target selected: {}", corsikaTargetId );
+      CORSIKA_LOG_DEBUG("Interaction: target selected: {}", corsikaTargetId);
 
       if (corsikaTargetId != Code::Hydrogen && corsikaTargetId != Code::Neutron &&
           corsikaTargetId != Code::Proton)
