@@ -71,10 +71,8 @@ TEST_CASE("InteractionCounter", "[process]") {
     CHECK(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
     CHECK(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
 
-    countedProcess.GetHistogram().saveLab("testInteractionCounter_file1.npz",
-                                          utl::SaveMode::overwrite);
-    countedProcess.GetHistogram().saveCMS("testInteractionCounter_file2.npz",
-                                          utl::SaveMode::overwrite);
+    countedProcess.GetHistogram().saveLab("testInteractionCounter_file1.npz");
+    countedProcess.GetHistogram().saveCMS("testInteractionCounter_file2.npz");
   }
 
   SECTION("DoInteraction Lambda") {
