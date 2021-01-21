@@ -43,8 +43,8 @@ namespace corsika {
     hist_type const& CMSHist() const { return inthist_cms_; }
     hist_type const& labHist() const { return inthist_lab_; }
 
-    void saveLab(std::string const& filename, SaveMode mode = SaveMode::append) const;
-    void saveCMS(std::string const& filename, SaveMode mode = SaveMode::append) const;
+    void saveLab(std::string const& filename) const;
+    void saveCMS(std::string const& filename) const;
 
     InteractionHistogram& operator+=(InteractionHistogram const& other);
     InteractionHistogram operator+(InteractionHistogram other) const;
