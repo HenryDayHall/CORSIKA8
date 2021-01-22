@@ -40,5 +40,6 @@ TEST_CASE("SaveHistogram") {
     h(a, b, c, d);
   }
 
-  corsika::save_hist(h, "hist.npz");
+  REQUIRE_NOTHROW(corsika::save_hist(h, "hist.npz", true));
+  REQUIRE_THROWS(corsika::save_hist(h, "hist.npz", false));
 }

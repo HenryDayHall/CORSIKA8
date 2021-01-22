@@ -42,14 +42,6 @@ namespace corsika {
     }
   }
 
-  void InteractionHistogram::saveLab(std::string const& filename) const {
-    corsika::save_hist(inthist_lab_, filename);
-  }
-
-  void InteractionHistogram::saveCMS(std::string const& filename) const {
-    corsika::save_hist(inthist_cms_, filename);
-  }
-
   InteractionHistogram& InteractionHistogram::operator+=(
       InteractionHistogram const& other) {
     inthist_lab_ += other.inthist_lab_;

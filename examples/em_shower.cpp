@@ -7,6 +7,7 @@
  */
 
 #include <corsika/framework/core/Cascade.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
@@ -180,7 +181,7 @@ int main(int argc, char** argv) {
   em_continuous.reset();
 
   auto const hists = proposalCounted.getHistogram();
-  hists.saveLab("inthist_lab_emShower.npz");
-  hists.saveCMS("inthist_cms_emShower.npz");
+  save_hist(hists.labHist(), "inthist_lab_emShower.npz", true);
+  save_hist(hists.CMSHist(), "inthist_cms_emShower.npz", true);
   longprof.save("longprof_emShower.txt");
 }

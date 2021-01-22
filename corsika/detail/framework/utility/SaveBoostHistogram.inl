@@ -16,6 +16,7 @@
 #include <memory>
 #include <numeric>
 #include <utility>
+#include <filesystem>
 #include <vector>
 #include <string>
 
@@ -23,7 +24,18 @@ namespace corsika {
 
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
-                        std::string const& filename) {
+                        std::string const& filename, bool overwrite) {
+    if (std::filesystem::status(filename).type() !=
+        std::filesystem::file_type::not_found) {
+      if (overwrite) {
+        std::filesystem::remove(filename);
+      } else {
+        using namespace std::literals;
+        throw std::runtime_error(
+            ("save_hist(): "s + filename + " already exists"s).c_str());
+      }
+    }
+
     unsigned const rank = h.rank();
 
     std::vector<size_t> axes_dims;

@@ -74,10 +74,10 @@ TEST_CASE("InteractionCounter", "[process]") {
     CHECK(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
     CHECK(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
 
-    std::remove("testInteractionCounter_file1.npz");
-    std::remove("testInteractionCounter_file2.npz");
-    countedProcess.getHistogram().saveLab("testInteractionCounter_file1.npz");
-    countedProcess.getHistogram().saveCMS("testInteractionCounter_file2.npz");
+    save_hist(countedProcess.getHistogram().labHist(), "testInteractionCounter_file1.npz",
+              true);
+    save_hist(countedProcess.getHistogram().CMSHist(), "testInteractionCounter_file2.npz",
+              true);
 
     SECTION("output validation") {
       auto const file = GENERATE(as<std::string>{}, "testInteractionCounter_file1",
