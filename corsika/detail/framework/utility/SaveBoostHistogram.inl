@@ -11,12 +11,12 @@
 #include <cnpy.hpp>
 
 #include <boost/histogram.hpp>
+#include <boost/filesystem.hpp> // can be changed to std::filesystem if compiler supports it
 
 #include <functional>
 #include <memory>
 #include <numeric>
 #include <utility>
-#include <filesystem>
 #include <vector>
 #include <string>
 
@@ -25,10 +25,10 @@ namespace corsika {
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
                         std::string const& filename, bool overwrite) {
-    if (std::filesystem::status(filename).type() !=
-        std::filesystem::file_type::not_found) {
+    if (boost::filesystem::status(filename).type() !=
+        boost::filesystem::file_type::file_not_found) {
       if (overwrite) {
-        std::filesystem::remove(filename);
+        boost::filesystem::remove(filename);
       } else {
         using namespace std::literals;
         throw std::runtime_error(
