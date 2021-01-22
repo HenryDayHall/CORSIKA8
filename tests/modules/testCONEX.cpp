@@ -97,13 +97,15 @@ TEST_CASE("CONEXSourceCut") {
 
   auto const emPosition = showerCore + showerAxis.getDirection() * (-20_km);
 
-  std::cout << "position injection: "
-            << injectionPos.getCoordinates(conex.getObserverCS()) << " "
-            << injectionPos.getCoordinates(rootCS) << std::endl;
-  std::cout << "position core: " << showerCore.getCoordinates(conex.getObserverCS())
-            << " " << showerCore.getCoordinates(rootCS) << std::endl;
-  std::cout << "position EM: " << emPosition.getCoordinates(conex.getObserverCS()) << " "
-            << emPosition.getCoordinates(rootCS) << std::endl;
+  CORSIKA_LOG_DEBUG("position injection: {} {}",
+                    injectionPos.getCoordinates(conex.getObserverCS()),
+                    injectionPos.getCoordinates(rootCS));
+  CORSIKA_LOG_DEBUG("position core: {} {}",
+                    showerCore.getCoordinates(conex.getObserverCS()),
+                    showerCore.getCoordinates(rootCS));
+  CORSIKA_LOG_DEBUG("position EM: {} {}",
+                    emPosition.getCoordinates(conex.getObserverCS()),
+                    emPosition.getCoordinates(rootCS));
 
   conex.addParticle(Code::Proton, Eem, 0_eV, emPosition, momentum.normalized(), 0_s);
   // supperimpose a photon
