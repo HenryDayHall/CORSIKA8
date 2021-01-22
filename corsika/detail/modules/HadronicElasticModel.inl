@@ -52,7 +52,7 @@ namespace corsika {
           avgCrossSection += getCrossSection(s) * fractions[i];
         }
 
-	CORSIKA_LOG_DEBUG("avgCrossSection: {} mb" , avgCrossSection / 1_mb );
+        CORSIKA_LOG_DEBUG("avgCrossSection: {} mb", avgCrossSection / 1_mb);
 
         return avgCrossSection;
       }();

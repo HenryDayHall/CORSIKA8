@@ -214,11 +214,11 @@ public:
   inline void doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
-    CORSIKA_LOG_DEBUG("Process3::doInteraction" );
+    CORSIKA_LOG_DEBUG("Process3::doInteraction");
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
-    CORSIKA_LOG_DEBUG("Process3::GetInteractionLength" );
+    CORSIKA_LOG_DEBUG("Process3::GetInteractionLength");
     return 30_g / (1_cm * 1_cm);
   }
 
