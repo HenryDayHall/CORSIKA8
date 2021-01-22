@@ -46,13 +46,16 @@ namespace corsika {
       if (ReportStack_) {
         CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem(); // for printout
         auto pos = iterP.getPosition().getCoordinates(rootCS);
-        std::cout << "StackInspector: i=" << std::setw(5) << std::fixed << (i++)
-                  << ", id=" << std::setw(30) << iterP.getPID() << " E=" << std::setw(15)
-                  << std::scientific << (E / 1_GeV) << " GeV, "
-                  << " pos=" << pos << " node = " << iterP.getNode();
+        CORSIKA_LOG_DEBUG(
+            "StackInspector: i= {:5d}"
+            ", id= {:^15}"
+            " E={:15e} GeV, "
+            " pos= {}"
+            " node = {}",
+            (i++), iterP.getPID(), (E / 1_GeV), pos, fmt::ptr(iterP.getNode()));
+
         if (iterP.getPID() == Code::Nucleus)
-          std::cout << " nuc_ref=" << iterP.getNucleusRef();
-        std::cout << std::endl;
+          CORSIKA_LOG_DEBUG("nuc_ref= {}", iterP.getNucleusRef());
       }
     }
 
@@ -67,13 +70,18 @@ namespace corsika {
     std::time_t const eta_time = std::chrono::system_clock::to_time_t(
         StartTime_ + std::chrono::seconds((int)eta_seconds));
 
-    std::cout << "StackInspector: "
-              << " time=" << std::put_time(std::localtime(&now_time), "%T")
-              << ", running=" << elapsed_seconds.count() << " seconds"
-              << " (" << std::setw(3) << int(progress * 100) << "%)"
-              << ", nStep=" << getStep() << ", stackSize=" << vS.getSize()
-              << ", Estack=" << Etot / 1_GeV << " GeV"
-              << ", ETA=" << std::put_time(std::localtime(&eta_time), "%T") << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "StackInspector: "
+        " time= {}"
+        ", running= {} seconds"
+        " ( {}%)"
+        ", nStep= {}"
+        ", stackSize= {}"
+        ", Estack= {} GeV"
+        ", ETA=",
+        std::put_time(std::localtime(&now_time), "%T"), elapsed_seconds.count(),
+        int(progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
+        std::put_time(std::localtime(&eta_time), "%T"));
   }
 
 } // namespace corsika
