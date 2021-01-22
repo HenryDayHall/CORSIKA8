@@ -19,7 +19,6 @@
 #include <string>
 #include <cstdlib>
 #include <experimental/filesystem>
-#include <iostream>
 
 using namespace corsika;
 
@@ -49,10 +48,11 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
     CHECK(data != 0);
     CHECK(std::experimental::filesystem::is_directory(
         std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
-    std::cout << "data: " << data << " isDir: "
-              << std::experimental::filesystem::is_directory(std::string(data) +
-                                                             "/QGSJetII")
-              << std::endl;
+    CORSIKA_LOG_INFO(
+        "data: {}"
+        " isDir: {}"
+        "/QGSJetII",
+        data, std::experimental::filesystem::is_directory(std::string(data)));
   }
 }
 
