@@ -19,6 +19,9 @@ namespace corsika {
    *
    * Note that this function makes a temporary, dense copy of the histogram, which could
    * be an issue for huge sizes (e.g. for high dimensions)
+   *
+   * @param overwrite silently overwrite existing files if true, otherwise throw
+   * runtime_error
    */
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
