@@ -78,7 +78,7 @@ namespace corsika {
         // reset energy
         p.setEnergy(e_shifted);
       } else
-        CORSIKA_LOGGER_DEBUG(logger_, "OnShellCheck: particle mass for {} OK", pid);
+        CORSIKA_LOGGER_DEBUG(logger_, "particle mass for {} OK", pid);
     }
   }
 
