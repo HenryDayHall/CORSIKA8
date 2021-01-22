@@ -15,36 +15,50 @@ set (
 
 enable_language (Fortran)
 add_library (QGSJetII SHARED ${MODEL_SOURCES})
-set_target_properties (QGSJetII PROPERTIES POSITION_INDEPENDENT_CODE 1)
+set_target_properties (
+  QGSJetII
+  PROPERTIES
+  POSITION_INDEPENDENT_CODE 1
+  )
 
 target_include_directories (
   QGSJetII
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/include>
+  $<INSTALL_INTERFACE:include/qgsjetII>
   )
 target_link_libraries (QGSJetII CorsikaData)
 
 add_library (QGSJetII_static STATIC ${MODEL_SOURCES})
-set_target_properties (QGSJetII_static PROPERTIES POSITION_INDEPENDENT_CODE 1)
+set_target_properties (
+  QGSJetII_static
+  PROPERTIES
+  POSITION_INDEPENDENT_CODE 1
+  )
 
 target_include_directories (
   QGSJetII_static
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/include>
+  $<INSTALL_INTERFACE:include/qgsjetII>
   )
 target_link_libraries (QGSJetII_static CorsikaData)
 
 install (
+  FILES
+  ${MODEL_HEADERS}
+  DESTINATION include/qgsjetII
+  )
+
+install (
   TARGETS QGSJetII
-  EXPORT CORSIKA8
+  EXPORT CORSIKA8PublicTargets
   DESTINATION lib
   )
 
 install (
   TARGETS QGSJetII_static
-  EXPORT CORSIKA8
+  EXPORT CORSIKA8PublicTargets
   DESTINATION lib
   )
 

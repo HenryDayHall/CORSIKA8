@@ -16,3 +16,8 @@ add_custom_command (
 
 add_custom_target (GenMediaProperties DEPENDS ${output_dir}/GeneratedMediaProperties.inc)
 add_dependencies (CORSIKA8 GenMediaProperties)
+
+install (
+  FILES ${output_dir}/GeneratedMediaProperties.inc
+  DESTINATION include/corsika/media
+  )
