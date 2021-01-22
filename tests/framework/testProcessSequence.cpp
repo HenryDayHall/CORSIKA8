@@ -39,7 +39,10 @@ public:
       : v_(v)
       , step_(step) {
 
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {} "
+        ", v_: {} ",
+        globalCount, v_);
     globalCount++;
   }
 
@@ -48,7 +51,7 @@ public:
   template <typename D, typename T>
   inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
     flag_ = flag;
-    cout << "ContinuousProcess1::DoContinuous" << endl;
+    CORSIKA_LOG_TRACE("ContinuousProcess1::DoContinuous");
     checkCont |= 1;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.933;
     return ProcessReturn::Ok;
@@ -73,7 +76,10 @@ public:
   ContinuousProcess2(int const v, LengthType const step)
       : v_(v)
       , step_(step) {
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {}",
+        globalCount, v_);
     globalCount++;
   }
 
@@ -82,7 +88,7 @@ public:
   template <typename D, typename T>
   inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
     flag_ = flag;
-    cout << "ContinuousProcess2::DoContinuous" << endl;
+    CORSIKA_LOG_DEBUG("ContinuousProcess2::DoContinuous");
     checkCont |= 2;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.111;
     return ProcessReturn::Ok;
@@ -107,7 +113,10 @@ public:
   ContinuousProcess3(int const v, LengthType const step)
       : v_(v)
       , step_(step) {
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {} ",
+        globalCount, v_);
     globalCount++;
   }
 
@@ -116,7 +125,7 @@ public:
   template <typename D, typename T>
   inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
     flag_ = flag;
-    cout << "ContinuousProcess3::DoContinuous" << endl;
+    CORSIKA_LOG_DEBUG("ContinuousProcess3::DoContinuous");
     checkCont |= 4;
     for (int i = 0; i < nData; ++i) d.data_[i] += 0.333;
     return ProcessReturn::Ok;
@@ -140,7 +149,11 @@ class Process1 : public InteractionProcess<Process1> {
 public:
   Process1(int const v)
       : v_(v) {
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {}",
+        globalCount, v_);
+    ;
     globalCount++;
   }
 
@@ -163,7 +176,10 @@ class Process2 : public InteractionProcess<Process2> {
 public:
   Process2(int const v)
       : v_(v) {
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {}",
+        globalCount, v_);
     globalCount++;
   }
 
@@ -171,11 +187,11 @@ public:
   inline void doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
-    cout << "Process2::doInteraction" << endl;
+    CORSIKA_LOG_DEBUG("Process2::doInteraction");
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
-    cout << "Process2::GetInteractionLength" << endl;
+    CORSIKA_LOG_DEBUG("Process2::GetInteractionLength");
     return 20_g / (1_cm * 1_cm);
   }
 
@@ -187,7 +203,10 @@ class Process3 : public InteractionProcess<Process3> {
 public:
   Process3(int const v)
       : v_(v) {
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {}",
+        globalCount, v_);
     globalCount++;
   }
 
@@ -195,11 +214,11 @@ public:
   inline void doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
-    cout << "Process3::doInteraction" << endl;
+    CORSIKA_LOG_DEBUG("Process3::doInteraction" );
   }
   template <typename Particle>
   GrammageType getInteractionLength(Particle&) const {
-    cout << "Process3::GetInteractionLength" << endl;
+    CORSIKA_LOG_DEBUG("Process3::GetInteractionLength" );
     return 30_g / (1_cm * 1_cm);
   }
 
@@ -211,13 +230,16 @@ class Process4 : public BaseProcess<Process4> {
 public:
   Process4(int const v)
       : v_(v) {
-    cout << "globalCount: " << globalCount << ", v_: " << v_ << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "globalCount: {}"
+        ", v_: {}",
+        globalCount, v_);
     globalCount++;
   }
 
   template <typename D, typename T>
   inline ProcessReturn doContinuous(D& d, T&, bool const) const {
-    std::cout << "Base::doContinuous" << std::endl;
+    CORSIKA_LOG_DEBUG("Base::doContinuous");
     checkCont |= 8;
     for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }
     return ProcessReturn::Ok;
@@ -234,7 +256,7 @@ private:
 class Decay1 : public DecayProcess<Decay1> {
 public:
   Decay1(int const) {
-    cout << "Decay1()" << endl;
+    CORSIKA_LOG_DEBUG("Decay1()");
     globalCount++;
   }
 
@@ -251,7 +273,7 @@ public:
 class Decay2 : public DecayProcess<Decay2> {
 public:
   Decay2(int const) {
-    cout << "Decay2()" << endl;
+    CORSIKA_LOG_DEBUG("Decay2()");
     globalCount++;
   }
 
@@ -354,7 +376,10 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     auto sequence2 = make_sequence(cp1, m2, m3);
     GrammageType const tot = sequence2.getInteractionLength(particle);
     InverseGrammageType const tot_inv = sequence2.getInverseInteractionLength(particle);
-    cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
+    CORSIKA_LOG_DEBUG(
+        "lambda_tot={}"
+        "; lambda_tot_inv={}",
+        tot, tot_inv);
 
     CHECK(tot / 1_g * square(1_cm) == 12);
     CHECK(tot_inv * 1_g / square(1_cm) == 1. / 12);
@@ -373,7 +398,10 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     auto sequence2 = make_sequence(cp1, m2, m3, d3);
     TimeType const tot = sequence2.getLifetime(particle);
     InverseTimeType const tot_inv = sequence2.getInverseLifetime(particle);
-    cout << "lambda_tot=" << tot << "; lambda_tot_inv=" << tot_inv << endl;
+    CORSIKA_LOG_DEBUG(
+        "lambda_tot={}"
+        "; lambda_tot_inv={}",
+        tot, tot_inv);
 
     CHECK(tot / 1_s == 1);
     CHECK(tot_inv * 1_s == 1.);
@@ -419,9 +447,9 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     CORSIKA_LOG_INFO("step2, l={}, i={}", LengthType(step2),
                      ContinuousProcessIndex(step2).getIndex());
 
-    cout << "-->init sequence2" << endl;
+    CORSIKA_LOG_DEBUG("-->init sequence2");
     globalCount = 0;
-    cout << "-->docontinuous" << endl;
+    CORSIKA_LOG_DEBUG("-->docont");
 
     // validation data
     double test_data[nData] = {0};
@@ -431,16 +459,16 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     track = DummyTrajectory();
 
     int const nLoop = 5;
-    cout << "Running loop with n=" << nLoop << endl;
+    CORSIKA_LOG_DEBUG("Running loop with n={}", nLoop);
     for (int iLoop = 0; iLoop < nLoop; ++iLoop) {
       for (int i = 0; i < nData; ++i) { test_data[i] += 0.933 + 0.111; }
       sequence2.doContinuous(particle, track, ContinuousProcessIndex(1));
     }
     for (int i = 0; i < nData; i++) {
-      cout << "data_[" << i << "]=" << particle.data_[i] << endl;
+      CORSIKA_LOG_DEBUG("data_[{}]={}", i, particle.data_[i]);
       CHECK(particle.data_[i] == Approx(test_data[i]).margin(1e-9));
     }
-    cout << "done" << endl;
+    CORSIKA_LOG_DEBUG("done");
   }
 
   SECTION("StackProcess") {
@@ -505,6 +533,14 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
         make_sequence(cp1, Process3(0),
                       make_select(make_sequence(Process1(0), cp2, Decay1(0)),
                                   make_sequence(cp3, Process2(0), Decay2(0)), select1));
+    struct TestSelect {
+      SwitchResult operator()(const DummyData& p) const {
+        CORSIKA_LOG_DEBUG("TestSelect data={}", p.data_[0]);
+        if (p.data_[0] > 0) return SwitchResult::First;
+        return SwitchResult::Second;
+      }
+    };
+    TestSelect select1;
 
     auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
     CHECK(is_process_sequence_v<decltype(switch_seq)>);
