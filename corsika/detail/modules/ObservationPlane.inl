@@ -59,15 +59,66 @@ namespace corsika {
       corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
 
-    auto const& volumeNode = particle.getNode();
+    int chargeNumber;
+    if (is_nucleus(vParticle.getPID())) {
+      chargeNumber = vParticle.getNuclearZ();
+    } else {
+      chargeNumber = get_charge_number(vParticle.getPID());
+    }
+    auto const* currentLogicalVolumeNode = vParticle.getNode();
+    auto magneticfield = currentLogicalVolumeNode->getModelProperties().getMagneticField(
+        vParticle.getPosition());
+    auto direction = trajectory.getVelocity(0).normalized();
 
-    typedef typename std::remove_const_t<
-        std::remove_reference_t<decltype(volumeNode->getModelProperties())>>
-        medium_type;
+    if (chargeNumber != 0 &&
+        abs(plane_.getNormal().dot(
+            trajectory.getLine().getVelocity().cross(magneticfield))) *
+                1_s / 1_m / 1_T >
+            1e-6) {
+      auto const* currentLogicalVolumeNode = vParticle.getNode();
+      auto magneticfield =
+          currentLogicalVolumeNode->getModelProperties().getMagneticField(
+              vParticle.getPosition());
+      auto k =
+          chargeNumber * constants::c * 1_eV / (vParticle.getMomentum().getNorm() * 1_V);
 
-    Intersections const intersection =
-        setup::Tracking::intersect<corsika::setup::Stack::particle_type, medium_type>(
-            particle, plane_, volumeNode->getModelProperties());
+      if (direction.dot(plane_.getNormal()) * direction.dot(plane_.getNormal()) -
+              (plane_.getNormal().dot(trajectory.getPosition(0) - plane_.getCenter()) *
+               plane_.getNormal().dot(direction.cross(magneticfield)) * 2 * k) <
+          0) {
+        return std::numeric_limits<double>::infinity() * 1_m;
+      }
+
+      LengthType MaxStepLength1 =
+          (sqrt(direction.dot(plane_.getNormal()) * direction.dot(plane_.getNormal()) -
+                (plane_.getNormal().dot(trajectory.getPosition(0) - plane_.getCenter()) *
+                 plane_.getNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+           direction.dot(plane_.getNormal()) / direction.getNorm()) /
+          (plane_.getNormal().dot(direction.cross(magneticfield)) * k);
+
+      LengthType MaxStepLength2 =
+          (-sqrt(direction.dot(plane_.getNormal()) * direction.dot(plane_.getNormal()) -
+                 (plane_.getNormal().dot(trajectory.getPosition(0) - plane_.getCenter()) *
+                  plane_.getNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+           direction.dot(plane_.getNormal()) / direction.getNorm()) /
+          (plane_.getNormal().dot(direction.cross(magneticfield)) * k);
+
+      if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
+        return std::numeric_limits<double>::infinity() * 1_m;
+      } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
+        CORSIKA_LOG_DEBUG("steplength to obs plane 2: {} ", MaxStepLength2);
+        return MaxStepLength2 *
+               (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+                   .getNorm() *
+               1.001;
+      } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
+        CORSIKA_LOG_DEBUG("steplength to obs plane 1: {}", MaxStepLength1);
+        return MaxStepLength1 *
+               (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+                   .getNorm() *
+               1.001;
+      }
+    }
 
     TimeType const timeOfIntersection = intersection.getEntry();
 
