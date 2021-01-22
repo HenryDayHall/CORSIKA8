@@ -31,7 +31,7 @@ namespace corsika {
     double average_shift_ = 0;
     double max_shift_ = 0;
     double count_ = 0;
-    std::shared_ptr<spdlog::logger> logger_ = get_logger("on_shell_check_OnShellCheck");
+    std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_OnShellCheck");
     double mass_tolerance_;
     double energy_tolerance_;
     bool throw_error_;
