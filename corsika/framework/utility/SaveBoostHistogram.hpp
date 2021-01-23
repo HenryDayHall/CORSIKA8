@@ -12,8 +12,6 @@
 
 namespace corsika {
 
-  enum class SaveMode { overwrite, append };
-
   /**
    * This functions saves a boost::histogram into a numpy file. Only rather basic axis
    * types are supported: regular, variable, integer, category<int>. Only "ordinary" bin
@@ -21,10 +19,13 @@ namespace corsika {
    *
    * Note that this function makes a temporary, dense copy of the histogram, which could
    * be an issue for huge sizes (e.g. for high dimensions)
+   *
+   * @param overwrite silently overwrite existing files if true, otherwise throw
+   * runtime_error
    */
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
-                        std::string const& filename, SaveMode mode = SaveMode::append);
+                        std::string const& filename, bool overwrite = true);
 } // namespace corsika
 
 #include <corsika/detail/framework/utility/SaveBoostHistogram.inl>

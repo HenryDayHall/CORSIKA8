@@ -21,6 +21,11 @@
 #include <catch2/catch.hpp>
 
 #include <numeric>
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <fstream>
+#include <cstdio>
 
 using namespace corsika;
 
@@ -69,10 +74,31 @@ TEST_CASE("InteractionCounter", "[process]") {
     CHECK(h2.at(h2.axis(0).index(1'000'070'140), h2.axis(1).index(1.6e12)) == 1);
     CHECK(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
 
-    countedProcess.getHistogram().saveLab("testInteractionCounter_file1.npz",
-                                          SaveMode::overwrite);
-    countedProcess.getHistogram().saveCMS("testInteractionCounter_file2.npz",
-                                          SaveMode::overwrite);
+    save_hist(countedProcess.getHistogram().labHist(), "testInteractionCounter_file1.npz",
+              true);
+    save_hist(countedProcess.getHistogram().CMSHist(), "testInteractionCounter_file2.npz",
+              true);
+
+    SECTION("output validation") {
+      auto const file = GENERATE(as<std::string>{}, "testInteractionCounter_file1",
+                                 "testInteractionCounter_file2");
+
+      std::cout << file + ".npz vs " << refDataDir + "/" + file + "_REF.npz" << std::endl;
+
+      // compare to binary reference data
+      // note that this currenly compares the whole files byte by byte. If the new
+      // or the reference file are compressed this would be a false-negative outcome
+      // of this test
+      std::ifstream file1(file + ".npz");
+      std::ifstream file1ref(refDataDir + "/" + file + "_REF.npz");
+
+      std::istreambuf_iterator<char> begin1(file1);
+      std::istreambuf_iterator<char> begin1ref(file1ref);
+
+      std::istreambuf_iterator<char> end;
+
+      CHECK(std::equal(begin1, end, begin1ref));
+    }
   }
 
   SECTION("DoInteraction Lambda") {
@@ -91,43 +117,5 @@ TEST_CASE("InteractionCounter", "[process]") {
     auto const& h2 = countedProcess.getHistogram().CMSHist();
     CHECK(h2.at(h2.axis(0).index(3122), h2.axis(1).index(1.6e12)) == 1);
     CHECK(std::accumulate(h2.cbegin(), h2.cend(), 0) == 1);
-  }
-}
-
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <fstream>
-
-TEST_CASE("InteractionCounterOutput", "[output validation]") {
-
-  logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-
-  auto file = GENERATE(as<std::string>{}, "testInteractionCounter_file1",
-                       "testInteractionCounter_file2");
-
-  SECTION(std::string("check saved data, ") + file + ".npz") {
-
-    std::cout << file + ".npz vs " << refDataDir + "/" + file + "_REF.npz" << std::endl;
-
-    // compare to binary reference data
-    std::ifstream file1(file + ".npz");
-    std::ifstream file1ref(refDataDir + "/" + file + "_REF.npz");
-
-    std::istreambuf_iterator<char> begin1(file1);
-    std::istreambuf_iterator<char> begin1ref(file1ref);
-
-    std::istreambuf_iterator<char> end;
-
-    while (begin1 != end && begin1ref != end) {
-      CHECK(*begin1 == *begin1ref);
-      ++begin1;
-      ++begin1ref;
-    }
-    CHECK(begin1 == end);
-    CHECK(begin1ref == end);
-    file1.close();
-    file1ref.close();
   }
 }

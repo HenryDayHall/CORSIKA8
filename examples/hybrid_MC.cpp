@@ -13,6 +13,7 @@
 #include <corsika/framework/process/InteractionCounter.hpp>
 /* clang-format on */
 #include <corsika/framework/geometry/Plane.hpp>
+#include <corsika/framework/utility/SaveBoostHistogram.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
@@ -267,11 +268,8 @@ int main(int argc, char** argv) {
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();
 
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
-
-  hists.saveLab("inthist_lab.txt");
-  hists.saveCMS("inthist_cms.txt");
+  save_hist(hists.labHist(), "inthist_lab_hybrid.npz", true);
+  save_hist(hists.CMSHist(), "inthist_cms_hybrid.npz", true);
 
   longprof.save("longprof.txt");
 
