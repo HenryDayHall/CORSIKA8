@@ -1,5 +1,5 @@
 variables:
-  GIT_STRATEGY: fetch # clone: fresh clone, fetch: update
+  GIT_STRATEGY: $CORSIKA8_GIT_STRATEGY # clone: fresh clone, fetch: update
   GIT_SSL_NO_VERIFY: "1"
   GIT_DEPTH: "1"
   # to re-use clones also in different forks
