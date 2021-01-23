@@ -43,10 +43,15 @@ else ()
     URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
     URL_MD5 83132880c0594b808bd7fd37fb642606
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/source
-    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
-    CONFIGURE_COMMAND ./configure --cxx-common=-Wno-deprecated-copy --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/external/pythia8
+    LOG_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/log
+    CONFIGURE_COMMAND ./configure --cxx-common=\\"-Wall -pedantic -Wextra -Wno-ignored-qualifiers -O0 -DNDEBUG  -Wno-nonportable-include-path -g -std=c++17 -Wno-deprecated-copy -fPIC\\" --prefix=${CMAKE_INSTALL_PREFIX}/external/pythia8
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
+    LOG_CONFIGURE TRUE
+    LOG_BUILD TRUE
+    LOG_INSTALL TRUE
+    LOG_MERGED_STDOUTERR TRUE
     )
   set (Pythia8_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (pythia8 INSTALL_DIR)
@@ -77,3 +82,4 @@ endif ()
 ##### add pythia8 to CORSIKA8 build
 add_dependencies (CORSIKA8 C8::ext::pythia8)
 target_link_libraries (CORSIKA8 INTERFACE C8::ext::pythia8)
+

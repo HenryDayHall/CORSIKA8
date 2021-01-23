@@ -31,37 +31,34 @@ namespace corsika::pythia8 {
     std::cout << "Pythia::Interaction n=" << count_ << std::endl;
 
     // initialize Pythia
-    if (!initialized_) {
 
-      pythia_.readString("Print:quiet = off");
-      pythia_.readString("Check:particleData = on");      // during init
-      pythia_.readString("Check:event = on");             // default: on
-      pythia_.readString("Check:levelParticleData = 12"); // 1 is default
-      // TODO: proper process initialization for MinBias needed
-      pythia_.readString("HardQCD:all = on");
-      pythia_.readString("ProcessLevel:resonanceDecays = off");
+    pythia_.readString("Print:quiet = off");
+    pythia_.readString("Check:particleData = on");      // during init
+    pythia_.readString("Check:event = on");             // default: on
+    pythia_.readString("Check:levelParticleData = 12"); // 1 is default
+    // TODO: proper process initialization for MinBias needed
+    pythia_.readString("HardQCD:all = on");
+    pythia_.readString("ProcessLevel:resonanceDecays = off");
+    
+    if (!pythia_.init())
+      throw std::runtime_error("Pythia::Interaction: Initialization failed!");
 
-      pythia_.init();
-
-      // any decays in pythia? if yes need to define which particles
-      if (internalDecays_) {
-        // define which particles are passed to corsika, i.e. which particles make it into
-        // history even very shortlived particles like charm or pi0 are of interest here
-        const std::vector<Code> HadronsWeWantTrackedByCorsika = {
-            Code::PiPlus,     Code::PiMinus, Code::Pi0,     Code::KMinus,
-            Code::KPlus,      Code::K0Long,  Code::K0Short, Code::SigmaPlus,
-            Code::SigmaMinus, Code::Lambda0, Code::Xi0,     Code::XiMinus,
-            Code::OmegaMinus, Code::DPlus,   Code::DMinus,  Code::D0,
-            Code::D0Bar};
-
-        Interaction::setStable(HadronsWeWantTrackedByCorsika);
-      }
-
-      // basic initialization of cross section routines
-      sigma_.init(&pythia_.info, pythia_.settings, &pythia_.particleData, &pythia_.rndm);
-
-      initialized_ = true;
+    // any decays in pythia? if yes need to define which particles
+    if (internalDecays_) {
+      // define which particles are passed to corsika, i.e. which particles make it into
+      // history even very shortlived particles like charm or pi0 are of interest here
+      const std::vector<Code> HadronsWeWantTrackedByCorsika = {
+							       Code::PiPlus,     Code::PiMinus, Code::Pi0,     Code::KMinus,
+							       Code::KPlus,      Code::K0Long,  Code::K0Short, Code::SigmaPlus,
+							       Code::SigmaMinus, Code::Lambda0, Code::Xi0,     Code::XiMinus,
+							       Code::OmegaMinus, Code::DPlus,   Code::DMinus,  Code::D0,
+							       Code::D0Bar};
+      
+      Interaction::setStable(HadronsWeWantTrackedByCorsika);
     }
+
+    // basic initialization of cross section routines
+    sigma_.init(&pythia_.info, pythia_.settings, &pythia_.particleData, &pythia_.rndm);
   }
 
   void Interaction::setStable(std::vector<Code> const& particleList) {
@@ -106,7 +103,9 @@ namespace corsika::pythia8 {
     // target at rest
     pythia_.readString("Beams:eB = 0.");
     // initialize this config
-    pythia_.init();
+
+    if (!pythia_.init())
+      throw std::runtime_error("Pythia::Interaction: Initialization failed!");
   }
 
   bool Interaction::canInteract(Code const pCode) {

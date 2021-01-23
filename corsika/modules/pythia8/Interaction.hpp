@@ -30,7 +30,6 @@ namespace corsika::pythia8 {
     void setUnstable(const Code);
     void setStable(const Code);
 
-    bool wasInitialized() { return initialized_; }
     bool isValidCoMEnergy(HEPEnergyType ecm) { return (10_GeV < ecm) && (ecm < 1_PeV); }
 
     bool canInteract(const Code);
@@ -56,7 +55,6 @@ namespace corsika::pythia8 {
     Pythia8::SigmaTotal sigma_;
     const bool internalDecays_ = true;
     int count_ = 0;
-    bool initialized_ = false;
     bool print_listing_ = false;
   };
 
