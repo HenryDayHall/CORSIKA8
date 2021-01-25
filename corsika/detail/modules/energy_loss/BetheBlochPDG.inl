@@ -149,7 +149,7 @@ namespace corsika {
                       p.getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType dE = getTotalEnergyLoss(p, dX);
     auto E = p.getEnergy();
-    const auto Ekin = E - p.getMass();
+    // const auto Ekin = E - p.getMass();
     auto Enew = E + dE;
     CORSIKA_LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
                       dE / 1_MeV, E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
@@ -199,20 +199,25 @@ namespace corsika {
 
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
     GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
-    const auto deltaX = grammageEnd - grammageStart;
-
-    int const binStart = grammageStart / dX_;
-    if (binStart < 0) return;
-    int const binEnd = grammageEnd / dX_;
-    if (binEnd > int(profile_.size() - 1)) return;
+    GrammageType deltaX = grammageEnd - grammageStart;
+    if (deltaX < GrammageType::zero()) deltaX = -deltaX;
     if (deltaX < dX_threshold_) return;
+
+    // only register the range that is covered by the profile
+    int const maxBin = int(profile_.size() - 1);
+    int binStart = grammageStart / dX_;
+    if (binStart < 0) binStart = 0;
+    if (binStart > maxBin) binStart = maxBin;
+    int binEnd = grammageEnd / dX_;
+    if (binEnd < 0) binEnd = 0;
+    if (binEnd > maxBin) binEnd = maxBin;
 
     CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
 
     auto energyCount = HEPEnergyType::zero();
 
-    auto fill = [&](const int bin, const double weight) {
+    auto fill = [&](int const bin, double const weight) {
       auto const increment = -dE * weight;
       profile_[bin] += increment;
       energyCount += increment;
