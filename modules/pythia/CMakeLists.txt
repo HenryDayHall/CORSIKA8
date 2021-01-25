@@ -36,16 +36,16 @@ if ("x_${USE_PYTHIA8_C8}" STREQUAL "x_SYSTEM")
 
 else ()
 
-  set (_C8_Pythia8_VERSION "8235")
+  set (_C8_Pythia8_VERSION "8245")
   message (STATUS "Building modules/pythia8 using pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2")
   message (STATUS "This will take a bit.....")
   ExternalProject_Add (pythia8
     URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
-    URL_MD5 83132880c0594b808bd7fd37fb642606
+    URL_MD5 d3e951a2f101e8cfec26405cb61db83b
     SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/source
     INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/external/pythia8
     LOG_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/log
-    CONFIGURE_COMMAND ./configure --cxx-common=\\"-Wall -pedantic -Wextra -Wno-ignored-qualifiers -O0 -DNDEBUG  -Wno-nonportable-include-path -g -std=c++17 -Wno-deprecated-copy -fPIC\\" --prefix=${CMAKE_INSTALL_PREFIX}/external/pythia8
+    CONFIGURE_COMMAND ./configure --cxx-common=\\"${CMAKE_CXX_FLAGS} -O2 -fPIC\\" --prefix=${CMAKE_INSTALL_PREFIX}/external/pythia8
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
     LOG_CONFIGURE TRUE
