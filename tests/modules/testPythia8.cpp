@@ -170,6 +170,6 @@ TEST_CASE("pythia process") {
     model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     CHECK(length / 1_kg * square(1_m) == Approx(43.04).margin(5e-1));
-    CHECK(view.getSize() == 38);
+    CHECK(view.getSize() == 40);
   }
 }
