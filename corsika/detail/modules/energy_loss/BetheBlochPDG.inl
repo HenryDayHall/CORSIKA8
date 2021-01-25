@@ -220,7 +220,7 @@ namespace corsika {
     auto energyCount = HEPEnergyType::zero();
 
     auto const factor = -dE / deltaX;
-    auto fill = [&](int const bin, double const weight) {
+    auto fill = [&](int const bin, GrammageType const weight) {
       auto const increment = factor * weight;
       profile_[bin] += increment;
       energyCount += increment;
