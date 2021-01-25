@@ -197,31 +197,31 @@ namespace corsika {
   void BetheBlochPDG::fillProfile(setup::Trajectory const& vTrack,
                                   const HEPEnergyType dE) {
 
-    GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
-    GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
-    GrammageType deltaX = grammageEnd - grammageStart;
-    if (deltaX < GrammageType::zero())
-      deltaX = -deltaX; // to catch upward-going particles
+    GrammageType grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
+    GrammageType grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
+
+    if (grammageStart > grammageEnd) { // particle going upstream
+      std::swap(grammageStart, grammageEnd);
+    }
+
+    GrammageType const deltaX = grammageEnd - grammageStart;
+
     if (deltaX < dX_threshold_) return;
 
     // only register the range that is covered by the profile
     int const maxBin = int(profile_.size() - 1);
-    int binStart = grammageStart / dX_;
-    if (binStart < 0) binStart = 0;
-    if (binStart > maxBin) binStart = maxBin;
-    int binEnd = grammageEnd / dX_;
-    if (binEnd < 0) binEnd = 0;
-    if (binEnd > maxBin) binEnd = maxBin;
-    // in upward going showers binEnd may be smaller than binStart, but we don't care:
-    if (binStart > binEnd) { std::swap(binStart, binEnd); }
+    int const binStart = std::min(std::max(grammageStart / dX_, 0), maxBin);
+
+    int const binEnd = std::max(std::min(grammageEnd / dX_, maxBin), 0);
 
     CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
 
     auto energyCount = HEPEnergyType::zero();
 
+    auto const factor = -dE / deltaX;
     auto fill = [&](int const bin, double const weight) {
-      auto const increment = -dE * weight;
+      auto const increment = factor * weight;
       profile_[bin] += increment;
       energyCount += increment;
 
@@ -232,9 +232,9 @@ namespace corsika {
     if (binStart == binEnd) {
       fill(binStart, 1);
     } else {
-      fill(binStart, ((1 + binStart) * dX_ - grammageStart) / deltaX);
-      fill(binEnd, (grammageEnd - binEnd * dX_) / deltaX);
-      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_ / deltaX); }
+      fill(binStart, ((1 + binStart) * dX_ - grammageStart));
+      fill(binEnd, (grammageEnd - binEnd * dX_));
+      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
     }
 
     CORSIKA_LOG_DEBUG("total energy added to histogram: {} ", energyCount);
