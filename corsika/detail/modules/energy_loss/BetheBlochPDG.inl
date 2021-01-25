@@ -211,7 +211,11 @@ namespace corsika {
     int binEnd = grammageEnd / dX_;
     if (binEnd < 0) binEnd = 0;
     if (binEnd > maxBin) binEnd = maxBin;
-
+    // in upward going showers binEnd may be smaller than binStart, but we don't care:
+    if (binStart>binEnd) {
+      std::swap(binStart, binEnd);
+    }
+    
     CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
 
