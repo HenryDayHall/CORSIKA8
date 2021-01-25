@@ -12,9 +12,9 @@
 
 namespace corsika {
 
-  ParticleCut::ParticleCut(const HEPEnergyType eEleCut, const HEPEnergyType ePhoCut,
-                           const HEPEnergyType eHadCut, const HEPEnergyType eMuCut,
-                           bool inv)
+  ParticleCut::ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
+                           HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
+                           bool const inv)
       : doCutEm_(false)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -41,8 +41,8 @@ namespace corsika {
     printThresholds();
   }
 
-  ParticleCut::ParticleCut(const HEPEnergyType eHadCut, const HEPEnergyType eMuCut,
-                           bool inv)
+  ParticleCut::ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
+                           bool const inv)
       : doCutEm_(true)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -63,7 +63,7 @@ namespace corsika {
     printThresholds();
   }
 
-  ParticleCut::ParticleCut(const HEPEnergyType eCut, bool em, bool inv)
+  ParticleCut::ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv)
       : doCutEm_(em)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -77,7 +77,8 @@ namespace corsika {
   }
 
   ParticleCut::ParticleCut(
-      std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool em, bool inv)
+      std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool const em,
+      bool const inv)
       : doCutEm_(em)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -107,9 +108,9 @@ namespace corsika {
   bool ParticleCut::isInvisible(Code const& vCode) const { return is_neutrino(vCode); }
 
   template <typename TParticle>
-  bool ParticleCut::checkCutParticle(const TParticle& particle) {
+  bool ParticleCut::checkCutParticle(TParticle const& particle) {
 
-    const Code pid = particle.getPID();
+    Code const pid = particle.getPID();
     HEPEnergyType energy = particle.getEnergy();
     CORSIKA_LOG_DEBUG("ParticleCut: checking {}, E= {} GeV, EcutTot={} GeV", pid,
                       energy / 1_GeV, (em_energy_ + inv_energy_ + energy_) / 1_GeV);
@@ -156,9 +157,10 @@ namespace corsika {
   }
 
   void ParticleCut::printThresholds() {
-    for (auto p : get_all_particles())
-      CORSIKA_LOG_DEBUG("energy threshold for particle {} is {} GeV", p,
-                        get_energy_threshold(p) / 1_GeV);
+    for (auto p : get_all_particles()) {
+      auto const Eth = get_energy_threshold(p);
+      CORSIKA_LOG_INFO("energy threshold for particle {} is {} GeV", p, Eth / 1_GeV);
+    }
   }
 
   void ParticleCut::showResults() {

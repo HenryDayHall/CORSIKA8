@@ -33,21 +33,21 @@ namespace corsika {
      *    hadrons (including nuclei with energy per nucleon) and muons
      *    invisible particles (neutrinos) can be cut or not
      **/
-    ParticleCut(const HEPEnergyType eEleCut, const HEPEnergyType ePhoCut,
-                const HEPEnergyType eHadCut, const HEPEnergyType eMuCut, bool inv);
+    ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
+                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv);
 
     //! simple cut. hadrons and muons are cut by threshold. EM particles are all
     //! discarded.
-    ParticleCut(const HEPEnergyType eHadCut, const HEPEnergyType eMuCut, bool inv);
+    ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const euCut, bool const inv);
 
     //! simplest cut. all particles have same threshold. EM particles can be set to be
     //! discarded altogether.
-    ParticleCut(const HEPEnergyType eCut, bool em, bool inv);
+    ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv);
 
     //! threshold for specific particles redefined. EM and invisible particles can be set
     //! to be discarded altogether.
-    ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool em,
-                bool inv);
+    ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
+                bool const em, bool const inv);
 
     void doSecondaries(corsika::setup::StackView&);
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
@@ -73,7 +73,7 @@ namespace corsika {
 
   private:
     template <typename TParticle>
-    bool checkCutParticle(const TParticle& p);
+    bool checkCutParticle(TParticle const& p);
 
     template <typename TParticle>
     bool isBelowEnergyCut(TParticle const&) const;
