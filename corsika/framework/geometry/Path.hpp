@@ -24,62 +24,101 @@ namespace corsika {
     /**
      * Create a Path with a given starting Point.
      */
-    Path(Point const& point);
+    Path(Point const& point) {
+      points_.push_front(point);
+    }
 
     /**
      * Initialize a Path from an existing collection of Points.
      */
-    Path(std::deque<Point> const& points);
+    Path(std::deque<Point> const& points)
+        : points_(points) {
+      int dequesize_ = points.size();
+      if (dequesize_ == 0 || dequesize_ == 1) {
+        length_ = LengthType::zero();
+      }
+      else if (dequesize_ == 2) {
+        length_ = (points.back() - points.front()).getNorm();
+      }
+      else {
+        for (auto point = points.begin(); point !=  points.end() - 1; ++point) {
+          auto point_next = *(point+1);
+          auto point_now = *(point);
+          length_ += (point_next - point_now).getNorm();
+        }
+      }
+    }
 
     /**
      * Add a new Point to the end of the path.
      */
-    inline void AddToEnd(Point const& point);
+    void AddToEnd(Point const& point) {
+      length_ += (point - points_.back()).getNorm();
+      points_.push_back(point);
+    }
 
     /**
      * Remove a point from the end of the path.
      */
-    inline void RemoveFromEnd();
+    void RemoveFromEnd() {
+      auto lastpoint_ = points_.back();
+      points_.pop_back();
+      int dequesize_ = points_.size();
+      if (dequesize_ == 0 || dequesize_ == 1) {
+        length_ = LengthType::zero();
+      }
+      else if (dequesize_ == 2) {
+        length_ = (points_.back() - points_.front()).getNorm();
+      }
+      else { length_ -= (lastpoint_ - points_.back()).getNorm(); }
+    }
 
     /**
      * Get the total length of the path.
      */
-    inline LengthType GetLength() const;
+    LengthType GetLength() const {
+      return length_;
+    }
 
     /**
      * Get the starting point of the path.
      */
-    inline Point GetStart() const;
+    Point GetStart() const {
+      return points_.front();
+    }
 
     /**
      * Get the end point of the path.
      */
-    inline Point GetEnd() const;
+    Point GetEnd() const {
+      return points_.back();
+    }
 
     /**
      * Get a specific point of the path.
      */
-    inline Point GetPoint(std::size_t const index) const;
+    Point GetPoint(std::size_t const index) const {
+      return points_.at(index);
+    }
 
     /**
      * Return an iterator to the start of the Path.
      */
-    inline auto begin();
+    auto begin() { return points_.begin(); }
 
     /**
      * Return an iterator to the end of the Path.
      */
-    inline auto end();
+    auto end() { return points_.end(); }
 
     /**
      * Get the number of steps in the path.
+     *
      * This is one less than the number of points that
      * defines the path.
      */
-    inline int GetNSegments() const;
+    int GetNSegments() const { return points_.size() - 1; }
 
   };  // class Path
 
 } // namespace corsika
-
-#include <corsika/detail/framework/geometry/Path.inl>
