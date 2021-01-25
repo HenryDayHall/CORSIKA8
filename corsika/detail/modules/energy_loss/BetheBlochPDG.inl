@@ -200,7 +200,8 @@ namespace corsika {
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
     GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
     GrammageType deltaX = grammageEnd - grammageStart;
-    if (deltaX < GrammageType::zero()) deltaX = -deltaX; // to catch upward-going particles
+    if (deltaX < GrammageType::zero())
+      deltaX = -deltaX; // to catch upward-going particles
     if (deltaX < dX_threshold_) return;
 
     // only register the range that is covered by the profile
@@ -212,10 +213,8 @@ namespace corsika {
     if (binEnd < 0) binEnd = 0;
     if (binEnd > maxBin) binEnd = maxBin;
     // in upward going showers binEnd may be smaller than binStart, but we don't care:
-    if (binStart>binEnd) {
-      std::swap(binStart, binEnd);
-    }
-    
+    if (binStart > binEnd) { std::swap(binStart, binEnd); }
+
     CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
 
