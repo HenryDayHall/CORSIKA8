@@ -149,7 +149,7 @@ namespace corsika {
                       p.getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType dE = getTotalEnergyLoss(p, dX);
     auto E = p.getEnergy();
-    // const auto Ekin = E - p.getMass();
+    [[maybe_unused]] const auto Ekin = E - p.getMass();
     auto Enew = E + dE;
     CORSIKA_LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
                       dE / 1_MeV, E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
