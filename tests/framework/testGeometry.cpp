@@ -312,3 +312,23 @@ TEST_CASE("Geometry Trajectories") {
               .magnitude() == Approx(0).margin(absMargin));
   }
 }
+
+
+TEST_CASE("Point") {
+  //define a known CS
+  CoordinateSystemPtr root = get_root_CoordinateSystem();
+
+  //define known points
+  Point p1(root, {0_m, 0_m, 0_m});
+  Point p2(root, {0_m, 0_m, 5_m});
+  Point p3(root, {1_m, 0_m, 0_m});
+  Point p4(root, {5_m, 0_m, 0_m});
+  Point p5(root, {0_m, 4_m, 0_m});
+  Point p6(root, {0_m, 5_m, 0_m});
+
+  SECTION("Test distance_to() method")
+  //check distance_to() method
+  CHECK(p1.distance_to(p2) / 1_m == Approx(5));
+  CHECK(p3.distance_to(p4) / 1_m == Approx(4));
+  CHECK(p5.distance_to(p6) / 1_m == Approx(1));
+}

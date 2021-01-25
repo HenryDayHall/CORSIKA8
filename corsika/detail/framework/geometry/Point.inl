@@ -59,6 +59,10 @@ namespace corsika {
     }
   }
 
+  inline LengthType Point::distance_to(Point const& point) const {
+    return (*this - point).getNorm();
+  }
+
   /// this always returns a QuantityVector as triple
   inline QuantityVector<length_d> Point::getCoordinates(
       CoordinateSystemPtr const& pCS) const {

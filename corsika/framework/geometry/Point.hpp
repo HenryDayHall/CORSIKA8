@@ -65,6 +65,11 @@ namespace corsika {
     LengthType getZ(CoordinateSystemPtr const& pCS) const;
     /** \} **/
 
+    /*
+     * calculates the distance between two points
+     */
+    inline LengthType distance_to(Point const& point) const;
+
     /*!
      * transforms the Point into another CoordinateSystem by changing its
      * coordinates interally
