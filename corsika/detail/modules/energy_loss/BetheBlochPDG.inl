@@ -201,9 +201,9 @@ namespace corsika {
     GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
     const auto deltaX = grammageEnd - grammageStart;
 
-    int binStart = grammageStart / dX_;
+    int const binStart = grammageStart / dX_;
     if (binStart < 0) return;
-    int binEnd = grammageEnd / dX_;
+    int const binEnd = grammageEnd / dX_;
     if (binEnd > int(profile_.size() - 1)) return;
     if (deltaX < dX_threshold_) return;
 
@@ -226,7 +226,7 @@ namespace corsika {
     } else {
       fill(binStart, ((1 + binStart) * dX_ - grammageStart) / deltaX);
       fill(binEnd, (grammageEnd - binEnd * dX_) / deltaX);
-      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, 1); }
+      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_ / deltaX); }
     }
 
     CORSIKA_LOG_DEBUG("total energy added to histogram: {} ", energyCount);
