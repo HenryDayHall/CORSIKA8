@@ -38,18 +38,23 @@ namespace corsika {
      */
     template <typename... Args>
     ExponentialRefractiveIndex(double const n0,
-                               InverseLengthType const lambda, Args&&... args);
-
+                               InverseLengthType const lambda, Args&&... args)
+        : T(std::forward<Args>(args)...)
+        , n_0(n0)
+        , lambda_(lambda) {}
     /**
      * Evaluate the refractive index at a given location.
      *
      * @param  point    The location to evaluate at.
      * @returns    The refractive index at this point.
      */
-    double getRefractiveIndex(Point const& point) const final override;
+    double getRefractiveIndex(Point const& point) const final override
+    {
+      //TODO: THIS METHOD CURRENTLY ONLY USES THE Z-COORDINATE.
+      //NEED TO THINK IT FOR FUTURE WORK ON ARBITRARY GEOMETRIES.
+      return n_0 * exp((-lambda_) * point.getCoordinates().getZ());
+    }
 
   }; // END: class ExponentialRefractiveIndex
 
 } // namespace corsika
-
-#include <corsika/detail/media/ExponentialRefractiveIndex.inl>
