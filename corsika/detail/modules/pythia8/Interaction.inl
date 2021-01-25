@@ -39,7 +39,7 @@ namespace corsika::pythia8 {
     // TODO: proper process initialization for MinBias needed
     pythia_.readString("HardQCD:all = on");
     pythia_.readString("ProcessLevel:resonanceDecays = off");
-    
+
     if (!pythia_.init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
 
@@ -48,12 +48,11 @@ namespace corsika::pythia8 {
       // define which particles are passed to corsika, i.e. which particles make it into
       // history even very shortlived particles like charm or pi0 are of interest here
       const std::vector<Code> HadronsWeWantTrackedByCorsika = {
-							       Code::PiPlus,     Code::PiMinus, Code::Pi0,     Code::KMinus,
-							       Code::KPlus,      Code::K0Long,  Code::K0Short, Code::SigmaPlus,
-							       Code::SigmaMinus, Code::Lambda0, Code::Xi0,     Code::XiMinus,
-							       Code::OmegaMinus, Code::DPlus,   Code::DMinus,  Code::D0,
-							       Code::D0Bar};
-      
+          Code::PiPlus, Code::PiMinus, Code::Pi0,        Code::KMinus,     Code::KPlus,
+          Code::K0Long, Code::K0Short, Code::SigmaPlus,  Code::SigmaMinus, Code::Lambda0,
+          Code::Xi0,    Code::XiMinus, Code::OmegaMinus, Code::DPlus,      Code::DMinus,
+          Code::D0,     Code::D0Bar};
+
       Interaction::setStable(HadronsWeWantTrackedByCorsika);
     }
 
