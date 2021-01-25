@@ -157,9 +157,11 @@ TEST_CASE("pythia process") {
 
   SECTION("pythia interaction") {
 
-    // feenableexcept(FE_INVALID); \todo how does this work nowadays
+    //! feenableexcept(FE_INVALID); \todo how does this work nowadays
+
+    // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        Code::Proton, 0, 0, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
@@ -167,6 +169,7 @@ TEST_CASE("pythia process") {
     corsika::pythia8::Interaction model;
     model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length / 1_kg * square(1_m) == Approx(82.2524));
+    CHECK(length / 1_kg * square(1_m) == Approx(43.04).margin(5e-1));
+    CHECK(view.getSize() == 38);
   }
 }
