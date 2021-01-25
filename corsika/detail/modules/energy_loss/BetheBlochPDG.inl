@@ -200,7 +200,7 @@ namespace corsika {
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
     GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
     GrammageType deltaX = grammageEnd - grammageStart;
-    if (deltaX < GrammageType::zero()) deltaX = -deltaX;
+    if (deltaX < GrammageType::zero()) deltaX = -deltaX; // to catch upward-going particles
     if (deltaX < dX_threshold_) return;
 
     // only register the range that is covered by the profile
