@@ -34,11 +34,16 @@ namespace corsika::pythia8 {
     std::cout << "Pythia::Interaction n=" << count_ << std::endl;
 
     // initialize Pythia
-    Pythia8::Pythia::readString("Print:quiet = off");
-    Pythia8::Pythia::readString("Check:particleData = on");      // during init
+
+    // reduce output from pythia if set to "on"
+    Pythia8::Pythia::readString("Print:quiet = on");
+    // check if data in particle data file is minimally consistent. Very verbose! set to
+    // "off"! we do not change the basic file provided by pythia.
+    Pythia8::Pythia::readString("Check:particleData = off");
     Pythia8::Pythia::readString("Check:event = on");             // default: on
     Pythia8::Pythia::readString("Check:levelParticleData = 12"); // 1 is default
-    // TODO: proper process initialization for MinBias needed
+    /** \TODO: proper process initialization for MinBias needed, see
+        also Issue https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/369 **/
     Pythia8::Pythia::readString("HardQCD:all = on");
     Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = off");
 
