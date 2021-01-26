@@ -20,7 +20,7 @@
 
 namespace corsika::pythia8 {
 
-  class Interaction : public InteractionProcess<Interaction> {
+  class Interaction : public InteractionProcess<Interaction>, public Pythia8::Pythia {
 
   public:
     Interaction(const bool print_listing = false);
@@ -38,20 +38,17 @@ namespace corsika::pythia8 {
     std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
         const Code BeamId, const Code TargetId, const HEPEnergyType CoMenergy);
 
-    // template <typename TParticle>
     GrammageType getInteractionLength(corsika::setup::Stack::particle_type const&);
 
     /**
        In this function PYTHIA is called to produce one event. The
        event is copied (and boosted) into the shower lab frame.
      */
-
     template <typename TView>
     void doInteraction(TView&);
 
   private:
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("pythia");
-    Pythia8::Pythia pythia_;
     Pythia8::SigmaTotal sigma_;
     const bool internalDecays_ = true;
     int count_ = 0;

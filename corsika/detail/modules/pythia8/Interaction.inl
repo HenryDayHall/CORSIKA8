@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/modules/pythia8/Interaction.hpp>
+#include <corsika/modules/pythia8/ConfigurationDirectory.hpp>
 
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
@@ -25,29 +26,30 @@ namespace corsika::pythia8 {
     std::cout << "Pythia::Interaction n=" << count_ << std::endl;
   }
 
-  Interaction::Interaction(const bool print_listing)
-      : print_listing_(print_listing) {
+  Interaction::Interaction(bool const print_listing)
+      : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
+      , print_listing_(print_listing) {
 
+    std::cout << "Configuring Pythia8 from: " << CORSIKA_Pythia8_XML_DIR << std::endl;
     std::cout << "Pythia::Interaction n=" << count_ << std::endl;
 
     // initialize Pythia
-
-    pythia_.readString("Print:quiet = off");
-    pythia_.readString("Check:particleData = on");      // during init
-    pythia_.readString("Check:event = on");             // default: on
-    pythia_.readString("Check:levelParticleData = 12"); // 1 is default
+    Pythia8::Pythia::readString("Print:quiet = off");
+    Pythia8::Pythia::readString("Check:particleData = on");      // during init
+    Pythia8::Pythia::readString("Check:event = on");             // default: on
+    Pythia8::Pythia::readString("Check:levelParticleData = 12"); // 1 is default
     // TODO: proper process initialization for MinBias needed
-    pythia_.readString("HardQCD:all = on");
-    pythia_.readString("ProcessLevel:resonanceDecays = off");
+    Pythia8::Pythia::readString("HardQCD:all = on");
+    Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = off");
 
-    if (!pythia_.init())
+    if (!Pythia8::Pythia::init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
 
     // any decays in pythia? if yes need to define which particles
     if (internalDecays_) {
       // define which particles are passed to corsika, i.e. which particles make it into
       // history even very shortlived particles like charm or pi0 are of interest here
-      const std::vector<Code> HadronsWeWantTrackedByCorsika = {
+      std::vector<Code> const HadronsWeWantTrackedByCorsika = {
           Code::PiPlus, Code::PiMinus, Code::Pi0,        Code::KMinus,     Code::KPlus,
           Code::K0Long, Code::K0Short, Code::SigmaPlus,  Code::SigmaMinus, Code::Lambda0,
           Code::Xi0,    Code::XiMinus, Code::OmegaMinus, Code::DPlus,      Code::DMinus,
@@ -57,7 +59,8 @@ namespace corsika::pythia8 {
     }
 
     // basic initialization of cross section routines
-    sigma_.init(&pythia_.info, pythia_.settings, &pythia_.particleData, &pythia_.rndm);
+    sigma_.init(&(Pythia8::Pythia::info), Pythia8::Pythia::settings,
+                &(Pythia8::Pythia::particleData), &(Pythia8::Pythia::rndm));
   }
 
   void Interaction::setStable(std::vector<Code> const& particleList) {
@@ -66,16 +69,16 @@ namespace corsika::pythia8 {
 
   void Interaction::setUnstable(Code const pCode) {
     std::cout << "Pythia::Interaction: setting " << pCode << " unstable.." << std::endl;
-    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
+    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
   void Interaction::setStable(Code const pCode) {
     std::cout << "Pythia::Interaction: setting " << pCode << " stable.." << std::endl;
-    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
+    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
-  void Interaction::configureLabFrameCollision(const Code BeamId, const Code TargetId,
-                                               const HEPEnergyType BeamEnergy) {
+  void Interaction::configureLabFrameCollision(Code const BeamId, Code const TargetId,
+                                               HEPEnergyType const BeamEnergy) {
     // Pythia configuration of the current event
     // very clumsy. I am sure this can be done better..
 
@@ -84,26 +87,26 @@ namespace corsika::pythia8 {
     auto const pdgBeam = static_cast<int>(get_PDG(BeamId));
     std::stringstream stBeam;
     stBeam << "Beams:idA = " << pdgBeam;
-    pythia_.readString(stBeam.str());
+    Pythia8::Pythia::readString(stBeam.str());
     // set target
     auto pdgTarget = static_cast<int>(get_PDG(TargetId));
     // replace hydrogen with proton, otherwise pythia goes into heavy ion mode!
     if (TargetId == Code::Hydrogen) pdgTarget = static_cast<int>(get_PDG(Code::Proton));
     std::stringstream stTarget;
     stTarget << "Beams:idB = " << pdgTarget;
-    pythia_.readString(stTarget.str());
+    Pythia8::Pythia::readString(stTarget.str());
     // set frame to lab. frame
-    pythia_.readString("Beams:frameType = 2");
+    Pythia8::Pythia::readString("Beams:frameType = 2");
     // set beam energy
-    const double Elab = BeamEnergy / 1_GeV;
+    double const Elab = BeamEnergy / 1_GeV;
     std::stringstream stEnergy;
     stEnergy << "Beams:eA = " << Elab;
-    pythia_.readString(stEnergy.str());
+    Pythia8::Pythia::readString(stEnergy.str());
     // target at rest
-    pythia_.readString("Beams:eB = 0.");
+    Pythia8::Pythia::readString("Beams:eB = 0.");
     // initialize this config
 
-    if (!pythia_.init())
+    if (!Pythia8::Pythia::init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
   }
 
@@ -113,20 +116,20 @@ namespace corsika::pythia8 {
   }
 
   std::tuple<CrossSectionType, CrossSectionType> Interaction::getCrossSection(
-      const Code BeamId, const Code TargetId, const HEPEnergyType CoMenergy) {
+      Code const BeamId, Code const TargetId, HEPEnergyType const CoMenergy) {
     // interaction possible in pythia?
     if (TargetId == Code::Proton || TargetId == Code::Hydrogen) {
       if (canInteract(BeamId) && isValidCoMEnergy(CoMenergy)) {
         // input particle PDG
         auto const pdgCodeBeam = static_cast<int>(get_PDG(BeamId));
         auto const pdgCodeTarget = static_cast<int>(get_PDG(TargetId));
-        const double ecm = CoMenergy / 1_GeV;
+        double const ecm = CoMenergy / 1_GeV;
 
         // calculate cross section
         sigma_.calc(pdgCodeBeam, pdgCodeTarget, ecm);
         if (sigma_.hasSigmaTot()) {
-          const double sigEla = sigma_.sigmaEl();
-          const double sigProd = sigma_.sigmaTot() - sigEla;
+          double const sigEla = sigma_.sigmaEl();
+          double const sigProd = sigma_.sigmaTot() - sigEla;
 
           return std::make_tuple(sigProd * (1_fm * 1_fm), sigEla * (1_fm * 1_fm));
 
@@ -142,7 +145,6 @@ namespace corsika::pythia8 {
     }
   }
 
-  //  template <>
   GrammageType Interaction::getInteractionLength(
       corsika::setup::Stack::particle_type const& particle) {
 
@@ -166,7 +168,7 @@ namespace corsika::pythia8 {
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.getNorm();
     // calculate cm. energy
-    const HEPEnergyType ECoM = sqrt(
+    HEPEnergyType const ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
     std::cout << "Interaction: LambdaInt: \n"
@@ -183,8 +185,8 @@ namespace corsika::pythia8 {
         ideally as full particle object so that the four momenta
         and the boosts can be defined..
       */
-      const auto* currentNode = particle.getNode();
-      const auto mediumComposition =
+      auto const* currentNode = particle.getNode();
+      auto const mediumComposition =
           currentNode->getModelProperties().getNuclearComposition();
       // determine average interaction length
 
@@ -211,17 +213,12 @@ namespace corsika::pythia8 {
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }
 
-  /**
-     In this function PYTHIA is called to produce one event. The
-     event is copied (and boosted) into the shower lab frame.
-   */
-
   template <class TView>
   void Interaction::doInteraction(TView& view) {
 
     auto projectile = view.getProjectile();
 
-    const auto corsikaBeamId = projectile.getPID();
+    auto const corsikaBeamId = projectile.getPID();
     std::cout << "Pythia::Interaction: "
               << "DoInteraction: " << corsikaBeamId << " interaction? "
               << corsika::pythia8::Interaction::canInteract(corsikaBeamId) << std::endl;
@@ -244,9 +241,9 @@ namespace corsika::pythia8 {
 
       // define target
       // FOR NOW: target is always at rest
-      const auto eTargetLab = 0_GeV + constants::nucleonMass;
-      const auto pTargetLab = MomentumVector(labCS, 0_GeV, 0_GeV, 0_GeV);
-      const FourVector PtargLab(eTargetLab, pTargetLab);
+      auto const eTargetLab = 0_GeV + constants::nucleonMass;
+      auto const pTargetLab = MomentumVector(labCS, 0_GeV, 0_GeV, 0_GeV);
+      FourVector const PtargLab(eTargetLab, pTargetLab);
 
       std::cout << "Interaction: ebeam lab: " << eProjectileLab / 1_GeV << std::endl
                 << "Interaction: pbeam lab: " << pProjectileLab.getComponents() / 1_GeV
@@ -255,7 +252,7 @@ namespace corsika::pythia8 {
                 << "Interaction: ptarget lab: " << pTargetLab.getComponents() / 1_GeV
                 << std::endl;
 
-      const FourVector PprojLab(eProjectileLab, pProjectileLab);
+      FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
       // define target kinematics in lab frame
       // define boost to and from CoM frame
@@ -288,8 +285,8 @@ namespace corsika::pythia8 {
       HEPEnergyType Ecm = sqrt(Etot * Etot - Ptot.getSquaredNorm());
 
       // sample target mass number
-      const auto* currentNode = projectile.getNode();
-      const auto& mediumComposition =
+      auto const* currentNode = projectile.getNode();
+      auto const& mediumComposition =
           currentNode->getModelProperties().getNuclearComposition();
       // get cross sections for target materials
       /*
@@ -302,12 +299,12 @@ namespace corsika::pythia8 {
 
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
-        const auto [sigProd, sigEla] = getCrossSection(corsikaBeamId, targetId, Ecm);
-        [[maybe_unused]] const auto& dummy_sigEla = sigEla;
+        auto const [sigProd, sigEla] = getCrossSection(corsikaBeamId, targetId, Ecm);
+        [[maybe_unused]] auto const& dummy_sigEla = sigEla;
         cross_section_of_components[i] = sigProd;
       }
 
-      const auto corsikaTargetId =
+      auto const corsikaTargetId =
           mediumComposition.sampleTarget(cross_section_of_components, RNG_);
       std::cout << "Interaction: target selected: " << corsikaTargetId << std::endl;
 
@@ -331,10 +328,11 @@ namespace corsika::pythia8 {
         configureLabFrameCollision(corsikaBeamId, corsikaTargetId, eProjectileLab);
 
         // create event in pytia
-        if (!pythia_.next()) throw std::runtime_error("Pythia::DoInteraction: failed!");
+        if (!Pythia8::Pythia::next())
+          throw std::runtime_error("Pythia::DoInteraction: failed!");
 
         // link to pythia stack
-        Pythia8::Event& event = pythia_.event;
+        Pythia8::Event& event = Pythia8::Pythia::event;
 
         if (print_listing_) {
           // print final state
@@ -350,7 +348,7 @@ namespace corsika::pythia8 {
 
           auto const pyId = convert_from_PDG(static_cast<PDGCode>(p8p.id()));
 
-          const MomentumVector pyPlab(
+          MomentumVector const pyPlab(
               labCS, {p8p.px() * 1_GeV, p8p.py() * 1_GeV, p8p.pz() * 1_GeV});
           HEPEnergyType const pyEn = p8p.e() * 1_GeV;
 
