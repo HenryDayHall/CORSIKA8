@@ -39,7 +39,7 @@ endif ()
 set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 set (CMAKE_MODULE_PATH  "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 include (CorsikaUtilities) # extra cmake function
-set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
+set (CMAKE_VERBOSE_MAKEFILE  ON) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
 

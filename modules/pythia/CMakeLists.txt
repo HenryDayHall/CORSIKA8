@@ -74,7 +74,7 @@ else ()
     INTERFACE_COMPILE_DEFINITIONS CORSIKA_Pythia8_PREFIX="${Pythia8_PREFIX}"
     )
 
-    message (STATUS "Pythia8 build at ${INSTALL_DIR}, install to ${Pythia8_INSTALL_DIR}")
+    message (STATUS "Pythia8 build at ${INSTALL_DIR}, final install to ${Pythia8_INSTALL_DIR}")
 endif ()
 
 
