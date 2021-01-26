@@ -44,7 +44,10 @@ namespace corsika::proposal {
   //!
   template <typename T>
   static auto cross_builder =
-      [](PROPOSAL::Medium& m, corsika::units::si::HEPEnergyType emCut) {
+      [](PROPOSAL::Medium& m,
+         corsika::units::si::HEPEnergyType
+             emCut) { //!< Stochastic losses smaller than the given cut
+                      //!< will be handeled continuously.
         using namespace corsika::units::si;
         auto p_cut =
             std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, true);
@@ -73,8 +76,6 @@ namespace corsika::proposal {
   //!
   class ProposalProcessBase {
   protected:
-    HEPEnergyType emCut_;       //!< Stochastic losses smaller than the given cut
-                                //!< will be handeled continuously.
     RNGManager::prng_type RNG_; //!< random number generator used by proposal
 
     std::unordered_map<std::size_t, PROPOSAL::Medium>
@@ -85,7 +86,7 @@ namespace corsika::proposal {
     //! Store cut and  nuclear composition of the whole universe in media which are
     //! required for creating crosssections by proposal.
     //!
-    ProposalProcessBase(corsika::setup::Environment const& _env, HEPEnergyType _emCut);
+    ProposalProcessBase(corsika::setup::Environment const& _env);
 
     //!
     //! Checks if a particle can be processed by proposal

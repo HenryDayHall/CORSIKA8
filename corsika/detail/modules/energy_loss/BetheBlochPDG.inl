@@ -26,11 +26,10 @@ namespace corsika {
     return sqrt((Elab - m) * (Elab + m));
   };
 
-  BetheBlochPDG::BetheBlochPDG(ShowerAxis const& shower_axis, HEPEnergyType emCut)
+  BetheBlochPDG::BetheBlochPDG(ShowerAxis const& shower_axis)
       : dX_(10_g / square(1_cm)) // profile binning
       , dX_threshold_(0.0001_g / square(1_cm))
       , shower_axis_(shower_axis)
-      , emCut_(emCut)
       , profile_(int(shower_axis.getMaximumX() / dX_) + 1) {}
 
   HEPEnergyType BetheBlochPDG::getBetheBloch(setup::Stack::particle_type const& p,
@@ -170,8 +169,9 @@ namespace corsika {
     auto const dEdX = -getTotalEnergyLoss(vParticle, dX) / dX; // dE > 0
     //~ auto const Ekin = vParticle.getEnergy() - vParticle.getMass();
 
-    // in any case: never go below 0.99*emCut_ This needs to be
-    // slightly smaller than emCut_ since, either this Step is limited
+    auto const emCut = get_energy_threshold(vParticle.getPID());
+    // in any case: never go below 0.99*emCut This needs to be
+    // slightly smaller than emCut since, either this Step is limited
     // by energy_lim, then the particle is stopped in a very short
     // range (before doing anythin else) and is then removed
     // instantly. The exact position where it reaches emCut is not
@@ -179,7 +179,7 @@ namespace corsika {
     // afterwards.
     //
     const auto energy = vParticle.getEnergy();
-    auto energy_lim = std::max(0.9 * energy, 0.99 * emCut_);
+    auto energy_lim = std::max(0.9 * energy, 0.99 * emCut);
 
     auto const maxGrammage = (energy - energy_lim) / dEdX;
 

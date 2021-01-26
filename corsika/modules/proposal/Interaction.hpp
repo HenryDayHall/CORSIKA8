@@ -48,7 +48,7 @@ namespace corsika::proposal {
     //! compositions and stochastic description limited by the particle cut.
     //!
     template <typename TEnvironment>
-    Interaction(TEnvironment const& env, HEPEnergyType emCut);
+    Interaction(TEnvironment const& env);
 
     //!
     //! Calculate the rates for the different targets and interactions. Sample a

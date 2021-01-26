@@ -13,6 +13,14 @@
 
 namespace corsika {
 
+  HEPEnergyType constexpr get_energy_threshold(Code const p) {
+    return particle::detail::thresholds[static_cast<CodeIntType>(p)];
+  }
+
+  void constexpr set_energy_threshold(Code const p, HEPEnergyType const val) {
+    particle::detail::thresholds[static_cast<CodeIntType>(p)] = val;
+  }
+
   HEPMassType constexpr get_mass(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");

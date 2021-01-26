@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
   decaySibyll.printDecayConfig();
 
   ParticleCut cut{60_GeV, false, true};
-  BetheBlochPDG eLoss{showerAxis, cut.getECut()};
+  BetheBlochPDG eLoss{showerAxis};
 
   CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
                           get_PDG(Code::Proton));

@@ -32,7 +32,9 @@ namespace corsika::proposal {
     // interpolate the crosssection for given media and energy cut. These may
     // take some minutes if you have to build the tables and cannot read the
     // from disk
-    auto c = p_cross->second(media.at(comp.getHash()), emCut_);
+    auto const emCut = get_energy_threshold(
+        code); //! energy thresholds globally defined for individual particles
+    auto c = p_cross->second(media.at(comp.getHash()), emCut);
 
     // Build displacement integral and scattering object and interpolate them too and
     // saved in the calc map by a key build out of a hash of composed of the component and
@@ -45,9 +47,8 @@ namespace corsika::proposal {
   }
 
   template <>
-  ContinuousProcess::ContinuousProcess(setup::Environment const& _env,
-                                       HEPEnergyType _emCut)
-      : ProposalProcessBase(_env, _emCut) {}
+  ContinuousProcess::ContinuousProcess(setup::Environment const& _env)
+      : ProposalProcessBase(_env) {}
 
   template <>
   void ContinuousProcess::scatter(setup::Stack::particle_type& vP,
@@ -115,21 +116,24 @@ namespace corsika::proposal {
   template <>
   LengthType ContinuousProcess::getMaxStepLength(setup::Stack::particle_type const& vP,
                                                  setup::Trajectory const& vT) {
-
-    if (!canInteract(vP.getPID())) return meter * std::numeric_limits<double>::infinity();
+    auto const code = vP.getPID();
+    if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
 
     // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
     //
-    // in any case: never go below 0.99*emCut_ This needs to be
-    // slightly smaller than emCut_ since, either this Step is limited
+    auto const emCut = get_energy_threshold(
+        code); //! energy thresholds globally defined for individual particles
+
+    // in any case: never go below 0.99*emCut This needs to be
+    // slightly smaller than emCut since, either this Step is limited
     // by energy_lim, then the particle is stopped in a very short
     // range (before doing anythin else) and is then removed
     // instantly. The exact position where it reaches emCut is not
     // important, the important fact is that its E_kin is zero
     // afterwards.
     //
-    auto energy_lim = std::max(0.9 * vP.getEnergy(), 0.99 * emCut_);
+    auto energy_lim = std::max(0.9 * vP.getEnergy(), 0.99 * emCut);
 
     // solving the track integral for giving energy lim
     auto c = getCalculator(vP, calc);

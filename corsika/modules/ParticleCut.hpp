@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
@@ -17,12 +19,35 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 
 namespace corsika {
-
+  /**
+     simple ParticleCut process. Goes through the secondaries of an interaction and
+   removes particles according to their energy. Particles with a time delay of more than
+   10ms are removed as well. Invisible particles (neutrinos) can be removed if selected.
+   **/
   class ParticleCut : public SecondariesProcess<ParticleCut>,
                       public ContinuousProcess<ParticleCut> {
 
   public:
-    ParticleCut(const HEPEnergyType eCut, bool em, bool inv);
+    /**
+     * particle cut with energy thresholds for electrons, photons,
+     *    hadrons (including nuclei with energy per nucleon) and muons
+     *    invisible particles (neutrinos) can be cut or not
+     **/
+    ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
+                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv);
+
+    //! simple cut. hadrons and muons are cut by threshold. EM particles are all
+    //! discarded.
+    ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const euCut, bool const inv);
+
+    //! simplest cut. all particles have same threshold. EM particles can be set to be
+    //! discarded altogether.
+    ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv);
+
+    //! threshold for specific particles redefined. EM and invisible particles can be set
+    //! to be discarded altogether.
+    ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
+                bool const em, bool const inv);
 
     void doSecondaries(corsika::setup::StackView&);
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
@@ -32,10 +57,14 @@ namespace corsika {
       return meter * std::numeric_limits<double>::infinity();
     }
 
+    void printThresholds();
     void showResults();
     void reset();
 
-    HEPEnergyType getECut() const { return energy_cut_; }
+    HEPEnergyType getElectronECut() const { return get_energy_threshold(Code::Electron); }
+    HEPEnergyType getPhotonECut() const { return get_energy_threshold(Code::Gamma); }
+    HEPEnergyType getMuonECut() const { return get_energy_threshold(Code::MuPlus); }
+    HEPEnergyType getHadronECut() const { return get_energy_threshold(Code::Proton); }
     HEPEnergyType getInvEnergy() const { return inv_energy_; }
     HEPEnergyType getCutEnergy() const { return energy_; }
     HEPEnergyType getEmEnergy() const { return em_energy_; }
@@ -44,15 +73,15 @@ namespace corsika {
 
   private:
     template <typename TParticle>
-    bool checkCutParticle(const TParticle& p);
+    bool checkCutParticle(TParticle const& p);
 
     template <typename TParticle>
     bool isBelowEnergyCut(TParticle const&) const;
-    bool isEmParticle(Code) const;
-    bool isInvisible(Code) const;
+
+    //! defines which particles are invisible, by default only neutrinos
+    bool isInvisible(Code const&) const;
 
   private:
-    HEPEnergyType energy_cut_;
     bool doCutEm_;
     bool doCutInv_;
     HEPEnergyType energy_ = 0 * electronvolt;
