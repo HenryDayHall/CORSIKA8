@@ -210,9 +210,12 @@ namespace corsika {
 
     // only register the range that is covered by the profile
     int const maxBin = int(profile_.size() - 1);
-    int const binStart = std::min(std::max(grammageStart / dX_, 0), maxBin);
-
-    int const binEnd = std::max(std::min(grammageEnd / dX_, maxBin), 0);
+    int binStart = grammageStart / dX_;
+    if (binStart < 0) binStart = 0;
+    if (binStart > maxBin) binStart = maxBin;
+    int binEnd = grammageEnd / dX_;
+    if (binEnd < 0) binEnd = 0;
+    if (binEnd > maxBin) binEnd = maxBin;
 
     CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
@@ -230,7 +233,7 @@ namespace corsika {
 
     // fill longitudinal profile
     if (binStart == binEnd) {
-      fill(binStart, 1);
+      fill(binStart, deltaX);
     } else {
       fill(binStart, ((1 + binStart) * dX_ - grammageStart));
       fill(binEnd, (grammageEnd - binEnd * dX_));
