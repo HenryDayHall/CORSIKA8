@@ -108,6 +108,31 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   RNGManager::getInstance().registerRandomStream("sibyll");
 
+  SECTION("InteractionInterface - valid targets") {
+
+    Interaction model;
+    // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
+    CHECK_FALSE(model.isValidTarget(Code::Electron));
+    CHECK(model.isValidTarget(Code::Hydrogen));
+    CHECK_FALSE(model.isValidTarget(Code::Deuterium));
+    CHECK(model.isValidTarget(Code::Helium));
+    CHECK_FALSE(model.isValidTarget(Code::Helium3));
+    CHECK_FALSE(model.isValidTarget(Code::Iron));
+    CHECK(model.isValidTarget(Code::Oxygen));
+
+    //  hydrogen target == proton target == neutron target
+    auto const [xs_prod_pp, xs_ela_pp] =
+        model.getCrossSection(Code::Proton, Code::Proton, 100_GeV);
+    auto const [xs_prod_pn, xs_ela_pn] =
+        model.getCrossSection(Code::Proton, Code::Neutron, 100_GeV);
+    auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
+        model.getCrossSection(Code::Proton, Code::Hydrogen, 100_GeV);
+    CHECK(xs_prod_pp == xs_prod_pHydrogen);
+    CHECK(xs_prod_pp == xs_prod_pn);
+    CHECK(xs_ela_pp == xs_ela_pHydrogen);
+    CHECK(xs_ela_pn == xs_ela_pHydrogen);
+  }
+
   SECTION("InteractionInterface - low energy") {
 
     const HEPEnergyType P0 = 60_GeV;
