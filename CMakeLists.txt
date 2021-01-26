@@ -225,7 +225,7 @@ add_subdirectory (documentation)
 # modules
 #
 set (CORSIKA_DATA_WITH_TEST ON) # we want to run the corsika-data unit test
-add_subdirectory (modules/data)
+add_subdirectory (modules/data) # this is corsika-data (submodule)
 add_subdirectory (modules/pythia)
 add_subdirectory (modules/sibyll)
 add_subdirectory (modules/qgsjetII)
@@ -234,8 +234,8 @@ add_subdirectory (modules/conex)
 #
 # we really need a better proposal CMakeList.txt files:
 set (ADD_PYTHON OFF)
-file(READ modules/CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
-file(WRITE modules/proposal/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
+file (READ modules/CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
+file (WRITE modules/proposal/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
 add_subdirectory (modules/proposal)
 target_link_libraries (CORSIKA8 INTERFACE PROPOSAL)
 
