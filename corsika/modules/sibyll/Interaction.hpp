@@ -25,10 +25,18 @@ namespace corsika::sibyll {
     bool isValidCoMEnergy(HEPEnergyType const ecm) const {
       return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
+    //! sibyll only accepts nuclei with 4<=A<=18 as targets, or protons aka Hydrogen or
+    //! neutrons (p,n == nucleon)
     bool isValidTarget(Code const TargetId) const {
-      return is_nucleus(TargetId) && (get_nucleus_A(TargetId) < maxTargetMassNumber_);
+      return (is_nucleus(TargetId) && (get_nucleus_A(TargetId) >= minNuclearTargetA_) &&
+              (get_nucleus_A(TargetId) < maxTargetMassNumber_)) ||
+             (TargetId == Code::Proton || TargetId == Code::Hydrogen ||
+              TargetId == Code::Neutron);
     }
 
+    //! returns production and elastic cross section for hadrons in sibyll. Inputs are:
+    //! CorsikaId of beam particle, CorsikaId of target particle and center-of-mass
+    //! energy. Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
     std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
         Code const, Code const, HEPEnergyType const) const;
 
@@ -61,6 +69,7 @@ namespace corsika::sibyll {
     const HEPEnergyType minEnergyCoM_ = 10. * 1e9 * electronvolt;
     const HEPEnergyType maxEnergyCoM_ = 1.e6 * 1e9 * electronvolt;
     const int maxTargetMassNumber_ = 18;
+    const int minNuclearTargetA_ = 4;
 
     // data members
     int count_ = 0;

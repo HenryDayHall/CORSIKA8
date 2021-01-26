@@ -78,21 +78,33 @@ namespace corsika::sibyll {
                                const corsika::HEPEnergyType CoMenergy) const {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
-    const int iBeam = corsika::sibyll::getSibyllXSCode(BeamId);
+    const int iBeam = corsika::sibyll::getSibyllXSCode(
+        BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
+    if (!iBeam)
+      throw std::runtime_error(
+          "Interaction: getCrossSection: interaction of beam hadron not defined in "
+          "Sibyll!");
     if (!isValidCoMEnergy(CoMenergy)) {
       throw std::runtime_error(
           "Interaction: getCrossSection: CoM energy outside range for Sibyll!");
     }
     const double dEcm = CoMenergy / 1_GeV;
-    if (corsika::is_nucleus(TargetId)) {
-      const int iTarget = corsika::get_nucleus_A(TargetId);
-      if (iTarget > maxTargetMassNumber_ || iTarget == 0)
-        throw std::runtime_error(
-            "Sibyll target outside range. Only nuclei with A<18 are allowed.");
-      sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
-    } else if (TargetId == corsika::Code::Proton) {
-      sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
+    // single nucleon target (p,n, hydrogen) or 4<=A<=18
+    if (isValidTarget(TargetId)) {
+      // single nucleon target
+      if (TargetId == corsika::Code::Proton || TargetId == Code::Hydrogen ||
+          TargetId == Code::Neutron) {
+        sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
+      } else {
+        // nuclear target
+        const int iTarget = corsika::get_nucleus_A(TargetId);
+        sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
+      }
     } else {
+      //         throw std::runtime_error(
+      //            "Sibyll nuclear target outside range. Only nuclei with 4<=A<18 are
+      //            allowed.");
+
       // no interaction in sibyll possible, return infinite cross section? or throw?
       sigProd = std::numeric_limits<double>::infinity();
       sigEla = std::numeric_limits<double>::infinity();
