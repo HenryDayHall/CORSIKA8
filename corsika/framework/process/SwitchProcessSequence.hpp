@@ -30,32 +30,6 @@
 
 namespace corsika {
 
-  /*
-  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart = 0,
-            int IndexProcess1 = count_continuous<TProcess1>::count,
-            int IndexProcess2 = count_continuous<TProcess2>::count>
-  class SwitchProcessSequence;
-  */
-
-  /**
-   * traits class to count ContinuousProcess-es, specialized for ProcessSequence-es
-   **/
-
-  /*  template <typename TProcess1, typename TProcess2, typename TSelect, int N>
-  struct count_continuous<SwitchProcessSequence<TProcess1, TProcess2, TSelect>, N> {
-    enum {
-      count = N + SwitchProcessSequence<TProcess1, TProcess2, TSelect>::nContinuous
-    };
-    };*/
-
-  /*
-  template <typename TSProcess, int N>
-  struct count_continuous<
-      TSProcess, N, typename std::enable_if_t<is_switch_process_sequence_v<TSProcess>>> {
-    enum { count = N + TSProcess::nContinuous };
-  };
-  */
-
   /**
    * enum for the process switch selection: identify if First or
    * Second process branch should be used.
@@ -87,16 +61,16 @@ namespace corsika {
      Template parameters:
       - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
       - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - IndexStart, IndexProcess1, IndexProcess2 are to count and index each
+      - IndexFirstProcess, IndexOfProcess1, IndexOfProcess2 are to count and index each
   ContinuousProcess in the entire process-chain
-
 
      See also class \sa ProcessSequence
   **/
 
-  template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart = 0,
-            int IndexProcess1 = count_continuous<TProcess1, IndexStart>::count,
-            int IndexProcess2 = count_continuous<TProcess2, IndexProcess1>::count>
+  template <typename TProcess1, typename TProcess2, typename TSelect,
+            int IndexFirstProcess = 0,
+            int IndexOfProcess1 = count_processes<TProcess1, IndexFirstProcess>::count,
+            int IndexOfProcess2 = count_processes<TProcess2, IndexOfProcess1>::count>
   class SwitchProcessSequence
       : public BaseProcess<SwitchProcessSequence<TProcess1, TProcess2, TSelect>> {
 
@@ -107,10 +81,10 @@ namespace corsika {
     static bool constexpr t2ProcSeq = is_process_sequence_v<process2_type>;
 
     // make sure only BaseProcess types TProcess1/2 are passed
-    static_assert(is_base_process_v<process1_type>,
+    static_assert(is_process_v<process1_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 1");
-    static_assert(is_base_process_v<process2_type>,
+    static_assert(is_process_v<process2_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 2");
 
@@ -130,11 +104,6 @@ namespace corsika {
                   "ProcessSequence 2");
 
   public:
-    /**
-     * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
-     **/
-    enum { nContinuous = IndexProcess2 };
-
     // resource management
     SwitchProcessSequence() = delete; // only initialized objects
     SwitchProcessSequence(SwitchProcessSequence const&) = default;
@@ -201,12 +170,19 @@ namespace corsika {
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
 
+    /**
+     * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
+     **/
+    static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
+
   private:
     TSelect select_; /// selector functor to switch between branch a and b, this is a
                      /// reference, if possible
 
     TProcess1 A_; /// process branch a, this is a reference, if possible
     TProcess2 B_; /// process branch b, this is a reference, if possible
+
+    static unsigned int constexpr numberOfProcesses_ = IndexOfProcess2; // static counter
   };
 
   /**
@@ -221,11 +197,10 @@ namespace corsika {
    **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
-  inline
-      typename std::enable_if_t<is_base_process_v<typename std::decay_t<TProcess1>> &&
-                                    is_base_process_v<typename std::decay_t<TProcess2>>,
-                                SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
-      make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
+  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
+                                       is_process_v<typename std::decay_t<TProcess2>>,
+                                   SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
+  make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }
 

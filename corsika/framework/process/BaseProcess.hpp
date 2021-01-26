@@ -8,7 +8,7 @@
 
 #pragma once
 
-//#include <corsika/framework/process/ProcessTraits.hpp>
+#include <corsika/framework/process/ProcessTraits.hpp>
 
 #include <type_traits>
 
@@ -43,8 +43,28 @@ namespace corsika {
     const TDerived& ref() const { return static_cast<const TDerived&>(*this); }
 
   public:
+    //! Default number of processes ist just one, obviously
+    static unsigned int constexpr getNumberOfProcesses() { return 1; }
+
     // Base processor type for use in other template classes
     using process_type = TDerived;
+  };
+
+  /**
+   * ProcessTraits specialization
+   **/
+  template <typename TProcess>
+  struct is_process<
+      TProcess,
+      std::enable_if_t<std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess>>,
+                                         typename std::decay_t<TProcess>>>>
+      : std::true_type {};
+
+  template <typename TProcess, int N>
+  struct count_processes<TProcess, N,
+                         typename std::enable_if_t<is_process_v<TProcess> &&
+                                                   !is_process_sequence_v<TProcess>>> {
+    static unsigned int constexpr count = N + 1;
   };
 
 } // namespace corsika

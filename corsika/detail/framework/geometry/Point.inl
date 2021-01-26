@@ -97,7 +97,7 @@ namespace corsika {
 
   inline std::ostream& operator<<(std::ostream& os, corsika::Point const& p) {
     auto const& qv = p.getCoordinates();
-    os << qv << " m";
+    os << qv << " (ref:" << fmt::ptr(p.getCoordinateSystem()) << ")";
     return os;
   }
 

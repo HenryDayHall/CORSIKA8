@@ -28,26 +28,19 @@
 
 namespace corsika {
 
-  /*
-  template <typename TProcess1, typename TProcess2 = NullModel, int IndexStart = 0,
-            int IndexProcess1 = count_continuous<TProcess1>::count,
-            int IndexProcess2 =
-                count_continuous<TProcess1, count_continuous<TProcess2>::count>::count>
-  class ProcessSequence;
-  */
-
-  /**
-   * traits class to count ContinuousProcess-es, specialized for ProcessSequence-es
-   **/
-  //  template <typename TProcess1, typename TProcess2, int N>
-  // struct count_continuous<ProcessSequence<TProcess1, TProcess2>, N> {
-  // enum { count = N + ProcessSequence<TProcess1,TProcess2>::nContinuous };
-  //};
-
   template <typename TProcess, int N>
   struct count_continuous<TProcess, N,
                           typename std::enable_if_t<is_process_sequence_v<TProcess>>> {
-    enum { count = N + std::decay_t<TProcess>::nContinuous };
+    static unsigned int constexpr count =
+        N + std::decay_t<TProcess>::getNumberOfProcesses();
+  };
+
+  template <typename TProcess, int N>
+  struct count_processes<TProcess, N,
+                         typename std::enable_if_t<is_process_v<TProcess> &&
+                                                   is_process_sequence_v<TProcess>>> {
+    static unsigned int constexpr count =
+        N + std::decay_t<TProcess>::getNumberOfProcesses();
   };
 
   /**
@@ -69,17 +62,15 @@ namespace corsika {
    * Template parameters:
    *  - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
    *  - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-   *  - IndexStart, IndexProcess1, IndexProcess2 are to count and index each
+   *  - ProcessIndexOffset, IndexOfProcess1, IndexOfProcess2 are to count and index each
    *ContinuousProcess in the entire process-chain
    **/
 
-  template <typename TProcess1, typename TProcess2 = NullModel, int IndexStart = 0,
-            int IndexProcess1 = count_continuous<
-                TProcess1, count_continuous<TProcess2, IndexStart>::count>::count,
-            int IndexProcess2 = count_continuous<TProcess2, IndexStart>::count>
-  //  template <typename TProcess1, typename TProcess2, int IndexStart, int
-  //  IndexProcess1,
-  //        int IndexProcess2>
+  template <typename TProcess1, typename TProcess2 = NullModel,
+            int ProcessIndexOffset = 0,
+            int IndexOfProcess1 = count_processes<
+                TProcess1, count_processes<TProcess2, ProcessIndexOffset>::count>::count,
+            int IndexOfProcess2 = count_processes<TProcess2, ProcessIndexOffset>::count>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
     using process1_type = typename std::decay_t<TProcess1>;
@@ -92,19 +83,14 @@ namespace corsika {
     static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<process2_type>;
 
     // make sure only BaseProcess types TProcess1/2 are passed
-    static_assert(is_base_process_v<process1_type>,
+    static_assert(is_process_v<process1_type>,
                   "can only use process derived from BaseProcess in "
                   "ProcessSequence, for Process 1");
-    static_assert(is_base_process_v<process2_type>,
+    static_assert(is_process_v<process2_type>,
                   "can only use process derived from BaseProcess in "
                   "ProcessSequence, for Process 2");
 
   public:
-    /**
-     * static counter to uniquely index (count) all ContinuousProcess in sequence.
-     **/
-    enum { nContinuous = IndexProcess1 };
-
     // resource management
     ProcessSequence() = delete; // only initialized objects
     ProcessSequence(ProcessSequence const&) = default;
@@ -196,9 +182,16 @@ namespace corsika {
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
 
+    /**
+     * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
+     **/
+    static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
+
   private:
     TProcess1 A_; /// process/list A, this is a reference, if possible
     TProcess2 B_; /// process/list B, this is a reference, if possible
+
+    static unsigned int constexpr numberOfProcesses_ = IndexOfProcess1; // static counter
   };
 
   /**
@@ -227,7 +220,7 @@ namespace corsika {
 
   template <typename... TProcesses, typename TProcess1>
   inline typename std::enable_if_t<
-      is_base_process_v<typename std::decay_t<TProcess1>>,
+      is_process_v<typename std::decay_t<TProcess1>>,
       ProcessSequence<TProcess1, decltype(make_sequence(std::declval<TProcesses>()...))>>
   make_sequence(TProcess1&& vA, TProcesses&&... vBs) {
     return ProcessSequence<TProcess1,
@@ -244,11 +237,10 @@ namespace corsika {
    * \param vB needs to derive BaseProcess or ProcessSequence
    **/
   template <typename TProcess1, typename TProcess2>
-  inline
-      typename std::enable_if_t<is_base_process_v<typename std::decay_t<TProcess1>> &&
-                                    is_base_process_v<typename std::decay_t<TProcess2>>,
-                                ProcessSequence<TProcess1, TProcess2>>
-      make_sequence(TProcess1&& vA, TProcess2&& vB) {
+  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
+                                       is_process_v<typename std::decay_t<TProcess2>>,
+                                   ProcessSequence<TProcess1, TProcess2>>
+  make_sequence(TProcess1&& vA, TProcess2&& vB) {
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
 
@@ -261,7 +253,7 @@ namespace corsika {
    * \param vA needs to derive from BaseProcess or ProcessSequence
    **/
   template <typename TProcess>
-  inline typename std::enable_if_t<is_base_process_v<typename std::decay_t<TProcess>>,
+  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess>>,
                                    ProcessSequence<TProcess, NullModel>>
   make_sequence(TProcess&& vA) {
     return ProcessSequence<TProcess, NullModel>(vA, NullModel());
@@ -274,7 +266,7 @@ namespace corsika {
   struct is_process_sequence<ProcessSequence<TProcess1, TProcess2>> : std::true_type {
     // only switch on for BaseProcesses
     template <typename std::enable_if_t<
-        is_base_process_v<TProcess1> && is_base_process_v<TProcess2>, int>>
+        is_process_v<TProcess1> && is_process_v<TProcess2>, int>>
     is_process_sequence() {}
   };
 

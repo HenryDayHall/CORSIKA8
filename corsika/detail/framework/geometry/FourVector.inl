@@ -95,7 +95,7 @@ namespace corsika {
 
   template <typename TTimeType, typename TSpaceVecType>
   typename FourVector<TTimeType, TSpaceVecType>::norm_type
-      FourVector<TTimeType, TSpaceVecType>::operator*(FourVector const& b) {
+  FourVector<TTimeType, TSpaceVecType>::operator*(FourVector const& b) {
     if constexpr (std::is_same<time_type, decltype(std::declval<space_type>() / meter *
                                                    second)>::value)
       return timeLike_ * b.timeLike_ * constants::cSquared - spaceLike_.norm();

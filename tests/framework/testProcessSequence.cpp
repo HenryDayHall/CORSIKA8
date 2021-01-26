@@ -297,7 +297,7 @@ struct DummyView {
   DummyData& parent() { return p_; }
 };
 
-TEST_CASE("Process Sequence General", "ProcessSequence") {
+TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
@@ -307,11 +307,11 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
     Process1 m1(0);
     const Process4 m4(3);
 
-    CHECK(is_base_process_v<Process1>);
-    CHECK_FALSE(is_base_process_v<DummyData>);
-    CHECK(is_base_process_v<decltype(m4)>);
-    CHECK(is_base_process_v<decltype(Decay1(1))>);
-    CHECK(is_base_process_v<decltype(ContinuousProcess3{3, 3_m})>);
+    CHECK(is_process_v<Process1>);
+    CHECK_FALSE(is_process_v<DummyData>);
+    CHECK(is_process_v<decltype(m4)>);
+    CHECK(is_process_v<decltype(Decay1(1))>);
+    CHECK(is_process_v<decltype(ContinuousProcess3{3, 3_m})>);
   }
 
   SECTION("Check construction") {
@@ -326,8 +326,8 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
     CHECK(globalCount == 4);
 
     auto sequence1 = make_sequence(m1, m2, m3, m4);
-    CHECK(is_base_process_v<decltype(sequence1)>);
-    CHECK(is_base_process_v<decltype(m2)>);
+    CHECK(is_process_v<decltype(sequence1)>);
+    CHECK(is_process_v<decltype(m2)>);
     CHECK(is_process_sequence_v<decltype(sequence1)>);
     CHECK_FALSE(is_process_sequence_v<decltype(m2)>);
     CHECK_FALSE(is_switch_process_sequence_v<decltype(sequence1)>);
@@ -471,7 +471,7 @@ TEST_CASE("Process Sequence General", "ProcessSequence") {
   }
 }
 
-TEST_CASE("Switch Process Sequence", "ProcessSequence") {
+TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
@@ -692,7 +692,7 @@ TEST_CASE("Switch Process Sequence", "ProcessSequence") {
   }
 }
 
-TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
+TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
@@ -750,12 +750,12 @@ TEST_CASE("Continuous Process Indexing", "ProcessSequence") {
     int const switch_seq_n = count_continuous<decltype(switch_seq)>::count;
     int const sequence3_n = count_continuous<decltype(sequence3)>::count;
 
-    CHECK(decltype(sequence1)::nContinuous == 1);
-    CHECK(count_continuous<decltype(sequence1)>::count == 1);
-    CHECK(count_continuous<decltype(sequence2)>::count == 2);
-    CHECK(switch_seq_n == 3);
-    CHECK(sequence3_n == 4);
-    CHECK(count_continuous<decltype(sequence4)>::count == 4);
+    CHECK(decltype(sequence1)::getNumberOfProcesses() == 3);
+    CHECK(count_continuous<decltype(sequence1)>::count == 3);
+    CHECK(count_continuous<decltype(sequence2)>::count == 4);
+    CHECK(switch_seq_n == 7);
+    CHECK(sequence3_n == 9);
+    CHECK(count_continuous<decltype(sequence4)>::count == 9);
 
     std::cout << "switch_seq "
               << boost::typeindex::type_id<decltype(switch_seq)>().pretty_name()

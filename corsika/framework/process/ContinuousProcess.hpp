@@ -64,9 +64,6 @@ namespace corsika {
   template <typename TProcess, int N>
   struct count_continuous<TProcess, N,
                           typename std::enable_if_t<is_continuous_process_v<TProcess>>> {
-    // std::is_base_of_v<
-    //                      ContinuousProcess<typename std::decay_t<TProcess>>,
-    //                      typename std::decay_t<TProcess>>>> {
     enum { count = N + 1 };
   };
 

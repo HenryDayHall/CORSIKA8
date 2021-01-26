@@ -12,30 +12,18 @@
  * \file ProcessTraits.hpp
  */
 
-//#include <corsika/framework/process/BaseProcess.hpp>
-//#include <corsika/framework/process/ProcessSequence.hpp>
-//#include <corsika/framework/process/SwitchProcessSequence.hpp>
-//#include <corsika/framework/process/ContinuousProcess.hpp>
-
 #include <type_traits>
 
 namespace corsika {
 
   /**
-   * A traits marker to identify BaseProcess
+   * A traits marker to identify BaseProcess, thus any type of process
    */
   template <typename TProcess, typename Enable = void>
-  struct is_base_process : std::false_type {};
+  struct is_process : std::false_type {};
 
   template <typename TProcess>
-  bool constexpr is_base_process_v = is_base_process<TProcess>::value;
-
-  template <typename TProcess>
-  struct is_base_process<
-      TProcess,
-      std::enable_if_t<std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess>>,
-                                         typename std::decay_t<TProcess>>>>
-      : std::true_type {};
+  bool constexpr is_process_v = is_process<TProcess>::value;
 
   /**
    * A traits marker to identify ContinuousProcess
@@ -79,7 +67,15 @@ namespace corsika {
    **/
   template <typename TProcess, int N = 0, typename Enable = void>
   struct count_continuous {
-    enum { count = N };
+    static unsigned int constexpr count = N;
+  };
+
+  /**
+   * traits class to count any type of Process, general version
+   **/
+  template <typename TProcess, int N = 0, typename Enable = void>
+  struct count_processes {
+    static unsigned int constexpr count = N;
   };
 
 } // namespace corsika
