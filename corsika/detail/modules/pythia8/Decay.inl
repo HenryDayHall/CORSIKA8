@@ -54,7 +54,7 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::readString("Next:numberShowEvent = 0");
 
     Pythia8::Pythia::readString("Print:quiet = on");
-    Pythia8::Pythia::readString("Check:particleData = 0");
+    Pythia8::Pythia::readString("Check:particleData = off");
 
     /*
        switching off event check in pythia is needed to allow decays that are off-shell
