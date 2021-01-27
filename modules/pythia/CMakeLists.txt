@@ -23,11 +23,12 @@ if ("x_${USE_PYTHIA8_C8}" STREQUAL "x_SYSTEM")
   
   find_package (Pythia8 8245 EXACT REQUIRED) 
   message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_PREFIX}")
+  set (Pythia8_INCLUDE_DIRS_CMAKE ${Pythia8_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
   set_target_properties (
     C8::ext::pythia8 PROPERTIES
     IMPORTED_LOCATION ${Pythia8_LIBRARY}/libpythia8.a
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES "${Pythia8_INCLUDE_DIR};${CMAKE_CURRENT_BINARY_DIR}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Pythia8_INCLUDE_DIRS_CMAKE}"
     )
   set (Pythia8_FOUND 1 PARENT_SCOPE)
 
@@ -46,9 +47,9 @@ else ()
   ExternalProject_Add (pythia8
     URL ${CMAKE_CURRENT_SOURCE_DIR}/pythia${_C8_Pythia8_VERSION}-stripped.tar.bz2
     URL_MD5 d3e951a2f101e8cfec26405cb61db83b
-    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/source
-    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
-    LOG_DIR ${CMAKE_CURRENT_BINARY_DIR}/pythia8/log
+    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/source"
+    INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/install"
+    LOG_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/log"
     CONFIGURE_COMMAND ./configure --cxx-common=\\"${CMAKE_CXX_FLAGS} -O2 -fPIC\\" --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
     INSTALL_COMMAND make install COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install/bin ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install/share/Pythia8/examples
     BUILD_IN_SOURCE ON
@@ -74,16 +75,18 @@ else ()
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/Pythia8ConfigurationDirectory_install.hpp  @ONLY)
   
   install (DIRECTORY ${INSTALL_DIR}/ DESTINATION ${Pythia8_INSTALL_DIR})
+
+  set (Pythia8_INCLUDE_DIRS_CMAKE ${Pythia8_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
   
   set_target_properties (
     C8::ext::pythia8
     PROPERTIES
     IMPORTED_LOCATION ${Pythia8_LIBRARY}
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES "${Pythia8_INCLUDE_DIR};${CMAKE_CURRENT_BINARY_DIR}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Pythia8_INCLUDE_DIRS_CMAKE}"
     )
   
-    message (STATUS "Pythia8 build at ${INSTALL_DIR}, final install to ${Pythia8_INSTALL_DIR}")
+    message (STATUS "Pythia8 build at: ${INSTALL_DIR}, final install to: ${Pythia8_INSTALL_DIR}, include dirs: ${Pythia8_INCLUDE_DIRS_CMAKE}")
 endif ()
 
 # the install location of Pythia8
