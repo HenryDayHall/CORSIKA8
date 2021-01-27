@@ -9,7 +9,6 @@
 #include <corsika/modules/pythia8/Pythia8.hpp>
 #include <corsika/modules/pythia8/Decay.hpp>
 #include <corsika/modules/pythia8/Random.hpp>
-#include <corsika/modules/pythia8/ConfigurationDirectory.hpp>
 
 #include <corsika/framework/utility/COMBoost.hpp>
 

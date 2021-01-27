@@ -9,7 +9,6 @@
 #pragma once
 
 #include <corsika/modules/pythia8/Interaction.hpp>
-#include <corsika/modules/pythia8/ConfigurationDirectory.hpp>
 
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
