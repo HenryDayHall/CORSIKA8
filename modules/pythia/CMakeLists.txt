@@ -49,15 +49,10 @@ else ()
     URL_MD5 d3e951a2f101e8cfec26405cb61db83b
     SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/source"
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/install"
-    LOG_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/log"
     CONFIGURE_COMMAND ./configure --cxx-common=\\"${CMAKE_CXX_FLAGS} -O2 -fPIC\\" --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
     INSTALL_COMMAND make install COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install/bin ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install/share/Pythia8/examples
     BUILD_IN_SOURCE ON
     EXCLUDE_FROM_ALL TRUE
-    LOG_CONFIGURE TRUE
-    LOG_BUILD TRUE
-    LOG_INSTALL TRUE
-    LOG_MERGED_STDOUTERR TRUE
     )  
   set (Pythia8_FOUND 1 PARENT_SCOPE)
   ExternalProject_Get_Property (pythia8 INSTALL_DIR) # this is "make"
