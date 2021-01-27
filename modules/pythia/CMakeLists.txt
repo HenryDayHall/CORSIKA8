@@ -22,12 +22,12 @@ add_library (C8::ext::pythia8 STATIC IMPORTED GLOBAL)
 if ("x_${USE_PYTHIA8_C8}" STREQUAL "x_SYSTEM")
   
   find_package (Pythia8 8245 EXACT REQUIRED) 
-  message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_INCLUDE_DIR}")
+  message (STATUS "Using system-level Pythia8 version ${Pythia8_VERSION} at ${Pythia8_PREFIX}")
   set_target_properties (
     C8::ext::pythia8 PROPERTIES
     IMPORTED_LOCATION ${Pythia8_LIBRARY}/libpythia8.a
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
-    INTERFACE_INCLUDE_DIRECTORIES ${Pythia8_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+    INTERFACE_INCLUDE_DIRECTORIES "${Pythia8_INCLUDE_DIR};${CMAKE_CURRENT_BINARY_DIR}"
     )
   set (Pythia8_FOUND 1 PARENT_SCOPE)
 

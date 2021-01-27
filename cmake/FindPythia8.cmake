@@ -57,18 +57,20 @@ set (_SEARCH_Pythia8_
   $ENV{PYTHIA8_ROOT}
   ${PYTHIA8_DIR}
   $ENV{PYTHIA8_DIR}
+  ${Pythia8_DIR}
+  $ENV{Pythia8_DIR}
   /opt/pythia8
   )
 
-find_file (Pythia8_DIR
+find_file (Pythia8_Pythia_h_LOC
   NAME Pythia.h
   PATHS ${_SEARCH_Pythia8_}
-  PATH_SUFFIXES "/include/Pythia8"
+  PATH_SUFFIXES include/Pythia8
   DOC "The location of the Pythia8/Pythia.h script"
   REQUIRED)
+string (REPLACE "/include/Pythia8/Pythia.h" "" Pythia8_DIR ${Pythia8_Pythia_h_LOC})
 
 set (Pythia8_CONFIG ${Pythia8_DIR}/bin/pythia-config)
-
 if (Pythia8_CONFIG)
   set (HAVE_Pythia8 1 CACHE BOOL "presence of pythia8, found via pythia8-config")
 
