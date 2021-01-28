@@ -23,10 +23,10 @@
 
 using namespace corsika;
 
-TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
+TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
-  logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  logging::set_level(logging::level::trace);
+  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
@@ -34,48 +34,64 @@ TEST_CASE("ContinuousProcess interface", "[proccesses][observation_plane]") {
   [[maybe_unused]] auto const& node_dummy = nodePtr;
 
   /*
-    Test with downward going 1_GeV neutrino, starting at 0,1_m,10m
+    Test with 1_GeV neutrino, starting at 0,0,0 travelling into +x direction (see
+    setup_stack).
 
-    ObservationPlane has origin at 0,0,0
+    ObservationPlane has origin at 10,0,0 and a normal in x-direction
    */
   auto [stack, viewPtr] =
       setup::testing::setup_stack(Code::NuE, 0, 0, 1_GeV, nodePtr, cs);
   [[maybe_unused]] setup::StackView& view = *viewPtr;
   auto particle = stack->getNextParticle();
 
+  // dummy track. Not used for calculation!
   Point const start(cs, {0_m, 1_m, 10_m});
   VelocityVector vec(cs, 0_m / second, 0_m / second, -constants::c);
   Line line(start, vec);
-
-  setup::Trajectory track =
+  setup::Trajectory no_used_track =
       setup::testing::make_track<setup::Trajectory>(line, 12_m / constants::c);
-
-  particle.setPosition(Point(cs, {1_m, 1_m, 10_m})); // moving already along -z
 
   SECTION("horizontal plane") {
 
-    Plane const obsPlane(Point(cs, {0_m, 0_m, 0_m}), DirectionVector(cs, {0., 0., 1.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {1., 0., 0.}), "particles.dat",
+    Plane const obsPlane(Point(cs, {10_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}), "particles.dat",
                          true);
 
-    LengthType const length = obs.getMaxStepLength(particle, track);
-    ProcessReturn const ret = obs.doContinuous(particle, track);
+    LengthType const length = obs.getMaxStepLength(particle, no_used_track);
+    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
 
     CHECK(length / 10_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
   }
 
-  SECTION("inclined plane") {}
-
   SECTION("transparent plane") {
-    Plane const obsPlane(Point(cs, {0_m, 0_m, 0_m}), DirectionVector(cs, {0., 0., 1.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {1., 0., 0.}), "particles.dat",
+    Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), "particles.dat",
                          false);
 
-    LengthType const length = obs.getMaxStepLength(particle, track);
-    ProcessReturn const ret = obs.doContinuous(particle, track);
+    LengthType const length = obs.getMaxStepLength(particle, no_used_track);
+    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
 
-    CHECK(length / 10_m == Approx(1).margin(1e-4));
+    CHECK(length / 1_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::Ok);
+  }
+
+  SECTION("inclined plane, inclined particle") {
+
+    MomentumVector const pnew = MomentumVector(cs, {1_GeV, 0.5_GeV, -0.4_GeV});
+    HEPEnergyType const enew = sqrt(pnew.dot(pnew));
+    particle.setMomentum(pnew);
+    particle.setEnergy(enew);
+
+    Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
+                         DirectionVector(cs, {1, 0.1, -0.05}));
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}), "particles.dat",
+                         true);
+
+    LengthType const length = obs.getMaxStepLength(particle, no_used_track);
+    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
+
+    CHECK(length / 10_m == Approx(1.1375).margin(1e-4));
+    CHECK(ret == ProcessReturn::ParticleAbsorbed);
   }
 }

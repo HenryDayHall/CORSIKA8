@@ -16,6 +16,7 @@
 #include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/process/ContinuousProcessIndex.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
@@ -57,10 +58,19 @@ namespace corsika {
      since this makes no sense. The StackProcess acts on an entire
      particle stack and not on indiviidual particles.
 
+     Template parameters:
+      - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      - IndexFirstProcess, IndexOfProcess1, IndexOfProcess2 are to count and index each
+  ContinuousProcess in the entire process-chain
+
      See also class \sa ProcessSequence
   **/
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
+  template <typename TProcess1, typename TProcess2, typename TSelect,
+            int IndexFirstProcess = 0,
+            int IndexOfProcess1 = count_processes<TProcess1, IndexFirstProcess>::count,
+            int IndexOfProcess2 = count_processes<TProcess2, IndexOfProcess1>::count>
   class SwitchProcessSequence
       : public BaseProcess<SwitchProcessSequence<TProcess1, TProcess2, TSelect>> {
 
@@ -71,10 +81,10 @@ namespace corsika {
     static bool constexpr t2ProcSeq = is_process_sequence_v<process2_type>;
 
     // make sure only BaseProcess types TProcess1/2 are passed
-    static_assert(std::is_base_of_v<BaseProcess<process1_type>, process1_type>,
+    static_assert(is_process_v<process1_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 1");
-    static_assert(std::is_base_of_v<BaseProcess<process2_type>, process2_type>,
+    static_assert(is_process_v<process2_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 2");
 
@@ -122,13 +132,15 @@ namespace corsika {
                                      TVTNType const& to);
 
     template <typename TParticle, typename TTrack>
-    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT);
+    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
+                                      ContinuousProcessIndex const limitId);
 
     template <typename TSecondaries>
     inline void doSecondaries(TSecondaries& vS);
 
     template <typename TParticle, typename TTrack>
-    inline LengthType getMaxStepLength(TParticle& particle, TTrack& vTrack);
+    inline ContinuousProcessStepLength getMaxStepLength(TParticle& particle,
+                                                        TTrack& vTrack);
 
     template <typename TParticle>
     inline GrammageType getInteractionLength(TParticle&& particle) {
@@ -158,12 +170,19 @@ namespace corsika {
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
 
+    /**
+     * static counter to uniquely index (count) all ContinuousProcess in switch sequence.
+     **/
+    static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
+
   private:
     TSelect select_; /// selector functor to switch between branch a and b, this is a
                      /// reference, if possible
 
     TProcess1 A_; /// process branch a, this is a reference, if possible
     TProcess2 B_; /// process branch b, this is a reference, if possible
+
+    static unsigned int constexpr numberOfProcesses_ = IndexOfProcess2; // static counter
   };
 
   /**
@@ -178,12 +197,9 @@ namespace corsika {
    **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
-  inline typename std::enable_if_t<
-      std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess1>>,
-                        typename std::decay_t<TProcess1>> &&
-          std::is_base_of_v<BaseProcess<typename std::decay_t<TProcess2>>,
-                            typename std::decay_t<TProcess2>>,
-      SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
+  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
+                                       is_process_v<typename std::decay_t<TProcess2>>,
+                                   SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
   make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }

@@ -10,6 +10,8 @@
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
+#include <corsika/framework/process/ContinuousProcessStepLength.hpp>
+#include <corsika/framework/process/ContinuousProcessIndex.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
@@ -118,7 +120,10 @@ namespace corsika {
                                                                           next_interact);
 
     // determine the maximum geometric step length
-    LengthType const continuous_max_dist = sequence_.getMaxStepLength(vParticle, step);
+    ContinuousProcessStepLength const continuousMaxStep =
+        sequence_.getMaxStepLength(vParticle, step);
+    LengthType const continuous_max_dist = continuousMaxStep;
+    ContinuousProcessIndex const limitingId = continuousMaxStep;
 
     // take minimum of geometry, interaction, decay for next step
     auto const min_distance =
@@ -142,7 +147,8 @@ namespace corsika {
     vParticle.setTime(vParticle.getTime() + step.getDuration());
 
     // apply all continuous processes on particle + track
-    if (sequence_.doContinuous(vParticle, step) == ProcessReturn::ParticleAbsorbed) {
+    if (sequence_.doContinuous(vParticle, step, limitingId) ==
+        ProcessReturn::ParticleAbsorbed) {
       CORSIKA_LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                         vParticle.getPID(), vParticle.getEnergy() / 1_GeV);
       if (!vParticle.isErased()) vParticle.erase();

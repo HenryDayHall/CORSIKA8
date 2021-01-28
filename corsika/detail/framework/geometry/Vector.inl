@@ -228,4 +228,12 @@ namespace corsika {
                                                   bareResult);
   }
 
+  template <typename TDimension>
+  inline std::ostream& operator<<(std::ostream& os,
+                                  corsika::Vector<TDimension> const& v) {
+    auto const& qv = v.getComponents();
+    os << qv << " (ref:" << fmt::ptr(v.getCoordinateSystem()) << ")";
+    return os;
+  }
+
 } // namespace corsika

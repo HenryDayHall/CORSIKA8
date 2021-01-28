@@ -145,7 +145,7 @@ namespace corsika {
   }
 
   ProcessReturn ParticleCut::doContinuous(corsika::setup::Stack::particle_type& particle,
-                                          corsika::setup::Trajectory const&) {
+                                          corsika::setup::Trajectory const&, bool const) {
     CORSIKA_LOG_TRACE("ParticleCut::DoContinuous");
     if (checkCutParticle(particle)) {
       CORSIKA_LOG_TRACE("removing during continuous");

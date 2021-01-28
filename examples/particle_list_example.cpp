@@ -35,37 +35,39 @@ using namespace std;
 int main() {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
 
   logging::info(
+      "\n"
       "------------------------------------------\n"
-      "particles in CORSIKA\n"
-      "------------------------------------------\n"
-      "Name                | "
+      "        particles in CORSIKA\n"
+      "------------------------------------------\n");
+  int const width = 20 + 10 + 10 + 10 + 15 + 15 + 17;
+  logging::info(
+      "Name                 | "
       "PDG-id     | "
       "SIBYLL-id  | "
       "QGSJETII-id| "
       "PDG-mass (GeV)   | "
-      "SIBYLL-mass (GeV)|\n"
-      "{:-}",
-      "", 104);
+      "SIBYLL-mass (GeV)|");
+  logging::info("{:->{}}", ' ', width);
   for (auto p : get_all_particles()) {
     if (!is_nucleus(p)) {
       corsika::sibyll::SibyllCode sib_id = corsika::sibyll::convertToSibyll(p);
       auto const sib_mass = (sib_id != corsika::sibyll::SibyllCode::Unknown
                                  ? to_string(corsika::sibyll::getSibyllMass(p) / 1_GeV)
-                                 : "--");
+                                 : "");
       auto const qgs_id = corsika::qgsjetII::convertToQgsjetII(p);
-      logging::info("{:20} | {:10} | {:10} | {:10.5} | {:18.5}", p,
+      logging::info("{:20} | {:10} | {:10} | {:10} | {:>15.5} | {:>15.5} |", p,
                     static_cast<int>(get_PDG(p)),
                     (sib_id != corsika::sibyll::SibyllCode::Unknown
                          ? to_string(static_cast<int>(sib_id))
-                         : "--"),
+                         : ""),
                     (qgs_id != corsika::qgsjetII::QgsjetIICode::Unknown
                          ? to_string(static_cast<int>(qgs_id))
-                         : "--"),
+                         : ""),
                     get_mass(p) / 1_GeV, sib_mass);
     }
   }
-  logging::info("{:-104}", "");
+  logging::info("{:->{}}", ' ', width);
 }

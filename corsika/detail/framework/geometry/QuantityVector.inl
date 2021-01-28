@@ -145,7 +145,7 @@ namespace corsika {
 
   template <typename TDimension>
   inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::QuantityVector<TDimension> const qv) {
+                                  corsika::QuantityVector<TDimension> const& qv) {
     using quantity_type = phys::units::quantity<TDimension, double>;
 
     os << '(' << qv.eigenVector_(0) << ' ' << qv.eigenVector_(1) << ' '

@@ -92,6 +92,8 @@ namespace corsika::tracking_line {
     auto const n = plane.getNormal();
     auto const c = n.dot(velocity);
 
+    CORSIKA_LOG_TRACE("c={}, delta={}, momentum={}", c, delta, particle.getMomentum());
+
     return Intersections(c.magnitude() == 0
                              ? std::numeric_limits<TimeType::value_type>::infinity() * 1_s
                              : n.dot(delta) / c);

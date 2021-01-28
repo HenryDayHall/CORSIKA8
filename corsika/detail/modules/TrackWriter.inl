@@ -31,7 +31,8 @@ namespace corsika {
   }
 
   template <typename TParticle, typename TTrack>
-  ProcessReturn TrackWriter::doContinuous(const TParticle& vP, const TTrack& vT) {
+  ProcessReturn TrackWriter::doContinuous(const TParticle& vP, const TTrack& vT,
+                                          bool const) {
     auto const start = vT.getPosition(0).getCoordinates();
     auto const delta = vT.getPosition(1).getCoordinates() - start;
     auto const pdg = static_cast<int>(get_PDG(vP.getPID()));

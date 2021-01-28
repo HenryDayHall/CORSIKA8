@@ -67,8 +67,11 @@ namespace corsika::proposal {
     //! If the particle if below the given energy threshold where it will be
     //! considered stochastically, it will be absorbed.
     //!
+    //! \param limitFlag is true, if the track was actually limited by
+    //! proposal::ContinuousProcess::getMaxStepLength
+    //!
     template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle&, TTrack const&);
+    ProcessReturn doContinuous(TParticle&, TTrack const& track, bool const limitFlag);
 
     //!
     //! Calculates maximal step length of process.

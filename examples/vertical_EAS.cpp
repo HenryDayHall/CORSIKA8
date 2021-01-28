@@ -91,8 +91,8 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
+  logging::set_level(logging::level::trace);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
@@ -222,9 +222,9 @@ int main(int argc, char** argv) {
   decaySibyll.printDecayConfig();
 
   ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
-  corsika::proposal::Interaction proposal(env);
-  corsika::proposal::ContinuousProcess em_continuous(env);
-  InteractionCounter proposalCounted(proposal);
+  corsika::proposal::Interaction emCascade(env);
+  corsika::proposal::ContinuousProcess emContinuous(env);
+  InteractionCounter emCascadeCounted(emCascade);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
   TrackWriter trackWriter("tracks.dat");
@@ -254,9 +254,9 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(
       urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted), EnergySwitch(55_GeV));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence = make_sequence(stackInspect, hadronSequence, reset_particle_mass,
-                                decaySequence, proposalCounted, em_continuous, cut,
-                                trackWriter, observationLevel, longprof);
+  auto sequence =
+      make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
+                    emContinuous, cut, trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
@@ -268,19 +268,19 @@ int main(int argc, char** argv) {
   EAS.run();
 
   cut.showResults();
-  em_continuous.showResults();
+  emContinuous.showResults();
   observationLevel.showResults();
   const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + em_continuous.getEnergyLost() +
+                               cut.getEmEnergy() + emContinuous.getEnergyLost() +
                                observationLevel.getEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.reset();
   cut.reset();
-  em_continuous.reset();
+  emContinuous.reset();
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                     urqmdCounted.getHistogram() + proposalCounted.getHistogram();
+                     urqmdCounted.getHistogram();
 
   save_hist(hists.labHist(), "inthist_lab_verticalEAS.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_verticalEAS.npz", true);

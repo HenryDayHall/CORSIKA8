@@ -140,7 +140,7 @@ namespace corsika {
   }
 
   ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
-                                            setup::Trajectory const& t) {
+                                            setup::Trajectory const& t, bool const) {
     if (p.getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
@@ -174,7 +174,7 @@ namespace corsika {
     // slightly smaller than emCut since, either this Step is limited
     // by energy_lim, then the particle is stopped in a very short
     // range (before doing anythin else) and is then removed
-    // instantly. The exact position where it reaches emCut is not
+    // instantly. The exact 3D position where it reaches emCut is not very
     // important, the important fact is that its E_kin is zero
     // afterwards.
     //

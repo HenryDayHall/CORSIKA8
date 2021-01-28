@@ -12,6 +12,8 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
+#include <string>
+
 namespace corsika {
 
   class Plane {
@@ -31,6 +33,8 @@ namespace corsika {
     Point const& getCenter() const;
 
     DimLessVec const& getNormal() const;
+
+    std::string asString() const;
 
   public:
     Point const center_;
