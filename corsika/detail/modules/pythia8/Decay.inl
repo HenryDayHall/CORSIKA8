@@ -17,7 +17,7 @@
 
 namespace corsika::pythia8 {
 
-  Decay::Decay(const bool print_listing)
+  Decay::Decay(bool const print_listing)
       : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
       , print_listing_(print_listing) {
     init();
@@ -35,18 +35,9 @@ namespace corsika::pythia8 {
 
     // run this only once during construction
 
-    // set random number generator in pythia
+    // link random number generator in pythia to CORSIKA8
     Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
     Pythia8::Pythia::setRndmEnginePtr(rndm);
-
-    /*
-       issue xyz: definition of particles and decay channels use the same mechanism in
-       corsika and pythia we should force pythia to use the file in corsika.
-     */
-    // bool ParticleData::reInit(string startFile, bool xmlFormat = true)
-    // read in particle data from Corsika 8
-    // Pythia8::Pythia::particleData.reInit("/home/felix/ngcorsika/corsika-build/include/corsika/particles/ParticleData.xml");
-    // Pythia8::Pythia::particleData.checkTable();
 
     Pythia8::Pythia::readString("Next:numberShowInfo = 0");
     Pythia8::Pythia::readString("Next:numberShowProcess = 0");
@@ -129,14 +120,14 @@ namespace corsika::pythia8 {
   }
 
   bool Decay::canDecay(Code const pCode) {
-    const bool ans =
+    bool const ans =
         Pythia8::Pythia::particleData.canDecay(static_cast<int>(get_PDG(pCode)));
     CORSIKA_LOG_INFO("Pythia::Decay: checking if particle: {} can decay in PYTHIA? {} ",
                      pCode, ans);
     return ans;
   }
 
-  void Decay::printDecayConfig(const Code vCode) {
+  void Decay::printDecayConfig(Code const vCode) {
     CORSIKA_LOG_INFO("Decay: Pythia decay configuration:");
     CORSIKA_LOG_INFO(" {} is {} ", vCode, (isStable(vCode) ? "stable" : "unstable"));
   }
@@ -153,14 +144,14 @@ namespace corsika::pythia8 {
   template <typename TParticle>
   TimeType Decay::getLifetime(TParticle const& particle) {
 
-    const auto pid = particle.getPID();
+    auto const pid = particle.getPID();
     if (canDecay(pid)) {
       HEPEnergyType E = particle.getEnergy();
       HEPMassType m = particle.getMass();
 
-      const double gamma = E / m;
+      double const gamma = E / m;
 
-      const TimeType t0 = get_lifetime(pid);
+      TimeType const t0 = get_lifetime(pid);
       auto const lifetime = gamma * t0;
       CORSIKA_LOG_INFO("Pythia::Decay: code: {}", particle.getPID());
       CORSIKA_LOG_INFO("Pythia::Decay: MinStep: t0: {}", t0);
