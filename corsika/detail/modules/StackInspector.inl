@@ -46,7 +46,7 @@ namespace corsika {
       if (ReportStack_) {
         CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem(); // for printout
         auto pos = iterP.getPosition().getCoordinates(rootCS);
-        CORSIKA_LOG_DEBUG(
+        CORSIKA_LOG_INFO(
             "StackInspector: i= {:5d}"
             ", id= {:^15}"
             " E={:15e} GeV, "
@@ -55,7 +55,7 @@ namespace corsika {
             (i++), iterP.getPID(), (E / 1_GeV), pos, fmt::ptr(iterP.getNode()));
 
         if (iterP.getPID() == Code::Nucleus)
-          CORSIKA_LOG_DEBUG("nuc_ref= {}", iterP.getNucleusRef());
+          CORSIKA_LOG_INFO("nuc_ref= {}", iterP.getNucleusRef());
       }
     }
 
@@ -70,7 +70,7 @@ namespace corsika {
     std::time_t const eta_time = std::chrono::system_clock::to_time_t(
         StartTime_ + std::chrono::seconds((int)eta_seconds));
 
-    CORSIKA_LOG_DEBUG(
+    CORSIKA_LOG_INFO(
         "StackInspector: "
         " time= {}"
         ", running= {} seconds"
