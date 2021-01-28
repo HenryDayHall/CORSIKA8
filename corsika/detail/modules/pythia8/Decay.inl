@@ -17,8 +17,9 @@
 
 namespace corsika::pythia8 {
 
-  Decay::Decay(const bool print_listing)
-      : print_listing_(print_listing) {
+  Decay::Decay(bool const print_listing)
+      : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
+      , print_listing_(print_listing) {
     init();
   }
 
@@ -34,25 +35,16 @@ namespace corsika::pythia8 {
 
     // run this only once during construction
 
-    // set random number generator in pythia
+    // link random number generator in pythia to CORSIKA8
     Pythia8::RndmEngine* rndm = new corsika::pythia8::Random();
-    pythia_.setRndmEnginePtr(rndm);
+    Pythia8::Pythia::setRndmEnginePtr(rndm);
 
-    /*
-       issue xyz: definition of particles and decay channels use the same mechanism in
-       corsika and pythia we should force pythia to use the file in corsika.
-     */
-    // bool ParticleData::reInit(string startFile, bool xmlFormat = true)
-    // read in particle data from Corsika 8
-    // pythia_.particleData.reInit("/home/felix/ngcorsika/corsika-build/include/corsika/particles/ParticleData.xml");
-    // pythia_.particleData.checkTable();
+    Pythia8::Pythia::readString("Next:numberShowInfo = 0");
+    Pythia8::Pythia::readString("Next:numberShowProcess = 0");
+    Pythia8::Pythia::readString("Next:numberShowEvent = 0");
 
-    pythia_.readString("Next:numberShowInfo = 0");
-    pythia_.readString("Next:numberShowProcess = 0");
-    pythia_.readString("Next:numberShowEvent = 0");
-
-    pythia_.readString("Print:quiet = on");
-    pythia_.readString("Check:particleData = 0");
+    Pythia8::Pythia::readString("Print:quiet = on");
+    Pythia8::Pythia::readString("Check:particleData = off");
 
     /*
        switching off event check in pythia is needed to allow decays that are off-shell
@@ -60,17 +52,17 @@ namespace corsika::pythia8 {
        the consistency of particle masses between event generators is an unsolved issues
     */
     CORSIKA_LOG_INFO("Pythia::Init: switching off event checking in pythia..");
-    pythia_.readString("Check:event = 1");
+    Pythia8::Pythia::readString("Check:event = 1");
 
-    pythia_.readString("ProcessLevel:all = off");
-    pythia_.readString("ProcessLevel:resonanceDecays = off");
+    Pythia8::Pythia::readString("ProcessLevel:all = off");
+    Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = off");
 
     // making sure
     setStable(Code::Pi0);
 
-    //    pythia_.particleData.readString("59:m0 = 101.00");
+    //    Pythia8::Pythia::particleData.readString("59:m0 = 101.00");
 
-    if (!pythia_.init())
+    if (!Pythia8::Pythia::init())
       throw std::runtime_error("Pythia::Decay: Initialization failed!");
   }
 
@@ -115,26 +107,27 @@ namespace corsika::pythia8 {
 
   void Decay::setUnstable(Code const pCode) {
     CORSIKA_LOG_INFO("Pythia::Decay: setting {} unstable..", pCode);
-    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
+    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
   void Decay::setStable(Code const pCode) {
     CORSIKA_LOG_INFO("Pythia::Decay: setting {} stable..", pCode);
-    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
+    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
   bool Decay::isStable(Code const vCode) {
-    return pythia_.particleData.canDecay(static_cast<int>(get_PDG(vCode)));
+    return Pythia8::Pythia::particleData.canDecay(static_cast<int>(get_PDG(vCode)));
   }
 
   bool Decay::canDecay(Code const pCode) {
-    const bool ans = pythia_.particleData.canDecay(static_cast<int>(get_PDG(pCode)));
+    bool const ans =
+        Pythia8::Pythia::particleData.canDecay(static_cast<int>(get_PDG(pCode)));
     CORSIKA_LOG_INFO("Pythia::Decay: checking if particle: {} can decay in PYTHIA? {} ",
                      pCode, ans);
     return ans;
   }
 
-  void Decay::printDecayConfig(const Code vCode) {
+  void Decay::printDecayConfig(Code const vCode) {
     CORSIKA_LOG_INFO("Decay: Pythia decay configuration:");
     CORSIKA_LOG_INFO(" {} is {} ", vCode, (isStable(vCode) ? "stable" : "unstable"));
   }
@@ -151,14 +144,14 @@ namespace corsika::pythia8 {
   template <typename TParticle>
   TimeType Decay::getLifetime(TParticle const& particle) {
 
-    const auto pid = particle.getPID();
+    auto const pid = particle.getPID();
     if (canDecay(pid)) {
       HEPEnergyType E = particle.getEnergy();
       HEPMassType m = particle.getMass();
 
-      const double gamma = E / m;
+      double const gamma = E / m;
 
-      const TimeType t0 = get_lifetime(pid);
+      TimeType const t0 = get_lifetime(pid);
       auto const lifetime = gamma * t0;
       CORSIKA_LOG_INFO("Pythia::Decay: code: {}", particle.getPID());
       CORSIKA_LOG_INFO("Pythia::Decay: MinStep: t0: {}", t0);
@@ -193,7 +186,7 @@ namespace corsika::pythia8 {
     count_++;
 
     // pythia stack
-    Pythia8::Event& event = pythia_.event;
+    Pythia8::Event& event = Pythia8::Pythia::event;
     event.reset();
 
     auto const particleId = projectile.getPID();
@@ -213,7 +206,7 @@ namespace corsika::pythia8 {
     // add particle to pythia stack
     event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
 
-    if (!pythia_.next())
+    if (!Pythia8::Pythia::next())
       throw std::runtime_error("Pythia::Decay: decay failed!");
     else
       CORSIKA_LOG_INFO("Pythia::Decay: particles after decay: {} ", event.size());

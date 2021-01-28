@@ -149,7 +149,7 @@ namespace corsika {
                       p.getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType dE = getTotalEnergyLoss(p, dX);
     auto E = p.getEnergy();
-    const auto Ekin = E - p.getMass();
+    [[maybe_unused]] const auto Ekin = E - p.getMass();
     auto Enew = E + dE;
     CORSIKA_LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
                       dE / 1_MeV, E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
@@ -197,23 +197,34 @@ namespace corsika {
   void BetheBlochPDG::fillProfile(setup::Trajectory const& vTrack,
                                   const HEPEnergyType dE) {
 
-    GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
-    GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
-    const auto deltaX = grammageEnd - grammageStart;
+    GrammageType grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
+    GrammageType grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
 
-    int const binStart = grammageStart / dX_;
-    if (binStart < 0) return;
-    int const binEnd = grammageEnd / dX_;
-    if (binEnd > int(profile_.size() - 1)) return;
+    if (grammageStart > grammageEnd) { // particle going upstream
+      std::swap(grammageStart, grammageEnd);
+    }
+
+    GrammageType const deltaX = grammageEnd - grammageStart;
+
     if (deltaX < dX_threshold_) return;
+
+    // only register the range that is covered by the profile
+    int const maxBin = int(profile_.size() - 1);
+    int binStart = grammageStart / dX_;
+    if (binStart < 0) binStart = 0;
+    if (binStart > maxBin) binStart = maxBin;
+    int binEnd = grammageEnd / dX_;
+    if (binEnd < 0) binEnd = 0;
+    if (binEnd > maxBin) binEnd = maxBin;
 
     CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
 
     auto energyCount = HEPEnergyType::zero();
 
-    auto fill = [&](const int bin, const double weight) {
-      auto const increment = -dE * weight;
+    auto const factor = -dE / deltaX;
+    auto fill = [&](int const bin, GrammageType const weight) {
+      auto const increment = factor * weight;
       profile_[bin] += increment;
       energyCount += increment;
 
@@ -222,11 +233,11 @@ namespace corsika {
 
     // fill longitudinal profile
     if (binStart == binEnd) {
-      fill(binStart, 1);
+      fill(binStart, deltaX);
     } else {
-      fill(binStart, ((1 + binStart) * dX_ - grammageStart) / deltaX);
-      fill(binEnd, (grammageEnd - binEnd * dX_) / deltaX);
-      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_ / deltaX); }
+      fill(binStart, ((1 + binStart) * dX_ - grammageStart));
+      fill(binEnd, (grammageEnd - binEnd * dX_));
+      for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
     }
 
     CORSIKA_LOG_DEBUG("total energy added to histogram: {} ", energyCount);

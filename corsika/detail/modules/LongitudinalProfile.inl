@@ -37,6 +37,7 @@ namespace corsika {
         "pos1={} m, pos2={}, X={} g/cm2", vTrack.getPosition(0).getCoordinates() / 1_m,
         vTrack.getPosition(1).getCoordinates() / 1_m, grammageStart / 1_g * square(1_cm));
 
+    // Note: particle may go also "upward", thus, grammageEnd<grammageStart
     const int binStart = std::ceil(grammageStart / dX_);
     const int binEnd = std::floor(grammageEnd / dX_);
 

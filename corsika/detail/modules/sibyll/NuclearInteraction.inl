@@ -240,7 +240,7 @@ namespace corsika::sibyll {
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.getNorm();
     // calculate cm. energy
-    HEPEnergyType const ECoM = sqrt(
+    [[maybe_unused]] HEPEnergyType const ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
     auto const ECoMNN = sqrt(2. * ElabNuc * constants::nucleonMass);
     CORSIKA_LOG_DEBUG(
