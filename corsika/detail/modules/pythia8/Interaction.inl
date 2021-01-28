@@ -21,9 +21,7 @@
 
 namespace corsika::pythia8 {
 
-  Interaction::~Interaction() {
-    CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_);
-  }
+  Interaction::~Interaction() { CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_); }
 
   Interaction::Interaction(bool const print_listing)
       : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
