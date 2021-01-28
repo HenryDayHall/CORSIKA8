@@ -70,12 +70,12 @@ namespace corsika::pythia8 {
 
   void Interaction::setUnstable(Code const pCode) {
     CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} unstable..", pCode);
-    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
+    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
   void Interaction::setStable(Code const pCode) {
     CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode);
-    pythia_.particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
+    Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
   void Interaction::configureLabFrameCollision(Code const BeamId, Code const TargetId,

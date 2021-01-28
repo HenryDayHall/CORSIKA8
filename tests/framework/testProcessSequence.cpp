@@ -533,14 +533,6 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
         make_sequence(cp1, Process3(0),
                       make_select(make_sequence(Process1(0), cp2, Decay1(0)),
                                   make_sequence(cp3, Process2(0), Decay2(0)), select1));
-    struct TestSelect {
-      SwitchResult operator()(const DummyData& p) const {
-        CORSIKA_LOG_DEBUG("TestSelect data={}", p.data_[0]);
-        if (p.data_[0] > 0) return SwitchResult::First;
-        return SwitchResult::Second;
-      }
-    };
-    TestSelect select1;
 
     auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
     CHECK(is_process_sequence_v<decltype(switch_seq)>);

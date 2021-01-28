@@ -70,7 +70,7 @@ namespace corsika {
         if (abs(e_shift_relative) > energy_tolerance_) {
           logger_->warn("warning! shifted particle energy by {} %",
                         e_shift_relative * 100);
-          if (throw_error_)
+          if (throw_error_) {
             throw std::runtime_error(
                 "OnShellCheck: error! shifted energy by large amount!");
         }
@@ -79,8 +79,10 @@ namespace corsika {
       // reset energy
       p.setEnergy(e_shifted);
     }
-    else CORSIKA_LOGGER_DEBUG(logger_, "particle mass for {} OK", pid);
-  }
-} // namespace corsika
+      else {
+	CORSIKA_LOGGER_DEBUG(logger_, "particle mass for {} OK", pid);
+      }
+    }
+  } // namespace corsika
 
 } // namespace corsika
