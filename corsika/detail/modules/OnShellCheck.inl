@@ -73,14 +73,13 @@ namespace corsika {
           if (throw_error_) {
             throw std::runtime_error(
                 "OnShellCheck: error! shifted energy by large amount!");
+          }
         }
-      }
 
-      // reset energy
-      p.setEnergy(e_shifted);
-    }
-      else {
-	CORSIKA_LOGGER_DEBUG(logger_, "particle mass for {} OK", pid);
+        // reset energy
+        p.setEnergy(e_shifted);
+      } else {
+        CORSIKA_LOGGER_DEBUG(logger_, "particle mass for {} OK", pid);
       }
     }
   } // namespace corsika

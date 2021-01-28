@@ -15,6 +15,8 @@ parser.add_argument('--apply', action="store_true",
     help="Apply clang-format to files which need changes.")
 parser.add_argument("--all", action="store_true",
     help="Check all files below current path instead of new/modified.")
+parser.add_argument("--docker", action="store_true",
+    help="Use corsika/devel:clang-8 container to run clang-format. Make sure you are in group \"docker\". ")
 
 args = parser.parse_args()
 
@@ -67,10 +69,17 @@ else:
         filelist_clean.append(f)
     filelist = filelist_clean
 
-cmd = "clang-format"
+cmd = ["clang-format"]
 if "CLANG_FORMAT" in os.environ:
-  cmd = os.environ["CLANG_FORMAT"]
-cmd +=  " -style=file"
+  cmd = [os.environ["CLANG_FORMAT"]]
+if args.docker: 
+  USER=os.environ["USER"]
+  UID=os.getuid()
+  GID=os.getgid()
+  PWD=os.getcwd()
+  # note, currently in container it is clang-8 
+  cmd = "docker container run --rm -v {}:/corsika -w /corsika -u {}:{} corsika/devel:clang-8 clang-format-8".format(PWD,UID,GID)
+cmd += " -style=file"
 if args.apply:
     for filename in filelist:        
         subp.check_call(cmd.split() + ["-i", filename])
