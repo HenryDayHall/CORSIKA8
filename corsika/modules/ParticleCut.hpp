@@ -58,7 +58,7 @@ namespace corsika {
     }
 
     void printThresholds();
-    void showResults(); // LCOV_EXCL_LINE 
+    void showResults(); // LCOV_EXCL_LINE
     void reset();
 
     HEPEnergyType getElectronECut() const { return get_energy_threshold(Code::Electron); }
