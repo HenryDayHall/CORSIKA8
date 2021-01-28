@@ -46,7 +46,7 @@
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
-//#include <corsika/modules/PROPOSAL.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -222,9 +222,9 @@ int main(int argc, char** argv) {
   decaySibyll.printDecayConfig();
 
   ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
-  corsika::proposal::Interaction proposal(env);
-  corsika::proposal::ContinuousProcess em_continuous(env);
-  InteractionCounter proposalCounted(proposal);
+  corsika::proposal::Interaction emCascade(env);
+  corsika::proposal::ContinuousProcess emContinuous(env);
+  InteractionCounter emCascadeCounted(emCascade);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
   TrackWriter trackWriter("tracks.dat");
@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
   auto sequence =
       make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
-                    em_continuous, cut, trackWriter, observationLevel, longprof);
+                    emContinuous, cut, trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
@@ -268,16 +268,16 @@ int main(int argc, char** argv) {
   EAS.run();
 
   cut.showResults();
-  em_continuous.showResults();
+  emContinuous.showResults();
   observationLevel.showResults();
   const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + em_continuous.getEnergyLost() +
+                               cut.getEmEnergy() + emContinuous.getEnergyLost() +
                                observationLevel.getEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.reset();
   cut.reset();
-  em_continuous.reset();
+  emContinuous.reset();
 
   auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                      urqmdCounted.getHistogram();

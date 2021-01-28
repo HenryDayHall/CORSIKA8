@@ -141,11 +141,10 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  // PROPOSAL processs proposal{...};
   ParticleCut cut(10_GeV, 10_GeV, 100_PeV, 100_PeV, true);
-  corsika::proposal::Interaction proposal(env);
-  corsika::proposal::ContinuousProcess em_continuous(env);
-  InteractionCounter proposalCounted(proposal);
+  corsika::proposal::Interaction emCascade(env);
+  corsika::proposal::ContinuousProcess emContinuous(env);
+  InteractionCounter emCascadeCounted(emCascade);
 
   TrackWriter trackWriter("tracks.dat");
 
@@ -156,7 +155,7 @@ int main(int argc, char** argv) {
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
                                     "particles.dat");
 
-  auto sequence = make_sequence(proposalCounted, em_continuous, longprof, cut,
+  auto sequence = make_sequence(emCascadeCounted, emContinuous, longprof, cut,
                                 observationLevel, trackWriter);
   // define air shower object, run simulation
   setup::Tracking tracking;
@@ -169,18 +168,18 @@ int main(int argc, char** argv) {
   EAS.run();
 
   cut.showResults();
-  em_continuous.showResults();
+  emContinuous.showResults();
   observationLevel.showResults();
   const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + em_continuous.getEnergyLost() +
+                               cut.getEmEnergy() + emContinuous.getEnergyLost() +
                                observationLevel.getEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.reset();
   cut.reset();
-  em_continuous.reset();
+  emContinuous.reset();
 
-  auto const hists = proposalCounted.getHistogram();
+  auto const hists = emCascadeCounted.getHistogram();
   save_hist(hists.labHist(), "inthist_lab_emShower.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_emShower.npz", true);
   longprof.save("longprof_emShower.txt");
