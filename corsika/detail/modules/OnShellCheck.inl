@@ -14,8 +14,8 @@
 
 namespace corsika {
 
-  OnShellCheck::OnShellCheck(const double vMassTolerance, const double vEnergyTolerance,
-                             const bool vError)
+  OnShellCheck::OnShellCheck(double const vMassTolerance, double const vEnergyTolerance,
+                             bool const vError)
       : mass_tolerance_(vMassTolerance)
       , energy_tolerance_(vEnergyTolerance)
       , throw_error_(vError) {
@@ -73,6 +73,7 @@ namespace corsika {
           if (throw_error_)
             throw std::runtime_error(
                 "OnShellCheck: error! shifted energy by large amount!");
+	  }
         }
 
         // reset energy
