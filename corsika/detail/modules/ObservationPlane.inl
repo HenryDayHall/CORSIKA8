@@ -42,7 +42,7 @@ namespace corsika {
 
     outputStream_ << static_cast<int>(get_PDG(particle.getPID())) << ' ' << energy / 1_eV
                   << ' ' << displacement.dot(xAxis_) / 1_m << ' '
-                  << displacement.dot(yAxis_) / 1_m
+                  << displacement.dot(yAxis_) / 1_m << ' '
                   << (pointOfIntersection - plane_.getCenter()).getNorm() / 1_m << '\n';
 
     if (deleteOnHit_) {
