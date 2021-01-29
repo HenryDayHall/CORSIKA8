@@ -39,6 +39,8 @@ if ("x_${USE_Pythia8_C8}" STREQUAL "x_SYSTEM")
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CORSIKA_Pythia8_MODULE_DIR}/Pythia8ConfigurationDirectory.hpp  @ONLY)
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/Pythia8ConfigurationDirectory_install.hpp  @ONLY)
   
+  set (Pythia8_PREFIX_INSTALL ${Pythia8_PREFIX}) # install and build are both the same here
+  
   message (STATUS "Pythia8 (system) at ${Pythia8_PREFIX}")
 
 else ()
@@ -58,6 +60,8 @@ else ()
     EXCLUDE_FROM_ALL TRUE
     )  
   set (Pythia8_FOUND 1 PARENT_SCOPE)
+  set (Pythia8_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/pythia8)
+  set (Pythia8_PREFIX_INSTALL ${Pythia8_INSTALL_DIR})
   ExternalProject_Get_Property (pythia8 INSTALL_DIR) # this is "make"
   set (Pythia8_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/externals/pythia8) # this is "make install"
   set (Pythia8_VERSION ${_C8_Pythia8_VERSION} CACHE STRING "Version of Pythia8")
@@ -66,7 +70,6 @@ else ()
   set (Pythia8_LIBRARY ${Pythia8_PREFIX}/lib)
   add_dependencies (C8::ext::pythia8 pythia8)
 
-  set (Pythia8_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/externals/pythia8)
   set (CORSIKA_Pythia8_LOCATION ${Pythia8_PREFIX}) # build location
   configure_file (Pythia8ConfigurationDirectory.hpp.in ${CORSIKA_Pythia8_MODULE_DIR}/Pythia8ConfigurationDirectory.hpp  @ONLY)
   set (CORSIKA_Pythia8_LOCATION ${Pythia8_INSTALL_DIR}) # install location
@@ -79,7 +82,7 @@ else ()
   set_target_properties (
     C8::ext::pythia8
     PROPERTIES
-    IMPORTED_LOCATION ${Pythia8_LIBRARY}
+    IMPORTED_LOCATION ${Pythia8_LIBRARY}/libpythia8.a
     IMPORTED_LINK_INTERFACE_LIBRARIES dl
     INTERFACE_INCLUDE_DIRECTORIES "${Pythia8_INCLUDE_DIRS}"
     )
@@ -91,7 +94,7 @@ endif ()
 install (
   FILES ${CMAKE_CURRENT_BINARY_DIR}/Pythia8ConfigurationDirectory_install.hpp
   RENAME Pythia8ConfigurationDirectory.hpp
-  DESTINATION include/modules/pythia8
+  DESTINATION include/corsika/modules/pythia8
   )
 
 ##### add pythia8 to CORSIKA8 build
@@ -101,5 +104,4 @@ target_link_libraries (CORSIKA8 INTERFACE C8::ext::pythia8)
 # we need those for exporting targets and dependencies:
 set (Pythia8_FOUND 1 PARENT_SCOPE)
 set (Pythia8_PREFIX ${Pythia8_PREFIX} PARENT_SCOPE)
-set (Pythia8_INCLUDE_DIRS  ${Pythia8_INCLUDE_DIRS} PARENT_SCOPE)
-set (Pythia8_LIBRARY ${Pythia8_LIBRARY} PARENT_SCOPE)
+set (Pythia8_PREFIX_INSTALL ${Pythia8_PREFIX_INSTALL} PARENT_SCOPE)

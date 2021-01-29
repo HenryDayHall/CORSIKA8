@@ -284,12 +284,6 @@ install (
 #
 install (DIRECTORY corsika DESTINATION include)
 
-configure_package_config_file (
-  cmake/CORSIKA8Config.cmake.in
-  ${PROJECT_BINARY_DIR}/CORSIKA8Config.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
-  )
-  
 write_basic_package_version_file (
   ${PROJECT_BINARY_DIR}/CORSIKA8ConfigVersion.cmake
   VERSION ${c8_version}
@@ -309,6 +303,21 @@ install (
   FILE CORSIKA8Targets.cmake
   NAMESPACE CORSIKA8::
   DESTINATION lib/cmake/CORSIKA8
+  )
+
+# config for build tree
+configure_package_config_file (
+  cmake/CORSIKA8Config.cmake.in
+  ${PROJECT_BINARY_DIR}/CORSIKA8Config.cmake
+  INSTALL_DESTINATION ${CMAKE_BINARY_DIR}/do_not_need_this
+  )
+
+# config for install tree
+set (Pythia8_PREFIX ${Pythia8_PREFIX_INSTALL}) # overwrite with install location
+configure_package_config_file (
+  cmake/CORSIKA8Config.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/CORSIKA8Config.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 
 install (FILES

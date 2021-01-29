@@ -24,12 +24,12 @@ conan_basic_setup (TARGETS)
 add_library (C8::ext::pythia8 STATIC IMPORTED GLOBAL)
 set_target_properties (
   C8::ext::pythia8 PROPERTIES
-  IMPORTED_LOCATION @Pythia8_LIBRARY@/libpythia8.a
+  IMPORTED_LOCATION @Pythia8_PREFIX@/lib/libpythia8.a
   IMPORTED_LINK_INTERFACE_LIBRARIES dl
-  INTERFACE_INCLUDE_DIRECTORIES @Pythia8_INCLUDE_DIRS@
+  INTERFACE_INCLUDE_DIRECTORIES @Pythia8_PREFIX@/include
   )
 set (Pythia8_FOUND @Pythia8_FOUND@)
-message (STATUS "Pythia8 lib: @Pythia8_LIBRARY@, inc: @Pythia8_INCLUDE_DIRS@")
+message (STATUS "Pythia8 at: @Pythia8_PREFIX@")
 
 
 #++++++++++++++++++++++++++++++
