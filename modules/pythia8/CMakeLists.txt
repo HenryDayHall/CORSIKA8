@@ -60,7 +60,7 @@ else ()
     URL_MD5 d3e951a2f101e8cfec26405cb61db83b
     SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/source"
     INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/pythia8/install"
-    CONFIGURE_COMMAND ./configure --cxx-common=\\"${CMAKE_CXX_FLAGS} -O2 -fPIC\\" --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
+    CONFIGURE_COMMAND ./configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/pythia8/install
     INSTALL_COMMAND make install
     COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install/bin
     COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/pythia8/install/share/Pythia8/examples
