@@ -223,14 +223,12 @@ namespace corsika::urqmd {
       auto const energy = sqrt(momentum.getSquaredNorm() + square(get_mass(code)));
 
       momentum.rebase(originalCS); // transform back into standard lab frame
-      std::cout << i << " " << code << " " << momentum.getComponents() << std::endl;
+      CORSIKA_LOG_DEBUG(" {} {} {} ", i, code, momentum.getComponents());
 
       projectile.addSecondary(
           std::make_tuple(code, energy, momentum, projectilePosition, projectileTime));
     }
-
-    std::cout << "UrQMD generated " << ::urqmd::sys_.npart << " secondaries!"
-              << std::endl;
+    CORSIKA_LOG_DEBUG("UrQMD generated {} secondaries!", ::urqmd::sys_.npart);
   }
 
   Code convertFromUrQMD(int vItyp, int vIso3) {

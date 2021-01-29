@@ -32,7 +32,7 @@ namespace corsika::qgsjetII {
     if (dataPath == "") {
       if (std::getenv("CORSIKA_DATA")) {
         data_path_ = std::string(std::getenv("CORSIKA_DATA")) + "/QGSJetII/";
-        std::cout << "Searching for QGSJetII data tables in " << data_path_ << std::endl;
+        CORSIKA_LOG_DEBUG("Searching for QGSJetII data tables in {}", data_path_);
       }
     }
 
@@ -47,7 +47,7 @@ namespace corsika::qgsjetII {
   }
 
   Interaction::~Interaction() {
-    std::cout << "QgsjetII::Interaction n=" << count_ << std::endl;
+    CORSIKA_LOG_DEBUG("QgsjetII::Interaction n= {}", count_);
   }
 
   CrossSectionType Interaction::getCrossSection(const Code beamId, const Code targetId,
@@ -76,10 +76,12 @@ namespace corsika::qgsjetII {
           throw std::runtime_error("QgsjetII target outside range. ");
       }
 
-      std::cout << "QgsjetII::getCrossSection Elab=" << Elab << " iBeam=" << iBeam
-                << " iProjectile=" << iProjectile << " iTarget=" << iTarget << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "QgsjetII::getCrossSection Elab= {} GeV iBeam= {}"
+          " iProjectile= {} iTarget= {}",
+          Elab / 1_GeV, iBeam, iProjectile, iTarget);
       sigProd = qgsect_(Elab / 1_GeV, iBeam, iProjectile, iTarget);
-      std::cout << "QgsjetII::getCrossSection sigProd=" << sigProd << std::endl;
+      CORSIKA_LOG_DEBUG("QgsjetII::getCrossSection sigProd= {} mb", sigProd);
     }
 
     return sigProd * 1_mb;
@@ -103,10 +105,12 @@ namespace corsika::qgsjetII {
     // total momentum and energy
     HEPEnergyType Elab = vP.getEnergy();
 
-    std::cout << "Interaction: LambdaInt: \n"
-              << " input energy: " << vP.getEnergy() / 1_GeV << std::endl
-              << " beam can interact:" << kInteraction << std::endl
-              << " beam pid:" << vP.getPID() << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "Interaction: LambdaInt: \n"
+        " input energy: {} GeV"
+        " beam can interact: {}"
+        " beam pid: {}",
+        vP.getEnergy() / 1_GeV, kInteraction, vP.getPID());
 
     if (kInteraction) {
 
@@ -131,16 +135,18 @@ namespace corsika::qgsjetII {
             return getCrossSection(corsikaBeamId, targetID, Elab, Abeam, targetA);
           });
 
-      std::cout << "Interaction: "
-                << "IntLength: weighted CrossSection (mb): "
-                << weightedProdCrossSection / 1_mb << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: "
+          "IntLength: weighted CrossSection (mb): {}",
+          weightedProdCrossSection / 1_mb);
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.getAverageMassNumber() *
                                       constants::u / weightedProdCrossSection;
-      std::cout << "Interaction: "
-                << "interaction length (g/cm2): " << int_length / (0.001_kg) * 1_cm * 1_cm
-                << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: "
+          "interaction length (g/cm2): {}",
+          int_length / (0.001_kg) * 1_cm * 1_cm);
 
       return int_length;
     }
@@ -159,9 +165,10 @@ namespace corsika::qgsjetII {
     auto const projectile = view.getProjectile();
 
     const auto corsikaBeamId = projectile.getPID();
-    std::cout << "ProcessQgsjetII: "
-              << "DoInteraction: " << corsikaBeamId << " interaction? "
-              << corsika::qgsjetII::canInteract(corsikaBeamId) << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "ProcessQgsjetII: "
+        "DoInteraction: {} interaction possible? {}",
+        corsikaBeamId, corsika::qgsjetII::canInteract(corsikaBeamId));
 
     if (corsika::qgsjetII::canInteract(corsikaBeamId)) {
 
@@ -187,16 +194,17 @@ namespace corsika::qgsjetII {
 
       HEPEnergyType const projectileEnergyLabPerNucleon = projectileEnergyLab / beamA;
 
-      std::cout << "Interaction: ebeam lab: " << projectileEnergyLab / 1_GeV << std::endl
-                << "Interaction: pbeam lab: "
-                << projectileMomentumLab.getComponents() / 1_GeV << std::endl;
-      std::cout << "Interaction: etarget lab: " << targetEnergyLab / 1_GeV << std::endl
-                << "Interaction: ptarget lab: "
-                << targetMomentumLab.getComponents() / 1_GeV << std::endl;
-
-      std::cout << "Interaction: position of interaction: " << pOrig.getCoordinates()
-                << std::endl;
-      std::cout << "Interaction: time: " << tOrig << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: ebeam lab: {} GeV"
+          "Interaction: pbeam lab: {} GeV",
+          projectileEnergyLab / 1_GeV, projectileMomentumLab.getComponents() / 1_GeV);
+      CORSIKA_LOG_DEBUG(
+          "Interaction: etarget lab: {} GeV"
+          "Interaction: ptarget lab: {} GeV",
+          targetEnergyLab / 1_GeV, targetMomentumLab.getComponents() / 1_GeV);
+      CORSIKA_LOG_DEBUG("Interaction: position of interaction: {}",
+                        pOrig.getCoordinates());
+      CORSIKA_LOG_DEBUG("Interaction: time: {} ", tOrig);
 
       // sample target mass number
       auto const* currentNode = projectile.getNode();
@@ -221,7 +229,7 @@ namespace corsika::qgsjetII {
 
       const auto targetCode =
           mediumComposition.sampleTarget(cross_section_of_components, rng_);
-      std::cout << "Interaction: target selected: " << targetCode << std::endl;
+      CORSIKA_LOG_DEBUG("Interaction: target selected: {}", targetCode);
 
       int targetMassNumber = 1;     // proton
       if (is_nucleus(targetCode)) { // nucleus
@@ -232,8 +240,7 @@ namespace corsika::qgsjetII {
         if (targetCode != Proton::code)
           throw std::runtime_error("QgsjetII Taget not possible.");
       }
-      std::cout << "Interaction: target qgsjetII code/A: " << targetMassNumber
-                << std::endl;
+      CORSIKA_LOG_DEBUG("Interaction: target qgsjetII code/A: ", targetMassNumber);
 
       int projectileMassNumber = 1; // "1" means "hadron"
       QgsjetIIHadronType qgsjet_hadron_type =
@@ -274,8 +281,8 @@ namespace corsika::qgsjetII {
         // else if (abs(kBeam)>6) -> throw
       }
 
-      std::cout << "Interaction: "
-                << " DoInteraction: E(GeV):" << projectileEnergyLab / 1_GeV << std::endl;
+      CORSIKA_LOG_DEBUG("Interaction: DoInteraction: E(GeV): {} GeV",
+                        projectileEnergyLab / 1_GeV);
       count_++;
       int qgsjet_hadron_type_int = static_cast<QgsjetIICodeIntType>(qgsjet_hadron_type);
       qgini_(projectileEnergyLab / 1_GeV, qgsjet_hadron_type_int, projectileMassNumber,
@@ -320,8 +327,10 @@ namespace corsika::qgsjetII {
 
             auto const energy = sqrt(momentum.getSquaredNorm() + square(nucleonMass));
             momentum.rebase(originalCS); // transform back into standard lab frame
-            std::cout << "secondary fragment> id=" << idFragm
-                      << " p=" << momentum.getComponents() << std::endl;
+            CORSIKA_LOG_DEBUG(
+                "secondary fragment> id= {}"
+                " p={}",
+                idFragm, momentum.getComponents());
             auto pnew = view.addSecondary(
                 std::make_tuple(idFragm, energy, momentum, pOrig, tOrig));
             Plab_final += pnew.getMomentum();
@@ -352,9 +361,13 @@ namespace corsika::qgsjetII {
 
           auto const energy = sqrt(momentum.getSquaredNorm() + square(nucleusMass));
           momentum.rebase(originalCS); // transform back into standard lab frame
-          std::cout << "secondary fragment> id=" << idFragm
-                    << " p=" << momentum.getComponents() << " A=" << A << " Z=" << Z
-                    << std::endl;
+          CORSIKA_LOG_DEBUG(
+              "secondary fragment> id={}"
+              " p={}"
+              " A={}"
+              " Z= {}",
+              idFragm, momentum.getComponents(), A, Z);
+
           auto pnew = view.addSecondary(
               std::make_tuple(idFragm, energy, momentum, pOrig, tOrig, A, Z));
           Plab_final += pnew.getMomentum();
@@ -370,24 +383,27 @@ namespace corsika::qgsjetII {
         auto const energy = psec.getEnergy();
 
         momentum.rebase(originalCS); // transform back into standard lab frame
-        std::cout << "secondary fragment> id="
-                  << corsika::qgsjetII::convertFromQgsjetII(psec.getPID())
-                  << " p=" << momentum.getComponents() << std::endl;
+        CORSIKA_LOG_DEBUG(
+            "secondary fragment> id= {}"
+            " p= {}",
+            corsika::qgsjetII::convertFromQgsjetII(psec.getPID()),
+            momentum.getComponents());
         auto pnew = view.addSecondary(
             std::make_tuple(corsika::qgsjetII::convertFromQgsjetII(psec.getPID()), energy,
                             momentum, pOrig, tOrig));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }
-      std::cout << "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/
-                << std::endl
-                << "Elab_final=" << Elab_final / 1_GeV
-                << ", Plab_final=" << (Plab_final / 1_GeV).getComponents()
-                << ", N_wounded,targ="
-                << QGSJetIIFragmentsStackData::getWoundedNucleonsTarget()
-                << ", N_wounded,proj="
-                << QGSJetIIFragmentsStackData::getWoundedNucleonsProjectile()
-                << ", N_fragm,proj=" << qfs.getSize() << std::endl;
+      CORSIKA_LOG_DEBUG(
+          "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/
+          "Elab_final="
+          ", Plab_final={}"
+          ", N_wounded,targ={}"
+          ", N_wounded,proj={}"
+          ", N_fragm,proj={}",
+          Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents(),
+          QGSJetIIFragmentsStackData::getWoundedNucleonsTarget(),
+          QGSJetIIFragmentsStackData::getWoundedNucleonsProjectile(), qfs.getSize());
     }
   }
 

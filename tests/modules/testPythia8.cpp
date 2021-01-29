@@ -27,8 +27,6 @@ TEST_CASE("Pythia", "[processes]") {
 
   SECTION("linking pythia") {
     using namespace Pythia8;
-    using std::cout;
-    using std::endl;
 
     // Generator. Process selection. LHC initialization. Histogram.
     Pythia pythia;
@@ -50,15 +48,15 @@ TEST_CASE("Pythia", "[processes]") {
     event.append(321, 1, 0, 0, 0., 0., 100., sqrt(pz * pz + m * m), m);
 
     if (!pythia.next())
-      cout << "decay failed!" << endl;
+      CORSIKA_LOG_CRITICAL("decay failed!");
     else
-      cout << "particles after decay: " << event.size() << endl;
+      CORSIKA_LOG_DEBUG("particles after decay: {}", event.size());
     event.list();
 
     // loop over final state
     for (int i = 0; i < pythia.event.size(); ++i)
       if (pythia.event[i].isFinal()) {
-        cout << "particle: id=" << pythia.event[i].id() << endl;
+        CORSIKA_LOG_DEBUG("particle: id= {}", pythia.event[i].id());
       }
   }
 
@@ -94,7 +92,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("pythia process") {
+TEST_CASE("PythiaInterface", "[processes]") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");

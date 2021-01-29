@@ -577,7 +577,7 @@ namespace corsika::sibyll {
     }
 
     // add inelastic interactions
-    std::cout << "calculate inelastic nucleon-nucleon interactions.." << std::endl;
+    CORSIKA_LOG_DEBUG("calculate inelastic nucleon-nucleon interactions..");
     for (int j = 0; j < nInelNucleons; ++j) {
       // TODO: sample neutron or proton
       auto pCode = Code::Proton;

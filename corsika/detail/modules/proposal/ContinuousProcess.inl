@@ -149,9 +149,11 @@ namespace corsika::proposal {
   }
 
   void ContinuousProcess::showResults() const {
-    std::cout << " ******************************" << std::endl
-              << " PROCESS::ContinuousProcess: " << std::endl;
-    std::cout << " energy lost dE (GeV)      :  " << energy_lost_ / 1_GeV << std::endl;
+    CORSIKA_LOG_DEBUG(
+        " ******************************\n"
+        " PROCESS::ContinuousProcess: \n"
+        " energy lost dE (GeV)      :  {}",
+        energy_lost_ / 1_GeV);
   }
 
   void ContinuousProcess::reset() { energy_lost_ = 0_GeV; }

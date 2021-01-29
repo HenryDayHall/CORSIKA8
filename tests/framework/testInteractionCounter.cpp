@@ -83,7 +83,7 @@ TEST_CASE("InteractionCounter", "[process]") {
       auto const file = GENERATE(as<std::string>{}, "testInteractionCounter_file1",
                                  "testInteractionCounter_file2");
 
-      std::cout << file + ".npz vs " << refDataDir + "/" + file + "_REF.npz" << std::endl;
+      CORSIKA_LOG_INFO("{0}.npz vs {1}/{0}_REF.npz", file, refDataDir);
 
       // compare to binary reference data
       // note that this currenly compares the whole files byte by byte. If the new

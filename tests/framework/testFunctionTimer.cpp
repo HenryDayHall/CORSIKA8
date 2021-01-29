@@ -12,7 +12,6 @@
 #include <catch2/catch.hpp>
 
 #include <chrono>
-#include <iostream>
 #include <thread>
 
 using namespace corsika;
@@ -39,15 +38,15 @@ TEST_CASE("FunctionTimer", "[Timer]") {
 
     auto test = corsika::FunctionTimer(testFunc);
 
-    std::cout << test() << std::endl;
-    std::cout << test.getTime().count() << std::endl;
+    CORSIKA_LOG_DEBUG(test());
+    CORSIKA_LOG_DEBUG(test.getTime().count());
   }
 
   SECTION("Measure runtime of a class functor") {
     TestClass testC;
     auto test = corsika::FunctionTimer(testC);
 
-    std::cout << test() << std::endl;
-    std::cout << test.getTime().count() << std::endl;
+    CORSIKA_LOG_DEBUG(test());
+    CORSIKA_LOG_DEBUG(test.getTime().count());
   }
 }

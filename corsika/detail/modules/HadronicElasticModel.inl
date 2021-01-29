@@ -52,7 +52,7 @@ namespace corsika {
           avgCrossSection += getCrossSection(s) * fractions[i];
         }
 
-        std::cout << "avgCrossSection: " << avgCrossSection / 1_mb << " mb" << std::endl;
+        CORSIKA_LOG_DEBUG("avgCrossSection: {} mb", avgCrossSection / 1_mb);
 
         return avgCrossSection;
       }();
@@ -116,7 +116,7 @@ namespace corsika {
     auto const s = static_pow<2>(sqrtS);
 
     auto const B = this->B(s);
-    std::cout << B << std::endl;
+    CORSIKA_LOG_DEBUG(B);
 
     ExponentialDistribution tDist(1 / B);
     auto const absT = [&]() {
@@ -133,10 +133,12 @@ namespace corsika {
       return absT;
     }();
 
-    std::cout << "HadronicElasticInteraction: s = " << s * constants::invGeVsq
-              << " GeV²; absT = " << absT * constants::invGeVsq << " GeV² (max./GeV² = "
-              << 4 * constants::invGeVsq * projectileMomentumSquaredNorm << ')'
-              << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "HadronicElasticInteraction: s = {}"
+        " GeV²; absT = {} "
+        " GeV² (max./GeV² = {})",
+        s * constants::invGeVsq, absT * constants::invGeVsq,
+        4 * constants::invGeVsq * projectileMomentumSquaredNorm);
 
     auto const theta = 2 * asin(sqrt(absT / (4 * pProjectileCoMSqNorm)));
     auto const phi = phiDist(RNG_);
@@ -163,8 +165,8 @@ namespace corsika {
     auto const result =
         (2 * b_p + 2 * b_p + 4 * pow(s * constants::invGeVsq, gfEpsilon) - 4.2) *
         constants::invGeVsq;
-    std::cout << "B(" << s << ") = " << result / constants::invGeVsq << " GeV¯²"
-              << std::endl;
+    CORSIKA_LOG_DEBUG("B({}) = {}  GeV¯²", s, result / constants::invGeVsq);
+
     return result;
   }
 
@@ -180,8 +182,8 @@ namespace corsika {
         static_pow<2>(sigmaTotal) /
         (16 * constants::pi * convert_HEP_to_SI<CrossSectionType::dimension_type>(B(s)));
 
-    std::cout << "HEM sigmaTot = " << sigmaTotal / 1_mb << " mb" << std::endl;
-    std::cout << "HEM sigmaElastic = " << sigmaElastic / 1_mb << " mb" << std::endl;
+    CORSIKA_LOG_DEBUG("HEM sigmaTot = {} mb", sigmaTotal / 1_mb);
+    CORSIKA_LOG_DEBUG("HEM sigmaElastic = {} mb", sigmaElastic / 1_mb);
     return sigmaElastic;
   }
 

@@ -60,30 +60,23 @@ namespace corsika {
       corsika::setup::Trajectory const& trajectory) {
 
     auto const& volumeNode = particle.getNode();
-
     typedef typename std::remove_const_t<
         std::remove_reference_t<decltype(volumeNode->getModelProperties())>>
         medium_type;
-
     Intersections const intersection =
         setup::Tracking::intersect<corsika::setup::Stack::particle_type, medium_type>(
             particle, plane_, volumeNode->getModelProperties());
-
     TimeType const timeOfIntersection = intersection.getEntry();
-
     CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}, timeOfIntersection={}",
                       particle.asString(), particle.getPosition(),
                       particle.getDirection(), plane_.asString(), timeOfIntersection);
-
     if (timeOfIntersection < TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
     if (timeOfIntersection > trajectory.getDuration()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
-
     double const fractionOfIntersection = timeOfIntersection / trajectory.getDuration();
-
     auto const pointOfIntersection = trajectory.getPosition(fractionOfIntersection);
     auto dist = (trajectory.getPosition(0) - pointOfIntersection).getNorm();
     CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength l={} m", dist / 1_m);
