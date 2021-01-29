@@ -4,7 +4,7 @@ project (CORSIKA8_examples)
 set (CMAKE_VERBOSE_MAKEFILE OFF) # this can be changed with `make VERBOSE=1`
 
 # this is enough to use CORSIKA8
-find_package (CORSIKA8 CONFIG REQUIRED)
+find_package (corsika CONFIG REQUIRED)
 
 # this is only for CORSIKA_REGISTER_EXAMPLE
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMakeHelper.cmake") 

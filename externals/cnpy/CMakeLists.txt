@@ -21,18 +21,18 @@ target_include_directories (
   cnpy 
   INTERFACE 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:external/cnpy/include>
+  $<INSTALL_INTERFACE:corsika_external/cnpy/include>
   )
 
 install (
   FILES cnpy.hpp
-  DESTINATION external/cnpy/include
+  DESTINATION corsika_external/cnpy/include
   )
 
 install (
   TARGETS cnpy
   EXPORT CORSIKA8PublicTargets
-  LIBRARY DESTINATION external/cnpy/lib
-  ARCHIVE DESTINATION external/cnpy/lib
+  LIBRARY DESTINATION corsika_external/cnpy/lib
+  ARCHIVE DESTINATION corsika_external/cnpy/lib
   )
 

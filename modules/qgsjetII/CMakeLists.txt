@@ -1,7 +1,3 @@
-cmake_minimum_required (VERSION 3.1)
-
-project (libQGSJetII)
-
 set (
   MODEL_SOURCES
   qgsjet-II-04-mod1.f
@@ -25,7 +21,7 @@ target_include_directories (
   QGSJetII
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/qgsjetII>
+  $<INSTALL_INTERFACE:include/corsika_modules/qgsjetII>
   )
 target_link_libraries (QGSJetII CorsikaData)
 
@@ -40,26 +36,26 @@ target_include_directories (
   QGSJetII_static
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/qgsjetII>
+  $<INSTALL_INTERFACE:include/corsika_modules/qgsjetII>
   )
 target_link_libraries (QGSJetII_static CorsikaData)
 
 install (
   FILES
   ${MODEL_HEADERS}
-  DESTINATION include/qgsjetII
+  DESTINATION include/corsika_modules/qgsjetII
   )
 
 install (
   TARGETS QGSJetII
   EXPORT CORSIKA8PublicTargets
-  DESTINATION lib
+  DESTINATION lib/corsika
   )
 
 install (
   TARGETS QGSJetII_static
   EXPORT CORSIKA8PublicTargets
-  DESTINATION lib
+  DESTINATION lib/corsika
   )
 
 # add qgsjetII to corsika8 build

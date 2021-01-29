@@ -33,14 +33,14 @@ target_include_directories (
   Sibyll
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/sibyll>
+  $<INSTALL_INTERFACE:include/corsika_modules/sibyll>
   )
 
 target_include_directories (
   Sibyll_static
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/sibyll>
+  $<INSTALL_INTERFACE:include/corsika_modules/sibyll>
   )
 
 target_link_libraries (
@@ -52,19 +52,19 @@ target_link_libraries (
 install (
   FILES
   ${MODEL_HEADERS}
-  DESTINATION include/sibyll
+  DESTINATION include/corsika_modules/sibyll
   )
 
 install (
   TARGETS Sibyll
   EXPORT CORSIKA8PublicTargets
-  LIBRARY DESTINATION lib
+  LIBRARY DESTINATION lib/corsika
   )
 
 install (
   TARGETS Sibyll_static
   EXPORT CORSIKA8PublicTargets
-  ARCHIVE DESTINATION lib
+  ARCHIVE DESTINATION lib/corsika
   )
 
 # add sibyll to corsika8 build

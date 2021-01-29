@@ -49,7 +49,7 @@ endif ()
 # cmake path dir, and cmake config
 #
 set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
-set (CMAKE_MODULE_PATH  "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 include (CorsikaUtilities) # extra cmake function
 set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
@@ -285,7 +285,7 @@ install (
 install (DIRECTORY corsika DESTINATION include)
 
 write_basic_package_version_file (
-  ${PROJECT_BINARY_DIR}/CORSIKA8ConfigVersion.cmake
+  ${PROJECT_BINARY_DIR}/corsikaConfigVersion.cmake
   VERSION ${c8_version}
   COMPATIBILITY SameMajorVersion
   )
@@ -293,50 +293,52 @@ write_basic_package_version_file (
 # export targets in build tree
 export (
   EXPORT CORSIKA8PublicTargets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/CORSIKA8Targets.cmake"
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/corsikaTargets.cmake"
   NAMESPACE CORSIKA8::
   )
 
 # export targets in install tree
 install (
   EXPORT CORSIKA8PublicTargets
-  FILE CORSIKA8Targets.cmake
+  FILE corsikaTargets.cmake
   NAMESPACE CORSIKA8::
-  DESTINATION lib/cmake/CORSIKA8
+  DESTINATION lib/cmake/corsika
   )
 
 # config for build tree
 configure_package_config_file (
-  cmake/CORSIKA8Config.cmake.in
-  ${PROJECT_BINARY_DIR}/CORSIKA8Config.cmake
+  cmake/corsikaConfig.cmake.in
+  ${PROJECT_BINARY_DIR}/corsikaConfig.cmake
   INSTALL_DESTINATION ${CMAKE_BINARY_DIR}/do_not_need_this
   )
 
 # config for install tree
-set (Pythia8_PREFIX ${Pythia8_PREFIX_INSTALL}) # overwrite with install location
+# overwrite with install location (if it was build as part of corsika)
+set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL}) 
+set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL}) 
 configure_package_config_file (
-  cmake/CORSIKA8Config.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/CORSIKA8Config.cmake
+  cmake/corsikaConfig.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 
 install (FILES
   ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
   ${CMAKE_BINARY_DIR}/conaninfo.txt
-  ${CMAKE_BINARY_DIR}/CORSIKA8Config.cmake
-  ${CMAKE_BINARY_DIR}/CORSIKA8ConfigVersion.cmake
-  DESTINATION lib/cmake/CORSIKA8
+  ${CMAKE_BINARY_DIR}/corsikaConfig.cmake
+  ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
+  DESTINATION lib/cmake/corsika
   )
 
 #
 # examples
 #
-install (DIRECTORY examples DESTINATION share/)
+install (DIRECTORY examples DESTINATION share/corsika)
 
 #
 # tools
 #
-install (DIRECTORY tools DESTINATION share/)
+install (DIRECTORY tools DESTINATION share/corsika)
 
 
 
