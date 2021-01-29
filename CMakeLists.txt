@@ -309,7 +309,7 @@ install (
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/corsikaConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_BINARY_DIR}/do_not_need_this
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 
 # config for install tree
@@ -319,7 +319,7 @@ set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+  INSTALL_DESTINATION ${CMAKE_BINARY_DIR}/do_not_need_this
   )
 
 install (FILES
