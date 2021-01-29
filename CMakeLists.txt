@@ -252,7 +252,7 @@ add_subdirectory (documentation)
 #
 set (CORSIKA_DATA_WITH_TEST ON) # we want to run the corsika-data unit test
 add_subdirectory (modules/data) # this is corsika-data (submodule)
-add_subdirectory (modules/pythia)
+add_subdirectory (modules/pythia8)
 add_subdirectory (modules/sibyll)
 add_subdirectory (modules/qgsjetII)
 add_subdirectory (modules/urqmd)
@@ -296,6 +296,14 @@ write_basic_package_version_file (
   COMPATIBILITY SameMajorVersion
   )
 
+# export targets in build tree
+export (
+  EXPORT CORSIKA8PublicTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/CORSIKA8Targets.cmake"
+  NAMESPACE CORSIKA8::
+  )
+
+# export targets in install tree
 install (
   EXPORT CORSIKA8PublicTargets
   FILE CORSIKA8Targets.cmake

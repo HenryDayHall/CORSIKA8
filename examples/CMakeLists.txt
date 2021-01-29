@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.9)
 
 project (CORSIKA8_examples)
+set (CMAKE_VERBOSE_MAKEFILE OFF) # this can be changed with `make VERBOSE=1`
 
 # this is enough to use CORSIKA8
 find_package (CORSIKA8 CONFIG REQUIRED)

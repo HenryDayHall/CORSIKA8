@@ -9,7 +9,7 @@
 #pragma once
 
 // the location of the "xmldoc" pythia directory (data files, config)
-#include <Pythia8ConfigurationDirectory.hpp>
+#include <corsika/modules/pythia8/Pythia8ConfigurationDirectory.hpp>
 
 // the main pythia include
 #include <Pythia8/Pythia.h>
