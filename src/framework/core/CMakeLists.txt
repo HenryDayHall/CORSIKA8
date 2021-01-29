@@ -26,7 +26,8 @@ add_custom_target (GenParticlesHeaders
 add_dependencies (CORSIKA8 GenParticlesHeaders)
 
 install (
-  FILES ${output_dir}/GeneratedParticleProperties.inc
-  FILES ${output_dir}/GeneratedParticleClasses.inc
+  FILES
+  ${output_dir}/GeneratedParticleProperties.inc
+  ${output_dir}/GeneratedParticleClasses.inc
   DESTINATION include/corsika/framework/core
   )

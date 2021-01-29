@@ -319,10 +319,11 @@ set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_BINARY_DIR}/do_not_need_this
+  INSTALL_DESTINATION ${PROJECT_BINARY_DIR}/do_not_need_this
   )
 
-install (FILES
+install (
+  FILES
   ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
   ${CMAKE_BINARY_DIR}/conaninfo.txt
   ${CMAKE_BINARY_DIR}/corsikaConfig.cmake

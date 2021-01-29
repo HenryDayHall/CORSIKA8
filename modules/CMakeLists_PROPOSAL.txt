@@ -212,6 +212,4 @@ install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/PROPOSALConfigVersion.cmake"
     DESTINATION lib/cmake/PROPOSAL
 )
-else (NOT IN_CORSIKA8)
-
 endif (NOT IN_CORSIKA8)
