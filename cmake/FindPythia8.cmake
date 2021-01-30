@@ -68,6 +68,11 @@ find_file (Pythia8_Pythia_h_LOC
   PATH_SUFFIXES include/Pythia8
   DOC "The location of the Pythia8/Pythia.h script"
   REQUIRED)
+
+if ("${Pythia8_Pythia_h_LOC}" STREQUAL "Pythia8_Pythia_h_LOC-NOTFOUND")
+  message (FATAL_ERROR "Did not find SYSTEM-level Pythia8 in: \"${_SEARCH_Pythia8_}\"")
+endif ()
+
 string (REPLACE "/include/Pythia8/Pythia.h" "" Pythia8_DIR ${Pythia8_Pythia_h_LOC})
 
 set (Pythia8_CONFIG ${Pythia8_DIR}/bin/pythia-config)

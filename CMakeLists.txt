@@ -1,6 +1,17 @@
 cmake_minimum_required (VERSION 3.9)
 
 #+++++++++++++++++++++++++++++
+# project name
+#
+set (c8_version 8.0.0)
+project (
+  corsika
+  VERSION ${c8_version}
+  DESCRIPTION "CORSIKA C++ project (alpha status)"
+  LANGUAGES CXX
+  )
+
+#+++++++++++++++++++++++++++++
 # prevent in-source builds and give warning message
 #
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") 
@@ -10,15 +21,16 @@ if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
           You must delete them, or cmake will refuse to work.")
 endif ()
 
-#+++++++++++++++++++++++++++++
-# project name
+#++++++++++++++++++++++++++++
+# cmake version-specific settings
 #
-project (
-  corsika
-  VERSION 8.0.0
-  DESCRIPTION "CORSIKA C++ project (alpha status)"
-  LANGUAGES CXX
-  )
+# https://cmake.org/cmake/help/latest/policy/CMP0079.html
+if (${CMAKE_VERSION} VERSION_GREATER "3.13.0")
+  cmake_policy (SET CMP0079 NEW)
+endif ()
+if (POLICY CMP0079)
+    cmake_policy (SET CMP0079 NEW)
+endif ()
 
 #+++++++++++++++++++++++++++++
 # as long as there still are modules using it:
@@ -37,7 +49,7 @@ endif ()
 # cmake path dir, and cmake config
 #
 set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
-set (CMAKE_MODULE_PATH  "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
 include (CorsikaUtilities) # extra cmake function
 set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
@@ -46,7 +58,7 @@ set (CMAKE_INSTALL_MESSAGE LAZY)
 #+++++++++++++++++++++++++++++
 # Setup hardware and infrastructure dependent defines
 #
-include(CorsikaDefines)
+include (CorsikaDefines)
 
 #+++++++++++++++++++++++++++++
 # check if compiler is C++17 compliant
@@ -68,7 +80,6 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 # FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
 # debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
-set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
 set (DEFAULT_BUILD_TYPE "Release")
 
 # clang produces a lot of unecessary warnings without this:
@@ -149,7 +160,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   add_custom_command (
     OUTPUT coverage.info
     COMMAND ${LCOV_BIN_DIR}/lcov -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
-    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" "*/include/Pythia8/*" "${CMAKE_CURRENT_SOURCE_DIR}/modules/*" "${CMAKE_CURRENT_BINARY_DIR}/modules/*" --output-file coverage.info
+    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" "*/include/Pythia8/*" "${CMAKE_SOURCE_DIR}/modules/*" "${CMAKE_BINARY_DIR}/modules/*" --output-file coverage.info
     COMMAND ${CMAKE_COMMAND} -E remove coverage2.info
     DEPENDS raw-coverage.info
     )
@@ -175,7 +186,7 @@ set (CTEST_CUSTOM_COVERAGE_EXCLUDE "./tests/" "./examples/" "./modules/" "test*.
 # include this test only if NOT run on gitlab-ci; On CI this is a dedicated job:
 if (NOT DEFINED ENV{CI})
   # add call to ./do-copyright.py to run as unit-test-case
-  add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_test (NAME copyright_notices COMMAND ./do-copyright.py WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif (NOT DEFINED ENV{CI})
 
 #+++++++++++++++++++++++++++++
@@ -190,18 +201,34 @@ option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
 set (Python_ADDITIONAL_VERSIONS 3)
 find_package (PythonInterp 3 REQUIRED)
 
+#+++++++++++++++++++++++++++++++
+# exporting of CMake targets
+#
+include (CMakePackageConfigHelpers)
+
+# list of targets that will be INSTALLed and EXPORTed
+# Important: all those targets must be individually INSTALLed with "EXPORT CORSIKA8PublicTargets"
+set (public_CORSIKA8_targets CORSIKA8)
+
 
 #+++++++++++++++++++++++++++++
 # CORSIKA8
 #
 add_library (CORSIKA8 INTERFACE)
+set_target_properties (
+  CORSIKA8
+  PROPERTIES
+  INTERFACE_CORSIKA8_MAJOR_VERSION 0
+  COMPATIBLE_INTERFACE_STRING CORSIKA8_MAJOR_VERSION
+  )
+#  
 target_include_directories (
   CORSIKA8
   INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}>
-  )
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>
+  ) 
 # since CORSIKA8 is a header only library we must specify all link dependencies here:
 target_link_libraries (
   CORSIKA8
@@ -217,22 +244,21 @@ add_subdirectory (src)
 add_subdirectory (documentation)
 
 #+++++++++++++++++++++++++++++
-# =~~~~~~~~~~~~~~~~~~~~~~~~~=
 #  = Add of subdirectories =
-# =~~~~~~~~~~~~~~~~~~~~~~~~~=
+#
 
 #+++++++++++++++++++++++++++++
 # modules
 #
 set (CORSIKA_DATA_WITH_TEST ON) # we want to run the corsika-data unit test
 add_subdirectory (modules/data) # this is corsika-data (submodule)
-add_subdirectory (modules/pythia)
+add_subdirectory (modules/pythia8)
 add_subdirectory (modules/sibyll)
 add_subdirectory (modules/qgsjetII)
 add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
 #
-# we really need a better proposal CMakeList.txt files:
+# we really need a better proposal CMakeList.txt file:
 set (ADD_PYTHON OFF)
 file (READ modules/CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
 file (WRITE modules/proposal/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
@@ -245,9 +271,79 @@ target_link_libraries (CORSIKA8 INTERFACE PROPOSAL)
 add_subdirectory (tests)
 
 #+++++++++++++++++++++++++++++++
+# installation
+#
+install (
+  TARGETS CORSIKA8
+  EXPORT CORSIKA8PublicTargets
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}
+  )
+
+#
+# header only part
+#
+install (DIRECTORY corsika DESTINATION include)
+
+write_basic_package_version_file (
+  ${PROJECT_BINARY_DIR}/corsikaConfigVersion.cmake
+  VERSION ${c8_version}
+  COMPATIBILITY SameMajorVersion
+  )
+
+# export targets in build tree
+export (
+  EXPORT CORSIKA8PublicTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/corsikaTargets.cmake"
+  NAMESPACE CORSIKA8::
+  )
+
+# export targets in install tree
+install (
+  EXPORT CORSIKA8PublicTargets
+  FILE corsikaTargets.cmake
+  NAMESPACE CORSIKA8::
+  DESTINATION lib/cmake/corsika
+  )
+
+# config for build tree
+configure_package_config_file (
+  cmake/corsikaConfig.cmake.in
+  ${PROJECT_BINARY_DIR}/corsikaConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+  )
+
+# config for install tree
+# overwrite with install location (if it was build as part of corsika)
+set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL}) 
+set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL}) 
+configure_package_config_file (
+  cmake/corsikaConfig.cmake.in
+  ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
+  INSTALL_DESTINATION ${PROJECT_BINARY_DIR}/do_not_need_this
+  )
+
+install (
+  FILES
+  ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
+  ${CMAKE_BINARY_DIR}/conaninfo.txt
+  ${CMAKE_BINARY_DIR}/corsikaConfig.cmake
+  ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
+  DESTINATION lib/cmake/corsika
+  )
+
+#
 # examples
-# 
-add_subdirectory (examples)
+#
+install (DIRECTORY examples DESTINATION share/corsika)
+
+#
+# tools
+#
+install (DIRECTORY tools DESTINATION share/corsika)
+
+
+
+
 
 #+++++++++++++++++++++++++++++++
 #

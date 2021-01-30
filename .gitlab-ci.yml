@@ -12,6 +12,7 @@ variables:
   ASAN_OPTIONS: "detect_leaks=0:detect_stack_use_after_return=1"
   # location of AirShowerPhysics/corsika-data
   CORSIKA_DATA: "${CI_PROJECT_DIR}/modules/data" # the git submodule
+  corsika_DIR: "${CI_PROJECT_DIR}/build/install" # for cmake to find corsikaConfig.cmake
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
@@ -92,7 +93,7 @@ check-clang-format:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_PYTHIA8_C8=C8
+    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
   rules:
     - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_TAG
@@ -279,56 +280,6 @@ build_test-clang-8:
 
 
 
-####### EXAMPLE (only manual)  ##############
-
-##########################################################
-# generic example template job
-# normal pipeline for each commit
-.example:
-  stage: example
-  tags:
-    - corsika
-  script:
-    - cd build
-    - set -o pipefail
-    - make -j4 run_examples | gzip -v -9 > examples.log.gz
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
-    - if: $CI_COMMIT_BRANCH
-      when: manual
-  allow_failure: true
-  artifacts:
-    when: always
-    expire_in: 3 days
-    paths:
-      - ${CI_PROJECT_DIR}/build/examples.log.gz
-  cache:
-    paths:
-      - ${CI_PROJECT_DIR}/build/
-    untracked: true
-    policy: pull
-
-# example for gcc
-example-u-18_04:
-  extends: .example
-  image: corsika/devel:u-18.04
-  dependencies:
-    - build-u-18_04
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}-gcc"
-
-# example for clang
-example-clang-8:
-  extends: .example
-  image: corsika/devel:clang-8
-  dependencies:
-    - build-clang-8
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}-clang"
-
 
 
 ####### BUILD-TEST-EXAMPLE (only non-Draft)  ##############
@@ -344,7 +295,12 @@ example-clang-8:
     - cd build
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 
+    - ctest -j4
+    - make install
+    - mkdir -p build_examples
+    - cd build_examples
+    - cmake ../install/share/corsika/examples
+    - make -j4
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
@@ -362,7 +318,7 @@ example-clang-8:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -450,10 +406,15 @@ install-clang-8:
     - corsika
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_PYTHIA8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
-    - ctest -j4 
+    - ctest -j4
+    - make install
+    - mkdir -p build_examples
+    - cd build_examples
+    - cmake ../install/share/corsika/examples
+    - make -j4
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
@@ -478,7 +439,7 @@ install-clang-8:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
 
 # release for gcc
 release-full-u-18_04:
@@ -513,7 +474,7 @@ coverage:
     - corsika
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_PYTHIA8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - ctest -j4 
     - cmake --build . --target coverage
@@ -575,5 +536,3 @@ sanity:
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
-
-

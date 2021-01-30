@@ -52,7 +52,7 @@ namespace corsika {
     inline QuantityVector<length_d>& getCoordinates(CoordinateSystemPtr const& pCS);
 
     /**
-     * \defgroup access coordinate components
+     * \name access coordinate components
      * \{
      *
      * Note, if you access components in a different CoordinateSystem
