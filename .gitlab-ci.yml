@@ -346,7 +346,7 @@ example-clang-8:
     - set -o pipefail
     - ctest -j4
     - make install
-    - cd install/share/examples
+    - cd install/share/corsika/examples
     - make -j4
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
@@ -365,7 +365,7 @@ example-clang-8:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/install/share/examples/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/install/share/corsika/examples/examples.log.gz
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -458,7 +458,7 @@ install-clang-8:
     - set -o pipefail
     - ctest -j4
     - make install
-    - cd install/share/examples
+    - cd install/share/corsika/examples
     - make -j4
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
@@ -484,7 +484,7 @@ install-clang-8:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
-      - ${CI_PROJECT_DIR}/build/install/share/examples/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/install/share/corsika/examples/examples.log.gz
 
 # release for gcc
 release-full-u-18_04:
