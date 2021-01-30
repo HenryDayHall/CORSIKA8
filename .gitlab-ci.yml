@@ -12,6 +12,7 @@ variables:
   ASAN_OPTIONS: "detect_leaks=0:detect_stack_use_after_return=1"
   # location of AirShowerPhysics/corsika-data
   CORSIKA_DATA: "${CI_PROJECT_DIR}/modules/data" # the git submodule
+  corsika_DIR: "${CI_PROJECT_DIR}/install" # for cmake to find corsikaConfig.cmake
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
