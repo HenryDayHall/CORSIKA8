@@ -1,0 +1,129 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+#pragma once
+
+#include <corsika/media/Environment.hpp>
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/core/PhysicalConstants.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/radio/propagators/RadioPropagator.hpp>
+
+namespace corsika {
+
+  /**
+   * This class implements a basic propagator that uses
+   * the straight-line (vector) between the particle
+   * location and the antenna as the trajectory.
+   *
+   * This is what is used in ZHAireS and CoREAS in C7.
+   */
+  template <typename TEnvironment>
+  class StraightPropagator final
+      : public RadioPropagator<StraightPropagator<TEnvironment>, TEnvironment> {
+
+    using Base = RadioPropagator<StraightPropagator<TEnvironment>, TEnvironment>;
+    using SignalPathCollection = typename Base::SignalPathCollection;
+
+  public:
+
+    /**
+     * Construct a new StraightPropagator with a given environment.
+     *
+     */
+    StraightPropagator(TEnvironment const& env)
+        : RadioPropagator<StraightPropagator, TEnvironment>(env){};
+    // TODO: maybe the constructor doesn't take any arguments for the environment (?)
+
+    /**
+     * Return the collection of paths from `start` to `end`.
+     * or from 'source' which is the emission point to 'destination'
+     * which is the location of the antenna
+     */
+    SignalPathCollection propagate(Point const& source,
+                                   Point const& destination,
+                                   LengthType const stepsize) const {
+
+      /**
+       * get the normalized (unit) vector from `source` to `destination'.
+       * this is also the `emit` and `receive` vectors in the SignalPath class.
+       * in this case emit and receive unit vectors should be the same
+       * so they are both called direction
+       */
+      auto direction{(destination - source).normalized()};
+
+      // the step is the direction vector with length `stepsize`
+      auto step{direction * stepsize};
+
+      //calculate the number of points (roughly) for the numerical integration.
+      auto n_points {(destination - source).getNorm() / stepsize};
+
+      // get the universe for this environment
+      auto const* const universe{Base::env_.getUniverse().get()};
+
+      // the points that we build along the way for the numerical integration
+      std::deque<Point> points;
+
+      // store value of the refractive index at points
+      std::vector<double> rindex;
+      rindex.reserve(n_points);
+
+      // loop from `source` to `destination` to store values before Simpson's rule.
+      // this loop skips the last point 'destination'
+      for (auto point = source; (point - destination).getNorm() > 0.6 * stepsize;
+           point = point + step) {
+
+         // get the environment node at this specific 'point'
+         auto const* node{universe->getContainingNode(point)};
+
+         // get the associated refractivity at 'point'
+         auto const refractive_index{node->getModelProperties().getRefractiveIndex(point)};
+         rindex.push_back(refractive_index);
+
+         // add this 'point' to our deque collection
+         points.push_back(point);
+      }
+
+      //add the refractive index of last point 'destination' and store it
+      auto const* node{universe->getContainingNode(destination)};
+      auto const refractive_index{node->getModelProperties().getRefractiveIndex(destination)};
+      rindex.push_back(refractive_index);
+      points.push_back(destination);
+
+      // Apply Simpson's rule
+      auto N = rindex.size();
+      std::size_t index = 0;
+      double sum = rindex.at(index);
+      auto refra_ = rindex.at(index);
+      auto h = ((destination - source).getNorm()) / (N - 1);
+      for (std::size_t index = 1; index < (N - 1); index += 2) {
+        sum += 4 * rindex.at(index);
+        refra_ += rindex.at(index);
+      }
+      for (std::size_t index = 2; index < (N - 1); index += 2) {
+        sum += 2 * rindex.at(index);
+        refra_ += rindex.at(index);
+      }
+      index = N - 1;
+      sum = sum + rindex.at(index);
+      refra_ += rindex.at(index);
+
+      // compute the total time delay.
+      TimeType time = sum * (h / (3 * constants::c));
+
+      // compute the average refractivity.
+      auto average_refractivity = refra_ / N;
+
+      // realize that emission and receive vector are 'direction' in this case.
+      return { SignalPath(time, average_refractivity, direction , direction, points) };
+
+    } // END: propagate()
+
+  }; // End: StraightPropagator
+
+} // namespace corsika
