@@ -10,6 +10,7 @@
 #pragma once
 
 #include <corsika/modules/radio/antennas/Antenna.hpp>
+#include <vector>
 
 namespace corsika {
 
@@ -26,7 +27,10 @@ namespace corsika {
     TimeType const duration_;        ///< The duration of this waveform.
     TimeType const sampling_period_; ///< The sampling period of this antenna.
 
-    Array waveform_; ///< The waveform stored by this antenna.
+//    std::pair<Array, Array> waveformX_; // time + Ex component (?)
+//    std::pair<Array, Array> waveformY_; // time + Ey component (?)
+//    std::pair<Array, Array> waveformZ_; // time + Ez component (?)
+    std::pair<Array, Array> waveform_; ///< The waveform stored by this antenna. This confuses me a lot. The first should be time and second E field?
 
   protected:
     // expose the CRTP interfaces constructor
@@ -65,7 +69,18 @@ namespace corsika {
      * @param field       The incident electric field vector.
      *
      */
-    void receive(TimeType const time, ElectricFieldVector const& efield) const;
+    void receive(TimeType const time, ElectricFieldVector const& efield) const {
+
+      if (time < start_time_ || time > start_time_ + duration_) {
+        return;
+      } else {
+        auto num_bins_ = static_cast<int>(duration_ / sampling_period_);
+        Array timebins_ (num_bins_,0);
+        auto timebin_ {(time - start_time_) / sampling_period_ };
+        timebins_.at(timebin_) = timebin_; //for sure this is not going to work
+      }
+
+    }
 
     /**
      * Get the current waveform for this antenna.
@@ -74,12 +89,17 @@ namespace corsika {
      *
      * @returns A pair of the sample times, and the field
      */
-    std::pair<Array, Array> getWaveform() const;
+    std::pair<Array, Array> getWaveform() const {
+      return waveform_;
+    };
 
     /**
      * Reset the antenna before starting a new simulation.
      */
-    void reset() { waveform_.clear(); };
+    void reset() {
+      waveform_.first.clear();
+      waveform_.second.clear();
+    };
 
   }; // END: class Antenna final
 

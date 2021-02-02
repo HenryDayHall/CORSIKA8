@@ -55,7 +55,7 @@ namespace corsika {
      *
      */
     // template <typename... TVArgs>
-    // void Receive(TVArgs&& args...);
+    // void receive(TVArgs&& args...);
 
     /**
      * Get the location of this antenna.
