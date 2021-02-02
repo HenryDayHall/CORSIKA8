@@ -18,9 +18,6 @@
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/media/Environment.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -139,7 +136,6 @@ namespace corsika {
         distance_interact / 1_m, continuous_max_dist / 1_m);
 
     // here the particle is actually moved along the trajectory to new position:
-    // std::visit(setup::ParticleUpdate<particle_type>{vParticle}, step);
     step.setLength(min_distance);
     vParticle.setPosition(step.getPosition(1));
     // assumption: tracking does not change absolute momentum:

@@ -61,12 +61,16 @@ namespace corsika {
       auto getTrack(TParticle const& particle);
 
       template <typename TParticle, typename TMedium>
-      static Intersections intersect(const TParticle& particle, const Sphere& sphere,
-                                     const TMedium& medium);
+      static Intersections intersect(TParticle const& particle, Sphere const& sphere,
+                                     TMedium const& medium);
 
       template <typename TParticle, typename TBaseNodeType>
-      static Intersections intersect(const TParticle& particle,
-                                     const TBaseNodeType& volumeNode);
+      static Intersections intersect(TParticle const& particle,
+                                     TBaseNodeType const& volumeNode);
+
+      template <typename TParticle, typename TMedium>
+      static Intersections intersect(TParticle const& particle, Plane const& plane,
+				     TMedium const& medium);
 
     protected:
       /**

@@ -24,6 +24,8 @@
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
+#include <SetupTestTrajectory.hpp>
+
 #include <catch2/catch.hpp>
 
 using namespace corsika;
@@ -68,14 +70,11 @@ public:
   auto getTrack(TParticle const& particle) {
     VelocityVector const initialVelocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
+    Line const theLine = Line(particle.getPosition(), initialVelocity);
+    TimeType const tEnd = std::numeric_limits<TimeType::value_type>::infinity() * 1_s;
     return std::make_tuple(
-        StraightTrajectory(
-            Line(particle.getPosition(), initialVelocity),
-            std::numeric_limits<TimeType::value_type>::infinity() * 1_s), // trajectory,
-                                                                          // just
-                                                                          // go
-                                                                          // ahead
-                                                                          // forever
+			   corsika::setup::testing::make_track<setup::Trajectory>(theLine, tEnd),
+			   // trajectory: just go ahead forever
         particle.getNode()); // next volume node
   }
 };

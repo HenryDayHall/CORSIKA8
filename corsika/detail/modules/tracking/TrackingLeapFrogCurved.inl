@@ -30,7 +30,7 @@ namespace corsika {
 
     template <typename TParticle>
     inline auto make_LeapFrogStep(TParticle const& particle, LengthType steplength) {
-      if (particle.getMomentum().norm() == 0_GeV) {
+      if (particle.getMomentum().getNorm() == 0_GeV) {
         return std::make_tuple(particle.getPosition(), particle.getMomentum() / 1_GeV,
                                double(0));
       } // charge of the particle
@@ -225,6 +225,81 @@ namespace corsika {
       return Intersections(d_enter / absVelocity, d_exit / absVelocity);
     }
 
+    
+    template <typename TParticle, typename TMedium>
+    Intersections Tracking::intersect(TParticle const& particle, Plane const& plane,
+				      TMedium const& medium) {
+      
+      int chargeNumber;
+      if (is_nucleus(particle.getPID())) {
+	chargeNumber = particle.getNuclearZ();
+      } else {
+	chargeNumber = get_charge_number(particle.getPID());
+      }
+      auto const* currentLogicalVolumeNode = particle.getNode();
+      auto magneticfield = currentLogicalVolumeNode->getModelProperties().getMagneticField(
+											   particle.getPosition());
+      VelocityVector const velocity =
+	particle.getMomentum() / particle.getEnergy() * constants::c;
+      auto const absVelocity = velocity.getNorm();
+      DirectionVector const direction =
+	velocity.normalized(); // determine steplength to next volume
+      Point const position = particle.getPosition();
+      
+      if (chargeNumber != 0 &&
+	  abs(plane.getNormal().dot(velocity.cross(magneticfield))) *
+	  1_s / 1_m / 1_T > 1e-6) {
+	
+	auto const* currentLogicalVolumeNode = particle.getNode();
+	auto magneticfield = currentLogicalVolumeNode->getModelProperties().getMagneticField(
+											     particle.getPosition());
+	auto k = chargeNumber * constants::c * 1_eV /
+             (particle.getMomentum().getNorm() * 1_V);
+
+	if (direction.dot(plane.getNormal()) * direction.dot(plane.getNormal()) -
+	    (plane.getNormal().dot(position - plane.getCenter()) *
+             plane.getNormal().dot(direction.cross(magneticfield)) * 2 * k) <
+	    0) {
+	  return Intersections(std::numeric_limits<double>::infinity() * 1_s);
+	}
+    
+	LengthType const MaxStepLength1 =
+	  (sqrt(direction.dot(plane.getNormal()) * direction.dot(plane.getNormal()) -
+		(plane.getNormal().dot(position - plane.getCenter()) *
+		 plane.getNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+	   direction.dot(plane.getNormal()) / direction.getNorm()) /
+	  (plane.getNormal().dot(direction.cross(magneticfield)) * k);
+	
+	LengthType const MaxStepLength2 =
+	  (-sqrt(
+		 direction.dot(plane.getNormal()) * direction.dot(plane.getNormal()) -
+		 (plane.getNormal().dot(position - plane.getCenter()) *
+		  plane.getNormal().dot(direction.cross(magneticfield)) * 2 * k)) -
+	   direction.dot(plane.getNormal()) / direction.getNorm()) /
+	  (plane.getNormal().dot(direction.cross(magneticfield)) * k);
+	
+	if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
+	  return Intersections(std::numeric_limits<double>::infinity() * 1_s);
+	} else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
+	  CORSIKA_LOG_TRACE(" steplength to obs plane 2: {} ", MaxStepLength2);
+	  return Intersections(MaxStepLength2 *
+			       (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+			       .getNorm() / absVelocity);
+	} else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
+	  CORSIKA_LOG_TRACE(" steplength to obs plane 2: {} ", MaxStepLength1);
+	  return Intersections(MaxStepLength1 *
+			       (direction + direction.cross(magneticfield) * MaxStepLength2 * k / 2)
+			       .getNorm() / absVelocity);
+	}
+
+	CORSIKA_LOG_WARN("Particle wasn't tracked with curved trajectory -> straight");
+	
+      } // end if curved-tracking
+
+      return tracking_line::Tracking::intersect(particle, plane, medium);
+    }
+
+    
     template <typename TParticle, typename TBaseNodeType>
     inline Intersections Tracking::intersect(const TParticle& particle,
                                              const TBaseNodeType& volumeNode) {

@@ -9,8 +9,6 @@
 #pragma once
 
 #include <corsika/framework/geometry/Line.hpp>
-#include <corsika/framework/geometry/Plane.hpp>
-#include <corsika/framework/geometry/Sphere.hpp>
 #include <corsika/framework/geometry/StraightTrajectory.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
