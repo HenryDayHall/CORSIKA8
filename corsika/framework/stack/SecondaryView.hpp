@@ -189,6 +189,16 @@ namespace corsika {
       // NOTE: 0 is special marker here for PROJECTILE, see getIndexFromIterator
       return stack_view_iterator(*this, 0);
     }
+
+    /**
+     * This return a projectile of this SecondaryView, which can be
+     * used to modify the SecondaryView
+     */
+    inline const_stack_view_iterator getProjectile() const {
+      // NOTE: 0 is special marker here for PROJECTILE, see getIndexFromIterator
+      return const_stack_view_iterator(*this, 0);
+    }
+
     /**
      * Method to add a new secondary particle on this SecondaryView
      */

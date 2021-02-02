@@ -70,7 +70,7 @@ namespace corsika {
 
       template <typename TParticle, typename TMedium>
       static Intersections intersect(TParticle const& particle, Plane const& plane,
-				     TMedium const& medium);
+                                     TMedium const& medium);
 
     protected:
       /**

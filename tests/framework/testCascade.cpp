@@ -73,8 +73,8 @@ public:
     Line const theLine = Line(particle.getPosition(), initialVelocity);
     TimeType const tEnd = std::numeric_limits<TimeType::value_type>::infinity() * 1_s;
     return std::make_tuple(
-			   corsika::setup::testing::make_track<setup::Trajectory>(theLine, tEnd),
-			   // trajectory: just go ahead forever
+        corsika::setup::testing::make_track<setup::Trajectory>(theLine, tEnd),
+        // trajectory: just go ahead forever
         particle.getNode()); // next volume node
   }
 };
