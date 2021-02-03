@@ -22,9 +22,9 @@
 
 namespace corsika {
 
-  CONEXhybrid::CONEXhybrid(Point center, ShowerAxis const& showerAxis,
-                           LengthType groundDist, LengthType injectionHeight,
-                           HEPEnergyType primaryEnergy, PDGCode primaryPDG)
+  inline CONEXhybrid::CONEXhybrid(Point center, ShowerAxis const& showerAxis,
+                                  LengthType groundDist, LengthType injectionHeight,
+                                  HEPEnergyType primaryEnergy, PDGCode primaryPDG)
       : center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
@@ -124,7 +124,7 @@ namespace corsika {
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
   }
 
-  void CONEXhybrid::doSecondaries(setup::StackView& vS) {
+  inline void CONEXhybrid::doSecondaries(setup::StackView& vS) {
     auto p = vS.begin();
     while (p != vS.end()) {
       Code const pid = p.getPID();
@@ -136,9 +136,9 @@ namespace corsika {
     }
   }
 
-  bool CONEXhybrid::addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
-                                Point const& position, DirectionVector const& direction,
-                                TimeType t) {
+  inline bool CONEXhybrid::addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
+                                       Point const& position,
+                                       DirectionVector const& direction, TimeType t) {
 
     auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
@@ -222,7 +222,7 @@ namespace corsika {
     return true;
   }
 
-  void CONEXhybrid::solveCE() {
+  inline void CONEXhybrid::solveCE() {
 
     ::conex::conexcascade_();
 

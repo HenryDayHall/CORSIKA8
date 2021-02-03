@@ -17,21 +17,21 @@
 
 namespace corsika::pythia8 {
 
-  Decay::Decay(bool const print_listing)
+  inline Decay::Decay(bool const print_listing)
       : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
       , print_listing_(print_listing) {
     init();
   }
 
-  Decay::Decay(std::set<Code> const& those)
+  inline Decay::Decay(std::set<Code> const& those)
       : handleAllDecays_(false)
       , handledDecays_(those) {
     init();
   }
 
-  Decay::~Decay() { CORSIKA_LOG_INFO("Pythia::Decay n={}", count_); }
+  inline Decay::~Decay() { CORSIKA_LOG_INFO("Pythia::Decay n={}", count_); }
 
-  void Decay::init() {
+  inline void Decay::init() {
 
     // run this only once during construction
 
@@ -66,7 +66,7 @@ namespace corsika::pythia8 {
       throw std::runtime_error("Pythia::Decay: Initialization failed!");
   }
 
-  bool Decay::canHandleDecay(Code const vParticleCode) {
+  inline bool Decay::canHandleDecay(Code const vParticleCode) {
     // if known to pythia and not proton, electron or neutrino it can decay
     if (vParticleCode == Code::Proton || vParticleCode == Code::AntiProton ||
         vParticleCode == Code::NuE || vParticleCode == Code::NuMu ||
@@ -80,7 +80,7 @@ namespace corsika::pythia8 {
       return false;
   }
 
-  void Decay::setHandleDecay(Code const vParticleCode) {
+  inline void Decay::setHandleDecay(Code const vParticleCode) {
     handleAllDecays_ = false;
     CORSIKA_LOG_INFO("Pythia::Decay: set to handle decay of {} ", vParticleCode);
     if (Decay::canHandleDecay(vParticleCode))
@@ -89,37 +89,37 @@ namespace corsika::pythia8 {
       throw std::runtime_error("this decay can not be handled by pythia!");
   }
 
-  void Decay::setHandleDecay(std::vector<Code> const& vParticleList) {
+  inline void Decay::setHandleDecay(std::vector<Code> const& vParticleList) {
     handleAllDecays_ = false;
     for (auto p : vParticleList) setHandleDecay(p);
   }
 
-  bool Decay::isDecayHandled(Code const vParticleCode) {
+  inline bool Decay::isDecayHandled(Code const vParticleCode) {
     if (handleAllDecays_ && canHandleDecay(vParticleCode))
       return true;
     else
       return handledDecays_.find(vParticleCode) != Decay::handledDecays_.end();
   }
 
-  void Decay::setStable(std::vector<Code> const& particleList) {
+  inline void Decay::setStable(std::vector<Code> const& particleList) {
     for (auto p : particleList) Decay::setStable(p);
   }
 
-  void Decay::setUnstable(Code const pCode) {
+  inline void Decay::setUnstable(Code const pCode) {
     CORSIKA_LOG_INFO("Pythia::Decay: setting {} unstable..", pCode);
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
-  void Decay::setStable(Code const pCode) {
+  inline void Decay::setStable(Code const pCode) {
     CORSIKA_LOG_INFO("Pythia::Decay: setting {} stable..", pCode);
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
-  bool Decay::isStable(Code const vCode) {
+  inline bool Decay::isStable(Code const vCode) {
     return Pythia8::Pythia::particleData.canDecay(static_cast<int>(get_PDG(vCode)));
   }
 
-  bool Decay::canDecay(Code const pCode) {
+  inline bool Decay::canDecay(Code const pCode) {
     bool const ans =
         Pythia8::Pythia::particleData.canDecay(static_cast<int>(get_PDG(pCode)));
     CORSIKA_LOG_INFO("Pythia::Decay: checking if particle: {} can decay in PYTHIA? {} ",
@@ -127,12 +127,12 @@ namespace corsika::pythia8 {
     return ans;
   }
 
-  void Decay::printDecayConfig(Code const vCode) {
+  inline void Decay::printDecayConfig(Code const vCode) {
     CORSIKA_LOG_INFO("Decay: Pythia decay configuration:");
     CORSIKA_LOG_INFO(" {} is {} ", vCode, (isStable(vCode) ? "stable" : "unstable"));
   }
 
-  void Decay::printDecayConfig() {
+  inline void Decay::printDecayConfig() {
     CORSIKA_LOG_INFO("Pythia::Decay: decay configuration:");
     if (handleAllDecays_)
       CORSIKA_LOG_INFO(" all particles known to Pythia are handled by Pythia::Decay!");
@@ -142,7 +142,7 @@ namespace corsika::pythia8 {
   }
 
   template <typename TParticle>
-  TimeType Decay::getLifetime(TParticle const& particle) {
+  inline TimeType Decay::getLifetime(TParticle const& particle) {
 
     auto const pid = particle.getPID();
     if (canDecay(pid)) {
@@ -167,7 +167,7 @@ namespace corsika::pythia8 {
   }
 
   template <typename TView>
-  void Decay::doDecay(TView& view) {
+  inline void Decay::doDecay(TView& view) {
 
     auto projectile = view.getProjectile();
 

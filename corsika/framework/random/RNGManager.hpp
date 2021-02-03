@@ -43,36 +43,35 @@ namespace corsika {
      *
      * \throws sth. when stream \a pModuleName is already registered
      */
-    inline void registerRandomStream(string_type const& streamName);
+    void registerRandomStream(string_type const& streamName);
 
     /*!
      * returns the pre-stored stream of given name \a pStreamName if
      * available
      */
-    inline prng_type& getRandomStream(string_type const& streamName);
+    prng_type& getRandomStream(string_type const& streamName);
 
     /*!
      * Check whether a stream has been registered.
      */
-    inline bool isRegistered(string_type const& streamName) const;
+    bool isRegistered(string_type const& streamName) const;
 
     /*!
      * dumps the names and states of all registered random-number streams
      * into a std::stringstream.
      */
-    inline std::stringstream dumpState() const;
+    std::stringstream dumpState() const;
 
     /**
      * Set explicit seeds for all currently registered streams. The actual seed values
      * are incremented from \a vSeed.
      */
-    inline void seedAll(seed_type seed);
+    void seedAll(seed_type seed);
 
     /**
      * Set seeds for all currently registered streams.
      */
-    inline void seedAll(
-        void); //!< seed all currently registered streams with "real" randomness
+    void seedAll(void); //!< seed all currently registered streams with "real" randomness
 
     /**
      * @fn const streams_type getRngs&()const
@@ -82,7 +81,7 @@ namespace corsika {
      * @post
      * @return RNGManager::streams_type
      */
-    inline const streams_type& getRngs() const { return rngs_; }
+    const streams_type& getRngs() const { return rngs_; }
 
     /**
      * @fn const seeds_type getSeeds&()const
@@ -92,7 +91,7 @@ namespace corsika {
      * @post
      * @return RNGManager::seeds_type
      */
-    inline const seeds_type& getSeeds() const { return seeds_; }
+    const seeds_type& getSeeds() const { return seeds_; }
 
     /**
      * @fn streams_type Rngs()
@@ -102,7 +101,7 @@ namespace corsika {
      * @post
      * @return RNGManager::streams_type&
      */
-    inline streams_type Rngs() { return rngs_; }
+    streams_type Rngs() { return rngs_; }
 
     /**
      * @fn seeds_type Seeds&()
@@ -112,7 +111,7 @@ namespace corsika {
      * @post
      * @return RNGManager::seeds_type&
      */
-    inline seeds_type& Seeds() { return seeds_; }
+    seeds_type& getSeeds() { return seeds_; }
 
   protected:
     RNGManager() = default;

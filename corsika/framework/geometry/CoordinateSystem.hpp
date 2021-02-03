@@ -40,31 +40,30 @@ namespace corsika {
   /**
    * Creates new CoordinateSystemPtr by translation along \a vector
    */
-  inline CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
-                                              QuantityVector<length_d> const& vector);
+  CoordinateSystemPtr make_translation(CoordinateSystemPtr const& cs,
+                                       QuantityVector<length_d> const& vector);
 
   /**
    * creates a new CoordinateSystem in which vVec points in direction of the new z-axis,
    * \a vVec
    */
   template <typename TDim>
-  inline CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
-                                              Vector<TDim> const& vVec);
+  CoordinateSystemPtr make_rotationToZ(CoordinateSystemPtr const& cs,
+                                       Vector<TDim> const& vVec);
 
   /**
    * creates a new CoordinateSystem, rotated around axis by angle.
    */
   template <typename TDim>
-  inline CoordinateSystemPtr make_rotation(CoordinateSystemPtr const& cs,
-                                           QuantityVector<TDim> const& axis,
-                                           double const angle);
+  CoordinateSystemPtr make_rotation(CoordinateSystemPtr const& cs,
+                                    QuantityVector<TDim> const& axis, double const angle);
 
   /**
    * creates a new CoordinateSystem, translated by \a translation and rotated around \a
    * axis by \a angle.
    */
   template <typename TDim>
-  inline CoordinateSystemPtr make_translationAndRotation(
+  CoordinateSystemPtr make_translationAndRotation(
       CoordinateSystemPtr const& cs, QuantityVector<length_d> const& translation,
       QuantityVector<TDim> const& axis, double const angle);
 
@@ -119,14 +118,14 @@ namespace corsika {
     /**
      * Checks, if this is the unique ROOT CS
      */
-    inline bool isRoot() const { return !referenceCS_; }
+    bool isRoot() const { return !referenceCS_; }
 
-    inline CoordinateSystemPtr getReferenceCS() const;
+    CoordinateSystemPtr getReferenceCS() const;
 
-    inline EigenTransform const& getTransform() const;
+    EigenTransform const& getTransform() const;
 
-    inline bool operator==(CoordinateSystem const&) const;
-    inline bool operator!=(CoordinateSystem const&) const;
+    bool operator==(CoordinateSystem const&) const;
+    bool operator!=(CoordinateSystem const&) const;
 
   protected:
     static CoordinateSystem createCS() { return CoordinateSystem(); }
@@ -171,8 +170,8 @@ namespace corsika {
    *
    * \todo make this a protected member of CoordinateSystem
    */
-  inline EigenTransform get_transformation(CoordinateSystem const& c1,
-                                           CoordinateSystem const& c2);
+  EigenTransform get_transformation(CoordinateSystem const& c1,
+                                    CoordinateSystem const& c2);
 
 } // namespace corsika
 

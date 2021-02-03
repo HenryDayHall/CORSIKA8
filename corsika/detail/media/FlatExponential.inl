@@ -17,16 +17,16 @@
 namespace corsika {
 
   template <typename T>
-  FlatExponential<T>::FlatExponential(Point const& point,
-                                      Vector<dimensionless_d> const& axis,
-                                      MassDensityType rho, LengthType lambda,
-                                      NuclearComposition const& nuclComp)
+  inline FlatExponential<T>::FlatExponential(Point const& point,
+                                             Vector<dimensionless_d> const& axis,
+                                             MassDensityType rho, LengthType lambda,
+                                             NuclearComposition const& nuclComp)
       : BaseExponential<FlatExponential<T>>(point, rho, lambda)
       , axis_(axis)
       , nuclComp_(nuclComp) {}
 
   template <typename T>
-  MassDensityType FlatExponential<T>::getMassDensity(Point const& point) const {
+  inline MassDensityType FlatExponential<T>::getMassDensity(Point const& point) const {
     return BaseExponential<FlatExponential<T>>::getRho0() *
            exp(BaseExponential<FlatExponential<T>>::getInvLambda() *
                (point - BaseExponential<FlatExponential<T>>::getAnchorPoint())
@@ -34,19 +34,19 @@ namespace corsika {
   }
 
   template <typename T>
-  NuclearComposition const& FlatExponential<T>::getNuclearComposition() const {
+  inline NuclearComposition const& FlatExponential<T>::getNuclearComposition() const {
     return nuclComp_;
   }
 
   template <typename T>
-  GrammageType FlatExponential<T>::getIntegratedGrammage(setup::Trajectory const& line,
-                                                         LengthType to) const {
+  inline GrammageType FlatExponential<T>::getIntegratedGrammage(
+      setup::Trajectory const& line, LengthType to) const {
     return BaseExponential<FlatExponential<T>>::getIntegratedGrammage(line, to, axis_);
   }
 
   template <typename T>
-  LengthType FlatExponential<T>::getArclengthFromGrammage(setup::Trajectory const& line,
-                                                          GrammageType grammage) const {
+  inline LengthType FlatExponential<T>::getArclengthFromGrammage(
+      setup::Trajectory const& line, GrammageType grammage) const {
     return BaseExponential<FlatExponential<T>>::getArclengthFromGrammage(line, grammage,
                                                                          axis_);
   }

@@ -13,12 +13,12 @@
 namespace corsika {
 
   template <typename TFunc, typename TTime>
-  FunctionTimer<TFunc, TTime>::FunctionTimer(TFunc f)
+  inline FunctionTimer<TFunc, TTime>::FunctionTimer(TFunc f)
       : function_(f) {}
 
   template <typename TFunc, typename TTime>
   template <typename... TArgs>
-  auto FunctionTimer<TFunc, TTime>::operator()(TArgs&&... args)
+  inline auto FunctionTimer<TFunc, TTime>::operator()(TArgs&&... args)
       -> std::invoke_result_t<TFunc, TArgs...> {
     this->startTimer();
     auto tmp = function_(std::forward<TArgs>(args)...);

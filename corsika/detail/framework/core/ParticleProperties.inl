@@ -13,72 +13,74 @@
 
 namespace corsika {
 
-  HEPEnergyType constexpr get_energy_threshold(Code const p) {
+  inline HEPEnergyType constexpr get_energy_threshold(Code const p) {
     return particle::detail::thresholds[static_cast<CodeIntType>(p)];
   }
 
-  void constexpr set_energy_threshold(Code const p, HEPEnergyType const val) {
+  inline void constexpr set_energy_threshold(Code const p, HEPEnergyType const val) {
     particle::detail::thresholds[static_cast<CodeIntType>(p)] = val;
   }
 
-  HEPMassType constexpr get_mass(Code const p) {
+  inline HEPMassType constexpr get_mass(Code const p) {
     if (p == Code::Nucleus)
       throw std::runtime_error("Cannot GetMass() of particle::Nucleus -> unspecified");
     return particle::detail::masses[static_cast<CodeIntType>(p)];
   }
 
-  PDGCode constexpr get_PDG(Code const p) {
+  inline PDGCode constexpr get_PDG(Code const p) {
     return particle::detail::pdg_codes[static_cast<CodeIntType>(p)];
   }
 
-  int16_t constexpr get_charge_number(Code const code) {
+  inline int16_t constexpr get_charge_number(Code const code) {
     if (code == Code::Nucleus)
       throw std::runtime_error("charge of particle::Nucleus undefined");
     return particle::detail::electric_charges[static_cast<CodeIntType>(code)];
   }
 
-  ElectricChargeType constexpr get_charge(Code const code) {
+  inline ElectricChargeType constexpr get_charge(Code const code) {
     return get_charge_number(code) * constants::e;
   }
 
-  std::string_view constexpr get_name(Code const code) {
+  inline std::string_view constexpr get_name(Code const code) {
     return particle::detail::names[static_cast<CodeIntType>(code)];
   }
 
-  TimeType constexpr get_lifetime(Code const p) {
+  inline TimeType constexpr get_lifetime(Code const p) {
     return particle::detail::lifetime[static_cast<CodeIntType>(p)] * second;
   }
 
-  bool constexpr is_hadron(Code const p) {
+  inline bool constexpr is_hadron(Code const p) {
     return particle::detail::isHadron[static_cast<CodeIntType>(p)];
   }
 
-  bool constexpr is_em(Code c) {
+  inline bool constexpr is_em(Code c) {
     return c == Code::Electron || c == Code::Positron || c == Code::Gamma;
   }
 
-  bool constexpr is_muon(Code c) { return c == Code::MuPlus || c == Code::MuMinus; }
+  inline bool constexpr is_muon(Code c) {
+    return c == Code::MuPlus || c == Code::MuMinus;
+  }
 
-  bool constexpr is_neutrino(Code c) {
+  inline bool constexpr is_neutrino(Code c) {
     return c == Code::NuE || c == Code::NuMu || c == Code::NuTau || c == Code::NuEBar ||
            c == Code::NuMuBar || c == Code::NuTauBar;
   }
 
-  int constexpr get_nucleus_A(Code const code) {
+  inline int constexpr get_nucleus_A(Code const code) {
     if (code == Code::Nucleus) {
       throw std::runtime_error("get_nucleus_A(Code::Nucleus) is impossible!");
     }
     return particle::detail::nucleusA[static_cast<CodeIntType>(code)];
   }
 
-  int constexpr get_nucleus_Z(Code const code) {
+  inline int constexpr get_nucleus_Z(Code const code) {
     if (code == Code::Nucleus) {
       throw std::runtime_error("get_nucleus_Z(Code::Nucleus) is impossible!");
     }
     return particle::detail::nucleusZ[static_cast<CodeIntType>(code)];
   }
 
-  bool constexpr is_nucleus(Code const code) {
+  inline bool constexpr is_nucleus(Code const code) {
     return (code == Code::Nucleus) || (get_nucleus_A(code) != 0);
   }
 
@@ -102,7 +104,7 @@ namespace corsika {
     return get_mass(Code::Proton) * Z + (A - Z) * get_mass(Code::Neutron);
   }
 
-  std::initializer_list<Code> constexpr get_all_particles() {
+  inline std::initializer_list<Code> constexpr get_all_particles() {
     return particle::detail::all_particles;
   }
 

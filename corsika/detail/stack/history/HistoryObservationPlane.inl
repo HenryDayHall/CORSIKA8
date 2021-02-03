@@ -13,14 +13,14 @@
 
 namespace corsika::history {
 
-  HistoryObservationPlane::HistoryObservationPlane(setup::Stack const& stack,
-                                                   Plane const& obsPlane,
-                                                   bool deleteOnHit)
+  inline HistoryObservationPlane::HistoryObservationPlane(setup::Stack const& stack,
+                                                          Plane const& obsPlane,
+                                                          bool deleteOnHit)
       : stack_{stack}
       , plane_{obsPlane}
       , deleteOnHit_{deleteOnHit} {}
 
-  ProcessReturn HistoryObservationPlane::DoContinuous(
+  inline ProcessReturn HistoryObservationPlane::DoContinuous(
       setup::Stack::ParticleType const& particle, setup::Trajectory const& trajectory) {
     TimeType const timeOfIntersection =
         (plane_.getCenter() - trajectory.getR0()).dot(plane_.getNormal()) /
@@ -45,8 +45,8 @@ namespace corsika::history {
     }
   }
 
-  LengthType HistoryObservationPlane::MaxStepLength(setup::Stack::ParticleType const&,
-                                                    setup::Trajectory const& trajectory) {
+  inline LengthType HistoryObservationPlane::MaxStepLength(
+      setup::Stack::ParticleType const&, setup::Trajectory const& trajectory) {
     TimeType const timeOfIntersection =
         (plane_.getCenter() - trajectory.getR0()).dot(plane_.getNormal()) /
         trajectory.getV0().dot(plane_.getNormal());
@@ -59,7 +59,7 @@ namespace corsika::history {
     return (trajectory.getR0() - pointOfIntersection).norm() * 1.0001;
   }
 
-  void HistoryObservationPlane::fillHistoryHistogram(
+  inline void HistoryObservationPlane::fillHistoryHistogram(
       setup::Stack::ParticleType const& muon) {
     double const muon_energy = muon.getEnergy() / 1_GeV;
 

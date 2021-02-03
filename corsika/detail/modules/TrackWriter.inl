@@ -20,7 +20,7 @@
 
 namespace corsika {
 
-  TrackWriter::TrackWriter(std::string const& filename)
+  inline TrackWriter::TrackWriter(std::string const& filename)
       : filename_(filename) {
     using namespace std::string_literals;
 
@@ -31,8 +31,8 @@ namespace corsika {
   }
 
   template <typename TParticle, typename TTrack>
-  ProcessReturn TrackWriter::doContinuous(const TParticle& vP, const TTrack& vT,
-                                          bool const) {
+  inline ProcessReturn TrackWriter::doContinuous(const TParticle& vP, const TTrack& vT,
+                                                 bool const) {
     auto const start = vT.getPosition(0).getCoordinates();
     auto const delta = vT.getPosition(1).getCoordinates() - start;
     auto const pdg = static_cast<int>(get_PDG(vP.getPID()));
@@ -54,7 +54,7 @@ namespace corsika {
   }
 
   template <typename TParticle, typename TTrack>
-  LengthType TrackWriter::getMaxStepLength(const TParticle&, const TTrack&) {
+  inline LengthType TrackWriter::getMaxStepLength(const TParticle&, const TTrack&) {
     return meter * std::numeric_limits<double>::infinity();
   }
 

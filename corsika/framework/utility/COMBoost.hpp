@@ -35,16 +35,16 @@ namespace corsika {
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     template <typename FourVector>
-    inline FourVector toCoM(FourVector const& p) const;
+    FourVector toCoM(FourVector const& p) const;
 
     //! transforms a 4-momentum from the center-of-mass frame back to lab frame
     template <typename FourVector>
-    inline FourVector fromCoM(FourVector const& p) const;
+    FourVector fromCoM(FourVector const& p) const;
 
-    inline CoordinateSystemPtr getRotatedCS() const;
+    CoordinateSystemPtr getRotatedCS() const;
 
   protected:
-    inline void setBoost(double coshEta, double sinhEta);
+    void setBoost(double coshEta, double sinhEta);
 
   private:
     Eigen::Matrix2d boost_;

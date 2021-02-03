@@ -16,13 +16,13 @@
 
 namespace corsika {
 
-  InteractionHistogram::InteractionHistogram()
+  inline InteractionHistogram::InteractionHistogram()
       : inthist_cms_{detail::hist_factory(num_bins_cms, lower_edge_cms, upper_edge_cms)}
       , inthist_lab_{detail::hist_factory(num_bins_lab, lower_edge_lab, upper_edge_lab)} {
   }
 
-  void InteractionHistogram::fill(Code projectile_id, HEPEnergyType lab_energy,
-                                  HEPEnergyType mass_target, int A, int Z) {
+  inline void InteractionHistogram::fill(Code projectile_id, HEPEnergyType lab_energy,
+                                         HEPEnergyType mass_target, int A, int Z) {
     auto constexpr inv_eV = 1 / 1_eV;
     if (projectile_id == Code::Nucleus) {
       auto const sqrtS = sqrt(A * A * (constants::nucleonMass * constants::nucleonMass) +
@@ -42,7 +42,7 @@ namespace corsika {
     }
   }
 
-  InteractionHistogram& InteractionHistogram::operator+=(
+  inline InteractionHistogram& InteractionHistogram::operator+=(
       InteractionHistogram const& other) {
     inthist_lab_ += other.inthist_lab_;
     inthist_cms_ += other.inthist_cms_;
@@ -50,7 +50,8 @@ namespace corsika {
     return *this;
   }
 
-  InteractionHistogram InteractionHistogram::operator+(InteractionHistogram other) const {
+  inline InteractionHistogram InteractionHistogram::operator+(
+      InteractionHistogram other) const {
     other.inthist_lab_ += inthist_lab_;
     other.inthist_cms_ += inthist_cms_;
 

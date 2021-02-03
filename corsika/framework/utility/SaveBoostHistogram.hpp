@@ -24,8 +24,8 @@ namespace corsika {
    * runtime_error
    */
   template <class Axes, class Storage>
-  inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
-                        std::string const& filename, bool overwrite = true);
+  void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
+                 std::string const& filename, bool overwrite = true);
 } // namespace corsika
 
 #include <corsika/detail/framework/utility/SaveBoostHistogram.inl>

@@ -14,8 +14,9 @@
 
 namespace corsika {
 
-  ObservationPlane::ObservationPlane(Plane const& obsPlane, DirectionVector const& x_axis,
-                                     std::string const& filename, bool deleteOnHit)
+  inline ObservationPlane::ObservationPlane(Plane const& obsPlane,
+                                            DirectionVector const& x_axis,
+                                            std::string const& filename, bool deleteOnHit)
       : plane_(obsPlane)
       , outputStream_(filename)
       , deleteOnHit_(deleteOnHit)
@@ -27,7 +28,7 @@ namespace corsika {
                   << std::endl;
   }
 
-  ProcessReturn ObservationPlane::doContinuous(
+  inline ProcessReturn ObservationPlane::doContinuous(
       corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory&,
       bool const stepLimit) {
 
@@ -54,7 +55,7 @@ namespace corsika {
     }
   }
 
-  LengthType ObservationPlane::getMaxStepLength(
+  inline LengthType ObservationPlane::getMaxStepLength(
       corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
 
@@ -82,7 +83,7 @@ namespace corsika {
     return dist;
   }
 
-  void ObservationPlane::showResults() const {
+  inline void ObservationPlane::showResults() const {
     CORSIKA_LOG_INFO(
         " ******************************\n"
         " ObservationPlane: \n"
@@ -92,7 +93,7 @@ namespace corsika {
         energy_ground_ / 1_GeV, count_ground_);
   }
 
-  void ObservationPlane::reset() {
+  inline void ObservationPlane::reset() {
     energy_ground_ = 0_GeV;
     count_ground_ = 0;
   }

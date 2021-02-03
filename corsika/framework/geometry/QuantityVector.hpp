@@ -113,8 +113,8 @@ namespace corsika {
    **/
 
   template <typename TDimension>
-  inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::QuantityVector<TDimension> const& qv);
+  std::ostream& operator<<(std::ostream& os,
+                           corsika::QuantityVector<TDimension> const& qv);
 
 } // namespace corsika
 

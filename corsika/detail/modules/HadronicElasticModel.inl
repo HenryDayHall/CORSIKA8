@@ -23,13 +23,14 @@
 
 namespace corsika {
 
-  HadronicElasticInteraction::HadronicElasticInteraction(CrossSectionType x,
-                                                         CrossSectionType y)
+  inline HadronicElasticInteraction::HadronicElasticInteraction(CrossSectionType x,
+                                                                CrossSectionType y)
       : parX_(x)
       , parY_(y) {}
 
   template <>
-  GrammageType HadronicElasticInteraction::getInteractionLength(SetupParticle const& p) {
+  inline GrammageType HadronicElasticInteraction::getInteractionLength(
+      SetupParticle const& p) {
     if (p.getPID() == Code::Proton) {
       auto const* currentNode = p.getNode();
       auto const& mediumComposition =
@@ -69,7 +70,7 @@ namespace corsika {
   }
 
   template <typename TParticle>
-  ProcessReturn HadronicElasticInteraction::doInteraction(TParticle& p) {
+  inline ProcessReturn HadronicElasticInteraction::doInteraction(TParticle& p) {
     if (p.getPID() != Code::Proton) { return ProcessReturn::Ok; }
 
     const auto* currentNode = p.getNode();
@@ -160,7 +161,7 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  HadronicElasticInteraction::inveV2 HadronicElasticInteraction::B(eV2 s) const {
+  inline HadronicElasticInteraction::inveV2 HadronicElasticInteraction::B(eV2 s) const {
     auto constexpr b_p = 2.3;
     auto const result =
         (2 * b_p + 2 * b_p + 4 * pow(s * constants::invGeVsq, gfEpsilon) - 4.2) *
@@ -170,7 +171,7 @@ namespace corsika {
     return result;
   }
 
-  CrossSectionType HadronicElasticInteraction::getCrossSection(
+  inline CrossSectionType HadronicElasticInteraction::getCrossSection(
       SquaredHEPEnergyType s) const {
     // assuming every target behaves like a proton, parX_ and parY_ are universal
     CrossSectionType const sigmaTotal = parX_ * pow(s * constants::invGeVsq, gfEpsilon) +

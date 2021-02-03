@@ -12,6 +12,6 @@
 
 namespace corsika::pythia8 {
 
-  double Random::flat() { return Dist_(RNG_); }
+  inline double Random::flat() { return Dist_(RNG_); }
 
 } // namespace corsika::pythia8

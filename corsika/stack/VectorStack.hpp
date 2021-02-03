@@ -119,7 +119,7 @@ namespace corsika {
 
     void dump() const {}
 
-    inline void clear();
+    void clear();
 
     unsigned int getSize() const { return dataPID_.size(); }
     unsigned int getCapacity() const { return dataPID_.size(); }
@@ -149,15 +149,15 @@ namespace corsika {
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    inline void copy(size_t i1, size_t i2);
+    void copy(size_t i1, size_t i2);
 
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
-    inline void swap(size_t i1, size_t i2);
+    void swap(size_t i1, size_t i2);
 
-    inline void incrementSize();
-    inline void decrementSize();
+    void incrementSize();
+    void decrementSize();
 
   private:
     /// the actual memory to store particle data

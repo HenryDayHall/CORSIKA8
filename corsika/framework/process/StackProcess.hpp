@@ -34,7 +34,7 @@ namespace corsika {
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoStack...
     template <typename TStack>
-    inline void doStack(TStack&);
+    void doStack(TStack&);
 
     int getStep() const { return iStep_; }
     bool checkStep() { return !((++iStep_) % nStep_); }

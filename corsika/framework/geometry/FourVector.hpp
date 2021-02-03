@@ -190,8 +190,8 @@ namespace corsika {
    **/
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline std::ostream& operator<<(
-      std::ostream& os, corsika::FourVector<TTimeType, TSpaceVecType> const& qv);
+  std::ostream& operator<<(std::ostream& os,
+                           corsika::FourVector<TTimeType, TSpaceVecType> const& qv);
 
 } // namespace corsika
 

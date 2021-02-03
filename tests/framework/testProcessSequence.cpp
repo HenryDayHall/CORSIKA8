@@ -49,7 +49,7 @@ public:
   void setStep(LengthType const v) { step_ = v; }
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+  ProcessReturn doContinuous(D& d, T&, bool const flag) const {
     flag_ = flag;
     CORSIKA_LOG_TRACE("ContinuousProcess1::DoContinuous");
     checkCont |= 1;
@@ -58,7 +58,7 @@ public:
   }
 
   template <typename TParticle, typename TTrack>
-  inline LengthType getMaxStepLength(TParticle&, TTrack&) {
+  LengthType getMaxStepLength(TParticle&, TTrack&) {
     return step_;
   }
 
@@ -86,7 +86,7 @@ public:
   void setStep(LengthType const v) { step_ = v; }
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+  ProcessReturn doContinuous(D& d, T&, bool const flag) const {
     flag_ = flag;
     CORSIKA_LOG_DEBUG("ContinuousProcess2::DoContinuous");
     checkCont |= 2;
@@ -95,7 +95,7 @@ public:
   }
 
   template <typename TParticle, typename TTrack>
-  inline LengthType getMaxStepLength(TParticle&, TTrack&) {
+  LengthType getMaxStepLength(TParticle&, TTrack&) {
     return step_;
   }
 
@@ -123,7 +123,7 @@ public:
   void setStep(LengthType const v) { step_ = v; }
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+  ProcessReturn doContinuous(D& d, T&, bool const flag) const {
     flag_ = flag;
     CORSIKA_LOG_DEBUG("ContinuousProcess3::DoContinuous");
     checkCont |= 4;
@@ -132,7 +132,7 @@ public:
   }
 
   template <typename TParticle, typename TTrack>
-  inline LengthType getMaxStepLength(TParticle&, TTrack&) {
+  LengthType getMaxStepLength(TParticle&, TTrack&) {
     return step_;
   }
 
@@ -158,7 +158,7 @@ public:
   }
 
   template <typename TView>
-  inline void doInteraction(TView& v) const {
+  void doInteraction(TView& v) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
   }
@@ -184,7 +184,7 @@ public:
   }
 
   template <typename TView>
-  inline void doInteraction(TView& v) const {
+  void doInteraction(TView& v) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     CORSIKA_LOG_DEBUG("Process2::doInteraction");
@@ -211,7 +211,7 @@ public:
   }
 
   template <typename TView>
-  inline void doInteraction(TView& v) const {
+  void doInteraction(TView& v) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     CORSIKA_LOG_DEBUG("Process3::doInteraction");
@@ -238,7 +238,7 @@ public:
   }
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&, bool const) const {
+  ProcessReturn doContinuous(D& d, T&, bool const) const {
     CORSIKA_LOG_DEBUG("Base::doContinuous");
     checkCont |= 8;
     for (int i = 0; i < nData; ++i) { d.data_[i] /= 1.2; }

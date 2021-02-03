@@ -24,10 +24,10 @@
 namespace corsika::proposal {
 
   template <>
-  Interaction::Interaction(setup::Environment const& _env)
+  inline Interaction::Interaction(setup::Environment const& _env)
       : ProposalProcessBase(_env) {}
 
-  void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
+  inline void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -52,7 +52,7 @@ namespace corsika::proposal {
   }
 
   template <>
-  ProcessReturn Interaction::doInteraction(setup::StackView& view) {
+  inline ProcessReturn Interaction::doInteraction(setup::StackView& view) {
 
     auto const projectile = view.getProjectile();
 
@@ -103,7 +103,7 @@ namespace corsika::proposal {
   }
 
   template <>
-  GrammageType Interaction::getInteractionLength(
+  inline GrammageType Interaction::getInteractionLength(
       setup::Stack::particle_type const& projectile) {
 
     if (canInteract(projectile.getPID())) {

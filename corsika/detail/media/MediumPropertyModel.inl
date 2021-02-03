@@ -14,17 +14,17 @@ namespace corsika {
 
   template <typename T>
   template <typename... Args>
-  MediumPropertyModel<T>::MediumPropertyModel(Medium const medium, Args&&... args)
+  inline MediumPropertyModel<T>::MediumPropertyModel(Medium const medium, Args&&... args)
       : T(std::forward<Args>(args)...)
       , medium_(medium) {}
 
   template <typename T>
-  Medium MediumPropertyModel<T>::getMedium(Point const&) const {
+  inline Medium MediumPropertyModel<T>::getMedium(Point const&) const {
     return medium_;
   }
 
   template <typename T>
-  void MediumPropertyModel<T>::setMedium(Medium const medium) {
+  inline void MediumPropertyModel<T>::setMedium(Medium const medium) {
     medium_ = medium;
   }
 

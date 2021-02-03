@@ -49,8 +49,8 @@ namespace corsika::tracking_line {
   }
 
   template <typename TParticle, typename TMedium>
-  Intersections Tracking::intersect(TParticle const& particle, Sphere const& sphere,
-                                    TMedium const&) {
+  inline Intersections Tracking::intersect(TParticle const& particle,
+                                           Sphere const& sphere, TMedium const&) {
     auto const delta = particle.getPosition() - sphere.getCenter();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const vSqNorm = velocity.getSquaredNorm();
@@ -70,8 +70,8 @@ namespace corsika::tracking_line {
   }
 
   template <typename TParticle, typename TBaseNodeType>
-  Intersections Tracking::intersect(TParticle const& particle,
-                                    TBaseNodeType const& volumeNode) {
+  inline Intersections Tracking::intersect(TParticle const& particle,
+                                           TBaseNodeType const& volumeNode) {
     Sphere const* sphere = dynamic_cast<Sphere const*>(&volumeNode.getVolume());
     if (sphere) {
       typedef typename std::remove_const_t<
@@ -85,8 +85,8 @@ namespace corsika::tracking_line {
   }
 
   template <typename TParticle, typename TMedium>
-  Intersections Tracking::intersect(TParticle const& particle, Plane const& plane,
-                                    TMedium const&) {
+  inline Intersections Tracking::intersect(TParticle const& particle, Plane const& plane,
+                                           TMedium const&) {
     auto const delta = plane.getCenter() - particle.getPosition();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const n = plane.getNormal();

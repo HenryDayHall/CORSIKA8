@@ -15,12 +15,12 @@
 namespace corsika {
 
   template <typename TDerived>
-  auto const& BaseExponential<TDerived>::getImplementation() const {
+  inline auto const& BaseExponential<TDerived>::getImplementation() const {
     return *static_cast<TDerived const*>(this);
   }
 
   template <typename TDerived>
-  GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
+  inline GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
       setup::Trajectory const& traj, LengthType vL, DirectionVector const& axis) const {
     if (vL == LengthType::zero()) { return GrammageType::zero(); }
 
@@ -35,7 +35,7 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
+  inline LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
       setup::Trajectory const& traj, GrammageType grammage,
       DirectionVector const& axis) const {
     auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
@@ -55,8 +55,9 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  BaseExponential<TDerived>::BaseExponential(Point const& point, MassDensityType rho0,
-                                             LengthType lambda)
+  inline BaseExponential<TDerived>::BaseExponential(Point const& point,
+                                                    MassDensityType rho0,
+                                                    LengthType lambda)
       : rho0_(rho0)
       , lambda_(lambda)
       , invLambda_(1 / lambda)

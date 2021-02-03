@@ -44,17 +44,17 @@ namespace corsika {
         , uPerp_(vPerp_.cross(vPar_.normalized()))
         , radius_(pvPar.getNorm() / abs(pOmegaC)) {}
 
-    inline LengthType getRadius() const;
+    LengthType getRadius() const;
 
-    inline Point getPosition(TimeType const t) const;
+    Point getPosition(TimeType const t) const;
 
     VelocityVec getVelocity(TimeType const t) const;
 
-    inline Point getPositionFromArclength(LengthType const l) const;
+    Point getPositionFromArclength(LengthType const l) const;
 
-    inline LengthType getArcLength(TimeType const t1, TimeType const t2) const;
+    LengthType getArcLength(TimeType const t1, TimeType const t2) const;
 
-    inline TimeType getTimeFromArclength(LengthType const l) const;
+    TimeType getTimeFromArclength(LengthType const l) const;
 
   private:
     Point r0_;             ///! origin of helix, but this is in the center of the

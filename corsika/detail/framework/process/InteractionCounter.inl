@@ -13,7 +13,7 @@
 namespace corsika {
 
   template <class TCountedProcess>
-  InteractionCounter<TCountedProcess>::InteractionCounter(TCountedProcess& process)
+  inline InteractionCounter<TCountedProcess>::InteractionCounter(TCountedProcess& process)
       : process_(process) {}
 
   template <class TCountedProcess>

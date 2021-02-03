@@ -14,8 +14,8 @@
 
 namespace corsika {
 
-  OnShellCheck::OnShellCheck(double const vMassTolerance, double const vEnergyTolerance,
-                             bool const vError)
+  inline OnShellCheck::OnShellCheck(double const vMassTolerance,
+                                    double const vEnergyTolerance, bool const vError)
       : mass_tolerance_(vMassTolerance)
       , energy_tolerance_(vEnergyTolerance)
       , throw_error_(vError) {
@@ -25,7 +25,7 @@ namespace corsika {
                          energy_tolerance_ * 100);
   }
 
-  OnShellCheck::~OnShellCheck() {
+  inline OnShellCheck::~OnShellCheck() {
     logger_->info(
         " summary \n"
         " particles shifted: {} \n"
@@ -35,7 +35,7 @@ namespace corsika {
   }
 
   template <typename TView>
-  void OnShellCheck::doSecondaries(TView& vS) {
+  inline void OnShellCheck::doSecondaries(TView& vS) {
     for (auto& p : vS) {
       auto const pid = p.getPID();
       if (is_nucleus(pid)) continue;

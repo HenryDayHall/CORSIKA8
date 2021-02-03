@@ -19,9 +19,11 @@
 
 namespace corsika {
 
-  CoordinateSystemPtr CoordinateSystem::getReferenceCS() const { return referenceCS_; }
+  inline CoordinateSystemPtr CoordinateSystem::getReferenceCS() const {
+    return referenceCS_;
+  }
 
-  EigenTransform const& CoordinateSystem::getTransform() const { return transf_; }
+  inline EigenTransform const& CoordinateSystem::getTransform() const { return transf_; }
 
   inline bool CoordinateSystem::operator==(CoordinateSystem const& cs) const {
     return referenceCS_ == cs.referenceCS_ && transf_.matrix() == cs.transf_.matrix();

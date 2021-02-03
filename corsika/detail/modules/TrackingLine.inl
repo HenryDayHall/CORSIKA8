@@ -20,7 +20,7 @@
 
 namespace corsika::tracking_line {
 
-  std::optional<std::pair<TimeType, TimeType>> TimeOfIntersection(
+  inline std::optional<std::pair<TimeType, TimeType>> TimeOfIntersection(
       corsika::Line const& line, corsika::Sphere const& sphere) {
     auto const delta = line.getStartPoint() - sphere.getCenter();
     auto const v = line.getVelocity();
@@ -42,7 +42,7 @@ namespace corsika::tracking_line {
     }
   }
 
-  TimeType getTimeOfIntersection(Line const& vLine, Plane const& vPlane) {
+  inline TimeType getTimeOfIntersection(Line const& vLine, Plane const& vPlane) {
 
     auto const delta = vPlane.getCenter() - vLine.getStartPoint();
     auto const v = vLine.getVelocity();

@@ -14,9 +14,9 @@
 namespace corsika {
 
   template <typename TEnvModel>
-  ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
-                         Environment<TEnvModel> const& env, bool const doThrow,
-                         int const steps)
+  inline ShowerAxis::ShowerAxis(Point const& pStart, Vector<length_d> const& length,
+                                Environment<TEnvModel> const& env, bool const doThrow,
+                                int const steps)
       : pointStart_(pStart)
       , length_(length)
       , throw_(doThrow)
@@ -58,7 +58,7 @@ namespace corsika {
     assert(std::is_sorted(d_.cbegin(), d_.cend()));
   }
 
-  GrammageType ShowerAxis::getX(LengthType l) const {
+  inline GrammageType ShowerAxis::getX(LengthType l) const {
     double const fractionalBin = l / steplength_;
     int const lower = fractionalBin; // indices of nearest X support points
     double const fraction = fractionalBin - lower;
@@ -97,21 +97,21 @@ namespace corsika {
     return X_[upper] * fraction + X_[lower] * (1 - fraction);
   }
 
-  LengthType ShowerAxis::getSteplength() const { return steplength_; }
+  inline LengthType ShowerAxis::getSteplength() const { return steplength_; }
 
-  GrammageType ShowerAxis::getMaximumX() const { return *X_.rbegin(); }
+  inline GrammageType ShowerAxis::getMaximumX() const { return *X_.rbegin(); }
 
-  GrammageType ShowerAxis::getMinimumX() const { return GrammageType::zero(); }
+  inline GrammageType ShowerAxis::getMinimumX() const { return GrammageType::zero(); }
 
-  GrammageType ShowerAxis::getProjectedX(Point const& p) const {
+  inline GrammageType ShowerAxis::getProjectedX(Point const& p) const {
     auto const projectedLength = (p - pointStart_).dot(axis_normalized_);
     return getX(projectedLength);
   }
 
-  Vector<dimensionless_d> const& ShowerAxis::getDirection() const {
+  inline DirectionVector const& ShowerAxis::getDirection() const {
     return axis_normalized_;
   }
 
-  Point const& ShowerAxis::getStart() const { return pointStart_; }
+  inline Point const& ShowerAxis::getStart() const { return pointStart_; }
 
 } // namespace corsika

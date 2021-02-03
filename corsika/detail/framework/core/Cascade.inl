@@ -28,7 +28,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  void Cascade<TTracking, TProcessList, TStack, TStackView>::run() {
+  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::run() {
     setNodes(); // put each particle on stack in correct environment volume
 
     while (!stack_.isEmpty()) {
@@ -55,7 +55,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  void Cascade<TTracking, TProcessList, TStack, TStackView>::forceInteraction() {
+  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::forceInteraction() {
     CORSIKA_LOG_TRACE("forced interaction!");
     setNodes();
     auto vParticle = stack_.getNextParticle();
@@ -67,7 +67,8 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  void Cascade<TTracking, TProcessList, TStack, TStackView>::step(Particle& vParticle) {
+  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::step(
+      Particle& vParticle) {
 
     // determine combined total interaction length (inverse)
     InverseGrammageType const total_inv_lambda =
@@ -236,7 +237,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::decay(
+  inline ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::decay(
       TStackView& view) {
     CORSIKA_LOG_DEBUG("decay");
     InverseTimeType const actual_decay_time = sequence_.getInverseLifetime(view.parent());
@@ -254,7 +255,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::interaction(
+  inline ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::interaction(
       TStackView& view) {
     CORSIKA_LOG_DEBUG("collide");
 
@@ -274,7 +275,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  void Cascade<TTracking, TProcessList, TStack, TStackView>::setNodes() {
+  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::setNodes() {
     std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
       auto const* numericalNode =
           environment_.getUniverse()->getContainingNode(p.getPosition());
@@ -284,7 +285,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TStack,
             typename TStackView>
-  void Cascade<TTracking, TProcessList, TStack, TStackView>::setEventType(
+  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::setEventType(
       TStackView& view, [[maybe_unused]] history::EventType eventType) {
     if constexpr (TStackView::has_event) {
       for (auto&& sec : view) { sec.getEvent()->setEventType(eventType); }

@@ -30,7 +30,7 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, typename TSelect, int IndexStart,
             int IndexProcess1, int IndexProcess2>
   template <typename TParticle, typename TVTNType>
-  ProcessReturn
+  inline ProcessReturn
   SwitchProcessSequence<TProcess1, TProcess2, TSelect, IndexStart, IndexProcess1,
                         IndexProcess2>::doBoundaryCrossing(TParticle& particle,
                                                            TVTNType const& from,

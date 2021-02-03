@@ -14,7 +14,7 @@
 namespace corsika {
 
   template <typename IModelProperties>
-  bool VolumeTreeNode<IModelProperties>::contains(Point const& p) const {
+  inline bool VolumeTreeNode<IModelProperties>::contains(Point const& p) const {
     return geoVolume_->contains(p);
   }
 
@@ -32,7 +32,7 @@ namespace corsika {
    * \class Point \p p, or nullptr iff \p p is not contained in this volume.
    */
   template <typename IModelProperties>
-  VolumeTreeNode<IModelProperties> const*
+  inline VolumeTreeNode<IModelProperties> const*
   VolumeTreeNode<IModelProperties>::getContainingNode(Point const& p) const {
     if (!contains(p)) { return nullptr; }
 
@@ -54,7 +54,7 @@ namespace corsika {
 
   template <typename IModelProperties>
   template <typename TCallable, bool preorder>
-  void VolumeTreeNode<IModelProperties>::walk(TCallable func) {
+  inline void VolumeTreeNode<IModelProperties>::walk(TCallable func) {
     if constexpr (preorder) { func(*this); }
 
     std::for_each(childNodes_.begin(), childNodes_.end(),
@@ -64,7 +64,7 @@ namespace corsika {
   }
 
   template <typename IModelProperties>
-  void VolumeTreeNode<IModelProperties>::addChild(
+  inline void VolumeTreeNode<IModelProperties>::addChild(
       typename VolumeTreeNode<IModelProperties>::VTNUPtr pChild) {
     pChild->parentNode_ = this;
     childNodes_.push_back(std::move(pChild));
@@ -74,19 +74,9 @@ namespace corsika {
   }
 
   template <typename IModelProperties>
-  void VolumeTreeNode<IModelProperties>::excludeOverlapWith(
+  inline void VolumeTreeNode<IModelProperties>::excludeOverlapWith(
       typename VolumeTreeNode<IModelProperties>::VTNUPtr const& pNode) {
     excludedNodes_.push_back(pNode.get());
   }
 
-  /*
-    template <typename IModelProperties>
-    template <class MediumType, typename... Args>
-    auto VolumeTreeNode<IModelProperties>::createMedium(Args&&... args) {
-      static_assert(std::is_base_of_v<IMediumModel, MediumType>,
-                    "unusable type provided, needs to be derived from \"IMediumModel\"");
-
-      return std::make_shared<MediumType>(std::forward<Args>(args)...);
-    }
-  */
 } // namespace corsika

@@ -12,9 +12,10 @@
 
 namespace corsika {
 
-  ParticleCut::ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
-                           HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
-                           bool const inv)
+  inline ParticleCut::ParticleCut(HEPEnergyType const eEleCut,
+                                  HEPEnergyType const ePhoCut,
+                                  HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
+                                  bool const inv)
       : doCutEm_(false)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -41,8 +42,8 @@ namespace corsika {
     printThresholds();
   }
 
-  ParticleCut::ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
-                           bool const inv)
+  inline ParticleCut::ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
+                                  bool const inv)
       : doCutEm_(true)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -63,7 +64,7 @@ namespace corsika {
     printThresholds();
   }
 
-  ParticleCut::ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv)
+  inline ParticleCut::ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv)
       : doCutEm_(em)
       , doCutInv_(inv)
       , energy_(0_GeV)
@@ -76,7 +77,7 @@ namespace corsika {
     printThresholds();
   }
 
-  ParticleCut::ParticleCut(
+  inline ParticleCut::ParticleCut(
       std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool const em,
       bool const inv)
       : doCutEm_(em)
@@ -92,7 +93,7 @@ namespace corsika {
   }
 
   template <typename TParticle>
-  bool ParticleCut::isBelowEnergyCut(TParticle const& vP) const {
+  inline bool ParticleCut::isBelowEnergyCut(TParticle const& vP) const {
     auto const energyLab = vP.getEnergy();
     auto const pid = vP.getPID();
     // nuclei
@@ -105,10 +106,12 @@ namespace corsika {
     }
   }
 
-  bool ParticleCut::isInvisible(Code const& vCode) const { return is_neutrino(vCode); }
+  inline bool ParticleCut::isInvisible(Code const& vCode) const {
+    return is_neutrino(vCode);
+  }
 
   template <typename TParticle>
-  bool ParticleCut::checkCutParticle(TParticle const& particle) {
+  inline bool ParticleCut::checkCutParticle(TParticle const& particle) {
 
     Code const pid = particle.getPID();
     HEPEnergyType energy = particle.getEnergy();
@@ -136,7 +139,7 @@ namespace corsika {
     return false; // this particle will not be removed/cut
   }
 
-  void ParticleCut::doSecondaries(corsika::setup::StackView& vS) {
+  inline void ParticleCut::doSecondaries(corsika::setup::StackView& vS) {
     auto particle = vS.begin();
     while (particle != vS.end()) {
       if (checkCutParticle(particle)) { particle.erase(); }
@@ -144,8 +147,9 @@ namespace corsika {
     }
   }
 
-  ProcessReturn ParticleCut::doContinuous(corsika::setup::Stack::particle_type& particle,
-                                          corsika::setup::Trajectory const&, bool const) {
+  inline ProcessReturn ParticleCut::doContinuous(
+      corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory const&,
+      bool const) {
     CORSIKA_LOG_TRACE("ParticleCut::DoContinuous");
     if (checkCutParticle(particle)) {
       CORSIKA_LOG_TRACE("removing during continuous");
@@ -156,14 +160,14 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  void ParticleCut::printThresholds() {
+  inline void ParticleCut::printThresholds() {
     for (auto p : get_all_particles()) {
       auto const Eth = get_energy_threshold(p);
       CORSIKA_LOG_INFO("energy threshold for particle {} is {} GeV", p, Eth / 1_GeV);
     }
   }
 
-  void ParticleCut::showResults() {
+  inline void ParticleCut::showResults() {
     CORSIKA_LOG_INFO(
         " ******************************\n"
         " energy in em.  component (GeV): {} \n "
@@ -175,7 +179,7 @@ namespace corsika {
         em_energy_ / 1_GeV, em_count_, inv_energy_ / 1_GeV, inv_count_, energy_ / 1_GeV);
   }
 
-  void ParticleCut::reset() {
+  inline void ParticleCut::reset() {
     em_energy_ = 0_GeV;
     em_count_ = 0;
     inv_energy_ = 0_GeV;

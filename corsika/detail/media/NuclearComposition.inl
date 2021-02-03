@@ -22,8 +22,8 @@
 
 namespace corsika {
 
-  NuclearComposition::NuclearComposition(std::vector<Code> const& pComponents,
-                                         std::vector<float> const& pFractions)
+  inline NuclearComposition::NuclearComposition(std::vector<Code> const& pComponents,
+                                                std::vector<float> const& pFractions)
       : numberFractions_(pFractions)
       , components_(pComponents)
       , avgMassNumber_(std::inner_product(

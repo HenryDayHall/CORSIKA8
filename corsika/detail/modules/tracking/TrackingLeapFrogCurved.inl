@@ -226,8 +226,8 @@ namespace corsika {
     }
 
     template <typename TParticle, typename TMedium>
-    Intersections Tracking::intersect(TParticle const& particle, Plane const& plane,
-                                      TMedium const& medium) {
+    inline Intersections Tracking::intersect(TParticle const& particle,
+                                             Plane const& plane, TMedium const& medium) {
 
       int chargeNumber;
       if (is_nucleus(particle.getPID())) {

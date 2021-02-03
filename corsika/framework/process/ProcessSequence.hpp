@@ -118,11 +118,11 @@ namespace corsika {
                                      typename TParticle::node_type const& to);
 
     template <typename TParticle, typename TTrack>
-    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
-                                      ContinuousProcessIndex const limitID);
+    ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
+                               ContinuousProcessIndex const limitID);
 
     template <typename TSecondaries>
-    inline void doSecondaries(TSecondaries& vS);
+    void doSecondaries(TSecondaries& vS);
 
     /**
        The processes of type StackProcess do have an internal counter,
@@ -132,53 +132,53 @@ namespace corsika {
        tested if either A_ or B_ are StackProcess and if they are due
        for execution.
      */
-    inline bool checkStep();
+    bool checkStep();
 
     /**
        Execute the StackProcess-es in the ProcessSequence
      */
     template <typename TStack>
-    inline void doStack(TStack& stack);
+    void doStack(TStack& stack);
 
     /**
-     * Determines the step-length limitation caused by ContinuousProcess-es in this
-     ProcessSequence.
+     * Calculate the maximum allowed length of the next tracking step, based on all
+     * ContinuousProcess-es
      *
-     * Returns a ContinuousProcessStepLength object, which contains both: the actual
-     * length (LengthType) as well as the index of the ContinuousProcess inside the
-     * ProcessSequence (for identification).
-
+     * The maximum allowed step length is the minimum of the allowed track lenght over all
+     * ContinuousProcess-es in the ProcessSequence.
+     *
+     * \return: ContinuousProcessStepLength which contains the step length itself in
+     *          LengthType, and a unique identifier of the related ContinuousProcess.
      **/
 
     template <typename TParticle, typename TTrack>
-    inline ContinuousProcessStepLength getMaxStepLength(TParticle& particle,
-                                                        TTrack& vTrack);
+    ContinuousProcessStepLength getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
-    inline GrammageType getInteractionLength(TParticle&& particle) {
+    GrammageType getInteractionLength(TParticle&& particle) {
       return 1. / getInverseInteractionLength(particle);
     }
 
     template <typename TParticle>
-    inline InverseGrammageType getInverseInteractionLength(TParticle&& particle);
+    InverseGrammageType getInverseInteractionLength(TParticle&& particle);
 
     template <typename TSecondaryView>
-    inline ProcessReturn selectInteraction(
+    ProcessReturn selectInteraction(
         TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
         [[maybe_unused]] InverseGrammageType lambda_inv_sum =
             InverseGrammageType::zero());
 
     template <typename TParticle>
-    inline TimeType getLifetime(TParticle& particle) {
+    TimeType getLifetime(TParticle& particle) {
       return 1. / getInverseLifetime(particle);
     }
 
     template <typename TParticle>
-    inline InverseTimeType getInverseLifetime(TParticle&& particle);
+    InverseTimeType getInverseLifetime(TParticle&& particle);
 
     // select decay process
     template <typename TSecondaryView>
-    inline ProcessReturn selectDecay(
+    ProcessReturn selectDecay(
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
 
@@ -219,7 +219,7 @@ namespace corsika {
    **/
 
   template <typename... TProcesses, typename TProcess1>
-  inline typename std::enable_if_t<
+  typename std::enable_if_t<
       is_process_v<typename std::decay_t<TProcess1>>,
       ProcessSequence<TProcess1, decltype(make_sequence(std::declval<TProcesses>()...))>>
   make_sequence(TProcess1&& vA, TProcesses&&... vBs) {
@@ -237,9 +237,9 @@ namespace corsika {
    * \param vB needs to derive BaseProcess or ProcessSequence
    **/
   template <typename TProcess1, typename TProcess2>
-  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
-                                       is_process_v<typename std::decay_t<TProcess2>>,
-                                   ProcessSequence<TProcess1, TProcess2>>
+  typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
+                                is_process_v<typename std::decay_t<TProcess2>>,
+                            ProcessSequence<TProcess1, TProcess2>>
   make_sequence(TProcess1&& vA, TProcess2&& vB) {
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
@@ -253,8 +253,8 @@ namespace corsika {
    * \param vA needs to derive from BaseProcess or ProcessSequence
    **/
   template <typename TProcess>
-  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess>>,
-                                   ProcessSequence<TProcess, NullModel>>
+  typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess>>,
+                            ProcessSequence<TProcess, NullModel>>
   make_sequence(TProcess&& vA) {
     return ProcessSequence<TProcess, NullModel>(vA, NullModel());
   }

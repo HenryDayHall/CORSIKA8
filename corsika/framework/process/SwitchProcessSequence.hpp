@@ -132,41 +132,40 @@ namespace corsika {
                                      TVTNType const& to);
 
     template <typename TParticle, typename TTrack>
-    inline ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
-                                      ContinuousProcessIndex const limitId);
+    ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
+                               ContinuousProcessIndex const limitId);
 
     template <typename TSecondaries>
-    inline void doSecondaries(TSecondaries& vS);
+    void doSecondaries(TSecondaries& vS);
 
     template <typename TParticle, typename TTrack>
-    inline ContinuousProcessStepLength getMaxStepLength(TParticle& particle,
-                                                        TTrack& vTrack);
+    ContinuousProcessStepLength getMaxStepLength(TParticle& particle, TTrack& vTrack);
 
     template <typename TParticle>
-    inline GrammageType getInteractionLength(TParticle&& particle) {
+    GrammageType getInteractionLength(TParticle&& particle) {
       return 1. / getInverseInteractionLength(particle);
     }
 
     template <typename TParticle>
-    inline InverseGrammageType getInverseInteractionLength(TParticle&& particle);
+    InverseGrammageType getInverseInteractionLength(TParticle&& particle);
 
     template <typename TSecondaryView>
-    inline ProcessReturn selectInteraction(
+    ProcessReturn selectInteraction(
         TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
         [[maybe_unused]] InverseGrammageType lambda_inv_sum =
             InverseGrammageType::zero());
 
     template <typename TParticle>
-    inline TimeType getLifetime(TParticle&& particle) {
+    TimeType getLifetime(TParticle&& particle) {
       return 1. / getInverseLifetime(particle);
     }
 
     template <typename TParticle>
-    inline InverseTimeType getInverseLifetime(TParticle&& particle);
+    InverseTimeType getInverseLifetime(TParticle&& particle);
 
     // select decay process
     template <typename TSecondaryView>
-    inline ProcessReturn selectDecay(
+    ProcessReturn selectDecay(
         TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
         [[maybe_unused]] InverseTimeType decay_inv_sum = InverseTimeType::zero());
 
@@ -197,9 +196,9 @@ namespace corsika {
    **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
-  inline typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
-                                       is_process_v<typename std::decay_t<TProcess2>>,
-                                   SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
+  typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
+                                is_process_v<typename std::decay_t<TProcess2>>,
+                            SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
   make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }
