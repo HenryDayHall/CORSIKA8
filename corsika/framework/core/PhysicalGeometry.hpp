@@ -33,7 +33,7 @@ namespace corsika {
 
   /**
    * A 3D vector defined in a specific coordinate system with units "velocity_t".
-   * 
+   *
    **/
   typedef Vector<SpeedType::dimension_type> VelocityVector;
 
