@@ -131,7 +131,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // perform checks to paths_ components
     for (auto const& path : paths_) {
-      CHECK((path.time_ / 1_s) - ((34_m / (3 * constants::c)) / 1_s) ==
+      CHECK((path.total_time_ / 1_s) - ((34_m / (3 * constants::c)) / 1_s) ==
             Approx(0).margin(absMargin));
       CHECK(path.average_refractivity_ == Approx(1));
       CHECK(path.emit_.getComponents() == v1.getComponents());
@@ -196,7 +196,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // perform checks to paths1_ components (this is just a sketch for now)
     for (auto const& path :paths1_) {
-      CHECK( (path.time_ / 1_s)  - ((34_m / (3 * constants::c)) / 1_s)
+      CHECK( (path.total_time_ / 1_s)  - ((34_m / (3 * constants::c)) / 1_s)
              == Approx(0).margin(absMargin) );
       CHECK( path.average_refractivity_ == Approx(1) );
       CHECK( path.emit_.getComponents() == vv1.getComponents() );
@@ -247,7 +247,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // perform checks to paths1_ components (this is just a sketch for now)
     for (auto const& path :paths2_) {
-      CHECK( (path.time_ / 1_s)  - ((3.177511688_m / (3 * constants::c)) / 1_s)
+      CHECK( (path.total_time_ / 1_s)  - ((3.177511688_m / (3 * constants::c)) / 1_s)
              == Approx(0).margin(absMargin) );
       CHECK( path.average_refractivity_ == Approx(0.210275935) );
       CHECK( path.emit_.getComponents() == vvv1.getComponents() );

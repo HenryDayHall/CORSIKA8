@@ -22,7 +22,7 @@ namespace corsika {
 
     using path = std::deque<Point>;
 
-    TimeType const time_;    ///< The total propagation time.
+    TimeType const total_time_;    ///< The total propagation time.
     double const average_refractivity_; ///< The average refractivity.
     Vector<dimensionless_d> const emit_;    ///< The (unit-length) emission vector.
     Vector<dimensionless_d> const receive_; ///< The (unit-length) receive vector.
@@ -31,11 +31,11 @@ namespace corsika {
     /**
      * Create a new SignalPath instance.
      */
-    SignalPath(TimeType const time, double const average_refractivity,
+    SignalPath(TimeType const total_time, double const average_refractivity,
                Vector<dimensionless_d> const emit, Vector<dimensionless_d> const receive,
                path const& points)
         : Path(points)
-        , time_(time)
+        , total_time_(total_time)
         , average_refractivity_(average_refractivity)
         , emit_(emit)
         , receive_(receive) {}
