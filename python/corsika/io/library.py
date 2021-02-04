@@ -11,7 +11,7 @@ import logging
 import os
 import os.path as op
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 import yaml
 
@@ -50,6 +50,20 @@ class Library(object):
 
         # build the list of outputs
         self.__outputs = self.__build_outputs(path)
+
+    @property
+    def names(self) -> List[str]:
+        """
+        Return the list of registered outputs.
+        """
+        return list(self.__outputs.keys())
+
+    @property
+    def modules(self) -> Dict[str, str]:
+        """
+        Return the list of registered outputs.
+        """
+        pass
 
     def get(self, name: str) -> Optional[outputs.Output]:
         """
@@ -138,7 +152,7 @@ class Library(object):
         _, dirs, _ = next(os.walk(path))
 
         # this is the dictionary where we store our components
-        outputs: Dict[str, Any] = {}
+        components: Dict[str, Any] = {}
 
         # loop over the subdirectories
         for subdir in dirs:
@@ -166,13 +180,10 @@ class Library(object):
             try:
 
                 # create the name of the module containing this output class
-                module_name = re.sub(r"(?<!^)(?=[A-Z])", "_", out_type).lower()
+                # module_name = re.sub(r"(?<!^)(?=[A-Z])", "_", out_type).lower()
 
                 # instantiate the output and store it in our dict
-                # we use a regex to go from CamelCase to snake_case
-                component = getattr(getattr(outputs, module_name), out_type)(
-                    op.join(path, subdir)
-                )
+                component = getattr(outputs, out_type)(op.join(path, subdir))
 
                 # check if the read failed
                 if not component.is_good():
@@ -182,15 +193,16 @@ class Library(object):
                     )
                     logging.getLogger("corsika").warn(msg)
                 else:
-                    outputs[name] = component
+                    components[name] = component
 
-            except AttributeError:
+            except AttributeError as e:
                 msg = (
                     f"Unable to instantiate an instance of '{out_type}' "
-                    "for a process called '{name}'"
+                    f"for a process called '{name}'"
                 )
                 logging.getLogger("corsika").warn(msg)
+                logging.getLogger("corsika").warn(e)
                 continue  # skip to the next output, don't error
 
         # and we are done building - return the constructed outputs
-        return outputs
+        return components
