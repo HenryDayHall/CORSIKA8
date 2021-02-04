@@ -118,6 +118,7 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 include (conan) # self-provided in 'cmake' directory
 #
 # download and build all dependencies
+message (STATUS "Installing dependencies from Conan (this may take some time)...")
 conan_cmake_run (CONANFILE conanfile.txt
                  BASIC_SETUP CMAKE_TARGETS
                  BUILD missing
@@ -209,6 +210,8 @@ target_link_libraries (
   CONAN_PKG::eigen
   CONAN_PKG::spdlog
   CONAN_PKG::boost
+  CONAN_PKG::yaml-cpp
+  CONAN_PKG::arrow
   cnpy # for SaveBoostHistogram
   stdc++fs # experimental::filesystem
   )
