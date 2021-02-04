@@ -23,6 +23,10 @@ Hadron models:
 - Felix Riehn <friehn@lip.pt>, Santiago/Lisbon
 - Anatoli Fedynitch <anatoli.fedynitch@icecube.wisc.edu> ICRR Tokyo
 
+Output formats and infrastructure:
+- Remy Prechelt <prechelt@hawaii.edu>, UHM
+- Ralf Ulrich <ralf.ulrich@kit.edu>, KIT
+
 Python library:
 - Remy Prechelt <prechelt@hawaii.edu>, UHM
 
