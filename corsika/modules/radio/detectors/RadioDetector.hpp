@@ -42,7 +42,7 @@ namespace corsika {
      * Reset all the antenna waveforms.
      */
     auto reset() -> void {
-      std::for_each(antennas_.begin(), antennas_.end(), std::mem_fn(&TAntennaImpl::Reset));
+      std::for_each(antennas_.begin(), antennas_.end(), std::mem_fn(&TAntennaImpl::reset));
     };
 
   }; // END: class RadioDetector

@@ -43,14 +43,18 @@ namespace corsika {
      *
      */
     template <typename Particle, typename Track>
-    ProcessReturn simulate(Particle&, Track const&) const {
+    ProcessReturn simulate(Particle& particle, Track const& track) const {
 
-      // here is where we put the actual ZHS/CoREAS equation
+      auto global_time = particle.getTime(); // this is very shady at the moment...
+      //get global time for that track
+      auto starttime = track.getDuration(0); // time at start point of track.
+      auto endtime = track.getDuration(1); // time at end point of track.
 
       // we loop over each antenna in the collection
       for (auto& antenna : detector_.getAntennas()) {
 
         // auto start = /* TODO: get Point from Track */;
+        auto start = track.getStart(); // just another shady idea...
 
         // get the Path from the track to the antenna
         // This is a SignalPathCollection
@@ -60,13 +64,16 @@ namespace corsika {
         // Note: for the StraightPropagator, there will only be a single
         // path but other propagators may return more than one.
         for (auto const& path : paths) {
+//          path.total_time_ + global_time;
+//          path.average_refractivity_;
+//          path.emit_;
+//          path.receive_;
 
           // calculate the ZHS formalism for this particle-antenna
           // combination along this path.
-
+          // global time + time delay
           // and pass it to the antenna.
-          // RP: The exact arguments still TBD.
-          antenna.receive(/* TBD */);
+          antenna.receive(/* global time + time delay, receive vector, ElectricFieldVector */);
 
         } // END: loop over paths
 

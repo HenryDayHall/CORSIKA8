@@ -8,6 +8,12 @@
 #pragma once
 
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <istream>
+#include <fstream>
+#include <iostream>
+#include <xtensor/xcsv.hpp>
+#include <xtensor/xtensor.hpp>
+#include <string>
 
 namespace corsika {
 
@@ -57,8 +63,8 @@ namespace corsika {
      * @param track       The current track.
      */
     template <typename Particle, typename Track>
-    ProcessReturn DoContinuous(Particle& particle, Track const& track) const {
-      // we wrap Simulate() in DoContinuous as the plan is to add particle level
+    ProcessReturn doContinuous(Particle& particle, Track const& track) const {
+      // we wrap Simulate() in doContinuous as the plan is to add particle level
       // filtering or thinning for calculation of the radio emission. This is
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
@@ -71,14 +77,21 @@ namespace corsika {
        **/
       bool writeOutput() const {
 
+        int i = 1;
+        for (auto& antenna : detector_.getAntennas()) {
+          std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
+          xt::dump_csv(out_file, antenna.getWaveform());
+          out_file.close();
+          ++i;
+        }
         // how this method should work:
         // 1. Loop over the antennas in the collection
         // 2. Get their waveforms
-        // 3. Create a textfile for each antenna
+        // 3. Create a text file for each antenna
         // 4. and write out two columns, time and field.
 
       }
 
   }; // END: class RadioProcess
 
-} // namespace corsika::process::radio
+} // namespace corsika

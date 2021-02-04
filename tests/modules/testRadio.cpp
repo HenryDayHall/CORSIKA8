@@ -261,6 +261,27 @@ TEST_CASE("Radio", "[processes]") {
 //    SECTION("Construct a ZHS process.") {
 //
 //        // TODO: construct the environment for the propagator
+
+  // create an environment with uniform refractive index of 1
+//  using UniRIndex =
+//  UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+//  using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//
+//  EnvType env;
+//
+//  // get a coordinate system
+//  const CoordinateSystemPtr rootCS = env.getCoordinateSystem();
+//
+//  auto Medium = EnvType::createNode<Sphere>(
+//      Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+//
+//  auto const props = Medium->setModelProperties<UniRIndex>(
+//      1, 1_kg / (1_m * 1_m * 1_m),
+//      NuclearComposition(
+//          std::vector<Code>{Code::Nitrogen},
+//          std::vector<float>{1.f}));
+//
+//  env.getUniverse()->addChild(std::move(Medium));
 //
 //        // here we just use a deque to store the antenna
 //        std::deque<TimeDomainAntenna> antennas;

@@ -24,14 +24,14 @@ namespace corsika {
   class Antenna {
 
     std::string const name_;         ///< The name/identifier of this antenna.
-    Point const location_; ///< The location of this antenna.
+    Point const location_;           ///< The location of this antenna.
 
   public:
     // this stores the polarization vector of an electric field
     using ElectricFieldVector =
-        QuantityVector<ElectricFieldType>;
+        QuantityVector<ElectricFieldType::dimension_type>;
     using MagneticFieldVector =
-        QuantityVector<MagneticFieldType>;
+        QuantityVector<MagneticFieldType::dimension_type>;
 
     // a dimensionless vector used for the incident direction
     using Vector = QuantityVector<dimensionless_d>;
@@ -54,8 +54,8 @@ namespace corsika {
      * for the particular antenna implementation and usage.
      *
      */
-    // template <typename... TVArgs>
-    // void receive(TVArgs&& args...);
+     template <typename... TVArgs>
+     void receive(TVArgs&&... args);
 
     /**
      * Get the location of this antenna.
