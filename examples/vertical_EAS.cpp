@@ -25,6 +25,8 @@
 #include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
+#include <corsika/output/OutputManager.hpp>
+
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -188,6 +190,9 @@ int main(int argc, char** argv) {
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env};
 
+  // create the output manager that we then register outputs with
+  OutputManager output("vertical_EAS_outputs");
+
   // setup processes, decays and interactions
 
   corsika::sibyll::Interaction sibyll;
@@ -232,8 +237,10 @@ int main(int argc, char** argv) {
   LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
-                                    "particles.dat");
+  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
+
+  // register the observation plane with the output
+  output.add("obsplane", observationLevel);
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
@@ -260,12 +267,14 @@ int main(int argc, char** argv) {
 
   // define air shower object, run simulation
   setup::Tracking tracking;
-  Cascade EAS(env, tracking, sequence, stack);
+  Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.forceInteraction();
 
+  output.startOfRun();
   EAS.run();
+  output.endOfRun();
 
   cut.showResults();
   em_continuous.showResults();
