@@ -28,7 +28,7 @@ namespace corsika {
       VelocityVector initialVelocity =
           particle.getMomentum() / particle.getEnergy() * constants::c;
 
-      const Point initialPosition = particle.getPosition();
+      Point const initialPosition = particle.getPosition();
       CORSIKA_LOG_DEBUG(
           "TrackingB pid: {}"
           " , E = {} GeV",
@@ -53,17 +53,17 @@ namespace corsika {
       const int chargeNumber = particle.getChargeNumber();
       auto magneticfield =
           volumeNode->getModelProperties().getMagneticField(initialPosition);
-      const auto magnitudeB = magneticfield.getNorm();
+      auto const magnitudeB = magneticfield.getNorm();
       CORSIKA_LOG_DEBUG("field={} uT, chargeNumber={}, magnitudeB={} uT",
                         magneticfield.getComponents() / 1_uT, chargeNumber,
                         magnitudeB / 1_T);
       bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
 
       // check, where the first halve-step direction has geometric intersections
-      const auto [initialTrack, initialTrackNextVolume] =
+      auto const [initialTrack, initialTrackNextVolume] =
           tracking_line::Tracking::getTrack(particle);
       { [[maybe_unused]] auto& initialTrackNextVolume_dum = initialTrackNextVolume; }
-      const auto initialTrackLength = initialTrack.getLength(1);
+      auto const initialTrackLength = initialTrack.getLength(1);
 
       CORSIKA_LOG_DEBUG("initialTrack(0)={}, initialTrack(1)={}, initialTrackLength={}",
                         initialTrack.getPosition(0).getCoordinates(),
@@ -94,8 +94,8 @@ namespace corsika {
       // need to follow strongly curved trajectories segment-wise,
       // at least if we don't employ concepts as "Helix
       // Trajectories" or similar
-      const double maxRadians = 0.01;
-      const LengthType steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
+      double const maxRadians = 0.01;
+      LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
       CORSIKA_LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
 
       // calculate first halve step for "steplimit"
@@ -110,12 +110,12 @@ namespace corsika {
       CORSIKA_LOG_DEBUG("first halve step length {}, steplimit={}, initialTrackLength={}",
                         firstHalveSteplength, steplimit, initialTrackLength);
       // perform the first halve-step
-      const Point position_mid = initialPosition + direction * firstHalveSteplength;
-      const auto k =
-          chargeNumber * constants::c * 1_eV / (particle.getMomentum().getNorm() * 1_V);
-      const auto new_direction =
+      Point const position_mid = initialPosition + direction * firstHalveSteplength;
+      auto const k =
+          chargeNumber * (constants::c * 1_eV / 1_V) / particle.getMomentum().getNorm();
+      auto const new_direction =
           direction + direction.cross(magneticfield) * firstHalveSteplength * 2 * k;
-      const auto new_direction_norm = new_direction.getNorm(); // by design this is >1
+      auto const new_direction_norm = new_direction.getNorm(); // by design this is >1
       CORSIKA_LOG_DEBUG(
           "position_mid={}, new_direction={}, (new_direction_norm)={}, deflection={}",
           position_mid.getCoordinates(), new_direction.getComponents(),
@@ -126,7 +126,7 @@ namespace corsika {
       // check, where the second halve-step direction has geometric intersections
       particle.setPosition(position_mid);
       particle.setMomentum(new_direction * absMomentum);
-      const auto [finalTrack, finalTrackNextVolume] =
+      auto const [finalTrack, finalTrackNextVolume] =
           tracking_line::Tracking::getTrack(particle);
       particle.setPosition(initialPosition); // this is not nice...
       particle.setMomentum(initialMomentum); // this is not nice...
@@ -160,12 +160,12 @@ namespace corsika {
 
       // perform the second halve-step
       auto const new_direction_normalized = new_direction.normalized();
-      const Point finalPosition =
+      Point const finalPosition =
           position_mid + new_direction_normalized * secondHalveStepLength;
 
-      const LengthType totalStep = firstHalveSteplength + secondHalveStepLength;
-      const auto delta_pos = finalPosition - initialPosition;
-      const auto distance = delta_pos.getNorm();
+      LengthType const totalStep = firstHalveSteplength + secondHalveStepLength;
+      auto const delta_pos = finalPosition - initialPosition;
+      auto const distance = delta_pos.getNorm();
 
       return std::make_tuple(
           StraightTrajectory(

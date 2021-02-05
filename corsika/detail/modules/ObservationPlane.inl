@@ -59,13 +59,9 @@ namespace corsika {
       corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
 
-    auto const& volumeNode = particle.getNode();
-    typedef typename std::remove_const_t<
-        std::remove_reference_t<decltype(volumeNode->getModelProperties())>>
-        medium_type;
     Intersections const intersection =
-        setup::Tracking::intersect<corsika::setup::Stack::particle_type, medium_type>(
-            particle, plane_, volumeNode->getModelProperties());
+        setup::Tracking::intersect<corsika::setup::Stack::particle_type>(particle,
+                                                                         plane_);
     TimeType const timeOfIntersection = intersection.getEntry();
     CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}, timeOfIntersection={}",
                       particle.asString(), particle.getPosition(),

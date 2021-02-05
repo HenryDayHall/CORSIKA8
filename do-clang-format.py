@@ -83,6 +83,7 @@ cmd += " -style=file"
 
 version = subp.check_output(cmd.split() + ["--version"]).decode("utf-8")
 print (version)
+print ("Note: the clang-format version has an impact on the result. Make sure you are consistent with current CI. Consider \'--docker\' option.")
 
 if args.apply:
     for filename in filelist:        
