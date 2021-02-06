@@ -179,9 +179,6 @@ class Library(object):
             # type from the proccesses subdirectory
             try:
 
-                # create the name of the module containing this output class
-                # module_name = re.sub(r"(?<!^)(?=[A-Z])", "_", out_type).lower()
-
                 # instantiate the output and store it in our dict
                 component = getattr(outputs, out_type)(op.join(path, subdir))
 

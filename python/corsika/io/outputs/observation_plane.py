@@ -55,7 +55,7 @@ class ObservationPlane(Output):
         """
         return self.__data is not None and self.__config is not None
 
-    def astype(self, dtype: str = "parquet", **kwargs: Any) -> Any:
+    def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
         Load the particle data from this observation plane.
 
@@ -71,7 +71,7 @@ class ObservationPlane(Output):
         Any:
             The return type of this method is determined by `dtype`.
         """
-        if dtype == "parquet":
+        if dtype == "arrow":
             return self.__data
         elif dtype == "pandas":
             return self.__data.to_pandas()
@@ -79,7 +79,7 @@ class ObservationPlane(Output):
             raise ValueError(
                 (
                     f"Unknown format '{dtype}' for ObservationPlane. "
-                    "We currently only support ['parquet', 'pandas']."
+                    "We currently only support ['arrow', 'pandas']."
                 )
             )
 
@@ -97,3 +97,9 @@ class ObservationPlane(Output):
             The configuration file for this output.
         """
         return self.__config
+
+    def __repr__(self) -> str:
+        """
+        Return a string representation of this class.
+        """
+        return f"ObservationPlane('{self.config['name']}')"
