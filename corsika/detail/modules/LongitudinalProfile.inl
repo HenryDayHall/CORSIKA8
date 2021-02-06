@@ -20,14 +20,16 @@
 
 namespace corsika {
 
-  LongitudinalProfile::LongitudinalProfile(ShowerAxis const& shower_axis, GrammageType dX)
+  inline LongitudinalProfile::LongitudinalProfile(ShowerAxis const& shower_axis,
+                                                  GrammageType dX)
       : dX_(dX)
       , shower_axis_{shower_axis}
       , profiles_{static_cast<unsigned int>(shower_axis.getMaximumX() / dX_) + 1} {}
 
   template <typename TParticle, typename TTrack>
-  ProcessReturn LongitudinalProfile::doContinuous(TParticle const& vP,
-                                                  TTrack const& vTrack, bool const) {
+  inline ProcessReturn LongitudinalProfile::doContinuous(TParticle const& vP,
+                                                         TTrack const& vTrack,
+                                                         bool const) {
     auto const pid = vP.getPID();
 
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
@@ -60,8 +62,8 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  void LongitudinalProfile::save(std::string const& filename, const int width,
-                                 const int precision) {
+  inline void LongitudinalProfile::save(std::string const& filename, const int width,
+                                        const int precision) {
     std::ofstream f{filename};
     f << "# X / g·cm¯², gamma, e+, e-, mu+, mu-, all hadrons" << std::endl;
     for (size_t b = 0; b < profiles_.size(); ++b) {

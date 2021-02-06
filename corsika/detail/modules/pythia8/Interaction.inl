@@ -21,9 +21,11 @@
 
 namespace corsika::pythia8 {
 
-  Interaction::~Interaction() { CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_); }
+  inline Interaction::~Interaction() {
+    CORSIKA_LOG_INFO("Pythia::Interaction n= {}", count_);
+  }
 
-  Interaction::Interaction(bool const print_listing)
+  inline Interaction::Interaction(bool const print_listing)
       : Pythia8::Pythia(CORSIKA_Pythia8_XML_DIR)
       , print_listing_(print_listing) {
 
@@ -64,22 +66,23 @@ namespace corsika::pythia8 {
                 &(Pythia8::Pythia::particleData), &(Pythia8::Pythia::rndm));
   }
 
-  void Interaction::setStable(std::vector<Code> const& particleList) {
+  inline void Interaction::setStable(std::vector<Code> const& particleList) {
     for (auto p : particleList) Interaction::setStable(p);
   }
 
-  void Interaction::setUnstable(Code const pCode) {
+  inline void Interaction::setUnstable(Code const pCode) {
     CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} unstable..", pCode);
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
-  void Interaction::setStable(Code const pCode) {
+  inline void Interaction::setStable(Code const pCode) {
     CORSIKA_LOG_DEBUG("Pythia::Interaction: setting {} stable..", pCode);
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
-  void Interaction::configureLabFrameCollision(Code const BeamId, Code const TargetId,
-                                               HEPEnergyType const BeamEnergy) {
+  inline void Interaction::configureLabFrameCollision(Code const BeamId,
+                                                      Code const TargetId,
+                                                      HEPEnergyType const BeamEnergy) {
     // Pythia configuration of the current event
     // very clumsy. I am sure this can be done better..
 
@@ -111,12 +114,12 @@ namespace corsika::pythia8 {
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
   }
 
-  bool Interaction::canInteract(Code const pCode) {
+  inline bool Interaction::canInteract(Code const pCode) {
     return pCode == Code::Proton || pCode == Code::Neutron || pCode == Code::AntiProton ||
            pCode == Code::AntiNeutron || pCode == Code::PiMinus || pCode == Code::PiPlus;
   }
 
-  std::tuple<CrossSectionType, CrossSectionType> Interaction::getCrossSection(
+  inline std::tuple<CrossSectionType, CrossSectionType> Interaction::getCrossSection(
       Code const BeamId, Code const TargetId, HEPEnergyType const CoMenergy) {
     // interaction possible in pythia?
     if (TargetId == Code::Proton || TargetId == Code::Hydrogen) {
@@ -146,7 +149,7 @@ namespace corsika::pythia8 {
     }
   }
 
-  GrammageType Interaction::getInteractionLength(
+  inline GrammageType Interaction::getInteractionLength(
       corsika::setup::Stack::particle_type const& particle) {
 
     // coordinate system, get global frame of reference
@@ -216,7 +219,7 @@ namespace corsika::pythia8 {
   }
 
   template <class TView>
-  void Interaction::doInteraction(TView& view) {
+  inline void Interaction::doInteraction(TView& view) {
 
     auto projectile = view.getProjectile();
 

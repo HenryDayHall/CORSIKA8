@@ -23,7 +23,7 @@
 namespace corsika {
 
   template <typename StackIteratorInterface>
-  void ParticleInterface<StackIteratorInterface>::setParticleData(
+  inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType> const& v) {
     this->setPID(std::get<0>(v));
     this->setEnergy(std::get<1>(v));
@@ -33,7 +33,7 @@ namespace corsika {
   }
 
   template <typename StackIteratorInterface>
-  void ParticleInterface<StackIteratorInterface>::setParticleData(
+  inline void ParticleInterface<StackIteratorInterface>::setParticleData(
       ParticleInterface<StackIteratorInterface> const&,
       std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType> const& v) {
     this->setPID(std::get<0>(v));

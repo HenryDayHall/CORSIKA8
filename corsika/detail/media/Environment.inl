@@ -13,33 +13,34 @@
 namespace corsika {
 
   template <typename IEnvironmentModel>
-  Environment<IEnvironmentModel>::Environment()
+  inline Environment<IEnvironmentModel>::Environment()
       : coordinateSystem_{get_root_CoordinateSystem()}
       , universe_(std::make_unique<BaseNodeType>(
             std::make_unique<Universe>(coordinateSystem_))) {}
 
   template <typename IEnvironmentModel>
-  typename Environment<IEnvironmentModel>::BaseNodeType::VTNUPtr&
+  inline typename Environment<IEnvironmentModel>::BaseNodeType::VTNUPtr&
   Environment<IEnvironmentModel>::getUniverse() {
     return universe_;
   }
 
   template <typename IEnvironmentModel>
-  typename Environment<IEnvironmentModel>::BaseNodeType::VTNUPtr const&
+  inline typename Environment<IEnvironmentModel>::BaseNodeType::VTNUPtr const&
   Environment<IEnvironmentModel>::getUniverse() const {
     return universe_;
   }
 
   template <typename IEnvironmentModel>
-  CoordinateSystemPtr const& Environment<IEnvironmentModel>::getCoordinateSystem() const {
+  inline CoordinateSystemPtr const& Environment<IEnvironmentModel>::getCoordinateSystem()
+      const {
     return coordinateSystem_;
   }
 
   // factory method for creation of VolumeTreeNodes
   template <typename IEnvironmentModel>
   template <class TVolumeType, typename... TVolumeArgs>
-  std::unique_ptr<VolumeTreeNode<IEnvironmentModel> >
-  Environment<IEnvironmentModel>::createNode(TVolumeArgs&&... args) {
+  std::unique_ptr<VolumeTreeNode<IEnvironmentModel> > inline Environment<
+      IEnvironmentModel>::createNode(TVolumeArgs&&... args) {
     static_assert(std::is_base_of_v<IVolume, TVolumeType>,
                   "unusable type provided, needs to be derived from "
                   "\"Volume\"");

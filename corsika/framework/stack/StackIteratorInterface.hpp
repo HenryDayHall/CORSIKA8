@@ -146,14 +146,14 @@ namespace corsika {
     /** @name Iterator interface
         @{
     **/
-    inline StackIteratorInterface& operator++() {
+    StackIteratorInterface& operator++() {
       do {
         ++index_;
       } while (
           getStack().isErased(*this)); // this also check the allowed bounds of index_
       return *this;
     }
-    inline StackIteratorInterface operator++(int) {
+    StackIteratorInterface operator++(int) {
       StackIteratorInterface tmp(*this);
       do {
         ++index_;
@@ -161,19 +161,19 @@ namespace corsika {
           getStack().isErased(*this)); // this also check the allowed bounds of index_
       return tmp;
     }
-    inline StackIteratorInterface operator+(int delta) const {
+    StackIteratorInterface operator+(int delta) const {
       return StackIteratorInterface(*data_, index_ + delta);
     }
-    inline bool operator==(StackIteratorInterface const& rhs) const {
+    bool operator==(StackIteratorInterface const& rhs) const {
       return index_ == rhs.index_;
     }
-    inline bool operator!=(StackIteratorInterface const& rhs) const {
+    bool operator!=(StackIteratorInterface const& rhs) const {
       return index_ != rhs.index_;
     }
-    inline bool operator==(
+    bool operator==(
         const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
             rhs) const; // implemented below
-    inline bool operator!=(
+    bool operator!=(
         const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
             rhs) const; // implemented below
 
@@ -181,7 +181,7 @@ namespace corsika {
      * Convert iterator to value type, where value type is the user-provided particle
      * readout class
      **/
-    inline particle_interface_type& operator*() {
+    particle_interface_type& operator*() {
       return static_cast<particle_interface_type&>(*this);
     }
 
@@ -189,7 +189,7 @@ namespace corsika {
      * Convert iterator to const value type, where value type is the user-provided
      * particle readout class
      **/
-    inline particle_interface_type const& operator*() const {
+    particle_interface_type const& operator*() const {
       return static_cast<particle_interface_type const&>(*this);
     }
     ///@}
@@ -200,17 +200,17 @@ namespace corsika {
      * @{
      **/
     /// Get current particle index
-    inline unsigned int getIndex() const { return index_; }
+    unsigned int getIndex() const { return index_; }
     /// Get current particle Stack object
-    inline TStackType& getStack() { return *data_; }
+    TStackType& getStack() { return *data_; }
     /// Get current particle const Stack object
-    inline TStackType const& getStack() const { return *data_; }
+    TStackType const& getStack() const { return *data_; }
     /// Get current user particle TStackData object
-    inline TStackData& getStackData() { return data_->getStackData(); }
+    TStackData& getStackData() { return data_->getStackData(); }
     /// Get current const user particle TStackData object
-    inline TStackData const& getStackData() const { return data_->getStackData(); }
+    TStackData const& getStackData() const { return data_->getStackData(); }
     /// Get data index as mapped in Stack class
-    inline unsigned int getIndexFromIterator() const {
+    unsigned int getIndexFromIterator() const {
       return data_->getIndexFromIterator(index_);
     }
     ///@}
@@ -326,11 +326,11 @@ namespace corsika {
         Only the const versions for read-only access
         @{
      */
-    inline unsigned int getIndex() const { return index_; }
-    inline TStackType const& getStack() const { return *data_; }
-    inline TStackData const& getStackData() const { return data_->getStackData(); }
+    unsigned int getIndex() const { return index_; }
+    TStackType const& getStack() const { return *data_; }
+    TStackData const& getStackData() const { return data_->getStackData(); }
     /// Get data index as mapped in Stack class
-    inline unsigned int getIndexFromIterator() const {
+    unsigned int getIndexFromIterator() const {
       return data_->getIndexFromIterator(index_);
     }
     ///@}

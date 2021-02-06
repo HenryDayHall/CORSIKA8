@@ -28,7 +28,7 @@ namespace corsika {
     /// here starts the interface-definition part
     // -> enforce TDerived to implement DoSecondaries...
     template <typename TSecondaries>
-    inline void doSecondaries(TSecondaries&);
+    void doSecondaries(TSecondaries&);
   };
 
 } // namespace corsika

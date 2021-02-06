@@ -167,7 +167,7 @@ namespace corsika {
      * SecondaryView is derived from. This projectile should not be
      * used to modify the Stack!
      */
-    inline stack_value_iterator parent()
+    stack_value_iterator parent()
         const { // todo: check if this can't be Conststack_value_iterator
       return stack_value_iterator(inner_stack_, projectile_index_);
     }
@@ -177,7 +177,7 @@ namespace corsika {
      * SecondaryView is derived from. This projectile should not be
      * used to modify the Stack!
      */
-    inline stack_value_iterator asNewParent() const {
+    stack_value_iterator asNewParent() const {
       return stack_value_iterator(inner_stack_, projectile_index_);
     }
 
@@ -185,26 +185,36 @@ namespace corsika {
      * This return a projectile of this SecondaryView, which can be
      * used to modify the SecondaryView
      */
-    inline stack_view_iterator getProjectile() {
+    stack_view_iterator getProjectile() {
       // NOTE: 0 is special marker here for PROJECTILE, see getIndexFromIterator
       return stack_view_iterator(*this, 0);
     }
+
+    /**
+     * This return a projectile of this SecondaryView, which can be
+     * used to modify the SecondaryView
+     */
+    const_stack_view_iterator getProjectile() const {
+      // NOTE: 0 is special marker here for PROJECTILE, see getIndexFromIterator
+      return const_stack_view_iterator(*this, 0);
+    }
+
     /**
      * Method to add a new secondary particle on this SecondaryView
      */
     template <typename... Args>
-    inline stack_view_iterator addSecondary(const Args... v);
+    stack_view_iterator addSecondary(const Args... v);
 
     /**
      * overwrite Stack::getSize to return actual number of secondaries
      */
-    inline unsigned int getSize() const { return indices_.size(); }
+    unsigned int getSize() const { return indices_.size(); }
 
-    inline unsigned int getEntries() const {
+    unsigned int getEntries() const {
       return getSize() - inner_stack_reference_type::getErased();
     }
 
-    inline bool isEmpty() const { return getEntries() == 0; }
+    bool isEmpty() const { return getEntries() == 0; }
 
     /**
      * @name These are functions required by std containers and std loops
@@ -214,48 +224,46 @@ namespace corsika {
      */
     // NOTE: the "+1" is since "0" is special marker here for PROJECTILE, see
     // getIndexFromIterator
-    inline stack_view_iterator begin();
+    stack_view_iterator begin();
 
-    inline stack_view_iterator end() { return stack_view_iterator(*this, getSize() + 1); }
+    stack_view_iterator end() { return stack_view_iterator(*this, getSize() + 1); }
 
-    inline stack_view_iterator last();
+    stack_view_iterator last();
 
-    inline const_stack_view_iterator begin() const;
+    const_stack_view_iterator begin() const;
 
-    inline const_stack_view_iterator end() const {
+    const_stack_view_iterator end() const {
       return const_stack_view_iterator(*this, getSize() + 1);
     }
 
-    inline const_stack_view_iterator last() const;
+    const_stack_view_iterator last() const;
 
-    inline const_stack_view_iterator cbegin() const;
+    const_stack_view_iterator cbegin() const;
 
-    inline const_stack_view_iterator cend() const {
+    const_stack_view_iterator cend() const {
       return const_stack_view_iterator(*this, getSize());
     }
 
-    inline const_stack_view_iterator clast() const;
+    const_stack_view_iterator clast() const;
 
-    inline stack_view_iterator at(unsigned int i) {
-      return stack_view_iterator(*this, i);
-    }
+    stack_view_iterator at(unsigned int i) { return stack_view_iterator(*this, i); }
 
-    inline const_stack_view_iterator at(unsigned int i) const {
+    const_stack_view_iterator at(unsigned int i) const {
       return const_stack_view_iterator(*this, i);
     }
 
-    inline stack_view_iterator first() { return stack_view_iterator{*this, 0}; }
+    stack_view_iterator first() { return stack_view_iterator{*this, 0}; }
 
-    inline const_stack_view_iterator cfirst() const {
+    const_stack_view_iterator cfirst() const {
       return const_stack_view_iterator{*this, 0};
     }
     /// @}
 
-    inline void swap(stack_view_iterator a, stack_view_iterator b);
+    void swap(stack_view_iterator a, stack_view_iterator b);
 
-    inline void copy(stack_view_iterator a, stack_view_iterator b);
+    void copy(stack_view_iterator a, stack_view_iterator b);
 
-    inline void copy(const_stack_view_iterator a, stack_view_iterator b);
+    void copy(const_stack_view_iterator a, stack_view_iterator b);
 
     /**
      * need overwrite Stack::Delete, since we want to call
@@ -269,13 +277,13 @@ namespace corsika {
      * remove the last particle.
      *
      */
-    inline void erase(stack_view_iterator p);
+    void erase(stack_view_iterator p);
 
     /**
      * return next particle from stack, need to overwrtie Stack::getNextParticle to get
      * right reference
      */
-    inline stack_view_iterator getNextParticle() {
+    stack_view_iterator getNextParticle() {
       while (purgeLastIfDeleted()) {}
       return last();
     }
@@ -286,21 +294,21 @@ namespace corsika {
      * need to re-implement for SecondaryView since stack_view_iterator types are a bit
      * different
      */
-    inline bool isErased(const stack_view_iterator& p) const {
+    bool isErased(const stack_view_iterator& p) const {
       return isErased(p.getIndex() - 1);
     }
 
-    inline bool isErased(const const_stack_view_iterator& p) const {
+    bool isErased(const const_stack_view_iterator& p) const {
       return isErased(p.getIndex() - 1);
     }
     /**
      * delete this particle
      */
-    inline bool isErased(const ParticleInterfaceType& p) const {
+    bool isErased(const ParticleInterfaceType& p) const {
       return isErased(p.getIterator());
     }
 
-    inline bool isDeleted(const const_stack_view_iterator& p) const {
+    bool isDeleted(const const_stack_view_iterator& p) const {
       return isDeleted(p.getIndex() - 1);
     }
     /**
@@ -308,7 +316,7 @@ namespace corsika {
      * if it was marked as deleted before. If this is not the case,
      * the function will just return false and do nothing.
      */
-    inline bool purgeLastIfDeleted();
+    bool purgeLastIfDeleted();
 
     /**
      * Function to ultimatively remove all entries from the stack
@@ -318,9 +326,9 @@ namespace corsika {
      * "gaps" in the stack are filled with entries from the back
      * (copied).
      */
-    inline void purge();
+    void purge();
 
-    inline std::string asString() const;
+    std::string asString() const;
 
   protected:
     friend class StackIteratorInterface<
@@ -343,11 +351,11 @@ namespace corsika {
      * stack_view_iterator::addSecondary via ParticleBase
      */
     template <typename... Args>
-    inline stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v);
+    stack_view_iterator addSecondary(stack_view_iterator& proj, const Args... v);
 
     // forward to inner stack
     // this also checks the allowed bounds of 'i'
-    inline bool isErased(unsigned int i) const {
+    bool isErased(unsigned int i) const {
       if (i >= indices_.size()) return false;
       return inner_stack_.isErased(getIndexFromIterator(i + 1));
     }
@@ -357,7 +365,7 @@ namespace corsika {
      * function the conversion form iterator-index to stack-index is
      * performed.
      */
-    inline unsigned int getIndexFromIterator(const unsigned int vI) const {
+    unsigned int getIndexFromIterator(const unsigned int vI) const {
       // this is too much: CORSIKA_LOG_TRACE("SecondaryView::getIndexFromIterator({})={}",
       // vI, (vI?indices_[vI-1]:projectile_index_));
       if (vI == 0) return projectile_index_;
@@ -389,7 +397,7 @@ namespace corsika {
      * is of course a reference into the SecondaryView itself.
      */
     template <typename Particle>
-    inline void new_secondary(Particle&&) const {
+    void new_secondary(Particle&&) const {
       CORSIKA_LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&&)");
     }
 
@@ -402,7 +410,7 @@ namespace corsika {
      * itself.
      */
     template <typename Particle>
-    inline DefaultSecondaryProducer(Particle const&) {
+    DefaultSecondaryProducer(Particle const&) {
 
       CORSIKA_LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
     }

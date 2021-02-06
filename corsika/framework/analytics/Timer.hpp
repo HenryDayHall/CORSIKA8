@@ -36,10 +36,10 @@ namespace corsika {
         : timeDiff_(0){};
 
     /// Start the timer
-    inline void startTimer() { start_ = clock_type::now(); }
+    void startTimer() { start_ = clock_type::now(); }
 
     /// Stop the timer
-    inline void stopTimer() {
+    void stopTimer() {
       timeDiff_ = std::chrono::duration_cast<duration_type>(clock_type::now() - start_);
     }
 
@@ -48,7 +48,7 @@ namespace corsika {
      * @return Returns the measured runtime of the wrapped function/functor in the unit
      * given by TDuration
      **/
-    inline duration_type getTime() const { return timeDiff_; }
+    duration_type getTime() const { return timeDiff_; }
   };
 
   std::false_type is_timer_impl(...);
@@ -56,7 +56,7 @@ namespace corsika {
   std::true_type is_timer_impl(Timer<T, U> const volatile&);
 
   template <typename T>
-  inline constexpr bool is_timer_v =
+  constexpr bool is_timer_v =
       std::is_same_v<decltype(is_timer_impl(std::declval<T&>())), std::true_type>;
 
 } // namespace corsika

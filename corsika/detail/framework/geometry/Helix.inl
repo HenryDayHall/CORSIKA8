@@ -15,23 +15,23 @@
 
 namespace corsika {
 
-  LengthType Helix::getRadius() const { return radius_; }
+  inline LengthType Helix::getRadius() const { return radius_; }
 
-  Point Helix::getPosition(TimeType const t) const {
+  inline Point Helix::getPosition(TimeType const t) const {
     return r0_ + vPar_ * t +
            (vPerp_ * (std::cos(omegaC_ * t) - 1) + uPerp_ * std::sin(omegaC_ * t)) /
                omegaC_;
   }
 
-  Point Helix::getPositionFromArclength(LengthType const l) const {
+  inline Point Helix::getPositionFromArclength(LengthType const l) const {
     return getPosition(getTimeFromArclength(l));
   }
 
-  LengthType Helix::getArcLength(TimeType const t1, TimeType const t2) const {
+  inline LengthType Helix::getArcLength(TimeType const t1, TimeType const t2) const {
     return (vPar_ + vPerp_).getNorm() * (t2 - t1);
   }
 
-  TimeType Helix::getTimeFromArclength(LengthType const l) const {
+  inline TimeType Helix::getTimeFromArclength(LengthType const l) const {
     return l / (vPar_ + vPerp_).getNorm();
   }
 

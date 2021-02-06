@@ -18,8 +18,9 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  void LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
-                                         TModelArgs...>::checkRadius(LengthType r) const {
+  inline void LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
+                                                TModelArgs...>::checkRadius(LengthType r)
+      const {
     if (r <= previousRadius_) {
       throw std::runtime_error("radius must be greater than previous");
     }
@@ -27,7 +28,7 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  void LayeredSphericalAtmosphereBuilder<
+  inline void LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra,
       TModelArgs...>::setNuclearComposition(NuclearComposition const& composition) {
     composition_ = std::make_unique<NuclearComposition>(composition);
@@ -35,7 +36,7 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  void LayeredSphericalAtmosphereBuilder<
+  inline void LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra,
       TModelArgs...>::addExponentialLayer(GrammageType b, LengthType c,
                                           LengthType upperBoundary) {
@@ -70,7 +71,7 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  void LayeredSphericalAtmosphereBuilder<
+  inline void LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra,
       TModelArgs...>::addLinearLayer(LengthType c, LengthType upperBoundary) {
     auto const radius = earthRadius_ + upperBoundary;
@@ -104,7 +105,7 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  Environment<TMediumInterface> LayeredSphericalAtmosphereBuilder<
+  inline Environment<TMediumInterface> LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra, TModelArgs...>::assemble() {
     Environment<TMediumInterface> env;
     assemble(env);
@@ -113,7 +114,7 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  void LayeredSphericalAtmosphereBuilder<
+  inline void LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra,
       TModelArgs...>::assemble(Environment<TMediumInterface>& env) {
     auto& universe = env.getUniverse();

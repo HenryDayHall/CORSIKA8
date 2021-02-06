@@ -23,7 +23,8 @@
 
 namespace corsika::proposal {
 
-  void ContinuousProcess::buildCalculator(Code code, NuclearComposition const& comp) {
+  inline void ContinuousProcess::buildCalculator(Code code,
+                                                 NuclearComposition const& comp) {
     // search crosssection builder for given particle
     auto p_cross = cross.find(code);
     if (p_cross == cross.end())
@@ -47,13 +48,13 @@ namespace corsika::proposal {
   }
 
   template <>
-  ContinuousProcess::ContinuousProcess(setup::Environment const& _env)
+  inline ContinuousProcess::ContinuousProcess(setup::Environment const& _env)
       : ProposalProcessBase(_env) {}
 
   template <>
-  void ContinuousProcess::scatter(setup::Stack::particle_type& vP,
-                                  HEPEnergyType const& loss,
-                                  GrammageType const& grammage) {
+  inline void ContinuousProcess::scatter(setup::Stack::particle_type& vP,
+                                         HEPEnergyType const& loss,
+                                         GrammageType const& grammage) {
 
     // get or build corresponding calculators
     auto c = getCalculator(vP, calc);
@@ -87,8 +88,9 @@ namespace corsika::proposal {
   }
 
   template <>
-  ProcessReturn ContinuousProcess::doContinuous(setup::Stack::particle_type& vP,
-                                                setup::Trajectory const& vT, bool const) {
+  inline ProcessReturn ContinuousProcess::doContinuous(setup::Stack::particle_type& vP,
+                                                       setup::Trajectory const& vT,
+                                                       bool const) {
 
     if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
     if (vT.getLength() == 0_m) return ProcessReturn::Ok;
@@ -114,8 +116,8 @@ namespace corsika::proposal {
   }
 
   template <>
-  LengthType ContinuousProcess::getMaxStepLength(setup::Stack::particle_type const& vP,
-                                                 setup::Trajectory const& vT) {
+  inline LengthType ContinuousProcess::getMaxStepLength(
+      setup::Stack::particle_type const& vP, setup::Trajectory const& vT) {
     auto const code = vP.getPID();
     if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
 
@@ -148,7 +150,7 @@ namespace corsika::proposal {
     return dist;
   }
 
-  void ContinuousProcess::showResults() const {
+  inline void ContinuousProcess::showResults() const {
     CORSIKA_LOG_DEBUG(
         " ******************************\n"
         " PROCESS::ContinuousProcess: \n"
@@ -156,6 +158,6 @@ namespace corsika::proposal {
         energy_lost_ / 1_GeV);
   }
 
-  void ContinuousProcess::reset() { energy_lost_ = 0_GeV; }
+  inline void ContinuousProcess::reset() { energy_lost_ = 0_GeV; }
 
 } // namespace corsika::proposal

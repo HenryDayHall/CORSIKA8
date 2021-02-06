@@ -33,8 +33,8 @@ namespace corsika {
      *  @param pFractions List of fractions how much each particle contributes. The sum
      *         needs to add up to 1
      **/
-    inline NuclearComposition(std::vector<Code> const& pComponents,
-                              std::vector<float> const& pFractions);
+    NuclearComposition(std::vector<Code> const& pComponents,
+                       std::vector<float> const& pFractions);
 
     /** Sum all all relative composition weighted by func(element)
      *  This function sums all relative compositions given during this classes
@@ -46,29 +46,29 @@ namespace corsika {
      *  @retval returns the weighted sum with the type defined by the return type of func
      **/
     template <typename TFunction>
-    inline auto getWeightedSum(TFunction const& func) const;
+    auto getWeightedSum(TFunction const& func) const;
 
     /** Number of elements in the composition array
      *  @retval returns the number of elements in the composition array
      **/
-    inline size_t getSize() const;
+    size_t getSize() const;
 
     /// Returns a const reference to the fraction
-    inline std::vector<float> const& getFractions() const;
+    std::vector<float> const& getFractions() const;
     /// Returns a const reference to the fraction
-    inline std::vector<Code> const& getComponents() const;
-    inline double const getAverageMassNumber() const;
+    std::vector<Code> const& getComponents() const;
+    double const getAverageMassNumber() const;
 
     template <class TRNG>
-    inline Code sampleTarget(std::vector<CrossSectionType> const& sigma,
-                             TRNG& randomStream) const;
+    Code sampleTarget(std::vector<CrossSectionType> const& sigma,
+                      TRNG& randomStream) const;
 
     // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
-    inline size_t getHash() const;
+    size_t getHash() const;
 
   private:
-    inline void updateHash();
+    void updateHash();
 
     std::vector<float> const numberFractions_; //!< relative fractions of number density
     std::vector<Code> const components_;       //!< particle codes of consitutents

@@ -31,21 +31,21 @@ namespace corsika {
         : start_point_(pR0)
         , velocity_(pV0) {}
 
-    inline Point getPosition(TimeType const t) const;
+    Point getPosition(TimeType const t) const;
 
-    inline VelocityVector const& getVelocity(TimeType const) const;
+    VelocityVector const& getVelocity(TimeType const) const;
 
-    inline Point getPositionFromArclength(LengthType const l) const;
+    Point getPositionFromArclength(LengthType const l) const;
 
-    inline LengthType getArcLength(TimeType const t1, TimeType const t2) const;
+    LengthType getArcLength(TimeType const t1, TimeType const t2) const;
 
-    inline TimeType getTimeFromArclength(LengthType const t) const;
+    TimeType getTimeFromArclength(LengthType const t) const;
 
-    inline Point const& getStartPoint() const;
+    Point const& getStartPoint() const;
 
-    inline DirectionVector getDirection() const;
+    DirectionVector getDirection() const;
 
-    inline VelocityVector const& getVelocity() const;
+    VelocityVector const& getVelocity() const;
 
   private:
     Point start_point_;

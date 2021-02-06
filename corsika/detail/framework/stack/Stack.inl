@@ -21,15 +21,15 @@ namespace corsika {
 
   template <typename StackData, template <typename> typename MParticleInterface>
   template <typename... TArgs>
-  void Stack<StackData, MParticleInterface>::clear(TArgs... args) {
+  inline void Stack<StackData, MParticleInterface>::clear(TArgs... args) {
     data_.clear(args...);
     deleted_ = std::vector<bool>(data_.getSize(), false);
     nDeleted_ = 0;
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::begin() {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::begin() {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
       if (!deleted_[i]) break;
@@ -38,14 +38,14 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::end() {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::end() {
     return stack_iterator_type(*this, getSize());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::last() {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::last() {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
       if (!deleted_[getSize() - 1 - i]) break;
@@ -54,8 +54,8 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::begin() const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::begin() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
       if (!deleted_[i]) break;
@@ -64,8 +64,8 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::end() const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::end() const {
     return const_stack_iterator_type(*this, getSize());
   }
 
@@ -80,8 +80,8 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::cbegin() const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::cbegin() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
       if (!deleted_[i]) break;
@@ -90,14 +90,14 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::cend() const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::cend() const {
     return const_stack_iterator_type(*this, getSize());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::clast() const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::clast() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
       if (!deleted_[getSize() - 1 - i]) break;
@@ -107,41 +107,40 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::at(unsigned int i) {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::at(unsigned int i) {
     return stack_iterator_type(*this, i);
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::at(unsigned int i) const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::at(unsigned int i) const {
     return const_stack_iterator_type(*this, i);
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::first() {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::first() {
     return stack_iterator_type{*this, 0};
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type
-  Stack<StackData, MParticleInterface>::cfirst() const {
+  typename Stack<StackData, MParticleInterface>::const_stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::cfirst() const {
     return const_stack_iterator_type{*this, 0};
   }
-  /// @}
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::getNextParticle() {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::getNextParticle() {
     while (purgeLastIfDeleted()) {}
     return last();
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
   template <typename... TArgs>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
-  Stack<StackData, MParticleInterface>::addParticle(const TArgs... v) {
+  typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
+      StackData, MParticleInterface>::addParticle(const TArgs... v) {
     CORSIKA_LOG_TRACE("Stack::AddParticle");
     data_.incrementSize();
     deleted_.push_back(false);
@@ -149,22 +148,22 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::swap(stack_iterator_type a,
-                                                  stack_iterator_type b) {
+  inline void Stack<StackData, MParticleInterface>::swap(stack_iterator_type a,
+                                                         stack_iterator_type b) {
     CORSIKA_LOG_TRACE("Stack::Swap");
     swap(a.getIndex(), b.getIndex());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::copy(stack_iterator_type a,
-                                                  stack_iterator_type b) {
+  inline void Stack<StackData, MParticleInterface>::copy(stack_iterator_type a,
+                                                         stack_iterator_type b) {
     CORSIKA_LOG_TRACE("Stack::Copy");
     copy(a.getIndex(), b.getIndex());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::copy(const_stack_iterator_type a,
-                                                  stack_iterator_type b) {
+  inline void Stack<StackData, MParticleInterface>::copy(const_stack_iterator_type a,
+                                                         stack_iterator_type b) {
     CORSIKA_LOG_TRACE("Stack::Copy");
     data_.copy(a.getIndex(), b.getIndex());
     if (deleted_[b.getIndex()] && !deleted_[a.getIndex()]) nDeleted_--;
@@ -173,7 +172,7 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::erase(stack_iterator_type p) {
+  inline void Stack<StackData, MParticleInterface>::erase(stack_iterator_type p) {
     CORSIKA_LOG_TRACE("Stack::Delete");
     if (this->isEmpty()) { /*error*/
       throw std::runtime_error("Stack, cannot delete entry since size is zero");
@@ -183,54 +182,52 @@ namespace corsika {
     }
     this->erase(p.getIndex());
   }
-  /**
+
+  /*
    * delete this particle
    */
-
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::erase(particle_interface_type p) {
+  inline void Stack<StackData, MParticleInterface>::erase(particle_interface_type p) {
     this->erase(p.getIterator());
   }
 
-  /**
+  /*
    * check if there are no further non-deleted particles on stack
    */
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  bool Stack<StackData, MParticleInterface>::isEmpty() {
+  inline bool Stack<StackData, MParticleInterface>::isEmpty() {
     return getEntries() == 0;
   }
 
-  /**
+  /*
    * check if this particle was already deleted
    */
-
   template <typename StackData, template <typename> typename MParticleInterface>
-  bool Stack<StackData, MParticleInterface>::isErased(
+  inline bool Stack<StackData, MParticleInterface>::isErased(
       const stack_iterator_type& p) const {
     return isErased(p.getIndex());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  bool Stack<StackData, MParticleInterface>::isErased(
+  inline bool Stack<StackData, MParticleInterface>::isErased(
       const const_stack_iterator_type& p) const {
     return isErased(p.getIndex());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  bool Stack<StackData, MParticleInterface>::isErased(
+  inline bool Stack<StackData, MParticleInterface>::isErased(
       const particle_interface_type& p) const {
     return isErased(p.getIterator());
   }
 
-  /**
+  /*
    * Function to ultimatively remove the last entry from the stack,
    * if it was marked as deleted before. If this is not the case,
    * the function will just return false and do nothing.
    */
-
   template <typename StackData, template <typename> typename MParticleInterface>
-  bool Stack<StackData, MParticleInterface>::purgeLastIfDeleted() {
+  inline bool Stack<StackData, MParticleInterface>::purgeLastIfDeleted() {
     if (!deleted_.back())
       return false; // the last particle is not marked for deletion. Do nothing.
 
@@ -241,7 +238,7 @@ namespace corsika {
     return true;
   }
 
-  /**
+  /*
    * Function to ultimatively remove all entries from the stack
    * marked as deleted.
    *
@@ -251,7 +248,7 @@ namespace corsika {
    */
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::purge() {
+  inline void Stack<StackData, MParticleInterface>::purge() {
     unsigned int iStackFront = 0;
     unsigned int iStackBack = getSize() - 1;
 
@@ -269,12 +266,12 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  unsigned int Stack<StackData, MParticleInterface>::getSize() const {
+  inline unsigned int Stack<StackData, MParticleInterface>::getSize() const {
     return data_.getSize();
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  std::string Stack<StackData, MParticleInterface>::asString() const {
+  inline std::string Stack<StackData, MParticleInterface>::asString() const {
     std::string str(fmt::format("size {}, entries {}, deleted {} \n", getSize(),
                                 getEntries(), getErased()));
     // we make our own begin/end since we want ALL entries
@@ -290,7 +287,7 @@ namespace corsika {
 
   template <typename StackData, template <typename> typename MParticleInterface>
   template <typename... TArgs>
-  typename Stack<StackData, MParticleInterface>::stack_iterator_type
+  inline typename Stack<StackData, MParticleInterface>::stack_iterator_type
   Stack<StackData, MParticleInterface>::addSecondary(stack_iterator_type& parent,
                                                      const TArgs... v) {
     CORSIKA_LOG_TRACE("Stack::AddSecondary");
@@ -300,16 +297,16 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::swap(unsigned int const a,
-                                                  unsigned int const b) {
+  inline void Stack<StackData, MParticleInterface>::swap(unsigned int const a,
+                                                         unsigned int const b) {
     CORSIKA_LOG_TRACE("Stack::Swap(unsigned int)");
     data_.swap(a, b);
     std::swap(deleted_[a], deleted_[b]);
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::copy(unsigned int const a,
-                                                  unsigned int const b) {
+  inline void Stack<StackData, MParticleInterface>::copy(unsigned int const a,
+                                                         unsigned int const b) {
     CORSIKA_LOG_TRACE("Stack::Copy");
     data_.copy(a, b);
     if (deleted_[b] && !deleted_[a]) nDeleted_--;
@@ -318,24 +315,23 @@ namespace corsika {
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  bool Stack<StackData, MParticleInterface>::isErased(unsigned int const i) const {
+  inline bool Stack<StackData, MParticleInterface>::isErased(unsigned int const i) const {
     if (i >= deleted_.size()) return false;
     return deleted_.at(i);
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::erase(unsigned int const i) {
+  inline void Stack<StackData, MParticleInterface>::erase(unsigned int const i) {
     deleted_[i] = true;
     nDeleted_++;
   }
 
-  /**
+  /*
    * will remove from storage the element i. This is a helper
    * function for SecondaryView.
    */
-
   template <typename StackData, template <typename> typename MParticleInterface>
-  void Stack<StackData, MParticleInterface>::purge(unsigned int i) {
+  inline void Stack<StackData, MParticleInterface>::purge(unsigned int i) {
     unsigned int iStackBack = getSize() - 1;
     // search for last non-deleted particle on stack
     while (deleted_[iStackBack]) { iStackBack--; }
@@ -347,33 +343,21 @@ namespace corsika {
     deleted_.pop_back();
   }
 
-  /**
-   * Function to perform eventual transformation from
-   * StackIterator::getIndex() to index in data stored in
-   * StackData data_. By default (and in almost all cases) this
-   * should just be identiy. See class SecondaryView for an alternative implementation.
-   */
-
   template <typename StackData, template <typename> typename MParticleInterface>
-  unsigned int Stack<StackData, MParticleInterface>::getIndexFromIterator(
+  inline unsigned int Stack<StackData, MParticleInterface>::getIndexFromIterator(
       const unsigned int vI) const {
     // this is too much: CORSIKA_LOG_TRACE("Stack::getIndexFromIterator({})={}", vI, vI);
     return vI;
   }
 
-  /**
-   * @name Return reference to StackData object data_ for data access
-   * @{
-   */
-
   template <typename StackData, template <typename> typename MParticleInterface>
-  typename Stack<StackData, MParticleInterface>::value_type&
+  inline typename Stack<StackData, MParticleInterface>::value_type&
   Stack<StackData, MParticleInterface>::getStackData() {
     return data_;
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
-  const typename Stack<StackData, MParticleInterface>::value_type&
+  inline const typename Stack<StackData, MParticleInterface>::value_type&
   Stack<StackData, MParticleInterface>::getStackData() const {
     return data_;
   }

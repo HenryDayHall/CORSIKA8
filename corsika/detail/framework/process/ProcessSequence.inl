@@ -29,7 +29,7 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TParticle>
-  ProcessReturn ProcessSequence<
+  inline ProcessReturn ProcessSequence<
       TProcess1, TProcess2, IndexStart, IndexProcess1,
       IndexProcess2>::doBoundaryCrossing(TParticle& particle,
                                          typename TParticle::node_type const& from,
@@ -54,7 +54,7 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TParticle, typename TTrack>
-  ProcessReturn
+  inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
       doContinuous(TParticle& particle, TTrack& vT,
                    [[maybe_unused]] ContinuousProcessIndex const limitId) {
@@ -81,8 +81,8 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TSecondaries>
-  void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                       IndexProcess2>::doSecondaries(TSecondaries& vS) {
+  inline void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                              IndexProcess2>::doSecondaries(TSecondaries& vS) {
     if constexpr (std::is_base_of_v<SecondariesProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
       A_.doSecondaries(vS);
@@ -95,8 +95,8 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
-  bool ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                       IndexProcess2>::checkStep() {
+  inline bool ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                              IndexProcess2>::checkStep() {
     bool ret = false;
     if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
                   (t1ProcSeq && !t1SwitchProcSeq)) {
@@ -112,8 +112,8 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TStack>
-  void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                       IndexProcess2>::doStack(TStack& stack) {
+  inline void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                              IndexProcess2>::doStack(TStack& stack) {
     if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
                   (t1ProcSeq && !t1SwitchProcSeq)) {
       if (A_.checkStep()) { A_.doStack(stack); }
@@ -124,20 +124,10 @@ namespace corsika {
     }
   }
 
-  /**
-   * Calculate the maximum allowed length of the next tracking step, based on all
-   * ContinuousProcess-es
-   *
-   * The maximum allowed step length is the minimum of the allowed track lenght over all
-   * ContinuousProcess-es in the ProcessSequence.
-   *
-   * \return: ContinuousProcessStepLength which contains the step length itself in
-   *          LengthType, and a unique identifier of the related ContinuousProcess.
-   **/
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TParticle, typename TTrack>
-  ContinuousProcessStepLength
+  inline ContinuousProcessStepLength
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
                   IndexProcess2>::getMaxStepLength(TParticle& particle, TTrack& vTrack) {
     // if no other process in the sequence implements it
@@ -167,7 +157,7 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TParticle>
-  InverseGrammageType
+  inline InverseGrammageType
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
                   IndexProcess2>::getInverseInteractionLength(TParticle&& particle) {
 

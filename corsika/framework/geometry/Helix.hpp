@@ -8,10 +8,12 @@
 
 #pragma once
 
-#include <cmath>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/PhysicalGeometry.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+
+#include <cmath>
 
 namespace corsika {
 
@@ -31,12 +33,9 @@ namespace corsika {
 
   class Helix {
 
-    ///! \todo move VelocityVec into PhysicalUnits
-    using VelocityVec = Vector<SpeedType::dimension_type>;
-
   public:
-    Helix(Point const& pR0, FrequencyType pOmegaC, VelocityVec const& pvPar,
-          VelocityVec const& pvPerp)
+    Helix(Point const& pR0, FrequencyType pOmegaC, VelocityVector const& pvPar,
+          VelocityVector const& pvPerp)
         : r0_(pR0)
         , omegaC_(pOmegaC)
         , vPar_(pvPar)
@@ -44,24 +43,24 @@ namespace corsika {
         , uPerp_(vPerp_.cross(vPar_.normalized()))
         , radius_(pvPar.getNorm() / abs(pOmegaC)) {}
 
-    inline LengthType getRadius() const;
+    LengthType getRadius() const;
 
-    inline Point getPosition(TimeType const t) const;
+    Point getPosition(TimeType const t) const;
 
-    VelocityVec getVelocity(TimeType const t) const;
+    VelocityVector getVelocity(TimeType const t) const;
 
-    inline Point getPositionFromArclength(LengthType const l) const;
+    Point getPositionFromArclength(LengthType const l) const;
 
-    inline LengthType getArcLength(TimeType const t1, TimeType const t2) const;
+    LengthType getArcLength(TimeType const t1, TimeType const t2) const;
 
-    inline TimeType getTimeFromArclength(LengthType const l) const;
+    TimeType getTimeFromArclength(LengthType const l) const;
 
   private:
     Point r0_;             ///! origin of helix, but this is in the center of the
                            ///! "cylinder" on which the helix rotates
     FrequencyType omegaC_; ///! speed of angular rotation
-    VelocityVec vPar_;     ///! speed along direction of "cylinder"
-    VelocityVec vPerp_, uPerp_;
+    VelocityVector vPar_;  ///! speed along direction of "cylinder"
+    VelocityVector vPerp_, uPerp_;
     LengthType radius_;
   };
 

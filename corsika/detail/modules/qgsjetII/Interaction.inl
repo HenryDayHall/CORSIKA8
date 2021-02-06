@@ -27,7 +27,7 @@
 
 namespace corsika::qgsjetII {
 
-  Interaction::Interaction(const std::string& dataPath)
+  inline Interaction::Interaction(const std::string& dataPath)
       : data_path_(dataPath) {
     if (dataPath == "") {
       if (std::getenv("CORSIKA_DATA")) {
@@ -46,14 +46,15 @@ namespace corsika::qgsjetII {
     }
   }
 
-  Interaction::~Interaction() {
+  inline Interaction::~Interaction() {
     CORSIKA_LOG_DEBUG("QgsjetII::Interaction n= {}", count_);
   }
 
-  CrossSectionType Interaction::getCrossSection(const Code beamId, const Code targetId,
-                                                const HEPEnergyType Elab,
-                                                const unsigned int Abeam,
-                                                const unsigned int targetA) const {
+  inline CrossSectionType Interaction::getCrossSection(const Code beamId,
+                                                       const Code targetId,
+                                                       const HEPEnergyType Elab,
+                                                       const unsigned int Abeam,
+                                                       const unsigned int targetA) const {
     double sigProd = std::numeric_limits<double>::infinity();
 
     if (corsika::qgsjetII::canInteract(beamId)) {
@@ -88,7 +89,7 @@ namespace corsika::qgsjetII {
   }
 
   template <typename TParticle>
-  GrammageType Interaction::getInteractionLength(const TParticle& vP) const {
+  inline GrammageType Interaction::getInteractionLength(const TParticle& vP) const {
 
     // coordinate system, get global frame of reference
     CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
@@ -160,7 +161,7 @@ namespace corsika::qgsjetII {
    */
 
   template <typename TView>
-  void Interaction::doInteraction(TView& view) {
+  inline void Interaction::doInteraction(TView& view) {
 
     auto const projectile = view.getProjectile();
 

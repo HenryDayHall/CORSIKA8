@@ -26,7 +26,7 @@ namespace corsika {
 
   inline Point const& Plane::getCenter() const { return center_; }
 
-  inline Plane::DimLessVec const& Plane::getNormal() const { return normal_; }
+  inline DirectionVector const& Plane::getNormal() const { return normal_; }
 
   inline std::string Plane::asString() const {
     std::ostringstream txt;

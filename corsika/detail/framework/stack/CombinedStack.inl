@@ -59,7 +59,6 @@ namespace corsika {
     pi_b_type::setParticleData(static_cast<pi_b_type&>(p), vB);
   }
 
-  ///@}
   template <template <typename> class TParticleInterfaceA,
             template <typename> class TParticleInterfaceB, typename TStackIterator>
   inline std::string CombinedParticleInterface<TParticleInterfaceA, TParticleInterfaceB,

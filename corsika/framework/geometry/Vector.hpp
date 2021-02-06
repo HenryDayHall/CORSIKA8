@@ -47,14 +47,14 @@ namespace corsika {
      * \todo this should best be protected, we don't want users to use
      * bare coordinates without reference frame
      */
-    inline QuantityVector<TDimension> const& getComponents() const;
-    inline QuantityVector<TDimension>& getComponents();
+    QuantityVector<TDimension> const& getComponents() const;
+    QuantityVector<TDimension>& getComponents();
 
     /*!
      * returns a QuantityVector with the components given in an arbitrary
      * CoordinateSystem
      */
-    inline QuantityVector<TDimension> getComponents(CoordinateSystemPtr const& pCS) const;
+    QuantityVector<TDimension> getComponents(CoordinateSystemPtr const& pCS) const;
 
     /**
      * this always returns a QuantityVector as triple
@@ -63,7 +63,7 @@ namespace corsika {
      *   is actually transformed to pCS, if needed. Thus, there may be an implicit call to
      *   \ref rebase.
      **/
-    inline QuantityVector<TDimension>& getComponents(CoordinateSystemPtr const& pCS);
+    QuantityVector<TDimension>& getComponents(CoordinateSystemPtr const& pCS);
 
     /**
      * \name Access coordinate components
@@ -76,28 +76,28 @@ namespace corsika {
      * \{
      **/
 
-    inline quantity_type getX(CoordinateSystemPtr const& pCS) const;
-    inline quantity_type getY(CoordinateSystemPtr const& pCS) const;
-    inline quantity_type getZ(CoordinateSystemPtr const& pCS) const;
+    quantity_type getX(CoordinateSystemPtr const& pCS) const;
+    quantity_type getY(CoordinateSystemPtr const& pCS) const;
+    quantity_type getZ(CoordinateSystemPtr const& pCS) const;
     /** \} **/
 
     /*!
      * transforms the Vector into another CoordinateSystem by changing
      * its components internally
      */
-    inline void rebase(CoordinateSystemPtr const& pCS);
+    void rebase(CoordinateSystemPtr const& pCS);
 
     /*!
      * returns the norm/length of the Vector. Before using this method,
      * think about whether squaredNorm() might be cheaper for your computation.
      */
-    inline quantity_type getNorm() const;
+    quantity_type getNorm() const;
 
     /*!
      * returns the squared norm of the Vector. Before using this method,
      * think about whether norm() might be cheaper for your computation.
      */
-    inline quantity_square_type getSquaredNorm() const;
+    quantity_square_type getSquaredNorm() const;
 
     /*!
      * returns a Vector \f$ \vec{v}_{\parallel} \f$ which is the parallel projection

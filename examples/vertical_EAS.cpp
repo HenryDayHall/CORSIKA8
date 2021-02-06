@@ -47,6 +47,7 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
+#include <corsika/modules/QGSJetII.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -66,6 +67,7 @@
  */
 #include <corsika/modules/sibyll/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/qgsjetII/Random.hpp>
 
 using namespace corsika;
 using namespace std;
@@ -189,6 +191,8 @@ int main(int argc, char** argv) {
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env};
 
   // setup processes, decays and interactions
+
+  corsika::qgsjetII::Interaction qgsjet;
 
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);

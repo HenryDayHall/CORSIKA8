@@ -26,14 +26,14 @@ namespace corsika {
     return sqrt((Elab - m) * (Elab + m));
   };
 
-  BetheBlochPDG::BetheBlochPDG(ShowerAxis const& shower_axis)
+  inline BetheBlochPDG::BetheBlochPDG(ShowerAxis const& shower_axis)
       : dX_(10_g / square(1_cm)) // profile binning
       , dX_threshold_(0.0001_g / square(1_cm))
       , shower_axis_(shower_axis)
       , profile_(int(shower_axis.getMaximumX() / dX_) + 1) {}
 
-  HEPEnergyType BetheBlochPDG::getBetheBloch(setup::Stack::particle_type const& p,
-                                             GrammageType const dX) {
+  inline HEPEnergyType BetheBlochPDG::getBetheBloch(setup::Stack::particle_type const& p,
+                                                    GrammageType const dX) {
 
     // all these are material constants and have to come through Environment
     // right now: values for nitrogen_D
@@ -126,21 +126,22 @@ namespace corsika {
   }
 
   // radiation losses according to PDG 2018, ch. 33 ref. [5]
-  HEPEnergyType BetheBlochPDG::getRadiationLosses(setup::Stack::particle_type const& vP,
-                                                  GrammageType const vDX) {
+  inline HEPEnergyType BetheBlochPDG::getRadiationLosses(
+      setup::Stack::particle_type const& vP, GrammageType const vDX) {
     // simple-minded hard-coded value for b(E) inspired by data from
     // http://pdg.lbl.gov/2018/AtomicNuclearProperties/ for N and O.
     auto constexpr b = 3.0 * 1e-6 * square(1_cm) / 1_g;
     return -vP.getEnergy() * b * vDX;
   }
 
-  HEPEnergyType BetheBlochPDG::getTotalEnergyLoss(setup::Stack::particle_type const& vP,
-                                                  GrammageType const vDX) {
+  inline HEPEnergyType BetheBlochPDG::getTotalEnergyLoss(
+      setup::Stack::particle_type const& vP, GrammageType const vDX) {
     return getBetheBloch(vP, vDX) + getRadiationLosses(vP, vDX);
   }
 
-  ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
-                                            setup::Trajectory const& t, bool const) {
+  inline ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
+                                                   setup::Trajectory const& t,
+                                                   bool const) {
     if (p.getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
@@ -159,8 +160,9 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  LengthType BetheBlochPDG::getMaxStepLength(setup::Stack::particle_type const& vParticle,
-                                             setup::Trajectory const& vTrack) const {
+  inline LengthType BetheBlochPDG::getMaxStepLength(
+      setup::Stack::particle_type const& vParticle,
+      setup::Trajectory const& vTrack) const {
     if (vParticle.getChargeNumber() == 0) {
       return meter * std::numeric_limits<double>::infinity();
     }
@@ -187,15 +189,15 @@ namespace corsika {
         vTrack, maxGrammage);
   }
 
-  void BetheBlochPDG::updateMomentum(corsika::setup::Stack::particle_type& vP,
-                                     HEPEnergyType Enew) {
+  inline void BetheBlochPDG::updateMomentum(corsika::setup::Stack::particle_type& vP,
+                                            HEPEnergyType Enew) {
     HEPMomentumType Pnew = elab2plab(Enew, vP.getMass());
     auto pnew = vP.getMomentum();
     vP.setMomentum(pnew * Pnew / pnew.getNorm());
   }
 
-  void BetheBlochPDG::fillProfile(setup::Trajectory const& vTrack,
-                                  const HEPEnergyType dE) {
+  inline void BetheBlochPDG::fillProfile(setup::Trajectory const& vTrack,
+                                         const HEPEnergyType dE) {
 
     GrammageType grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
     GrammageType grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
@@ -243,7 +245,7 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("total energy added to histogram: {} ", energyCount);
   }
 
-  void BetheBlochPDG::printProfile() const {
+  inline void BetheBlochPDG::printProfile() const {
     std::ofstream file("EnergyLossProfile.dat");
     file << "# EnergyLoss profile" << std::endl
          << "# lower X bin edge [g/cm2]  dE/dX [GeV/g/cm2]\n";
@@ -255,11 +257,11 @@ namespace corsika {
     file.close();
   }
 
-  HEPEnergyType BetheBlochPDG::getTotal() const {
+  inline HEPEnergyType BetheBlochPDG::getTotal() const {
     return std::accumulate(profile_.cbegin(), profile_.cend(), HEPEnergyType::zero());
   }
 
-  void BetheBlochPDG::showResults() const {
+  inline void BetheBlochPDG::showResults() const {
     CORSIKA_LOG_INFO(
         " ******************************\n"
         " PROCESS::ContinuousProcess: \n"
@@ -267,6 +269,6 @@ namespace corsika {
         energy_lost_ / 1_GeV);
   }
 
-  void BetheBlochPDG::reset() { energy_lost_ = 0_GeV; }
+  inline void BetheBlochPDG::reset() { energy_lost_ = 0_GeV; }
 
 } // namespace corsika

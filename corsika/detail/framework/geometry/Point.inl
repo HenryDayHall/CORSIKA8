@@ -15,11 +15,11 @@
 
 namespace corsika {
 
-  QuantityVector<length_d> const& Point::getCoordinates() const {
+  inline QuantityVector<length_d> const& Point::getCoordinates() const {
     return BaseVector<length_d>::getQuantityVector();
   }
 
-  QuantityVector<length_d>& Point::getCoordinates() {
+  inline QuantityVector<length_d>& Point::getCoordinates() {
     return BaseVector<length_d>::getQuantityVector();
   }
 
@@ -60,7 +60,8 @@ namespace corsika {
   }
 
   /// this always returns a QuantityVector as triple
-  QuantityVector<length_d> Point::getCoordinates(CoordinateSystemPtr const& pCS) const {
+  inline QuantityVector<length_d> Point::getCoordinates(
+      CoordinateSystemPtr const& pCS) const {
     CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
     if (*pCS == *cs) {
       return BaseVector<length_d>::getQuantityVector();
@@ -72,12 +73,12 @@ namespace corsika {
   }
 
   /// this always returns a QuantityVector as triple
-  QuantityVector<length_d>& Point::getCoordinates(CoordinateSystemPtr const& pCS) {
+  inline QuantityVector<length_d>& Point::getCoordinates(CoordinateSystemPtr const& pCS) {
     if (*pCS != *BaseVector<length_d>::getCoordinateSystem()) { rebase(pCS); }
     return BaseVector<length_d>::getQuantityVector();
   }
 
-  void Point::rebase(CoordinateSystemPtr const& pCS) {
+  inline void Point::rebase(CoordinateSystemPtr const& pCS) {
     BaseVector<length_d>::setQuantityVector(QuantityVector<length_d>(
         get_transformation(*BaseVector<length_d>::getCoordinateSystem().get(),
                            *pCS.get()) *
@@ -85,12 +86,12 @@ namespace corsika {
     BaseVector<length_d>::setCoordinateSystem(pCS);
   }
 
-  Point Point::operator+(Vector<length_d> const& pVec) const {
+  inline Point Point::operator+(Vector<length_d> const& pVec) const {
     CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
     return Point(cs, getCoordinates() + pVec.getComponents(cs));
   }
 
-  Vector<length_d> Point::operator-(Point const& pB) const {
+  inline Vector<length_d> Point::operator-(Point const& pB) const {
     CoordinateSystemPtr const& cs = BaseVector<length_d>::getCoordinateSystem();
     return Vector<length_d>(cs, getCoordinates() - pB.getCoordinates(cs));
   }

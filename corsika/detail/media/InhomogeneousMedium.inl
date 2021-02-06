@@ -17,31 +17,31 @@ namespace corsika {
 
   template <typename T, typename TDensityFunction>
   template <typename... TArgs>
-  InhomogeneousMedium<T, TDensityFunction>::InhomogeneousMedium(
+  inline InhomogeneousMedium<T, TDensityFunction>::InhomogeneousMedium(
       NuclearComposition const& nuclComp, TArgs&&... rhoTArgs)
       : nuclComp_(nuclComp)
       , densityFunction_(rhoTArgs...) {}
 
   template <typename T, typename TDensityFunction>
-  MassDensityType InhomogeneousMedium<T, TDensityFunction>::getMassDensity(
+  inline MassDensityType InhomogeneousMedium<T, TDensityFunction>::getMassDensity(
       Point const& point) const {
     return densityFunction_.evaluateAt(point);
   }
 
   template <typename T, typename TDensityFunction>
-  NuclearComposition const&
+  inline NuclearComposition const&
   InhomogeneousMedium<T, TDensityFunction>::getNuclearComposition() const {
     return nuclComp_;
   }
 
   template <typename T, typename TDensityFunction>
-  GrammageType InhomogeneousMedium<T, TDensityFunction>::getIntegratedGrammage(
+  inline GrammageType InhomogeneousMedium<T, TDensityFunction>::getIntegratedGrammage(
       setup::Trajectory const& line, LengthType to) const {
     return densityFunction_.getIntegrateGrammage(line, to);
   }
 
   template <typename T, typename TDensityFunction>
-  LengthType InhomogeneousMedium<T, TDensityFunction>::getArclengthFromGrammage(
+  inline LengthType InhomogeneousMedium<T, TDensityFunction>::getArclengthFromGrammage(
       setup::Trajectory const& line, GrammageType grammage) const {
     return densityFunction_.getArclengthFromGrammage(line, grammage);
   }

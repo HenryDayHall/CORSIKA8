@@ -24,18 +24,18 @@
 namespace corsika {
 
   template <typename TStack>
-  StackInspector<TStack>::StackInspector(const int vNStep, const bool vReportStack,
-                                         const HEPEnergyType vE0)
+  inline StackInspector<TStack>::StackInspector(const int vNStep, const bool vReportStack,
+                                                const HEPEnergyType vE0)
       : StackProcess<StackInspector<TStack>>(vNStep)
       , ReportStack_(vReportStack)
       , E0_(vE0)
       , StartTime_(std::chrono::system_clock::now()) {}
 
   template <typename TStack>
-  StackInspector<TStack>::~StackInspector() {}
+  inline StackInspector<TStack>::~StackInspector() {}
 
   template <typename TStack>
-  void StackInspector<TStack>::doStack(const TStack& vS) {
+  inline void StackInspector<TStack>::doStack(const TStack& vS) {
 
     [[maybe_unused]] int i = 0;
     HEPEnergyType Etot = 0_GeV;

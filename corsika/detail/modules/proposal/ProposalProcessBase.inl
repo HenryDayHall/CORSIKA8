@@ -25,12 +25,12 @@
 
 namespace corsika::proposal {
 
-  bool ProposalProcessBase::canInteract(Code pcode) const {
+  inline bool ProposalProcessBase::canInteract(Code pcode) const {
     if (std::find(begin(tracked), end(tracked), pcode) != end(tracked)) return true;
     return false;
   }
 
-  ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env)
+  inline ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env)
       : RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {
@@ -71,7 +71,8 @@ namespace corsika::proposal {
     }
   }
 
-  size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const noexcept {
+  inline size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const
+      noexcept {
     return p.first ^ std::hash<Code>{}(p.second);
   }
 

@@ -48,9 +48,9 @@ namespace corsika::tracking_line {
                            minNode);                    // next volume node
   }
 
-  template <typename TParticle, typename TMedium>
-  Intersections Tracking::intersect(TParticle const& particle, Sphere const& sphere,
-                                    TMedium const&) {
+  template <typename TParticle>
+  inline Intersections Tracking::intersect(TParticle const& particle,
+                                           Sphere const& sphere) {
     auto const delta = particle.getPosition() - sphere.getCenter();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const vSqNorm = velocity.getSquaredNorm();
@@ -70,23 +70,17 @@ namespace corsika::tracking_line {
   }
 
   template <typename TParticle, typename TBaseNodeType>
-  Intersections Tracking::intersect(TParticle const& particle,
-                                    TBaseNodeType const& volumeNode) {
+  inline Intersections Tracking::intersect(TParticle const& particle,
+                                           TBaseNodeType const& volumeNode) {
     Sphere const* sphere = dynamic_cast<Sphere const*>(&volumeNode.getVolume());
-    if (sphere) {
-      typedef typename std::remove_const_t<
-          std::remove_reference_t<decltype(volumeNode.getModelProperties())>>
-          medium_type;
-      return Tracking::intersect<TParticle, medium_type>(particle, *sphere,
-                                                         volumeNode.getModelProperties());
-    }
+    if (sphere) { return Tracking::intersect<TParticle>(particle, *sphere); }
     throw std::runtime_error(
         "The Volume type provided is not supported in Intersect(particle, node)");
   }
 
-  template <typename TParticle, typename TMedium>
-  Intersections Tracking::intersect(TParticle const& particle, Plane const& plane,
-                                    TMedium const&) {
+  template <typename TParticle>
+  inline Intersections Tracking::intersect(TParticle const& particle,
+                                           Plane const& plane) {
     auto const delta = plane.getCenter() - particle.getPosition();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const n = plane.getNormal();

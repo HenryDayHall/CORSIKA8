@@ -23,11 +23,11 @@
 
 namespace corsika::urqmd {
 
-  UrQMD::UrQMD() { ::urqmd::iniurqmdc8_(); }
+  inline UrQMD::UrQMD() { ::urqmd::iniurqmdc8_(); }
 
-  CrossSectionType UrQMD::getCrossSection(Code vProjectileCode, Code vTargetCode,
-                                          HEPEnergyType vLabEnergy,
-                                          int vAProjectile = 1) {
+  inline CrossSectionType UrQMD::getCrossSection(Code vProjectileCode, Code vTargetCode,
+                                                 HEPEnergyType vLabEnergy,
+                                                 int vAProjectile = 1) {
 
     // the following is a translation of ptsigtot() into C++
     if (vProjectileCode != Code::Nucleus &&
@@ -63,8 +63,8 @@ namespace corsika::urqmd {
 
   template <typename TParticle> // need template here, as this is called both with
                                 // SetupParticle as well as SetupProjectile
-  CrossSectionType UrQMD::getCrossSection(TParticle const& vProjectile,
-                                          Code vTargetCode) const {
+  inline CrossSectionType UrQMD::getCrossSection(TParticle const& vProjectile,
+                                                 Code vTargetCode) const {
     // TODO: return 0 for non-hadrons?
 
     auto const projectileCode = vProjectile.getPID();
@@ -79,7 +79,7 @@ namespace corsika::urqmd {
     return getCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
   }
 
-  bool UrQMD::canInteract(Code vCode) const {
+  inline bool UrQMD::canInteract(Code vCode) const {
     // According to the manual, UrQMD can use all mesons, baryons and nucleons
     // which are modeled also as input particles. I think it is safer to accept
     // only the usual long-lived species as input.
@@ -95,7 +95,7 @@ namespace corsika::urqmd {
   }
 
   template <typename TParticle>
-  GrammageType UrQMD::getInteractionLength(TParticle const& vParticle) const {
+  inline GrammageType UrQMD::getInteractionLength(TParticle const& vParticle) const {
 
     if (!canInteract(vParticle.getPID())) {
       // we could do the canInteract check in getCrossSection, too but if
@@ -115,7 +115,7 @@ namespace corsika::urqmd {
   }
 
   template <typename TView>
-  void UrQMD::doInteraction(TView& view) {
+  inline void UrQMD::doInteraction(TView& view) {
 
     auto projectile = view.getProjectile();
 
@@ -231,7 +231,7 @@ namespace corsika::urqmd {
     CORSIKA_LOG_DEBUG("UrQMD generated {} secondaries!", ::urqmd::sys_.npart);
   }
 
-  Code convertFromUrQMD(int vItyp, int vIso3) {
+  inline Code convertFromUrQMD(int vItyp, int vIso3) {
     int const pdgInt =
         ::urqmd::pdgid_(vItyp, vIso3); // use the conversion function provided by UrQMD
     if (pdgInt == 0) {                 // ::urqmd::pdgid_ returns 0 on error
@@ -241,7 +241,7 @@ namespace corsika::urqmd {
     return convert_from_PDG(pdg);
   }
 
-  std::pair<int, int> convertToUrQMD(Code code) {
+  inline std::pair<int, int> convertToUrQMD(Code code) {
     static const std::map<int, std::pair<int, int>> mapPDGToUrQMD{
         // data mostly from github.com/afedynitch/ParticleDataTool
         {22, {100, 0}},      // gamma
