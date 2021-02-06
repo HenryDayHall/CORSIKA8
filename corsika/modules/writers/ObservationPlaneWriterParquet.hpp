@@ -23,48 +23,25 @@ namespace corsika {
      *
      * @param name    The name of this output.
      */
-    ObservationPlaneWriterParquet()
-        : ParquetStreamer(){};
+    ObservationPlaneWriterParquet();
 
     /**
-     * Called at the start of each run.
+     * Called at the start of each library.
      */
-    void startOfRun(std::filesystem::path const& directory) final override {
-
-      // setup the streamer
-      initStreamer((directory / "particles.parquet").string());
-
-      // build the schema
-      addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
-               parquet::ConvertedType::INT_32);
-      addField("energy", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
-               parquet::ConvertedType::NONE);
-      addField("x", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
-               parquet::ConvertedType::NONE);
-      addField("y", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
-               parquet::ConvertedType::NONE);
-      addField("radius", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
-               parquet::ConvertedType::NONE);
-
-      // and build the streamer
-      buildStreamer();
-    }
+    void startOfLibrary(std::filesystem::path const& directory) final override;
 
     /**
-     * Called at the end of each event/shower.
+     * Called at the end of each shower.
      */
-    void endOfEvent() final override { ++event_; }
+    void endOfShower() final override;
 
     /**
-     * Called at the end of each run.
+     * Called at the end of each library.
      *
      * This must also increment the run number since we override
      * the default behaviour of BaseOutput.
      */
-    void endOfRun() final override {
-      closeStreamer();
-      ++run_;
-    }
+    void endOfLibrary() final override;
 
   protected:
     /**
@@ -72,15 +49,10 @@ namespace corsika {
      */
     void write(Code const& pid, units::si::HEPEnergyType const& energy,
                units::si::LengthType const& x, units::si::LengthType const& y,
-               units::si::LengthType const& radius) {
-      using namespace units::si;
-
-      // write the next row
-      // NOTE: we must write run_ and then event_ first
-      (*writer_) << run_ << event_ << static_cast<int>(get_PDG(pid)) << energy / 1_eV
-                 << x / 1_m << y / 1_m << radius / 1_m << parquet::EndRow;
-    }
+               units::si::LengthType const& radius);
 
   }; // class ObservationPlaneWriterParquet
 
 } // namespace corsika
+
+#include <corsika/details/modules/writers/ObservationPlaneWriterParquet.inl>
