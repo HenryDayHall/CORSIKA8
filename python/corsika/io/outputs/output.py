@@ -83,6 +83,23 @@ class Output(ABC):
         """
         pass
 
+    @property
+    def data(self) -> Any:
+        """
+        Return the data in its default format.
+
+        We try to use Pandas as the default format for most data.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Any:
+            The data in its default format.
+        """
+        return self.astype()
+
     @staticmethod
     def load_config(path: str) -> Dict[str, Any]:
         """
