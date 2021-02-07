@@ -12,8 +12,4 @@
 	path = modules/conex
 	url = ../../AirShowerPhysics/cxroot.git
 	branch = master
-    shallow = true
-[submodule "externals/arrow"]
-	path = externals/arrow
-	url = https://github.com/apache/arrow
 	shallow = true
