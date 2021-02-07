@@ -52,9 +52,9 @@ namespace corsika {
     virtual YAML::Node getConfig() const = 0;
 
     /**
-     * Get final text outputs for the config file.
+     * Get any summary information for the entire library.
      */
-    virtual YAML::Node getFinalOutput() { return YAML::Node(); };
+    virtual YAML::Node getSummary() { return YAML::Node(); };
   };
 
 } // namespace corsika

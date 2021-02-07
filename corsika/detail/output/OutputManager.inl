@@ -20,7 +20,6 @@
 
 namespace corsika {
 
-
   void OutputManager::writeNode(YAML::Node const& node,
                                 std::filesystem::path const& path) const {
 
@@ -61,7 +60,6 @@ namespace corsika {
 
     // create a quick lambda function to convert a time-instance to a string
     auto timeToString = [&](auto const time) -> std::string {
-
       // the format for our date string
       auto format{"%d/%m/%Y %H:%M:%S %Z"};
 
@@ -220,8 +218,18 @@ namespace corsika {
       throw std::runtime_error("endOfLibrary() called in invalid state.");
     }
 
-    // forward the endOfLibrary() call to all the registered outputs
-    for (auto& [name, output] : outputs_) { output.get().endOfLibrary(); }
+    // write the summary for each output and forward the endOfLibrary call()
+    for (auto& [name, output] : outputs_) {
+
+      // we get the summary for each output as a YAML node
+      auto summary{outputs_.at(name).get().getSummary()};
+
+      // write the summary for this output to the file
+      writeNode(summary, root_ / name / "summary.yaml");
+
+      // and forward the end of library call
+      output.get().endOfLibrary();
+    }
 
     // and the library has finished
     state_ = OutputState::LibraryFinished;

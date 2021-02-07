@@ -151,19 +151,6 @@ namespace corsika {
         energy_ground_ / 1_GeV, count_ground_);
   }
 
-  // template <typename TOutput>
-  // YAML::Node ObservationPlane<TOutput>::getFinalResults() const {
-
-  //     // construct the top-level node
-  //   YAML::Node node;
-
-  //   node["energy_at_ground"] = energy_ground_ / 1 GeV;
-  //   node["count_at_ground"] = count_ground_;
-
-  //   return node;
-
-  // }
-
   template <typename TOutput>
   YAML::Node ObservationPlane<TOutput>::getConfig() const {
     using namespace units::si;
