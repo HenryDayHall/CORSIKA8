@@ -11,28 +11,15 @@
 #include <fstream>
 #include <functional>
 
-#include <iostream>
 #include <iomanip>
 #include <ctime>
 #include <sstream>
 
+#include <fmt/core.h>
+#include <fmt/chrono.h>
+
 namespace corsika {
 
-  std::string OutputManager::getCurrentTime() const {
-
-    // the format for our date string
-    auto fmt{"%d/%m/%Y %H:%M:%S %Z"};
-
-    // get the current time
-    auto t = std::time(nullptr);
-    auto current = *std::localtime(&t);
-
-    // create the string and push the time onto it
-    std::ostringstream oss;
-    oss << std::put_time(&current, fmt);
-
-    return oss.str();
-  }
 
   void OutputManager::writeNode(YAML::Node const& node,
                                 std::filesystem::path const& path) const {
@@ -58,24 +45,49 @@ namespace corsika {
     config["name"] = name_;               // the simulation name
     config["creator"] = "CORSIKA8";       // a tag to identify C8 libraries
     config["version"] = "8.0.0-prealpha"; // the current version
-    config["start time"] = getCurrentTime();
 
     // write the node to a file
     writeNode(config, root_ / ("config.yaml"));
   }
 
-  // void OutputManager::writeTopLevelSummary() const {
+  void OutputManager::writeTopLevelSummary() const {
 
-  //   YAML::Node config;
+    YAML::Node config;
 
-  //   // some basic info
-  //   config["start time"] = getCurrentTime(); // TODO:
-  //   config["end time"] = getCurrentTime();
-  //   // config["showers"] = 0; // TODO
+    // the total number of showers contained in the library
+    config["showers"] = count_;
 
-  //   // write the node to a file
-  //   writeNode(config, root_ / ("summary.yaml"));
-  // }
+    // this next section handles writing some time and duration information
+
+    // create a quick lambda function to convert a time-instance to a string
+    auto timeToString = [&](auto const time) -> std::string {
+
+      // the format for our date string
+      auto format{"%d/%m/%Y %H:%M:%S %Z"};
+
+      // convert the clock to a time_t
+      auto time_tc{std::chrono::system_clock::to_time_t(time)};
+
+      // create the string and push the time onto it
+      std::ostringstream oss;
+      oss << std::put_time(std::localtime(&time_tc), format);
+
+      return oss.str();
+    };
+
+    auto end_time{std::chrono::system_clock::now()};
+
+    // now let's construct an estimate of the runtime
+    auto runtime{end_time - start_time};
+
+    // add the time and duration info
+    config["start time"] = timeToString(start_time);
+    config["end time"] = timeToString(end_time);
+    config["runtime"] = fmt::format("{:%H:%M:%S}", runtime);
+
+    // write the node to a file
+    writeNode(config, root_ / ("summary.yaml"));
+  }
 
   void OutputManager::initOutput(std::string const& name) const {
     // construct the path to this directory
@@ -125,6 +137,9 @@ namespace corsika {
           " The last shower in this libray may be incomplete.");
       endOfShower();
     }
+
+    // write the top level summary file (summary.yaml)
+    writeTopLevelSummary();
 
     // if we are being destructed but EndOfLibrary() has not been called,
     // make sure that we gracefully close all the outputs. This is a supported
@@ -182,6 +197,9 @@ namespace corsika {
 
     // now start the event for all the outputs
     for (auto& [name, output] : outputs_) { output.get().startOfShower(); }
+
+    // increment our shower count
+    ++count_;
 
     // and transition to the in progress state
     state_ = OutputState::ShowerInProgress;

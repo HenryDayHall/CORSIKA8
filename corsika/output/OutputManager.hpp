@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <chrono>
 #include <string>
 #include <filesystem>
 #include <corsika/output/BaseOutput.hpp>
@@ -32,8 +33,10 @@ namespace corsika {
     OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
     std::string const name_;                 ///< The name of this simulation file.
     std::filesystem::path const root_;       ///< The top-level directory for the output.
+    int count_{0};                           ///< The current ID of this shower.
+    std::chrono::time_point<std::chrono::system_clock> const start_time{
+        std::chrono::system_clock::now()};           ///< The time the manager is created.
     inline static auto logger{get_logger("output")}; ///< A custom logger.
-
     /**
      * The outputs that have been registered with us.
      */
@@ -55,9 +58,9 @@ namespace corsika {
     void initOutput(std::string const& name) const;
 
     /**
-     * Get the current local time as a string.
+     * Write the top-level summary of this library.
      */
-    std::string getCurrentTime() const;
+    void writeTopLevelSummary() const;
 
   public:
     /**
