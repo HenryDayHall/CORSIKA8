@@ -45,8 +45,9 @@ class Library(object):
         # store the top-level path
         self.path = path
 
-        # load the config file
+        # load the config and summary files
         self.config = self.load_config(path)
+        self.summary = self.load_summary(path)
 
         # build the list of outputs
         self.__outputs = self.__build_outputs(path)
@@ -99,6 +100,31 @@ class Library(object):
 
         """
         with open(op.join(path, "config.yaml"), "r") as f:
+            return yaml.load(f, Loader=yaml.Loader)
+
+    @staticmethod
+    def load_summary(path: str) -> Dict[str, Any]:
+        """
+        Load the top-level summary from a given library path.
+
+
+        Parameters
+        ----------
+        path: str
+            The path to the directory containing the library.
+
+        Returns
+        -------
+        dict:
+            The summary as a python dictionary.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the summary file cannot be found
+
+        """
+        with open(op.join(path, "summary.yaml"), "r") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
     @staticmethod
