@@ -190,9 +190,6 @@ int main(int argc, char** argv) {
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env};
 
-  // create the output manager that we then register outputs with
-  OutputManager output("vertical_EAS_outputs");
-
   // setup processes, decays and interactions
 
   corsika::sibyll::Interaction sibyll;
@@ -239,6 +236,9 @@ int main(int argc, char** argv) {
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
 
+  // create the output manager that we then register outputs with
+  OutputManager output("vertical_EAS_outputs");
+
   // register the observation plane with the output
   output.add("obsplane", observationLevel);
 
@@ -272,9 +272,7 @@ int main(int argc, char** argv) {
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.forceInteraction();
 
-  output.startOfRun();
   EAS.run();
-  output.endOfRun();
 
   cut.showResults();
   em_continuous.showResults();
@@ -294,4 +292,6 @@ int main(int argc, char** argv) {
   save_hist(hists.labHist(), "inthist_lab_verticalEAS.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_verticalEAS.npz", true);
   longprof.save("longprof_verticalEAS.txt");
+
+  output.endOfLibrary();
 }

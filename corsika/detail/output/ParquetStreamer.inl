@@ -21,9 +21,7 @@ namespace corsika {
     builder_.created_by("CORSIKA8");
 
     // add run and event tags to the file
-    addField("run", parquet::Repetition::REQUIRED, parquet::Type::INT32,
-             parquet::ConvertedType::INT_32);
-    addField("event", parquet::Repetition::REQUIRED, parquet::Type::INT32,
+    addField("shower", parquet::Repetition::REQUIRED, parquet::Type::INT32,
              parquet::ConvertedType::INT_32);
   }
 

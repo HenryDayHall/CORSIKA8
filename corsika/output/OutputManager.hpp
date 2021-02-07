@@ -23,21 +23,20 @@ namespace corsika {
      * Indicates the current state of this manager.
      */
     enum class OutputState {
-      RunNoInit,
-      RunInitialized,
-      EventInProgress,
-      RunFinished,
+      NoInit,
+      LibraryReady,
+      ShowerInProgress,
+      LibraryFinished,
     };
 
-    OutputState state_{OutputState::RunNoInit}; ///< The current state of this manager.
-    std::string const name_;                    ///< The name of this simulation file.
-    std::filesystem::path const root_; ///< The top-level directory for the output.
+    OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
+    std::string const name_;                 ///< The name of this simulation file.
+    std::filesystem::path const root_;       ///< The top-level directory for the output.
     inline static auto logger{get_logger("output")}; ///< A custom logger.
 
     /**
      * The outputs that have been registered with us.
      */
-    // std::map<std::string, std::shared_ptr<BaseOutput>> outputs_;
     std::map<std::string, std::reference_wrapper<BaseOutput>> outputs_;
 
     /**
@@ -54,6 +53,11 @@ namespace corsika {
      * Initialize the "registered" output with a given name.
      */
     void initOutput(std::string const& name) const;
+
+    /**
+     * Get the current local time as a string.
+     */
+    std::string getCurrentTime() const;
 
   public:
     /**
@@ -78,32 +82,31 @@ namespace corsika {
      */
     template <typename TOutput>
     void add(std::string const& name, TOutput& output);
-    // void add(std::string const& name, BaseOutput& output);
 
     /**
-     * Called at the start of each run.
+     * Called at the start of each library.
      *
-     * This iteratively calls startOfRun on each registered output.
+     * This iteratively calls startOfLibrary on each registered output.
      */
-    void startOfRun();
+    void startOfLibrary();
 
     /**
      * Called at the start of each event/shower.
      * This iteratively calls startOfEvent on each registered output.
      */
-    void startOfEvent();
+    void startOfShower();
 
     /**
      * Called at the end of each event/shower.
      * This iteratively calls endOfEvent on each registered output.
      */
-    void endOfEvent();
+    void endOfShower();
 
     /**
-     * Called at the end of each run.
-     * This iteratively calls endOfRun on each registered output.
+     * Called at the end of each library.
+     * This iteratively calls endOfLibrary on each registered output.
      */
-    void endOfRun();
+    void endOfLibrary();
 
   }; // class OutputManager
 

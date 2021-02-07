@@ -33,7 +33,7 @@ namespace corsika {
     setNodes(); // put each particle on stack in correct environment volume
 
     // start this event (i.e. this shower)
-    output_.startOfEvent();
+    output_.startOfShower();
 
     while (!stack_.isEmpty()) {
       while (!stack_.isEmpty()) {
@@ -57,7 +57,7 @@ namespace corsika {
     }
 
     // end this event (i.e. this shower)
-    output_.endOfEvent();
+    output_.endOfShower();
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,

@@ -11,7 +11,7 @@
 namespace corsika {
 
   ObservationPlaneWriterParquet::ObservationPlaneWriterParquet()
-      : ParquetStreamer(){};
+      : ParquetStreamer(){}
 
   void ObservationPlaneWriterParquet::startOfLibrary(
       std::filesystem::path const& directory) {
@@ -47,8 +47,8 @@ namespace corsika {
     using namespace units::si;
 
     // write the next row - we must write `shower_` first.
-    (*writer_) _ << shower_ << static_cast<int>(get_PDG(pid)) << energy / 1_eV << x / 1_m
-                 << y / 1_m << radius / 1_m << parquet::EndRow;
+    (*writer_) << shower_ << static_cast<int>(get_PDG(pid)) << energy / 1_eV << x / 1_m
+               << y / 1_m << radius / 1_m << parquet::EndRow;
   }
 
 } // namespace corsika

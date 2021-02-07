@@ -55,4 +55,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include <corsika/details/modules/writers/ObservationPlaneWriterParquet.inl>
+#include <corsika/detail/modules/writers/ObservationPlaneWriterParquet.inl>

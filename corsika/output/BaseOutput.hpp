@@ -18,12 +18,10 @@ namespace corsika {
    * This is the base class for all outputs so that they
    * can be stored in homogeneous containers.
    */
-  // class BaseOutput : public std::enable_shared_from_this<BaseOutput> {
   class BaseOutput {
 
   protected:
-    int event_{0}; ///< The current event number.
-    int run_{0};   ///< The current run number.
+    int shower_{0}; ///< The current event number.
 
     BaseOutput();
 
@@ -31,22 +29,22 @@ namespace corsika {
     /**
      * Called at the start of each run.
      */
-    virtual void startOfRun(std::filesystem::path const& directory) = 0;
+    virtual void startOfLibrary(std::filesystem::path const& directory) = 0;
 
     /**
      * Called at the start of each event/shower.
      */
-    virtual void startOfEvent() {}
+    virtual void startOfShower() {}
 
     /**
      * Called at the end of each event/shower.
      */
-    virtual void endOfEvent() = 0;
+    virtual void endOfShower() = 0;
 
     /**
      * Called at the end of each run.
      */
-    virtual void endOfRun() = 0;
+    virtual void endOfLibrary() = 0;
 
     /**
      * Get the configuration of this output.

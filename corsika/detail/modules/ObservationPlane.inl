@@ -13,7 +13,9 @@
 namespace corsika {
 
   template <typename TOutput>
-  ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane, DirectionVector const& x_axis, bool deleteOnHit)
+  ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
+                                              DirectionVector const& x_axis,
+                                              bool deleteOnHit)
 
       : plane_(obsPlane)
       , deleteOnHit_(deleteOnHit)
@@ -41,9 +43,7 @@ namespace corsika {
     auto const displacement = trajectory.getPosition(1) - plane_.getCenter();
 
     // add our particles to the output file stream
-    this->write(particle.getPID(),
-                energy,
-                displacement.dot(xAxis_),
+    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
                 displacement.dot(yAxis_),
                 (trajectory.getPosition(1) - plane_.getCenter()).getNorm());
 
@@ -166,46 +166,46 @@ namespace corsika {
 
   template <typename TOutput>
   YAML::Node ObservationPlane<TOutput>::getConfig() const {
-      using namespace units::si;
+    using namespace units::si;
 
-      // construct the top-level node
-      YAML::Node node;
+    // construct the top-level node
+    YAML::Node node;
 
-      // basic info
-      node["type"] = "ObservationPlane";
+    // basic info
+    node["type"] = "ObservationPlane";
 
-      // the center of the plane
-      auto const center{plane_.getCenter()};
+    // the center of the plane
+    auto const center{plane_.getCenter()};
 
-      // save each component in its native coordinate system
-      auto const center_coords{center.getCoordinates(center.getCoordinateSystem())};
-      node["plane"]["center"].push_back(center_coords.getX() / 1_m);
-      node["plane"]["center"].push_back(center_coords.getY() / 1_m);
-      node["plane"]["center"].push_back(center_coords.getZ() / 1_m);
-      node["plane"]["center.units"] = "m";
+    // save each component in its native coordinate system
+    auto const center_coords{center.getCoordinates(center.getCoordinateSystem())};
+    node["plane"]["center"].push_back(center_coords.getX() / 1_m);
+    node["plane"]["center"].push_back(center_coords.getY() / 1_m);
+    node["plane"]["center"].push_back(center_coords.getZ() / 1_m);
+    node["plane"]["center.units"] = "m";
 
-      // the normal vector of the plane
-      auto const normal{plane_.getNormal().getComponents()};
-      node["plane"]["normal"].push_back(normal.getX().magnitude());
-      node["plane"]["normal"].push_back(normal.getY().magnitude());
-      node["plane"]["normal"].push_back(normal.getZ().magnitude());
+    // the normal vector of the plane
+    auto const normal{plane_.getNormal().getComponents()};
+    node["plane"]["normal"].push_back(normal.getX().magnitude());
+    node["plane"]["normal"].push_back(normal.getY().magnitude());
+    node["plane"]["normal"].push_back(normal.getZ().magnitude());
 
-      // the x-axis vector
-      auto const xAxis_coords{xAxis_.getComponents(xAxis_.getCoordinateSystem())};
-      node["x-axis"].push_back(xAxis_coords.getX().magnitude());
-      node["x-axis"].push_back(xAxis_coords.getY().magnitude());
-      node["x-axis"].push_back(xAxis_coords.getZ().magnitude());
+    // the x-axis vector
+    auto const xAxis_coords{xAxis_.getComponents(xAxis_.getCoordinateSystem())};
+    node["x-axis"].push_back(xAxis_coords.getX().magnitude());
+    node["x-axis"].push_back(xAxis_coords.getY().magnitude());
+    node["x-axis"].push_back(xAxis_coords.getZ().magnitude());
 
-      // the y-axis vector
-      auto const yAxis_coords{yAxis_.getComponents(yAxis_.getCoordinateSystem())};
-      node["y-axis"].push_back(yAxis_coords.getX().magnitude());
-      node["y-axis"].push_back(yAxis_coords.getY().magnitude());
-      node["y-axis"].push_back(yAxis_coords.getZ().magnitude());
+    // the y-axis vector
+    auto const yAxis_coords{yAxis_.getComponents(yAxis_.getCoordinateSystem())};
+    node["y-axis"].push_back(yAxis_coords.getX().magnitude());
+    node["y-axis"].push_back(yAxis_coords.getY().magnitude());
+    node["y-axis"].push_back(yAxis_coords.getZ().magnitude());
 
-      node["delete_on_hit"] = deleteOnHit_;
+    node["delete_on_hit"] = deleteOnHit_;
 
-      return node;
-    }
+    return node;
+  }
 
   template <typename TOutput>
   void ObservationPlane<TOutput>::reset() {
