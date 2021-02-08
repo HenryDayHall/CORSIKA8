@@ -30,10 +30,7 @@ class ObservationPlane(Output):
         path: str
             The path to the directory containing this output.
         """
-
-        # load and store our path and config
-        self.path = path
-        self.__config = self.load_config(path)
+        super().__init__(path)
 
         # try and load our data
         try:
@@ -53,7 +50,7 @@ class ObservationPlane(Output):
         bool:
             True if this is a good output.
         """
-        return self.__data is not None and self.__config is not None
+        return self.__data is not None
 
     def astype(self, dtype: str = "pandas", **kwargs: Any) -> Any:
         """
@@ -82,21 +79,6 @@ class ObservationPlane(Output):
                     "We currently only support ['arrow', 'pandas']."
                 )
             )
-
-    @property
-    def config(self) -> Dict[str, Any]:
-        """
-        Return the config file for this output.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        Dict[str, any]
-            The configuration file for this output.
-        """
-        return self.__config
 
     def __repr__(self) -> str:
         """

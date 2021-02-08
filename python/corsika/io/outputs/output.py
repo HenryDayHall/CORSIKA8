@@ -20,7 +20,6 @@ class Output(ABC):
     that wish to provide reading support for CORSIKA8 outputs.
     """
 
-    @abstractmethod
     def __init__(self, path: str):
         """
         __init__ must load the output files and check
@@ -31,7 +30,10 @@ class Output(ABC):
         path: str
             The path to the directory containing this output.
         """
-        pass
+        # load and store our path and config
+        self.path = path
+        self.__config = self.load_config(path)
+        self.__summary = self.load_summary(path)
 
     @abstractmethod
     def is_good(self) -> bool:
@@ -68,7 +70,6 @@ class Output(ABC):
         pass
 
     @property
-    @abstractmethod
     def config(self) -> Dict[str, Any]:
         """
         Return the config file for this output.
@@ -81,7 +82,22 @@ class Output(ABC):
         Dict[str, any]
             The configuration file for this output.
         """
-        pass
+        return self.__config
+
+    @property
+    def summary(self) -> Dict[str, Any]:
+        """
+        Return the summary file for this output.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Dict[str, any]
+            The summary file for this output.
+        """
+        return self.__summary
 
     @property
     def data(self) -> Any:
