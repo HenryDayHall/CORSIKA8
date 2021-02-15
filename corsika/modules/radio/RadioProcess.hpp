@@ -7,13 +7,16 @@
  */
 #pragma once
 
-#include <corsika/framework/process/ContinuousProcess.hpp>
 #include <istream>
 #include <fstream>
 #include <iostream>
 #include <xtensor/xcsv.hpp>
 #include <xtensor/xtensor.hpp>
 #include <string>
+#include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
+
 
 namespace corsika {
 
@@ -27,6 +30,14 @@ namespace corsika {
   template <typename TRadioDetector, typename TRadioImpl, typename TPropagator>
   class RadioProcess : public ContinuousProcess<
                            RadioProcess<TRadioDetector, TRadioImpl, TPropagator>> {
+
+    using ParticleType = corsika::setup::Stack::particle_type;
+    using TrackType = corsika::LeapFrogTrajectory;
+
+    /**
+     * A collection of filter objects for deciding on valid particles and tracks.
+     */
+    std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
 
     /**
      * Get a reference to the underlying radio implementation.
@@ -64,14 +75,38 @@ namespace corsika {
      */
     template <typename Particle, typename Track>
     ProcessReturn doContinuous(Particle& particle, Track const& track) const {
+      //we want the following particles:
+      // Code::Electron & Code::Positron & Code::Gamma
+
       // we wrap Simulate() in doContinuous as the plan is to add particle level
       // filtering or thinning for calculation of the radio emission. This is
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
-      return this->implementation().simulate(particle, track);
+      if (valid(particle, track)) {
+        return this->implementation().simulate(particle, track);
+      }
     }
 
-      /**
+    /**
+     * Decide whether this particle and track is valid for radio emission.
+     */
+    template <typename Particle, typename Track>
+    auto valid(Particle& particle, Track const& track) const {
+
+      // loop over the filters in the our collection
+      for (auto& filter : filters_) {
+        // evaluate the filter. If the filter returns false,
+        // then this track is not valid for radio emission.
+        if (!filter(particle, track)) return false;
+      }
+    }
+
+    template <typename Particle, typename Track>
+    void addFilter(const std::function<bool(Particle&, Track const&)> filter) {
+      filters_.push_back(filter);
+    }
+
+    /**
        * TODO: This is placeholder so we can use text output while
        * we wait for the true output formatting to be ready.
        **/

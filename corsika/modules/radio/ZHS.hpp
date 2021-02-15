@@ -9,6 +9,8 @@
 
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
+#include <corsika/framework/geometry/QuantityVector.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {
 
@@ -22,6 +24,8 @@ namespace corsika {
       using Base::detector_;
       
   public:
+    using ElectricFieldVector =
+    QuantityVector<ElectricFieldType::dimension_type>;
     /**
      * Construct a new ZHS instance.
      *
@@ -45,26 +49,27 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) const {
 
-      auto global_time = particle.getTime(); // this is very shady at the moment...
+      auto globalTime_ = particle.getTime(); // this is very shady at the moment...
+
       //get global time for that track
-      auto starttime = track.getDuration(0); // time at start point of track.
-      auto endtime = track.getDuration(1); // time at end point of track.
+//      auto startTime_ = track.getDuration(0); // time at start point of track.
+//      auto endTime_ = track.getDuration(1); // time at end point of track.
 
       // we loop over each antenna in the collection
       for (auto& antenna : detector_.getAntennas()) {
 
         // auto start = /* TODO: get Point from Track */;
-        auto start = track.getStart(); // just another shady idea...
+        auto startPoint = track.getPosition(0); // this MIGHT work and also get it out of the for loop?
 
         // get the Path from the track to the antenna
         // This is a SignalPathCollection
-        auto paths{this->propagator_.propagate(start, antenna.getLocation())};
+        auto paths{this->propagator_.propagate(startPoint, antenna.getLocation())};
 
         // now loop over the paths that we got above
         // Note: for the StraightPropagator, there will only be a single
         // path but other propagators may return more than one.
         for (auto const& path : paths) {
-//          path.total_time_ + global_time;
+//          path.total_time_ + globalTime_;
 //          path.average_refractivity_;
 //          path.emit_;
 //          path.receive_;
@@ -73,6 +78,11 @@ namespace corsika {
           // combination along this path.
           // global time + time delay
           // and pass it to the antenna.
+
+//      ElectricFieldVector EV_ = -(constants)*(V_perpendicular)*
+//      (delta(global time + time delay - (1 - average_refractivity*beta*costheta)t1)
+//       - delta(global time + time delay- (1 - average_refractivity*beta*costheta)t1))
+//      /(1 - average_refractivity*beta*costheta);
           antenna.receive(/* global time + time delay, receive vector, ElectricFieldVector */);
 
         } // END: loop over paths
@@ -94,7 +104,7 @@ namespace corsika {
     LengthType MaxStepLength(Particle const& particle,
                                         Track const& track) const {
 
-      // TODO : This is where te control the maximum step size
+      // TODO : This is where we control the maximum step size
       // of a particle track in order to maintain the accuracy
       // of the particular formalism.
       //
