@@ -237,6 +237,7 @@ add_subdirectory (modules/sibyll)
 add_subdirectory (modules/qgsjetII)
 add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
+add_subdirectory (modules/epos)
 
 #+++++++++++++++++++++++++++++++
 # unit testing
