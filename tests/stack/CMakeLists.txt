@@ -3,6 +3,7 @@ set (test_stack_sources
   testHistoryStack.cpp
   testHistoryView.cpp
   testGeometryNodeStackExtension.cpp
+  testWeightStackExtension.cpp
   testDummyStack.cpp
   testVectorStack.cpp
   testNuclearStackExtension.cpp

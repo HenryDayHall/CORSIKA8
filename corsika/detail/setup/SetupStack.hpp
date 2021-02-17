@@ -11,6 +11,7 @@
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/stack/GeometryNodeStackExtension.hpp>
 #include <corsika/stack/NuclearStackExtension.hpp>
+#include <corsika/stack/WeightStackExtension.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
 
@@ -27,7 +28,7 @@ namespace corsika {
     // environment:
     template <typename TStackIter>
     using SetupGeometryDataInterface =
-        typename node::MakeGeometryDataInterface<TStackIter, setup::Environment>::type;
+        typename node::make_GeometryDataInterface<TStackIter, setup::Environment>::type;
 
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>

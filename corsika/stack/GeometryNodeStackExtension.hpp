@@ -117,7 +117,7 @@ namespace corsika::node {
   };
 
   template <typename T, typename TEnv>
-  struct MakeGeometryDataInterface {
+  struct make_GeometryDataInterface {
     typedef GeometryDataInterface<T, TEnv> type;
   };
 

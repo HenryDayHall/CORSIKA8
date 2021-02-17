@@ -8,7 +8,7 @@
 
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/stack/DummyStack.hpp>
-#include <corsika/stack/GeometryNodeStackExtension.hpp>
+#include <corsika/stack/WeightStackExtension.hpp>
 
 using namespace corsika;
 
@@ -17,75 +17,69 @@ using namespace corsika;
 #include <iostream>
 using namespace std;
 
-// this is our dummy environment, it only knows its trivial BaseNodeType
-class DummyEnv {
-public:
-  typedef int BaseNodeType;
-};
-
-// the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:
+// the Weight stack:
 template <typename TStackIter>
-using DummyGeometryDataInterface =
-    typename node::make_GeometryDataInterface<TStackIter, DummyEnv>::type;
+using DummyWeightDataInterface =
+    typename weights::make_WeightDataInterface<TStackIter>::type;
 
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>
 using StackWithGeometryInterface =
-    CombinedParticleInterface<dummy_stack::DummyStack::pi_type,
-                              DummyGeometryDataInterface, TStackIter>;
+    CombinedParticleInterface<dummy_stack::DummyStack::pi_type, DummyWeightDataInterface,
+                              TStackIter>;
 
 using TestStack =
     CombinedStack<typename dummy_stack::DummyStack::stack_implementation_type,
-                  node::GeometryData<DummyEnv>, StackWithGeometryInterface>;
+                  weights::WeightData, StackWithGeometryInterface>;
 
-TEST_CASE("GeometryNodeStackExtension", "[stack]") {
+TEST_CASE("WeightStackExtension", "[stack]") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   dummy_stack::NoData noData;
 
-  SECTION("write node") {
+  SECTION("write weights") {
 
-    const int data = 5;
+    double const weight = 5.1;
 
     TestStack s;
-    s.addParticle(std::make_tuple(noData), std::tuple<const int*>{&data});
+    s.addParticle(std::make_tuple(noData), std::tuple<double>{weight});
 
     CHECK(s.getEntries() == 1);
   }
 
-  SECTION("write/read node") {
-    const int data = 15;
+  SECTION("write/read weights") {
+    double const weight = 15;
 
     TestStack s;
     auto p = s.addParticle(std::make_tuple(noData));
-    p.setNode(&data);
+    p.setWeight(weight);
     CHECK(s.getEntries() == 1);
 
     const auto pout = s.getNextParticle();
-    CHECK(*(pout.getNode()) == 15);
+    CHECK(pout.getWeight() == 15);
   }
 
   SECTION("stack fill and cleanup") {
 
-    const int data = 16;
+    double const weight = 16;
 
     TestStack s;
     // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
     for (int i = 0; i < 99; ++i) {
       auto p = s.addParticle(std::tuple<dummy_stack::NoData>{noData});
-      p.setNode(&data);
+      p.setWeight(weight);
     }
 
     CHECK(s.getEntries() == 99);
     double v = 0;
     for (int i = 0; i < 99; ++i) {
       auto p = s.getNextParticle();
-      v += *(p.getNode());
+      v += p.getWeight();
       p.erase();
     }
-    CHECK(v == 99 * data);
+    CHECK(v == 99 * weight);
     CHECK(s.getEntries() == 0);
   }
 }
