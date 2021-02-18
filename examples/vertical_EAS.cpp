@@ -153,11 +153,20 @@ int main(int argc, char** argv) {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
-  const Code beamCode = Code::Nucleus;
   unsigned short const A = std::stoi(std::string(argv[1]));
-  unsigned short Z = std::stoi(std::string(argv[2]));
-  auto const mass = get_nucleus_mass(A, Z);
-  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
+  Code beamCode;
+  HEPEnergyType mass;
+  unsigned short Z = 0;
+  if (A>0) {
+    beamCode = Code::Nucleus;
+    Z = std::stoi(std::string(argv[2]));
+    mass = get_nucleus_mass(A, Z);
+  } else {
+    unsigned int pdg = std::stoi(std::string(argv[2]));
+    beamCode = convert_from_PDG(PDGCode(pdg));
+    mass = get_mass(beamCode);
+  }
+  HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
@@ -187,17 +196,21 @@ int main(int argc, char** argv) {
 
   std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
-  if (A != 1) {
+  if (A > 1) {
     stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    if (Z == 1) {
-      stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
-    } else if (Z == 0) {
-      stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+    if (A==1) {
+      if (Z == 1) {
+	stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+      } else if (Z == 0) {
+	stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+      } else {
+	std::cerr << "illegal parameters" << std::endl;
+	return EXIT_FAILURE;
+      }
     } else {
-      std::cerr << "illegal parameters" << std::endl;
-      return EXIT_FAILURE;
+      stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
     }
   }
 
@@ -210,8 +223,7 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  corsika::qgsjetII::Interaction qgsjet;
-
+  // corsika::qgsjetII::Interaction qgsjet;
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
 
