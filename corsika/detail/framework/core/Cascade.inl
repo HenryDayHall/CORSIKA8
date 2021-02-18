@@ -148,7 +148,13 @@ namespace corsika {
         ProcessReturn::ParticleAbsorbed) {
       CORSIKA_LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
                         vParticle.getPID(), vParticle.getEnergy() / 1_GeV);
-      if (!vParticle.isErased()) vParticle.erase();
+      if (vParticle.isErased()) {
+        CORSIKA_LOG_WARN(
+            "Particle marked as Absorbed in doContinuous, but prematurely erased. This "
+            "may be bug. Check.");
+      } else {
+        vParticle.erase();
+      }
       return;
     }
 
