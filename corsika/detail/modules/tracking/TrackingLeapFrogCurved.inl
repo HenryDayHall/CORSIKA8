@@ -149,21 +149,25 @@ namespace corsika {
       }
 
       bool const numericallyInside = sphere.contains(particle.getPosition());
+      CORSIKA_LOG_TRACE("numericallyInside={}", numericallyInside);
 
       auto const absVelocity = velocity.getNorm();
-      auto energy = particle.getEnergy();
-      auto k = chargeNumber * constants::cSquared * 1_eV / (absVelocity * energy * 1_V);
+      auto const energy = particle.getEnergy();
+      // this is: k = q/|p|
+      auto const k =
+          chargeNumber * constants::cSquared * 1_eV / (absVelocity * energy * 1_V);
 
       auto const direction_B_perp = directionBefore.cross(magneticfield);
-      auto const denom = direction_B_perp.getSquaredNorm() * k * k;
+      auto const denom = 4. / (direction_B_perp.getSquaredNorm() * k * k);
       Vector<length_d> const deltaPos = position - sphere.getCenter();
-      double const a = (direction_B_perp.dot(deltaPos) * k + 1) * 4 / (1_m * 1_m * denom);
-      double const b = directionBefore.dot(deltaPos) * 8 / (denom * 1_m * 1_m * 1_m);
-      double const c =
-          (deltaPos.getSquaredNorm() - (sphere.getRadius() * sphere.getRadius())) * 4 /
-          (denom * 1_m * 1_m * 1_m * 1_m);
-      CORSIKA_LOG_TRACE("denom={}, a={}, b={}, c={}", denom, a, b, c);
-      std::complex<double>* solutions = quartic_solver::solve_quartic(0, a, b, c);
+      double const b = (direction_B_perp.dot(deltaPos) * k + 1) * denom / (1_m * 1_m);
+      double const c = directionBefore.dot(deltaPos) * 2 * denom / (1_m * 1_m * 1_m);
+      LengthType const deltaPosLength = deltaPos.getNorm();
+      double const d = (deltaPosLength + sphere.getRadius()) *
+                       (deltaPosLength - sphere.getRadius()) * denom /
+                       (1_m * 1_m * 1_m * 1_m);
+      CORSIKA_LOG_TRACE("denom={}, b={}, c={}, d={}", denom, b, c, d);
+      std::complex<double> const* solutions = quartic_solver::solve_quartic(0, b, c, d);
       LengthType d_enter, d_exit;
       int first = 0, first_entry = 0, first_exit = 0;
       for (int i = 0; i < 4; i++) {
@@ -172,8 +176,8 @@ namespace corsika {
           CORSIKA_LOG_TRACE("Solution (real) for current Volume: {} ", dist);
           if (numericallyInside) {
             // there must be an entry (negative) and exit (positive) solution
-            if (dist < -0.0001_m) { // security margin to assure transfer to next
-                                    // logical volume
+            if (dist < 0.0001_m) { // security margin to assure transfer to next
+                                   // logical volume
               if (first_entry == 0) {
                 d_enter = dist;
               } else {
@@ -181,7 +185,7 @@ namespace corsika {
               }
               first_entry++;
 
-            } else { // thus, dist >= -0.0001_m
+            } else { // thus, dist > -0.0001_m
 
               if (first_exit == 0) {
                 d_exit = dist;
@@ -196,7 +200,7 @@ namespace corsika {
 
             // both physical solutions (entry, exit) must be positive, and as small as
             // possible
-            if (dist < -0.0001_m) { // need small numerical margin, to assure transport
+            if (dist < 0.0001_m) { // need small numerical margin, to assure transport
               // into next logical volume
               continue;
             }
@@ -268,6 +272,9 @@ namespace corsika {
         LengthType const MaxStepLength1 = (sqrSqrtArg - norm_projected) / denom;
         LengthType const MaxStepLength2 = (-sqrSqrtArg - norm_projected) / denom;
 
+        CORSIKA_LOG_TRACE("MaxStepLength1={}, MaxStepLength2={}", MaxStepLength1,
+                          MaxStepLength2);
+
         // check: both intersections in past
         if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
           return Intersections(std::numeric_limits<double>::infinity() * 1_s);
@@ -294,6 +301,9 @@ namespace corsika {
             "ERROR?)");
 
       } // end if curved-tracking
+
+      CORSIKA_LOG_TRACE("straight tracking with  chargeNumber={}, B={}", chargeNumber,
+                        magneticfield);
 
       return tracking_line::Tracking::intersect(particle, plane);
     }

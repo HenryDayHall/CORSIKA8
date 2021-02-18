@@ -84,13 +84,14 @@ namespace corsika::tracking_line {
     auto const delta = plane.getCenter() - particle.getPosition();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const n = plane.getNormal();
-    auto const c = n.dot(velocity);
+    auto const n_dot_v = n.dot(velocity);
 
-    CORSIKA_LOG_TRACE("c={}, delta={}, momentum={}", c, delta, particle.getMomentum());
+    CORSIKA_LOG_TRACE("n_dot_v={}, delta={}, momentum={}", n_dot_v, delta,
+                      particle.getMomentum());
 
-    return Intersections(c.magnitude() == 0
+    return Intersections(n_dot_v.magnitude() == 0
                              ? std::numeric_limits<TimeType::value_type>::infinity() * 1_s
-                             : n.dot(delta) / c);
+                             : n.dot(delta) / n_dot_v);
   }
 
 } // namespace corsika::tracking_line

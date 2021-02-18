@@ -6,6 +6,8 @@
  * the license.
  */
 
+#define DEBUG 1
+
 /* clang-format off */
 // InteractionCounter used boost/histogram, which
 // fails if boost/type_traits have been included before. Thus, we have
@@ -129,8 +131,24 @@ int main(int argc, char** argv) {
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km+constants::EarthRadius::Mean);
   builder.assemble(env);
+
+  CORSIKA_LOG_DEBUG(
+      "environment setup: universe={}, layer1={}, layer2={}, layer3={}, layer4={}, "
+      "layer5={}",
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 130_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 110_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 50_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 20_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 5_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 2_km, 0_m, 0_m}))));
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -159,7 +177,7 @@ int main(int argc, char** argv) {
        << ", norm = " << plab.getNorm() << endl;
 
   auto const observationHeight = 0_km + builder.getEarthRadius();
-  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+  auto const injectionHeight = 111.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
