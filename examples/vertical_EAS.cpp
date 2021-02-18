@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km+constants::EarthRadius::Mean);
+  builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
 
   CORSIKA_LOG_DEBUG(
@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
   Code beamCode;
   HEPEnergyType mass;
   unsigned short Z = 0;
-  if (A>0) {
+  if (A > 0) {
     beamCode = Code::Nucleus;
     Z = std::stoi(std::string(argv[2]));
     mass = get_nucleus_mass(A, Z);
@@ -200,14 +200,14 @@ int main(int argc, char** argv) {
     stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    if (A==1) {
+    if (A == 1) {
       if (Z == 1) {
-	stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+        stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
       } else if (Z == 0) {
-	stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+        stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
       } else {
-	std::cerr << "illegal parameters" << std::endl;
-	return EXIT_FAILURE;
+        std::cerr << "illegal parameters" << std::endl;
+        return EXIT_FAILURE;
       }
     } else {
       stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));

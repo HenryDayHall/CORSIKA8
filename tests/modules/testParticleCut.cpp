@@ -23,7 +23,7 @@
 
 using namespace corsika;
 
-TEST_CASE("ParticleCut", "[processes]") {
+TEST_CASE("ParticleCut", "processes") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
@@ -222,7 +222,10 @@ TEST_CASE("ParticleCut", "[processes]") {
     for (auto proType : particleList) {
       auto particle = stack.addParticle(std::make_tuple(
           proType, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
-      cut.doContinuous(particle, track);
+
+      if (cut.doContinuous(particle, track) == ProcessReturn::ParticleAbsorbed) {
+        particle.erase();
+      }
     }
 
     CHECK(stack.getEntries() == 9);

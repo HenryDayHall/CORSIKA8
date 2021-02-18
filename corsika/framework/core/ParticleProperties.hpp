@@ -73,12 +73,14 @@ namespace corsika {
 
   //! true iff the particle is a hard-coded nucleus or Code::Nucleus
   bool constexpr is_nucleus(Code const);
-  bool constexpr is_hadron(Code const);    //!< true iff particle is hadron
-  bool constexpr is_em(Code const);        //!< true iff particle is electron, positron or gamma
-  bool constexpr is_muon(Code const);      //!< true iff particle is mu+ or mu-
-  bool constexpr is_neutrino(Code const);  //!< true iff particle is (anti-) neutrino
-  int constexpr get_nucleus_A(Code const); //!< returns A for hard-coded nucleus, otherwise 0
-  int constexpr get_nucleus_Z(Code const); //!< returns Z for hard-coded nucleus, otherwise 0
+  bool constexpr is_hadron(Code const); //!< true iff particle is hadron
+  bool constexpr is_em(Code const); //!< true iff particle is electron, positron or gamma
+  bool constexpr is_muon(Code const);     //!< true iff particle is mu+ or mu-
+  bool constexpr is_neutrino(Code const); //!< true iff particle is (anti-) neutrino
+  int constexpr get_nucleus_A(
+      Code const); //!< returns A for hard-coded nucleus, otherwise 0
+  int constexpr get_nucleus_Z(
+      Code const); //!< returns Z for hard-coded nucleus, otherwise 0
 
   //! returns mass of (A,Z) nucleus, disregarding binding energy
   HEPMassType get_nucleus_mass(unsigned int const, unsigned int const);

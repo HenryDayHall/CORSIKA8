@@ -176,7 +176,7 @@ namespace corsika {
           CORSIKA_LOG_TRACE("Solution (real) for current Volume: {} ", dist);
           if (numericallyInside) {
             // there must be an entry (negative) and exit (positive) solution
-            if (dist < 0.0001_m) { // security margin to assure transfer to next
+            if (dist < -0.0001_m) { // security margin to assure transfer to next
                                    // logical volume
               if (first_entry == 0) {
                 d_enter = dist;
@@ -200,7 +200,7 @@ namespace corsika {
 
             // both physical solutions (entry, exit) must be positive, and as small as
             // possible
-            if (dist < 0.0001_m) { // need small numerical margin, to assure transport
+            if (dist < -0.0001_m) { // need small numerical margin, to assure transport
               // into next logical volume
               continue;
             }
