@@ -48,7 +48,6 @@ namespace corsika {
     if (deleteOnHit_) {
       count_ground_++;
       energy_ground_ += energy;
-      particle.erase();
       return ProcessReturn::ParticleAbsorbed;
     } else {
       return ProcessReturn::Ok;

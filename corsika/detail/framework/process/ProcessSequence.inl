@@ -67,12 +67,10 @@ namespace corsika {
     }
 
     if constexpr (t2ProcSeq) {
-      if (!isAbsorbed(ret)) { ret |= B_.doContinuous(particle, vT, limitId); }
+      ret |= B_.doContinuous(particle, vT, limitId);
     } else if constexpr (is_continuous_process_v<process2_type>) {
-      if (!isAbsorbed(ret)) {
-        ret |= B_.doContinuous(particle, vT,
-                               limitId == ContinuousProcessIndex(IndexProcess2));
-      }
+      ret |=
+          B_.doContinuous(particle, vT, limitId == ContinuousProcessIndex(IndexProcess2));
     }
 
     return ret;
