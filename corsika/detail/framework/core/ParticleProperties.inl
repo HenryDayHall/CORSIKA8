@@ -53,15 +53,15 @@ namespace corsika {
     return particle::detail::isHadron[static_cast<CodeIntType>(p)];
   }
 
-  inline bool constexpr is_em(Code c) {
+  inline bool constexpr is_em(Code const c) {
     return c == Code::Electron || c == Code::Positron || c == Code::Gamma;
   }
 
-  inline bool constexpr is_muon(Code c) {
+  inline bool constexpr is_muon(Code const c) {
     return c == Code::MuPlus || c == Code::MuMinus;
   }
 
-  inline bool constexpr is_neutrino(Code c) {
+  inline bool constexpr is_neutrino(Code const c) {
     return c == Code::NuE || c == Code::NuMu || c == Code::NuTau || c == Code::NuEBar ||
            c == Code::NuMuBar || c == Code::NuTauBar;
   }
@@ -88,7 +88,7 @@ namespace corsika {
     return stream << get_name(code);
   }
 
-  inline Code convert_from_PDG(PDGCode p) {
+  inline Code convert_from_PDG(PDGCode const p) {
     static_assert(particle::detail::conversionArray.size() % 2 == 1);
     // this will fail, for the strange case where the maxPDG is negative...
     int constexpr maxPDG{(particle::detail::conversionArray.size() - 1) >> 1};
