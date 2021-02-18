@@ -64,18 +64,18 @@ namespace corsika {
     double const beta2 = (gamma2 - 1) / gamma2; // 1-1/gamma2    (1-1/gamma)*(1+1/gamma);
                                                 // (gamma_2-1)/gamma_2 = (1-1/gamma2);
     double constexpr c2 = 1;                    // HEP convention here c=c2=1
-    CORSIKA_LOG_DEBUG("BetheBloch beta2={}, gamma2={}", beta2, gamma2);
+    CORSIKA_LOG_TRACE("BetheBloch beta2={}, gamma2={}", beta2, gamma2);
     [[maybe_unused]] double const eta2 = beta2 / (1 - beta2);
     HEPMassType const Wmax =
         2 * me * c2 * beta2 * gamma2 / (1 + 2 * gamma * me / m + me2 / m2);
     // approx, but <<1%    HEPMassType const Wmax = 2*me*c2*beta2*gamma2;      for HEAVY
     // PARTICLES Wmax ~ 2me v2 for non-relativistic particles
-    CORSIKA_LOG_DEBUG("BetheBloch Wmax={}", Wmax);
+    CORSIKA_LOG_TRACE("BetheBloch Wmax={}", Wmax);
 
     // Sternheimer parameterization, density corrections towards high energies
     // NOTE/TODO: when Cbar is 0 it needs to be approximated from parameterization ->
     // MISSING
-    CORSIKA_LOG_DEBUG("BetheBloch p.getMomentum().getNorm()/m{}=",
+    CORSIKA_LOG_TRACE("BetheBloch p.getMomentum().getNorm()/m{}=",
                       p.getMomentum().getNorm() / m);
     double const x = log10(p.getMomentum().getNorm() / m);
     double delta = 0;
@@ -86,7 +86,7 @@ namespace corsika {
     } else if (x < x0) { // and IF conductor (otherwise, this is 0)
       delta = delta0 * pow(100, 2 * (x - x0));
     }
-    CORSIKA_LOG_DEBUG("BetheBloch delta={}", delta);
+    CORSIKA_LOG_TRACE("BetheBloch delta={}", delta);
 
     // with further low energies correction, accurary ~1% down to beta~0.05 (1MeV for p)
 
@@ -141,18 +141,26 @@ namespace corsika {
 
   inline ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
                                                    setup::Trajectory const& t,
-                                                   bool const) {
+                                                   bool const limitStep) {
+
+    // if this step was limiting the CORSIKA stepping, the particle is lost
+    if (limitStep) {
+      fillProfile(t, p.getEnergy());
+      p.setEnergy(p.getMass());
+      return ProcessReturn::ParticleAbsorbed;
+    }
+
     if (p.getChargeNumber() == 0) return ProcessReturn::Ok;
 
     GrammageType const dX =
         p.getNode()->getModelProperties().getIntegratedGrammage(t, t.getLength());
-    CORSIKA_LOG_DEBUG("EnergyLoss pid={}, z={}, dX={} g/cm2", p.getPID(),
+    CORSIKA_LOG_TRACE("EnergyLoss pid={}, z={}, dX={} g/cm2", p.getPID(),
                       p.getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType dE = getTotalEnergyLoss(p, dX);
     auto E = p.getEnergy();
     [[maybe_unused]] const auto Ekin = E - p.getMass();
     auto Enew = E + dE;
-    CORSIKA_LOG_DEBUG("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
+    CORSIKA_LOG_TRACE("EnergyLoss  dE={} MeV, E={} GeV, Ekin={} GeV, Enew={} GeV",
                       dE / 1_MeV, E / 1_GeV, Ekin / 1_GeV, Enew / 1_GeV);
     p.setEnergy(Enew);
     updateMomentum(p, Enew);
@@ -168,22 +176,17 @@ namespace corsika {
     }
 
     auto constexpr dX = 1_g / square(1_cm);
-    auto const dEdX = -getTotalEnergyLoss(vParticle, dX) / dX; // dE > 0
-    //~ auto const Ekin = vParticle.getEnergy() - vParticle.getMass();
-
-    auto const emCut = get_energy_threshold(vParticle.getPID());
-    // in any case: never go below 0.99*emCut This needs to be
-    // slightly smaller than emCut since, either this Step is limited
-    // by energy_lim, then the particle is stopped in a very short
-    // range (before doing anythin else) and is then removed
-    // instantly. The exact 3D position where it reaches emCut is not very
-    // important, the important fact is that its E_kin is zero
-    // afterwards.
-    //
-    const auto energy = vParticle.getEnergy();
-    auto energy_lim = std::max(0.9 * energy, 0.99 * emCut);
-
-    auto const maxGrammage = (energy - energy_lim) / dEdX;
+    auto const dEdX = -getTotalEnergyLoss(vParticle, dX) / dX;
+    auto const energy = vParticle.getEnergy();
+    auto const energy_lim = std::max(
+        energy * 0.9,                            // either 10% relative loss max., or
+        get_energy_threshold(vParticle.getPID()) // energy thresholds globally defined for
+                                                 // individual particles
+            *
+            0.99 // need to go 1% below global e-cut to assure removal in ParticleCut. The
+                 // 1% does not matter since at cut-time the entire energy is removed.
+    );
+    auto const maxGrammage = (vParticle.getEnergy() - energy_lim) / dEdX;
 
     return vParticle.getNode()->getModelProperties().getArclengthFromGrammage(
         vTrack, maxGrammage);
@@ -219,7 +222,7 @@ namespace corsika {
     if (binEnd < 0) binEnd = 0;
     if (binEnd > maxBin) binEnd = maxBin;
 
-    CORSIKA_LOG_DEBUG("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
+    CORSIKA_LOG_TRACE("energy deposit of -dE={} between {} and {}", -dE, grammageStart,
                       grammageEnd);
 
     auto energyCount = HEPEnergyType::zero();
@@ -230,7 +233,7 @@ namespace corsika {
       profile_[bin] += increment;
       energyCount += increment;
 
-      CORSIKA_LOG_DEBUG("filling bin {} with weight {} : {} ", bin, weight, increment);
+      CORSIKA_LOG_TRACE("filling bin {} with weight {} : {} ", bin, weight, increment);
     };
 
     // fill longitudinal profile
@@ -242,7 +245,7 @@ namespace corsika {
       for (int bin = binStart + 1; bin < binEnd; ++bin) { fill(bin, dX_); }
     }
 
-    CORSIKA_LOG_DEBUG("total energy added to histogram: {} ", energyCount);
+    CORSIKA_LOG_TRACE("total energy added to histogram: {} ", energyCount);
   }
 
   inline void BetheBlochPDG::printProfile() const {
