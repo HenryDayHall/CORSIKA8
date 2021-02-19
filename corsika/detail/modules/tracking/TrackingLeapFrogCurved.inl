@@ -177,7 +177,7 @@ namespace corsika {
           if (numericallyInside) {
             // there must be an entry (negative) and exit (positive) solution
             if (dist < -0.0001_m) { // security margin to assure transfer to next
-                                   // logical volume
+                                    // logical volume
               if (first_entry == 0) {
                 d_enter = dist;
               } else {
