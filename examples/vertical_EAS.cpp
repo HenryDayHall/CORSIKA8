@@ -101,8 +101,10 @@ int main(int argc, char** argv) {
   CORSIKA_LOG_INFO("vertical_EAS");
 
   if (argc < 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
-    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed] \n"
+                 "       if A=0, Z is interpreted as PDG code \n"
+                 "       if no seed is given, a random seed is chosen \n"
+              << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);

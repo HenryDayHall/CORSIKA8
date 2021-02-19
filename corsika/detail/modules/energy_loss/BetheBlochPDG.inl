@@ -141,14 +141,16 @@ namespace corsika {
 
   inline ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
                                                    setup::Trajectory const& t,
-                                                   bool const limitStep) {
+                                                   bool const) {
 
     // if this step was limiting the CORSIKA stepping, the particle is lost
+    /* see Issue https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/-/issues/389
     if (limitStep) {
       fillProfile(t, p.getEnergy());
       p.setEnergy(p.getMass());
       return ProcessReturn::ParticleAbsorbed;
     }
+    */
 
     if (p.getChargeNumber() == 0) return ProcessReturn::Ok;
 
