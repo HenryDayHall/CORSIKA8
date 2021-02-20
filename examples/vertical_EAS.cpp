@@ -6,8 +6,6 @@
  * the license.
  */
 
-#define DEBUG 1
-
 /* clang-format off */
 // InteractionCounter used boost/histogram, which
 // fails if boost/type_traits have been included before. Thus, we have
@@ -96,7 +94,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 int main(int argc, char** argv) {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 

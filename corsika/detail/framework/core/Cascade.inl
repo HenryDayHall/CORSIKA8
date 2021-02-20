@@ -121,11 +121,17 @@ namespace corsika {
     ContinuousProcessStepLength const continuousMaxStep =
         sequence_.getMaxStepLength(vParticle, step);
     LengthType const continuous_max_dist = continuousMaxStep;
-    ContinuousProcessIndex const limitingId = continuousMaxStep;
+    ContinuousProcessIndex limitingId;
 
     // take minimum of geometry, interaction, decay for next step
-    auto const min_distance =
-        std::min({distance_interact, distance_decay, continuous_max_dist, geomMaxLength});
+    LengthType const min_discrete = std::min(distance_interact, distance_decay);
+    LengthType const min_non_continuous = std::min(min_discrete, geomMaxLength);
+    LengthType const min_distance = std::min(min_non_continuous, continuous_max_dist);
+
+    if (continuous_max_dist < min_non_continuous) {
+      limitingId =
+          continuousMaxStep; // the current step IS limited by known continuous process
+    }
 
     CORSIKA_LOG_DEBUG(
         "transport particle by : {} m "
@@ -157,66 +163,18 @@ namespace corsika {
       }
       return;
     }
+    if (continuous_max_dist < min_non_continuous) {
+      return; // there is nothing further further
+    }
 
     CORSIKA_LOG_DEBUG("sth. happening before geometric limit ? {}",
                       ((min_distance < geomMaxLength) ? "yes" : "no"));
 
-    if (min_distance < geomMaxLength) { // interaction to happen within geometric limit
-
-      // check whether decay or interaction limits this step the
-      // outcome of decay or interaction MAY be a) new particles in
-      // secondaries, b) the projectile particle deleted (or
-      // changed)
-
-      TStackView secondaries(vParticle);
-
-      if (min_distance < continuous_max_dist) {
-        /*
-          Create SecondaryView object on Stack. The data container
-          remains untouched and identical, and 'projectil' is identical
-          to 'vParticle' above this line. However,
-          projectil.AddSecondaries populate the SecondaryView, which can
-          then be used afterwards for further processing. Thus: it is
-          important to use projectle/view (and not vParticle) for Interaction,
-          and Decay!
-        */
-
-        [[maybe_unused]] auto projectile = secondaries.getProjectile();
-
-        if (distance_interact < distance_decay) {
-          interaction(secondaries);
-        } else {
-          decay(secondaries);
-          // make sure particle actually did decay if it should have done so
-          if (secondaries.getSize() == 1 &&
-              projectile.getPID() == secondaries.getNextParticle().getPID())
-            throw std::runtime_error(fmt::format("Particle {} decays into itself!",
-                                                 get_name(projectile.getPID())));
-        }
-
-        sequence_.doSecondaries(secondaries);
-        vParticle.erase();
-      } else { // step-length limitation within volume
-
-        CORSIKA_LOG_DEBUG("step-length limitation");
-        // no further physics happens here. just proceed to next step.
-      }
-
-      [[maybe_unused]] auto const assertion = [&] {
-        auto const* numericalNodeAfterStep =
-            environment_.getUniverse()->getContainingNode(vParticle.getPosition());
-        CORSIKA_LOG_TRACE(
-            "Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
-            fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
-        return numericalNodeAfterStep == currentLogicalNode;
-      };
-
-      assert(assertion()); // numerical and logical nodes should match, since
-                           // we did not cross any volume boundary
-
-    } else { // boundary crossing, step is limited by volume boundary
+    if (geomMaxLength < min_discrete) {
+      // geometric / tracking limit
 
       if (nextVol != currentLogicalNode) {
+        // boundary crossing, step is limited by volume boundary
 
         CORSIKA_LOG_DEBUG("volume boundary crossing to {}", fmt::ptr(nextVol));
 
@@ -237,8 +195,59 @@ namespace corsika {
         */
 
         sequence_.doBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+        return;
       }
+
+      CORSIKA_LOG_DEBUG("step limit reached. nothing further happens.");
+
+      [[maybe_unused]] auto const assertion = [&] {
+        auto const* numericalNodeAfterStep =
+            environment_.getUniverse()->getContainingNode(vParticle.getPosition());
+        CORSIKA_LOG_TRACE(
+            "Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
+            fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
+        return numericalNodeAfterStep == currentLogicalNode;
+      };
+
+      assert(assertion()); // numerical and logical nodes should match, since
+                           // we did not cross any volume boundary
+
+      // step length limit
+      return;
     }
+
+    // interaction or decay to happen in this step
+    // the outcome of decay or interaction MAY be a) new particles in
+    // secondaries, b) the projectile particle deleted (or
+    // changed)
+
+    TStackView secondaries(vParticle);
+
+    /*
+      Create SecondaryView object on Stack. The data container
+      remains untouched and identical, and 'projectil' is identical
+      to 'vParticle' above this line. However,
+      projectil.AddSecondaries populate the SecondaryView, which can
+      then be used afterwards for further processing. Thus: it is
+      important to use projectle/view (and not vParticle) for Interaction,
+      and Decay!
+    */
+
+    [[maybe_unused]] auto projectile = secondaries.getProjectile();
+
+    if (distance_interact < distance_decay) {
+      interaction(secondaries);
+    } else {
+      decay(secondaries);
+      // make sure particle actually did decay if it should have done so
+      if (secondaries.getSize() == 1 &&
+          projectile.getPID() == secondaries.getNextParticle().getPID())
+        throw std::runtime_error(fmt::format("Particle {} decays into itself!",
+                                             get_name(projectile.getPID())));
+    }
+
+    sequence_.doSecondaries(secondaries);
+    vParticle.erase();
   }
 
   template <typename TTracking, typename TProcessList, typename TStack,

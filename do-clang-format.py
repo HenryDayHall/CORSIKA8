@@ -10,6 +10,14 @@ import os
 import sys
 import re
 
+do_progress = False
+try:    
+    from progress.bar import ChargingBar
+    do_progress = True
+except ImportError as e:
+    do_progress = False
+    # no progress bar
+
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--apply', action="store_true",
     help="Apply clang-format to files which need changes.")
@@ -85,17 +93,26 @@ version = subp.check_output(cmd.split() + ["--version"]).decode("utf-8")
 print (version)
 print ("Note: the clang-format version has an impact on the result. Make sure you are consistent with current CI. Consider \'--docker\' option.")
 
+
+bar = None
+if do_progress:
+    bar = ChargingBar('Processing', max=len(filelist))
+
 if args.apply:
     for filename in filelist:        
+        if bar: bar.next()
         subp.check_call(cmd.split() + ["-i", filename])
+    if bar: bar.finish()
         
 else:
     # only print files which need formatting
     files_need_formatting = 0
     for filename in filelist:
+        if bar: bar.next()
         a = open(filename, "rb").read()
         b = subp.check_output(cmd.split() + [filename])
         if a != b:
             files_need_formatting += 1
             print(filename)
+    if bar: bar.finish()            
     sys.exit(1 if files_need_formatting > 0 else 0)

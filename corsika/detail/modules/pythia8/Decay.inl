@@ -82,7 +82,7 @@ namespace corsika::pythia8 {
 
   inline void Decay::setHandleDecay(Code const vParticleCode) {
     handleAllDecays_ = false;
-    CORSIKA_LOG_INFO("Pythia::Decay: set to handle decay of {} ", vParticleCode);
+    CORSIKA_LOG_DEBUG("Pythia::Decay: set to handle decay of {} ", vParticleCode);
     if (Decay::canHandleDecay(vParticleCode))
       handledDecays_.insert(vParticleCode);
     else
@@ -106,12 +106,12 @@ namespace corsika::pythia8 {
   }
 
   inline void Decay::setUnstable(Code const pCode) {
-    CORSIKA_LOG_INFO("Pythia::Decay: setting {} unstable..", pCode);
+    CORSIKA_LOG_DEBUG("Pythia::Decay: setting {} unstable..", pCode);
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), true);
   }
 
   inline void Decay::setStable(Code const pCode) {
-    CORSIKA_LOG_INFO("Pythia::Decay: setting {} stable..", pCode);
+    CORSIKA_LOG_DEBUG("Pythia::Decay: setting {} stable..", pCode);
     Pythia8::Pythia::particleData.mayDecay(static_cast<int>(get_PDG(pCode)), false);
   }
 
@@ -122,8 +122,8 @@ namespace corsika::pythia8 {
   inline bool Decay::canDecay(Code const pCode) {
     bool const ans =
         Pythia8::Pythia::particleData.canDecay(static_cast<int>(get_PDG(pCode)));
-    CORSIKA_LOG_INFO("Pythia::Decay: checking if particle: {} can decay in PYTHIA? {} ",
-                     pCode, ans);
+    CORSIKA_LOG_DEBUG("Pythia::Decay: checking if particle: {} can decay in PYTHIA? {} ",
+                      pCode, ans);
     return ans;
   }
 
@@ -153,13 +153,13 @@ namespace corsika::pythia8 {
 
       TimeType const t0 = get_lifetime(pid);
       auto const lifetime = gamma * t0;
-      CORSIKA_LOG_INFO("Pythia::Decay: code: {}", particle.getPID());
-      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: t0: {}", t0);
-      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: energy: {} GeV", E / 1_GeV);
-      CORSIKA_LOG_INFO("Pythia::Decay: momentum: {} GeV",
-                       particle.getMomentum().getComponents() / 1_GeV);
-      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: gamma: {}", gamma);
-      CORSIKA_LOG_INFO("Pythia::Decay: MinStep: tau: {} ", lifetime);
+      CORSIKA_LOG_TRACE("Pythia::Decay: code: {}", particle.getPID());
+      CORSIKA_LOG_TRACE("Pythia::Decay: MinStep: t0: {}", t0);
+      CORSIKA_LOG_TRACE("Pythia::Decay: MinStep: energy: {} GeV", E / 1_GeV);
+      CORSIKA_LOG_TRACE("Pythia::Decay: momentum: {} GeV",
+                        particle.getMomentum().getComponents() / 1_GeV);
+      CORSIKA_LOG_TRACE("Pythia::Decay: MinStep: gamma: {}", gamma);
+      CORSIKA_LOG_TRACE("Pythia::Decay: MinStep: tau: {} ", lifetime);
 
       return lifetime;
     } else
@@ -209,7 +209,7 @@ namespace corsika::pythia8 {
     if (!Pythia8::Pythia::next())
       throw std::runtime_error("Pythia::Decay: decay failed!");
     else
-      CORSIKA_LOG_INFO("Pythia::Decay: particles after decay: {} ", event.size());
+      CORSIKA_LOG_DEBUG("Pythia::Decay: particles after decay: {} ", event.size());
 
     if (print_listing_) {
       // list final state
@@ -227,9 +227,10 @@ namespace corsika::pythia8 {
         FourVector const fourMomRest{Erest, pRest};
         auto const fourMomLab = boost.fromCoM(fourMomRest);
 
-        CORSIKA_LOG_INFO("particle: id={} momentum={} energy={} ", pyId,
-                         fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
-                         fourMomLab.getTimeLikeComponent());
+        CORSIKA_LOG_TRACE(
+            "particle: id={} momentum={} energy={} ", pyId,
+            fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
+            fourMomLab.getTimeLikeComponent());
 
         view.addSecondary(std::make_tuple(pyId, fourMomLab.getTimeLikeComponent(),
                                           fourMomLab.getSpaceLikeComponents(), decayPoint,

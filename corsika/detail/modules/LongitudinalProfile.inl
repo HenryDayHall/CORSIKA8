@@ -35,11 +35,11 @@ namespace corsika {
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
     GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
 
-    CORSIKA_LOG_INFO("pos1={} m, pos2={}, X1={} g/cm2, X2={} g/cm2",
-                     vTrack.getPosition(0).getCoordinates() / 1_m,
-                     vTrack.getPosition(1).getCoordinates() / 1_m,
-                     grammageStart / 1_g * square(1_cm),
-                     grammageEnd / 1_g * square(1_cm));
+    CORSIKA_LOG_TRACE("pos1={} m, pos2={}, X1={} g/cm2, X2={} g/cm2",
+                      vTrack.getPosition(0).getCoordinates() / 1_m,
+                      vTrack.getPosition(1).getCoordinates() / 1_m,
+                      grammageStart / 1_g * square(1_cm),
+                      grammageEnd / 1_g * square(1_cm));
 
     // Note: particle may go also "upward", thus, grammageEnd<grammageStart
     const int binStart = std::ceil(grammageStart / dX_);
