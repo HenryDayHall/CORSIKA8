@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
     Z = std::stoi(std::string(argv[2]));
     mass = get_nucleus_mass(A, Z);
   } else {
-    unsigned int pdg = std::stoi(std::string(argv[2]));
+    int pdg = std::stoi(std::string(argv[2]));
     beamCode = convert_from_PDG(PDGCode(pdg));
     mass = get_mass(beamCode);
   }
@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
-  StackInspector<setup::Stack> stackInspect(1000, false, E0);
+  StackInspector<setup::Stack> stackInspect(50000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {

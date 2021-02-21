@@ -121,16 +121,21 @@ namespace corsika {
     ContinuousProcessStepLength const continuousMaxStep =
         sequence_.getMaxStepLength(vParticle, step);
     LengthType const continuous_max_dist = continuousMaxStep;
-    ContinuousProcessIndex limitingId;
 
     // take minimum of geometry, interaction, decay for next step
     LengthType const min_discrete = std::min(distance_interact, distance_decay);
     LengthType const min_non_continuous = std::min(min_discrete, geomMaxLength);
     LengthType const min_distance = std::min(min_non_continuous, continuous_max_dist);
 
-    if (continuous_max_dist < min_non_continuous) {
+    // inform ContinuousProcesses (if applicable) that it is responsible for step-limit
+    // this would become simpler if we follow the idea of Max to enumerate ALL types of
+    // processes. Then non-contunuous are included and no further logic is needed to
+    // distinguish between continuous and non-continuous limit.
+    ContinuousProcessIndex limitingId;
+    bool const isContinuous = continuous_max_dist < min_non_continuous;
+    if (isContinuous) {
       limitingId =
-          continuousMaxStep; // the current step IS limited by known continuous process
+          continuousMaxStep; // the current step IS limited by a known continuous process
     }
 
     CORSIKA_LOG_DEBUG(
@@ -142,10 +147,12 @@ namespace corsika {
         min_distance / 1_m, geomMaxLength / 1_m, distance_decay / 1_m,
         distance_interact / 1_m, continuous_max_dist / 1_m);
 
-    // here the particle is actually moved along the trajectory to new position:
+    // move particle along the trajectory to new position
+    // also update momentum/direction/time
     step.setLength(min_distance);
     vParticle.setPosition(step.getPosition(1));
-    // assumption: tracking does not change absolute momentum:
+    // assumption: tracking does not change absolute momentum (continuous physics can and
+    // will):
     vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
     vParticle.setTime(vParticle.getTime() + step.getDuration());
 
@@ -163,11 +170,11 @@ namespace corsika {
       }
       return;
     }
-    if (continuous_max_dist < min_non_continuous) {
-      return; // there is nothing further further
+    if (isContinuous) {
+      return; // there is nothing further, step is finished
     }
 
-    CORSIKA_LOG_DEBUG("sth. happening before geometric limit ? {}",
+    CORSIKA_LOG_DEBUG("discrete process before geometric limit ? {}",
                       ((min_distance < geomMaxLength) ? "yes" : "no"));
 
     if (geomMaxLength < min_discrete) {
@@ -195,10 +202,10 @@ namespace corsika {
         */
 
         sequence_.doBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
-        return;
+        return; // step finished
       }
 
-      CORSIKA_LOG_DEBUG("step limit reached. nothing further happens.");
+      CORSIKA_LOG_DEBUG("step limit reached (e.g. deflection). nothing further happens.");
 
       [[maybe_unused]] auto const assertion = [&] {
         auto const* numericalNodeAfterStep =
@@ -240,6 +247,7 @@ namespace corsika {
     } else {
       decay(secondaries);
       // make sure particle actually did decay if it should have done so
+      // \todo this should go to a validation code and not be included here
       if (secondaries.getSize() == 1 &&
           projectile.getPID() == secondaries.getNextParticle().getPID())
         throw std::runtime_error(fmt::format("Particle {} decays into itself!",
