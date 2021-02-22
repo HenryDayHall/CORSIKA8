@@ -11,6 +11,7 @@
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <bits/stdc++.h>
 
 namespace corsika {
 
@@ -49,41 +50,46 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) const {
 
-      auto globalTime_ = particle.getTime(); // this is very shady at the moment...
+      //get global simulation time for that track. (This is my best guess for now)
+      auto startTime_ {particle.getTime()
+                       - track.getDuration()}; // time at start point of track.
+      auto endTime_ {particle.getTime()}; // time at end point of track.
+      auto midTime_ {(startTime_ + endTime_) / 2};
 
-      //get global time for that track
-//      auto startTime_ = track.getDuration(0); // time at start point of track.
-//      auto endTime_ = track.getDuration(1); // time at end point of track.
+      auto startPoint_ = track.getPosition(0);
+
+      // track velocity
+      auto trackVelocity_ {(track.getVelocity(0) + track.getVelocity(1)) / 2};
+
+      // beta is defined as velocity / speed of light
+      auto beta_ { trackVelocity_ / constants::c};
+
+      // get particle charge
+      auto const charge_ {get_charge(particle.getPID())};
 
       // we loop over each antenna in the collection
       for (auto& antenna : detector_.getAntennas()) {
 
-        // auto start = /* TODO: get Point from Track */;
-        auto startPoint = track.getPosition(0); // this MIGHT work and also get it out of the for loop?
-
         // get the Path from the track to the antenna
         // This is a SignalPathCollection
-        auto paths{this->propagator_.propagate(startPoint, antenna.getLocation())};
+        auto paths{this->propagator_.propagate(startPoint_, antenna.getLocation())};
+        auto R_ {(startPoint_ - antenna.getLocation()).getNorm()};
 
         // now loop over the paths that we got above
         // Note: for the StraightPropagator, there will only be a single
         // path but other propagators may return more than one.
         for (auto const& path : paths) {
-//          path.total_time_ + globalTime_;
-//          path.average_refractivity_;
-//          path.emit_;
-//          path.receive_;
 
           // calculate the ZHS formalism for this particle-antenna
-          // combination along this path.
-          // global time + time delay
-          // and pass it to the antenna.
+          ElectricFieldVector EV_ = ((- constants) * trackVelocity_.dot(path.emit)) *
+          ((midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *
+                                                                       acos(track.getDirection(0).dot(path.emit_))) * startTime_)
+           - (midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *
+                                                                         acos(track.getDirection(0).dot(path.emit_))) * endTime_))
+           / (1 - path.average_refractivity_ * beta_ * acos(track.getDirection(0).dot(path.emit_)));
 
-//      ElectricFieldVector EV_ = -(constants)*(V_perpendicular)*
-//      (delta(global time + time delay - (1 - average_refractivity*beta*costheta)t1)
-//       - delta(global time + time delay- (1 - average_refractivity*beta*costheta)t1))
-//      /(1 - average_refractivity*beta*costheta);
-          antenna.receive(/* global time + time delay, receive vector, ElectricFieldVector */);
+          // pass it to the antenna
+          antenna.receive(midTime_ + path.total_time_, path.receive_, EV_);
 
         } // END: loop over paths
 
@@ -111,6 +117,7 @@ namespace corsika {
       // This is part of the ZHS / CoReas formalisms and can
       // be related from the magnetic field / acceleration, charge,
       // etc. of the particle.
+      return 1000000000_m;
     }
 
   }; // END: class RadioProcess

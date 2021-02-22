@@ -50,63 +50,64 @@ namespace corsika {
     ProcessReturn simulate(Particle& particle, Track const& track) const {
 
       //get global simulation time for that track. (This is my best guess for now)
-      auto startTime_ {particle.getTime()}; // time at start point of track.
-      auto endTime_ {particle.getTime() - track.getDuration()}; // time at end point of track.
-
-      // an alternative is the following which shouldn't work I think
-//      auto startTime_ {particle.getTime()};
-//      auto endTime_ {startTime_ + track.getDuration()};
+      auto startTime_ {particle.getTime()
+                      - track.getDuration()}; // time at start point of track.
+      auto endTime_ {particle.getTime()}; // time at end point of track.
 
       // beta is defined as velocity / speed of light
       auto startBeta_ {track.getVelocity(0) / constants::c};
       auto endBeta_ {track.getVelocity(1) / constants::c};
 
-      // calculate gamma factor using beta (the proper way would be with energy over mass but not yet :( )
+      // calculate gamma factor using beta (the proper way would be with energy over mass)
       auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
       auto endGamma_ {1. / sqrt(1. - (endBeta_ * endBeta_))};
+
+      // get start and end position of the track
+      auto startPoint_ {track.getPosition(0)};
+      auto endPoint_ {track.getPosition(1)};
+
+      // get particle charge
+      auto const charge_ {get_charge(particle.getPID())};
 
       // we loop over each antenna in the collection
       for (auto& antenna : detector_.getAntennas()) {
 
-        // auto startPoint = /* TODO: get Point from Track */;
-        auto startPoint = track.getPosition(0); // this MIGHT work and also get it out of the for loop?
-        auto endPoint = track.getPosition(1); // I think we should get these guys out of the for loop
-        // get the Path from the track to the antenna
+        // get the Path (path1) from the start "endpoint" to the antenna.
         // This is a SignalPathCollection
-        auto paths1{this->propagator_.propagate(startPoint, antenna.getLocation())};
+        auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation())};
+        auto R1_ {(startPoint_ - antenna.getLocation()).getNorm()};
 
         // now loop over the paths that we got above
-        // Note: for the StraightPropagator, there will only be a single
-        // path but other propagators may return more than one.
         for (auto const& path : paths1) {
-//          auto startPoint_ {path.total_time_ + startTime_};
-//          path.average_refractivity_;
-//          path.emit_;
-//          path.receive_;
+          auto startPointReceiveTime_ {path.total_time_ + startTime_}; // might do it on the fly
 
-          // combination along this path.
-          // global time + time delay
-          // and pass it to the antenna.
           // CoREAS calculation -> get ElectricFieldVector1
-          antenna.receive(/* startPoint_, receive vector, ElectricFieldVector1 */);
+          ElectricFieldVector EV1_ {(charge_ / constants::c) *
+                                   path.receive_.cross(path.receive_.cross(startBeta_)) /
+                                        (R1_ * (1 - path.average_refractivity_ *
+                                                       startBeta_ * path.receive_))};
+
+          // pass it to the antenna
+          antenna.receive(startPointReceiveTime_, path.receive_, EV1_);
 
         } // END: loop over paths
 
-        // get the Path from the track to the antenna
+        // get the Path (path2) from the end "endpoint" to the antenna.
         // This is a SignalPathCollection
-        auto paths2{this->propagator_.propagate(endPoint, antenna.getLocation())};
+        auto paths2{this->propagator_.propagate(endPoint_, antenna.getLocation())};
+        auto R2_ {(endPoint_ - antenna.getLocation()).getNorm()};
 
         for (auto const& path : paths2) {
-//          auto endPoint_ {path.total_time + endTime_};
-//          path.average_refractivity_;
-//          path.emit_;
-//          path.receive_;
+          auto endPointReceiveTime_ {path.total_time + endTime_}; // might do it on the fly
 
-          // combination along this path.
-          // global time + time delay
-          // and pass it to the antenna.
           //CoREAS calculation -> get ElectricFieldVector2
-          antenna.receive(/* endPoint_, receive vector, ElectricFieldVector2 */);
+          ElectricFieldVector EV2_ {(charge_ / constants::c) *
+                                    path.receive_.cross(path.receive_.cross(endBeta_)) /
+                                    (R2_ * (1 - path.average_refractivity_ *
+                                                   endBeta_ * path.receive_))};
+
+          // pass it to the antenna
+          antenna.receive(endPointReceiveTime_, path.receive_, EV2_);
 
         } // END: loop over paths
 
@@ -134,6 +135,7 @@ namespace corsika {
       // This is part of the ZHS / CoReas formalisms and can
       // be related from the magnetic field / acceleration, charge,
       // etc. of the particle.
+      return 1000000000000;
     }
 
   }; // END: class RadioProcess

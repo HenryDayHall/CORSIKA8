@@ -31,13 +31,13 @@ namespace corsika {
   class RadioProcess : public ContinuousProcess<
                            RadioProcess<TRadioDetector, TRadioImpl, TPropagator>> {
 
-    using ParticleType = corsika::setup::Stack::particle_type;
-    using TrackType = corsika::LeapFrogTrajectory;
+//    using ParticleType = corsika::setup::Stack::particle_type;
+//    using TrackType = corsika::LeapFrogTrajectory;
 
     /**
      * A collection of filter objects for deciding on valid particles and tracks.
      */
-    std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
+    //std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
 
     /**
      * Get a reference to the underlying radio implementation.
@@ -82,29 +82,29 @@ namespace corsika {
       // filtering or thinning for calculation of the radio emission. This is
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
-      if (valid(particle, track)) {
+      //if (valid(particle, track)) {
         return this->implementation().simulate(particle, track);
-      }
+      //}
     }
 
     /**
      * Decide whether this particle and track is valid for radio emission.
      */
-    template <typename Particle, typename Track>
-    auto valid(Particle& particle, Track const& track) const {
+//    template <typename Particle, typename Track>
+//    auto valid(Particle& particle, Track const& track) const {
+//
+//      // loop over the filters in the our collection
+//      for (auto& filter : filters_) {
+//        // evaluate the filter. If the filter returns false,
+//        // then this track is not valid for radio emission.
+//        if (!filter(particle, track)) return false;
+//      }
+//    }
 
-      // loop over the filters in the our collection
-      for (auto& filter : filters_) {
-        // evaluate the filter. If the filter returns false,
-        // then this track is not valid for radio emission.
-        if (!filter(particle, track)) return false;
-      }
-    }
-
-    template <typename Particle, typename Track>
-    void addFilter(const std::function<bool(Particle&, Track const&)> filter) {
-      filters_.push_back(filter);
-    }
+//    template <typename Particle, typename Track>
+//    void addFilter(const std::function<bool(Particle&, Track const&)> filter) {
+//      filters_.push_back(filter);
+//    }
 
     /**
        * TODO: This is placeholder so we can use text output while
@@ -114,10 +114,13 @@ namespace corsika {
 
         int i = 1;
         for (auto& antenna : detector_.getAntennas()) {
+
+          auto [t,E] = antenna.getWaveform();
           std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
-          xt::dump_csv(out_file, antenna.getWaveform());
+          xt::dump_csv(out_file, t, E);
           out_file.close();
           ++i;
+
         }
         // how this method should work:
         // 1. Loop over the antennas in the collection
