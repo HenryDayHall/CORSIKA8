@@ -13,10 +13,11 @@ namespace corsika {
 
   /**
    * The base interface for radio detectors.
+   * At the moment it is a collection of antennas with the same implementation.
    */
 
-  template <typename TAntennaImpl, typename TDetectorImpl>
-  class RadioDetector {
+  template <typename TAntennaImpl>
+  class AntennaCollection {
 
     /**
      * The collection of antennas used in this simulation.
@@ -29,7 +30,7 @@ namespace corsika {
      *
      * @param antenna    The antenna to add
      */
-    auto addAntenna(TAntennaImpl const& antenna) -> void { antennas_.push_back(antenna); }
+    void addAntenna(TAntennaImpl const& antenna) { antennas_.push_back(antenna); }
 
     /**
      * Get a *non*-const reference to the collection of antennas.
@@ -41,7 +42,7 @@ namespace corsika {
     /**
      * Reset all the antenna waveforms.
      */
-    auto reset() -> void {
+    void reset() {
       std::for_each(antennas_.begin(), antennas_.end(), std::mem_fn(&TAntennaImpl::reset));
     };
 

@@ -30,8 +30,8 @@ namespace corsika {
     // this stores the polarization vector of an electric field
     using ElectricFieldVector =
         QuantityVector<ElectricFieldType::dimension_type>;
-    using MagneticFieldVector =
-        QuantityVector<MagneticFieldType::dimension_type>;
+//    using MagneticFieldVector =
+//        QuantityVector<MagneticFieldType::dimension_type>;
 
     // a dimensionless vector used for the incident direction
     using Vector = QuantityVector<dimensionless_d>;

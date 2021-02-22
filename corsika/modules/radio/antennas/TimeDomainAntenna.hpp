@@ -27,9 +27,9 @@ namespace corsika {
     TimeType const duration_;        ///< The duration of this waveform.
     InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
     int num_bins_;                   ///< The number of bins used.
-    xt::xtensor<double,2> waveformE_; ///< The waveform stored by this antenna.
-    xt::xtensor<double,1> waveformT_;///< This xtensor stores timebins.
-    std::pair<xt::xtensor<double, 1>, xt::xtensor<double,2>> waveform_; ///< E & t pair
+    xt::xtensor<double,3> waveformE_; ///< The waveform stored by this antenna.
+    std::pair<xt::xtensor<double, 1>,
+        xt::xtensor<double,3>> waveform_; ///< useful for .getWaveform()
 
   protected:
     // expose the CRTP interfaces constructor
@@ -49,6 +49,8 @@ namespace corsika {
      * @param start_time         The starting time of this waveform.
      * @param duration           The duration of this waveform.
      * @param sample_rate        The sample rate of this waveform.
+     * @param num_bins_          The number of timebins to store E-field.
+     * @param waveformE_         The xtensor initialized to zero for E-field.
      *
      */
     TimeDomainAntenna(std::string const& name, Point const& location,
@@ -61,17 +63,17 @@ namespace corsika {
         , sample_rate_(sample_rate)
         , num_bins_ (static_cast<int>(duration * sample_rate))
         , waveformE_ (xt::zeros<double>({3, num_bins_}))
-        , waveformT_(xt::zeros<double>({num_bins_}))
     {};
 
     /**
      * Receive an electric field at this antenna.
      *
      * This assumes that the antenna will receive
-     *  an *instantaneous* electric field modeled as a delta function.
+     *  an *instantaneous* electric field modeled as a delta function (or timebin).
      *
-     * @param time        The (global) time at which this
-     * @param field       The incident electric field vector.
+     * @param time             The (global) time at which this signal is received.
+     * @param receive_vector   The incident unit vector. (not used at the moment)
+     * @param field            The incident electric field vector.
      *
      */
     void receive(TimeType const time, Vector const& receive_vector,
@@ -80,23 +82,14 @@ namespace corsika {
       if (time < start_time_ || time > start_time_ + duration_) {
         return;
       } else {
-
+        // figure out the correct timebin to store the E-field value.
         auto timebin_ {static_cast<std::size_t>((time - start_time_) * sample_rate_)};
 
-        for (std::size_t t = static_cast<std::size_t>(start_time_ / 1_ns);
-             t < static_cast<std::size_t>((start_time_ + duration_) / 1_ns);
-             t = t + timebin_) {
-          waveformT_.at(t) = t; // store the sample times
-        }
+        // store the x,y,z electric field components.
+        waveformE_.at(0, timebin_) += (efield.getX().magnitude());
+        waveformE_.at(1, timebin_) += (efield.getY().magnitude());
+        waveformE_.at(2, timebin_) += (efield.getZ().magnitude());
 
-        // store the x,y,z electric field components
-        waveformE_.at(0, timebin_) = waveformE_.at(0, timebin_) + (efield.getX().magnitude());
-        waveformE_.at(1, timebin_) = waveformE_.at(1, timebin_) + (efield.getY().magnitude());
-        waveformE_.at(2, timebin_) = waveformE_.at(2, timebin_) + (efield.getZ().magnitude());
-
-        // create a std::pair of sample times & electric field components
-        waveform_.first = waveformT_;
-        waveform_.second = waveformE_;
       }
     }
 
@@ -107,7 +100,16 @@ namespace corsika {
      *
      * @returns A pair of the sample times, and the field
      */
-    std::pair<xt::xtensor<double, 2>, xt::xtensor<double,1>> getWaveform() const {
+    std::pair<xt::xtensor<double, 1>, xt::xtensor<double,3>> getWaveform() const {
+
+      // create a 1-D xtensor to store time values so we can print them later.
+      xt::xtensor<double, 1> times_ {xt::zeros<double>({num_bins_, 1})};
+
+      for (auto i = 0; i <= num_bins_; i++) {
+        times_.at(i) = static_cast<double>(start_time_ / 1_ns) +
+                       static_cast<double>(i * sample_rate_ * 1_ns);
+      }
+
       return waveform_;
     };
 
@@ -115,8 +117,7 @@ namespace corsika {
      * Reset the antenna before starting a new simulation.
      */
     void reset() {
-      waveform_.first = xt::zeros_like(waveform_.first);
-      waveform_.second = xt::zeros_like(waveform_.second);
+      waveformE_ = xt::zeros_like(waveformE_);
     };
 
   }; // END: class Antenna final
