@@ -57,6 +57,9 @@ namespace corsika {
        */
       auto direction{(destination - source).normalized()};
 
+      // the distance from the point of emission to an observer
+      auto distance_ {(destination - source).getNorm()};
+
       // the step is the direction vector with length `stepsize`
       auto step{direction * stepsize};
 
@@ -73,6 +76,7 @@ namespace corsika {
       std::vector<double> rindex;
       rindex.reserve(n_points);
 
+      // TODO: Re-think the efficiency of this for loop
       // loop from `source` to `destination` to store values before Simpson's rule.
       // this loop skips the last point 'destination'
       for (auto point = source; (point - destination).getNorm() > 0.6 * stepsize;
@@ -117,10 +121,13 @@ namespace corsika {
       TimeType time = sum * (h / (3 * constants::c));
 
       // compute the average refractivity.
-      auto average_refractivity = refra_ / N;
+      auto averageRefractiveIndex_ = refra_ / N;
+
+      // refractivity definition: (n - 1)
 
       // realize that emission and receive vector are 'direction' in this case.
-      return { SignalPath(time, average_refractivity, direction , direction, points) };
+      //TODO: receive and emission vector should have opposite signs!
+      return { SignalPath(time, averageRefractiveIndex_, direction , direction, distance_,points) };
 
     } // END: propagate()
 
