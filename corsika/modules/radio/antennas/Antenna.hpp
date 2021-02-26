@@ -34,7 +34,7 @@ namespace corsika {
 //        QuantityVector<MagneticFieldType::dimension_type>;
 
     // a dimensionless vector used for the incident direction
-    using Vector = QuantityVector<dimensionless_d>;
+//    using Vector = QuantityVector<dimensionless_d>;
 
     /**
      * \brief Construct a base antenna instance.

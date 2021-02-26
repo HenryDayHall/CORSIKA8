@@ -18,26 +18,25 @@ namespace corsika {
 
   /**
    * An implementation of a time-domain antenna that has a customized
-   * start time, sampling period, and waveform duration.
+   * start time, sampling rate, and waveform duration.
    *
    */
-  class TimeDomainAntenna final : public Antenna<TimeDomainAntenna> {
+  class TimeDomainAntenna : public Antenna<TimeDomainAntenna> {
 
     TimeType const start_time_;      ///< The start time of this waveform.
     TimeType const duration_;        ///< The duration of this waveform.
     InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
     int num_bins_;                   ///< The number of bins used.
-    xt::xtensor<double,3> waveformE_; ///< The waveform stored by this antenna.
-    std::pair<xt::xtensor<double, 1>,
-        xt::xtensor<double,3>> waveform_; ///< useful for .getWaveform()
+    xt::xtensor<double,2> waveformE_; ///< The waveform stored by this antenna.
+    std::pair<xt::xtensor<double, 2>,
+        xt::xtensor<double,2>> waveform_; ///< useful for .getWaveform()
 
   protected:
     // expose the CRTP interfaces constructor
 
   public:
     // import the methods from the antenna
-    using Antenna<TimeDomainAntenna>::Antenna;
-    using Antenna<TimeDomainAntenna>::receive;
+
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;
 
@@ -62,7 +61,7 @@ namespace corsika {
         , duration_(duration)
         , sample_rate_(sample_rate)
         , num_bins_ (static_cast<int>(duration * sample_rate))
-        , waveformE_ (xt::zeros<double>({3, num_bins_}))
+        , waveformE_ (xt::zeros<double>({num_bins_, 3}))
     {};
 
     /**
@@ -76,20 +75,20 @@ namespace corsika {
      * @param field            The incident electric field vector.
      *
      */
-    void receive(TimeType const time, Vector const& receive_vector,
+    void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
                  ElectricFieldVector const& efield) {
 
-      if (time < start_time_ || time > start_time_ + duration_) {
+      if (time < start_time_ || time >= start_time_ + duration_) {
         return;
       } else {
         // figure out the correct timebin to store the E-field value.
         auto timebin_ {static_cast<std::size_t>((time - start_time_) * sample_rate_)};
 
         // store the x,y,z electric field components.
-        waveformE_.at(0, timebin_) += (efield.getX().magnitude());
-        waveformE_.at(1, timebin_) += (efield.getY().magnitude());
-        waveformE_.at(2, timebin_) += (efield.getZ().magnitude());
-
+        waveformE_.at(timebin_, 0) += efield.getX().magnitude();
+        waveformE_.at(timebin_, 1) += efield.getY().magnitude();
+        waveformE_.at(timebin_, 2) += efield.getZ().magnitude();
+        //TODO: Check how they are stored in memory, row-wise or column-wise?
       }
     }
 
@@ -100,17 +99,17 @@ namespace corsika {
      *
      * @returns A pair of the sample times, and the field
      */
-    std::pair<xt::xtensor<double, 1>, xt::xtensor<double,3>> getWaveform() const {
+    std::pair<xt::xtensor<double, 2>, xt::xtensor<double,2>> getWaveform() const {
+      // TODO: divide by Δt for CoREAS ONLY!
 
       // create a 1-D xtensor to store time values so we can print them later.
-      xt::xtensor<double, 1> times_ {xt::zeros<double>({num_bins_, 1})};
+      xt::xtensor<double, 2> times_ (xt::zeros<double>({num_bins_, 1}));
 
-      for (auto i = 0; i <= num_bins_; i++) {
-        times_.at(i) = static_cast<double>(start_time_ / 1_ns) +
-                       static_cast<double>(i * sample_rate_ * 1_ns);
+      for (int i = 0; i < num_bins_; i++) {
+        times_.at(i,0) = static_cast<double>(start_time_ / 1_s + i * sample_rate_ * 1_s);
       }
 
-      return waveform_;
+      return std::make_pair(times_, waveformE_);
     };
 
     /**
@@ -118,6 +117,7 @@ namespace corsika {
      */
     void reset() {
       waveformE_ = xt::zeros_like(waveformE_);
+//      times_ = xt::zeros_like(times_);
     };
 
   }; // END: class Antenna final

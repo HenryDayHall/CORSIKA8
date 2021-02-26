@@ -111,13 +111,14 @@ namespace corsika {
        * we wait for the true output formatting to be ready.
        **/
       bool writeOutput() const {
-
+        // this for loop still has some issues
         int i = 1;
         for (auto& antenna : detector_.getAntennas()) {
 
           auto [t,E] = antenna.getWaveform();
           std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
-          xt::dump_csv(out_file, t, E);
+          xt::dump_csv(out_file, t);
+          xt::dump_csv(out_file, E);
           out_file.close();
           ++i;
 

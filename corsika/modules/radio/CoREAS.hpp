@@ -11,6 +11,7 @@
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/radio/propagators/SignalPath.hpp>
 #include <cmath>
 
 namespace corsika {
@@ -50,152 +51,325 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) const {
 
-      // set threshold for application of ZHS-like approximation
-      const double approxThreshold_ {1.0e-3};
+      // get the global simulation time for that track. (best guess for now)
+      auto startTime_ {particle.getTime() - track.getDuration()}; // time at the start point of the track hopefully.
+      auto endTime_ {particle.getTime()};
 
-      //get global simulation time for that track. (This is my best guess for now)
-      auto startTime_ {particle.getTime()
-                      - track.getDuration()}; // time at start point of track.
-      auto endTime_ {particle.getTime()}; // time at end point of track.
-
-      // beta is defined as velocity / speed of light
-      auto startBeta_ {track.getVelocity(0) / constants::c};
-      auto endBeta_ {track.getVelocity(1) / constants::c};
-      //TODO: check if they are different!!! They shouldn't!!!
-//      auto startBeta_ {(track.getPosition(0) / (particle.getTime()
-//                                                - track.getDuration()) ) / constants::c};
-//      auto endBeta_ {(track.getPosition(1) / particle.getTime() ) / constants::c};
-
-      // calculate gamma factor using beta (the proper way would be with energy over mass)
-      auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
-      auto endGamma_ {1. / sqrt(1. - (endBeta_ * endBeta_))};
+      // gamma factor is calculated using beta
+//       auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
+//       auto endGamma_ {1. / sqrt(1. - (endBeta_ * endBeta_))};
 
       // get start and end position of the track
       auto startPoint_ {track.getPosition(0)};
       auto endPoint_ {track.getPosition(1)};
 
+      // beta is velocity / speed of light. Start & end should be the same!
+      auto beta_ {((endPoint_ - startPoint_) / (endTime_ - startTime_)).normalized()};
+
       // get particle charge
       auto const charge_ {get_charge(particle.getPID())};
 
-      // we loop over each antenna in the collection
+      // set threshold for application of ZHS-like approximation.
+      const double approxThreshold_ {1.0e-3};
+
+      // we loop over each antenna in the collection.
       for (auto& antenna : detector_.getAntennas()) {
 
-        ElectricFieldVector EV1_ {0_V / 0_m};
-        ElectricFieldVector EV2_ {0_V / 0_m};
-        ElectricFieldVector EV3_ {0_V / 0_m};
-
-        auto startPointReceiveTime_ {0_ns};
-        auto endPointReceiveTime_ {0_ns};
+        std::vector<ElectricFieldVector> EVstart_;
+        std::vector<ElectricFieldVector> EVend_;
+        std::vector<TimeType> startTTimes_;
+        std::vector<TimeType> endTTimes_;
+        std::vector<double> preDoppler;
+        std::vector<double> postDoppler;
+        std::vector<QuantityVector<dimensionless_d>> ReceiveVectorsStart_;
+        std::vector<QuantityVector<dimensionless_d>> ReceiveVectorsEnd_;
 
         // get the Path (path1) from the start "endpoint" to the antenna.
-        // This is a SignalPathCollection
-        auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation())};
+        // This is a Signal Path Collection
+        auto paths1 {this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_nm)}; // TODO: Need to add the stepsize to .propagate()!!!!
 
-        // set postDoppler to approximate threshold in advance and check after loop
-        // if we need to perform ZHS-like approximation
-        auto preDoppler_ {approxThreshold_};
         // now loop over the paths for startpoint that we got above
         for (auto const& path : paths1) {
 
-          preDoppler_ = 1. - path.average_refractive_index_ *
-                               startBeta_ * path.emit_;
+          // calculate preDoppler factor
+          double preDoppler_{1. - path.average_refractive_index_ *
+                                  beta_ * path.emit_};
 
-          if (preDoppler_ > approxThreshold_) {
-            startPointReceiveTime_ = path.total_time_ +
-                                              startTime_ ; // might do it on the fly
+          // store it to the preDoppler std::vector for later comparisons
+          preDoppler.push_back(preDoppler_);
 
-            // CoREAS calculation -> get ElectricFieldVector1
-            EV1_= (charge_ / constants::c) *
-                path.receive_.cross(path.receive_.cross(startBeta_)) /
-                (path.R_distance_ * preDoppler_);
+          // calculate receive times for startpoint
+          auto startPointReceiveTime_ {path.total_time_ + startTime_};
 
-            // pass it to the antenna
-            antenna.receive(startPointReceiveTime_, path.receive_, EV1_);
-          } else {
-            continue;
-          } // END preDoppler check
+          // store it to startTTimes_ std::vector for later use
+          startTTimes_.push_back(startPointReceiveTime_);
 
-        } // END: loop over paths for startpoint
+          // store the receive unit vector
+          ReceiveVectorsStart_.push_back(path.receive_);
+
+          // calculate electric field vector for startpoint
+          auto EV1_= (charge_ / constants::c) *
+                     path.receive_.cross(path.receive_.cross(beta_)) /
+                     (path.R_distance_ * preDoppler_);
+
+          // store it to EVstart_ std::vector for later use
+          EVstart_.push_back(EV1_);
+
+        } // End of looping over paths1
 
         // get the Path (path2) from the end "endpoint" to the antenna.
         // This is a SignalPathCollection
-        auto paths2{this->propagator_.propagate(endPoint_, antenna.getLocation())};
+        auto paths2 {this->propagator_.propagate(endPoint_, antenna.getLocation())};
 
-        // set postDoppler to approximate threshold in advance and check after loop
-        // if we need to perform ZHS-like approximation
-        auto postDoppler_ {approxThreshold_};
         // now loop over the paths for endpoint that we got above
         for (auto const& path : paths2) {
-          postDoppler_ = 1. - path.average_refractive_index_ *
-                                endBeta_ * path.emit_;
 
-          if (preDoppler_ > approxThreshold_) {
-            auto endPointReceiveTime_ = path.total_time + endTime_ ; // might do it on the fly
+          double postDoppler_{1. - path.average_refractive_index_ *
+                                   beta_ * path.emit_}; // maybe this is path.receive_ (?)
 
-            //CoREAS calculation -> get ElectricFieldVector2
-          EV2_ = (charge_ / constants::c) *
-                   path.receive_.cross(path.receive_.cross(endBeta_)) /
-                   (path.R_distance_ * postDoppler_);
+          // store it to the postDoppler std::vector for later comparisons
+          postDoppler.push_back(postDoppler_);
 
-          // pass it to the antenna
-          antenna.receive(endPointReceiveTime_, path.receive_, EV2_);
-          } else {
-            continue;
-          } // END postDoppler check
+          // calculate receive times for endpoint
+          auto endPointReceiveTime_ {path.total_time_ + endTime_};
 
-        } // END: loop over paths for endpoint
+          // store it to endTTimes_ std::vector for later use
+          endTTimes_.push_back(endPointReceiveTime_);
 
-        // perform ZHS-like calculation close to Cherenkov angle
-        if (fabs(preDoppler_) <= approxThreshold_ || fabs(postDoppler_) <= approxThreshold_) {
-            // get global simulation time for the middle point of that track. (This is my best guess for now)
-            auto midTime_{particle.getTime() - (track.getDuration() / 2)};
+          // store the receive unit vector
+          ReceiveVectorsEnd_.push_back(path.receive_);
 
-            // beta is defined as velocity / speed of light
-            auto midBeta_{track.getVelocity(0.5) / constants::c};
-            //      auto midBeta_ {(track.getPosition(0.5) / (particle.getTime()
-            //                                        - (track.getDuration() / 2) ) / constants::c};
+          // calculate electric field vector for endpoint
+          auto EV2_= (charge_ / constants::c) *
+                     path.receive_.cross(path.receive_.cross(beta_)) /
+                     (path.R_distance_ * postDoppler_);
 
-            // calculate gamma factor using beta (the proper way would be with energy over mass)
-            //          auto midGamma_ {1. / sqrt(1. - (midBeta_ * midBeta_))};
+          // store it to EVstart_ std::vector for later use
+          EVend_.push_back(EV2_);
 
-            // get start and end position of the track
-            auto midPoint_{track.getPosition(0.5)};
+        } // End of looping over paths2
 
-            // get the Path (path3) from the middle "endpoint" to the antenna.
-            // This is a SignalPathCollection
-            auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation())};
+        // start doing comparisons for preDoppler and postDoppler
+        // first check that start and end paths have the same number of paths
+        if (EVstart_.size() == EVend_.size()) {
 
-            // now loop over the paths for endpoint that we got above
-            for (auto const& path : paths3) {
-              midDoppler_ = 1. - path.average_refractive_index_ * midBeta_ * path.emit_;
+          // use this to access different elements of std::vectors
+          std::size_t index = 0;
+          for (auto& preDoppler__ : preDoppler) {
 
-              auto const midPointReceiveTime_{path.total_time_ +
-                                              midTime_}; // might do it on the fly
+            // redistribute contributions over time scale defined by the observation time resolution
+            // this is to make sure that "start" and "end" won't end up in the same bin (xtensor)!!
+            if ((preDoppler__ < 1.e-9) || (postDoppler.at(index) < 1.e-9)) {
 
-              // CoREAS calculation -> get ElectricFieldVector3 for "midPoint"
-              EV3_ = (charge_ / constants::c) *
-                     path.receive_.cross(path.receive_.cross(midBeta_)) /
-                     (path.R_distance_ * midDoppler_);
+              auto gridResolution_ {antenna.duration_};
+              auto deltaT_ { endTTimes_.at(index) - startTTimes_.at(index) };
 
-              // pass it to the antenna but first check if "start" or "end" are double counted!!!
-              if (fabs(preDoppler_) > approxThreshold_ &&
-                  fabs(postDoppler_) <= approxThreshold_) {
+              if (fabs(deltaT_) < gridResolution_) {
 
-                antenna.receive(startPointReceiveTime_, path.receive_, -EV1_);
-                antenna.receive(midPointReceiveTime_, path.receive_, EV3_);
-              } else if (fabs(preDoppler_) <= approxThreshold_ &&
-                         fabs(postDoppler_) > approxThreshold_) {
-                antenna.receive(endPointReceiveTime_, path.receive_, -EV2_);
-                antenna.receive(midPointReceiveTime_, path.receive_, EV3_);
+                EVstart_.at(index) = EVstart_.at(index) * fabs(deltaT_ / gridResolution_);
+                EVend_.at(index) = EVend_.at(index) * fabs(deltaT_ / gridResolution_);
 
-              } else {
-                antenna.receive(midPointReceiveTime_, path.receive_, EV3_);
-              } // end deleting double-counted values
-            }
-          } // end of ZHS-like approximation
+                const long startBin = static_cast<long>(floor(startTTimes_.at(index)/gridResolution_+0.5l));
+                const long endBin = static_cast<long>(floor(endTTimes_.at(index)/gridResolution_+0.5l));
+                const double startBinFraction = (startTTimes_.at(index)/gridResolution_)-floor(startTTimes_.at(index)/gridResolution_);
+                const double endBinFraction = (endTTimes_.at(index)/gridResolution_)-floor(endTTimes_.at(index)/gridResolution_);
 
-      } // END: loop over antennas
-    }
+                // only do timing modification if contributions would land in same bin
+                if (startBin == endBin) {
+
+                  // if startE arrives before endE
+                  if (deltaT_ >= 0) {
+                    if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
+                    {
+                      startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
+                    }
+                    else if ((startBinFraction < 0.5) && (endBinFraction < 0.5)) // both points right of bin center
+                    {
+                      endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_; // shift EV2_ to next gridpoint
+                    }
+                    else // points on both sides of bin center
+                    {
+                      const double leftDist = 1.0-startBinFraction;
+                      const double rightDist = endBinFraction;
+                      // check if asymmetry to right or left
+                      if (rightDist >= leftDist)
+                      {
+                        endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_; // shift EV2_ to next gridpoint
+                      }
+                      else
+                      {
+                        startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
+                      }
+                    }
+                  }
+                  else // if endE arrives before startE
+                  {
+                    if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
+                    {
+                      endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_; // shift EV2_ to previous gridpoint
+                    }
+                    else if ((startBinFraction < 0.5) && (endBinFraction < 0.5)) // both points right of bin center
+                    {
+                      startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_; // shift EV1_ to next gridpoint
+                    }
+                    else // points on both sides of bin center
+                    {
+                      const double leftDist = 1.0-endBinFraction;
+                      const double rightDist = startBinFraction;
+                      // check if asymmetry to right or left
+                      if (rightDist >= leftDist)
+                      {
+                        startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_; // shift EV1_ to next gridpoint
+                      }
+                      else
+                      {
+                        endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_; // shift EV2_ to previous gridpoint
+                      }
+                    }
+                  } // End of else statement
+                } // End of if for startbin == endbin
+              } // End of if deltaT < gridresolution
+            } // End of checking for very small doppler factors
+
+            // perform ZHS-like calculation close to Cherenkov angle
+            if (fabs(preDoppler__) <= approxThreshold_ || fabs(postDoppler.at(index)) <= approxThreshold_) {
+
+              // get global simulation time for the middle point of that track. (This is my best guess for now)
+              auto midTime_{particle.getTime() - (track.getDuration() / 2)};
+
+              // get "mid" position of the track (that may not work properly)
+              auto midPoint_{track.getPosition(0.5)};
+
+              // get the Path (path3) from the middle "endpoint" to the antenna.
+              // This is a SignalPathCollection
+              auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation())};
+
+//               std::size_t j_index {0}; // this will be useful for multiple paths (aka curved propagators)
+              // now loop over the paths for endpoint that we got above
+              for (auto const& path : paths3) {
+
+//                 EVstart_.erase(EVstart_.begin() + index + j_index); // this should work for curved + curved propagators
+//                 EVend_.erase(EVend_.begin() + index + j_index); // for now just use one index and not j_index since at the moment you are working with StraightPropagator
+
+                auto const midPointReceiveTime_{path.total_time_ + midTime_};
+                auto midDoppler_{1. - path.average_refractive_index_ * beta_ * path.emit_};
+
+                // change the values of the receive unit vectors of start and end
+                ReceiveVectorsStart_.at(index) = path.receive_;
+                ReceiveVectorsEnd_.at(index) = path.receive_;
+
+                // CoREAS calculation -> get ElectricFieldVector3 for "midPoint"
+                ElectricFieldVector EVmid_ = (charge_ / constants::c) *
+                                             path.receive_.cross(path.receive_.cross(beta_)) /
+                                             (path.R_distance_ * midDoppler_);
+
+//                 EVstart_.insert(EVstart_.begin() + index + j_index, EVmid_); // this should work for curved + curved propagators
+//                 EVend_.insert(EVend_.begin() + index + j_index, - EVmid_); // for now just use one index and not j_index since at the moment you are working with StraightPropagator
+                EVstart_.at(index) = EVmid_;
+                EVend_.at(index) = - EVmid_;
+
+                auto deltaT_{midPoint_.getNorm() / (constants::c * beta_ * fabs(midDoppler_))};
+
+                if (startTTimes_.at(index) < endTTimes_.at(index)) // EVstart_ arrives earlier
+                {
+                  startTTimes_.at(index) = midPointReceiveTime_ - 0.5 * deltaT_;
+                  endTTimes_.at(index) = midPointReceiveTime_ + 0.5 * deltaT_;
+                }
+                else // EVend_ arrives earlier
+                {
+                  startTTimes_.at(index) = midPointReceiveTime_ + 0.5 * deltaT_;
+                  endTTimes_.at(index) = midPointReceiveTime_ - 0.5 * deltaT_;
+                }
+
+                const long double gridResolution_{antenna.duration_};
+                deltaT_ = endTTimes_.at(index) - startTTimes_.at(index);
+
+                // redistribute contributions over time scale defined by the observation time resolution
+                if (fabs(deltaT_) < gridResolution_) {
+
+                  EVstart_.at(index) = EVstart_.at(index) * fabs(deltaT_ / gridResolution_);
+                  EVend_.at(index) = EVend_.at(index) * fabs(deltaT_ / gridResolution_);
+
+                  const long startBin = static_cast<long>(floor(startTTimes_.at(index)/gridResolution_+0.5l));
+                  const long endBin = static_cast<long>(floor(endTTimes_.at(index)/gridResolution_+0.5l));
+                  const double startBinFraction = (startTTimes_.at(index)/gridResolution_)-floor(startTTimes_.at(index)/gridResolution_);
+                  const double endBinFraction = (endTTimes_.at(index)/gridResolution_)-floor(endTTimes_.at(index)/gridResolution_);
+
+                  // only do timing modification if contributions would land in same bin
+                  if (startBin == endBin) {
+
+                    // if startE arrives before endE
+                    if (deltaT_ >= 0) {
+                      if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
+                      {
+                        startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
+                      }
+                      else if ((startBinFraction < 0.5) && (endBinFraction < 0.5)) // both points right of bin center
+                      {
+                        endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_; // shift EV2_ to next gridpoint
+                      }
+                      else // points on both sides of bin center
+                      {
+                        const double leftDist = 1.0-startBinFraction;
+                        const double rightDist = endBinFraction;
+                        // check if asymmetry to right or left
+                        if (rightDist >= leftDist)
+                        {
+                          endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_; // shift EV2_ to next gridpoint
+                        }
+                        else
+                        {
+                          startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
+                        }
+                      }
+                    }
+                    else // if endE arrives before startE
+                    {
+                      if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
+                      {
+                        endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_; // shift EV2_ to previous gridpoint
+                      }
+                      else if ((startBinFraction < 0.5) && (endBinFraction < 0.5)) // both points right of bin center
+                      {
+                        startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_; // shift EV1_ to next gridpoint
+                      }
+                      else // points on both sides of bin center
+                      {
+                        const double leftDist = 1.0-endBinFraction;
+                        const double rightDist = startBinFraction;
+                        // check if asymmetry to right or left
+                        if (rightDist >= leftDist)
+                        {
+                          startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_; // shift EV1_ to next gridpoint
+                        }
+                        else
+                        {
+                          endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_; // shift EV2_ to previous gridpoint
+                        }
+                      }
+                    } // End of else statement
+                  } // End of if for startbin == endbin
+                } // End of if deltaT < gridresolution
+
+              } // End of looping over paths3
+
+            } // end of ZHS-like approximation
+
+            // Feed start and end to the antenna
+            antenna.receive(startTTimes_.at(index), ReceiveVectorsStart_.at(index), EVstart_.at(index));
+            antenna.receive(endTTimes_.at(index), ReceiveVectorsEnd_.at(index), EVend_.at(index));
+
+            // update index
+            index = index + 1;
+
+          } // End of for loop for preDoppler factor (this includes checking for postDoppler factors)
+
+        } // End of checking of vector sizes
+
+      } // End of looping over the antennas.
+
+    } // End of simulate method.
+
 
     /**
      * Return the maximum step length for this particle and track.
@@ -218,7 +392,7 @@ namespace corsika {
       // This is part of the ZHS / CoReas formalisms and can
       // be related from the magnetic field / acceleration, charge,
       // etc. of the particle.
-      return 1000000000000;
+      return 1000000000000_m;
     }
 
   }; // END: class RadioProcess

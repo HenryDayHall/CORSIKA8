@@ -11,6 +11,7 @@
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/modules/radio/propagators/SignalPath.hpp>
 #include <bits/stdc++.h>
 
 namespace corsika {
@@ -72,24 +73,26 @@ namespace corsika {
 
         // get the Path from the track to the antenna
         // This is a SignalPathCollection
-        auto paths{this->propagator_.propagate(startPoint_, antenna.getLocation())};
-        auto R_ {(startPoint_ - antenna.getLocation()).getNorm()};
+        auto paths{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_nm)};
 
         // now loop over the paths that we got above
         // Note: for the StraightPropagator, there will only be a single
         // path but other propagators may return more than one.
         for (auto const& path : paths) {
 
-          // calculate the ZHS formalism for this particle-antenna
-          ElectricFieldVector EV_ = ((- constants) * trackVelocity_.dot(path.emit)) *
-          ((midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *
-                                                                       acos(track.getDirection(0).dot(path.emit_))) * startTime_)
-           - (midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *
-                                                                         acos(track.getDirection(0).dot(path.emit_))) * endTime_))
-           / (1 - path.average_refractivity_ * beta_ * acos(track.getDirection(0).dot(path.emit_)));
+          auto t1 = path.total_time_;
 
-          // pass it to the antenna
-          antenna.receive(midTime_ + path.total_time_, path.receive_, EV_);
+          QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
+          // calculate the ZHS formalism for this particle-antenna
+//          ElectricFieldVector EV_ = ((- constants) * trackVelocity_.dot(path.emit)) *
+//          ((midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *
+//                                                                       acos(track.getDirection(0).dot(path.emit_))) * startTime_)
+//           - (midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *
+//                                                                         acos(track.getDirection(0).dot(path.emit_))) * endTime_))
+//           / (1 - path.average_refractivity_ * beta_ * acos(track.getDirection(0).dot(path.emit_)));
+//
+//          // pass it to the antenna
+//          antenna.receive(midTime_ + path.total_time_, path.receive_, EV_);
 
         } // END: loop over paths
 
