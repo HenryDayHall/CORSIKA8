@@ -124,23 +124,20 @@ namespace corsika::proposal {
     // Limit the step size of a conitnuous loss. The maximal continuous loss seems to be a
     // hyper parameter which must be adjusted.
     //
-    auto const emCut = get_energy_threshold(
-        code); //! energy thresholds globally defined for individual particles
-
-    // in any case: never go below 0.99*emCut This needs to be
-    // slightly smaller than emCut since, either this Step is limited
-    // by energy_lim, then the particle is stopped in a very short
-    // range (before doing anythin else) and is then removed
-    // instantly. The exact position where it reaches emCut is not
-    // important, the important fact is that its E_kin is zero
-    // afterwards.
-    //
-    auto energy_lim = std::max(0.9 * vP.getEnergy(), 0.99 * emCut);
+    auto const energy = vP.getEnergy();
+    auto const energy_lim = std::max(
+        energy * 0.9, // either 10% relative loss max., or
+        get_energy_threshold(
+            code) // energy thresholds globally defined for individual particles
+            *
+            0.99 // need to go 1% below global e-cut to assure removal in ParticleCut. The
+                 // 1% does not matter since at cut-time the entire energy is removed.
+    );
 
     // solving the track integral for giving energy lim
     auto c = getCalculator(vP, calc);
     auto grammage = get<eDISPLACEMENT>(c->second)->SolveTrackIntegral(
-                        vP.getEnergy() / 1_MeV, energy_lim / 1_MeV) *
+                        energy / 1_MeV, energy_lim / 1_MeV) *
                     1_g / square(1_cm);
 
     // return it in distance aequivalent

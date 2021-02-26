@@ -153,7 +153,6 @@ namespace corsika {
     CORSIKA_LOG_TRACE("ParticleCut::DoContinuous");
     if (checkCutParticle(particle)) {
       CORSIKA_LOG_TRACE("removing during continuous");
-      particle.erase();
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;
     }

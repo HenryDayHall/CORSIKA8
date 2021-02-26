@@ -24,8 +24,8 @@
 namespace corsika {
 
   template <typename TStack>
-  inline StackInspector<TStack>::StackInspector(const int vNStep, const bool vReportStack,
-                                                const HEPEnergyType vE0)
+  inline StackInspector<TStack>::StackInspector(int const vNStep, bool const vReportStack,
+                                                HEPEnergyType const vE0)
       : StackProcess<StackInspector<TStack>>(vNStep)
       , ReportStack_(vReportStack)
       , E0_(vE0)
@@ -35,12 +35,12 @@ namespace corsika {
   inline StackInspector<TStack>::~StackInspector() {}
 
   template <typename TStack>
-  inline void StackInspector<TStack>::doStack(const TStack& vS) {
+  inline void StackInspector<TStack>::doStack(TStack const& vS) {
 
     [[maybe_unused]] int i = 0;
     HEPEnergyType Etot = 0_GeV;
 
-    for (const auto& iterP : vS) {
+    for (auto const& iterP : vS) {
       HEPEnergyType E = iterP.getEnergy();
       Etot += E;
       if (ReportStack_) {
@@ -60,7 +60,7 @@ namespace corsika {
     }
 
     auto const now = std::chrono::system_clock::now();
-    const std::chrono::duration<double> elapsed_seconds = now - StartTime_;
+    std::chrono::duration<double> const elapsed_seconds = now - StartTime_;
     std::time_t const now_time = std::chrono::system_clock::to_time_t(now);
     auto const dE = E0_ - Etot;
     if (dE < dE_threshold_) return;

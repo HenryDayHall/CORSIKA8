@@ -6,8 +6,6 @@
  * the license.
  */
 
-#define DEBUG 1
-
 /* clang-format off */
 // InteractionCounter used boost/histogram, which
 // fails if boost/type_traits have been included before. Thus, we have
@@ -96,13 +94,15 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 int main(int argc, char** argv) {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
   if (argc < 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
-    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed] \n"
+                 "       if A=0, Z is interpreted as PDG code \n"
+                 "       if no seed is given, a random seed is chosen \n"
+              << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km+constants::EarthRadius::Mean);
+  builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
 
   CORSIKA_LOG_DEBUG(
@@ -153,11 +153,20 @@ int main(int argc, char** argv) {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
-  const Code beamCode = Code::Nucleus;
   unsigned short const A = std::stoi(std::string(argv[1]));
-  unsigned short Z = std::stoi(std::string(argv[2]));
-  auto const mass = get_nucleus_mass(A, Z);
-  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
+  Code beamCode;
+  HEPEnergyType mass;
+  unsigned short Z = 0;
+  if (A > 0) {
+    beamCode = Code::Nucleus;
+    Z = std::stoi(std::string(argv[2]));
+    mass = get_nucleus_mass(A, Z);
+  } else {
+    int pdg = std::stoi(std::string(argv[2]));
+    beamCode = convert_from_PDG(PDGCode(pdg));
+    mass = get_mass(beamCode);
+  }
+  HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
@@ -187,17 +196,21 @@ int main(int argc, char** argv) {
 
   std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
-  if (A != 1) {
+  if (A > 1) {
     stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    if (Z == 1) {
-      stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
-    } else if (Z == 0) {
-      stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+    if (A == 1) {
+      if (Z == 1) {
+        stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+      } else if (Z == 0) {
+        stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+      } else {
+        std::cerr << "illegal parameters" << std::endl;
+        return EXIT_FAILURE;
+      }
     } else {
-      std::cerr << "illegal parameters" << std::endl;
-      return EXIT_FAILURE;
+      stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
     }
   }
 
@@ -210,8 +223,7 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  corsika::qgsjetII::Interaction qgsjet;
-
+  // corsika::qgsjetII::Interaction qgsjet;
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
 
@@ -259,7 +271,7 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
-  StackInspector<setup::Stack> stackInspect(1000, false, E0);
+  StackInspector<setup::Stack> stackInspect(50000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {

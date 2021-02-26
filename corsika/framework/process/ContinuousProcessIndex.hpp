@@ -18,6 +18,8 @@ namespace corsika {
 
   class ContinuousProcessIndex {
   public:
+    ContinuousProcessIndex()
+        : id_(-1) {} // default
     ContinuousProcessIndex(int const id)
         : id_(id) {}
     void setIndex(int const id) { id_ = id; }
