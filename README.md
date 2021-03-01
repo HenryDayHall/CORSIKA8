@@ -11,7 +11,7 @@ particle cascades with stochastic and continuous processes.
 The software makes extensive use of static design patterns and
 compiler optimization. Thus, the most fundamental configuration
 decision of the user must be performed at compile time. At run time
-only specific model parameters can still be changed.
+model parameters can still be changed.
 
 CORSIKA 8 is by default released under the GPLv3 license. See [license
 file](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/LICENSE)
@@ -30,37 +30,43 @@ When you plan to contribute to CORSIKA 8 check the guidelines outlined here:
 guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/CONTRIBUTING.md). Code
 that fails the review by the CORSIKA author group must be improved
 before it can be merged in the official code base. After your code has
-been accepted and merged you become a contributor of the CORSIKA 8
+been accepted and merged, you become a contributor of the CORSIKA 8
 project (code author). 
 
 IMPORTANT: Before you contribute, you need to read and agree to the
 [collaboration
-agreement](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The
-agreement can be discussed, and eventually improved.
+agreement](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/COLLABORATION_AGREEMENT.md). The agreement can be discussed, and eventually improved.
 
 We also want to point you to the [MCnet
-guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES),
-which are very useful also for us.
+guidelines](https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika/blob/master/MCNET_GUIDELINES), which are very useful also for us.
 
 
 ## Get in contact
-  * Connect to https://gitlab.ikp.kit.edu register yourself and join the "Air Shower Physics" group
+  * Connect to https://gitlab.ikp.kit.edu register yourself and join the "Air Shower Physics" group. Write to me (ralf.ulrich@kit.edu) only in case there are problems with that. 
   * Connect to corsika-devel@lists.kit.edu (self-register at
     https://www.lists.kit.edu/sympa/subscribe/corsika-devel) to get in
-    touch with the project
+    touch with the project.
+    
+  * Register on the corsika slack channel. 
 
 
+## Installation
 
-CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0. You will
-also need:
+CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0. 
 
-- Python 3 (supported versions are Python >= 3.6)
+### Prerequisites
+
+You will also need:
+
+- Python 3 (supported versions are Python >= 3.6), with pip
+- conan (via pip)
 - cmake 
 - git
+- g++, gfortran, binutils, make
 
 On a bare Ubuntu 18.04, just add:
 ``` shell
-sudo apt-get install cmake g++ git
+sudo apt-get install python3 python3-pip cmake g++ gfortran binutils make git 
 ```
 
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to manage our
@@ -70,18 +76,19 @@ dependencies. If you do not have Conan installed, it can be installed with:
 pip install --user conan
 ```
 
+### Compiling
+
 Once Conan is installed, follow these steps to download and install CORSIKA 8:
+
 ``` shell
 git clone --recursive git@gitlab.ikp.kit.edu:AirShowerPhysics/corsika.git
-cd corsika
-mkdir ../corsika-build
-cd ../corsika-build
+mkdir corsika-build
+cd corsika-build
 cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
 make -j8
 make install
 ```
 
-Type `make test` to run the unit test suite.
 
 ## Installation (using docker containers)
 
@@ -94,53 +101,81 @@ You only need docker, e.g. on Ubunut: `sudo apt-get install docker` and of cours
 ## Compiling
 
 Follow these steps to download and install CORSIKA 8, master development version
-```
+```shell
 git clone --recursive https://gitlab.ikp.kit.edu/AirShowerPhysics/corsika.git
-cd corsika
 sudo docker run -v $PWD:/corsika -it corsika/devel:clang-8 /bin/bash
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../install
+cmake ../corsika -DCMAKE_INSTALL_PREFIX=../corsika-install
 make -j8
 make install
 ```
 
-Type `make test` to run the unit test suite.
+## Runing Unit Tests
 
-### Running examples
-
-and if you want to see how the first simple hadron cascade develops, see `Documentation/Examples/cascade_example.cc` for a starting point. 
-
-Run the cascade_example with: 
+Note, before you run *any* executbale you must also define the
+`CORSIKA_DATA` environment variable to point to the location where you
+cloned corsika `modules/data`, thus typically 
+```shell
+export CORSIKA_DATA=$PWD/../corsika/modules/data
 ```
-cd ../corsika-install
-share/examples/cascade_example
+
+To run the Unit Tests, just type `ctest` in your build area.
+
+
+## Running examples
+
+To see how a relatively simple hadron cascade develops,
+see `examples/cascade_example.cpp` for a starting point.
+
+To run the cascade_example, or any other CORSIKA 8 application, you
+must first compile it wrt. to the CORSIKA 8 header-only framework.  This
+can be done best by copying
+e.g. `corsika-install/share/corsika/examples/` to your working place
+(e.g. `corsika-work`). 
+
+Next, you need to define the environment variable `corsika_DIR` to point to, either, 
+your build, or your install area. Thus, e.g. 
+```shell
+export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you buld it">
+```
+
+Then compile your example/application with
+```shell
+cd corsika-work
+cmake .
+make
+bin/cascade_example 
 ```
 
 Visualize output (needs gnuplot installed): 
-```
-bash share/tools/plot_tracks.sh tracks.dat 
+```shell
+bash $corsika_DIR/share/corsika/tools/plot_tracks.sh tracks.dat 
 firefox tracks.dat.gif 
 ```
+(note, if you use the corsika_DIR to point to the build area: the script `plot_tracks.sh` is 
+not copied to the build area, it is only part of the source tree at `tools/plot_tracks.sh`)
 
-Or also consider the `vertical_EAS` example in the same directory, which can 
-be configured with command line options. 
+Or also consider the `vertical_EAS` example in the same directory,
+which can be configured with command line options. 
+Run `bin/vertical_EAS` to get basic help.
 
 
 ### Generating doxygen documentation
 
-To generate the documentation, you need doxygen and graphviz. If you work with the docker corsika/devel containers this is already included. 
+To generate the documentation, you need doxygen and graphviz. If you work with 
+the docker corsika/devel containers this is already included. 
 Otherwise, e.g. on Ubuntu 18.04, do:
-```
+```shell
 sudo apt-get install doxygen graphviz
 ```
 Switch to the corsika build directory and do
-```
+```shell
 make doxygen
 make install
 ```
-browse with firefox:
-```
-firefox ../corsika-install/share/doc/html/index.html
+open with firefox:
+```shell
+firefox ../corsika-install/share/corsika/doc/html/index.html
 ```
 
