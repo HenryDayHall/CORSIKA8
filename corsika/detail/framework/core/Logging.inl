@@ -47,7 +47,13 @@ namespace corsika {
     auto logger = spdlog::stdout_color_mt(name);
 
     // set the default C8 format
+#if (!defined(_GLIBCXX_USE_CXX11_ABI) || _GLIBCXX_USE_CXX11_ABI == 1)
     logger->set_pattern(logging::default_pattern);
+#else
+    // special case: gcc from the software collections devtoolset
+    std::string dp(default_pattern);
+    logger->set_pattern(dp);
+#endif
 
     // if defaultlog is True, we set this as the default spdlog logger.
     if (defaultlog) { spdlog::set_default_logger(logger); }
