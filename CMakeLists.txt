@@ -343,7 +343,7 @@ install (DIRECTORY examples DESTINATION share/corsika)
 #
 # tools
 #
-install (DIRECTORY tools DESTINATION share/corsika)
+add_subdirectory (tools)
 
 
 
