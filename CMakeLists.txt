@@ -80,6 +80,9 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 # FYI: optimizer flags: -O2 would not trade speed for size, neither O2/3 use fast-math
 # debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
+if (CORSIKA_SCL_CXX)
+  add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+endif()
 set (DEFAULT_BUILD_TYPE "Release")
 
 # clang produces a lot of unecessary warnings without this:
@@ -126,6 +129,7 @@ endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 #+++++++++++++++++++++++++++++
 # Setup external dependencies.
 #
+###
 include (conan) # self-provided in 'cmake' directory
 #
 # download and build all dependencies
