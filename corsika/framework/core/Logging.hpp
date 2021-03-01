@@ -50,6 +50,7 @@ namespace corsika {
    * The default pattern for CORSIKA8 loggers.
    */
   const std::string default_pattern{"[%n:%^%-8l%$] %v"};
+  const std::string source_pattern{"[%n:%^%-8l%$(%s:%!:%#)] %v"};
 
   /**
    * Create a new C8-style logger.
