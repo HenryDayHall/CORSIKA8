@@ -64,9 +64,9 @@ You will also need:
 - git
 - g++, gfortran, binutils, make
 
-On a bare Ubuntu 18.04, just add:
+On a bare Ubuntu 20.04, just add:
 ``` shell
-sudo apt-get install python3 python3-pip cmake g++ gfortran binutils make git 
+sudo apt-get install python3 python3-pip cmake g++ gfortran git doxygen graphviz
 ```
 
 CORSIKA 8 uses the [conan](https://conan.io/) package manager to manage our
