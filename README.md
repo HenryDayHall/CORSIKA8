@@ -69,8 +69,15 @@ On a bare Ubuntu 20.04, just add:
 sudo apt-get install python3 python3-pip cmake g++ gfortran git doxygen graphviz
 ```
 
-CORSIKA 8 uses the [conan](https://conan.io/) package manager to manage our
-dependencies. If you do not have Conan installed, it can be installed with:
+On a bare CentOS 7 install python3, pip3 (pip from python3) and cmake3. Any of the devtools 7, 8, 9 should work (at least). 
+Also initialize devtools, before building CORSIKA 8:
+``` shell
+source /opt/rh/devtoolset-9/enable
+```
+
+CORSIKA 8 uses the [conan](https://conan.io/) package manager to
+manage our dependencies. If you do not have Conan installed, it can be
+installed with:
 
 ``` shell
 pip install --user conan
