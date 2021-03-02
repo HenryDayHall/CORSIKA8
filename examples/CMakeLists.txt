@@ -7,7 +7,7 @@ set (CMAKE_VERBOSE_MAKEFILE OFF) # this can be changed with `make VERBOSE=1`
 find_package (corsika CONFIG REQUIRED)
 
 # this is only for CORSIKA_REGISTER_EXAMPLE
-include ("${CMAKE_CURRENT_SOURCE_DIR}/CMakeHelper.cmake") 
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMakeHelper.cmake")
 
 add_executable (helix_example helix_example.cpp)
 target_link_libraries (helix_example CORSIKA8::CORSIKA8)
@@ -35,7 +35,7 @@ CORSIKA_REGISTER_EXAMPLE (cascade_proton_example)
 
 add_executable (vertical_EAS vertical_EAS.cpp)
 target_link_libraries (vertical_EAS CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
+CORSIKA_REGISTER_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000. 1)
 
 add_executable (stopping_power stopping_power.cpp)
 target_link_libraries (stopping_power CORSIKA8::CORSIKA8)
