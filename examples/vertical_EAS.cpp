@@ -112,10 +112,8 @@ int main(int argc, char** argv) {
   feenableexcept(FE_INVALID);
 
   int seed = 0;
-  int number_showers= std::stoi(std::string(argv[4]));
-  if (argc > 5){
-    seed = std::stoi(std::string(argv[5]));
-  }
+  int number_showers = std::stoi(std::string(argv[4]));
+  if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
 
   // initialize random number sequence(s)
   registerRandomStreams(seed);
@@ -158,19 +156,22 @@ int main(int argc, char** argv) {
       fmt::ptr(env.getUniverse()->getContainingNode(
           Point(rootCS, {constants::EarthRadius::Mean + 2_km, 0_m, 0_m}))));
 
-  string output_dir="example_outputs";
+  string output_dir = "example_outputs";
 
-  for(int i_shower=1;i_shower<number_showers+1;i_shower++){
+  for (int i_shower = 1; i_shower < number_showers + 1; i_shower++) {
 
     // directory for outputs
-    string labHist_dir=output_dir+"/inthist_lab_verticalEAS_"+to_string(i_shower)+".npz";
-    string cMSHist_dir=output_dir+"/inthist_cms_verticalEAS_"+to_string(i_shower)+".npz";
-    string longprof_dir=output_dir+"/longprof_verticalEAS_"+to_string(i_shower)+".txt";
-    string tracks_dir=output_dir+"/tracks_"+to_string(i_shower)+".dat";
-    string particles_dir=output_dir+"/particles_"+to_string(i_shower)+".dat";
+    string labHist_dir =
+        output_dir + "/inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
+    string cMSHist_dir =
+        output_dir + "/inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
+    string longprof_dir =
+        output_dir + "/longprof_verticalEAS_" + to_string(i_shower) + ".txt";
+    string tracks_dir = output_dir + "/tracks_" + to_string(i_shower) + ".dat";
+    string particles_dir = output_dir + "/particles_" + to_string(i_shower) + ".dat";
 
     std::cout << std::endl;
-    std::cout << "Shower "<<i_shower<<"/"<<number_showers<<std::endl;
+    std::cout << "Shower " << i_shower << "/" << number_showers << std::endl;
 
     // setup particle stack, and add primary particle
     setup::Stack stack;
@@ -307,8 +308,9 @@ int main(int argc, char** argv) {
           return SwitchResult::Second;
       }
     };
-    auto hadronSequence = make_select(
-        urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted), EnergySwitch(55_GeV));
+    auto hadronSequence =
+        make_select(urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted),
+                    EnergySwitch(55_GeV));
     auto decaySequence = make_sequence(decayPythia, decaySibyll);
     auto sequence =
         make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
@@ -342,5 +344,4 @@ int main(int argc, char** argv) {
     save_hist(hists.CMSHist(), cMSHist_dir, true);
     longprof.save(longprof_dir);
   }
-
 }
