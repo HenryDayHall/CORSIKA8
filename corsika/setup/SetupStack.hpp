@@ -18,12 +18,15 @@ namespace corsika::setup {
 
 #ifdef WITH_HISTORY
 
+#include <corsika/stack/history/HistoryStackExtension.hpp>
+#include <corsika/stack/history/HistorySecondaryProducer.hpp>
+
   /*
    * the version with history
    */
   using Stack = detail::StackWithHistory;
   template <typename T1, template <typename> typename M2>
-  using StackViewProducer = HistorySecondaryProducer<T1, M2>;
+  using StackViewProducer = history::HistorySecondaryProducer<T1, M2>;
 
 #else // WITH_HISTORY
 
@@ -32,7 +35,7 @@ namespace corsika::setup {
    */
   using Stack = detail::StackWithGeometry;
   template <typename T1, template <typename> typename M2>
-  using StackViewProducer = corsika::DefaultSecondaryProducer<T1, M2>;
+  using StackViewProducer = DefaultSecondaryProducer<T1, M2>;
 
 #endif
 
@@ -58,7 +61,7 @@ namespace corsika::setup {
                                   // CHECK with CLANG: setup::Stack::MPIType>;
                                   detail::StackWithHistoryInterface, StackViewProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-  using StackView = make_view<setup::Stack, StackViewProducer>::type;
+  using StackView = MakeView<setup::Stack, StackViewProducer>::type;
 #endif
 
 #else // WITH_HISTORY
@@ -69,7 +72,7 @@ namespace corsika::setup {
                                   // setup::Stack::MPIType>;
                                   setup::detail::StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
-  using StackView = corsika::MakeView<setup::Stack>::type;
+  using StackView = MakeView<setup::Stack>::type;
 #endif
 
 #endif // WITH_HISTORY

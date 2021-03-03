@@ -194,12 +194,6 @@ if (NOT DEFINED ENV{CI})
 endif (NOT DEFINED ENV{CI})
 
 #+++++++++++++++++++++++++++++
-# Options
-#
-# HISTORY option selection
-option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
-
-#+++++++++++++++++++++++++++++
 # Externals
 #
 set (Python_ADDITIONAL_VERSIONS 3)
@@ -346,13 +340,9 @@ install (DIRECTORY examples DESTINATION share/corsika)
 add_subdirectory (tools)
 
 
-
-
-
 #+++++++++++++++++++++++++++++++
 #
 # final summary output
 #
 include (FeatureSummary)
-add_feature_info (HISTORY WITH_HISTORY "Full information on cascade history for particles.")
 feature_summary (WHAT ALL)
