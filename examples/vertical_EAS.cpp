@@ -93,7 +93,8 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 // argv : 1.number of nucleons, 2.number of protons,
 //        3.total energy in GeV, 4.number of showers,
-//        5.seed (0 by default to generate random values for all)
+//        5.output directory
+//        6.seed (0 by default to generate random values for all)
 
 int main(int argc, char** argv) {
 
@@ -111,9 +112,15 @@ int main(int argc, char** argv) {
   }
   feenableexcept(FE_INVALID);
 
+  string output_dir = "";
   int seed = 0;
   int number_showers = std::stoi(std::string(argv[4]));
-  if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
+  if (argc > 5) {
+    output_dir = argv[5];
+    if (output_dir.back() != '/' && output_dir != "") output_dir += '/';
+  }
+
+  if (argc > 6) { seed = std::stoi(std::string(argv[6])); }
 
   // initialize random number sequence(s)
   registerRandomStreams(seed);
@@ -156,19 +163,17 @@ int main(int argc, char** argv) {
       fmt::ptr(env.getUniverse()->getContainingNode(
           Point(rootCS, {constants::EarthRadius::Mean + 2_km, 0_m, 0_m}))));
 
-  string output_dir = "example_outputs";
-
   for (int i_shower = 1; i_shower < number_showers + 1; i_shower++) {
 
     // directory for outputs
     string labHist_dir =
-        output_dir + "/inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
+        output_dir + "inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
     string cMSHist_dir =
-        output_dir + "/inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
+        output_dir + "inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
     string longprof_dir =
-        output_dir + "/longprof_verticalEAS_" + to_string(i_shower) + ".txt";
-    string tracks_dir = output_dir + "/tracks_" + to_string(i_shower) + ".dat";
-    string particles_dir = output_dir + "/particles_" + to_string(i_shower) + ".dat";
+        output_dir + "longprof_verticalEAS_" + to_string(i_shower) + ".txt";
+    string tracks_dir = output_dir + "tracks_" + to_string(i_shower) + ".dat";
+    string particles_dir = output_dir + "particles_" + to_string(i_shower) + ".dat";
 
     std::cout << std::endl;
     std::cout << "Shower " << i_shower << "/" << number_showers << std::endl;
