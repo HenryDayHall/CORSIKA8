@@ -75,6 +75,7 @@ namespace corsika {
       // we loop over each antenna in the collection.
       for (auto& antenna : detector_.getAntennas()) {
 
+        // use something different than vector (maybe pairs)
         std::vector<ElectricFieldVector> EVstart_;
         std::vector<ElectricFieldVector> EVend_;
         std::vector<TimeType> startTTimes_;
@@ -119,7 +120,7 @@ namespace corsika {
 
         // get the Path (path2) from the end "endpoint" to the antenna.
         // This is a SignalPathCollection
-        auto paths2 {this->propagator_.propagate(endPoint_, antenna.getLocation())};
+        auto paths2 {this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_nm)};
 
         // now loop over the paths for endpoint that we got above
         for (auto const& path : paths2) {

@@ -83,6 +83,8 @@ namespace corsika {
           auto t1 = path.total_time_;
 
           QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
+
+          antenna.receive(t1, path.emit_, v11);
           // calculate the ZHS formalism for this particle-antenna
 //          ElectricFieldVector EV_ = ((- constants) * trackVelocity_.dot(path.emit)) *
 //          ((midTime_ + path.total_time_ - (1 - path.average_refractivity_ * beta_ *

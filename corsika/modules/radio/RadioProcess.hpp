@@ -83,7 +83,7 @@ namespace corsika {
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
       //if (valid(particle, track)) {
-        return this->implementation().simulate(particle, track);
+      if (particle.is_em) { return this->implementation().simulate(particle, track); }
       //}
     }
 

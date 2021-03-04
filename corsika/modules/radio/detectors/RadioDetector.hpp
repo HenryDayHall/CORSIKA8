@@ -30,7 +30,9 @@ namespace corsika {
      *
      * @param antenna    The antenna to add
      */
-    void addAntenna(TAntennaImpl const& antenna) { antennas_.push_back(antenna); }
+    void addAntenna(TAntennaImpl const antenna) { antennas_.push_back(antenna); }
+
+    TAntennaImpl at(std::size_t const i) {antennas_.at(i);}
 
     /**
      * Get a *non*-const reference to the collection of antennas.
