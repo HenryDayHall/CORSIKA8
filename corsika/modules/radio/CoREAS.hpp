@@ -17,7 +17,7 @@
 namespace corsika {
 
   /**
-   * A concrete implementation of the Enpoints formalism.
+   * A concrete implementation of the Enpoints formalism. TODO: are there any limitations for the track length?
    */
   template <typename TRadioDetector, typename TPropagator>
   class CoREAS final : public RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator> {
@@ -81,8 +81,8 @@ namespace corsika {
         std::vector<TimeType> endTTimes_;
         std::vector<double> preDoppler;
         std::vector<double> postDoppler;
-        std::vector<QuantityVector<dimensionless_d>> ReceiveVectorsStart_;
-        std::vector<QuantityVector<dimensionless_d>> ReceiveVectorsEnd_;
+        std::vector<Vector<dimensionless_d>> ReceiveVectorsStart_;
+        std::vector<Vector<dimensionless_d>> ReceiveVectorsEnd_;
 
         // get the Path (path1) from the start "endpoint" to the antenna.
         // This is a Signal Path Collection
@@ -108,7 +108,7 @@ namespace corsika {
           ReceiveVectorsStart_.push_back(path.receive_);
 
           // calculate electric field vector for startpoint
-          auto EV1_= (charge_ / constants::c) *
+          ElectricFieldVector EV1_= (charge_ / constants::c) *
                      path.receive_.cross(path.receive_.cross(beta_)) /
                      (path.R_distance_ * preDoppler_);
 
@@ -140,7 +140,7 @@ namespace corsika {
           ReceiveVectorsEnd_.push_back(path.receive_);
 
           // calculate electric field vector for endpoint
-          auto EV2_= (charge_ / constants::c) *
+          ElectricFieldVector EV2_= (charge_ / constants::c) *
                      path.receive_.cross(path.receive_.cross(beta_)) /
                      (path.R_distance_ * postDoppler_);
 
@@ -164,7 +164,7 @@ namespace corsika {
               auto gridResolution_ {antenna.duration_};
               auto deltaT_ { endTTimes_.at(index) - startTTimes_.at(index) };
 
-              if (fabs(deltaT_) < gridResolution_) {
+              if (fabs(deltaT_ / 1_s) < gridResolution_ / 1_s) {
 
                 EVstart_.at(index) = EVstart_.at(index) * fabs(deltaT_ / gridResolution_);
                 EVend_.at(index) = EVend_.at(index) * fabs(deltaT_ / gridResolution_);
@@ -178,7 +178,7 @@ namespace corsika {
                 if (startBin == endBin) {
 
                   // if startE arrives before endE
-                  if (deltaT_ >= 0) {
+                  if (deltaT_ / 1_s >= 0) {
                     if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
                     {
                       startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
@@ -263,6 +263,10 @@ namespace corsika {
                                              path.receive_.cross(path.receive_.cross(beta_)) /
                                              (path.R_distance_ * midDoppler_);
 
+//                ElectricFieldVector EVmid2_ = (- charge_ / constants::c) *
+//                                             path.receive_.cross(path.receive_.cross(beta_)) /
+//                                             (path.R_distance_ * midDoppler_);
+
 //                 EVstart_.insert(EVstart_.begin() + index + j_index, EVmid_); // this should work for curved + curved propagators
 //                 EVend_.insert(EVend_.begin() + index + j_index, - EVmid_); // for now just use one index and not j_index since at the moment you are working with StraightPropagator
                 EVstart_.at(index) = EVmid_;
@@ -290,10 +294,10 @@ namespace corsika {
                   EVstart_.at(index) = EVstart_.at(index) * fabs(deltaT_ / gridResolution_);
                   EVend_.at(index) = EVend_.at(index) * fabs(deltaT_ / gridResolution_);
 
-                  const long startBin = static_cast<long>(floor(startTTimes_.at(index)/gridResolution_+0.5l));
-                  const long endBin = static_cast<long>(floor(endTTimes_.at(index)/gridResolution_+0.5l));
-                  const double startBinFraction = (startTTimes_.at(index)/gridResolution_)-floor(startTTimes_.at(index)/gridResolution_);
-                  const double endBinFraction = (endTTimes_.at(index)/gridResolution_)-floor(endTTimes_.at(index)/gridResolution_);
+                  const long startBin = static_cast<long>(floor((startTTimes_.at(index) / 1_s)/gridResolution_+0.5l));
+                  const long endBin = static_cast<long>(floor((endTTimes_.at(index) / 1_s) /gridResolution_+0.5l));
+                  const double startBinFraction = ((startTTimes_.at(index) / 1_s)/gridResolution_)-floor((startTTimes_.at(index) / 1_s)/gridResolution_);
+                  const double endBinFraction = ((endTTimes_.at(index) / 1_s)/gridResolution_)-floor((endTTimes_.at(index) / 1_s)/gridResolution_);
 
                   // only do timing modification if contributions would land in same bin
                   if (startBin == endBin) {
@@ -302,11 +306,11 @@ namespace corsika {
                     if (deltaT_ >= 0) {
                       if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
                       {
-                        startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
+                        startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
                       }
                       else if ((startBinFraction < 0.5) && (endBinFraction < 0.5)) // both points right of bin center
                       {
-                        endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_; // shift EV2_ to next gridpoint
+                        endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_ * 1_s; // shift EV2_ to next gridpoint
                       }
                       else // points on both sides of bin center
                       {
@@ -315,11 +319,11 @@ namespace corsika {
                         // check if asymmetry to right or left
                         if (rightDist >= leftDist)
                         {
-                          endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_; // shift EV2_ to next gridpoint
+                          endTTimes_.at(index) = endTTimes_.at(index) + gridResolution_ * 1_s; // shift EV2_ to next gridpoint
                         }
                         else
                         {
-                          startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_; // shift EV1_ to previous gridpoint
+                          startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
                         }
                       }
                     }
@@ -327,11 +331,11 @@ namespace corsika {
                     {
                       if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
                       {
-                        endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_; // shift EV2_ to previous gridpoint
+                        endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_ * 1_s; // shift EV2_ to previous gridpoint
                       }
                       else if ((startBinFraction < 0.5) && (endBinFraction < 0.5)) // both points right of bin center
                       {
-                        startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_; // shift EV1_ to next gridpoint
+                        startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_ * 1_s; // shift EV1_ to next gridpoint
                       }
                       else // points on both sides of bin center
                       {
@@ -340,11 +344,11 @@ namespace corsika {
                         // check if asymmetry to right or left
                         if (rightDist >= leftDist)
                         {
-                          startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_; // shift EV1_ to next gridpoint
+                          startTTimes_.at(index) = startTTimes_.at(index) + gridResolution_ * 1_s; // shift EV1_ to next gridpoint
                         }
                         else
                         {
-                          endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_; // shift EV2_ to previous gridpoint
+                          endTTimes_.at(index) = endTTimes_.at(index) - gridResolution_ * 1_s; // shift EV2_ to previous gridpoint
                         }
                       }
                     } // End of else statement
