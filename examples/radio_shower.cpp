@@ -33,6 +33,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
 
@@ -86,8 +87,9 @@ void registerRandomStreams(const int seed) {
     RNGManager::getInstance().seedAll(seed);
 }
 
-template <typename T>
-using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+template <typename TInterface>
+using MyExtraEnv =
+    UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 int main(int argc, char** argv) {
 
@@ -108,48 +110,15 @@ int main(int argc, char** argv) {
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
-  // setup environment (idea 1)
-
-  using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-  EnvType env9;
-
-
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<UniformRefractiveIndex<IRefractiveIndexModel<IMediumModel>>>>>;
-
-  auto& universe = *(env9.getUniverse());
-  CoordinateSystemPtr const& rootCS9 = env9.getCoordinateSystem();
-
-  auto world = EnvType::createNode<Sphere>(Point{rootCS9, 0_m, 0_m, 0_m}, 150_km);
-
-  world->setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, MagneticFieldVector(rootCS9, 0_T, 0_T, 1_T),
-      1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(std::vector<Code>{Code::Hydrogen},
-                         std::vector<float>{(float)1.}), 1);
-
-  universe.addChild(std::move(world));
-
-//    world->setModelProperties<UniRIndex>(
-//        1);
-//
-//    universe.addChild(std::move(world));
-
-
   // setup environment (idea 2)
-  template <typename T>
-  using UniRIndex = UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<MediumPropertyModel<UniformMagneticField<T>>>>>;
   using EnvType = setup::Environment;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
   auto builder = make_layered_spherical_atmosphere_builder<
-      setup::EnvironmentInterface, UniRIndex>::create(center,
-                                                      constants::EarthRadius::Mean,
-                                                      Medium::AirDry1Atm,
-                                                      1,                         // 1 is the refractive index
-                                                      MagneticFieldVector{rootCS, 0_T,
-                                                                          50_uT, 0_T});
-
+      setup::EnvironmentInterface, MyExtraEnv>::create(center,
+                                                       constants::EarthRadius::Mean, 1.,
+                                                       Medium::AirDry1Atm,
+                                                       MagneticFieldVector{rootCS, 0_T,
+                                                                           50_uT, 0_T});
 }
-
