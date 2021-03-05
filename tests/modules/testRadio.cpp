@@ -24,6 +24,16 @@
 #include <fstream>
 #include <iostream>
 
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/FlatExponential.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
+#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/MediumPropertyModel.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/SlidingPlanarExponential.hpp>
+
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -42,30 +52,52 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/PhysicalConstants.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+
+
 
 using namespace corsika;
 
 double constexpr absMargin = 1.0e-7;
 
+template <typename T>
+using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
+
+template <typename T>
+using UniRIndex =
+UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<MediumPropertyModel<UniformMagneticField<T>>>>>;
+
+
+
 TEST_CASE("Radio", "[processes]") {
 
-  logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  // create an environment with uniform refractive index of 1
+
+  using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+  EnvType env9;
 
 
-  // check that I can create and reset a TimeDomain process
-//  SECTION("TimeDomainDetector") {
+  using MyHomogeneousModel = MediumPropertyModel<
+      UniformMagneticField<HomogeneousMedium<UniformRefractiveIndex<IRefractiveIndexModel<IMediumModel>>>>>;
+
+  auto& universe = *(env9.getUniverse());
+  CoordinateSystemPtr const& rootCS9 = env9.getCoordinateSystem();
+
+  auto world = EnvType::createNode<Sphere>(Point{rootCS9, 0_m, 0_m, 0_m}, 150_km);
+
+  world->setModelProperties<MyHomogeneousModel>(
+      Medium::AirDry1Atm, MagneticFieldVector(rootCS9, 0_T, 0_T, 1_T),
+      1_kg / (1_m * 1_m * 1_m),
+      NuclearComposition(std::vector<Code>{Code::Hydrogen},
+                         std::vector<float>{(float)1.}), 1);
+
+  universe.addChild(std::move(world));
+
+//    world->setModelProperties<UniRIndex>(
+//        1);
 //
-//    // construct a time domain detector
-//    AntennaCollection<TimeDomainAntenna> detector;
-//
-//    //   // and construct some time domain radio process
-//    //   TimeDomain<ZHS<>, TimeDomainDetector<TimeDomainAntenna>> process(detector);
-//    //   TimeDomain<ZHS<CPU>, TimeDomainDetector<TimeDomainAntenna>> process2(detector);
-//    //   TimeDomain<ZHS<CPU>, decltype(detector)> process3(detector);
-//  }
+//    universe.addChild(std::move(world));
 
-  // check that I can create time domain antennas
   SECTION("TimeDomainAntenna") {
 
     // create an environment so we can get a coordinate system
@@ -100,38 +132,148 @@ TEST_CASE("Radio", "[processes]") {
 //    detector.addAntenna(ant1);
 ////    detector.addAntenna(ant2);
 
-    // create an environment with uniform refractive index of 1
-    using UniRIndex =
-    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-    EnvType env6;
+//    EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//    using UniRIndex =
+//    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-    // get a coordinate system
-    const CoordinateSystemPtr rootCS6 = env6.getCoordinateSystem();
+//    using UniRIndex =
+//    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+//
+//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//    EnvType env;
 
-    auto Medium6 = EnvType::createNode<Sphere>(
-        Point{rootCS6, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//    EnvType env6;
+//
+//    // get a coordinate system
+//    const CoordinateSystemPtr rootCS6 = env6.getCoordinateSystem();
+//
+//    auto Medium6 = EnvType::createNode<Sphere>(
+//        Point{rootCS6, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+//
+//    auto const props6 = Medium6->setModelProperties<UniRIndex>(
+//        1, 1_kg / (1_m * 1_m * 1_m),
+//        NuclearComposition(
+//            std::vector<Code>{Code::Nitrogen},
+//            std::vector<float>{1.f}));
+//
+//    env6.getUniverse()->addChild(std::move(Medium6));
 
-    auto const props6 = Medium6->setModelProperties<UniRIndex>(
-        1, 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition(
-            std::vector<Code>{Code::Nitrogen},
-            std::vector<float>{1.f}));
+//    using EnvType = setup::Environment;
+//    EnvType env6;
+//
+//    CoordinateSystemPtr const& rootCS = env6.getCoordinateSystem();
+//
+//    Point const center{rootCS, 0_m, 0_m, 0_m};
+//
+//    auto builder = make_layered_spherical_atmosphere_builder<
+//        setup::EnvironmentInterface, UniRIndex>::create(center,
+//                                                         constants::EarthRadius::Mean,
+//                                                         Medium::AirDry1Atm,
+//                                                         1,
+//                                                         MagneticFieldVector{rootCS, 0_T,
+//                                                                             50_uT, 0_T});
+//
+//    builder.setNuclearComposition(
+//        {{Code::Nitrogen, Code::Oxygen},
+//         {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-    env6.getUniverse()->addChild(std::move(Medium6));
+//    builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+//    builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+//    builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+//    builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+//    builder.addLinearLayer(1e9_cm, 112.8_km);
+//    builder.assemble(env6);
+
+    // setup particle stack, and add primary particle
+//    setup::Stack stack;
+//    stack.clear();
+//    const Code beamCode = Code::Nucleus;
+//    unsigned short const A = std::stoi(std::string(argv[1]));
+//    unsigned short Z = std::stoi(std::string(argv[2]));
+//    auto const mass = get_nucleus_mass(A, Z);
+//    const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
+//    double theta = 0.;
+//    auto const thetaRad = theta / 180. * M_PI;
+//
+//    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+//      return sqrt((Elab - m) * (Elab + m));
+//    };
+//    HEPMomentumType P0 = elab2plab(E0, mass);
+//    auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
+//      return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
+//    };
+//
+//    auto const [px, py, pz] = momentumComponents(thetaRad, P0);
+//    auto plab = MomentumVector(rootCS, {px, py, pz});
+//    std::cout << "input particle: " << beamCode << std::endl;
+//    std::cout << "input angles: theta=" << theta << std::endl;
+//    std::cout << "input momentum: " << plab.getComponents() / 1_GeV
+//         << ", norm = " << plab.getNorm() << std::endl;
+//
+//    auto const observationHeight = 0_km + builder.getEarthRadius();
+//    auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+//    auto const t = -observationHeight * cos(thetaRad) +
+//                   sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
+//                        static_pow<2>(injectionHeight));
+//    Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
+//    Point const injectionPos =
+//        showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+//
+//    std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
 
-    // get a unit vector
-    Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
-    QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
 
-    Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
-    QuantityVector<ElectricFieldType::dimension_type> v22{20_V / 1_m, 20_V / 1_m, 20_V / 1_m};
 
-    // use receive methods
-    ant1.receive(15_s, v1, v11);
-    ant2.receive(16_s, v2, v22);
+
+
+
+
+//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//    EnvType env6;
+//
+//    // get a coordinate system
+//    const CoordinateSystemPtr rootCS6 = env6.getCoordinateSystem();
+//
+//    auto Medium6 = EnvType::createNode<Sphere>(
+//        Point{rootCS6, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+//
+//    auto const props6 = Medium6->setModelProperties<UniRIndex>(
+//        1, 1_kg / (1_m * 1_m * 1_m),
+//        NuclearComposition(
+//            std::vector<Code>{Code::Nitrogen},
+//            std::vector<float>{1.f}));
+//
+//    env6.getUniverse()->addChild(std::move(Medium6));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    // get a unit vector
+//    Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
+//    QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
+//
+//    Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
+//    QuantityVector<ElectricFieldType::dimension_type> v22{20_V / 1_m, 20_V / 1_m, 20_V / 1_m};
+//
+//    // use receive methods
+//    ant1.receive(15_s, v1, v11);
+//    ant2.receive(16_s, v2, v22);
 
     // TODO: this is crucial to be solved I thought it was the getAntenna() method but nope.
     // Tried the same with a good old out of the box std::vector and still no luck
@@ -145,12 +287,12 @@ TEST_CASE("Radio", "[processes]") {
 //    }
 
 
-    // use getWaveform() method
-    auto [t11, E1] = ant1.getWaveform();
-    CHECK(E1(5,0) - 10 == 0);
-
-    auto [t222, E2] = ant2.getWaveform();
-    CHECK(E2(5,0) -20 == 0);
+//    // use getWaveform() method
+//    auto [t11, E1] = ant1.getWaveform();
+//    CHECK(E1(5,0) - 10 == 0);
+//
+//    auto [t222, E2] = ant2.getWaveform();
+//    CHECK(E2(5,0) -20 == 0);
 
 
     // the rest is just random ideas
@@ -399,85 +541,85 @@ TEST_CASE("Radio", "[processes]") {
 
     }
 
-    SECTION("ZHS process") {
-      // first step is to construct an environment for the propagation (uni index)
-    using UniRIndex =
-    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
-
-    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-    EnvType envZHS;
-
-    // get a coordinate system
-    const CoordinateSystemPtr rootCSzhs = envZHS.getCoordinateSystem();
-
-    auto MediumZHS = EnvType::createNode<Sphere>(
-        Point{rootCSzhs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-
-    auto const propsZHS = MediumZHS->setModelProperties<UniRIndex>(
-        1, 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition(
-            std::vector<Code>{Code::Nitrogen},
-            std::vector<float>{1.f}));
-
-    envZHS.getUniverse()->addChild(std::move(MediumZHS));
-
-
-    // now create antennas and detectors
-    // the antennas location
-    const auto point1{Point(envZHS.getCoordinateSystem(), 1_m, 2_m, 3_m)};
-    const auto point2{Point(envZHS.getCoordinateSystem(), 4_m, 5_m, 6_m)};
-
-    // create times for the antenna
-    const TimeType t1{10_s};
-    const TimeType t2{10_s};
-    const InverseTimeType t3{1/1_s};
-    const TimeType t4{11_s};
-
-    // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3);
-
-    // construct a radio detector instance to store our antennas
-    AntennaCollection<TimeDomainAntenna> detector;
-
-    // add this antenna to the process
-    detector.addAntenna(ant1);
-    detector.addAntenna(ant2);
-
-    // create a particle
-    auto const particle{Code::Electron};
-    const auto pmass{get_mass(particle)};
-
-    // create a new stack for each trial
-    setup::Stack stack;
-
-    // construct an energy
-    const HEPEnergyType E0{1_TeV};
-
-    // compute the necessary momentumn
-    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
-
-    // and create the momentum vector
-    const auto plab{MomentumVector(rootCSzhs, {0_GeV, 0_GeV, P0})};
-
-    // and create the location of the particle in this coordinate system
-    const Point pos(rootCSzhs, 50_m, 10_m, 80_m);
-
-    // add the particle to the stack
-    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
-
-    // set up a track object
-      setup::Tracking tracking;
-
-    // Create a ZHS instance
-    ZHS<decltype(detector), decltype(StraightPropagator(envZHS))> zhs(detector, envZHS);
-
-    // call ZHS over the track
-    zhs.doContinuous(particle1, tracking);
-    zhs.simulate(particle1, tracking);
-
-    zhs.writeOutput();
-    }
+//    SECTION("ZHS process") {
+//      // first step is to construct an environment for the propagation (uni index)
+//    using UniRIndex =
+//    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+//
+//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//    EnvType envZHS;
+//
+//    // get a coordinate system
+//    const CoordinateSystemPtr rootCSzhs = envZHS.getCoordinateSystem();
+//
+//    auto MediumZHS = EnvType::createNode<Sphere>(
+//        Point{rootCSzhs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+//
+//    auto const propsZHS = MediumZHS->setModelProperties<UniRIndex>(
+//        1, 1_kg / (1_m * 1_m * 1_m),
+//        NuclearComposition(
+//            std::vector<Code>{Code::Nitrogen},
+//            std::vector<float>{1.f}));
+//
+//    envZHS.getUniverse()->addChild(std::move(MediumZHS));
+//
+//
+//    // now create antennas and detectors
+//    // the antennas location
+//    const auto point1{Point(envZHS.getCoordinateSystem(), 1_m, 2_m, 3_m)};
+//    const auto point2{Point(envZHS.getCoordinateSystem(), 4_m, 5_m, 6_m)};
+//
+//    // create times for the antenna
+//    const TimeType t1{10_s};
+//    const TimeType t2{10_s};
+//    const InverseTimeType t3{1/1_s};
+//    const TimeType t4{11_s};
+//
+//    // check that I can create an antenna at (1, 2, 3)
+//    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
+//    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3);
+//
+//    // construct a radio detector instance to store our antennas
+//    AntennaCollection<TimeDomainAntenna> detector;
+//
+//    // add this antenna to the process
+//    detector.addAntenna(ant1);
+//    detector.addAntenna(ant2);
+//
+//    // create a particle
+//    auto const particle{Code::Electron};
+//    const auto pmass{get_mass(particle)};
+//
+//    // create a new stack for each trial
+//    setup::Stack stack;
+//
+//    // construct an energy
+//    const HEPEnergyType E0{1_TeV};
+//
+//    // compute the necessary momentumn
+//    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+//
+//    // and create the momentum vector
+//    const auto plab{MomentumVector(rootCSzhs, {0_GeV, 0_GeV, P0})};
+//
+//    // and create the location of the particle in this coordinate system
+//    const Point pos(rootCSzhs, 50_m, 10_m, 80_m);
+//
+//    // add the particle to the stack
+//    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
+//
+//    // set up a track object
+//      setup::Tracking tracking;
+//
+//    // Create a ZHS instance
+//    ZHS<decltype(detector), decltype(StraightPropagator(envZHS))> zhs(detector, envZHS);
+//
+//    // call ZHS over the track
+//    zhs.doContinuous(particle1, tracking);
+//    zhs.simulate(particle1, tracking);
+//
+//    zhs.writeOutput();
+//    }
 
 //    SECTION("Construct a ZHS process.") {
 //
