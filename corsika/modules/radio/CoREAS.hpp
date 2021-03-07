@@ -64,7 +64,9 @@ namespace corsika {
       auto endPoint_ {track.getPosition(1)};
 
       // beta is velocity / speed of light. Start & end should be the same!
-      auto beta_ {((endPoint_ - startPoint_) / (endTime_ - startTime_)).normalized()};
+//      auto beta_ {static_cast<double>((endPoint_.distance_to(startPoint_) / 1_m ) / (endTime_/ 1_s - startTime_/ 1_s) )};
+//      auto beta_ {((endPoint_.distance_to(startPoint_)) / (endTime_ - startTime_)).normalized()};
+      auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
 
       // get particle charge
       auto const charge_ {get_charge(particle.getPID())};
@@ -93,8 +95,7 @@ namespace corsika {
         for (auto const& path : paths1) {
 
           // calculate preDoppler factor
-          double preDoppler_{1. - path.average_refractive_index_ *
-                                  beta_ * path.emit_};
+          auto preDoppler_{1. - path.average_refractive_index_ * beta_.dot(path.emit_)};
 
           // store it to the preDoppler std::vector for later comparisons
           preDoppler.push_back(preDoppler_);
@@ -107,9 +108,15 @@ namespace corsika {
 
           // store the receive unit vector
           ReceiveVectorsStart_.push_back(path.receive_);
+//          auto kkk{path.receive_.cross(path.receive_.cross(beta_))};
+//          auto kk{path.R_distance_ * preDoppler_};
+//          auto kkkk{kkk/kk};
+//          auto kc{kkkk * (1 / 1_s) /constants::c};
+//          auto kosta{charge_ * 1_m};
 
+          //(charge_ / constants::c) *
           // calculate electric field vector for startpoint
-          ElectricFieldVector EV1_= (charge_ / constants::c) *
+          ElectricFieldVector EV1_= (1 / 1_s) * (charge_ / constants::c) *
                      path.receive_.cross(path.receive_.cross(beta_)) /
                      (path.R_distance_ * preDoppler_);
 
@@ -126,7 +133,7 @@ namespace corsika {
         for (auto const& path : paths2) {
 
           double postDoppler_{1. - path.average_refractive_index_ *
-                                   beta_ * path.emit_}; // maybe this is path.receive_ (?)
+                                   beta_.dot(path.emit_)}; // maybe this is path.receive_ (?)
 
           // store it to the postDoppler std::vector for later comparisons
           postDoppler.push_back(postDoppler_);
@@ -243,7 +250,7 @@ namespace corsika {
 
               // get the Path (path3) from the middle "endpoint" to the antenna.
               // This is a SignalPathCollection
-              auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation())};
+              auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation(), 1_nm)};
 
 //               std::size_t j_index {0}; // this will be useful for multiple paths (aka curved propagators)
               // now loop over the paths for endpoint that we got above
@@ -253,7 +260,7 @@ namespace corsika {
 //                 EVend_.erase(EVend_.begin() + index + j_index); // for now just use one index and not j_index since at the moment you are working with StraightPropagator
 
                 auto const midPointReceiveTime_{path.total_time_ + midTime_};
-                auto midDoppler_{1. - path.average_refractive_index_ * beta_ * path.emit_};
+                auto midDoppler_{1. - path.average_refractive_index_ * beta_.dot(path.emit_)};
 
                 // change the values of the receive unit vectors of start and end
                 ReceiveVectorsStart_.at(index) = path.receive_;
@@ -273,7 +280,7 @@ namespace corsika {
                 EVstart_.at(index) = EVmid_;
                 EVend_.at(index) = - EVmid_;
 
-                auto deltaT_{midPoint_.getNorm() / (constants::c * beta_ * fabs(midDoppler_))};
+                auto deltaT_{(endPoint_ - startPoint_).getNorm() / (constants::c * beta_.getNorm() * fabs(midDoppler_))}; // TODO: Caution with this!
 
                 if (startTTimes_.at(index) < endTTimes_.at(index)) // EVstart_ arrives earlier
                 {
@@ -286,14 +293,14 @@ namespace corsika {
                   endTTimes_.at(index) = midPointReceiveTime_ - 0.5 * deltaT_;
                 }
 
-                const long double gridResolution_{antenna.duration_};
+                const long double gridResolution_{antenna.duration_ / 1_s};
                 deltaT_ = endTTimes_.at(index) - startTTimes_.at(index);
 
                 // redistribute contributions over time scale defined by the observation time resolution
-                if (fabs(deltaT_) < gridResolution_) {
+                if (fabs(deltaT_ / 1_s) < gridResolution_) {
 
-                  EVstart_.at(index) = EVstart_.at(index) * fabs(deltaT_ / gridResolution_);
-                  EVend_.at(index) = EVend_.at(index) * fabs(deltaT_ / gridResolution_);
+                  EVstart_.at(index) = EVstart_.at(index) * fabs((deltaT_ / 1_s) / gridResolution_);
+                  EVend_.at(index) = EVend_.at(index) * fabs((deltaT_ / 1_s) / gridResolution_);
 
                   const long startBin = static_cast<long>(floor((startTTimes_.at(index) / 1_s)/gridResolution_+0.5l));
                   const long endBin = static_cast<long>(floor((endTTimes_.at(index) / 1_s) /gridResolution_+0.5l));
@@ -304,7 +311,7 @@ namespace corsika {
                   if (startBin == endBin) {
 
                     // if startE arrives before endE
-                    if (deltaT_ >= 0) {
+                    if ((deltaT_ / 1_s) >= 0) {
                       if ((startBinFraction >= 0.5) && (endBinFraction >= 0.5)) // both points left of bin center
                       {
                         startTTimes_.at(index) = startTTimes_.at(index) - gridResolution_ * 1_s; // shift EV1_ to previous gridpoint

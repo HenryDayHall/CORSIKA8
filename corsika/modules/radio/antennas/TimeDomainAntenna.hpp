@@ -23,6 +23,13 @@ namespace corsika {
    */
   class TimeDomainAntenna : public Antenna<TimeDomainAntenna> {
 
+
+//  protected:
+//    // expose the CRTP interfaces constructor
+
+  public:
+    // import the methods from the antenna
+
     TimeType const start_time_;      ///< The start time of this waveform.
     TimeType const duration_;        ///< The duration of this waveform.
     InverseTimeType const sample_rate_; ///< The sampling rate of this antenna.
@@ -30,12 +37,6 @@ namespace corsika {
     xt::xtensor<double,2> waveformE_; ///< The waveform stored by this antenna.
     std::pair<xt::xtensor<double, 2>,
         xt::xtensor<double,2>> waveform_; ///< useful for .getWaveform()
-
-  protected:
-    // expose the CRTP interfaces constructor
-
-  public:
-    // import the methods from the antenna
 
     using Antenna<TimeDomainAntenna>::getName;
     using Antenna<TimeDomainAntenna>::getLocation;

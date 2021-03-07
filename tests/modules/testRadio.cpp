@@ -64,15 +64,128 @@ double constexpr absMargin = 1.0e-7;
 
 TEST_CASE("Radio", "[processes]") {
 
+  SECTION("CoREAS process") {
+      // first step is to construct an environment for the propagation (uni index)
+    using UniRIndex =
+    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    EnvType envZHS;
+
+    // get a coordinate system
+    const CoordinateSystemPtr rootCSzhs = envZHS.getCoordinateSystem();
+
+    auto MediumZHS = EnvType::createNode<Sphere>(
+        Point{rootCSzhs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+    auto const propsZHS = MediumZHS->setModelProperties<UniRIndex>(
+        1, 1_kg / (1_m * 1_m * 1_m),
+        NuclearComposition(
+            std::vector<Code>{Code::Nitrogen},
+            std::vector<float>{1.f}));
+
+    envZHS.getUniverse()->addChild(std::move(MediumZHS));
+
+
+    // now create antennas and detectors
+    // the antennas location
+    const auto point1{Point(envZHS.getCoordinateSystem(), 1_m, 2_m, 3_m)};
+    const auto point2{Point(envZHS.getCoordinateSystem(), 4_m, 5_m, 6_m)};
+    const auto point3{Point(envZHS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
+
+
+    // create times for the antenna
+    const TimeType t1{10_s};
+    const TimeType t2{10_s};
+    const InverseTimeType t3{1/1_s};
+    const TimeType t4{11_s};
+
+    // check that I can create an antenna at (1, 2, 3)
+    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
+    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3);
+
+    // construct a radio detector instance to store our antennas
+    AntennaCollection<TimeDomainAntenna> detector;
+
+    detector.addAntenna(ant1);
+
+    // create a particle
+    auto const particle{Code::Electron};
+    const auto pmass{get_mass(particle)};
+
+    VelocityVector v0(rootCSzhs, {5_m / second, 0_m / second, 0_m / second});
+
+    Vector B0(rootCSzhs, 5_T, 0_T, 0_T);
+
+    Line const line(point3, v0);
+
+    auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
+
+    auto const t = 10_s;
+    LeapFrogTrajectory base(point1, v0, B0, k, t);
+
+    // create a new stack for each trial
+    setup::Stack stack;
+
+    // construct an energy
+    const HEPEnergyType E0{1_TeV};
+
+    // compute the necessary momentumn
+    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+
+    // and create the momentum vector
+    const auto plab{MomentumVector(rootCSzhs, {0_GeV, 0_GeV, P0})};
+
+    // and create the location of the particle in this coordinate system
+    const Point pos(rootCSzhs, 50_m, 10_m, 80_m);
+
+    // add the particle to the stack
+    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
+
+    // set up a track object
+//      setup::Tracking tracking;
+
+    // Create a ZHS instance
+    CoREAS<decltype(detector), decltype(StraightPropagator(envZHS))> coreas(detector, envZHS);
+
+    // call CoREAS over the track
+//    coreas.doContinuous(particle1, tracking);
+    coreas.simulate(particle1, base);
+
+    coreas.writeOutput();
+    }
+
+
   SECTION("TimeDomainAntenna") {
 
     // create an environment so we can get a coordinate system
-    using EnvType = setup::Environment;
-    EnvType env;
+//    using EnvType = setup::Environment;
+//    EnvType env;
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    EnvType env6;
+
+    using UniRIndex =
+    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+
 
     // the antenna location
-    const auto point1{Point(env.getCoordinateSystem(), 1_m, 2_m, 3_m)};
-    const auto point2{Point(env.getCoordinateSystem(), 4_m, 5_m, 6_m)};
+    const auto point1{Point(env6.getCoordinateSystem(), 1_m, 2_m, 3_m)};
+    const auto point2{Point(env6.getCoordinateSystem(), 4_m, 5_m, 6_m)};
+
+
+    // get a coordinate system
+    const CoordinateSystemPtr rootCS6 = env6.getCoordinateSystem();
+
+    auto Medium6 = EnvType::createNode<Sphere>(
+        Point{rootCS6, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+    auto const props6 = Medium6->setModelProperties<UniRIndex>(
+        1, 1_kg / (1_m * 1_m * 1_m),
+        NuclearComposition(
+            std::vector<Code>{Code::Nitrogen},
+            std::vector<float>{1.f}));
+
+    env6.getUniverse()->addChild(std::move(Medium6));
 
     // create times for the antenna
     const TimeType t1{10_s};
@@ -97,18 +210,18 @@ TEST_CASE("Radio", "[processes]") {
 //
 //    // add this antenna to the process
 //    detector.addAntenna(ant1);
-////    detector.addAntenna(ant2);
+//    detector.addAntenna(ant2);
 
-//    // get a unit vector
-//    Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
-//    QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
-//
-//    Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
-//    QuantityVector<ElectricFieldType::dimension_type> v22{20_V / 1_m, 20_V / 1_m, 20_V / 1_m};
-//
-//    // use receive methods
-//    ant1.receive(15_s, v1, v11);
-//    ant2.receive(16_s, v2, v22);
+    // get a unit vector
+    Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
+    QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
+
+    Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
+    QuantityVector<ElectricFieldType::dimension_type> v22{20_V / 1_m, 20_V / 1_m, 20_V / 1_m};
+
+    // use receive methods
+    ant1.receive(15_s, v1, v11);
+    ant2.receive(16_s, v2, v22);
 
     // TODO: this is crucial to be solved I thought it was the getAntenna() method but nope.
     // Tried the same with a good old out of the box std::vector and still no luck
@@ -122,12 +235,12 @@ TEST_CASE("Radio", "[processes]") {
 //    }
 
 
-//    // use getWaveform() method
-//    auto [t11, E1] = ant1.getWaveform();
-//    CHECK(E1(5,0) - 10 == 0);
-//
-//    auto [t222, E2] = ant2.getWaveform();
-//    CHECK(E2(5,0) -20 == 0);
+    // use getWaveform() method
+    auto [t11, E1] = ant1.getWaveform();
+    CHECK(E1(5,0) - 10 == 0);
+
+    auto [t222, E2] = ant2.getWaveform();
+    CHECK(E2(5,0) -20 == 0);
 
 
     // the rest is just random ideas
@@ -196,185 +309,185 @@ TEST_CASE("Radio", "[processes]") {
   }
 
   // check that I can create working Straight Propagators in different environments
-//  SECTION("Straight Propagator w/ Uniform Refractive Index") {
-//
-//    // create an environment with uniform refractive index of 1
-//    using UniRIndex =
-//        UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
-//
-//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-//    EnvType env;
-//
-//    // get a coordinate system
-//    const CoordinateSystemPtr rootCS = env.getCoordinateSystem();
-//
-//    auto Medium = EnvType::createNode<Sphere>(
-//        Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-//
-//    auto const props = Medium->setModelProperties<UniRIndex>(
-//        1, 1_kg / (1_m * 1_m * 1_m),
-//        NuclearComposition(
-//            std::vector<Code>{Code::Nitrogen},
-//            std::vector<float>{1.f}));
-//
-//    env.getUniverse()->addChild(std::move(Medium));
-//
-//    // get some points
-//    Point p0(rootCS, {0_m, 0_m, 0_m});
-//    //    Point p1(rootCS, {0_m, 0_m, 1_m});
-//    //    Point p2(rootCS, {0_m, 0_m, 2_m});
-//    //    Point p3(rootCS, {0_m, 0_m, 3_m});
-//    //    Point p4(rootCS, {0_m, 0_m, 4_m});
-//    //    Point p5(rootCS, {0_m, 0_m, 5_m});
-//    //    Point p6(rootCS, {0_m, 0_m, 6_m});
-//    //    Point p7(rootCS, {0_m, 0_m, 7_m});
-//    //    Point p8(rootCS, {0_m, 0_m, 8_m});
-//    //    Point p9(rootCS, {0_m, 0_m, 9_m});
-//    Point p10(rootCS, {0_m, 0_m, 10_m});
-//
-//    // get a unit vector
-//    Vector<dimensionless_d> v1(rootCS, {0, 0, 1});
-//
-//    //    // get a geometrical path of points
-//    //    Path P1({p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10});
-//
-//    // construct a Straight Propagator given the uniform refractive index environment
-//    StraightPropagator SP(env);
-//
-//    // store the outcome of the Propagate method to paths_
-//    auto const paths_ = SP.propagate(p0, p10, 1_m);
-//
-//    // perform checks to paths_ components
-//    for (auto const& path : paths_) {
-//      CHECK((path.total_time_ / 1_s) - ((34_m / (3 * constants::c)) / 1_s) ==
-//            Approx(0).margin(absMargin));
-//      CHECK(path.average_refractive_index_ == Approx(1));
-//      CHECK(path.emit_.getComponents() == v1.getComponents());
-//      CHECK(path.receive_.getComponents() == v1.getComponents());
-//      CHECK(path.R_distance_ == 10_m);
-//      //      CHECK(std::equal(P1.begin(), P1.end(), path.points_.begin(),[]
-//      //      (Point a, Point b) { return (a - b).norm() / 1_m < 1e-5;}));
-//      //TODO:THINK ABOUT THE POINTS IN THE SIGNALPATH.H
-//    }
-//
-//    CHECK(paths_.size() == 1);
-//  }
-//
-//    SECTION("Straight Propagator w/ Exponential Refractive Index") {
-//
-////    logging::set_level(logging::level::info);
-////    corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-//
-//     // create an environment with exponential refractive index (n_0 = 1 & lambda = 0)
-//    using ExpoRIndex = ExponentialRefractiveIndex<HomogeneousMedium
-//        <IRefractiveIndexModel<IMediumModel>>>;
-//
-//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-//    EnvType env1;
-//
-//    //get another coordinate system
-//    const CoordinateSystemPtr rootCS1 = env1.getCoordinateSystem();
-//
-//    auto Medium1 = EnvType::createNode<Sphere>(
-//        Point{rootCS1, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-//
-//    auto const props1 =
-//        Medium1
-//            ->setModelProperties<ExpoRIndex>( 1, 0 / 1_m,
-//               1_kg / (1_m * 1_m * 1_m),
-//               NuclearComposition(
-//               std::vector<Code>{Code::Nitrogen},
-//               std::vector<float>{1.f}));
-//
-//    env1.getUniverse()->addChild(std::move(Medium1));
-//
-//    // get some points
-//    Point pp0(rootCS1, {0_m, 0_m, 0_m});
-////    Point pp1(rootCS1, {0_m, 0_m, 1_m});
-////    Point pp2(rootCS1, {0_m, 0_m, 2_m});
-////    Point pp3(rootCS1, {0_m, 0_m, 3_m});
-////    Point pp4(rootCS1, {0_m, 0_m, 4_m});
-////    Point pp5(rootCS1, {0_m, 0_m, 5_m});
-////    Point pp6(rootCS1, {0_m, 0_m, 6_m});
-////    Point pp7(rootCS1, {0_m, 0_m, 7_m});
-////    Point pp8(rootCS1, {0_m, 0_m, 8_m});
-////    Point pp9(rootCS1, {0_m, 0_m, 9_m});
-//    Point pp10(rootCS1, {0_m, 0_m, 10_m});
-//
-//    // get a unit vector
-//    Vector<dimensionless_d> vv1(rootCS1, {0, 0, 1});
-//
-//    // construct a Straight Propagator given the exponential refractive index environment
-//    StraightPropagator SP1(env1);
-//
-//    // store the outcome of Propagate method to paths1_
-//    auto const paths1_ = SP1.propagate(pp0, pp10, 1_m);
-//
-//    // perform checks to paths1_ components (this is just a sketch for now)
-//    for (auto const& path :paths1_) {
-//      CHECK( (path.total_time_ / 1_s)  - ((34_m / (3 * constants::c)) / 1_s)
-//             == Approx(0).margin(absMargin) );
-//      CHECK( path.average_refractive_index_ == Approx(1) );
-//      CHECK( path.emit_.getComponents() == vv1.getComponents() );
-//      CHECK( path.receive_.getComponents() == vv1.getComponents() );
-//      CHECK( path.R_distance_ == 10_m );
-//    }
-//
-//    CHECK( paths1_.size() == 1 );
-//
-//    /*
-//    * A second environment with another exponential refractive index
-//    */
-//
-//    // create an environment with exponential refractive index (n_0 = 2 & lambda = 2)
-//    using ExpoRIndex = ExponentialRefractiveIndex<HomogeneousMedium
-//        <IRefractiveIndexModel<IMediumModel>>>;
-//
-//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-//    EnvType env2;
-//
-//    //get another coordinate system
-//    const CoordinateSystemPtr rootCS2 = env2.getCoordinateSystem();
-//
-//    auto Medium2 = EnvType::createNode<Sphere>(
-//        Point{rootCS2, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-//
-//    auto const props2 =
-//        Medium2
-//            ->setModelProperties<ExpoRIndex>( 2, 2 / 1_m,
-//                                              1_kg / (1_m * 1_m * 1_m),
-//                                              NuclearComposition(
-//                                                  std::vector<Code>{Code::Nitrogen},
-//                                                  std::vector<float>{1.f}));
-//
-//    env2.getUniverse()->addChild(std::move(Medium2));
-//
-//    // get some points
-//    Point ppp0(rootCS2, {0_m, 0_m, 0_m});
-//    Point ppp10(rootCS2, {0_m, 0_m, 10_m});
-//
-//    // get a unit vector
-//    Vector<dimensionless_d> vvv1(rootCS2, {0, 0, 1});
-//
-//    // construct a Straight Propagator given the exponential refractive index environment
-//    StraightPropagator SP2(env2);
-//
-//    // store the outcome of Propagate method to paths1_
-//    auto const paths2_ = SP2.propagate(ppp0, ppp10, 1_m);
-//
-//    // perform checks to paths1_ components (this is just a sketch for now)
-//    for (auto const& path :paths2_) {
-//      CHECK( (path.total_time_ / 1_s)  - ((3.177511688_m / (3 * constants::c)) / 1_s)
-//             == Approx(0).margin(absMargin) );
-//      CHECK( path.average_refractive_index_ == Approx(0.210275935) );
-//      CHECK( path.emit_.getComponents() == vvv1.getComponents() );
-//      CHECK( path.receive_.getComponents() == vvv1.getComponents() );
-//      CHECK( path.R_distance_ == 10_m );
-//    }
-//
-//    CHECK( paths2_.size() == 1 );
-//
-//    }
+  SECTION("Straight Propagator w/ Uniform Refractive Index") {
+
+    // create an environment with uniform refractive index of 1
+    using UniRIndex =
+        UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    EnvType env;
+
+    // get a coordinate system
+    const CoordinateSystemPtr rootCS = env.getCoordinateSystem();
+
+    auto Medium = EnvType::createNode<Sphere>(
+        Point{rootCS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+    auto const props = Medium->setModelProperties<UniRIndex>(
+        1, 1_kg / (1_m * 1_m * 1_m),
+        NuclearComposition(
+            std::vector<Code>{Code::Nitrogen},
+            std::vector<float>{1.f}));
+
+    env.getUniverse()->addChild(std::move(Medium));
+
+    // get some points
+    Point p0(rootCS, {0_m, 0_m, 0_m});
+    //    Point p1(rootCS, {0_m, 0_m, 1_m});
+    //    Point p2(rootCS, {0_m, 0_m, 2_m});
+    //    Point p3(rootCS, {0_m, 0_m, 3_m});
+    //    Point p4(rootCS, {0_m, 0_m, 4_m});
+    //    Point p5(rootCS, {0_m, 0_m, 5_m});
+    //    Point p6(rootCS, {0_m, 0_m, 6_m});
+    //    Point p7(rootCS, {0_m, 0_m, 7_m});
+    //    Point p8(rootCS, {0_m, 0_m, 8_m});
+    //    Point p9(rootCS, {0_m, 0_m, 9_m});
+    Point p10(rootCS, {0_m, 0_m, 10_m});
+
+    // get a unit vector
+    Vector<dimensionless_d> v1(rootCS, {0, 0, 1});
+
+    //    // get a geometrical path of points
+    //    Path P1({p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10});
+
+    // construct a Straight Propagator given the uniform refractive index environment
+    StraightPropagator SP(env);
+
+    // store the outcome of the Propagate method to paths_
+    auto const paths_ = SP.propagate(p0, p10, 1_m);
+
+    // perform checks to paths_ components
+    for (auto const& path : paths_) {
+      CHECK((path.total_time_ / 1_s) - ((34_m / (3 * constants::c)) / 1_s) ==
+            Approx(0).margin(absMargin));
+      CHECK(path.average_refractive_index_ == Approx(1));
+      CHECK(path.emit_.getComponents() == v1.getComponents());
+      CHECK(path.receive_.getComponents() == v1.getComponents());
+      CHECK(path.R_distance_ == 10_m);
+      //      CHECK(std::equal(P1.begin(), P1.end(), path.points_.begin(),[]
+      //      (Point a, Point b) { return (a - b).norm() / 1_m < 1e-5;}));
+      //TODO:THINK ABOUT THE POINTS IN THE SIGNALPATH.H
+    }
+
+    CHECK(paths_.size() == 1);
+  }
+
+    SECTION("Straight Propagator w/ Exponential Refractive Index") {
+
+//    logging::set_level(logging::level::info);
+//    corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
+     // create an environment with exponential refractive index (n_0 = 1 & lambda = 0)
+    using ExpoRIndex = ExponentialRefractiveIndex<HomogeneousMedium
+        <IRefractiveIndexModel<IMediumModel>>>;
+
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    EnvType env1;
+
+    //get another coordinate system
+    const CoordinateSystemPtr rootCS1 = env1.getCoordinateSystem();
+
+    auto Medium1 = EnvType::createNode<Sphere>(
+        Point{rootCS1, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+    auto const props1 =
+        Medium1
+            ->setModelProperties<ExpoRIndex>( 1, 0 / 1_m,
+               1_kg / (1_m * 1_m * 1_m),
+               NuclearComposition(
+               std::vector<Code>{Code::Nitrogen},
+               std::vector<float>{1.f}));
+
+    env1.getUniverse()->addChild(std::move(Medium1));
+
+    // get some points
+    Point pp0(rootCS1, {0_m, 0_m, 0_m});
+//    Point pp1(rootCS1, {0_m, 0_m, 1_m});
+//    Point pp2(rootCS1, {0_m, 0_m, 2_m});
+//    Point pp3(rootCS1, {0_m, 0_m, 3_m});
+//    Point pp4(rootCS1, {0_m, 0_m, 4_m});
+//    Point pp5(rootCS1, {0_m, 0_m, 5_m});
+//    Point pp6(rootCS1, {0_m, 0_m, 6_m});
+//    Point pp7(rootCS1, {0_m, 0_m, 7_m});
+//    Point pp8(rootCS1, {0_m, 0_m, 8_m});
+//    Point pp9(rootCS1, {0_m, 0_m, 9_m});
+    Point pp10(rootCS1, {0_m, 0_m, 10_m});
+
+    // get a unit vector
+    Vector<dimensionless_d> vv1(rootCS1, {0, 0, 1});
+
+    // construct a Straight Propagator given the exponential refractive index environment
+    StraightPropagator SP1(env1);
+
+    // store the outcome of Propagate method to paths1_
+    auto const paths1_ = SP1.propagate(pp0, pp10, 1_m);
+
+    // perform checks to paths1_ components (this is just a sketch for now)
+    for (auto const& path :paths1_) {
+      CHECK( (path.total_time_ / 1_s)  - ((34_m / (3 * constants::c)) / 1_s)
+             == Approx(0).margin(absMargin) );
+      CHECK( path.average_refractive_index_ == Approx(1) );
+      CHECK( path.emit_.getComponents() == vv1.getComponents() );
+      CHECK( path.receive_.getComponents() == vv1.getComponents() );
+      CHECK( path.R_distance_ == 10_m );
+    }
+
+    CHECK( paths1_.size() == 1 );
+
+    /*
+    * A second environment with another exponential refractive index
+    */
+
+    // create an environment with exponential refractive index (n_0 = 2 & lambda = 2)
+    using ExpoRIndex = ExponentialRefractiveIndex<HomogeneousMedium
+        <IRefractiveIndexModel<IMediumModel>>>;
+
+    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    EnvType env2;
+
+    //get another coordinate system
+    const CoordinateSystemPtr rootCS2 = env2.getCoordinateSystem();
+
+    auto Medium2 = EnvType::createNode<Sphere>(
+        Point{rootCS2, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+
+    auto const props2 =
+        Medium2
+            ->setModelProperties<ExpoRIndex>( 2, 2 / 1_m,
+                                              1_kg / (1_m * 1_m * 1_m),
+                                              NuclearComposition(
+                                                  std::vector<Code>{Code::Nitrogen},
+                                                  std::vector<float>{1.f}));
+
+    env2.getUniverse()->addChild(std::move(Medium2));
+
+    // get some points
+    Point ppp0(rootCS2, {0_m, 0_m, 0_m});
+    Point ppp10(rootCS2, {0_m, 0_m, 10_m});
+
+    // get a unit vector
+    Vector<dimensionless_d> vvv1(rootCS2, {0, 0, 1});
+
+    // construct a Straight Propagator given the exponential refractive index environment
+    StraightPropagator SP2(env2);
+
+    // store the outcome of Propagate method to paths1_
+    auto const paths2_ = SP2.propagate(ppp0, ppp10, 1_m);
+
+    // perform checks to paths1_ components (this is just a sketch for now)
+    for (auto const& path :paths2_) {
+      CHECK( (path.total_time_ / 1_s)  - ((3.177511688_m / (3 * constants::c)) / 1_s)
+             == Approx(0).margin(absMargin) );
+      CHECK( path.average_refractive_index_ == Approx(0.210275935) );
+      CHECK( path.emit_.getComponents() == vvv1.getComponents() );
+      CHECK( path.receive_.getComponents() == vvv1.getComponents() );
+      CHECK( path.R_distance_ == 10_m );
+    }
+
+    CHECK( paths2_.size() == 1 );
+
+    }
 
 //    SECTION("ZHS process") {
 //      // first step is to construct an environment for the propagation (uni index)
