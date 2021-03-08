@@ -65,6 +65,16 @@ namespace corsika {
         , waveformE_ (xt::zeros<double>({num_bins_, 3}))
     {};
 
+    // copy constructor
+    TimeDomainAntenna(const TimeDomainAntenna& Tant)
+        : Antenna(Tant.name_, Tant.location_)
+        , start_time_(Tant.start_time_)
+        , duration_(Tant.duration_)
+        , sample_rate_(Tant.sample_rate_)
+        , num_bins_(Tant.num_bins_)
+        , waveformE_(Tant.waveformE_)
+    {};
+
     /**
      * Receive an electric field at this antenna.
      *

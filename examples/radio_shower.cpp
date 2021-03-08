@@ -248,7 +248,7 @@ int main(int argc, char** argv) {
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
   // put radio here
-  CoREAS<TimeDomainAntenna, StraightPropagator(env)> coreas;
+  CoREAS<decltype(detector), decltype(StraightPropagator(env))> coreas(detector, env);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
   TrackWriter trackWriter("tracks.dat");

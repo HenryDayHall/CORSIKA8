@@ -74,7 +74,7 @@ namespace corsika {
      * @param track       The current track.
      */
     template <typename Particle, typename Track>
-    ProcessReturn doContinuous(Particle& particle, Track const& track) const {
+    ProcessReturn doContinuous(Particle& particle, Track const& track) {
       //we want the following particles:
       // Code::Electron & Code::Positron & Code::Gamma
 
@@ -83,7 +83,7 @@ namespace corsika {
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
       //if (valid(particle, track)) {
-      if (particle == Code::Electron || particle == Code::Positron) {
+      if (particle.getPID() == Code::Electron || particle.getPID() == Code::Positron) {
         return this->implementation().simulate(particle, track);
       }
       //}
@@ -118,9 +118,9 @@ namespace corsika {
         for (auto& antenna : detector_.getAntennas()) {
 
           auto [t,E] = antenna.getWaveform();
+          auto c = xt::hstack(xt::xtuple(t,E));
           std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
-          xt::dump_csv(out_file, t);
-          xt::dump_csv(out_file, E);
+          xt::dump_csv(out_file, c);
           out_file.close();
           ++i;
 

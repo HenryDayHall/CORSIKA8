@@ -65,33 +65,33 @@ double constexpr absMargin = 1.0e-7;
 TEST_CASE("Radio", "[processes]") {
 
   SECTION("CoREAS process") {
-      // first step is to construct an environment for the propagation (uni index)
+      // first step is to construct an environment for the propagation (uniform index 1)
     using UniRIndex =
     UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
     using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-    EnvType envZHS;
+    EnvType envCoREAS;
 
     // get a coordinate system
-    const CoordinateSystemPtr rootCSzhs = envZHS.getCoordinateSystem();
+    const CoordinateSystemPtr rootCSCoREAS = envCoREAS.getCoordinateSystem();
 
-    auto MediumZHS = EnvType::createNode<Sphere>(
-        Point{rootCSzhs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+    auto MediumCoREAS = EnvType::createNode<Sphere>(
+        Point{rootCSCoREAS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 
-    auto const propsZHS = MediumZHS->setModelProperties<UniRIndex>(
+    auto const propsZHS = MediumCoREAS->setModelProperties<UniRIndex>(
         1, 1_kg / (1_m * 1_m * 1_m),
         NuclearComposition(
             std::vector<Code>{Code::Nitrogen},
             std::vector<float>{1.f}));
 
-    envZHS.getUniverse()->addChild(std::move(MediumZHS));
+    envCoREAS.getUniverse()->addChild(std::move(MediumCoREAS));
 
 
     // now create antennas and detectors
     // the antennas location
-    const auto point1{Point(envZHS.getCoordinateSystem(), 1_m, 2_m, 3_m)};
-    const auto point2{Point(envZHS.getCoordinateSystem(), 4_m, 5_m, 6_m)};
-    const auto point3{Point(envZHS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
+    const auto point1{Point(envCoREAS.getCoordinateSystem(), 1_m, 2_m, 3_m)};
+    const auto point2{Point(envCoREAS.getCoordinateSystem(), 4_m, 5_m, 6_m)};
+    const auto point3{Point(envCoREAS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
 
 
     // create times for the antenna
@@ -107,15 +107,18 @@ TEST_CASE("Radio", "[processes]") {
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
 
+//    std::vector<TimeDomainAntenna> detector;
     detector.addAntenna(ant1);
+//    detector.push_back(ant1);
 
     // create a particle
     auto const particle{Code::Electron};
     const auto pmass{get_mass(particle)};
 
-    VelocityVector v0(rootCSzhs, {5_m / second, 0_m / second, 0_m / second});
 
-    Vector B0(rootCSzhs, 5_T, 0_T, 0_T);
+    VelocityVector v0(rootCSCoREAS, {5_m / second, 5_m / second, 5_m / second});
+
+    Vector B0(rootCSCoREAS, 5_T, 5_T, 5_T);
 
     Line const line(point3, v0);
 
@@ -134,33 +137,58 @@ TEST_CASE("Radio", "[processes]") {
     const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
 
     // and create the momentum vector
-    const auto plab{MomentumVector(rootCSzhs, {0_GeV, 0_GeV, P0})};
+    const auto plab{MomentumVector(rootCSCoREAS, {0_GeV, 0_GeV, P0})};
 
     // and create the location of the particle in this coordinate system
-    const Point pos(rootCSzhs, 50_m, 10_m, 80_m);
+    const Point pos(rootCSCoREAS, 50_m, 10_m, 80_m);
 
     // add the particle to the stack
     auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
 
+    auto const charge_ {get_charge(particle1.getPID())};
+    std::cout << "charge: " << charge_ << std::endl;
+    std::cout << "1 / c: " << 1. / constants::c << std::endl;
+
     // set up a track object
 //      setup::Tracking tracking;
 
+    auto startPoint_ {base.getPosition(0)};
+    auto midPoint_ {base.getPosition(0.5)};
+    auto endPoint_ {base.getPosition(1)};
+    std::cout << "startPoint_: " << startPoint_ << std::endl;
+    std::cout << "midPoint_: " << midPoint_ << std::endl;
+    std::cout << "endPoint_: " << endPoint_ << std::endl;
+
+    auto velo_ {base.getVelocity(0)};
+    std::cout << "velocity: " << velo_ << std::endl;
+
+    auto startTime_ {particle1.getTime() - base.getDuration()}; // time at the start point of the track hopefully.
+    auto endTime_ {particle1.getTime()};
+    std::cout << "startTime_: " << startTime_ << std::endl;
+    std::cout << "endTime_: " << endTime_ << std::endl;
+
+    auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
+    std::cout << "beta_: " << beta_ << std::endl;
+
+    Vector<dimensionless_d> v1(rootCSCoREAS, {0, 0, 1});
+    std::cout << "v1: " << v1.getComponents() << std::endl;
+
+    std::cout << "beta_.dot(v1): " << beta_.dot(v1) << std::endl;
+
     // Create a ZHS instance
-    CoREAS<decltype(detector), decltype(StraightPropagator(envZHS))> coreas(detector, envZHS);
+    CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))> coreas(detector, envCoREAS);
 
     // call CoREAS over the track
-//    coreas.doContinuous(particle1, tracking);
-    coreas.simulate(particle1, base);
+//    coreas.doContinuous(particle1, base);
+//    coreas.simulate(particle1, base);
 
-    coreas.writeOutput();
+//    coreas.writeOutput();
     }
 
 
   SECTION("TimeDomainAntenna") {
 
     // create an environment so we can get a coordinate system
-//    using EnvType = setup::Environment;
-//    EnvType env;
     using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
     EnvType env6;
 
@@ -191,26 +219,27 @@ TEST_CASE("Radio", "[processes]") {
     const TimeType t1{10_s};
     const TimeType t2{10_s};
     const InverseTimeType t3{1/1_s};
+    const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
     TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna_name2", point2, 11_s, t2, t3);
+    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3);
 
     // assert that the antenna name is correct
     REQUIRE(ant1.getName() == "antenna_name");
+    REQUIRE(ant2.getName() == "antenna_name2");
 
     // and check that the antenna is at the right location
     REQUIRE((ant1.getLocation() - point1).getNorm() < 1e-12 * 1_m);
+    REQUIRE((ant2.getLocation() - point2).getNorm() < 1e-12 * 1_m);
 
-    std::vector<TimeDomainAntenna> detector;
-    detector.push_back(ant1);
+    // construct a radio detector instance to store our antennas
+    AntennaCollection<TimeDomainAntenna> detector;
 
-//    // construct a radio detector instance to store our antennas
-//    AntennaCollection<TimeDomainAntenna> detector;
-//
-//    // add this antenna to the process
-//    detector.addAntenna(ant1);
-//    detector.addAntenna(ant2);
+    // add this antenna to the process
+    detector.addAntenna(ant1);
+    detector.addAntenna(ant2);
+    CHECK(detector.size() == 2);
 
     // get a unit vector
     Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
@@ -223,89 +252,57 @@ TEST_CASE("Radio", "[processes]") {
     ant1.receive(15_s, v1, v11);
     ant2.receive(16_s, v2, v22);
 
-    // TODO: this is crucial to be solved I thought it was the getAntenna() method but nope.
-    // Tried the same with a good old out of the box std::vector and still no luck
-    // The problem should be in the constructor (?)
-//    auto x = detector.getAntennas();
-//    detector.push_back(ant1);
-
-//    for (auto& xx : detector) {
-//      auto [t1111, E1111] = xx.getWaveform();
-//      CHECK(E1111(5,0) - 10 == 0);
-//    }
-
-
     // use getWaveform() method
-    auto [t11, E1] = ant1.getWaveform();
+    auto [t111, E1] = ant1.getWaveform();
     CHECK(E1(5,0) - 10 == 0);
-
     auto [t222, E2] = ant2.getWaveform();
     CHECK(E2(5,0) -20 == 0);
 
+    // use the receive method in a for loop. It works now!
+    for (auto& xx : detector.getAntennas()) {
+      xx.receive(15_s, v1, v11);
+    }
 
-    // the rest is just random ideas
-    //////////////////////////////////////////////////////////////////////////////////////
-
-//    for (auto& kostas : detector.getAntennas()) {
-//      std::cout << kostas.getName() << std::endl;
-//      kostas.receive(15_s, v1, v11);
-//      std::cout << kostas.waveformE_;
-//      auto [t, E] = kostas.getWaveform();
-//      std::cout << E(5,0) << std::endl;
-//      kostas.receive(16_s, v2, v22);
-//      std::cout << E(5,0) << std::endl;
+    // t & E are correct! uncomment to see them
+//    for (auto& xx : detector.getAntennas()) {
+//      auto [t,E] = xx.getWaveform();
+//      std::cout << t << std::endl;
+//      std::cout << " ... "<< std::endl;
+//      std::cout << E << std::endl;
+//      std::cout << " ... "<< std::endl;
 //    }
 
-
-
-    //    auto t33{static_cast<int>(t1 / t2)};
-//    std::cout << t33 << std::endl;
-//    xt::xtensor<double,2> waveformE_ = xt::zeros<double>({2, 3});
-//    xt::xtensor<double,2> res = xt::view(waveformE_);
-//    std::cout << ant1.waveformE_ << std::endl;
-//    std::cout << " " << std::endl;
-//    std::cout << ant2.waveformE_ << std::endl;
-//    std::cout << " " << std::endl;
-//    std::cout << ant1.times_ << std::endl;
-//    std::cout << " " << std::endl;
-//    std::cout << ant2.times_ << std::endl;
-//   auto [t, E] = ant2.getWaveform();
-//
-
-//
-//
-//   std::ofstream out_file("antenna_output.csv");
-//    xt::dump_csv(out_file, t);
-//    xt::dump_csv(out_file, E);
-//    out_file.close();
-
-
-//    for (auto& antenna : detector.getAntennas()) {
-//      auto [t, E] = antenna.getWaveform();
-//    }
-
+    // check output files. It works, uncomment to see.
 //    int i = 1;
-//    auto x = detector.getAntennas();
-//    for (auto& antenna : x) {
+//    for (auto& antenna : detector.getAntennas()) {
 //
-//      auto [t, E] = antenna.getWaveform();
-//      std::ofstream out_file("antenna" + to_string(i) + "_output.csv");
-//      std::cout << E(5,0) << std::endl;
-//      xt::dump_csv(out_file, t);
-//      xt::dump_csv(out_file, E);
+//      auto [t,E] = antenna.getWaveform();
+//      auto c0 = xt::hstack(xt::xtuple(t,E));
+//      std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
+//      xt::dump_csv(out_file, c0);
 //      out_file.close();
 //      ++i;
+//
 //    }
 
-
-//    detector.writeOutput();
+    // check reset method for antennas. Uncomment to see they are zero
 //    ant1.reset();
 //    ant2.reset();
 //
 //    std::cout << ant1.waveformE_ << std::endl;
 //    std::cout << ant2.waveformE_ << std::endl;
+//
+//    std::cout << " ... "<< std::endl;
+//    std::cout << " ... "<< std::endl;
 
-    //////////////////////////////////////////////////////////////////////////////////////
+    // check reset method for antenna collection. Uncomment to see they are zero
+//    detector.reset();
+//    for (auto& xx : detector.getAntennas()) {
+//      std::cout << xx.waveformE_ << std::endl;
+//      std::cout << " ... "<< std::endl;
+//    }
+
+
   }
 
   // check that I can create working Straight Propagators in different environments
@@ -368,6 +365,13 @@ TEST_CASE("Radio", "[processes]") {
       //      CHECK(std::equal(P1.begin(), P1.end(), path.points_.begin(),[]
       //      (Point a, Point b) { return (a - b).norm() / 1_m < 1e-5;}));
       //TODO:THINK ABOUT THE POINTS IN THE SIGNALPATH.H
+
+      std::cout << "path.total_time_: " << path.total_time_ << std::endl;
+      std::cout << "path.average_refractive_index_: " << path.average_refractive_index_ << std::endl;
+      std::cout << "path.emit_: " << path.emit_.getComponents() << std::endl;
+      std::cout << "path.R_distance_: " << path.R_distance_ << std::endl;
+
+
     }
 
     CHECK(paths_.size() == 1);
@@ -488,190 +492,5 @@ TEST_CASE("Radio", "[processes]") {
     CHECK( paths2_.size() == 1 );
 
     }
-
-//    SECTION("ZHS process") {
-//      // first step is to construct an environment for the propagation (uni index)
-//    using UniRIndex =
-//    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
-//
-//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-//    EnvType envZHS;
-//
-//    // get a coordinate system
-//    const CoordinateSystemPtr rootCSzhs = envZHS.getCoordinateSystem();
-//
-//    auto MediumZHS = EnvType::createNode<Sphere>(
-//        Point{rootCSzhs, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-//
-//    auto const propsZHS = MediumZHS->setModelProperties<UniRIndex>(
-//        1, 1_kg / (1_m * 1_m * 1_m),
-//        NuclearComposition(
-//            std::vector<Code>{Code::Nitrogen},
-//            std::vector<float>{1.f}));
-//
-//    envZHS.getUniverse()->addChild(std::move(MediumZHS));
-//
-//
-//    // now create antennas and detectors
-//    // the antennas location
-//    const auto point1{Point(envZHS.getCoordinateSystem(), 1_m, 2_m, 3_m)};
-//    const auto point2{Point(envZHS.getCoordinateSystem(), 4_m, 5_m, 6_m)};
-//
-//    // create times for the antenna
-//    const TimeType t1{10_s};
-//    const TimeType t2{10_s};
-//    const InverseTimeType t3{1/1_s};
-//    const TimeType t4{11_s};
-//
-//    // check that I can create an antenna at (1, 2, 3)
-//    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
-//    TimeDomainAntenna ant2("antenna_name2", point2, t4, t2, t3);
-//
-//    // construct a radio detector instance to store our antennas
-//    AntennaCollection<TimeDomainAntenna> detector;
-//
-//    // add this antenna to the process
-//    detector.addAntenna(ant1);
-//    detector.addAntenna(ant2);
-//
-//    // create a particle
-//    auto const particle{Code::Electron};
-//    const auto pmass{get_mass(particle)};
-//
-//    // create a new stack for each trial
-//    setup::Stack stack;
-//
-//    // construct an energy
-//    const HEPEnergyType E0{1_TeV};
-//
-//    // compute the necessary momentumn
-//    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
-//
-//    // and create the momentum vector
-//    const auto plab{MomentumVector(rootCSzhs, {0_GeV, 0_GeV, P0})};
-//
-//    // and create the location of the particle in this coordinate system
-//    const Point pos(rootCSzhs, 50_m, 10_m, 80_m);
-//
-//    // add the particle to the stack
-//    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
-//
-//    // set up a track object
-//      setup::Tracking tracking;
-//
-//    // Create a ZHS instance
-//    ZHS<decltype(detector), decltype(StraightPropagator(envZHS))> zhs(detector, envZHS);
-//
-//    // call ZHS over the track
-//    zhs.doContinuous(particle1, tracking);
-//    zhs.simulate(particle1, tracking);
-//
-//    zhs.writeOutput();
-//    }
-
-//    SECTION("Construct a ZHS process.") {
-//
-//        // TODO: construct the environment for the propagator
-
-    //////////////////////////////////////////////////////////////////////////////////////
-//    // useful information
-//  // create a TimeDomain process
-//  auto zhs{TimeDomain<ZHS<CPU>, decltype(detector)>(detector)};
-//
-//  // get the antenna back from the process and check the properties
-//  REQUIRE(detector.GetAntennas().cbegin()->GetName() == "antenna_name");
-//
-//  // and check the location is the same
-//  REQUIRE((detector.GetAntennas().cbegin()->GetLocation() - point).norm() <
-//          1e-12 * 1_m);
-//  // and check that the number of antennas visible to the process has increased
-//  REQUIRE(zhs.GetDetector().GetAntennas().size() == 2);
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-//  using VelocityVec = Vector<corsika::units::si::SpeedType::dimension_type>;
-//
-//  // setup environment, geometry
-//  environment::Environment<environment::IMediumModel> env;
-//
-//  // and get the coordinate systm
-//  geometry::CoordinateSystem const& cs{env.GetCoordinateSystem()};
-//
-//  // a test particle
-//  const auto pcode{particles::Code::Electron};
-//  const auto mass{particles::Electron::GetMass()};
-//
-//  // create a new stack for each trial
-//  setup::Stack stack;
-//
-//  // construct an energy
-//  const HEPEnergyType E0{1_TeV};
-//
-//  // compute the necessary momentumn
-//  const HEPMomentumType P0{sqrt(E0 * E0 - mass * mass)};
-//
-//  // and create the momentum vector
-//  const auto plab{corsika::stack::MomentumVector(cs, {0_GeV, 0_GeV, P0})};
-//
-//  // and create the location of the particle in this coordinate system
-//  const geometry::Point pos(cs, 5_m, 1_m, 8_m);
-//
-//  // add the particle to the stack
-//  auto particle{stack.AddParticle(std::make_tuple(pcode, E0, plab, pos, 0_ns))};
-//
-//  // get a view into the stack
-//  corsika::stack::SecondaryView stackview(particle);
-//
-//  // create a trajectory
-//  const auto& track{
-//      Trajectory(Line(pos, VelocityVec(cs, 0_m / 1_s, 0_m / 1_s, 0.1_m / 1_ns)), 1_ns)};
-//
-//  // and create a view vector
-//  const auto& view{Vector(cs, 0_m, 0_m, 1_m)};
-//
-//  // construct a radio detector instance to store our antennas
-//  TimeDomainDetector<TimeDomainAntenna> detector;
-//
-//  // the antenna location
-//  const auto point{geometry::Point(cs, 1_m, 2_m, 3_m)};
-//
-//  // check that I can create an antenna at (1, 2, 3)
-//  const auto ant{TimeDomainAntenna("antenna_name", point)};
-//
-//  // add this antenna to the process
-//  detector.AddAntenna(ant);
-//
-//  // create a TimeDomain process
-//  auto zhs{TimeDomain<ZHS<CPU>, decltype(detector)>(detector)};
-//
-//  // get the projectile
-//  auto projectile{stackview.GetProjectile()};
-//
-//  // call ZHS over the track
-//  zhs.DoContinuous(projectile, track);
-//  zhs.Simulate(projectile, track);
-//
-//  // try and call the ZHS implementation directly for a given view direction
-//  ZHS<CPU>::Emit(projectile, track, view);
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-  // create an environment with uniform refractive index of 1
-//
-//        // here we just use a deque to store the antenna
-//        std::deque<TimeDomainAntenna> antennas;
-//
-//        // TODO: add time domain antennas to the deque
-//
-//        // and now create ZHS with this antenna collection
-//        // and with a straight propagator
-//        ZHS<decltype(antennas), StraightPropagator> zhs(antennas, env);
-//        // TODO: do we need the explicit type declaration?
-//
-//        // here is where the simulation happens
-//
-//        // and call zhs.writeOutput() at the end.
-//    }
 
 } // END: TEST_CASE("Radio", "[processes]")

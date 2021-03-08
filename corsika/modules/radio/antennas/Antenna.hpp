@@ -23,10 +23,12 @@ namespace corsika {
   template <typename AntennaImpl>
   class Antenna {
 
+
+
+  public:
     std::string const name_;         ///< The name/identifier of this antenna.
     Point const location_;           ///< The location of this antenna.
 
-  public:
     // this stores the polarization vector of an electric field
     using ElectricFieldVector =
         QuantityVector<ElectricFieldType::dimension_type>;
@@ -46,6 +48,11 @@ namespace corsika {
     Antenna(std::string const& name, Point const& location)
         : name_(name)
         , location_(location){};
+
+    // copy constructor
+    Antenna(const Antenna& Ant)
+        : name_(Ant.name_)
+        , location_(Ant.location_){};
 
     /**
      * Receive a signal at this antenna.

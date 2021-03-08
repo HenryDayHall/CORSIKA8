@@ -49,7 +49,7 @@ namespace corsika {
      *
      */
     template <typename Particle, typename Track>
-    ProcessReturn simulate(Particle& particle, Track const& track) const {
+    ProcessReturn simulate(Particle& particle, Track const& track) {
 
       // get the global simulation time for that track. (best guess for now)
       auto startTime_ {particle.getTime() - track.getDuration()}; // time at the start point of the track hopefully.
@@ -116,9 +116,9 @@ namespace corsika {
 
           //(charge_ / constants::c) *
           // calculate electric field vector for startpoint
-          ElectricFieldVector EV1_= (1 / 1_s) * (charge_ / constants::c) *
+          ElectricFieldVector EV1_=
                      path.receive_.cross(path.receive_.cross(beta_)) /
-                     (path.R_distance_ * preDoppler_);
+                     (path.R_distance_ * preDoppler_) * ((1 / 1_s) * (1 / constants::c)) * charge_;
 
           // store it to EVstart_ std::vector for later use
           EVstart_.push_back(EV1_);
@@ -148,9 +148,9 @@ namespace corsika {
           ReceiveVectorsEnd_.push_back(path.receive_);
 
           // calculate electric field vector for endpoint
-          ElectricFieldVector EV2_= (charge_ / constants::c) *
+          ElectricFieldVector EV2_=
                      path.receive_.cross(path.receive_.cross(beta_)) /
-                     (path.R_distance_ * postDoppler_);
+                     (path.R_distance_ * postDoppler_) * ((1 / 1_s) * (1 / constants::c)) * charge_;
 
           // store it to EVstart_ std::vector for later use
           EVend_.push_back(EV2_);
@@ -267,9 +267,9 @@ namespace corsika {
                 ReceiveVectorsEnd_.at(index) = path.receive_;
 
                 // CoREAS calculation -> get ElectricFieldVector3 for "midPoint"
-                ElectricFieldVector EVmid_ = (charge_ / constants::c) *
+                ElectricFieldVector EVmid_ =
                                              path.receive_.cross(path.receive_.cross(beta_)) /
-                                             (path.R_distance_ * midDoppler_);
+                                             (path.R_distance_ * midDoppler_) * ((1 / 1_s) * (1 / constants::c)) * charge_;
 
 //                ElectricFieldVector EVmid2_ = (- charge_ / constants::c) *
 //                                             path.receive_.cross(path.receive_.cross(beta_)) /

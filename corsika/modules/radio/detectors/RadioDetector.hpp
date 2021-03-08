@@ -32,14 +32,24 @@ namespace corsika {
      */
     void addAntenna(TAntennaImpl const antenna) { antennas_.push_back(antenna); }
 
+    /**
+     * Get the specific antenna at that place in the collection
+     *
+     * @param index in the collection
+     */
     TAntennaImpl at(std::size_t const i) {antennas_.at(i);}
+
+    /**
+     * Get the number of antennas in the collection
+     */
+    int size() { return antennas_.size(); }
 
     /**
      * Get a *non*-const reference to the collection of antennas.
      *
      * @returns    An iterable mutable reference to the antennas.
      */
-    std::vector<TAntennaImpl> const& getAntennas() { return antennas_; } // maybe the const& here is an issue
+    std::vector<TAntennaImpl>& getAntennas() { return antennas_; } // maybe the const& here is an issue
 
     /**
      * Reset all the antenna waveforms.
