@@ -52,8 +52,11 @@ namespace corsika {
     ProcessReturn simulate(Particle& particle, Track const& track) {
 
       // get the global simulation time for that track. (best guess for now)
-      auto startTime_ {particle.getTime() - track.getDuration()}; // time at the start point of the track hopefully.
-      auto endTime_ {particle.getTime()};
+      auto startTime_ {particle.getTime()}; // time at the start point of the track hopefully.
+      std::cout << "startTime_: " << startTime_ << std::endl;
+      auto endTime_ {particle.getTime() + track.getDuration()};
+      std::cout << "endTime_: " << endTime_ << std::endl;
+      std::cout << "track.getDuration(): " << track.getDuration() << std::endl;
 
       // gamma factor is calculated using beta
 //       auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
@@ -61,12 +64,15 @@ namespace corsika {
 
       // get start and end position of the track
       auto startPoint_ {track.getPosition(0)};
+      std::cout << "EDO EINAI I ARXI: " << startPoint_ << std::endl;
       auto endPoint_ {track.getPosition(1)};
+      std::cout << "EDO EINAI TO TELOS: " << endPoint_ << std::endl;
 
       // beta is velocity / speed of light. Start & end should be the same!
 //      auto beta_ {static_cast<double>((endPoint_.distance_to(startPoint_) / 1_m ) / (endTime_/ 1_s - startTime_/ 1_s) )};
 //      auto beta_ {((endPoint_.distance_to(startPoint_)) / (endTime_ - startTime_)).normalized()};
       auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
+      std::cout << "BETA_: " << beta_ << std::endl;
 
       // get particle charge
       auto const charge_ {get_charge(particle.getPID())};
@@ -89,19 +95,27 @@ namespace corsika {
 
         // get the Path (path1) from the start "endpoint" to the antenna.
         // This is a Signal Path Collection
-        auto paths1 {this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_nm)}; // TODO: Need to add the stepsize to .propagate()!!!!
+        auto paths1 {this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Need to add the stepsize to .propagate()!!!!
 
         // now loop over the paths for startpoint that we got above
         for (auto const& path : paths1) {
 
           // calculate preDoppler factor
-          auto preDoppler_{1. - path.average_refractive_index_ * beta_.dot(path.emit_)};
+          double preDoppler_{1. - path.average_refractive_index_ * beta_.dot(path.emit_)};
+
+          std::cout << "Path Emit PRE: " << beta_.dot(path.emit_) << std::endl;
+
+          std::cout << "preDoppler: " << preDoppler_<< std::endl;
+          long double preDoppler_1{1. - path.average_refractive_index_ * beta_.dot(path.emit_)};
+          std::cout << "preDoppler1: " << preDoppler_1<< std::endl;
+
 
           // store it to the preDoppler std::vector for later comparisons
           preDoppler.push_back(preDoppler_);
 
           // calculate receive times for startpoint
           auto startPointReceiveTime_ {path.total_time_ + startTime_};
+          std::cout << "START RECEIVE TIME: " << startPointReceiveTime_ << std::endl;
 
           // store it to startTTimes_ std::vector for later use
           startTTimes_.push_back(startPointReceiveTime_);
@@ -112,7 +126,7 @@ namespace corsika {
           // calculate electric field vector for startpoint
           ElectricFieldVector EV1_=
                      path.receive_.cross(path.receive_.cross(beta_)).getComponents() /
-                     (path.R_distance_ * preDoppler_) * (1 / (4 * M_PI * 1_s)) * ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
+                     (path.R_distance_ * preDoppler_) * (1 / (4 * M_PI * track.getDuration())) * ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
           // store it to EVstart_ std::vector for later use
           EVstart_.push_back(EV1_);
@@ -121,7 +135,7 @@ namespace corsika {
 
         // get the Path (path2) from the end "endpoint" to the antenna.
         // This is a SignalPathCollection
-        auto paths2 {this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_nm)};
+        auto paths2 {this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_m)};
 
         // now loop over the paths for endpoint that we got above
         for (auto const& path : paths2) {
@@ -129,11 +143,20 @@ namespace corsika {
           double postDoppler_{1. - path.average_refractive_index_ *
                                    beta_.dot(path.emit_)}; // maybe this is path.receive_ (?)
 
+          std::cout << "Path Emit POST: " << beta_.dot(path.emit_) << std::endl;
+
+          std::cout << "postDoppler: " << postDoppler_<< std::endl;
+          long double postDoppler_1{1. - path.average_refractive_index_ *
+                                   beta_.dot(path.emit_)}; // maybe this is path.receive_ (?)
+          std::cout << "postDoppler1: " << postDoppler_1 << std::endl;
+
           // store it to the postDoppler std::vector for later comparisons
           postDoppler.push_back(postDoppler_);
 
           // calculate receive times for endpoint
           auto endPointReceiveTime_ {path.total_time_ + endTime_};
+          std::cout << "END RECEIVE TIME: " << endPointReceiveTime_ << std::endl;
+
 
           // store it to endTTimes_ std::vector for later use
           endTTimes_.push_back(endPointReceiveTime_);
@@ -144,7 +167,7 @@ namespace corsika {
           // calculate electric field vector for endpoint
           ElectricFieldVector EV2_=
                      path.receive_.cross(path.receive_.cross(beta_)).getComponents() /
-                     (path.R_distance_ * postDoppler_) * (1 / (4 * M_PI * 1_s)) * ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
+                     (path.R_distance_ * postDoppler_) * ((-1) / (4 * M_PI * track.getDuration())) * ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
           // store it to EVstart_ std::vector for later use
           EVend_.push_back(EV2_);
@@ -158,7 +181,10 @@ namespace corsika {
           // use this to access different elements of std::vectors
           std::size_t index = 0;
           for (auto& preDoppler__ : preDoppler) {
+            std::cout << "preDoppler__: " << preDoppler__ << std::endl;
+            std::cout << "postDoppler.at(index): " << postDoppler.at(index) << std::endl;
 
+            // TODO: We need to check this. Something funny is happening here.
             // redistribute contributions over time scale defined by the observation time resolution
             // this is to make sure that "start" and "end" won't end up in the same bin (xtensor)!!
             if ((preDoppler__ < 1.e-9) || (postDoppler.at(index) < 1.e-9)) {
@@ -244,7 +270,7 @@ namespace corsika {
 
               // get the Path (path3) from the middle "endpoint" to the antenna.
               // This is a SignalPathCollection
-              auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation(), 1_nm)};
+              auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation(), 1_m)};
 
 //               std::size_t j_index {0}; // this will be useful for multiple paths (aka curved propagators)
               // now loop over the paths for endpoint that we got above
@@ -263,11 +289,7 @@ namespace corsika {
                 // CoREAS calculation -> get ElectricFieldVector3 for "midPoint"
                 ElectricFieldVector EVmid_ =
                                              path.receive_.cross(path.receive_.cross(beta_)).getComponents() /
-                                             (path.R_distance_ * midDoppler_) * (1 / (4 * M_PI * 1_s)) * ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
-
-//                ElectricFieldVector EVmid2_ = (- charge_ / constants::c) *
-//                                             path.receive_.cross(path.receive_.cross(beta_)) /
-//                                             (path.R_distance_ * midDoppler_);
+                                             (path.R_distance_ * midDoppler_) * (1 / (4 * M_PI * track.getDuration())) * ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
 //                 EVstart_.insert(EVstart_.begin() + index + j_index, EVmid_); // this should work for curved + curved propagators
 //                 EVend_.insert(EVend_.begin() + index + j_index, - EVmid_); // for now just use one index and not j_index since at the moment you are working with StraightPropagator
@@ -362,6 +384,9 @@ namespace corsika {
             } // end of ZHS-like approximation
 
             // Feed start and end to the antenna
+            std::cout << "LIGO PRIN TO RECEIVE :" << std::endl;
+            std::cout << "startTTimes_.at(index): " << startTTimes_.at(index) << std::endl;
+            std::cout << "endTTimes_.at(index): " << endTTimes_.at(index) << std::endl;
             antenna.receive(startTTimes_.at(index), ReceiveVectorsStart_.at(index), EVstart_.at(index));
             antenna.receive(endTTimes_.at(index), ReceiveVectorsEnd_.at(index), EVend_.at(index));
 
@@ -370,6 +395,7 @@ namespace corsika {
 
           } // End of for loop for preDoppler factor (this includes checking for postDoppler factors)
 
+          index = 0;
         } // End of checking of vector sizes
 
       } // End of looping over the antennas.

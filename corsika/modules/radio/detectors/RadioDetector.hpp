@@ -30,7 +30,7 @@ namespace corsika {
      *
      * @param antenna    The antenna to add
      */
-    void addAntenna(TAntennaImpl const antenna) { antennas_.push_back(antenna); }
+    void addAntenna(TAntennaImpl const& antenna) { antennas_.push_back(antenna); }
 
     /**
      * Get the specific antenna at that place in the collection

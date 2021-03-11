@@ -51,6 +51,7 @@
 
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
+#include <corsika/modules/radio/antennas/Antenna.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/RadioDetector.hpp>
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
@@ -248,7 +249,8 @@ int main(int argc, char** argv) {
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
   // put radio here
-  CoREAS<decltype(detector), decltype(StraightPropagator(env))> coreas(detector, env);
+  RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
+      coreas(detector, envCoREAS);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
   TrackWriter trackWriter("tracks.dat");
