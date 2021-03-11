@@ -15,17 +15,17 @@ namespace corsika {
 
   template <typename T>
   template <typename... Args>
-  ExponentialRefractiveIndex<T>::ExponentialRefractiveIndex(double const n0,
-                             InverseLengthType const lambda, Args&&... args)
+  ExponentialRefractiveIndex<T>::ExponentialRefractiveIndex(
+      double const n0, InverseLengthType const lambda, Args&&... args)
       : T(std::forward<Args>(args)...)
       , n_0(n0)
       , lambda_(lambda) {}
 
   template <typename T>
   double ExponentialRefractiveIndex<T>::getRefractiveIndex(Point const& point) const {
-  //TODO: THIS METHOD CURRENTLY ONLY USES THE Z-COORDINATE.
-  //NEED TO THINK IT FOR FUTURE WORK ON ARBITRARY GEOMETRIES.
-  return n_0 * exp((-lambda_) * point.getCoordinates().getZ());
+    // TODO: THIS METHOD CURRENTLY ONLY USES THE Z-COORDINATE.
+    // NEED TO THINK IT FOR FUTURE WORK ON ARBITRARY GEOMETRIES.
+    return n_0 * exp((-lambda_) * point.getCoordinates().getZ());
   }
 
 } // namespace corsika

@@ -91,7 +91,6 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   CHECK((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }
 
-
 TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
 
   logging::set_level(logging::level::info);
@@ -158,8 +157,8 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   // and the associated trajectory
   setup::Trajectory const track =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
-//  // and the associated trajectory
-//  Trajectory<Line> const trajectory(line, tEnd);
+  //  // and the associated trajectory
+  //  Trajectory<Line> const trajectory(line, tEnd);
 
   // and check the integrated grammage
   REQUIRE((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
