@@ -87,7 +87,7 @@ namespace corsika {
 
     auto operator+=(QuantityVector<TDimension> const& pQVec);
 
-    auto& operator-=(QuantityVector<TDimension> const& pQVec);
+    auto operator-=(QuantityVector<TDimension> const& pQVec);
 
     auto operator-() const;
 
