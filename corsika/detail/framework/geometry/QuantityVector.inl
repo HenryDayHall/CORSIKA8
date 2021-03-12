@@ -102,26 +102,26 @@ namespace corsika {
   }
 
   template <typename TDimension>
-  inline auto& QuantityVector<TDimension>::operator/=(double const p) {
+  inline auto QuantityVector<TDimension>::operator/=(double const p) {
     eigenVector_ /= p;
     return *this;
   }
 
   template <typename TDimension>
-  inline auto& QuantityVector<TDimension>::operator*=(double const p) {
+  inline auto QuantityVector<TDimension>::operator*=(double const p) {
     eigenVector_ *= p;
     return *this;
   }
 
   template <typename TDimension>
-  inline auto& QuantityVector<TDimension>::operator+=(
+  inline auto QuantityVector<TDimension>::operator+=(
       QuantityVector<TDimension> const& pQVec) {
     eigenVector_ += pQVec.eigenVector_;
     return *this;
   }
 
   template <typename TDimension>
-  inline auto& QuantityVector<TDimension>::operator-=(
+  inline auto QuantityVector<TDimension>::operator-=(
       QuantityVector<TDimension> const& pQVec) {
     eigenVector_ -= pQVec.eigenVector_;
     return *this;
