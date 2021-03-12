@@ -89,7 +89,7 @@ namespace corsika {
 
     auto& operator-=(QuantityVector<TDimension> const& pQVec);
 
-    auto& operator-() const;
+    auto operator-() const;
 
     auto normalized() const;
 
