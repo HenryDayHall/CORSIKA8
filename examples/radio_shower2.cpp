@@ -97,9 +97,6 @@ void registerRandomStreams(const int seed) {
     RNGManager::getInstance().seedAll(seed);
 }
 
-template <typename TInterface>
-using MyExtraEnv =
-    UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 int main(int argc, char** argv) {
 
@@ -121,9 +118,10 @@ int main(int argc, char** argv) {
   registerRandomStreams(seed);
 
   // setup environment
-  using EnvironmentInterface =
-  IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using EnvType = Environment<EnvironmentInterface>;
+  using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+  using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+      <IModelInterface>>>>;
+  using EnvType = Environment<AtmModel>;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
@@ -137,23 +135,22 @@ int main(int argc, char** argv) {
   AntennaCollection<TimeDomainAntenna> detector;
   detector.addAntenna(ant1);
   detector.addAntenna(ant2);
-  auto builder = make_layered_spherical_atmosphere_builder<
-      EnvironmentInterface, MyExtraEnv>::create(center,
-                                                       constants::EarthRadius::Mean, 1.000327,
-                                                       Medium::AirDry1Atm,
-                                                       MagneticFieldVector{rootCS, 0_T,
-                                                                           50_uT, 0_T});
-
-  builder.setNuclearComposition(
-      {{Code::Nitrogen, Code::Oxygen},
-       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
-
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
-  builder.assemble(env);
+  // a refractive index
+  const double ri_{1.000327};
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+  // the composition we use for the homogeneous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+  // create magnetic field vector
+  Vector B0(rootCS, 0_T,50_uT, 0_T);
+  // create the medium
+  auto Medium = EnvType::createNode<Sphere>(
+      center, 1_km * std::numeric_limits<double>::infinity());
+  // set the properties
+  auto const props = Medium->setModelProperties<AtmModel>(ri_,
+                                                          Medium::AirDry1Atm, B0, density, protonComposition);
+  env.getUniverse()->addChild(std::move(Medium));
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
