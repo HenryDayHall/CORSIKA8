@@ -192,15 +192,15 @@ namespace corsika {
               auto gridResolution_ {antenna.duration_};
               auto deltaT_ { endTTimes_.at(index) - startTTimes_.at(index) };
 
-              if (fabs(deltaT_ / 1_s) < gridResolution_ / 1_s) {
+              if (std::fabs(deltaT_ / 1_s) < gridResolution_ / 1_s) {
 
-                EVstart_.at(index) = EVstart_.at(index) * fabs(deltaT_ / gridResolution_);
-                EVend_.at(index) = EVend_.at(index) * fabs(deltaT_ / gridResolution_);
+                EVstart_.at(index) = EVstart_.at(index) * std::fabs(deltaT_ / gridResolution_);
+                EVend_.at(index) = EVend_.at(index) * std::fabs(deltaT_ / gridResolution_);
 
-                const long startBin = static_cast<long>(floor(startTTimes_.at(index)/gridResolution_+0.5l));
-                const long endBin = static_cast<long>(floor(endTTimes_.at(index)/gridResolution_+0.5l));
-                const double startBinFraction = (startTTimes_.at(index)/gridResolution_)-floor(startTTimes_.at(index)/gridResolution_);
-                const double endBinFraction = (endTTimes_.at(index)/gridResolution_)-floor(endTTimes_.at(index)/gridResolution_);
+                const long startBin = static_cast<long>(std::floor(startTTimes_.at(index)/gridResolution_+0.5l));
+                const long endBin = static_cast<long>(std::floor(endTTimes_.at(index)/gridResolution_+0.5l));
+                const double startBinFraction = (startTTimes_.at(index)/gridResolution_)-std::floor(startTTimes_.at(index)/gridResolution_);
+                const double endBinFraction = (endTTimes_.at(index)/gridResolution_)-std::floor(endTTimes_.at(index)/gridResolution_);
 
                 // only do timing modification if contributions would land in same bin
                 if (startBin == endBin) {
@@ -260,7 +260,7 @@ namespace corsika {
             } // End of checking for very small doppler factors
 
             // perform ZHS-like calculation close to Cherenkov angle
-            if (fabs(preDoppler__) <= approxThreshold_ || fabs(postDoppler.at(index)) <= approxThreshold_) {
+            if (std::fabs(preDoppler__) <= approxThreshold_ || std::fabs(postDoppler.at(index)) <= approxThreshold_) {
 
               // get global simulation time for the middle point of that track. (This is my best guess for now)
               auto midTime_{particle.getTime() - (track.getDuration() / 2)};
@@ -296,7 +296,7 @@ namespace corsika {
                 EVstart_.at(index) = EVmid_;
                 EVend_.at(index) = - EVmid_;
 
-                auto deltaT_{(endPoint_ - startPoint_).getNorm() / (constants::c * beta_.getNorm() * fabs(midDoppler_))}; // TODO: Caution with this!
+                auto deltaT_{(endPoint_ - startPoint_).getNorm() / (constants::c * beta_.getNorm() * std::fabs(midDoppler_))}; // TODO: Caution with this!
 
                 if (startTTimes_.at(index) < endTTimes_.at(index)) // EVstart_ arrives earlier
                 {
@@ -313,15 +313,15 @@ namespace corsika {
                 deltaT_ = endTTimes_.at(index) - startTTimes_.at(index);
 
                 // redistribute contributions over time scale defined by the observation time resolution
-                if (fabs(deltaT_ / 1_s) < gridResolution_) {
+                if (std::fabs(deltaT_ / 1_s) < gridResolution_) {
 
-                  EVstart_.at(index) = EVstart_.at(index) * fabs((deltaT_ / 1_s) / gridResolution_);
-                  EVend_.at(index) = EVend_.at(index) * fabs((deltaT_ / 1_s) / gridResolution_);
+                  EVstart_.at(index) = EVstart_.at(index) * std::fabs((deltaT_ / 1_s) / gridResolution_);
+                  EVend_.at(index) = EVend_.at(index) * std::fabs((deltaT_ / 1_s) / gridResolution_);
 
-                  const long startBin = static_cast<long>(floor((startTTimes_.at(index) / 1_s)/gridResolution_+0.5l));
-                  const long endBin = static_cast<long>(floor((endTTimes_.at(index) / 1_s) /gridResolution_+0.5l));
-                  const double startBinFraction = ((startTTimes_.at(index) / 1_s)/gridResolution_)-floor((startTTimes_.at(index) / 1_s)/gridResolution_);
-                  const double endBinFraction = ((endTTimes_.at(index) / 1_s)/gridResolution_)-floor((endTTimes_.at(index) / 1_s)/gridResolution_);
+                  const long startBin = static_cast<long>(std::floor((startTTimes_.at(index) / 1_s)/gridResolution_+0.5l));
+                  const long endBin = static_cast<long>(std::floor((endTTimes_.at(index) / 1_s) /gridResolution_+0.5l));
+                  const double startBinFraction = ((startTTimes_.at(index) / 1_s)/gridResolution_)-std::floor((startTTimes_.at(index) / 1_s)/gridResolution_);
+                  const double endBinFraction = ((endTTimes_.at(index) / 1_s)/gridResolution_)-std::floor((endTTimes_.at(index) / 1_s)/gridResolution_);
 
                   // only do timing modification if contributions would land in same bin
                   if (startBin == endBin) {

@@ -61,30 +61,96 @@ using namespace corsika;
 
 double constexpr absMargin = 1.0e-7;
 
+template <typename TInterface>
+using MyExtraEnv =
+UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+
 
 TEST_CASE("Radio", "[processes]") {
 
   SECTION("CoREAS process") {
-      // first step is to construct an environment for the propagation (uniform index 1)
-    using UniRIndex =
-    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
 
-    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+    // TODO: construct sychnotron radiation example with one electron
+
+//     // Environment 1 (works)
+//      // first step is to construct an environment for the propagation (uniform index 1)
+//    using UniRIndex =
+//    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+//
+//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+//    EnvType envCoREAS;
+//
+//    // get a coordinate system
+//    const CoordinateSystemPtr rootCSCoREAS = envCoREAS.getCoordinateSystem();
+//
+//    auto MediumCoREAS = EnvType::createNode<Sphere>(
+//        Point{rootCSCoREAS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+//
+//    auto const propsCoREAS = MediumCoREAS->setModelProperties<UniRIndex>(
+//        1.000327, 1_kg / (1_m * 1_m * 1_m),
+//        NuclearComposition(
+//            std::vector<Code>{Code::Nitrogen},
+//            std::vector<float>{1.f}));
+//
+//    envCoREAS.getUniverse()->addChild(std::move(MediumCoREAS));
+
+
+    //////////////////////////////////////////////////////////////////////////////////////
+//    // Environment 2 (works)
+//    using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+//    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+//        <IModelInterface>>>>;
+//    using EnvType = Environment<AtmModel>;
+//    EnvType envCoREAS;
+//    CoordinateSystemPtr const& rootCSCoREAS = envCoREAS.getCoordinateSystem();
+//    // get the center point
+//    Point const center{rootCSCoREAS, 0_m, 0_m, 0_m};
+//    // a refractive index
+//    const double ri_{1.000327};
+//
+//    // the constant density
+//    const auto density{19.2_g / cube(1_cm)};
+//
+//    // the composition we use for the homogeneous medium
+//    NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+//                                               std::vector<float>{1.f});
+//
+//    // create magnetic field vector
+//    Vector B1(rootCSCoREAS, 0_T, 0_T, 1_T);
+//
+//    auto Medium = EnvType::createNode<Sphere>(
+//        center, 1_km * std::numeric_limits<double>::infinity());
+//
+//    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, protonComposition);
+//    envCoREAS.getUniverse()->addChild(std::move(Medium));
+
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Environment 3 (works)
+    using EnvironmentInterface =
+    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+    using EnvType = Environment<EnvironmentInterface>;
     EnvType envCoREAS;
+    CoordinateSystemPtr const& rootCSCoREAS = envCoREAS.getCoordinateSystem();
+    Point const center{rootCSCoREAS, 0_m, 0_m, 0_m};
+    auto builder = make_layered_spherical_atmosphere_builder<
+        EnvironmentInterface, MyExtraEnv>::create(center,
+                                                  constants::EarthRadius::Mean, 1.000327,
+                                                  Medium::AirDry1Atm,
+                                                  MagneticFieldVector{rootCSCoREAS, 0_T,
+                                                                      50_uT, 0_T});
 
-    // get a coordinate system
-    const CoordinateSystemPtr rootCSCoREAS = envCoREAS.getCoordinateSystem();
+    builder.setNuclearComposition(
+        {{Code::Nitrogen, Code::Oxygen},
+         {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
-    auto MediumCoREAS = EnvType::createNode<Sphere>(
-        Point{rootCSCoREAS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
-
-    auto const propsZHS = MediumCoREAS->setModelProperties<UniRIndex>(
-        1, 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition(
-            std::vector<Code>{Code::Nitrogen},
-            std::vector<float>{1.f}));
-
-    envCoREAS.getUniverse()->addChild(std::move(MediumCoREAS));
+//    builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+//    builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+//    builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+//    builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+    builder.addLinearLayer(1e9_cm, 112.8_km);
+    builder.assemble(envCoREAS);
+//////////////////////////////////////////////////////////////////////////////////////////
 
 
     // now create antennas and detectors
@@ -96,7 +162,7 @@ TEST_CASE("Radio", "[processes]") {
 
 
     // create times for the antenna
-    const TimeType t1{0_s};
+    const TimeType t1{0_s}; // TODO: initialization of times to antennas! particle hits the observation level should be zero
     const TimeType t2{100_s};
     const InverseTimeType t3{1/1_s};
     const TimeType t4{11_s};
