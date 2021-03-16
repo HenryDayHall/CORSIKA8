@@ -194,7 +194,7 @@ namespace corsika {
   }
 
   template <typename TDimension>
-  inline auto& Vector<TDimension>::operator-() const {
+  inline auto Vector<TDimension>::operator-() const {
     return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(),
                               -BaseVector<TDimension>::getQuantityVector());
   }

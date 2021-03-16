@@ -81,13 +81,13 @@ namespace corsika {
 
     auto operator/(double const p) const;
 
-    auto operator/=(double const p);
+    auto& operator/=(double const p);
 
-    auto operator*=(double const p);
+    auto& operator*=(double const p);
 
-    auto operator+=(QuantityVector<TDimension> const& pQVec);
+    auto& operator+=(QuantityVector<TDimension> const& pQVec);
 
-    auto operator-=(QuantityVector<TDimension> const& pQVec);
+    auto& operator-=(QuantityVector<TDimension> const& pQVec);
 
     auto operator-() const;
 
