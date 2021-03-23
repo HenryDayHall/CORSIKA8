@@ -62,19 +62,20 @@ using namespace corsika;
 using namespace std;
 
 //
-// The example main program for a particle cascade
+// A simple shower to get the electric field trace of an electron
 //
 int main() {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
-  std::cout << "cascade_proton_example" << std::endl;
+  std::cout << "radio_shower2" << std::endl;
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   RNGManager::getInstance().registerRandomStream("cascade");
 
+  // This environment needs a hardcoded refractive index in the propagator at the moment
   // setup environment, geometry
   using EnvType = setup::Environment;
   EnvType env;
@@ -145,35 +146,21 @@ int main() {
   setup::Tracking tracking;
   StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-
-//  ParticleCut cut(60_GeV, true, true);
   // put radio process here
   RadioProcess<decltype(detector), CoREAS<decltype(detector),
       decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
       coreas(detector, env);
 
 
-
   TrackWriter trackWriter("tracks.dat");
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
-//  BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  // auto sequence = make_sequence(sibyll, sibyllNuc, decay, eLoss, cut, trackWriter,
-  // stackInspect); auto sequence = make_sequence(sibyll, decay, eLoss, cut, trackWriter,
-  // stackInspect);
   auto sequence = make_sequence(coreas, trackWriter, stackInspect);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, stack);
   EAS.run();
-
-  cout << "Result: E0=" << E0 / 1_GeV << endl;
-  cut.showResults();
-  const HEPEnergyType Efinal =
-      cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
-  cout << "total energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
 
   // get radio output
   coreas.writeOutput();
