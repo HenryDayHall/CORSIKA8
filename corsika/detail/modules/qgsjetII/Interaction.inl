@@ -241,7 +241,7 @@ namespace corsika::qgsjetII {
         if (targetCode != Proton::code)
           throw std::runtime_error("QgsjetII Taget not possible.");
       }
-      CORSIKA_LOG_DEBUG("Interaction: target qgsjetII code/A: ", targetMassNumber);
+      CORSIKA_LOG_DEBUG("Interaction: target qgsjetII code/A: {}", targetMassNumber);
 
       int projectileMassNumber = 1; // "1" means "hadron"
       QgsjetIIHadronType qgsjet_hadron_type =
