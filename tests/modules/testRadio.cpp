@@ -164,7 +164,7 @@ TEST_CASE("Radio", "[processes]") {
     // create times for the antenna
     const TimeType t1{0_s}; // TODO: initialization of times to antennas! particle hits the observation level should be zero
     const TimeType t2{100_s};
-    const InverseTimeType t3{1/1_s};
+    const InverseTimeType t3{1/1e+2_s};
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
@@ -172,6 +172,7 @@ TEST_CASE("Radio", "[processes]") {
     TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3);
 //    TimeDomainAntenna ant3("antenna1", point1, 0_s, 2_s, 1/1e-7_s);
 
+//    std::cout << "static cast " << static_cast<int>(1/1000) << std::endl;
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;

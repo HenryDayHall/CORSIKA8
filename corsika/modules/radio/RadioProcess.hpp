@@ -133,6 +133,21 @@ namespace corsika {
 
       }
 
+    /**
+   * Return the maximum step length for this particle and track.
+   *
+   * This must be provided by the TRadioImpl.
+   *
+   * @param particle    The current particle.
+   * @param track       The current track.
+   *
+   * @returns The maximum length of this track.
+   */
+    LengthType getMaxStepLength(setup::Stack::particle_type const& vParticle,
+                                setup::Trajectory const& vTrack) const {
+      return meter * std::numeric_limits<double>::infinity();
+    }
+
   }; // END: class RadioProcess
 
 } // namespace corsika

@@ -99,12 +99,15 @@ void registerRandomStreams(const int seed) {
 
 template <typename TInterface>
 using MyExtraEnv =
-    UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
+
+//template <typename T>
+//using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
@@ -120,10 +123,14 @@ int main(int argc, char** argv) {
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
-  // setup environment
-  using EnvironmentInterface =
-  IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-  using EnvType = Environment<EnvironmentInterface>;
+  // setup 2 environments (use only one)
+
+//  using EnvironmentInterface =
+//  IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+//  using EnvType = Environment<EnvironmentInterface>;
+//  EnvType env;
+
+  using EnvType = setup::Environment;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
@@ -131,18 +138,25 @@ int main(int argc, char** argv) {
   const auto point1{Point(env.getCoordinateSystem(), 50_m, 50_m, 50_m)};
   const auto point2{Point(env.getCoordinateSystem(), 25_m, 25_m, 25_m)};
   // the antennas
-  TimeDomainAntenna ant1("antenna1", point1, 0_s, 100_s, 1/1e-6_s);
-  TimeDomainAntenna ant2("antenna2", point2, 0_s, 100_s, 1/1e-6_s);
+  TimeDomainAntenna ant1("antenna1", point1, 0_s, 1_s, 1/1e-6_s);
+  TimeDomainAntenna ant2("antenna2", point2, 0_s, 1_s, 1/1e-6_s);
   // the detector
   AntennaCollection<TimeDomainAntenna> detector;
   detector.addAntenna(ant1);
   detector.addAntenna(ant2);
   auto builder = make_layered_spherical_atmosphere_builder<
-      EnvironmentInterface, MyExtraEnv>::create(center,
+      setup::EnvironmentInterface, MyExtraEnv>::create(center,
                                                        constants::EarthRadius::Mean, 1.000327,
                                                        Medium::AirDry1Atm,
                                                        MagneticFieldVector{rootCS, 0_T,
                                                                            50_uT, 0_T});
+  // builder with refractive index interface
+//  auto builder = make_layered_spherical_atmosphere_builder<
+//      EnvironmentInterface, MyExtraEnv>::create(center,
+//                                                       constants::EarthRadius::Mean, 1.000327,
+//                                                       Medium::AirDry1Atm,
+//                                                       MagneticFieldVector{rootCS, 0_T,
+//                                                                           50_uT, 0_T});
 
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
