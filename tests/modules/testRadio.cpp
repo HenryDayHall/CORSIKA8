@@ -170,6 +170,8 @@ TEST_CASE("Radio", "[processes]") {
     // check that I can create an antenna at (1, 2, 3)
     TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
     TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3);
+//    TimeDomainAntenna ant3("antenna1", point1, 0_s, 2_s, 1/1e-7_s);
+
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
@@ -177,6 +179,8 @@ TEST_CASE("Radio", "[processes]") {
     // add the antennas to the detector
     detector.addAntenna(ant1);
     detector.addAntenna(ant2);
+//    detector.addAntenna(ant3);
+
 
 
     // create a particle
@@ -193,7 +197,7 @@ TEST_CASE("Radio", "[processes]") {
 
     auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
 
-    auto const t = 10000_ms;
+    auto const t = 10_s;
     LeapFrogTrajectory base(point4, v0, B0, k, t);
 
     // create a new stack for each trial

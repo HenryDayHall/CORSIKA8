@@ -89,10 +89,10 @@ int main() {
   const auto point4{Point(rootCS, -50_m, -50_m, 0_m)};
 
   // the antennas
-  TimeDomainAntenna ant1("antenna1", point1, 0_s, 1_s, 1/1e+6_s);
-  TimeDomainAntenna ant2("antenna2", point2, 0_s, 1_s, 1/1e+6_s);
-  TimeDomainAntenna ant3("antenna3", point3, 0_s, 1_s, 1/1e+6_s);
-  TimeDomainAntenna ant4("antenna4", point4, 0_s, 1_s, 1/1e+6_s);
+  TimeDomainAntenna ant1("antenna1", point1, 0_s, 1_s, 1/1e-6_s);
+  TimeDomainAntenna ant2("antenna2", point2, 0_s, 1_s, 1/1e-6_s);
+  TimeDomainAntenna ant3("antenna3", point3, 0_s, 1_s, 1/1e-6_s);
+  TimeDomainAntenna ant4("antenna4", point4, 0_s, 1_s, 1/1e-6_s);
 
   // the detector
   AntennaCollection<TimeDomainAntenna> detector;

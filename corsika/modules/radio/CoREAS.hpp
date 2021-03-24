@@ -93,8 +93,9 @@ namespace corsika {
         // This is a SignalPathCollection
         auto paths2{this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_m)};
 
-        if (paths1.size() == paths2.size()) {
-          for (size_t i = 0; (i < paths1.size() && i < paths2.size()); i++) {
+          // loop over both paths at once and directly compare 'start' and 'end' attributes
+          for (size_t i = (paths1.size() == paths2.size()) ? 0 : paths1.size();
+               (i < paths1.size() && i < paths2.size()); i++) {
 
             // First start with the 'start' point
             // calculate preDoppler factor
@@ -342,7 +343,6 @@ namespace corsika {
             antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
 
           } // End of loop over both paths to get signal info
-        } // End of checking that we have the same number of paths
       } // End of looping over antennas
     } // End of simulate method
 

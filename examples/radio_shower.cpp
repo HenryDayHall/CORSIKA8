@@ -131,8 +131,8 @@ int main(int argc, char** argv) {
   const auto point1{Point(env.getCoordinateSystem(), 50_m, 50_m, 50_m)};
   const auto point2{Point(env.getCoordinateSystem(), 25_m, 25_m, 25_m)};
   // the antennas
-  TimeDomainAntenna ant1("antenna1", point1, 0_s, 100_s, 1/1e-8_s);
-  TimeDomainAntenna ant2("antenna2", point2, 0_s, 100_s, 1/1e-8_s);
+  TimeDomainAntenna ant1("antenna1", point1, 0_s, 100_s, 1/1e-6_s);
+  TimeDomainAntenna ant2("antenna2", point2, 0_s, 100_s, 1/1e-6_s);
   // the detector
   AntennaCollection<TimeDomainAntenna> detector;
   detector.addAntenna(ant1);

@@ -86,6 +86,7 @@ namespace corsika {
      * @param field            The incident electric field vector.
      *
      */
+     // TODO: rethink this method a bit. If the endpoint is at the end of the antenna resolution then you get the startpoint signal but you lose the endpoint signal!
     void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
                  ElectricFieldVector const& efield) {
 
