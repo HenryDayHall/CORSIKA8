@@ -221,6 +221,10 @@ namespace corsika {
             // perform ZHS-like calculation close to Cherenkov angle
             if (std::fabs(preDoppler_) <= approxThreshold_ || std::fabs(postDoppler_) <= approxThreshold_) {
 
+              // clear the existing paths for this particle and track
+              paths1.clear();
+              paths2.clear();
+
               // get global simulation time for the middle point of that track. (This is my best guess for now)
               auto midTime_{particle.getTime() - (track.getDuration() / 2)};
 
@@ -333,6 +337,10 @@ namespace corsika {
                 } // End of if deltaT < gridresolution
 
               } // End of looping over paths3
+
+              std::cout << "RECEIVE using ZHS-like approximation" << std::endl;
+              antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
+              antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
 
             } // end of ZHS-like approximation
 
