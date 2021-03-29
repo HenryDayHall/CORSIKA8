@@ -74,7 +74,7 @@ namespace corsika {
      * @param track       The current track.
      */
     template <typename Particle, typename Track>
-    ProcessReturn doContinuous(Particle& particle, Track const& track) {
+    ProcessReturn doContinuous(Particle& particle, Track const& track, bool const) {
       //we want the following particles:
       // Code::Electron & Code::Positron & Code::Gamma
 
