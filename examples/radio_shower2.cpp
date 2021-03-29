@@ -21,6 +21,7 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/UniformRefractiveIndex.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -103,16 +104,17 @@ int main() {
 
   auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
-  using MyHomogeneousModel = MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
+  using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
+      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
 
-  world->setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_T),
-      1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(std::vector<Code>{Code::Hydrogen},
-                         std::vector<float>{(float)1.}));
+  world->setModelProperties<MyHomogeneousModel>(1.000327,
+                                                Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_T),
+                                                1_kg / (1_m * 1_m * 1_m),
+                                                NuclearComposition(std::vector<Code>{Code::Hydrogen},
+                                                                   std::vector<float>{(float)1.}));
 
   universe.addChild(std::move(world));
+
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -120,8 +122,6 @@ int main() {
   const Code beamCode = Code::Electron;
   const HEPMassType mass = Electron::mass;
   const HEPEnergyType E0 = 1000_GeV;
-  double theta = 0.;
-  double phi = 0.;
 
   Point injectionPos(rootCS, 0_m, 0_m, 0_m);
   {
@@ -129,22 +129,16 @@ int main() {
       return sqrt(Elab * Elab - m * m);
     };
     HEPMomentumType P0 = elab2plab(E0, mass);
-    auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
-      return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
-                             -ptot * cos(theta));
-    };
-    auto const [px, py, pz] =
-    momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = MomentumVector(rootCS, {px, py, pz});
+
+    auto plab = MomentumVector(rootCS, {0, P0, 0});
     cout << "input particle: " << beamCode << endl;
-    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
     stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
   }
 
   // setup processes, decays and interactions
   setup::Tracking tracking;
-  StackInspector<setup::Stack> stackInspect(1, true, E0);
+//  StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   // put radio process here
   RadioProcess<decltype(detector), CoREAS<decltype(detector),
@@ -153,10 +147,10 @@ int main() {
 
 
   TrackWriter trackWriter("tracks.dat");
-  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
+//  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(coreas, trackWriter, stackInspect);
+  auto sequence = make_sequence(coreas, trackWriter);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, stack);

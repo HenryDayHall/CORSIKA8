@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
   logging::set_level(logging::level::info);
 
-  CORSIKA_LOG_INFO("vertical_EAS");
+  CORSIKA_LOG_INFO("Vertical Radio Shower");
 
   if (argc < 4) {
     std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;

@@ -87,6 +87,7 @@ namespace corsika {
 
          // get the associated refractivity at 'point'
          auto const refractive_index{node->getModelProperties().getRefractiveIndex(point)};
+//         auto const refractive_index{1.000327};
          rindex.push_back(refractive_index);
 
          // add this 'point' to our deque collection
@@ -96,6 +97,7 @@ namespace corsika {
       //add the refractive index of last point 'destination' and store it
       auto const* node{universe->getContainingNode(destination)};
       auto const refractive_index{node->getModelProperties().getRefractiveIndex(destination)};
+//      auto const refractive_index{1.000327};
       rindex.push_back(refractive_index);
       points.push_back(destination);
 
