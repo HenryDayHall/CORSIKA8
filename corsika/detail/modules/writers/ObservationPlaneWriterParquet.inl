@@ -44,8 +44,12 @@ namespace corsika {
     using namespace units::si;
 
     // write the next row - we must write `shower_` first.
-    (*writer_) << shower_ << static_cast<int>(get_PDG(pid)) << energy / 1_eV << x / 1_m
-               << y / 1_m << parquet::EndRow;
+    (*writer_) << shower_
+               << static_cast<int>(get_PDG(pid))
+               << static_cast<float>(energy / 1_eV)
+               << static_cast<float>(x / 1_m)
+               << static_cast<float>(y / 1_m)
+               << parquet::EndRow;
   }
 
 } // namespace corsika
