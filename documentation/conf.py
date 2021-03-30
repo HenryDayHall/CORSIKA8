@@ -1,10 +1,32 @@
 import sys
 import subprocess, os
 
+def configureDoxyfile(input_dir, output_dir):
+    with open('Doxyfile.in', 'r') as file :
+        filedata = file.read()
+
+    filedata = filedata.replace('@PROJECT_SOURCE_DIR@', input_dir)
+    filedata = filedata.replace('@CMAKE_CURRENT_BINARY_DIR@', output_dir)
+    filedata = filedata.replace('@CMAKE_BINARY_DIR@', output_dir)
+
+    with open('Doxyfile', 'w') as file:
+        file.write(filedata)
+
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-if read_the_docs_build:
+breathe_projects = {}
 
+if read_the_docs_build:
+    
+    input_dir = '../corsika'
+    output_dir = 'build'
+    configureDoxyfile(input_dir, output_dir)
+
+    subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../../corsika/src/framework/core/pdxml_reader.py ../../../../../corsika/src/framework/core/ParticleData.xml ../../../../../corsika/src/framework/core/NuclearData.xml ../../../../../corsika/src/framework/core/ParticleClassNames.xml', shell=True)
+
+    subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../../corsika/src/media/readProperties.py ../../../../../corsika/src/media/properties8.dat', shell=True)
+    
+    subprocess.call('doxygen', shell=True)
     subprocess.call('cd ../doxygen; doxygen', shell=True)
     
 
