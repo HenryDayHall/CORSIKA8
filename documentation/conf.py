@@ -22,9 +22,9 @@ if read_the_docs_build:
     output_dir = 'build'
     configureDoxyfile(input_dir, output_dir)
 
-    subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../../corsika/src/framework/core/pdxml_reader.py ../../../../../corsika/src/framework/core/ParticleData.xml ../../../../../corsika/src/framework/core/NuclearData.xml ../../../../../corsika/src/framework/core/ParticleClassNames.xml', shell=True)
+    subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../corsika/src/framework/core/pdxml_reader.py ../../../../corsika/src/framework/core/ParticleData.xml ../../../../corsika/src/framework/core/NuclearData.xml ../../../../corsika/src/framework/core/ParticleClassNames.xml', shell=True)
 
-    subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../../corsika/src/media/readProperties.py ../../../../../corsika/src/media/properties8.dat', shell=True)
+    subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../corsika/src/media/readProperties.py ../../../../corsika/src/media/properties8.dat', shell=True)
     
     subprocess.call('doxygen', shell=True)
     subprocess.call('cd ../doxygen; doxygen', shell=True)
