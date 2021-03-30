@@ -43,9 +43,9 @@ namespace corsika {
     auto const displacement = trajectory.getPosition(1) - plane_.getCenter();
 
     // add our particles to the output file stream
-    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
-                displacement.dot(yAxis_),
-                (trajectory.getPosition(1) - plane_.getCenter()).getNorm());
+    this->write(particle.getPID(), energy,
+                displacement.dot(xAxis_),
+                displacement.dot(yAxis_));
 
     if (deleteOnHit_) {
       count_ground_++;

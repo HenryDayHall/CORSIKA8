@@ -28,8 +28,6 @@ namespace corsika {
              parquet::ConvertedType::NONE);
     addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
              parquet::ConvertedType::NONE);
-    addField("radius", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-             parquet::ConvertedType::NONE);
 
     // and build the streamer
     buildStreamer();
@@ -42,13 +40,12 @@ namespace corsika {
   void ObservationPlaneWriterParquet::write(Code const& pid,
                                             units::si::HEPEnergyType const& energy,
                                             units::si::LengthType const& x,
-                                            units::si::LengthType const& y,
-                                            units::si::LengthType const& radius) {
+                                            units::si::LengthType const& y) {
     using namespace units::si;
 
     // write the next row - we must write `shower_` first.
     (*writer_) << shower_ << static_cast<int>(get_PDG(pid)) << energy / 1_eV << x / 1_m
-               << y / 1_m << radius / 1_m << parquet::EndRow;
+               << y / 1_m << parquet::EndRow;
   }
 
 } // namespace corsika
