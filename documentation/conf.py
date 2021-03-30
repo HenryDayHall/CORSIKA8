@@ -23,10 +23,10 @@ if read_the_docs_build:
     configureDoxyfile(input_dir, output_dir)
 
     subprocess.call('pwd; ls -l; ls -l ..', shell=True)
-    subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../corsika/src/framework/core/pdxml_reader.py ../../../../corsika/src/framework/core/ParticleData.xml ../../../../corsika/src/framework/core/NuclearData.xml ../../../../corsika/src/framework/core/ParticleClassNames.xml', shell=True)
+    subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../../src/framework/core/pdxml_reader.py ../../../../../src/framework/core/ParticleData.xml ../../../../../src/framework/core/NuclearData.xml ../../../../../src/framework/core/ParticleClassNames.xml', shell=True)
 
     subprocess.call('pwd; ls -l; ls -l ..', shell=True)
-    subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../corsika/src/media/readProperties.py ../../../../corsika/src/media/properties8.dat', shell=True)
+    subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../src/media/readProperties.py ../../../../src/media/properties8.dat', shell=True)
     
     subprocess.call('pwd; ls -l; ls -l ..', shell=True)
     subprocess.call('doxygen', shell=True)
