@@ -60,8 +60,8 @@ namespace corsika {
 
     // create a quick lambda function to convert a time-instance to a string
     auto timeToString = [&](auto const time) -> std::string {
-      // the format for our date string
-      auto format{"%d/%m/%Y %H:%M:%S %Z"};
+      // ISO 8601 time format
+      auto format{"%FT%T%z"};
 
       // convert the clock to a time_t
       auto time_tc{std::chrono::system_clock::to_time_t(time)};
