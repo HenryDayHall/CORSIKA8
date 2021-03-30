@@ -31,11 +31,17 @@
 namespace corsika {
 
   /**
+     @ingroup Processes
+     @{
+
    * enum for the process switch selection: identify if First or
    * Second process branch should be used.
    **/
-  enum class SwitchResult { First, Second };
-
+  enum class SwitchResult { First, /// Follow first branch in SwitchProcessSequence
+			    Second /// Follow second branch in
+				   /// SwitchProcessSequence
+  };
+  
   /**
      Class to switch between two process branches
 
@@ -64,7 +70,7 @@ namespace corsika {
       - IndexFirstProcess, IndexOfProcess1, IndexOfProcess2 are to count and index each
   ContinuousProcess in the entire process-chain
 
-     See also class \sa ProcessSequence
+     See also class ProcessSequence
   **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect,
@@ -120,7 +126,7 @@ namespace corsika {
      *
      * \param in_A process branch A
      * \param in_A process branch B
-     * \param sel functor to swtich between branch A and B
+     * \param sel functor to switch between branch A and B
      **/
     SwitchProcessSequence(TProcess1 in_A, TProcess2 in_B, TSelect sel)
         : select_(sel)
@@ -185,14 +191,13 @@ namespace corsika {
   };
 
   /**
-   *
    * the functin `make_select(proc1,proc1,selector)` assembles many
    * BaseProcesses, and ProcessSequences into a SwitchProcessSequence,
-   * all combinatorics must be allowed, this is why we define a macro
-   * to define all combinations here:
+   * all combinatorics are allowed.
    *
-   *
-   * Both, Processes1 and Processes2, must derive from BaseProcesses
+   * \param vA needs to derive from BaseProcess or ProcessSequence
+   * \param vB needs to derive from BaseProcess or ProcessSequence
+   * \param selector must provide `SwitchResult operator()(const Particle&) const`
    **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
@@ -203,6 +208,8 @@ namespace corsika {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }
 
+  //! @}
+  
 } // namespace corsika
 
 #include <corsika/detail/framework/process/SwitchProcessSequence.inl>

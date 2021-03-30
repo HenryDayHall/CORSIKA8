@@ -181,7 +181,7 @@ namespace corsika {
                         [[maybe_unused]] InverseGrammageType lambda_inv_select,
                         [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
 
-    // TODO: add check for lambda_inv_select>lambda_inv_tot
+    // TODO: add check for lambda_inv_select > lambda_inv_tot
 
     if constexpr (t1ProcSeq) {
       // if A is a process sequence --> check inside
@@ -195,7 +195,14 @@ namespace corsika {
       lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
       // check if we should execute THIS process and then EXIT
       if (lambda_inv_select <= lambda_inv_sum) {
-        A_.doInteraction(view);
+
+        // interface checking on TProcess1
+        static_assert(has_method_doInteract_v<TProcess1, void, TSecondaryView&>,
+                      "TDerived has no method with correct signature \"void "
+                      "doInteraction(TSecondaryView&)\" required for "
+                      "InteractionProcess<TDerived>. ");
+
+        A_.template doInteraction(view);
         return ProcessReturn::Interacted;
       }
     } // end branch A
@@ -210,6 +217,13 @@ namespace corsika {
       // soon as SecondaryView::parent() is migrated!
       // check if we should execute THIS process and then EXIT
       if (lambda_inv_select <= lambda_inv_sum) {
+
+        // interface checking on TProcess1
+        static_assert(has_method_doInteract_v<TProcess2, void, TSecondaryView&>,
+                      "TDerived has no method with correct signature \"void "
+                      "doInteraction(TSecondaryView&)\" required for "
+                      "InteractionProcess<TDerived>. ");
+
         B_.doInteraction(view);
         return ProcessReturn::Interacted;
       }

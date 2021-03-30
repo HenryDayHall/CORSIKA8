@@ -15,15 +15,11 @@
 
 namespace corsika {
 
-  /*
-  struct passepartout {
-    template <typename T>
-    operator T&();
-
-    template <typename T>
-    operator T &&();
-    };*/
-
+  /** @ingroup Processes
+      @{
+  */
+  
+  
   template <typename TDerived>
   class BoundaryCrossingProcess : public BaseProcess<TDerived> {
 
@@ -42,4 +38,6 @@ namespace corsika {
                                      typename TParticle::node_type const& to);
   };
 
+  //! @}
+  
 } // namespace corsika

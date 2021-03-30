@@ -15,6 +15,9 @@
 namespace corsika {
 
   /**
+     @ingroup
+     @{
+
      since in a process sequence many status updates can accumulate
      for a single particle, this enum should define only bit-flags
      that can be accumulated easily with "|="
@@ -59,4 +62,6 @@ namespace corsika {
     return static_cast<int>(a & ProcessReturn::Interacted);
   }
 
+  //! @}
+  
 } // namespace corsika

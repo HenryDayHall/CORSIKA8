@@ -14,6 +14,9 @@
 namespace corsika {
 
   /*!
+    @ingroup Processes
+    @{
+
    * Wrapper around an InteractionProcess that fills histograms of the number
    * of calls to DoInteraction() binned in projectile energy (both in
    * lab and center-of-mass frame) and species
@@ -33,11 +36,15 @@ namespace corsika {
 
     InteractionHistogram const& getHistogram() const;
 
+    void blob(int) {}
+    
   private:
     TCountedProcess& process_;
     InteractionHistogram histogram_;
   };
 
+  //! @}
+  
 } // namespace corsika
 
 #include <corsika/detail/framework/process/InteractionCounter.inl>

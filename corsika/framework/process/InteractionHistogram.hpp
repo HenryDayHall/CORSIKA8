@@ -23,6 +23,10 @@
 
 namespace corsika {
 
+  /** @ingroup Processes
+      @{
+  */
+  
   class InteractionHistogram {
     static double constexpr lower_edge_cms = 1e3, upper_edge_cms = 1e17; // eV sqrt s
     static double constexpr lower_edge_lab = 1e3, upper_edge_lab = 1e21; // eV lab
@@ -47,6 +51,8 @@ namespace corsika {
     InteractionHistogram operator+(InteractionHistogram other) const;
   };
 
+  /** @} */
+  
 } // namespace corsika
 
 #include <corsika/detail/framework/process/InteractionHistogram.inl> // for implementation

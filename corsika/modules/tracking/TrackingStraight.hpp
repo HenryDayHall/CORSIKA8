@@ -51,7 +51,10 @@ namespace corsika::tracking_line {
     //! find intersection of Plane with Track
     template <typename TParticle>
     static Intersections intersect(TParticle const& particle, Plane const& plane);
-  };
+
+    static std::string getName() { return "Tracking-Straight"; }
+    static std::string getVersion() { return "1.0.0"; }
+};
 
 } // namespace corsika::tracking_line
 

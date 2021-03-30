@@ -14,6 +14,9 @@
 namespace corsika {
 
   /**
+     @ingroup Processes
+     @{
+
      Process to act on the entire particle stack
 
      The structural base type of a process object in a
@@ -51,4 +54,6 @@ namespace corsika {
     //! @}
   };
 
+  //! @}
+  
 } // namespace corsika

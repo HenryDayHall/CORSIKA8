@@ -16,6 +16,9 @@
 namespace corsika {
 
   /**
+     @ingroup Processes
+     @{
+
      Processes with continuous effects along a particle Trajectory
 
      The structural base type of a process object in a
@@ -67,4 +70,6 @@ namespace corsika {
     enum { count = N + 1 };
   };
 
+  /** @} */
+  
 } // namespace corsika

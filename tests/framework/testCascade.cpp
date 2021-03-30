@@ -77,6 +77,8 @@ public:
         // trajectory: just go ahead forever
         particle.getNode()); // next volume node
   }
+  static std::string getName() { return "DummyTracking"; }
+  static std::string getVersion() { return "1.0.0"; }
 };
 
 class ProcessSplit : public InteractionProcess<ProcessSplit> {
@@ -90,7 +92,7 @@ public:
   }
 
   template <typename TView>
-  ProcessReturn doInteraction(TView& view) {
+  void doInteraction(TView& view) {
     calls_++;
     auto vP = view.getProjectile();
     const HEPEnergyType E = vP.getEnergy();
@@ -98,7 +100,6 @@ public:
                                     vP.getPosition(), vP.getTime()));
     vP.addSecondary(std::make_tuple(vP.getPID(), E / 2, vP.getMomentum(),
                                     vP.getPosition(), vP.getTime()));
-    return ProcessReturn::Interacted;
   }
 
   int getCalls() const { return calls_; }

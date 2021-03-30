@@ -14,6 +14,9 @@
 namespace corsika {
 
   /**
+     @ingroup Processes
+     @{
+
      Process decribing the decay of particles
 
      The structural base type of a process object in a
@@ -41,4 +44,6 @@ namespace corsika {
     }
   };
 
+  /** @} */
+  
 } // namespace corsika

@@ -14,12 +14,13 @@
 namespace corsika {
 
   /**
+     @ingroup Processes
+     @{
      Process that modifies a list of secondaries of other processes
 
      The structural base type of a process object in a
      ProcessSequence. Both, the ProcessSequence and all its elements
      are of type SecondariesProcess<T>
-
    */
 
   template <typename TDerived>
@@ -31,4 +32,6 @@ namespace corsika {
     void doSecondaries(TSecondaries&);
   };
 
+  //! @}
+  
 } // namespace corsika

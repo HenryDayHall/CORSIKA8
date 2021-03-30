@@ -13,7 +13,10 @@
 namespace corsika {
 
   /**
-   * Process that does nothing
+     @ingroup Processes
+     @{
+
+     Process that does nothing
    */
 
   class NullModel : public BaseProcess<NullModel> {
@@ -22,5 +25,7 @@ namespace corsika {
     NullModel() = default;
     ~NullModel() = default;
   };
+
+  //! @}
 
 } // namespace corsika

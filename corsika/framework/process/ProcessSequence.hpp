@@ -9,7 +9,7 @@
 #pragma once
 
 /**
- * \file ProcessSequence.hpp
+ * @file ProcessSequence.hpp
  */
 
 #include <corsika/framework/process/BaseProcess.hpp>
@@ -28,6 +28,7 @@
 
 namespace corsika {
 
+  // traits class to statically count processes in the sequence
   template <typename TProcess, int N>
   struct count_continuous<TProcess, N,
                           typename std::enable_if_t<is_process_sequence_v<TProcess>>> {
@@ -35,6 +36,7 @@ namespace corsika {
         N + std::decay_t<TProcess>::getNumberOfProcesses();
   };
 
+  // traits class to statically count processes in the sequence
   template <typename TProcess, int N>
   struct count_processes<TProcess, N,
                          typename std::enable_if_t<is_process_v<TProcess> &&
@@ -43,6 +45,27 @@ namespace corsika {
         N + std::decay_t<TProcess>::getNumberOfProcesses();
   };
 
+
+/**
+   @defgroup Processes Physics Processes and Modules
+   
+   Physics processes in CORSIKA 8 are clustered in ProcessSequence and SwitchProcessSequence containers. 
+   The former is a mere (ordered) collection, while the latter has the option to switch between two
+   alternative ProcessSequences. 
+
+   Depending on the type of data to act on and on the allowed actions of processes there are several 
+   interface options: 
+   - InteractionProcess
+   - DecayProcess
+   - ContinuousProcess
+   - StackProcess
+   - SecondariesProcess   
+
+   @ingroup Processes
+   @{
+ */
+
+  
   /**
    *
    *  Definition of a static process list/sequence
@@ -63,7 +86,7 @@ namespace corsika {
    *  - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
    *  - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
    *  - ProcessIndexOffset, IndexOfProcess1, IndexOfProcess2 are to count and index each
-   *ContinuousProcess in the entire process-chain
+   *    ContinuousProcess in the entire process-chain
    **/
 
   template <typename TProcess1, typename TProcess2 = NullModel,
@@ -195,27 +218,27 @@ namespace corsika {
   };
 
   /**
-   * Factory function to create ProcessSequence
-   *
-   * to construct ProcessSequences in a flexible and dynamic way the
-   * `sequence` factory functions are provided
-   *
-   * Any objects of type
-   *  - BaseProcess,
-   *  - ContinuousProcess, and
-   *  - Interaction/DecayProcess,
-   *  - StackProcess,
-   *  - SecondariesProcess
-   * can be assembled into a ProcessSequence, all
-   * combinatorics are allowed.
+    Factory function to create a ProcessSequence
+   
+    to construct ProcessSequences in a flexible and dynamic way the
+    `sequence` factory functions are provided
+   
+    Any objects of type
+     - BaseProcess,
+     - ContinuousProcess, and
+     - InteractionProcess/DecayProcess,
+     - StackProcess,
+     - SecondariesProcess
+    can be assembled into a ProcessSequence, all
+    combinatorics are allowed.
 
-   * The sequence function checks that all its arguments are all of
-   * types derived from BaseProcess. Also the ProcessSequence itself
-   * is derived from type BaseProcess
-   *
-   * \param vA needs to derive from BaseProcess or ProcessSequence
-   * \param vB paramter-pack, needs to derive BaseProcess or ProcessSequence
-   *
+    The sequence function checks that all its arguments are all of
+    types derived from BaseProcess. Also the ProcessSequence itself
+    is derived from type BaseProcess
+   
+    \param vA needs to derive from BaseProcess or ProcessSequence
+    \param vB paramter-pack, needs to derive BaseProcess or ProcessSequence
+   
    **/
 
   template <typename... TProcesses, typename TProcess1>
@@ -270,6 +293,8 @@ namespace corsika {
     is_process_sequence() {}
   };
 
+  /** @}  */
+  
 } // namespace corsika
 
 #include <corsika/detail/framework/process/ProcessSequence.inl>
