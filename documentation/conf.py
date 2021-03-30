@@ -22,14 +22,12 @@ if read_the_docs_build:
     output_dir = 'build'
     configureDoxyfile(input_dir, output_dir)
 
-    subprocess.call('pwd; ls -l; ls -l ..', shell=True)
     subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../../src/framework/core/pdxml_reader.py ../../../../../src/framework/core/ParticleData.xml ../../../../../src/framework/core/NuclearData.xml ../../../../../src/framework/core/ParticleClassNames.xml', shell=True)
 
-    subprocess.call('pwd; ls -l; ls -l ..', shell=True)
     subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../src/media/readProperties.py ../../../../src/media/properties8.dat', shell=True)
     
-    subprocess.call('pwd; ls -l; ls -l ..', shell=True)
     subprocess.call('doxygen', shell=True)
+    breathe_projects['CORSIKA8'] = output_dir + '/xml'
     
 
 # -- Project information -----------------------------------------------------
@@ -54,7 +52,6 @@ extensions = [
     'recommonmark'
 ]
 
-#breathe_projects = { "CORSIKA8": "/work/corsika/corsika/build/documentation/xml/" }
 breathe_default_project = "CORSIKA8"
 
 
@@ -118,7 +115,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PROPOSALdoc'
+htmlhelp_basename = 'C8doc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -181,8 +178,3 @@ napoleon_use_param = True
 napoleon_use_rtype = False
 napoleon_use_admonition_for_examples = True
 # autodoc_docstring_signature=False
-
-
-
-
-
