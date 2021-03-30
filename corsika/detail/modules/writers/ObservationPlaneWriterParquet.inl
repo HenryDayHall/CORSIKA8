@@ -22,13 +22,13 @@ namespace corsika {
     // build the schema
     addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
              parquet::ConvertedType::INT_32);
-    addField("energy", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+    addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
              parquet::ConvertedType::NONE);
-    addField("x", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+    addField("x", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
              parquet::ConvertedType::NONE);
-    addField("y", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+    addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
              parquet::ConvertedType::NONE);
-    addField("radius", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE,
+    addField("radius", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
              parquet::ConvertedType::NONE);
 
     // and build the streamer
