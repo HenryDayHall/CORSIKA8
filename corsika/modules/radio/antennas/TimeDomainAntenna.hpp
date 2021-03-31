@@ -90,7 +90,7 @@ namespace corsika {
     void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
                  ElectricFieldVector const& efield) {
 
-      if (time < start_time_ || time >= start_time_ + duration_) {
+      if (time < start_time_ || time > start_time_ + duration_) {
         return;
       } else {
         // figure out the correct timebin to store the E-field value.
@@ -119,7 +119,7 @@ namespace corsika {
       xt::xtensor<double, 2> times_ (xt::zeros<double>({num_bins_, 1}));
 
       for (int i = 0; i < num_bins_; i++) {
-        times_.at(i,0) = static_cast<double>(start_time_ / 1_s + i * sample_rate_ * 1_s);
+        times_.at(i,0) = static_cast<double>(start_time_ / 1_s + i / (sample_rate_ * 1_s));
       }
 
       return std::make_pair(times_, waveformE_);

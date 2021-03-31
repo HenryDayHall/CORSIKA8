@@ -156,6 +156,7 @@ int main() {
   Cascade EAS(env, tracking, sequence, stack);
   EAS.run();
 
+  //TODO: this will run indefinetly due to no energy losses
   // get radio output
   coreas.writeOutput();
 }

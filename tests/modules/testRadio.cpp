@@ -163,8 +163,8 @@ TEST_CASE("Radio", "[processes]") {
 
     // create times for the antenna
     const TimeType t1{0_s}; // TODO: initialization of times to antennas! particle hits the observation level should be zero
-    const TimeType t2{100_s};
-    const InverseTimeType t3{1/1e+2_s};
+    const TimeType t2{10_s};
+    const InverseTimeType t3{1e+3_Hz};
     const TimeType t4{11_s};
 
     // check that I can create an antenna at (1, 2, 3)
@@ -198,7 +198,7 @@ TEST_CASE("Radio", "[processes]") {
 
     auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
 
-    auto const t = 10_s;
+    auto const t = 1_s;
     LeapFrogTrajectory base(point4, v0, B0, k, t);
 
     // create a new stack for each trial
@@ -263,7 +263,7 @@ TEST_CASE("Radio", "[processes]") {
         coreas(detector, envCoREAS);
 
     // check doContinuous and simulate methods
-    coreas.doContinuous(particle1, base);
+    coreas.doContinuous(particle1, base, true);
 //    coreas1.simulate(particle1, base);
 
     // check writeOutput method -> should produce 2 csv files for each antenna

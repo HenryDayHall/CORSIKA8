@@ -66,6 +66,7 @@ namespace corsika {
       auto startPoint_{track.getPosition(0)};
       std::cout << "STARTPOINT : " << startPoint_ << std::endl;
       auto endPoint_{track.getPosition(1)};
+//      track.getVelocity(1); TODO: use this for velocity weight factors
       std::cout << "ENDPOINT : " << endPoint_ << std::endl;
 
       // beta is velocity / speed of light. Start & end should be the same!
@@ -85,27 +86,25 @@ namespace corsika {
 
         // get the Path (path1) from the start "endpoint" to the antenna.
         // This is a Signal Path Collection
-        auto paths1{this->propagator_.propagate(
-            startPoint_, antenna.getLocation(),
-            1_m)}; // TODO: Need to add the stepsize to .propagate()!!!!
+        auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Need to add the stepsize to .propagate()!!!!
 
         // get the Path (path2) from the end "endpoint" to the antenna.
         // This is a SignalPathCollection
         auto paths2{this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_m)};
 
           // loop over both paths at once and directly compare 'start' and 'end' attributes
-          for (size_t i = (paths1.size() == paths2.size()) ? 0 : paths1.size();
+          for (size_t i = (paths1.size() == paths2.size()) ? 0 : paths1.size(); // TODO: throw an exception if the sizes don't match
                (i < paths1.size() && i < paths2.size()); i++) {
 
             // First start with the 'start' point
             // calculate preDoppler factor
-            double preDoppler_{1. - paths1[i].average_refractive_index_ *
+            double preDoppler_{1. - paths1[i].refractive_index_source_ * // TODO: use the refractive index at source, not average!
                                     beta_.dot(paths1[i].emit_)};
             std::cout << "preDoppler: " << preDoppler_<< std::endl;
 
             // calculate receive times for startpoint
-            auto startPointReceiveTime_{paths1[i].total_time_ + startTime_};
-            std::cout << "START RECEIVE TIME: " << startPointReceiveTime_ << std::endl;
+            auto startPointReceiveTime_{paths1[i].propagation_time_ + startTime_}; // TODO: total time -> propagation time
+            std::cout << "START RECEIVE TIME: " << startPointReceiveTime_ << std::endl; // TODO: time 0 is when the imaginary primary hits the ground
 
             // get receive unit vector at 'start'
             auto ReceiveVectorStart_ {paths1[i].receive_};
@@ -113,22 +112,21 @@ namespace corsika {
 
             // calculate electric field vector for startpoint
             ElectricFieldVector EV1_ =
-                paths1[i]
-                    .receive_.cross(paths1[i].receive_.cross(beta_))
+                paths1[i].receive_.cross(paths1[i].receive_.cross(beta_))
                     .getComponents() /
                 (paths1[i].R_distance_ * preDoppler_) *
-                (1 / (4 * M_PI * track.getDuration())) *
+                (1 / (4 * M_PI * track.getDuration())) * // TODO: divide by sample width not track.getDuration!
                 ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
             // Now continue with the 'end' point
             // calculate postDoppler factor
             double postDoppler_{
-                1. - paths2[i].average_refractive_index_ *
+                1. - paths2[i].refractive_index_source_ *
                      beta_.dot(paths2[i].emit_)}; // maybe this is path.receive_ (?)
             std::cout << "postDoppler: " << postDoppler_<< std::endl;
 
             // calculate receive times for endpoint
-            auto endPointReceiveTime_{paths2[i].total_time_ + endTime_};
+            auto endPointReceiveTime_{paths2[i].propagation_time_ + endTime_};
             std::cout << "END RECEIVE TIME: " << endPointReceiveTime_ << std::endl;
 
             // get receive unit vector at 'end'
@@ -137,16 +135,17 @@ namespace corsika {
 
             // calculate electric field vector for endpoint
             ElectricFieldVector EV2_ =
-                paths2[i]
-                    .receive_.cross(paths2[i].receive_.cross(beta_))
+                paths2[i].receive_.cross(paths2[i].receive_.cross(beta_))
                     .getComponents() /
                 (paths2[i].R_distance_ * postDoppler_) *
-                ((-1) / (4 * M_PI * track.getDuration())) *
+                ((-1) / (4 * M_PI * track.getDuration())) * // TODO: divide by sample width not track.getDuration!
                 ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
             //////////////////////////////////////////////////////////////////////////////
             // start comparing stuff
             if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
+
+              std::cout << "Gets into if less than 1.e-9" << std::endl;
 
               auto gridResolution_ {antenna.duration_};
               auto deltaT_ { endPointReceiveTime_ - startPointReceiveTime_ };
@@ -218,6 +217,7 @@ namespace corsika {
               } // End of if deltaT < gridresolution
             } // End of if that checks small doppler factors
 
+            // TODO; fix this if with the one above, they should work together
             // perform ZHS-like calculation close to Cherenkov angle
             if (std::fabs(preDoppler_) <= approxThreshold_ || std::fabs(postDoppler_) <= approxThreshold_) {
 
@@ -229,7 +229,7 @@ namespace corsika {
               auto midTime_{particle.getTime() - (track.getDuration() / 2)};
 
               // get "mid" position of the track (that may not work properly)
-              auto midPoint_{track.getPosition(0.5)};
+              auto midPoint_{track.getPosition(0.5)}; // TODO: get mid position geometrically
 
               // get the Path (path3) from the middle "endpoint" to the antenna.
               // This is a SignalPathCollection
@@ -238,7 +238,7 @@ namespace corsika {
               // now loop over the paths for endpoint that we got above
               for (auto const& path : paths3) {
 
-                auto const midPointReceiveTime_{path.total_time_ + midTime_};
+                auto const midPointReceiveTime_{path.propagation_time_ + midTime_};
                 auto midDoppler_{1. - path.average_refractive_index_ * beta_.dot(path.emit_)};
 
                 // change the values of the receive unit vectors of start and end
@@ -346,8 +346,10 @@ namespace corsika {
 
             std::cout << "RIGHT BEFORE RECEIVE INCIDENT :" << std::endl;
             std::cout << "startTTimes_.at(index): " << startPointReceiveTime_ << std::endl;
-            std::cout << "endTTimes_.at(index): " << endPointReceiveTime_ << std::endl;
+
             antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
+            std::cout << "SECOND RECEIVE ! ! !" << std::endl;
+            std::cout << "endTTimes_.at(index): " << endPointReceiveTime_ << std::endl;
             antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
 
           } // End of loop over both paths to get signal info

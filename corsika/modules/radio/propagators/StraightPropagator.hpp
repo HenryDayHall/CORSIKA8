@@ -98,6 +98,7 @@ namespace corsika {
       auto const* node{universe->getContainingNode(destination)};
       auto const refractive_index{node->getModelProperties().getRefractiveIndex(destination)};
 //      auto const refractive_index{1.000327};
+      auto const ri_source{refractive_index};
       rindex.push_back(refractive_index);
       points.push_back(destination);
 
@@ -129,7 +130,7 @@ namespace corsika {
 
       // realize that emission and receive vector are 'direction' in this case.
       //TODO: receive and emission vector should have opposite signs!
-      return { SignalPath(time, averageRefractiveIndex_, direction , direction, distance_,points) };
+      return { SignalPath(time, averageRefractiveIndex_, ri_source, direction , direction, distance_,points) };
 
     } // END: propagate()
 
