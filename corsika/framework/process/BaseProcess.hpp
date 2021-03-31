@@ -16,6 +16,8 @@ namespace corsika {
 
   class TDerived; // fwd decl
 
+  class _BaseProcess {};
+
   /**
      @ingroup Processes
      @{
@@ -31,7 +33,6 @@ namespace corsika {
      ./Processes/AnalyticProcessors/ExecTime.h, see e.g. how this is done in
      ProcessSequence.hpp/make_sequence
    */
-  class _BaseProcess {};
 
   template <typename TDerived>
   struct BaseProcess : _BaseProcess {
@@ -54,7 +55,7 @@ namespace corsika {
   };
 
   /**
-   * ProcessTraits specialization
+     ProcessTraits specialization
    **/
   template <typename TProcess>
   struct is_process<

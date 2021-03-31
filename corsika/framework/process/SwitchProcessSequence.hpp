@@ -9,7 +9,7 @@
 #pragma once
 
 /**
- * \file SwitchProcessSequence.hpp
+  @file SwitchProcessSequence.hpp
  **/
 
 #include <corsika/framework/process/BaseProcess.hpp>
@@ -31,18 +31,22 @@
 namespace corsika {
 
   /**
+     @enum
      @ingroup Processes
-     @{
 
-   * enum for the process switch selection: identify if First or
-   * Second process branch should be used.
-   **/
-  enum class SwitchResult { First, /// Follow first branch in SwitchProcessSequence
-			    Second /// Follow second branch in
-				   /// SwitchProcessSequence
+     enum for the process switch selection: identify if First or Second
+     process branch should be used.
+     @var SwitchResult::First Follow first branch in SwitchProcessSequence
+     @var SwitchResult::Second Follow second branch in SwitchProcessSequence
+   */
+  enum class SwitchResult { First, 
+			    Second 
   };
   
   /**
+     @ingroup Processes
+     @{
+
      Class to switch between two process branches
 
      A compile-time static list of processes that uses an internal
@@ -65,12 +69,14 @@ namespace corsika {
      particle stack and not on indiviidual particles.
 
      Template parameters:
-      - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - IndexFirstProcess, IndexOfProcess1, IndexOfProcess2 are to count and index each
-  ContinuousProcess in the entire process-chain
+     @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+     @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+     @tparam TSelect selector functor/function 
+     @tparam IndexFirstProcess to count and index each ContinuousProcess in the entire process-chain
+     @tparam IndexOfProcess1 index of TProcess1 (counting of ContinuousProcess)
+     @tparam IndexOfProcess2 index of TProcess2 (counting of ContinuousProcess)
 
-     See also class ProcessSequence
+     See also class ProcessSequence.
   **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect,

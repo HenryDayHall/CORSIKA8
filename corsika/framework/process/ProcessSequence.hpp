@@ -60,6 +60,65 @@ namespace corsika {
    - ContinuousProcess
    - StackProcess
    - SecondariesProcess   
+   - BoundaryCrossingProcess
+
+   And all processes (including ProcessSequence and SwitchProcessSequence) are derived from BaseProcess. 
+   
+   Processes of any type (e.g. p1, p2, p3,...) can be assembled into a ProcessSequence using the `make_sequence` factory function.
+   
+   @code{.cpp}
+     auto sequence1 = make_sequence(p1, p2, p3);
+     auto sequence2 = make_sequence(p4, p5, p6, p7);
+     auto sequence3 = make_sequence(sequence1, sequemce2, p8, p9);
+   @endcode
+
+   Note, if the order of processes
+   matters, the order of occurence
+   in the ProcessSequence determines
+   the executiion order.
+   
+   SecondariesProcess alyways act on
+   new secondaries produced (i.e. in
+   InteractionProcess and
+   DecayProcess) in the scope of
+   their ProcessSequence. For
+   example if i1 and i2 are
+   InteractionProcesses and s1 is a
+   SecondariesProcess, then
+
+   @code{.cpp}
+     auto sequence = make_sequence(i1, make_sequence(i2, s1))
+   @endcode
+
+   will result in s1 acting only on
+   the particles produced by i2 and
+   not by i1. This can be very
+   useful, e.g. to fine tune thinning. 
+
+   A special type of ProcessSequence
+   is SwitchProcessSequence, which
+   has two branches and a functor
+   that can select between these two
+   branches.
+
+   @code{.cpp}
+     auto sequence = make_switch(sequence1, sequence2, selector);
+   @endcode
+
+   where the only requirement to
+   `selector` is that it
+   provides a `SwitchResult operator()(Particle const& particle) const` method. Thus,
+   based on the dynamic properties
+   of `particle` the functor
+   can make its decision. This is
+   clearly important for switching
+   between low-energy and
+   high-energy models, but not
+   limited to this. The selection
+   can even be done with a lambda
+   function.
+   
+   
 
    @ingroup Processes
    @{
@@ -67,27 +126,28 @@ namespace corsika {
 
   
   /**
-   *
-   *  Definition of a static process list/sequence
-   *
-   *  A compile time static list of processes. The compiler will
-   *  generate a new type based on template logic containing all the
-   *  elements provided by the user.
-   *
-   *  TProcess1 and TProcess2 must both be derived from BaseProcess,
-   *  and are both references if possible (lvalue), otherwise (rvalue)
-   *  they are just classes. This allows us to handle both, rvalue as
-   *  well as lvalue Processes in the ProcessSequence.
-   *
-   *  (The sequence, and the processes use the CRTP, curiously recurring template
-   *  pattern).
-   *
-   * Template parameters:
-   *  - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-   *  - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-   *  - ProcessIndexOffset, IndexOfProcess1, IndexOfProcess2 are to count and index each
-   *    ContinuousProcess in the entire process-chain
-   **/
+   
+     Definition of a static process list/sequence
+   
+     A compile time static list of processes. The compiler will
+     generate a new type based on template logic containing all the
+     elements provided by the user.
+   
+     TProcess1 and TProcess2 must both be derived from BaseProcess,
+     and are both references if possible (lvalue), otherwise (rvalue)
+     they are just classes. This allows us to handle both, rvalue as
+     well as lvalue Processes in the ProcessSequence.
+   
+     (The sequence, and the processes use the CRTP, curiously recurring template
+     pattern).
+   
+    Template parameters:
+     @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+     @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+     @tparam ProcessIndexOffset to count and index each ContinuousProcess in the entire process-chain
+      @tparam IndexOfProcess1
+      @tparam IndexOfProcess2 
+   */
 
   template <typename TProcess1, typename TProcess2 = NullModel,
             int ProcessIndexOffset = 0,
@@ -218,17 +278,21 @@ namespace corsika {
   };
 
   /**
+    @fn make_sequence
+
     Factory function to create a ProcessSequence
    
     to construct ProcessSequences in a flexible and dynamic way the
     `sequence` factory functions are provided
    
     Any objects of type
-     - BaseProcess,
-     - ContinuousProcess, and
-     - InteractionProcess/DecayProcess,
-     - StackProcess,
+     - BaseProcess
+     - ContinuousProcess and
+     - InteractionProcess/DecayProcess
+     - StackProcess
      - SecondariesProcess
+     - BoundaryCrossingProcess
+
     can be assembled into a ProcessSequence, all
     combinatorics are allowed.
 
@@ -236,11 +300,11 @@ namespace corsika {
     types derived from BaseProcess. Also the ProcessSequence itself
     is derived from type BaseProcess
    
-    \param vA needs to derive from BaseProcess or ProcessSequence
-    \param vB paramter-pack, needs to derive BaseProcess or ProcessSequence
-   
-   **/
-
+    @tparam TProcesses parameter pack with objects of type BaseProcess
+    @tparam TProcess1 another BaseProcess
+    @param vA needs to derive from BaseProcess or ProcessSequence
+    @param vB paramter-pack, needs to derive BaseProcess or ProcessSequence
+   */
   template <typename... TProcesses, typename TProcess1>
   typename std::enable_if_t<
       is_process_v<typename std::decay_t<TProcess1>>,
@@ -252,13 +316,17 @@ namespace corsika {
   }
 
   /**
-   * Factory function to create ProcessSequence
-   *
-   * specialization for two input objects (no paramter pack in vB).
-   *
-   * \param vA needs to derive from BaseProcess or ProcessSequence
-   * \param vB needs to derive BaseProcess or ProcessSequence
-   **/
+    @fn make_sequence
+    
+    Factory function to create ProcessSequence
+   
+    specialization for two input objects (no paramter pack in vB).
+   
+    @tparam TProcess1 another BaseProcess
+    @tparam TProcess2 another BaseProcess
+    @param vA needs to derive from BaseProcess or ProcessSequence
+    @param vB needs to derive BaseProcess or ProcessSequence
+   */
   template <typename TProcess1, typename TProcess2>
   typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
                                 is_process_v<typename std::decay_t<TProcess2>>,
@@ -268,13 +336,16 @@ namespace corsika {
   }
 
   /**
-   * Factory function to create ProcessSequence from a single BaseProcess
-   *
-   * also allow a single Process in ProcessSequence, accompany by
-   * `NullModel`
-   *
-   * \param vA needs to derive from BaseProcess or ProcessSequence
-   **/
+    @fn make_sequence
+
+    Factory function to create ProcessSequence from a single BaseProcess
+   
+    also allow a single Process in ProcessSequence, accompany by
+    `NullModel`
+   
+    @tparam TProcess1 another BaseProcess
+    @param vA needs to derive from BaseProcess or ProcessSequence
+   */
   template <typename TProcess>
   typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess>>,
                             ProcessSequence<TProcess, NullModel>>
@@ -283,7 +354,10 @@ namespace corsika {
   }
 
   /**
-   * traits marker to identify objectas ProcessSequence
+    traits marker to identify objectas ProcessSequence
+
+    @tparam TProcess1 another BaseProcess
+    @tparam TProcess2 another BaseProcess
    **/
   template <typename TProcess1, typename TProcess2>
   struct is_process_sequence<ProcessSequence<TProcess1, TProcess2>> : std::true_type {
