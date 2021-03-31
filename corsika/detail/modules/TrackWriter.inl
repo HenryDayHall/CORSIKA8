@@ -11,9 +11,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-// #include <corsika/setup/SetupStack.hpp>
-// #include <corsika/setup/SetupTrajectory.hpp>
-
 #include <limits>
 
 namespace corsika {
