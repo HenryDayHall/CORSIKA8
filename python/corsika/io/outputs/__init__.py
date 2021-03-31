@@ -8,6 +8,7 @@
 """
 
 from .observation_plane import ObservationPlane
+from .track_writer import TrackWriter
 from .output import Output
 
-__all__ = ["Output", "ObservationPlane"]
+__all__ = ["Output", "ObservationPlane", "TrackWriter"]
