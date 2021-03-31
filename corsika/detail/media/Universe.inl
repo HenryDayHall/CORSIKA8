@@ -12,10 +12,10 @@
 
 namespace corsika {
 
-  Universe::Universe(CoordinateSystemPtr const& pCS)
+  inline Universe::Universe(CoordinateSystemPtr const& pCS)
       : corsika::Sphere(Point{pCS, 0 * meter, 0 * meter, 0 * meter},
                         meter * std::numeric_limits<double>::infinity()) {}
 
-  bool Universe::contains(corsika::Point const&) const { return true; }
+  inline bool Universe::contains(corsika::Point const&) const { return true; }
 
 } // namespace corsika

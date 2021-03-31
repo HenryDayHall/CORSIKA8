@@ -11,6 +11,7 @@
 #include <corsika/modules/conex/CONEX_f.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/core/PhysicalConstants.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 #include <conexConfig.h>
 
@@ -21,9 +22,9 @@
 
 namespace corsika {
 
-  CONEXhybrid::CONEXhybrid(Point center, ShowerAxis const& showerAxis,
-                           LengthType groundDist, LengthType injectionHeight,
-                           HEPEnergyType primaryEnergy, PDGCode primaryPDG)
+  inline CONEXhybrid::CONEXhybrid(Point center, ShowerAxis const& showerAxis,
+                                  LengthType groundDist, LengthType injectionHeight,
+                                  HEPEnergyType primaryEnergy, PDGCode primaryPDG)
       : center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
@@ -35,19 +36,11 @@ namespace corsika {
             make_translation(c8cs, translation.getComponents(c8cs));
         auto const transformCS = make_rotationToZ(intermediateCS, translation);
 
-        std::cout << "translation C8/CONEX obs: " << translation.getComponents()
-                  << std::endl;
+        CORSIKA_LOG_DEBUG("translation C8/CONEX obs: ", translation.getComponents());
 
         /*
         auto const transform = CoordinateSystem::getTransformation(
             intermediateCS2, c8cs); // either this way or vice versa... TODO: test this!
-        std::cout << transform.matrix() << std::endl << std::endl;
-        std::cout << CoordinateSystem::getTransformation(intermediateCS, c8cs).matrix()
-                  << std::endl
-                  << std::endl;
-        std::cout << CoordinateSystem::getTransformation(intermediateCS2, intermediateCS)
-                         .matrix()
-                  << std::endl;
         */
         return transformCS;
       })}
@@ -63,27 +56,25 @@ namespace corsika {
       })}
       , y_sf_{showerAxis_.getDirection().cross(x_sf_)} {
 
-    std::cout << "x_sf (conexObservationCS): " << x_sf_.getComponents(conexObservationCS_)
-              << std::endl;
-    std::cout << "x_sf (C8): " << x_sf_.getComponents(center.getCoordinateSystem())
-              << std::endl;
+    CORSIKA_LOG_DEBUG("x_sf (conexObservationCS): {}",
+                      x_sf_.getComponents(conexObservationCS_));
+    CORSIKA_LOG_DEBUG("x_sf (C8): {}", x_sf_.getComponents(center.getCoordinateSystem()));
 
-    std::cout << "y_sf (conexObservationCS): " << y_sf_.getComponents(conexObservationCS_)
-              << std::endl;
-    std::cout << "y_sf (C8): " << y_sf_.getComponents(center.getCoordinateSystem())
-              << std::endl;
+    CORSIKA_LOG_DEBUG("y_sf (conexObservationCS): {}",
+                      y_sf_.getComponents(conexObservationCS_));
 
-    std::cout << "showerAxisDirection (conexObservationCS): "
-              << showerAxis_.getDirection().getComponents(conexObservationCS_)
-              << std::endl;
-    std::cout << "showerAxisDirection (C8): "
-              << showerAxis_.getDirection().getComponents(center.getCoordinateSystem())
-              << std::endl;
+    CORSIKA_LOG_DEBUG("y_sf (C8): {}", y_sf_.getComponents(center.getCoordinateSystem()));
 
-    std::cout << "showerCore (conexObservationCS): "
-              << showerCore_.getCoordinates(conexObservationCS_) << std::endl;
-    std::cout << "showerCore (C8): "
-              << showerCore_.getCoordinates(center.getCoordinateSystem()) << std::endl;
+    CORSIKA_LOG_DEBUG("showerAxisDirection (conexObservationCS): {}",
+                      showerAxis_.getDirection().getComponents(conexObservationCS_));
+    CORSIKA_LOG_DEBUG(
+        "showerAxisDirection (C8): {}",
+        showerAxis_.getDirection().getComponents(center.getCoordinateSystem()));
+
+    CORSIKA_LOG_DEBUG("showerCore (conexObservationCS): {}",
+                      showerCore_.getCoordinates(conexObservationCS_));
+    CORSIKA_LOG_DEBUG("showerCore (C8): {}",
+                      showerCore_.getCoordinates(center.getCoordinateSystem()));
 
     int randomSeeds[3] = {1234, 0, 0}; // will be overwritten later??
     int heModel = eSibyll23;
@@ -114,7 +105,10 @@ namespace corsika {
                             showerAxisConex.getX().magnitude()) *
                  180 / M_PI;
 
-    std::cout << "theta (deg) = " << theta << "; phi (deg) = " << phi << std::endl;
+    CORSIKA_LOG_DEBUG(
+        "theta (deg) = {}"
+        "; phi (deg) = {}",
+        theta, phi);
 
     int ipart = static_cast<int>(primaryPDG);
     auto rng = RNGManager::getInstance().getRandomStream("cascade");
@@ -130,7 +124,7 @@ namespace corsika {
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
   }
 
-  void CONEXhybrid::doSecondaries(setup::StackView& vS) {
+  inline void CONEXhybrid::doSecondaries(setup::StackView& vS) {
     auto p = vS.begin();
     while (p != vS.end()) {
       Code const pid = p.getPID();
@@ -142,9 +136,9 @@ namespace corsika {
     }
   }
 
-  bool CONEXhybrid::addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
-                                Point const& position, DirectionVector const& direction,
-                                TimeType t) {
+  inline bool CONEXhybrid::addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
+                                       Point const& position,
+                                       DirectionVector const& direction, TimeType t) {
 
     auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
@@ -152,8 +146,8 @@ namespace corsika {
 
     // EM particle
     auto const egs_pid = it->second;
-    std::cout << "position conexObs: " << position.getCoordinates(conexObservationCS_)
-              << std::endl;
+    CORSIKA_LOG_DEBUG("position conexObs: {}",
+                      position.getCoordinates(conexObservationCS_));
 
     auto const coords = position.getCoordinates(conexObservationCS_) / 1_m;
     double const x = coords[0].magnitude();
@@ -187,24 +181,23 @@ namespace corsika {
     double const E = energy / 1_GeV;
     double const m = mass / 1_GeV;
 
-    std::cout << "CONEXhybrid: removing " << egs_pid << " " << std::scientific << energy
-              << " GeV" << std::endl;
+    CORSIKA_LOG_DEBUG("CONEXhybrid: removing {} {:5e} GeV", egs_pid, energy);
 
-    std::cout << "#### parameters to cegs4_() ####" << std::endl;
-    std::cout << "egs_pid = " << egs_pid << std::endl;
-    std::cout << "E = " << E << std::endl;
-    std::cout << "m = " << m << std::endl;
-    std::cout << "x = " << x << std::endl;
-    std::cout << "y = " << y << std::endl;
-    std::cout << "altitude = " << altitude << std::endl;
-    std::cout << "slantDistance = " << slantDistance << std::endl;
-    std::cout << "lateralX = " << lateralX << std::endl;
-    std::cout << "lateralY = " << lateralY << std::endl;
-    std::cout << "slantX = " << slantX << std::endl;
-    std::cout << "time = " << time << std::endl;
-    std::cout << "u = " << u << std::endl;
-    std::cout << "v = " << v << std::endl;
-    std::cout << "w = " << w << std::endl;
+    CORSIKA_LOG_DEBUG("#### parameters to cegs4_() ####");
+    CORSIKA_LOG_DEBUG("egs_pid = {}", egs_pid);
+    CORSIKA_LOG_DEBUG("E = {}", E);
+    CORSIKA_LOG_DEBUG("m = {}", m);
+    CORSIKA_LOG_DEBUG("x = {}", x);
+    CORSIKA_LOG_DEBUG("y = {}", y);
+    CORSIKA_LOG_DEBUG("altitude = {}", altitude);
+    CORSIKA_LOG_DEBUG("slantDistance = {}", slantDistance);
+    CORSIKA_LOG_DEBUG("lateralX = {}", lateralX);
+    CORSIKA_LOG_DEBUG("lateralY = {}", lateralY);
+    CORSIKA_LOG_DEBUG("slantX = {}", slantX);
+    CORSIKA_LOG_DEBUG("time = {}", time);
+    CORSIKA_LOG_DEBUG("u = {}", u);
+    CORSIKA_LOG_DEBUG("v = {}", v);
+    CORSIKA_LOG_DEBUG("w = {}", w);
 
     ::conex::cxoptl_.dptl[10 - 1] = egs_pid;
     ::conex::cxoptl_.dptl[4 - 1] = E;
@@ -229,7 +222,7 @@ namespace corsika {
     return true;
   }
 
-  void CONEXhybrid::solveCE() {
+  inline void CONEXhybrid::solveCE() {
 
     ::conex::conexcascade_();
 

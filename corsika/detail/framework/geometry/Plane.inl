@@ -12,6 +12,8 @@
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
+#include <sstream>
+
 namespace corsika {
 
   inline bool Plane::isAbove(Point const& vP) const {
@@ -24,6 +26,12 @@ namespace corsika {
 
   inline Point const& Plane::getCenter() const { return center_; }
 
-  inline Plane::DimLessVec const& Plane::getNormal() const { return normal_; }
+  inline DirectionVector const& Plane::getNormal() const { return normal_; }
+
+  inline std::string Plane::asString() const {
+    std::ostringstream txt;
+    txt << "center=" << center_ << ", normal=" << normal_;
+    return txt.str();
+  }
 
 } // namespace corsika

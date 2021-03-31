@@ -108,6 +108,6 @@ namespace corsika {
     inverseBoost_ << coshEta, -sinhEta, -sinhEta, coshEta;
   }
 
-  CoordinateSystemPtr COMBoost::getRotatedCS() const { return rotatedCS_; }
+  inline CoordinateSystemPtr COMBoost::getRotatedCS() const { return rotatedCS_; }
 
 } // namespace corsika

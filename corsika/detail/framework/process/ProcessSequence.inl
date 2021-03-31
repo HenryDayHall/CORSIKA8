@@ -12,6 +12,8 @@
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/process/ContinuousProcessStepLength.hpp>
+#include <corsika/framework/process/ContinuousProcessIndex.hpp>
 #include <corsika/framework/process/DecayProcess.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/process/ProcessReturn.hpp>
@@ -24,11 +26,14 @@
 
 namespace corsika {
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TParticle>
-  ProcessReturn ProcessSequence<TProcess1, TProcess2>::doBoundaryCrossing(
-      TParticle& particle, typename TParticle::node_type const& from,
-      typename TParticle::node_type const& to) {
+  inline ProcessReturn ProcessSequence<
+      TProcess1, TProcess2, IndexStart, IndexProcess1,
+      IndexProcess2>::doBoundaryCrossing(TParticle& particle,
+                                         typename TParticle::node_type const& from,
+                                         typename TParticle::node_type const& to) {
     ProcessReturn ret = ProcessReturn::Ok;
 
     if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
@@ -46,25 +51,36 @@ namespace corsika {
     return ret;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TParticle, typename TTrack>
-  ProcessReturn ProcessSequence<TProcess1, TProcess2>::doContinuous(TParticle& particle,
-                                                                    TTrack& vT) {
+  inline ProcessReturn
+  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
+      doContinuous(TParticle& particle, TTrack& vT,
+                   [[maybe_unused]] ContinuousProcessIndex const limitId) {
     ProcessReturn ret = ProcessReturn::Ok;
-    if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>, process1_type> ||
-                  t1ProcSeq) {
-      ret |= A_.doContinuous(particle, vT);
+    if constexpr (t1ProcSeq) {
+      ret |= A_.doContinuous(particle, vT, limitId);
+    } else if constexpr (is_continuous_process_v<process1_type>) {
+      ret |=
+          A_.doContinuous(particle, vT, limitId == ContinuousProcessIndex(IndexProcess1));
     }
-    if constexpr (std::is_base_of_v<ContinuousProcess<process2_type>, process2_type> ||
-                  t2ProcSeq) {
-      if (!isAbsorbed(ret)) { ret |= B_.doContinuous(particle, vT); }
+
+    if constexpr (t2ProcSeq) {
+      ret |= B_.doContinuous(particle, vT, limitId);
+    } else if constexpr (is_continuous_process_v<process2_type>) {
+      ret |=
+          B_.doContinuous(particle, vT, limitId == ContinuousProcessIndex(IndexProcess2));
     }
+
     return ret;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TSecondaries>
-  void ProcessSequence<TProcess1, TProcess2>::doSecondaries(TSecondaries& vS) {
+  inline void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                              IndexProcess2>::doSecondaries(TSecondaries& vS) {
     if constexpr (std::is_base_of_v<SecondariesProcess<process1_type>, process1_type> ||
                   t1ProcSeq) {
       A_.doSecondaries(vS);
@@ -75,8 +91,10 @@ namespace corsika {
     }
   }
 
-  template <typename TProcess1, typename TProcess2>
-  bool ProcessSequence<TProcess1, TProcess2>::checkStep() {
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
+  inline bool ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                              IndexProcess2>::checkStep() {
     bool ret = false;
     if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
                   (t1ProcSeq && !t1SwitchProcSeq)) {
@@ -89,9 +107,11 @@ namespace corsika {
     return ret;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TStack>
-  void ProcessSequence<TProcess1, TProcess2>::doStack(TStack& stack) {
+  inline void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                              IndexProcess2>::doStack(TStack& stack) {
     if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
                   (t1ProcSeq && !t1SwitchProcSeq)) {
       if (A_.checkStep()) { A_.doStack(stack); }
@@ -102,30 +122,42 @@ namespace corsika {
     }
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TParticle, typename TTrack>
-  LengthType ProcessSequence<TProcess1, TProcess2>::getMaxStepLength(TParticle& particle,
-                                                                     TTrack& vTrack) {
-    LengthType max_length = // if no other process in the sequence implements it
-        std::numeric_limits<double>::infinity() * meter;
+  inline ContinuousProcessStepLength
+  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                  IndexProcess2>::getMaxStepLength(TParticle& particle, TTrack& vTrack) {
+    // if no other process in the sequence implements it
+    ContinuousProcessStepLength max_length(std::numeric_limits<double>::infinity() *
+                                           meter);
 
-    if constexpr (std::is_base_of_v<ContinuousProcess<process1_type>, process1_type> ||
-                  t1ProcSeq) {
-      LengthType const len = A_.getMaxStepLength(particle, vTrack);
-      max_length = std::min(max_length, len);
+    if constexpr (t1ProcSeq) {
+      ContinuousProcessStepLength const step = A_.getMaxStepLength(particle, vTrack);
+      max_length = std::min(max_length, step);
+    } else if constexpr (is_continuous_process_v<process1_type>) {
+      ContinuousProcessStepLength const step(A_.getMaxStepLength(particle, vTrack),
+                                             ContinuousProcessIndex(IndexProcess1));
+      max_length = std::min(max_length, step);
     }
-    if constexpr (std::is_base_of_v<ContinuousProcess<process2_type>, process2_type> ||
-                  t2ProcSeq) {
-      LengthType const len = B_.getMaxStepLength(particle, vTrack);
-      max_length = std::min(max_length, len);
+    //      return ContinuousProcessStepLength(std::min(max_length, len), IndexProcess1);
+    if constexpr (t2ProcSeq) {
+      ContinuousProcessStepLength const step = B_.getMaxStepLength(particle, vTrack);
+      max_length = std::min(max_length, step);
+    } else if constexpr (is_continuous_process_v<process2_type>) {
+      ContinuousProcessStepLength const step(B_.getMaxStepLength(particle, vTrack),
+                                             ContinuousProcessIndex(IndexProcess2));
+      max_length = std::min(max_length, step);
     }
     return max_length;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TParticle>
-  InverseGrammageType ProcessSequence<TProcess1, TProcess2>::getInverseInteractionLength(
-      TParticle&& particle) {
+  inline InverseGrammageType
+  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                  IndexProcess2>::getInverseInteractionLength(TParticle&& particle) {
 
     InverseGrammageType tot = 0 * meter * meter / gram; // default value
 
@@ -140,11 +172,14 @@ namespace corsika {
     return tot;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TSecondaryView>
-  inline ProcessReturn ProcessSequence<TProcess1, TProcess2>::selectInteraction(
-      TSecondaryView& view, [[maybe_unused]] InverseGrammageType lambda_inv_select,
-      [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
+  inline ProcessReturn
+  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
+      selectInteraction(TSecondaryView& view,
+                        [[maybe_unused]] InverseGrammageType lambda_inv_select,
+                        [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
 
     // TODO: add check for lambda_inv_select>lambda_inv_tot
 
@@ -182,10 +217,12 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TParticle>
-  inline InverseTimeType ProcessSequence<TProcess1, TProcess2>::getInverseLifetime(
-      TParticle&& particle) {
+  inline InverseTimeType
+  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                  IndexProcess2>::getInverseLifetime(TParticle&& particle) {
 
     InverseTimeType tot = 0 / second; // default value
 
@@ -200,12 +237,15 @@ namespace corsika {
     return tot;
   }
 
-  template <typename TProcess1, typename TProcess2>
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   // select decay process
   template <typename TSecondaryView>
-  inline ProcessReturn ProcessSequence<TProcess1, TProcess2>::selectDecay(
-      TSecondaryView& view, [[maybe_unused]] InverseTimeType decay_inv_select,
-      [[maybe_unused]] InverseTimeType decay_inv_sum) {
+  inline ProcessReturn ProcessSequence<
+      TProcess1, TProcess2, IndexStart, IndexProcess1,
+      IndexProcess2>::selectDecay(TSecondaryView& view,
+                                  [[maybe_unused]] InverseTimeType decay_inv_select,
+                                  [[maybe_unused]] InverseTimeType decay_inv_sum) {
 
     // TODO: add check for decay_inv_select>decay_inv_tot
 

@@ -8,8 +8,6 @@
 
 #pragma once
 
-//#define OFFLINE_USE_GAMMA_SINGLETON
-
 namespace corsika {
   /**
    * \class Singleton Singleton.h utl/Singleton.h

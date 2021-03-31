@@ -41,8 +41,7 @@ namespace corsika::sibyll {
   }
 
   inline Interaction::~Interaction() {
-    CORSIKA_LOG_DEBUG(
-        fmt::format("Sibyll::Interaction n={}, Nnuc={}", count_, nucCount_));
+    CORSIKA_LOG_DEBUG("Sibyll::Interaction n={}, Nnuc={}", count_, nucCount_);
   }
 
   inline void Interaction::setStable(std::vector<corsika::Code> const& vParticleList) {
@@ -54,13 +53,13 @@ namespace corsika::sibyll {
   }
 
   inline void Interaction::setUnstable(const corsika::Code vCode) {
-    std::cout << "Sibyll::Interaction: setting " << vCode << " unstable.." << std::endl;
+    CORSIKA_LOG_DEBUG("Sibyll::Interaction: setting {} unstable..", vCode);
     const int s_id = abs(corsika::sibyll::convertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
   }
 
   inline void Interaction::setStable(const corsika::Code vCode) {
-    std::cout << "Sibyll::Interaction: setting " << vCode << " stable.." << std::endl;
+    CORSIKA_LOG_DEBUG("Sibyll::Interaction: setting {} stable..", vCode);
     const int s_id = abs(corsika::sibyll::convertToSibyllRaw(vCode));
     s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
   }
@@ -166,17 +165,17 @@ namespace corsika::sibyll {
           });
 
       CORSIKA_LOG_DEBUG(
-          fmt::format("Interaction: "
-                      "IntLength: weighted CrossSection (mb): {} ",
-                      weightedProdCrossSection / 1_mb));
+          "Interaction: "
+          "IntLength: weighted CrossSection (mb): {} ",
+          weightedProdCrossSection / 1_mb);
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.getAverageMassNumber() *
                                       constants::u / weightedProdCrossSection;
       CORSIKA_LOG_DEBUG(
-          fmt::format("Interaction: "
-                      "interaction length (g/cm2): {} ",
-                      int_length / (0.001_kg) * 1_cm * 1_cm));
+          "Interaction: "
+          "interaction length (g/cm2): {} ",
+          int_length / (0.001_kg) * 1_cm * 1_cm);
 
       return int_length;
     }

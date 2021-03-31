@@ -14,17 +14,18 @@
 namespace corsika {
 
   template <typename TDimension>
-  CoordinateSystemPtr BaseVector<TDimension>::getCoordinateSystem() const {
+  inline CoordinateSystemPtr BaseVector<TDimension>::getCoordinateSystem() const {
     return cs_;
   }
 
   template <typename TDimension>
-  QuantityVector<TDimension> const& BaseVector<TDimension>::getQuantityVector() const {
+  inline QuantityVector<TDimension> const& BaseVector<TDimension>::getQuantityVector()
+      const {
     return quantityVector_;
   }
 
   template <typename TDimension>
-  QuantityVector<TDimension>& BaseVector<TDimension>::getQuantityVector() {
+  inline QuantityVector<TDimension>& BaseVector<TDimension>::getQuantityVector() {
     return quantityVector_;
   }
 

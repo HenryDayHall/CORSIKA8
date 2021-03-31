@@ -12,9 +12,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
-
-#include <corsika/modules/qgsjetII/Random.hpp>
-
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 #include <qgsjet-II-04.hpp>
 

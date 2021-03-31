@@ -15,17 +15,11 @@
 #include <vector>
 
 namespace corsika {
-  /*
-  template <typename TStackDataType, template <typename> typename TParticleInterface,
-            template <typename T1, template <class> class T2> class MSecondaryProducer>
-  SecondaryView< TStackDataType,TParticleInterface, MSecondaryProducer>::
-
-  */
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
   template <typename... Args>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::addSecondary(
       const Args... v) {
     CORSIKA_LOG_TRACE("SecondaryView::addSecondary(Args&&)");
@@ -35,8 +29,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::begin() {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
@@ -48,8 +42,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::const_stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::const_stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::begin() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
@@ -61,8 +55,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::const_stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::const_stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::cbegin() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
@@ -74,8 +68,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::last() {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
@@ -86,8 +80,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::const_stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::const_stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::last() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
@@ -98,8 +92,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::const_stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::const_stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::clast() const {
     unsigned int i = 0;
     for (; i < getSize(); ++i) {
@@ -111,7 +105,7 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::swap(
+  inline void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::swap(
       stack_view_iterator a, stack_view_iterator b) {
 
     CORSIKA_LOG_TRACE("View::swap");
@@ -121,7 +115,7 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::copy(
+  inline void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::copy(
       stack_view_iterator a, stack_view_iterator b) {
 
     CORSIKA_LOG_TRACE("View::copy");
@@ -131,7 +125,7 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::copy(
+  inline void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::copy(
       const_stack_view_iterator a, stack_view_iterator b) {
 
     CORSIKA_LOG_TRACE("View::copy");
@@ -141,8 +135,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::erase(
-      stack_view_iterator p) {
+  inline void SecondaryView<TStackDataType, TParticleInterface,
+                            MSecondaryProducer>::erase(stack_view_iterator p) {
 
     CORSIKA_LOG_TRACE("SecondaryView::Delete");
     if (isEmpty()) { /*error*/
@@ -157,8 +151,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  bool SecondaryView<TStackDataType, TParticleInterface,
-                     MSecondaryProducer>::purgeLastIfDeleted() {
+  inline bool SecondaryView<TStackDataType, TParticleInterface,
+                            MSecondaryProducer>::purgeLastIfDeleted() {
     CORSIKA_LOG_TRACE("SecondaryView::purgeLastIfDeleted");
     if (!isErased(getSize() - 1))
       return false; // the last particle is not marked for deletion. Do nothing.
@@ -170,7 +164,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  void SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::purge() {
+  inline void
+  SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::purge() {
     unsigned int iStack = 0;
     unsigned int size = getSize();
     while (iStack < size) {
@@ -187,8 +182,8 @@ namespace corsika {
 
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
-  std::string SecondaryView<TStackDataType, TParticleInterface,
-                            MSecondaryProducer>::asString() const {
+  inline std::string SecondaryView<TStackDataType, TParticleInterface,
+                                   MSecondaryProducer>::asString() const {
     std::string str(fmt::format("size {}\n", getSize()));
     // we make our own begin/end since we want ALL entries
     std::string new_line = "     ";
@@ -206,8 +201,8 @@ namespace corsika {
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer>
   template <typename... Args>
-  typename SecondaryView<TStackDataType, TParticleInterface,
-                         MSecondaryProducer>::stack_view_iterator
+  inline typename SecondaryView<TStackDataType, TParticleInterface,
+                                MSecondaryProducer>::stack_view_iterator
   SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>::addSecondary(
       stack_view_iterator& proj, const Args... v) {
     CORSIKA_LOG_TRACE("SecondaryView::addSecondary(stack_view_iterator&, Args&&)");

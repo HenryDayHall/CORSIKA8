@@ -30,7 +30,8 @@ namespace corsika {
     ObservationPlane(Plane const&, DirectionVector const&, bool = true);
 
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
-                               corsika::setup::Trajectory& vTrajectory);
+                               corsika::setup::Trajectory& vTrajectory,
+                               bool const stepLimit);
 
     LengthType getMaxStepLength(corsika::setup::Stack::particle_type const&,
                                 corsika::setup::Trajectory const& vTrajectory);

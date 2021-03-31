@@ -166,7 +166,7 @@
  <channel onMode="1" bRatio="0.1081660" products="-13 14"/> 
  <channel onMode="1" bRatio="0.1080870" products="-15 16"/> 
 </particle> 
- 
+ -->
 <particle id="25" name="h0" spinType="1" chargeType="0" colType="0" 
           m0="125.00000" mWidth="0.00374" mMin="50.00000" mMax="0.00000"> 
  <channel onMode="1" bRatio="0.0000009" products="1 -1"/> 
@@ -246,7 +246,7 @@
  <channel onMode="1" bRatio="0.0000000" meMode="103" products="1000016 -2000016"/> 
  <channel onMode="1" bRatio="0.0000000" meMode="103" products="-1000016 2000016"/> 
 </particle> 
- 
+<!-- 
 <particle id="32" name="Z'0" spinType="3" chargeType="0" colType="0" 
           m0="500.00000" mWidth="14.54029" mMin="10.00000" mMax="0.00000"> 
  <channel onMode="1" bRatio="0.1458350" products="1 -1"/> 

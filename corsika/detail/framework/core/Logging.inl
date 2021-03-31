@@ -1,4 +1,4 @@
-/*
+/* -*-c++-*-
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
@@ -21,15 +21,13 @@ namespace corsika {
     /*
      * The default pattern for CORSIKA8 loggers.
      */
-    std::string const default_pattern{"[%n:%^%-8l%$] %v"};
-
     inline auto set_default_level(level::level_enum const minlevel) -> void {
       spdlog::set_level(minlevel);
     }
 
     template <typename TLogger>
     inline auto add_source_info(TLogger& logger) -> void {
-      logger->set_pattern("[%n:%^%-8l%$(%s:%!:%#)] %v");
+      logger->set_pattern(source_pattern);
     }
 
     template <typename TLogger>
@@ -47,7 +45,13 @@ namespace corsika {
     auto logger = spdlog::stdout_color_mt(name);
 
     // set the default C8 format
-    logger->set_pattern(logging::default_pattern);
+#if (!defined(_GLIBCXX_USE_CXX11_ABI) || _GLIBCXX_USE_CXX11_ABI == 1)
+    logger->set_pattern(default_pattern);
+#else
+    // special case: gcc from the software collections devtoolset
+    std::string dp(default_pattern);
+    logger->set_pattern(dp);
+#endif
 
     // if defaultlog is True, we set this as the default spdlog logger.
     if (defaultlog) { spdlog::set_default_logger(logger); }

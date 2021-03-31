@@ -17,8 +17,8 @@
 namespace corsika {
 
   template <typename TDimension>
-  inline typename QuantityVector<TDimension>::quantity_type
-  QuantityVector<TDimension>::operator[](size_t const index) const {
+  inline typename QuantityVector<TDimension>::quantity_type QuantityVector<TDimension>::
+  operator[](size_t const index) const {
     return quantity_type(phys::units::detail::magnitude_tag, eigenVector_[index]);
   }
 
@@ -145,7 +145,7 @@ namespace corsika {
 
   template <typename TDimension>
   inline std::ostream& operator<<(std::ostream& os,
-                                  corsika::QuantityVector<TDimension> const qv) {
+                                  corsika::QuantityVector<TDimension> const& qv) {
     using quantity_type = phys::units::quantity<TDimension, double>;
 
     os << '(' << qv.eigenVector_(0) << ' ' << qv.eigenVector_(1) << ' '

@@ -9,32 +9,34 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/PhysicalGeometry.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+
+#include <string>
 
 namespace corsika {
 
   class Plane {
 
-    ///! \todo move to PhysicalUnits
-    using DimLessVec = Vector<dimensionless_d>;
-
   public:
-    Plane(Point const& vCenter, DimLessVec const& vNormal)
+    Plane(Point const& vCenter, DirectionVector const& vNormal)
         : center_(vCenter)
         , normal_(vNormal.normalized()) {}
 
     bool isAbove(Point const& vP) const;
 
-    LengthType getDistanceTo(corsika::Point const& vP) const;
+    LengthType getDistanceTo(Point const& vP) const;
 
     Point const& getCenter() const;
 
-    DimLessVec const& getNormal() const;
+    DirectionVector const& getNormal() const;
+
+    std::string asString() const;
 
   public:
     Point const center_;
-    DimLessVec const normal_;
+    DirectionVector const normal_;
   };
 
 } // namespace corsika

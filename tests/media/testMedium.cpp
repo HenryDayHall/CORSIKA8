@@ -101,7 +101,8 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   auto const tEnd = 1_s;
 
   // and the associated trajectory
-  setup::Trajectory const trajectory(line, tEnd);
+  setup::Trajectory const trajectory =
+      corsika::setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
   CHECK((medium.getIntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));

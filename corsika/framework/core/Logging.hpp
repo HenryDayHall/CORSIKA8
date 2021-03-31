@@ -35,9 +35,9 @@
 // if this is a Debug build, include debug messages in objects
 #ifdef DEBUG
 // trace is the highest level of logging (ALL messages will be printed)
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #else // otherwise, remove everything but "error" and worse messages
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
 #endif
 
 #include <spdlog/fmt/ostr.h> // will output whenerver a streaming operator is found
@@ -50,6 +50,7 @@ namespace corsika {
    * The default pattern for CORSIKA8 loggers.
    */
   const std::string default_pattern{"[%n:%^%-8l%$] %v"};
+  const std::string source_pattern{"[%n:%^%-8l%$(%s:%!:%#)] %v"};
 
   /**
    * Create a new C8-style logger.

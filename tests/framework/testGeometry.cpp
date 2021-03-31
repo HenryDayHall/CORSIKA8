@@ -26,18 +26,20 @@ using namespace corsika::testing;
 
 double constexpr absMargin = 1.0e-8;
 
-TEST_CASE("transformations between CoordinateSystems") {
+TEST_CASE("Geometry CoordinateSystems") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+  corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
 
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
   QuantityVector<length_d> const coordinates{0_m, 0_m, 0_m};
   Point p1(rootCS, coordinates);
+  CORSIKA_LOG_INFO("Point p1={}", p1);
 
   QuantityVector<magnetic_flux_density_d> components{1. * tesla, 0. * tesla, 0. * tesla};
   Vector<magnetic_flux_density_d> v1(rootCS, components);
+  CORSIKA_LOG_INFO("Vector<magnetic_flux_density_d> v1={}", v1);
 
   CHECK((p1.getCoordinates() - coordinates).getNorm().magnitude() ==
         Approx(0).margin(absMargin));
@@ -46,6 +48,7 @@ TEST_CASE("transformations between CoordinateSystems") {
 
   SECTION("translations") {
     QuantityVector<length_d> const translationVector{0_m, 4_m, 0_m};
+    CORSIKA_LOG_INFO("QuantityVector<length_d> translationVector={}", translationVector);
 
     CoordinateSystemPtr translatedCS = make_translation(rootCS, translationVector);
 
@@ -184,7 +187,7 @@ TEST_CASE("transformations between CoordinateSystems") {
   }
 }
 
-TEST_CASE("CoordinateSystem hirarchy") {
+TEST_CASE("Geometry CoordinateSystem-hirarchy") {
 
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
@@ -232,7 +235,7 @@ TEST_CASE("CoordinateSystem hirarchy") {
   CHECK((p1 - p6).getNorm().magnitude() == Approx(0).margin(absMargin));
 }
 
-TEST_CASE("Sphere") {
+TEST_CASE("Geometry Sphere") {
   CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
   Point center(rootCS, {0_m, 3_m, 4_m});
   Sphere sphere(center, 5_m);
@@ -251,7 +254,7 @@ TEST_CASE("Sphere") {
   }
 }
 
-TEST_CASE("Trajectories") {
+TEST_CASE("Geometry Trajectories") {
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});
 

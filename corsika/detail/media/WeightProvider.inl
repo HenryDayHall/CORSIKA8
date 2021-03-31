@@ -13,19 +13,19 @@
 namespace corsika {
 
   template <class AConstIterator, class BConstIterator>
-  WeightProviderIterator<AConstIterator, BConstIterator>::WeightProviderIterator(
+  inline WeightProviderIterator<AConstIterator, BConstIterator>::WeightProviderIterator(
       AConstIterator a, BConstIterator b)
       : aIter_(a)
       , bIter_(b) {}
 
   template <class AConstIterator, class BConstIterator>
-  typename WeightProviderIterator<AConstIterator, BConstIterator>::value_type
-  WeightProviderIterator<AConstIterator, BConstIterator>::operator*() const {
+  inline typename WeightProviderIterator<AConstIterator, BConstIterator>::value_type
+      WeightProviderIterator<AConstIterator, BConstIterator>::operator*() const {
     return ((*aIter_) * (*bIter_)).magnitude();
   }
 
   template <class AConstIterator, class BConstIterator>
-  WeightProviderIterator<AConstIterator, BConstIterator>&
+  inline WeightProviderIterator<AConstIterator, BConstIterator>&
   WeightProviderIterator<AConstIterator,
                          BConstIterator>::operator++() { // prefix ++
     ++aIter_;
@@ -34,13 +34,13 @@ namespace corsika {
   }
 
   template <class AConstIterator, class BConstIterator>
-  bool WeightProviderIterator<AConstIterator, BConstIterator>::operator==(
+  inline bool WeightProviderIterator<AConstIterator, BConstIterator>::operator==(
       WeightProviderIterator other) {
     return aIter_ == other.aIter_;
   }
 
   template <class AConstIterator, class BConstIterator>
-  bool WeightProviderIterator<AConstIterator, BConstIterator>::operator!=(
+  inline bool WeightProviderIterator<AConstIterator, BConstIterator>::operator!=(
       WeightProviderIterator other) {
     return !(*this == other);
   }

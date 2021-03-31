@@ -19,7 +19,16 @@
 #include <string>
 #include <cstdlib>
 #include <experimental/filesystem>
-#include <iostream>
+
+/*
+  NOTE, WARNING, ATTENTION
+
+  The sibyll/Random.hpp implements the hook of sibyll to the C8 random
+  number generator. It has to occur excatly ONCE per linked
+  executable. If you include the header below in multiple "tests" and
+  link them togehter, it will fail.
+ */
+#include <corsika/modules/qgsjetII/Random.hpp>
 
 using namespace corsika;
 
@@ -49,10 +58,11 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
     CHECK(data != 0);
     CHECK(std::experimental::filesystem::is_directory(
         std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
-    std::cout << "data: " << data << " isDir: "
-              << std::experimental::filesystem::is_directory(std::string(data) +
-                                                             "/QGSJetII")
-              << std::endl;
+    CORSIKA_LOG_INFO(
+        "data: {}"
+        " isDir: {}"
+        "/QGSJetII",
+        data, std::experimental::filesystem::is_directory(std::string(data)));
   }
 }
 

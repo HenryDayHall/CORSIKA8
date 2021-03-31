@@ -24,7 +24,7 @@ class Process1 : public ContinuousProcess<Process1> {
 public:
   Process1() {}
   template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&) const {
+  ProcessReturn doContinuous(D& d, T&, bool const) const {
     for (int i = 0; i < nData; ++i) d.p[i] += 1;
     return ProcessReturn::Ok;
   }
@@ -35,7 +35,7 @@ public:
   Process2() {}
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&, bool const) const {
     for (int i = 0; i < nData; ++i) d.p[i] -= 0.1 * i;
     return ProcessReturn::Ok;
   }
@@ -46,7 +46,7 @@ public:
   Process3() {}
 
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D&, T&) const {
+  inline ProcessReturn doContinuous(D&, T&, bool const) const {
     return ProcessReturn::Ok;
   }
 };
@@ -56,7 +56,7 @@ public:
   Process4(const double v)
       : fV(v) {}
   template <typename D, typename T>
-  inline ProcessReturn doContinuous(D& d, T&) const {
+  inline ProcessReturn doContinuous(D& d, T&, bool const) const {
     for (int i = 0; i < nData; ++i) d.p[i] *= fV;
     return ProcessReturn::Ok;
   }
@@ -90,7 +90,7 @@ void modular() {
 
   const int nEv = 10;
   for (int iEv = 0; iEv < nEv; ++iEv) {
-    sequence.doContinuous(particle, track);
+    sequence.doContinuous(particle, track, ContinuousProcessIndex(0));
     for (int i = 0; i < nData; ++i) {
       check[i] += 1. - 0.1 * i;
       check[i] *= 1.5;

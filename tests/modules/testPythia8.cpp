@@ -27,8 +27,6 @@ TEST_CASE("Pythia", "[processes]") {
 
   SECTION("linking pythia") {
     using namespace Pythia8;
-    using std::cout;
-    using std::endl;
 
     // Generator. Process selection. LHC initialization. Histogram.
     Pythia pythia;
@@ -50,15 +48,15 @@ TEST_CASE("Pythia", "[processes]") {
     event.append(321, 1, 0, 0, 0., 0., 100., sqrt(pz * pz + m * m), m);
 
     if (!pythia.next())
-      cout << "decay failed!" << endl;
+      CORSIKA_LOG_CRITICAL("decay failed!");
     else
-      cout << "particles after decay: " << event.size() << endl;
+      CORSIKA_LOG_DEBUG("particles after decay: {}", event.size());
     event.list();
 
     // loop over final state
     for (int i = 0; i < pythia.event.size(); ++i)
       if (pythia.event[i].isFinal()) {
-        cout << "particle: id=" << pythia.event[i].id() << endl;
+        CORSIKA_LOG_DEBUG("particle: id= {}", pythia.event[i].id());
       }
   }
 
@@ -94,7 +92,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("pythia process") {
+TEST_CASE("PythiaInterface", "[processes]") {
 
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
@@ -157,9 +155,11 @@ TEST_CASE("pythia process") {
 
   SECTION("pythia interaction") {
 
-    // feenableexcept(FE_INVALID); \todo how does this work nowadays
+    //! feenableexcept(FE_INVALID); \todo how does this work nowadays
+
+    // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        Code::Proton, 0, 0, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
@@ -167,6 +167,7 @@ TEST_CASE("pythia process") {
     corsika::pythia8::Interaction model;
     model.doInteraction(view);
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length / 1_kg * square(1_m) == Approx(82.2524));
+    CHECK(length / 1_kg * square(1_m) == Approx(43.04).margin(5e-1));
+    CHECK(view.getSize() == 38);
   }
 }

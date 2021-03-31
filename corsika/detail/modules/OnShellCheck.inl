@@ -14,8 +14,8 @@
 
 namespace corsika {
 
-  OnShellCheck::OnShellCheck(const double vMassTolerance, const double vEnergyTolerance,
-                             const bool vError)
+  inline OnShellCheck::OnShellCheck(double const vMassTolerance,
+                                    double const vEnergyTolerance, bool const vError)
       : mass_tolerance_(vMassTolerance)
       , energy_tolerance_(vEnergyTolerance)
       , throw_error_(vError) {
@@ -25,7 +25,7 @@ namespace corsika {
                          energy_tolerance_ * 100);
   }
 
-  OnShellCheck::~OnShellCheck() {
+  inline OnShellCheck::~OnShellCheck() {
     logger_->info(
         " summary \n"
         " particles shifted: {} \n"
@@ -35,7 +35,7 @@ namespace corsika {
   }
 
   template <typename TView>
-  void OnShellCheck::doSecondaries(TView& vS) {
+  inline void OnShellCheck::doSecondaries(TView& vS) {
     for (auto& p : vS) {
       auto const pid = p.getPID();
       if (is_nucleus(pid)) continue;
@@ -70,16 +70,18 @@ namespace corsika {
         if (abs(e_shift_relative) > energy_tolerance_) {
           logger_->warn("warning! shifted particle energy by {} %",
                         e_shift_relative * 100);
-          if (throw_error_)
+          if (throw_error_) {
             throw std::runtime_error(
                 "OnShellCheck: error! shifted energy by large amount!");
+          }
         }
 
         // reset energy
         p.setEnergy(e_shifted);
-      } else
+      } else {
         CORSIKA_LOGGER_DEBUG(logger_, "particle mass for {} OK", pid);
+      }
     }
-  }
+  } // namespace corsika
 
 } // namespace corsika

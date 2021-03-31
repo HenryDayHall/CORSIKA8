@@ -17,7 +17,7 @@
 
 namespace corsika::pythia8 {
 
-  class Decay : public DecayProcess<Decay> {
+  class Decay : public DecayProcess<Decay>, public Pythia8::Pythia {
 
   public:
     Decay(bool const print_listing = false);
@@ -59,7 +59,6 @@ namespace corsika::pythia8 {
     void setStable(Code const);
 
     // data members
-    Pythia8::Pythia pythia_;
     int count_ = 0;
     bool handleAllDecays_ = true;
     std::set<Code> handledDecays_;

@@ -13,12 +13,12 @@
 namespace corsika {
 
   template <typename TDerived>
-  auto const& LinearApproximationIntegrator<TDerived>::getImplementation() const {
+  inline auto const& LinearApproximationIntegrator<TDerived>::getImplementation() const {
     return *static_cast<TDerived const*>(this);
   }
 
   template <typename TDerived>
-  auto LinearApproximationIntegrator<TDerived>::getIntegrateGrammage(
+  inline auto LinearApproximationIntegrator<TDerived>::getIntegrateGrammage(
       setup::Trajectory const& line, LengthType length) const {
     auto const c0 = getImplementation().evaluateAt(line.getPosition(0));
     auto const c1 = getImplementation().rho_.getFirstDerivative(line.getPosition(0),
@@ -27,7 +27,7 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  auto LinearApproximationIntegrator<TDerived>::getArclengthFromGrammage(
+  inline auto LinearApproximationIntegrator<TDerived>::getArclengthFromGrammage(
       setup::Trajectory const& line, GrammageType grammage) const {
     auto const c0 = getImplementation().rho_(line.getPosition(0));
     auto const c1 = getImplementation().rho_.getFirstDerivative(line.getPosition(0),
@@ -37,7 +37,7 @@ namespace corsika {
   }
 
   template <typename TDerived>
-  auto LinearApproximationIntegrator<TDerived>::getMaximumLength(
+  inline auto LinearApproximationIntegrator<TDerived>::getMaximumLength(
       setup::Trajectory const& line, [[maybe_unused]] double relError) const {
     [[maybe_unused]] auto const c1 = getImplementation().rho_.getSecondDerivative(
         line.getPosition(0), line.getDirection(0));

@@ -36,7 +36,7 @@ namespace corsika {
         : min_(other.getMin())
         , max_(other.getMax()) {}
 
-    inline UniformRealDistribution<value_type>& operator=(
+    UniformRealDistribution<value_type>& operator=(
         UniformRealDistribution<value_type> const& other) {
       if (this == &other) return *this;
       min_ = other.getMin();
@@ -52,7 +52,7 @@ namespace corsika {
      * @post
      * @return quantity_type
      */
-    inline value_type getMax() const { return max_; }
+    value_type getMax() const { return max_; }
 
     /**
      * @fn void setMax(quantity_type)
@@ -62,7 +62,7 @@ namespace corsika {
      * @post
      * @param vMax
      */
-    inline void setMax(value_type const& pmax) { max_ = pmax; }
+    void setMax(value_type const& pmax) { max_ = pmax; }
 
     /**
      * @fn quantity_type getMin()const
@@ -72,7 +72,7 @@ namespace corsika {
      * @post
      * @return
      */
-    inline value_type getMin() const { return min_; }
+    value_type getMin() const { return min_; }
 
     /**
      * @fn void setMin(quantity_type)
@@ -82,7 +82,7 @@ namespace corsika {
      * @post
      * @param vMin
      */
-    inline void setMin(value_type const& pmin) { min_ = pmin; }
+    void setMin(value_type const& pmin) { min_ = pmin; }
 
     /**
      * @fn quantity_type operator ()(Generator&)
@@ -95,7 +95,7 @@ namespace corsika {
      * @return quantity_type
      */
     template <class Generator>
-    inline value_type operator()(Generator& g) {
+    value_type operator()(Generator& g) {
       return min_ + dist_(g) * (max_ - min_);
     }
 

@@ -29,15 +29,14 @@ namespace corsika {
         : geoVolume_(std::move(pVolume)) {}
 
     //! convenience function equivalent to Volume::isInside
-    inline bool contains(Point const& p) const;
+    bool contains(Point const& p) const;
 
-    inline VolumeTreeNode<IModelProperties> const* excludes(Point const& p) const;
+    VolumeTreeNode<IModelProperties> const* excludes(Point const& p) const;
 
     /** returns a pointer to the sub-VolumeTreeNode which is "responsible" for the given
      * \class Point \p p, or nullptr iff \p p is not contained in this volume.
      */
-    inline VolumeTreeNode<IModelProperties> const* getContainingNode(
-        Point const& p) const;
+    VolumeTreeNode<IModelProperties> const* getContainingNode(Point const& p) const;
 
     /**
      * Traverses the VolumeTree pre- or post-order and calls the functor  \p func for each
@@ -45,33 +44,33 @@ namespace corsika {
      * func is ignored.
      */
     template <typename TCallable, bool preorder = true>
-    inline void walk(TCallable func);
+    void walk(TCallable func);
 
-    inline void addChild(VTNUPtr pChild);
+    void addChild(VTNUPtr pChild);
 
-    inline void excludeOverlapWith(VTNUPtr const& pNode);
+    void excludeOverlapWith(VTNUPtr const& pNode);
 
-    inline VTN_type const* getParent() const { return parentNode_; };
+    VTN_type const* getParent() const { return parentNode_; };
 
-    inline auto const& getChildNodes() const { return childNodes_; }
+    auto const& getChildNodes() const { return childNodes_; }
 
-    inline auto const& getExcludedNodes() const { return excludedNodes_; }
+    auto const& getExcludedNodes() const { return excludedNodes_; }
 
-    inline auto const& getVolume() const { return *geoVolume_; }
+    auto const& getVolume() const { return *geoVolume_; }
 
-    inline auto const& getModelProperties() const { return *modelProperties_; }
+    auto const& getModelProperties() const { return *modelProperties_; }
 
-    inline bool hasModelProperties() const { return modelProperties_.get() != nullptr; }
+    bool hasModelProperties() const { return modelProperties_.get() != nullptr; }
 
     template <typename ModelProperties, typename... Args>
-    inline auto setModelProperties(Args&&... args) {
+    auto setModelProperties(Args&&... args) {
       // static_assert(std::is_base_of_v<IModelProperties, ModelProperties>,
       //            "unusable type provided");
       modelProperties_ = std::make_shared<ModelProperties>(std::forward<Args>(args)...);
       return modelProperties_;
     }
 
-    inline void setModelProperties(IMPSharedPtr ptr) { modelProperties_ = ptr; }
+    void setModelProperties(IMPSharedPtr ptr) { modelProperties_ = ptr; }
 
     // template <class MediumType, typename... Args>
     // static auto createMedium(Args&&... args);

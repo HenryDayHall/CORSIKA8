@@ -14,17 +14,17 @@ namespace corsika {
 
   template <typename T>
   template <typename... Args>
-  UniformRefractiveIndex<T>::UniformRefractiveIndex(double const n, Args&&... args)
+  inline UniformRefractiveIndex<T>::UniformRefractiveIndex(double const n, Args&&... args)
       : T(std::forward<Args>(args)...)
       , n_(n) {}
 
   template <typename T>
-  double UniformRefractiveIndex<T>::getRefractiveIndex(Point const&) const {
+  inline double UniformRefractiveIndex<T>::getRefractiveIndex(Point const&) const {
     return n_;
   }
 
   template <typename T>
-  void UniformRefractiveIndex<T>::setRefractiveIndex(double const& n) {
+  inline void UniformRefractiveIndex<T>::setRefractiveIndex(double const& n) {
     n_ = n;
   }
 

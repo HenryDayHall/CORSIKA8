@@ -43,7 +43,17 @@ namespace corsika {
   public:
     BetheBlochPDG(ShowerAxis const& showerAxis);
 
-    ProcessReturn doContinuous(setup::Stack::particle_type&, setup::Trajectory const&);
+    /** clang-format-off
+     * Interface function of ContinuousProcess.
+     *
+     * \param particle The particle to process in its current state
+     * \param track The trajectory in space of this particle, on which doContinuous should
+     *        act
+     * \param limitFlag flag to identify, if BetheBlochPDG::getMaxStepLength is the
+     *        globally limiting factor (or not)
+     clang-format-on **/
+    ProcessReturn doContinuous(setup::Stack::particle_type& particle,
+                               setup::Trajectory const& track, bool const limitFlag);
     LengthType getMaxStepLength(setup::Stack::particle_type const&,
                                 setup::Trajectory const&)
         const; //! limited by the energy threshold! By default the limit is the particle

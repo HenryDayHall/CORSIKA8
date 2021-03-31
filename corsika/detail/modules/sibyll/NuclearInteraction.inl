@@ -27,8 +27,8 @@
 namespace corsika::sibyll {
 
   template <typename TEnvironment>
-  NuclearInteraction<TEnvironment>::NuclearInteraction(sibyll::Interaction& hadint,
-                                                       TEnvironment const& env)
+  inline NuclearInteraction<TEnvironment>::NuclearInteraction(sibyll::Interaction& hadint,
+                                                              TEnvironment const& env)
       : environment_(env)
       , hadronicInteraction_(hadint) {
 
@@ -49,12 +49,12 @@ namespace corsika::sibyll {
   }
 
   template <typename TEnvironment>
-  NuclearInteraction<TEnvironment>::~NuclearInteraction() {
+  inline NuclearInteraction<TEnvironment>::~NuclearInteraction() {
     CORSIKA_LOG_DEBUG("Nuclib::NuclearInteraction n={} Nnuc={}", count_, nucCount_);
   }
 
   template <typename TEnvironment>
-  void NuclearInteraction<TEnvironment>::printCrossSectionTable(Code pCode) {
+  inline void NuclearInteraction<TEnvironment>::printCrossSectionTable(Code pCode) {
     const int k = targetComponentsIndex_.at(pCode);
     Code pNuclei[] = {Code::Helium, Code::Lithium7, Code::Oxygen,
                       Code::Neon,   Code::Argon,    Code::Iron};
@@ -79,7 +79,7 @@ namespace corsika::sibyll {
   }
 
   template <typename TEnvironment>
-  void NuclearInteraction<TEnvironment>::initializeNuclearCrossSections() {
+  inline void NuclearInteraction<TEnvironment>::initializeNuclearCrossSections() {
 
     auto& universe = *(environment_.getUniverse());
 
@@ -143,7 +143,7 @@ namespace corsika::sibyll {
   }
 
   template <typename TEnvironment>
-  CrossSectionType NuclearInteraction<TEnvironment>::readCrossSectionTable(
+  inline CrossSectionType NuclearInteraction<TEnvironment>::readCrossSectionTable(
       const int ia, Code pTarget, HEPEnergyType elabnuc) {
 
     const int ib = targetComponentsIndex_.at(pTarget) + 1; // table index in fortran
@@ -161,9 +161,8 @@ namespace corsika::sibyll {
   // TODO: remove elastic cross section?
   template <typename TEnvironment>
   template <typename TParticle>
-  std::tuple<CrossSectionType, CrossSectionType>
-  NuclearInteraction<TEnvironment>::getCrossSection(TParticle const& projectile,
-                                                    Code const TargetId) {
+  std::tuple<CrossSectionType, CrossSectionType> inline NuclearInteraction<
+      TEnvironment>::getCrossSection(TParticle const& projectile, Code const TargetId) {
 
     if (projectile.getPID() != Code::Nucleus)
       throw std::runtime_error(
@@ -203,7 +202,7 @@ namespace corsika::sibyll {
 
   template <typename TEnvironment>
   template <typename TParticle>
-  GrammageType NuclearInteraction<TEnvironment>::getInteractionLength(
+  inline GrammageType NuclearInteraction<TEnvironment>::getInteractionLength(
       TParticle const& projectile) {
 
     // coordinate system, get global frame of reference
@@ -240,7 +239,7 @@ namespace corsika::sibyll {
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.getNorm();
     // calculate cm. energy
-    HEPEnergyType const ECoM = sqrt(
+    [[maybe_unused]] HEPEnergyType const ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
     auto const ECoMNN = sqrt(2. * ElabNuc * constants::nucleonMass);
     CORSIKA_LOG_DEBUG(
@@ -310,7 +309,7 @@ namespace corsika::sibyll {
 
   template <typename TEnvironment>
   template <typename TSecondaryView>
-  void NuclearInteraction<TEnvironment>::doInteraction(TSecondaryView& view) {
+  inline void NuclearInteraction<TEnvironment>::doInteraction(TSecondaryView& view) {
 
     auto projectile = view.getProjectile();
 
@@ -577,7 +576,7 @@ namespace corsika::sibyll {
     }
 
     // add inelastic interactions
-    std::cout << "calculate inelastic nucleon-nucleon interactions.." << std::endl;
+    CORSIKA_LOG_DEBUG("calculate inelastic nucleon-nucleon interactions..");
     for (int j = 0; j < nInelNucleons; ++j) {
       // TODO: sample neutron or proton
       auto pCode = Code::Proton;

@@ -88,7 +88,7 @@ namespace corsika {
   }
 
   template <typename TDimension>
-  void Vector<TDimension>::rebase(CoordinateSystemPtr const& pCS) {
+  inline void Vector<TDimension>::rebase(CoordinateSystemPtr const& pCS) {
     BaseVector<TDimension>::setQuantityVector(QuantityVector<TDimension>(
         get_transformation(*BaseVector<TDimension>::getCoordinateSystem().get(),
                            *pCS.get())
@@ -110,7 +110,7 @@ namespace corsika {
 
   template <typename TDimension>
   template <typename TDimension2>
-  auto Vector<TDimension>::getParallelProjectionOnto(
+  inline auto Vector<TDimension>::getParallelProjectionOnto(
       Vector<TDimension2> const& pVec, CoordinateSystemPtr const& pCS) const {
     auto const ourCompVec = getComponents(pCS);
     auto const otherCompVec = pVec.getComponents(pCS);
@@ -123,34 +123,36 @@ namespace corsika {
 
   template <typename TDimension>
   template <typename TDimension2>
-  auto Vector<TDimension>::getParallelProjectionOnto(
+  inline auto Vector<TDimension>::getParallelProjectionOnto(
       Vector<TDimension2> const& pVec) const {
     return getParallelProjectionOnto<TDimension2>(
         pVec, BaseVector<TDimension>::getCoordinateSystem());
   }
 
   template <typename TDimension>
-  Vector<TDimension> Vector<TDimension>::operator+(Vector<TDimension> const& pVec) const {
+  inline Vector<TDimension> Vector<TDimension>::operator+(
+      Vector<TDimension> const& pVec) const {
     CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
     auto const components = getComponents(cs) + pVec.getComponents(cs);
     return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(), components);
   }
 
   template <typename TDimension>
-  Vector<TDimension> Vector<TDimension>::operator-(Vector<TDimension> const& pVec) const {
+  inline Vector<TDimension> Vector<TDimension>::operator-(
+      Vector<TDimension> const& pVec) const {
     CoordinateSystemPtr const& cs = BaseVector<TDimension>::getCoordinateSystem();
     return Vector<TDimension>(cs, getComponents() - pVec.getComponents(cs));
   }
 
   template <typename TDimension>
-  auto& Vector<TDimension>::operator*=(double const p) {
+  inline auto& Vector<TDimension>::operator*=(double const p) {
     BaseVector<TDimension>::getQuantityVector() *= p;
     return *this;
   }
 
   template <typename TDimension>
   template <typename TScalarDim>
-  auto Vector<TDimension>::operator*(
+  inline auto Vector<TDimension>::operator*(
       phys::units::quantity<TScalarDim, double> const p) const {
     using ProdDim = phys::units::detail::product_d<TDimension, TScalarDim>;
 
@@ -160,51 +162,51 @@ namespace corsika {
 
   template <typename TDimension>
   template <typename TScalarDim>
-  auto Vector<TDimension>::operator/(
+  inline auto Vector<TDimension>::operator/(
       phys::units::quantity<TScalarDim, double> const p) const {
     return (*this) * (1 / p);
   }
 
   template <typename TDimension>
-  auto Vector<TDimension>::operator*(double const p) const {
+  inline auto Vector<TDimension>::operator*(double const p) const {
     return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(),
                               BaseVector<TDimension>::getQuantityVector() * p);
   }
 
   template <typename TDimension>
-  auto Vector<TDimension>::operator/(double const p) const {
+  inline auto Vector<TDimension>::operator/(double const p) const {
     return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(),
                               BaseVector<TDimension>::getQuantityVector() / p);
   }
 
   template <typename TDimension>
-  auto& Vector<TDimension>::operator+=(Vector<TDimension> const& pVec) {
+  inline auto& Vector<TDimension>::operator+=(Vector<TDimension> const& pVec) {
     BaseVector<TDimension>::getQuantityVector() +=
         pVec.getComponents(BaseVector<TDimension>::getCoordinateSystem());
     return *this;
   }
 
   template <typename TDimension>
-  auto& Vector<TDimension>::operator-=(Vector<TDimension> const& pVec) {
+  inline auto& Vector<TDimension>::operator-=(Vector<TDimension> const& pVec) {
     BaseVector<TDimension>::getQuantityVector() -=
         pVec.getComponents(BaseVector<TDimension>::getCoordinateSystem());
     return *this;
   }
 
   template <typename TDimension>
-  auto& Vector<TDimension>::operator-() const {
+  inline auto& Vector<TDimension>::operator-() const {
     return Vector<TDimension>(BaseVector<TDimension>::getCoordinateSystem(),
                               -BaseVector<TDimension>::getQuantityVector());
   }
 
   template <typename TDimension>
-  auto Vector<TDimension>::normalized() const {
+  inline auto Vector<TDimension>::normalized() const {
     return (*this) * (1 / getNorm());
   }
 
   template <typename TDimension>
   template <typename TDimension2>
-  auto Vector<TDimension>::cross(Vector<TDimension2> const& pV) const {
+  inline auto Vector<TDimension>::cross(Vector<TDimension2> const& pV) const {
     auto const c1 = getComponents().eigenVector_;
     auto const c2 =
         pV.getComponents(BaseVector<TDimension>::getCoordinateSystem()).eigenVector_;
@@ -216,7 +218,7 @@ namespace corsika {
 
   template <typename TDimension>
   template <typename TDimension2>
-  auto Vector<TDimension>::dot(Vector<TDimension2> const& pV) const {
+  inline auto Vector<TDimension>::dot(Vector<TDimension2> const& pV) const {
     auto const c1 = getComponents().eigenVector_;
     auto const c2 =
         pV.getComponents(BaseVector<TDimension>::getCoordinateSystem()).eigenVector_;
@@ -226,6 +228,14 @@ namespace corsika {
 
     return phys::units::quantity<ProdDim, double>(phys::units::detail::magnitude_tag,
                                                   bareResult);
+  }
+
+  template <typename TDimension>
+  inline std::ostream& operator<<(std::ostream& os,
+                                  corsika::Vector<TDimension> const& v) {
+    auto const& qv = v.getComponents();
+    os << qv << " (ref:" << fmt::ptr(v.getCoordinateSystem()) << ")";
+    return os;
   }
 
 } // namespace corsika

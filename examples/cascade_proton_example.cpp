@@ -90,7 +90,7 @@ int main() {
   stack.clear();
   const Code beamCode = Code::Proton;
   const HEPMassType mass = Proton::mass;
-  const HEPEnergyType E0 = 100_GeV;
+  const HEPEnergyType E0 = 1000_GeV;
   double theta = 0.;
   double phi = 0.;
 

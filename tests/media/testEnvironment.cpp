@@ -301,3 +301,105 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
                                      .getMagneticField(pTest2)
                                      .getComponents(gCS));
 }
+
+TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
+  // setup environment, geometry
+  Point const center{gCS, 0_m, 0_m, 0_m};
+
+  // setup our interface types
+  auto builder = make_layered_spherical_atmosphere_builder<>::create(
+      center, constants::EarthRadius::Mean);
+
+  builder.setNuclearComposition(
+      {{Code::Nitrogen, Code::Oxygen},
+       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
+
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km);
+
+  Environment<IMediumModel> env;
+  builder.assemble(env);
+
+  typedef typename Environment<IMediumModel>::BaseNodeType::VTN_type node_type;
+  node_type const* universe = env.getUniverse().get();
+
+  // far out ther is the universe
+  CHECK(universe->getContainingNode(Point(gCS, {10000_km, 0_m, 0_m})) == universe);
+  CHECK(universe->getContainingNode(Point(gCS, {0_m, 10000_km, 0_m})) == universe);
+
+  // at 112.8km there is transition to atmosphere
+  CHECK(universe->getContainingNode(
+            Point(gCS, {constants::EarthRadius::Mean + 112.8_km + 1_cm, 0_m, 0_m})) ==
+        universe);
+  CHECK(universe->getContainingNode(
+            Point(gCS, {0_m, constants::EarthRadius::Mean + 112.8_km + 1_cm, 0_m})) ==
+        universe);
+
+  // check layer transition at 112.8km
+
+  node_type const* layer1_not_yet = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 112.8_km + 1_cm, 0_m, 0_m}));
+  node_type const* layer1 = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 112.8_km - 1_cm, 0_m, 0_m}));
+  node_type const* layer1_also = universe->getContainingNode(
+      Point(gCS, {0_m, constants::EarthRadius::Mean + 112.8_km - 1_cm, 0_m}));
+
+  CHECK(layer1_not_yet == universe);
+  CHECK(layer1 != universe);
+  CHECK(layer1 == layer1_also);
+
+  // check layer transition at 100km
+
+  node_type const* layer2_not_yet = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 100_km + 1_cm, 0_m, 0_m}));
+  node_type const* layer2 = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 100_km - 1_cm, 0_m, 0_m}));
+  node_type const* layer2_also = universe->getContainingNode(
+      Point(gCS, {0_m, constants::EarthRadius::Mean + 100_km - 1_cm, 0_m}));
+
+  CHECK(layer2_not_yet == layer1);
+  CHECK(layer2 != layer1);
+  CHECK(layer2 == layer2_also);
+
+  // check layer transition at 40km
+
+  node_type const* layer3_not_yet = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 40_km + 1_cm, 0_m, 0_m}));
+  node_type const* layer3 = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 40_km - 1_cm, 0_m, 0_m}));
+  node_type const* layer3_also = universe->getContainingNode(
+      Point(gCS, {0_m, constants::EarthRadius::Mean + 40_km - 1_cm, 0_m}));
+
+  CHECK(layer3_not_yet == layer2);
+  CHECK(layer3 != layer2);
+  CHECK(layer3 == layer3_also);
+
+  // check layer transition at 10km
+
+  node_type const* layer4_not_yet = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 10_km + 1_cm, 0_m, 0_m}));
+  node_type const* layer4 = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 10_km - 1_cm, 0_m, 0_m}));
+  node_type const* layer4_also = universe->getContainingNode(
+      Point(gCS, {0_m, constants::EarthRadius::Mean + 10_km - 1_cm, 0_m}));
+
+  CHECK(layer4_not_yet == layer3);
+  CHECK(layer4 != layer3);
+  CHECK(layer4 == layer4_also);
+
+  // check layer transition at 4km
+
+  node_type const* layer5_not_yet = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 4_km + 1_cm, 0_m, 0_m}));
+  node_type const* layer5 = universe->getContainingNode(
+      Point(gCS, {constants::EarthRadius::Mean + 4_km - 1_cm, 0_m, 0_m}));
+  node_type const* layer5_also = universe->getContainingNode(
+      Point(gCS, {0_m, constants::EarthRadius::Mean + 4_km - 1_cm, 0_m}));
+
+  CHECK(layer5_not_yet == layer4);
+  CHECK(layer5 != layer4);
+  CHECK(layer5 == layer5_also);
+}
