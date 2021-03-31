@@ -11,31 +11,31 @@
 namespace corsika {
 
   ObservationPlaneWriterParquet::ObservationPlaneWriterParquet()
-      : ParquetStreamer(){}
+      : output_() {}
 
   void ObservationPlaneWriterParquet::startOfLibrary(
       std::filesystem::path const& directory) {
 
     // setup the streamer
-    initStreamer((directory / "particles.parquet").string());
+    output_.initStreamer((directory / "particles.parquet").string());
 
     // build the schema
-    addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
-             parquet::ConvertedType::INT_32);
-    addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-             parquet::ConvertedType::NONE);
-    addField("x", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-             parquet::ConvertedType::NONE);
-    addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-             parquet::ConvertedType::NONE);
+    output_.addField("pdg", parquet::Repetition::REQUIRED, parquet::Type::INT32,
+                     parquet::ConvertedType::INT_32);
+    output_.addField("energy", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("x", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
 
     // and build the streamer
-    buildStreamer();
+    output_.buildStreamer();
   }
 
   void ObservationPlaneWriterParquet::endOfShower() { ++shower_; }
 
-  void ObservationPlaneWriterParquet::endOfLibrary() { closeStreamer(); }
+  void ObservationPlaneWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
   void ObservationPlaneWriterParquet::write(Code const& pid,
                                             units::si::HEPEnergyType const& energy,
@@ -44,12 +44,10 @@ namespace corsika {
     using namespace units::si;
 
     // write the next row - we must write `shower_` first.
-    (*writer_) << shower_
-               << static_cast<int>(get_PDG(pid))
-               << static_cast<float>(energy / 1_eV)
-               << static_cast<float>(x / 1_m)
-               << static_cast<float>(y / 1_m)
-               << parquet::EndRow;
+    *(output_.getWriter()) << shower_ << static_cast<int>(get_PDG(pid))
+                           << static_cast<float>(energy / 1_GeV)
+                           << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
+                           << parquet::EndRow;
   }
 
 } // namespace corsika

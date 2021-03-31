@@ -47,4 +47,8 @@ namespace corsika {
     outfile_->Close();
   }
 
+  std::shared_ptr<parquet::StreamWriter> ParquetStreamer::getWriter() {
+    return writer_;
+  }
+
 } // namespace corsika

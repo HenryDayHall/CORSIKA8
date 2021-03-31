@@ -15,7 +15,9 @@
 
 namespace corsika {
 
-  class ObservationPlaneWriterParquet : public BaseOutput, private ParquetStreamer {
+  class ObservationPlaneWriterParquet : public BaseOutput {
+
+    ParquetStreamer output_; ///< The primary output file.
 
   public:
     /**
