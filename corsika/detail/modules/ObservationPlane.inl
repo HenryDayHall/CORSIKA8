@@ -6,10 +6,6 @@
  * the license.
  */
 
-#include <corsika/modules/ObservationPlane.hpp>
-
-#include <fstream>
-
 namespace corsika {
 
   template <typename TOutput>
@@ -43,8 +39,7 @@ namespace corsika {
     auto const displacement = trajectory.getPosition(1) - plane_.getCenter();
 
     // add our particles to the output file stream
-    this->write(particle.getPID(), energy,
-                displacement.dot(xAxis_),
+    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
                 displacement.dot(yAxis_));
 
     if (deleteOnHit_) {
@@ -160,6 +155,7 @@ namespace corsika {
 
     // basic info
     node["type"] = "ObservationPlane";
+    node["units"] = "m"; // add default units for values
 
     // the center of the plane
     auto const center{plane_.getCenter()};
@@ -169,7 +165,6 @@ namespace corsika {
     node["plane"]["center"].push_back(center_coords.getX() / 1_m);
     node["plane"]["center"].push_back(center_coords.getY() / 1_m);
     node["plane"]["center"].push_back(center_coords.getZ() / 1_m);
-    node["plane"]["center.units"] = "m";
 
     // the normal vector of the plane
     auto const normal{plane_.getNormal().getComponents()};
