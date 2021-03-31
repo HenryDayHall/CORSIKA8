@@ -15,9 +15,6 @@
 #include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
 
-#include <fstream>
-#include <string>
-
 namespace corsika {
 
   /**
@@ -42,6 +39,7 @@ namespace corsika {
     void reset();
     HEPEnergyType getEnergyGround() const { return energy_ground_; }
     YAML::Node getConfig() const;
+
   private:
     Plane const plane_;
     bool const deleteOnHit_;

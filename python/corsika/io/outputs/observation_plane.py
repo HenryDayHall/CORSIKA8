@@ -9,7 +9,7 @@
 """
 import logging
 import os.path as op
-from typing import Any, Dict
+from typing import Any
 
 import pyarrow.parquet as pq
 

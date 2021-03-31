@@ -21,7 +21,7 @@ namespace corsika {
 
   public:
     /**
-     * Write an observation plane to a directory.
+     * Construct an ObservationPlane.
      *
      * @param name    The name of this output.
      */

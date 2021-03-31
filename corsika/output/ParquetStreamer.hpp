@@ -1,3 +1,4 @@
+
 /*
  * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
  *
@@ -26,11 +27,11 @@ namespace corsika {
   class ParquetStreamer {
 
   protected:
-    std::shared_ptr<parquet::StreamWriter> writer_; ///< The stream writer to 'outfile'
-    parquet::WriterProperties::Builder builder_;    ///< The writer properties builder.
-    parquet::schema::NodeVector fields_;            ///< The fields in this file.
+    parquet::WriterProperties::Builder builder_; ///< The writer properties builder.
+    parquet::schema::NodeVector fields_;         ///< The fields in this file.
     std::shared_ptr<parquet::schema::GroupNode> schema_;   ///< The schema for this file.
     std::shared_ptr<arrow::io::FileOutputStream> outfile_; ///< The output file.
+    std::shared_ptr<parquet::StreamWriter> writer_; ///< The stream writer to 'outfile'
 
   public:
     /**
@@ -58,6 +59,11 @@ namespace corsika {
      * Finish writing this stream.
      */
     void closeStreamer();
+
+    /**
+     * Return a reference to the underlying writer.
+     */
+    std::shared_ptr<parquet::StreamWriter> getWriter();
 
   }; // class ParquetHelper
 } // namespace corsika
