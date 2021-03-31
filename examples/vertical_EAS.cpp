@@ -223,21 +223,23 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
+  // create the output manager that we then register outputs with
+  OutputManager output("vertical_EAS_outputs");
+
   ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
   corsika::proposal::Interaction proposal(env);
   corsika::proposal::ContinuousProcess em_continuous(env);
   InteractionCounter proposalCounted(proposal);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
-  TrackWriter trackWriter("tracks.dat");
+
+  TrackWriter trackWriter;
+  output.add("tracks", trackWriter); // register TrackWriter
 
   LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-
-  // create the output manager that we then register outputs with
-  OutputManager output("vertical_EAS_outputs");
 
   // register the observation plane with the output
   output.add("obsplane", observationLevel);
