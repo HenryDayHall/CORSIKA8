@@ -289,6 +289,7 @@ def gen_classes(media_db):
   **/
 
   class {cname} {{
+     /** @cond EXCLUDE_DOXY */
     public:
      static constexpr Medium medium() {{ return Medium::{cname}; }}
 
@@ -319,6 +320,7 @@ def gen_classes(media_db):
      {weight_significant_figure}, {weight_error_last_digit}, {Z_over_A},
      {sternheimer_density}, {corrected_density}, State::{state},
      MediumType::{type}, "{symbol}", {Ieff}, {Cbar}, {x0}, {x1}, {aa}, {sk}, {dlt0} }};
+     /** @endcond */
   }};
 
         """.format(cname=cname,

@@ -437,6 +437,7 @@ def gen_classes(particle_db):
             string += " *  - nuclear Z=" + str(particle_db[cname]['Z']) + "\n"        
         string += "*/\n\n"
         string += "class " + cname + " {\n"
+        string += "   /** @cond EXCLUDE_DOXY */ \n"
         string += "  public:\n"
         string += "   " + cname + "() = delete;\n"
         string += "   static constexpr Code code{Code::" + cname + "};\n"
@@ -451,6 +452,7 @@ def gen_classes(particle_db):
             string += "   static constexpr int nucleus_Z{corsika::get_nucleus_Z(code)};\n"
         string += " private:\n"
         string += "   static constexpr CodeIntType TypeIndex = static_cast<CodeIntType>(code);\n"
+        string += "   /** @endcond */ \n"
         string += "};\n"
 
     string += "  //! @}\n";

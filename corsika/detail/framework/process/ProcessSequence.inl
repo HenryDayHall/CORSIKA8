@@ -45,11 +45,13 @@ namespace corsika {
 
         // interface checking on TProcess1
         static_assert(
-            has_method_doBoundaryCrossing_v<TProcess1, ProcessReturn, TParticle&,
-                                            typename TParticle::node_type const&,
-                                            typename TParticle::node_type const&>,
+            has_method_doBoundaryCrossing_v<TProcess1, ProcessReturn, TParticle>,
+            //                                            typename TParticle::node_type
+            //                                            const&,
+            //                    typename TParticle::node_type const&>,
             "TDerived has no method with correct signature \"ProcessReturn "
-            "doBoundaryCrossing(TParticle&, VolumeNode&, VolumeNode&)\" required for "
+            "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
+            "required for "
             "BoundaryCrossingProcess<TDerived>. ");
       }
 
@@ -64,11 +66,13 @@ namespace corsika {
                                       process2_type>) {
         // interface checking on TProcess2
         static_assert(
-            has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle&,
-                                            typename TParticle::node_type const&,
-                                            typename TParticle::node_type const&>,
+            has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle&>,
+            //                                            typename TParticle::node_type
+            //                                            const&,
+            //                    typename TParticle::node_type const&>,
             "TDerived has no method with correct signature \"ProcessReturn "
-            "doBoundaryCrossing(TParticle&, VolumeNode&, VolumeNode&)\" required for "
+            "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
+            "required for "
             "BoundaryCrossingProcess<TDerived>. ");
       }
 
@@ -93,9 +97,13 @@ namespace corsika {
 
       // interface checking on TProcess1
       static_assert(
-          has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack&>,
+          has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack&> ||
+              has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&,
+                                        TTrack const&> ||
+              has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle const&,
+                                        TTrack const&>,
           "TDerived has no method with correct signature \"ProcessReturn "
-          "doContinuous(TParticle&,TTrack&,bool)\" required for "
+          "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
           "ContinuousProcess<TDerived>. ");
 
       ret |=
@@ -108,9 +116,13 @@ namespace corsika {
 
       // interface checking on TProcess2
       static_assert(
-          has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack&>,
+          has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack&> ||
+              has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&,
+                                        TTrack const&> ||
+              has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle const&,
+                                        TTrack const&>,
           "TDerived has no method with correct signature \"ProcessReturn "
-          "doContinuous(TParticle&,TTrack&,bool)\" required for "
+          "doContinuous(TParticle [const]&,TTrack [const]&,bool)\" required for "
           "ContinuousProcess<TDerived>. ");
 
       ret |=
@@ -129,9 +141,10 @@ namespace corsika {
                   t1ProcSeq) {
 
       // interface checking on TProcess1
-      static_assert(has_method_doSecondaries_v<TProcess1, void, TSecondaries&>,
+      static_assert(has_method_doSecondaries_v<TProcess1, void, TSecondaries&> ||
+                        has_method_doSecondaries_v<TProcess1, void, TSecondaries const&>,
                     "TDerived has no method with correct signature \"void "
-                    "doSecondaries(TStackView&)\" required for "
+                    "doSecondaries(TStackView [const]&)\" required for "
                     "SecondariesProcessProcess<TDerived>. ");
 
       A_.doSecondaries(vS);
@@ -140,9 +153,10 @@ namespace corsika {
                   t2ProcSeq) {
 
       // interface checking on TProcess2
-      static_assert(has_method_doSecondaries_v<TProcess2, void, TSecondaries&>,
+      static_assert(has_method_doSecondaries_v<TProcess2, void, TSecondaries&> ||
+                        has_method_doSecondaries_v<TProcess2, void, TSecondaries const&>,
                     "TDerived has no method with correct signature \"void "
-                    "doSecondaries(TStackView&)\" required for "
+                    "doSecondaries(TStackView [const]&)\" required for "
                     "SecondariesProcessProcess<TDerived>. ");
 
       B_.doSecondaries(vS);
@@ -177,7 +191,7 @@ namespace corsika {
       static_assert(has_method_doStack_v<TProcess1, void, TStack&> ||
                         has_method_doStack_v<TProcess1, void, TStack const&>,
                     "TDerived has no method with correct signature \"void "
-                    "doStack(TStackx&)\" required for "
+                    "doStack(TStack [const]&)\" required for "
                     "StackProcess<TDerived>. ");
 
       if (A_.checkStep()) { A_.doStack(stack); }
@@ -189,7 +203,7 @@ namespace corsika {
       static_assert(has_method_doStack_v<TProcess2, void, TStack&> ||
                         has_method_doStack_v<TProcess2, void, TStack const&>,
                     "TDerived has no method with correct signature \"void "
-                    "doStack(TStack&)\" required for "
+                    "doStack(TStack [const]&)\" required for "
                     "StackProcess<TDerived>. ");
 
       if (B_.checkStep()) { B_.doStack(stack); }
@@ -212,28 +226,27 @@ namespace corsika {
     } else if constexpr (is_continuous_process_v<process1_type>) {
 
       // interface checking on TProcess1
-      static_assert(
-          has_method_getMaxStepLength_v<TProcess1, LengthType, TParticle&, TTrack&>,
-          "TDerived has no method with correct signature \"Grammage "
-          "getMaxStepLength(TParticle&, TTrack&)\" required for "
-          "ContinuousProcess<TDerived>. ");
+      static_assert(has_method_getMaxStepLength_v<TProcess1, LengthType, TParticle const&,
+                                                  TTrack const&>,
+                    "TDerived has no method with correct signature \"LengthType "
+                    "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
+                    "ContinuousProcess<TDerived>. ");
 
       ContinuousProcessStepLength const step(A_.getMaxStepLength(particle, vTrack),
                                              ContinuousProcessIndex(IndexProcess1));
       max_length = std::min(max_length, step);
     }
-    //      return ContinuousProcessStepLength(std::min(max_length, len), IndexProcess1);
     if constexpr (t2ProcSeq) {
       ContinuousProcessStepLength const step = B_.getMaxStepLength(particle, vTrack);
       max_length = std::min(max_length, step);
     } else if constexpr (is_continuous_process_v<process2_type>) {
 
       // interface checking on TProcess2
-      static_assert(
-          has_method_getMaxStepLength_v<TProcess2, LengthType, TParticle&, TTrack&>,
-          "TDerived has no method with correct signature \"Grammage "
-          "getMaxStepLength(TParticle&, TTrack&)\" required for "
-          "ContinuousProcess<TDerived>. ");
+      static_assert(has_method_getMaxStepLength_v<TProcess2, LengthType, TParticle const&,
+                                                  TTrack const&>,
+                    "TDerived has no method with correct signature \"LengthType "
+                    "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
+                    "ContinuousProcess<TDerived>. ");
 
       ContinuousProcessStepLength const step(B_.getMaxStepLength(particle, vTrack),
                                              ContinuousProcessIndex(IndexProcess2));

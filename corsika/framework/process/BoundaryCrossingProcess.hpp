@@ -47,6 +47,6 @@ namespace corsika {
   public:
   };
 
-  //! @}
+  /** @} */
 
 } // namespace corsika

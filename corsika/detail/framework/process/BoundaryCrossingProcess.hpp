@@ -14,11 +14,15 @@ namespace corsika {
 
   // test for doBoundaryCrossing method
 
-  template <class TProcess, typename TReturn, typename... TArg>
+  template <class TProcess, typename TReturn, typename TParticle>
   struct has_method_doBoundaryCrossing
-      : public detail::has_method_signature<TReturn, TArg...> {
+      : public detail::has_method_signature<TReturn, TParticle&,
+                                            typename TParticle::node_type const&,
+                                            typename TParticle::node_type const&> {
 
-    using detail::has_method_signature<TReturn, TArg...>::testSignature;
+    using detail::has_method_signature<
+        TReturn, TParticle&, typename TParticle::node_type const&,
+        typename TParticle::node_type const&>::testSignature;
 
     // the default value
     template <class T>
@@ -26,7 +30,7 @@ namespace corsika {
 
     // templated parameter option
     template <class T>
-    static decltype(testSignature(&T::template doBoundaryCrossing<TArg...>)) test(
+    static decltype(testSignature(&T::template doBoundaryCrossing<TParticle>)) test(
         std::nullptr_t);
 
     // non templated parameter option
@@ -38,8 +42,8 @@ namespace corsika {
     static const bool value = type::value;
   };
 
-  template <class TProcess, typename TReturn, typename... TArg>
+  template <class TProcess, typename TReturn, typename TParticle>
   bool constexpr has_method_doBoundaryCrossing_v =
-      has_method_doBoundaryCrossing<TProcess, TReturn, TArg...>::value;
+      has_method_doBoundaryCrossing<TProcess, TReturn, TParticle>::value;
 
 } // namespace corsika
