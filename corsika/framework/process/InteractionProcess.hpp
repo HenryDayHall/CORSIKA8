@@ -21,22 +21,19 @@ namespace corsika {
 
      Process describing the interaction of particles
 
-     The structural base type for any interaction process in a
-     ProcessSequence. 
-
      Create a new InteractionProcess, e.g. for XYModel, via 
-     \code
+     @code
      class XYModel : public InteractionProcess<XYModel> {};
-     \endcode
+     @endcode
 
      and provide the two necessary interface methods
-     \code
+     @code
      template <typename TSecondaryView> 
-     void doInteraction(TSecondaryView&);
+     void XYModel::doInteraction(TSecondaryView&);
 
      template <typename TParticle>
-     GrammageType getInteractionLength(TParticle const&)
-     \endcode
+     GrammageType XYModel::getInteractionLength(TParticle const&)
+     @endcode
      
      Where, of course, SecondaryView and Particle are the valid
      classes to access particles on the Stack. Those two methods do
@@ -44,8 +41,11 @@ namespace corsika {
      e.g. corsika::setup::Stack::particle_type -- but by the cost of
      loosing all flexibility otherwise provided. 
 
-     (For your potential interest, InteractionProcess is based on the
-     CRTP C++ design pattern)
+     SecondaryView allows to retrieve the properties of the projectile
+     particles, AND to store new particles (secondaries) which then
+     subsequently can be processes by SecondariesProcess. This is how
+     the output of interactions can be studied right away.
+
    */
 
   template <typename TDerived>

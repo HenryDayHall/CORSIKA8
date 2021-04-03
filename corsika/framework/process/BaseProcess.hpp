@@ -12,6 +12,8 @@
 
 #include <type_traits>
 
+//! @file BaseProcess.hpp
+
 namespace corsika {
 
   class TDerived; // fwd decl
@@ -28,8 +30,8 @@ namespace corsika {
      ProcessSequence. Both, the ProcessSequence and all its elements
      are of type BaseProcess
 
-     \todo rename BaseProcess into just Process
-     \todo rename _BaseProcess, or find better alternative in FIXME
+     @todo rename BaseProcess into just Process
+     @todo rename _BaseProcess, or find better alternative in FIXME
      ./Processes/AnalyticProcessors/ExecTime.h, see e.g. how this is done in
      ProcessSequence.hpp/make_sequence
    */
@@ -43,20 +45,24 @@ namespace corsika {
                              // derived classes to be created, not
                              // BaseProcess itself
 
+    /** @name getRef Return reference to underlying type
+	@{
+     */
     TDerived& ref() { return static_cast<TDerived&>(*this); }
     const TDerived& ref() const { return static_cast<const TDerived&>(*this); }
+    //! @}
 
   public:
-    //! Default number of processes ist just one, obviously
+    //! Default number of processes is just one, obviously
     static unsigned int constexpr getNumberOfProcesses() { return 1; }
 
-    // Base processor type for use in other template classes
+    //! Base processor type for use in other template classes
     using process_type = TDerived;
   };
 
   /**
-     ProcessTraits specialization
-   **/
+     is_process traits specialization to indicate inheritance from BaseProcess
+  */
   template <typename TProcess>
   struct is_process<
       TProcess,
@@ -64,6 +70,9 @@ namespace corsika {
                                          typename std::decay_t<TProcess>>>>
       : std::true_type {};
 
+  /**
+     count_processes traits specialization to increase process count by one.
+   */ 
   template <typename TProcess, int N>
   struct count_processes<TProcess, N,
                          typename std::enable_if_t<is_process_v<TProcess> &&

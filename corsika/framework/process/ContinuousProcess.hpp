@@ -13,6 +13,8 @@
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/ProcessTraits.hpp>
 
+#include <corsika/detail/framework/process/ContinuousProcess.hpp> // for extra traits, method/interface checking
+
 namespace corsika {
 
   /**
@@ -21,41 +23,50 @@ namespace corsika {
 
      Processes with continuous effects along a particle Trajectory
 
-     The structural base type of a process object in a
-     ProcessSequence. Both, the ProcessSequence and all its elements
-     are of type ContinuousProcess<T>
+     Create a new ContinuousProcess, e.g. for XYModel, via 
+     @code{.cpp}
+     class XYModel : public ContinuousProcess<XYModel> {};
+     @endcode
+
+     and provide two necessary interface methods:
+     @code{.cpp}
+     template <typename TParticle, typename TTrack>
+     LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
+     @endcode
+
+     which allows any ContinuousProcess to tell to CORSIKA a maximum
+     allowed step length. Such step-length limitation, if it turns out
+     to be smaller/sooner than any other limit (decay length,
+     interaction length, other continuous processes, geometry, etc.)
+     will lead to a limited step length. 
+
+     @code{.cpp}
+     template <typename TParticle, typename TTrack>
+     ProcessReturn doContinuous(TParticle& p, TTrack const& t, bool const stepLimit) const;
+     @endcode
+     
+     which applied any continuous effects on Particle p along
+     Trajectory t. The particle in all typical scenarios will be
+     altered by a doContinuous. The flag stepLimit will be true if the
+     preious evaluation of getMaxStepLength resulted in this
+     particular ContinuousProcess to be responsible for the step
+     length limit on the current track t. This information can be
+     expoited and avoid e.g. any uncessary calculations.
+     
+     Particle and Track are the valid classes to
+     access particles and track (Trajectory) data on the Stack. Those two methods
+     do not need to be templated, they could use the types
+     e.g. corsika::setup::Stack::particle_type -- but by the cost of
+     loosing all flexibility otherwise provided.
 
    */
 
   template <typename TDerived>
   class ContinuousProcess : public BaseProcess<TDerived> {
-  private:
-  protected:
-  public:
-    // here starts the interface part
-    /**
-     * Applies the effects of this ContinuousProcess on a Particle on a Track.
-     *
-     * Note, the stepLimit is a flag, if this particular process was responsible for the
-     * track-length limit. This can be used by the process to trigger activity.
-     *
-     * \todo -> enforce TDerived to implement doContinuous...
-     **/
-    template <typename TParticle, typename TTrack>
-    ProcessReturn doContinuous(TParticle&, TTrack const&, bool const stepLimit) const;
-
-    /**
-     * Calculates/returns a possible step length limitation of this continuousprocess.
-     *
-     *
-     * \todo -> enforce TDerived to implement getMaxStepLength...
-     **/
-    template <typename TParticle, typename TTrack>
-    LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
   };
 
   /**
-   * ProcessTraits specialization
+   * ProcessTraits specialization to flag ContinuousProcess objects
    **/
   template <typename TProcess>
   struct is_continuous_process<
@@ -63,12 +74,6 @@ namespace corsika {
                     std::is_base_of_v<ContinuousProcess<typename std::decay_t<TProcess>>,
                                       typename std::decay_t<TProcess>>>>
       : std::true_type {};
-
-  template <typename TProcess, int N>
-  struct count_continuous<TProcess, N,
-                          typename std::enable_if_t<is_continuous_process_v<TProcess>>> {
-    enum { count = N + 1 };
-  };
 
   /** @} */
   

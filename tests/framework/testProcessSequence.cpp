@@ -26,6 +26,26 @@ using namespace std;
 
 static int const nData = 10;
 
+
+// The stack is non-existent for this example
+struct DummyStack {};
+// our data object (particle) is a simple arrary of doubles
+struct DummyData {
+  double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+};
+// there is no real trajectory/track
+struct DummyTrajectory {};
+// since there is no stack, there is also no view. This is a simplistic dummy object
+// sufficient here.
+struct DummyView {
+  DummyView(DummyData& p)
+      : p_(p) {}
+  DummyData& p_;
+  DummyData& parent() { return p_; }
+};
+
+
+
 int globalCount = 0; // simple counter
 
 int checkDecay = 0;    // use this as a bit field
@@ -49,7 +69,7 @@ public:
   void setStep(LengthType const v) { step_ = v; }
 
   template <typename D, typename T>
-  ProcessReturn doContinuous(D& d, T&, bool const flag) const {
+  ProcessReturn doContinuous(D& d, T&, bool flag) const {
     flag_ = flag;
     CORSIKA_LOG_TRACE("ContinuousProcess1::DoContinuous");
     checkCont |= 1;
@@ -281,8 +301,7 @@ public:
   TimeType getLifetime(Particle&) const {
     return 2_s;
   }
-  template <typename TView>
-  void doDecay(TView&) const {
+  void doDecay(DummyView&) const {
     checkDecay |= 2;
   }
 };
@@ -292,9 +311,8 @@ public:
   Stack1(int const n)
       : StackProcess(n) {}
   template <typename TStack>
-  ProcessReturn doStack(TStack&) {
+  void doStack(TStack const&) {
     count_++;
-    return ProcessReturn::Ok;
   }
   int getCount() const { return count_; }
 
@@ -302,22 +320,6 @@ private:
   int count_ = 0;
 };
 
-// The stack is non-existent for this example
-struct DummyStack {};
-// our data object (particle) is a simple arrary of doubles
-struct DummyData {
-  double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-};
-// there is no real trajectory/track
-struct DummyTrajectory {};
-// since there is no stack, there is also no view. This is a simplistic dummy object
-// sufficient here.
-struct DummyView {
-  DummyView(DummyData& p)
-      : p_(p) {}
-  DummyData& p_;
-  DummyData& parent() { return p_; }
-};
 
 TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
@@ -727,34 +729,34 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
 
   SECTION("Indexing") {
 
-    int const n0 = count_continuous<Decay2>::count;
-    int const n1 = count_continuous<ContinuousProcess3>::count;
-    int const n2 = count_continuous<ContinuousProcess2,
-                                    count_continuous<ContinuousProcess3>::count>::count;
+    int const n0 = count_processes<Decay2>::count;
+    int const n1 = count_processes<ContinuousProcess3>::count;
+    int const n2 = count_processes<ContinuousProcess2,
+                                    count_processes<ContinuousProcess3>::count>::count;
     int const n1_b =
-        count_continuous<Process2, count_continuous<ContinuousProcess3>::count>::count;
+        count_processes<Process2, count_processes<ContinuousProcess3>::count>::count;
     int const n1_c =
-        count_continuous<ContinuousProcess3, count_continuous<Process2>::count>::count;
+        count_processes<ContinuousProcess3, count_processes<Process2>::count>::count;
     int const n12 =
-        count_continuous<ContinuousProcess2,
-                         count_continuous<ContinuousProcess3, 10>::count>::count;
+        count_processes<ContinuousProcess2,
+                         count_processes<ContinuousProcess3, 10>::count>::count;
     int const n11_b =
-        count_continuous<Process1,
-                         count_continuous<ContinuousProcess3, 10>::count>::count;
-    int const n11_c = count_continuous<ContinuousProcess3,
-                                       count_continuous<Process1, 10>::count>::count;
+        count_processes<Process1,
+                         count_processes<ContinuousProcess3, 10>::count>::count;
+    int const n11_c = count_processes<ContinuousProcess3,
+                                       count_processes<Process1, 10>::count>::count;
 
-    CHECK(n0 == 0);
+    CHECK(n0 == 1);
     CHECK(n1 == 1);
-    CHECK(n1_b == 1);
-    CHECK(n1_c == 1);
+    CHECK(n1_b == 2);
+    CHECK(n1_c == 2);
     CHECK(n2 == 2);
-    CHECK(n11_b == 11);
-    CHECK(n11_c == 11);
+    CHECK(n11_b == 12);
+    CHECK(n11_c == 12);
     CHECK(n12 == 12);
 
-    std::cout << count_continuous<ContinuousProcess3>::count << std::endl;
-    std::cout << count_continuous<Process3>::count << std::endl;
+    std::cout << count_processes<ContinuousProcess3>::count << std::endl;
+    std::cout << count_processes<Process3>::count << std::endl;
 
     struct SwitchSelect {
       SwitchResult operator()(DummyData const& p) const {
@@ -775,15 +777,15 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
     auto sequence4 = make_sequence(ContinuousProcess1(0, 1_m), Process3(0),
                                    SwitchProcessSequence(sequence1, sequence2, select1));
 
-    int const switch_seq_n = count_continuous<decltype(switch_seq)>::count;
-    int const sequence3_n = count_continuous<decltype(sequence3)>::count;
+    int const switch_seq_n = count_processes<decltype(switch_seq)>::count;
+    int const sequence3_n = count_processes<decltype(sequence3)>::count;
 
     CHECK(decltype(sequence1)::getNumberOfProcesses() == 3);
-    CHECK(count_continuous<decltype(sequence1)>::count == 3);
-    CHECK(count_continuous<decltype(sequence2)>::count == 4);
+    CHECK(count_processes<decltype(sequence1)>::count == 3);
+    CHECK(count_processes<decltype(sequence2)>::count == 4);
     CHECK(switch_seq_n == 7);
     CHECK(sequence3_n == 9);
-    CHECK(count_continuous<decltype(sequence4)>::count == 9);
+    CHECK(count_processes<decltype(sequence4)>::count == 9);
 
     std::cout << "switch_seq "
               << boost::typeindex::type_id<decltype(switch_seq)>().pretty_name()

@@ -1,46 +1,35 @@
+/*
+ * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #pragma once
+
+#include <corsika/framework/process/ProcessTraits.hpp>
 
 namespace corsika {
 
-  namespace detail {
 
-    /**
-       Helper traits class (partial) for static compile time checking.
-
-       Note, this is a poor replacement for C++20 concepts... they are
-       eagerly awaited!
-
-       It defines the default body of a generic test function returning
-       std::false_type.
-
-       In addition it defines the pattern for class-method matching with a
-       return type TReturn and function arguments TArgs... . Right now
-       both method signatures, "const" and "not const", are matched.
-     */
-    template <typename TReturn, typename... TArgs>
-    struct has_method_signature {
-
-      template <class T>
-      static std::true_type testSignature(TReturn (T::*)(TArgs&&...));
-
-      template <class T>
-      static std::true_type testSignature(TReturn (T::*)(TArgs&&...) const);
-
-      template <class T>
-      static std::false_type test(...);
-    };
-
-  } // namespace detail
-
+  // doInteract
+  
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_doInteract : public detail::has_method_signature<TReturn, TArgs...> {
 
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
 
+    // the default value
+    template <class T>
+    static std::false_type test(...);
+    
+    // signature of templated method
     template <class T>
     static decltype(testSignature(&T::template doInteraction<TArgs...>)) test(
         std::nullptr_t);
 
+    // signature of non-templated method
     template <class T>
     static decltype(testSignature(&T::doInteraction)) test(std::nullptr_t);
 
@@ -48,16 +37,23 @@ namespace corsika {
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
   };
-
+  
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_doInteract_v =
       has_method_doInteract<TProcess, TReturn, TArgs...>::value;
 
+
+  // getInteractionLength
+  
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getInteractionLength
       : public detail::has_method_signature<TReturn, TArgs...> {
 
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
+
+    // the default value
+    template <class T>
+    static std::false_type test(...);
 
     template <class T>
     static decltype(testSignature(&T::template getInteractionLength<TArgs...>)) test(

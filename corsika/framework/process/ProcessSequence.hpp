@@ -28,15 +28,11 @@
 
 namespace corsika {
 
-  // traits class to statically count processes in the sequence
-  template <typename TProcess, int N>
-  struct count_continuous<TProcess, N,
-                          typename std::enable_if_t<is_process_sequence_v<TProcess>>> {
-    static unsigned int constexpr count =
-        N + std::decay_t<TProcess>::getNumberOfProcesses();
-  };
 
-  // traits class to statically count processes in the sequence
+  /**
+     count_processes traits specialization to increase process count by getNumberOfProcesses(). 
+     This is used to statically count processes in the sequence
+  */
   template <typename TProcess, int N>
   struct count_processes<TProcess, N,
                          typename std::enable_if_t<is_process_v<TProcess> &&
@@ -122,10 +118,6 @@ namespace corsika {
 
    @ingroup Processes
    @{
- */
-
-  
-  /**
    
      Definition of a static process list/sequence
    
@@ -138,13 +130,16 @@ namespace corsika {
      they are just classes. This allows us to handle both, rvalue as
      well as lvalue Processes in the ProcessSequence.
    
-     (The sequence, and the processes use the CRTP, curiously recurring template
-     pattern).
+     (For your potential interest,
+     the static version of the
+     ProcessSequence and all Process
+     types are based on the CRTP C++
+     design pattern)
    
     Template parameters:
-     @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-     @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-     @tparam ProcessIndexOffset to count and index each ContinuousProcess in the entire process-chain
+      @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      @tparam ProcessIndexOffset to count and index each ContinuousProcess in the entire process-chain
       @tparam IndexOfProcess1
       @tparam IndexOfProcess2 
    */

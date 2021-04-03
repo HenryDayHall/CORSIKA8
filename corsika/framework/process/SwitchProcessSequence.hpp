@@ -69,12 +69,12 @@ namespace corsika {
      particle stack and not on indiviidual particles.
 
      Template parameters:
-     @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-     @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-     @tparam TSelect selector functor/function 
-     @tparam IndexFirstProcess to count and index each ContinuousProcess in the entire process-chain
-     @tparam IndexOfProcess1 index of TProcess1 (counting of ContinuousProcess)
-     @tparam IndexOfProcess2 index of TProcess2 (counting of ContinuousProcess)
+      @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
+      @tparam TSelect selector functor/function 
+      @tparam IndexFirstProcess to count and index each ContinuousProcess in the entire process-chain
+      @tparam IndexOfProcess1 index of TProcess1 (counting of ContinuousProcess)
+      @tparam IndexOfProcess2 index of TProcess2 (counting of ContinuousProcess)
 
      See also class ProcessSequence.
   **/
