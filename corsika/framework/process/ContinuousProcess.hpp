@@ -23,7 +23,7 @@ namespace corsika {
 
      Processes with continuous effects along a particle Trajectory
 
-     Create a new ContinuousProcess, e.g. for XYModel, via 
+     Create a new ContinuousProcess, e.g. for XYModel, via
      @code{.cpp}
      class XYModel : public ContinuousProcess<XYModel> {};
      @endcode
@@ -38,13 +38,14 @@ namespace corsika {
      allowed step length. Such step-length limitation, if it turns out
      to be smaller/sooner than any other limit (decay length,
      interaction length, other continuous processes, geometry, etc.)
-     will lead to a limited step length. 
+     will lead to a limited step length.
 
      @code{.cpp}
      template <typename TParticle, typename TTrack>
-     ProcessReturn doContinuous(TParticle& p, TTrack const& t, bool const stepLimit) const;
+     ProcessReturn doContinuous(TParticle& p, TTrack const& t, bool const stepLimit)
+     const;
      @endcode
-     
+
      which applied any continuous effects on Particle p along
      Trajectory t. The particle in all typical scenarios will be
      altered by a doContinuous. The flag stepLimit will be true if the
@@ -52,7 +53,7 @@ namespace corsika {
      particular ContinuousProcess to be responsible for the step
      length limit on the current track t. This information can be
      expoited and avoid e.g. any uncessary calculations.
-     
+
      Particle and Track are the valid classes to
      access particles and track (Trajectory) data on the Stack. Those two methods
      do not need to be templated, they could use the types
@@ -62,8 +63,7 @@ namespace corsika {
    */
 
   template <typename TDerived>
-  class ContinuousProcess : public BaseProcess<TDerived> {
-  };
+  class ContinuousProcess : public BaseProcess<TDerived> {};
 
   /**
    * ProcessTraits specialization to flag ContinuousProcess objects
@@ -76,5 +76,5 @@ namespace corsika {
       : std::true_type {};
 
   /** @} */
-  
+
 } // namespace corsika

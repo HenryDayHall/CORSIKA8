@@ -13,12 +13,12 @@
 namespace corsika {
 
   // doDecay
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_doDecay : public detail::has_method_signature<TReturn, TArgs...> {
 
     typedef std::decay_t<TProcess> process_type;
-    
+
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
 
     // the default value
@@ -27,9 +27,8 @@ namespace corsika {
 
     // signature of templated method
     template <class T>
-    static decltype(testSignature(&T::template doDecay<TArgs...>)) test(
-        std::nullptr_t);
-    
+    static decltype(testSignature(&T::template doDecay<TArgs...>)) test(std::nullptr_t);
+
     // signature of non-templated method
     template <class T>
     static decltype(testSignature(&T::doDecay)) test(std::nullptr_t);
@@ -43,12 +42,10 @@ namespace corsika {
   bool constexpr has_method_doDecay_v =
       has_method_doDecay<TProcess, TReturn, TArgs...>::value;
 
-
   // getLifetime
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
-  struct has_method_getLifetime
-      : public detail::has_method_signature<TReturn, TArgs...> {
+  struct has_method_getLifetime : public detail::has_method_signature<TReturn, TArgs...> {
 
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
 

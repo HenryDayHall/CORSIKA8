@@ -95,7 +95,6 @@ namespace corsika {
       // the const version
       template <class T>
       static std::true_type testSignature(TReturn (T::*)(TArgs...) const);
-
     };
 
   } // namespace detail

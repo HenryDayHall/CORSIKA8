@@ -60,7 +60,7 @@ namespace corsika {
 
       template <typename Particle>
       auto getTrack(Particle& particle);
-      
+
       static std::string getName() { return "LeapFrogStraight"; }
       static std::string getVersion() { return "1.0.0"; }
 

@@ -24,46 +24,46 @@
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-
 namespace corsika {
 
-/**
-   @defgroup Particles Particle Properties
+  /**
+     @defgroup Particles Particle Properties
 
-   The properties of all particles are saved in static and flat
-   arrays. There is a enum corsika::Code to identify each
-   particles, and each individual particles has its own static class,
-   which can be used to retrieve its physical properties.
+     The properties of all particles are saved in static and flat
+     arrays. There is a enum corsika::Code to identify each
+     particles, and each individual particles has its own static class,
+     which can be used to retrieve its physical properties.
 
-   The properties of all elementary particles are accessible here. The data
-   are taken from the Pythia ParticleData.xml file. 
+     The properties of all elementary particles are accessible here. The data
+     are taken from the Pythia ParticleData.xml file.
 
-   Particle data can be accessed via global function in namespace corsika, or via 
-   static classes for each particle type. These classes all have the interface (example for 
-   the class corsika::Electron):
+     Particle data can be accessed via global function in namespace corsika, or via
+     static classes for each particle type. These classes all have the interface (example
+     for the class corsika::Electron):
 
-   @code{.cpp}
-     static constexpr Code code{Code::Electron};
-     static constexpr Code anti_code{Code::Positron};
-     static constexpr HEPMassType mass{corsika::get_mass(code)};
-     static constexpr ElectricChargeType charge{corsika::get_charge(code)};
-     static constexpr int charge_number{corsika::get_charge_number(code)};
-     static constexpr std::string_view name{corsika::get_name(code)};
-     static constexpr bool is_nucleus{corsika::is_nucleus(code)};
-   @endcode
+     @code{.cpp}
+       static constexpr Code code{Code::Electron};
+       static constexpr Code anti_code{Code::Positron};
+       static constexpr HEPMassType mass{corsika::get_mass(code)};
+       static constexpr ElectricChargeType charge{corsika::get_charge(code)};
+       static constexpr int charge_number{corsika::get_charge_number(code)};
+       static constexpr std::string_view name{corsika::get_name(code)};
+       static constexpr bool is_nucleus{corsika::is_nucleus(code)};
+     @endcode
 
-   The names, relations and properties of all particles known to CORSIKA 8 are listed below. 
+     The names, relations and properties of all particles known to CORSIKA 8 are listed
+     below.
 
-   @addtogroup Particles
-   @{
- */
+     @addtogroup Particles
+     @{
+   */
 
   /** The Code enum is the actual place to define CORSIKA 8 particle codes. */
   enum class Code : int16_t;
-  
+
   /** Specifically for PDG ids */
   enum class PDGCode : int32_t;
-  
+
   using CodeIntType = std::underlying_type<Code>::type;
   using PDGCodeType = std::underlying_type<PDGCode>::type;
 
@@ -124,4 +124,3 @@ namespace corsika {
 
 // constants in namespaces-like static classes, generated automatically
 #include <corsika/framework/core/GeneratedParticleClasses.inc>
-

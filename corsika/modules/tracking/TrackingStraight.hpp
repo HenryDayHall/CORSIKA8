@@ -54,7 +54,7 @@ namespace corsika::tracking_line {
 
     static std::string getName() { return "Tracking-Straight"; }
     static std::string getVersion() { return "1.0.0"; }
-};
+  };
 
 } // namespace corsika::tracking_line
 

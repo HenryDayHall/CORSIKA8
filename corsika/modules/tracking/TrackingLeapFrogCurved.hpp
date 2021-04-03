@@ -53,7 +53,8 @@ namespace corsika {
       using Intersect<Tracking>::nextIntersect;
 
     public:
-      Tracking() : straightTracking_{tracking_line::Tracking()} {}
+      Tracking()
+          : straightTracking_{tracking_line::Tracking()} {}
 
       template <typename TParticle>
       auto getTrack(TParticle const& particle);

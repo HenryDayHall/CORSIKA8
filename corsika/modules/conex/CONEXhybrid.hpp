@@ -41,7 +41,7 @@ namespace corsika {
 
     HEPEnergyType getEnergyEM() const;
     void reset();
-    
+
   private:
     // data members
     //! CONEX e.m. particle codes

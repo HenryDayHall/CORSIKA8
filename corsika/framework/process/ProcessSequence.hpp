@@ -28,10 +28,9 @@
 
 namespace corsika {
 
-
   /**
-     count_processes traits specialization to increase process count by getNumberOfProcesses(). 
-     This is used to statically count processes in the sequence
+     count_processes traits specialization to increase process count by
+     getNumberOfProcesses(). This is used to statically count processes in the sequence
   */
   template <typename TProcess, int N>
   struct count_processes<TProcess, N,
@@ -41,108 +40,112 @@ namespace corsika {
         N + std::decay_t<TProcess>::getNumberOfProcesses();
   };
 
+  /**
+     @defgroup Processes Physics Processes and Modules
 
-/**
-   @defgroup Processes Physics Processes and Modules
-   
-   Physics processes in CORSIKA 8 are clustered in ProcessSequence and SwitchProcessSequence containers. 
-   The former is a mere (ordered) collection, while the latter has the option to switch between two
-   alternative ProcessSequences. 
+     Physics processes in CORSIKA 8 are clustered in ProcessSequence and
+     SwitchProcessSequence containers. The former is a mere (ordered) collection, while
+     the latter has the option to switch between two alternative ProcessSequences.
 
-   Depending on the type of data to act on and on the allowed actions of processes there are several 
-   interface options: 
-   - InteractionProcess
-   - DecayProcess
-   - ContinuousProcess
-   - StackProcess
-   - SecondariesProcess   
-   - BoundaryCrossingProcess
+     Depending on the type of data to act on and on the allowed actions of processes there
+     are several interface options:
+     - InteractionProcess
+     - DecayProcess
+     - ContinuousProcess
+     - StackProcess
+     - SecondariesProcess
+     - BoundaryCrossingProcess
 
-   And all processes (including ProcessSequence and SwitchProcessSequence) are derived from BaseProcess. 
-   
-   Processes of any type (e.g. p1, p2, p3,...) can be assembled into a ProcessSequence using the `make_sequence` factory function.
-   
-   @code{.cpp}
-     auto sequence1 = make_sequence(p1, p2, p3);
-     auto sequence2 = make_sequence(p4, p5, p6, p7);
-     auto sequence3 = make_sequence(sequence1, sequemce2, p8, p9);
-   @endcode
+     And all processes (including ProcessSequence and SwitchProcessSequence) are derived
+     from BaseProcess.
 
-   Note, if the order of processes
-   matters, the order of occurence
-   in the ProcessSequence determines
-   the executiion order.
-   
-   SecondariesProcess alyways act on
-   new secondaries produced (i.e. in
-   InteractionProcess and
-   DecayProcess) in the scope of
-   their ProcessSequence. For
-   example if i1 and i2 are
-   InteractionProcesses and s1 is a
-   SecondariesProcess, then
+     Processes of any type (e.g. p1, p2, p3,...) can be assembled into a ProcessSequence
+     using the `make_sequence` factory function.
 
-   @code{.cpp}
-     auto sequence = make_sequence(i1, make_sequence(i2, s1))
-   @endcode
+     @code{.cpp}
+       auto sequence1 = make_sequence(p1, p2, p3);
+       auto sequence2 = make_sequence(p4, p5, p6, p7);
+       auto sequence3 = make_sequence(sequence1, sequemce2, p8, p9);
+     @endcode
 
-   will result in s1 acting only on
-   the particles produced by i2 and
-   not by i1. This can be very
-   useful, e.g. to fine tune thinning. 
+     Note, if the order of processes
+     matters, the order of occurence
+     in the ProcessSequence determines
+     the executiion order.
 
-   A special type of ProcessSequence
-   is SwitchProcessSequence, which
-   has two branches and a functor
-   that can select between these two
-   branches.
+     SecondariesProcess alyways act on
+     new secondaries produced (i.e. in
+     InteractionProcess and
+     DecayProcess) in the scope of
+     their ProcessSequence. For
+     example if i1 and i2 are
+     InteractionProcesses and s1 is a
+     SecondariesProcess, then
 
-   @code{.cpp}
-     auto sequence = make_switch(sequence1, sequence2, selector);
-   @endcode
+     @code{.cpp}
+       auto sequence = make_sequence(i1, make_sequence(i2, s1))
+     @endcode
 
-   where the only requirement to
-   `selector` is that it
-   provides a `SwitchResult operator()(Particle const& particle) const` method. Thus,
-   based on the dynamic properties
-   of `particle` the functor
-   can make its decision. This is
-   clearly important for switching
-   between low-energy and
-   high-energy models, but not
-   limited to this. The selection
-   can even be done with a lambda
-   function.
-   
-   
+     will result in s1 acting only on
+     the particles produced by i2 and
+     not by i1. This can be very
+     useful, e.g. to fine tune thinning.
 
-   @ingroup Processes
-   @{
-   
-     Definition of a static process list/sequence
-   
-     A compile time static list of processes. The compiler will
-     generate a new type based on template logic containing all the
-     elements provided by the user.
-   
-     TProcess1 and TProcess2 must both be derived from BaseProcess,
-     and are both references if possible (lvalue), otherwise (rvalue)
-     they are just classes. This allows us to handle both, rvalue as
-     well as lvalue Processes in the ProcessSequence.
-   
-     (For your potential interest,
-     the static version of the
-     ProcessSequence and all Process
-     types are based on the CRTP C++
-     design pattern)
-   
-    Template parameters:
-      @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      @tparam ProcessIndexOffset to count and index each ContinuousProcess in the entire process-chain
-      @tparam IndexOfProcess1
-      @tparam IndexOfProcess2 
-   */
+     A special type of ProcessSequence
+     is SwitchProcessSequence, which
+     has two branches and a functor
+     that can select between these two
+     branches.
+
+     @code{.cpp}
+       auto sequence = make_switch(sequence1, sequence2, selector);
+     @endcode
+
+     where the only requirement to
+     `selector` is that it
+     provides a `SwitchResult operator()(Particle const& particle) const` method. Thus,
+     based on the dynamic properties
+     of `particle` the functor
+     can make its decision. This is
+     clearly important for switching
+     between low-energy and
+     high-energy models, but not
+     limited to this. The selection
+     can even be done with a lambda
+     function.
+
+
+
+     @ingroup Processes
+     @{
+
+       Definition of a static process list/sequence
+
+       A compile time static list of processes. The compiler will
+       generate a new type based on template logic containing all the
+       elements provided by the user.
+
+       TProcess1 and TProcess2 must both be derived from BaseProcess,
+       and are both references if possible (lvalue), otherwise (rvalue)
+       they are just classes. This allows us to handle both, rvalue as
+       well as lvalue Processes in the ProcessSequence.
+
+       (For your potential interest,
+       the static version of the
+       ProcessSequence and all Process
+       types are based on the CRTP C++
+       design pattern)
+
+      Template parameters:
+        @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
+     ProcessSequence
+        @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
+     ProcessSequence
+        @tparam ProcessIndexOffset to count and index each ContinuousProcess in the entire
+     process-chain
+        @tparam IndexOfProcess1
+        @tparam IndexOfProcess2
+     */
 
   template <typename TProcess1, typename TProcess2 = NullModel,
             int ProcessIndexOffset = 0,
@@ -276,10 +279,10 @@ namespace corsika {
     @fn make_sequence
 
     Factory function to create a ProcessSequence
-   
+
     to construct ProcessSequences in a flexible and dynamic way the
     `sequence` factory functions are provided
-   
+
     Any objects of type
      - BaseProcess
      - ContinuousProcess and
@@ -294,7 +297,7 @@ namespace corsika {
     The sequence function checks that all its arguments are all of
     types derived from BaseProcess. Also the ProcessSequence itself
     is derived from type BaseProcess
-   
+
     @tparam TProcesses parameter pack with objects of type BaseProcess
     @tparam TProcess1 another BaseProcess
     @param vA needs to derive from BaseProcess or ProcessSequence
@@ -312,11 +315,11 @@ namespace corsika {
 
   /**
     @fn make_sequence
-    
+
     Factory function to create ProcessSequence
-   
+
     specialization for two input objects (no paramter pack in vB).
-   
+
     @tparam TProcess1 another BaseProcess
     @tparam TProcess2 another BaseProcess
     @param vA needs to derive from BaseProcess or ProcessSequence
@@ -334,10 +337,10 @@ namespace corsika {
     @fn make_sequence
 
     Factory function to create ProcessSequence from a single BaseProcess
-   
+
     also allow a single Process in ProcessSequence, accompany by
     `NullModel`
-   
+
     @tparam TProcess1 another BaseProcess
     @param vA needs to derive from BaseProcess or ProcessSequence
    */
@@ -363,7 +366,7 @@ namespace corsika {
   };
 
   /** @}  */
-  
+
 } // namespace corsika
 
 #include <corsika/detail/framework/process/ProcessSequence.inl>

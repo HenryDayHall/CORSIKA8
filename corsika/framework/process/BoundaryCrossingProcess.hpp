@@ -24,7 +24,7 @@ namespace corsika {
      Processes acting on the particles traversion from one volume into
      another volume.
 
-     Create a new BoundaryCrossingProcess, e.g. for XYModel, via 
+     Create a new BoundaryCrossingProcess, e.g. for XYModel, via
      @code{.cpp}
      class XYModel : public BoundaryCrossingProcess<XYModel> {};
      @endcode
@@ -41,13 +41,12 @@ namespace corsika {
      Stack. The volume the particle is originating from is `from`, the
      volume where it goes to is `to`.
    */
-  
-  
+
   template <typename TDerived>
   class BoundaryCrossingProcess : public BaseProcess<TDerived> {
   public:
   };
 
   //! @}
-  
+
 } // namespace corsika

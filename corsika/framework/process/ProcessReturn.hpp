@@ -63,5 +63,5 @@ namespace corsika {
   }
 
   //! @}
-  
+
 } // namespace corsika

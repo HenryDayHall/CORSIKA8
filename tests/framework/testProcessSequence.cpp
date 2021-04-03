@@ -26,7 +26,6 @@ using namespace std;
 
 static int const nData = 10;
 
-
 // The stack is non-existent for this example
 struct DummyStack {};
 // our data object (particle) is a simple arrary of doubles
@@ -43,8 +42,6 @@ struct DummyView {
   DummyData& p_;
   DummyData& parent() { return p_; }
 };
-
-
 
 int globalCount = 0; // simple counter
 
@@ -301,9 +298,7 @@ public:
   TimeType getLifetime(Particle&) const {
     return 2_s;
   }
-  void doDecay(DummyView&) const {
-    checkDecay |= 2;
-  }
+  void doDecay(DummyView&) const { checkDecay |= 2; }
 };
 
 class Stack1 : public StackProcess<Stack1> {
@@ -319,7 +314,6 @@ public:
 private:
   int count_ = 0;
 };
-
 
 TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
@@ -732,19 +726,18 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
     int const n0 = count_processes<Decay2>::count;
     int const n1 = count_processes<ContinuousProcess3>::count;
     int const n2 = count_processes<ContinuousProcess2,
-                                    count_processes<ContinuousProcess3>::count>::count;
+                                   count_processes<ContinuousProcess3>::count>::count;
     int const n1_b =
         count_processes<Process2, count_processes<ContinuousProcess3>::count>::count;
     int const n1_c =
         count_processes<ContinuousProcess3, count_processes<Process2>::count>::count;
     int const n12 =
         count_processes<ContinuousProcess2,
-                         count_processes<ContinuousProcess3, 10>::count>::count;
+                        count_processes<ContinuousProcess3, 10>::count>::count;
     int const n11_b =
-        count_processes<Process1,
-                         count_processes<ContinuousProcess3, 10>::count>::count;
-    int const n11_c = count_processes<ContinuousProcess3,
-                                       count_processes<Process1, 10>::count>::count;
+        count_processes<Process1, count_processes<ContinuousProcess3, 10>::count>::count;
+    int const n11_c =
+        count_processes<ContinuousProcess3, count_processes<Process1, 10>::count>::count;
 
     CHECK(n0 == 1);
     CHECK(n1 == 1);

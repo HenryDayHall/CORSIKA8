@@ -39,10 +39,8 @@ namespace corsika {
      @var SwitchResult::First Follow first branch in SwitchProcessSequence
      @var SwitchResult::Second Follow second branch in SwitchProcessSequence
    */
-  enum class SwitchResult { First, 
-			    Second 
-  };
-  
+  enum class SwitchResult { First, Second };
+
   /**
      @ingroup Processes
      @{
@@ -69,10 +67,13 @@ namespace corsika {
      particle stack and not on indiviidual particles.
 
      Template parameters:
-      @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      @tparam TSelect selector functor/function 
-      @tparam IndexFirstProcess to count and index each ContinuousProcess in the entire process-chain
+      @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
+  ProcessSequence
+      @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
+  ProcessSequence
+      @tparam TSelect selector functor/function
+      @tparam IndexFirstProcess to count and index each ContinuousProcess in the entire
+  process-chain
       @tparam IndexOfProcess1 index of TProcess1 (counting of ContinuousProcess)
       @tparam IndexOfProcess2 index of TProcess2 (counting of ContinuousProcess)
 
@@ -215,7 +216,7 @@ namespace corsika {
   }
 
   //! @}
-  
+
 } // namespace corsika
 
 #include <corsika/detail/framework/process/SwitchProcessSequence.inl>

@@ -13,9 +13,10 @@
 namespace corsika {
 
   // test for doContinuous method
-  
+
   template <class TProcess, typename TReturn, typename TArg1, typename TArg2>
-  struct has_method_doContinuous : public detail::has_method_signature<TReturn, TArg1, TArg2, bool> {
+  struct has_method_doContinuous
+      : public detail::has_method_signature<TReturn, TArg1, TArg2, bool> {
 
     using detail::has_method_signature<TReturn, TArg1, TArg2, bool>::testSignature;
 
@@ -39,10 +40,10 @@ namespace corsika {
 
   template <class TProcess, typename TReturn, typename TArg1, typename TArg2>
   bool constexpr has_method_doContinuous_v =
-    has_method_doContinuous<TProcess, TReturn, TArg1, TArg2>::value;
+      has_method_doContinuous<TProcess, TReturn, TArg1, TArg2>::value;
 
   // test for getMaxStepLength method
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getMaxStepLength
       : public detail::has_method_signature<TReturn, TArgs...> {

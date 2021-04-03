@@ -16,30 +16,30 @@
 namespace corsika {
 
   /**
-     @ingroup Processes     
+     @ingroup Processes
      @{
 
      Process describing the interaction of particles
 
-     Create a new InteractionProcess, e.g. for XYModel, via 
+     Create a new InteractionProcess, e.g. for XYModel, via
      @code
      class XYModel : public InteractionProcess<XYModel> {};
      @endcode
 
      and provide the two necessary interface methods
      @code
-     template <typename TSecondaryView> 
+     template <typename TSecondaryView>
      void XYModel::doInteraction(TSecondaryView&);
 
      template <typename TParticle>
      GrammageType XYModel::getInteractionLength(TParticle const&)
      @endcode
-     
+
      Where, of course, SecondaryView and Particle are the valid
      classes to access particles on the Stack. Those two methods do
      not need to be templated, they could use the types
      e.g. corsika::setup::Stack::particle_type -- but by the cost of
-     loosing all flexibility otherwise provided. 
+     loosing all flexibility otherwise provided.
 
      SecondaryView allows to retrieve the properties of the projectile
      particles, AND to store new particles (secondaries) which then
@@ -56,17 +56,18 @@ namespace corsika {
 
     template <typename TParticle>
     InverseGrammageType getInverseInteractionLength(TParticle const& particle) {
-      
+
       // interface checking on TProcess1
-      static_assert(has_method_getInteractionLength_v<TDerived, GrammageType, TParticle const&>,
-		    "TDerived has no method with correct signature \"GrammageType "
-		    "getInteractionLength(TParticle const&)\" required for "
-		    "InteractionProcess<TDerived>. ");
-      
+      static_assert(
+          has_method_getInteractionLength_v<TDerived, GrammageType, TParticle const&>,
+          "TDerived has no method with correct signature \"GrammageType "
+          "getInteractionLength(TParticle const&)\" required for "
+          "InteractionProcess<TDerived>. ");
+
       return 1. / ref().getInteractionLength(particle);
     }
   };
 
   /** @} */
-  
+
 } // namespace corsika

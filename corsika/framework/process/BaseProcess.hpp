@@ -46,7 +46,7 @@ namespace corsika {
                              // BaseProcess itself
 
     /** @name getRef Return reference to underlying type
-	@{
+        @{
      */
     TDerived& ref() { return static_cast<TDerived&>(*this); }
     const TDerived& ref() const { return static_cast<const TDerived&>(*this); }
@@ -72,7 +72,7 @@ namespace corsika {
 
   /**
      count_processes traits specialization to increase process count by one.
-   */ 
+   */
   template <typename TProcess, int N>
   struct count_processes<TProcess, N,
                          typename std::enable_if_t<is_process_v<TProcess> &&
@@ -81,5 +81,5 @@ namespace corsika {
   };
 
   //! @}
-  
+
 } // namespace corsika

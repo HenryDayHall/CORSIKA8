@@ -19,9 +19,9 @@ namespace corsika {
      @ingroup Processes
      @{
 
-     Processes acting on the secondaries produced by other processes. 
+     Processes acting on the secondaries produced by other processes.
 
-     Create a new SecondariesProcess, e.g. for XYModel, via 
+     Create a new SecondariesProcess, e.g. for XYModel, via
      @code{.cpp}
      class XYModel : public SecondariesProcess<XYModel> {};
      @endcode
@@ -33,16 +33,14 @@ namespace corsika {
      @endcode
 
      where StackView is an object that can store secondaries on a
-     stack and also iterate over these secondaries. 
+     stack and also iterate over these secondaries.
    */
 
   template <typename TDerived>
   class SecondariesProcess : public BaseProcess<TDerived> {
   public:
-
-    static 
   };
 
   //! @}
-  
+
 } // namespace corsika

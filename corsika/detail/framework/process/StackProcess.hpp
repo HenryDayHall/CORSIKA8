@@ -13,7 +13,7 @@
 namespace corsika {
 
   // test method doStack
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_doStack : public detail::has_method_signature<TReturn, TArgs...> {
 
@@ -22,16 +22,14 @@ namespace corsika {
     // the default value
     template <class T>
     static std::false_type test(...);
-    
+
     // templated parameter option
     template <class T>
-    static decltype(testSignature(&T::template doStack<TArgs...>)) test(
-        std::nullptr_t);
+    static decltype(testSignature(&T::template doStack<TArgs...>)) test(std::nullptr_t);
 
     // non-templated parameter option
     template <template <typename> typename T>
-    static decltype(testSignature(&T<TArgs...>::template doStack)) test(
-        std::nullptr_t);
+    static decltype(testSignature(&T<TArgs...>::template doStack)) test(std::nullptr_t);
 
     template <class T>
     static decltype(testSignature(&T::doStack)) test(std::nullptr_t);

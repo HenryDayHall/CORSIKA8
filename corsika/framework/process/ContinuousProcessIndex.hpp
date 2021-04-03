@@ -15,7 +15,7 @@ namespace corsika {
 
      To index individual processes (continuous processes) inside a
      ProcessSequence.
-    
+
    **/
 
   class ContinuousProcessIndex {

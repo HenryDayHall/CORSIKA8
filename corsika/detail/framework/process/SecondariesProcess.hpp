@@ -13,9 +13,10 @@
 namespace corsika {
 
   // test for doSecondaries method
-  
+
   template <class TProcess, typename TReturn, typename... TArg>
-  struct has_method_doSecondaries : public detail::has_method_signature<TReturn, TArg...> {
+  struct has_method_doSecondaries
+      : public detail::has_method_signature<TReturn, TArg...> {
 
     using detail::has_method_signature<TReturn, TArg...>::testSignature;
 
@@ -39,7 +40,6 @@ namespace corsika {
 
   template <class TProcess, typename TReturn, typename... TArg>
   bool constexpr has_method_doSecondaries_v =
-    has_method_doSecondaries<TProcess, TReturn, TArg...>::value;
-
+      has_method_doSecondaries<TProcess, TReturn, TArg...>::value;
 
 } // namespace corsika

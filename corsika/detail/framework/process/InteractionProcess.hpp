@@ -12,9 +12,8 @@
 
 namespace corsika {
 
-
   // doInteract
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_doInteract : public detail::has_method_signature<TReturn, TArgs...> {
 
@@ -23,7 +22,7 @@ namespace corsika {
     // the default value
     template <class T>
     static std::false_type test(...);
-    
+
     // signature of templated method
     template <class T>
     static decltype(testSignature(&T::template doInteraction<TArgs...>)) test(
@@ -37,14 +36,13 @@ namespace corsika {
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
   };
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_doInteract_v =
       has_method_doInteract<TProcess, TReturn, TArgs...>::value;
 
-
   // getInteractionLength
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getInteractionLength
       : public detail::has_method_signature<TReturn, TArgs...> {

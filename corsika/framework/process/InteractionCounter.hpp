@@ -37,14 +37,14 @@ namespace corsika {
     InteractionHistogram const& getHistogram() const;
 
     void blob(int) {}
-    
+
   private:
     TCountedProcess& process_;
     InteractionHistogram histogram_;
   };
 
   //! @}
-  
+
 } // namespace corsika
 
 #include <corsika/detail/framework/process/InteractionCounter.inl>
