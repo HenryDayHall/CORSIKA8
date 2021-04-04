@@ -25,6 +25,13 @@ namespace corsika {
 
   /** @ingroup Processes
       @{
+
+       Class that creates and stores histograms of collisions
+       @f$dN/dE_{lab}@f$, @f$dN/d\sqrt{s}@f$ which is used by class
+       InteractionCounter
+
+       Histograms are of type boost::histogram
+
   */
 
   class InteractionHistogram {
@@ -32,6 +39,11 @@ namespace corsika {
     static double constexpr lower_edge_lab = 1e3, upper_edge_lab = 1e21; // eV lab
     static unsigned int constexpr num_bins_lab = 18 * 10, num_bins_cms = 14 * 10;
 
+    /**
+       hist_type is a boost::histogram with two axes
+        - a growing PDG id axis
+        - a fixed logarithmic energy axis as configured by the user
+     */
     using hist_type =
         decltype(detail::hist_factory(num_bins_lab, lower_edge_lab, upper_edge_lab));
 
@@ -40,11 +52,20 @@ namespace corsika {
   public:
     InteractionHistogram();
 
-    //! fill both CMS and lab histograms at the same time
+    /**
+       fill both CMS and lab histograms at the same time
+       @param projectile_id corsika::Code of particle
+       @param lab_energy Energy in lab. frame
+       @param mass_target Mass of target particle
+       @param A if projectile_id is corsika::Nucleus : Mass of nucleus
+       @param Z if projectile_id is corsika::Nucleus : Charge of nucleus
+    */
     void fill(Code projectile_id, HEPEnergyType lab_energy, HEPEnergyType mass_target,
               int A = 0, int Z = 0);
 
+    //! return histogram in c.m.s. frame
     hist_type const& CMSHist() const { return inthist_cms_; }
+    /// return histogram in laboratory frame
     hist_type const& labHist() const { return inthist_lab_; }
 
     InteractionHistogram& operator+=(InteractionHistogram const& other);

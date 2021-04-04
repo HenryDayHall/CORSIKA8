@@ -72,10 +72,10 @@ namespace corsika {
       @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
   ProcessSequence
       @tparam TSelect selector functor/function
-      @tparam IndexFirstProcess to count and index each ContinuousProcess in the entire
+      @tparam IndexFirstProcess to count and index each Process in the entire
   process-chain
-      @tparam IndexOfProcess1 index of TProcess1 (counting of ContinuousProcess)
-      @tparam IndexOfProcess2 index of TProcess2 (counting of ContinuousProcess)
+      @tparam IndexOfProcess1 index of TProcess1 (counting of Process)
+      @tparam IndexOfProcess2 index of TProcess2 (counting of Process)
 
      See also class ProcessSequence.
   **/

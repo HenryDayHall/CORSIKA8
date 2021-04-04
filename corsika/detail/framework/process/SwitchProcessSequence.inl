@@ -47,10 +47,11 @@ namespace corsika {
 
             static_assert(
                 has_method_doBoundaryCrossing_v<TProcess1, ProcessReturn, TParticle&>,
-		//  typename TParticle::node_type const&,
-		//                              typename TParticle::node_type const&>,
+                //  typename TParticle::node_type const&,
+                //                              typename TParticle::node_type const&>,
                 "TDerived has no method with correct signature \"ProcessReturn "
-                "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" required for "
+                "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
+                "required for "
                 "BoundaryCrossingProcess<TDerived>. ");
           }
 
@@ -69,10 +70,11 @@ namespace corsika {
 
             static_assert(
                 has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle&>,
-		//typename TParticle::node_type const&,
-		//                              typename TParticle::node_type const&>,
+                // typename TParticle::node_type const&,
+                //                              typename TParticle::node_type const&>,
                 "TDerived has no method with correct signature \"ProcessReturn "
-                "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" required for "
+                "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
+                "required for "
                 "BoundaryCrossingProcess<TDerived>. ");
           }
 
@@ -98,8 +100,10 @@ namespace corsika {
 
           static_assert(
               has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack&> ||
-	      has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack const&> ||
-	      has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle const&, TTrack const&>,
+                  has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&,
+                                            TTrack const&> ||
+                  has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle const&,
+                                            TTrack const&>,
               "TDerived has no method with correct signature \"ProcessReturn "
               "doContinuous(TParticle[const]&,TTrack[const]&,bool)\" required for "
               "ContinuousProcess<TDerived>. ");
@@ -116,8 +120,10 @@ namespace corsika {
           // interface checking on TProcess2
           static_assert(
               has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack&> ||
-	      has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack const&> ||
-	      has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle const&, TTrack const&>,
+                  has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&,
+                                            TTrack const&> ||
+                  has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle const&,
+                                            TTrack const&>,
               "TDerived has no method with correct signature \"ProcessReturn "
               "doContinuous(TParticle [const]&,TTrack[const]&,bool)\" required for "
               "ContinuousProcess<TDerived>. ");
@@ -190,7 +196,8 @@ namespace corsika {
 
           // interface checking on TProcess1
           static_assert(
-              has_method_getMaxStepLength_v<TProcess1, LengthType, TParticle const&, TTrack const&>,
+              has_method_getMaxStepLength_v<TProcess1, LengthType, TParticle const&,
+                                            TTrack const&>,
               "TDerived has no method with correct signature \"LengthType "
               "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
               "ContinuousProcess<TDerived>. ");
@@ -206,7 +213,8 @@ namespace corsika {
 
           // interface checking on TProcess2
           static_assert(
-              has_method_getMaxStepLength_v<TProcess2, LengthType, TParticle const&, TTrack const&>,
+              has_method_getMaxStepLength_v<TProcess2, LengthType, TParticle const&,
+                                            TTrack const&>,
               "TDerived has no method with correct signature \"LengthType "
               "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
               "ContinuousProcess<TDerived>. ");

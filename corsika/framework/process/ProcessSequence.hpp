@@ -115,9 +115,8 @@ namespace corsika {
      function.
 
 
-
+     @class ProcessSequence
      @ingroup Processes
-     @{
 
        Definition of a static process list/sequence
 
@@ -141,10 +140,10 @@ namespace corsika {
      ProcessSequence
         @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
      ProcessSequence
-        @tparam ProcessIndexOffset to count and index each ContinuousProcess in the entire
-     process-chain
-        @tparam IndexOfProcess1
-        @tparam IndexOfProcess2
+      @tparam IndexFirstProcess to count and index each Process in the entire
+  process-chain. The offset is the starting value for this ProcessSequence
+      @tparam IndexOfProcess1 index of TProcess1 (counting of Process)
+      @tparam IndexOfProcess2 index of TProcess2 (counting of Process)
      */
 
   template <typename TProcess1, typename TProcess2 = NullModel,
@@ -228,7 +227,7 @@ namespace corsika {
      * The maximum allowed step length is the minimum of the allowed track lenght over all
      * ContinuousProcess-es in the ProcessSequence.
      *
-     * \return: ContinuousProcessStepLength which contains the step length itself in
+     * @return ContinuousProcessStepLength which contains the step length itself in
      *          LengthType, and a unique identifier of the related ContinuousProcess.
      **/
 
@@ -277,6 +276,7 @@ namespace corsika {
 
   /**
     @fn make_sequence
+    @ingroup Processes
 
     Factory function to create a ProcessSequence
 
@@ -315,6 +315,7 @@ namespace corsika {
 
   /**
     @fn make_sequence
+    @ingroup Processes
 
     Factory function to create ProcessSequence
 
@@ -335,6 +336,7 @@ namespace corsika {
 
   /**
     @fn make_sequence
+    @ingroup Processes
 
     Factory function to create ProcessSequence from a single BaseProcess
 
@@ -352,6 +354,8 @@ namespace corsika {
   }
 
   /**
+    @struct
+    @ingroup Processes
     traits marker to identify objectas ProcessSequence
 
     @tparam TProcess1 another BaseProcess
@@ -364,8 +368,6 @@ namespace corsika {
         is_process_v<TProcess1> && is_process_v<TProcess2>, int>>
     is_process_sequence() {}
   };
-
-  /** @}  */
 
 } // namespace corsika
 
