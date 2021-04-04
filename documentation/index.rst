@@ -10,11 +10,9 @@ Welcome to the CORSIKA 8 air shower simulation framework.
    modules
    particles
    media
+   units
+   environment
+   stack
    api
    
-
-.. 
- .. doxygenclass:: corsika::Stack
-    :project: CORSIKA8
-    :members:
 
