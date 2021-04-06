@@ -23,5 +23,10 @@ TEST_CASE("NullModel", "[processes]") {
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
-  SECTION("interface") { [[maybe_unused]] NullModel model; }
+  SECTION("interface") {
+    [[maybe_unused]] NullModel nm;
+
+    CHECK(is_process_v<decltype(nm)>);
+    CHECK(count_processes<decltype(nm)>::count == 0);
+  }
 }

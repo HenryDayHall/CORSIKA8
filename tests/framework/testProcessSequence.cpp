@@ -21,19 +21,35 @@
 
 #include <boost/type_index.hpp>
 
+
+/*
+  Unit test for testing all Process types and their arrangement in
+  containers ProcessSequence and SwitchProcessSequence
+ */
+
 using namespace corsika;
 using namespace std;
 
 static int const nData = 10;
 
+// DummyNode is only needed for BoundaryCrossingProcess
+struct DummyNode {
+  DummyNode(int v) : data_(v) {}
+  int data_ = 0;
+};
+
 // The stack is non-existent for this example
 struct DummyStack {};
+
 // our data object (particle) is a simple arrary of doubles
 struct DummyData {
   double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  typedef DummyNode node_type; // for BoundaryCrossingProcess
 };
+
 // there is no real trajectory/track
 struct DummyTrajectory {};
+
 // since there is no stack, there is also no view. This is a simplistic dummy object
 // sufficient here.
 struct DummyView {
@@ -42,6 +58,7 @@ struct DummyView {
   DummyData& p_;
   DummyData& parent() { return p_; }
 };
+
 
 int globalCount = 0; // simple counter
 
@@ -315,6 +332,22 @@ private:
   int count_ = 0;
 };
 
+class Boundary1 : public BoundaryCrossingProcess<Boundary1> {
+public:
+  Boundary1(double const v=1.0) : v_(v) {}
+  
+  template <typename Particle>
+  ProcessReturn doBoundaryCrossing(Particle& p, typename Particle::node_type const& from,
+                                   typename Particle::node_type const& to) {
+
+    for (int i = 0; i < nData; ++i) { p.data_[i] += v_*(from.data_ - to.data_); }
+    return ProcessReturn::Ok;
+  }
+private:
+  double v_ = 0.0;
+};
+
+
 TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
@@ -493,6 +526,31 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     CHECK(contains_stack_process_v<decltype(sequence2)> == false);
     CHECK(contains_stack_process_v<decltype(sequence3)> == true);
   }
+
+  SECTION("BoundaryCrossingProcess") {
+
+    globalCount = 0;
+    Boundary1 b1;
+
+    auto sequence1 = make_sequence(b1);
+
+    DummyData particle;
+    DummyNode node_from(5);
+    DummyNode node_to(4);
+    
+    int const nLoop = 20;
+    for (int i = 0; i < nLoop; ++i) { sequence1.doBoundaryCrossing(particle, node_from, node_to); }
+
+    for (int i = 0; i < nData; i++) {
+      CORSIKA_LOG_DEBUG("data_[{}]={}", i, particle.data_[i]);
+      CHECK(particle.data_[i] == Approx(nLoop).margin(1e-9));
+    }
+
+    CHECK(is_process_sequence_v<decltype(sequence1)> == true);
+    CHECK(contains_stack_process_v<decltype(sequence1)> == false);
+    CHECK(count_processes<decltype(sequence1)>::count == 1);
+  }
+  
 }
 
 TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
@@ -517,18 +575,21 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
   auto cp2 = ContinuousProcess2(0, 2_m);
   auto cp3 = ContinuousProcess3(0, 3_m);
 
-  auto sequence1 = make_sequence(Process1(0), cp2, Decay1(0));
-  auto sequence2 = make_sequence(cp3, Process2(0), Decay2(0));
+  auto sequence1 = make_sequence(Process1(0), cp2, Decay1(0), Boundary1(1.0));
+  auto sequence2 = make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0));
 
   auto sequence3 = make_sequence(cp1, Process3(0),
                                  SwitchProcessSequence(sequence1, sequence2, select1));
+
+  auto sequence4 = make_sequence(cp1, Boundary1(2.0), Process3(0),
+                                 SwitchProcessSequence(sequence1, Boundary1(-1.0), select1));
 
   SECTION("Check construction") {
 
     auto sequence_alt =
         make_sequence(cp1, Process3(0),
-                      make_select(make_sequence(Process1(0), cp2, Decay1(0)),
-                                  make_sequence(cp3, Process2(0), Decay2(0)), select1));
+                      make_select(make_sequence(Process1(0), cp2, Decay1(0), Boundary1(1.0)),
+                                  make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0)), select1));
 
     auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
     CHECK(is_process_sequence_v<decltype(switch_seq)>);
@@ -624,6 +685,33 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CHECK(checkDecay == 0);
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
+
+    // check the SwitchProcessSequence where no process is selected in
+    // selected branch (fallthrough)
+
+    checkDecay = 0;
+    checkInteract = 0;
+    checkSec = 0;
+    checkCont = 0;
+    particle.data_[0] = -100; // data negative
+    sequence4.selectInteraction(view, lambda_select);
+    sequence4.doSecondaries(view);
+    sequence4.selectDecay(view, time_select);
+    sequence4.doSecondaries(view);
+    CHECK(checkInteract == 0);
+    CHECK(checkDecay == 0);   
+    CHECK(checkCont == 0);
+    CHECK(checkSec == 0);
+    
+    // check that large "select" value will correctly ignore the call
+    lambda_select = 1e5 * square(1_cm) / 1_g;
+    time_select = 1e5 / second;
+    checkDecay = 0;
+    checkInteract = 0;
+    sequence3.selectInteraction(view, lambda_select);
+    sequence3.selectDecay(view, time_select);
+    CHECK(checkInteract == 0);
+    CHECK(checkDecay == 0);
   }
 
   SECTION("Check ContinuousProcesses in SwitchProcessSequence") {
@@ -714,6 +802,27 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
                      ContinuousProcessIndex(step4).getIndex(),
                      boost::typeindex::type_id<decltype(sequence3)>().pretty_name());
   }
+
+  SECTION("Check BoundaryCrossingProcess in SwitchProcessSequence") {
+
+    DummyData particle;
+    DummyNode node_from(1);
+    DummyNode node_to(2);
+
+    particle.data_[0] =
+        100; // data positive, selects particular branch on SwitchProcessSequence
+
+    sequence4.doBoundaryCrossing(particle, node_from, node_to);
+
+    CHECK(particle.data_[0] == 97); // 100 - 2*1 - 1*1
+    
+    particle.data_[0] =
+        -100; // data positive, selects particular branch on SwitchProcessSequence
+
+    sequence4.doBoundaryCrossing(particle, node_from, node_to);
+    CHECK(particle.data_[0] == -101); // -100 - 2*1 + 1*1
+  }
+
 }
 
 TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {

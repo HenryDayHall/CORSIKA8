@@ -67,7 +67,7 @@ namespace corsika {
                                           process2_type>) {
 
             static_assert(
-                has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle&>,
+                has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle>,
                 "TDerived has no method with correct signature \"ProcessReturn "
                 "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
                 "required for "

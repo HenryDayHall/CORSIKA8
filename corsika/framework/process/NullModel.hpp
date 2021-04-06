@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <corsika/framework/process/BaseProcess.hpp>
+//#include <corsika/framework/process/BaseProcess.hpp>
+#include <corsika/framework/process/ProcessTraits.hpp>
 
 namespace corsika {
 
@@ -16,14 +17,32 @@ namespace corsika {
      @ingroup Processes
      @{
 
-     Process that does nothing
+     Process that does nothing. It is not even derived from
+     BaseProcess
    */
 
-  class NullModel : public BaseProcess<NullModel> {
+  class NullModel { // : public BaseProcess<NullModel> {
 
   public:
     NullModel() = default;
     ~NullModel() = default;
+
+    //! Default number of processes is just one, obviously
+    static unsigned int constexpr getNumberOfProcesses() { return 0; }
+  };
+
+  /**
+     is_process traits specialization to indicate compatibility ProcessSequence
+  */
+  template <>
+  struct is_process<NullModel, void> : std::true_type {};
+
+  /**
+     count_processes traits specialization to increase process count by one.
+   */
+  template <int N>
+  struct count_processes<NullModel, N, void> {
+    static unsigned int constexpr count = N;
   };
 
   //! @}
