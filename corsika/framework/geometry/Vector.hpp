@@ -131,7 +131,7 @@ namespace corsika {
 
     auto& operator-=(Vector<TDimension> const& pVec);
 
-    auto& operator-() const;
+    auto operator-() const;
 
     auto normalized() const;
 
