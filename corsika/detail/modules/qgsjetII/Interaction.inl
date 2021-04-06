@@ -66,15 +66,18 @@ namespace corsika::qgsjetII {
         iTarget = targetA;
         if (iTarget > maxMassNumber_ || iTarget <= 0) {
           std::ostringstream txt;
-          txt << "QgsjetII target outside range. iTarget=" << iTarget;
+          txt << "QgsjetII target outside range. Atarget=" << iTarget;
           throw std::runtime_error(txt.str().c_str());
         }
       }
       int iProjectile = 1;
       if (is_nucleus(beamId)) {
         iProjectile = Abeam;
-        if (iProjectile > maxMassNumber_ || iProjectile <= 0)
-          throw std::runtime_error("QgsjetII target outside range. ");
+        if (iProjectile > maxMassNumber_ || iProjectile <= 0) {
+          std::ostringstream txt;
+          txt << "QgsjetII projectile outside range. Aprojectile=" << iProjectile;
+          throw std::runtime_error(txt.str().c_str());
+	}
       }
 
       CORSIKA_LOG_DEBUG(
@@ -234,7 +237,7 @@ namespace corsika::qgsjetII {
 
       int targetMassNumber = 1;     // proton
       if (is_nucleus(targetCode)) { // nucleus
-        targetMassNumber = get_nucleus_A(targetCode);
+        targetMassNumber = get_nucleus_A(targetCode);       
         if (targetMassNumber > maxMassNumber_)
           throw std::runtime_error("QgsjetII target mass outside range.");
       } else {

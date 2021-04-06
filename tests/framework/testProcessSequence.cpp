@@ -696,7 +696,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = -100; // data negative
+    particle.data_[0] = -100; // data positive
     sequence4.selectInteraction(view, lambda_select);
     sequence4.doSecondaries(view);
     sequence4.selectDecay(view, time_select);

@@ -56,19 +56,16 @@ Get in contact
 
 Installation
 ------------
-
 CORSIKA 8 is tested regularly at least on gcc7.3.0 and clang-8.0.0. 
 
 Prerequisites
 ~~~~~~~~~~~~~
-
 You will also need:
-
-- Python 3 (supported versions are Python >= 3.6), with pip
-- conan (via pip)
-- cmake 
-- git
-- g++, gfortran, binutils, make
+  * Python 3 (supported versions are Python >= 3.6), with pip
+  * conan (via pip)
+  * cmake 
+  * git
+  * g++, gfortran, binutils, make
 
 On a bare Ubuntu 20.04, just add:
 ::
