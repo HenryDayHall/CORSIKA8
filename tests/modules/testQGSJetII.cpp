@@ -18,7 +18,7 @@
 
 #include <string>
 #include <cstdlib>
-#include <experimental/filesystem>
+#include <boost/filesystem.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -56,13 +56,12 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
     const char* data = std::getenv("CORSIKA_DATA");
     // these CHECKS are needed:
     CHECK(data != 0);
-    CHECK(std::experimental::filesystem::is_directory(
-        std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
+    CHECK(boost::filesystem::is_directory(boost::filesystem::path(data) / "QGSJetII"));
     CORSIKA_LOG_INFO(
         "data: {}"
         " isDir: {}"
         "/QGSJetII",
-        data, std::experimental::filesystem::is_directory(std::string(data)));
+        data, boost::filesystem::is_directory(data));
   }
 }
 
