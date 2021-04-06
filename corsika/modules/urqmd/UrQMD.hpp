@@ -16,6 +16,7 @@
 
 #include <corsika/setup/SetupStack.hpp>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/multi_array.hpp>
 
 #include <array>
