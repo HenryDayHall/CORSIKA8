@@ -46,9 +46,6 @@ namespace corsika {
         // interface checking on TProcess1
         static_assert(
             has_method_doBoundaryCrossing_v<TProcess1, ProcessReturn, TParticle>,
-            //                                            typename TParticle::node_type
-            //                                            const&,
-            //                    typename TParticle::node_type const&>,
             "TDerived has no method with correct signature \"ProcessReturn "
             "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
             "required for "
@@ -67,9 +64,6 @@ namespace corsika {
         // interface checking on TProcess2
         static_assert(
             has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle&>,
-            //                                            typename TParticle::node_type
-            //                                            const&,
-            //                    typename TParticle::node_type const&>,
             "TDerived has no method with correct signature \"ProcessReturn "
             "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
             "required for "
@@ -398,7 +392,6 @@ namespace corsika {
       if (decay_inv_select <= decay_inv_sum) {
 
         // interface checking on TProcess1
-
         static_assert(has_method_doDecay_v<TProcess2, void, TSecondaryView&>,
                       "TDerived has no method with correct signature \"void "
                       "doDecay(TSecondaryView&)\" required for "

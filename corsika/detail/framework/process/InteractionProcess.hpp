@@ -12,61 +12,85 @@
 
 namespace corsika {
 
-  // doInteract
+  /**
+     traits test for InteractionProcess::doInteraction method
+  */
 
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_doInteract : public detail::has_method_signature<TReturn, TArgs...> {
 
+    ///! method signature
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
 
-    // the default value
+    //! the default value
     template <class T>
     static std::false_type test(...);
 
-    // signature of templated method
+    //! signature of templated method
     template <class T>
     static decltype(testSignature(&T::template doInteraction<TArgs...>)) test(
         std::nullptr_t);
 
-    // signature of non-templated method
+    //! signature of non-templated method
     template <class T>
     static decltype(testSignature(&T::doInteraction)) test(std::nullptr_t);
 
   public:
+    /** 
+	@name traits results
+	@{
+    */   
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
+    //! @}
   };
 
+  //! @file BoundaryCrossingProcess.hpp
+  //! value traits type
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_doInteract_v =
       has_method_doInteract<TProcess, TReturn, TArgs...>::value;
 
-  // getInteractionLength
+  
+  /**
+     traits test for InteractionProcess::getInteractionLength method
+  */
 
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getInteractionLength
       : public detail::has_method_signature<TReturn, TArgs...> {
 
+    ///! method signature
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
 
-    // the default value
+    //! the default value
     template <class T>
     static std::false_type test(...);
 
+    //! templated parameter option
     template <class T>
     static decltype(testSignature(&T::template getInteractionLength<TArgs...>)) test(
         std::nullptr_t);
 
+    //! non templated parameter option
     template <class T>
     static decltype(testSignature(&T::getInteractionLength)) test(std::nullptr_t);
 
   public:
+    /** 
+	@name traits results
+	@{
+    */   
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
+    //! @}
   };
 
+  //! @file BoundaryCrossingProcess.hpp
+  //! value traits type
+  
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_getInteractionLength_v =
       has_method_getInteractionLength<TProcess, TReturn, TArgs...>::value;
-
+  
 } // namespace corsika

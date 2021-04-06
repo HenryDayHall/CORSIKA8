@@ -12,62 +12,81 @@
 
 namespace corsika {
 
-  // test for doContinuous method
-
+  /**
+     traits test for ContinuousProcess::doContinuous method
+  */
   template <class TProcess, typename TReturn, typename TArg1, typename TArg2>
   struct has_method_doContinuous
       : public detail::has_method_signature<TReturn, TArg1, TArg2, bool> {
 
+    //! method signature
     using detail::has_method_signature<TReturn, TArg1, TArg2, bool>::testSignature;
 
-    // the default value
+    //! the default value
     template <class T>
     static std::false_type test(...);
 
-    // templated parameter option
+    //! templated parameter option
     template <class T>
     static decltype(testSignature(&T::template doContinuous<TArg1, TArg2>)) test(
         std::nullptr_t);
 
-    // non templated parameter option
+    //! non templated parameter option
     template <class T>
     static decltype(testSignature(&T::doContinuous)) test(std::nullptr_t);
 
   public:
+    /** 
+	@name traits results
+	@{
+    */   
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
+    //! @}
   };
 
+  //! @file ContinuousProcess.hpp
+  //! value traits type
   template <class TProcess, typename TReturn, typename TArg1, typename TArg2>
   bool constexpr has_method_doContinuous_v =
       has_method_doContinuous<TProcess, TReturn, TArg1, TArg2>::value;
 
-  // test for getMaxStepLength method
+  
+  /**
+     traits test for ContinuousProcess::getMaxStepLength method
+  */
 
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getMaxStepLength
       : public detail::has_method_signature<TReturn, TArgs...> {
 
+    //! method signature
     using detail::has_method_signature<TReturn, TArgs...>::testSignature;
 
-    // the default value
+    //! the default value
     template <class T>
     static std::false_type test(...);
 
-    // templated option
+    //! templated option
     template <class T>
     static decltype(testSignature(&T::template getMaxStepLength<TArgs...>)) test(
         std::nullptr_t);
 
-    // non templated option
+    //! non templated option
     template <class T>
     static decltype(testSignature(&T::getMaxStepLength)) test(std::nullptr_t);
 
   public:
+    /** 
+	@name traits results
+	@{
+    */   
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
+    //! @}
   };
 
+  //! value traits type
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_getMaxStepLength_v =
       has_method_getMaxStepLength<TProcess, TReturn, TArgs...>::value;
