@@ -77,21 +77,19 @@ TEST_CASE("UrQMD") {
     auto const& cs = *csPtr;
     { [[maybe_unused]] auto const& env_dummy = env; }
 
-    Code validProjectileCodes[] = {Code::PiPlus,  Code::PiMinus, Code::Proton,
-                                   Code::Neutron, Code::KPlus,   Code::KMinus,
-                                   Code::K0,      Code::K0Bar,   Code::K0Long};
+    Code validProjectileCodes[] = {Code::PiPlus,     Code::PiMinus,     Code::Proton,
+                                   Code::AntiProton, Code::AntiNeutron, Code::Neutron,
+                                   Code::KPlus,      Code::KMinus,      Code::K0,
+                                   Code::K0Bar,      Code::K0Long};
 
     for (auto code : validProjectileCodes) {
-      auto [stack, view] = setup::testing::setup_stack(
-          code, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-      CHECK(stack->getEntries() == 1);
-      CHECK(view->getEntries() == 0);
+      auto [stack, view] = setup::testing::setup_stack(code, 0, 0, 100_GeV, nodePtr, cs);
+      REQUIRE(stack->getEntries() == 1);
+      REQUIRE(view->getEntries() == 0);
 
       // simple check whether the cross-section is non-vanishing
-      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Proton) / 1_mb > 0);
-      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Nitrogen) / 1_mb > 0);
-      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Oxygen) / 1_mb > 0);
-      CHECK(urqmd.getCrossSection(view->getProjectile(), Code::Argon) / 1_mb > 0);
+      // only nuclei with available tabluated data so far
+      REQUIRE(urqmd.getInteractionLength(stack->getNextParticle()) > 1_g / square(1_cm));
     }
   }
 
