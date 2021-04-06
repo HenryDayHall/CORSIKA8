@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include <string>
+#include <boost/filesystem/path.hpp>
 
 namespace corsika {
   /**
    * returns the full path of the file \p filename within the CORSIKA_DATA directory
    */
-  std::string corsika_data(std::string const& filename);
+  boost::filesystem::path corsika_data(boost::filesystem::path const& filename);
 } // namespace corsika
 
 #include <corsika/detail/framework/utility/CorsikaData.inl>

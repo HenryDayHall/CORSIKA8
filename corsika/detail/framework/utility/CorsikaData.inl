@@ -7,14 +7,15 @@
  */
 #pragma once
 
+#include <boost/filesystem/path.hpp>
+
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
 
-inline std::string corsika::corsika_data(std::string const& key) {
+inline boost::filesystem::path corsika::corsika_data(boost::filesystem::path const& key) {
   if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
-    auto const path = std::string(p) + "/" + key;
-    return path;
+    return boost::filesystem::path(p) / key;
   } else {
     throw std::runtime_error("CORSIKA_DATA not set");
   }
