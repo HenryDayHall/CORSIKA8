@@ -15,7 +15,7 @@
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/multi_array.hpp>
 
 #include <algorithm>
