@@ -397,7 +397,7 @@ namespace corsika::urqmd {
   }
 
   inline void UrQMD::readXSFile(boost::filesystem::path const& filename) {
-    std::ifstream file(filename, std::ios::in);
+    boost::filesystem::ifstream file(filename, std::ios::in);
 
     if (!file.is_open()) {
       throw std::runtime_error(filename.native() + " could not be opened.");
