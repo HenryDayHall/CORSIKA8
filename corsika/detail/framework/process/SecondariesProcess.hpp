@@ -36,10 +36,10 @@ namespace corsika {
     static decltype(testSignature(&T::doSecondaries)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}

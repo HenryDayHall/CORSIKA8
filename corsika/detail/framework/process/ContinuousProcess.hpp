@@ -36,10 +36,10 @@ namespace corsika {
     static decltype(testSignature(&T::doContinuous)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
@@ -51,7 +51,6 @@ namespace corsika {
   bool constexpr has_method_doContinuous_v =
       has_method_doContinuous<TProcess, TReturn, TArg1, TArg2>::value;
 
-  
   /**
      traits test for ContinuousProcess::getMaxStepLength method
   */
@@ -77,10 +76,10 @@ namespace corsika {
     static decltype(testSignature(&T::getMaxStepLength)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}

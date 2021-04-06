@@ -38,10 +38,10 @@ namespace corsika {
     static decltype(testSignature(&T::doDecay)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<process_type>(nullptr));
     static const bool value = type::value;
     //! @}
@@ -67,7 +67,7 @@ namespace corsika {
     template <class T>
     static std::false_type test(...);
 
-    //! signature of templated method    
+    //! signature of templated method
     template <class T>
     static decltype(testSignature(&T::template getLifetime<TArgs...>)) test(
         std::nullptr_t);
@@ -77,10 +77,10 @@ namespace corsika {
     static decltype(testSignature(&T::getLifetime)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}

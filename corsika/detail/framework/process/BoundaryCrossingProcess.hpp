@@ -40,10 +40,10 @@ namespace corsika {
     static decltype(testSignature(&T::doBoundaryCrossing)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
@@ -51,7 +51,7 @@ namespace corsika {
 
   //! @file BoundaryCrossingProcess.hpp
   //! value traits type
-  
+
   template <class TProcess, typename TReturn, typename TParticle>
   bool constexpr has_method_doBoundaryCrossing_v =
       has_method_doBoundaryCrossing<TProcess, TReturn, TParticle>::value;

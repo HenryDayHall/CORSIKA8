@@ -36,10 +36,10 @@ namespace corsika {
     static decltype(testSignature(&T::doInteraction)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
@@ -51,7 +51,6 @@ namespace corsika {
   bool constexpr has_method_doInteract_v =
       has_method_doInteract<TProcess, TReturn, TArgs...>::value;
 
-  
   /**
      traits test for InteractionProcess::getInteractionLength method
   */
@@ -77,10 +76,10 @@ namespace corsika {
     static decltype(testSignature(&T::getInteractionLength)) test(std::nullptr_t);
 
   public:
-    /** 
-	@name traits results
-	@{
-    */   
+    /**
+        @name traits results
+        @{
+    */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
@@ -88,9 +87,9 @@ namespace corsika {
 
   //! @file BoundaryCrossingProcess.hpp
   //! value traits type
-  
+
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_getInteractionLength_v =
       has_method_getInteractionLength<TProcess, TReturn, TArgs...>::value;
-  
+
 } // namespace corsika

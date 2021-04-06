@@ -21,7 +21,6 @@
 
 #include <boost/type_index.hpp>
 
-
 /*
   Unit test for testing all Process types and their arrangement in
   containers ProcessSequence and SwitchProcessSequence
@@ -34,7 +33,8 @@ static int const nData = 10;
 
 // DummyNode is only needed for BoundaryCrossingProcess
 struct DummyNode {
-  DummyNode(int v) : data_(v) {}
+  DummyNode(int v)
+      : data_(v) {}
   int data_ = 0;
 };
 
@@ -58,7 +58,6 @@ struct DummyView {
   DummyData& p_;
   DummyData& parent() { return p_; }
 };
-
 
 int globalCount = 0; // simple counter
 
@@ -334,19 +333,20 @@ private:
 
 class Boundary1 : public BoundaryCrossingProcess<Boundary1> {
 public:
-  Boundary1(double const v=1.0) : v_(v) {}
-  
+  Boundary1(double const v = 1.0)
+      : v_(v) {}
+
   template <typename Particle>
   ProcessReturn doBoundaryCrossing(Particle& p, typename Particle::node_type const& from,
                                    typename Particle::node_type const& to) {
 
-    for (int i = 0; i < nData; ++i) { p.data_[i] += v_*(from.data_ - to.data_); }
+    for (int i = 0; i < nData; ++i) { p.data_[i] += v_ * (from.data_ - to.data_); }
     return ProcessReturn::Ok;
   }
+
 private:
   double v_ = 0.0;
 };
-
 
 TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
@@ -537,9 +537,11 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     DummyData particle;
     DummyNode node_from(5);
     DummyNode node_to(4);
-    
+
     int const nLoop = 20;
-    for (int i = 0; i < nLoop; ++i) { sequence1.doBoundaryCrossing(particle, node_from, node_to); }
+    for (int i = 0; i < nLoop; ++i) {
+      sequence1.doBoundaryCrossing(particle, node_from, node_to);
+    }
 
     for (int i = 0; i < nData; i++) {
       CORSIKA_LOG_DEBUG("data_[{}]={}", i, particle.data_[i]);
@@ -550,7 +552,6 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     CHECK(contains_stack_process_v<decltype(sequence1)> == false);
     CHECK(count_processes<decltype(sequence1)>::count == 1);
   }
-  
 }
 
 TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
@@ -581,15 +582,17 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
   auto sequence3 = make_sequence(cp1, Process3(0),
                                  SwitchProcessSequence(sequence1, sequence2, select1));
 
-  auto sequence4 = make_sequence(cp1, Boundary1(2.0), Process3(0),
-                                 SwitchProcessSequence(sequence1, Boundary1(-1.0), select1));
+  auto sequence4 =
+      make_sequence(cp1, Boundary1(2.0), Process3(0),
+                    SwitchProcessSequence(sequence1, Boundary1(-1.0), select1));
 
   SECTION("Check construction") {
 
-    auto sequence_alt =
-        make_sequence(cp1, Process3(0),
-                      make_select(make_sequence(Process1(0), cp2, Decay1(0), Boundary1(1.0)),
-                                  make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0)), select1));
+    auto sequence_alt = make_sequence(
+        cp1, Process3(0),
+        make_select(make_sequence(Process1(0), cp2, Decay1(0), Boundary1(1.0)),
+                    make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0)),
+                    select1));
 
     auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
     CHECK(is_process_sequence_v<decltype(switch_seq)>);
@@ -699,10 +702,10 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     sequence4.selectDecay(view, time_select);
     sequence4.doSecondaries(view);
     CHECK(checkInteract == 0);
-    CHECK(checkDecay == 0);   
+    CHECK(checkDecay == 0);
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
-    
+
     // check that large "select" value will correctly ignore the call
     lambda_select = 1e5 * square(1_cm) / 1_g;
     time_select = 1e5 / second;
@@ -815,14 +818,13 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     sequence4.doBoundaryCrossing(particle, node_from, node_to);
 
     CHECK(particle.data_[0] == 97); // 100 - 2*1 - 1*1
-    
+
     particle.data_[0] =
         -100; // data positive, selects particular branch on SwitchProcessSequence
 
     sequence4.doBoundaryCrossing(particle, node_from, node_to);
     CHECK(particle.data_[0] == -101); // -100 - 2*1 + 1*1
   }
-
 }
 
 TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
