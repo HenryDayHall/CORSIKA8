@@ -79,6 +79,8 @@ TEST_CASE("QgsjetII", "[processes]") {
   SECTION("QgsjetII -> Corsika") {
     CHECK(Code::PiPlus == corsika::qgsjetII::convertFromQgsjetII(
                               corsika::qgsjetII::QgsjetIICode::PiPlus));
+    CHECK_THROWS(
+        corsika::qgsjetII::convertFromQgsjetII(corsika::qgsjetII::QgsjetIICode::Unknown));
   }
 
   SECTION("Corsika -> QgsjetII") {
@@ -169,12 +171,12 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
           Approx(0).margin(1e-2));
   }
-  
+
   SECTION("InteractionInterface Nuclei") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, 20, 10, 10100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::Nucleus, 20, 10, 10100_GeV,
+        (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
     auto projectile = secViewPtr->getProjectile();
@@ -188,37 +190,37 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   }
 
   SECTION("Heavy nuclei") {
-    
+
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, 1000, 1000, 1100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::Nucleus, 1000, 1000, 1100_GeV,
+        (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
-    
+
     corsika::qgsjetII::Interaction model;
-        
-    CHECK_THROWS(model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 10., 1000.));
-    CHECK_THROWS(model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 1000., 10.));
+
+    CHECK_THROWS(
+        model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 10., 1000.));
+    CHECK_THROWS(
+        model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 1000., 10.));
     CHECK_THROWS(model.doInteraction(view));
     CHECK_THROWS(model.getInteractionLength(particle));
   }
 
   SECTION("Allowed Particles") {
-    
+
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Electron, 0, 0, 1100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
-    setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
-    
-    corsika::qgsjetII::Interaction model;
-        
-    GrammageType const  length = model.getInteractionLength(particle);
-    CHECK(length / (1_g / square(1_cm)) == std::numeric_limits<double>::infinity());    
-  }
 
+    corsika::qgsjetII::Interaction model;
+
+    GrammageType const length = model.getInteractionLength(particle);
+    CHECK(length / (1_g / square(1_cm)) == std::numeric_limits<double>::infinity());
+  }
 }

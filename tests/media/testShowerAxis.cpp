@@ -62,7 +62,7 @@ TEST_CASE("Homogeneous Density") {
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              false, // -> do not throw exceptions
+                              true, // -> do not throw exceptions
                               20};   // -> number of bins
 
   CHECK(showerAxis.getSteplength() == 500_m);
@@ -80,4 +80,7 @@ TEST_CASE("Homogeneous Density") {
   const Vector<dimensionless_d> dir{cs, {0, 0, -1}};
   CHECK(showerAxis.getDirection().getComponents(cs) == dir.getComponents(cs));
   CHECK(showerAxis.getStart().getCoordinates() == injectionPos.getCoordinates());
+
+  CHECK_THROWS(showerAxis.getX(-1_m));
+  CHECK_THROWS(showerAxis.getX((injectionPos-showerCore).getNorm()+1_m));
 }

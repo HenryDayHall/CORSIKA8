@@ -53,9 +53,9 @@ namespace corsika {
      **/
     size_t getSize() const;
 
-    /// Returns a const reference to the fraction
+    //! Returns a const reference to the fraction
     std::vector<float> const& getFractions() const;
-    /// Returns a const reference to the fraction
+    //! Returns a const reference to the fraction
     std::vector<Code> const& getComponents() const;
     double const getAverageMassNumber() const;
 
@@ -63,9 +63,12 @@ namespace corsika {
     Code sampleTarget(std::vector<CrossSectionType> const& sigma,
                       TRNG& randomStream) const;
 
-    // Note: when this class ever modifies its internal data, the hash
+    // Note: when this class ever modifies its internal data, the hash 
     // must be updated, too!
     size_t getHash() const;
+
+    //! based on hash value
+    bool operator==(NuclearComposition const& v) const;
 
   private:
     void updateHash();

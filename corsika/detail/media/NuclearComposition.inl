@@ -97,9 +97,13 @@ namespace corsika {
     return components_[iChannel];
   }
 
-  // Note: when this class ever modifies its internal data, the hash
+  // Note: when this class ever modifies its internal data, the hash 
   // must be updated, too!
   inline size_t NuclearComposition::getHash() const { return hash_; }
+
+  inline bool NuclearComposition::operator==(NuclearComposition const& v) const {
+    return v.hash_ == hash_;
+  }
 
   inline void NuclearComposition::updateHash() {
     std::vector<std::size_t> hashes;
