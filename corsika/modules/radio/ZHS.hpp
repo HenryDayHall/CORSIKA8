@@ -22,9 +22,9 @@ namespace corsika {
   template <typename TRadioDetector, typename TPropagator>
   class ZHS final : public RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>, TPropagator> {
 
-      using Base = RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>, TPropagator>;
-      using Base::detector_;
-      
+    using Base = RadioProcess<TRadioDetector, ZHS<TRadioDetector, TPropagator>, TPropagator>;
+    using Base::detector_;
+
   public:
     using ElectricFieldVector =
     QuantityVector<ElectricFieldType::dimension_type>;
@@ -113,7 +113,7 @@ namespace corsika {
      */
     template <typename Particle, typename Track>
     LengthType MaxStepLength(Particle const& particle,
-                                        Track const& track) const {
+                             Track const& track) const {
 
       // TODO : This is where we control the maximum step size
       // of a particle track in order to maintain the accuracy

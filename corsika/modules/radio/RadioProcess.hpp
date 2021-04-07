@@ -29,7 +29,7 @@ namespace corsika {
    */
   template <typename TRadioDetector, typename TRadioImpl, typename TPropagator>
   class RadioProcess : public ContinuousProcess<
-                           RadioProcess<TRadioDetector, TRadioImpl, TPropagator>> {
+      RadioProcess<TRadioDetector, TRadioImpl, TPropagator>> {
 
 //    using ParticleType = corsika::setup::Stack::particle_type;
 //    using TrackType = corsika::LeapFrogTrajectory;
@@ -112,26 +112,26 @@ namespace corsika {
        * TODO: This is placeholder so we can use text output while
        * we wait for the true output formatting to be ready.
        **/
-      bool writeOutput() const {
-        // this for loop still has some issues
-        int i = 1;
-        for (auto& antenna : detector_.getAntennas()) {
+    bool writeOutput() const {
+      // this for loop still has some issues
+      int i = 1;
+      for (auto& antenna : detector_.getAntennas()) {
 
-          auto [t,E] = antenna.getWaveform();
-          auto c = xt::hstack(xt::xtuple(t,E));
-          std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
-          xt::dump_csv(out_file, c);
-          out_file.close();
-          ++i;
-
-        }
-        // how this method should work:
-        // 1. Loop over the antennas in the collection
-        // 2. Get their waveforms
-        // 3. Create a text file for each antenna
-        // 4. and write out two columns, time and field.
+        auto [t,E] = antenna.getWaveform();
+        auto c = xt::hstack(xt::xtuple(t,E));
+        std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
+        xt::dump_csv(out_file, c);
+        out_file.close();
+        ++i;
 
       }
+      // how this method should work:
+      // 1. Loop over the antennas in the collection
+      // 2. Get their waveforms
+      // 3. Create a text file for each antenna
+      // 4. and write out two columns, time and field.
+
+    }
 
     /**
    * Return the maximum step length for this particle and track.

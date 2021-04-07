@@ -31,7 +31,7 @@ namespace corsika {
 
     // this stores the polarization vector of an electric field
     using ElectricFieldVector =
-        QuantityVector<ElectricFieldType::dimension_type>;
+    QuantityVector<ElectricFieldType::dimension_type>;
 //    using MagneticFieldVector =
 //        QuantityVector<MagneticFieldType::dimension_type>;
 
@@ -61,8 +61,8 @@ namespace corsika {
      * for the particular antenna implementation and usage.
      *
      */
-     template <typename... TVArgs>
-     void receive(TVArgs&&... args);
+    template <typename... TVArgs>
+    void receive(TVArgs&&... args);
 
     /**
      * Get the location of this antenna.
