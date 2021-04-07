@@ -96,6 +96,11 @@ namespace corsika::units::si {
       phys::units::quantity<phys::units::dimensions<2, -1, 0>, double>;
   using MagneticFluxType =
       phys::units::quantity<phys::units::magnetic_flux_density_d, double>;
+  using ElectricFieldType =
+  phys::units::quantity<phys::units::dimensions<1, 1, -3, -1>, double>;
+  using MagneticFieldType =
+  phys::units::quantity<phys::units::dimensions<-1, 0, 0, 1>, double>;
+
 
   template <typename DimFrom, typename DimTo>
   auto constexpr conversion_factor_HEP_to_SI() {
