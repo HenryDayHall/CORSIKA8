@@ -97,7 +97,7 @@ namespace corsika {
     return components_[iChannel];
   }
 
-  // Note: when this class ever modifies its internal data, the hash 
+  // Note: when this class ever modifies its internal data, the hash
   // must be updated, too!
   inline size_t NuclearComposition::getHash() const { return hash_; }
 

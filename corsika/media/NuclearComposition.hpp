@@ -63,7 +63,7 @@ namespace corsika {
     Code sampleTarget(std::vector<CrossSectionType> const& sigma,
                       TRNG& randomStream) const;
 
-    // Note: when this class ever modifies its internal data, the hash 
+    // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
     size_t getHash() const;
 

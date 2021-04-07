@@ -220,7 +220,7 @@ TEST_CASE("InhomogeneousMedium") {
     CHECK(rho.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
           inhMedium.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
     CHECK(inhMedium.getNuclearComposition() == composition);
-    CHECK(inhMedium.getMassDensity({gCS, {0_m, 0_m, 0_m}}) == 1_kg/static_pow<3>(1_m));
+    CHECK(inhMedium.getMassDensity({gCS, {0_m, 0_m, 0_m}}) == 1_kg / static_pow<3>(1_m));
   }
 }
 
@@ -240,7 +240,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 30_km);
 
   CHECK_THROWS(builder.addLinearLayer(0.5_km, 5_km));
-  
+
   CHECK(builder.getSize() == 3);
 
   auto const builtEnv = builder.assemble();
@@ -307,7 +307,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
                                      ->getModelProperties()
                                      .getMagneticField(pTest2)
                                      .getComponents(gCS));
- }
+}
 
 TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   // setup environment, geometry

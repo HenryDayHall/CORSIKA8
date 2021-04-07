@@ -63,7 +63,7 @@ TEST_CASE("Homogeneous Density") {
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
                               true, // -> do not throw exceptions
-                              20};   // -> number of bins
+                              20};  // -> number of bins
 
   CHECK(showerAxis.getSteplength() == 500_m);
 
@@ -82,5 +82,5 @@ TEST_CASE("Homogeneous Density") {
   CHECK(showerAxis.getStart().getCoordinates() == injectionPos.getCoordinates());
 
   CHECK_THROWS(showerAxis.getX(-1_m));
-  CHECK_THROWS(showerAxis.getX((injectionPos-showerCore).getNorm()+1_m));
+  CHECK_THROWS(showerAxis.getX((injectionPos - showerCore).getNorm() + 1_m));
 }
