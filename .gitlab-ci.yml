@@ -32,6 +32,7 @@ stages:
   - build_test
   - example
   - build_test_example
+  - python
   - install
   - optional
 
