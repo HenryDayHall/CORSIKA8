@@ -23,6 +23,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Cascade.hpp>
+#include <corsika/output/DummyOutputManager.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 #include <corsika/media/Environment.hpp>
@@ -243,7 +244,8 @@ int main(int argc, char** argv) {
 
   // define air shower object, run simulation
   setup::Tracking tracking;
-  Cascade EAS(env, tracking, sequence, stack);
+  DummyOutputManager output;
+  Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.SetNodes();

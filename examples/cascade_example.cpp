@@ -14,6 +14,7 @@
 
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/output/DummyOutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -140,7 +141,7 @@ int main() {
   // cascade with only HE model ==> HE cut
   ParticleCut cut(80_GeV, true, true);
 
-  TrackWriter trackWriter("tracks.dat");
+  TrackWriter trackWriter;
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
@@ -148,7 +149,8 @@ int main() {
       make_sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
+  DummyOutputManager output;
+  Cascade EAS(env, tracking, sequence, output, stack);
 
   EAS.run();
 

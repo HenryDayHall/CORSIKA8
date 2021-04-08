@@ -14,6 +14,7 @@
 
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/output/DummyOutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -21,6 +22,7 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -130,7 +132,7 @@ int main() {
   // HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
-  TrackWriter trackWriter("tracks.dat");
+  TrackWriter trackWriter;
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
   BetheBlochPDG eLoss{showerAxis};
 
@@ -141,7 +143,8 @@ int main() {
   auto sequence = make_sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);
 
   // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
+  DummyOutputManager output;
+  Cascade EAS(env, tracking, sequence, output, stack);
   EAS.run();
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;

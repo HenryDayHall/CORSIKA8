@@ -13,6 +13,7 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/output/DummyOutputManager.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -42,6 +43,7 @@
 #include <iostream>
 #include <limits>
 #include <typeinfo>
+#include <fstream>
 
 using namespace corsika;
 using namespace std;
@@ -121,7 +123,7 @@ int main() {
 
   ParticleCut cut(50_GeV, true, true);
 
-  TrackWriter trackWriter("boundary_tracks.dat");
+  TrackWriter trackWriter;
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
@@ -164,7 +166,8 @@ int main() {
   }
 
   // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
+  DummyOutputManager output;
+  Cascade EAS(env, tracking, sequence, output, stack);
 
   EAS.run();
 
