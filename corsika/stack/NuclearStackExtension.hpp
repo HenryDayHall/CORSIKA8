@@ -101,7 +101,7 @@ namespace corsika::nuclear_stack {
     /**
      * Overwrite normal getKineticEnergy function with nuclear version
      */
-    HEPMassType getKineticEnergy() const;
+    HEPEnergyType getKineticEnergy() const;
 
     /**
      * Overwirte normal getChargeNumber function with nuclear version
