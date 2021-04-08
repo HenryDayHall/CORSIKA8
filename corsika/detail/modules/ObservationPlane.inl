@@ -6,6 +6,9 @@
  * the license.
  */
 
+#include <corsika/setup/SetupStack.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
+
 namespace corsika {
 
   template <typename TOutput>
@@ -47,7 +50,7 @@ namespace corsika {
 
   template <typename TOutput>
   inline LengthType ObservationPlane<TOutput>::getMaxStepLength(
-      corsika::setup::Stack::particle_type const& vParticle,
+      corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
 
     Intersections const intersection =

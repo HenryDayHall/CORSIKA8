@@ -54,8 +54,7 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
   SECTION("horizontal plane") {
 
     Plane const obsPlane(Point(cs, {10_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}), "particles.dat",
-                         true);
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
@@ -66,8 +65,7 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
   SECTION("transparent plane") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), "particles.dat",
-                         false);
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 0., 1.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
@@ -85,8 +83,7 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
     Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
                          DirectionVector(cs, {1, 0.1, -0.05}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}), "particles.dat",
-                         true);
+    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);

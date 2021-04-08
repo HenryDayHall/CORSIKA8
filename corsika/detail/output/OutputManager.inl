@@ -145,7 +145,6 @@ namespace corsika {
     if (state_ == OutputState::LibraryReady) { endOfLibrary(); }
   }
 
-  // void OutputManager::add(std::string const& name, BaseOutput& output) {
   template <typename TOutput>
   void OutputManager::add(std::string const& name, TOutput& output) {
 
