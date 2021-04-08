@@ -6,6 +6,7 @@ boost/1.74.0
 zlib/1.2.11
 yaml-cpp/0.6.3
 arrow/2.0.0
+zstd/1.4.9
 
 [generators]
 cmake
@@ -13,7 +14,7 @@ cmake
 [options]
 arrow:shared=False
 arrow:parquet=True
-arrow:with_zlib=True
+arrow:with_zlib=False
 arrow:fPIC=False
 arrow:with_re2=False
 arrow:with_protobuf=False

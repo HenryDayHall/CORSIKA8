@@ -30,6 +30,11 @@ namespace corsika {
     fields_.push_back(parquet::schema::PrimitiveNode::Make(args...));
   }
 
+  void ParquetStreamer::enableCompression(int const level) {
+    builder_.compression(parquet::Compression::ZSTD);
+    builder_.compression_level(level);
+  }
+
   void ParquetStreamer::buildStreamer() {
 
     // build the top level schema
@@ -47,8 +52,6 @@ namespace corsika {
     outfile_->Close();
   }
 
-  std::shared_ptr<parquet::StreamWriter> ParquetStreamer::getWriter() {
-    return writer_;
-  }
+  std::shared_ptr<parquet::StreamWriter> ParquetStreamer::getWriter() { return writer_; }
 
 } // namespace corsika

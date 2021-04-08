@@ -51,6 +51,11 @@ namespace corsika {
     void addField(TArgs&&... args);
 
     /**
+     * Enable compression for this streamer.
+     */
+    void enableCompression(int const level = 3);
+
+    /**
      * Finalize the streamer construction.
      */
     void buildStreamer();
