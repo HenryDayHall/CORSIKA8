@@ -17,6 +17,11 @@
 using namespace corsika;
 using namespace std;
 
+template <typename TParticle>
+HEPEnergyType kineticEnergy(TParticle const p) {
+  return p.getEnergy() - get_mass(p.getPID());
+}
+
 TEST_CASE("VectorStack", "[stack]") {
 
   logging::set_level(logging::level::info);
@@ -37,6 +42,7 @@ TEST_CASE("VectorStack", "[stack]") {
     auto pout = s.getNextParticle();
     CHECK(pout.getPID() == Code::Electron);
     CHECK(pout.getEnergy() == 1.5_GeV);
+    CHECK(pout.getKineticEnergy() == kineticEnergy(pout));
     CHECK(pout.getTime() == 100_s);
   }
 

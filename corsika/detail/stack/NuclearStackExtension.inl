@@ -123,6 +123,13 @@ namespace corsika::nuclear_stack {
 
   template <template <typename> class InnerParticleInterface,
             typename StackIteratorInterface>
+  inline HEPEnergyType NuclearParticleInterface<
+      InnerParticleInterface, StackIteratorInterface>::getKineticEnergy() const {
+    return this->getEnergy() - this->getMass();
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
   inline int16_t NuclearParticleInterface<
       InnerParticleInterface, StackIteratorInterface>::getChargeNumber() const {
     if (super_type::getPID() == Code::Nucleus) return getNuclearZ();

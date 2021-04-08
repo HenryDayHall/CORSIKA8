@@ -17,6 +17,14 @@ using namespace corsika;
 #include <iostream>
 using namespace std;
 
+template <typename TParticle>
+HEPEnergyType kineticEnergy(TParticle const p) {
+  if (p.getPID() == Code::Nucleus)
+    return p.getEnergy() - get_nucleus_mass(p.getNuclearA(), p.getNuclearZ());
+  else
+    return p.getEnergy() - get_mass(p.getPID());
+}
+
 TEST_CASE("NuclearStackExtension", "[stack]") {
 
   logging::set_level(logging::level::info);
@@ -64,13 +72,18 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
   }
 
   SECTION("read nucleus") {
+    auto const A = 10;
+    auto const Z = 9;
     nuclear_stack::ParticleDataStack s;
     s.addParticle(std::make_tuple(
         Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, A, Z));
     const auto pout = s.getNextParticle();
     CHECK(pout.getPID() == Code::Nucleus);
     CHECK(pout.getEnergy() == 1.5_GeV);
+    CHECK(pout.getMass() == get_nucleus_mass(A, Z));
+    CHECK(pout.getKineticEnergy() == kineticEnergy(pout));
+    CHECK(pout.getKineticEnergy() > 0_GeV);
     CHECK(pout.getTime() == 100_s);
     CHECK(pout.getNuclearA() == 10);
     CHECK(pout.getNuclearZ() == 9);

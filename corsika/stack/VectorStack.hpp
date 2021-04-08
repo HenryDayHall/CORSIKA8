@@ -95,6 +95,8 @@ namespace corsika {
 
     ElectricChargeType getCharge() const { return get_charge(this->getPID()); }
 
+    HEPEnergyType getKineticEnergy() const { return this->getEnergy() - this->getMass(); }
+
     int16_t getChargeNumber() const { return get_charge_number(this->getPID()); }
     ///@}
   };
