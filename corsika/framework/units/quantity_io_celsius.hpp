@@ -22,14 +22,14 @@
 namespace phys { namespace units {
 
 /**
- * celsius, [°C].
+ * celsius, [C].
  */
 template<>
 struct unit_info< thermodynamic_temperature_d >
 {
     static bool        single() { return true; }
     static std::string name()   { return "celsius"; }
-    static std::string symbol() { return "°C"; }
+    static std::string symbol() { return "C"; }
 };
 
 namespace literals {

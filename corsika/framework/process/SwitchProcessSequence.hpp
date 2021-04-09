@@ -9,7 +9,7 @@
 #pragma once
 
 /**
- * \file SwitchProcessSequence.hpp
+  @file SwitchProcessSequence.hpp
  **/
 
 #include <corsika/framework/process/BaseProcess.hpp>
@@ -31,12 +31,20 @@
 namespace corsika {
 
   /**
-   * enum for the process switch selection: identify if First or
-   * Second process branch should be used.
-   **/
+     @enum
+     @ingroup Processes
+
+     enum for the process switch selection: identify if First or Second
+     process branch should be used.
+     @var SwitchResult::First Follow first branch in SwitchProcessSequence
+     @var SwitchResult::Second Follow second branch in SwitchProcessSequence
+   */
   enum class SwitchResult { First, Second };
 
   /**
+     @ingroup Processes
+     @{
+
      Class to switch between two process branches
 
      A compile-time static list of processes that uses an internal
@@ -59,12 +67,17 @@ namespace corsika {
      particle stack and not on indiviidual particles.
 
      Template parameters:
-      - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - IndexFirstProcess, IndexOfProcess1, IndexOfProcess2 are to count and index each
-  ContinuousProcess in the entire process-chain
+      @tparam TProcess1 is of type BaseProcess, either a dedicatd process, or a
+  ProcessSequence
+      @tparam TProcess2 is of type BaseProcess, either a dedicatd process, or a
+  ProcessSequence
+      @tparam TSelect selector functor/function
+      @tparam IndexFirstProcess to count and index each Process in the entire
+  process-chain
+      @tparam IndexOfProcess1 index of TProcess1 (counting of Process)
+      @tparam IndexOfProcess2 index of TProcess2 (counting of Process)
 
-     See also class \sa ProcessSequence
+     See also class ProcessSequence.
   **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect,
@@ -120,7 +133,7 @@ namespace corsika {
      *
      * \param in_A process branch A
      * \param in_A process branch B
-     * \param sel functor to swtich between branch A and B
+     * \param sel functor to switch between branch A and B
      **/
     SwitchProcessSequence(TProcess1 in_A, TProcess2 in_B, TSelect sel)
         : select_(sel)
@@ -185,14 +198,13 @@ namespace corsika {
   };
 
   /**
-   *
    * the functin `make_select(proc1,proc1,selector)` assembles many
    * BaseProcesses, and ProcessSequences into a SwitchProcessSequence,
-   * all combinatorics must be allowed, this is why we define a macro
-   * to define all combinations here:
+   * all combinatorics are allowed.
    *
-   *
-   * Both, Processes1 and Processes2, must derive from BaseProcesses
+   * \param vA needs to derive from BaseProcess or ProcessSequence
+   * \param vB needs to derive from BaseProcess or ProcessSequence
+   * \param selector must provide `SwitchResult operator()(const Particle&) const`
    **/
 
   template <typename TProcess1, typename TProcess2, typename TSelect>
@@ -202,6 +214,8 @@ namespace corsika {
   make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
     return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
   }
+
+  //! @}
 
 } // namespace corsika
 

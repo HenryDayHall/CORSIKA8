@@ -90,8 +90,10 @@ namespace corsika {
         , sequence_(pl)
         , stack_(stack) {
       CORSIKA_LOG_INFO(c8_ascii_);
+      CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
+                       TTracking::getVersion());
       if constexpr (TStackView::has_event) {
-        CORSIKA_LOG_INFO(" - With full cascade HISTORY.");
+        CORSIKA_LOG_INFO("Stack - with full cascade HISTORY.");
       }
     }
     //! \}

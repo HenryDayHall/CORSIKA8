@@ -14,9 +14,19 @@
 namespace corsika {
 
   /*!
+    @ingroup Processes
+    @{
+
    * Wrapper around an InteractionProcess that fills histograms of the number
-   * of calls to DoInteraction() binned in projectile energy (both in
+   * of calls to `doInteraction()` binned in projectile energy (both in
    * lab and center-of-mass frame) and species
+   *
+   * Use by wrapping a normal InteractionProcess
+   * @code{.cpp}
+   * InteractionProcess collision1;
+   * InteractionClounter<collision1> counted_collision1;
+   * @endcode
+   *
    */
   template <class TCountedProcess>
   class InteractionCounter
@@ -25,18 +35,25 @@ namespace corsika {
   public:
     InteractionCounter(TCountedProcess& process);
 
+    //! wrapper around internall process doInteraction
     template <typename TSecondaryView>
     void doInteraction(TSecondaryView& view);
 
+    ///! returns internal process getInteractionLength
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const& particle) const;
 
+    /** returns the filles histograms
+        @return InteractionHistogram, which contains the histogram data
+    */
     InteractionHistogram const& getHistogram() const;
 
   private:
     TCountedProcess& process_;
     InteractionHistogram histogram_;
   };
+
+  //! @}
 
 } // namespace corsika
 

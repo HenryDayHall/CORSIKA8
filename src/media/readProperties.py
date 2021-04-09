@@ -219,6 +219,7 @@ def read_data(filename):
 def gen_code(media_db):
 
     string = """
+  /** @cond EXCLUDE_DOXY */
   // enum for all media
   enum class Medium : MediumIntType {
     Unkown, 
@@ -231,7 +232,7 @@ def gen_code(media_db):
         imedium += 1
     string += "    {} = {} ,\n".format("First", 0)
     string += "    {} = {} ,\n".format("Last", imedium-1)
-    string += "  };\n\n"        
+    string += "  };/** @endcond */\n\n"        
     return string
 
 
@@ -242,11 +243,11 @@ def gen_code(media_db):
 def gen_classes(media_db):
 
     string = """
-  // list of C++ classes to access media properties"
+  /** @defgroup MediaPropertiesClasses
 
-//  typedef std::map<std::string, double> Properties;
-//  typedef std::array<Properties, static_cast<MediumIntType>(Medium::Last)+1> Constituents; this is wrong> num_elements
-
+      list of C++ classes to access media properties
+      @{
+  */
     """
     
     for entry in media_db:
@@ -278,13 +279,17 @@ def gen_classes(media_db):
             
         class_string = """
   /** 
-   * \class {cname}
+   * @class {cname}
    *
    * Media properties from properties8.dat file from NIST:
-   *  - Sternheimer index {stern_index}, label {stern_label}
+   *  - Sternheimer index: {stern_index}, label: {stern_label}, name: {name}, nice_name: {nice_name}, symbol: {symbol}
+   *  - weight: {weight}, weight_significant_figure: {weight_significant_figure}, weight_error_last_digit: {weight_error_last_digit}
+   *  - Z_over_A: {Z_over_A}, sternheimhers_density: {sternheimer_density}, corrected_density: {corrected_density}, 
+   *  - State::{state}, MediumType::{type}, Ieff={Ieff}, Cbar={Cbar}, X0={x0}, x1={x1}, aa={aa}, sk={sk}, dlt0={dlt0}
   **/
 
   class {cname} {{
+     /** @cond EXCLUDE_DOXY */
     public:
      static constexpr Medium medium() {{ return Medium::{cname}; }}
 
@@ -315,6 +320,7 @@ def gen_classes(media_db):
      {weight_significant_figure}, {weight_error_last_digit}, {Z_over_A},
      {sternheimer_density}, {corrected_density}, State::{state},
      MediumType::{type}, "{symbol}", {Ieff}, {Cbar}, {x0}, {x1}, {aa}, {sk}, {dlt0} }};
+     /** @endcond */
   }};
 
         """.format(cname=cname,
@@ -342,32 +348,10 @@ def gen_classes(media_db):
                    properties=properties);
 
 
-     # static std::string const name() {{ return "{name}"; }}
-     # static std::string const pretty_name() {{ return "{nice_name}"; }}
-     # static constexpr double weight() {{ return {weight} ; }}
-     # static constexpr int weight_significant_figure() {{ return {weight_significant_figure} ; }}
-     # static constexpr int weight_error_last_digit() {{ return {weight_error_last_digit}; }}
-     # static constexpr double Z_over_A() {{ return {Z_over_A}; }}
-     # static constexpr double sternheimer_density() {{ return {sternheimer_density}; }}
-     # static constexpr double corrected_density() {{ return {corrected_density}; }}
-     # static constexpr State state() {{ return State::{state}; }}
-     # static constexpr MediumType type() {{ return MediumType::{type}; }}
-     # static std::string const symbol() {{ return "{symbol}"; }}
-
-     # static constexpr double Ieff() {{ return {Ieff}; }}
-     # static constexpr double Cbar() {{ return {Cbar}; }}
-     # static constexpr double x0() {{ return {x0}; }}
-     # static constexpr double x1() {{ return {x1}; }}
-     # static constexpr double aa() {{ return {aa}; }}
-     # static constexpr double sk() {{ return {sk}; }}
-     # static constexpr double dlt0() {{ return {dlt0}; }}
-
-
         string += class_string
 
-
-#         private:\n"
-#           static constexpr CodeIntType TypeIndex = static_cast<CodeIntType const>(Type);\n"
+    string += " /** @} */"
+        
     return string
 
 ###############################################################
@@ -419,7 +403,9 @@ def inc_start():
 
 #pragma once
 namespace corsika {
-
+  /** @ingroup MediaProperties 
+      @{ 
+     */ 
 """
     return string
 
@@ -428,7 +414,8 @@ namespace corsika {
 # 
 # 
 def detail_start():
-    string = ('namespace detail {\n\n')
+    string = ('  /** @} */ \n'
+              'namespace detail {\n\n')
     return string
 
 

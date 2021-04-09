@@ -35,6 +35,8 @@ namespace corsika::urqmd {
 
     bool canInteract(Code) const;
 
+    void blob(int) {}
+
   private:
     static CrossSectionType getCrossSection(Code, Code, HEPEnergyType, int);
 

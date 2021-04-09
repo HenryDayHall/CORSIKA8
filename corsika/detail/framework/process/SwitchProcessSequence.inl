@@ -40,6 +40,19 @@ namespace corsika {
         if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
                                         process1_type> ||
                       t1ProcSeq) {
+
+          // interface checking on TProcess1
+          if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
+                                          process1_type>) {
+
+            static_assert(
+                has_method_doBoundaryCrossing_v<TProcess1, ProcessReturn, TParticle&>,
+                "TDerived has no method with correct signature \"ProcessReturn "
+                "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
+                "required for "
+                "BoundaryCrossingProcess<TDerived>. ");
+          }
+
           return A_.doBoundaryCrossing(particle, from, to);
         }
         break;
@@ -48,6 +61,19 @@ namespace corsika {
         if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process2_type>,
                                         process2_type> ||
                       t2ProcSeq) {
+
+          // interface checking on TProcess2
+          if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process2_type>,
+                                          process2_type>) {
+
+            static_assert(
+                has_method_doBoundaryCrossing_v<TProcess2, ProcessReturn, TParticle>,
+                "TDerived has no method with correct signature \"ProcessReturn "
+                "doBoundaryCrossing(TParticle&, VolumeNode const&, VolumeNode const&)\" "
+                "required for "
+                "BoundaryCrossingProcess<TDerived>. ");
+          }
+
           return B_.doBoundaryCrossing(particle, from, to);
         }
         break;
@@ -67,6 +93,17 @@ namespace corsika {
       case SwitchResult::First: {
         if constexpr (t1ProcSeq) { return A_.doContinuous(particle, vT, idLimit); }
         if constexpr (is_continuous_process_v<process1_type>) {
+
+          static_assert(
+              has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&, TTrack&> ||
+                  has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle&,
+                                            TTrack const&> ||
+                  has_method_doContinuous_v<TProcess1, ProcessReturn, TParticle const&,
+                                            TTrack const&>,
+              "TDerived has no method with correct signature \"ProcessReturn "
+              "doContinuous(TParticle[const]&,TTrack[const]&,bool)\" required for "
+              "ContinuousProcess<TDerived>. ");
+
           return A_.doContinuous(particle, vT,
                                  idLimit == ContinuousProcessIndex(IndexProcess1));
         }
@@ -75,6 +112,18 @@ namespace corsika {
       case SwitchResult::Second: {
         if constexpr (t2ProcSeq) { return B_.doContinuous(particle, vT, idLimit); }
         if constexpr (is_continuous_process_v<process2_type>) {
+
+          // interface checking on TProcess2
+          static_assert(
+              has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&, TTrack&> ||
+                  has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle&,
+                                            TTrack const&> ||
+                  has_method_doContinuous_v<TProcess2, ProcessReturn, TParticle const&,
+                                            TTrack const&>,
+              "TDerived has no method with correct signature \"ProcessReturn "
+              "doContinuous(TParticle [const]&,TTrack[const]&,bool)\" required for "
+              "ContinuousProcess<TDerived>. ");
+
           return B_.doContinuous(particle, vT,
                                  idLimit == ContinuousProcessIndex(IndexProcess2));
         }
@@ -96,6 +145,15 @@ namespace corsika {
         if constexpr (std::is_base_of_v<SecondariesProcess<process1_type>,
                                         process1_type> ||
                       t1ProcSeq) {
+
+          // interface checking on TProcess1
+          static_assert(
+              has_method_doSecondaries_v<TProcess1, void, TSecondaries&> ||
+                  has_method_doSecondaries_v<TProcess1, void, TSecondaries const&>,
+              "TDerived has no method with correct signature \"void "
+              "doSecondaries(TStackView [const]&)\" required for "
+              "SecondariesProcessProcess<TDerived>. ");
+
           A_.doSecondaries(vS);
         }
         break;
@@ -104,6 +162,15 @@ namespace corsika {
         if constexpr (std::is_base_of_v<SecondariesProcess<process2_type>,
                                         process2_type> ||
                       t2ProcSeq) {
+
+          // interface checking on TProcess2
+          static_assert(
+              has_method_doSecondaries_v<TProcess2, void, TSecondaries&> ||
+                  has_method_doSecondaries_v<TProcess2, void, TSecondaries const&>,
+              "TDerived has no method with correct signature \"void "
+              "doSecondaries(TStackView [const]&)\" required for "
+              "SecondariesProcessProcess<TDerived>. ");
+
           B_.doSecondaries(vS);
         }
         break;
@@ -122,6 +189,15 @@ namespace corsika {
       case SwitchResult::First: {
         if constexpr (t1ProcSeq) { return A_.getMaxStepLength(particle, vTrack); }
         if constexpr (is_continuous_process_v<process1_type>) {
+
+          // interface checking on TProcess1
+          static_assert(
+              has_method_getMaxStepLength_v<TProcess1, LengthType, TParticle const&,
+                                            TTrack const&>,
+              "TDerived has no method with correct signature \"LengthType "
+              "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
+              "ContinuousProcess<TDerived>. ");
+
           return ContinuousProcessStepLength(A_.getMaxStepLength(particle, vTrack),
                                              ContinuousProcessIndex(IndexProcess1));
         }
@@ -130,6 +206,15 @@ namespace corsika {
       case SwitchResult::Second: {
         if constexpr (t2ProcSeq) { return B_.getMaxStepLength(particle, vTrack); }
         if constexpr (is_continuous_process_v<process2_type>) {
+
+          // interface checking on TProcess2
+          static_assert(
+              has_method_getMaxStepLength_v<TProcess2, LengthType, TParticle const&,
+                                            TTrack const&>,
+              "TDerived has no method with correct signature \"LengthType "
+              "getMaxStepLength(TParticle const&, TTrack const&)\" required for "
+              "ContinuousProcess<TDerived>. ");
+
           return ContinuousProcessStepLength(B_.getMaxStepLength(particle, vTrack),
                                              ContinuousProcessIndex(IndexProcess2));
         }
@@ -191,6 +276,13 @@ namespace corsika {
           lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
           // check if we should execute THIS process and then EXIT
           if (lambda_inv_select < lambda_inv_sum) {
+
+            // interface checking on TProcess1
+            static_assert(has_method_doInteract_v<TProcess1, void, TSecondaryView&>,
+                          "TDerived has no method with correct signature \"void "
+                          "doInteraction(TSecondaryView&)\" required for "
+                          "InteractionProcess<TDerived>. ");
+
             A_.doInteraction(view);
             return ProcessReturn::Interacted;
           }
@@ -209,6 +301,13 @@ namespace corsika {
           lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
           // check if we should execute THIS process and then EXIT
           if (lambda_inv_select < lambda_inv_sum) {
+
+            // interface checking on TProcess1
+            static_assert(has_method_doInteract_v<TProcess2, void, TSecondaryView&>,
+                          "TDerived has no method with correct signature \"void "
+                          "doInteraction(TSecondaryView&)\" required for "
+                          "InteractionProcess<TDerived>. ");
+
             B_.doInteraction(view);
             return ProcessReturn::Interacted;
           }
@@ -269,6 +368,13 @@ namespace corsika {
           // check if we should execute THIS process and then EXIT
           if (decay_inv_select < decay_inv_sum) {
             // more pedagogical: rndm_select < decay_inv_sum / decay_inv_tot
+
+            // interface checking on TProcess1
+            static_assert(has_method_doDecay_v<TProcess1, void, TSecondaryView&>,
+                          "TDerived has no method with correct signature \"void "
+                          "doDecay(TSecondaryView&)\" required for "
+                          "DecayProcess<TDerived>. ");
+
             A_.doDecay(view);
             return ProcessReturn::Decayed;
           }
@@ -287,6 +393,13 @@ namespace corsika {
           decay_inv_sum += B_.getInverseLifetime(view.parent());
           // check if we should execute THIS process and then EXIT
           if (decay_inv_select < decay_inv_sum) {
+
+            // interface checking on TProcess1
+            static_assert(has_method_doDecay_v<TProcess2, void, TSecondaryView&>,
+                          "TDerived has no method with correct signature \"void "
+                          "doDecay(TSecondaryView&)\" required for "
+                          "DecayProcess<TDerived>. ");
+
             B_.doDecay(view);
             return ProcessReturn::Decayed;
           }
@@ -297,14 +410,6 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  /*
-  /// traits marker to identify objectas ProcessSequence
-  template <typename TProcess1, typename TProcess2, typename TSelect>
-  struct is_process_sequence<ProcessSequence<typename std::decay_t<TProcess1>,
-                                                   typename std::decay_t<TProcess2>,
-                                                   typename std::decay_t<TSelect>>>
-      : std::true_type {};
-  */
   /// traits marker to identify objectas ProcessSequence
   template <typename TProcess1, typename TProcess2, typename TSelect>
   struct is_process_sequence<SwitchProcessSequence<TProcess1, TProcess2, TSelect>>

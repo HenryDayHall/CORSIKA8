@@ -13,33 +13,40 @@
 
 #include <type_traits>
 
+#include <corsika/detail/framework/process/BoundaryCrossingProcess.hpp> // for extra traits, method/interface checking
+
 namespace corsika {
 
-  /*
-  struct passepartout {
-    template <typename T>
-    operator T&();
+  /**
+     @ingroup Processes
+     @{
 
-    template <typename T>
-    operator T &&();
-    };*/
+     Processes acting on the particles traversion from one volume into
+     another volume.
+
+     Create a new BoundaryCrossingProcess, e.g. for XYModel, via
+     @code{.cpp}
+     class XYModel : public BoundaryCrossingProcess<XYModel> {};
+     @endcode
+
+     and provide the necessary interface method:
+     @code{.cpp}
+     template <typename TParticle>
+     ProcessReturn XYModel::doBoundaryCrossing(TParticle& Particle,
+                                     typename TParticle::node_type const& from,
+                                     typename TParticle::node_type const& to);
+     @endcode
+
+     where Particle is the object to read particle data from a
+     Stack. The volume the particle is originating from is `from`, the
+     volume where it goes to is `to`.
+   */
 
   template <typename TDerived>
   class BoundaryCrossingProcess : public BaseProcess<TDerived> {
-
-    /*    static_assert(std::is_invocable_v<decltype(&TDerived<>::doBoundaryCrossing),
-       TDerived&, passepartout>, "BoundaryCrossingProcess needs
-       doBoundaryCrossing(TParticle, " "TParticle::node_type, TParticle::node_type)");*/
-
   public:
-    /**
-     * This method is called when a particle crosses the boundary between the nodes
-     * \p from and \p to.
-     */
-    template <typename TParticle>
-    ProcessReturn doBoundaryCrossing(TParticle&,
-                                     typename TParticle::node_type const& from,
-                                     typename TParticle::node_type const& to);
   };
+
+  /** @} */
 
 } // namespace corsika

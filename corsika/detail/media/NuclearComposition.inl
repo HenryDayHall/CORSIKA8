@@ -101,6 +101,10 @@ namespace corsika {
   // must be updated, too!
   inline size_t NuclearComposition::getHash() const { return hash_; }
 
+  inline bool NuclearComposition::operator==(NuclearComposition const& v) const {
+    return v.hash_ == hash_;
+  }
+
   inline void NuclearComposition::updateHash() {
     std::vector<std::size_t> hashes;
     for (float ifrac : this->getFractions()) hashes.push_back(std::hash<float>{}(ifrac));
