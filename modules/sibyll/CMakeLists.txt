@@ -14,26 +14,12 @@ set (
   )
 
 enable_language (Fortran)
-add_library (Sibyll SHARED ${MODEL_SOURCES})
 add_library (Sibyll_static STATIC ${MODEL_SOURCES})
-
-set_target_properties (
-  Sibyll
-  PROPERTIES
-  POSITION_INDEPENDENT_CODE 1
-  )
 
 set_target_properties (
   Sibyll_static
   PROPERTIES
   POSITION_INDEPENDENT_CODE 1
-  )
-
-target_include_directories (
-  Sibyll
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/corsika_modules/sibyll>
   )
 
 target_include_directories (
@@ -53,12 +39,6 @@ install (
   FILES
   ${MODEL_HEADERS}
   DESTINATION include/corsika_modules/sibyll
-  )
-
-install (
-  TARGETS Sibyll
-  EXPORT CORSIKA8PublicTargets
-  LIBRARY DESTINATION lib/corsika
   )
 
 install (

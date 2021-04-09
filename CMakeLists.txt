@@ -239,8 +239,8 @@ target_link_libraries (
   CONAN_PKG::spdlog
   CONAN_PKG::boost
   cnpy # for SaveBoostHistogram
-  stdc++fs # experimental::filesystem
   )
+
 # "src" is needed, since some headers (namely GeneratedParticleProperties.inc ec.) are produced by python script from e.g. ParticleData.xml
 add_subdirectory (src)
 add_subdirectory (documentation)

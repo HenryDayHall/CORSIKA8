@@ -25,6 +25,12 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     STRING "Choose the type of build." FORCE)
 endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   
+#+++++++++++++++++++++++++++++
+# as long as there still are modules using it:
+#
+enable_language (Fortran)
+set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
+
 
 #++++++++++++++++++++++++++++
 # General config and flags

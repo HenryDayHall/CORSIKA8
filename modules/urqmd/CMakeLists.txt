@@ -41,17 +41,6 @@ set (
 
 enable_language (Fortran)
 
-add_library (UrQMD SHARED ${MODEL_SOURCES})
-target_include_directories (UrQMD PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:include/corsika_modules/urqmd>
-  )
-set_target_properties (
-  UrQMD
-  PROPERTIES
-  POSITION_INDEPENDENT_CODE 1
-  )
-
 add_library (UrQMD_static STATIC ${MODEL_SOURCES})
 target_include_directories (UrQMD_static PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -67,13 +56,6 @@ install (
   FILES
   ${MODEL_HEADERS}
   DESTINATION include/corsika_modules/urqmd
-  )
-
-install (
-  TARGETS UrQMD
-  EXPORT CORSIKA8PublicTargets
-  LIBRARY DESTINATION lib/corsika
-  INCLUDES DESTINATION include/corsika_modules/urqmd
   )
 
 install (
