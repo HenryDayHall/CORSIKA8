@@ -83,7 +83,6 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     CHECK(pout.getEnergy() == 1.5_GeV);
     CHECK(pout.getMass() == get_nucleus_mass(A, Z));
     CHECK(pout.getKineticEnergy() == kineticEnergy(pout));
-    CHECK(pout.getKineticEnergy() > 0_GeV);
     CHECK(pout.getTime() == 100_s);
     CHECK(pout.getNuclearA() == 10);
     CHECK(pout.getNuclearZ() == 9);
