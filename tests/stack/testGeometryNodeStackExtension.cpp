@@ -26,7 +26,7 @@ public:
 // the GeometryNode stack needs to know the type of geometry-nodes from the DummyEnv:
 template <typename TStackIter>
 using DummyGeometryDataInterface =
-    typename node::make_GeometryDataInterface<TStackIter, DummyEnv>::type;
+    typename node::MakeGeometryDataInterface<TStackIter, DummyEnv>::type;
 
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>

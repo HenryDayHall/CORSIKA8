@@ -28,7 +28,7 @@ namespace corsika {
     // environment:
     template <typename TStackIter>
     using SetupGeometryDataInterface =
-        typename node::make_GeometryDataInterface<TStackIter, setup::Environment>::type;
+        typename node::MakeGeometryDataInterface<TStackIter, setup::Environment>::type;
 
     // combine particle data stack with geometry information for tracking
     template <typename TStackIter>

@@ -20,7 +20,7 @@ using namespace std;
 // the Weight stack:
 template <typename TStackIter>
 using DummyWeightDataInterface =
-    typename weights::make_WeightDataInterface<TStackIter>::type;
+    typename weights::MakeWeightDataInterface<TStackIter>::type;
 
 // combine dummy stack with geometry information for tracking
 template <typename TStackIter>

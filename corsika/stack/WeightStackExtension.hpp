@@ -112,7 +112,7 @@ namespace corsika::weights {
   };
 
   template <typename TParentStack>
-  struct make_WeightDataInterface {
+  struct MakeWeightDataInterface {
     typedef WeightDataInterface<TParentStack> type;
   };
 
