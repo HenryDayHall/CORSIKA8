@@ -65,6 +65,16 @@ namespace corsika {
     }
   };
 
+  /**
+   * ProcessTraits specialization to flag DecayProcess objects
+   **/
+  template <typename TProcess>
+  struct is_decay_process<
+      TProcess,
+      std::enable_if_t<std::is_base_of_v<DecayProcess<typename std::decay_t<TProcess>>,
+                                         typename std::decay_t<TProcess>>>>
+      : std::true_type {};
+
   /** @} */
 
 } // namespace corsika

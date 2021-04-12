@@ -63,7 +63,9 @@ namespace corsika {
    */
 
   template <typename TDerived>
-  class ContinuousProcess : public BaseProcess<TDerived> {};
+  class ContinuousProcess : public BaseProcess<TDerived> {
+  public:
+  };
 
   /**
    * ProcessTraits specialization to flag ContinuousProcess objects
