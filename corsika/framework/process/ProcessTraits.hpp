@@ -19,7 +19,7 @@ namespace corsika {
   /**
    * A traits marker to identify BaseProcess, thus any type of process
    */
-  template <typename TProcess, typename Enable = void>
+  template <typename TProcess, typename TEnable = void>
   struct is_process : std::false_type {};
 
   template <typename TProcess>
@@ -35,23 +35,49 @@ namespace corsika {
   bool constexpr is_continuous_process_v = is_continuous_process<TProcess>::value;
 
   /**
-   *  A traits marker to track which BaseProcess is also a ProcessSequence
-   **/
-  template <typename TClass>
-  struct is_process_sequence : std::false_type {};
+   * A traits marker to identify DecayProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_decay_process : std::false_type {};
 
-  template <typename TClass>
-  bool constexpr is_process_sequence_v = is_process_sequence<TClass>::value;
+  template <typename TProcess>
+  bool constexpr is_decay_process_v = is_decay_process<TProcess>::value;
 
   /**
-   * A traits marker to identiy a BaseProcess that is also SwitchProcessesSequence
-   **/
+   * A traits marker to identify StackProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_stack_process : std::false_type {};
 
-  template <typename TClass>
-  struct is_switch_process_sequence : std::false_type {};
+  template <typename TProcess>
+  bool constexpr is_stack_process_v = is_stack_process<TProcess>::value;
 
-  template <typename TClass>
-  bool constexpr is_switch_process_sequence_v = is_switch_process_sequence<TClass>::value;
+  /**
+   * A traits marker to identify SecondariesProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_secondaries_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_secondaries_process_v = is_secondaries_process<TProcess>::value;
+
+  /**
+   * A traits marker to identify BoundaryProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_boundary_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_boundary_process_v = is_boundary_process<TProcess>::value;
+
+  /**
+   * A traits marker to identify InteractionProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_interaction_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_interaction_process_v = is_interaction_process<TProcess>::value;
 
   /**
    * A traits marker to identify ProcessSequence that contain a StackProcess

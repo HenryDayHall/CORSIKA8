@@ -31,11 +31,12 @@ namespace corsika {
   /**
      count_processes traits specialization to increase process count by
      getNumberOfProcesses(). This is used to statically count processes in the sequence
-  */
+  **/
   template <typename TProcess, int N>
-  struct count_processes<TProcess, N,
-                         typename std::enable_if_t<is_process_v<TProcess> &&
-                                                   is_process_sequence_v<TProcess>>> {
+  struct count_processes<
+      TProcess, N,
+      typename std::enable_if_t<is_process_v<std::decay_t<TProcess>> &&
+                                std::decay_t<TProcess>::is_process_sequence>> {
     static unsigned int constexpr count =
         N + std::decay_t<TProcess>::getNumberOfProcesses();
   };
@@ -144,31 +145,19 @@ namespace corsika {
   process-chain. The offset is the starting value for this ProcessSequence
       @tparam IndexOfProcess1 index of TProcess1 (counting of Process)
       @tparam IndexOfProcess2 index of TProcess2 (counting of Process)
-     */
+  **/
 
   template <typename TProcess1, typename TProcess2 = NullModel,
             int ProcessIndexOffset = 0,
-            int IndexOfProcess1 = count_processes<
-                TProcess1, count_processes<TProcess2, ProcessIndexOffset>::count>::count,
-            int IndexOfProcess2 = count_processes<TProcess2, ProcessIndexOffset>::count>
+            int IndexOfProcess1 = corsika::count_processes<
+                TProcess1,
+                corsika::count_processes<TProcess2, ProcessIndexOffset>::count>::count,
+            int IndexOfProcess2 =
+                corsika::count_processes<TProcess2, ProcessIndexOffset>::count>
   class ProcessSequence : public BaseProcess<ProcessSequence<TProcess1, TProcess2>> {
 
     using process1_type = typename std::decay_t<TProcess1>;
     using process2_type = typename std::decay_t<TProcess2>;
-
-    static bool constexpr t1ProcSeq = is_process_sequence_v<process1_type>;
-    static bool constexpr t2ProcSeq = is_process_sequence_v<process2_type>;
-
-    static bool constexpr t1SwitchProcSeq = is_switch_process_sequence_v<process1_type>;
-    static bool constexpr t2SwitchProcSeq = is_switch_process_sequence_v<process2_type>;
-
-    // make sure only BaseProcess types TProcess1/2 are passed
-    static_assert(is_process_v<process1_type>,
-                  "can only use process derived from BaseProcess in "
-                  "ProcessSequence, for Process 1");
-    static_assert(is_process_v<process2_type>,
-                  "can only use process derived from BaseProcess in "
-                  "ProcessSequence, for Process 2");
 
   public:
     // resource management
@@ -178,19 +167,19 @@ namespace corsika {
     ProcessSequence& operator=(ProcessSequence const&) = default;
     ~ProcessSequence() = default;
 
+    static bool const is_process_sequence = true;
+
     /**
-     * Only valid user constructor will create fully initialized object
-     *
-     * ProcessSequence supports and encourages move semantics. You can
-     * use object, l-value references or r-value references to
-     * construct sequences.
-     *
-     * \param in_A process/list A
-     * \param in_A process/list B
+      Only valid user constructor will create fully initialized object
+
+      ProcessSequence supports and encourages move semantics. You can
+      use object, l-value references or r-value references to
+      construct sequences.
+
+      @param in_A BaseProcess or switch/process list
+      @param in_B BaseProcess or switch/process list
      **/
-    ProcessSequence(TProcess1 in_A, TProcess2 in_B)
-        : A_(in_A)
-        , B_(in_B) {}
+    ProcessSequence(TProcess1 in_A, TProcess2 in_B);
 
     template <typename TParticle>
     ProcessReturn doBoundaryCrossing(TParticle& particle,
@@ -267,6 +256,11 @@ namespace corsika {
      **/
     static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
 
+#ifdef CORSIKA_UNIT_TESTING
+    TProcess1 getProcess1() const { return A_; }
+    TProcess2 getProcess2() const { return B_; }
+#endif
+
   private:
     TProcess1 A_; /// process/list A, this is a reference, if possible
     TProcess2 B_; /// process/list B, this is a reference, if possible
@@ -300,13 +294,11 @@ namespace corsika {
 
     @tparam TProcesses parameter pack with objects of type BaseProcess
     @tparam TProcess1 another BaseProcess
-    @param vA needs to derive from BaseProcess or ProcessSequence
-    @param vB paramter-pack, needs to derive BaseProcess or ProcessSequence
+    @param vA needs to derive from BaseProcess
+    @param vB paramter-pack, needs to derive BaseProcess
    */
   template <typename... TProcesses, typename TProcess1>
-  typename std::enable_if_t<
-      is_process_v<typename std::decay_t<TProcess1>>,
-      ProcessSequence<TProcess1, decltype(make_sequence(std::declval<TProcesses>()...))>>
+  ProcessSequence<TProcess1, decltype(make_sequence(std::declval<TProcesses>()...))>
   make_sequence(TProcess1&& vA, TProcesses&&... vBs) {
     return ProcessSequence<TProcess1,
                            decltype(make_sequence(std::declval<TProcesses>()...))>(
@@ -323,14 +315,11 @@ namespace corsika {
 
     @tparam TProcess1 another BaseProcess
     @tparam TProcess2 another BaseProcess
-    @param vA needs to derive from BaseProcess or ProcessSequence
-    @param vB needs to derive BaseProcess or ProcessSequence
-   */
+    @param vA needs to derive from BaseProcess
+    @param vB needs to derive BaseProcess
+  */
   template <typename TProcess1, typename TProcess2>
-  typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
-                                is_process_v<typename std::decay_t<TProcess2>>,
-                            ProcessSequence<TProcess1, TProcess2>>
-  make_sequence(TProcess1&& vA, TProcess2&& vB) {
+  ProcessSequence<TProcess1, TProcess2> make_sequence(TProcess1&& vA, TProcess2&& vB) {
     return ProcessSequence<TProcess1, TProcess2>(vA, vB);
   }
 
@@ -344,30 +333,12 @@ namespace corsika {
     `NullModel`
 
     @tparam TProcess1 another BaseProcess
-    @param vA needs to derive from BaseProcess or ProcessSequence
+    @param vA needs to derive from BaseProcess
    */
   template <typename TProcess>
-  typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess>>,
-                            ProcessSequence<TProcess, NullModel>>
-  make_sequence(TProcess&& vA) {
+  ProcessSequence<TProcess, NullModel> make_sequence(TProcess&& vA) {
     return ProcessSequence<TProcess, NullModel>(vA, NullModel());
   }
-
-  /**
-    @struct
-    @ingroup Processes
-    traits marker to identify objectas ProcessSequence
-
-    @tparam TProcess1 another BaseProcess
-    @tparam TProcess2 another BaseProcess
-   **/
-  template <typename TProcess1, typename TProcess2>
-  struct is_process_sequence<ProcessSequence<TProcess1, TProcess2>> : std::true_type {
-    // only switch on for BaseProcesses
-    template <typename std::enable_if_t<
-        is_process_v<TProcess1> && is_process_v<TProcess2>, int>>
-    is_process_sequence() {}
-  };
 
 } // namespace corsika
 

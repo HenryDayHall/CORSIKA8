@@ -53,6 +53,8 @@ namespace corsika {
     StackProcess(const unsigned int nStep)
         : nStep_(nStep) {}
 
+    static bool const is_stack_process = true;
+
     //! return the current Cascade step counter
     int getStep() const { return iStep_; }
 
@@ -71,6 +73,16 @@ namespace corsika {
     unsigned long int iStep_ = 0;
     //! @}
   };
+
+  /**
+   * ProcessTraits specialization to flag StackProcess objects
+   **/
+  template <typename TProcess>
+  struct is_stack_process<
+      TProcess,
+      std::enable_if_t<std::is_base_of_v<StackProcess<typename std::decay_t<TProcess>>,
+                                         typename std::decay_t<TProcess>>>>
+      : std::true_type {};
 
   //! @}
 

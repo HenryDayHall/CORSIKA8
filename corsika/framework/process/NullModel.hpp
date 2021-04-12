@@ -21,21 +21,26 @@ namespace corsika {
      BaseProcess
    */
 
-  class NullModel { // : public BaseProcess<NullModel> {
+  class NullModel {
 
   public:
     NullModel() = default;
     ~NullModel() = default;
+
+    static bool const is_process_sequence = false;
+    static bool const is_switch_process_sequence = false;
 
     //! Default number of processes is just one, obviously
     static unsigned int constexpr getNumberOfProcesses() { return 0; }
   };
 
   /**
-     is_process traits specialization to indicate compatibility ProcessSequence
+     is_process traits specialization to indicate compatibility with BaseProcess
   */
-  template <>
-  struct is_process<NullModel, void> : std::true_type {};
+  template <typename TNull>
+  struct is_process<
+      TNull, std::enable_if_t<std::is_base_of_v<NullModel, typename std::decay_t<TNull>>>>
+      : std::true_type {};
 
   /**
      count_processes traits specialization to increase process count by one.

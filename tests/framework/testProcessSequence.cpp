@@ -5,6 +5,7 @@
  * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
  * the license.
  */
+#define CORSIKA_UNIT_TESTING
 
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
@@ -359,7 +360,6 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     const Process4 m4(3);
 
     CHECK(is_process_v<Process1>);
-    CHECK_FALSE(is_process_v<DummyData>);
     CHECK(is_process_v<decltype(m4)>);
     CHECK(is_process_v<decltype(Decay1(1))>);
     CHECK(is_process_v<decltype(ContinuousProcess3{3, 3_m})>);
@@ -379,19 +379,39 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     auto sequence1 = make_sequence(m1, m2, m3, m4);
     CHECK(is_process_v<decltype(sequence1)>);
     CHECK(is_process_v<decltype(m2)>);
-    CHECK(is_process_sequence_v<decltype(sequence1)>);
-    CHECK_FALSE(is_process_sequence_v<decltype(m2)>);
-    CHECK_FALSE(is_switch_process_sequence_v<decltype(sequence1)>);
-    CHECK_FALSE(is_switch_process_sequence_v<decltype(m2)>);
+    CHECK(decltype(sequence1)::is_process_sequence);
+    CHECK_FALSE(decltype(m2)::is_process_sequence);
+    CHECK_FALSE(decltype(sequence1)::is_switch_process_sequence);
+    CHECK_FALSE(decltype(m2)::is_switch_process_sequence);
 
-    CHECK_FALSE(is_process_sequence_v<decltype(Decay1(7))>);
-    CHECK_FALSE(is_switch_process_sequence_v<decltype(Decay1(7))>);
+    CHECK_FALSE(decltype(Decay1(7))::is_process_sequence);
+    CHECK_FALSE(decltype(Decay1(7))::is_switch_process_sequence);
 
     auto sequence2 = make_sequence(m1, m2, m3);
-    CHECK(is_process_sequence_v<decltype(sequence2)> == true);
+    CHECK(decltype(sequence2)::is_process_sequence == true);
 
     auto sequence3 = make_sequence(m4);
-    CHECK(is_process_sequence_v<decltype(sequence3)> == true);
+    CHECK(decltype(sequence3)::is_process_sequence == true);
+
+    CHECK(std::is_reference_v<decltype(sequence3.getProcess1())>);  // Process4&
+    CHECK(!std::is_reference_v<decltype(sequence3.getProcess2())>); // NullModel
+
+    CHECK(std::is_reference_v<decltype(sequence2.getProcess1())>);  // Process1&
+    CHECK(!std::is_reference_v<decltype(sequence2.getProcess2())>); // ProcessSequence
+    CHECK(std::is_reference_v<decltype(
+              sequence2.getProcess2().getProcess1())>); // Process2&
+    CHECK(std::is_reference_v<decltype(
+              sequence2.getProcess2().getProcess2())>); // Process3&
+
+    // and now with rvalue initialization
+
+    auto sequence2_rv = make_sequence(Process1(0), m2, Process3(0));
+    CHECK(!std::is_reference_v<decltype(sequence2_rv.getProcess1())>); // Process1
+    CHECK(!std::is_reference_v<decltype(sequence2_rv.getProcess2())>); // ProcessSequence
+    CHECK(std::is_reference_v<decltype(
+              sequence2_rv.getProcess2().getProcess1())>); // Process2&
+    CHECK(!std::is_reference_v<decltype(
+              sequence2_rv.getProcess2().getProcess2())>); // Process3
   }
 
   SECTION("interaction length") {
@@ -508,6 +528,9 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
     auto sequence1 = make_sequence(s1, s2);
 
+    std::cout << boost::typeindex::type_id<decltype(sequence1)>().pretty_name()
+              << std::endl;
+
     DummyStack stack;
 
     int const nLoop = 20;
@@ -521,8 +544,8 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     auto sequence2 = make_sequence(cp2, m2);
     auto sequence3 = make_sequence(cp2, m2, s1);
 
-    CHECK(is_process_sequence_v<decltype(sequence2)> == true);
-    CHECK(is_process_sequence_v<decltype(sequence3)> == true);
+    CHECK(decltype(sequence2)::is_process_sequence == true);
+    CHECK(decltype(sequence3)::is_process_sequence == true);
     CHECK(contains_stack_process_v<decltype(sequence2)> == false);
     CHECK(contains_stack_process_v<decltype(sequence3)> == true);
   }
@@ -548,7 +571,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
       CHECK(particle.data_[i] == Approx(nLoop).margin(1e-9));
     }
 
-    CHECK(is_process_sequence_v<decltype(sequence1)> == true);
+    CHECK(decltype(sequence1)::is_process_sequence == true);
     CHECK(contains_stack_process_v<decltype(sequence1)> == false);
     CHECK(count_processes<decltype(sequence1)>::count == 1);
   }
@@ -565,10 +588,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
    */
 
   struct SwitchSelect {
-    SwitchResult operator()(DummyData const& p) const {
-      if (p.data_[0] > 0) return SwitchResult::First;
-      return SwitchResult::Second;
-    }
+    bool operator()(DummyData const& p) const { return (p.data_[0] > 0); }
   };
   SwitchSelect select1;
 
@@ -580,40 +600,44 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
   auto sequence2 = make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0));
 
   auto sequence3 = make_sequence(cp1, Process3(0),
-                                 SwitchProcessSequence(sequence1, sequence2, select1));
+                                 SwitchProcessSequence(select1, sequence1, sequence2));
 
   auto sequence4 =
       make_sequence(cp1, Boundary1(2.0), Process3(0),
-                    SwitchProcessSequence(sequence1, Boundary1(-1.0), select1));
+                    SwitchProcessSequence(select1, sequence1, Boundary1(-1.0)));
 
   SECTION("Check construction") {
 
-    auto sequence_alt = make_sequence(
-        cp1, Process3(0),
-        make_select(make_sequence(Process1(0), cp2, Decay1(0), Boundary1(1.0)),
-                    make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0)),
-                    select1));
+    auto switch_seq = make_select(select1, sequence1, sequence2);
+    CHECK(decltype(switch_seq)::is_process_sequence);
+    CHECK(decltype(switch_seq)::is_switch_process_sequence);
+    CHECK(decltype(SwitchProcessSequence(select1, sequence1,
+                                         sequence2))::is_switch_process_sequence);
 
-    auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
-    CHECK(is_process_sequence_v<decltype(switch_seq)>);
-    CHECK(is_switch_process_sequence_v<decltype(switch_seq)>);
-    // CHECK(is_switch_process_sequence_v<decltype(&switch_seq)>);
-    CHECK(is_switch_process_sequence_v<decltype(
-              SwitchProcessSequence(sequence1, sequence2, select1))>);
+    CHECK(decltype(sequence3)::is_process_sequence);
+    CHECK_FALSE(decltype(sequence3)::is_switch_process_sequence);
 
-    CHECK(is_process_sequence_v<decltype(sequence3)>);
-    CHECK_FALSE(is_switch_process_sequence_v<decltype(sequence3)>);
+    auto sps1 = SwitchProcessSequence(select1, sequence1, sequence2);
+    CHECK(decltype(sps1)::is_process_sequence);
+    CHECK(decltype(sps1)::is_switch_process_sequence);
 
-    CHECK(is_process_sequence_v<decltype(
-              SwitchProcessSequence(sequence1, sequence2, select1))>);
-    CHECK(is_switch_process_sequence_v<decltype(
-              SwitchProcessSequence(sequence1, sequence2, select1))>);
+    std::cout << boost::typeindex::type_id<decltype(sequence3)>().pretty_name()
+              << std::endl;
 
-    // check that same process sequence can be build in different ways
-    CHECK(typeid(sequence3) == typeid(sequence_alt));
-    CHECK(is_process_sequence_v<decltype(sequence3)>);
-    CHECK(is_process_sequence_v<decltype(
-              SwitchProcessSequence(sequence1, sequence2, select1))>);
+    CHECK(decltype(sequence3)::is_process_sequence);
+    auto sps2 = SwitchProcessSequence(select1, sequence1, sequence2);
+    CHECK(decltype(sps2)::is_process_sequence);
+
+    CHECK(std::is_reference_v<decltype(switch_seq.getCondition())>);   //
+    CHECK(std::is_reference_v<decltype(switch_seq.getSequence())>);    //
+    CHECK(std::is_reference_v<decltype(switch_seq.getAltSequence())>); //
+
+    // check with rvalue init
+    auto switch_seq_rv =
+        make_select(SwitchSelect(), make_sequence(Process1(0)), Process3(0));
+    CHECK(!std::is_reference_v<decltype(switch_seq_rv.getCondition())>);
+    CHECK(!std::is_reference_v<decltype(switch_seq_rv.getSequence())>);
+    CHECK(!std::is_reference_v<decltype(switch_seq_rv.getAltSequence())>);
   }
 
   SECTION("Check interfaces") {
@@ -863,10 +887,9 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
     std::cout << count_processes<Process3>::count << std::endl;
 
     struct SwitchSelect {
-      SwitchResult operator()(DummyData const& p) const {
+      bool operator()(DummyData const& p) const {
         std::cout << "SwitchSelect data=" << p.data_[0] << std::endl;
-        if (p.data_[0] > 0) return SwitchResult::First;
-        return SwitchResult::Second;
+        return (p.data_[0] > 0);
       }
     };
 
@@ -875,11 +898,11 @@ TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
                                    ContinuousProcess1(0, 1_m));
 
     SwitchSelect select1;
-    auto switch_seq = SwitchProcessSequence(sequence1, sequence2, select1);
+    auto switch_seq = SwitchProcessSequence(select1, sequence1, sequence2);
 
     auto sequence3 = make_sequence(ContinuousProcess1(0, 1_m), Process3(0), switch_seq);
     auto sequence4 = make_sequence(ContinuousProcess1(0, 1_m), Process3(0),
-                                   SwitchProcessSequence(sequence1, sequence2, select1));
+                                   SwitchProcessSequence(select1, sequence1, sequence2));
 
     int const switch_seq_n = count_processes<decltype(switch_seq)>::count;
     int const sequence3_n = count_processes<decltype(sequence3)>::count;

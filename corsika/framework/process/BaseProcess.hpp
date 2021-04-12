@@ -16,10 +16,6 @@
 
 namespace corsika {
 
-  class TDerived; // fwd decl
-
-  class _BaseProcess {};
-
   /**
      @ingroup Processes
      @{
@@ -31,13 +27,10 @@ namespace corsika {
      are of type BaseProcess
 
      @todo rename BaseProcess into just Process
-     @todo rename _BaseProcess, or find better alternative in FIXME
-     ./Processes/AnalyticProcessors/ExecTime.h, see e.g. how this is done in
-     ProcessSequence.hpp/make_sequence
    */
 
   template <typename TDerived>
-  struct BaseProcess : _BaseProcess {
+  struct BaseProcess {
   protected:
     friend TDerived;
 
@@ -53,6 +46,9 @@ namespace corsika {
     //! @}
 
   public:
+    static bool const is_process_sequence = false;
+    static bool const is_switch_process_sequence = false;
+
     //! Default number of processes is just one, obviously
     static unsigned int constexpr getNumberOfProcesses() { return 1; }
 
@@ -74,9 +70,10 @@ namespace corsika {
      count_processes traits specialization to increase process count by one.
    */
   template <typename TProcess, int N>
-  struct count_processes<TProcess, N,
-                         typename std::enable_if_t<is_process_v<TProcess> &&
-                                                   !is_process_sequence_v<TProcess>>> {
+  struct count_processes<
+      TProcess, N,
+      typename std::enable_if_t<is_process_v<std::decay_t<TProcess>> &&
+                                !std::decay_t<TProcess>::is_process_sequence>> {
     static unsigned int constexpr count = N + 1;
   };
 

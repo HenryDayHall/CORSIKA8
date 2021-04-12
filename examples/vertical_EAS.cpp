@@ -306,16 +306,10 @@ int main(int argc, char** argv) {
       HEPEnergyType cutE_;
       EnergySwitch(HEPEnergyType cutE)
           : cutE_(cutE) {}
-      SwitchResult operator()(const Particle& p) {
-        if (p.getEnergy() < cutE_)
-          return SwitchResult::First;
-        else
-          return SwitchResult::Second;
-      }
+      bool operator()(const Particle& p) { return (p.getEnergy() < cutE_); }
     };
-    auto hadronSequence =
-        make_select(urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted),
-                    EnergySwitch(55_GeV));
+    auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
+                                      make_sequence(sibyllNucCounted, sibyllCounted));
     auto decaySequence = make_sequence(decayPythia, decaySibyll);
     auto sequence =
         make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,

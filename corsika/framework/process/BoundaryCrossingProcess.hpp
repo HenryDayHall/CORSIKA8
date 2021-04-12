@@ -47,6 +47,15 @@ namespace corsika {
   public:
   };
 
+  /**
+   * ProcessTraits specialization to flag BoundaryProcess objects
+   **/
+  template <typename TProcess>
+  struct is_boundary_process<TProcess,
+                             std::enable_if_t<std::is_base_of_v<
+                                 BoundaryCrossingProcess<typename std::decay_t<TProcess>>,
+                                 typename std::decay_t<TProcess>>>> : std::true_type {};
+
   /** @} */
 
 } // namespace corsika

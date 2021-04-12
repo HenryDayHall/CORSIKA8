@@ -41,6 +41,16 @@ namespace corsika {
   public:
   };
 
+  /**
+   * ProcessTraits specialization to flag SecondariesProcess objects
+   **/
+  template <typename TProcess>
+  struct is_secondaries_process<
+      TProcess, std::enable_if_t<
+                    std::is_base_of_v<SecondariesProcess<typename std::decay_t<TProcess>>,
+                                      typename std::decay_t<TProcess>>>>
+      : std::true_type {};
+
   //! @}
 
 } // namespace corsika
