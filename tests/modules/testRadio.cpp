@@ -68,111 +68,256 @@ UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 TEST_CASE("Radio", "[processes]") {
 
-  SECTION("CoREAS process") {
-
-    // TODO: construct sychnotron radiation example with one electron
-
-//     // Environment 1 (works)
-//      // first step is to construct an environment for the propagation (uniform index 1)
-//    using UniRIndex =
-//    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+//  SECTION("CoREAS process") {
 //
-//    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
-//    EnvType envCoREAS;
+//    // TODO: construct sychnotron radiation example with one electron
 //
-//    // get a coordinate system
-//    const CoordinateSystemPtr rootCSCoREAS = envCoREAS.getCoordinateSystem();
+////     // Environment 1 (works)
+////      // first step is to construct an environment for the propagation (uniform index 1)
+////    using UniRIndex =
+////    UniformRefractiveIndex<HomogeneousMedium<IRefractiveIndexModel<IMediumModel>>>;
+////
+////    using EnvType = Environment<IRefractiveIndexModel<IMediumModel>>;
+////    EnvType envCoREAS;
+////
+////    // get a coordinate system
+////    const CoordinateSystemPtr rootCSCoREAS = envCoREAS.getCoordinateSystem();
+////
+////    auto MediumCoREAS = EnvType::createNode<Sphere>(
+////        Point{rootCSCoREAS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
+////
+////    auto const propsCoREAS = MediumCoREAS->setModelProperties<UniRIndex>(
+////        1.000327, 1_kg / (1_m * 1_m * 1_m),
+////        NuclearComposition(
+////            std::vector<Code>{Code::Nitrogen},
+////            std::vector<float>{1.f}));
+////
+////    envCoREAS.getUniverse()->addChild(std::move(MediumCoREAS));
 //
-//    auto MediumCoREAS = EnvType::createNode<Sphere>(
-//        Point{rootCSCoREAS, 0_m, 0_m, 0_m}, 1_km * std::numeric_limits<double>::infinity());
 //
-//    auto const propsCoREAS = MediumCoREAS->setModelProperties<UniRIndex>(
-//        1.000327, 1_kg / (1_m * 1_m * 1_m),
-//        NuclearComposition(
-//            std::vector<Code>{Code::Nitrogen},
-//            std::vector<float>{1.f}));
+//    //////////////////////////////////////////////////////////////////////////////////////
+////    // Environment 2 (works)
+////    using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+////    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+////        <IModelInterface>>>>;
+////    using EnvType = Environment<AtmModel>;
+////    EnvType envCoREAS;
+////    CoordinateSystemPtr const& rootCSCoREAS = envCoREAS.getCoordinateSystem();
+////    // get the center point
+////    Point const center{rootCSCoREAS, 0_m, 0_m, 0_m};
+////    // a refractive index
+////    const double ri_{1.000327};
+////
+////    // the constant density
+////    const auto density{19.2_g / cube(1_cm)};
+////
+////    // the composition we use for the homogeneous medium
+////    NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+////                                               std::vector<float>{1.f});
+////
+////    // create magnetic field vector
+////    Vector B1(rootCSCoREAS, 0_T, 0_T, 1_T);
+////
+////    auto Medium = EnvType::createNode<Sphere>(
+////        center, 1_km * std::numeric_limits<double>::infinity());
+////
+////    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, protonComposition);
+////    envCoREAS.getUniverse()->addChild(std::move(Medium));
 //
-//    envCoREAS.getUniverse()->addChild(std::move(MediumCoREAS));
-
-
-    //////////////////////////////////////////////////////////////////////////////////////
-//    // Environment 2 (works)
-//    using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-//    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
-//        <IModelInterface>>>>;
-//    using EnvType = Environment<AtmModel>;
+//
+//    //////////////////////////////////////////////////////////////////////////////////////
+//    // Environment 3 (works)
+//    using EnvironmentInterface =
+//    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+//    using EnvType = Environment<EnvironmentInterface>;
 //    EnvType envCoREAS;
 //    CoordinateSystemPtr const& rootCSCoREAS = envCoREAS.getCoordinateSystem();
-//    // get the center point
 //    Point const center{rootCSCoREAS, 0_m, 0_m, 0_m};
-//    // a refractive index
-//    const double ri_{1.000327};
+//    auto builder = make_layered_spherical_atmosphere_builder<
+//        EnvironmentInterface, MyExtraEnv>::create(center,
+//                                                  constants::EarthRadius::Mean, 1.000327,
+//                                                  Medium::AirDry1Atm,
+//                                                  MagneticFieldVector{rootCSCoREAS, 0_T,
+//                                                                      50_uT, 0_T});
 //
-//    // the constant density
-//    const auto density{19.2_g / cube(1_cm)};
+//    builder.setNuclearComposition(
+//        {{Code::Nitrogen, Code::Oxygen},
+//         {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 //
-//    // the composition we use for the homogeneous medium
-//    NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-//                                               std::vector<float>{1.f});
+////    builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
+////    builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
+////    builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
+////    builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+//    builder.addLinearLayer(1e9_cm, 112.8_km);
+//    builder.assemble(envCoREAS);
+////////////////////////////////////////////////////////////////////////////////////////////
 //
-//    // create magnetic field vector
-//    Vector B1(rootCSCoREAS, 0_T, 0_T, 1_T);
 //
-//    auto Medium = EnvType::createNode<Sphere>(
-//        center, 1_km * std::numeric_limits<double>::infinity());
+//    // now create antennas and detectors
+//    // the antennas location
+//    const auto point1{Point(envCoREAS.getCoordinateSystem(), 100_m, 2_m, 3_m)};
+//    const auto point2{Point(envCoREAS.getCoordinateSystem(), 4_m, 80_m, 6_m)};
+//    const auto point3{Point(envCoREAS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
+//    const auto point4{Point(envCoREAS.getCoordinateSystem(), 5_m, 5_m, 10_m)};
 //
-//    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, protonComposition);
-//    envCoREAS.getUniverse()->addChild(std::move(Medium));
+//
+//    // create times for the antenna
+//    const TimeType t1{0_s}; // TODO: initialization of times to antennas! particle hits the observation level should be zero
+//    const TimeType t2{10_s};
+//    const InverseTimeType t3{1e+3_Hz};
+//    const TimeType t4{11_s};
+//
+//    // check that I can create an antenna at (1, 2, 3)
+//    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
+//    TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3);
+////    TimeDomainAntenna ant3("antenna1", point1, 0_s, 2_s, 1/1e-7_s);
+//
+////    std::cout << "static cast " << static_cast<int>(1/1000) << std::endl;
+//
+//    // construct a radio detector instance to store our antennas
+//    AntennaCollection<TimeDomainAntenna> detector;
+//
+//    // add the antennas to the detector
+//    detector.addAntenna(ant1);
+//    detector.addAntenna(ant2);
+////    detector.addAntenna(ant3);
+//
+//
+//
+//    // create a particle
+//    auto const particle{Code::Electron};
+////    auto const particle{Code::Gamma};
+//    const auto pmass{get_mass(particle)};
+//
+//
+//    VelocityVector v0(rootCSCoREAS, {5e+2_m / second, 5e+2_m / second, 5e+2_m / second});
+//
+//    Vector B0(rootCSCoREAS, 5_T, 5_T, 5_T);
+//
+//    Line const line(point3, v0);
+//
+//    auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
+//
+//    auto const t = 1_s;
+//    LeapFrogTrajectory base(point4, v0, B0, k, t);
+//
+//    // create a new stack for each trial
+//    setup::Stack stack;
+//
+//    // construct an energy
+//    const HEPEnergyType E0{1_TeV};
+//
+//    // compute the necessary momentumn
+//    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+//
+//    // and create the momentum vector
+//    const auto plab{MomentumVector(rootCSCoREAS, {0_GeV, 0_GeV, P0})};
+//
+//    // and create the location of the particle in this coordinate system
+//    const Point pos(rootCSCoREAS, 50_m, 10_m, 80_m);
+//
+//    // add the particle to the stack
+//    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
+//
+//    auto const charge_ {get_charge(particle1.getPID())};
+////    std::cout << "charge: " << charge_ << std::endl;
+////    std::cout << "1 / c: " << 1. / constants::c << std::endl;
+//
+//    // set up a track object
+////      setup::Tracking tracking;
+//
+////    auto startPoint_ {base.getPosition(0)};
+////    auto midPoint_ {base.getPosition(0.5)};
+////    auto endPoint_ {base.getPosition(1)};
+////    std::cout << "startPoint_: " << startPoint_ << std::endl;
+////    std::cout << "midPoint_: " << midPoint_ << std::endl;
+////    std::cout << "endPoint_: " << endPoint_ << std::endl;
+//
+////    auto velo_ {base.getVelocity(0)};
+////    std::cout << "velocity: " << velo_ << std::endl;
+//
+////    auto startTime_ {particle1.getTime() - base.getDuration()}; // time at the start point of the track hopefully.
+////    auto endTime_ {particle1.getTime()};
+////    std::cout << "startTime_: " << startTime_ << std::endl;
+////    std::cout << "endTime_: " << endTime_ << std::endl;
+////
+////    auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
+////    std::cout << "beta_: " << beta_ << std::endl;
+//
+////    Vector<dimensionless_d> v1(rootCSCoREAS, {0, 0, 1});
+////    std::cout << "v1: " << v1.getComponents() << std::endl;
+////
+////    std::cout << "beta_.dot(v1): " << beta_.dot(v1) << std::endl;
+////
+////    std::cout << "Pi: " << 1/M_PI << std::endl;
+////
+////    std::cout << "speed of light: " << constants::c << std::endl;
+////
+////    std::cout << "vacuum permitivity: " << constants::epsilonZero << std::endl;
+//
+//    // Create a CoREAS instance
+////    CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))> coreas1(detector, envCoREAS);
+//
+//    // create a radio process instance using CoREAS
+//    RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
+//        coreas(detector, envCoREAS);
+//
+//    // check doContinuous and simulate methods
+//    coreas.doContinuous(particle1, base, true);
+////    coreas1.simulate(particle1, base);
+//
+//    // check writeOutput method -> should produce 2 csv files for each antenna
+//    coreas.writeOutput();
+//    }
 
 
-    //////////////////////////////////////////////////////////////////////////////////////
-    // Environment 3 (works)
-    using EnvironmentInterface =
-    IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using EnvType = Environment<EnvironmentInterface>;
-    EnvType envCoREAS;
-    CoordinateSystemPtr const& rootCSCoREAS = envCoREAS.getCoordinateSystem();
-    Point const center{rootCSCoREAS, 0_m, 0_m, 0_m};
-    auto builder = make_layered_spherical_atmosphere_builder<
-        EnvironmentInterface, MyExtraEnv>::create(center,
-                                                  constants::EarthRadius::Mean, 1.000327,
-                                                  Medium::AirDry1Atm,
-                                                  MagneticFieldVector{rootCSCoREAS, 0_T,
-                                                                      50_uT, 0_T});
+  SECTION("Synchrotron radiation") {
 
-    builder.setNuclearComposition(
-        {{Code::Nitrogen, Code::Oxygen},
-         {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
+    // create a suitable environment ///////////////////////////////////////////////////
+    using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+        <IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
+    EnvType env;
+    CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+    // get the center point
+    Point const center{rootCS, 0_m, 0_m, 0_m};
+    // a refractive index for the vacuum
+    const double ri_{1};
+    // the constant density
+    const auto density{19.2_g / cube(1_cm)};
+    // the composition we use for the homogeneous medium
+    NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
+                                         std::vector<float>{1.f});
+    // create magnetic field vector
+    Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
+    // create a Sphere for the medium
+    auto Medium = EnvType::createNode<Sphere>(
+        center, 1_km * std::numeric_limits<double>::infinity());
+    // set the environment properties
+    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, Composition);
+    // bind things together
+    env.getUniverse()->addChild(std::move(Medium));
 
-//    builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-//    builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-//    builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-//    builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-    builder.addLinearLayer(1e9_cm, 112.8_km);
-    builder.assemble(envCoREAS);
-//////////////////////////////////////////////////////////////////////////////////////////
 
-
-    // now create antennas and detectors
+        // now create antennas and detectors/////////////////////////////////////////////
     // the antennas location
-    const auto point1{Point(envCoREAS.getCoordinateSystem(), 100_m, 2_m, 3_m)};
-    const auto point2{Point(envCoREAS.getCoordinateSystem(), 4_m, 80_m, 6_m)};
-    const auto point3{Point(envCoREAS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
-    const auto point4{Point(envCoREAS.getCoordinateSystem(), 5_m, 5_m, 10_m)};
+    const auto point1{Point(rootCS, 200_m, 200_m, 0_m)};
+    const auto point2{Point(rootCS, 200_m, -200_m, 0_m)};
+    const auto point3{Point(rootCS, -200_m, -200_m, 0_m)};
+    const auto point4{Point(rootCS, -200_m, 200_m, 0_m)};
 
 
     // create times for the antenna
-    const TimeType t1{0_s}; // TODO: initialization of times to antennas! particle hits the observation level should be zero
-    const TimeType t2{10_s};
-    const InverseTimeType t3{1e+3_Hz};
-    const TimeType t4{11_s};
+    const TimeType t1{0_s};
+    const TimeType t2{1e-6_s};
+    const InverseTimeType t3{1e+9_Hz};
 
-    // check that I can create an antenna at (1, 2, 3)
-    TimeDomainAntenna ant1("antenna_name", point1, t1, t2, t3);
-    TimeDomainAntenna ant2("antenna_name2", point2, t1, t2, t3);
-//    TimeDomainAntenna ant3("antenna1", point1, 0_s, 2_s, 1/1e-7_s);
-
-//    std::cout << "static cast " << static_cast<int>(1/1000) << std::endl;
+    // create 4 cool antennas
+    TimeDomainAntenna ant1("cool antenna", point1, t1, t2, t3);
+    TimeDomainAntenna ant2("cooler antenna", point2, t1, t2, t3);
+    TimeDomainAntenna ant3("coolest antenna", point3, t1, t2, t3);
+    TimeDomainAntenna ant4("No, I am the coolest antenna", point4, t1, t2, t3);
 
     // construct a radio detector instance to store our antennas
     AntennaCollection<TimeDomainAntenna> detector;
@@ -180,95 +325,508 @@ TEST_CASE("Radio", "[processes]") {
     // add the antennas to the detector
     detector.addAntenna(ant1);
     detector.addAntenna(ant2);
-//    detector.addAntenna(ant3);
+    detector.addAntenna(ant3);
+    detector.addAntenna(ant4);
 
 
 
-    // create a particle
+    // create points that make a 2D circle of radius=100m ////////////////////////////////
+    Point p0(rootCS, {0_m, 100_m, 0_m});
+    Point p1(rootCS, {1_m, 99.995_m, 0_m});
+    Point p2(rootCS, {2_m,99.98_m, 0_m});
+    Point p3(rootCS, {3_m,99.955_m, 0_m});
+    Point p4(rootCS, {4_m,99.92_m, 0_m});
+    Point p5(rootCS, {5_m,99.875_m, 0_m});
+    Point p6(rootCS, {6_m,99.82_m, 0_m});
+    Point p7(rootCS, {7_m,99.755_m, 0_m});
+    Point p8(rootCS, {8_m,99.679_m, 0_m});
+    Point p9(rootCS, {9_m,99.594_m, 0_m});
+    Point p10(rootCS,{10_m,99.499_m, 0_m});
+    Point p11(rootCS,{11_m,99.393_m, 0_m});
+    Point p12(rootCS,{12_m,99.277_m, 0_m});
+    Point p13(rootCS,{13_m,99.151_m, 0_m});
+    Point p14(rootCS,{14_m,99.015_m, 0_m});
+    Point p15(rootCS,{15_m,98.869_m, 0_m});
+    Point p16(rootCS,{16_m,98.712_m, 0_m});
+    Point p17(rootCS,{17_m,98.544_m, 0_m});
+    Point p18(rootCS,{18_m,98.367_m, 0_m});
+    Point p19(rootCS,{19_m,98.178_m, 0_m});
+    Point p20(rootCS,{20_m,97.98_m, 0_m});
+    Point p21(rootCS,{21_m,97.77_m, 0_m});
+    Point p22(rootCS,{22_m,97.55_m, 0_m});
+    Point p23(rootCS,{23_m,97.319_m, 0_m});
+    Point p24(rootCS,{24_m,97.077_m, 0_m});
+    Point p25(rootCS,{25_m,96.825_m, 0_m});
+    Point p26(rootCS,{26_m,96.561_m, 0_m});
+    Point p27(rootCS,{27_m,96.286_m, 0_m});
+    Point p28(rootCS,{28_m,96_m, 0_m});
+    Point p29(rootCS,{29_m,95.703_m, 0_m});
+    Point p30(rootCS,{30_m,95.394_m, 0_m});
+    Point p31(rootCS,{31_m,95.074_m, 0_m});
+    Point p32(rootCS,{32_m,94.742_m, 0_m});
+    Point p33(rootCS,{33_m,94.398_m, 0_m});
+    Point p34(rootCS,{34_m,94.043_m, 0_m});
+    Point p35(rootCS,{35_m,93.675_m, 0_m});
+    Point p36(rootCS,{36_m,93.295_m, 0_m});
+    Point p37(rootCS,{37_m,92.903_m, 0_m});
+    Point p38(rootCS,{38_m,92.499_m, 0_m});
+    Point p39(rootCS,{39_m,92.081_m, 0_m});
+    Point p40(rootCS,{40_m,91.652_m, 0_m});
+    Point p41(rootCS,{41_m,91.209_m, 0_m});
+    Point p42(rootCS,{42_m,90.752_m, 0_m});
+    Point p43(rootCS,{43_m,90.283_m, 0_m});
+    Point p44(rootCS,{44_m,89.8_m, 0_m});
+    Point p45(rootCS,{45_m,89.303_m, 0_m});
+    Point p46(rootCS,{46_m,88.792_m, 0_m});
+    Point p47(rootCS,{47_m,88.267_m, 0_m});
+    Point p48(rootCS,{48_m,87.727_m, 0_m});
+    Point p49(rootCS,{49_m,87.171_m, 0_m});
+    Point p50(rootCS,{50_m,86.603_m, 0_m});
+    Point p51(rootCS,{51_m,86.017_m, 0_m});
+    Point p52(rootCS,{52_m,85.417_m, 0_m});
+    Point p53(rootCS,{53_m,84.8_m, 0_m});
+    Point p54(rootCS,{54_m,84.167_m, 0_m});
+    Point p55(rootCS,{55_m,83.516_m, 0_m});
+    Point p56(rootCS,{56_m,82.849_m, 0_m});
+    Point p57(rootCS,{57_m,82.164_m, 0_m});
+    Point p58(rootCS,{58_m,81.462_m, 0_m});
+    Point p59(rootCS,{59_m,80.74_m, 0_m});
+    Point p60(rootCS,{60_m,80_m, 0_m});
+    Point p61(rootCS,{61_m,79.24_m, 0_m});
+    Point p62(rootCS,{62_m,78.46_m, 0_m});
+    Point p63(rootCS,{63_m,77.66_m, 0_m});
+    Point p64(rootCS,{64_m,76.837_m, 0_m});
+    Point p65(rootCS,{65_m,75.993_m, 0_m});
+    Point p66(rootCS,{66_m,75.127_m, 0_m});
+    Point p67(rootCS,{67_m,74.236_m, 0_m});
+    Point p68(rootCS,{68_m,73.321_m, 0_m});
+    Point p69(rootCS,{69_m,72.476_m, 0_m});
+    Point p70(rootCS,{70_m,71.414_m, 0_m});
+    Point p71(rootCS,{71_m,70.42_m, 0_m});
+    Point p72(rootCS,{72_m,69.397_m, 0_m});
+    Point p73(rootCS,{73_m,68.345_m, 0_m});
+    Point p74(rootCS,{74_m,67.261_m, 0_m});
+    Point p75(rootCS,{75_m,66.144_m, 0_m});
+    Point p76(rootCS,{76_m,64.992_m, 0_m});
+    Point p77(rootCS,{77_m,63.804_m, 0_m});
+    Point p78(rootCS,{78_m,62.578_m, 0_m});
+    Point p79(rootCS,{79_m,61.311_m, 0_m});
+    Point p80(rootCS,{80_m,60_m, 0_m});
+    Point p81(rootCS,{81_m,58.643_m, 0_m});
+    Point p82(rootCS,{82_m,57.236_m, 0_m});
+    Point p83(rootCS,{83_m,55.776_m, 0_m});
+    Point p84(rootCS,{84_m,54.259_m, 0_m});
+    Point p85(rootCS,{85_m,52.678_m, 0_m});
+    Point p86(rootCS,{86_m,51.029_m, 0_m});
+    Point p87(rootCS,{87_m,49.305_m, 0_m});
+    Point p88(rootCS,{88_m,47.497_m, 0_m});
+    Point p89(rootCS,{89_m,45.596_m, 0_m});
+    Point p90(rootCS,{90_m,43.589_m, 0_m});
+    Point p91(rootCS,{91_m,41.461_m, 0_m});
+    Point p92(rootCS,{92_m,39.192_m, 0_m});
+    Point p93(rootCS,{93_m,36.756_m, 0_m});
+    Point p94(rootCS,{94_m,34.117_m, 0_m});
+    Point p95(rootCS,{95_m,31.225_m, 0_m});
+    Point p96(rootCS,{96_m,28_m, 0_m});
+    Point p97(rootCS,{97_m,24.31_m, 0_m});
+    Point p98(rootCS,{98_m,19.9_m, 0_m});
+    Point p99(rootCS,{99_m,14.107_m, 0_m});
+    Point p100(rootCS,{100_m,0_m, 0_m});
+    Point p101(rootCS,{99_m,-14.107_m, 0_m});
+    Point p102(rootCS,{98_m,-19.9_m, 0_m});
+    Point p103(rootCS,{97_m,-24.31_m, 0_m});
+    Point p104(rootCS,{96_m,-28_m, 0_m});
+    Point p105(rootCS,{95_m,-31.225_m, 0_m});
+    Point p106(rootCS,{94_m,-34.117_m, 0_m});
+    Point p107(rootCS,{93_m,-36.756_m, 0_m});
+    Point p108(rootCS,{92_m,-39.192_m, 0_m});
+    Point p109(rootCS,{91_m,-41.461_m, 0_m});
+    Point p110(rootCS,{90_m,-43.589_m, 0_m});
+    Point p111(rootCS,{89_m,-45.596_m, 0_m});
+    Point p112(rootCS,{88_m,-47.497_m, 0_m});
+    Point p113(rootCS,{87_m,-49.305_m, 0_m});
+    Point p114(rootCS,{86_m,-51.029_m, 0_m});
+    Point p115(rootCS,{85_m,-52.678_m, 0_m});
+    Point p116(rootCS,{84_m,-54.259_m, 0_m});
+    Point p117(rootCS,{83_m,-55.776_m, 0_m});
+    Point p118(rootCS,{82_m,-57.236_m, 0_m});
+    Point p119(rootCS,{81_m,-58.643_m, 0_m});
+    Point p120(rootCS,{80_m,-60_m, 0_m});
+    Point p121(rootCS,{79_m,-61.311_m, 0_m});
+    Point p122(rootCS,{78_m,-62.578_m, 0_m});
+    Point p123(rootCS,{77_m,-63.804_m, 0_m});
+    Point p124(rootCS,{76_m,-64.992_m, 0_m});
+    Point p125(rootCS,{75_m,-66.144_m, 0_m});
+    Point p126(rootCS,{74_m,-67.261_m, 0_m});
+    Point p127(rootCS,{73_m,-68.345_m, 0_m});
+    Point p128(rootCS,{72_m,-69.397_m, 0_m});
+    Point p129(rootCS,{71_m,-70.42_m, 0_m});
+    Point p130(rootCS,{70_m,-71.414_m, 0_m});
+    Point p131(rootCS,{69_m,-72.476_m, 0_m});
+    Point p132(rootCS,{68_m,-73.321_m, 0_m});
+    Point p133(rootCS,{67_m,-74.236_m, 0_m});
+    Point p134(rootCS,{66_m,-75.127_m, 0_m});
+    Point p135(rootCS,{65_m,-75.993_m, 0_m});
+    Point p136(rootCS,{64_m,-76.837_m, 0_m});
+    Point p137(rootCS,{63_m,-77.66_m, 0_m});
+    Point p138(rootCS,{62_m,-78.46_m, 0_m});
+    Point p139(rootCS,{61_m,-79.24_m, 0_m});
+    Point p140(rootCS,{60_m,-80_m, 0_m});
+    Point p141(rootCS,{59_m,-80.74_m, 0_m});
+    Point p142(rootCS,{58_m,-81.462_m, 0_m});
+    Point p143(rootCS,{57_m,-82.164_m, 0_m});
+    Point p144(rootCS,{56_m,-82.849_m, 0_m});
+    Point p145(rootCS,{55_m,-83.516_m, 0_m});
+    Point p146(rootCS,{54_m,-84.167_m, 0_m});
+    Point p147(rootCS,{53_m,-84.8_m, 0_m});
+    Point p148(rootCS,{52_m,-85.417_m, 0_m});
+    Point p149(rootCS,{51_m,-86.017_m, 0_m});
+    Point p150(rootCS,{50_m,-86.603_m, 0_m});
+    Point p151(rootCS,{49_m,-87.171_m, 0_m});
+    Point p152(rootCS,{48_m,-87.727_m, 0_m});
+    Point p153(rootCS,{47_m,-88.267_m, 0_m});
+    Point p154(rootCS,{46_m,-88.792_m, 0_m});
+    Point p155(rootCS,{45_m,-89.303_m, 0_m});
+    Point p156(rootCS,{44_m,-89.8_m, 0_m});
+    Point p157(rootCS,{43_m,-90.283_m, 0_m});
+    Point p158(rootCS,{42_m,-90.752_m, 0_m});
+    Point p159(rootCS,{41_m,-91.209_m, 0_m});
+    Point p160(rootCS,{40_m,-91.652_m, 0_m});
+    Point p161(rootCS,{39_m,-92.081_m, 0_m});
+    Point p162(rootCS,{38_m,-92.499_m, 0_m});
+    Point p163(rootCS,{37_m,-92.903_m, 0_m});
+    Point p164(rootCS,{36_m,-93.295_m, 0_m});
+    Point p165(rootCS,{35_m,-93.675_m, 0_m});
+    Point p166(rootCS,{34_m,-94.043_m, 0_m});
+    Point p167(rootCS,{33_m,-94.398_m, 0_m});
+    Point p168(rootCS,{32_m,-94.742_m, 0_m});
+    Point p169(rootCS,{31_m,-95.074_m, 0_m});
+    Point p170(rootCS,{30_m,-95.394_m, 0_m});
+    Point p171(rootCS,{29_m,-95.703_m, 0_m});
+    Point p172(rootCS,{28_m,-96_m, 0_m});
+    Point p173(rootCS,{27_m,-96.286_m, 0_m});
+    Point p174(rootCS,{26_m,-96.561_m, 0_m});
+    Point p175(rootCS,{25_m,-96.825_m, 0_m});
+    Point p176(rootCS,{24_m,-97.077_m, 0_m});
+    Point p177(rootCS,{23_m,-97.319_m, 0_m});
+    Point p178(rootCS,{22_m,-97.55_m, 0_m});
+    Point p179(rootCS,{21_m,-97.77_m, 0_m});
+    Point p180(rootCS,{20_m,-97.98_m, 0_m});
+    Point p181(rootCS,{19_m,-98.178_m, 0_m});
+    Point p182(rootCS,{18_m,-98.367_m, 0_m});
+    Point p183(rootCS,{17_m,-98.544_m, 0_m});
+    Point p184(rootCS,{16_m,-98.712_m, 0_m});
+    Point p185(rootCS,{15_m,-98.869_m, 0_m});
+    Point p186(rootCS,{14_m,-99.015_m, 0_m});
+    Point p187(rootCS,{13_m,-99.151_m, 0_m});
+    Point p188(rootCS,{12_m,-99.277_m, 0_m});
+    Point p189(rootCS,{11_m,-99.393_m, 0_m});
+    Point p190(rootCS,{10_m,-99.499_m, 0_m});
+    Point p191(rootCS,{9_m,-99.594_m, 0_m});
+    Point p192(rootCS,{8_m,-99.679_m, 0_m});
+    Point p193(rootCS,{7_m,-99.755_m, 0_m});
+    Point p194(rootCS,{6_m,-99.82_m, 0_m});
+    Point p195(rootCS,{5_m,-99.875_m, 0_m});
+    Point p196(rootCS,{4_m,-99.92_m, 0_m});
+    Point p197(rootCS,{3_m,-99.955_m, 0_m});
+    Point p198(rootCS,{2_m,-99.98_m, 0_m});
+    Point p199(rootCS,{1_m,-99.995_m, 0_m});
+    Point p200(rootCS,{0_m,-100_m, 0_m});
+    Point p201(rootCS,{-1_m,-99.995_m, 0_m});
+    Point p202(rootCS,{-2_m,-99.98_m, 0_m});
+    Point p203(rootCS,{-3_m,-99.955_m, 0_m});
+    Point p204(rootCS,{-4_m,-99.92_m, 0_m});
+    Point p205(rootCS,{-5_m,-99.875_m, 0_m});
+    Point p206(rootCS,{-6_m,-99.82_m, 0_m});
+    Point p207(rootCS,{-7_m,-99.755_m, 0_m});
+    Point p208(rootCS,{-8_m,-99.679_m, 0_m});
+    Point p209(rootCS,{-9_m,-99.594_m, 0_m});
+    Point p210(rootCS,{-10_m,-99.499_m, 0_m});
+    Point p211(rootCS,{-11_m,-99.393_m, 0_m});
+    Point p212(rootCS,{-12_m,-99.277_m, 0_m});
+    Point p213(rootCS,{-13_m,-99.151_m, 0_m});
+    Point p214(rootCS,{-14_m,-99.015_m, 0_m});
+    Point p215(rootCS,{-15_m,-98.869_m, 0_m});
+    Point p216(rootCS,{-16_m,-98.712_m, 0_m});
+    Point p217(rootCS,{-17_m,-98.544_m, 0_m});
+    Point p218(rootCS,{-18_m,-98.367_m, 0_m});
+    Point p219(rootCS,{-19_m,-98.178_m, 0_m});
+    Point p220(rootCS,{-20_m,-97.98_m, 0_m});
+    Point p221(rootCS,{-21_m,-97.77_m, 0_m});
+    Point p222(rootCS,{-22_m,-97.55_m, 0_m});
+    Point p223(rootCS,{-23_m,-97.319_m, 0_m});
+    Point p224(rootCS,{-24_m,-97.077_m, 0_m});
+    Point p225(rootCS,{-25_m,-96.825_m, 0_m});
+    Point p226(rootCS,{-26_m,-96.561_m, 0_m});
+    Point p227(rootCS,{-27_m,-96.286_m, 0_m});
+    Point p228(rootCS,{-28_m,-96_m, 0_m});
+    Point p229(rootCS,{-29_m,-95.703_m, 0_m});
+    Point p230(rootCS,{-30_m,-95.394_m, 0_m});
+    Point p231(rootCS,{-31_m,-95.074_m, 0_m});
+    Point p232(rootCS,{-32_m,-94.742_m, 0_m});
+    Point p233(rootCS,{-33_m,-94.398_m, 0_m});
+    Point p234(rootCS,{-34_m,-94.043_m, 0_m});
+    Point p235(rootCS,{-35_m,-93.675_m, 0_m});
+    Point p236(rootCS,{-36_m,-93.295_m, 0_m});
+    Point p237(rootCS,{-37_m,-92.903_m, 0_m});
+    Point p238(rootCS,{-38_m,-92.499_m, 0_m});
+    Point p239(rootCS,{-39_m,-92.081_m, 0_m});
+    Point p240(rootCS,{-40_m,-91.652_m, 0_m});
+    Point p241(rootCS,{-41_m,-91.209_m, 0_m});
+    Point p242(rootCS,{-42_m,-90.752_m, 0_m});
+    Point p243(rootCS,{-43_m,-90.283_m, 0_m});
+    Point p244(rootCS,{-44_m,-89.8_m, 0_m});
+    Point p245(rootCS,{-45_m,-89.303_m, 0_m});
+    Point p246(rootCS,{-46_m,-88.792_m, 0_m});
+    Point p247(rootCS,{-47_m,-88.267_m, 0_m});
+    Point p248(rootCS,{-48_m,-87.727_m, 0_m});
+    Point p249(rootCS,{-49_m,-87.171_m, 0_m});
+    Point p250(rootCS,{-50_m,-86.603_m, 0_m});
+    Point p251(rootCS,{-51_m,-86.017_m, 0_m});
+    Point p252(rootCS,{-52_m,-85.417_m, 0_m});
+    Point p253(rootCS,{-53_m,-84.8_m, 0_m});
+    Point p254(rootCS,{-54_m,-84.167_m, 0_m});
+    Point p255(rootCS,{-55_m,-83.516_m, 0_m});
+    Point p256(rootCS,{-56_m,-82.849_m, 0_m});
+    Point p257(rootCS,{-57_m,-82.164_m, 0_m});
+    Point p258(rootCS,{-58_m,-81.462_m, 0_m});
+    Point p259(rootCS,{-59_m,-80.74_m, 0_m});
+    Point p260(rootCS,{-60_m,-80_m, 0_m});
+    Point p261(rootCS,{-61_m,-79.24_m, 0_m});
+    Point p262(rootCS,{-62_m,-78.46_m, 0_m});
+    Point p263(rootCS,{-63_m,-77.66_m, 0_m});
+    Point p264(rootCS,{-64_m,-76.837_m, 0_m});
+    Point p265(rootCS,{-65_m,-75.993_m, 0_m});
+    Point p266(rootCS,{-66_m,-75.127_m, 0_m});
+    Point p267(rootCS,{-67_m,-74.236_m, 0_m});
+    Point p268(rootCS,{-68_m,-73.321_m, 0_m});
+    Point p269(rootCS,{-69_m,-72.476_m, 0_m});
+    Point p270(rootCS,{-70_m,-71.414_m, 0_m});
+    Point p271(rootCS,{-71_m,-70.42_m, 0_m});
+    Point p272(rootCS,{-72_m,-69.397_m, 0_m});
+    Point p273(rootCS,{-73_m,-68.345_m, 0_m});
+    Point p274(rootCS,{-74_m,-67.261_m, 0_m});
+    Point p275(rootCS,{-75_m,-66.144_m, 0_m});
+    Point p276(rootCS,{-76_m,-64.992_m, 0_m});
+    Point p277(rootCS,{-77_m,-63.804_m, 0_m});
+    Point p278(rootCS,{-78_m,-62.578_m, 0_m});
+    Point p279(rootCS,{-79_m,-61.311_m, 0_m});
+    Point p280(rootCS,{-80_m,-60_m, 0_m});
+    Point p281(rootCS,{-81_m,-58.643_m, 0_m});
+    Point p282(rootCS,{-82_m,-57.236_m, 0_m});
+    Point p283(rootCS,{-83_m,-55.776_m, 0_m});
+    Point p284(rootCS,{-84_m,-54.259_m, 0_m});
+    Point p285(rootCS,{-85_m,-52.678_m, 0_m});
+    Point p286(rootCS,{-86_m,-51.029_m, 0_m});
+    Point p287(rootCS,{-87_m,-49.305_m, 0_m});
+    Point p288(rootCS,{-88_m,-47.497_m, 0_m});
+    Point p289(rootCS,{-89_m,-45.596_m, 0_m});
+    Point p290(rootCS,{-90_m,-43.589_m, 0_m});
+    Point p291(rootCS,{-91_m,-41.461_m, 0_m});
+    Point p292(rootCS,{-92_m,-39.192_m, 0_m});
+    Point p293(rootCS,{-93_m,-36.756_m, 0_m});
+    Point p294(rootCS,{-94_m,-34.117_m, 0_m});
+    Point p295(rootCS,{-95_m,-31.225_m, 0_m});
+    Point p296(rootCS,{-96_m,-28_m, 0_m});
+    Point p297(rootCS,{-97_m,-24.31_m, 0_m});
+    Point p298(rootCS,{-98_m,-19.9_m, 0_m});
+    Point p299(rootCS,{-99_m,-14.107_m, 0_m});
+    Point p300(rootCS,{-100_m,0_m, 0_m});
+    Point p301(rootCS,{-99_m,14.107_m, 0_m});
+    Point p302(rootCS,{-98_m,19.9_m, 0_m});
+    Point p303(rootCS,{-97_m,24.31_m, 0_m});
+    Point p304(rootCS,{-96_m,28_m, 0_m});
+    Point p305(rootCS,{-95_m,31.225_m, 0_m});
+    Point p306(rootCS,{-94_m,34.117_m, 0_m});
+    Point p307(rootCS,{-93_m,36.756_m, 0_m});
+    Point p308(rootCS,{-92_m,39.192_m, 0_m});
+    Point p309(rootCS,{-91_m,41.461_m, 0_m});
+    Point p310(rootCS,{-90_m,43.589_m, 0_m});
+    Point p311(rootCS,{-89_m,45.596_m, 0_m});
+    Point p312(rootCS,{-88_m,47.497_m, 0_m});
+    Point p313(rootCS,{-87_m,49.305_m, 0_m});
+    Point p314(rootCS,{-86_m,51.029_m, 0_m});
+    Point p315(rootCS,{-85_m,52.678_m, 0_m});
+    Point p316(rootCS,{-84_m,54.259_m, 0_m});
+    Point p317(rootCS,{-83_m,55.776_m, 0_m});
+    Point p318(rootCS,{-82_m,57.236_m, 0_m});
+    Point p319(rootCS,{-81_m,58.643_m, 0_m});
+    Point p320(rootCS,{-80_m,60_m, 0_m});
+    Point p321(rootCS,{-79_m,61.311_m, 0_m});
+    Point p322(rootCS,{-78_m,62.578_m, 0_m});
+    Point p323(rootCS,{-77_m,63.804_m, 0_m});
+    Point p324(rootCS,{-76_m,64.992_m, 0_m});
+    Point p325(rootCS,{-75_m,66.144_m, 0_m});
+    Point p326(rootCS,{-74_m,67.261_m, 0_m});
+    Point p327(rootCS,{-73_m,68.345_m, 0_m});
+    Point p328(rootCS,{-72_m,69.397_m, 0_m});
+    Point p329(rootCS,{-71_m,70.42_m, 0_m});
+    Point p330(rootCS,{-70_m,71.414_m, 0_m});
+    Point p331(rootCS,{-69_m,72.476_m, 0_m});
+    Point p332(rootCS,{-68_m,73.321_m, 0_m});
+    Point p333(rootCS,{-67_m,74.236_m, 0_m});
+    Point p334(rootCS,{-66_m,75.127_m, 0_m});
+    Point p335(rootCS,{-65_m,75.993_m, 0_m});
+    Point p336(rootCS,{-64_m,76.837_m, 0_m});
+    Point p337(rootCS,{-63_m,77.66_m, 0_m});
+    Point p338(rootCS,{-62_m,78.46_m, 0_m});
+    Point p339(rootCS,{-61_m,79.24_m, 0_m});
+    Point p340(rootCS,{-60_m,80_m, 0_m});
+    Point p341(rootCS,{-59_m,80.74_m, 0_m});
+    Point p342(rootCS,{-58_m,81.462_m, 0_m});
+    Point p343(rootCS,{-57_m,82.164_m, 0_m});
+    Point p344(rootCS,{-56_m,82.849_m, 0_m});
+    Point p345(rootCS,{-55_m,83.516_m, 0_m});
+    Point p346(rootCS,{-54_m,84.167_m, 0_m});
+    Point p347(rootCS,{-53_m,84.8_m, 0_m});
+    Point p348(rootCS,{-52_m,85.417_m, 0_m});
+    Point p349(rootCS,{-51_m,86.017_m, 0_m});
+    Point p350(rootCS,{-50_m,86.603_m, 0_m});
+    Point p351(rootCS,{-49_m,87.171_m, 0_m});
+    Point p352(rootCS,{-48_m,87.727_m, 0_m});
+    Point p353(rootCS,{-47_m,88.267_m, 0_m});
+    Point p354(rootCS,{-46_m,88.792_m, 0_m});
+    Point p355(rootCS,{-45_m,89.303_m, 0_m});
+    Point p356(rootCS,{-44_m,89.8_m, 0_m});
+    Point p357(rootCS,{-43_m,90.283_m, 0_m});
+    Point p358(rootCS,{-42_m,90.752_m, 0_m});
+    Point p359(rootCS,{-41_m,91.209_m, 0_m});
+    Point p360(rootCS,{-40_m,91.652_m, 0_m});
+    Point p361(rootCS,{-39_m,92.081_m, 0_m});
+    Point p362(rootCS,{-38_m,92.499_m, 0_m});
+    Point p363(rootCS,{-37_m,92.903_m, 0_m});
+    Point p364(rootCS,{-36_m,93.295_m, 0_m});
+    Point p365(rootCS,{-35_m,93.675_m, 0_m});
+    Point p366(rootCS,{-34_m,94.043_m, 0_m});
+    Point p367(rootCS,{-33_m,94.398_m, 0_m});
+    Point p368(rootCS,{-32_m,94.742_m, 0_m});
+    Point p369(rootCS,{-31_m,95.074_m, 0_m});
+    Point p370(rootCS,{-30_m,95.394_m, 0_m});
+    Point p371(rootCS,{-29_m,95.703_m, 0_m});
+    Point p372(rootCS,{-28_m,96_m, 0_m});
+    Point p373(rootCS,{-27_m,96.286_m, 0_m});
+    Point p374(rootCS,{-26_m,96.561_m, 0_m});
+    Point p375(rootCS,{-25_m,96.825_m, 0_m});
+    Point p376(rootCS,{-24_m,97.077_m, 0_m});
+    Point p377(rootCS,{-23_m,97.319_m, 0_m});
+    Point p378(rootCS,{-22_m,97.55_m, 0_m});
+    Point p379(rootCS,{-21_m,97.77_m, 0_m});
+    Point p380(rootCS,{-20_m,97.98_m, 0_m});
+    Point p381(rootCS,{-19_m,98.178_m, 0_m});
+    Point p382(rootCS,{-18_m,98.367_m, 0_m});
+    Point p383(rootCS,{-17_m,98.544_m, 0_m});
+    Point p384(rootCS,{-16_m,98.712_m, 0_m});
+    Point p385(rootCS,{-15_m,98.869_m, 0_m});
+    Point p386(rootCS,{-14_m,99.015_m, 0_m});
+    Point p387(rootCS,{-13_m,99.151_m, 0_m});
+    Point p388(rootCS,{-12_m,99.277_m, 0_m});
+    Point p389(rootCS,{-11_m,99.393_m, 0_m});
+    Point p390(rootCS,{-10_m,99.499_m, 0_m});
+    Point p391(rootCS,{-9_m,99.594_m, 0_m});
+    Point p392(rootCS,{-8_m,99.679_m, 0_m});
+    Point p393(rootCS,{-7_m,99.755_m, 0_m});
+    Point p394(rootCS,{-6_m,99.82_m, 0_m});
+    Point p395(rootCS,{-5_m,99.875_m, 0_m});
+    Point p396(rootCS,{-4_m,99.92_m, 0_m});
+    Point p397(rootCS,{-3_m,99.955_m, 0_m});
+    Point p398(rootCS,{-2_m,99.98_m, 0_m});
+    Point p399(rootCS,{-1_m,99.995_m, 0_m});
+//    Point p400(rootCS,{0_m,100_m, 0_m}); // same as p0
+
+    // store all the points in a std::array
+    std::array<Point, 400> points_
+        {p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,
+        p10,p11,p12,p13,p14,p15,p16,p17,p18,p19,
+        p20,p21,p22,p23,p24,p25,p26,p27,p28,p29,
+        p30,p31,p32,p33,p34,p35,p36,p37,p38,p39,
+        p40,p41,p42,p43,p44,p45,p46,p47,p48,p49,
+        p50,p51,p52,p53,p54,p55,p56,p57,p58,p59,
+        p60,p61,p62,p63,p64,p65,p66,p67,p68,p69,
+        p70,p71,p72,p73,p74,p75,p76,p77,p78,p79,
+        p80,p81,p82,p83,p84,p85,p86,p87,p88,p89,
+        p90,p91,p92,p93,p94,p95,p96,p97,p98,p99,
+        p100,p101,p102,p103,p104,p105,p106,p107,p108,p109,
+        p110,p111,p112,p113,p114,p115,p116,p117,p118,p119,
+        p120,p121,p122,p123,p124,p125,p126,p127,p128,p129,
+        p130,p131,p132,p133,p134,p135,p136,p137,p138,p139,
+        p140,p141,p142,p143,p144,p145,p146,p147,p148,p149,
+        p150,p151,p152,p153,p154,p155,p156,p157,p158,p159,
+        p160,p161,p162,p163,p164,p165,p166,p167,p168,p169,
+        p170,p171,p172,p173,p174,p175,p176,p177,p178,p179,
+        p180,p181,p182,p183,p184,p185,p186,p187,p188,p189,
+        p190,p191,p192,p193,p194,p195,p196,p197,p198,p199,
+        p200,p201,p202,p203,p204,p205,p206,p207,p208,p209,
+        p210,p211,p212,p213,p214,p215,p216,p217,p218,p219,
+        p220,p221,p222,p223,p224,p225,p226,p227,p228,p229,
+        p230,p231,p232,p233,p234,p235,p236,p237,p238,p239,
+        p240,p241,p242,p243,p244,p245,p246,p247,p248,p249,
+        p250,p251,p252,p253,p254,p255,p256,p257,p258,p259,
+        p260,p261,p262,p263,p264,p265,p266,p267,p268,p269,
+        p270,p271,p272,p273,p274,p275,p276,p277,p278,p279,
+        p280,p281,p282,p283,p284,p285,p286,p287,p288,p289,
+        p290,p291,p292,p293,p294,p295,p296,p297,p298,p299,
+        p300,p301,p302,p303,p304,p305,p306,p307,p308,p309,
+        p310,p311,p312,p313,p314,p315,p316,p317,p318,p319,
+        p320,p321,p322,p323,p324,p325,p326,p327,p328,p329,
+        p330,p331,p332,p333,p334,p335,p336,p337,p338,p339,
+        p340,p341,p342,p343,p344,p345,p346,p347,p348,p349,
+        p350,p351,p352,p353,p354,p355,p356,p357,p358,p359,
+        p360,p361,p362,p363,p364,p365,p366,p367,p368,p369,
+        p370,p371,p372,p373,p374,p375,p376,p377,p378,p379,
+        p380,p381,p382,p383,p384,p385,p386,p387,p388,p389,
+        p390,p391,p392,p393,p394,p395,p396,p397,p398,p399};
+
+    std::vector<TimeType> times_;
+
+    // create a particle /////////////////////////////////////////////////////////////
     auto const particle{Code::Electron};
-//    auto const particle{Code::Gamma};
     const auto pmass{get_mass(particle)};
-
-
-    VelocityVector v0(rootCSCoREAS, {5e+2_m / second, 5e+2_m / second, 5e+2_m / second});
-
-    Vector B0(rootCSCoREAS, 5_T, 5_T, 5_T);
-
-    Line const line(point3, v0);
-
-    auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
-
-    auto const t = 1_s;
-    LeapFrogTrajectory base(point4, v0, B0, k, t);
 
     // create a new stack for each trial
     setup::Stack stack;
 
-    // construct an energy
-    const HEPEnergyType E0{1_TeV};
+    // construct an energy // move in the for loop
+    const HEPEnergyType E0{11.4_MeV};
 
-    // compute the necessary momentumn
+    // compute the necessary momentum // move in the for loop
     const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
 
     // and create the momentum vector
-    const auto plab{MomentumVector(rootCSCoREAS, {0_GeV, 0_GeV, P0})};
-
-    // and create the location of the particle in this coordinate system
-    const Point pos(rootCSCoREAS, 50_m, 10_m, 80_m);
-
-    // add the particle to the stack
-    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
-
-    auto const charge_ {get_charge(particle1.getPID())};
-//    std::cout << "charge: " << charge_ << std::endl;
-//    std::cout << "1 / c: " << 1. / constants::c << std::endl;
-
-    // set up a track object
-//      setup::Tracking tracking;
-
-//    auto startPoint_ {base.getPosition(0)};
-//    auto midPoint_ {base.getPosition(0.5)};
-//    auto endPoint_ {base.getPosition(1)};
-//    std::cout << "startPoint_: " << startPoint_ << std::endl;
-//    std::cout << "midPoint_: " << midPoint_ << std::endl;
-//    std::cout << "endPoint_: " << endPoint_ << std::endl;
-
-//    auto velo_ {base.getVelocity(0)};
-//    std::cout << "velocity: " << velo_ << std::endl;
-
-//    auto startTime_ {particle1.getTime() - base.getDuration()}; // time at the start point of the track hopefully.
-//    auto endTime_ {particle1.getTime()};
-//    std::cout << "startTime_: " << startTime_ << std::endl;
-//    std::cout << "endTime_: " << endTime_ << std::endl;
-//
-//    auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
-//    std::cout << "beta_: " << beta_ << std::endl;
-
-//    Vector<dimensionless_d> v1(rootCSCoREAS, {0, 0, 1});
-//    std::cout << "v1: " << v1.getComponents() << std::endl;
-//
-//    std::cout << "beta_.dot(v1): " << beta_.dot(v1) << std::endl;
-//
-//    std::cout << "Pi: " << 1/M_PI << std::endl;
-//
-//    std::cout << "speed of light: " << constants::c << std::endl;
-//
-//    std::cout << "vacuum permitivity: " << constants::epsilonZero << std::endl;
-
-    // Create a CoREAS instance
-//    CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))> coreas1(detector, envCoREAS);
+    const auto plab{MomentumVector(rootCS, {0_GeV, 0_GeV, P0})};
 
     // create a radio process instance using CoREAS
-    RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
-        coreas(detector, envCoREAS);
+    RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+        coreas(detector, env);
 
-    // check doContinuous and simulate methods
-    coreas.doContinuous(particle1, base, true);
-//    coreas1.simulate(particle1, base);
+    // loop over all the tracks except the last one
+    for (size_t i = 1; i <= 399; i++) {
+      TimeType t {(points_[i] - points_[i-1]).getNorm() / (0.999 * constants::c)};
+      VelocityVector v { (points_[i] - points_[i-1]) / t };
+      Line l {points_[i-1],v};
+      StraightTrajectory track {l,t};
+      auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[i-1], t))}; //TODO: plab is inconsistent
+      coreas.doContinuous(particle1,track,true);
+     }
 
-    // check writeOutput method -> should produce 2 csv files for each antenna
-    coreas.writeOutput();
-    }
+
+     // get the last track
+    TimeType t {(points_[0] - points_[399]).getNorm() / (0.999 * constants::c)};
+    VelocityVector v { (points_[0] - points_[399]) / t };
+    Line l {points_[399],v};
+    StraightTrajectory track {l,t};
+    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[399], t))};
+    coreas.doContinuous(particle1,track,true);
+
+    // get the output
+     coreas.writeOutput();
+
+    //    VelocityVector v0 {(p1 - p0) / 1_s}; //v = ((x1 - x2) + (y1 - y2)) / dt
+//    Line l1{p0,v0};
+//    StraightTrajectory st0 {l1,1_s};
+//    std::cout << times_.size() << std::endl;
+
+    // next step is to connect these points with straight trajectories
+  }
 
 
 //  SECTION("TimeDomainAntenna") {
