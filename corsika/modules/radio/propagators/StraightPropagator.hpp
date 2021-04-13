@@ -55,7 +55,10 @@ namespace corsika {
        * in this case emit and receive unit vectors should be the same
        * so they are both called direction
        */
+
+      // these are used for the direction of emission and reception. TODO: They should be opposite (?)
       auto direction{(destination - source).normalized()};
+      auto receive_{- direction};
 
       // the distance from the point of emission to an observer
       auto distance_ {(destination - source).getNorm()};
@@ -76,10 +79,17 @@ namespace corsika {
       std::vector<double> rindex;
       rindex.reserve(n_points);
 
+      //get and store the refractive index of the first point 'source'
+      auto const* nodeSource{universe->getContainingNode(source)};
+      auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
+//      auto const refractive_index{1.000327};
+      rindex.push_back(ri_source);
+      points.push_back(source);
+
       // TODO: Re-think the efficiency of this for loop
       // loop from `source` to `destination` to store values before Simpson's rule.
       // this loop skips the last point 'destination'
-      for (auto point = source; (point - destination).getNorm() > 0.6 * stepsize;
+      for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize;
            point = point + step) {
 
          // get the environment node at this specific 'point'
@@ -98,7 +108,6 @@ namespace corsika {
       auto const* node{universe->getContainingNode(destination)};
       auto const refractive_index{node->getModelProperties().getRefractiveIndex(destination)};
 //      auto const refractive_index{1.000327};
-      auto const ri_source{refractive_index};
       rindex.push_back(refractive_index);
       points.push_back(destination);
 
@@ -129,8 +138,8 @@ namespace corsika {
       // refractivity definition: (n - 1)
 
       // realize that emission and receive vector are 'direction' in this case.
-      //TODO: receive and emission vector should have opposite signs!
-      return { SignalPath(time, averageRefractiveIndex_, ri_source, direction , direction, distance_,points) };
+      //TODO: receive and emission vector should have opposite signs! -> done
+      return { SignalPath(time, averageRefractiveIndex_, ri_source, direction , receive_, distance_,points) };
 
     } // END: propagate()
 
