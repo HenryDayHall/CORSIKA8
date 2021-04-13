@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <iterator>
+#include <random>
+#include <sstream>
+
 namespace corsika {
 
   inline void RNGManager::registerRandomStream(string_type const& pStreamName) {
@@ -48,13 +52,16 @@ namespace corsika {
 
   inline void RNGManager::seedAll(void) {
     std::random_device rd;
-    std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()};
-    for (auto& entry : rngs_) {
-      std::vector<std::uint32_t> seeds(1);
-      sseq.generate(seeds.begin(), seeds.end());
-      std::uint32_t seed = seeds[0];
-      CORSIKA_LOG_TRACE("Random seed stream {} seed {}", entry.first, seed);
-      entry.second.seed(seed);
+
+    for (auto& [streamName, rng] : rngs_) {
+      std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()}; // 6 really random values
+
+      // for logging collect sseq input values in string
+      std::stringstream ss;
+      sseq.param(std::ostream_iterator<int>{ss, " "});
+      CORSIKA_LOG_DEBUG("Random seed stream {} seed {}", streamName, ss.str());
+
+      rng.seed(sseq);
     }
   }
 
