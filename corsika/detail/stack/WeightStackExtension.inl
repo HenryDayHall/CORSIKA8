@@ -43,7 +43,7 @@ namespace corsika::weights {
 
   template <typename TParentStack>
   inline std::string WeightDataInterface<TParentStack>::asString() const {
-    return fmt::format("weight={}", fmt::ptr(getWeight()));
+    return fmt::format("weight={}", getWeight());
   }
 
   template <typename TParentStack>
