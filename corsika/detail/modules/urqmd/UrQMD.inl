@@ -15,15 +15,112 @@
 #include <corsika/framework/geometry/QuantityVector.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 
+#include <boost/filesystem.hpp>
+#include <boost/multi_array.hpp>
+
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 #include <urqmd.hpp>
 
 namespace corsika::urqmd {
 
-  inline UrQMD::UrQMD() { ::urqmd::iniurqmdc8_(); }
+  inline UrQMD::UrQMD(boost::filesystem::path const& xs_file) {
+    readXSFile(xs_file);
+    ::urqmd::iniurqmdc8_();
+  }
+
+  inline CrossSectionType UrQMD::getTabulatedCrossSection(Code projectileCode,
+                                                          Code targetCode,
+                                                          HEPEnergyType labEnergy) const {
+    // translated to C++ from CORSIKA 7 subroutine cxtot_u
+
+    auto const kinEnergy = labEnergy - get_mass(projectileCode);
+
+    assert(kinEnergy >= HEPEnergyType::zero());
+
+    double const logKinEnergy = std::log10(kinEnergy * (1 / 1_GeV));
+    double const ye = std::max(10 * logKinEnergy + 10.5, 1.);
+    int const je = std::min(int(ye), int(xs_interp_support_table_.shape()[2] - 2));
+    std::array<double, 3> w;
+    w[2 - 1] = ye - je;
+    w[3 - 1] = w[2 - 1] * (w[2 - 1] - 1.) * .5;
+    w[1 - 1] = 1 - w[2 - 1] + w[3 - 1];
+    w[2 - 1] = w[2 - 1] - 2 * w[3 - 1];
+
+    int projectileIndex;
+    switch (projectileCode) {
+      case Code::Proton:
+        projectileIndex = 0;
+        break;
+      case Code::AntiProton:
+        projectileIndex = 1;
+        break;
+      case Code::Neutron:
+        projectileIndex = 2;
+        break;
+      case Code::AntiNeutron:
+        projectileIndex = 3;
+        break;
+      case Code::PiPlus:
+        projectileIndex = 4;
+        break;
+      case Code::PiMinus:
+        projectileIndex = 5;
+        break;
+      case Code::KPlus:
+        projectileIndex = 6;
+        break;
+      case Code::KMinus:
+        projectileIndex = 7;
+        break;
+      case Code::K0Short:
+      case Code::K0Long:
+      /* since K0Short and K0Long are treated the same, we can also add K0 and K0Bar
+       * to the list. This is a deviation from CORSIKA 7. */
+      case Code::K0:
+      case Code::K0Bar:
+        projectileIndex = 8;
+        break;
+      default: { // LCOV_EXCL_START since this can never happen due to canInteract
+        CORSIKA_LOG_WARN("UrQMD cross-section not tabulated for {}", projectileCode);
+        return CrossSectionType::zero(); // LCOV_EXCL_STOP
+      }
+    }
+
+    int targetIndex;
+    switch (targetCode) {
+      case Code::Nitrogen:
+        targetIndex = 0;
+        break;
+      case Code::Oxygen:
+        targetIndex = 1;
+        break;
+      case Code::Argon:
+        targetIndex = 2;
+        break;
+      default:
+        std::stringstream ss;
+        ss << "UrQMD cross-section not tabluated for target " << targetCode;
+        throw std::runtime_error(ss.str().data());
+    }
+
+    auto result = CrossSectionType::zero();
+    for (int i = 0; i < 3; ++i) {
+      result +=
+          xs_interp_support_table_[projectileIndex][targetIndex][je + i - 1 - 1] * w[i];
+    }
+
+    CORSIKA_LOG_TRACE(
+        "UrQMD::GetTabulatedCrossSection proj={}, targ={}, E={} GeV, sigma={}",
+        get_name(projectileCode), get_name(targetCode), labEnergy / 1_GeV, result);
+
+    return result;
+  }
 
   inline CrossSectionType UrQMD::getCrossSection(Code vProjectileCode, Code vTargetCode,
                                                  HEPEnergyType vLabEnergy,
@@ -63,20 +160,19 @@ namespace corsika::urqmd {
 
   template <typename TParticle> // need template here, as this is called both with
                                 // SetupParticle as well as SetupProjectile
-  inline CrossSectionType UrQMD::getCrossSection(TParticle const& vProjectile,
-                                                 Code vTargetCode) const {
-    // TODO: return 0 for non-hadrons?
+  inline CrossSectionType UrQMD::getCrossSection(TParticle const& projectile,
+                                                 Code targetCode) const {
+    auto const projectileCode = projectile.getPID();
 
-    auto const projectileCode = vProjectile.getPID();
-    auto const projectileEnergyLab = vProjectile.getEnergy();
-
-    if (projectileCode == Code::K0Long) {
-      return 0.5 * (getCrossSection(Code::K0, vTargetCode, projectileEnergyLab) +
-                    getCrossSection(Code::K0Bar, vTargetCode, projectileEnergyLab));
+    if (projectileCode == Code::Nucleus) {
+      /*
+       * unfortunately unavoidable at the moment until we have tools to get the actual
+       * inealstic cross-section from UrQMD
+       */
+      return CrossSectionType::zero();
     }
 
-    int const Ap = (projectileCode == Code::Nucleus) ? vProjectile.getNuclearA() : 1;
-    return getCrossSection(projectileCode, vTargetCode, projectileEnergyLab, Ap);
+    return getTabulatedCrossSection(projectileCode, targetCode, projectile.getEnergy());
   }
 
   inline bool UrQMD::canInteract(Code vCode) const {
@@ -85,10 +181,9 @@ namespace corsika::urqmd {
     // only the usual long-lived species as input.
     // TODO: Charmed mesons should be added to the list, too
 
-    static Code const validProjectileCodes[] = {
-        Code::Nucleus,     Code::Proton, Code::AntiProton, Code::Neutron,
-        Code::AntiNeutron, Code::PiPlus, Code::PiMinus,    Code::KPlus,
-        Code::KMinus,      Code::K0,     Code::K0Bar,      Code::K0Long};
+    static std::array constexpr validProjectileCodes{
+        Code::Proton,  Code::AntiProton, Code::Neutron, Code::AntiNeutron, Code::PiPlus,
+        Code::PiMinus, Code::KPlus,      Code::KMinus,  Code::K0Short,     Code::K0Long};
 
     return std::find(std::cbegin(validProjectileCodes), std::cend(validProjectileCodes),
                      vCode) != std::cend(validProjectileCodes);
@@ -299,6 +394,43 @@ namespace corsika::urqmd {
     };
 
     return mapPDGToUrQMD.at(static_cast<int>(get_PDG(code)));
+  }
+
+  inline void UrQMD::readXSFile(boost::filesystem::path const& filename) {
+    boost::filesystem::ifstream file(filename, std::ios::in);
+
+    if (!file.is_open()) {
+      throw std::runtime_error(
+          filename.native() +
+          " could not be opened."); // LCOV_EXCL_LINE since this is pointless to test
+    }
+
+    std::string line;
+
+    std::getline(file, line);
+    std::stringstream ss(line);
+
+    char dummy;
+    int nTargets, nProjectiles, nSupports;
+    ss >> dummy >> nTargets >> nProjectiles >> nSupports;
+
+    decltype(xs_interp_support_table_)::extent_gen extents;
+    xs_interp_support_table_.resize(extents[nProjectiles][nTargets][nSupports]);
+
+    for (int i = 0; i < nTargets; ++i) {
+      for (int j = 0; j < nProjectiles; ++j) {
+        for (int k = 0; k < nSupports; ++k) {
+          std::getline(file, line);
+          std::stringstream s(line);
+          double energy, sigma;
+          s >> energy >> sigma;
+          xs_interp_support_table_[j][i][k] = sigma * 1_mb;
+        }
+
+        std::getline(file, line);
+        std::getline(file, line);
+      }
+    }
   }
 
 } // namespace corsika::urqmd

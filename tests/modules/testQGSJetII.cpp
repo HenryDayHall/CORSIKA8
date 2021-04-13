@@ -175,7 +175,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   SECTION("InteractionInterface Nuclei") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, 20, 10, 10100_GeV,
+        Code::Nucleus, 60, 30, 20100_GeV,
         (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
@@ -183,10 +183,15 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     auto const projectileMomentum = projectile.getMomentum();
 
     corsika::qgsjetII::Interaction model;
-    model.doInteraction(view);
+    model.doInteraction(view); // this also should produce some fragments
+    CHECK(view.getSize() == Approx(188).margin(2)); // this is not physics validation
+    int countFragments = 0;
+    for (auto const& sec : view) { countFragments += (sec.getPID() == Code::Nucleus); }
+    CHECK(countFragments == Approx(2).margin(1)); // this is not physics validation
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
 
-    CHECK(length / (1_g / square(1_cm)) == Approx(20.13).margin(0.1));
+    CHECK(length / (1_g / square(1_cm)) ==
+          Approx(12).margin(2)); // this is not physics validation
   }
 
   SECTION("Heavy nuclei") {
@@ -210,17 +215,50 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   }
 
   SECTION("Allowed Particles") {
-
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Electron, 0, 0, 1100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
-    auto particle = stackPtr->first();
-    auto projectile = secViewPtr->getProjectile();
-    auto const projectileMomentum = projectile.getMomentum();
-
-    corsika::qgsjetII::Interaction model;
-
-    GrammageType const length = model.getInteractionLength(particle);
-    CHECK(length / (1_g / square(1_cm)) == std::numeric_limits<double>::infinity());
+    { // electron
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Electron, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      auto particle = stackPtr->first();
+      corsika::qgsjetII::Interaction model;
+      GrammageType const length = model.getInteractionLength(particle);
+      CHECK(length / (1_g / square(1_cm)) == std::numeric_limits<double>::infinity());
+    }
+    { // pi0 is internally converted into pi+/pi-
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Pi0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(18).margin(2)); // this is not physics validation
+    }
+    { // rho0 is internally converted into pi-/pi+
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Rho0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(7).margin(2)); // this is not physics validation
+    }
+    { // Lambda is internally converted into neutron
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Lambda0, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(25).margin(3)); // this is not physics validation
+    }
+    { // AntiLambda is internally converted into anti neutron
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Lambda0Bar, 0, 0, 100_GeV,
+          (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(25).margin(3)); // this is not physics validation
+    }
   }
 }

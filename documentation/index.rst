@@ -13,6 +13,7 @@ Welcome to the CORSIKA 8 air shower simulation framework.
    units
    environment
    stack
+   utilities
    api
    
 
