@@ -11,6 +11,9 @@
 #include <complex>
 
 /**
+ * @file QuarticSolver.hpp
+ * @ingroup Utilities
+ * @{
  * \todo convert to class
  */
 
@@ -55,6 +58,8 @@ namespace corsika::quartic_solver {
   // Attention - this function returns dynamically allocated array. It has to be released
   // afterwards.
   DComplex* solve_quartic(double a, double b, double c, double d);
+
+  //! @}
 
 } // namespace corsika::quartic_solver
 
