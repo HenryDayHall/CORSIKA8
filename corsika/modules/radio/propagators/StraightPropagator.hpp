@@ -82,7 +82,7 @@ namespace corsika {
       //get and store the refractive index of the first point 'source'
       auto const* nodeSource{universe->getContainingNode(source)};
       auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
-//      auto const refractive_index{1.000327};
+//      auto const ri_source{1.000327};
       rindex.push_back(ri_source);
       points.push_back(source);
 
@@ -106,9 +106,9 @@ namespace corsika {
 
       //add the refractive index of last point 'destination' and store it
       auto const* node{universe->getContainingNode(destination)};
-      auto const refractive_index{node->getModelProperties().getRefractiveIndex(destination)};
-//      auto const refractive_index{1.000327};
-      rindex.push_back(refractive_index);
+      auto const ri_destination{node->getModelProperties().getRefractiveIndex(destination)};
+//      auto const ri_destination{1.000327};
+      rindex.push_back(ri_destination);
       points.push_back(destination);
 
       // Apply Simpson's rule
@@ -139,7 +139,8 @@ namespace corsika {
 
       // realize that emission and receive vector are 'direction' in this case.
       //TODO: receive and emission vector should have opposite signs! -> done
-      return { SignalPath(time, averageRefractiveIndex_, ri_source, direction , receive_, distance_,points) };
+      return { SignalPath(time, averageRefractiveIndex_, ri_source,  ri_destination,
+                         direction , receive_, distance_,points) };
 
     } // END: propagate()
 

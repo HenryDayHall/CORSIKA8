@@ -26,6 +26,7 @@ namespace corsika {
     TimeType const propagation_time_;    ///< The total propagation time.
     double const average_refractive_index_; ///< The average refractive index.
     double const refractive_index_source_; ///< The refractive index at the source.
+    double const refractive_index_destination_; ///< The refractive index at the destination point.
     Vector<dimensionless_d> const emit_;    ///< The (unit-length) emission vector.
     Vector<dimensionless_d> const receive_; ///< The (unit-length) receive vector.
     path const points_;  ///< A collection of points that make up the geometrical path.
@@ -34,13 +35,14 @@ namespace corsika {
     /**
      * Create a new SignalPath instance.
      */
-    SignalPath(TimeType const propagation_time, double const average_refractive_index, double const refractive_index_source,
+    SignalPath(TimeType const propagation_time, double const average_refractive_index, double const refractive_index_source, double const refractive_index_destination,
                Vector<dimensionless_d> const emit, Vector<dimensionless_d> const receive,
                LengthType const R_distance, path const& points)
         : Path(points)
         , propagation_time_(propagation_time)
         , average_refractive_index_(average_refractive_index)
         , refractive_index_source_(refractive_index_source)
+        , refractive_index_destination_(refractive_index_destination)
         , emit_(emit)
         , receive_(receive)
         , R_distance_(R_distance) {}
