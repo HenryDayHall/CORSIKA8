@@ -36,27 +36,16 @@ namespace corsika::weights {
 
   public:
     // default version for particle-creation from input data
-    void setParticleData(std::tuple<double> const v) { setWeight(std::get<0>(v)); }
-    void setParticleData(WeightDataInterface& parent, std::tuple<double> const) {
-      setWeight(parent.getWeight()); // copy Weight from parent particle!
-    }
-    void setParticleData() { setWeight(1); } // default weight
-    void setParticleData(WeightDataInterface& parent) {
-      setWeight(parent.getWeight()); // copy Weight from parent particle!
-    }
+    void setParticleData(std::tuple<double> const v);
+    void setParticleData(WeightDataInterface const& parent, std::tuple<double> const);
+    void setParticleData();
+    void setParticleData(WeightDataInterface const& parent);
 
-    std::string asString() const {
-      return fmt::format("weight={}", fmt::ptr(getWeight()));
-    }
+    std::string asString() const;
 
-    void setWeight(double const v) {
+    void setWeight(double const v);
 
-      super_type::getStackData().setWeight(super_type::getIndex(), v);
-    }
-
-    double getWeight() const {
-      return super_type::getStackData().getWeight(super_type::getIndex());
-    }
+    double getWeight() const;
   };
 
   // definition of stack-data object to store geometry information
@@ -72,39 +61,31 @@ namespace corsika::weights {
     typedef std::vector<double> weight_vector_type;
 
     WeightData() = default;
-
     WeightData(WeightData const&) = default;
-
     WeightData(WeightData&&) = default;
-
     WeightData& operator=(WeightData const&) = default;
-
     WeightData& operator=(WeightData&&) = default;
 
     // these functions are needed for the Stack interface
-    void clear() { weight_vector_.clear(); }
+    void clear();
 
-    unsigned int getSize() const { return weight_vector_.size(); }
+    unsigned int getSize() const;
 
-    unsigned int getCapacity() const { return weight_vector_.size(); }
+    unsigned int getCapacity() const;
 
-    void copy(int const i1, int const i2) { weight_vector_[i2] = weight_vector_[i1]; }
+    void copy(int const i1, int const i2);
 
-    void swap(int const i1, int const i2) {
-      std::swap(weight_vector_[i1], weight_vector_[i2]);
-    }
+    void swap(int const i1, int const i2);
 
     // custom data access function
-    void setWeight(int const i, double const v) { weight_vector_[i] = v; }
+    void setWeight(int const i, double const v);
 
-    double getWeight(int const i) const { return weight_vector_[i]; }
+    double getWeight(int const i) const;
 
     // these functions are also needed by the Stack interface
-    void incrementSize() { weight_vector_.push_back(1); } // default weight
+    void incrementSize();
 
-    void decrementSize() {
-      if (weight_vector_.size() > 0) { weight_vector_.pop_back(); }
-    }
+    void decrementSize();
 
     // custom private data section
   private:
@@ -117,3 +98,5 @@ namespace corsika::weights {
   };
 
 } // namespace corsika::weights
+
+#include <corsika/detail/stack/WeightStackExtension.inl>

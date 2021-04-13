@@ -58,7 +58,7 @@ TEST_CASE("WeightStackExtension", "[stack]") {
     CHECK(s.getEntries() == 1);
 
     const auto pout = s.getNextParticle();
-    CHECK(pout.getWeight() == 15);
+    CHECK(pout.getWeight() == weight);
   }
 
   SECTION("stack fill and cleanup") {
@@ -79,7 +79,7 @@ TEST_CASE("WeightStackExtension", "[stack]") {
       v += p.getWeight();
       p.erase();
     }
-    CHECK(v == 99 * weight);
+    CHECK(v == Approx(99 * weight));
     CHECK(s.getEntries() == 0);
   }
 }
