@@ -13,6 +13,7 @@
 namespace corsika {
 
   /**
+   * @file SaveBoostHistogram.hpp
    * @ingroup Utilities
    *
    * This functions saves a boost::histogram into a numpy file. Only rather basic axis

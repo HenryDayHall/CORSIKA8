@@ -18,7 +18,7 @@ namespace corsika {
      @{
 
      Process that does nothing. It is not even derived from
-     BaseProcess
+     BaseProcess. But it can be added to a ProcessSequence.
    */
 
   class NullModel {
@@ -30,7 +30,7 @@ namespace corsika {
     static bool const is_process_sequence = false;
     static bool const is_switch_process_sequence = false;
 
-    //! Default number of processes is just one, obviously
+    //! Default number of processes is zero, obviously
     static unsigned int constexpr getNumberOfProcesses() { return 0; }
   };
 

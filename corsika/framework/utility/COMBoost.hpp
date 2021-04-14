@@ -25,7 +25,7 @@ namespace corsika {
    **/
 
   /**
-     @class
+     @class COMBoost
      @ingroup Utilities
 
      This utility class handles Lorentz boost between different
