@@ -96,13 +96,13 @@ namespace corsika {
 
           // calculate preDoppler factor
           double preDoppler_{1. - paths1[i].refractive_index_source_ *
-                                  beta_.dot(paths1[i].receive_)};
+                                  beta_.dot(paths1[i].emit_)}; // TODO: are you sure this is path.receive and not emit?
           std::cout << "***** preDoppler: " << preDoppler_ << std::endl;
 
           // calculate postDoppler factor
           double postDoppler_{
               1. - paths2[i].refractive_index_source_ *
-                   beta_.dot(paths2[i].receive_)}; // maybe this is path.receive_ (?)
+                   beta_.dot(paths2[i].emit_)}; // maybe this is path.receive_ (?)
           std::cout << "***** postDoppler: " << postDoppler_ << std::endl;
 
           // calculate receive time for startpoint
@@ -147,7 +147,7 @@ namespace corsika {
             for (auto const& path : paths3) {
 
               auto const midPointReceiveTime_{path.propagation_time_ + midTime_};
-              auto midDoppler_{1. - path.refractive_index_source_ * beta_.dot(path.receive_)};
+              auto midDoppler_{1. - path.refractive_index_source_ * beta_.dot(path.emit_)};
 
               // change the values of the receive unit vectors of start and end
               ReceiveVectorStart_ = path.receive_;

@@ -776,21 +776,17 @@ TEST_CASE("Radio", "[processes]") {
 
     std::vector<TimeType> times_;
 
-    // create a particle /////////////////////////////////////////////////////////////
-    auto const particle{Code::Electron};
-    const auto pmass{get_mass(particle)};
+    //////////////////////////////////////////////////////////////////////////////////
 
     // create a new stack for each trial
     setup::Stack stack;
+    stack.clear();
+
+    const Code particle{Code::Electron};
+    const HEPMassType pmass{get_mass(particle)};
 
     // construct an energy // move in the for loop
     const HEPEnergyType E0{11.4_MeV};
-
-    // compute the necessary momentum // move in the for loop
-    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
-
-    // and create the momentum vector
-    const auto plab{MomentumVector(rootCS, {0_GeV, 0_GeV, P0})};
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
@@ -800,28 +796,30 @@ TEST_CASE("Radio", "[processes]") {
     for (size_t i = 1; i <= 399; i++) {
       TimeType t {(points_[i] - points_[i-1]).getNorm() / (0.999 * constants::c)};
       VelocityVector v { (points_[i] - points_[i-1]) / t };
+      auto  beta {v / constants::c};
+      auto gamma {E0/pmass};
+      auto plab {beta * pmass * gamma};
       Line l {points_[i-1],v};
       StraightTrajectory track {l,t};
-      auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[i-1], t))}; //TODO: plab is inconsistent
+      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[i-1], t))}; //TODO: plab is inconsistent
       coreas.doContinuous(particle1,track,true);
      }
 
+     // ToDo: use just one electron, this way I have 400! (although it shouldn't affect the physics)
 
      // get the last track
     TimeType t {(points_[0] - points_[399]).getNorm() / (0.999 * constants::c)};
     VelocityVector v { (points_[0] - points_[399]) / t };
+    auto  beta {v / constants::c};
+    auto gamma {E0/pmass};
+    auto plab {beta * pmass * gamma};
     Line l {points_[399],v};
     StraightTrajectory track {l,t};
-    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[399], t))};
+    auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[399], t))};
     coreas.doContinuous(particle1,track,true);
 
     // get the output
      coreas.writeOutput();
-
-    //    VelocityVector v0 {(p1 - p0) / 1_s}; //v = ((x1 - x2) + (y1 - y2)) / dt
-//    Line l1{p0,v0};
-//    StraightTrajectory st0 {l1,1_s};
-//    std::cout << times_.size() << std::endl;
 
   }
 
