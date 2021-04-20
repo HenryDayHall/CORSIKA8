@@ -89,7 +89,6 @@ using StackTest = CombinedStack<TestStackData, TestStackData2, CombinedTestInter
 TEST_CASE("Combined Stack", "[stack]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   // helper function for sum over stack data
   auto sum = [](const StackTest& stack) {
@@ -395,7 +394,6 @@ using Particle2 = typename StackTest2::particle_type;
 TEST_CASE("Combined Stack - secondary view") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("create secondaries via secondaryview") {
 

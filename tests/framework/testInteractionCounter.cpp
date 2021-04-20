@@ -43,7 +43,6 @@ struct DummyProcess {
 
 TEST_CASE("InteractionCounter", "[process]") {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::info);
 
   DummyProcess d;

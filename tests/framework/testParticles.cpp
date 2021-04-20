@@ -17,7 +17,6 @@ using namespace corsika;
 TEST_CASE("ParticleProperties", "[Particles]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Types") {
     CHECK(Electron::code == Code::Electron);

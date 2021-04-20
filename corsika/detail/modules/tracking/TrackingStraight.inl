@@ -20,6 +20,7 @@
 
 #include <type_traits>
 #include <utility>
+#include <cmath>
 
 namespace corsika::tracking_line {
 

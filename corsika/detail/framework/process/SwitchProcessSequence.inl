@@ -36,13 +36,11 @@ namespace corsika {
                                          typename TParticle::node_type const& from,
                                          typename TParticle::node_type const& to) {
     if (select_(particle)) {
-      if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
-                                      process1_type> ||
+      if constexpr (is_boundary_process_v<process1_type> ||
                     process1_type::is_process_sequence) {
 
         // interface checking on TSequence
-        if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process1_type>,
-                                        process1_type>) {
+        if constexpr (is_boundary_process_v<process1_type>) {
 
           static_assert(
               has_method_doBoundaryCrossing_v<TSequence, ProcessReturn, TParticle&>,
@@ -56,13 +54,11 @@ namespace corsika {
       }
     } else {
 
-      if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process2_type>,
-                                      process2_type> ||
+      if constexpr (is_boundary_process_v<process2_type> ||
                     process2_type::is_process_sequence) {
 
         // interface checking on USequence
-        if constexpr (std::is_base_of_v<BoundaryCrossingProcess<process2_type>,
-                                        process2_type>) {
+        if constexpr (is_boundary_process_v<process2_type>) {
 
           static_assert(
               has_method_doBoundaryCrossing_v<USequence, ProcessReturn, TParticle>,
@@ -136,7 +132,7 @@ namespace corsika {
                         IndexProcess2>::doSecondaries(TSecondaries& vS) {
     const auto& particle = vS.parent();
     if (select_(particle)) {
-      if constexpr (std::is_base_of_v<SecondariesProcess<process1_type>, process1_type> ||
+      if constexpr (is_secondaries_process_v<process1_type> ||
                     process1_type::is_process_sequence) {
 
         // interface checking on TSequence
@@ -150,7 +146,7 @@ namespace corsika {
         A_.doSecondaries(vS);
       }
     } else {
-      if constexpr (std::is_base_of_v<SecondariesProcess<process2_type>, process2_type> ||
+      if constexpr (is_secondaries_process_v<process2_type> ||
                     process2_type::is_process_sequence) {
 
         // interface checking on USequence
@@ -219,14 +215,14 @@ namespace corsika {
       IndexProcess2>::getInverseInteractionLength(TParticle&& particle) {
 
     if (select_(particle)) {
-      if constexpr (std::is_base_of_v<InteractionProcess<process1_type>, process1_type> ||
+      if constexpr (is_interaction_process_v<process1_type> ||
                     process1_type::is_process_sequence) {
         return A_.getInverseInteractionLength(particle);
       }
 
     } else {
 
-      if constexpr (std::is_base_of_v<InteractionProcess<process2_type>, process2_type> ||
+      if constexpr (is_interaction_process_v<process2_type> ||
                     process2_type::is_process_sequence) {
         return B_.getInverseInteractionLength(particle);
       }
@@ -249,8 +245,7 @@ namespace corsika {
             A_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
         // if A_ did succeed, stop routine. Not checking other static branch B_.
         if (ret != ProcessReturn::Ok) { return ret; }
-      } else if constexpr (std::is_base_of_v<InteractionProcess<process1_type>,
-                                             process1_type>) {
+      } else if constexpr (is_interaction_process_v<process1_type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
         // check if we should execute THIS process and then EXIT
@@ -272,8 +267,7 @@ namespace corsika {
       if constexpr (process2_type::is_process_sequence) {
         // if B_ is a process sequence --> check inside
         return B_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
-      } else if constexpr (std::is_base_of_v<InteractionProcess<process2_type>,
-                                             process2_type>) {
+      } else if constexpr (is_interaction_process_v<process2_type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
         // check if we should execute THIS process and then EXIT
@@ -301,14 +295,14 @@ namespace corsika {
                         IndexProcess2>::getInverseLifetime(TParticle&& particle) {
 
     if (select_(particle)) {
-      if constexpr (std::is_base_of_v<DecayProcess<process1_type>, process1_type> ||
+      if constexpr (is_decay_process_v<process1_type> ||
                     process1_type::is_process_sequence) {
         return A_.getInverseLifetime(particle);
       }
 
     } else {
 
-      if constexpr (std::is_base_of_v<DecayProcess<process2_type>, process2_type> ||
+      if constexpr (is_decay_process_v<process2_type> ||
                     process2_type::is_process_sequence) {
         return B_.getInverseLifetime(particle);
       }
@@ -331,8 +325,7 @@ namespace corsika {
         ProcessReturn const ret = A_.selectDecay(view, decay_inv_select, decay_inv_sum);
         // if A_ did succeed, stop routine here (not checking other static branch B_)
         if (ret != ProcessReturn::Ok) { return ret; }
-      } else if constexpr (std::is_base_of_v<DecayProcess<process1_type>,
-                                             process1_type>) {
+      } else if constexpr (is_decay_process_v<process1_type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_sum += A_.getInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT
@@ -355,8 +348,7 @@ namespace corsika {
       if constexpr (process2_type::is_process_sequence) {
         // if B_ is a process sequence --> check inside
         return B_.selectDecay(view, decay_inv_select, decay_inv_sum);
-      } else if constexpr (std::is_base_of_v<DecayProcess<process2_type>,
-                                             process2_type>) {
+      } else if constexpr (is_decay_process_v<process2_type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         decay_inv_sum += B_.getInverseLifetime(view.parent());
         // check if we should execute THIS process and then EXIT

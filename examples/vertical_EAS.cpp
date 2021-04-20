@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
       "environment setup: universe={}, layer1={}, layer2={}, layer3={}, layer4={}, "
       "layer5={}",
       fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 130_km, 0_m, 0_m}))),
+          Point(rootCS, {constants::EarthRadius::Mean + 130000_km, 0_m, 0_m}))),
       fmt::ptr(env.getUniverse()->getContainingNode(
           Point(rootCS, {constants::EarthRadius::Mean + 110_km, 0_m, 0_m}))),
       fmt::ptr(env.getUniverse()->getContainingNode(
@@ -289,6 +289,46 @@ int main(int argc, char** argv) {
     // setup particle stack, and add primary particle
     setup::Stack stack;
     stack.clear();
+    unsigned short const A = std::stoi(std::string(argv[1]));
+    Code beamCode;
+    HEPEnergyType mass;
+    unsigned short Z = 0;
+    if (A > 0) {
+      beamCode = Code::Nucleus;
+      Z = std::stoi(std::string(argv[2]));
+      mass = get_nucleus_mass(A, Z);
+    } else {
+      int pdg = std::stoi(std::string(argv[2]));
+      beamCode = convert_from_PDG(PDGCode(pdg));
+      mass = get_mass(beamCode);
+    }
+    HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
+    double theta = 0.;
+    auto const thetaRad = theta / 180. * M_PI;
+
+    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+      return sqrt((Elab - m) * (Elab + m));
+    };
+    HEPMomentumType P0 = elab2plab(E0, mass);
+    auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
+      return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
+    };
+
+    auto const [px, py, pz] = momentumComponents(thetaRad, P0);
+    auto plab = MomentumVector(rootCS, {px, py, pz});
+    cout << "input particle: " << beamCode << endl;
+    cout << "input angles: theta=" << theta << endl;
+    cout << "input momentum: " << plab.getComponents() / 1_GeV
+         << ", norm = " << plab.getNorm() << endl;
+
+    auto const observationHeight = 0_km + builder.getEarthRadius();
+    auto const injectionHeight = 111.75_km + builder.getEarthRadius();
+    auto const t = (injectionHeight - observationHeight) / cos(thetaRad);
+    Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
+    Point const injectionPos =
+        showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+
+    std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
     if (A > 1) {
       stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));

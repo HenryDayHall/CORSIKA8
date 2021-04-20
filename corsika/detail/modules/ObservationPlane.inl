@@ -45,6 +45,8 @@ namespace corsika {
                   << ' ' << displacement.dot(xAxis_) / 1_m << ' '
                   << displacement.dot(yAxis_) / 1_m << '\n';
 
+    CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
+
     if (deleteOnHit_) {
       count_ground_++;
       energy_ground_ += energy;
@@ -58,13 +60,14 @@ namespace corsika {
       corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
 
+    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
+                      particle.getPosition(), particle.getDirection(), plane_.asString());
+
     Intersections const intersection =
         setup::Tracking::intersect<corsika::setup::Stack::particle_type>(particle,
                                                                          plane_);
     TimeType const timeOfIntersection = intersection.getEntry();
-    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}, timeOfIntersection={}",
-                      particle.asString(), particle.getPosition(),
-                      particle.getDirection(), plane_.asString(), timeOfIntersection);
+    CORSIKA_LOG_TRACE("timeOfIntersection={}", timeOfIntersection);
     if (timeOfIntersection < TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }

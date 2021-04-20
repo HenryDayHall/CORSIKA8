@@ -34,15 +34,14 @@ namespace corsika {
         return std::make_tuple(particle.getPosition(), particle.getMomentum() / 1_GeV,
                                double(0));
       } // charge of the particle
-      int const chargeNumber = particle.getChargeNumber();
+      ElectricChargeType const charge = particle.getCharge();
       auto const* currentLogicalVolumeNode = particle.getNode();
       MagneticFieldVector const& magneticfield =
           currentLogicalVolumeNode->getModelProperties().getMagneticField(
               particle.getPosition());
-      VelocityVector velocity =
-          particle.getMomentum() / particle.getEnergy() * constants::c;
+      VelocityVector velocity = particle.getVelocity();
       decltype(meter / (second * volt)) k =
-          chargeNumber * constants::cSquared * 1_eV /
+          charge * constants::cSquared * 1_eV /
           (velocity.getNorm() * particle.getEnergy() * 1_V);
       DirectionVector direction = velocity.normalized();
       auto position = particle.getPosition(); // First Movement
@@ -58,8 +57,7 @@ namespace corsika {
 
     template <typename TParticle>
     inline auto Tracking::getTrack(TParticle const& particle) {
-      VelocityVector const initialVelocity =
-          particle.getMomentum() / particle.getEnergy() * constants::c;
+      VelocityVector const initialVelocity = particle.getVelocity();
 
       auto const position = particle.getPosition();
       CORSIKA_LOG_DEBUG(
@@ -74,7 +72,7 @@ namespace corsika {
 
       typedef
           typename std::remove_reference<decltype(*particle.getNode())>::type node_type;
-      node_type& volumeNode = *particle.getNode();
+      node_type const& volumeNode = *particle.getNode();
 
       // for the event of magnetic fields and curved trajectories, we need to limit
       // maximum step-length since we need to follow curved
@@ -83,25 +81,25 @@ namespace corsika {
       MagneticFieldVector const& magneticfield =
           volumeNode.getModelProperties().getMagneticField(position);
       MagneticFluxType const magnitudeB = magneticfield.getNorm();
-      int const chargeNumber = particle.getChargeNumber();
-      bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
+      ElectricChargeType const charge = particle.getCharge();
+      bool const no_deflection = (charge == 0 * constants::e) || magnitudeB == 0_T;
 
       if (no_deflection) { return getLinearTrajectory(particle); }
 
-      HEPMomentumType const pAlongB_delta =
+      HEPMomentumType const p_perp =
           (particle.getMomentum() -
            particle.getMomentum().getParallelProjectionOnto(magneticfield))
               .getNorm();
 
-      if (pAlongB_delta == 0_GeV) {
+      if (p_perp < 1_eV) {
         // particle travel along, parallel to magnetic field. Rg is
         // "0", but for purpose of step limit we return infinity here.
-        CORSIKA_LOG_TRACE("pAlongB_delta is 0_GeV --> parallel");
+        CORSIKA_LOG_TRACE("p_perp is 0_GeV --> parallel");
         return getLinearTrajectory(particle);
       }
 
-      LengthType const gyroradius =
-          (pAlongB_delta * 1_V / (constants::c * abs(chargeNumber) * magnitudeB * 1_eV));
+      LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(p_perp) *
+                                     constants::c / (abs(charge) * magnitudeB));
 
       double const maxRadians = 0.01;
       LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
@@ -113,8 +111,15 @@ namespace corsika {
       // intersection
       auto [minTime, minNode] = nextIntersect(particle, steplimit_time);
 
-      auto const k =
-          chargeNumber * constants::cSquared * 1_eV / (particle.getEnergy() * 1_V);
+      auto const p_norm =
+          constants::c * convert_HEP_to_SI<MassType::dimension_type>(
+                             particle.getMomentum().getNorm()); // kg *m /s
+      // k = q/|p|
+      decltype(1 / (tesla * second)) const k =
+          charge / p_norm *
+          initialVelocity.getNorm(); // since we use steps in time and not length
+      // units: C * s / m / kg * m/s = 1 / (T*m) * m/s = 1/(T s)
+
       return std::make_tuple(
           LeapFrogTrajectory(position, initialVelocity, magneticfield, k,
                              minTime), // trajectory
@@ -129,99 +134,104 @@ namespace corsika {
         return Intersections();
       }
 
-      int const chargeNumber = particle.getChargeNumber();
+      ElectricChargeType const charge = particle.getCharge();
       auto const& position = particle.getPosition();
       auto const* currentLogicalVolumeNode = particle.getNode();
       MagneticFieldVector const& magneticfield =
           currentLogicalVolumeNode->getModelProperties().getMagneticField(position);
 
-      VelocityVector const velocity =
-          particle.getMomentum() / particle.getEnergy() * constants::c;
-      DirectionVector const directionBefore =
-          velocity.normalized(); // determine steplength to next volume
+      VelocityVector const velocity = particle.getVelocity();
+      DirectionVector const directionBefore = velocity.normalized();
 
       auto const projectedDirection = directionBefore.cross(magneticfield);
       auto const projectedDirectionSqrNorm = projectedDirection.getSquaredNorm();
       bool const isParallel = (projectedDirectionSqrNorm == 0 * square(1_T));
 
-      if (chargeNumber == 0 || magneticfield.getNorm() == 0_T || isParallel) {
+      if ((charge == 0 * constants::e) || magneticfield.getNorm() == 0_T || isParallel) {
         return tracking_line::Tracking::intersect<TParticle>(particle, sphere);
       }
 
       bool const numericallyInside = sphere.contains(particle.getPosition());
       CORSIKA_LOG_TRACE("numericallyInside={}", numericallyInside);
 
-      auto const absVelocity = velocity.getNorm();
-      auto const energy = particle.getEnergy();
+      SpeedType const absVelocity = velocity.getNorm();
+      auto const p_norm =
+          constants::c * convert_HEP_to_SI<MassType::dimension_type>(
+                             particle.getMomentum().getNorm()); // km * m /s
       // this is: k = q/|p|
-      auto const k =
-          chargeNumber * constants::cSquared * 1_eV / (absVelocity * energy * 1_V);
+      auto const k = charge / p_norm;
 
-      auto const direction_B_perp = directionBefore.cross(magneticfield);
-      auto const denom = 4. / (direction_B_perp.getSquaredNorm() * k * k);
+      MagneticFieldVector const direction_x_B = directionBefore.cross(magneticfield);
+      auto const denom = 4. / (direction_x_B.getSquaredNorm() * k * k);
       Vector<length_d> const deltaPos = position - sphere.getCenter();
-      double const b = (direction_B_perp.dot(deltaPos) * k + 1) * denom / (1_m * 1_m);
+      double const b = (direction_x_B.dot(deltaPos) * k + 1) * denom / (1_m * 1_m);
       double const c = directionBefore.dot(deltaPos) * 2 * denom / (1_m * 1_m * 1_m);
       LengthType const deltaPosLength = deltaPos.getNorm();
       double const d = (deltaPosLength + sphere.getRadius()) *
                        (deltaPosLength - sphere.getRadius()) * denom /
                        (1_m * 1_m * 1_m * 1_m);
       CORSIKA_LOG_TRACE("denom={}, b={}, c={}, d={}", denom, b, c, d);
-      std::complex<double> const* solutions = quartic_solver::solve_quartic(0, b, c, d);
+      std::vector<double> solutions = andre::solve_quartic_real(1, 0, b, c, d);
       LengthType d_enter, d_exit;
       int first = 0, first_entry = 0, first_exit = 0;
-      for (int i = 0; i < 4; i++) {
-        if (solutions[i].imag() == 0) {
-          LengthType const dist = solutions[i].real() * 1_m;
-          CORSIKA_LOG_TRACE("Solution (real) for current Volume: {} ", dist);
-          if (numericallyInside) {
-            // there must be an entry (negative) and exit (positive) solution
-            if (dist < -0.0001_m) { // security margin to assure transfer to next
-                                    // logical volume
-              if (first_entry == 0) {
-                d_enter = dist;
-              } else {
-                d_enter = std::max(d_enter, dist); // closest negative to zero (-1e-4) m
-              }
-              first_entry++;
-
-            } else { // thus, dist > -0.0001_m
-
-              if (first_exit == 0) {
-                d_exit = dist;
-              } else {
-                d_exit = std::min(d_exit, dist); // closest positive to zero (-1e-4) m
-              }
-              first_exit++;
-            }
-            first = int(first_exit > 0) + int(first_entry > 0);
-
-          } else { // thus, numericallyInside == false
-
-            // both physical solutions (entry, exit) must be positive, and as small as
-            // possible
-            if (dist < -0.0001_m) { // need small numerical margin, to assure transport
-              // into next logical volume
-              continue;
-            }
-            if (first == 0) {
+      for (auto solution : solutions) {
+        LengthType const dist = solution * 1_m;
+        CORSIKA_LOG_TRACE("Solution (real) for current Volume: {} ", dist);
+        if (numericallyInside) {
+          // there must be an entry (negative) and exit (positive) solution
+          if (dist < 0.0001_m) { // security margin to assure
+                                 // transfer to next logical volume
+                                 // (even if dist suggest marginal
+                                 // entry already, which we
+                                 // classify as numerical artifact)
+            if (first_entry == 0) {
               d_enter = dist;
             } else {
-              if (dist < d_enter) {
-                d_exit = d_enter;
-                d_enter = dist;
-              } else {
-                d_exit = dist;
-              }
+              d_enter = std::max(d_enter, dist); // closest negative to zero >1e-4 m
             }
-            first++;
-          }
-        } // loop over solutions
-      }
-      delete[] solutions;
+            first_entry++;
 
-      if (first != 2) { // entry and exit points found
-        CORSIKA_LOG_DEBUG("no intersection! count={}", first);
+          } else { // thus, dist > +0.0001_m
+
+            if (first_exit == 0) {
+              d_exit = dist;
+            } else {
+              d_exit = std::min(d_exit, dist); // closest positive to zero >1e-4 m
+            }
+            first_exit++;
+          }
+          first = int(first_exit > 0) + int(first_entry > 0);
+
+        } else { // thus, numericallyInside == false
+
+          // both physical solutions (entry, exit) must be positive, and as small as
+          // possible
+          if (dist < -0.0001_m) { // need small numerical margin, to
+                                  // assure transport. We consider
+                                  // begin marginally already inside
+                                  // next volume (besides
+                                  // numericallyInside=false) as numerical glitch.
+            // into next logical volume
+            continue;
+          }
+          if (first == 0) {
+            d_enter = dist;
+          } else {
+            if (dist < d_enter) {
+              d_exit = d_enter;
+              d_enter = dist;
+            } else {
+              d_exit = dist;
+            }
+          }
+          first++;
+        }
+      } // loop over solutions
+
+      if (first == 0) { // entry and exit points found
+        CORSIKA_LOG_DEBUG(
+            "no intersections found: count={}, first_entry={}, first_exit={}", first,
+            first_entry, first_exit);
         return Intersections();
       }
       return Intersections(d_enter / absVelocity, d_exit / absVelocity);
@@ -231,79 +241,80 @@ namespace corsika {
     inline Intersections Tracking::intersect(TParticle const& particle,
                                              Plane const& plane) {
 
-      int chargeNumber;
-      if (is_nucleus(particle.getPID())) {
-        chargeNumber = particle.getNuclearZ();
-      } else {
-        chargeNumber = get_charge_number(particle.getPID());
-      }
-      auto const* currentLogicalVolumeNode = particle.getNode();
-      VelocityVector const velocity =
-          particle.getMomentum() / particle.getEnergy() * constants::c;
-      auto const absVelocity = velocity.getNorm();
-      DirectionVector const direction =
-          velocity.normalized(); // determine steplength to next volume
-      Point const position = particle.getPosition();
+      CORSIKA_LOG_TRACE("intersection particle with plane");
 
-      auto const magneticfield =
-          currentLogicalVolumeNode->getModelProperties().getMagneticField(position);
+      ElectricChargeType const charge = particle.getCharge();
 
-      if (chargeNumber != 0 && abs(plane.getNormal().dot(velocity.cross(magneticfield))) >
-                                   1e-6_T * 1_m / 1_s) {
+      if (charge != 0 * constants::e) {
 
         auto const* currentLogicalVolumeNode = particle.getNode();
+        VelocityVector const velocity = particle.getVelocity();
+        auto const absVelocity = velocity.getNorm();
+        DirectionVector const direction = velocity.normalized();
+        Point const position = particle.getPosition();
+
         auto const magneticfield =
             currentLogicalVolumeNode->getModelProperties().getMagneticField(position);
-        auto const k =
-            chargeNumber * (constants::c * 1_eV / 1_V) / particle.getMomentum().getNorm();
 
-        auto const direction_B_perp = direction.cross(magneticfield);
-        auto const denom = plane.getNormal().dot(direction_B_perp) * k;
-        auto const sqrtArg =
-            direction.dot(plane.getNormal()) * direction.dot(plane.getNormal()) -
-            (plane.getNormal().dot(position - plane.getCenter()) * denom * 2);
+        // solve:     denom x^2 + p x + q =0    for     x = delta-l
 
-        if (sqrtArg < 0) {
+        auto const direction_x_B = direction.cross(magneticfield);
+        double const denom = charge *
+                             plane.getNormal().dot(direction_x_B) // unit: C*T = kg/s
+                             / 1_kg * 1_s;
+
+        CORSIKA_LOG_TRACE("denom={}", denom);
+
+        auto const p_norm =
+            constants::c * convert_HEP_to_SI<MassType::dimension_type>(
+                               particle.getMomentum().getNorm()); // unit: kg * m/s
+
+        double const p = (2 * p_norm * direction.dot(plane.getNormal())) // unit: kg*m/s
+                         / (1_m * 1_kg) * 1_s;
+        double const q =
+            (2 * p_norm *
+             plane.getNormal().dot(position - plane.getCenter())) // unit: kg*m/s *m
+            / (1_m * 1_m * 1_kg) * 1_s;
+
+        std::vector<double> deltaLs = solve_quadratic_real(denom, p, q);
+
+        if (deltaLs.size() == 0) {
           return Intersections(std::numeric_limits<double>::infinity() * 1_s);
         }
-        double const sqrSqrtArg = sqrt(sqrtArg);
-        auto const norm_projected =
-            direction.dot(plane.getNormal()) / direction.getNorm();
-        LengthType const MaxStepLength1 = (sqrSqrtArg - norm_projected) / denom;
-        LengthType const MaxStepLength2 = (-sqrSqrtArg - norm_projected) / denom;
 
-        CORSIKA_LOG_TRACE("MaxStepLength1={}, MaxStepLength2={}", MaxStepLength1,
-                          MaxStepLength2);
-
-        // check: both intersections in past
-        if (MaxStepLength1 <= 0_m && MaxStepLength2 <= 0_m) {
-          return Intersections(std::numeric_limits<double>::infinity() * 1_s);
-
-          // check: next intersection is MaxStepLength2
-        } else if (MaxStepLength1 <= 0_m || MaxStepLength2 < MaxStepLength1) {
-          CORSIKA_LOG_TRACE(" steplength to obs plane 2: {} ", MaxStepLength2);
-          return Intersections(
-              MaxStepLength2 *
-              (direction + direction_B_perp * MaxStepLength2 * k / 2).getNorm() /
-              absVelocity);
-
-          // check: next intersections is MaxStepLength1
-        } else if (MaxStepLength2 <= 0_m || MaxStepLength1 < MaxStepLength2) {
-          CORSIKA_LOG_TRACE(" steplength to obs plane 2: {} ", MaxStepLength1);
-          return Intersections(
-              MaxStepLength1 *
-              (direction + direction_B_perp * MaxStepLength1 * k / 2).getNorm() /
-              absVelocity);
+        // select smallest but positive solution
+        bool first = true;
+        LengthType maxStepLength = 0_m;
+        for (auto& deltaL : deltaLs) {
+          if (deltaL < 0) continue;
+          if (first) {
+            first = false;
+            maxStepLength = deltaL * meter;
+          } else if (maxStepLength > deltaL * meter) {
+            maxStepLength = deltaL * meter;
+          }
         }
 
-        CORSIKA_LOG_WARN(
-            "Particle wasn't tracked with curved trajectory -> straight (is this an "
-            "ERROR?)");
+        // check: both intersections in past, or no valid intersection
+        if (first) {
+          return Intersections(std::numeric_limits<double>::infinity() * 1_s);
+        }
 
-      } // end if curved-tracking
+        CORSIKA_LOG_TRACE("maxStepLength={}", maxStepLength);
 
-      CORSIKA_LOG_TRACE("straight tracking with  chargeNumber={}, B={}", chargeNumber,
-                        magneticfield);
+        // with final length correction
+        auto const corr =
+            (direction + direction_x_B * maxStepLength * charge / (p_norm * 2))
+                .getNorm() /
+            absVelocity; // unit: s/m
+
+        return Intersections(maxStepLength * corr); // unit: s
+
+      } // no charge
+
+      CORSIKA_LOG_TRACE("(plane) straight tracking with  charge={}, B={}", charge,
+                        particle.getNode()->getModelProperties().getMagneticField(
+                            particle.getPosition()));
 
       return tracking_line::Tracking::intersect(particle, plane);
     }
@@ -330,7 +341,7 @@ namespace corsika {
               straightTrajectory.getLine().getVelocity(),
               MagneticFieldVector(particle.getPosition().getCoordinateSystem(), 0_T, 0_T,
                                   0_T),
-              square(0_m) / (square(1_s) * 1_V),
+              0 * square(meter) / (square(second) * volt),
               straightTrajectory.getDuration()), // trajectory
           minNode);                              // next volume node
     }

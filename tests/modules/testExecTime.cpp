@@ -27,7 +27,6 @@ using namespace corsika::process::example_processors;
 TEST_CASE("Timing process", "[proccesses][analytic_processors ExecTime]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   int tmp = 0;
 

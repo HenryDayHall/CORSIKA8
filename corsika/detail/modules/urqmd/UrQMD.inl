@@ -268,10 +268,8 @@ namespace corsika::urqmd {
                              2 * ::urqmd::options_.CTParam[30 - 1];
       ::urqmd::rsys_.ebeam = (projectileEnergyLab - projectile.getMass()) * (1 / 1_GeV);
 
-      if (projectileCode == Code::K0Long) {
+      if (projectileCode == Code::K0Long || projectileCode == Code::K0Short) {
         projectileCode = booleanDist_(RNG_) ? Code::K0 : Code::K0Bar;
-      } else if (projectileCode == Code::K0Short) {
-        throw std::runtime_error("K0Short should not interact");
       }
 
       auto const [ityp, iso3] = convertToUrQMD(projectileCode);

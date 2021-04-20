@@ -49,7 +49,6 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 TEST_CASE("CORSIKA_DATA", "[processes]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("check CORSIKA_DATA") {
 
@@ -68,7 +67,6 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
 TEST_CASE("QgsjetII", "[processes]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Corsika -> QgsjetII") {
     CHECK(corsika::qgsjetII::convertToQgsjetII(PiMinus::code) ==
@@ -133,7 +131,6 @@ TEST_CASE("QgsjetII", "[processes]") {
 TEST_CASE("QgsjetIIInterface", "[processes]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   [[maybe_unused]] auto const& env_dummy = env;
@@ -184,7 +181,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
     corsika::qgsjetII::Interaction model;
     model.doInteraction(view); // this also should produce some fragments
-    CHECK(view.getSize() == Approx(188).margin(2)); // this is not physics validation
+    CHECK(view.getSize() == Approx(228).margin(10)); // this is not physics validation
     int countFragments = 0;
     for (auto const& sec : view) { countFragments += (sec.getPID() == Code::Nucleus); }
     CHECK(countFragments == Approx(2).margin(1)); // this is not physics validation
@@ -240,7 +237,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       setup::StackView& view = *(secViewPtr.get());
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(7).margin(2)); // this is not physics validation
+      CHECK(view.getSize() == Approx(12).margin(4)); // this is not physics validation
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -249,11 +246,11 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       setup::StackView& view = *(secViewPtr.get());
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(25).margin(3)); // this is not physics validation
+      CHECK(view.getSize() == Approx(10).margin(3)); // this is not physics validation
     }
     { // AntiLambda is internally converted into anti neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Lambda0Bar, 0, 0, 100_GeV,
+          Code::Lambda0Bar, 0, 0, 1000_GeV,
           (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       setup::StackView& view = *(secViewPtr.get());
       corsika::qgsjetII::Interaction model;

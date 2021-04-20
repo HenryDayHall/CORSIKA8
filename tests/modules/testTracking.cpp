@@ -43,8 +43,6 @@ TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
                    tracking_leapfrog_straight::Tracking, tracking_line::Tracking) {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
-
   logging::set_level(logging::level::trace);
 
   const HEPEnergyType P0 = 10_GeV;
@@ -78,8 +76,9 @@ TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
     int deflect = 0;
     if (chargeNumber != 0 and Bfield != 0_T) {
       deflect = -sgn(chargeNumber) * sgn(Bfield / 1_T); // direction of deflection
-      LengthType const gyroradius =
-          P0 * 1_V / (constants::c * abs(chargeNumber) * abs(Bfield) * 1_eV);
+      LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(P0) *
+                                     constants::c / (abs(get_charge(PID)) * abs(Bfield)));
+      CORSIKA_LOG_DEBUG("Rg={} deflect={}", gyroradius, deflect);
       radius = gyroradius;
     }
 
@@ -123,7 +122,7 @@ TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
     particle.setMomentum(traj.getDirection(1) * particle.getMomentum().getNorm());
     if (outer) {
       // now we know we are in target volume, depending on "outer"
-      CHECK(traj.getLength(1) == 0_m);
+      CHECK(traj.getLength(1) / 1_m == Approx(0).margin(1e-3));
       CHECK(nextVol == targetPtr);
     }
     // move forward, until we leave target volume
@@ -133,6 +132,11 @@ TEMPLATE_TEST_CASE("TrackingLeapfrog_Curved", "tracking",
       particle.setNode(nextVol);
       particle.setPosition(traj2.getPosition(1));
       particle.setMomentum(traj2.getDirection(1) * particle.getMomentum().getNorm());
+      CORSIKA_LOG_DEBUG("pos={}, p={}, |p|={} |v|={}, delta-l={}, delta-t={}",
+                        particle.getPosition(), particle.getMomentum(),
+                        particle.getMomentum().getNorm(),
+                        particle.getVelocity().getNorm(), traj2.getLength(1),
+                        traj2.getLength(1) / particle.getVelocity().getNorm());
     }
     CHECK(nextVol == worldPtr);
 

@@ -39,7 +39,7 @@ namespace corsika {
 
     LeapFrogTrajectory(Point const& pos, VelocityVector const& initialVelocity,
                        MagneticFieldVector const& Bfield,
-                       decltype(square(meter) / (square(second) * volt)) const k,
+                       decltype(1 / (tesla * second)) const k,
                        TimeType const timeStep) // leap-from total length
         : initialPosition_(pos)
         , initialVelocity_(initialVelocity)
@@ -74,7 +74,7 @@ namespace corsika {
     VelocityVector initialVelocity_;
     DirectionVector initialDirection_;
     MagneticFieldVector magneticfield_;
-    decltype(square(meter) / (square(second) * volt)) k_;
+    decltype(1 / (tesla * second)) k_;
     TimeType timeStep_;
   };
 

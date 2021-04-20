@@ -44,7 +44,6 @@ using Particle = typename StackTest::particle_type;
 TEST_CASE("SecondaryStack", "[stack]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   // helper function for sum over stack data
   auto sum = [](const StackTest& stack) {

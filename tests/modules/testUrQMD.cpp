@@ -59,7 +59,6 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 TEST_CASE("UrQMD") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("conversion") {
     CHECK_THROWS(corsika::urqmd::convertFromUrQMD(106, 0));
@@ -226,23 +225,5 @@ TEST_CASE("UrQMD") {
         sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
           Approx(0).margin(1e-2));
-  }
-
-  SECTION("K0Short projectile") {
-    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Argon);
-    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
-    [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
-
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::K0Short, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
-    CHECK(stackPtr->getEntries() == 1);
-    CHECK(secViewPtr->getEntries() == 0);
-
-    // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile = secViewPtr->getProjectile();
-    auto const projectileMomentum = projectile.getMomentum();
-
-    CHECK_THROWS(urqmd.doInteraction(*secViewPtr));
   }
 }

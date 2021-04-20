@@ -20,6 +20,7 @@ set (test_framework_sources
   testNullModel.cpp  
   testHelix.cpp
   testInteractionCounter.cpp
+  testSolver.cpp
   )
 
 CORSIKA_ADD_TEST (testFramework SOURCES ${test_framework_sources})
