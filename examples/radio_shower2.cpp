@@ -40,6 +40,7 @@
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/TimeCut.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/HadronicElasticModel.hpp>
 #include <corsika/modules/Pythia8.hpp>
@@ -70,30 +71,68 @@ int main() {
   logging::set_level(logging::level::info);
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
-  std::cout << "radio_shower2" << std::endl;
+  std::cout << "Synchrotron radiation" << std::endl;
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
   RNGManager::getInstance().registerRandomStream("cascade");
 
-  // This environment needs a hardcoded refractive index in the propagator at the moment
-  // setup environment, geometry
+  // This environment may need a hardcoded refractive index in the propagator at the moment although it shouldn't
+  // set up the environment
   using EnvType = setup::Environment;
   EnvType env;
   auto& universe = *(env.getUniverse());
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  // the antenna location
-  const auto point1{Point(rootCS, 50_m, 50_m, 0_m)};
-  const auto point2{Point(rootCS, 50_m, -50_m, 0_m)};
-  const auto point3{Point(rootCS, -50_m, 50_m, 0_m)};
-  const auto point4{Point(rootCS, -50_m, -50_m, 0_m)};
+  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
+
+  using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
+      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
+
+  world->setModelProperties<MyHomogeneousModel>(1,
+                                                Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0.3809_T),
+                                                1_kg / (1_m * 1_m * 1_m),
+                                                NuclearComposition(std::vector<Code>{Code::Nitrogen},
+                                                                   std::vector<float>{(float)1.}));
+
+  universe.addChild(std::move(world));
+
+//  // The following environment is the same as the one above qualitatively but it doesn't compile with Cascade.
+//  //  I leave it here for now, as I am curious to understand why at some point.
+//  using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+//  using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+//      <IModelInterface>>>>;
+//  using EnvType = Environment<AtmModel>;
+//  EnvType env;
+//  auto& universe = *(env.getUniverse());
+//  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+//
+//  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
+//
+//  world->setModelProperties<AtmModel>(1,
+//                                                Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0.3809_T),
+//                                                1_kg / (1_m * 1_m * 1_m),
+//                                                NuclearComposition(std::vector<Code>{Code::Nitrogen},
+//                                                                   std::vector<float>{(float)1.}));
+//
+//  universe.addChild(std::move(world));
+
+  // the antenna locations
+  const auto point1{Point(rootCS, 100_m, 100_m, 0_m)};
+  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
+  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
+  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
+
+  // the antenna time variables
+  const TimeType t1{0_s};
+  const TimeType t2{1e-6_s};
+  const InverseTimeType t3{1e+9_Hz};
 
   // the antennas
-  TimeDomainAntenna ant1("antenna1", point1, 0_s, 1_s, 1/1e-6_s);
-  TimeDomainAntenna ant2("antenna2", point2, 0_s, 1_s, 1/1e-6_s);
-  TimeDomainAntenna ant3("antenna3", point3, 0_s, 1_s, 1/1e-6_s);
-  TimeDomainAntenna ant4("antenna4", point4, 0_s, 1_s, 1/1e-6_s);
+  TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
+  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
+  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
+  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
 
   // the detector
   AntennaCollection<TimeDomainAntenna> detector;
@@ -102,41 +141,34 @@ int main() {
   detector.addAntenna(ant3);
   detector.addAntenna(ant4);
 
-  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
-
-  using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
-
-  world->setModelProperties<MyHomogeneousModel>(1.000327,
-                                                Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_T),
-                                                1_kg / (1_m * 1_m * 1_m),
-                                                NuclearComposition(std::vector<Code>{Code::Hydrogen},
-                                                                   std::vector<float>{(float)1.}));
-
-  universe.addChild(std::move(world));
-
-
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
   const Code beamCode = Code::Electron;
   const HEPMassType mass = Electron::mass;
-  const HEPEnergyType E0 = 1000_GeV;
+  const HEPEnergyType E0 = 11.4_MeV;
+  double theta = 0.;
+  double phi = 0.;
 
-  Point injectionPos(rootCS, 0_m, 0_m, 0_m);
+  Point injectionPos(rootCS, 0_m, 100_m, 0_m);
   {
     auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
       return sqrt(Elab * Elab - m * m);
     };
     HEPMomentumType P0 = elab2plab(E0, mass);
-
-    auto plab = MomentumVector(rootCS, {0, P0, 0});
+    auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
+      return std::make_tuple(ptot * cos(theta), ptot * sin(theta),
+                             ptot * sin(theta));
+    };
+    auto const [px, py, pz] =
+    momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
+    auto plab = MomentumVector(rootCS, {px, py, pz});
     cout << "input particle: " << beamCode << endl;
     cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
     stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
   }
 
-  // setup processes, decays and interactions
+  // setup relevant processes
   setup::Tracking tracking;
 //  StackInspector<setup::Stack> stackInspect(1, true, E0);
 
@@ -145,18 +177,17 @@ int main() {
       decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
       coreas(detector, env);
 
+  TimeCut cut(1e-9_s);
 
   TrackWriter trackWriter("tracks.dat");
-//  ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(coreas, trackWriter);
+  auto sequence = make_sequence(coreas, cut, trackWriter);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, stack);
   EAS.run();
 
-  //TODO: this will run indefinetly due to no energy losses
   // get radio output
   coreas.writeOutput();
 }
