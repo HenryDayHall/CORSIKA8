@@ -96,14 +96,17 @@ namespace corsika {
 
           // calculate preDoppler factor
           double preDoppler_{1. - paths1[i].refractive_index_source_ *
-                                  beta_.dot(paths1[i].emit_)}; // TODO: are you sure this is path.receive and not emit?
+                                  beta_.dot(paths1[i].emit_)}; // are you sure this is path.emit and not path.receive?
           std::cout << "***** preDoppler: " << preDoppler_ << std::endl;
+          std::cout << "***** preEmmit_: " << paths1[i].emit_ << std::endl;
+          std::cout << "***** preRefractive_index: " << paths1[i].refractive_index_source_ << std::endl;
 
           // calculate postDoppler factor
-          double postDoppler_{
-              1. - paths2[i].refractive_index_source_ *
-                   beta_.dot(paths2[i].emit_)}; // maybe this is path.receive_ (?)
+          double postDoppler_{1. - paths2[i].refractive_index_source_ *
+                                   beta_.dot(paths2[i].emit_)}; // maybe this is path.receive_ (?)
           std::cout << "***** postDoppler: " << postDoppler_ << std::endl;
+          std::cout << "***** postEmmit_: " << paths2[i].emit_ << std::endl;
+          std::cout << "***** postRefractive_index: " << paths2[i].refractive_index_source_ << std::endl;
 
           // calculate receive time for startpoint
           auto startPointReceiveTime_{paths1[i].propagation_time_ + startTime_};
@@ -133,7 +136,8 @@ namespace corsika {
             paths2.clear();
 
             // get global simulation time for the middle point of that track.
-            auto midTime_{particle.getTime() - (track.getDuration() / 2)}; // ToDo: get time geometrically
+            TimeType midTime_ {((startPoint_ - endPoint_).getNorm()/2) / track.getVelocity(0).getNorm()};
+//            auto midTime_{particle.getTime() - (track.getDuration() / 2)}; // this is not the geometrical calculation
 
             // get "mid" position of the track geometrically
             auto midVector_ { (startPoint_ - endPoint_) / 2 };
