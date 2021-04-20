@@ -29,7 +29,7 @@ namespace corsika {
      @ingroup Utility
      @{
    */
-  
+
   namespace andre {
     /**
        Solve a x^3 + b x^2 + c x + d = 0
@@ -63,13 +63,13 @@ namespace corsika {
                              long double d);
 
   /**
-     @return 3 a x^2 + 2 b x + c 
-  */  
+     @return 3 a x^2 + 2 b x + c
+  */
   long double cubic_function_dfdx(long double x, long double a, long double b,
                                   long double c);
 
   /**
-     @return 6 a x + 2 b 
+     @return 6 a x + 2 b
   */
   long double cubic_function_d2fd2x(long double x, long double a, long double b);
 

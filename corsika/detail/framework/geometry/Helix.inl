@@ -19,7 +19,7 @@ namespace corsika {
 
   inline Point Helix::getPosition(TimeType const t) const {
     return r0_ + vPar_ * t +
-      (vPerp_ * (std::cos(omegaC_ * t) - 1) + uPerp_ * std::sin(omegaC_ * t)) /
+           (vPerp_ * (std::cos(omegaC_ * t) - 1) + uPerp_ * std::sin(omegaC_ * t)) /
                omegaC_;
   }
 
