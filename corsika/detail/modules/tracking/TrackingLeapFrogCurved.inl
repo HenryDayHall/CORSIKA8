@@ -276,10 +276,10 @@ namespace corsika {
              plane.getNormal().dot(position - plane.getCenter())) // unit: kg*m/s *m
             / (1_m * 1_m * 1_kg) * 1_s;
 
-        std::vector<double> deltaLs = solve_quadratic_real(denom, p, q);
+        std::vector<double> const deltaLs = solve_quadratic_real(denom, p, q);
 
-        CORSIKA_LOG_TRACE("deltaLs=[{}]", fmt::join(deltaLs, ", "));
-
+	CORSIKA_LOG_TRACE("deltaLs=[{}]", fmt::join(deltaLs, ", "));
+	
         if (deltaLs.size() == 0) {
           return Intersections(std::numeric_limits<double>::infinity() * 1_s);
         }
@@ -287,7 +287,7 @@ namespace corsika {
         // select smallest but positive solution
         bool first = true;
         LengthType maxStepLength = 0_m;
-        for (auto& deltaL : deltaLs) {
+        for (auto const& deltaL : deltaLs) {
           if (deltaL < 0) continue;
           if (first) {
             first = false;

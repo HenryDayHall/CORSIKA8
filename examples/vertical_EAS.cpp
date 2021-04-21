@@ -98,7 +98,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 int main(int argc, char** argv) {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
@@ -136,6 +136,7 @@ int main(int argc, char** argv) {
       {{Code::Nitrogen, Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
@@ -392,10 +393,11 @@ int main(int argc, char** argv) {
 
     decaySibyll.printDecayConfig();
 
-    ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
-    corsika::proposal::Interaction emCascade(env);
-    corsika::proposal::ContinuousProcess emContinuous(env);
-    InteractionCounter emCascadeCounted(emCascade);
+    ParticleCut cut{60_GeV, true, true};
+    // corsika::proposal::Interaction emCascade(env);
+    // corsika::proposal::ContinuousProcess emContinuous(env);
+    // InteractionCounter emCascadeCounted(emCascade);
+    BetheBlochPDG emContinuous(showerAxis);
 
     OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
     TrackWriter trackWriter(tracks_dir);
@@ -420,16 +422,16 @@ int main(int argc, char** argv) {
     EAS.run();
 
     cut.showResults();
-    emContinuous.showResults();
+    // emContinuous.showResults();
     observationLevel.showResults();
     const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + emContinuous.getEnergyLost() +
+                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
                                  observationLevel.getEnergyGround();
     cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
          << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
     observationLevel.reset();
     cut.reset();
-    emContinuous.reset();
+    // emContinuous.reset();
 
     longprof.save(longprof_dat);
 
