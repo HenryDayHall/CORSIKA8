@@ -55,7 +55,7 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::readString("Check:event = 1");
 
     Pythia8::Pythia::readString("ProcessLevel:all = off");
-    Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = off");
+    Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = on");
 
     // making sure
     setStable(Code::Pi0);
