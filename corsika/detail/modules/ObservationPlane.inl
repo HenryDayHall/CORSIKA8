@@ -24,6 +24,7 @@ namespace corsika {
       , count_ground_(0)
       , xAxis_(x_axis.normalized())
       , yAxis_(obsPlane.getNormal().cross(xAxis_)) {
+    CORSIKA_LOG_DEBUG("Plane height: {}", obsPlane.getCenter());
     outputStream_ << "#PDG code, energy / eV, x distance / m, y distance / m"
                   << std::endl;
   }
@@ -35,7 +36,18 @@ namespace corsika {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
-    if (!stepLimit) { return ProcessReturn::Ok; }
+    if (!stepLimit) {
+#ifdef DEBUG
+      if (deleteOnHit_) {
+        LengthType const check =
+            (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
+        if (check < 0_m) {
+          CORSIKA_LOG_DEBUG("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
+        }
+      }
+#endif
+      return ProcessReturn::Ok;
+    }
 
     HEPEnergyType const energy = particle.getEnergy();
     Point const pointOfIntersection = particle.getPosition();

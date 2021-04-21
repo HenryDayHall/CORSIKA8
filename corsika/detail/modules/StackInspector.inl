@@ -72,13 +72,13 @@ namespace corsika {
 
     CORSIKA_LOG_INFO(
         "StackInspector: "
-        " time= {}"
-        ", running= {} seconds"
+        " time={}"
+        ", running={} seconds"
         " ( {}%)"
-        ", nStep= {}"
-        ", stackSize= {}"
-        ", Estack= {} GeV"
-        ", ETA=",
+        ", nStep={}"
+        ", stackSize={}"
+        ", Estack={} GeV"
+        ", ETA={}",
         std::put_time(std::localtime(&now_time), "%T"), elapsed_seconds.count(),
         int(progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
         std::put_time(std::localtime(&eta_time), "%T"));

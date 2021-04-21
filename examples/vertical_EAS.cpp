@@ -98,12 +98,12 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 int main(int argc, char** argv) {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::trace);
 
   CORSIKA_LOG_INFO("vertical_EAS");
 
   if (argc < 5) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> <Nevt> [seed] \n"
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> <Nevt> [seed] [output-dir] \n"
                  "       if A=0, Z is interpreted as PDG code \n"
                  "       if no seed is given, a random seed is chosen \n"
               << std::endl;
@@ -115,6 +115,8 @@ int main(int argc, char** argv) {
   int number_showers = std::stoi(std::string(argv[4]));
 
   if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
+
+  CORSIKA_LOG_INFO("output_dir={} seed={}", output_dir, seed);
 
   // initialize random number sequence(s)
   registerRandomStreams(seed);
@@ -348,7 +350,59 @@ int main(int argc, char** argv) {
       }
     }
 
-    TrackWriter trackWriter(tracks_file);
+    // we make the axis much longer than the inj-core distance since the
+    // profile will go beyond the core, depending on zenith angle
+    std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.5
+              << std::endl;
+
+    ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env,
+                                false};
+
+    // setup processes, decays and interactions
+
+    // corsika::qgsjetII::Interaction qgsjet;
+    corsika::sibyll::Interaction sibyll;
+    InteractionCounter sibyllCounted(sibyll);
+
+    corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+    InteractionCounter sibyllNucCounted(sibyllNuc);
+
+    corsika::pythia8::Decay decayPythia;
+
+    // use sibyll decay routine for decays of particles unknown to pythia
+    corsika::sibyll::Decay decaySibyll{{
+        Code::N1440Plus,
+        Code::N1440MinusBar,
+        Code::N1440_0,
+        Code::N1440_0Bar,
+        Code::N1710Plus,
+        Code::N1710MinusBar,
+        Code::N1710_0,
+        Code::N1710_0Bar,
+
+        Code::Pi1300Plus,
+        Code::Pi1300Minus,
+        Code::Pi1300_0,
+
+        Code::KStar0_1430_0,
+        Code::KStar0_1430_0Bar,
+        Code::KStar0_1430_Plus,
+        Code::KStar0_1430_MinusBar,
+    }};
+
+    decaySibyll.printDecayConfig();
+
+    ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
+    corsika::proposal::Interaction emCascade(env);
+    corsika::proposal::ContinuousProcess emContinuous(env);
+    InteractionCounter emCascadeCounted(emCascade);
+
+    OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+    TrackWriter trackWriter(tracks_dir);
+
+    LongitudinalProfile longprof{showerAxis};
+
+    Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
     ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
                                       particles_file);
 
@@ -376,6 +430,8 @@ int main(int argc, char** argv) {
     observationLevel.reset();
     cut.reset();
     emContinuous.reset();
+
+    longprof.save(longprof_dat);
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();

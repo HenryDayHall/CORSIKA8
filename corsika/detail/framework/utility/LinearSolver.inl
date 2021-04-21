@@ -16,7 +16,7 @@ namespace corsika {
 
   inline std::vector<double> solve_linear_real(double a, double b, double const epsilon) {
 
-    if (std::abs(a) < epsilon) {
+    if (a == 0) {
       return {}; // no (b!=0), or infinite number (b==0) of solutions....
     }
 
@@ -26,7 +26,7 @@ namespace corsika {
   inline std::vector<std::complex<double>> solve_linear(double a, double b,
                                                         double const epsilon) {
 
-    if (std::abs(a) < epsilon) {
+    if (std::abs(a) == 0) {
       return {}; // no (b!=0), or infinite number (b==0) of solutions....
     }
 

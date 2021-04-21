@@ -181,7 +181,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
     corsika::qgsjetII::Interaction model;
     model.doInteraction(view); // this also should produce some fragments
-    CHECK(view.getSize() == Approx(228).margin(10)); // this is not physics validation
+    CHECK(view.getSize() == Approx(228).margin(100)); // this is not physics validation
     int countFragments = 0;
     for (auto const& sec : view) { countFragments += (sec.getPID() == Code::Nucleus); }
     CHECK(countFragments == Approx(2).margin(1)); // this is not physics validation
@@ -237,7 +237,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       setup::StackView& view = *(secViewPtr.get());
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(12).margin(4)); // this is not physics validation
+      CHECK(view.getSize() == Approx(12).margin(8)); // this is not physics validation
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -246,7 +246,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       setup::StackView& view = *(secViewPtr.get());
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(10).margin(3)); // this is not physics validation
+      CHECK(view.getSize() == Approx(15).margin(10)); // this is not physics validation
     }
     { // AntiLambda is internally converted into anti neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -255,7 +255,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       setup::StackView& view = *(secViewPtr.get());
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(25).margin(3)); // this is not physics validation
+      CHECK(view.getSize() == Approx(40).margin(20)); // this is not physics validation
     }
   }
 }

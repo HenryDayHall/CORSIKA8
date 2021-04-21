@@ -26,6 +26,8 @@ namespace corsika {
       , shower_axis_{shower_axis}
       , profiles_{static_cast<unsigned int>(shower_axis.getMaximumX() / dX_) + 1} {}
 
+  inline LongitudinalProfile::~LongitudinalProfile() {}
+
   template <typename TParticle, typename TTrack>
   inline ProcessReturn LongitudinalProfile::doContinuous(TParticle const& vP,
                                                          TTrack const& vTrack,
@@ -35,15 +37,15 @@ namespace corsika {
     GrammageType const grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
     GrammageType const grammageEnd = shower_axis_.getProjectedX(vTrack.getPosition(1));
 
-    CORSIKA_LOG_TRACE("pos1={} m, pos2={}, X1={} g/cm2, X2={} g/cm2",
+    CORSIKA_LOG_DEBUG("longprof: pos1={} m, pos2={}, X1={} g/cm2, X2={} g/cm2",
                       vTrack.getPosition(0).getCoordinates() / 1_m,
                       vTrack.getPosition(1).getCoordinates() / 1_m,
                       grammageStart / 1_g * square(1_cm),
                       grammageEnd / 1_g * square(1_cm));
 
     // Note: particle may go also "upward", thus, grammageEnd<grammageStart
-    const int binStart = std::ceil(grammageStart / dX_);
-    const int binEnd = std::floor(grammageEnd / dX_);
+    int const binStart = std::ceil(grammageStart / dX_);
+    int const binEnd = std::floor(grammageEnd / dX_);
 
     for (int b = binStart; b <= binEnd; ++b) {
       if (pid == Code::Gamma) {
@@ -66,6 +68,7 @@ namespace corsika {
 
   inline void LongitudinalProfile::save(std::string const& filename, const int width,
                                         const int precision) {
+    CORSIKA_LOG_DEBUG("Write longprof to {}", filename);
     std::ofstream f{filename};
     f << "# X / g·cm¯², gamma, e+, e-, mu+, mu-, all hadrons" << std::endl;
     for (size_t b = 0; b < profiles_.size(); ++b) {

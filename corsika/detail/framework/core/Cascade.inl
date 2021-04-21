@@ -266,7 +266,7 @@ namespace corsika {
 
 #ifdef DEBUG
     InverseTimeType const actual_decay_time = sequence_.getInverseLifetime(view.parent());
-    if (actual_decay_time > initial_inv_decay_time) {
+    if (actual_decay_time * 0.99 > initial_inv_decay_time) {
       CORSIKA_LOG_WARN(
           "Decay time decreased during step! This leads to un-physical step length. "
           "initial_decay_time={}, actual_decay_time={}",
@@ -300,7 +300,7 @@ namespace corsika {
     InverseGrammageType const actual_inv_length = sequence_.getInverseInteractionLength(
         view.parent()); // 1/lambda_int after step, -dE/dX etc.
 
-    if (actual_inv_length > initial_inv_int_length) {
+    if (actual_inv_length * 0.99 > initial_inv_int_length) {
       CORSIKA_LOG_WARN(
           "Interaction length decreased during step! This leads to un-physical step "
           "length. "
