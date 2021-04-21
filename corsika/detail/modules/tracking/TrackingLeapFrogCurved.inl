@@ -278,8 +278,8 @@ namespace corsika {
 
         std::vector<double> const deltaLs = solve_quadratic_real(denom, p, q);
 
-	CORSIKA_LOG_TRACE("deltaLs=[{}]", fmt::join(deltaLs, ", "));
-	
+        CORSIKA_LOG_TRACE("deltaLs=[{}]", fmt::join(deltaLs, ", "));
+
         if (deltaLs.size() == 0) {
           return Intersections(std::numeric_limits<double>::infinity() * 1_s);
         }
