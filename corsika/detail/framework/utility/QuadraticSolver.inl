@@ -11,10 +11,10 @@ namespace corsika {
   inline std::vector<std::complex<double>> solve_quadratic(long double a, long double b,
                                                            long double c,
                                                            double const epsilon) {
-    if (std::abs(a) < epsilon) { return solve_linear(b, c, epsilon); }
+    if (std::abs(a) < epsilon) { return solve_linear(b, c); }
 
     if (std::abs(c) < epsilon) {
-      std::vector<std::complex<double>> lin_result = solve_linear(a, b, epsilon);
+      std::vector<std::complex<double>> lin_result = solve_linear(a, b);
       lin_result.push_back({0.});
       return lin_result;
     }
@@ -45,9 +45,9 @@ namespace corsika {
 
     CORSIKA_LOG_TRACE("quadratic: a={} b={} c={}", a, b, c);
 
-    if (std::abs(a) < epsilon) { return solve_linear_real(b, c, epsilon); }
+    if (std::abs(a) < epsilon) { return solve_linear_real(b, c); }
     if (std::abs(c) < epsilon) {
-      std::vector<double> lin_result = solve_linear_real(a, b, epsilon);
+      std::vector<double> lin_result = solve_linear_real(a, b);
       lin_result.push_back(0.);
       return lin_result;
     }

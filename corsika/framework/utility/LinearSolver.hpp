@@ -14,10 +14,9 @@
 
 namespace corsika {
 
-  std::vector<double> solve_linear_real(double a, double b, double const epsilon = 1e-12);
+  std::vector<double> solve_linear_real(double a, double b);
 
-  std::vector<std::complex<double>> solve_linear(double a, double b,
-                                                 double const epsilon = 1e-12);
+  std::vector<std::complex<double>> solve_linear(double a, double b);
 
 } // namespace corsika
 

@@ -29,15 +29,17 @@ namespace corsika {
           particle.getMomentum() / particle.getEnergy() * constants::c;
 
       Point const initialPosition = particle.getPosition();
+
       CORSIKA_LOG_DEBUG(
-          "TrackingB pid: {}"
-          " , E = {} GeV",
-          particle.getPID(), particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("TrackingB pos: {}", initialPosition.getCoordinates());
-      CORSIKA_LOG_DEBUG("TrackingB   E: {} GeV", particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("TrackingB   p: {} GeV",
-                        particle.getMomentum().getComponents() / 1_GeV);
-      CORSIKA_LOG_DEBUG("TrackingB   v: {} ", initialVelocity.getComponents());
+          "TrackingLeapFrogStraight pid: {}"
+          " , E = {} GeV \n"
+          "\tTracking pos: {} \n"
+          "\tTracking   p: {} GeV \n"
+          "\tTracking   v: {} ",
+          particle.getPID(), particle.getEnergy() / 1_GeV,
+          initialPosition.getCoordinates(),
+          particle.getMomentum().getComponents() / 1_GeV,
+          initialVelocity.getComponents());
 
       typedef decltype(particle.getNode()) node_type;
       node_type const volumeNode = particle.getNode();
@@ -93,7 +95,7 @@ namespace corsika {
       // need to follow strongly curved trajectories segment-wise,
       // at least if we don't employ concepts as "Helix
       // Trajectories" or similar
-      double const maxRadians = 0.01;
+      double const maxRadians = 0.001;
       LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
       CORSIKA_LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
 

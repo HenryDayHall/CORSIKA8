@@ -31,14 +31,13 @@ namespace corsika::tracking_line {
 
     auto const initialPosition = particle.getPosition();
     CORSIKA_LOG_DEBUG(
-        "Tracking pid: {}"
-        " , E = {} GeV",
-        particle.getPID(), particle.getEnergy() / 1_GeV);
-    CORSIKA_LOG_DEBUG("Tracking pos: {}", initialPosition.getCoordinates());
-    CORSIKA_LOG_DEBUG("Tracking   E: {} GeV", particle.getEnergy() / 1_GeV);
-    CORSIKA_LOG_DEBUG("Tracking   p: {} GeV",
-                      particle.getMomentum().getComponents() / 1_GeV);
-    CORSIKA_LOG_DEBUG("Tracking   v: {} ", initialVelocity.getComponents());
+        "TrackingStraight pid: {}"
+        " , E = {} GeV \n"
+        "\tTracking pos: {} \n"
+        "\tTracking   p: {} GeV \n"
+        "\tTracking   v: {}",
+        particle.getPID(), particle.getEnergy() / 1_GeV, initialPosition.getCoordinates(),
+        particle.getMomentum().getComponents() / 1_GeV, initialVelocity.getComponents());
 
     // traverse the environment volume tree and find next
     // intersection
@@ -52,7 +51,8 @@ namespace corsika::tracking_line {
   template <typename TParticle>
   inline Intersections Tracking::intersect(TParticle const& particle,
                                            Sphere const& sphere) {
-    auto const delta = particle.getPosition() - sphere.getCenter();
+    auto const position = particle.getPosition();
+    auto const delta = position - sphere.getCenter();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const vSqNorm = velocity.getSquaredNorm();
     auto const R = sphere.getRadius();
@@ -64,6 +64,9 @@ namespace corsika::tracking_line {
     if (discriminant.magnitude() > 0) {
       auto const sqDisc = sqrt(discriminant);
       auto const invDenom = 1 / vSqNorm;
+
+      bool const numericallyInside = sphere.contains(position);
+      CORSIKA_LOG_TRACE("numericallyInside={}", numericallyInside);
       return Intersections((-vDotDelta - sqDisc) * invDenom,
                            (-vDotDelta + sqDisc) * invDenom);
     }

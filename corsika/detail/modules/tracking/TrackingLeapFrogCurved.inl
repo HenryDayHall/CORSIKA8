@@ -61,14 +61,14 @@ namespace corsika {
 
       auto const position = particle.getPosition();
       CORSIKA_LOG_DEBUG(
-          "Tracking pid: {}"
-          " , E = {} GeV",
-          particle.getPID(), particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("Tracking pos: {}", position.getCoordinates());
-      CORSIKA_LOG_DEBUG("Tracking   E: {} GeV", particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("Tracking   p: {} GeV",
-                        particle.getMomentum().getComponents() / 1_GeV);
-      CORSIKA_LOG_DEBUG("Tracking   v: {} ", initialVelocity.getComponents());
+          "TrackingLeapfrog_Curved pid: {}"
+          " , E = {} GeV \n"
+          "\tTracking pos: {} \n"
+          "\tTracking   p: {} GeV \n"
+          "\tTracking   v: {}",
+          particle.getPID(), particle.getEnergy() / 1_GeV, position.getCoordinates(),
+          particle.getMomentum().getComponents() / 1_GeV,
+          initialVelocity.getComponents());
 
       typedef
           typename std::remove_reference<decltype(*particle.getNode())>::type node_type;
@@ -84,7 +84,10 @@ namespace corsika {
       ElectricChargeType const charge = particle.getCharge();
       bool const no_deflection = (charge == 0 * constants::e) || magnitudeB == 0_T;
 
-      if (no_deflection) { return getLinearTrajectory(particle); }
+      if (no_deflection) {
+        CORSIKA_LOG_TRACE("no_deflection");
+        return getLinearTrajectory(particle);
+      }
 
       HEPMomentumType const p_perp =
           (particle.getMomentum() -

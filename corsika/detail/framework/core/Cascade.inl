@@ -269,8 +269,8 @@ namespace corsika {
     if (actual_decay_time * 0.99 > initial_inv_decay_time) {
       CORSIKA_LOG_WARN(
           "Decay time decreased during step! This leads to un-physical step length. "
-          "initial_decay_time={}, actual_decay_time={}",
-          1 / initial_inv_decay_time, 1 / actual_decay_time);
+          "delta_inverse_decay_time={}",
+          1 / initial_inv_decay_time - 1 / actual_decay_time);
     }
 #endif
 
@@ -303,9 +303,8 @@ namespace corsika {
     if (actual_inv_length * 0.99 > initial_inv_int_length) {
       CORSIKA_LOG_WARN(
           "Interaction length decreased during step! This leads to un-physical step "
-          "length. "
-          "initial_inv_int_length={}, actual_inv_length={}",
-          1 / initial_inv_int_length, 1 / actual_inv_length);
+          "length. delta_innverse_interaction_length={}",
+          1 / initial_inv_int_length - 1 / actual_inv_length);
     }
 #endif
 
