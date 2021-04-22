@@ -94,6 +94,7 @@ TEST_CASE("PhysicalUnits", "[Units]") {
     CHECK(E3 == 180_GeV);
 
     CHECK(sqrt(5_GeV * 5_GeV) / 5_GeV == Approx(1));
+    CHECK(cbrt(static_pow<3>(5_GeV)) / 5_GeV == Approx(1));
   }
 
   SECTION("Output") {
