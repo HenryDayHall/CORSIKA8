@@ -92,6 +92,8 @@ TEST_CASE("PhysicalUnits", "[Units]") {
 
     const auto E3 = E2 + 100_GeV + pow(10, lgE) * 1_GeV;
     CHECK(E3 == 180_GeV);
+
+    CHECK(sqrt(5_GeV * 5_GeV) / 5_GeV == Approx(1));
   }
 
   SECTION("Output") {
