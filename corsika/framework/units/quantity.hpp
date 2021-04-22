@@ -676,7 +676,7 @@ namespace phys {
       static_assert(detail::root<D, 2, X>::all_even_multiples,
                     "root result dimensions must be integral");
 
-      return detail::Root<D, 2, X>(std::pow(x.m_value, X(1.0) / 2));
+      return detail::Root<D, 2, X>(std::sqrt(x.m_value));
     }
 
     // Comparison operators
