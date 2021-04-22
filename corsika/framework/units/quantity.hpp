@@ -468,6 +468,9 @@ namespace phys {
       template <typename D, typename X>
       friend detail::Root<D, 2, X> sqrt(quantity<D, X> const& x);
 
+      template <typename D, typename X>
+      friend detail::Root<D, 3, X> cbrt(quantity<D, X> const& x);
+
       // comparison
 
       template <typename D, typename X, typename Y>
@@ -677,6 +680,16 @@ namespace phys {
                     "root result dimensions must be integral");
 
       return detail::Root<D, 2, X>(std::sqrt(x.m_value));
+    }
+
+    /// cubic root.
+
+    template <typename D, typename X>
+    detail::Root<D, 3, X> cbrt(quantity<D, X> const& x) {
+      static_assert(detail::root<D, 3, X>::all_even_multiples,
+                    "root result dimensions must be integral");
+
+      return detail::Root<D, 3, X>(std::cbrt(x.m_value));
     }
 
     // Comparison operators
