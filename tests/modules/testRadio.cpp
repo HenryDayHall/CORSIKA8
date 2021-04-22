@@ -1137,9 +1137,9 @@ TEST_CASE("Radio", "[processes]") {
       CHECK( path.receive_.getComponents() == vvv2.getComponents() );
       CHECK( path.R_distance_ == 10_m );
     }
-//
-//    CHECK( paths2_.size() == 1 );
-//
-//    }
+
+    CHECK( paths2_.size() == 1 );
+
+    }
 
   } // END: TEST_CASE("Radio", "[processes]")

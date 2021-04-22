@@ -48,6 +48,7 @@
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
+#include <corsika/modules/QGSJetII.hpp>
 
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
@@ -77,6 +78,7 @@
  */
 #include <corsika/modules/sibyll/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/qgsjetII/Random.hpp>
 
 using namespace corsika;
 using namespace std;
@@ -104,6 +106,10 @@ UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 //template <typename T>
 //using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
+// argv : 1.number of nucleons, 2.number of protons,
+//        3.total energy in GeV, 4.number of showers,
+//        5.seed (0 by default to generate random values for all)
+
 int main(int argc, char** argv) {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
@@ -111,15 +117,20 @@ int main(int argc, char** argv) {
 
   CORSIKA_LOG_INFO("Vertical Radio Shower");
 
-  if (argc < 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed]" << std::endl;
-    std::cerr << "       if no seed is given, a random seed is chosen" << std::endl;
+  if (argc < 5) {
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> <Nevt> [seed] \n"
+                 "       if A=0, Z is interpreted as PDG code \n"
+                 "       if no seed is given, a random seed is chosen \n"
+              << std::endl;
     return 1;
   }
   feenableexcept(FE_INVALID);
 
   int seed = 0;
-  if (argc > 4) seed = std::stoi(std::string(argv[4]));
+  int number_showers = std::stoi(std::string(argv[4]));
+
+  if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
+
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
@@ -129,21 +140,10 @@ int main(int argc, char** argv) {
 //  IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
 //  using EnvType = Environment<EnvironmentInterface>;
 //  EnvType env;
-
   using EnvType = setup::Environment;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  // the antenna location
-  const auto point1{Point(env.getCoordinateSystem(), 50_m, 50_m, 50_m)};
-  const auto point2{Point(env.getCoordinateSystem(), 25_m, 25_m, 25_m)};
-  // the antennas
-  TimeDomainAntenna ant1("antenna1", point1, 0_s, 1_s, 1/1e-6_s);
-  TimeDomainAntenna ant2("antenna2", point2, 0_s, 1_s, 1/1e-6_s);
-  // the detector
-  AntennaCollection<TimeDomainAntenna> detector;
-  detector.addAntenna(ant1);
-  detector.addAntenna(ant2);
   auto builder = make_layered_spherical_atmosphere_builder<
       setup::EnvironmentInterface, MyExtraEnv>::create(center,
                                                        constants::EarthRadius::Mean, 1.000327,
@@ -166,59 +166,97 @@ int main(int argc, char** argv) {
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
+  builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
 
-  // setup particle stack, and add primary particle
-  setup::Stack stack;
-  stack.clear();
-  const Code beamCode = Code::Nucleus;
+  CORSIKA_LOG_DEBUG(
+      "environment setup: universe={}, layer1={}, layer2={}, layer3={}, layer4={}, "
+      "layer5={}",
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 130_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 110_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 50_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 20_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 5_km, 0_m, 0_m}))),
+      fmt::ptr(env.getUniverse()->getContainingNode(
+          Point(rootCS, {constants::EarthRadius::Mean + 2_km, 0_m, 0_m}))));
+
+  // the antenna locations
+  const auto point1{Point(rootCS, 100_m, 100_m, 0_m)};
+  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
+  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
+  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
+
+  // the antenna time variables
+  const TimeType t1{0_s};
+  const TimeType t2{1e-6_s};
+  const InverseTimeType t3{1e+9_Hz};
+
+  // the antennas
+  TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
+  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
+  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
+  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
+
+  // the detector (aka antenna collection)
+  AntennaCollection<TimeDomainAntenna> detector;
+  detector.addAntenna(ant1);
+  detector.addAntenna(ant2);
+  detector.addAntenna(ant3);
+  detector.addAntenna(ant4);
+
+  // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
-  unsigned short Z = std::stoi(std::string(argv[2]));
-  auto const mass = get_nucleus_mass(A, Z);
-  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 0.;
+  Code beamCode;
+  HEPEnergyType mass;
+  unsigned short Z = 0;
+  if (A > 0) {
+    beamCode = Code::Nucleus;
+    Z = std::stoi(std::string(argv[2]));
+    mass = get_nucleus_mass(A, Z);
+  } else {
+    int pdg = std::stoi(std::string(argv[2]));
+    beamCode = convert_from_PDG(PDGCode(pdg));
+    mass = get_mass(beamCode);
+  }
+  HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
+  double theta = 20.;
+  double phi = 180.;
   auto const thetaRad = theta / 180. * M_PI;
+  auto const phiRad = phi / 180. * M_PI;
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
   };
   HEPMomentumType P0 = elab2plab(E0, mass);
-  auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
-    return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
+  auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
+    return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
+                           -ptot * cos(theta));
   };
-
-  auto const [px, py, pz] = momentumComponents(thetaRad, P0);
+  auto const [px, py, pz] = momentumComponents(thetaRad, phiRad, P0);
   auto plab = MomentumVector(rootCS, {px, py, pz});
   cout << "input particle: " << beamCode << endl;
-  cout << "input angles: theta=" << theta << endl;
+  cout << "input angles: theta=" << theta << ",phi=" << phi << endl;
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
   auto const observationHeight = 0_km + builder.getEarthRadius();
-  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+  auto const injectionHeight = 111.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
   Point const injectionPos =
-      showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+      showerCore + DirectionVector{rootCS,
+                                   {-sin(thetaRad) * cos(phiRad),
+                                    -sin(thetaRad) * sin(phiRad), cos(thetaRad)}} *
+                   t;
 
   std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
-
-  if (A != 1) {
-    stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
-
-  } else {
-    if (Z == 1) {
-      stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
-    } else if (Z == 0) {
-      stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
-    } else {
-      std::cerr << "illegal parameters" << std::endl;
-      return EXIT_FAILURE;
-    }
-  }
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
@@ -229,6 +267,7 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
+  // corsika::qgsjetII::Interaction qgsjet;
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
 
@@ -264,13 +303,8 @@ int main(int argc, char** argv) {
   corsika::proposal::Interaction emCascade(env);
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
-  // put radio process here
-  RadioProcess<decltype(detector), CoREAS<decltype(detector),
-      decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-      coreas(detector, env);
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
-  TrackWriter trackWriter("tracks.dat");
 
   LongitudinalProfile longprof{showerAxis};
 
@@ -280,56 +314,98 @@ int main(int argc, char** argv) {
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
-  StackInspector<setup::Stack> stackInspect(1000, false, E0);
+  StackInspector<setup::Stack> stackInspect(50000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    SwitchResult operator()(const Particle& p) {
-      if (p.getEnergy() < cutE_)
-        return SwitchResult::First;
-      else
-        return SwitchResult::Second;
-    }
+    bool operator()(const Particle& p) { return (p.getEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(
-      urqmdCounted, make_sequence(sibyllNucCounted, sibyllCounted), EnergySwitch(55_GeV));
+  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
+                                    make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence =
-      make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
-                    emContinuous, cut, coreas, trackWriter, observationLevel, longprof);
 
-  // define air shower object, run simulation
-  setup::Tracking tracking;
-  Cascade EAS(env, tracking, sequence, stack);
+  for (int i_shower = 1; i_shower < number_showers + 1; i_shower++) {
 
-  // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.forceInteraction();
+    // directory for outputs
+    string const labHist_file = "inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
+    string const cMSHist_file = "inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
+    string const longprof_file = "longprof_verticalEAS_" + to_string(i_shower) + ".txt";
+    string const tracks_file = "tracks_" + to_string(i_shower) + ".dat";
+    string const particles_file = "particles_" + to_string(i_shower) + ".dat";
 
-  EAS.run();
+    std::cout << std::endl;
+    std::cout << "Shower " << i_shower << "/" << number_showers << std::endl;
 
-  cut.showResults();
-  emContinuous.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + emContinuous.getEnergyLost() +
-                               observationLevel.getEnergyGround();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  emContinuous.reset();
+    // setup particle stack, and add primary particle
+    setup::Stack stack;
+    stack.clear();
 
-  // get radio output
-  coreas.writeOutput();
+    if (A > 1) {
+      stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
 
-  auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                     urqmdCounted.getHistogram();
+    } else {
+      if (A == 1) {
+        if (Z == 1) {
+          stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+        } else if (Z == 0) {
+          stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+        } else {
+          std::cerr << "illegal parameters" << std::endl;
+          return EXIT_FAILURE;
+        }
+      } else {
+        stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
+      }
+    }
 
-  save_hist(hists.labHist(), "inthist_lab_verticalEAS.npz", true);
-  save_hist(hists.CMSHist(), "inthist_cms_verticalEAS.npz", true);
-  longprof.save("longprof_verticalEAS.txt");
+    // put radio process here
+    RadioProcess<decltype(detector), CoREAS<decltype(detector),
+        decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+        coreas(detector, env);
+    TrackWriter trackWriter(tracks_file);
+    ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+                                      particles_file);
 
+    auto sequence =
+        make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
+                      emContinuous, cut, coreas, trackWriter, observationLevel, longprof);
+
+    // define air shower object, run simulation
+    setup::Tracking tracking;
+    Cascade EAS(env, tracking, sequence, stack);
+
+    // to fix the point of first interaction, uncomment the following two lines:
+    //  EAS.forceInteraction();
+
+    EAS.run();
+
+    cut.showResults();
+    emContinuous.showResults();
+    observationLevel.showResults();
+    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
+                                 cut.getEmEnergy() + emContinuous.getEnergyLost() +
+                                 observationLevel.getEnergyGround();
+    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
+         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+    // get radio output
+    coreas.writeOutput();
+
+    // reset antenna collection
+    detector.reset();
+
+    observationLevel.reset();
+    cut.reset();
+    emContinuous.reset();
+
+
+    auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
+                       urqmdCounted.getHistogram();
+
+    save_hist(hists.labHist(), labHist_file, true);
+    save_hist(hists.CMSHist(), cMSHist_file, true);
+    longprof.save(longprof_file);
+  }
 }
