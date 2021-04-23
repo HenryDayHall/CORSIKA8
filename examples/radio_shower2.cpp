@@ -89,8 +89,11 @@ int main() {
   using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
 
+  auto const Bmag {0.3809_T};
+  MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
+
   world->setModelProperties<MyHomogeneousModel>(1,
-                                                Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0.3809_T),
+                                                Medium::AirDry1Atm, B,
                                                 1_kg / (1_m * 1_m * 1_m),
                                                 NuclearComposition(std::vector<Code>{Code::Nitrogen},
                                                                    std::vector<float>{(float)1.}));
@@ -145,39 +148,28 @@ int main() {
   setup::Stack stack;
   stack.clear();
   const Code beamCode = Code::Electron;
-  const HEPMassType mass = Electron::mass;
-  const HEPEnergyType E0 = 11.4_MeV;
-  double theta = 0.;
-  double phi = 0.;
+  auto const gyroradius = 100_m;
+  auto const pLabMag = convert_SI_to_HEP(get_charge(beamCode) * Bmag * gyroradius);
+  auto const omega_inv = convert_HEP_to_SI<MassType::dimension_type>(get_mass(beamCode)) / ((-1)*get_charge(beamCode) * Bmag);
+  MomentumVector const plab{rootCS, pLabMag, 0_MeV, 0_MeV};
+  auto const Elab = sqrt(plab.getSquaredNorm() + static_pow<2>(get_mass(beamCode)));
+  TimeType const period = 2 * M_PI * omega_inv;
 
-  Point injectionPos(rootCS, 0_m, 100_m, 0_m);
-  {
-    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-      return sqrt(Elab * Elab - m * m);
-    };
-    HEPMomentumType P0 = elab2plab(E0, mass);
-    auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
-      return std::make_tuple(ptot * cos(theta), ptot * sin(theta),
-                             ptot * sin(theta));
-    };
-    auto const [px, py, pz] =
-    momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
-    auto plab = MomentumVector(rootCS, {px, py, pz});
-    cout << "input particle: " << beamCode << endl;
-    cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
-    stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
-  }
+  std::cout << "|p| = " << plab.getNorm() << "; E = " << Elab << std::endl;
+  std::cout << "period: " << period << std::endl;
+
+  Point injectionPos(rootCS, 0_m, 0_m, 0_m);
+  stack.addParticle(std::make_tuple(beamCode, Elab, plab, injectionPos, 0_ns));
 
   // setup relevant processes
   setup::Tracking tracking;
-//  StackInspector<setup::Stack> stackInspect(1, true, E0);
 
   // put radio process here
   RadioProcess<decltype(detector), CoREAS<decltype(detector),
       decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
       coreas(detector, env);
 
-  TimeCut cut(1e-9_s);
+  TimeCut cut(period);
 
   TrackWriter trackWriter("tracks.dat");
 
