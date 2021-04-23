@@ -65,8 +65,7 @@ namespace corsika::tracking_line {
       auto const sqDisc = sqrt(discriminant);
       auto const invDenom = 1 / vSqNorm;
 
-      bool const numericallyInside = sphere.contains(position);
-      CORSIKA_LOG_TRACE("numericallyInside={}", numericallyInside);
+      CORSIKA_LOG_TRACE("numericallyInside={}", sphere.contains(position));
       return Intersections((-vDotDelta - sqDisc) * invDenom,
                            (-vDotDelta + sqDisc) * invDenom);
     }

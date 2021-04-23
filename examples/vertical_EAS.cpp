@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
   CORSIKA_LOG_INFO("vertical_EAS");
 
   if (argc < 5) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> <Nevt> [seed] [output-dir] \n"
+    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> <Nevt> [seed] \n"
                  "       if A=0, Z is interpreted as PDG code \n"
                  "       if no seed is given, a random seed is chosen \n"
               << std::endl;
@@ -115,8 +115,6 @@ int main(int argc, char** argv) {
   int number_showers = std::stoi(std::string(argv[4]));
 
   if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
-
-  CORSIKA_LOG_INFO("output_dir={} seed={}", output_dir, seed);
 
   // initialize random number sequence(s)
   registerRandomStreams(seed);
@@ -400,7 +398,7 @@ int main(int argc, char** argv) {
     BetheBlochPDG emContinuous(showerAxis);
 
     OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
-    TrackWriter trackWriter(tracks_dir);
+    TrackWriter trackWriter(tracks_file);
 
     LongitudinalProfile longprof{showerAxis};
 
@@ -432,8 +430,6 @@ int main(int argc, char** argv) {
     observationLevel.reset();
     cut.reset();
     // emContinuous.reset();
-
-    longprof.save(longprof_dat);
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();

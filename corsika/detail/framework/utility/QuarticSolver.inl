@@ -61,9 +61,9 @@ namespace corsika {
         }
       } else {
         if (Det < 0) return {};
-        long double sqDet = sqrt(Det);
-        q1 = (y + sqDet) * 0.5;
-        q2 = (y - sqDet) * 0.5;
+        long double sqDet1 = sqrt(Det);
+        q1 = (y + sqDet1) * 0.5;
+        q2 = (y - sqDet1) * 0.5;
         // g1+g2 = b && g1*h2 + g2*h1 = c       ( && g === p )  Krammer
         p1 = (b * q1 - d) / (q1 - q2);
         p2 = (d - b * q2) / (q1 - q2);
@@ -71,32 +71,30 @@ namespace corsika {
 
       // solving quadratic eqs.  x^2 + p1*x + q1 = 0
       //                         x^2 + p2*x + q2 = 0
+#ifdef DEBUG
       {
-        long double Det1 = p1 * p1 - 4 * q1;
-        long double Det2 = p2 * p2 - 4 * q2;
+        [[maybe_unused]] long double Det1 = p1 * p1 - 4 * q1;
+        [[maybe_unused]] long double Det2 = p2 * p2 - 4 * q2;
         CORSIKA_LOG_TRACE("Det1={} Det2={}", Det1, Det2);
         if (Det1 >= 0 && Det2 >= 0) {
-          long double sqDet1 = sqrt(Det1);
-          long double sqDet2 = sqrt(Det2);
-          // return {double(-p1 + sqDet1) * 0.5, double(-p1 - sqDet1) * 0.5, double(-p2 +
-          // sqDet2) * 0.5, double(-p2 - sqDet2) * 0.5};
+          [[maybe_unused]] long double sqDet1 = sqrt(Det1);
+          [[maybe_unused]] long double sqDet2 = sqrt(Det2);
           CORSIKA_LOG_TRACE("check1 {} {} {} {}", double(-p1 + sqDet1) * 0.5,
                             double(-p1 - sqDet1) * 0.5, double(-p2 + sqDet2) * 0.5,
                             double(-p2 - sqDet2) * 0.5);
         }
         if (Det1 >= 0) {
-          long double sqDet1 = sqrt(Det1);
-          // return {double(-p1 + sqDet1) * 0.5, double(-p1 - sqDet1) * 0.5};
+          [[maybe_unused]] long double sqDet1 = sqrt(Det1);
           CORSIKA_LOG_TRACE("check2 {} {} ", double(-p1 + sqDet1) * 0.5,
                             double(-p1 - sqDet1) * 0.5);
         }
         if (Det2 >= 0) {
-          long double sqDet2 = sqrt(Det2);
-          // return {double(-p2 + sqDet2) * 0.5, double(-p2 - sqDet2) * 0.5};
+          [[maybe_unused]] long double sqDet2 = sqrt(Det2);
           CORSIKA_LOG_TRACE("check3 {} {}", double(-p1 + sqDet2) * 0.5,
                             double(-p1 - sqDet2) * 0.5);
         }
       }
+#endif
 
       std::vector<double> quad1 = solve_quadratic_real(1, p1, q1);
       std::vector<double> quad2 = solve_quadratic_real(1, p2, q2);

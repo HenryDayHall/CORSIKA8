@@ -33,7 +33,6 @@ namespace corsika {
       long double a2 = a * a;
       long double q = (a2 - 3 * b) / 9;
       long double r = (a * (2 * a2 - 9 * b) + 27 * c) / 54;
-      long double r2 = r * r;
       long double q3 = q * q * q;
 
       // disc = q**3 + r**2
@@ -55,8 +54,6 @@ namespace corsika {
       ab = u - ab;
       // sum all terms into final result
       long double const disc = -(((e + uf) + au) + ab) + v;
-
-      CORSIKA_LOG_TRACE("solveP3 disc={} r2-r3={}", disc, r2 - q3);
 
       if (disc >= 0) {
         long double t = r / std::sqrt(q3);
