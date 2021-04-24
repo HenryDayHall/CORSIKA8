@@ -54,7 +54,8 @@ namespace corsika {
 
         return b.normalized();
       })}
-      , y_sf_{showerAxis_.getDirection().cross(x_sf_)} {
+      , y_sf_{showerAxis_.getDirection().cross(x_sf_)}
+      , energy_em_(0_GeV) {
 
     CORSIKA_LOG_DEBUG("x_sf (conexObservationCS): {}",
                       x_sf_.getComponents(conexObservationCS_));
@@ -180,6 +181,7 @@ namespace corsika {
 
     double const E = energy / 1_GeV;
     double const m = mass / 1_GeV;
+    energy_em_ += energy;
 
     CORSIKA_LOG_DEBUG("CONEXhybrid: removing {} {:5e} GeV", egs_pid, energy);
 
@@ -283,5 +285,9 @@ namespace corsika {
     fitout << fitpars[13 - 1] << " # ???" << std::endl;
     fitout.close();
   }
+
+  inline HEPEnergyType CONEXhybrid::getEnergyEM() const { return energy_em_; }
+
+  inline void CONEXhybrid::reset() { energy_em_ = 0_GeV; }
 
 } // namespace corsika

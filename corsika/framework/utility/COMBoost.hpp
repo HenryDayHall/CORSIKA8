@@ -19,14 +19,36 @@
 namespace corsika {
 
   /**
+     @defgroup Utilities
+
+     Collection of classes and methods to perform recurring tasks.
+   **/
+
+  /**
+     @class COMBoost
+     @ingroup Utilities
+
      This utility class handles Lorentz boost between different
      referenence frames, using FourVector.
+
+     The class is initialized with projectile and optionally target
+     energy/momentum data. During initialization, a rotation matrix is
+     calculated to represent the projectile movement (and thus the
+     boost) along the z-axis. Also the inverse of this rotation is
+     calculated. The Lorentz boost matrix and its inverse are
+     determined as 2x2 matrices considering the energy and
+     pz-momentum.
+
+     Different constructors are offered with different specialization
+     for the cases of collisions (projectile-target) or just decays
+     (projectile only).
    */
 
   class COMBoost {
 
   public:
-    //! construct a COMBoost given four-vector of projectile and mass of target
+    //! construct a COMBoost given four-vector of projectile and mass of target (target at
+    //! rest)
     COMBoost(FourVector<HEPEnergyType, MomentumVector> const& Pprojectile,
              HEPEnergyType const massTarget);
 
@@ -41,9 +63,11 @@ namespace corsika {
     template <typename FourVector>
     FourVector fromCoM(FourVector const& p) const;
 
+    //! returns the rotated coordinate system
     CoordinateSystemPtr getRotatedCS() const;
 
   protected:
+    //! internal method
     void setBoost(double coshEta, double sinhEta);
 
   private:

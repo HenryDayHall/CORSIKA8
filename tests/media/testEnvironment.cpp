@@ -46,6 +46,9 @@ TEST_CASE("HomogeneousMedium") {
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
+
+  CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
+  CHECK_THROWS(NuclearComposition({Code::Proton}, {0.99}));
 }
 
 TEST_CASE("FlatExponential") {
@@ -216,6 +219,8 @@ TEST_CASE("InhomogeneousMedium") {
           inhMedium.getIntegratedGrammage(trajectory, l));
     CHECK(rho.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
           inhMedium.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
+    CHECK(inhMedium.getNuclearComposition() == composition);
+    CHECK(inhMedium.getMassDensity({gCS, {0_m, 0_m, 0_m}}) == 1_kg / static_pow<3>(1_m));
   }
 }
 
@@ -233,6 +238,8 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
   builder.addLinearLayer(1_km, 10_km);
   builder.addLinearLayer(2_km, 20_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 30_km);
+
+  CHECK_THROWS(builder.addLinearLayer(0.5_km, 5_km));
 
   CHECK(builder.getSize() == 3);
 

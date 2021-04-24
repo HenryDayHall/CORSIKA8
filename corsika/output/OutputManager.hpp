@@ -32,7 +32,7 @@ namespace corsika {
 
     OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
     std::string const name_;                 ///< The name of this simulation file.
-    boost::filesystem::path const root_;       ///< The top-level directory for the output.
+    boost::filesystem::path const root_;     ///< The top-level directory for the output.
     int count_{0};                           ///< The current ID of this shower.
     std::chrono::time_point<std::chrono::system_clock> const start_time{
         std::chrono::system_clock::now()};           ///< The time the manager is created.

@@ -7,7 +7,7 @@
  */
 
 /**
- *  @File Logging.hpp
+ *  @file Logging.hpp
  *
  * CORSIKA8 logging utilities.
  *

@@ -18,7 +18,7 @@
 
 #include <string>
 #include <cstdlib>
-#include <experimental/filesystem>
+#include <boost/filesystem.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -56,13 +56,12 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
     const char* data = std::getenv("CORSIKA_DATA");
     // these CHECKS are needed:
     CHECK(data != 0);
-    CHECK(std::experimental::filesystem::is_directory(
-        std::experimental::filesystem::path(std::string(data) + "/QGSJetII")));
+    CHECK(boost::filesystem::is_directory(boost::filesystem::path(data) / "QGSJetII"));
     CORSIKA_LOG_INFO(
         "data: {}"
         " isDir: {}"
         "/QGSJetII",
-        data, std::experimental::filesystem::is_directory(std::string(data)));
+        data, boost::filesystem::is_directory(data));
   }
 }
 
@@ -80,6 +79,8 @@ TEST_CASE("QgsjetII", "[processes]") {
   SECTION("QgsjetII -> Corsika") {
     CHECK(Code::PiPlus == corsika::qgsjetII::convertFromQgsjetII(
                               corsika::qgsjetII::QgsjetIICode::PiPlus));
+    CHECK_THROWS(
+        corsika::qgsjetII::convertFromQgsjetII(corsika::qgsjetII::QgsjetIICode::Unknown));
   }
 
   SECTION("Corsika -> QgsjetII") {
@@ -169,5 +170,95 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     auto const secMomSum = sumMomentum(view, projectileMomentum.getCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
           Approx(0).margin(1e-2));
+  }
+
+  SECTION("InteractionInterface Nuclei") {
+
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Nucleus, 60, 30, 20100_GeV,
+        (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+    setup::StackView& view = *(secViewPtr.get());
+    auto particle = stackPtr->first();
+    auto projectile = secViewPtr->getProjectile();
+    auto const projectileMomentum = projectile.getMomentum();
+
+    corsika::qgsjetII::Interaction model;
+    model.doInteraction(view); // this also should produce some fragments
+    CHECK(view.getSize() == Approx(188).margin(2)); // this is not physics validation
+    int countFragments = 0;
+    for (auto const& sec : view) { countFragments += (sec.getPID() == Code::Nucleus); }
+    CHECK(countFragments == Approx(2).margin(1)); // this is not physics validation
+    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+
+    CHECK(length / (1_g / square(1_cm)) ==
+          Approx(12).margin(2)); // this is not physics validation
+  }
+
+  SECTION("Heavy nuclei") {
+
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Nucleus, 1000, 1000, 1100_GeV,
+        (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+    setup::StackView& view = *(secViewPtr.get());
+    auto particle = stackPtr->first();
+    auto projectile = secViewPtr->getProjectile();
+    auto const projectileMomentum = projectile.getMomentum();
+
+    corsika::qgsjetII::Interaction model;
+
+    CHECK_THROWS(
+        model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 10., 1000.));
+    CHECK_THROWS(
+        model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 1000., 10.));
+    CHECK_THROWS(model.doInteraction(view));
+    CHECK_THROWS(model.getInteractionLength(particle));
+  }
+
+  SECTION("Allowed Particles") {
+    { // electron
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Electron, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      auto particle = stackPtr->first();
+      corsika::qgsjetII::Interaction model;
+      GrammageType const length = model.getInteractionLength(particle);
+      CHECK(length / (1_g / square(1_cm)) == std::numeric_limits<double>::infinity());
+    }
+    { // pi0 is internally converted into pi+/pi-
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Pi0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(18).margin(2)); // this is not physics validation
+    }
+    { // rho0 is internally converted into pi-/pi+
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Rho0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(7).margin(2)); // this is not physics validation
+    }
+    { // Lambda is internally converted into neutron
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Lambda0, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(25).margin(3)); // this is not physics validation
+    }
+    { // AntiLambda is internally converted into anti neutron
+      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+          Code::Lambda0Bar, 0, 0, 100_GeV,
+          (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+      setup::StackView& view = *(secViewPtr.get());
+      corsika::qgsjetII::Interaction model;
+      model.doInteraction(view);
+      CHECK(view.getSize() == Approx(25).margin(3)); // this is not physics validation
+    }
   }
 }

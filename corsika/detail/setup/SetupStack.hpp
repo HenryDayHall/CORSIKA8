@@ -11,6 +11,7 @@
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/stack/GeometryNodeStackExtension.hpp>
 #include <corsika/stack/NuclearStackExtension.hpp>
+#include <corsika/stack/WeightStackExtension.hpp>
 #include <corsika/stack/history/HistorySecondaryProducer.hpp>
 #include <corsika/stack/history/HistoryStackExtension.hpp>
 

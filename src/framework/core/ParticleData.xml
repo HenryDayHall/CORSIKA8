@@ -138,7 +138,6 @@
           m0="0.00000"> 
 </particle> 
  
-<!--
 <particle id="23" name="Z0" spinType="3" chargeType="0" colType="0" 
           m0="91.18760" mWidth="2.49520" mMin="10.00000" mMax="0.00000"> 
  <channel onMode="1" bRatio="0.1539950" products="1 -1"/> 
@@ -166,7 +165,7 @@
  <channel onMode="1" bRatio="0.1081660" products="-13 14"/> 
  <channel onMode="1" bRatio="0.1080870" products="-15 16"/> 
 </particle> 
- -->
+
 <particle id="25" name="h0" spinType="1" chargeType="0" colType="0" 
           m0="125.00000" mWidth="0.00374" mMin="50.00000" mMax="0.00000"> 
  <channel onMode="1" bRatio="0.0000009" products="1 -1"/> 

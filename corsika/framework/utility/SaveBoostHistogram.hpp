@@ -13,6 +13,9 @@
 namespace corsika {
 
   /**
+   * @file SaveBoostHistogram.hpp
+   * @ingroup Utilities
+   *
    * This functions saves a boost::histogram into a numpy file. Only rather basic axis
    * types are supported: regular, variable, integer, category<int>. Only "ordinary" bin
    * counts (i.e. a double or int) are supported, nothing fancy like profiles.

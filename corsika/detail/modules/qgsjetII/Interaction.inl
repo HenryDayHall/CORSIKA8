@@ -66,15 +66,18 @@ namespace corsika::qgsjetII {
         iTarget = targetA;
         if (iTarget > maxMassNumber_ || iTarget <= 0) {
           std::ostringstream txt;
-          txt << "QgsjetII target outside range. iTarget=" << iTarget;
+          txt << "QgsjetII target outside range. Atarget=" << iTarget;
           throw std::runtime_error(txt.str().c_str());
         }
       }
       int iProjectile = 1;
       if (is_nucleus(beamId)) {
         iProjectile = Abeam;
-        if (iProjectile > maxMassNumber_ || iProjectile <= 0)
-          throw std::runtime_error("QgsjetII target outside range. ");
+        if (iProjectile > maxMassNumber_ || iProjectile <= 0) {
+          std::ostringstream txt;
+          txt << "QgsjetII projectile outside range. Aprojectile=" << iProjectile;
+          throw std::runtime_error(txt.str().c_str());
+        }
       }
 
       CORSIKA_LOG_DEBUG(
@@ -236,12 +239,16 @@ namespace corsika::qgsjetII {
       if (is_nucleus(targetCode)) { // nucleus
         targetMassNumber = get_nucleus_A(targetCode);
         if (targetMassNumber > maxMassNumber_)
-          throw std::runtime_error("QgsjetII target mass outside range.");
+          throw std::runtime_error(
+              "QgsjetII target mass outside range."); // LCOV_EXCL_LINE there is no
+                                                      // allowed path here
       } else {
-        if (targetCode != Proton::code)
-          throw std::runtime_error("QgsjetII Taget not possible.");
+        if (targetCode != Proton::code) // LCOV_EXCL_LINE there is no allowed path here
+          throw std::runtime_error(
+              "QgsjetII Taget not possible."); // LCOV_EXCL_LINE there is no allowed path
+                                               // here
       }
-      CORSIKA_LOG_DEBUG("Interaction: target qgsjetII code/A: ", targetMassNumber);
+      CORSIKA_LOG_DEBUG("Interaction: target qgsjetII code/A: {}", targetMassNumber);
 
       int projectileMassNumber = 1; // "1" means "hadron"
       QgsjetIIHadronType qgsjet_hadron_type =
@@ -249,7 +256,9 @@ namespace corsika::qgsjetII {
       if (qgsjet_hadron_type == QgsjetIIHadronType::NucleusType) {
         projectileMassNumber = projectile.getNuclearA();
         if (projectileMassNumber > maxMassNumber_)
-          throw std::runtime_error("QgsjetII projectile mass outside range.");
+          throw std::runtime_error(
+              "QgsjetII projectile mass outside range."); // LCOV_EXCL_LINE there is no
+                                                          // allowed path here
         std::array<QgsjetIIHadronType, 2> constexpr nucleons = {
             QgsjetIIHadronType::ProtonType, QgsjetIIHadronType::NeutronType};
         std::uniform_int_distribution select(0, 1);

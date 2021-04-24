@@ -165,7 +165,11 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
   add_custom_command (
     OUTPUT coverage.info
     COMMAND ${LCOV_BIN_DIR}/lcov -q --remove raw-coverage.info "*/usr/*" "/usr/*" --output-file coverage2.info
-    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" "*/include/Pythia8/*" "${CMAKE_SOURCE_DIR}/modules/*" "${CMAKE_BINARY_DIR}/modules/*" --output-file coverage.info
+    COMMAND ${LCOV_BIN_DIR}/lcov --remove coverage2.info 
+                        "*/externals/*" "*/tests/*" "*/sibyll2.3d.cpp" "*/.conan/*" 
+                        "*/include/Pythia8/*" "*/install/*" "${CMAKE_SOURCE_DIR}/modules/*" 
+                        "${CMAKE_BINARY_DIR}/modules/*" 
+                        --output-file coverage.info
     COMMAND ${CMAKE_COMMAND} -E remove coverage2.info
     DEPENDS raw-coverage.info
     )
@@ -238,8 +242,8 @@ target_link_libraries (
   CONAN_PKG::yaml-cpp
   CONAN_PKG::arrow
   cnpy # for SaveBoostHistogram
-  stdc++fs # experimental::filesystem
   )
+
 # "src" is needed, since some headers (namely GeneratedParticleProperties.inc ec.) are produced by python script from e.g. ParticleData.xml
 add_subdirectory (src)
 add_subdirectory (documentation)

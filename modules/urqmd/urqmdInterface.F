@@ -432,16 +432,3 @@ c~       xsegymin=0.25d0
 
       end
 
-c
-c M. Reininghaus, 2020-04-08
-c
-      integer function ReadSigmaLn(ia, ib, ic)
-      implicit none
-
-      include 'comres.f'
-
-      integer :: ia, ib, ic
-
-      ReadSigmaLn = SigmaLn(ia, ib, ic)
-
-      end function ReadSigmaLn

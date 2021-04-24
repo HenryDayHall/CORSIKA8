@@ -60,40 +60,32 @@ void qgaini_(
     const char* datdir); // Note: there is a length limiation 132 from fortran-qgsjet here
 
 /**
-   @function qgini_
-
    additional initialization procedure per event
 
-   @parameter e0n  - interaction energy (per hadron/nucleon),
-   @parameter icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~), +-4 - K+-, +-5 -
+   @param e0n  - interaction energy (per hadron/nucleon),
+   @param icp0 - hadron type (+-1 - pi+-, +-2 - p(p~), +-3 - n(n~), +-4 - K+-, +-5 -
    K_l/s),
-   @parameter iap  - projectile mass number (1 - for a hadron),
-   @parameter iat  - target mass number
+   @param iap  - projectile mass number (1 - for a hadron),
+   @param iat  - target mass number
 */
 void qgini_(const double& e0n, const int& icp0, const int& iap, const int& iat);
 
 /**
-   @function qgconf_
-
    generate one event configuration
 */
 void qgconf_();
 
 /**
-   @function qgsect_
-
    hadron-nucleus (hadron-nucleus) particle production cross section
 
-   @parameter e0n lab. energy per projectile nucleon (hadron)
-   @parameter icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
-   @parameter iap projectile mass number (1=<iap<=iapmax),
-   @parameter iat target mass number     (1=<iat<=iapmax)
+   @param e0n lab. energy per projectile nucleon (hadron)
+   @param icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
+   @param iap projectile mass number (1=<iap<=iapmax),
+   @param iat target mass number     (1=<iat<=iapmax)
  */
 double qgsect_(const double& e0n, const int& icz, const int& iap0, const int& iat0);
 
 /**
-   @function qgran
-
    link to random number generation
  */
 double qgran_(int&);

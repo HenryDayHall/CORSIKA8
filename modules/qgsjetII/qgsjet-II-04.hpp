@@ -99,8 +99,8 @@ void qgconf_();
 
    @parameter e0n lab. energy per projectile nucleon (hadron)
    @parameter icz hadron class (1 - pion, 2 - nucleon, 3 - kaon)
-   @parameter iap projectile mass number (1=<iap<=iapmax),
-   @parameter iat target mass number     (1=<iat<=iapmax)
+   @parameter iap0 projectile mass number (1=<iap0<=iapmax),
+   @parameter iat0 target mass number     (1=<iat0<=iapmax)
  */
 double qgsect_(const double& e0n, const int& icz, const int& iap0, const int& iat0);
 

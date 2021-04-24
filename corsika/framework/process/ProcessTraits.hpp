@@ -9,7 +9,7 @@
 #pragma once
 
 /**
- * \file ProcessTraits.hpp
+ * @file ProcessTraits.hpp
  */
 
 #include <type_traits>
@@ -19,7 +19,7 @@ namespace corsika {
   /**
    * A traits marker to identify BaseProcess, thus any type of process
    */
-  template <typename TProcess, typename Enable = void>
+  template <typename TProcess, typename TEnable = void>
   struct is_process : std::false_type {};
 
   template <typename TProcess>
@@ -35,23 +35,49 @@ namespace corsika {
   bool constexpr is_continuous_process_v = is_continuous_process<TProcess>::value;
 
   /**
-   *  A traits marker to track which BaseProcess is also a ProcessSequence
-   **/
-  template <typename TClass>
-  struct is_process_sequence : std::false_type {};
+   * A traits marker to identify DecayProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_decay_process : std::false_type {};
 
-  template <typename TClass>
-  bool constexpr is_process_sequence_v = is_process_sequence<TClass>::value;
+  template <typename TProcess>
+  bool constexpr is_decay_process_v = is_decay_process<TProcess>::value;
 
   /**
-   * A traits marker to identiy a BaseProcess that is also SwitchProcessesSequence
-   **/
+   * A traits marker to identify StackProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_stack_process : std::false_type {};
 
-  template <typename TClass>
-  struct is_switch_process_sequence : std::false_type {};
+  template <typename TProcess>
+  bool constexpr is_stack_process_v = is_stack_process<TProcess>::value;
 
-  template <typename TClass>
-  bool constexpr is_switch_process_sequence_v = is_switch_process_sequence<TClass>::value;
+  /**
+   * A traits marker to identify SecondariesProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_secondaries_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_secondaries_process_v = is_secondaries_process<TProcess>::value;
+
+  /**
+   * A traits marker to identify BoundaryProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_boundary_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_boundary_process_v = is_boundary_process<TProcess>::value;
+
+  /**
+   * A traits marker to identify InteractionProcess
+   */
+  template <typename TProcess, typename Enable = void>
+  struct is_interaction_process : std::false_type {};
+
+  template <typename TProcess>
+  bool constexpr is_interaction_process_v = is_interaction_process<TProcess>::value;
 
   /**
    * A traits marker to identify ProcessSequence that contain a StackProcess
@@ -63,19 +89,40 @@ namespace corsika {
   bool constexpr contains_stack_process_v = contains_stack_process<TClass>::value;
 
   /**
-   * traits class to count ContinuousProcess-es, general version
-   **/
-  template <typename TProcess, int N = 0, typename Enable = void>
-  struct count_continuous {
-    static unsigned int constexpr count = N;
-  };
-
-  /**
    * traits class to count any type of Process, general version
    **/
   template <typename TProcess, int N = 0, typename Enable = void>
   struct count_processes {
     static unsigned int constexpr count = N;
   };
+
+  namespace detail {
+
+    /**
+       Helper traits class (partial) for static compile time checking.
+
+       Note, this is a poor replacement for C++20 concepts... they are
+       eagerly awaited!
+
+       It defines the default body of a generic test function returning
+       std::false_type.
+
+       In addition it defines the pattern for class-method matching with a
+       return type TReturn and function arguments TArgs... . Right now
+       both method signatures, "const" and "not const", are matched.
+     */
+    template <typename TReturn, typename... TArgs>
+    struct has_method_signature {
+
+      // the non-const version
+      template <class T>
+      static std::true_type testSignature(TReturn (T::*)(TArgs...));
+
+      // the const version
+      template <class T>
+      static std::true_type testSignature(TReturn (T::*)(TArgs...) const);
+    };
+
+  } // namespace detail
 
 } // namespace corsika

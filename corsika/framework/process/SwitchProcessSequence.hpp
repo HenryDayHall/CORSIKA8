@@ -9,7 +9,7 @@
 #pragma once
 
 /**
- * \file SwitchProcessSequence.hpp
+  @file SwitchProcessSequence.hpp
  **/
 
 #include <corsika/framework/process/BaseProcess.hpp>
@@ -31,26 +31,24 @@
 namespace corsika {
 
   /**
-   * enum for the process switch selection: identify if First or
-   * Second process branch should be used.
-   **/
-  enum class SwitchResult { First, Second };
+     @ingroup Processes
+     @{
 
-  /**
      Class to switch between two process branches
 
      A compile-time static list of processes that uses an internal
-     TSelect class to switch between different versions of processes
+     TCondition class to switch between different versions of processes
      (or process sequence).
 
-     TProcess1 and TProcess2 must be derived from BaseProcess and are
+     TSequence and USequence must be derived from BaseProcess and are
      both references if possible (lvalue), otherwise (rvalue) they are
      just classes. This allows us to handle both, rvalue as well as
      lvalue Processes in the SwitchProcessSequence.
+     Please use the `corsika::make_select(condition, sequence, alt_sequence)`
+     factory function for best results.
 
-     TSelect has to implement a `operator()(const Particle&)` and has to
-     return either SwitchResult::First or SwitchResult::Second. Note:
-     TSelect may absolutely also use random numbers to sample between
+     TCondition has to implement a `bool operator()(Particle const&)`. Note:
+     TCondition may absolutely also use random numbers to sample between
      its results. This can be used to achieve arbitrarily smooth
      transition or mixtures of processes.
 
@@ -59,28 +57,30 @@ namespace corsika {
      particle stack and not on indiviidual particles.
 
      Template parameters:
-      - TProcess1 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - TProcess2 is of type BaseProcess, either a dedicatd process, or a ProcessSequence
-      - IndexFirstProcess, IndexOfProcess1, IndexOfProcess2 are to count and index each
-  ContinuousProcess in the entire process-chain
+      @tparam TCondition selector functor/function
+      @tparam TSequence is of type BaseProcess, either a dedicatd process, or a
+  ProcessSequence
+      @tparam USequence is of type BaseProcess, either a dedicatd process, or a
+  ProcessSequence
+      @tparam IndexFirstProcess to count and index each Process in the entire
+  process-chain
+      @tparam IndexOfProcess1 index of TSequence (counting of Process)
+      @tparam IndexOfProcess2 index of USequence (counting of Process)
 
-     See also class \sa ProcessSequence
+     See also class ProcessSequence.
   **/
 
-  template <typename TProcess1, typename TProcess2, typename TSelect,
+  template <typename TCondition, typename TSequence, typename USequence,
             int IndexFirstProcess = 0,
-            int IndexOfProcess1 = count_processes<TProcess1, IndexFirstProcess>::count,
-            int IndexOfProcess2 = count_processes<TProcess2, IndexOfProcess1>::count>
+            int IndexOfProcess1 = count_processes<TSequence, IndexFirstProcess>::count,
+            int IndexOfProcess2 = count_processes<USequence, IndexOfProcess1>::count>
   class SwitchProcessSequence
-      : public BaseProcess<SwitchProcessSequence<TProcess1, TProcess2, TSelect>> {
+      : public BaseProcess<SwitchProcessSequence<TCondition, TSequence, USequence>> {
 
-    using process1_type = typename std::decay_t<TProcess1>;
-    using process2_type = typename std::decay_t<TProcess2>;
+    using process1_type = typename std::decay_t<TSequence>;
+    using process2_type = typename std::decay_t<USequence>;
 
-    static bool constexpr t1ProcSeq = is_process_sequence_v<process1_type>;
-    static bool constexpr t2ProcSeq = is_process_sequence_v<process2_type>;
-
-    // make sure only BaseProcess types TProcess1/2 are passed
+    // make sure only BaseProcess types TSequence/2 are passed
     static_assert(is_process_v<process1_type>,
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 1");
@@ -88,13 +88,13 @@ namespace corsika {
                   "can only use process derived from BaseProcess in "
                   "SwitchProcessSequence, for Process 2");
 
-    // make sure none of TProcess1/2 is a StackProcess
+    // make sure none of TSequence/2 is a StackProcess
     static_assert(!std::is_base_of_v<StackProcess<process1_type>, process1_type>,
                   "cannot use StackProcess in SwitchProcessSequence, for Process 1");
     static_assert(!std::is_base_of_v<StackProcess<process2_type>, process2_type>,
                   "cannot use StackProcess in SwitchProcessSequence, for Process 2");
 
-    // if TProcess1/2 are already ProcessSequences, make sure they do not contain
+    // if TSequence/2 are already ProcessSequences, make sure they do not contain
     // any StackProcess
     static_assert(!contains_stack_process_v<process1_type>,
                   "cannot use StackProcess in SwitchProcessSequence, remove from "
@@ -111,25 +111,29 @@ namespace corsika {
     SwitchProcessSequence& operator=(SwitchProcessSequence const&) = default;
     ~SwitchProcessSequence() = default;
 
+    static bool const is_process_sequence = true;
+    static bool const is_switch_process_sequence = true;
+
     /**
-     * Only valid user constructor will create fully initialized object
-     *
-     * SwitchProcessSequence supports and encourages move semantics. You can
-     * use object, l-value references or r-value references to
-     * construct sequences.
-     *
-     * \param in_A process branch A
-     * \param in_A process branch B
-     * \param sel functor to swtich between branch A and B
+      Only valid user constructor will create fully initialized object
+
+      SwitchProcessSequence supports and encourages move semantics. You can
+      use object, l-value references or r-value references to
+      construct sequences.
+
+      @param sel functor to switch between branch A and B
+      @param in_A process branch A
+      @param in_A process branch B
      **/
-    SwitchProcessSequence(TProcess1 in_A, TProcess2 in_B, TSelect sel)
+    SwitchProcessSequence(TCondition sel, TSequence in_A, USequence in_B)
         : select_(sel)
         , A_(in_A)
         , B_(in_B) {}
 
-    template <typename TParticle, typename TVTNType>
-    ProcessReturn doBoundaryCrossing(TParticle& particle, TVTNType const& from,
-                                     TVTNType const& to);
+    template <typename TParticle>
+    ProcessReturn doBoundaryCrossing(TParticle& particle,
+                                     typename TParticle::node_type const& from,
+                                     typename TParticle::node_type const& to);
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(TParticle& particle, TTrack& vT,
@@ -174,34 +178,41 @@ namespace corsika {
      **/
     static unsigned int constexpr getNumberOfProcesses() { return numberOfProcesses_; }
 
-  private:
-    TSelect select_; /// selector functor to switch between branch a and b, this is a
-                     /// reference, if possible
+#ifdef CORSIKA_UNIT_TESTING
+    TCondition getCondition() const { return select_; }
+    TSequence getSequence() const { return A_; }
+    USequence getAltSequence() const { return B_; }
+#endif
 
-    TProcess1 A_; /// process branch a, this is a reference, if possible
-    TProcess2 B_; /// process branch b, this is a reference, if possible
+  private:
+    TCondition select_; /// selector functor to switch between branch a and b, this is a
+                        /// reference, if possible
+
+    TSequence A_; /// process branch a, this is a reference, if possible
+    USequence B_; /// process branch b, this is a reference, if possible
 
     static unsigned int constexpr numberOfProcesses_ = IndexOfProcess2; // static counter
   };
 
   /**
-   *
-   * the functin `make_select(proc1,proc1,selector)` assembles many
-   * BaseProcesses, and ProcessSequences into a SwitchProcessSequence,
-   * all combinatorics must be allowed, this is why we define a macro
-   * to define all combinations here:
-   *
-   *
-   * Both, Processes1 and Processes2, must derive from BaseProcesses
+    the functin `make_select(select, proc1, proc1)` assembles many
+    BaseProcesses, and ProcessSequences into a SwitchProcessSequence,
+    all combinatorics are allowed.
+
+    @param selector must provide `bool operator()(Particle const&) const`
+    @param vA needs to derive from BaseProcess or ProcessSequence
+    @param vB needs to derive from BaseProcess or ProcessSequence
    **/
 
-  template <typename TProcess1, typename TProcess2, typename TSelect>
-  typename std::enable_if_t<is_process_v<typename std::decay_t<TProcess1>> &&
-                                is_process_v<typename std::decay_t<TProcess2>>,
-                            SwitchProcessSequence<TProcess1, TProcess2, TSelect>>
-  make_select(TProcess1&& vA, TProcess2&& vB, TSelect selector) {
-    return SwitchProcessSequence<TProcess1, TProcess2, TSelect>(vA, vB, selector);
+  template <typename TCondition, typename TSequence, typename USequence,
+            typename = std::enable_if_t<is_process_v<typename std::decay_t<TSequence>> &&
+                                        is_process_v<typename std::decay_t<USequence>>>>
+  SwitchProcessSequence<TCondition, TSequence, USequence> make_select(
+      TCondition&& selector, TSequence&& vA, USequence&& vB) {
+    return SwitchProcessSequence<TCondition, TSequence, USequence>(selector, vA, vB);
   }
+
+  //! @}
 
 } // namespace corsika
 

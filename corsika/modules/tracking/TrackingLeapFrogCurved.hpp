@@ -30,7 +30,6 @@ namespace corsika {
 
     /**
      * \file TrackingLeapFrogCurved.hpp
-     * \function LeapFrogStep
      *
      * Performs one leap-frog step consistent of two halve-steps with steplength/2
      * The step is caluculated analytically precisely to reach to the next volume
@@ -72,6 +71,9 @@ namespace corsika {
       //! find intersection of Plane with Track
       template <typename TParticle>
       static Intersections intersect(TParticle const& particle, Plane const& plane);
+
+      static std::string getName() { return "LeapFrog-curved"; }
+      static std::string getVersion() { return "1.0.0"; }
 
     protected:
       /**

@@ -12,20 +12,27 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 
+#include <boost/filesystem/path.hpp>
+#include <boost/multi_array.hpp>
+
 #include <array>
 #include <utility>
+#include <string>
 
 namespace corsika::urqmd {
 
   class UrQMD : public InteractionProcess<UrQMD> {
   public:
-    UrQMD();
+    UrQMD(boost::filesystem::path const& path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"));
 
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&) const;
+
+    CrossSectionType getTabulatedCrossSection(Code, Code, HEPEnergyType) const;
 
     template <typename TParticle>
     CrossSectionType getCrossSection(TParticle const&, Code) const;
@@ -35,13 +42,16 @@ namespace corsika::urqmd {
 
     bool canInteract(Code) const;
 
+    void blob(int) {}
+
   private:
     static CrossSectionType getCrossSection(Code, Code, HEPEnergyType, int);
+    void readXSFile(boost::filesystem::path const&);
 
     // data members
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("urqmd");
-
     std::uniform_int_distribution<int> booleanDist_{0, 1};
+    boost::multi_array<CrossSectionType, 3> xs_interp_support_table_;
   };
 
   /**

@@ -128,7 +128,7 @@ namespace corsika {
   }
 
   template <typename TDimension>
-  inline auto& QuantityVector<TDimension>::operator-() const {
+  inline auto QuantityVector<TDimension>::operator-() const {
     return QuantityVector<TDimension>(-eigenVector_);
   }
 

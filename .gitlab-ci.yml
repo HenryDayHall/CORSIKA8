@@ -480,7 +480,7 @@ coverage:
     - ctest -j4 
     - cmake --build . --target coverage
     - tar czf coverage-report.tar.gz coverage-report
-  coverage: '/^.*functions\.+:\s(.*\%)\s/'
+  coverage: '/^.*lines\.+:\s(.*\%)\s/'
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

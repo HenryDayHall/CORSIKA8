@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <boost/filesystem>
+#include <boost/filesystem.hpp>
 
 #include <yaml-cpp/yaml.h>
 

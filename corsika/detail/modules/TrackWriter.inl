@@ -20,8 +20,8 @@ namespace corsika {
 
   template <typename TOutput>
   template <typename TParticle, typename TTrack>
-  ProcessReturn TrackWriter<TOutput>::doContinuous(const TParticle& vP, const TTrack& vT,
-                                                   bool const) {
+  inline ProcessReturn TrackWriter<TOutput>::doContinuous(TParticle const& vP,
+                                                          TTrack const& vT, bool const) {
 
     auto const start = vT.getPosition(0).getCoordinates();
     auto const end = vT.getPosition(1).getCoordinates();
@@ -34,8 +34,8 @@ namespace corsika {
 
   template <typename TOutput>
   template <typename TParticle, typename TTrack>
-  inline LengthType TrackWriter<TOutput>::getMaxStepLength(const TParticle&,
-                                                           const TTrack&) {
+  inline LengthType TrackWriter<TOutput>::getMaxStepLength(TParticle const&,
+                                                           TTrack const&) {
     return meter * std::numeric_limits<double>::infinity();
   }
 

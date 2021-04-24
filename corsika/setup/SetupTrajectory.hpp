@@ -38,15 +38,15 @@ namespace corsika::setup {
      The default tracking algorithm.
    */
 
-  // typedef corsika::tracking_leapfrog_curved::Tracking Tracking;
+  typedef corsika::tracking_leapfrog_curved::Tracking Tracking;
   // typedef corsika::tracking_leapfrog_straight::Tracking Tracking;
-  typedef corsika::tracking_line::Tracking Tracking;
+  // typedef corsika::tracking_line::Tracking Tracking;
 
   /**
    The default trajectory.
   */
   /// definition of Trajectory base class, to be used in tracking and cascades
-  typedef StraightTrajectory Trajectory;
-  // typedef corsika::LeapFrogTrajectory Trajectory;
+  // typedef StraightTrajectory Trajectory;
+  typedef corsika::LeapFrogTrajectory Trajectory;
 
 } // namespace corsika::setup

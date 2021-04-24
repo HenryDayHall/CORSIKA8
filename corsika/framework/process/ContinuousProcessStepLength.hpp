@@ -14,9 +14,11 @@
 namespace corsika {
 
   /**
-   * To store step length in LengthType and unique index in ProcessSequence of shortest
-   * step ContinuousProcess.
-   *
+     @ingroup Processes
+
+     To store step length in LengthType and unique index in ProcessSequence of shortest
+     step ContinuousProcess.
+
    **/
 
   class ContinuousProcessStepLength {

@@ -39,6 +39,9 @@ namespace corsika {
 
     CoordinateSystemPtr const& getObserverCS() const { return conexObservationCS_; }
 
+    HEPEnergyType getEnergyEM() const;
+    void reset();
+
   private:
     // data members
     //! CONEX e.m. particle codes
@@ -52,6 +55,7 @@ namespace corsika {
     CoordinateSystemPtr const conexObservationCS_; //!< CONEX observation frame
     DirectionVector const x_sf_,
         y_sf_; //!< unit vectors of CONEX shower frame, z_sf is shower axis direction
+    HEPEnergyType energy_em_;
   };
 } // namespace corsika
 
