@@ -17,6 +17,8 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
+#include <corsika/output/NoOutput.hpp>
+
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>
@@ -54,7 +56,7 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
   SECTION("horizontal plane") {
 
     Plane const obsPlane(Point(cs, {10_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
@@ -65,10 +67,10 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
   SECTION("transparent plane") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 0., 1.}));
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
-    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
+    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, false);
 
     CHECK(length / 1_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::Ok);
@@ -83,7 +85,7 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
     Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
                          DirectionVector(cs, {1, 0.1, -0.05}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);

@@ -30,9 +30,9 @@ namespace corsika {
     fields_.push_back(parquet::schema::PrimitiveNode::Make(args...));
   }
 
-  void ParquetStreamer::enableCompression(int const level) {
-    builder_.compression(parquet::Compression::ZSTD);
-    builder_.compression_level(level);
+  void ParquetStreamer::enableCompression(int const /*level*/) {
+    // builder_.compression(parquet::Compression::ZSTD);
+    // builder_.compression_level(level);
   }
 
   void ParquetStreamer::buildStreamer() {

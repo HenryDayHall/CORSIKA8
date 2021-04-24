@@ -15,13 +15,14 @@
 
 namespace corsika {
 
-  template <typename TOutput>
-  inline TrackWriter<TOutput>::TrackWriter() {}
+  template <typename TOutputWriter>
+  inline TrackWriter<TOutputWriter>::TrackWriter() {}
 
-  template <typename TOutput>
+  template <typename TOutputWriter>
   template <typename TParticle, typename TTrack>
-  inline ProcessReturn TrackWriter<TOutput>::doContinuous(TParticle const& vP,
-                                                          TTrack const& vT, bool const) {
+  inline ProcessReturn TrackWriter<TOutputWriter>::doContinuous(TParticle const& vP,
+                                                                TTrack const& vT,
+                                                                bool const) {
 
     auto const start = vT.getPosition(0).getCoordinates();
     auto const end = vT.getPosition(1).getCoordinates();
@@ -32,15 +33,15 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  template <typename TOutput>
+  template <typename TOutputWriter>
   template <typename TParticle, typename TTrack>
-  inline LengthType TrackWriter<TOutput>::getMaxStepLength(TParticle const&,
-                                                           TTrack const&) {
+  inline LengthType TrackWriter<TOutputWriter>::getMaxStepLength(TParticle const&,
+                                                                 TTrack const&) {
     return meter * std::numeric_limits<double>::infinity();
   }
 
-  template <typename TOutput>
-  YAML::Node TrackWriter<TOutput>::getConfig() const {
+  template <typename TOutputWriter>
+  YAML::Node TrackWriter<TOutputWriter>::getConfig() const {
     using namespace units::si;
 
     YAML::Node node;
