@@ -10,6 +10,6 @@
 namespace corsika {
 
   BaseOutput::BaseOutput()
-      : shower_(0){}
+      : shower_(0) {}
 
-}
+} // namespace corsika

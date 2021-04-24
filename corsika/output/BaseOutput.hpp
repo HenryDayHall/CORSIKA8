@@ -7,8 +7,7 @@
  */
 #pragma once
 
-//#include <memory>
-#include <filesystem>
+#include <boost/filesystem>
 
 #include <yaml-cpp/yaml.h>
 
@@ -29,7 +28,7 @@ namespace corsika {
     /**
      * Called at the start of each run.
      */
-    virtual void startOfLibrary(std::filesystem::path const& directory) = 0;
+    virtual void startOfLibrary(boost::filesystem::path const& directory) = 0;
 
     /**
      * Called at the start of each event/shower.

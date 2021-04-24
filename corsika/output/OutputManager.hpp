@@ -9,7 +9,7 @@
 
 #include <chrono>
 #include <string>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <corsika/output/BaseOutput.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
@@ -32,7 +32,7 @@ namespace corsika {
 
     OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
     std::string const name_;                 ///< The name of this simulation file.
-    std::filesystem::path const root_;       ///< The top-level directory for the output.
+    boost::filesystem::path const root_;       ///< The top-level directory for the output.
     int count_{0};                           ///< The current ID of this shower.
     std::chrono::time_point<std::chrono::system_clock> const start_time{
         std::chrono::system_clock::now()};           ///< The time the manager is created.
@@ -45,7 +45,7 @@ namespace corsika {
     /**
      * Write a YAML-node to a file.
      */
-    void writeNode(YAML::Node const& node, std::filesystem::path const& path) const;
+    void writeNode(YAML::Node const& node, boost::filesystem::path const& path) const;
 
     /**
      * Write the top-level config of this simulation.
@@ -69,7 +69,7 @@ namespace corsika {
      * @param name    The name of this output collection.
      * @param dir     The directory where the output directory will be stored.
      */
-    OutputManager(std::string const& name, std::filesystem::path const& dir);
+    OutputManager(std::string const& name, boost::filesystem::path const& dir);
 
     /**
      * Handle graceful closure of the outputs upon destruction.

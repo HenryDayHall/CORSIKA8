@@ -21,7 +21,7 @@
 namespace corsika {
 
   void OutputManager::writeNode(YAML::Node const& node,
-                                std::filesystem::path const& path) const {
+                                boost::filesystem::path const& path) const {
 
     // construct a YAML emitter for this config file
     YAML::Emitter out;
@@ -92,7 +92,7 @@ namespace corsika {
     auto const path{root_ / name};
 
     // create the directory for this process.
-    std::filesystem::create_directory(path);
+    boost::filesystem::create_directory(path);
 
     // get the config for this output
     auto config = outputs_.at(name).get().getConfig();
@@ -106,12 +106,12 @@ namespace corsika {
 
   OutputManager::OutputManager(
       std::string const& name,
-      std::filesystem::path const& dir = std::filesystem::current_path())
+      boost::filesystem::path const& dir = boost::filesystem::current_path())
       : name_(name)
       , root_(dir / name) {
 
     // check if this directory already exists
-    if (std::filesystem::exists(root_)) {
+    if (boost::filesystem::exists(root_)) {
       logger->warn(
           "Output directory '{}' already exists! This is currenty not supported.",
           root_.string());
@@ -119,7 +119,7 @@ namespace corsika {
     }
 
     // construct the directory for this library
-    std::filesystem::create_directory(root_);
+    boost::filesystem::create_directory(root_);
 
     // write the top level config file
     writeTopLevelConfig();
