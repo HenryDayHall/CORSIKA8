@@ -13,7 +13,7 @@ namespace corsika {
   TrackWriterParquet::TrackWriterParquet()
       : output_() {}
 
-  void TrackWriterParquet::startOfLibrary(std::filesystem::path const& directory) {
+  void TrackWriterParquet::startOfLibrary(boost::filesystem::path const& directory) {
 
     // setup the streamer
     output_.initStreamer((directory / "tracks.parquet").string());

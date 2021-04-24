@@ -49,7 +49,7 @@ namespace corsika {
 
   void ParquetStreamer::closeStreamer() {
     writer_.reset();
-    outfile_->Close();
+    [[maybe_unused]] auto status = outfile_->Close();
   }
 
   std::shared_ptr<parquet::StreamWriter> ParquetStreamer::getWriter() { return writer_; }

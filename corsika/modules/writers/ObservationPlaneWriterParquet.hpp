@@ -30,7 +30,7 @@ namespace corsika {
     /**
      * Called at the start of each library.
      */
-    void startOfLibrary(std::filesystem::path const& directory) final override;
+    void startOfLibrary(boost::filesystem::path const& directory) final override;
 
     /**
      * Called at the end of each shower.

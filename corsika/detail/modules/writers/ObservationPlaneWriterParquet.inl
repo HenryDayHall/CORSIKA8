@@ -14,7 +14,7 @@ namespace corsika {
       : output_() {}
 
   void ObservationPlaneWriterParquet::startOfLibrary(
-      std::filesystem::path const& directory) {
+      boost::filesystem::path const& directory) {
 
     // setup the streamer
     output_.initStreamer((directory / "particles.parquet").string());
