@@ -30,7 +30,7 @@ namespace corsika {
     out << node;
 
     // open the output file - this is <output name>.yaml
-    std::ofstream file(path);
+    std::ofstream file(path.string());
 
     // dump the YAML to the file
     file << out.c_str() << std::endl;
