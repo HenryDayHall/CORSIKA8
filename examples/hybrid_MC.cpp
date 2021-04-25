@@ -23,8 +23,9 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Cascade.hpp>
-#include <corsika/output/DummyOutputManager.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
+
+#include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -87,7 +88,6 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CORSIKA_LOG_INFO("hybrid_MC");
 
@@ -172,6 +172,7 @@ int main(int argc, char** argv) {
   std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
             << std::endl;
 
+  OutputManager output("hybrid_MC_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
 
   // setup processes, decays and interactions
@@ -220,7 +221,8 @@ int main(int argc, char** argv) {
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
                                     "particles.dat");
-
+  output.add("obsplane", observationLevel);
+  
   corsika::urqmd::UrQMD urqmd_model;
   InteractionCounter urqmdCounted{urqmd_model};
 
@@ -241,7 +243,6 @@ int main(int argc, char** argv) {
 
   // define air shower object, run simulation
   setup::Tracking tracking;
-  DummyOutputManager output;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
@@ -274,4 +275,6 @@ int main(int argc, char** argv) {
 
   std::ofstream finish("finished");
   finish << "run completed without error" << std::endl;
+
+  output.endOfLibrary();
 }

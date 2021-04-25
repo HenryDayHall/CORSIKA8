@@ -34,17 +34,23 @@ namespace corsika {
 
     // and build the streamer
     output_.buildStreamer();
+
+    setInit(true);
   }
 
   void ObservationPlaneWriterParquet::endOfShower() { ++shower_; }
 
   void ObservationPlaneWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  void ObservationPlaneWriterParquet::write(Code const& pid,
-                                            units::si::HEPEnergyType const& energy,
-                                            units::si::LengthType const& x,
-                                            units::si::LengthType const& y) {
-    using namespace units::si;
+  void ObservationPlaneWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
+                                            LengthType const& x, LengthType const& y) {
+    if (!isInit()) {
+      std::runtime_error(
+          "ObservationPlaneWriterParquet not initialized. Either 1) add the "
+          "corresponding module to "
+          "the OutputManager, or 2) declare the module to write no output using "
+          "NoOutput.");
+    }
 
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << shower_ << static_cast<int>(get_PDG(pid))

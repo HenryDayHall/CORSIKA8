@@ -24,8 +24,8 @@ namespace corsika {
 
   template <typename TOutput>
   inline ProcessReturn ObservationPlane<TOutput>::doContinuous(
-      corsika::setup::Stack::particle_type& particle,
-      corsika::setup::Trajectory&, bool const stepLimit) {
+      corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory&,
+      bool const stepLimit) {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */

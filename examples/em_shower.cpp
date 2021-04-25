@@ -17,7 +17,8 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/process/InteractionCounter.hpp>
 #include <corsika/framework/core/Logging.hpp>
-#include <corsika/output/DummyOutputManager.hpp>
+
+#include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
@@ -67,7 +68,6 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   if (argc != 2) {
     std::cerr << "usage: em_shower <energy/GeV>" << std::endl;
@@ -138,6 +138,7 @@ int main(int argc, char** argv) {
   std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
             << std::endl;
 
+  OutputManager output("em_shower_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
 
   // setup processes, decays and interactions
@@ -148,6 +149,7 @@ int main(int argc, char** argv) {
   InteractionCounter emCascadeCounted(emCascade);
 
   TrackWriter trackWriter;
+  output.add("tracks", trackWriter); // register TrackWriter
 
   // long. profile; columns for gamma, e+, e- still need to be added
   LongitudinalProfile longprof{showerAxis};
@@ -155,12 +157,12 @@ int main(int argc, char** argv) {
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
                                     "particles.dat");
+  output.add("obsplane", observationLevel);
 
   auto sequence = make_sequence(emCascadeCounted, emContinuous, longprof, cut,
                                 observationLevel, trackWriter);
   // define air shower object, run simulation
   setup::Tracking tracking;
-  DummyOutputManager output;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
@@ -185,4 +187,6 @@ int main(int argc, char** argv) {
   save_hist(hists.labHist(), "inthist_lab_emShower.npz", true);
   save_hist(hists.CMSHist(), "inthist_cms_emShower.npz", true);
   longprof.save("longprof_emShower.txt");
+
+  output.endOfLibrary();
 }

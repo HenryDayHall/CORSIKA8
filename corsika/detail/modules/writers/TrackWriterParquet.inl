@@ -38,16 +38,24 @@ namespace corsika {
 
     // and build the streamer
     output_.buildStreamer();
+
+    setInit(true);
   }
 
   void TrackWriterParquet::endOfShower() { ++shower_; }
 
   void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  void TrackWriterParquet::write(Code const& pid, units::si::HEPEnergyType const& energy,
+  void TrackWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
                                  QuantityVector<length_d> const& start,
                                  QuantityVector<length_d> const& end) {
-    using namespace units::si;
+
+    if (!isInit()) {
+      std::runtime_error(
+          "TrackWriterParquet not initialized. Either 1) add the corresponding module to "
+          "the OutputManager, or 2) declare the module to write no output using "
+          "NoOutput.");
+    }
 
     // write the next row - we must write `shower_` first.
     // clang-format off
