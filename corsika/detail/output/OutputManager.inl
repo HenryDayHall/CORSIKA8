@@ -15,6 +15,8 @@
 #include <ctime>
 #include <sstream>
 
+#include <boost/filesystem.hpp>
+
 #include <fmt/core.h>
 #include <fmt/chrono.h>
 
@@ -30,7 +32,7 @@ namespace corsika {
     out << node;
 
     // open the output file - this is <output name>.yaml
-    std::ofstream file(path.string());
+    boost::filesystem::ofstream file(path);
 
     // dump the YAML to the file
     file << out.c_str() << std::endl;
