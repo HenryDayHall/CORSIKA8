@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
                                     "particles.dat");
   output.add("obsplane", observationLevel);
-  
+
   corsika::urqmd::UrQMD urqmd_model;
   InteractionCounter urqmdCounted{urqmd_model};
 

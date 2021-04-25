@@ -62,7 +62,7 @@ namespace corsika {
      * Set init flag.
      */
     void setInit(bool const v) { is_init_ = v; }
-    
+
   protected:
     int shower_{0}; ///< The current event number.
   private:

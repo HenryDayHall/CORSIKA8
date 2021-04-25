@@ -144,7 +144,7 @@ int main() {
 
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
-  
+
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
