@@ -285,7 +285,7 @@ def gen_classes(media_db):
    *  - Sternheimer index: {stern_index}, label: {stern_label}, name: {name}, nice_name: {nice_name}, symbol: {symbol}
    *  - weight: {weight}, weight_significant_figure: {weight_significant_figure}, weight_error_last_digit: {weight_error_last_digit}
    *  - Z_over_A: {Z_over_A}, sternheimhers_density: {sternheimer_density}, corrected_density: {corrected_density}, 
-   *  - State::{state}, MediumType::{type}, Ieff={Ieff}, Cbar={Cbar}, X0={x0}, x1={x1}, aa={aa}, sk={sk}, dlt0={dlt0}
+   *  - StateOfMatter::{state}, MediumType::{type}, Ieff={Ieff}, Cbar={Cbar}, X0={x0}, x1={x1}, aa={aa}, sk={sk}, dlt0={dlt0}
   **/
 
   class {cname} {{
@@ -301,7 +301,7 @@ def gen_classes(media_db):
      static double Z_over_A() {{ return data_.Z_over_A(); }}
      static double getSternheimerDensity() {{ return data_.getSternheimerDensity(); }}
      static double getCorrectedDensity() {{ return data_.getCorrectedDensity(); }}
-     static State getState() {{ return data_.getState(); }}
+     static StateOfMatter getStateOfMatter() {{ return data_.getStateOfMatter(); }}
      static MediumType getType() {{ return data_.getType(); }}
      static std::string const getSymbol() {{ return data_.getSymbol(); }}
 
@@ -318,7 +318,7 @@ def gen_classes(media_db):
 
      inline static const MediumData data_ {{ "{name}", "{nice_name}", {weight},
      {weight_significant_figure}, {weight_error_last_digit}, {Z_over_A},
-     {sternheimer_density}, {corrected_density}, State::{state},
+     {sternheimer_density}, {corrected_density}, StateOfMatter::{state},
      MediumType::{type}, "{symbol}", {Ieff}, {Cbar}, {x0}, {x1}, {aa}, {sk}, {dlt0} }};
      /** @endcond */
   }};
