@@ -11,12 +11,13 @@
 
 #include <string>
 
-// NOTE: the order of these includes is *important*
+// clang-format-off, NOTE: the order of these includes is *important*
 // you will get unhelpful compiler errors about unknown
 // operator definitions if these are reordered
 #include <parquet/stream_writer.h>
 #include <parquet/arrow/schema.h>
 #include <arrow/io/file.h>
+// clang-format-on
 
 namespace corsika {
 
