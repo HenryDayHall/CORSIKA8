@@ -36,7 +36,7 @@ namespace corsika {
      static double Z_over_A() { return data_.Z_over_A(); }
      static double getSternheimerDensity() { return data_.getSternheimerDensity(); }
      static double getCorrectedDensity() { return data_.getCorrectedDensity(); }
-     static State getState() { return data_.getState(); }
+     static StateOfMatter getStateOfMatter() { return data_.getStateOfMatter(); }
      static MediumType getType() { return data_.getType(); }
      static std::string const getSymbol() { return data_.getSymbol(); }
 
@@ -50,7 +50,7 @@ namespace corsika {
 
      inline static const MediumData data_ { "hydrogen_gas", "hydrogen gas (H%2#)", 1.008,
      3, 7, 0.99212,
-     8.3748e-05, 8.3755e-05, State::DiatomicGas,
+     8.3748e-05, 8.3755e-05, StateOfMatter::DiatomicGas,
      MediumType::Element, "H", 19.2, 9.5835, 1.8639, 3.2718, 0.14092, 5.7273, 0.0 };
      @endcode
 
@@ -73,7 +73,7 @@ namespace corsika {
   };
 
   //! Physical state of medium
-  enum class State { Unknown, Solid, Liquid, Gas, DiatomicGas };
+  enum class StateOfMatter { Unknown, Solid, Liquid, Gas, DiatomicGas };
 
   enum class Medium : int16_t;
 
@@ -93,7 +93,7 @@ namespace corsika {
     double Z_over_A_;
     double sternheimer_density_;
     double corrected_density_;
-    State state_;
+    StateOfMatter state_;
     MediumType type_;
     std::string symbol_;
     double Ieff_;
@@ -122,17 +122,17 @@ namespace corsika {
     } /// Sternheimer density
     double getCorrectedDensity() const {
       return corrected_density_;
-    }                                                 /// corrected density
-    State getState() const { return state_; }         /// state
-    MediumType getType() const { return type_; }      /// type
-    std::string getSymbol() const { return symbol_; } /// symbol
-    double getIeff() const { return Ieff_; }          /// Ieff
-    double getCbar() const { return Cbar_; }          /// Cbar
-    double getX0() const { return x0_; }              /// X0
-    double getX1() const { return x1_; }              /// X1
-    double getAA() const { return aa_; }              /// AA
-    double getSK() const { return sk_; }              /// Sk
-    double getDlt0() const { return dlt0_; }          /// Delta0
+    }                                                         /// corrected density
+    StateOfMatter getStateOfMatter() const { return state_; } /// state
+    MediumType getType() const { return type_; }              /// type
+    std::string getSymbol() const { return symbol_; }         /// symbol
+    double getIeff() const { return Ieff_; }                  /// Ieff
+    double getCbar() const { return Cbar_; }                  /// Cbar
+    double getX0() const { return x0_; }                      /// X0
+    double getX1() const { return x1_; }                      /// X1
+    double getAA() const { return aa_; }                      /// AA
+    double getSK() const { return sk_; }                      /// Sk
+    double getDlt0() const { return dlt0_; }                  /// Delta0
     //! @}
   };
 
