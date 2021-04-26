@@ -84,6 +84,7 @@ namespace corsika {
             l / max_length_);
         throw std::runtime_error(err.c_str());
       }
+      return getMaximumX();
     }
     CORSIKA_LOG_TRACE("showerAxis::X frac={}, fractionalBin={}, lower={}, upper={}",
                       fraction, fractionalBin, lower, upper);
