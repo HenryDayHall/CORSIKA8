@@ -104,7 +104,7 @@ namespace corsika {
                 auto deltaT1_ {startTime_ + paths1[i].propagation_time_};
                 auto deltaT2_ {endTime_ + paths2[i].propagation_time_};
 
-                long double const gridResolution_{antenna.duration_ / 1_s};
+                long double const gridResolution_{antenna.sample_rate_ * 1_s};
                 //make deltaT1_ be the smallest time => changes step function order so
                 // constants is changed to account for it
                 if (deltaT1_ > deltaT2_)
