@@ -218,6 +218,17 @@ TEST_CASE("Combined Stack", "[stack]") {
     CHECK(s.getEntries() == 0);
     CHECK(s.isEmpty());
   }
+
+  
+  SECTION("exceptions") {
+    StackTest s;
+    auto p1 = s.addParticle(std::tuple{9.9});
+    auto p2 = s.addParticle(std::tuple{9.9});
+    ++p2;
+    CHECK_THROWS(s.copy(p1, p2));
+    CHECK_THROWS(s.swap(p1, p2));
+    CHECK(s.getSize() == 2);   
+  }
 }
 
 ////////////////////////////////////////////////////////////
@@ -288,7 +299,6 @@ using StackTest2 = CombinedStack<typename StackTest::stack_implementation_type,
 TEST_CASE("Combined Stack - multi", "[stack]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("create secondaries") {
 
