@@ -219,7 +219,6 @@ TEST_CASE("Combined Stack", "[stack]") {
     CHECK(s.isEmpty());
   }
 
-  
   SECTION("exceptions") {
     StackTest s;
     auto p1 = s.addParticle(std::tuple{9.9});
@@ -227,7 +226,7 @@ TEST_CASE("Combined Stack", "[stack]") {
     ++p2;
     CHECK_THROWS(s.copy(p1, p2));
     CHECK_THROWS(s.swap(p1, p2));
-    CHECK(s.getSize() == 2);   
+    CHECK(s.getSize() == 2);
   }
 }
 
