@@ -64,7 +64,7 @@ namespace corsika {
     void reset();
 
     HEPEnergyType getElectronECut() const { return get_energy_threshold(Code::Electron); }
-    HEPEnergyType getPhotonECut() const { return get_energy_threshold(Code::Gamma); }
+    HEPEnergyType getPhotonECut() const { return get_energy_threshold(Code::Photon); }
     HEPEnergyType getMuonECut() const { return get_energy_threshold(Code::MuPlus); }
     HEPEnergyType getHadronECut() const { return get_energy_threshold(Code::Proton); }
     HEPEnergyType getInvEnergy() const { return inv_energy_; }

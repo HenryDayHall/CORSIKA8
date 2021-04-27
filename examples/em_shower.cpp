@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 
   TrackWriter trackWriter("tracks.dat");
 
-  // long. profile; columns for gamma, e+, e- still need to be added
+  // long. profile; columns for photon, e+, e- still need to be added
   LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));

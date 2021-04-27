@@ -39,7 +39,7 @@ TEST_CASE("OnShellCheck", "[processes]") {
   const HEPEnergyType E = 10_GeV;
   // list of arbitrary particles
   std::array const particleList{Code::PiPlus, Code::PiMinus,  Code::Helium,
-                                Code::Gamma,  Code::Electron, Code::MuPlus};
+                                Code::Photon,  Code::Electron, Code::MuPlus};
 
   std::array const mass_shifts{1.1, 1.001, 1.0, 1.0, 1.01, 1.0};
 

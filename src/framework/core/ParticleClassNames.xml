@@ -7,7 +7,7 @@
   
   <particle pdgID="11" classname="Electron"/>
   <particle pdgID="-11" classname="Positron"/>
-  <particle pdgID="22" classname="Gamma"/>
+  <particle pdgID="22" classname="Photon"/>
 
   <particle pdgID="130" classname="K0Long"/>
   <particle pdgID="310" classname="K0Short"/>

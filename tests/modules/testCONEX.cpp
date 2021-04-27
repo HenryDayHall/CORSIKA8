@@ -110,7 +110,7 @@ TEST_CASE("CONEXSourceCut") {
   conex.addParticle(Code::Proton, Eem, 0_eV, emPosition, momentum.normalized(), 0_s);
   // supperimpose a photon
   auto const momentumPhoton = showerAxis.getDirection() * 1_TeV;
-  conex.addParticle(Code::Gamma, 1_TeV, 0_eV, emPosition, momentumPhoton.normalized(),
+  conex.addParticle(Code::Photon, 1_TeV, 0_eV, emPosition, momentumPhoton.normalized(),
                     0_s);
   conex.solveCE();
 }

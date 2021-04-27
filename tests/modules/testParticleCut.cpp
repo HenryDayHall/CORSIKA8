@@ -150,7 +150,7 @@ TEST_CASE("ParticleCut", "processes") {
     auto projectile = view.getProjectile();
     // add secondaries
     projectile.addSecondary(std::make_tuple(
-        Code::Gamma, 3_MeV, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+        Code::Photon, 3_MeV, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
     projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
                                             MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
                                             point0, 0_ns));

@@ -19,7 +19,7 @@ TauMinus                 91      0       CannotInteract
 TauPlus                  90      0       CannotInteract
 NuTau                    92      0       CannotInteract
 NuTauBar                 93      0       CannotInteract
-Gamma                    1       0       CannotInteract
+Photon                   1       0       CannotInteract
 Pi0                      6       1       Pion
 #                        rho0    could interact but sibyll has no cross section/interaction length. was used for gamma had int
 Rho0                     27      0       CannotInteract

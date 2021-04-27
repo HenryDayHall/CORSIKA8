@@ -339,7 +339,7 @@ namespace corsika::urqmd {
   inline std::pair<int, int> convertToUrQMD(Code code) {
     static const std::map<int, std::pair<int, int>> mapPDGToUrQMD{
         // data mostly from github.com/afedynitch/ParticleDataTool
-        {22, {100, 0}},      // gamma
+        {22, {100, 0}},      // photon
         {111, {101, 0}},     // pi0
         {211, {101, 2}},     // pi+
         {-211, {101, -2}},   // pi-

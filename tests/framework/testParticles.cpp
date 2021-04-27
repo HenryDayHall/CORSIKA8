@@ -24,7 +24,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(Positron::code == Code::Positron);
     CHECK(Proton::code == Code::Proton);
     CHECK(Neutron::code == Code::Neutron);
-    CHECK(Gamma::code == Code::Gamma);
+    CHECK(Photon::code == Code::Photon);
     CHECK(PiPlus::code == Code::PiPlus);
   }
 
@@ -71,7 +71,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Lifetimes") {
     CHECK(get_lifetime(Code::Electron) ==
           std::numeric_limits<double>::infinity() * si::second);
-    CHECK(get_lifetime(Code::DPlus) < get_lifetime(Code::Gamma));
+    CHECK(get_lifetime(Code::DPlus) < get_lifetime(Code::Photon));
     CHECK(get_lifetime(Code::RhoPlus) / si::second ==
           (Approx(4.414566727909413e-24).epsilon(1e-3)));
     CHECK(get_lifetime(Code::SigmaMinusBar) / si::second ==
@@ -90,7 +90,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Particle groups: electromagnetic") {
-    CHECK(is_em(Code::Gamma));
+    CHECK(is_em(Code::Photon));
     CHECK(is_em(Code::Electron));
     CHECK_FALSE(is_em(Code::MuPlus));
     CHECK_FALSE(is_em(Code::NuE));
@@ -100,7 +100,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Particle groups: hadrons") {
-    CHECK_FALSE(is_hadron(Code::Gamma));
+    CHECK_FALSE(is_hadron(Code::Photon));
     CHECK_FALSE(is_hadron(Code::Electron));
     CHECK_FALSE(is_hadron(Code::MuPlus));
     CHECK_FALSE(is_hadron(Code::NuE));
@@ -111,7 +111,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Particle groups: muons") {
-    CHECK_FALSE(is_muon(Code::Gamma));
+    CHECK_FALSE(is_muon(Code::Photon));
     CHECK_FALSE(is_muon(Code::Electron));
     CHECK(is_muon(Code::MuPlus));
     CHECK(is_muon(Code::MuMinus));
@@ -122,7 +122,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Particle groups: neutrinos") {
-    CHECK_FALSE(is_neutrino(Code::Gamma));
+    CHECK_FALSE(is_neutrino(Code::Photon));
     CHECK_FALSE(is_neutrino(Code::Electron));
     CHECK_FALSE(is_neutrino(Code::MuPlus));
     CHECK_FALSE(is_neutrino(Code::Proton));
@@ -138,7 +138,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Nuclei") {
-    CHECK_FALSE(is_nucleus(Code::Gamma));
+    CHECK_FALSE(is_nucleus(Code::Photon));
     CHECK(is_nucleus(Code::Argon));
     CHECK_FALSE(is_nucleus(Code::Proton));
     CHECK(is_nucleus(Code::Hydrogen));

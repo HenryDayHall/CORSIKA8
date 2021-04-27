@@ -24,7 +24,7 @@ namespace corsika::proposal {
   //! propagated and decayed if they decays.
   //!
   static constexpr std::array<Code, 7> tracked{
-      Code::Gamma,  Code::Electron, Code::Positron, Code::MuMinus,
+      Code::Photon,  Code::Electron, Code::Positron, Code::MuMinus,
       Code::MuPlus, Code::TauPlus,  Code::TauMinus,
   };
 
@@ -34,7 +34,7 @@ namespace corsika::proposal {
   //! particles may be created by reading out the Corsica constants.
   //!
   static std::map<Code, PROPOSAL::ParticleDef> particle = {
-      {Code::Gamma, PROPOSAL::GammaDef()},    {Code::Electron, PROPOSAL::EMinusDef()},
+      {Code::Photon, PROPOSAL::GammaDef()},    {Code::Electron, PROPOSAL::EMinusDef()},
       {Code::Positron, PROPOSAL::EPlusDef()}, {Code::MuMinus, PROPOSAL::MuMinusDef()},
       {Code::MuPlus, PROPOSAL::MuPlusDef()},  {Code::TauMinus, PROPOSAL::TauMinusDef()},
       {Code::TauPlus, PROPOSAL::TauPlusDef()}};
@@ -62,7 +62,7 @@ namespace corsika::proposal {
   static std::map<Code, std::function<PROPOSAL::crosssection_list_t<PROPOSAL::ParticleDef,
                                                                     PROPOSAL::Medium>(
                             PROPOSAL::Medium&, corsika::units::si::HEPEnergyType)>>
-      cross = {{Code::Gamma, cross_builder<PROPOSAL::GammaDef>},
+      cross = {{Code::Photon, cross_builder<PROPOSAL::GammaDef>},
                {Code::Electron, cross_builder<PROPOSAL::EMinusDef>},
                {Code::Positron, cross_builder<PROPOSAL::EPlusDef>},
                {Code::MuMinus, cross_builder<PROPOSAL::MuMinusDef>},
