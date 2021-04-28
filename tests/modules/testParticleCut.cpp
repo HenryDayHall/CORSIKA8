@@ -149,8 +149,9 @@ TEST_CASE("ParticleCut", "processes") {
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
     // add secondaries
-    projectile.addSecondary(std::make_tuple(
-        Code::Photon, 3_MeV, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+    projectile.addSecondary(std::make_tuple(Code::Photon, 3_MeV,
+                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
+                                            point0, 0_ns));
     projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
                                             MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
                                             point0, 0_ns));

@@ -24,7 +24,7 @@ namespace corsika::proposal {
   //! propagated and decayed if they decays.
   //!
   static constexpr std::array<Code, 7> tracked{
-      Code::Photon,  Code::Electron, Code::Positron, Code::MuMinus,
+      Code::Photon, Code::Electron, Code::Positron, Code::MuMinus,
       Code::MuPlus, Code::TauPlus,  Code::TauMinus,
   };
 
@@ -34,7 +34,7 @@ namespace corsika::proposal {
   //! particles may be created by reading out the Corsica constants.
   //!
   static std::map<Code, PROPOSAL::ParticleDef> particle = {
-      {Code::Photon, PROPOSAL::GammaDef()},    {Code::Electron, PROPOSAL::EMinusDef()},
+      {Code::Photon, PROPOSAL::GammaDef()},   {Code::Electron, PROPOSAL::EMinusDef()},
       {Code::Positron, PROPOSAL::EPlusDef()}, {Code::MuMinus, PROPOSAL::MuMinusDef()},
       {Code::MuPlus, PROPOSAL::MuPlusDef()},  {Code::TauMinus, PROPOSAL::TauMinusDef()},
       {Code::TauPlus, PROPOSAL::TauPlusDef()}};
