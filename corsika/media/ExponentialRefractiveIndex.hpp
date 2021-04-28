@@ -41,7 +41,7 @@ namespace corsika {
                                Args&&... args);
 
     /**
-     * Evaluate the refractive index at a given location.
+     * Evaluate the refractive index at a given location using its z-coordinate.
      *
      * @param  point    The location to evaluate at.
      * @returns    The refractive index at this point.
