@@ -104,7 +104,6 @@ namespace corsika {
                 auto deltaT1_ {startTime_ + paths1[i].propagation_time_};
                 auto deltaT2_ {endTime_ + paths2[i].propagation_time_};
 
-                long double const gridResolution_{antenna.sample_rate_ * 1_s};
                 //make deltaT1_ be the smallest time => changes step function order so
                 // constants is changed to account for it
                 if (deltaT1_ > deltaT2_)
@@ -115,8 +114,8 @@ namespace corsika {
                 }
 
 
-                long const startBin {std::floor((deltaT1_ / 1_s)/gridResolution_)};
-                long const endBin {std::floor((deltaT2_ / 1_s) /gridResolution_)};
+                long const startBin {std::floor(deltaT1_ * antenna.sample_rate_)};
+                long const endBin {std::floor(deltaT2_ * antenna.sample_rate_)};
 
                 auto const betaPerp_ {midPaths[i].emit_.cross(beta_.cross(midPaths[i].emit_))};
                 double const denominator {1 - midPaths[i].refractive_index_source_ *
@@ -131,7 +130,7 @@ namespace corsika {
 //                        std::cout << "Track in one bin !" << std::endl;
                         if (std::fabs(denominator)>1.e-15L)//if not in Cerenkov angle then
                         {
-                            double const f {std::fabs((deltaT2_ - deltaT1_)/1_s)/gridResolution_};
+                            double const f {std::fabs((deltaT2_ - deltaT1_) * antenna.sample_rate_)};
                             //should be PotentialVector const Vp_ = betaPerp_.getComponents()/denominator/
                             //                                    midPaths[i].R_distance_ * constants * f;
                             // but to make it compile until antenna is adapted it stays like that to test it.
@@ -143,7 +142,7 @@ namespace corsika {
                         }
                         else//If emission in Cerenkov angle => approximation
                         {
-                            double const f {(endTime_ - startTime_)/gridResolution_/1_s};
+                            double const f {(endTime_ - startTime_) * antenna.sample_rate_};
                             ElectricFieldVector const Vp_ = betaPerp_.getComponents()/
                                     midPaths[i].R_distance_ * constants * f / 1_s;
 //                            std::cout << "Vector Potential in Cerenkov Angle: " << Vp_ << std::endl;
@@ -157,14 +156,14 @@ namespace corsika {
 //                        std::cout << "Track in multiple bins !" << std::endl;
                         if (it == 0)//start of track
                         {
-                            double const f {std::fabs(startTime_/1_s / gridResolution_ - startBin)};
+                            double const f {std::fabs(startTime_ * antenna.sample_rate_ - startBin)};
                             ElectricFieldVector const Vp_ = betaPerp_.getComponents() * f *
                                     constants/denominator/midPaths[i].R_distance_ / 1_s;
                             antenna.receive(deltaT1_, betaPerp_, Vp_);
                         }
                         else if (it == numberOfBins)//end of track
                         {
-                            double const f {std::fabs(endTime_/1_s / gridResolution_ - endBin)};
+                            double const f {std::fabs(endTime_ * antenna.sample_rate_ - endBin)};
                             ElectricFieldVector const Vp_ = betaPerp_.getComponents() * f *
                                     constants / denominator / midPaths[i].R_distance_ / 1_s;
                             antenna.receive(deltaT2_, betaPerp_, Vp_);
@@ -173,7 +172,7 @@ namespace corsika {
                         {
                             ElectricFieldVector const Vp_ = betaPerp_.getComponents() * constants /
                                     denominator/midPaths[i].R_distance_ / 1_s;
-                            antenna.receive(deltaT1_ + gridResolution_ * it * 1_s, betaPerp_, Vp_);
+                            antenna.receive(deltaT1_ + it / antenna.sample_rate_, betaPerp_, Vp_);
                         }
                     }
                 }//end loop over bins in which potential vector is not zero
