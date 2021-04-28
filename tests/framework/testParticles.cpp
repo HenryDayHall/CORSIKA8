@@ -31,6 +31,8 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   SECTION("Masses") {
     CHECK(Electron::mass / (511_keV) == Approx(1));
     CHECK(Electron::mass / get_mass(Code::Electron) == 1.);
+    CHECK(Photon::mass / (1_eV) == 0.);
+    CHECK(Photon::mass == get_mass(Code::Photon));
 
     CHECK((Proton::mass + Neutron::mass) / constants::nucleonMass == Approx(2));
   }
@@ -39,6 +41,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(Electron::charge / constants::e == Approx(-1));
     CHECK(Positron::charge / constants::e == Approx(+1));
     CHECK(get_charge(Positron::anti_code) / constants::e == Approx(-1));
+    CHECK(Photon::charge / constants::e == 0.);
   }
 
   SECTION("Names") {
@@ -46,6 +49,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(get_name(Code::Electron) == "e-");
     CHECK(PiMinus::name == "pi-");
     CHECK(Iron::name == "iron");
+    CHECK(Photon::name == "photon");
   }
 
   SECTION("PDG") {
@@ -54,12 +58,14 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(get_PDG(Code::NuMu) == PDGCode::NuMu);
     CHECK(get_PDG(Code::NuE) == PDGCode::NuE);
     CHECK(get_PDG(Code::MuMinus) == PDGCode::MuMinus);
+    CHECK(get_PDG(Code::Photon) == PDGCode::Photon);
 
     CHECK(static_cast<int>(get_PDG(Code::PiPlus)) == 211);
     CHECK(static_cast<int>(get_PDG(Code::DPlus)) == 411);
     CHECK(static_cast<int>(get_PDG(Code::NuMu)) == 14);
     CHECK(static_cast<int>(get_PDG(Code::NuEBar)) == -12);
     CHECK(static_cast<int>(get_PDG(Code::MuMinus)) == 13);
+    CHECK(static_cast<int>(get_PDG(Code::Photon)) == 22);
   }
 
   SECTION("Conversion PDG -> internal") {
