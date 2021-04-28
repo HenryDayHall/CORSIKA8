@@ -8,7 +8,7 @@ set (test_modules_sources
   testPythia8.cpp
   testUrQMD.cpp
   testCONEX.cpp
-  testOnShellCheck.cpp
+  # testOnShellCheck.cpp
   testParticleCut.cpp
   testSibyll.cpp
   )

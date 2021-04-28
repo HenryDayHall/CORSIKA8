@@ -97,11 +97,110 @@ namespace corsika::nuclear_stack {
 
   template <template <typename> class InnerParticleInterface,
             typename StackIteratorInterface>
+  inline void NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>::
+      setParticleData(particle_data_momentum_type const& v) {
+
+    if (std::get<0>(v) == Code::Nucleus) {
+      std::ostringstream err;
+      err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+      throw std::runtime_error(err.str());
+    }
+
+    super_type::setParticleData(v);
+    setNucleusRef(-1); // this is not a nucleus
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
+  inline void NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>::
+      setParticleData(altenative_particle_data_momentum_type const& v) {
+    const unsigned short A = std::get<5>(v);
+    const unsigned short Z = std::get<6>(v);
+    if (std::get<0>(v) != Code::Nucleus || A == 0 || Z == 0) {
+      std::ostringstream err;
+      err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+      throw std::runtime_error(err.str());
+    }
+    setNucleusRef(
+        super_type::getStackData().getNucleusNextRef()); // store this nucleus data ref
+    setNuclearA(A);
+    setNuclearZ(Z);
+    super_type::setParticleData(particle_data_momentum_type{
+        std::get<0>(v), std::get<1>(v), std::get<2>(v), std::get<3>(v), std::get<4>(v)});
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
+  inline void NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>::
+      setParticleData(super_type& p, particle_data_momentum_type const& v) {
+    if (std::get<0>(v) == Code::Nucleus) {
+      std::ostringstream err;
+      err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+      throw std::runtime_error(err.str());
+    }
+
+    super_type::setParticleData(
+        p, particle_data_momentum_type{std::get<0>(v), std::get<1>(v), std::get<2>(v),
+                                       std::get<3>(v), std::get<4>(v)});
+
+    setNucleusRef(-1); // this is not a nucleus
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
+  inline void NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>::
+      setParticleData(super_type& p, altenative_particle_data_momentum_type const& v) {
+
+    const unsigned short A = std::get<5>(v);
+    const unsigned short Z = std::get<6>(v);
+
+    if (std::get<0>(v) != Code::Nucleus || A == 0 || Z == 0) {
+      std::ostringstream err;
+      err << "NuclearStackExtension: no A and Z specified for new Nucleus!";
+      throw std::runtime_error(err.str());
+    }
+
+    setNucleusRef(
+        super_type::getStackData().getNucleusNextRef()); // store this nucleus data ref
+    setNuclearA(A);
+    setNuclearZ(Z);
+    super_type::setParticleData(
+        p, particle_data_momentum_type{std::get<0>(v), std::get<1>(v), std::get<2>(v),
+                                       std::get<3>(v), std::get<4>(v)});
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
   inline std::string NuclearParticleInterface<InnerParticleInterface,
                                               StackIteratorInterface>::asString() const {
     return fmt::format(
         "{}, nuc({})", super_type::asString(),
         (isNucleus() ? fmt::format("A={}, Z={}", getNuclearA(), getNuclearZ()) : "n/a"));
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
+  inline void
+  NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>::setMomentum(
+      MomentumVector const& v) {
+    HEPMomentumType const P = v.getNorm();
+    if (P == 0_eV) {
+      super_type::getStackData().setEnergy(super_type::getIndex(), this->getMass());
+      super_type::getStackData().setDirection(
+          super_type::getIndex(), DirectionVector(v.getCoordinateSystem(), {0, 0, 0}));
+    } else {
+      super_type::getStackData().setEnergy(super_type::getIndex(),
+                                           sqrt(square(this->getMass()) + square(P)));
+      super_type::getStackData().setDirection(super_type::getIndex(), v / P);
+    }
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
+  inline MomentumVector NuclearParticleInterface<
+      InnerParticleInterface, StackIteratorInterface>::getMomentum() const {
+    auto const P = sqrt(square(this->getEnergy()) - square(this->getMass()));
+    return super_type::getStackData().getDirection(super_type::getIndex()) * P;
   }
 
   template <template <typename> class InnerParticleInterface,

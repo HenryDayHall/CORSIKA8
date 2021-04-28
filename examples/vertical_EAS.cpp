@@ -6,6 +6,8 @@
  * the license.
  */
 
+#define TRACE
+
 /* clang-format off */
 // InteractionCounter used boost/histogram, which
 // fails if boost/type_traits have been included before. Thus, we have
@@ -96,6 +98,12 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 // argv : 1.number of nucleons, 2.number of protons,
 //        3.total energy in GeV, 4.number of showers,
 //        5.seed (0 by default to generate random values for all)
+
+int Point::count_construct_ = 0;
+int Point::count_copy_construct_ = 0;
+int Point::count_move_ = 0;
+int Point::count_assign_ = 0;
+int Point::count_destruct_ = 0;
 
 int main(int argc, char** argv) {
 
@@ -428,4 +436,5 @@ int main(int argc, char** argv) {
 
     output.endOfLibrary();
   }
+  Point::trace();
 }

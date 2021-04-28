@@ -47,10 +47,10 @@ namespace corsika::nuclear_stack {
     typedef InnerParticleInterface<StackIteratorInterface> super_type;
 
   public:
-    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType>
+    typedef std::tuple<Code, HEPEnergyType, DirectionVector, Point, TimeType>
         particle_data_type;
 
-    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType,
+    typedef std::tuple<Code, HEPEnergyType, DirectionVector, Point, TimeType,
                        unsigned short, unsigned short>
         altenative_particle_data_type;
 
@@ -61,6 +61,22 @@ namespace corsika::nuclear_stack {
     void setParticleData(super_type& p, particle_data_type const& v);
 
     void setParticleData(super_type& p, altenative_particle_data_type const& v);
+
+    
+    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType>
+    particle_data_momentum_type;
+
+    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType,
+                       unsigned short, unsigned short>
+        altenative_particle_data_momentum_type;
+
+    void setParticleData(particle_data_momentum_type const& v);
+
+    void setParticleData(altenative_particle_data_momentum_type const& v);
+
+    void setParticleData(super_type& p, particle_data_momentum_type const& v);
+
+    void setParticleData(super_type& p, altenative_particle_data_momentum_type const& v);
 
     std::string asString() const;
 
@@ -89,7 +105,17 @@ namespace corsika::nuclear_stack {
     /// @}
 
     /**
-     * Overwrite normal getParticleMass function with nuclear version
+     * Overwrite normal setMomentum function with nuclear version
+     */
+    void setMomentum(MomentumVector const& v);
+
+    /**
+     * Overwrite normal getMomentum function with nuclear version
+     */ 
+    MomentumVector getMomentum() const;
+
+    /**
+     * Overwrite normal getMass function with nuclear version
      */
     HEPMassType getMass() const;
 
