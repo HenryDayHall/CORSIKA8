@@ -82,7 +82,7 @@ namespace corsika {
   /*
    * calculates the distance between two points
    */
-  inline LengthType distance(Point const &p1, Point const &p2);
+  inline LengthType distance(Point const& p1, Point const& p2);
 
 } // namespace corsika
 

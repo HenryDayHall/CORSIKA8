@@ -139,20 +139,20 @@ TEST_CASE("Geometry CoordinateSystems") {
     CHECK(zPrime.getComponents(rootCS)[0].magnitude() == Approx(0));
 
     CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
-        yPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+              yPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
     CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
-        xPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+              xPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
     CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
-        zPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+              zPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
 
     CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
-        yPrime.getComponents(rootCS).getEigenVector()) ==
+              yPrime.getComponents(rootCS).getEigenVector()) ==
           Approx((5_m * 5_m).magnitude()));
     CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
-        xPrime.getComponents(rootCS).getEigenVector()) ==
+              xPrime.getComponents(rootCS).getEigenVector()) ==
           Approx((5_m * 5_m).magnitude()));
     CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
-        zPrime.getComponents(rootCS).getEigenVector()) ==
+              zPrime.getComponents(rootCS).getEigenVector()) ==
           Approx((5_m * 5_m).magnitude()));
   }
 
@@ -165,25 +165,25 @@ TEST_CASE("Geometry CoordinateSystems") {
 
     CHECK(zPrime.dot(v).magnitude() > 0);
     CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
-        v.getComponents().getEigenVector()) == Approx(0));
+              v.getComponents().getEigenVector()) == Approx(0));
     CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
-        v.getComponents().getEigenVector()) == Approx(0));
+              v.getComponents().getEigenVector()) == Approx(0));
 
     CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
-        yPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+              yPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
     CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
-        xPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+              xPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
     CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
-        zPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
+              zPrime.getComponents(rootCS).getEigenVector()) == Approx(0));
 
     CHECK(yPrime.getComponents(rootCS).getEigenVector().dot(
-        yPrime.getComponents(rootCS).getEigenVector()) ==
+              yPrime.getComponents(rootCS).getEigenVector()) ==
           Approx((5_m * 5_m).magnitude()));
     CHECK(xPrime.getComponents(rootCS).getEigenVector().dot(
-        xPrime.getComponents(rootCS).getEigenVector()) ==
+              xPrime.getComponents(rootCS).getEigenVector()) ==
           Approx((5_m * 5_m).magnitude()));
     CHECK(zPrime.getComponents(rootCS).getEigenVector().dot(
-        zPrime.getComponents(rootCS).getEigenVector()) ==
+              zPrime.getComponents(rootCS).getEigenVector()) ==
           Approx((5_m * 5_m).magnitude()));
   }
 }
@@ -315,10 +315,10 @@ TEST_CASE("Geometry Trajectories") {
 }
 
 TEST_CASE("Distance between points") {
-  //define a known CS
+  // define a known CS
   CoordinateSystemPtr root = get_root_CoordinateSystem();
 
-  //define known points
+  // define known points
   Point p1(root, {0_m, 0_m, 0_m});
   Point p2(root, {0_m, 0_m, 5_m});
   Point p3(root, {1_m, 0_m, 0_m});
@@ -326,68 +326,65 @@ TEST_CASE("Distance between points") {
   Point p5(root, {0_m, 4_m, 0_m});
   Point p6(root, {0_m, 5_m, 0_m});
 
-    //check distance() function
+  // check distance() function
   CHECK(distance(p1, p2) / 1_m == Approx(5));
   CHECK(distance(p3, p4) / 1_m == Approx(4));
   CHECK(distance(p5, p6) / 1_m == Approx(1));
 }
 
-
-
 TEST_CASE("Path") {
-  //define a known CS
+  // define a known CS
   CoordinateSystemPtr root = get_root_CoordinateSystem();
 
-  //define known points
+  // define known points
   Point p1(root, {0_m, 0_m, 0_m});
   Point p2(root, {0_m, 0_m, 1_m});
   Point p3(root, {0_m, 0_m, 2_m});
   Point p4(root, {0_m, 0_m, 3_m});
   Point p5(root, {0_m, 0_m, 4_m});
-  //define paths
+  // define paths
   Path P1(p1);
-  Path P2({p1,p2});
+  Path P2({p1, p2});
   Path P3({p1, p2, p3});
-  //define deque that include point(s)
+  // define deque that include point(s)
   std::deque<Point> l1 = {p1};
   std::deque<Point> l2 = {p1, p2};
   std::deque<Point> l3 = {p1, p2, p3};
 
-  //test the various path constructors
+  // test the various path constructors
   SECTION("Test Constructors") {
-    //check constructor for one point
-    CHECK(std::equal(P1.begin(), P1.end(), l1.begin(),[](Point a, Point b)
-    { return (a - b).getNorm() / 1_m < 1e-5;}));
-    //check constructor for collection of points
-    CHECK(std::equal(P3.begin(), P3.end(), l3.begin(),[](Point a, Point b)
-    { return (a - b).getNorm() / 1_m < 1e-5;}));
+    // check constructor for one point
+    CHECK(std::equal(P1.begin(), P1.end(), l1.begin(),
+                     [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+    // check constructor for collection of points
+    CHECK(std::equal(P3.begin(), P3.end(), l3.begin(),
+                     [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
   }
 
-    //test the length and access methods
+  // test the length and access methods
   SECTION("Test getLength() and modifications to Path") {
     P1.addToEnd(p2);
     P2.removeFromEnd();
-    //Check modifications to path
-    CHECK(std::equal(P1.begin(), P1.end(), l2.begin(),[](Point a, Point b)
-    { return (a - b).getNorm() / 1_m < 1e-5;}));
-    CHECK(std::equal(P2.begin(), P2.end(), l1.begin(),[](Point a, Point b)
-    { return (a - b).getNorm() / 1_m < 1e-5;}));
-    //Check GetStart(), GetEnd(), GetPoint()
+    // Check modifications to path
+    CHECK(std::equal(P1.begin(), P1.end(), l2.begin(),
+                     [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+    CHECK(std::equal(P2.begin(), P2.end(), l1.begin(),
+                     [](Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5; }));
+    // Check GetStart(), GetEnd(), GetPoint()
     CHECK((P3.getEnd() - P3.getStart()).getNorm() / 1_m == Approx(2));
     CHECK((P1.getPoint(1) - p2).getNorm() / 1_m == Approx(0));
-    //Check GetLength()
+    // Check GetLength()
     CHECK(P1.getLength() / 1_m == Approx(1));
     CHECK(P2.getLength() / 1_m == Approx(0));
     CHECK(P3.getLength() / 1_m == Approx(2));
     P2.removeFromEnd();
-    CHECK(P2.getLength() / 1_m == Approx(0)); //Check the length of an empty path
+    CHECK(P2.getLength() / 1_m == Approx(0)); // Check the length of an empty path
     P3.addToEnd(p4);
     P3.addToEnd(p5);
     CHECK(P3.getLength() / 1_m == Approx(4));
     P3.removeFromEnd();
-    CHECK(P3.getLength() / 1_m == Approx(3)); //Check RemoveFromEnd() else case
-    //Check GetNSegments()
+    CHECK(P3.getLength() / 1_m == Approx(3)); // Check RemoveFromEnd() else case
+    // Check GetNSegments()
     CHECK(P3.getNSegments() - 3 == Approx(0));
-
   }
 }

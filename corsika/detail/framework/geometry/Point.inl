@@ -29,8 +29,8 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector().getX();
     } else {
       return QuantityVector<length_d>(
-          get_transformation(*cs.get(), *pCS.get()) *
-          BaseVector<length_d>::getQuantityVector().eigenVector_)
+                 get_transformation(*cs.get(), *pCS.get()) *
+                 BaseVector<length_d>::getQuantityVector().eigenVector_)
           .getX();
     }
   }
@@ -41,8 +41,8 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector().getY();
     } else {
       return QuantityVector<length_d>(
-          get_transformation(*cs.get(), *pCS.get()) *
-          BaseVector<length_d>::getQuantityVector().eigenVector_)
+                 get_transformation(*cs.get(), *pCS.get()) *
+                 BaseVector<length_d>::getQuantityVector().eigenVector_)
           .getY();
     }
   }
@@ -53,8 +53,8 @@ namespace corsika {
       return BaseVector<length_d>::getQuantityVector().getZ();
     } else {
       return QuantityVector<length_d>(
-          get_transformation(*cs.get(), *pCS.get()) *
-          BaseVector<length_d>::getQuantityVector().eigenVector_)
+                 get_transformation(*cs.get(), *pCS.get()) *
+                 BaseVector<length_d>::getQuantityVector().eigenVector_)
           .getZ();
     }
   }
@@ -102,7 +102,7 @@ namespace corsika {
     return os;
   }
 
-  inline LengthType distance(Point const &p1, Point const &p2) {
+  inline LengthType distance(Point const& p1, Point const& p2) {
     return (p1 - p2).getNorm();
   }
 

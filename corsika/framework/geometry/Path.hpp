@@ -18,8 +18,8 @@ namespace corsika {
    * points using N >= 1 straight-line segments.
    */
   class Path {
-    std::deque<Point> points_;     ///< The points that make up this path.
-    LengthType length_= LengthType::zero(); ///< The length of the path.
+    std::deque<Point> points_;               ///< The points that make up this path.
+    LengthType length_ = LengthType::zero(); ///< The length of the path.
   public:
     /**
      * Create a Path with a given starting Point.
@@ -78,7 +78,7 @@ namespace corsika {
      */
     inline int getNSegments() const;
 
-  };  // class Path
+  }; // class Path
 
 } // namespace corsika
 

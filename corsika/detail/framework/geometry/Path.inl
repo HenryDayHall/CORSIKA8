@@ -13,22 +13,18 @@
 
 namespace corsika {
 
-  Path::Path(Point const& point) {
-    points_.push_front(point);
-  }
+  Path::Path(Point const& point) { points_.push_front(point); }
 
   Path::Path(std::deque<Point> const& points)
       : points_(points) {
     int dequesize_ = points.size();
     if (dequesize_ == 0 || dequesize_ == 1) {
       length_ = LengthType::zero();
-    }
-    else if (dequesize_ == 2) {
+    } else if (dequesize_ == 2) {
       length_ = (points.back() - points.front()).getNorm();
-    }
-    else {
-      for (auto point = points.begin(); point !=  points.end() - 1; ++point) {
-        auto point_next = *(point+1);
+    } else {
+      for (auto point = points.begin(); point != points.end() - 1; ++point) {
+        auto point_next = *(point + 1);
         auto point_now = *(point);
         length_ += (point_next - point_now).getNorm();
       }
@@ -46,28 +42,20 @@ namespace corsika {
     int dequesize_ = points_.size();
     if (dequesize_ == 0 || dequesize_ == 1) {
       length_ = LengthType::zero();
-    }
-    else if (dequesize_ == 2) {
+    } else if (dequesize_ == 2) {
       length_ = (points_.back() - points_.front()).getNorm();
+    } else {
+      length_ -= (lastpoint_ - points_.back()).getNorm();
     }
-    else { length_ -= (lastpoint_ - points_.back()).getNorm(); }
   }
 
-  inline LengthType Path::getLength() const {
-    return length_;
-  }
+  inline LengthType Path::getLength() const { return length_; }
 
-  inline Point Path::getStart() const {
-    return points_.front();
-  }
+  inline Point Path::getStart() const { return points_.front(); }
 
-  inline Point Path::getEnd() const {
-    return points_.back();
-  }
+  inline Point Path::getEnd() const { return points_.back(); }
 
-  inline Point Path::getPoint(std::size_t const index) const {
-    return points_.at(index);
-  }
+  inline Point Path::getPoint(std::size_t const index) const { return points_.at(index); }
 
   inline auto Path::begin() { return points_.begin(); }
 
