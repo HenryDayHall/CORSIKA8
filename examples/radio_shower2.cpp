@@ -29,6 +29,7 @@
 
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
+#include <corsika/modules/radio/ZHS.hpp>
 #include <corsika/modules/radio/antennas/Antenna.hpp>
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/RadioDetector.hpp>
@@ -171,7 +172,7 @@ int main() {
 
   TimeCut cut(period);
 
-  TrackWriter trackWriter("tracks.dat");
+  TrackWriter trackWriter("synchrotron_tracks.dat");
 
   // assemble all processes into an ordered process list
   auto sequence = make_sequence(coreas, cut, trackWriter);

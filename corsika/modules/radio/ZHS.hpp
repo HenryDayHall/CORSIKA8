@@ -185,31 +185,6 @@ namespace corsika {
         return ProcessReturn::Ok;
       } //end simulate
 
-
-    /**
-     * Return the maximum step length for this particle and track.
-     *
-     * This must be provided by the TRadioImpl.
-     *
-     * @param particle    The current particle.
-     * @param track       The current track.
-     *
-     * @returns The maximum length of this track.
-     */
-    template <typename Particle, typename Track>
-    LengthType MaxStepLength(Particle const& particle,
-                             Track const& track) const {
-
-      // TODO : This is where we control the maximum step size
-      // of a particle track in order to maintain the accuracy
-      // of the particular formalism.
-      //
-      // This is part of the ZHS / CoReas formalisms and can
-      // be related from the magnetic field / acceleration, charge,
-      // etc. of the particle.
-      return 1000000000_m;
-    }
-
-  }; // END: class RadioProcess
+  }; // END: class ZHS
 
 } // namespace corsika

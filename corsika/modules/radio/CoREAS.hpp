@@ -84,6 +84,8 @@ namespace corsika {
       // loop over each antenna in the antenna collection (detector)
       for (auto& antenna : detector_.getAntennas()) {
 
+        std::cout << "ANTENNA: " << antenna.getName() << std::endl;
+
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
         auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Need to add the stepsize to .propagate()!!!!
 
@@ -370,6 +372,8 @@ namespace corsika {
 
         } // End of loop over both paths to get signal info
       } // End of looping over antennas
+      return ProcessReturn::Ok;
+
     } // End of simulate method
 
   }; // END: class CoREAS
