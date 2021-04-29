@@ -269,6 +269,111 @@ TEST_CASE("Radio", "[processes]") {
     }
 
 
+  SECTION("ZHS process") {
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Environment
+    using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+        <IModelInterface>>>>;
+    using EnvType = Environment<AtmModel>;
+    EnvType envZHS;
+    CoordinateSystemPtr const& rootCSZHS = envZHS.getCoordinateSystem();
+    // get the center point
+    Point const center{rootCSZHS, 0_m, 0_m, 0_m};
+    // a refractive index
+    const double ri_{1.000327};
+
+    // the constant density
+    const auto density{19.2_g / cube(1_cm)};
+
+    // the composition we use for the homogeneous medium
+    NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                               std::vector<float>{1.f});
+
+    // create magnetic field vector
+    Vector B1(rootCSZHS, 0_T, 0_T, 1_T);
+
+    auto Medium = EnvType::createNode<Sphere>(
+        center, 1_km * std::numeric_limits<double>::infinity());
+
+    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, protonComposition);
+    envZHS.getUniverse()->addChild(std::move(Medium));
+
+    // the antennas location
+    const auto point1{Point(envZHS.getCoordinateSystem(), 100_m, 2_m, 3_m)};
+    const auto point2{Point(envZHS.getCoordinateSystem(), 4_m, 80_m, 6_m)};
+    const auto point3{Point(envZHS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
+    const auto point4{Point(envZHS.getCoordinateSystem(), 5_m, 5_m, 10_m)};
+
+    // create times for the antenna
+    const TimeType t1{0_s};
+    const TimeType t2{10_s};
+    const InverseTimeType t3{1e+3_Hz};
+    const TimeType t4{11_s};
+
+    // check that I can create an antenna at (1, 2, 3)
+    TimeDomainAntenna ant1("antenna_zhs", point1, t1, t2, t3);
+    TimeDomainAntenna ant2("antenna_zhs2", point2, t1, t2, t3);
+//    TimeDomainAntenna ant3("antenna1", point1, 0_s, 2_s, 1/1e-7_s);
+
+    // construct a radio detector instance to store our antennas
+    AntennaCollection<TimeDomainAntenna> detector;
+
+    // add the antennas to the detector
+    detector.addAntenna(ant1);
+    detector.addAntenna(ant2);
+//    detector.addAntenna(ant3);
+
+    // create a particle
+    auto const particle{Code::Electron};
+//    auto const particle{Code::Gamma};
+    const auto pmass{get_mass(particle)};
+
+    VelocityVector v0(rootCSZHS, {5e+2_m / second, 5e+2_m / second, 5e+2_m / second});
+
+    Vector B0(rootCSZHS, 5_T, 5_T, 5_T);
+
+    Line const line(point3, v0);
+
+    auto const k{1_m * ((1_m) / ((1_s * 1_s) * 1_V))};
+
+    auto const t = 1_s;
+    LeapFrogTrajectory base(point4, v0, B0, k, t);
+
+    // create a new stack for each trial
+    setup::Stack stack;
+
+    // construct an energy
+    const HEPEnergyType E0{1_TeV};
+
+    // compute the necessary momentumn
+    const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
+
+    // and create the momentum vector
+    const auto plab{MomentumVector(rootCSZHS, {0_GeV, 0_GeV, P0})};
+
+    // and create the location of the particle in this coordinate system
+    const Point pos(rootCSZHS, 50_m, 10_m, 80_m);
+
+    // add the particle to the stack
+    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
+
+    auto const charge_ {get_charge(particle1.getPID())};
+
+    // create a radio process instance using CoREAS
+    RadioProcess<decltype(detector), ZHS<decltype(detector), decltype(StraightPropagator(envZHS))>, decltype(StraightPropagator(envZHS))>
+        zhs(detector, envZHS);
+
+    // check doContinuous and simulate methods
+    zhs.doContinuous(particle1, base, true);
+//    zhs.simulate(particle1, base);
+
+    // check writeOutput method -> should produce 2 csv files for each antenna
+    zhs.writeOutput();
+  }
+
+
   SECTION("Synchrotron radiation") {
 
     // create a suitable environment ///////////////////////////////////////////////////
@@ -910,7 +1015,7 @@ TEST_CASE("Radio", "[processes]") {
       auto plab {beta * pmass * gamma};
       Line l {point_1,v};
       StraightTrajectory track {l,t};
-      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, t))}; //TODO: plab is inconsistent
+      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, t))};
       coreas.doContinuous(particle1,track,true);
       stack.clear();
     }
