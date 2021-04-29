@@ -16,6 +16,7 @@
 #include <corsika/media/InhomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/ExponentialRefractiveIndex.hpp>
 
 #include <SetupTestTrajectory.hpp>
 
@@ -88,4 +89,82 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   // and check the integrated grammage
   CHECK((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
   CHECK((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
+}
+
+TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
+
+  logging::set_level(logging::level::info);
+  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+
+  // get a CS and a point
+  CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
+
+  Point const gOrigin(gCS, {0_m, 0_m, 0_m});
+
+  // setup our interface types
+  using IModelInterface = IRefractiveIndexModel<IMediumModel>;
+  using AtmModel = ExponentialRefractiveIndex<HomogeneousMedium<IModelInterface>>;
+
+  // the constant density
+  const auto density{19.2_g / cube(1_cm)};
+
+  // the composition we use for the homogenous medium
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  // a new refractive index
+  const double n0{2};
+  const InverseLengthType lambda{56 / 1_m};
+
+  // create the atmospheric model and check refractive index
+  AtmModel medium(n0, lambda, density, protonComposition);
+  CHECK(n0 == medium.getRefractiveIndex(Point(gCS, 10_m, 14_m, 0_m)));
+
+  // another refractive index
+  const double n0_{1};
+  const InverseLengthType lambda_{1 / 1_km};
+
+  // create the atmospheric model and check refractive index
+  AtmModel medium_(n0_, lambda_, density, protonComposition);
+  CHECK(medium_.getRefractiveIndex(Point(gCS, 12_m, 56_m, 1_km)) == Approx(0.3678794));
+
+  // another refractive index
+  const double n0__{4};
+  const InverseLengthType lambda__{2 / 1_m};
+
+  // create the atmospheric model and check refractive index
+  AtmModel medium__(n0__, lambda__, density, protonComposition);
+  CHECK(medium__.getRefractiveIndex(Point(gCS, 0_m, 0_m, 35_km)) == Approx(0));
+
+  // define our axis vector
+  Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
+
+  // check the density and nuclear composition
+  REQUIRE(density == medium.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium.getNuclearComposition();
+  REQUIRE(density == medium_.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium_.getNuclearComposition();
+  REQUIRE(density == medium__.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
+  medium__.getNuclearComposition();
+
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {1_m / second, 0_m / second, 0_m / second}));
+
+  // the end time of our line
+  auto const tEnd = 1_s;
+
+  // and the associated trajectory
+  setup::Trajectory const track =
+      setup::testing::make_track<setup::Trajectory>(line, tEnd);
+  //  // and the associated trajectory
+  //  Trajectory<Line> const trajectory(line, tEnd);
+
+  // and check the integrated grammage
+  REQUIRE((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
+  REQUIRE((medium_.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium_.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
+  REQUIRE((medium__.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium__.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }

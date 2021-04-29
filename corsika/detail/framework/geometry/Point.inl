@@ -102,4 +102,8 @@ namespace corsika {
     return os;
   }
 
+  inline LengthType distance(Point const& p1, Point const& p2) {
+    return (p1 - p2).getNorm();
+  }
+
 } // namespace corsika
