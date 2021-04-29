@@ -54,7 +54,6 @@ using namespace std;
 //
 int main() {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
   std::cout << "cascade_example" << std::endl;

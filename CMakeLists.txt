@@ -1,3 +1,13 @@
+#
+# (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+#
+# See file AUTHORS for a list of contributors.
+#
+# This software is distributed under the terms of the GNU General Public
+# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+# the license.
+#
+
 cmake_minimum_required (VERSION 3.9)
 
 #+++++++++++++++++++++++++++++
@@ -33,12 +43,6 @@ if (POLICY CMP0079)
 endif ()
 
 #+++++++++++++++++++++++++++++
-# as long as there still are modules using it:
-#
-enable_language (Fortran)
-set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
-
-#+++++++++++++++++++++++++++++
 # warn user if system is not UNIX
 #
 if (NOT UNIX)
@@ -50,15 +54,19 @@ endif ()
 #
 set (CORSIKA8_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 set (CMAKE_MODULE_PATH "${CORSIKA8_CMAKE_DIR}" ${CMAKE_MODULE_PATH})
-include (CorsikaUtilities) # extra cmake function
 set (CMAKE_VERBOSE_MAKEFILE  OFF) # this can be done with `make VERBOSE=1`
 # ignore many irrelevant Up-to-date messages during install
 set (CMAKE_INSTALL_MESSAGE LAZY)
 
 #+++++++++++++++++++++++++++++
-# Setup hardware and infrastructure dependent defines
+# Extra cmake functions for registering and running tests
 #
-include (CorsikaDefines)
+include (corsikaUtilities) # extra cmake functions
+
+#+++++++++++++++++++++++++++++
+# Setup hardware and infrastructure dependent defines, and general settings
+#
+include (corsikaDefines)
 
 #+++++++++++++++++++++++++++++
 # check if compiler is C++17 compliant
@@ -81,50 +89,14 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 # debug: O0, relwithdebinfo: 02, release: O3, minsizerel: Os (all defaults)
 set (CMAKE_CXX_FLAGS "-Wall -pedantic -Wextra -Wno-ignored-qualifiers")
 if (CORSIKA_SCL_CXX)
-  add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+  add_definitions (-D_GLIBCXX_USE_CXX11_ABI=0)
 endif()
-set (DEFAULT_BUILD_TYPE "Release")
 
 # clang produces a lot of unecessary warnings without this:
 add_compile_options (
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-nonportable-include-path>
   )
 
-#+++++++++++++++++++++++++++++
-# Build types settings
-#
-# setup coverage build type
-set (CMAKE_CXX_FLAGS_COVERAGE "-g --coverage")
-set (CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
-set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
-# set a flag to inform code that we are in debug mode
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-
-#+++++++++++++++++++++++++++++
-# Build type selection
-#
-# Set the possible values of build type for cmake-gui and command line check
-set (ALLOWED_BUILD_TYPES Debug Release MinSizeRel RelWithDebInfo Coverage)
-set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${ALLOWED_BUILD_TYPES})
-# Set a default build type if none was specified
-# by default: "Debug", if local ".git" directory is found, otherwise "Release"
-set (DEFAULT_BUILD_TYPE "Release")
-if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
-  set (DEFAULT_BUILD_TYPE "Debug")
-endif ()
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message (STATUS "Setting build type to '${DEFAULT_BUILD_TYPE}' as no other was specified.")
-  set (CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE
-      STRING "Choose the type of build." FORCE)
-else (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  # Ignore capitalization when build type is selected manually and check for valid setting
-  string (TOLOWER ${CMAKE_BUILD_TYPE} SELECTED_LOWER)
-  string (TOLOWER "${ALLOWED_BUILD_TYPES}" BUILD_TYPES_LOWER)
-  if (NOT SELECTED_LOWER IN_LIST BUILD_TYPES_LOWER)
-    message (FATAL_ERROR "Unknown build type: ${CMAKE_BUILD_TYPE} [allowed: ${ALLOWED_BUILD_TYPES}]")
-  endif ()
-  message (STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
-endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 
 #+++++++++++++++++++++++++++++
 # Setup external dependencies.
@@ -314,6 +286,13 @@ configure_package_config_file (
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 
+# corsikaDefines for build tree
+configure_package_config_file (
+  cmake/corsikaDefines.cmake
+  ${PROJECT_BINARY_DIR}/corsikaDefines.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+  )
+
 # config for install tree
 # overwrite with install location (if it was build as part of corsika)
 set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL}) 
@@ -329,6 +308,7 @@ install (
   ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
   ${CMAKE_BINARY_DIR}/conaninfo.txt
   ${CMAKE_BINARY_DIR}/corsikaConfig.cmake
+  ${CMAKE_BINARY_DIR}/corsikaDefines.cmake
   ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
   DESTINATION lib/cmake/corsika
   )

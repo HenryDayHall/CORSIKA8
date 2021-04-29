@@ -7,7 +7,7 @@ set (CMAKE_VERBOSE_MAKEFILE OFF) # this can be changed with `make VERBOSE=1`
 find_package (corsika CONFIG REQUIRED)
 
 # this is only for CORSIKA_REGISTER_EXAMPLE
-include ("${CMAKE_CURRENT_SOURCE_DIR}/CMakeHelper.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/corsikaExamples.cmake")
 
 add_executable (helix_example helix_example.cpp)
 target_link_libraries (helix_example CORSIKA8::CORSIKA8)

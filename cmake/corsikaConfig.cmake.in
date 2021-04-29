@@ -1,37 +1,27 @@
+#
+# (c) Copyright 2018 CORSIKA Project, corsika-project@lists.kit.edu
+#
+# See file AUTHORS for a list of contributors.
+#
+# This software is distributed under the terms of the GNU General Public
+# Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+# the license.
+#
+
 set (CORSIKA8_VERSION @c8_version@)
 
 @PACKAGE_INIT@
+
+#+++++++++++++++++++++++++++++
+# Setup hardware and infrastructure dependent defines and other setting
+#
+include (${CMAKE_CURRENT_LIST_DIR}/corsikaDefines.cmake)
 
 #+++++++++++++++++++++++++++
 # Options
 #
 option (WITH_HISTORY "Flag to switch on/off HISTORY" ON)
-
-
-#+++++++++++++++++++++++++++++
-# Build types settings
-#
-# setup coverage build type
-set (CMAKE_CXX_FLAGS_COVERAGE "-g --coverage")
-set (CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
-set (CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
-# set a flag to inform code that we are in debug mode
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-set (ALLOWED_BUILD_TYPES Debug Release MinSizeRel RelWithDebInfo Coverage)
-set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${ALLOWED_BUILD_TYPES})
-set (DEFAULT_BUILD_TYPE "Release")
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set (CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE
-    STRING "Choose the type of build." FORCE)
-endif (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   
-#+++++++++++++++++++++++++++++
-# as long as there still are modules using it:
-#
-enable_language (Fortran)
-set (CMAKE_Fortran_FLAGS "-std=legacy -Wfunction-elimination")
-
-
 #++++++++++++++++++++++++++++
 # General config and flags
 #
