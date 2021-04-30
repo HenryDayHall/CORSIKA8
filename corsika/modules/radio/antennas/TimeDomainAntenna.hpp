@@ -94,6 +94,7 @@ namespace corsika {
         return;
       } else {
         // figure out the correct timebin to store the E-field value.
+        // NOTE: static cast is implicitly flooring
         auto timebin_ {static_cast<std::size_t>((time - start_time_) * sample_rate_)};
         std::cout << "TIMEBIN IS: " << timebin_ << std::endl;
 
@@ -119,6 +120,7 @@ namespace corsika {
       xt::xtensor<double, 2> times_ (xt::zeros<double>({num_bins_, 1}));
 
       for (int i = 0; i < num_bins_; i++) {
+        // copy here waveformE_ (maybe that solves the segmentation error)
         times_.at(i,0) = static_cast<double>(start_time_ / 1_s + i / (sample_rate_ * 1_s));
       }
 

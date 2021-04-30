@@ -122,34 +122,35 @@ int main() {
 //  universe.addChild(std::move(world));
 
   // the antenna locations
-  const auto point1{Point(rootCS, 100_m, 100_m, 0_m)};
-  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
-  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
-  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
+  const auto point1{Point(rootCS, 5000_m, 0_m, 0_m)};
+//  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
+//  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
+//  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
 
   // the antenna time variables
-  const TimeType t1{0_s};
-  const TimeType t2{1e-6_s};
+  const TimeType t1{15e-6_s};
+  const TimeType t2{4e-6_s};
   const InverseTimeType t3{1e+9_Hz};
 
   // the antennas
   TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
-  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
-  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
-  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
+//  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
+//  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
+//  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
 
   // the detector
   AntennaCollection<TimeDomainAntenna> detector;
   detector.addAntenna(ant1);
-  detector.addAntenna(ant2);
-  detector.addAntenna(ant3);
-  detector.addAntenna(ant4);
+//  detector.addAntenna(ant2);
+//  detector.addAntenna(ant3);
+//  detector.addAntenna(ant4);
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
   const Code beamCode = Code::Electron;
   auto const gyroradius = 100_m;
+  // ToDO: include gamma factor
   auto const pLabMag = convert_SI_to_HEP(get_charge(beamCode) * Bmag * gyroradius);
   auto const omega_inv = convert_HEP_to_SI<MassType::dimension_type>(get_mass(beamCode)) / ((-1)*get_charge(beamCode) * Bmag);
   MomentumVector const plab{rootCS, pLabMag, 0_MeV, 0_MeV};
