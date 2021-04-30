@@ -358,11 +358,10 @@ def gen_properties(particle_db):
             mass=p['mass'], name=p['name'])
     string += "};\n\n"
 
-    # particle threshold table, initially set to the particle mass
-    string += "static std::array<corsika::units::si::HEPEnergyType, size> thresholds = {\n"
-    for p in particle_db.values():
-        string += "  {mass:e} * 1e9 * corsika::units::si::electronvolt, // {name:s}\n".format(
-            mass=p['mass'], name=p['name'])
+    # particle threshold table, initially set to 0
+    string += "static std::array<corsika::units::si::HEPEnergyType, size> thresholds = {\n"    
+    for k in particle_db:
+        string += " 0 * corsika::units::si::electronvolt, // {name:s}\n".format( name = k)
     string += "};\n\n"
 
     # PDG code table

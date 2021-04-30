@@ -21,15 +21,18 @@
 namespace corsika {
   /**
      simple ParticleCut process. Goes through the secondaries of an interaction and
-   removes particles according to their energy. Particles with a time delay of more than
-   10ms are removed as well. Invisible particles (neutrinos) can be removed if selected.
+   removes particles according to their kinetic energy. Particles with a time delay of
+  more than 10ms are removed as well. Invisible particles (neutrinos) can be removed if
+  selected. The threshold value is set to 0 by default but in principle can be configured
+  for each particle. Special constructors for cuts by the following groups are
+  implemented: (electrons,positrons), photons, hadrons and muons.
    **/
   class ParticleCut : public SecondariesProcess<ParticleCut>,
                       public ContinuousProcess<ParticleCut> {
 
   public:
     /**
-     * particle cut with energy thresholds for electrons, photons,
+     * particle cut with kinetic energy thresholds for electrons, photons,
      *    hadrons (including nuclei with energy per nucleon) and muons
      *    invisible particles (neutrinos) can be cut or not
      **/
@@ -63,14 +66,30 @@ namespace corsika {
     void showResults(); // LCOV_EXCL_LINE
     void reset();
 
-    HEPEnergyType getElectronECut() const { return get_energy_threshold(Code::Electron); }
-    HEPEnergyType getPhotonECut() const { return get_energy_threshold(Code::Photon); }
-    HEPEnergyType getMuonECut() const { return get_energy_threshold(Code::MuPlus); }
-    HEPEnergyType getHadronECut() const { return get_energy_threshold(Code::Proton); }
-    HEPEnergyType getInvEnergy() const { return inv_energy_; }
-    HEPEnergyType getCutEnergy() const { return energy_; }
-    HEPEnergyType getEmEnergy() const { return em_energy_; }
+    HEPEnergyType getElectronKineticECut() const {
+      return get_kinetic_energy_threshold(Code::Electron);
+    }
+    HEPEnergyType getPhotonKineticECut() const {
+      return get_kinetic_energy_threshold(Code::Photon);
+    }
+    HEPEnergyType getMuonKineticECut() const {
+      return get_kinetic_energy_threshold(Code::MuPlus);
+    }
+    HEPEnergyType getHadronKineticECut() const {
+      return get_kinetic_energy_threshold(Code::Proton);
+    }
+    //! returns total energy of particles that were removed by cut for invisible particles
+    HEPEnergyType getInvEnergy() const { return energy_invcut_; }
+    //! returns total energy of particles that were removed by cut in time
+    HEPEnergyType getTimeCutEnergy() const { return energy_timecut_; }
+    //! returns total energy of particles that were removed by cut in kinetic energy
+    HEPEnergyType getCutEnergy() const { return energy_cut_; }
+    //! returns total energy of particles that were removed by cut for electromagnetic
+    //! particles
+    HEPEnergyType getEmEnergy() const { return energy_emcut_; }
+    //! returns number of electromagnetic particles
     unsigned int getNumberEmParticles() const { return em_count_; }
+    //! returns number of invisible particles
     unsigned int getNumberInvParticles() const { return inv_count_; }
 
   private:
@@ -86,10 +105,11 @@ namespace corsika {
   private:
     bool doCutEm_;
     bool doCutInv_;
-    HEPEnergyType energy_ = 0 * electronvolt;
-    HEPEnergyType em_energy_ = 0 * electronvolt;
+    HEPEnergyType energy_cut_ = 0 * electronvolt;
+    HEPEnergyType energy_timecut_ = 0 * electronvolt;
+    HEPEnergyType energy_emcut_ = 0 * electronvolt;
+    HEPEnergyType energy_invcut_ = 0 * electronvolt;
     unsigned int em_count_ = 0;
-    HEPEnergyType inv_energy_ = 0 * electronvolt;
     unsigned int inv_count_ = 0;
   };
 

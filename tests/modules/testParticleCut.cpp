@@ -50,8 +50,9 @@ TEST_CASE("ParticleCut", "processes") {
 
   SECTION("cut on particle type: inv") {
 
+    // particle cut with 20GeV threshold for all, also cut invisible
     ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getHadronECut() == 20_GeV);
+    CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -174,10 +175,11 @@ TEST_CASE("ParticleCut", "processes") {
 
   SECTION("cut low energy:  reset thresholds of arbitrary set of particles") {
     ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false, true);
-    CHECK(get_energy_threshold(Code::Electron) != get_energy_threshold(Code::Positron));
-    CHECK_FALSE(get_energy_threshold(Code::Electron) == Electron::mass);
+    CHECK(get_kinetic_energy_threshold(Code::Electron) !=
+          get_kinetic_energy_threshold(Code::Positron));
+    CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == Electron::mass);
     // test default values still correct
-    CHECK(get_energy_threshold(Code::Proton) == 5_GeV);
+    CHECK(get_kinetic_energy_threshold(Code::Proton) == 5_GeV);
   }
 
   SECTION("cut on time") {
@@ -194,7 +196,7 @@ TEST_CASE("ParticleCut", "processes") {
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
     // add secondaries, all with energies above the threshold
-    // only cut is by species
+    // only cut is by time
     for (auto proType : particleList) {
       projectile.addSecondary(
           std::make_tuple(proType, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
@@ -203,9 +205,10 @@ TEST_CASE("ParticleCut", "processes") {
     cut.doSecondaries(view);
 
     CHECK(view.getEntries() == 0);
-    CHECK(cut.getCutEnergy() / 1_GeV == 11000);
-    cut.reset();
+    CHECK(cut.getTimeCutEnergy() == 11 * Eabove);
     CHECK(cut.getCutEnergy() == 0_GeV);
+    cut.reset();
+    CHECK(cut.getTimeCutEnergy() == 0_GeV);
   }
 
   setup::Trajectory const track = setup::testing::make_track<setup::Trajectory>(
@@ -215,7 +218,7 @@ TEST_CASE("ParticleCut", "processes") {
   SECTION("cut on DoContinous, just invisibles") {
 
     ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getHadronECut() == 20_GeV);
+    CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add particles, all with energies above the threshold
     // only cut is by species

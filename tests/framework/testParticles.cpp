@@ -86,12 +86,12 @@ TEST_CASE("ParticleProperties", "[Particles]") {
   }
 
   SECTION("Energy threshold") {
-    //! by default energy thresholds are set to particle mass
-    CHECK(get_energy_threshold(Electron::code) / Electron::mass == Approx(1));
+    //! by default energy thresholds are set to zero
+    CHECK(get_kinetic_energy_threshold(Electron::code) == 0_GeV);
 
-    set_energy_threshold(Electron::code, 10_GeV);
-    CHECK_FALSE(get_energy_threshold(Code::Electron) == 1_GeV);
-    CHECK(get_energy_threshold(Code::Electron) == 10_GeV);
+    set_kinetic_energy_threshold(Electron::code, 10_GeV);
+    CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == 1_GeV);
+    CHECK(get_kinetic_energy_threshold(Code::Electron) == 10_GeV);
   }
 
   SECTION("Particle groups: electromagnetic") {

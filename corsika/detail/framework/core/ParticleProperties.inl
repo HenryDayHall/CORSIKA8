@@ -13,11 +13,12 @@
 
 namespace corsika {
 
-  inline HEPEnergyType constexpr get_energy_threshold(Code const p) {
+  inline HEPEnergyType constexpr get_kinetic_energy_threshold(Code const p) {
     return particle::detail::thresholds[static_cast<CodeIntType>(p)];
   }
 
-  inline void constexpr set_energy_threshold(Code const p, HEPEnergyType const val) {
+  inline void constexpr set_kinetic_energy_threshold(Code const p,
+                                                     HEPEnergyType const val) {
     particle::detail::thresholds[static_cast<CodeIntType>(p)] = val;
   }
 

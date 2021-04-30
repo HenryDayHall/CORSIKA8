@@ -62,9 +62,8 @@ namespace corsika::nuclear_stack {
 
     void setParticleData(super_type& p, altenative_particle_data_type const& v);
 
-    
     typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType>
-    particle_data_momentum_type;
+        particle_data_momentum_type;
 
     typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType,
                        unsigned short, unsigned short>
@@ -111,7 +110,7 @@ namespace corsika::nuclear_stack {
 
     /**
      * Overwrite normal getMomentum function with nuclear version
-     */ 
+     */
     MomentumVector getMomentum() const;
 
     /**
