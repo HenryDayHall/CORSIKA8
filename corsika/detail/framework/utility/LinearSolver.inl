@@ -29,7 +29,7 @@ namespace corsika {
       return {}; // no (b!=0), or infinite number (b==0) of solutions....
     }
 
-    return {{-b / a, 0}};
+    return {std::complex<double>(-b / a, 0)};
   }
 
 } // namespace corsika

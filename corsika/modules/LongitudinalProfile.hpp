@@ -40,8 +40,6 @@ namespace corsika {
     LongitudinalProfile(ShowerAxis const&,
                         GrammageType dX = 10_g / square(1_cm)); // profile binning);
 
-    ~LongitudinalProfile();
-
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(
         TParticle const&, TTrack const&,

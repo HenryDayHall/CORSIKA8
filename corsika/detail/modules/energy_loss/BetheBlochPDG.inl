@@ -184,8 +184,8 @@ namespace corsika {
         energy * 0.9,                            // either 10% relative loss max., or
         get_energy_threshold(vParticle.getPID()) // energy thresholds globally defined for
                                                  // individual particles
-            * 0.99999 // need to go 1% below global e-cut to assure removal in
-                      // ParticleCut. The 1% does not matter since at cut-time the entire
+            * 0.99999 // need to go slightly below global e-cut to assure removal in
+                      // ParticleCut. This does not matter since at cut-time the entire
                       // energy is removed.
     );
     auto const maxGrammage = (vParticle.getEnergy() - energy_lim) / dEdX;

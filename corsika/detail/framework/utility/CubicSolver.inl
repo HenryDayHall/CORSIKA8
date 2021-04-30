@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CubicSolver.hpp>
 #include <cmath>
 
@@ -16,13 +17,10 @@ namespace corsika {
   namespace andre {
 
     //---------------------------------------------------------------------------
-    // solve cubic equation x^3 + a*x^2 + b*x + c = 0
-    // x - array of size 3
-    // In case 3 real roots: => x[0], x[1], x[2], return 3
-    //         2 real roots: x[0], x[1],          return 2
-    //         1 real root : x[0], x[1] ± i*x[2], return 1
-    inline std::vector<double> solveP3(long double A, long double B, long double C,
-                                       long double D, double const epsilon) {
+    // solve cubic equation A x^3 + B*x^2 + C*x + D = 0
+    inline std::vector<double> solve_cubic_real_analytic(long double A, long double B,
+                                                         long double C, long double D,
+                                                         double const epsilon) {
 
       if (std::abs(A) < epsilon) { return solve_quadratic_real(B, C, epsilon); }
 
@@ -66,17 +64,17 @@ namespace corsika {
                 double(q * std::cos((t + 2 * M_PI) / 3) - a),
                 double(q * std::cos((t - 2 * M_PI) / 3) - a)};
       } else {
-        long double A = -std::pow(std::fabs(r) + std::sqrt(-disc), 1. / 3);
-        if (r < 0) A = -A;
-        long double B = (0 == A ? 0 : q / A);
+        long double term1 = -cbrt(std::fabs(r) + std::sqrt(-disc));
+        if (r < 0) term1 = -term1;
+        long double term2 = (0 == term1 ? 0 : q / term1);
 
         a /= 3;
-        long double test = 0.5 * std::sqrt(3.) * (A - B);
+        long double test = 0.5 * std::sqrt(3.) * (term1 - term2);
         if (std::fabs(test) < epsilon) {
-          return {double((A + B) - 1), double(-0.5 * (A + B) - a)};
+          return {double((term1 + term2) - 1), double(-0.5 * (term1 + term2) - a)};
         }
 
-        return {double((A + B) - a)};
+        return {double((term1 + term2) - a)};
       }
     }
   } // namespace andre
@@ -169,7 +167,7 @@ namespace corsika {
   }
 
   /**
-     Analytical approach. Not very stable in all conditions.
+   * Analytical approach. Not very stable in all conditions.
    */
   inline std::vector<double> solve_cubic_real_analytic(long double a, long double b,
                                                        long double c, long double d,
@@ -206,28 +204,31 @@ namespace corsika {
       double const b0 = b1 * z + c / a;
       std::vector<double> quad_check = solve_quadratic_real(1, b1, b0, epsilon);
       CORSIKA_LOG_TRACE("quad_check=[{}], f(z)={}", fmt::join(quad_check, ", "),
-                        std::pow(z, 3) * a + std::pow(z, 2) * b + std::pow(z, 1) * c + d);
+                        static_pow<3>(z) * a + static_pow<2>(z) * b + z * c + d);
     }
     CORSIKA_LOG_TRACE("cubic: solve_cubic_real returns={}", fmt::join(zs, ", "));
     return zs;
   }
 
-  inline long double cubic_function(long double x, long double a, long double b,
-                                    long double c, long double d) {
-    return std::pow(x, 3) * a + std::pow(x, 2) * b + x * c + d;
+  template <typename T> // T must be floating point type
+  inline T cubic_function(T x, T a, T b, T c, T d) {
+    T x2 = x * x;
+    return x2 * x * a + x2 * b + x * c + d;
   }
 
-  inline long double cubic_function_dfdx(long double x, long double a, long double b,
-                                         long double c) {
-    return std::pow(x, 2) * a * 3 + x * b * 2 + c;
+  template <typename T> // T must be floating point type
+  inline T cubic_function_dfdx(T x, T a, T b, T c) {
+    T x2 = x * x;
+    return x2 * a * 3 + x * b * 2 + c;
   }
 
-  inline long double cubic_function_d2fd2x(long double x, long double a, long double b) {
+  template <typename T> // T must be floating point type
+  inline T cubic_function_d2fd2x(T x, T a, T b) {
     return x * a * 6 + b * 2;
   }
 
   /**
-     Iterative approach.
+   * Iterative approach.
    */
 
   inline std::vector<double> solve_cubic_real(long double a, long double b, long double c,
@@ -270,7 +271,8 @@ namespace corsika {
         if (std::abs(f_prime_x1) < epsilon) {
           x1 -= std::cbrt(f_x1);
         } else {
-          x1 -= f_x1 * f_prime_x1 / (std::pow(f_prime_x1, 2) - 0.5 * f_x1 * f_prime2_x1);
+          x1 -=
+              f_x1 * f_prime_x1 / (static_pow<2>(f_prime_x1) - 0.5 * f_x1 * f_prime2_x1);
         }
         f_x1 = cubic_function(x1, a, b, c, d);
         CORSIKA_LOG_TRACE("niter={} x1={} f_x1={} f_prime={} f_prime2={} eps={}", niter,

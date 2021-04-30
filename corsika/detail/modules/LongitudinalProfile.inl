@@ -26,8 +26,6 @@ namespace corsika {
       , shower_axis_{shower_axis}
       , profiles_{static_cast<unsigned int>(shower_axis.getMaximumX() / dX_) + 1} {}
 
-  inline LongitudinalProfile::~LongitudinalProfile() {}
-
   template <typename TParticle, typename TTrack>
   inline ProcessReturn LongitudinalProfile::doContinuous(TParticle const& vP,
                                                          TTrack const& vTrack,

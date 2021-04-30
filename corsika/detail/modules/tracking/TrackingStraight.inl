@@ -29,7 +29,7 @@ namespace corsika::tracking_line {
     VelocityVector const initialVelocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
 
-    auto const initialPosition = particle.getPosition();
+    auto const& initialPosition = particle.getPosition();
     CORSIKA_LOG_DEBUG(
         "TrackingStraight pid: {}"
         " , E = {} GeV \n"
@@ -51,7 +51,7 @@ namespace corsika::tracking_line {
   template <typename TParticle>
   inline Intersections Tracking::intersect(TParticle const& particle,
                                            Sphere const& sphere) {
-    auto const position = particle.getPosition();
+    auto const& position = particle.getPosition();
     auto const delta = position - sphere.getCenter();
     auto const velocity = particle.getMomentum() / particle.getEnergy() * constants::c;
     auto const vSqNorm = velocity.getSquaredNorm();

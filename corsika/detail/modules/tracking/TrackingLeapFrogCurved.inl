@@ -59,7 +59,7 @@ namespace corsika {
     inline auto Tracking::getTrack(TParticle const& particle) {
       VelocityVector const initialVelocity = particle.getVelocity();
 
-      auto const position = particle.getPosition();
+      auto const& position = particle.getPosition();
       CORSIKA_LOG_DEBUG(
           "TrackingLeapfrog_Curved pid: {}"
           " , E = {} GeV \n"
@@ -254,7 +254,7 @@ namespace corsika {
         VelocityVector const velocity = particle.getVelocity();
         auto const absVelocity = velocity.getNorm();
         DirectionVector const direction = velocity.normalized();
-        Point const position = particle.getPosition();
+        Point const& position = particle.getPosition();
 
         auto const magneticfield =
             currentLogicalVolumeNode->getModelProperties().getMagneticField(position);

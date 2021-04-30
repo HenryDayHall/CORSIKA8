@@ -20,14 +20,14 @@
 #include <boost/multiprecision/cpp_bin_float.hpp>
 
 /**
-   @file CubicSolver.hpp
+ *   @file CubicSolver.hpp
  */
 
 namespace corsika {
 
   /**
-     @ingroup Utility
-     @{
+   *  @ingroup Utility
+   * @{
    */
 
   namespace andre {
@@ -57,21 +57,26 @@ namespace corsika {
                                                 double const epsilon = 1e-12);
 
   /**
-     @return a x^3 + b x^2 + c x + d
-  */
-  long double cubic_function(long double x, long double a, long double b, long double c,
-                             long double d);
+   * Cubic function.
+   *
+   * T must be a floating point type.
+   *
+   *  @return a x^3 + b x^2 + c x + d
+   */
+  template <typename T>
+  T cubic_function(T x, T a, T b, T c, T d);
 
   /**
      @return 3 a x^2 + 2 b x + c
   */
-  long double cubic_function_dfdx(long double x, long double a, long double b,
-                                  long double c);
+  template <typename T>
+  T cubic_function_dfdx(T x, T a, T b, T c);
 
   /**
      @return 6 a x + 2 b
   */
-  long double cubic_function_d2fd2x(long double x, long double a, long double b);
+  template <typename T>
+  T cubic_function_d2fd2x(T x, T a, T b);
 
   /**
      Iterative approach to solve: a x^3 + b x^2 + c x + d = 0

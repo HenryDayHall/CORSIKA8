@@ -255,7 +255,7 @@ TEST_CASE("TrackingLeapFrogCurved") {
     worldPtr->addChild(std::move(target));
 
     auto [stack, viewPtr] = setup::testing::setup_stack(PID, 0, 0, P0, targetPtr, cs);
-    { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
+    { [[maybe_unused]] auto& viewPtr_dum = viewPtr; } // prevent warning
     auto particle = stack->first();
     // Note: momentum in X-direction
     //       magnetic field in X-direction
@@ -264,8 +264,9 @@ TEST_CASE("TrackingLeapFrogCurved") {
     particle.setPosition(Point(cs, 0_m, 0_m, 0_m));
 
     auto [traj, nextVol] = tracking.getTrack(particle);
-    // this must be a "linear trajectory" with no curvature
+    { [[maybe_unused]] auto const& dummy = nextVol; } // prevent warning
 
+    // this must be a "linear trajectory" with no curvature
     CHECK(traj.getDirection(0).getComponents() == traj.getDirection(1).getComponents());
   }
 }

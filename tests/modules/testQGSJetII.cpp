@@ -216,6 +216,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Electron, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
           *csPtr);
+      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       GrammageType const length = model.getInteractionLength(particle);
@@ -225,7 +226,8 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Pi0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
           *csPtr);
-      setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
       CHECK(view.getSize() == Approx(18).margin(2)); // this is not physics validation
@@ -234,7 +236,8 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Rho0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
           *csPtr);
-      setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
       CHECK(view.getSize() == Approx(12).margin(8)); // this is not physics validation
@@ -243,7 +246,8 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Lambda0, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
           *csPtr);
-      setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
       CHECK(view.getSize() == Approx(15).margin(10)); // this is not physics validation
@@ -252,7 +256,8 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Lambda0Bar, 0, 0, 1000_GeV,
           (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-      setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
+      [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
       CHECK(view.getSize() == Approx(40).margin(20)); // this is not physics validation

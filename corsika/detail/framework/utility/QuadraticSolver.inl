@@ -6,6 +6,8 @@
  * the license.
  */
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
 namespace corsika {
 
   inline std::vector<std::complex<double>> solve_quadratic(long double a, long double b,
@@ -19,7 +21,7 @@ namespace corsika {
       return lin_result;
     }
 
-    long double const radicant = std::pow(b, 2) - a * c * 4;
+    long double const radicant = static_pow<2>(b) - a * c * 4;
 
     if (radicant < -epsilon) { // two complex solutions
       double const rpart = -b / 2 * a;
