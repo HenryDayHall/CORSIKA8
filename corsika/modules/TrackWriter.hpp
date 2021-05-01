@@ -20,6 +20,7 @@ namespace corsika {
 
   public:
     TrackWriter(std::string const& filename);
+    ~TrackWriter();
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(TParticle const&, TTrack const&, bool const limitFlag);

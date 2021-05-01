@@ -16,6 +16,7 @@ variables:
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
+  CTEST_OUTPUT_ON_FAILURE: 1
 
 
 #
@@ -251,6 +252,8 @@ test-clang-8:
   artifacts:
     when: always
     expire_in: 3 days
+    paths:
+      - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     reports:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
@@ -311,6 +314,7 @@ build_test-clang-8:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
+  allow_failure: true
   artifacts:
     when: always
     expire_in: 3 days
@@ -319,6 +323,7 @@ build_test-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -440,6 +445,7 @@ install-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # release for gcc
 release-full-u-18_04:

@@ -30,9 +30,14 @@ namespace corsika {
         << '\n';
   }
 
+  inline TrackWriter::~TrackWriter() { file_.close(); }
+
   template <typename TParticle, typename TTrack>
   inline ProcessReturn TrackWriter::doContinuous(TParticle const& vP, TTrack const& vT,
                                                  bool const) {
+
+    CORSIKA_LOG_DEBUG("TrackWriter");
+
     auto const start = vT.getPosition(0).getCoordinates();
     auto const delta = vT.getPosition(1).getCoordinates() - start;
     auto const pdg = static_cast<int>(get_PDG(vP.getPID()));

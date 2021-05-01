@@ -13,6 +13,10 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
+
+#include <boost/filesystem/path.hpp>
+
 #include <qgsjet-II-04.hpp>
 
 #include <string>
@@ -21,14 +25,8 @@ namespace corsika::qgsjetII {
 
   class Interaction : public corsika::InteractionProcess<Interaction> {
 
-    std::string data_path_;
-    int count_ = 0;
-    bool initialized_ = false;
-    QgsjetIIHadronType alternate_ =
-        QgsjetIIHadronType::PiPlusType; // for pi0, rho0 projectiles
-
   public:
-    Interaction(const std::string& dataPath = "");
+    Interaction(boost::filesystem::path dataPath = corsika_data("QGSJetII"));
     ~Interaction();
 
     bool wasInitialized() { return initialized_; }
@@ -53,6 +51,11 @@ namespace corsika::qgsjetII {
     void doInteraction(TSecondaryView&);
 
   private:
+    int count_ = 0;
+    bool initialized_ = false;
+    QgsjetIIHadronType alternate_ =
+        QgsjetIIHadronType::PiPlusType; // for pi0, rho0 projectiles
+
     corsika::default_prng_type& rng_ =
         corsika::RNGManager::getInstance().getRandomStream("qgsjet");
     const int maxMassNumber_ = 208;

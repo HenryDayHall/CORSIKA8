@@ -93,6 +93,10 @@ namespace corsika::nuclear_stack {
      */
     HEPMassType getMass() const;
     /**
+     * Overwrite normal getParticleCharge function with nuclear version
+     */
+    ElectricChargeType getCharge() const;
+    /**
      * Overwirte normal getChargeNumber function with nuclear version
      **/
     int16_t getChargeNumber() const;

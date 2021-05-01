@@ -115,6 +115,14 @@ namespace corsika::nuclear_stack {
 
   template <template <typename> class InnerParticleInterface,
             typename StackIteratorInterface>
+  inline ElectricChargeType NuclearParticleInterface<
+      InnerParticleInterface, StackIteratorInterface>::getCharge() const {
+    if (super_type::getPID() == Code::Nucleus) return getNuclearZ() * constants::e;
+    return super_type::getCharge();
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
   inline int16_t NuclearParticleInterface<
       InnerParticleInterface, StackIteratorInterface>::getChargeNumber() const {
     if (super_type::getPID() == Code::Nucleus) return getNuclearZ();

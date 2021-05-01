@@ -49,7 +49,8 @@ namespace corsika {
   /*
    * The default pattern for CORSIKA8 loggers.
    */
-  const std::string default_pattern{"[%n:%^%-8l%$] %v"};
+  const std::string minimal_pattern{"[%n:%^%-8l%$] %v"};
+  const std::string default_pattern{"[%n:%^%-8l%$(%s:%#)] %v"};
   const std::string source_pattern{"[%n:%^%-8l%$(%s:%!:%#)] %v"};
 
   /**
@@ -91,7 +92,6 @@ namespace corsika {
    */
   static inline std::shared_ptr<spdlog::logger> corsika_logger =
       get_logger("corsika", true);
-  // corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   // many of these free functions are special to the logging
   // infrastructure so we hide them in the corsika::logging namespace.
