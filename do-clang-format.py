@@ -10,6 +10,7 @@ import os
 import sys
 import re
 
+debug = False
 do_progress = False
 try:    
     from progress.bar import ChargingBar
@@ -77,6 +78,9 @@ else:
         filelist_clean.append(f)
     filelist = filelist_clean
 
+if debug:
+    print ("filelist: ", filelist)
+    
 cmd = "clang-format"
 if "CLANG_FORMAT" in os.environ:
   cmd = os.environ["CLANG_FORMAT"]
@@ -99,11 +103,18 @@ if do_progress:
     bar = ChargingBar('Processing', max=len(filelist))
 
 if args.apply:
+    changed = []
     for filename in filelist:        
         if bar: bar.next()
+        a = open(filename, "rb").read()
         subp.check_call(cmd.split() + ["-i", filename])
+        b = open(filename, "rb").read()
+        if a != b:
+            changed.append(filename)
     if bar: bar.finish()
-        
+    if debug:
+        print ("changed: ", changed)
+    
 else:
     # only print files which need formatting
     files_need_formatting = 0
