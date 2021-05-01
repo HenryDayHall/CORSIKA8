@@ -24,7 +24,11 @@ namespace corsika {
         : id_(id) {}
     void setIndex(int const id) { id_ = id; }
     int getIndex() const { return id_; }
-    bool operator==(ContinuousProcessIndex const v) const { return id_ == v.id_; }
+    bool operator==(ContinuousProcessIndex
+
+                    const v) const {
+      return id_ == v.id_;
+    }
     bool operator!=(ContinuousProcessIndex const v) const { return id_ != v.id_; }
 
   private:

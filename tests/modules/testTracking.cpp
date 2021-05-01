@@ -37,7 +37,7 @@ int sgn(T val) {
 /**
    @file testTracking.cpp
 
-  This is the unified and commond unit test for all Tracking algorithms:
+  This is the unified and common unit test for all Tracking algorithms:
 
   - tracking_leapfrog_curved::Tracking
   - tracking_leapfrog_straight::Tracking
@@ -175,7 +175,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
       particle.setNode(nextVol);
       particle.setPosition(traj2.getPosition(1));
       particle.setMomentum(traj2.getDirection(1) * particle.getMomentum().getNorm());
-      CORSIKA_LOG_DEBUG("pos={}, p={}, |p|={} |v|={}, delta-l={}, delta-t={}",
+      CORSIKA_LOG_TRACE("pos={}, p={}, |p|={} |v|={}, delta-l={}, delta-t={}",
                         particle.getPosition(), particle.getMomentum(),
                         particle.getMomentum().getNorm(),
                         particle.getVelocity().getNorm(), traj2.getLength(1),
