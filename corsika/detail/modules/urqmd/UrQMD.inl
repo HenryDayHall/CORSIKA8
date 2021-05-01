@@ -29,7 +29,7 @@
 
 namespace corsika::urqmd {
 
-  inline UrQMD::UrQMD(boost::filesystem::path const& xs_file) {
+  inline UrQMD::UrQMD(boost::filesystem::path xs_file) {
     readXSFile(xs_file);
     ::urqmd::iniurqmdc8_();
   }
@@ -394,7 +394,7 @@ namespace corsika::urqmd {
     return mapPDGToUrQMD.at(static_cast<int>(get_PDG(code)));
   }
 
-  inline void UrQMD::readXSFile(boost::filesystem::path const& filename) {
+  inline void UrQMD::readXSFile(boost::filesystem::path const filename) {
     boost::filesystem::ifstream file(filename, std::ios::in);
 
     if (!file.is_open()) {
@@ -429,6 +429,7 @@ namespace corsika::urqmd {
         std::getline(file, line);
       }
     }
+    file.close();
   }
 
 } // namespace corsika::urqmd
