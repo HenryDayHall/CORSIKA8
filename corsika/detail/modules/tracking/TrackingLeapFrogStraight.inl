@@ -29,15 +29,17 @@ namespace corsika {
           particle.getMomentum() / particle.getEnergy() * constants::c;
 
       Point const initialPosition = particle.getPosition();
+
       CORSIKA_LOG_DEBUG(
-          "TrackingB pid: {}"
-          " , E = {} GeV",
-          particle.getPID(), particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("TrackingB pos: {}", initialPosition.getCoordinates());
-      CORSIKA_LOG_DEBUG("TrackingB   E: {} GeV", particle.getEnergy() / 1_GeV);
-      CORSIKA_LOG_DEBUG("TrackingB   p: {} GeV",
-                        particle.getMomentum().getComponents() / 1_GeV);
-      CORSIKA_LOG_DEBUG("TrackingB   v: {} ", initialVelocity.getComponents());
+          "TrackingLeapFrogStraight pid: {}"
+          " , E = {} GeV \n"
+          "\tTracking pos: {} \n"
+          "\tTracking   p: {} GeV \n"
+          "\tTracking   v: {} ",
+          particle.getPID(), particle.getEnergy() / 1_GeV,
+          initialPosition.getCoordinates(),
+          particle.getMomentum().getComponents() / 1_GeV,
+          initialVelocity.getComponents());
 
       typedef decltype(particle.getNode()) node_type;
       node_type const volumeNode = particle.getNode();
@@ -50,14 +52,13 @@ namespace corsika {
       }
 
       // charge of the particle, and magnetic field
-      const int chargeNumber = particle.getChargeNumber();
+      auto const charge = particle.getCharge();
       auto magneticfield =
           volumeNode->getModelProperties().getMagneticField(initialPosition);
       auto const magnitudeB = magneticfield.getNorm();
-      CORSIKA_LOG_DEBUG("field={} uT, chargeNumber={}, magnitudeB={} uT",
-                        magneticfield.getComponents() / 1_uT, chargeNumber,
-                        magnitudeB / 1_T);
-      bool const no_deflection = chargeNumber == 0 || magnitudeB == 0_T;
+      CORSIKA_LOG_DEBUG("field={} uT, charge={}, magnitudeB={} uT",
+                        magneticfield.getComponents() / 1_uT, charge, magnitudeB / 1_T);
+      bool const no_deflection = (charge == 0 * constants::e) || magnitudeB == 0_T;
 
       // check, where the first halve-step direction has geometric intersections
       auto const [initialTrack, initialTrackNextVolume] =
@@ -75,26 +76,26 @@ namespace corsika {
         return std::make_tuple(initialTrack, initialTrackNextVolume);
       }
 
-      HEPMomentumType const pAlongB_delta =
+      HEPMomentumType const p_perp =
           (particle.getMomentum() -
            particle.getMomentum().getParallelProjectionOnto(magneticfield))
               .getNorm();
 
-      if (pAlongB_delta == 0_GeV) {
+      if (p_perp == 0_GeV) {
         // particle travel along, parallel to magnetic field. Rg is
         // "0", but for purpose of step limit we return infinity here.
-        CORSIKA_LOG_TRACE("pAlongB_delta is 0_GeV --> parallel");
+        CORSIKA_LOG_TRACE("p_perp is 0_GeV --> parallel");
         return std::make_tuple(initialTrack, initialTrackNextVolume);
       }
 
-      LengthType const gyroradius =
-          (pAlongB_delta * 1_V / (constants::c * abs(chargeNumber) * magnitudeB * 1_eV));
+      LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(p_perp) *
+                                     constants::c / (abs(charge) * magnitudeB));
 
       // we need to limit maximum step-length since we absolutely
       // need to follow strongly curved trajectories segment-wise,
       // at least if we don't employ concepts as "Helix
       // Trajectories" or similar
-      double const maxRadians = 0.01;
+      double const maxRadians = 0.001;
       LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
       CORSIKA_LOG_DEBUG("gyroradius {}, Steplimit: {}", gyroradius, steplimit);
 
@@ -111,9 +112,9 @@ namespace corsika {
                         firstHalveSteplength, steplimit, initialTrackLength);
       // perform the first halve-step
       Point const position_mid = initialPosition + direction * firstHalveSteplength;
-      auto const k =
-          chargeNumber * (constants::c * 1_eV / 1_V) / particle.getMomentum().getNorm();
-      auto const new_direction =
+      auto const k = charge / (constants::c * convert_HEP_to_SI<MassType::dimension_type>(
+                                                  particle.getMomentum().getNorm()));
+      DirectionVector const new_direction =
           direction + direction.cross(magneticfield) * firstHalveSteplength * 2 * k;
       auto const new_direction_norm = new_direction.getNorm(); // by design this is >1
       CORSIKA_LOG_DEBUG(

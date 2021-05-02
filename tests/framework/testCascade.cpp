@@ -139,7 +139,6 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
   HEPEnergyType E0 = 100_GeV;

@@ -14,7 +14,6 @@ using namespace corsika;
 
 TEST_CASE("NullModel", "[processes]") {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
   SECTION("interface") {

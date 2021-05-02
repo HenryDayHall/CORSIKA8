@@ -19,7 +19,6 @@ using namespace corsika;
 TEST_CASE("PhysicalUnits", "[Units]") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   SECTION("Consistency") {
     CHECK(1_m / 1_m == Approx(1));

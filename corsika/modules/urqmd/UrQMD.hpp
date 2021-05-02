@@ -27,7 +27,7 @@ namespace corsika::urqmd {
 
   class UrQMD : public InteractionProcess<UrQMD> {
   public:
-    UrQMD(boost::filesystem::path const& path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"));
+    UrQMD(boost::filesystem::path const path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"));
 
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&) const;
@@ -46,7 +46,7 @@ namespace corsika::urqmd {
 
   private:
     static CrossSectionType getCrossSection(Code, Code, HEPEnergyType, int);
-    void readXSFile(boost::filesystem::path const&);
+    void readXSFile(boost::filesystem::path);
 
     // data members
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("urqmd");

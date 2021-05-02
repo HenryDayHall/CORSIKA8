@@ -221,7 +221,7 @@ namespace corsika {
                               IndexProcess2>::doStack(TStack& stack) {
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
-      if constexpr (std::is_base_of_v<StackProcess<process1_type>, process1_type> ||
+      if constexpr (is_stack_process_v<process1_type> ||
                     (process1_type::is_process_sequence &&
                      !process1_type::is_switch_process_sequence)) {
 
@@ -237,7 +237,7 @@ namespace corsika {
     }
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
-      if constexpr (std::is_base_of_v<StackProcess<process2_type>, process2_type> ||
+      if constexpr (is_stack_process_v<process2_type> ||
                     (process2_type::is_process_sequence &&
                      !process2_type::is_switch_process_sequence)) {
 
@@ -316,14 +316,14 @@ namespace corsika {
 
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
-      if constexpr (std::is_base_of_v<InteractionProcess<process1_type>, process1_type> ||
+      if constexpr (is_interaction_process_v<process1_type> ||
                     process1_type::is_process_sequence) {
         tot += A_.getInverseInteractionLength(particle);
       }
     }
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
-      if constexpr (std::is_base_of_v<InteractionProcess<process2_type>, process2_type> ||
+      if constexpr (is_interaction_process_v<process2_type> ||
                     process2_type::is_process_sequence) {
         tot += B_.getInverseInteractionLength(particle);
       }
@@ -350,9 +350,7 @@ namespace corsika {
             A_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
         // if A_ did succeed, stop routine. Not checking other static branch B_.
         if (ret != ProcessReturn::Ok) { return ret; }
-      } else if constexpr (is_process_v<process1_type> &&
-                           std::is_base_of_v<InteractionProcess<process1_type>,
-                                             process1_type>) {
+      } else if constexpr (is_interaction_process_v<process1_type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
         // check if we should execute THIS process and then EXIT
@@ -376,9 +374,7 @@ namespace corsika {
       if constexpr (process2_type::is_process_sequence) {
         // if B_ is a process sequence --> check inside
         return B_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
-      } else if constexpr (is_process_v<process2_type> &&
-                           std::is_base_of_v<InteractionProcess<process2_type>,
-                                             process2_type>) {
+      } else if constexpr (is_interaction_process_v<process2_type>) {
         // if this is not a ContinuousProcess --> evaluate probability
         lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
         // soon as SecondaryView::parent() is migrated!

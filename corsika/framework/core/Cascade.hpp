@@ -131,8 +131,9 @@ namespace corsika {
      */
     void step(Particle& vParticle);
 
-    ProcessReturn decay(TStackView& view);
-    ProcessReturn interaction(TStackView& view);
+    ProcessReturn decay(TStackView& view, InverseTimeType initial_inv_decay_time);
+    ProcessReturn interaction(TStackView& view,
+                              InverseGrammageType initial_inv_int_length);
     void setEventType(TStackView& view, history::EventType);
 
     // data members

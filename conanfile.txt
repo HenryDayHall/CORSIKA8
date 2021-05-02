@@ -3,8 +3,9 @@ readline/8.0 # this is only needed to fix a missing dependency in "bison" which 
 spdlog/1.8.5
 catch2/2.13.3
 eigen/3.3.8
-boost/1.75.0
+boost/1.76.0
 zlib/1.2.11
+proposal/7.0.2
 yaml-cpp/0.6.3
 arrow/2.0.0
 
@@ -25,4 +26,3 @@ arrow:with_grpc=False
 arrow:with_utf8proc=False
 arrow:with_zstd=False
 arrow:with_bz2=False
-

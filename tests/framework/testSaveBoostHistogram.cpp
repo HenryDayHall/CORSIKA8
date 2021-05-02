@@ -16,7 +16,6 @@ namespace bh = boost::histogram;
 
 TEST_CASE("SaveHistogram") {
 
-  corsika::corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   corsika::logging::set_level(corsika::logging::level::info);
 
   std::mt19937 rng;

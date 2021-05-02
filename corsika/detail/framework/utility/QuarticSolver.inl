@@ -8,128 +8,154 @@
 
 #pragma once
 
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/utility/CubicSolver.hpp>
 #include <cmath>
 
-namespace corsika::quartic_solver {
+namespace corsika {
 
-  //---------------------------------------------------------------------------
-  // solve cubic equation x^3 + a*x^2 + b*x + c = 0
-  // x - array of size 3
-  // In case 3 real roots: => x[0], x[1], x[2], return 3
-  //         2 real roots: x[0], x[1],          return 2
-  //         1 real root : x[0], x[1] ± i*x[2], return 1
-  inline unsigned int solveP3(double* x, double a, double b, double c) {
-    double a2 = a * a;
-    double q = (a2 - 3 * b) / 9;
-    double r = (a * (2 * a2 - 9 * b) + 27 * c) / 54;
-    double r2 = r * r;
-    double q3 = q * q * q;
-    double A, B;
-    if (r2 < q3) {
-      double t = r / sqrt(q3);
-      if (t < -1) t = -1;
-      if (t > 1) t = 1;
-      t = acos(t);
-      a /= 3;
-      q = -2 * sqrt(q);
-      x[0] = q * cos(t / 3) - a;
-      x[1] = q * cos((t + M_2PI) / 3) - a;
-      x[2] = q * cos((t - M_2PI) / 3) - a;
-      return 3;
-    } else {
-      A = -pow(fabs(r) + sqrt(r2 - q3), 1. / 3);
-      if (r < 0) A = -A;
-      B = (0 == A ? 0 : q / A);
+  namespace andre {
 
-      a /= 3;
-      x[0] = (A + B) - a;
-      x[1] = -0.5 * (A + B) - a;
-      x[2] = 0.5 * sqrt(3.) * (A - B);
-      if (fabs(x[2]) < eps) {
-        x[2] = x[1];
-        return 2;
+    inline std::vector<double> solve_quartic_real(long double a, long double b,
+                                                  long double c, long double d,
+                                                  long double e, double const epsilon) {
+
+      if (std::abs(a) < epsilon) { return solve_cubic_real(b, c, d, e, epsilon); }
+
+      b /= a;
+      c /= a;
+      d /= a;
+      e /= a;
+
+      long double a3 = -c;
+      long double b3 = b * d - 4. * e;
+      long double c3 = -b * b * e - d * d + 4. * c * e;
+
+      // cubic resolvent
+      // y^3 − b*y^2 + (ac−4d)*y − a^2*d−c^2+4*b*d = 0
+
+      std::vector<double> x3 = solve_cubic_real(1, a3, b3, c3, epsilon);
+      long double y = x3[0]; // there is always at least one solution
+      // The essence - choosing Y with maximal absolute value.
+      if (x3.size() == 3) {
+        if (fabs(x3[1]) > fabs(y)) y = x3[1];
+        if (fabs(x3[2]) > fabs(y)) y = x3[2];
       }
 
-      return 1;
-    }
-  }
+      long double q1, q2, p1, p2;
+      // h1+h2 = y && h1*h2 = e  <=>  h^2 -y*h + e = 0    (h === q)
 
-  //---------------------------------------------------------------------------
-  // solve quartic equation x^4 + a*x^3 + b*x^2 + c*x + d
-  // Attention - this function returns dynamically allocated array. It has to be released
-  // afterwards.
-  inline DComplex* solve_quartic(double a, double b, double c, double d) {
-    double a3 = -b;
-    double b3 = a * c - 4. * d;
-    double c3 = -a * a * d - c * c + 4. * b * d;
-
-    // cubic resolvent
-    // y^3 − b*y^2 + (ac−4d)*y − a^2*d−c^2+4*b*d = 0
-
-    double x3[3];
-    unsigned int iZeroes = solveP3(x3, a3, b3, c3);
-
-    double q1, q2, p1, p2, D, sqD, y;
-
-    y = x3[0];
-    // The essence - choosing Y with maximal absolute value.
-    if (iZeroes != 1) {
-      if (fabs(x3[1]) > fabs(y)) y = x3[1];
-      if (fabs(x3[2]) > fabs(y)) y = x3[2];
-    }
-
-    // h1+h2 = y && h1*h2 = d  <=>  h^2 -y*h + d = 0    (h === q)
-
-    D = y * y - 4 * d;
-    if (fabs(D) < eps) // in other words - D==0
-    {
-      q1 = q2 = y * 0.5;
-      // g1+g2 = a && g1+g2 = b-y   <=>   g^2 - a*g + b-y = 0    (p === g)
-      D = a * a - 4 * (b - y);
-      if (fabs(D) < eps) // in other words - D==0
-        p1 = p2 = a * 0.5;
-
-      else {
-        sqD = sqrt(D);
-        p1 = (a + sqD) * 0.5;
-        p2 = (a - sqD) * 0.5;
+      long double Det = y * y - 4 * e;
+      CORSIKA_LOG_TRACE("Det={}", Det);
+      if (fabs(Det) < epsilon) // in other words - D==0
+      {
+        q1 = q2 = y * 0.5;
+        // g1+g2 = b && g1+g2 = c-y   <=>   g^2 - b*g + c-y = 0    (p === g)
+        Det = b * b - 4 * (c - y);
+        if (fabs(Det) < epsilon) { // in other words - D==0
+          p1 = p2 = b * 0.5;
+        } else {
+          if (Det < 0) return {};
+          long double sqDet = sqrt(Det);
+          p1 = (b + sqDet) * 0.5;
+          p2 = (b - sqDet) * 0.5;
+        }
+      } else {
+        if (Det < 0) return {};
+        long double sqDet1 = sqrt(Det);
+        q1 = (y + sqDet1) * 0.5;
+        q2 = (y - sqDet1) * 0.5;
+        // g1+g2 = b && g1*h2 + g2*h1 = c       ( && g === p )  Krammer
+        p1 = (b * q1 - d) / (q1 - q2);
+        p2 = (d - b * q2) / (q1 - q2);
       }
-    } else {
-      sqD = sqrt(D);
-      q1 = (y + sqD) * 0.5;
-      q2 = (y - sqD) * 0.5;
-      // g1+g2 = a && g1*h2 + g2*h1 = c       ( && g === p )  Krammer
-      p1 = (a * q1 - c) / (q1 - q2);
-      p2 = (c - a * q2) / (q1 - q2);
+
+      // solving quadratic eqs.  x^2 + p1*x + q1 = 0
+      //                         x^2 + p2*x + q2 = 0
+
+      std::vector<double> quad1 = solve_quadratic_real(1, p1, q1);
+      std::vector<double> quad2 = solve_quadratic_real(1, p2, q2);
+      if (quad2.size() > 0) {
+        for (auto val : quad2) quad1.push_back(val);
+      }
+      return quad1;
     }
+  } // namespace andre
 
-    DComplex* retval = new DComplex[4];
+  inline std::vector<double> solve_quartic_depressed_real(long double p, long double q,
+                                                          long double r,
+                                                          double const epsilon) {
 
-    // solving quadratic eq. - x^2 + p1*x + q1 = 0
-    D = p1 * p1 - 4 * q1;
-    if (D < 0.0) {
-      retval[0].real(-p1 * 0.5);
-      retval[0].imag(sqrt(-D) * 0.5);
-      retval[1] = std::conj(retval[0]);
-    } else {
-      sqD = sqrt(D);
-      retval[0].real((-p1 + sqD) * 0.5);
-      retval[1].real((-p1 - sqD) * 0.5);
+    CORSIKA_LOG_TRACE("quartic-depressed: p={:f}, q={:f}, r={:f},  epsilon={}", p, q, r,
+                      epsilon);
+
+    long double const p2 = static_pow<2>(p);
+    long double const q2 = static_pow<2>(q);
+
+    std::vector<double> const resolve_cubic =
+        solve_cubic_real(1, p, p2 / 4 - r, -q2 / 8, epsilon);
+
+    CORSIKA_LOG_TRACE("resolve_cubic: N={}, m=[{}]", resolve_cubic.size(),
+                      fmt::join(resolve_cubic, ", "));
+
+    if (!resolve_cubic.size()) return {};
+
+    long double m = 0;
+    for (auto const& v : resolve_cubic) {
+      CORSIKA_LOG_TRACE("check pol3(v)={}", (static_pow<3>(v) + static_pow<2>(v) * p +
+                                             v * (p2 / 4 - r) - q2 / 8));
+      if (std::abs(v) > epsilon && std::abs(v) > m) { m = v; }
     }
+    CORSIKA_LOG_TRACE("check m={}", m);
+    if (m == 0) { return {0}; }
 
-    // solving quadratic eq. - x^2 + p2*x + q2 = 0
-    D = p2 * p2 - 4 * q2;
-    if (D < 0.0) {
-      retval[2].real(-p2 * 0.5);
-      retval[2].imag(sqrt(-D) * 0.5);
-      retval[3] = std::conj(retval[2]);
-    } else {
-      sqD = sqrt(D);
-      retval[2].real((-p2 + sqD) * 0.5);
-      retval[3].real((-p2 - sqD) * 0.5);
-    }
+    CORSIKA_LOG_TRACE("check m={}", m);
 
-    return retval;
+    long double const quad_term1 = p / 2 + m;
+    long double const quad_term2 = std::sqrt(2 * m);
+    long double const quad_term3 = q / (2 * quad_term2);
+
+    std::vector<double> z_quad1 =
+        solve_quadratic_real(1, quad_term2, quad_term1 - quad_term3, epsilon);
+    std::vector<double> z_quad2 =
+        solve_quadratic_real(1, -quad_term2, quad_term1 + quad_term3, epsilon);
+    for (auto const& z : z_quad2) z_quad1.push_back(z);
+    return z_quad1;
   }
 
-} // namespace corsika::quartic_solver
+  inline std::vector<double> solve_quartic_real(long double a, long double b,
+                                                long double c, long double d,
+                                                long double e, double const epsilon) {
+
+    CORSIKA_LOG_TRACE("quartic: a={:f}, b={:f}, c={:f}, d={:f}, e={:f}, epsilon={}", a, b,
+                      c, d, e, epsilon);
+
+    if (std::abs(a) < epsilon) { // this is just a quadratic
+      return solve_cubic_real(b, c, d, e, epsilon);
+    }
+
+    if ((std::abs(a - 1) < epsilon) &&
+        (std::abs(b) < epsilon)) { // this is a depressed quartic
+      return solve_quartic_depressed_real(c, d, e, epsilon);
+    }
+
+    long double const b2 = static_pow<2>(b);
+    long double const b3 = static_pow<3>(b);
+    long double const b4 = static_pow<4>(b);
+    long double const a2 = static_pow<2>(a);
+    long double const a3 = static_pow<3>(a);
+    long double const a4 = static_pow<4>(a);
+
+    long double const p = (c * a * 8 - b2 * 3) / (a4 * 8);
+    long double const q = (b3 - b * c * a * 4 + d * a2 * 8) / (a4 * 8);
+    long double const r =
+        (-b4 * 3 + e * a3 * 256 - b * d * a2 * 64 + b2 * c * a * 16) / (a4 * 256);
+
+    std::vector<double> zs = solve_quartic_depressed_real(p, q, r, epsilon);
+    CORSIKA_LOG_TRACE("quartic: solve_depressed={}, b/4a={}", fmt::join(zs, ", "),
+                      b / (4 * a));
+    for (auto& z : zs) { z -= b / (4 * a); }
+    CORSIKA_LOG_TRACE("quartic: solve_quartic_real returns={}", fmt::join(zs, ", "));
+    return zs;
+  }
+} // namespace corsika

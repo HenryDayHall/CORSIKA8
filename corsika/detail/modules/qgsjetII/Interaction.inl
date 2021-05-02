@@ -27,20 +27,14 @@
 
 namespace corsika::qgsjetII {
 
-  inline Interaction::Interaction(const std::string& dataPath)
-      : data_path_(dataPath) {
-    if (dataPath == "") {
-      if (std::getenv("CORSIKA_DATA")) {
-        data_path_ = std::string(std::getenv("CORSIKA_DATA")) + "/QGSJetII/";
-        CORSIKA_LOG_DEBUG("Searching for QGSJetII data tables in {}", data_path_);
-      }
-    }
+  inline Interaction::Interaction(boost::filesystem::path dataPath) {
+    CORSIKA_LOG_DEBUG("Reading QGSJetII data tables from {}", dataPath);
 
     // initialize QgsjetII
     static bool initialized = false;
     if (!initialized) {
       qgset_();
-      datadir DIR(data_path_);
+      datadir DIR(dataPath.string() + "/");
       qgaini_(DIR.data);
       initialized = true;
     }

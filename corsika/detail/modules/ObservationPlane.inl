@@ -29,7 +29,18 @@ namespace corsika {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
-    if (!stepLimit) { return ProcessReturn::Ok; }
+    if (!stepLimit) {
+#ifdef DEBUG
+      if (deleteOnHit_) {
+        LengthType const check =
+            (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
+        if (check < 0_m) {
+          CORSIKA_LOG_DEBUG("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
+        }
+      }
+#endif
+      return ProcessReturn::Ok;
+    }
 
     HEPEnergyType const energy = particle.getEnergy();
     Point const pointOfIntersection = particle.getPosition();
@@ -38,6 +49,8 @@ namespace corsika {
     // add our particles to the output file stream
     this->write(particle.getPID(), energy, displacement.dot(xAxis_),
                 displacement.dot(yAxis_));
+
+    CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
     if (deleteOnHit_) {
       count_ground_++;
@@ -53,13 +66,14 @@ namespace corsika {
       corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
 
+    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
+                      particle.getPosition(), particle.getDirection(), plane_.asString());
+
     Intersections const intersection =
         setup::Tracking::intersect<corsika::setup::Stack::particle_type>(particle,
                                                                          plane_);
     TimeType const timeOfIntersection = intersection.getEntry();
-    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}, timeOfIntersection={}",
-                      particle.asString(), particle.getPosition(),
-                      particle.getDirection(), plane_.asString(), timeOfIntersection);
+    CORSIKA_LOG_TRACE("timeOfIntersection={}", timeOfIntersection);
     if (timeOfIntersection < TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }

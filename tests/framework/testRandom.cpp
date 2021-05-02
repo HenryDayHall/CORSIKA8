@@ -55,7 +55,6 @@ SCENARIO("random-number streams can be registered and retrieved") {
 TEST_CASE("UniformRealDistribution") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   std::mt19937 rng;
 
@@ -101,7 +100,6 @@ TEST_CASE("UniformRealDistribution") {
 TEST_CASE("ExponentialDistribution") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   std::mt19937 rng;
 
