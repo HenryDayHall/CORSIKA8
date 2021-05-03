@@ -25,7 +25,7 @@
 
 using namespace corsika;
 
-TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
+TEST_CASE("ObservationPlane", "interface") {
 
   logging::set_level(logging::level::trace);
 
@@ -62,11 +62,28 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
     CHECK(length / 10_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
+
+    // particle does not reach plane:
+    {
+      setup::Trajectory no_hit_track =
+          setup::testing::make_track<setup::Trajectory>(line, 1_nm / constants::c);
+      LengthType const no_hit = obs.getMaxStepLength(particle, no_hit_track);
+      CHECK(no_hit == std::numeric_limits<double>::infinity() * 1_m);
+    }
+
+    // particle past plane:
+    {
+      particle.setPosition({cs, {0_m, 0_m, -1_m}});
+      setup::Trajectory no_hit_track =
+          setup::testing::make_track<setup::Trajectory>(line, 1_nm / constants::c);
+      LengthType const no_hit = obs.getMaxStepLength(particle, no_hit_track);
+      CHECK(no_hit == std::numeric_limits<double>::infinity() * 1_m);
+    }
   }
 
   SECTION("transparent plane") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}));
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, false);
@@ -91,5 +108,12 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
     CHECK(length / 10_m == Approx(1.1375).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
+  }
+
+  SECTION("output") {
+    Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
+    auto const cfg = obs.getConfig();
+    CHECK(cfg["type"]);
   }
 }
