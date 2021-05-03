@@ -3,8 +3,8 @@ set (test_output_sources
   testOutputManager.cpp
   testDummyOutputManager.cpp
   testParquetStreamer.cpp
-  #testWriterObservationPlane.cpp
-  #testWriterTrack.cpp
+  testWriterObservationPlane.cpp
+  testWriterTracks.cpp
   )
 
 CORSIKA_ADD_TEST (testOutput SOURCES ${test_output_sources})

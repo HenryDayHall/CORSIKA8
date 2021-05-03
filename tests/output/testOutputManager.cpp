@@ -10,10 +10,24 @@
 
 #include <boost/filesystem.hpp>
 
-#include <corsika/output/OutputManager.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
+#include <corsika/output/OutputManager.hpp>
+#include <corsika/output/NoOutput.hpp>
+
 using namespace corsika;
+
+struct DummyNoOutput : public NoOutput {
+  void check() {
+    NoOutput::startOfLibrary("./");
+    NoOutput::startOfShower();
+    NoOutput::endOfShower();
+    NoOutput::endOfLibrary();
+    NoOutput::getConfig();
+    NoOutput::getSummary();
+  }
+  void checkWrite() { NoOutput::write(Code::Unknown, 1_eV, 1_m, 1_m); }
+};
 
 struct DummyOutput : public BaseOutput {
 
@@ -26,7 +40,10 @@ struct DummyOutput : public BaseOutput {
 
   void startOfLibrary(boost::filesystem::path const&) { startLibrary_ = true; }
 
-  void startOfShower() { startShower_ = true; }
+  void startOfShower() {
+    BaseOutput::startOfShower();
+    startShower_ = true;
+  }
 
   void endOfShower() { endShower_ = true; }
 
@@ -39,7 +56,7 @@ struct DummyOutput : public BaseOutput {
 
   YAML::Node getSummary() {
     isSummary_ = true;
-    return YAML::Node();
+    return BaseOutput::getSummary();
   }
 };
 
@@ -86,6 +103,32 @@ TEST_CASE("OutputManager") {
     CHECK(test.isSummary_);
     test.isSummary_ = false;
     test.endLibrary_ = false;
+
+    CHECK(boost::filesystem::exists("./out_test/check/test/summary.yaml"));
+  }
+
+  SECTION("auto-write") {
+
+    // preparation
+    if (boost::filesystem::exists("./out_test")) {
+      boost::filesystem::remove_all("./out_test");
+    }
+
+    // output manager performs nothing, no action, just interface
+    OutputManager* output = new OutputManager("check", "./out_test");
+
+    CHECK(boost::filesystem::is_directory("./out_test/check"));
+
+    DummyOutput test;
+    output->add("test", test);
+    output->startOfLibrary();
+    output->startOfShower();
+
+    // check support for closing automatically
+    delete output;
+    output = 0;
+
+    CHECK(boost::filesystem::exists("./out_test/check/test/summary.yaml"));
   }
 
   SECTION("failures") {
@@ -128,5 +171,14 @@ TEST_CASE("OutputManager") {
     // CHECK_THROWS(output.endOfShower());
     // CHECK_THROWS(output.startOfShower());
     // CHECK_THROWS(output.endOfLibrary());
+  }
+
+  SECTION("NoOutput") {
+    // this is one of the classes where testing is a bit useless, but we can at least make
+    // sure the interface exists.
+    DummyNoOutput nothing;
+
+    nothing.check();
+    nothing.checkWrite();
   }
 }

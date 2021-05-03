@@ -7,6 +7,9 @@
  */
 #pragma once
 
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
 namespace corsika {
 
   /**

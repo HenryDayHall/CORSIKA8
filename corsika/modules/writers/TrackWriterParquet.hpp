@@ -12,12 +12,11 @@
 #include <corsika/output/ParquetStreamer.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/geometry/QuantityVector.hpp>
 
 namespace corsika {
 
   class TrackWriterParquet : public BaseOutput {
-
-    ParquetStreamer output_; ///< The primary output file.
 
   public:
     /**
@@ -52,6 +51,9 @@ namespace corsika {
     void write(Code const& pid, units::si::HEPEnergyType const& energy,
                QuantityVector<length_d> const& start,
                QuantityVector<length_d> const& end);
+
+  private:
+    ParquetStreamer output_; ///< The primary output file.
 
   }; // class TrackWriterParquet
 
