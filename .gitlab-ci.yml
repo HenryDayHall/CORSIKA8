@@ -553,7 +553,7 @@ sanity:
   before_script:
     - apt-get update && apt-get install -y python3-pip
   script:
-    - cd ${CI_PROJECT_DIR}/Python  # change into the Python directory
+    - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
     - pip3 install --user -e '.[test]'  # install the package + test deps
     - python3 --version
     - python3 -m mypy corsika
