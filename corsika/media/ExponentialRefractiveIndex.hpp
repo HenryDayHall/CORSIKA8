@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <bits/stdc++.h>
 #include <corsika/media/IRefractiveIndexModel.hpp>
 
 namespace corsika {
