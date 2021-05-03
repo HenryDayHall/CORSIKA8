@@ -28,7 +28,6 @@ using namespace corsika;
 TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
   logging::set_level(logging::level::trace);
-  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;

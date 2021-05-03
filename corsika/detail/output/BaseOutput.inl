@@ -9,7 +9,7 @@
 
 namespace corsika {
 
-  BaseOutput::BaseOutput()
+  inline BaseOutput::BaseOutput()
       : shower_(0) {}
 
 } // namespace corsika

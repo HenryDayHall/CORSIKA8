@@ -9,19 +9,19 @@
 
 namespace corsika {
 
-  DummyOutputManager::DummyOutputManager() {}
+  inline DummyOutputManager::DummyOutputManager() {}
 
-  DummyOutputManager::~DummyOutputManager() {}
+  inline DummyOutputManager::~DummyOutputManager() {}
 
   template <typename TOutput>
-  void DummyOutputManager::add(std::string const& name, TOutput& output) {}
+  inline void DummyOutputManager::add(std::string const&, TOutput&) {}
 
-  void DummyOutputManager::startOfLibrary() {}
+  inline void DummyOutputManager::startOfLibrary() {}
 
-  void DummyOutputManager::startOfShower() {}
+  inline void DummyOutputManager::startOfShower() {}
 
-  void DummyOutputManager::endOfShower() {}
+  inline void DummyOutputManager::endOfShower() {}
 
-  void DummyOutputManager::endOfLibrary() {}
+  inline void DummyOutputManager::endOfLibrary() {}
 
 } // namespace corsika

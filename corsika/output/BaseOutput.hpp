@@ -51,20 +51,21 @@ namespace corsika {
     /**
      * Get any summary information for the entire library.
      */
-    virtual YAML::Node getSummary() { return YAML::Node(); };
+    virtual YAML::Node getSummary() { return YAML::Node(); }
 
     /**
      * Flag to indicate readiness.
      */
     bool isInit() const { return is_init_; }
 
+  protected:
     /**
      * Set init flag.
      */
     void setInit(bool const v) { is_init_ = v; }
 
-  protected:
     int shower_{0}; ///< The current event number.
+
   private:
     bool is_init_{false}; ///< flag to indicate readiness
   };

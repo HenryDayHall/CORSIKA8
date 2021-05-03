@@ -27,13 +27,6 @@ namespace corsika {
    */
   class ParquetStreamer {
 
-  protected:
-    parquet::WriterProperties::Builder builder_; ///< The writer properties builder.
-    parquet::schema::NodeVector fields_;         ///< The fields in this file.
-    std::shared_ptr<parquet::schema::GroupNode> schema_;   ///< The schema for this file.
-    std::shared_ptr<arrow::io::FileOutputStream> outfile_; ///< The output file.
-    std::shared_ptr<parquet::StreamWriter> writer_; ///< The stream writer to 'outfile'
-
   public:
     /**
      * ParquetStreamer's take no constructor arguments.
@@ -71,7 +64,20 @@ namespace corsika {
      */
     std::shared_ptr<parquet::StreamWriter> getWriter();
 
-  }; // class ParquetHelper
+    /**
+     * @return status of streamer
+     */
+    bool isInit() const { return isInit_; }
+
+  private:
+    bool isInit_ = false;                        ///< flag to handle state of writer
+    parquet::WriterProperties::Builder builder_; ///< The writer properties builder.
+    parquet::schema::NodeVector fields_;         ///< The fields in this file.
+    std::shared_ptr<parquet::schema::GroupNode> schema_;   ///< The schema for this file.
+    std::shared_ptr<arrow::io::FileOutputStream> outfile_; ///< The output file.
+    std::shared_ptr<parquet::StreamWriter> writer_; ///< The stream writer to 'outfile'
+
+  }; // class ParquetStreamer
 } // namespace corsika
 
 #include <corsika/detail/output/ParquetStreamer.inl>

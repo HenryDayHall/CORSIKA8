@@ -22,8 +22,8 @@
 
 namespace corsika {
 
-  void OutputManager::writeNode(YAML::Node const& node,
-                                boost::filesystem::path const& path) const {
+  inline void OutputManager::writeNode(YAML::Node const& node,
+                                       boost::filesystem::path const& path) const {
 
     // construct a YAML emitter for this config file
     YAML::Emitter out;
@@ -38,7 +38,7 @@ namespace corsika {
     file << out.c_str() << std::endl;
   }
 
-  void OutputManager::writeTopLevelConfig() const {
+  inline void OutputManager::writeTopLevelConfig() const {
 
     YAML::Node config;
 
@@ -51,7 +51,7 @@ namespace corsika {
     writeNode(config, root_ / ("config.yaml"));
   }
 
-  void OutputManager::writeTopLevelSummary() const {
+  inline void OutputManager::writeTopLevelSummary() const {
 
     YAML::Node config;
 
@@ -89,7 +89,7 @@ namespace corsika {
     writeNode(config, root_ / ("summary.yaml"));
   }
 
-  void OutputManager::initOutput(std::string const& name) const {
+  inline void OutputManager::initOutput(std::string const& name) const {
     // construct the path to this directory
     auto const path{root_ / name};
 
@@ -106,7 +106,7 @@ namespace corsika {
     writeNode(config, path / "config.yaml");
   }
 
-  OutputManager::OutputManager(
+  inline OutputManager::OutputManager(
       std::string const& name,
       boost::filesystem::path const& dir = boost::filesystem::current_path())
       : name_(name)
@@ -114,20 +114,19 @@ namespace corsika {
 
     // check if this directory already exists
     if (boost::filesystem::exists(root_)) {
-      logger->warn(
-          "Output directory '{}' already exists! This is currenty not supported.",
-          root_.string());
+      logger->error("Output directory '{}' already exists! Do not overwrite!.",
+                    root_.string());
       throw std::runtime_error("Output directory already exists.");
     }
 
     // construct the directory for this library
-    boost::filesystem::create_directory(root_);
+    boost::filesystem::create_directories(root_);
 
     // write the top level config file
     writeTopLevelConfig();
   }
 
-  OutputManager::~OutputManager() {
+  inline OutputManager::~OutputManager() {
 
     if (state_ == OutputState::ShowerInProgress) {
       // if this the destructor is called before the shower has been explicitly
@@ -148,13 +147,13 @@ namespace corsika {
   }
 
   template <typename TOutput>
-  void OutputManager::add(std::string const& name, TOutput& output) {
+  inline void OutputManager::add(std::string const& name, TOutput& output) {
 
     // check if that name is already in the map
     if (outputs_.count(name) > 0) {
-      logger->warn("'{}' is already registered. All outputs must have unique names.",
-                   name);
-      return;
+      logger->error("'{}' is already registered. All outputs must have unique names.",
+                    name);
+      throw std::runtime_error("Output already exists. Do not overwrite!");
     }
 
     // if we get here, the name is not already in the map
@@ -165,7 +164,7 @@ namespace corsika {
     initOutput(name);
   }
 
-  void OutputManager::startOfLibrary() {
+  inline void OutputManager::startOfLibrary() {
 
     // this is only valid when we haven't started a library
     // or have already finished a library
@@ -188,7 +187,7 @@ namespace corsika {
     state_ = OutputState::LibraryReady;
   }
 
-  void OutputManager::startOfShower() {
+  inline void OutputManager::startOfShower() {
 
     // if this is called and we still in the "no init" state, then
     // this is the first shower in the library so make sure we start it
@@ -204,7 +203,7 @@ namespace corsika {
     state_ = OutputState::ShowerInProgress;
   }
 
-  void OutputManager::endOfShower() {
+  inline void OutputManager::endOfShower() {
 
     for (auto& [name, output] : outputs_) { output.get().endOfShower(); }
 
@@ -212,7 +211,7 @@ namespace corsika {
     state_ = OutputState::LibraryReady;
   }
 
-  void OutputManager::endOfLibrary() {
+  inline void OutputManager::endOfLibrary() {
 
     // we can only call endOfLibrary when we have already started
     if (state_ == OutputState::NoInit) {

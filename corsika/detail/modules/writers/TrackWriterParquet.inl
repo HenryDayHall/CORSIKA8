@@ -10,10 +10,11 @@
 
 namespace corsika {
 
-  TrackWriterParquet::TrackWriterParquet()
+  inline TrackWriterParquet::TrackWriterParquet()
       : output_() {}
 
-  void TrackWriterParquet::startOfLibrary(boost::filesystem::path const& directory) {
+  inline void TrackWriterParquet::startOfLibrary(
+      boost::filesystem::path const& directory) {
 
     // setup the streamer
     output_.initStreamer((directory / "tracks.parquet").string());
@@ -38,24 +39,15 @@ namespace corsika {
 
     // and build the streamer
     output_.buildStreamer();
-
-    setInit(true);
   }
 
-  void TrackWriterParquet::endOfShower() { ++shower_; }
+  inline void TrackWriterParquet::endOfShower() { ++shower_; }
 
-  void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
+  inline void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
-  void TrackWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
-                                 QuantityVector<length_d> const& start,
-                                 QuantityVector<length_d> const& end) {
-
-    if (!isInit()) {
-      std::runtime_error(
-          "TrackWriterParquet not initialized. Either 1) add the corresponding module to "
-          "the OutputManager, or 2) declare the module to write no output using "
-          "NoOutput.");
-    }
+  inline void TrackWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
+                                        QuantityVector<length_d> const& start,
+                                        QuantityVector<length_d> const& end) {
 
     // write the next row - we must write `shower_` first.
     // clang-format off
