@@ -17,16 +17,17 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
+#include <corsika/output/NoOutput.hpp>
+
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>
 
 using namespace corsika;
 
-TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
+TEST_CASE("ObservationPlane", "interface") {
 
   logging::set_level(logging::level::trace);
-  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
@@ -54,23 +55,38 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
   SECTION("horizontal plane") {
 
     Plane const obsPlane(Point(cs, {10_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}), "particles.dat",
-                         true);
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
 
     CHECK(length / 10_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
+
+    // particle does not reach plane:
+    {
+      setup::Trajectory no_hit_track =
+          setup::testing::make_track<setup::Trajectory>(line, 1_nm / constants::c);
+      LengthType const no_hit = obs.getMaxStepLength(particle, no_hit_track);
+      CHECK(no_hit == std::numeric_limits<double>::infinity() * 1_m);
+    }
+
+    // particle past plane:
+    {
+      particle.setPosition({cs, {0_m, 0_m, -1_m}});
+      setup::Trajectory no_hit_track =
+          setup::testing::make_track<setup::Trajectory>(line, 1_nm / constants::c);
+      LengthType const no_hit = obs.getMaxStepLength(particle, no_hit_track);
+      CHECK(no_hit == std::numeric_limits<double>::infinity() * 1_m);
+    }
   }
 
   SECTION("transparent plane") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), "particles.dat",
-                         false);
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
-    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
+    ProcessReturn const ret = obs.doContinuous(particle, no_used_track, false);
 
     CHECK(length / 1_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::Ok);
@@ -85,13 +101,19 @@ TEST_CASE("ObservationPlane", "[proccesses][observation_plane]") {
 
     Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
                          DirectionVector(cs, {1, 0.1, -0.05}));
-    ObservationPlane obs(obsPlane, DirectionVector(cs, {0., 1., 0.}), "particles.dat",
-                         true);
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
 
     CHECK(length / 10_m == Approx(1.1375).margin(1e-4));
     CHECK(ret == ProcessReturn::ParticleAbsorbed);
+  }
+
+  SECTION("output") {
+    Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
+    ObservationPlane<NoOutput> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
+    auto const cfg = obs.getConfig();
+    CHECK(cfg["type"]);
   }
 }

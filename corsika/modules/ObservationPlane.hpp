@@ -13,9 +13,7 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-
-#include <fstream>
-#include <string>
+#include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
 
 namespace corsika {
 
@@ -34,11 +32,12 @@ namespace corsika {
      small gap in between the two plane in such a scenario, or develop
      another more specialized output class.
    */
-  class ObservationPlane : public ContinuousProcess<ObservationPlane> {
+  template <typename TOutputWriter = ObservationPlaneWriterParquet>
+  class ObservationPlane : public ContinuousProcess<ObservationPlane<TOutputWriter>>,
+                           public TOutputWriter {
 
   public:
-    ObservationPlane(Plane const&, DirectionVector const&, std::string const&,
-                     bool = true);
+    ObservationPlane(Plane const&, DirectionVector const&, bool = true);
 
     ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
                                corsika::setup::Trajectory& vTrajectory,
@@ -50,10 +49,10 @@ namespace corsika {
     void showResults() const;
     void reset();
     HEPEnergyType getEnergyGround() const { return energy_ground_; }
+    YAML::Node getConfig() const;
 
   private:
     Plane const plane_;
-    std::ofstream outputStream_;
     bool const deleteOnHit_;
     HEPEnergyType energy_ground_;
     unsigned int count_ground_;

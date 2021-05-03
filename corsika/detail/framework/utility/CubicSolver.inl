@@ -248,10 +248,6 @@ namespace corsika {
     long double x1 = xinfl;
     long double f_x1 = cubic_function(xinfl, a, b, c, d);
 
-    CORSIKA_LOG_TRACE("dist={} xinfl={} f_x1={} {} {}", dist, xinfl, f_x1,
-                      cubic_function(xinfl - 2 / 3 * std::sqrt(dist), a, b, c, d),
-                      cubic_function(xinfl + 2 / 3 * std::sqrt(dist), a, b, c, d));
-
     if (std::abs(f_x1) > epsilon) {
       if (std::abs(dist) < epsilon) {
         x1 = xinfl - std::cbrt(f_x1);

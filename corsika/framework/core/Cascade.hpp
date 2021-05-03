@@ -57,7 +57,7 @@ namespace corsika {
    *
    *
    */
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             /*
              TStackView is needed as explicit template parameter because
              of issue 161 and the
@@ -84,10 +84,11 @@ namespace corsika {
     ~Cascade() = default;
     Cascade& operator=(Cascade const&) = default;
     Cascade(Environment<MediumInterface> const& env, TTracking& tr, TProcessList& pl,
-            TStack& stack)
+            TOutput& out, TStack& stack)
         : environment_(env)
         , tracking_(tr)
         , sequence_(pl)
+        , output_(out)
         , stack_(stack) {
       CORSIKA_LOG_INFO(c8_ascii_);
       CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
@@ -139,6 +140,7 @@ namespace corsika {
     Environment<MediumInterface> const& environment_;
     TTracking& tracking_;
     TProcessList& sequence_;
+    TOutput& output_;
     TStack& stack_;
     default_prng_type& rng_ = RNGManager::getInstance().getRandomStream("cascade");
     unsigned int count_ = 0;

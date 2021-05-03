@@ -11,9 +11,10 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
+
+#include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -54,7 +55,7 @@ using namespace std;
 //
 int main() {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   std::cout << "cascade_example" << std::endl;
 
@@ -106,6 +107,8 @@ int main() {
       rootCS, 0_m, 0_m,
       height_atmosphere); // this is the CORSIKA 7 start of atmosphere/universe
 
+  OutputManager output("cascade_outputs");
+
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
 
   {
@@ -139,7 +142,9 @@ int main() {
   // cascade with only HE model ==> HE cut
   ParticleCut cut(80_GeV, true, true);
 
-  TrackWriter trackWriter("tracks.dat");
+  TrackWriter trackWriter;
+  output.add("tracks", trackWriter); // register TrackWriter
+
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
@@ -147,7 +152,7 @@ int main() {
       make_sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
+  Cascade EAS(env, tracking, sequence, output, stack);
 
   EAS.run();
 
@@ -161,4 +166,6 @@ int main() {
   cout << "total dEdX energy (GeV): " << eLoss.getTotal() / 1_GeV << endl
        << "relative difference (%): " << eLoss.getTotal() / E0 * 100 << endl;
   cut.reset();
+
+  output.endOfLibrary();
 }

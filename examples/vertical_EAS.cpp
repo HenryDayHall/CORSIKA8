@@ -25,6 +25,8 @@
 #include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
+#include <corsika/output/OutputManager.hpp>
+
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -97,7 +99,6 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] %s:%#: %v");
   logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("vertical_EAS");
@@ -134,28 +135,13 @@ int main(int argc, char** argv) {
       {{Code::Nitrogen, Code::Oxygen},
        {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
 
+  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
   builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
-
-  CORSIKA_LOG_DEBUG(
-      "environment setup: universe={}, layer1={}, layer2={}, layer3={}, layer4={}, "
-      "layer5={}",
-      fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 130_km, 0_m, 0_m}))),
-      fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 110_km, 0_m, 0_m}))),
-      fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 50_km, 0_m, 0_m}))),
-      fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 20_km, 0_m, 0_m}))),
-      fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 5_km, 0_m, 0_m}))),
-      fmt::ptr(env.getUniverse()->getContainingNode(
-          Point(rootCS, {constants::EarthRadius::Mean + 2_km, 0_m, 0_m}))));
 
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
@@ -213,6 +199,9 @@ int main(int argc, char** argv) {
             << std::endl;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env};
+
+  // create the output manager that we then register outputs with
+  OutputManager output("vertical_EAS_outputs");
 
   // setup processes, decays and interactions
 
@@ -280,8 +269,6 @@ int main(int argc, char** argv) {
     string const labHist_file = "inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = "inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
     string const longprof_file = "longprof_verticalEAS_" + to_string(i_shower) + ".txt";
-    string const tracks_file = "tracks_" + to_string(i_shower) + ".dat";
-    string const particles_file = "particles_" + to_string(i_shower) + ".dat";
 
     std::cout << std::endl;
     std::cout << "Shower " << i_shower << "/" << number_showers << std::endl;
@@ -289,6 +276,46 @@ int main(int argc, char** argv) {
     // setup particle stack, and add primary particle
     setup::Stack stack;
     stack.clear();
+    unsigned short const A = std::stoi(std::string(argv[1]));
+    Code beamCode;
+    HEPEnergyType mass;
+    unsigned short Z = 0;
+    if (A > 0) {
+      beamCode = Code::Nucleus;
+      Z = std::stoi(std::string(argv[2]));
+      mass = get_nucleus_mass(A, Z);
+    } else {
+      int pdg = std::stoi(std::string(argv[2]));
+      beamCode = convert_from_PDG(PDGCode(pdg));
+      mass = get_mass(beamCode);
+    }
+    HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
+    double theta = 0.;
+    auto const thetaRad = theta / 180. * M_PI;
+
+    auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
+      return sqrt((Elab - m) * (Elab + m));
+    };
+    HEPMomentumType P0 = elab2plab(E0, mass);
+    auto momentumComponents = [](double thetaRad, HEPMomentumType ptot) {
+      return std::make_tuple(ptot * sin(thetaRad), 0_eV, -ptot * cos(thetaRad));
+    };
+
+    auto const [px, py, pz] = momentumComponents(thetaRad, P0);
+    auto plab = MomentumVector(rootCS, {px, py, pz});
+    cout << "input particle: " << beamCode << endl;
+    cout << "input angles: theta=" << theta << endl;
+    cout << "input momentum: " << plab.getComponents() / 1_GeV
+         << ", norm = " << plab.getNorm() << endl;
+
+    auto const observationHeight = 0_km + builder.getEarthRadius();
+    auto const injectionHeight = 111.75_km + builder.getEarthRadius();
+    auto const t = (injectionHeight - observationHeight) / cos(thetaRad);
+    Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
+    Point const injectionPos =
+        showerCore + DirectionVector{rootCS, {-sin(thetaRad), 0, cos(thetaRad)}} * t;
+
+    std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
     if (A > 1) {
       stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
@@ -308,9 +335,64 @@ int main(int argc, char** argv) {
       }
     }
 
-    TrackWriter trackWriter(tracks_file);
-    ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
-                                      particles_file);
+    // we make the axis much longer than the inj-core distance since the
+    // profile will go beyond the core, depending on zenith angle
+    std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.5
+              << std::endl;
+
+    ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env,
+                                false};
+
+    // setup processes, decays and interactions
+
+    // corsika::qgsjetII::Interaction qgsjet;
+    corsika::sibyll::Interaction sibyll;
+    InteractionCounter sibyllCounted(sibyll);
+
+    corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+    InteractionCounter sibyllNucCounted(sibyllNuc);
+
+    corsika::pythia8::Decay decayPythia;
+
+    // use sibyll decay routine for decays of particles unknown to pythia
+    corsika::sibyll::Decay decaySibyll{{
+        Code::N1440Plus,
+        Code::N1440MinusBar,
+        Code::N1440_0,
+        Code::N1440_0Bar,
+        Code::N1710Plus,
+        Code::N1710MinusBar,
+        Code::N1710_0,
+        Code::N1710_0Bar,
+
+        Code::Pi1300Plus,
+        Code::Pi1300Minus,
+        Code::Pi1300_0,
+
+        Code::KStar0_1430_0,
+        Code::KStar0_1430_0Bar,
+        Code::KStar0_1430_Plus,
+        Code::KStar0_1430_MinusBar,
+    }};
+
+    decaySibyll.printDecayConfig();
+
+    ParticleCut cut{60_GeV, true, true};
+    // corsika::proposal::Interaction emCascade(env);
+    // corsika::proposal::ContinuousProcess emContinuous(env);
+    // InteractionCounter emCascadeCounted(emCascade);
+    BetheBlochPDG emContinuous(showerAxis);
+
+    OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
+    TrackWriter trackWriter;
+    output.add("tracks", trackWriter); // register TrackWriter
+
+    LongitudinalProfile longprof{showerAxis};
+
+    Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
+    ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
+    // register the observation plane with the output
+    output.add("obsplane", observationLevel);
 
     auto sequence =
         make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
@@ -318,7 +400,7 @@ int main(int argc, char** argv) {
 
     // define air shower object, run simulation
     setup::Tracking tracking;
-    Cascade EAS(env, tracking, sequence, stack);
+    Cascade EAS(env, tracking, sequence, output, stack);
 
     // to fix the point of first interaction, uncomment the following two lines:
     //  EAS.forceInteraction();
@@ -326,16 +408,16 @@ int main(int argc, char** argv) {
     EAS.run();
 
     cut.showResults();
-    emContinuous.showResults();
+    // emContinuous.showResults();
     observationLevel.showResults();
     const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + emContinuous.getEnergyLost() +
+                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
                                  observationLevel.getEnergyGround();
     cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
          << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
     observationLevel.reset();
     cut.reset();
-    emContinuous.reset();
+    // emContinuous.reset();
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();
@@ -343,5 +425,7 @@ int main(int argc, char** argv) {
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
     longprof.save(longprof_file);
+
+    output.endOfLibrary();
   }
 }

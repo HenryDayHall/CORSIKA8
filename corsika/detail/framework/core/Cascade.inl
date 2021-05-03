@@ -26,10 +26,13 @@
 
 namespace corsika {
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::run() {
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::run() {
     setNodes(); // put each particle on stack in correct environment volume
+
+    // start this event (i.e. this shower)
+    output_.startOfShower();
 
     while (!stack_.isEmpty()) {
       while (!stack_.isEmpty()) {
@@ -51,11 +54,15 @@ namespace corsika {
       // thus, the double loop
       // doCascadeEquations();
     }
+
+    // end this event (i.e. this shower)
+    output_.endOfShower();
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::forceInteraction() {
+  inline void
+  Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::forceInteraction() {
     CORSIKA_LOG_TRACE("forced interaction!");
     setNodes();
     auto vParticle = stack_.getNextParticle();
@@ -65,9 +72,9 @@ namespace corsika {
     vParticle.erase(); // primary particle is done
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::step(
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::step(
       Particle& vParticle) {
 
     // determine combined total interaction length (inverse)
@@ -258,9 +265,10 @@ namespace corsika {
     vParticle.erase();
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::decay(
+  inline ProcessReturn
+  Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::decay(
       TStackView& view, InverseTimeType initial_inv_decay_time) {
     CORSIKA_LOG_DEBUG("decay");
 
@@ -289,11 +297,11 @@ namespace corsika {
     return returnCode;
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::interaction(
+  inline ProcessReturn
+  Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::interaction(
       TStackView& view, InverseGrammageType initial_inv_int_length) {
-
     CORSIKA_LOG_DEBUG("collide");
 
 #ifdef DEBUG
@@ -322,9 +330,9 @@ namespace corsika {
     return returnCode;
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::setNodes() {
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::setNodes() {
     std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
       auto const* numericalNode =
           environment_.getUniverse()->getContainingNode(p.getPosition());
@@ -332,9 +340,9 @@ namespace corsika {
     });
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::setEventType(
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::setEventType(
       TStackView& view, [[maybe_unused]] history::EventType eventType) {
     if constexpr (TStackView::has_event) {
       for (auto&& sec : view) { sec.getEvent()->setEventType(eventType); }
