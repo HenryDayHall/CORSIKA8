@@ -897,16 +897,19 @@ TEST_CASE("Radio", "[processes]") {
     RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
         coreas(detector, env);
 
+    TimeType timeCounter {0._s};
+
     // loop over all the tracks except the last one
     for (size_t i = 1; i <= 399; i++) {
       TimeType t {(points_[i] - points_[i-1]).getNorm() / (0.999 * constants::c)};
+      timeCounter = timeCounter + t;
       VelocityVector v { (points_[i] - points_[i-1]) / t };
       auto  beta {v / constants::c};
       auto gamma {E0/pmass};
       auto plab {beta * pmass * gamma};
       Line l {points_[i-1],v};
       StraightTrajectory track {l,t};
-      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[i-1], t))}; //TODO: plab is inconsistent
+      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[i-1], timeCounter))}; //TODO: plab is inconsistent
       coreas.doContinuous(particle1,track,true);
     }
 
@@ -1006,17 +1009,19 @@ TEST_CASE("Radio", "[processes]") {
     // loop over all the tracks except the last one
     int const n_points {60000};
     LengthType const radius {100_m};
+    TimeType timeCounter {0._s};
     for (size_t i = 0; i <= n_points; i++) {
       Point const point_1(rootCS,{radius*cos(M_PI*2*i/n_points),radius*sin(M_PI*2*i/n_points), 0_m});
       Point const point_2(rootCS,{radius*cos(M_PI*2*(i+1)/n_points),radius*sin(M_PI*2*(i+1)/n_points), 0_m});
       TimeType t {(point_2 - point_1).getNorm() / (0.999 * constants::c)};
+      timeCounter = timeCounter + t;
       VelocityVector v { (point_2 - point_1) / t };
       auto  beta {v / constants::c};
       auto gamma {E0/pmass};
       auto plab {beta * pmass * gamma};
       Line l {point_1,v};
       StraightTrajectory track {l,t};
-      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, t))};
+      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, timeCounter))};
       coreas.doContinuous(particle1,track,true);
       stack.clear();
     }
