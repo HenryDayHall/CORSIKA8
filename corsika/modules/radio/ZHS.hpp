@@ -81,6 +81,8 @@ namespace corsika {
         auto midPaths{this->propagator_.propagate(midPoint_, antenna.getLocation(), 1_m)};
         //Loop over midPaths to first check Fraunhoffer limit
         for (size_t i{0}; i < midPaths.size(); i++){
+            //Maybe I can recalculate fraunhLimit without Midpaths to avoid calculating this third
+            //path which is something really slow, and only use path1 and path2.
             double const betaTimesK {beta_.dot(midPaths[i].emit_)/beta_.getNorm()};
             double const slitSize_ {1. - betaTimesK * betaTimesK * trackLength_ * trackLength_ /1_m /1_m};
             //Parameter that determines the limit for the Fraunhoffer limit (probably related to antenna sampling rate
@@ -100,82 +102,69 @@ namespace corsika {
                 auto paths2{this->propagator_.propagate(endPoint_, antenna.getLocation(), 1_m)};
                 // First implementation, need to check if there are the same number of paths, but once its working.
 
-                //modified later if deltaT1_ > deltaT2_
-                auto deltaT1_ {startTime_ + paths1[i].propagation_time_};
-                auto deltaT2_ {endTime_ + paths2[i].propagation_time_};
+                //modified later if detectionTime1_ > detectionTime2_
+                TimeType detectionTime1_ {startTime_ + paths1[i].propagation_time_};
+                TimeType detectionTime2_ {endTime_ + paths2[i].propagation_time_};
 
-                //make deltaT1_ be the smallest time => changes step function order so
+                //make detectionTime1_ be the smallest time => changes step function order so
                 // constants is changed to account for it
-                if (deltaT1_ > deltaT2_)
+                if (detectionTime1_ > detectionTime2_)
                 {
-                    deltaT1_ = {endTime_ + paths2[i].propagation_time_};
-                    deltaT2_ = {startTime_ + paths1[i].propagation_time_};
+                    detectionTime1_ = endTime_ + paths2[i].propagation_time_;
+                    detectionTime2_ = startTime_ + paths1[i].propagation_time_;
                     constants = - constants;
                 }
 
-
-                long const startBin {std::floor(deltaT1_ * antenna.sample_rate_)};
-                long const endBin {std::floor(deltaT2_ * antenna.sample_rate_)};
+                double const startBin {std::floor(detectionTime1_ * antenna.sample_rate_)};
+                double const endBin {std::floor(detectionTime2_ * antenna.sample_rate_)};
 
                 auto const betaPerp_ {midPaths[i].emit_.cross(beta_.cross(midPaths[i].emit_))};
                 double const denominator {1 - midPaths[i].refractive_index_source_ *
                                               beta_.dot(midPaths[i].emit_)};
 
-                long const numberOfBins{endBin - startBin};
+
                 //IMPORTANT!!!!! Using ElectricFieldVector instead of PotentialVector until antenna is adapted
-                for (long int it{0}; it <= numberOfBins; ++it)
-                {
-                    if (startBin == endBin)//track contained in bin
-                    {
-//                        std::cout << "Track in one bin !" << std::endl;
-                        if (std::fabs(denominator)>1.e-15L)//if not in Cerenkov angle then
-                        {
-                            double const f {std::fabs((deltaT2_ - deltaT1_) * antenna.sample_rate_)};
-                            //should be PotentialVector const Vp_ = betaPerp_.getComponents()/denominator/
-                            //                                    midPaths[i].R_distance_ * constants * f;
-                            // but to make it compile until antenna is adapted it stays like that to test it.
-                            ElectricFieldVector const Vp_ = betaPerp_.getComponents()/denominator/
-                                    midPaths[i].R_distance_ * constants * f / 1_s;
-//                            std::cout << "Vector Potential NOT in Cerenkov Angle: " << Vp_ << std::endl;
-//                            std::cout << "Time " << deltaT2_ << std::endl;
-                            antenna.receive(deltaT2_, betaPerp_, Vp_);
-                        }
-                        else//If emission in Cerenkov angle => approximation
-                        {
-                            double const f {(endTime_ - startTime_) * antenna.sample_rate_};
-                            ElectricFieldVector const Vp_ = betaPerp_.getComponents()/
-                                    midPaths[i].R_distance_ * constants * f / 1_s;
-//                            std::cout << "Vector Potential in Cerenkov Angle: " << Vp_ << std::endl;
-//                            std::cout << "Time " << deltaT1_ << std::endl;
-                            antenna.receive(deltaT2_, betaPerp_, Vp_);
-                        }//end if Cerenkov angle approx
-                    }
-                    //TODO: should we check for Cerenkov angle?
-                    else //Track is contained in more than one bin
-                    {
-//                        std::cout << "Track in multiple bins !" << std::endl;
-                        if (it == 0)//start of track
-                        {
-                            double const f {std::fabs(startTime_ * antenna.sample_rate_ - startBin)};
-                            ElectricFieldVector const Vp_ = betaPerp_.getComponents() * f *
-                                    constants/denominator/midPaths[i].R_distance_ / 1_s;
-                            antenna.receive(deltaT1_, betaPerp_, Vp_);
-                        }
-                        else if (it == numberOfBins)//end of track
-                        {
-                            double const f {std::fabs(endTime_ * antenna.sample_rate_ - endBin)};
-                            ElectricFieldVector const Vp_ = betaPerp_.getComponents() * f *
-                                    constants / denominator / midPaths[i].R_distance_ / 1_s;
-                            antenna.receive(deltaT2_, betaPerp_, Vp_);
-                        }
-                        else
-                        {
-                            ElectricFieldVector const Vp_ = betaPerp_.getComponents() * constants /
-                                    denominator/midPaths[i].R_distance_ / 1_s;
-                            antenna.receive(deltaT1_ + it / antenna.sample_rate_, betaPerp_, Vp_);
-                        }
-                    }
-                }//end loop over bins in which potential vector is not zero
+                if (startBin == endBin) {
+                //track contained in bin
+                  //if not in Cerenkov angle then
+                  if (std::fabs(denominator)>1.e-15L) {
+                    double const f {std::fabs((detectionTime2_ * antenna.sample_rate_ - detectionTime1_ * antenna.sample_rate_) )};
+                    //should be PotentialVector const Vp_ = betaPerp_.getComponents()/denominator/
+                    //                                    midPaths[i].R_distance_ * constants * f;
+                    // but to make it compile until antenna is adapted it stays like that to test it.
+                    ElectricFieldVector const Vp_ = betaPerp_.getComponents()/denominator/
+                                                    midPaths[i].R_distance_ * constants * f / 1_s;
+                    antenna.receive(detectionTime2_, betaPerp_, Vp_);
+                  }
+                  else {//If emission in Cerenkov angle => approximation
+                    double const f {(detectionTime2_ - detectionTime1_) * antenna.sample_rate_};
+                    ElectricFieldVector const Vp_ = betaPerp_.getComponents()/
+                                                    midPaths[i].R_distance_ * constants * f / 1_s;
+                    antenna.receive(detectionTime2_, betaPerp_, Vp_);
+                  }//end if Cerenkov angle approx
+                } else {
+                  /*Track is contained in more than one bin*/
+                  int const numberOfBins {static_cast<int>(endBin - startBin)};
+                  //TODO: should we check for Cerenkov angle?
+                  //first contribution
+                  double f{std::fabs(startBin + 1. - detectionTime1_ * antenna.sample_rate_)};
+                  ElectricFieldVector Vp_ = betaPerp_.getComponents() * f *
+                                                  constants / denominator /
+                                                  midPaths[i].R_distance_ / 1_s;
+                  antenna.receive(detectionTime1_, betaPerp_, Vp_);
+                  //intermidiate contributions
+                  for (int it{1}; it < numberOfBins; ++it) {
+                    Vp_ = betaPerp_.getComponents() * constants / denominator /
+                                                    midPaths[i].R_distance_ / 1_s;
+                    antenna.receive(detectionTime1_ + static_cast<double>(it) / antenna.sample_rate_,
+                                    betaPerp_, Vp_);
+                  }// end loop over bins in which potential vector is not zero
+                  //final contribution
+                  f = std::fabs(detectionTime2_ * antenna.sample_rate_ - endBin);
+                  Vp_ = betaPerp_.getComponents() * f * constants / denominator /
+                                                    midPaths[i].R_distance_ / 1_s;
+                  antenna.receive(detectionTime2_, betaPerp_, Vp_);
+                }//end if statement for track in multiple bins
 
             }//finish if statement of track in fraunhoffer or not
 
