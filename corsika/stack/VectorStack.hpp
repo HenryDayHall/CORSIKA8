@@ -127,10 +127,6 @@ namespace corsika {
      *
      * @{
      */
-    DirectionVector getDirection() const {
-      return this->getMomentum() / this->getEnergy();
-    }
-
     VelocityVector getVelocity() const {
       return this->getMomentum() / this->getEnergy() * constants::c;
     }

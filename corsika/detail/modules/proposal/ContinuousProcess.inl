@@ -128,11 +128,11 @@ namespace corsika::proposal {
     auto const energy = vP.getEnergy();
     auto const energy_lim = std::max(
         energy * 0.9, // either 10% relative loss max., or
-        get_energy_threshold(
-            code) // energy thresholds globally defined for individual particles
-            *
-            0.99 // need to go 1% below global e-cut to assure removal in ParticleCut. The
-                 // 1% does not matter since at cut-time the entire energy is removed.
+        get_kinetic_energy_threshold(code) +
+            get_mass(code) // energy thresholds globally defined for individual particles
+                * 0.99     // need to go 1% below global e-cut to assure removal in
+                       // ParticleCut. The 1% does not matter since at cut-time the entire
+                       // energy is removed.
     );
 
     // solving the track integral for giving energy lim
