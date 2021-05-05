@@ -95,12 +95,12 @@ public:
 
   template <typename TView>
   void doInteraction(TView& view) {
-    calls_++;
+    ++calls_;
     auto vP = view.getProjectile();
-    const HEPEnergyType E = vP.getEnergy();
-    vP.addSecondary(std::make_tuple(vP.getPID(), E / 2, vP.getMomentum(),
+    const HEPEnergyType Ekin = vP.getKineticEnergy();
+    vP.addSecondary(std::make_tuple(vP.getPID(), Ekin / 2, vP.getMomentum().normalized(),
                                     vP.getPosition(), vP.getTime()));
-    vP.addSecondary(std::make_tuple(vP.getPID(), E / 2, vP.getMomentum(),
+    vP.addSecondary(std::make_tuple(vP.getPID(), Ekin / 2, vP.getMomentum().normalized(),
                                     vP.getPosition(), vP.getTime()));
   }
 
@@ -159,7 +159,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   TestCascadeStack stack;
   stack.clear();
   stack.addParticle(std::make_tuple(
-      Code::Electron, E0,
+      Code::Electron,
       MomentumVector(rootCS, {0_GeV, 0_GeV,
                               -sqrt(E0 * E0 - static_pow<2>(get_mass(Code::Electron)))}),
       Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));

@@ -99,12 +99,6 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 //        3.total energy in GeV, 4.number of showers,
 //        5.seed (0 by default to generate random values for all)
 
-int Point::count_construct_ = 0;
-int Point::count_copy_construct_ = 0;
-int Point::count_move_ = 0;
-int Point::count_assign_ = 0;
-int Point::count_destruct_ = 0;
-
 int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
@@ -326,20 +320,20 @@ int main(int argc, char** argv) {
     std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
     if (A > 1) {
-      stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
+      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
 
     } else {
       if (A == 1) {
         if (Z == 1) {
-          stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+          stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
         } else if (Z == 0) {
-          stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+          stack.addParticle(std::make_tuple(Code::Neutron, plab, injectionPos, 0_ns));
         } else {
           std::cerr << "illegal parameters" << std::endl;
           return EXIT_FAILURE;
         }
       } else {
-        stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
+        stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
       }
     }
 
@@ -436,5 +430,4 @@ int main(int argc, char** argv) {
 
     output.endOfLibrary();
   }
-  Point::trace();
 }

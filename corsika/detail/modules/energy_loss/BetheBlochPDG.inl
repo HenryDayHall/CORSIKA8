@@ -179,17 +179,17 @@ namespace corsika {
 
     auto constexpr dX = 1_g / square(1_cm);
     auto const dEdX = -getTotalEnergyLoss(vParticle, dX) / dX;
-    auto const energy = vParticle.getEnergy();
+    auto const energy = vParticle.getKineticEnergy();
     auto const energy_lim =
         std::max(energy * 0.9, // either 10% relative loss max., or
-                 get_kinetic_energy_threshold(vParticle.getPID()) +
-                     get_mass(vParticle.getPID()) // energy thresholds globally defined
-                                                  // for individual particles
-                         * 0.99999 // need to go slightly below global e-cut to assure removal in
-                                // ParticleCut. The 1% does not matter since at cut-time
-                                // the entire energy is removed.
+                 get_kinetic_energy_threshold(
+                     vParticle.getPID()) // energy thresholds globally defined
+                                         // for individual particles
+                     * 0.99999 // need to go slightly below global e-cut to assure
+                               // removal in ParticleCut. The 1% does not matter since
+                               // at cut-time the entire energy is removed.
         );
-    auto const maxGrammage = (vParticle.getEnergy() - energy_lim) / dEdX;
+    auto const maxGrammage = (energy - energy_lim) / dEdX;
 
     return vParticle.getNode()->getModelProperties().getArclengthFromGrammage(
         vTrack, maxGrammage);

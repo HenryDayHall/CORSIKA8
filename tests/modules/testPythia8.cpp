@@ -102,9 +102,6 @@ TEST_CASE("PythiaInterface", "[processes]") {
 
   SECTION("pythia decay") {
     HEPEnergyType const P0 = 10_GeV;
-    // HEPMomentumType const E0 = sqrt(P0*P0 + PiPlus::mass*PiPlus::mass);
-
-    // feenableexcept(FE_INVALID); \todo how does this work nowadays...???
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::PiPlus, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& stack = *stackPtr;
@@ -120,9 +117,13 @@ TEST_CASE("PythiaInterface", "[processes]") {
 
     corsika::pythia8::Decay model(particleList);
 
+    CORSIKA_LOG_INFO("stack: {} {}", stack.asString(), particle.asString());
     [[maybe_unused]] const TimeType time = model.getLifetime(particle);
+    double const gamma = particle.getEnergy() / get_mass(Code::PiPlus);
+    CHECK(time == get_lifetime(Code::PiPlus) * gamma);
     model.doDecay(*secViewPtr);
-    CHECK(stack.getEntries() == 3);
+    CORSIKA_LOG_INFO("piplus->{}", stack.asString());
+    CHECK(stack.getEntries() == 3); // piplus, muplu, numu
     auto const pSum = sumMomentum(view, cs);
     CHECK((pSum - plab).getNorm() / 1_GeV == Approx(0).margin(1e-4));
     CHECK((pSum.getNorm() - plab.getNorm()) / 1_GeV == Approx(0).margin(1e-4));
@@ -152,8 +153,6 @@ TEST_CASE("PythiaInterface", "[processes]") {
   }
 
   SECTION("pythia interaction") {
-
-    //! feenableexcept(FE_INVALID); \todo how does this work nowadays
 
     // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(

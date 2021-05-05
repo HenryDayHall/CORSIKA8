@@ -141,7 +141,6 @@ namespace corsika {
   template <typename... TArgs>
   typename Stack<StackData, MParticleInterface>::stack_iterator_type inline Stack<
       StackData, MParticleInterface>::addParticle(const TArgs... v) {
-    CORSIKA_LOG_TRACE("Stack::AddParticle");
     data_.incrementSize();
     deleted_.push_back(false);
     return stack_iterator_type(*this, getSize() - 1, v...);
@@ -150,21 +149,18 @@ namespace corsika {
   template <typename StackData, template <typename> typename MParticleInterface>
   inline void Stack<StackData, MParticleInterface>::swap(stack_iterator_type a,
                                                          stack_iterator_type b) {
-    CORSIKA_LOG_TRACE("Stack::Swap");
     swap(a.getIndex(), b.getIndex());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
   inline void Stack<StackData, MParticleInterface>::copy(stack_iterator_type a,
                                                          stack_iterator_type b) {
-    CORSIKA_LOG_TRACE("Stack::Copy");
     copy(a.getIndex(), b.getIndex());
   }
 
   template <typename StackData, template <typename> typename MParticleInterface>
   inline void Stack<StackData, MParticleInterface>::copy(const_stack_iterator_type a,
                                                          stack_iterator_type b) {
-    CORSIKA_LOG_TRACE("Stack::Copy");
     data_.copy(a.getIndex(), b.getIndex());
     if (deleted_[b.getIndex()] && !deleted_[a.getIndex()]) nDeleted_--;
     if (!deleted_[b.getIndex()] && deleted_[a.getIndex()]) nDeleted_++;
@@ -173,11 +169,10 @@ namespace corsika {
 
   template <typename StackData, template <typename> typename MParticleInterface>
   inline void Stack<StackData, MParticleInterface>::erase(stack_iterator_type p) {
-    CORSIKA_LOG_TRACE("Stack::Delete");
-    if (this->isEmpty()) { /*error*/
+    if (this->isEmpty()) {
       throw std::runtime_error("Stack, cannot delete entry since size is zero");
     }
-    if (deleted_[p.getIndex()]) { /*error*/
+    if (deleted_[p.getIndex()]) {
       throw std::runtime_error("Stack, cannot delete entry since already deleted");
     }
     this->erase(p.getIndex());
@@ -231,7 +226,7 @@ namespace corsika {
     if (!deleted_.back())
       return false; // the last particle is not marked for deletion. Do nothing.
 
-    CORSIKA_LOG_TRACE("Stack::purgeLastIfDeleted: yes");
+    CORSIKA_LOG_TRACE("stack: purgeLastIfDeleted: yes");
     data_.decrementSize();
     nDeleted_--;
     deleted_.pop_back();
@@ -290,7 +285,6 @@ namespace corsika {
   inline typename Stack<StackData, MParticleInterface>::stack_iterator_type
   Stack<StackData, MParticleInterface>::addSecondary(stack_iterator_type& parent,
                                                      const TArgs... v) {
-    CORSIKA_LOG_TRACE("Stack::AddSecondary");
     data_.incrementSize();
     deleted_.push_back(false);
     return stack_iterator_type(*this, getSize() - 1, parent, v...);
@@ -299,7 +293,6 @@ namespace corsika {
   template <typename StackData, template <typename> typename MParticleInterface>
   inline void Stack<StackData, MParticleInterface>::swap(unsigned int const a,
                                                          unsigned int const b) {
-    CORSIKA_LOG_TRACE("Stack::Swap(unsigned int)");
     data_.swap(a, b);
     std::swap(deleted_[a], deleted_[b]);
   }
@@ -307,7 +300,6 @@ namespace corsika {
   template <typename StackData, template <typename> typename MParticleInterface>
   inline void Stack<StackData, MParticleInterface>::copy(unsigned int const a,
                                                          unsigned int const b) {
-    CORSIKA_LOG_TRACE("Stack::Copy");
     data_.copy(a, b);
     if (deleted_[b] && !deleted_[a]) nDeleted_--;
     if (!deleted_[b] && deleted_[a]) nDeleted_++;
@@ -346,7 +338,6 @@ namespace corsika {
   template <typename StackData, template <typename> typename MParticleInterface>
   inline unsigned int Stack<StackData, MParticleInterface>::getIndexFromIterator(
       const unsigned int vI) const {
-    // this is too much: CORSIKA_LOG_TRACE("Stack::getIndexFromIterator({})={}", vI, vI);
     return vI;
   }
 

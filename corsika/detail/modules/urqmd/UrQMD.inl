@@ -313,13 +313,11 @@ namespace corsika::urqmd {
                      ::urqmd::coor_.px[i], ::urqmd::coor_.py[i], ::urqmd::coor_.pz[i]} *
                      1_GeV);
 
-      auto const energy = sqrt(momentum.getSquaredNorm() + square(get_mass(code)));
-
       momentum.rebase(originalCS); // transform back into standard lab frame
       CORSIKA_LOG_DEBUG(" {} {} {} ", i, code, momentum.getComponents());
 
       projectile.addSecondary(
-          std::make_tuple(code, energy, momentum, projectilePosition, projectileTime));
+          std::make_tuple(code, momentum, projectilePosition, projectileTime));
     }
     CORSIKA_LOG_DEBUG("UrQMD generated {} secondaries!", ::urqmd::sys_.npart);
   }

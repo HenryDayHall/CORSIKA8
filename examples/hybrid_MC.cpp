@@ -163,10 +163,10 @@ int main(int argc, char** argv) {
   std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
   if (A != 1) {
-    stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
 
   } else {
-    stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+    stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
   }
 
   std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02

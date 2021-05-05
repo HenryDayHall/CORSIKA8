@@ -78,7 +78,7 @@ int main() {
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
 
-    stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
 
     auto const p = stack.getNextParticle();
     HEPEnergyType dE = eLoss.getTotalEnergyLoss(p, 1_g / square(1_cm));

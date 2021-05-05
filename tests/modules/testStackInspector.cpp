@@ -21,7 +21,7 @@
 
 using namespace corsika;
 
-TEST_CASE("StackInspector", "[processes]") {
+TEST_CASE("StackInspector", "modules") {
 
   logging::set_level(logging::level::info);
 
@@ -34,7 +34,7 @@ TEST_CASE("StackInspector", "[processes]") {
   TestCascadeStack stack;
   stack.clear();
   HEPEnergyType E0 = 100_GeV;
-  stack.addParticle(std::make_tuple(Code::Electron, E0,
+  stack.addParticle(std::make_tuple(Code::Electron,
                                     MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
                                     Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 

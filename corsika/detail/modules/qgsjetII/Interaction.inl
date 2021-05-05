@@ -329,14 +329,13 @@ namespace corsika::qgsjetII {
                                 sqrt((projectileEnergyLabPerNucleon + nucleonMass) *
                                      (projectileEnergyLabPerNucleon - nucleonMass))});
 
-            auto const energy = sqrt(momentum.getSquaredNorm() + square(nucleonMass));
             momentum.rebase(originalCS); // transform back into standard lab frame
             CORSIKA_LOG_DEBUG(
                 "secondary fragment> id= {}"
                 " p={}",
                 idFragm, momentum.getComponents());
-            auto pnew = view.addSecondary(
-                std::make_tuple(idFragm, energy, momentum, pOrig, tOrig));
+            auto pnew =
+                view.addSecondary(std::make_tuple(idFragm, momentum, pOrig, tOrig));
             Plab_final += pnew.getMomentum();
             Elab_final += pnew.getEnergy();
           } break;
@@ -363,7 +362,6 @@ namespace corsika::qgsjetII {
                               sqrt((projectileEnergyLabPerNucleon * A + nucleusMass) *
                                    (projectileEnergyLabPerNucleon * A - nucleusMass))});
 
-          auto const energy = sqrt(momentum.getSquaredNorm() + square(nucleusMass));
           momentum.rebase(originalCS); // transform back into standard lab frame
           CORSIKA_LOG_DEBUG(
               "secondary fragment> id={}"
@@ -372,8 +370,8 @@ namespace corsika::qgsjetII {
               " Z= {}",
               idFragm, momentum.getComponents(), A, Z);
 
-          auto pnew = view.addSecondary(
-              std::make_tuple(idFragm, energy, momentum, pOrig, tOrig, A, Z));
+          auto pnew =
+              view.addSecondary(std::make_tuple(idFragm, momentum, pOrig, tOrig, A, Z));
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }
@@ -384,7 +382,6 @@ namespace corsika::qgsjetII {
       for (auto& psec : qs) {
 
         auto momentum = psec.getMomentum(zAxisFrame);
-        auto const energy = psec.getEnergy();
 
         momentum.rebase(originalCS); // transform back into standard lab frame
         CORSIKA_LOG_DEBUG(
@@ -393,7 +390,7 @@ namespace corsika::qgsjetII {
             corsika::qgsjetII::convertFromQgsjetII(psec.getPID()),
             momentum.getComponents());
         auto pnew = view.addSecondary(
-            std::make_tuple(corsika::qgsjetII::convertFromQgsjetII(psec.getPID()), energy,
+            std::make_tuple(corsika::qgsjetII::convertFromQgsjetII(psec.getPID()),
                             momentum, pOrig, tOrig));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();

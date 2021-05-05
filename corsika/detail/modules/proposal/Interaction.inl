@@ -97,7 +97,7 @@ namespace corsika::proposal {
         auto sec_code =
             convert_from_PDG(static_cast<PDGCode>(get<PROPOSAL::Loss::TYPE>(s)));
         view.addSecondary(
-            make_tuple(sec_code, E, p, projectile.getPosition(), projectile.getTime()));
+            make_tuple(sec_code, p, projectile.getPosition(), projectile.getTime()));
       }
     }
     return ProcessReturn::Ok;

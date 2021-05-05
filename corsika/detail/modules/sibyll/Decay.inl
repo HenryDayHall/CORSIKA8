@@ -215,8 +215,7 @@ namespace corsika::sibyll {
       if (psib.hasDecayed()) continue;
       // add to corsika stack
       projectile.addSecondary(std::make_tuple(sibyll::convertFromSibyll(psib.getPID()),
-                                              psib.getEnergy(), psib.getMomentum(),
-                                              decayPoint, t0));
+                                              psib.getMomentum(), decayPoint, t0));
     }
     // empty sibyll stack
     ss.clear();

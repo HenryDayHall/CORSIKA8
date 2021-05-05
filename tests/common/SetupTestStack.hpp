@@ -45,18 +45,14 @@ namespace corsika::setup::testing {
     MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
     if (vProjectileType == Code::Nucleus) {
-      auto constexpr mN = constants::nucleonMass;
-      HEPEnergyType const E0 = sqrt(static_pow<2>(mN * vA) + pLab.getSquaredNorm());
-      auto particle = stack->addParticle(
-          std::make_tuple(Code::Nucleus, E0, pLab, origin, 0_ns, vA, vZ));
+      auto particle =
+          stack->addParticle(std::make_tuple(Code::Nucleus, pLab, origin, 0_ns, vA, vZ));
       particle.setNode(vNodePtr);
       return std::make_tuple(std::move(stack),
                              std::make_unique<setup::StackView>(particle));
     } else { // not a nucleus
-      HEPEnergyType const E0 =
-          sqrt(static_pow<2>(get_mass(vProjectileType)) + pLab.getSquaredNorm());
       auto particle =
-          stack->addParticle(std::make_tuple(vProjectileType, E0, pLab, origin, 0_ns));
+          stack->addParticle(std::make_tuple(vProjectileType, pLab, origin, 0_ns));
       particle.setNode(vNodePtr);
       return std::make_tuple(std::move(stack),
                              std::make_unique<setup::StackView>(particle));

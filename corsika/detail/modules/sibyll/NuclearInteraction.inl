@@ -546,14 +546,12 @@ namespace corsika::sibyll {
 
       if (nuclA == 1)
         // add nucleon
-        projectile.addSecondary(std::make_tuple(specCode, Plab.getTimeLikeComponent(),
-                                                Plab.getSpaceLikeComponents(), pOrig,
-                                                tOrig));
+        projectile.addSecondary(
+            std::make_tuple(specCode, Plab.getSpaceLikeComponents(), pOrig, tOrig));
       else
         // add nucleus
-        projectile.addSecondary(std::make_tuple(specCode, Plab.getTimeLikeComponent(),
-                                                Plab.getSpaceLikeComponents(), pOrig,
-                                                tOrig, nuclA, nuclZ));
+        projectile.addSecondary(std::make_tuple(specCode, Plab.getSpaceLikeComponents(),
+                                                pOrig, tOrig, nuclA, nuclZ));
     }
 
     // add elastic nucleons to corsika stack
@@ -570,9 +568,8 @@ namespace corsika::sibyll {
       const double mass_ratio = get_mass(elaNucCode) / ProjMass;
       auto const Plab = PprojLab * mass_ratio;
 
-      projectile.addSecondary(std::make_tuple(elaNucCode, Plab.getTimeLikeComponent(),
-                                              Plab.getSpaceLikeComponents(), pOrig,
-                                              tOrig));
+      projectile.addSecondary(
+          std::make_tuple(elaNucCode, Plab.getSpaceLikeComponents(), pOrig, tOrig));
     }
 
     // add inelastic interactions
@@ -584,8 +581,7 @@ namespace corsika::sibyll {
       CORSIKA_LOG_DEBUG("inelastic interaction no. {}", j);
       setup::Stack nucleonStack;
       auto inelasticNucleon = nucleonStack.addParticle(
-          std::make_tuple(pCode, PprojNucLab.getTimeLikeComponent(),
-                          PprojNucLab.getSpaceLikeComponents(), pOrig, tOrig));
+          std::make_tuple(pCode, PprojNucLab.getSpaceLikeComponents(), pOrig, tOrig));
       inelasticNucleon.setNode(projectile.getNode());
       // create inelastic interaction for each nucleon
       CORSIKA_LOG_TRACE("calling HadronicInteraction...");
@@ -595,9 +591,8 @@ namespace corsika::sibyll {
       hadronicInteraction_.doInteraction(nucleon_secondaries);
       // inelasticNucleon.Delete(); // this is just a temporary object
       for (const auto& pSec : nucleon_secondaries) {
-        projectile.addSecondary(std::make_tuple(pSec.getPID(), pSec.getEnergy(),
-                                                pSec.getMomentum(), pSec.getPosition(),
-                                                pSec.getTime()));
+        projectile.addSecondary(std::make_tuple(pSec.getPID(), pSec.getMomentum(),
+                                                pSec.getPosition(), pSec.getTime()));
       }
     }
 

@@ -255,7 +255,7 @@ namespace corsika {
      * particle/projectile
      *
      * This should only get internally called from a
-     * StackIterator::AddSecondary via ParticleBase
+     * StackIterator::addSecondary via ParticleBase
      */
     template <typename... TArgs>
     stack_iterator_type addSecondary(stack_iterator_type& parent, const TArgs... v);

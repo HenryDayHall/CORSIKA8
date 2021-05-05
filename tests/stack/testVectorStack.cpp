@@ -17,32 +17,26 @@
 using namespace corsika;
 using namespace std;
 
-template <typename TParticle>
-HEPEnergyType kineticEnergy(TParticle const p) {
-  return p.getEnergy() - get_mass(p.getPID());
-}
-
-TEST_CASE("VectorStack", "[stack]") {
+TEST_CASE("VectorStack", "stack") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
   SECTION("read+write") {
 
     VectorStack s;
-    s.addParticle(std::make_tuple(
-        Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+    s.addParticle(
+        std::make_tuple(Code::Electron, 1.5_GeV, DirectionVector(dummyCS, {1, 0, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     // read
     CHECK(s.getEntries() == 1);
     CHECK(s.getSize() == 1);
     auto pout = s.getNextParticle();
     CHECK(pout.getPID() == Code::Electron);
-    CHECK(pout.getEnergy() == 1.5_GeV);
-    CHECK(pout.getKineticEnergy() == kineticEnergy(pout));
+    CHECK(pout.getEnergy() == 1.5_GeV + Electron::mass);
+    CHECK(pout.getKineticEnergy() == 1.5_GeV);
     CHECK(pout.getTime() == 100_s);
   }
 
@@ -51,9 +45,9 @@ TEST_CASE("VectorStack", "[stack]") {
     VectorStack s;
     for (int i = 0; i < 99; ++i)
 
-      s.addParticle(std::make_tuple(
-          Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      s.addParticle(
+          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
     CHECK(s.getSize() == 99);
 

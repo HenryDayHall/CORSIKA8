@@ -22,8 +22,8 @@ using namespace std;
 void fill(VectorStack& s) {
   CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
   for (int i = 0; i < 11; ++i) {
-    s.addParticle(std::make_tuple(Code::Electron, 1.5_GeV * i,
-                                  MomentumVector(rootCS, {0_GeV, 0_GeV, 1_GeV}),
+    s.addParticle(std::make_tuple(Code::Electron, 1.5_GeV * i - Electron::mass,
+                                  DirectionVector(rootCS, {1, 0, 0}),
                                   Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
   }
 }

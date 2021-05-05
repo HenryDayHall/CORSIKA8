@@ -354,9 +354,8 @@ namespace corsika::sibyll {
         assert(p3lab.getCoordinateSystem() == originalCS); // just to be sure!
 
         // add to corsika stack
-        auto pnew = view.addSecondary(
-            std::make_tuple(corsika::sibyll::convertFromSibyll(psib.getPID()),
-                            Plab.getTimeLikeComponent(), p3lab, pOrig, tOrig));
+        auto pnew = view.addSecondary(std::make_tuple(
+            corsika::sibyll::convertFromSibyll(psib.getPID()), p3lab, pOrig, tOrig));
 
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
