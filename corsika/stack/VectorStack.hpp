@@ -87,7 +87,8 @@ namespace corsika {
 
     ///! Set energy
     void setEnergy(HEPEnergyType const& e) {
-      super_type::getStackData().setKineticEnergy(super_type::getIndex(), e - this->getMass());
+      super_type::getStackData().setKineticEnergy(super_type::getIndex(),
+                                                  e - this->getMass());
     }
 
     ///! Set kinetic energy
@@ -107,7 +108,8 @@ namespace corsika {
             super_type::getIndex(), DirectionVector(v.getCoordinateSystem(), {0, 0, 0}));
       } else {
         super_type::getStackData().setKineticEnergy(
-            super_type::getIndex(), sqrt(square(getMass()) + square(P)) - this->getMass());
+            super_type::getIndex(),
+            sqrt(square(getMass()) + square(P)) - this->getMass());
         super_type::getStackData().setDirection(super_type::getIndex(), v / P);
       }
     }

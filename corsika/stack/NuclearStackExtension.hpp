@@ -146,12 +146,12 @@ namespace corsika::nuclear_stack {
      * Overwrite normal setMomentum function with nuclear version
      */
     void setMomentum(MomentumVector const& v);
-    
+
     /**
      * Overwrite normal getMomentum function with nuclear version
      */
     MomentumVector getMomentum() const;
-    
+
     /**
      * Overwrite normal getEnergy function with nuclear version
      */
