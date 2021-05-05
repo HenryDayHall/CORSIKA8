@@ -9,6 +9,7 @@ Welcome to the CORSIKA 8 air shower simulation framework.
    readme_link
    output
    particles
+   particle_stack
    media
    units
    environment

@@ -1,21 +1,22 @@
 Howto create new physics modules
 ================================
 
-There are different types of physics modules, which you can add to the CORSIKA~8 physics process 
+There are different types of physics modules, which you can add to the CORSIKA 8 physics process 
 sequence. Modules can act on particles, secondaries or the entire stack. Modules can create new particles 
 or they can modify or delete particles. They can also produce output. 
 
 Types of different modules are explained in ::modules
 
-When creating new modules, we suggest to stick as close as possible to the default CORSIKA~8 coding guidelines 
+When creating new modules, we suggest to stick as close as possible to the default CORSIKA 8 coding guidelines 
 and code structure. This makes code review and sharing with others not more complicated than needed. 
 
-When your modules creates output, use the available CORSIKA~8 output machinery. This is not explained here. 
+When your modules creates output, use the available CORSIKA 8 output machinery. This is not explained here. Also learn 
+how to use units, and use the loggers from the very beginning. Furthermore, get aquinted with C++17.  
 
 Let's consider the case of an "InteractionProcess" which will remove the projectile particle and create 
 secondary particles on the stack instead. It also has a cross section in order to evaulate the probability 
 with respect to other InteractionProcesses. Create a header file "SimpleProcess.hpp", which is conceptually
-based to resemble (roughly) a Matthews-Heitler model:
+based to resemble (roughly) a Matthew-Heitler model:
 
 .. code-block:: c++
 
