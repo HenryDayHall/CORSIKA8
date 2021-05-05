@@ -22,54 +22,11 @@ namespace corsika {
   class Point : public BaseVector<length_d> {
 
   public:
-#ifdef TRACE
-    static int count_construct_;
-    static int count_copy_construct_;
-    static int count_move_;
-    static int count_assign_;
-    static int count_destruct_;
-    Point(Point const& v)
-        : BaseVector<length_d>(v) {
-      count_copy_construct_++;
-    }
-    Point(Point&& v)
-        : BaseVector<length_d>(v) {
-      count_move_++;
-    }
-    Point& operator=(Point const& v) {
-      count_assign_++;
-      BaseVector<length_d>::operator=(v);
-      return *this;
-    }
-    ~Point() { count_destruct_++; }
-    static void trace() {
-      CORSIKA_LOG_INFO(
-          "Point count_construct_={} count_copy_construct_={} count_move_={} "
-          "count_assign_={} "
-          "count_destruct_={}",
-          count_construct_, count_copy_construct_, count_move_, count_assign_,
-          count_destruct_);
-    }
-#else
-    Point(Point const&) = default;
-    Point(Point&&) = default;
-    Point& operator=(Point const&) = default;
-    ~Point() = default;
-#endif
-
     Point(CoordinateSystemPtr const& pCS, QuantityVector<length_d> const& pQVector)
-        : BaseVector<length_d>(pCS, pQVector) {
-#ifdef TRACE
-      count_construct_++;
-#endif
-    }
+        : BaseVector<length_d>(pCS, pQVector) {}
 
     Point(CoordinateSystemPtr const& cs, LengthType x, LengthType y, LengthType z)
-        : BaseVector<length_d>(cs, {x, y, z}) {
-#ifdef TRACE
-      count_construct_++;
-#endif
-    }
+        : BaseVector<length_d>(cs, {x, y, z}) {}
 
     /** \todo TODO: this should be private or protected, we don NOT want to expose numbers
      * without reference to outside:
