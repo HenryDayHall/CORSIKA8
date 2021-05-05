@@ -30,7 +30,6 @@ double constexpr absMargin = 1.0e-8;
 TEST_CASE("Geometry CoordinateSystems") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] %v");
 
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
@@ -66,6 +65,9 @@ TEST_CASE("Geometry CoordinateSystems") {
     Point p2(translatedCS, {0_m, 0_m, 0_m});
     CHECK(((p2 - p1).getComponents() - translationVector).getNorm().magnitude() ==
           Approx(0).margin(absMargin));
+    CHECK(p2.getX(rootCS) == 0_m);
+    CHECK(p2.getY(rootCS) == 4_m);
+    CHECK(p2.getZ(rootCS) == 0_m);
   }
 
   SECTION("multiple translations") {

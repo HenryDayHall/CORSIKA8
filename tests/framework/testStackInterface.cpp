@@ -83,7 +83,6 @@ TEST_CASE("Stack", "[Stack]") {
     stack.erase(p);
     CHECK(stack.getSize() == 1);
     CHECK(stack.getEntries() == 0);
-    CHECK_THROWS(stack.erase(p)); // already deleted
   }
 
   SECTION("delete particle") {
@@ -99,7 +98,8 @@ TEST_CASE("Stack", "[Stack]") {
     CHECK(stack.getEntries() == 3);
     CHECK(!stack.isEmpty());
 
-    p.erase(); // mark for deletion: size=3, entries=2
+    p.erase();               // mark for deletion: size=3, entries=2
+    CHECK_THROWS(p.erase()); // already deleted
     CHECK(stack.getSize() == 3);
     CHECK(stack.getEntries() == 2);
     CHECK(!stack.isEmpty());
