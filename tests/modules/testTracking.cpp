@@ -301,7 +301,7 @@ TEMPLATE_TEST_CASE("TrackingPlane", "plane", tracking_leapfrog_curved::Tracking,
 
   const HEPEnergyType P0 = 10_GeV;
 
-  auto PID = GENERATE(as<Code>{}, Code::MuPlus, Code::MuPlus, Code::Gamma);
+  auto PID = GENERATE(as<Code>{}, Code::MuPlus, Code::MuPlus, Code::Photon);
   // for algorithms that know magnetic deflections choose: +-50uT, 0uT
   // otherwise just 0uT
   auto Bfield = GENERATE(filter(
