@@ -93,8 +93,8 @@ constexpr quantity< length_d >               furlong            { Rep( 2.01168e+
 
 constexpr quantity< volume_d >               gallon_imperial    { Rep( 4.54609e-3L ) * cube( meter ) };
 constexpr quantity< volume_d >               gallon_us          { Rep( 3.785412e-3L ) * cube( meter ) };
-constexpr quantity< magnetic_flux_density_d > photon             { Rep( 1e-9L ) * tesla };
-constexpr quantity< mass_d >                 photon_mass         { Rep( 1e-9L ) * kilogram };
+constexpr quantity< magnetic_flux_density_d > gamma             { Rep( 1e-9L ) * tesla };
+constexpr quantity< mass_d >                 gamma_mass         { Rep( 1e-9L ) * kilogram };
 constexpr quantity< magnetic_flux_density_d > gauss             { Rep( 1e-4L ) * tesla };
 constexpr quantity< electric_current_d >     gilbert            { Rep( 7.957747e-1L ) * ampere };
 constexpr quantity< volume_d >               gill_imperial      { Rep( 1.420653e-4L ) * cube( meter ) };
