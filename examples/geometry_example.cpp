@@ -21,7 +21,6 @@ using namespace corsika;
 int main() {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CORSIKA_LOG_INFO("geometry_example");
 

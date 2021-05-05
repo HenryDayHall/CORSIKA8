@@ -22,7 +22,6 @@ double constexpr absMargin = 1.0e-8;
 TEST_CASE("Helix class") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   const CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
   Point r0(rootCS, {0_m, 0_m, 0_m});

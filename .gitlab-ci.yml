@@ -16,6 +16,7 @@ variables:
   # _alternatively_ corsika-data can be downloaded as submodule:
   GIT_SUBMODULE_STRATEGY: normal # none: we get the submodules in before_script,
                                  # normal: get submodules automatically
+  CTEST_OUTPUT_ON_FAILURE: 1
 
 
 #
@@ -32,6 +33,7 @@ stages:
   - build_test
   - example
   - build_test_example
+  - python
   - install
   - optional
 
@@ -251,6 +253,8 @@ test-clang-8:
   artifacts:
     when: always
     expire_in: 3 days
+    paths:
+      - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     reports:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
@@ -311,6 +315,7 @@ build_test-clang-8:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
+  allow_failure: true
   artifacts:
     when: always
     expire_in: 3 days
@@ -319,6 +324,7 @@ build_test-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -440,6 +446,7 @@ install-clang-8:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
     paths:
       - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
+      - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
 
 # release for gcc
 release-full-u-18_04:
@@ -536,3 +543,38 @@ sanity:
     untracked: true
     policy: pull
     key: "${CI_COMMIT_REF_SLUG}-gcc"
+
+##########################################################
+# template for all Python jobs
+.python:
+  stage: python
+  tags:
+    - corsika
+  before_script:
+    - apt-get update && apt-get install -y python3-pip
+  script:
+    - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
+    - pip3 install --user -e '.[test]'  # install the package + test deps
+    - python3 --version
+    - python3 -m mypy corsika
+    - python3 -m isort --atomic --check-only corsika tests
+    - python3 -m black -t py37 corsika tests
+    - python3 -m flake8 corsika tests
+    - python3 -m pytest --cov=corsika tests
+    - cd ${CI_PROJECT_DIR}  # reset the directory
+  coverage: '/^TOTAL\s*\d+\s*\d+\s*(.*\%)/'
+
+# the default Python version Ubuntu 18.04 is Python3.8
+python-3.8:
+  extends: .python
+  image: corsika/devel:u-18.04
+  dependencies:
+    - build-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
+  artifacts:
+    when: always
+    expire_in: 1 year
+    paths:
+      - ${CI_PROJECT_DIR}/Python/python-test.log
+  allow_failure: true

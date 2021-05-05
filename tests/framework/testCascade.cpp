@@ -24,6 +24,8 @@
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
+#include <corsika/output/DummyOutputManager.hpp>
+
 #include <SetupTestTrajectory.hpp>
 
 #include <catch2/catch.hpp>
@@ -137,7 +139,6 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
   HEPEnergyType E0 = 100_GeV;
@@ -164,8 +165,10 @@ TEST_CASE("Cascade", "[Cascade]") {
       Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   DummyTracking tracking;
-  Cascade<DummyTracking, decltype(sequence), TestCascadeStack, TestCascadeStackView> EAS(
-      env, tracking, sequence, stack);
+  DummyOutputManager output;
+  Cascade<DummyTracking, decltype(sequence), DummyOutputManager, TestCascadeStack,
+          TestCascadeStackView>
+      EAS(env, tracking, sequence, output, stack);
 
   SECTION("full cascade") {
     EAS.run();

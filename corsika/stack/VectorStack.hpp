@@ -87,7 +87,13 @@ namespace corsika {
       return this->getMomentum() / this->getEnergy();
     }
 
+    VelocityVector getVelocity() const {
+      return this->getMomentum() / this->getEnergy() * constants::c;
+    }
+
     HEPMassType getMass() const { return get_mass(this->getPID()); }
+
+    ElectricChargeType getCharge() const { return get_charge(this->getPID()); }
 
     int16_t getChargeNumber() const { return get_charge_number(this->getPID()); }
     ///@}

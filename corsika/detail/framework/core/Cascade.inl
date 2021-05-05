@@ -26,10 +26,13 @@
 
 namespace corsika {
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::run() {
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::run() {
     setNodes(); // put each particle on stack in correct environment volume
+
+    // start this event (i.e. this shower)
+    output_.startOfShower();
 
     while (!stack_.isEmpty()) {
       while (!stack_.isEmpty()) {
@@ -51,23 +54,27 @@ namespace corsika {
       // thus, the double loop
       // doCascadeEquations();
     }
+
+    // end this event (i.e. this shower)
+    output_.endOfShower();
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::forceInteraction() {
+  inline void
+  Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::forceInteraction() {
     CORSIKA_LOG_TRACE("forced interaction!");
     setNodes();
     auto vParticle = stack_.getNextParticle();
     TStackView secondaries(vParticle);
-    interaction(secondaries);
+    interaction(secondaries, sequence_.getInverseInteractionLength(vParticle));
     sequence_.doSecondaries(secondaries);
     vParticle.erase(); // primary particle is done
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::step(
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::step(
       Particle& vParticle) {
 
     // determine combined total interaction length (inverse)
@@ -243,62 +250,89 @@ namespace corsika {
     [[maybe_unused]] auto projectile = secondaries.getProjectile();
 
     if (distance_interact < distance_decay) {
-      interaction(secondaries);
+      interaction(secondaries, total_inv_lambda);
     } else {
-      decay(secondaries);
-      // make sure particle actually did decay if it should have done so
-      // \todo this should go to a validation code and not be included here
-      if (secondaries.getSize() == 1 &&
-          projectile.getPID() == secondaries.getNextParticle().getPID())
-        throw std::runtime_error(fmt::format("Particle {} decays into itself!",
-                                             get_name(projectile.getPID())));
+      if (decay(secondaries, total_inv_lifetime) == ProcessReturn::Decayed) {
+        if (secondaries.getSize() == 1 &&
+            projectile.getPID() == secondaries.getNextParticle().getPID()) {
+          throw std::runtime_error(fmt::format("Particle {} decays into itself!",
+                                               get_name(projectile.getPID())));
+        }
+      }
     }
 
     sequence_.doSecondaries(secondaries);
     vParticle.erase();
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::decay(
-      TStackView& view) {
+  inline ProcessReturn
+  Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::decay(
+      TStackView& view, InverseTimeType initial_inv_decay_time) {
     CORSIKA_LOG_DEBUG("decay");
-    InverseTimeType const actual_decay_time = sequence_.getInverseLifetime(view.parent());
 
-    UniformRealDistribution<InverseTimeType> uniDist(actual_decay_time);
+#ifdef DEBUG
+    InverseTimeType const actual_decay_time = sequence_.getInverseLifetime(view.parent());
+    if (actual_decay_time * 0.99 > initial_inv_decay_time) {
+      CORSIKA_LOG_WARN(
+          "Decay time decreased during step! This leads to un-physical step length. "
+          "delta_inverse_decay_time={}",
+          1 / initial_inv_decay_time - 1 / actual_decay_time);
+    }
+#endif
+
+    // one option is that decay_time is now larger (less
+    // probability for decay) than it was before the step, thus,
+    // no decay might actually occur and is allowed
+
+    UniformRealDistribution<InverseTimeType> uniDist(initial_inv_decay_time);
     const auto sample_process = uniDist(rng_);
 
     auto const returnCode = sequence_.selectDecay(view, sample_process);
     if (returnCode != ProcessReturn::Decayed) {
-      CORSIKA_LOG_WARN("Particle did not decay!");
+      CORSIKA_LOG_DEBUG("Particle did not decay!");
     }
     setEventType(view, history::EventType::Decay);
     return returnCode;
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline ProcessReturn Cascade<TTracking, TProcessList, TStack, TStackView>::interaction(
-      TStackView& view) {
+  inline ProcessReturn
+  Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::interaction(
+      TStackView& view, InverseGrammageType initial_inv_int_length) {
     CORSIKA_LOG_DEBUG("collide");
 
-    InverseGrammageType const current_inv_length =
-        sequence_.getInverseInteractionLength(view.parent());
+#ifdef DEBUG
+    InverseGrammageType const actual_inv_length = sequence_.getInverseInteractionLength(
+        view.parent()); // 1/lambda_int after step, -dE/dX etc.
 
-    UniformRealDistribution<InverseGrammageType> uniDist(current_inv_length);
+    if (actual_inv_length * 0.99 > initial_inv_int_length) {
+      CORSIKA_LOG_WARN(
+          "Interaction length decreased during step! This leads to un-physical step "
+          "length. delta_innverse_interaction_length={}",
+          1 / initial_inv_int_length - 1 / actual_inv_length);
+    }
+#endif
 
+    // one option is that interaction_length is now larger (less
+    // probability for collision) than it was before the step, thus,
+    // no interaction might actually occur and is allowed
+
+    UniformRealDistribution<InverseGrammageType> uniDist(initial_inv_int_length);
     const auto sample_process = uniDist(rng_);
     auto const returnCode = sequence_.selectInteraction(view, sample_process);
     if (returnCode != ProcessReturn::Interacted) {
-      CORSIKA_LOG_WARN("Particle did not interace!");
+      CORSIKA_LOG_DEBUG("Particle did not interact!");
     }
     setEventType(view, history::EventType::Interaction);
     return returnCode;
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::setNodes() {
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::setNodes() {
     std::for_each(stack_.begin(), stack_.end(), [&](auto& p) {
       auto const* numericalNode =
           environment_.getUniverse()->getContainingNode(p.getPosition());
@@ -306,9 +340,9 @@ namespace corsika {
     });
   }
 
-  template <typename TTracking, typename TProcessList, typename TStack,
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
             typename TStackView>
-  inline void Cascade<TTracking, TProcessList, TStack, TStackView>::setEventType(
+  inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::setEventType(
       TStackView& view, [[maybe_unused]] history::EventType eventType) {
     if constexpr (TStackView::has_event) {
       for (auto&& sec : view) { sec.getEvent()->setEventType(eventType); }

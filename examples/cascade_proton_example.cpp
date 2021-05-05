@@ -11,9 +11,10 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
+
+#include <corsika/output/OutputManager.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -66,6 +67,8 @@ int main() {
   // initialize random number sequence(s)
   RNGManager::getInstance().registerRandomStream("cascade");
 
+  OutputManager output("cascade_proton_outputs");
+
   // setup environment, geometry
   using EnvType = setup::Environment;
   EnvType env;
@@ -115,7 +118,7 @@ int main() {
 
   // setup processes, decays and interactions
   setup::Tracking tracking;
-  StackInspector<setup::Stack> stackInspect(1, true, E0);
+  StackInspector<setup::Stack> stackInspect(1000, true, E0);
 
   RNGManager::getInstance().registerRandomStream("sibyll");
   RNGManager::getInstance().registerRandomStream("pythia");
@@ -130,7 +133,9 @@ int main() {
   // HadronicElasticModel::HadronicElasticInteraction
   // hadronicElastic(env);
 
-  TrackWriter trackWriter("tracks.dat");
+  TrackWriter trackWriter;
+  output.add("tracks", trackWriter); // register TrackWriter
+
   ShowerAxis const showerAxis{injectionPos, Vector{rootCS, 0_m, 0_m, -100_km}, env};
   BetheBlochPDG eLoss{showerAxis};
 
@@ -141,7 +146,7 @@ int main() {
   auto sequence = make_sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);
 
   // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
+  Cascade EAS(env, tracking, sequence, output, stack);
   EAS.run();
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;
@@ -150,4 +155,6 @@ int main() {
       cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy();
   cout << "total energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1.) * 100 << endl;
+
+  output.endOfLibrary();
 }

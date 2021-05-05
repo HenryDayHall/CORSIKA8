@@ -6,44 +6,51 @@
  * the license.
  */
 
-#include <corsika/modules/ObservationPlane.hpp>
-#include <corsika/framework/core/Logging.hpp>
+#include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-
-#include <fstream>
 
 namespace corsika {
 
-  inline ObservationPlane::ObservationPlane(Plane const& obsPlane,
-                                            DirectionVector const& x_axis,
-                                            std::string const& filename, bool deleteOnHit)
+  template <typename TOutput>
+  ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
+                                              DirectionVector const& x_axis,
+                                              bool deleteOnHit)
       : plane_(obsPlane)
-      , outputStream_(filename)
       , deleteOnHit_(deleteOnHit)
       , energy_ground_(0_GeV)
       , count_ground_(0)
       , xAxis_(x_axis.normalized())
-      , yAxis_(obsPlane.getNormal().cross(xAxis_)) {
-    outputStream_ << "#PDG code, energy / eV, x distance / m, y distance / m"
-                  << std::endl;
-  }
+      , yAxis_(obsPlane.getNormal().cross(xAxis_)) {}
 
-  inline ProcessReturn ObservationPlane::doContinuous(
+  template <typename TOutput>
+  inline ProcessReturn ObservationPlane<TOutput>::doContinuous(
       corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory&,
       bool const stepLimit) {
-
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
-    if (!stepLimit) { return ProcessReturn::Ok; }
+    if (!stepLimit) {
+#ifdef DEBUG
+      if (deleteOnHit_) {
+        LengthType const check =
+            (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
+        if (check < 0_m) {
+          CORSIKA_LOG_DEBUG("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
+        }
+      }
+#endif
+      return ProcessReturn::Ok;
+    }
 
     HEPEnergyType const energy = particle.getEnergy();
     Point const pointOfIntersection = particle.getPosition();
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
-    outputStream_ << static_cast<int>(get_PDG(particle.getPID())) << ' ' << energy / 1_eV
-                  << ' ' << displacement.dot(xAxis_) / 1_m << ' '
-                  << displacement.dot(yAxis_) / 1_m << '\n';
+    // add our particles to the output file stream
+    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
+                displacement.dot(yAxis_));
+
+    CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
     if (deleteOnHit_) {
       count_ground_++;
@@ -54,17 +61,19 @@ namespace corsika {
     }
   }
 
-  inline LengthType ObservationPlane::getMaxStepLength(
+  template <typename TOutput>
+  inline LengthType ObservationPlane<TOutput>::getMaxStepLength(
       corsika::setup::Stack::particle_type const& particle,
       corsika::setup::Trajectory const& trajectory) {
+
+    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
+                      particle.getPosition(), particle.getDirection(), plane_.asString());
 
     Intersections const intersection =
         setup::Tracking::intersect<corsika::setup::Stack::particle_type>(particle,
                                                                          plane_);
     TimeType const timeOfIntersection = intersection.getEntry();
-    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}, timeOfIntersection={}",
-                      particle.asString(), particle.getPosition(),
-                      particle.getDirection(), plane_.asString(), timeOfIntersection);
+    CORSIKA_LOG_TRACE("timeOfIntersection={}", timeOfIntersection);
     if (timeOfIntersection < TimeType::zero()) {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
@@ -78,17 +87,62 @@ namespace corsika {
     return dist;
   }
 
-  inline void ObservationPlane::showResults() const {
+  template <typename TOutput>
+  inline void ObservationPlane<TOutput>::showResults() const {
     CORSIKA_LOG_INFO(
         " ******************************\n"
         " ObservationPlane: \n"
-        " energy in ground (GeV)     :  {}\n"
-        " no. of particles in ground :  {}\n"
+        " energy an ground (GeV)     :  {}\n"
+        " no. of particles at ground :  {}\n"
         " ******************************",
         energy_ground_ / 1_GeV, count_ground_);
   }
 
-  inline void ObservationPlane::reset() {
+  template <typename TOutput>
+  inline YAML::Node ObservationPlane<TOutput>::getConfig() const {
+    using namespace units::si;
+
+    // construct the top-level node
+    YAML::Node node;
+
+    // basic info
+    node["type"] = "ObservationPlane";
+    node["units"] = "m"; // add default units for values
+
+    // the center of the plane
+    auto const center{plane_.getCenter()};
+
+    // save each component in its native coordinate system
+    auto const center_coords{center.getCoordinates(center.getCoordinateSystem())};
+    node["plane"]["center"].push_back(center_coords.getX() / 1_m);
+    node["plane"]["center"].push_back(center_coords.getY() / 1_m);
+    node["plane"]["center"].push_back(center_coords.getZ() / 1_m);
+
+    // the normal vector of the plane
+    auto const normal{plane_.getNormal().getComponents()};
+    node["plane"]["normal"].push_back(normal.getX().magnitude());
+    node["plane"]["normal"].push_back(normal.getY().magnitude());
+    node["plane"]["normal"].push_back(normal.getZ().magnitude());
+
+    // the x-axis vector
+    auto const xAxis_coords{xAxis_.getComponents(xAxis_.getCoordinateSystem())};
+    node["x-axis"].push_back(xAxis_coords.getX().magnitude());
+    node["x-axis"].push_back(xAxis_coords.getY().magnitude());
+    node["x-axis"].push_back(xAxis_coords.getZ().magnitude());
+
+    // the y-axis vector
+    auto const yAxis_coords{yAxis_.getComponents(yAxis_.getCoordinateSystem())};
+    node["y-axis"].push_back(yAxis_coords.getX().magnitude());
+    node["y-axis"].push_back(yAxis_coords.getY().magnitude());
+    node["y-axis"].push_back(yAxis_coords.getZ().magnitude());
+
+    node["delete_on_hit"] = deleteOnHit_;
+
+    return node;
+  }
+
+  template <typename TOutput>
+  inline void ObservationPlane<TOutput>::reset() {
     energy_ground_ = 0_GeV;
     count_ground_ = 0;
   }

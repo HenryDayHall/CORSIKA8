@@ -31,8 +31,8 @@ namespace corsika {
     /** \todo TODO: this should be private or protected, we don NOT want to expose numbers
      * without reference to outside:
      */
-    QuantityVector<length_d> const& getCoordinates() const;
-    QuantityVector<length_d>& getCoordinates();
+    inline QuantityVector<length_d> const& getCoordinates() const;
+    inline QuantityVector<length_d>& getCoordinates();
 
     /**
        this always returns a QuantityVector as triple
@@ -40,7 +40,7 @@ namespace corsika {
        \returns A value type QuantityVector, since it may have to create a temporary
        object to transform to pCS.
     **/
-    QuantityVector<length_d> getCoordinates(CoordinateSystemPtr const& pCS) const;
+    inline QuantityVector<length_d> getCoordinates(CoordinateSystemPtr const& pCS) const;
 
     /**
      * this always returns a QuantityVector as triple
@@ -49,7 +49,7 @@ namespace corsika {
      *   is actually transformed to pCS, if needed. Thus, there may be an implicit call to
      *   \ref rebase.
      **/
-    QuantityVector<length_d>& getCoordinates(CoordinateSystemPtr const& pCS);
+    inline QuantityVector<length_d>& getCoordinates(CoordinateSystemPtr const& pCS);
 
     /**
      * \name access coordinate components
@@ -60,24 +60,29 @@ namespace corsika {
      * created and destroyed each call. This can be avoided by using
      * \ref rebase first.
      **/
-    LengthType getX(CoordinateSystemPtr const& pCS) const;
-    LengthType getY(CoordinateSystemPtr const& pCS) const;
-    LengthType getZ(CoordinateSystemPtr const& pCS) const;
+    inline LengthType getX(CoordinateSystemPtr const& pCS) const;
+    inline LengthType getY(CoordinateSystemPtr const& pCS) const;
+    inline LengthType getZ(CoordinateSystemPtr const& pCS) const;
     /** \} **/
 
     /*!
      * transforms the Point into another CoordinateSystem by changing its
      * coordinates interally
      */
-    void rebase(CoordinateSystemPtr const& pCS);
+    inline void rebase(CoordinateSystemPtr const& pCS);
 
-    Point operator+(Vector<length_d> const& pVec) const;
+    inline Point operator+(Vector<length_d> const& pVec) const;
 
     /*!
      * returns the distance Vector between two points
      */
-    Vector<length_d> operator-(Point const& pB) const;
+    inline Vector<length_d> operator-(Point const& pB) const;
   };
+
+  /*
+   * calculates the distance between two points
+   */
+  inline LengthType distance(Point const& p1, Point const& p2);
 
 } // namespace corsika
 

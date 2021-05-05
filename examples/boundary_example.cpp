@@ -14,6 +14,8 @@
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
+#include <corsika/output/OutputManager.hpp>
+
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -42,6 +44,7 @@
 #include <iostream>
 #include <limits>
 #include <typeinfo>
+#include <fstream>
 
 using namespace corsika;
 using namespace std;
@@ -112,6 +115,8 @@ int main() {
   world->addChild(std::move(target));
   universe.addChild(std::move(world));
 
+  OutputManager output("boundary_outputs");
+
   // setup processes, decays and interactions
   setup::Tracking tracking;
 
@@ -121,7 +126,9 @@ int main() {
 
   ParticleCut cut(50_GeV, true, true);
 
-  TrackWriter trackWriter("boundary_tracks.dat");
+  TrackWriter trackWriter;
+  output.add("tracks", trackWriter); // register TrackWriter
+
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
@@ -164,7 +171,7 @@ int main() {
   }
 
   // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
+  Cascade EAS(env, tracking, sequence, output, stack);
 
   EAS.run();
 
@@ -174,4 +181,6 @@ int main() {
       (cut.getCutEnergy() + cut.getInvEnergy() + cut.getEmEnergy());
   CORSIKA_LOG_INFO("Total energy (GeV): {} relative difference (%): {}", Efinal / 1_GeV,
                    (Efinal / E0 - 1.) * 100);
+
+  output.endOfLibrary();
 }

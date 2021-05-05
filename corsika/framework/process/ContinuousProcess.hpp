@@ -18,47 +18,46 @@
 namespace corsika {
 
   /**
-     @ingroup Processes
-     @{
+    * @ingroup Processes
+    * @{
+    * Processes with continuous effects along a particle Trajectory.
+    *
+    * Create a new ContinuousProcess, e.g. for XYModel, via:
+    * @code{.cpp}
+    * class XYModel : public ContinuousProcess<XYModel> {};
+    * @endcode
+    *
+    * and provide two necessary interface methods:
+    * @code{.cpp}
+    * template <typename TParticle, typename TTrack>
+    * LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
+    * @endcode
 
-     Processes with continuous effects along a particle Trajectory
+    * which allows any ContinuousProcess to tell to CORSIKA a maximum
+    * allowed step length. Such step-length limitation, if it turns out
+    * to be smaller/sooner than any other limit (decay length,
+    * interaction length, other continuous processes, geometry, etc.)
+    * will lead to a limited step length.
 
-     Create a new ContinuousProcess, e.g. for XYModel, via
-     @code{.cpp}
-     class XYModel : public ContinuousProcess<XYModel> {};
-     @endcode
+    * @code{.cpp}
+    * template <typename TParticle, typename TTrack>
+    * ProcessReturn doContinuous(TParticle& p, TTrack const& t, bool const stepLimit)
+    * const;
+    * @endcode
 
-     and provide two necessary interface methods:
-     @code{.cpp}
-     template <typename TParticle, typename TTrack>
-     LengthType getMaxStepLength(TParticle const& p, TTrack const& track) const;
-     @endcode
+    * which applied any continuous effects on Particle p along
+    * Trajectory t. The particle in all typical scenarios will be
+    * altered by a doContinuous. The flag stepLimit will be true if the
+    * preious evaluation of getMaxStepLength resulted in this
+    * particular ContinuousProcess to be responsible for the step
+    * length limit on the current track t. This information can be
+    * expoited and avoid e.g. any uncessary calculations.
 
-     which allows any ContinuousProcess to tell to CORSIKA a maximum
-     allowed step length. Such step-length limitation, if it turns out
-     to be smaller/sooner than any other limit (decay length,
-     interaction length, other continuous processes, geometry, etc.)
-     will lead to a limited step length.
-
-     @code{.cpp}
-     template <typename TParticle, typename TTrack>
-     ProcessReturn doContinuous(TParticle& p, TTrack const& t, bool const stepLimit)
-     const;
-     @endcode
-
-     which applied any continuous effects on Particle p along
-     Trajectory t. The particle in all typical scenarios will be
-     altered by a doContinuous. The flag stepLimit will be true if the
-     preious evaluation of getMaxStepLength resulted in this
-     particular ContinuousProcess to be responsible for the step
-     length limit on the current track t. This information can be
-     expoited and avoid e.g. any uncessary calculations.
-
-     Particle and Track are the valid classes to
-     access particles and track (Trajectory) data on the Stack. Those two methods
-     do not need to be templated, they could use the types
-     e.g. corsika::setup::Stack::particle_type -- but by the cost of
-     loosing all flexibility otherwise provided.
+    * Particle and Track are the valid classes to
+    * access particles and track (Trajectory) data on the Stack. Those two methods
+    * do not need to be templated, they could use the types
+    * e.g. corsika::setup::Stack::particle_type -- but by the cost of
+    * loosing all flexibility otherwise provided.
 
    */
 
@@ -68,8 +67,8 @@ namespace corsika {
   };
 
   /**
-   * ProcessTraits specialization to flag ContinuousProcess objects
-   **/
+   * ProcessTraits specialization to flag ContinuousProcess objects.
+   */
   template <typename TProcess>
   struct is_continuous_process<
       TProcess, std::enable_if_t<

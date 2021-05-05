@@ -8,18 +8,17 @@
 
 #pragma once
 
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
-
-#include <fstream>
-#include <string>
+#include <corsika/modules/writers/TrackWriterParquet.hpp>
 
 namespace corsika {
 
-  class TrackWriter : public ContinuousProcess<TrackWriter> {
+  template <typename TOutputWriter = TrackWriterParquet>
+  class TrackWriter : public ContinuousProcess<TrackWriter<TOutputWriter>>,
+                      public TOutputWriter {
 
   public:
-    TrackWriter(std::string const& filename);
+    TrackWriter();
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(TParticle const&, TTrack const&, bool const limitFlag);
@@ -27,12 +26,7 @@ namespace corsika {
     template <typename TParticle, typename TTrack>
     LengthType getMaxStepLength(TParticle const&, TTrack const&);
 
-  private:
-    std::string const filename_;
-    std::ofstream file_;
-
-    int width_ = 14;
-    int precision_ = 6;
+    YAML::Node getConfig() const;
   };
 
 } // namespace corsika
