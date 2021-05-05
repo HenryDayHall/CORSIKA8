@@ -173,7 +173,11 @@ def read_pythia_db(filename, particle_db, classnames):
         else:
             c_id = c_identifier_camel(name) # the camel case names
 
-        hadron =abs(pdg) > 100
+        # rename photon in Pythia to gamma
+        if pdg == 22:
+            name = "photon"
+
+        hadron = abs(pdg) > 100
 
         if c_id in particle_db.keys():
             raise RuntimeError("particle '{:s}' already known (new PDG id {:d}, stored PDG id: {:d})".format(c_id, pdg, particle_db[c_id]['pdg']))
@@ -514,7 +518,7 @@ def serialize_particle_db(particle_db, file):
 if __name__ == "__main__":
     
     if len(sys.argv) != 4:
-        print("usage: {:s} <Pythia8.xml> <Nuclei.xml> <ClassNames.xml>".format(sys.argv[0]), file=sys.stderr)
+        print("usage: {:s} <ParticleData.xml> <NuclearData.xml> <ParticleClassNames.xml>".format(sys.argv[0]), file=sys.stderr)
         sys.exit(1)
         
     print("\n       pdxml_reader.py: automatically produce particle properties from input files\n")
