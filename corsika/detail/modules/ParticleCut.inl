@@ -30,7 +30,7 @@ namespace corsika {
         set_energy_threshold(p, eMuCut);
       else if (p == Code::Electron || p == Code::Positron)
         set_energy_threshold(p, eEleCut);
-      else if (p == Code::Gamma)
+      else if (p == Code::Photon)
         set_energy_threshold(p, ePhoCut);
       else if (p == Code::Nucleus)
         // nuclei have same threshold as hadrons on the nucleon level.

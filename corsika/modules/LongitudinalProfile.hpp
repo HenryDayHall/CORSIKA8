@@ -57,7 +57,7 @@ namespace corsika {
     ShowerAxis const& shower_axis_;
     using ProfileEntry = std::array<uint32_t, 6>;
     enum ProfileIndex {
-      Gamma = 0,
+      Photon = 0,
       Positron = 1,
       Electron = 2,
       MuPlus = 3,

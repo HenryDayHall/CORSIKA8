@@ -2280,8 +2280,8 @@ heavymet in ATLAS calorimeter
 Note: Tungsten properties except for average Z/A used in calculations
 ----------------------------------------------------------------------------
  280 Heavy  5  -1.0000000000      0.40915 1.9300E+01 1.9300E+01 S  3  1  1 M
-     heavymet_in_Rochester_gamma_stop
-heavymet as Rochester gamma stop
+     heavymet_in_Rochester_photon_stop
+heavymet as Rochester photon stop
      727.0   5.4059   0.2167   3.4960  0.15509   2.8447     0.14
         28  1.000000  0.060000
         29  0.615758  0.040000

@@ -46,8 +46,8 @@ namespace corsika {
     int const binEnd = std::floor(grammageEnd / dX_);
 
     for (int b = binStart; b <= binEnd; ++b) {
-      if (pid == Code::Gamma) {
-        profiles_.at(b)[ProfileIndex::Gamma]++;
+      if (pid == Code::Photon) {
+        profiles_.at(b)[ProfileIndex::Photon]++;
       } else if (pid == Code::Positron) {
         profiles_.at(b)[ProfileIndex::Positron]++;
       } else if (pid == Code::Electron) {
@@ -68,7 +68,7 @@ namespace corsika {
                                         const int precision) {
     CORSIKA_LOG_DEBUG("Write longprof to {}", filename);
     std::ofstream f{filename};
-    f << "# X / g·cm¯², gamma, e+, e-, mu+, mu-, all hadrons" << std::endl;
+    f << "# X / g·cm¯², photon, e+, e-, mu+, mu-, all hadrons" << std::endl;
     for (size_t b = 0; b < profiles_.size(); ++b) {
       f << std::setprecision(5) << std::setw(11) << b * (dX_ / (1_g / 1_cm / 1_cm));
       for (auto const& N : profiles_.at(b)) {

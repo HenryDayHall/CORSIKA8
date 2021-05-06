@@ -54,7 +54,7 @@ namespace corsika {
   }
 
   inline bool constexpr is_em(Code const c) {
-    return c == Code::Electron || c == Code::Positron || c == Code::Gamma;
+    return c == Code::Electron || c == Code::Positron || c == Code::Photon;
   }
 
   inline bool constexpr is_muon(Code const c) {

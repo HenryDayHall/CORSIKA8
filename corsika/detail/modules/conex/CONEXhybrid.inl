@@ -246,7 +246,7 @@ namespace corsika {
     auto dEdX = std::make_unique<float[]>(maxX);
     auto Mu = std::make_unique<float[]>(maxX);
     auto dMu = std::make_unique<float[]>(maxX);
-    auto Gamma = std::make_unique<float[]>(maxX);
+    auto Photon = std::make_unique<float[]>(maxX);
     auto Electrons = std::make_unique<float[]>(maxX);
     auto Hadrons = std::make_unique<float[]>(maxX);
 
@@ -255,17 +255,17 @@ namespace corsika {
     ::conex::get_shower_data_(icut, iSec, nX, X[0], N[0], fitpars[0], H[0], D[0]);
     ::conex::get_shower_edep_(icut, nX, dEdX[0], EGround[0]);
     ::conex::get_shower_muon_(icutm, nX, Mu[0], dMu[0]);
-    ::conex::get_shower_gamma_(icutg, nX, Gamma[0]);
+    ::conex::get_shower_gamma_(icutg, nX, Photon[0]);
     ::conex::get_shower_electron_(icute, nX, Electrons[0]);
     ::conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 
     std::ofstream file{"conex_output.txt"};
     file << fmt::format("#{:>8} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13}\n", "X",
-                        "N", "dEdX", "Mu", "dMu", "Gamma", "El", "Had");
+                        "N", "dEdX", "Mu", "dMu", "Photon", "El", "Had");
     for (int i = 0; i < nX; ++i) {
       file << fmt::format(
           " {:>8.2f} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3}\n",
-          X[i], N[i], dEdX[i], Mu[i], dMu[i], Gamma[i], Electrons[i], Hadrons[i]);
+          X[i], N[i], dEdX[i], Mu[i], dMu[i], Photon[i], Electrons[i], Hadrons[i]);
     }
     file.close();
 

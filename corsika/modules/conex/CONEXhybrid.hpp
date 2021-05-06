@@ -46,7 +46,7 @@ namespace corsika {
     // data members
     //! CONEX e.m. particle codes
     static std::array<std::pair<Code, int>, 3> constexpr egs_em_codes_{
-        {{Code::Gamma, 0}, {Code::Electron, -1}, {Code::Positron, -1}}};
+        {{Code::Photon, 0}, {Code::Electron, -1}, {Code::Positron, -1}}};
 
     Point const center_; //!< center of CONEX Earth
     ShowerAxis const& showerAxis_;

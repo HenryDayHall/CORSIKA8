@@ -24,7 +24,7 @@
 namespace corsika::proposal {
 
   //!
-  //! Electro-magnetic and gamma continous losses produced by proposal. It makes
+  //! Electro-magnetic and photon continous losses produced by proposal. It makes
   //! use of interpolation tables which are runtime intensive calculation, but can be
   //! reused by setting the \param PROPOSAL::InterpolationDef::path_to_tables variable.
   //!
