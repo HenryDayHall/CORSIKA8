@@ -143,6 +143,11 @@ namespace corsika::nuclear_stack {
     /// @}
 
     /**
+     * Overwrite normal getPDG function with nuclear version
+     */
+    PDGCode getPDG() const;
+
+    /**
      * Overwrite normal setMomentum function with nuclear version
      */
     void setMomentum(MomentumVector const& v);

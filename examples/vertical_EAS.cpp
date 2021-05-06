@@ -394,7 +394,7 @@ int main(int argc, char** argv) {
     Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
     ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
     // register the observation plane with the output
-    output.add("obsplane", observationLevel);
+    output.add("particles", observationLevel);
 
     auto sequence =
         make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,

@@ -195,6 +195,14 @@ namespace corsika::nuclear_stack {
 
   template <template <typename> class InnerParticleInterface,
             typename StackIteratorInterface>
+  inline PDGCode NuclearParticleInterface<InnerParticleInterface,
+                                          StackIteratorInterface>::getPDG() const {
+    return (isNucleus() ? PDGCode(1000000000 + getNuclearZ() * 10000 + getNuclearA() * 10)
+                        : super_type::getPDG());
+  }
+
+  template <template <typename> class InnerParticleInterface,
+            typename StackIteratorInterface>
   inline void
   NuclearParticleInterface<InnerParticleInterface, StackIteratorInterface>::setMomentum(
       MomentumVector const& v) {

@@ -130,6 +130,8 @@ namespace corsika {
     Code getPID() const {
       return super_type::getStackData().getPID(super_type::getIndex());
     }
+    //! Get PDG code
+    PDGCode getPDG() const { return get_PDG(getPID()); }
     //! Get kinetic energy
     HEPEnergyType getKineticEnergy() const {
       return super_type::getStackData().getKineticEnergy(super_type::getIndex());
