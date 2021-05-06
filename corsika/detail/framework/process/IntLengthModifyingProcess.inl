@@ -1,0 +1,41 @@
+/*
+ * (c) Copyright 2021 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
+namespace corsika {
+
+  template <class TUnderlyingProcess>
+  inline IntLengthModifyingProcess<TUnderlyingProcess>::IntLengthModifyingProcess(
+      TUnderlyingProcess& process,
+      std::function<IntLengthModifyingProcess::functor_signature> modifier)
+      : process_{process}
+      , modifier_{modifier} {}
+
+  template <class TUnderlyingProcess>
+  template <typename TSecondaryView>
+  inline void IntLengthModifyingProcess<TUnderlyingProcess>::doInteraction(
+      TSecondaryView& view) {
+    process_.doInteraction(view);
+  }
+
+  template <class TUnderlyingProcess>
+  template <typename TParticle>
+  inline GrammageType IntLengthModifyingProcess<TUnderlyingProcess>::getInteractionLength(
+      TParticle const& particle) {
+    GrammageType const original = process_.getInteractionLength(particle);
+    Code const pid = particle.getPID();
+    HEPEnergyType const energy = particle.getEnergy();
+
+    return modifier_(original, pid, energy);
+  }
+
+} // namespace corsika
