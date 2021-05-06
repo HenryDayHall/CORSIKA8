@@ -7,25 +7,9 @@
  */
 
 #include <corsika/framework/process/IntLengthModifyingProcess.hpp>
-#include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
-#include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
-#include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <SetupTestStack.hpp>
-#include <SetupTestEnvironment.hpp>
-
 #include <catch2/catch.hpp>
-
-#include <numeric>
-#include <algorithm>
-#include <iterator>
-#include <string>
-#include <fstream>
-#include <cstdio>
 
 using namespace corsika;
 
