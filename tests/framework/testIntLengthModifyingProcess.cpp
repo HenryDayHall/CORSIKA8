@@ -13,7 +13,7 @@
 
 using namespace corsika;
 
-struct DummyProcess {
+struct DummyProcess : public InteractionProcess<DummyProcess> {
   int id{0};
 
   template <typename TParticle>
