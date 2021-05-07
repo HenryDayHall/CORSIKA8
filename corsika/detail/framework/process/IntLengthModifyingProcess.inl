@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
@@ -18,7 +20,7 @@ namespace corsika {
       TUnderlyingProcess& process,
       std::function<IntLengthModifyingProcess::functor_signature> modifier)
       : process_{process}
-      , modifier_{modifier} {}
+      , modifier_{std::move(modifier)} {}
 
   template <class TUnderlyingProcess>
   template <typename TSecondaryView>
