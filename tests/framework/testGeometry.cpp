@@ -334,6 +334,8 @@ TEST_CASE("Distance between points") {
   CHECK(distance(p5, p6) / 1_m == Approx(1));
 }
 
+TEST_CASE("Geometry Tree") {}
+
 TEST_CASE("Path") {
   // define a known CS
   CoordinateSystemPtr root = get_root_CoordinateSystem();

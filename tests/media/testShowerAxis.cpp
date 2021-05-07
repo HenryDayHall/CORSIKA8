@@ -48,7 +48,6 @@ auto setupEnvironment(Code vTargetCode) {
 TEST_CASE("Homogeneous Density") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   auto [env, csPtr, nodePtr] = setupEnvironment(Code::Nitrogen);
   auto const& cs = *csPtr;
@@ -62,7 +61,7 @@ TEST_CASE("Homogeneous Density") {
   Point const injectionPos = showerCore + Vector<dimensionless_d>{cs, {0, 0, 1}} * t;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos), *env,
-                              true, // -> do not throw exceptions
+                              true, // -> throw exceptions
                               20};  // -> number of bins
 
   CHECK(showerAxis.getSteplength() == 500_m);
@@ -83,4 +82,11 @@ TEST_CASE("Homogeneous Density") {
 
   CHECK_THROWS(showerAxis.getX(-1_m));
   CHECK_THROWS(showerAxis.getX((injectionPos - showerCore).getNorm() + 1_m));
+
+  ShowerAxis const showerAxisNoThrow{injectionPos, (showerCore - injectionPos), *env,
+                                     false, // -> do not throw exceptions
+                                     20};   // -> number of bins
+  CHECK(showerAxisNoThrow.getX(-1_m) == showerAxis.getMinimumX());
+  CHECK(showerAxisNoThrow.getX((injectionPos - showerCore).getNorm() + 1_m) ==
+        showerAxis.getMaximumX());
 }
