@@ -17,9 +17,9 @@ namespace corsika {
 
   template <class TUnderlyingProcess>
   inline IntLengthModifyingProcess<TUnderlyingProcess>::IntLengthModifyingProcess(
-      TUnderlyingProcess& process,
+      TUnderlyingProcess&& process,
       std::function<IntLengthModifyingProcess::functor_signature> modifier)
-      : process_{process}
+      : process_{std::move(process)}
       , modifier_{std::move(modifier)} {}
 
   template <class TUnderlyingProcess>
@@ -38,6 +38,17 @@ namespace corsika {
     HEPEnergyType const energy = particle.getEnergy();
 
     return modifier_(original, pid, energy);
+  }
+
+  template <class TUnderlyingProcess>
+  inline TUnderlyingProcess const&
+  IntLengthModifyingProcess<TUnderlyingProcess>::getProcess() const {
+    return process_;
+  }
+
+  template <class TUnderlyingProcess>
+  inline TUnderlyingProcess& IntLengthModifyingProcess<TUnderlyingProcess>::getProcess() {
+    return process_;
   }
 
 } // namespace corsika

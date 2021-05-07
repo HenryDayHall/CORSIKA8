@@ -14,6 +14,8 @@
 using namespace corsika;
 
 struct DummyProcess {
+  int id{0};
+
   template <typename TParticle>
   GrammageType getInteractionLength(TParticle const&) {
     return 100_g / 1_cm / 1_cm;
@@ -23,6 +25,13 @@ struct DummyProcess {
   void doInteraction(TArgument& arg) {
     arg = 3;
   }
+
+  DummyProcess() = default;
+  DummyProcess(DummyProcess&&) = default;
+
+  // prevent copying
+  DummyProcess(DummyProcess const&) = delete;
+  DummyProcess& operator=(DummyProcess const&) = delete;
 };
 
 struct DummyParticle {
@@ -33,12 +42,14 @@ struct DummyParticle {
 
 TEST_CASE("IntLengthModifyingProcess", "[process]") {
   DummyProcess u;
+  u.id = 38;
 
   auto const modifier = [](GrammageType orig, Code, HEPEnergyType) -> GrammageType {
     return orig * 2;
   };
 
-  IntLengthModifyingProcess mod{u, modifier};
+  IntLengthModifyingProcess mod{std::move(u), modifier};
+  REQUIRE(std::is_same_v<decltype(mod), IntLengthModifyingProcess<DummyProcess>>);
 
   SECTION("getInteractionLength") {
     DummyParticle const p;
@@ -49,5 +60,14 @@ TEST_CASE("IntLengthModifyingProcess", "[process]") {
     int k = 0;
     mod.doInteraction(k);
     REQUIRE(k == 3);
+  }
+
+  SECTION("getProcess") {
+    DummyProcess& uRef = mod.getProcess();
+    REQUIRE(uRef.id == 38);
+
+    decltype(mod) const& modConstRef = mod;
+    DummyProcess const& uConstRef = modConstRef.getProcess();
+    REQUIRE(uConstRef.id == 38);
   }
 }

@@ -35,7 +35,7 @@ namespace corsika {
     //! energy
     using functor_signature = GrammageType(GrammageType, corsika::Code, HEPEnergyType);
 
-    IntLengthModifyingProcess(TUnderlyingProcess& process,
+    IntLengthModifyingProcess(TUnderlyingProcess&& process,
                               std::function<functor_signature> modifier);
 
     //! wrapper around internal process doInteraction
@@ -46,8 +46,11 @@ namespace corsika {
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const& particle);
 
+    TUnderlyingProcess const& getProcess() const;
+    TUnderlyingProcess& getProcess();
+
   private:
-    TUnderlyingProcess& process_;
+    TUnderlyingProcess process_;
     std::function<functor_signature> const modifier_{non_modifying_functor};
   };
 
