@@ -35,6 +35,10 @@ namespace corsika {
     //! energy
     using functor_signature = GrammageType(GrammageType, corsika::Code, HEPEnergyType);
 
+    /**
+     * Create wrapper around InteractionProcess. Note that the passed process object
+     * itself may no longer be used, only through this class.
+     */
     IntLengthModifyingProcess(TUnderlyingProcess&& process,
                               std::function<functor_signature> modifier);
 
@@ -46,6 +50,7 @@ namespace corsika {
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const& particle);
 
+    ///! obtain reference to wrapped process
     TUnderlyingProcess const& getProcess() const;
     TUnderlyingProcess& getProcess();
 
