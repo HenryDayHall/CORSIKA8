@@ -62,10 +62,11 @@ struct DummyView {
 
 int globalCount = 0; // simple counter
 
-int checkDecay = 0;    // use this as a bit field
-int checkInteract = 0; // use this as a bit field
-int checkSec = 0;      // use this as a bit field
-int checkCont = 0;     // use this as a bit field
+int checkDecay = 0;       // use this as a bit field
+int checkInteract = 0;    // use this as a bit field
+int checkSec = 0;         // use this as a bit field
+int checkCont = 0;        // use this as a bit field
+int checkSecondaries = 0; // use this as a bit field
 
 class ContinuousProcess1 : public ContinuousProcess<ContinuousProcess1> {
 public:
@@ -332,6 +333,22 @@ private:
   int count_ = 0;
 };
 
+class Secondaries1 : public SecondariesProcess<Secondaries1> {
+public:
+  template <typename TView>
+  void doSecondaries(TView const&) {
+    checkSecondaries |= 1;
+  }
+};
+
+class Secondaries2 : public SecondariesProcess<Secondaries2> {
+public:
+  template <typename TView>
+  void doSecondaries(TView const&) {
+    checkSecondaries |= 2;
+  }
+};
+
 class Boundary1 : public BoundaryCrossingProcess<Boundary1> {
 public:
   Boundary1(double const v = 1.0)
@@ -580,7 +597,6 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
 TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   /**
    * In this example switching is done only by "data_[0]>0", where
@@ -596,8 +612,11 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
   auto cp2 = ContinuousProcess2(0, 2_m);
   auto cp3 = ContinuousProcess3(0, 3_m);
 
-  auto sequence1 = make_sequence(Process1(0), cp2, Decay1(0), Boundary1(1.0));
-  auto sequence2 = make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0));
+  auto sec1 = Secondaries1();
+  auto sec2 = Secondaries2();
+
+  auto sequence1 = make_sequence(Process1(0), cp2, Decay1(0), sec1, Boundary1(1.0));
+  auto sequence2 = make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0), sec2);
 
   auto sequence3 = make_sequence(cp1, Process3(0),
                                  SwitchProcessSequence(select1, sequence1, sequence2));
@@ -650,7 +669,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = 100; // data positive
+    particle.data_[0] = 100; // data positive --> sequence1
     sequence3.doContinuous(particle, track, ContinuousProcessIndex(1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
@@ -661,7 +680,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = -100; // data negative
+    particle.data_[0] = -100; // data negative  --> sequence2
     sequence3.doContinuous(particle, track, ContinuousProcessIndex(1));
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
@@ -676,7 +695,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = 100; // data positive
+    particle.data_[0] = 100; // data positive   --> sequence1
     sequence3.selectInteraction(view, lambda_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b100); // this is Process3
@@ -692,7 +711,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = -100; // data negative
+    particle.data_[0] = -100; // data negative   --> sequence2
     sequence3.selectInteraction(view, lambda_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b010); // this is Process2
@@ -704,7 +723,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = -100; // data negative
+    particle.data_[0] = -100; // data negative  --> sequence2
     sequence3.doSecondaries(view);
     Stack1 stack(0);
     sequence3.doStack(stack);
@@ -720,7 +739,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
-    particle.data_[0] = -100; // data positive
+    particle.data_[0] = -100; // data negative --> sequence1
     sequence4.selectInteraction(view, lambda_select);
     sequence4.doSecondaries(view);
     sequence4.selectDecay(view, time_select);
@@ -739,6 +758,22 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);
+  }
+
+  SECTION("Check SecondariesProcesses in SwitchProcessSequence") {
+
+    DummyData particle;
+    DummyView view(particle);
+
+    checkSecondaries = 0;
+    particle.data_[0] = 100; // data positive  --> sequence1
+    sequence3.doSecondaries(view);
+    CHECK(checkSecondaries == 1);
+
+    checkSecondaries = 0;
+    particle.data_[0] = -100; // data positive  --> sequence1
+    sequence3.doSecondaries(view);
+    CHECK(checkSecondaries == 2);
   }
 
   SECTION("Check ContinuousProcesses in SwitchProcessSequence") {
