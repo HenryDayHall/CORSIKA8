@@ -133,9 +133,9 @@ namespace corsika::proposal {
         std::max(energy * 0.9, // either 10% relative loss max., or
                  get_kinetic_energy_threshold(
                      code) // energy thresholds globally defined for individual particles
-                     * 0.9999 // need to go slightly below global e-cut to assure removal in
-                              // ParticleCut. This does not matter since at cut-time the
-                              // entire energy is removed.
+                     * 0.9999 // need to go slightly below global e-cut to assure removal
+                              // in ParticleCut. This does not matter since at cut-time
+                              // the entire energy is removed.
         );
 
     // solving the track integral for giving energy lim
