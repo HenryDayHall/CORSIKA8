@@ -48,19 +48,16 @@ namespace corsika::proposal {
          corsika::units::si::HEPEnergyType
              emCut) { //!< Stochastic losses smaller than the given cut
                       //!< will be handeled continuously.
-        using namespace corsika::units::si;
-        auto p_cut =
-            std::make_shared<const PROPOSAL::EnergyCutSettings>(emCut / 1_MeV, 1, true);
-        return PROPOSAL::DefaultCrossSections<T>::template Get<std::false_type>(
-            T(), m, p_cut, true);
+        auto p_cut = std::make_shared<const PROPOSAL::EnergyCutSettings>(
+            0.5 * emCut / 1_MeV, 1, false);
+        return PROPOSAL::GetStdCrossSections(T(), m, p_cut, true);
       };
 
   //!
   //! PROPOSAL default crosssections are maped to corresponding corsika particle
   //! code.
   //!
-  static std::map<Code, std::function<PROPOSAL::crosssection_list_t<PROPOSAL::ParticleDef,
-                                                                    PROPOSAL::Medium>(
+  static std::map<Code, std::function<PROPOSAL::crosssection_list_t(
                             PROPOSAL::Medium&, corsika::units::si::HEPEnergyType)>>
       cross = {{Code::Photon, cross_builder<PROPOSAL::GammaDef>},
                {Code::Electron, cross_builder<PROPOSAL::EMinusDef>},

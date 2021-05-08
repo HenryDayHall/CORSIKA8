@@ -12,6 +12,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/process/InteractionProcess.hpp>
+#include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 
@@ -31,8 +32,8 @@ namespace corsika::proposal {
   class Interaction : public InteractionProcess<Interaction>, ProposalProcessBase {
 
     enum { eSECONDARIES, eINTERACTION };
-    using calculator_t = tuple<unique_ptr<PROPOSAL::SecondariesCalculator>,
-                               unique_ptr<PROPOSAL::Interaction>>;
+    using calculator_t = std::tuple<std::unique_ptr<PROPOSAL::SecondariesCalculator>,
+                                    std::unique_ptr<PROPOSAL::Interaction>>;
 
     std::unordered_map<calc_key_t, calculator_t, hash>
         calc; //!< Stores the secondaries and interaction calculators.

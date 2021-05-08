@@ -62,8 +62,10 @@ namespace corsika::pythia8 {
 
     //    Pythia8::Pythia::particleData.readString("59:m0 = 101.00");
 
+    // LCOV_EXCL_START, we don't validate pythia8 internals
     if (!Pythia8::Pythia::init())
       throw std::runtime_error("Pythia::Decay: Initialization failed!");
+    // LCOV_EXCL_STOP
   }
 
   inline bool Decay::canHandleDecay(Code const vParticleCode) {
@@ -74,7 +76,7 @@ namespace corsika::pythia8 {
         vParticleCode == Code::NuMuBar || vParticleCode == Code::NuTauBar ||
         vParticleCode == Code::Electron || vParticleCode == Code::Positron)
       return false;
-    else if (canDecay(vParticleCode)) // non-zero for particles known to sibyll
+    else if (canDecay(vParticleCode)) // check pythia8 internal
       return true;
     else
       return false;
@@ -206,15 +208,19 @@ namespace corsika::pythia8 {
     // add particle to pythia stack
     event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
 
+    // LCOV_EXCL_START, we don't validate pythia8 internals
     if (!Pythia8::Pythia::next())
       throw std::runtime_error("Pythia::Decay: decay failed!");
-    else
-      CORSIKA_LOG_DEBUG("Pythia::Decay: particles after decay: {} ", event.size());
+    // LCOV_EXCL_STOP
 
+    CORSIKA_LOG_DEBUG("Pythia::Decay: particles after decay: {} ", event.size());
+
+    // LCOV_EXCL_START, we don't validate pythia8 internals
     if (print_listing_) {
       // list final state
       event.list();
     }
+    // LCOV_EXCL_STOP
 
     // loop over final state
     for (int i = 0; i < event.size(); ++i)

@@ -20,7 +20,7 @@
 
 using namespace corsika;
 
-TEST_CASE("Pythia", "[processes]") {
+TEST_CASE("Pythia8", "modules") {
 
   logging::set_level(logging::level::info);
 
@@ -64,7 +64,7 @@ TEST_CASE("Pythia", "[processes]") {
     std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                          Code::KMinus, Code::K0Long,  Code::K0Short};
     RNGManager::getInstance().registerRandomStream("pythia");
-    corsika::pythia8::Decay model(particleList);
+    corsika::pythia8::Decay decay(particleList);
   }
 }
 
@@ -91,10 +91,9 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("PythiaInterface", "[processes]") {
+TEST_CASE("Pythia8Interface", "modules") {
 
   logging::set_level(logging::level::info);
-
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
@@ -118,37 +117,46 @@ TEST_CASE("PythiaInterface", "[processes]") {
 
     RNGManager::getInstance().registerRandomStream("pythia");
 
-    corsika::pythia8::Decay model(particleList);
+    corsika::pythia8::Decay decay(particleList);
 
-    [[maybe_unused]] const TimeType time = model.getLifetime(particle);
-    model.doDecay(*secViewPtr);
-    CHECK(stack.getEntries() == 3);
+    [[maybe_unused]] const TimeType time = decay.getLifetime(particle);
+    double const gamma = particle.getEnergy() / get_mass(Code::PiPlus);
+    CHECK(time == get_lifetime(Code::PiPlus) * gamma);
+    decay.doDecay(*secViewPtr);
+    CHECK(stack.getEntries() == 3); // piplus, muplu, numu
     auto const pSum = sumMomentum(view, cs);
     CHECK((pSum - plab).getNorm() / 1_GeV == Approx(0).margin(1e-4));
     CHECK((pSum.getNorm() - plab.getNorm()) / 1_GeV == Approx(0).margin(1e-4));
   }
 
   SECTION("pythia decay config") {
-    corsika::pythia8::Decay model({Code::PiPlus, Code::PiMinus});
-    CHECK(model.isDecayHandled(Code::PiPlus));
-    CHECK(model.isDecayHandled(Code::PiMinus));
-    CHECK_FALSE(model.isDecayHandled(Code::KPlus));
+    corsika::pythia8::Decay decay({Code::PiPlus, Code::PiMinus});
+    CHECK(decay.isDecayHandled(Code::PiPlus));
+    CHECK(decay.isDecayHandled(Code::PiMinus));
+    CHECK_FALSE(decay.isDecayHandled(Code::KPlus));
 
     const std::vector<Code> particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                                 Code::Lambda0Bar, Code::D0Bar};
 
     // setup decays
-    model.setHandleDecay(particleTestList);
-    for (auto& pCode : particleTestList) CHECK(model.isDecayHandled(pCode));
+    decay.setHandleDecay(particleTestList);
+    for (auto& pCode : particleTestList) CHECK(decay.isDecayHandled(pCode));
 
     // individually
-    model.setHandleDecay(Code::KMinus);
+    decay.setHandleDecay(Code::KMinus);
+
+    // impossible
+    CHECK_THROWS(decay.setHandleDecay(Code::Photon));
+
+    CHECK(decay.isDecayHandled(Code::PiPlus));
+    CHECK_FALSE(decay.isDecayHandled(Code::Photon));
 
     // possible decays
-    CHECK_FALSE(model.canHandleDecay(Code::Proton));
-    CHECK_FALSE(model.canHandleDecay(Code::Electron));
-    CHECK(model.canHandleDecay(Code::PiPlus));
-    CHECK(model.canHandleDecay(Code::MuPlus));
+    CHECK_FALSE(decay.canHandleDecay(Code::Photon));
+    CHECK_FALSE(decay.canHandleDecay(Code::Proton));
+    CHECK_FALSE(decay.canHandleDecay(Code::Electron));
+    CHECK(decay.canHandleDecay(Code::PiPlus));
+    CHECK(decay.canHandleDecay(Code::MuPlus));
   }
 
   SECTION("pythia interaction") {
@@ -162,10 +170,81 @@ TEST_CASE("PythiaInterface", "[processes]") {
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
 
-    corsika::pythia8::Interaction model;
-    model.doInteraction(view);
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+    corsika::pythia8::Interaction collision;
+
+    CHECK(collision.canInteract(Code::Proton));
+    CHECK(collision.canInteract(Code::AntiProton));
+    CHECK(collision.canInteract(Code::Neutron));
+    CHECK(collision.canInteract(Code::AntiNeutron));
+    CHECK(collision.canInteract(Code::PiMinus));
+    CHECK(collision.canInteract(Code::PiPlus));
+    CHECK_FALSE(collision.canInteract(Code::Electron));
+
+    // nuclei not supported
+    CHECK_THROWS(collision.getCrossSection(Code::Proton, Code::Helium, 1_TeV));
+    std::tuple<CrossSectionType, CrossSectionType> xs_test =
+        collision.getCrossSection(Code::Iron, Code::Hydrogen, 1_GeV);
+    CHECK(std::get<0>(xs_test) == std::numeric_limits<double>::infinity() * 1_mb);
+    CHECK(std::get<1>(xs_test) == std::numeric_limits<double>::infinity() * 1_mb);
+
+    collision.getInteractionLength(particle);
+
+    collision.doInteraction(view);
+    [[maybe_unused]] const GrammageType length = collision.getInteractionLength(particle);
     CHECK(length / 1_kg * square(1_m) == Approx(43.04).margin(5e-1));
     CHECK(view.getSize() == 38);
+  }
+
+  SECTION("pythia nucleus projectile") {
+
+    // this is a projectile nucleus with very little energy
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Oxygen, 0, 0, 17_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
+    auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
+
+    corsika::pythia8::Interaction collision;
+
+    GrammageType lambda_test = collision.getInteractionLength(particle);
+    CHECK(lambda_test == std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm));
+
+    CHECK_THROWS(collision.doInteraction(view));
+  }
+
+  SECTION("pythia too low energy") {
+
+    // this is a projectile neutron with very little energy
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Neutron, 0, 0, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        *csPtr);
+    auto& view = *secViewPtr;
+    auto particle = stackPtr->first();
+
+    corsika::pythia8::Interaction collision;
+
+    GrammageType lambda_test = collision.getInteractionLength(particle);
+    CHECK(lambda_test == std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm));
+
+    CHECK_THROWS(collision.doInteraction(view));
+  }
+
+  SECTION("pythia wrong target") {
+
+    // incompatible target
+    auto [env_Fe, csPtr_Fe, nodePtr_Fe] = setup::testing::setup_environment(Code::Iron);
+    [[maybe_unused]] auto const& cs_Fe = *csPtr_Fe;
+    [[maybe_unused]] auto const& env_dummy_Fe = env_Fe;
+    [[maybe_unused]] auto const& node_dummy_Fe = nodePtr_Fe;
+
+    // resonable projectile, but tool low energy
+    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
+        Code::Proton, 0, 0, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr_Fe,
+        *csPtr_Fe);
+    auto& view = *secViewPtr;
+
+    corsika::pythia8::Interaction collision;
+
+    CHECK_THROWS(collision.doInteraction(view));
   }
 }

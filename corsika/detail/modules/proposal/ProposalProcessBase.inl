@@ -38,7 +38,7 @@ namespace corsika::proposal {
         const auto& medium = mediumData(
             prop.getMedium(Point(_env.getCoordinateSystem(), 0_cm, 0_cm, 0_cm)));
 
-        auto comp_vec = std::vector<PROPOSAL::Components::Component>();
+        auto comp_vec = std::vector<PROPOSAL::Component>();
         const auto& comp = prop.getNuclearComposition();
         auto frac_iter = comp.getFractions().cbegin();
         for (auto& pcode : comp.getComponents()) {
@@ -54,15 +54,11 @@ namespace corsika::proposal {
       }
     });
 
-    PROPOSAL::InterpolationDef::order_of_interpolation = 2;
-    PROPOSAL::InterpolationDef::nodes_cross_section = 100;
-    PROPOSAL::InterpolationDef::nodes_propagate = 1000;
-
     //! If corsika data exist store interpolation tables to the corresponding
     //! path, otherwise interpolation tables would only stored in main memory if
     //! no explicit intrpolation def is specified.
     if (auto data_path = std::getenv("CORSIKA_DATA")) {
-      PROPOSAL::InterpolationDef::path_to_tables = std::string(data_path) + "/PROPOSAL";
+      PROPOSAL::InterpolationSettings::TABLES_PATH = std::string(data_path) + "/PROPOSAL";
     } else {
       throw std::runtime_error(
           "It is not recommended to run PROPOSAL without its tables in "
