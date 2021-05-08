@@ -24,7 +24,7 @@ project (
 #+++++++++++++++++++++++++++++
 # prevent in-source builds and give warning message
 #
-if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") 
+if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
   message (FATAL_ERROR "In-source builds are disabled.
     Please create a build-dir and use `cmake <source-dir>` inside it.
     NOTE: cmake will now create CMakeCache.txt and CMakeFiles/*.
@@ -124,7 +124,7 @@ if (CMAKE_BUILD_TYPE STREQUAL Coverage)
 
   # compile coverage under -O0 to avoid any optimization, function elimation etc.
   add_compile_options ("-O0")
-  
+
   set (GCOV gcov CACHE STRING "gcov executable" FORCE)
   set (LCOV_BIN_DIR "${PROJECT_SOURCE_DIR}/externals/lcov/bin")
   # collect coverage data
@@ -158,7 +158,7 @@ endif ()
 # CTest config
 #
 enable_testing ()
-if (${CMAKE_VERSION} VERSION_LESS "3.12.0")  
+if (${CMAKE_VERSION} VERSION_LESS "3.12.0")
   list (APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 else (${CMAKE_VERSION} VERSION_LESS "3.12.0")
   set (CTEST_OUTPUT_ON_FAILURE 1) # this is for new versions of cmake
@@ -196,18 +196,19 @@ set_target_properties (
   INTERFACE_CORSIKA8_MAJOR_VERSION 0
   COMPATIBLE_INTERFACE_STRING CORSIKA8_MAJOR_VERSION
   )
-#  
+#
 target_include_directories (
   CORSIKA8
   INTERFACE
   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
   $<INSTALL_INTERFACE:include>
-  ) 
+  )
 # since CORSIKA8 is a header only library we must specify all link dependencies here:
 target_link_libraries (
   CORSIKA8
   INTERFACE
+  CONAN_PKG::proposal
   CONAN_PKG::eigen
   CONAN_PKG::spdlog
   CONAN_PKG::boost
@@ -234,17 +235,10 @@ add_subdirectory (modules/sibyll)
 add_subdirectory (modules/qgsjetII)
 add_subdirectory (modules/urqmd)
 add_subdirectory (modules/conex)
-#
-# we really need a better proposal CMakeList.txt file:
-set (ADD_PYTHON OFF)
-file (READ modules/CMakeLists_PROPOSAL.txt overwrite_CMakeLists_PROPOSAL_txt)
-file (WRITE modules/proposal/CMakeLists.txt ${overwrite_CMakeLists_PROPOSAL_txt})
-add_subdirectory (modules/proposal)
-target_link_libraries (CORSIKA8 INTERFACE PROPOSAL)
 
 #+++++++++++++++++++++++++++++++
 # unit testing
-# 
+#
 add_subdirectory (tests)
 
 #+++++++++++++++++++++++++++++++
@@ -298,8 +292,8 @@ configure_package_config_file (
 
 # config for install tree
 # overwrite with install location (if it was build as part of corsika)
-set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL}) 
-set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL}) 
+set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL})
+set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake

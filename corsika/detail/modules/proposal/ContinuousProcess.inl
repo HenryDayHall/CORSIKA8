@@ -37,14 +37,19 @@ namespace corsika::proposal {
         code); //! energy thresholds globally defined for individual particles
     auto c = p_cross->second(media.at(comp.getHash()), emCut);
 
+    // Use higland multiple scattering and deactivate stochastic deflection by
+    // passing an empty vector
+    static constexpr auto ms_type = PROPOSAL::MultipleScatteringType::Highland;
+    auto s_type = std::vector<PROPOSAL::InteractionType>();
+
     // Build displacement integral and scattering object and interpolate them too and
     // saved in the calc map by a key build out of a hash of composed of the component and
     // particle code.
-    auto disp = PROPOSAL::make_displacement(c, true);
-    auto scatter =
-        PROPOSAL::make_scattering("highland", particle[code], media.at(comp.getHash()));
-    calc[std::make_pair(comp.getHash(), code)] =
-        std::make_tuple(std::move(disp), std::move(scatter));
+    auto calculator =
+        Calculator{PROPOSAL::make_displacement(c, true),
+                   PROPOSAL::make_scattering(ms_type, s_type, particle[code],
+                                             media.at(comp.getHash()))};
+    calc[std::make_pair(comp.getHash(), code)] = std::move(calculator);
   }
 
   template <>
@@ -62,28 +67,25 @@ namespace corsika::proposal {
     // Cast corsika vector to proposal vector
     auto vP_dir = vP.getDirection();
     auto d = vP_dir.getComponents();
-    auto direction = PROPOSAL::Vector3D(d.getX().magnitude(), d.getY().magnitude(),
-                                        d.getZ().magnitude());
+    auto direction = PROPOSAL::Cartesian3D(d.getX().magnitude(), d.getY().magnitude(),
+                                           d.getZ().magnitude());
 
     auto E_f = vP.getEnergy() - loss;
 
     // draw random numbers required for scattering process
     std::uniform_real_distribution<double> distr(0., 1.);
-    auto rnd = array<double, 4>();
+    auto rnd = std::array<double, 4>();
     for (auto& it : rnd) it = distr(RNG_);
 
     // calculate deflection based on particle energy, loss
-    auto [mean_dir, final_dir] = get<eSCATTERING>(c->second)->Scatter(
-        grammage / 1_g * square(1_cm), vP.getEnergy() / 1_MeV, E_f / 1_MeV, direction,
-        rnd);
+    [[maybe_unused]] auto deflection = (c->second).scatter->CalculateMultipleScattering(
+        grammage / 1_g * square(1_cm), vP.getEnergy() / 1_MeV, E_f / 1_MeV, rnd);
 
-    // TODO: neglect mean direction deflection because Trajectory is a const ref
-    (void)mean_dir;
-
+    // TODO: multiple scattering is temporary deactivated !!!!!
     // update particle direction after continuous loss caused by multiple
     // scattering
-    auto vec = QuantityVector(final_dir.GetX() * E_f, final_dir.GetY() * E_f,
-                              final_dir.GetZ() * E_f);
+    auto vec = QuantityVector(direction.GetX() * E_f, direction.GetY() * E_f,
+                              direction.GetZ() * E_f);
     vP.setMomentum(MomentumVector(vP_dir.getCoordinateSystem(), vec));
   }
 
@@ -102,7 +104,7 @@ namespace corsika::proposal {
     // get or build corresponding track integral calculator and solve the
     // integral
     auto c = getCalculator(vP, calc);
-    auto final_energy = get<eDISPLACEMENT>(c->second)->UpperLimitTrackIntegral(
+    auto final_energy = (c->second).disp->UpperLimitTrackIntegral(
                             vP.getEnergy() / 1_MeV, dX / 1_g * 1_cm * 1_cm) *
                         1_MeV;
     auto dE = vP.getEnergy() - final_energy;
@@ -125,20 +127,20 @@ namespace corsika::proposal {
     // hyper parameter which must be adjusted.
     //
     auto const energy = vP.getEnergy();
-    auto const energy_lim = std::max(
-        energy * 0.9, // either 10% relative loss max., or
-        get_energy_threshold(
-            code) // energy thresholds globally defined for individual particles
-            *
-            0.99 // need to go 1% below global e-cut to assure removal in ParticleCut. The
-                 // 1% does not matter since at cut-time the entire energy is removed.
-    );
+    auto const energy_lim =
+        std::max(energy * 0.9, // either 10% relative loss max., or
+                 get_energy_threshold(
+                     code) // energy thresholds globally defined for individual particles
+                     * 0.9999 // need to go 1% below global e-cut to assure removal in
+                              // ParticleCut. The 1% does not matter since at cut-time the
+                              // entire energy is removed.
+        );
 
     // solving the track integral for giving energy lim
     auto c = getCalculator(vP, calc);
-    auto grammage = get<eDISPLACEMENT>(c->second)->SolveTrackIntegral(
-                        energy / 1_MeV, energy_lim / 1_MeV) *
-                    1_g / square(1_cm);
+    auto grammage =
+        (c->second).disp->SolveTrackIntegral(energy / 1_MeV, energy_lim / 1_MeV) * 1_g /
+        square(1_cm);
 
     // return it in distance aequivalent
     auto dist = vP.getNode()->getModelProperties().getArclengthFromGrammage(vT, grammage);

@@ -81,8 +81,9 @@ namespace corsika::sibyll {
         BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
     if (!iBeam)
       throw std::runtime_error(
-          "Interaction: getCrossSection: interaction of beam hadron not defined in "
-          "Sibyll!");
+          fmt::format("Interaction of beam {} not defined in "
+                      "Sibyll!",
+                      BeamId));
     if (!isValidCoMEnergy(CoMenergy)) {
       throw std::runtime_error(
           "Interaction: getCrossSection: CoM energy outside range for Sibyll!");

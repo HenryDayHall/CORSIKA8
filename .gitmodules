@@ -1,13 +1,8 @@
 [submodule "modules/data"]
-	path = modules/data
-	url = ../../AirShowerPhysics/corsika-data.git
-	branch = master
-        shallow = true
-[submodule "modules/proposal"]
-	path = modules/proposal
-	url = https://github.com/tudo-astroparticlephysics/PROPOSAL.git
-	branch = restructure_parametrization
-        shallow = true
+    path = modules/data
+    url = ../../AirShowerPhysics/corsika-data.git
+    branch = master
+    shallow = true
 [submodule "modules/conex"]
 	path = modules/conex
 	url = ../../AirShowerPhysics/cxroot.git

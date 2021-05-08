@@ -45,8 +45,10 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::readString("HardQCD:all = on");
     Pythia8::Pythia::readString("ProcessLevel:resonanceDecays = off");
 
+    // we can't test this block, LCOV_EXCL_START
     if (!Pythia8::Pythia::init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
+    // LCOV_EXCL_STOP
 
     // any decays in pythia? if yes need to define which particles
     if (internalDecays_) {
@@ -110,8 +112,10 @@ namespace corsika::pythia8 {
     Pythia8::Pythia::readString("Beams:eB = 0.");
     // initialize this config
 
+    // we can't test this block, LCOV_EXCL_START
     if (!Pythia8::Pythia::init())
       throw std::runtime_error("Pythia::Interaction: Initialization failed!");
+    // LCOV_EXCL_STOP
   }
 
   inline bool Interaction::canInteract(Code const pCode) {
@@ -137,9 +141,11 @@ namespace corsika::pythia8 {
 
           return std::make_tuple(sigProd * (1_fm * 1_fm), sigEla * (1_fm * 1_fm));
 
-        } else
+        } else {
+          // we can't test pythia8 internals, LCOV_EXCL_START
           throw std::runtime_error("pythia cross section init failed");
-
+          // we can't test pythia8 internals, LCOV_EXCL_STOP
+        }
       } else {
         return std::make_tuple(std::numeric_limits<double>::infinity() * 1_mb,
                                std::numeric_limits<double>::infinity() * 1_mb);
@@ -341,17 +347,20 @@ namespace corsika::pythia8 {
 
         configureLabFrameCollision(corsikaBeamId, corsikaTargetId, eProjectileLab);
 
-        // create event in pytia
+        // create event in pytia. LCOV_EXCL_START: we don't validate pythia8 internals
         if (!Pythia8::Pythia::next())
           throw std::runtime_error("Pythia::DoInteraction: failed!");
+        // LCOV_EXCL_STOP
 
         // link to pythia stack
         Pythia8::Event& event = Pythia8::Pythia::event;
 
+        // LCOV_EXCL_START, we don't validate pythia8 internals
         if (print_listing_) {
           // print final state
           event.list();
         }
+        // LCOV_EXCL_STOP
 
         MomentumVector Plab_final(labCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
         HEPEnergyType Elab_final = 0_GeV;
