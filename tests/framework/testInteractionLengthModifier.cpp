@@ -6,7 +6,7 @@
  * the license.
  */
 
-#include <corsika/framework/process/IntLengthModifyingProcess.hpp>
+#include <corsika/framework/process/InteractionLengthModifier.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <catch2/catch.hpp>
@@ -40,7 +40,7 @@ struct DummyParticle {
   Code getPID() const { return Code::MuPlus; }
 };
 
-TEST_CASE("IntLengthModifyingProcess", "[process]") {
+TEST_CASE("InteractionLengthModifier", "[process]") {
   DummyProcess u;
   u.id = 38;
 
@@ -48,8 +48,8 @@ TEST_CASE("IntLengthModifyingProcess", "[process]") {
     return orig * 2;
   };
 
-  IntLengthModifyingProcess mod{std::move(u), modifier};
-  REQUIRE(std::is_same_v<decltype(mod), IntLengthModifyingProcess<DummyProcess>>);
+  InteractionLengthModifier mod{std::move(u), modifier};
+  REQUIRE(std::is_same_v<decltype(mod), InteractionLengthModifier<DummyProcess>>);
 
   SECTION("getInteractionLength") {
     DummyParticle const p;

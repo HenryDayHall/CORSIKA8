@@ -16,22 +16,22 @@
 namespace corsika {
 
   template <class TUnderlyingProcess>
-  inline IntLengthModifyingProcess<TUnderlyingProcess>::IntLengthModifyingProcess(
+  inline InteractionLengthModifier<TUnderlyingProcess>::InteractionLengthModifier(
       TUnderlyingProcess&& process,
-      std::function<IntLengthModifyingProcess::functor_signature> modifier)
+      std::function<InteractionLengthModifier::functor_signature> modifier)
       : process_{std::move(process)}
       , modifier_{std::move(modifier)} {}
 
   template <class TUnderlyingProcess>
   template <typename TSecondaryView>
-  inline void IntLengthModifyingProcess<TUnderlyingProcess>::doInteraction(
+  inline void InteractionLengthModifier<TUnderlyingProcess>::doInteraction(
       TSecondaryView& view) {
     process_.doInteraction(view);
   }
 
   template <class TUnderlyingProcess>
   template <typename TParticle>
-  inline GrammageType IntLengthModifyingProcess<TUnderlyingProcess>::getInteractionLength(
+  inline GrammageType InteractionLengthModifier<TUnderlyingProcess>::getInteractionLength(
       TParticle const& particle) {
     GrammageType const original = process_.getInteractionLength(particle);
     Code const pid = particle.getPID();
@@ -42,12 +42,12 @@ namespace corsika {
 
   template <class TUnderlyingProcess>
   inline TUnderlyingProcess const&
-  IntLengthModifyingProcess<TUnderlyingProcess>::getProcess() const {
+  InteractionLengthModifier<TUnderlyingProcess>::getProcess() const {
     return process_;
   }
 
   template <class TUnderlyingProcess>
-  inline TUnderlyingProcess& IntLengthModifyingProcess<TUnderlyingProcess>::getProcess() {
+  inline TUnderlyingProcess& InteractionLengthModifier<TUnderlyingProcess>::getProcess() {
     return process_;
   }
 

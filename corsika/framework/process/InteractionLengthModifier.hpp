@@ -23,8 +23,8 @@ namespace corsika {
    * length returned by the underlying process in a user-defined way.   *
    */
   template <class TUnderlyingProcess>
-  class IntLengthModifyingProcess
-      : public InteractionProcess<IntLengthModifyingProcess<TUnderlyingProcess>> {
+  class InteractionLengthModifier
+      : public InteractionProcess<InteractionLengthModifier<TUnderlyingProcess>> {
 
     //! identity function as default modifier
     static auto constexpr non_modifying_functor = [](GrammageType original, corsika::Code,
@@ -39,7 +39,7 @@ namespace corsika {
      * Create wrapper around InteractionProcess. Note that the passed process object
      * itself may no longer be used, only through this class.
      */
-    IntLengthModifyingProcess(TUnderlyingProcess&& process,
+    InteractionLengthModifier(TUnderlyingProcess&& process,
                               std::function<functor_signature> modifier);
 
     //! wrapper around internal process doInteraction
@@ -63,4 +63,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include <corsika/detail/framework/process/IntLengthModifyingProcess.inl>
+#include <corsika/detail/framework/process/InteractionLengthModifier.inl>
