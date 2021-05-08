@@ -98,7 +98,8 @@ namespace corsika::proposal {
         auto vec = QuantityVector(vecProposal.GetX() * E, vecProposal.GetY() * E,
                                   vecProposal.GetZ() * E);
         auto p = MomentumVector(labCS, vec);
-        auto sec_code = convert_from_PDG(static_cast<PDGCode>(s.type));
+        auto sec_code =
+            convert_from_PDG(static_cast<PDGCode>(s.type));
         view.addSecondary(
             std::make_tuple(sec_code, p, projectile.getPosition(), projectile.getTime()));
       }

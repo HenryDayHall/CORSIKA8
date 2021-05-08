@@ -173,7 +173,8 @@ int main(int argc, char** argv) {
             << std::endl;
 
   OutputManager output("hybrid_MC_outputs");
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env, true,
+                              1000};
 
   // setup processes, decays and interactions
 

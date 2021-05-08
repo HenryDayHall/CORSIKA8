@@ -26,7 +26,6 @@
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 
-#include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 
@@ -38,9 +37,6 @@
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
  */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
-
 #include <iostream>
 #include <limits>
 #include <typeinfo>
@@ -83,7 +79,6 @@ private:
 int main() {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CORSIKA_LOG_INFO("boundary_example");
 
@@ -120,10 +115,6 @@ int main() {
   // setup processes, decays and interactions
   setup::Tracking tracking;
 
-  RNGManager::getInstance().registerRandomStream("sibyll");
-  corsika::sibyll::Interaction sibyll;
-  corsika::sibyll::Decay decay;
-
   ParticleCut cut(50_GeV, true, true);
 
   TrackWriter trackWriter;
@@ -132,7 +123,7 @@ int main() {
   MyBoundaryCrossingProcess<true> boundaryCrossing("crossings.dat");
 
   // assemble all processes into an ordered process list
-  auto sequence = make_sequence(sibyll, decay, cut, boundaryCrossing, trackWriter);
+  auto sequence = make_sequence(cut, boundaryCrossing, trackWriter);
 
   // setup particle stack, and add primary particles
   setup::Stack stack;
