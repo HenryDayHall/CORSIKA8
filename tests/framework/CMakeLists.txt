@@ -20,7 +20,7 @@ set (test_framework_sources
   testNullModel.cpp  
   testHelix.cpp
   testInteractionCounter.cpp
-  testIntLengthModifyingProcess.cpp
+  testInteractionLengthModifier.cpp
   testSolver.cpp
   )
 
