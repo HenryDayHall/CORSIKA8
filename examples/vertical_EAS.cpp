@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
     mass = get_mass(beamCode);
   }
   HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 20.;
+  double theta = 0.;
   double phi = 180.;
   auto const thetaRad = theta / 180. * M_PI;
   auto const phiRad = phi / 180. * M_PI;
@@ -396,9 +396,10 @@ int main(int argc, char** argv) {
     // register the observation plane with the output
     output.add("particles", observationLevel);
 
-    auto sequence =
-        make_sequence(stackInspect, hadronSequence, reset_particle_mass, decaySequence,
-                      emContinuous, cut, trackWriter, observationLevel, longprof);
+    auto sequence = make_sequence( // emCascadeCounted,
+        stackInspect, hadronSequence, reset_particle_mass, decaySequence,
+        // emContinuous,
+        BetheBlochPDG(showerAxis), cut, trackWriter, observationLevel, longprof);
 
     // define air shower object, run simulation
     setup::Tracking tracking;

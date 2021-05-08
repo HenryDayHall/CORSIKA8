@@ -14,6 +14,7 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 
@@ -32,11 +33,12 @@ namespace corsika::proposal {
       : public corsika::ContinuousProcess<proposal::ContinuousProcess>,
         ProposalProcessBase {
 
-    enum { eDISPLACEMENT, eSCATTERING };
-    using calc_t = std::tuple<std::unique_ptr<PROPOSAL::Displacement>,
-                              std::unique_ptr<PROPOSAL::Scattering>>;
+    struct Calculator {
+      std::unique_ptr<PROPOSAL::Displacement> disp;
+      std::unique_ptr<PROPOSAL::Scattering> scatter;
+    };
 
-    std::unordered_map<calc_key_t, calc_t, hash>
+    std::unordered_map<calc_key_t, Calculator, hash>
         calc; //!< Stores the displacement and scattering calculators.
 
     HEPEnergyType energy_lost_ = 0 * electronvolt;
