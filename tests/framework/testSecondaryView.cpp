@@ -76,6 +76,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
     CHECK(view.getSize() == 0);
     CHECK(view.getEntries() == 0);
     CHECK(view.isEmpty());
+    CHECK_THROWS(view.erase(view.begin())); // nothing to delete yet
 
     {
       auto proj = view.getProjectile();
@@ -112,6 +113,7 @@ TEST_CASE("SecondaryStack", "[stack]") {
 
     auto pDel = view.getNextParticle();
     view.erase(pDel);
+    CHECK_THROWS(view.erase(pDel)); // already erased
     CHECK(view.getSize() == 2);
     CHECK(stack.getSize() == 4);
 

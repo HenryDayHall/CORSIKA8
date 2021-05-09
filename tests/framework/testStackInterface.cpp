@@ -71,6 +71,9 @@ TEST_CASE("Stack", "[Stack]") {
   SECTION("delete from stack") {
 
     StackTest stack;
+
+    CHECK_THROWS(stack.erase(stack.begin())); // nothing to delete
+
     CHECK(stack.getSize() == 0);
     StackTest::stack_iterator_type p =
         stack.addParticle(std::tuple{0.}); // valid way to access particle data
@@ -95,7 +98,8 @@ TEST_CASE("Stack", "[Stack]") {
     CHECK(stack.getEntries() == 3);
     CHECK(!stack.isEmpty());
 
-    p.erase(); // mark for deletion: size=3, entries=2
+    p.erase();               // mark for deletion: size=3, entries=2
+    CHECK_THROWS(p.erase()); // already deleted
     CHECK(stack.getSize() == 3);
     CHECK(stack.getEntries() == 2);
     CHECK(!stack.isEmpty());

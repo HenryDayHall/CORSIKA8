@@ -32,7 +32,7 @@ namespace corsika {
       long double c3 = -b * b * e - d * d + 4. * c * e;
 
       // cubic resolvent
-      // y^3 − b*y^2 + (ac−4d)*y − a^2*d−c^2+4*b*d = 0
+      // y^3 − c*y^2 + (bd−4e)*y − b^2*e−d^2+4*c*e = 0
 
       std::vector<double> x3 = solve_cubic_real(1, a3, b3, c3, epsilon);
       long double y = x3[0]; // there is always at least one solution
@@ -52,6 +52,7 @@ namespace corsika {
         q1 = q2 = y * 0.5;
         // g1+g2 = b && g1+g2 = c-y   <=>   g^2 - b*g + c-y = 0    (p === g)
         Det = b * b - 4 * (c - y);
+        CORSIKA_LOG_TRACE("Det={}", Det);
         if (fabs(Det) < epsilon) { // in other words - D==0
           p1 = p2 = b * 0.5;
         } else {

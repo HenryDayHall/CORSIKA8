@@ -17,10 +17,9 @@ using namespace corsika;
 #include <iostream>
 using namespace std;
 
-TEST_CASE("NuclearStackExtension", "[stack]") {
+TEST_CASE("NuclearStackExtension", "stack") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
@@ -28,9 +27,9 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     nuclear_stack::NuclearStackExtension<VectorStack,
                                          nuclear_stack::ExtendedParticleInterfaceType>
         s;
-    s.addParticle(std::make_tuple(
-        Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+    s.addParticle(
+        std::make_tuple(Code::Electron, 1.5_GeV, DirectionVector(dummyCS, {0, 1, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
     CHECK(s.getEntries() == 1);
   }
 
@@ -40,37 +39,41 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
                                          nuclear_stack::ExtendedParticleInterfaceType>
         s;
     s.addParticle(std::make_tuple(
-        Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Code::Nucleus, MomentumVector(dummyCS, {10_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 10));
     CHECK(s.getEntries() == 1);
   }
 
   SECTION("write invalid nucleus") {
     nuclear_stack::ParticleDataStack s;
-    CHECK_THROWS(s.addParticle(std::make_tuple(
-        Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0)));
+    CHECK_THROWS(s.addParticle(
+        std::make_tuple(Code::Nucleus, 1.5_GeV, DirectionVector(dummyCS, {1, 0, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0)));
   }
 
   SECTION("read non nucleus") {
     nuclear_stack::ParticleDataStack s;
-    s.addParticle(std::make_tuple(
-        Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+    s.addParticle(
+        std::make_tuple(Code::Electron, MomentumVector(dummyCS, {0_GeV, 10_GeV, 0_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
     const auto pout = s.getNextParticle();
     CHECK(pout.getPID() == Code::Electron);
-    CHECK(pout.getEnergy() == 1.5_GeV);
+    CHECK(pout.getEnergy() == sqrt(square(10_GeV) + square(Electron::mass)));
     CHECK(pout.getTime() == 100_s);
   }
 
   SECTION("read nucleus") {
+    auto const A = 10;
+    auto const Z = 9;
     nuclear_stack::ParticleDataStack s;
-    s.addParticle(std::make_tuple(
-        Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
+    s.addParticle(
+        std::make_tuple(Code::Nucleus, 1.5_GeV, DirectionVector(dummyCS, {1, 0, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, A, Z));
     const auto pout = s.getNextParticle();
     CHECK(pout.getPID() == Code::Nucleus);
-    CHECK(pout.getEnergy() == 1.5_GeV);
+    CHECK(pout.getEnergy() == 1.5_GeV + pout.getMass());
+    CHECK(pout.getMass() == get_nucleus_mass(A, Z));
+    CHECK(pout.getKineticEnergy() == 1.5_GeV);
     CHECK(pout.getTime() == 100_s);
     CHECK(pout.getNuclearA() == 10);
     CHECK(pout.getNuclearZ() == 9);
@@ -78,9 +81,9 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
   SECTION("read invalid nucleus") {
     nuclear_stack::ParticleDataStack s;
-    s.addParticle(std::make_tuple(
-        Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+    s.addParticle(
+        std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 10_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
     const auto pout = s.getNextParticle();
     CHECK_THROWS(pout.getNuclearA());
     CHECK_THROWS(pout.getNuclearZ());
@@ -93,11 +96,11 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {
         s.addParticle(std::make_tuple(
-            Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Code::Nucleus, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, i, i / 2));
       } else {
         s.addParticle(std::make_tuple(
-            Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+            Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
             Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
       }
     }
@@ -114,13 +117,18 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
     // i=9, 19, 29, etc. are nuclei
     for (int i = 0; i < 99; ++i) {
       if ((i + 1) % 10 == 0) {
+        unsigned int const A = i;
+        unsigned int const Z = i / 2;
         s.addParticle(std::make_tuple(
-            Code::Nucleus, i * 15_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, i, i / 2));
+
+            Code::Nucleus, i * 15_GeV - get_nucleus_mass(A, Z),
+            DirectionVector(dummyCS, {0, 0, 1}),
+            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, A, Z));
       } else {
-        s.addParticle(std::make_tuple(
-            Code::Electron, i * 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-            Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+        s.addParticle(std::make_tuple(Code::Electron, i * 1.5_GeV - Electron::mass,
+                                      DirectionVector(dummyCS, {1, 0, 0}),
+                                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}),
+                                      100_s));
       }
     }
 
@@ -221,23 +229,23 @@ TEST_CASE("NuclearStackExtension", "[stack]") {
 
     // not valid:
     CHECK_THROWS(s.addParticle(std::make_tuple(
-        Code::Oxygen, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Code::Oxygen, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 16, 8)));
 
     // valid
-    auto particle = s.addParticle(std::make_tuple(
-        Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
+    auto particle = s.addParticle(
+        std::make_tuple(Code::Nucleus, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
 
     // not valid
     CHECK_THROWS(particle.addSecondary(std::make_tuple(
-        Code::Oxygen, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+        Code::Oxygen, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 16, 8)));
 
     // add a another nucleus, so there are two now
-    s.addParticle(std::make_tuple(
-        Code::Nucleus, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
+    s.addParticle(
+        std::make_tuple(Code::Nucleus, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
 
     // not valid, since end() is not a valid entry
     CHECK_THROWS(s.swap(s.begin(), s.end()));

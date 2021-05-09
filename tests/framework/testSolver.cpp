@@ -53,7 +53,6 @@ TEST_CASE("Solver") {
                                                    {7e8, -1e-7}};
 
     for (auto v : vals) {
-
       {
         double a = v.first;
         double b = v.second;
@@ -74,7 +73,9 @@ TEST_CASE("Solver") {
     }
 
     CHECK(solve_linear_real(0, 55.).size() == 0);
-  }
+    CHECK(solve_linear(0, 55.).size() == 0);
+
+  } // linear
 
   SECTION("quadratic") {
 
@@ -129,7 +130,7 @@ TEST_CASE("Solver") {
         }
       }
     }
-  }
+  } // quadratic
 
   SECTION("cubic") {
 

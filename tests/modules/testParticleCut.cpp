@@ -50,13 +50,14 @@ TEST_CASE("ParticleCut", "processes") {
 
   SECTION("cut on particle type: inv") {
 
+    // particle cut with 20GeV threshold for all, also cut invisible
     ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getHadronECut() == 20_GeV);
+    CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add primary particle to stack
-    auto particle = stack.addParticle(std::make_tuple(
-        Code::Proton, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-        Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
+    auto particle = stack.addParticle(
+        std::make_tuple(Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}),
+                        Point(rootCS, 0_m, 0_m, 0_m), 0_ns));
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -66,7 +67,7 @@ TEST_CASE("ParticleCut", "processes") {
     // only cut is by species
     for (auto proType : particleList)
       projectile.addSecondary(std::make_tuple(
-          proType, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+          proType, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     CHECK(view.getEntries() == 11);
     CHECK(stack.getEntries() == 12);
 
@@ -82,9 +83,8 @@ TEST_CASE("ParticleCut", "processes") {
     ParticleCut cut(20_GeV, true, false);
 
     // add primary particle to stack
-    auto particle = stack.addParticle(
-        std::make_tuple(Code::Proton, Eabove,
-                        MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+    auto particle = stack.addParticle(std::make_tuple(
+        Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -94,22 +94,22 @@ TEST_CASE("ParticleCut", "processes") {
     // only cut is by species
     for (auto proType : particleList) {
       projectile.addSecondary(std::make_tuple(
-          proType, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+          proType, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     }
     cut.doSecondaries(view);
 
     CHECK(view.getEntries() == 10);
     CHECK(cut.getNumberEmParticles() == 1);
-    CHECK(cut.getEmEnergy() / 1_GeV == 1000);
+    CHECK(cut.getEmEnergy() / 1_GeV == Approx(1000. + 0.000511));
   }
 
   SECTION("cut low energy") {
     ParticleCut cut(20_GeV, true, true);
 
     // add primary particle to stack
-    auto particle = stack.addParticle(
-        std::make_tuple(Code::Proton, Eabove,
-                        MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+    auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove - Proton::mass,
+                                                      DirectionVector(rootCS, {1, 0, 0}),
+                                                      point0, 0_ns));
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
@@ -119,15 +119,15 @@ TEST_CASE("ParticleCut", "processes") {
     // only cut is by species
     for (auto proType : particleList)
       projectile.addSecondary(std::make_tuple(
-          proType, Ebelow, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+          proType, Ebelow, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     unsigned short A = 18;
     unsigned short Z = 8;
     projectile.addSecondary(std::make_tuple(Code::Nucleus, Eabove * A,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns, A, Z));
+                                            DirectionVector(rootCS, {1, 0, 0}), point0,
+                                            0_ns, A, Z));
     projectile.addSecondary(std::make_tuple(Code::Nucleus, Ebelow * A,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns, A, Z));
+                                            DirectionVector(rootCS, {1, 0, 0}), point0,
+                                            0_ns, A, Z));
 
     cut.doSecondaries(view);
 
@@ -139,32 +139,32 @@ TEST_CASE("ParticleCut", "processes") {
     ParticleCut cut(5_MeV, 5_MeV, 5_GeV, 5_GeV, true);
 
     // add primary particle to stack
-    auto particle = stack.addParticle(
-        std::make_tuple(Code::Proton, Eabove,
-                        MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+    auto particle = stack.addParticle(std::make_tuple(Code::Proton, Eabove - Proton::mass,
+                                                      DirectionVector(rootCS, {1, 0, 0}),
+                                                      point0, 0_ns));
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
     // add secondaries
-    projectile.addSecondary(std::make_tuple(Code::Photon, 3_MeV,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns));
-    projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns));
-    projectile.addSecondary(std::make_tuple(Code::PiPlus, 4_GeV,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns));
+    projectile.addSecondary(std::make_tuple(
+        Code::Photon, 3_MeV, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
+    projectile.addSecondary(std::make_tuple(Code::Electron, 3_MeV - Electron::mass,
+                                            DirectionVector(rootCS, {1, 0, 0}), point0,
+                                            0_ns));
+    projectile.addSecondary(std::make_tuple(Code::PiPlus, 4_GeV - PiPlus::mass,
+                                            DirectionVector(rootCS, {1, 0, 0}), point0,
+                                            0_ns));
+
     unsigned short A = 18;
     unsigned short Z = 8;
     projectile.addSecondary(std::make_tuple(Code::Nucleus, 4_GeV * A,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns, A, Z));
+                                            DirectionVector(rootCS, {1, 0, 0}), point0,
+                                            0_ns, A, Z));
     projectile.addSecondary(std::make_tuple(Code::Nucleus, 6_GeV * A,
-                                            MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                                            point0, 0_ns, A, Z));
+                                            DirectionVector(rootCS, {1, 0, 0}), point0,
+                                            0_ns, A, Z));
 
     cut.doSecondaries(view);
 
@@ -174,10 +174,11 @@ TEST_CASE("ParticleCut", "processes") {
 
   SECTION("cut low energy:  reset thresholds of arbitrary set of particles") {
     ParticleCut cut({{Code::Electron, 5_MeV}, {Code::Positron, 50_MeV}}, false, true);
-    CHECK(get_energy_threshold(Code::Electron) != get_energy_threshold(Code::Positron));
-    CHECK_FALSE(get_energy_threshold(Code::Electron) == Electron::mass);
+    CHECK(get_kinetic_energy_threshold(Code::Electron) !=
+          get_kinetic_energy_threshold(Code::Positron));
+    CHECK_FALSE(get_kinetic_energy_threshold(Code::Electron) == Electron::mass);
     // test default values still correct
-    CHECK(get_energy_threshold(Code::Proton) == 5_GeV);
+    CHECK(get_kinetic_energy_threshold(Code::Proton) == 5_GeV);
   }
 
   SECTION("cut on time") {
@@ -185,27 +186,27 @@ TEST_CASE("ParticleCut", "processes") {
     const TimeType too_late = 1_s;
 
     // add primary particle to stack
-    auto particle = stack.addParticle(
-        std::make_tuple(Code::Proton, Eabove,
-                        MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 1_ns));
+    auto particle = stack.addParticle(std::make_tuple(
+        Code::Proton, Eabove, DirectionVector(rootCS, {1, 0, 0}), point0, 1_ns));
     // view on secondary particles
     setup::StackView view(particle);
     // ref. to primary particle through the secondary view.
     // only this way the secondary view is populated
     auto projectile = view.getProjectile();
     // add secondaries, all with energies above the threshold
-    // only cut is by species
+    // only cut is by time
     for (auto proType : particleList) {
-      projectile.addSecondary(
-          std::make_tuple(proType, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}),
-                          point0, too_late));
+      projectile.addSecondary(std::make_tuple(proType, Eabove - get_mass(proType),
+                                              DirectionVector(rootCS, {1, 0, 0}), point0,
+                                              too_late));
     }
     cut.doSecondaries(view);
 
     CHECK(view.getEntries() == 0);
-    CHECK(cut.getCutEnergy() / 1_GeV == 11000);
-    cut.reset();
+    CHECK(cut.getTimeCutEnergy() == 11 * Eabove);
     CHECK(cut.getCutEnergy() == 0_GeV);
+    cut.reset();
+    CHECK(cut.getTimeCutEnergy() == 0_GeV);
   }
 
   setup::Trajectory const track = setup::testing::make_track<setup::Trajectory>(
@@ -215,13 +216,14 @@ TEST_CASE("ParticleCut", "processes") {
   SECTION("cut on DoContinous, just invisibles") {
 
     ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getHadronECut() == 20_GeV);
+    CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add particles, all with energies above the threshold
     // only cut is by species
     for (auto proType : particleList) {
-      auto particle = stack.addParticle(std::make_tuple(
-          proType, Eabove, MomentumVector(rootCS, {0_GeV, 0_GeV, 0_GeV}), point0, 0_ns));
+      auto particle = stack.addParticle(
+          std::make_tuple(proType, Eabove - get_mass(proType),
+                          DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
 
       if (cut.doContinuous(particle, track) == ProcessReturn::ParticleAbsorbed) {
         particle.erase();

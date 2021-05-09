@@ -101,9 +101,6 @@ TEST_CASE("Pythia8Interface", "modules") {
 
   SECTION("pythia decay") {
     HEPEnergyType const P0 = 10_GeV;
-    // HEPMomentumType const E0 = sqrt(P0*P0 + PiPlus::mass*PiPlus::mass);
-
-    // feenableexcept(FE_INVALID); \todo how does this work nowadays...???
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::PiPlus, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& stack = *stackPtr;
@@ -160,8 +157,6 @@ TEST_CASE("Pythia8Interface", "modules") {
   }
 
   SECTION("pythia interaction") {
-
-    //! feenableexcept(FE_INVALID); \todo how does this work nowadays
 
     // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(

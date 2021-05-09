@@ -78,9 +78,9 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
   TestStack stack;
 
   // add primary particle
-  auto p0 = stack.addParticle(std::make_tuple(
-      Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+  auto p0 = stack.addParticle(
+      std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                      Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
   CHECK(stack.getEntries() == 1);
   corsika::history::EventPtr evt = p0.getEvent();
@@ -99,9 +99,9 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
 
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
-      auto sec = hview0.addSecondary(std::make_tuple(
-          Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = hview0.addSecondary(
+          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
       CHECK(sec.getParentEventIndex() == i);
       CHECK(sec.getEvent() != nullptr);
@@ -120,9 +120,9 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     // add second generation of secondaries
     // add 10 secondaries
     for (int i = 0; i < 10; ++i) {
-      auto sec = hview1.addSecondary(std::make_tuple(
-          Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = hview1.addSecondary(
+          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
       CHECK(sec.getParentEventIndex() == i);
       CHECK(sec.getEvent()->parentEvent() == ev1);
@@ -146,9 +146,9 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     for (int i = 0; i < 15; ++i) {
       CORSIKA_LOG_TRACE("loop, view: " + std::to_string(i));
 
-      auto sec = hview2.addSecondary(std::make_tuple(
-          Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = hview2.addSecondary(
+          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
       CORSIKA_LOG_TRACE("loop, ---- ");
 
       CHECK(sec.getParentEventIndex() == i);
@@ -175,9 +175,9 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     // add 5 secondaries
     for (int i = 0; i < 5; ++i) {
       CORSIKA_LOG_TRACE("loop " + std::to_string(i));
-      auto sec = proj0.addSecondary(std::make_tuple(
-          Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = proj0.addSecondary(
+          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
       CHECK(sec.getParentEventIndex() == i);
       CHECK(sec.getEvent() != nullptr);
@@ -195,9 +195,9 @@ TEST_CASE("HistoryStackExtensionView", "[stack]") {
     // add second generation of secondaries
     // add 10 secondaries
     for (unsigned int i = 0; i < 10; ++i) {
-      auto sec = proj1.addSecondary(std::make_tuple(
-          Code::Electron, 1.5_GeV, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
+      auto sec = proj1.addSecondary(
+          std::make_tuple(Code::Electron, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                          Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s));
 
       CHECK(sec.getParentEventIndex() == int(i));
       CHECK(sec.getEvent()->parentEvent() == ev1);

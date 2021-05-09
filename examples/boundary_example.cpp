@@ -167,7 +167,7 @@ int main() {
         beamCode, theta, phi, plab.getComponents() / 1_GeV);
     // shoot particles from inside target out
     Point pos(rootCS, 0_m, 0_m, 0_m);
-    stack.addParticle(std::make_tuple(beamCode, E0, plab, pos, 0_ns));
+    stack.addParticle(std::make_tuple(beamCode, plab, pos, 0_ns));
   }
 
   // define air shower object, run simulation

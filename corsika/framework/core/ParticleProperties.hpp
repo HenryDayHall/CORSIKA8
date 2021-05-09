@@ -71,19 +71,19 @@ namespace corsika {
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
   ElectricChargeType constexpr get_charge(Code const); //!< electric charge
   HEPMassType constexpr get_mass(Code const);          //!< mass
-  HEPEnergyType constexpr get_energy_threshold(
-      Code const); //!< get energy threshold below which the particle is discarded, by
-                   //!< default set to particle mass
-  void constexpr set_energy_threshold(
-      Code const, HEPEnergyType const); //!< set energy threshold below which the particle
-                                        //!< is discarded
+  HEPEnergyType constexpr get_kinetic_energy_threshold(
+      Code const); //!< get kinetic energy threshold below which the particle is
+                   //!< discarded, by default set to zero
+  void constexpr set_kinetic_energy_threshold(
+      Code const, HEPEnergyType const); //!< set kinetic energy threshold below which the
+                                        //!< particle is discarded
 
-  inline void set_energy_threshold(std::pair<Code const, HEPEnergyType const> p) {
-    set_energy_threshold(p.first, p.second);
+  inline void set_kinetic_energy_threshold(std::pair<Code const, HEPEnergyType const> p) {
+    set_kinetic_energy_threshold(p.first, p.second);
   }
-  inline void set_energy_thresholds(
+  inline void set_kinetic_energy_thresholds(
       std::unordered_map<Code const, HEPEnergyType const> const& eCuts) {
-    for (auto v : eCuts) set_energy_threshold(v);
+    for (auto v : eCuts) set_kinetic_energy_threshold(v);
   }
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"

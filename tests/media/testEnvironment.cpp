@@ -38,10 +38,43 @@ CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
 
 Point const gOrigin(gCS, {0_m, 0_m, 0_m});
 
+TEST_CASE("VolumeTree") {
+  logging::set_level(logging::level::info);
+  Environment<IEmpty> env;
+  auto& universe = *(env.getUniverse());
+  auto world = Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 0_m}, 150_km);
+  // volume cut partly by "world"
+  auto vol1 =
+      Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 140_km}, 20_km);
+  // partly overlap with "vol1"
+  auto vol2 = Environment<IEmpty>::createNode<Sphere>(Point{gCS, 0_m, 0_m, 120_km}, 5_km);
+  vol1->excludeOverlapWith(vol2);
+  world->addChild(std::move(vol1));
+  world->addChild(std::move(vol2));
+
+  // in world
+  CHECK(dynamic_cast<Sphere const&>(
+            world->getContainingNode(Point(gCS, 0_m, 0_m, 0_m))->getVolume())
+            .getRadius() == 150_km);
+  // in vol1
+  CHECK(dynamic_cast<Sphere const&>(
+            world->getContainingNode(Point(gCS, 0_m, 0_m, 149_km))->getVolume())
+            .getRadius() == 20_km);
+  // outside world, in universe
+  CHECK(world->getContainingNode(Point(gCS, 0_m, 151_km, 0_m)) == nullptr);
+  // in vol2
+  CHECK(dynamic_cast<Sphere const&>(
+            world->getContainingNode(Point(gCS, 0_m, 0_km, 119_km))->getVolume())
+            .getRadius() == 5_km);
+  CHECK(dynamic_cast<Sphere const&>(
+            world->getContainingNode(Point(gCS, 0_m, 0_km, 121_km))->getVolume())
+            .getRadius() == 5_km);
+  universe.addChild(std::move(world));
+}
+
 TEST_CASE("HomogeneousMedium") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
@@ -54,7 +87,6 @@ TEST_CASE("HomogeneousMedium") {
 TEST_CASE("FlatExponential") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
@@ -117,7 +149,6 @@ TEST_CASE("FlatExponential") {
 TEST_CASE("SlidingPlanarExponential") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
                                              std::vector<float>{1.f});
@@ -178,7 +209,6 @@ struct Exponential {
 TEST_CASE("InhomogeneousMedium") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   Vector direction(gCS, QuantityVector<dimensionless_d>(1, 0, 0));
 
@@ -227,7 +257,6 @@ TEST_CASE("InhomogeneousMedium") {
 TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   LayeredSphericalAtmosphereBuilder builder =
       make_layered_spherical_atmosphere_builder<>::create(gOrigin,
@@ -267,7 +296,6 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   // setup our interface types
   using ModelInterface = IMagneticFieldModel<IMediumModel>;

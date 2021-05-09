@@ -77,9 +77,6 @@ namespace corsika {
         corsika::StackIteratorInterface<TStackData, TParticleInterface, TStackType>>
         particle_interface_type;
 
-    // using ParticleInterfaceType = TParticleInterface<
-    //  corsika::StackIteratorInterface<TStackData, TParticleInterface, TStackType>>;
-
     // it is not allowed to create a "dangling" stack iterator
     StackIteratorInterface() = delete; //! \todo check rule of five
 
@@ -112,7 +109,7 @@ namespace corsika {
         @param index index on stack
         @param args variadic list of data to initialize stack entry, this must be
        consistent with the definition of the user-provided
-       particle_interface_type::SetParticleData(...) function
+       particle_interface_type::setParticleData(...) function
      */
     template <typename... TArgs>
     StackIteratorInterface(TStackType& data, unsigned int const index,
@@ -130,7 +127,7 @@ namespace corsika {
        counting, history, etc.
         @param args variadic list of data to initialize stack entry, this must be
        consistent with the definition of the user-provided
-       particle_interface_type::SetParticleData(...) function
+       particle_interface_type::setParticleData(...) function
     */
     template <typename... Args>
     StackIteratorInterface(TStackType& data, unsigned int const index,

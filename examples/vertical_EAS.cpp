@@ -6,6 +6,8 @@
  * the license.
  */
 
+#define TRACE
+
 /* clang-format off */
 // InteractionCounter used boost/histogram, which
 // fails if boost/type_traits have been included before. Thus, we have
@@ -318,20 +320,20 @@ int main(int argc, char** argv) {
     std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
 
     if (A > 1) {
-      stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns, A, Z));
+      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
 
     } else {
       if (A == 1) {
         if (Z == 1) {
-          stack.addParticle(std::make_tuple(Code::Proton, E0, plab, injectionPos, 0_ns));
+          stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
         } else if (Z == 0) {
-          stack.addParticle(std::make_tuple(Code::Neutron, E0, plab, injectionPos, 0_ns));
+          stack.addParticle(std::make_tuple(Code::Neutron, plab, injectionPos, 0_ns));
         } else {
           std::cerr << "illegal parameters" << std::endl;
           return EXIT_FAILURE;
         }
       } else {
-        stack.addParticle(std::make_tuple(beamCode, E0, plab, injectionPos, 0_ns));
+        stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
       }
     }
 
@@ -392,7 +394,7 @@ int main(int argc, char** argv) {
     Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
     ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
     // register the observation plane with the output
-    output.add("obsplane", observationLevel);
+    output.add("particles", observationLevel);
 
     auto sequence = make_sequence( // emCascadeCounted,
         stackInspect, hadronSequence, reset_particle_mass, decaySequence,

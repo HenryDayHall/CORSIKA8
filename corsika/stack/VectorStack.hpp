@@ -33,48 +33,118 @@ namespace corsika {
     typedef ParticleBase<StackIteratorInterface> super_type;
 
   public:
-    std::string asString() const {
-      return fmt::format("particle: i={}, PID={}, E={}GeV", super_type::getIndex(),
-                         get_name(this->getPID()), this->getEnergy() / 1_GeV);
-    }
+    typedef std::tuple<Code, HEPEnergyType, DirectionVector, Point, TimeType>
+        particle_data_type;
 
-    void setParticleData(
-        std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType> const& v);
+    typedef std::tuple<Code, MomentumVector, Point, TimeType> particle_data_momentum_type;
 
-    void setParticleData(
-        ParticleInterface<StackIteratorInterface> const&,
-        std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType> const& v);
+    std::string asString() const;
 
-    /// individual setters
+    /**
+     * Set data of new particle.
+     *
+     * @param v tuple containing: PID, Momentum Vector, Position, Time
+     *
+     *  MomentumVector is only used to determine the DirectionVector, the normalization
+     * is lost.
+     */
+    void setParticleData(particle_data_type const& v);
+
+    /**
+     * Set data of new particle.
+     *
+     * @param p parent particle
+     * @param v tuple containing: PID, Momentum Vector, Position, Time
+     *
+     *  MomentumVector is only used to determine the DirectionVector, the normalization
+     * is lost.
+     */
+    void setParticleData(ParticleInterface<StackIteratorInterface> const& p,
+                         particle_data_type const& v);
+
+    /**
+     * Set data of new particle.
+     *
+     * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
+     *
+     */
+    void setParticleData(particle_data_momentum_type const& v);
+
+    /**
+     * Set data of new particle.
+     *
+     * @param p parent particle
+     * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
+     *
+     */
+    void setParticleData(ParticleInterface<StackIteratorInterface> const& p,
+                         particle_data_momentum_type const& v);
+
+    ///! Set particle corsika::Code
     void setPID(Code const id) {
       super_type::getStackData().setPID(super_type::getIndex(), id);
     }
+
+    ///! Set energy
     void setEnergy(HEPEnergyType const& e) {
-      super_type::getStackData().setEnergy(super_type::getIndex(), e);
+      super_type::getStackData().setKineticEnergy(super_type::getIndex(),
+                                                  e - this->getMass());
     }
+
+    ///! Set kinetic energy
+    void setKineticEnergy(HEPEnergyType const& ekin) {
+      super_type::getStackData().setKineticEnergy(super_type::getIndex(), ekin);
+    }
+
+    /**
+       The MomentumVector v is used to determine the DirectionVector, and to update the
+       particle energy.
+    */
     void setMomentum(MomentumVector const& v) {
-      super_type::getStackData().setMomentum(super_type::getIndex(), v);
+      HEPMomentumType const P = v.getNorm();
+      if (P == 0_eV) {
+        super_type::getStackData().setKineticEnergy(super_type::getIndex(), 0_eV);
+        super_type::getStackData().setDirection(
+            super_type::getIndex(), DirectionVector(v.getCoordinateSystem(), {0, 0, 0}));
+      } else {
+        super_type::getStackData().setKineticEnergy(
+            super_type::getIndex(),
+            sqrt(square(getMass()) + square(P)) - this->getMass());
+        super_type::getStackData().setDirection(super_type::getIndex(), v / P);
+      }
     }
+    //! Set direction
+    void setDirection(DirectionVector const& v) {
+      super_type::getStackData().setDirection(super_type::getIndex(), v);
+    }
+    //! Set position
     void setPosition(Point const& v) {
       super_type::getStackData().setPosition(super_type::getIndex(), v);
     }
+    //! Set time
     void setTime(TimeType const& v) {
       super_type::getStackData().setTime(super_type::getIndex(), v);
     }
 
-    /// individual getters
+    //! Get corsika::Code
     Code getPID() const {
       return super_type::getStackData().getPID(super_type::getIndex());
     }
-    HEPEnergyType getEnergy() const {
-      return super_type::getStackData().getEnergy(super_type::getIndex());
+    //! Get PDG code
+    PDGCode getPDG() const { return get_PDG(getPID()); }
+    //! Get kinetic energy
+    HEPEnergyType getKineticEnergy() const {
+      return super_type::getStackData().getKineticEnergy(super_type::getIndex());
     }
-    MomentumVector getMomentum() const {
-      return super_type::getStackData().getMomentum(super_type::getIndex());
+    //! Get direction
+    DirectionVector getDirection() const {
+      return super_type::getStackData().getDirection(super_type::getIndex());
     }
+    //! Get position
     Point getPosition() const {
       return super_type::getStackData().getPosition(super_type::getIndex());
     }
+    //! Get time
     TimeType getTime() const {
       return super_type::getStackData().getTime(super_type::getIndex());
     }
@@ -83,18 +153,25 @@ namespace corsika {
      *
      * @{
      */
-    DirectionVector getDirection() const {
-      return this->getMomentum() / this->getEnergy();
-    }
-
+    //! Get velocity
     VelocityVector getVelocity() const {
       return this->getMomentum() / this->getEnergy() * constants::c;
     }
-
+    //! Get momentum
+    MomentumVector getMomentum() const {
+      auto const P = sqrt(square(getEnergy()) - square(this->getMass()));
+      return super_type::getStackData().getDirection(super_type::getIndex()) * P;
+    }
+    //! Get mass of particle
     HEPMassType getMass() const { return get_mass(this->getPID()); }
 
+    //! Get electric charge
     ElectricChargeType getCharge() const { return get_charge(this->getPID()); }
 
+    //! Get kinetic energy
+    HEPEnergyType getEnergy() const { return this->getKineticEnergy() + this->getMass(); }
+
+    //! Get charge number
     int16_t getChargeNumber() const { return get_charge_number(this->getPID()); }
     ///@}
   };
@@ -102,16 +179,18 @@ namespace corsika {
   /**
    * Memory implementation of the most simple (stupid) particle stack object.
    *
+   * @note if we ever want to have off-shell particles, we need to
+   *       add momentum as HEPMomentumType, and a lot of care.
    */
 
   class VectorStackImpl {
 
   public:
     typedef std::vector<Code> code_vector_type;
-    typedef std::vector<HEPEnergyType> energy_vector_type;
+    typedef std::vector<HEPEnergyType> kinetic_energy_vector_type;
     typedef std::vector<Point> point_vector_type;
     typedef std::vector<TimeType> time_vector_type;
-    typedef std::vector<MomentumVector> momentum_vector_type;
+    typedef std::vector<DirectionVector> direction_vector_type;
 
     VectorStackImpl() = default;
 
@@ -131,27 +210,17 @@ namespace corsika {
     unsigned int getCapacity() const { return dataPID_.size(); }
 
     void setPID(size_t i, Code const id) { dataPID_[i] = id; }
-    void setEnergy(size_t i, HEPEnergyType const& e) { dataE_[i] = e; }
-    void setMomentum(size_t i, MomentumVector const& v) { momentum_[i] = v; }
+    void setKineticEnergy(size_t i, HEPEnergyType const& e) { dataEkin_[i] = e; }
+    void setDirection(size_t i, DirectionVector const& v) { direction_[i] = v; }
     void setPosition(size_t i, Point const& v) { position_[i] = v; }
     void setTime(size_t i, TimeType const& v) { time_[i] = v; }
 
     Code getPID(size_t i) const { return dataPID_[i]; }
-
-    HEPEnergyType getEnergy(size_t i) const { return dataE_[i]; }
-
-    MomentumVector getMomentum(size_t i) const { return momentum_[i]; }
-
+    HEPEnergyType getKineticEnergy(size_t i) const { return dataEkin_[i]; }
+    DirectionVector getDirection(size_t i) const { return direction_[i]; }
     Point getPosition(size_t i) const { return position_[i]; }
     TimeType getTime(size_t i) const { return time_[i]; }
 
-    HEPEnergyType getDataE(size_t i) const { return dataE_[i]; }
-
-    void setDataE(size_t i, HEPEnergyType const& dataE) { dataE_[i] = dataE; }
-
-    Code getDataPid(size_t i) const { return dataPID_[i]; }
-
-    void setDataPid(size_t i, Code const& dataPid) { dataPID_[i] = dataPid; }
     /**
      *   Function to copy particle at location i2 in stack to i1
      */
@@ -168,8 +237,8 @@ namespace corsika {
   private:
     /// the actual memory to store particle data
     code_vector_type dataPID_;
-    energy_vector_type dataE_;
-    momentum_vector_type momentum_;
+    kinetic_energy_vector_type dataEkin_;
+    direction_vector_type direction_;
     point_vector_type position_;
     time_vector_type time_;
 

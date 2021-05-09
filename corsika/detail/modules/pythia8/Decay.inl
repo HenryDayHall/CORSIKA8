@@ -206,7 +206,8 @@ namespace corsika::pythia8 {
     double const m = en;
 
     // add particle to pythia stack
-    event.append(pdgCode, 1, 0, 0, px, py, pz, en, m);
+    event.append(pdgCode, 1, 0, 0, // PID, status, col, acol
+                 px, py, pz, en, m);
 
     // LCOV_EXCL_START, we don't validate pythia8 internals
     if (!Pythia8::Pythia::next())
@@ -238,9 +239,8 @@ namespace corsika::pythia8 {
             fourMomLab.getSpaceLikeComponents().getComponents(labCS) / 1_GeV,
             fourMomLab.getTimeLikeComponent());
 
-        view.addSecondary(std::make_tuple(pyId, fourMomLab.getTimeLikeComponent(),
-                                          fourMomLab.getSpaceLikeComponents(), decayPoint,
-                                          t0));
+        view.addSecondary(
+            std::make_tuple(pyId, fourMomLab.getSpaceLikeComponents(), decayPoint, t0));
       }
 
     // set particle stable

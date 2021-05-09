@@ -203,8 +203,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     */
 
     CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
-    CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-4));
-    CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-3));
+    CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-3));
 
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
@@ -212,8 +212,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(88.7).margin(0.1));
     // CHECK(view.getEntries() == 9); //! \todo: this was 20 before refactory-2020: check
-    //                                           also sibyll not stable wrt. to compiler
-    //                                           changes
+    //                                           "also sibyll not stable wrt. to compiler
+    //                                           changes"
   }
 
   SECTION("NuclearInteractionInterface") {

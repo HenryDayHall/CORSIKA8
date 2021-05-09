@@ -47,20 +47,74 @@ namespace corsika::nuclear_stack {
     typedef InnerParticleInterface<StackIteratorInterface> super_type;
 
   public:
-    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType>
-        particle_data_type;
-
-    typedef std::tuple<Code, HEPEnergyType, MomentumVector, Point, TimeType,
+    typedef std::tuple<Code, HEPEnergyType, DirectionVector, Point, TimeType,
                        unsigned short, unsigned short>
-        altenative_particle_data_type;
+        nuclear_particle_data_type;
 
-    void setParticleData(particle_data_type const& v);
+    typedef std::tuple<Code, MomentumVector, Point, TimeType, unsigned short,
+                       unsigned short>
+        nuclear_particle_data_momentum_type;
 
-    void setParticleData(altenative_particle_data_type const& v);
+    /**
+     *
+     * @param v which is a tuple containing: PID, kinetic Energy, DirectionVector,
+     * Position, Time
+     */
+    void setParticleData(typename super_type::particle_data_type const& v);
 
-    void setParticleData(super_type& p, particle_data_type const& v);
+    /**
+     *
+     * @param v which is a tuple containing: PID, kinetic Energy, DirectionVector,
+     * Position, Time, A, Z
+     */
+    void setParticleData(nuclear_particle_data_type const& v);
 
-    void setParticleData(super_type& p, altenative_particle_data_type const& v);
+    /**
+     *
+     * @param p the parent particle
+     * @param v which is a tuple containing: PID, Momentum Vector, Position,
+     * Time
+     */
+    void setParticleData(super_type& p, typename super_type::particle_data_type const& v);
+
+    /**
+     *
+     * @param p the parent particle
+     * @param v which is a tuple containing: PID, Momentum Vector, Position,
+     * Time, A, Z
+     */
+    void setParticleData(super_type& p, nuclear_particle_data_type const& v);
+
+    /**
+     *
+     * @param v which is a tuple containing: PID, Total Energy, MomentumVector, Position,
+     * Time
+     */
+    void setParticleData(typename super_type::particle_data_momentum_type const& v);
+
+    /**
+     *
+     * @param v which is a tuple containing: PID, Total Energy, MomentumVector, Position,
+     * Time, A, Z
+     */
+    void setParticleData(nuclear_particle_data_momentum_type const& v);
+
+    /**
+     *
+     * @param p parent particle
+     * @param v which is a tuple containing: PID, Total Energy, MomentumVector, Position,
+     * Time
+     */
+    void setParticleData(super_type& p,
+                         typename super_type::particle_data_momentum_type const& v);
+
+    /**
+     *
+     * @param p parent particle
+     * @param v which is a tuple containing: PID, Total Energy, MomentumVector, Position,
+     * Time, A, Z
+     */
+    void setParticleData(super_type& p, nuclear_particle_data_momentum_type const& v);
 
     std::string asString() const;
 
@@ -89,13 +143,45 @@ namespace corsika::nuclear_stack {
     /// @}
 
     /**
-     * Overwrite normal getParticleMass function with nuclear version
+     * Overwrite normal getPDG function with nuclear version
+     */
+    PDGCode getPDG() const;
+
+    /**
+     * Overwrite normal setMomentum function with nuclear version
+     */
+    void setMomentum(MomentumVector const& v);
+
+    /**
+     * Overwrite normal getMomentum function with nuclear version
+     */
+    MomentumVector getMomentum() const;
+
+    /**
+     * Overwrite normal getEnergy function with nuclear version
+     */
+    void setEnergy(HEPEnergyType const& e);
+
+    /**
+     * Overwrite normal getVelocity function with nuclear version
+     */
+    VelocityVector getVelocity() const;
+
+    /**
+     * Overwrite normal getMass function with nuclear version
      */
     HEPMassType getMass() const;
+
     /**
      * Overwrite normal getParticleCharge function with nuclear version
      */
     ElectricChargeType getCharge() const;
+
+    /**
+     * Overwrite normal getEnergy function with nuclear version
+     */
+    HEPEnergyType getEnergy() const;
+
     /**
      * Overwirte normal getChargeNumber function with nuclear version
      **/
@@ -172,6 +258,7 @@ namespace corsika::nuclear_stack {
     int getNuclearA(const unsigned int i) const { return nuclearA_[getNucleusRef(i)]; }
 
     int getNuclearZ(const unsigned int i) const { return nuclearZ_[getNucleusRef(i)]; }
+
     // this function will create new storage for Nuclear Properties, and return the
     // reference to it
     int getNucleusNextRef();
