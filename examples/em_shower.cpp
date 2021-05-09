@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 
   OutputManager output("em_shower_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
-                              false, 1000.};
+                              false, 1000};
 
   // setup processes, decays and interactions
 

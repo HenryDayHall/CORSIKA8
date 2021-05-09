@@ -549,6 +549,7 @@ sanity:
     - corsika
   before_script:
     - apt-get update && apt-get install -y python3-pip
+    - pip3 install --upgrade cython
   script:
     - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
     - pip3 install --user -e '.[test]'  # install the package + test deps
