@@ -215,7 +215,7 @@ TEST_CASE("Radio", "[processes]") {
     const Point pos(rootCSCoREAS, 50_m, 10_m, 80_m);
 
     // add the particle to the stack
-    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
+    auto const particle1{stack.addParticle(std::make_tuple(particle, plab, pos, 0_ns))};
 
     auto const charge_ {get_charge(particle1.getPID())};
 //    std::cout << "charge: " << charge_ << std::endl;
@@ -265,7 +265,7 @@ TEST_CASE("Radio", "[processes]") {
 //    coreas1.simulate(particle1, base);
 
     // check writeOutput method -> should produce 2 csv files for each antenna
-    coreas.writeOutput();
+   // coreas.writeOutput();
     }
 
 
@@ -347,7 +347,7 @@ TEST_CASE("Radio", "[processes]") {
     // construct an energy
     const HEPEnergyType E0{1_TeV};
 
-    // compute the necessary momentumn
+    // compute the necessary momentum
     const HEPMomentumType P0{sqrt(E0 * E0 - pmass * pmass)};
 
     // and create the momentum vector
@@ -357,7 +357,7 @@ TEST_CASE("Radio", "[processes]") {
     const Point pos(rootCSZHS, 50_m, 10_m, 80_m);
 
     // add the particle to the stack
-    auto const particle1{stack.addParticle(std::make_tuple(particle, E0, plab, pos, 0_ns))};
+    auto const particle1{stack.addParticle(std::make_tuple(particle, plab, pos, 0_ns))};
 
     auto const charge_ {get_charge(particle1.getPID())};
 
@@ -370,7 +370,7 @@ TEST_CASE("Radio", "[processes]") {
 //    zhs.simulate(particle1, base);
 
     // check writeOutput method -> should produce 2 csv files for each antenna
-    zhs.writeOutput();
+    // zhs.writeOutput();
   }
 
 
@@ -909,7 +909,7 @@ TEST_CASE("Radio", "[processes]") {
       auto plab {beta * pmass * gamma};
       Line l {points_[i-1],v};
       StraightTrajectory track {l,t};
-      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[i-1], timeCounter))}; //TODO: plab is inconsistent
+      auto particle1{stack.addParticle(std::make_tuple(particle, plab, points_[i-1], timeCounter))}; //TODO: plab is inconsistent
       coreas.doContinuous(particle1,track,true);
     }
 
@@ -921,7 +921,7 @@ TEST_CASE("Radio", "[processes]") {
     auto plab {beta * pmass * gamma};
     Line l {points_[399],v};
     StraightTrajectory track {l,t};
-    auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, points_[399], t))};
+    auto particle1{stack.addParticle(std::make_tuple(particle, plab, points_[399], t))};
     coreas.doContinuous(particle1,track,true);
 
     // get the output
@@ -1023,14 +1023,14 @@ auto gamma {E0/pmass};
 auto plab {beta * pmass * gamma};
 Line l {point_1,v};
 StraightTrajectory track {l,t};
-auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, timeCounter))};
+auto particle1{stack.addParticle(std::make_tuple(particle, plab, point_1, timeCounter))};
 coreas.doContinuous(particle1,track,true);
 stack.clear();
 }
 
 
 // get the output
-coreas.writeOutput();
+// coreas.writeOutput();
 }
 
 SECTION("Synchrotron radiation 2") {
@@ -1125,13 +1125,13 @@ auto gamma {E0/pmass};
 auto plab {beta * pmass * gamma};
 Line l {point_1,v};
 StraightTrajectory track {l,t};
-auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, timeCounter))};
+auto particle1{stack.addParticle(std::make_tuple(particle, plab, point_1, timeCounter))};
 coreas.doContinuous(particle1,track,true);
 stack.clear();
 }
 
 // get the output
-coreas.writeOutput();
+// coreas.writeOutput();
 
 }
 
