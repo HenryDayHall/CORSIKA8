@@ -929,107 +929,211 @@ TEST_CASE("Radio", "[processes]") {
 
   }
 
-  SECTION("Synchrotron radiation 2") {
 
-    // create a suitable environment ///////////////////////////////////////////////////
-    using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-    using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
-        <IModelInterface>>>>;
-    using EnvType = Environment<AtmModel>;
-    EnvType env;
-    CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
-    // get the center point
-    Point const center{rootCS, 0_m, 0_m, 0_m};
-    // a refractive index for the vacuum
-    const double ri_{1};
-    // the constant density
-    const auto density{19.2_g / cube(1_cm)};
-    // the composition we use for the homogeneous medium
-    NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
-                                         std::vector<float>{1.f});
-    // create magnetic field vector
-    Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
-    // create a Sphere for the medium
-    auto Medium = EnvType::createNode<Sphere>(
+SECTION("ZHS synchrotron") {
+// create a suitable environment ///////////////////////////////////////////////////
+using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+                                                            <IModelInterface>>>>;
+using EnvType = Environment<AtmModel>;
+EnvType env;
+CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+// get the center point
+Point const center{rootCS, 0_m, 0_m, 0_m};
+// a refractive index for the vacuum
+const double ri_{1};
+// the constant density
+const auto density{19.2_g / cube(1_cm)};
+// the composition we use for the homogeneous medium
+NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
+                                     std::vector<float>{1.f});
+// create magnetic field vector
+Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
+// create a Sphere for the medium
+auto Medium = EnvType::createNode<Sphere>(
         center, 1_km * std::numeric_limits<double>::infinity());
-    // set the environment properties
-    auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, Composition);
-    // bind things together
-    env.getUniverse()->addChild(std::move(Medium));
+// set the environment properties
+auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, Composition);
+// bind things together
+env.getUniverse()->addChild(std::move(Medium));
 
 
-    // now create antennas and detectors/////////////////////////////////////////////
-    // the antennas location
-    const auto point1{Point(rootCS, 5000_m, 0_m, 0_m)};
+// now create antennas and detectors/////////////////////////////////////////////
+// the antennas location
+const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
+//    const auto point2{Point(rootCS, 5000_m, 100_m, 0_m)};
+//    const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
+//    const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
+
+
+// create times for the antenna
+// 30 km antenna
+const TimeType start{0.994e-4_s};
+const TimeType duration{1.07e-4_s - 0.994e-4_s};
+// 3 km antenna
+//    const TimeType start{0.994e-5_s};
+//    const TimeType duration{1.7e-5_s - 0.994e-5_s};
+const InverseTimeType sampleRate_{5e+11_Hz};
+
+std::cout << "number of points in time: " << duration*sampleRate_ << std::endl;
+
+// create 4 cool antennas
+TimeDomainAntenna ant1("cool antenna", point1, start, duration, sampleRate_);
+//    TimeDomainAntenna ant2("cooler antenna", point2, t1, t2, t3);
+//    TimeDomainAntenna ant3("coolest antenna", point3, t1, t2, t3);
+//    TimeDomainAntenna ant4("No, I am the coolest antenna", point4, t1, t2, t3);
+
+// construct a radio detector instance to store our antennas
+AntennaCollection<TimeDomainAntenna> detector;
+
+// add the antennas to the detector
+detector.addAntenna(ant1);
+//    detector.addAntenna(ant2);
+//    detector.addAntenna(ant3);
+//    detector.addAntenna(ant4);
+
+//////////////////////////////////////////////////////////////////////////////////
+
+// create a new stack for each trial
+setup::Stack stack;
+stack.clear();
+
+const Code particle{Code::Electron};
+const HEPMassType pmass{get_mass(particle)};
+
+// construct an energy // move in the for loop
+const HEPEnergyType E0{11.4_MeV};
+
+// create a radio process instance using CoREAS
+RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+coreas(detector, env);
+
+// loop over all the tracks except the last one
+int const n_points {100000};
+LengthType const radius {100_m};
+TimeType timeCounter {0._s};
+for (size_t i = 0; i <= (n_points) * 2; i++) {
+Point const point_1(rootCS,{radius*cos(M_PI*2*i/n_points),radius*sin(M_PI*2*i/n_points), 0_m});
+Point const point_2(rootCS,{radius*cos(M_PI*2*(i+1)/n_points),radius*sin(M_PI*2*(i+1)/n_points), 0_m});
+TimeType t {(point_2 - point_1).getNorm() / (0.999 * constants::c)};
+timeCounter = timeCounter + t;
+VelocityVector v { (point_2 - point_1) / t };
+auto  beta {v / constants::c};
+auto gamma {E0/pmass};
+auto plab {beta * pmass * gamma};
+Line l {point_1,v};
+StraightTrajectory track {l,t};
+auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, timeCounter))};
+coreas.doContinuous(particle1,track,true);
+stack.clear();
+}
+
+
+// get the output
+coreas.writeOutput();
+}
+
+SECTION("Synchrotron radiation 2") {
+
+// create a suitable environment ///////////////////////////////////////////////////
+using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
+using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
+                                                            <IModelInterface>>>>;
+using EnvType = Environment<AtmModel>;
+EnvType env;
+CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+// get the center point
+Point const center{rootCS, 0_m, 0_m, 0_m};
+// a refractive index for the vacuum
+const double ri_{1};
+// the constant density
+const auto density{19.2_g / cube(1_cm)};
+// the composition we use for the homogeneous medium
+NuclearComposition const Composition(std::vector<Code>{Code::Nitrogen},
+                                     std::vector<float>{1.f});
+// create magnetic field vector
+Vector B1(rootCS, 0_T, 0_T, 0.3809_T);
+// create a Sphere for the medium
+auto Medium = EnvType::createNode<Sphere>(
+        center, 1_km * std::numeric_limits<double>::infinity());
+// set the environment properties
+auto const props = Medium->setModelProperties<AtmModel>(ri_, Medium::AirDry1Atm, B1, density, Composition);
+// bind things together
+env.getUniverse()->addChild(std::move(Medium));
+
+
+// now create antennas and detectors/////////////////////////////////////////////
+// the antennas location
+const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
 //    const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
 //    const auto point2{Point(rootCS, 5000_m, 100_m, 0_m)};
 //    const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
 //    const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
 
-    // create times for the antenna
+// create times for the antenna
 //    const TimeType t1{0.998e-4_s};
 //    const TimeType t2{1.0000e-4_s};
 //    const InverseTimeType t3{1e+11_Hz};
 
-    const TimeType start{16e-6_s};
-    const TimeType duration{3e-6_s};
-    const InverseTimeType sample_period{200e+9_Hz};
+const TimeType start{99e-6_s};
+const TimeType duration{3e-6_s};
+const InverseTimeType sample_period{20e+9_Hz};
 
 
-    // create 4 cool antennas
-    TimeDomainAntenna ant1("cool antenna", point1, start, duration, sample_period);
+// create 4 cool antennas
+TimeDomainAntenna ant1("cool antenna", point1, start, duration, sample_period);
 //    TimeDomainAntenna ant2("cooler antenna", point2, t1, t2, t3);
 //    TimeDomainAntenna ant3("coolest antenna", point3, t1, t2, t3);
 //    TimeDomainAntenna ant4("No, I am the coolest antenna", point4, t1, t2, t3);
 
-    // construct a radio detector instance to store our antennas
-    AntennaCollection<TimeDomainAntenna> detector;
+// construct a radio detector instance to store our antennas
+AntennaCollection<TimeDomainAntenna> detector;
 
-    // add the antennas to the detector
-    detector.addAntenna(ant1);
+// add the antennas to the detector
+detector.addAntenna(ant1);
 //    detector.addAntenna(ant2);
 //    detector.addAntenna(ant3);
 //    detector.addAntenna(ant4);
 
-    //////////////////////////////////////////////////////////////////////////////////
-    // create a new stack for each trial
-    setup::Stack stack;
-    stack.clear();
+//////////////////////////////////////////////////////////////////////////////////
+// create a new stack for each trial
+setup::Stack stack;
+stack.clear();
 
-    const Code particle{Code::Electron};
-    const HEPMassType pmass{get_mass(particle)};
+const Code particle{Code::Electron};
+const HEPMassType pmass{get_mass(particle)};
 
-    // construct an energy // move in the for loop
-    const HEPEnergyType E0{11.4_MeV};
+// construct an energy // move in the for loop
+const HEPEnergyType E0{11.4_MeV};
 
-    // create a radio process instance using CoREAS or ZHS
-    RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-        coreas(detector, env);
+// create a radio process instance using CoREAS or ZHS
+RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+coreas(detector, env);
 
-    // loop over all the tracks except the last one
-    int const n_points {60000};
-    LengthType const radius {100_m};
-    TimeType timeCounter {0._s};
-    for (size_t i = 0; i <= n_points; i++) {
-      Point const point_1(rootCS,{radius*cos(M_PI*2*i/n_points),radius*sin(M_PI*2*i/n_points), 0_m});
-      Point const point_2(rootCS,{radius*cos(M_PI*2*(i+1)/n_points),radius*sin(M_PI*2*(i+1)/n_points), 0_m});
-      TimeType t {(point_2 - point_1).getNorm() / (0.999 * constants::c)};
-      timeCounter = timeCounter + t;
-      VelocityVector v { (point_2 - point_1) / t };
-      auto  beta {v / constants::c};
-      auto gamma {E0/pmass};
-      auto plab {beta * pmass * gamma};
-      Line l {point_1,v};
-      StraightTrajectory track {l,t};
-      auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, timeCounter))};
-      coreas.doContinuous(particle1,track,true);
-      stack.clear();
-    }
+// loop over all the tracks except the last one
+int const n_points {60000};
+LengthType const radius {100_m};
+TimeType timeCounter {0._s};
+for (size_t i = 0; i <= n_points; i++) {
+Point const point_1(rootCS,{radius*cos(M_PI*2*i/n_points),radius*sin(M_PI*2*i/n_points), 0_m});
+Point const point_2(rootCS,{radius*cos(M_PI*2*(i+1)/n_points),radius*sin(M_PI*2*(i+1)/n_points), 0_m});
+TimeType t {(point_2 - point_1).getNorm() / (0.999 * constants::c)};
+timeCounter = timeCounter + t;
+VelocityVector v { (point_2 - point_1) / t };
+auto  beta {v / constants::c};
+auto gamma {E0/pmass};
+auto plab {beta * pmass * gamma};
+Line l {point_1,v};
+StraightTrajectory track {l,t};
+auto particle1{stack.addParticle(std::make_tuple(particle, E0, plab, point_1, timeCounter))};
+coreas.doContinuous(particle1,track,true);
+stack.clear();
+}
 
-    // get the output
-    coreas.writeOutput();
+// get the output
+coreas.writeOutput();
 
-  }
+}
 
 
   SECTION("TimeDomainAntenna") {
@@ -1203,53 +1307,49 @@ TEST_CASE("Radio", "[processes]") {
 
     // get some points
     Point p0(rootCS, {0_m, 0_m, 0_m});
-    //    Point p1(rootCS, {0_m, 0_m, 1_m});
-    //    Point p2(rootCS, {0_m, 0_m, 2_m});
-    //    Point p3(rootCS, {0_m, 0_m, 3_m});
-    //    Point p4(rootCS, {0_m, 0_m, 4_m});
-    //    Point p5(rootCS, {0_m, 0_m, 5_m});
-    //    Point p6(rootCS, {0_m, 0_m, 6_m});
-    //    Point p7(rootCS, {0_m, 0_m, 7_m});
-    //    Point p8(rootCS, {0_m, 0_m, 8_m});
-    //    Point p9(rootCS, {0_m, 0_m, 9_m});
-    Point p10(rootCS, {5000_m, 0_m, 0_m});
+    Point p1(rootCS, {0_m, 0_m, 1_m});
+    Point p2(rootCS, {0_m, 0_m, 2_m});
+    Point p3(rootCS, {0_m, 0_m, 3_m});
+    Point p4(rootCS, {0_m, 0_m, 4_m});
+    Point p5(rootCS, {0_m, 0_m, 5_m});
+    Point p6(rootCS, {0_m, 0_m, 6_m});
+    Point p7(rootCS, {0_m, 0_m, 7_m});
+    Point p8(rootCS, {0_m, 0_m, 8_m});
+    Point p9(rootCS, {0_m, 0_m, 9_m});
+    Point p10(rootCS, {0_m, 0_m, 10_m});
 
     // get a unit vector
     Vector<dimensionless_d> v1(rootCS, {0, 0, 1});
     Vector<dimensionless_d> v2(rootCS, {0, 0, -1});
 
-    //    // get a geometrical path of points
-    //    Path P1({p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10});
+    // get a geometrical path of points
+    Path P1({p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10});
 
     // construct a Straight Propagator given the uniform refractive index environment
     StraightPropagator SP(env);
 
     // store the outcome of the Propagate method to paths_
-    auto const paths_ = SP.propagate(p0, p10, 1_m);
+    auto const paths_ = SP.propagate(p0, p10, 9_m);
 
     // perform checks to paths_ components
     for (auto const& path : paths_) {
 //      CHECK((path.propagation_time_ / 1_s) - ((34_m / (3 * constants::c)) / 1_s) ==
 //            Approx(0).margin(absMargin));
-//      CHECK(path.average_refractive_index_ == Approx(1));
-//      CHECK(path.refractive_index_source_ == Approx(1));
-//      CHECK(path.refractive_index_destination_ == Approx(1));
-//      CHECK(path.emit_.getComponents() == v1.getComponents());
-//      CHECK(path.receive_.getComponents() == v2.getComponents());
-//      CHECK(path.R_distance_ == 10_m);
-      //      CHECK(std::equal(P1.begin(), P1.end(), path.points_.begin(),[]
-      //      (Point a, Point b) { return (a - b).norm() / 1_m < 1e-5;}));
-      //TODO:THINK ABOUT THE POINTS IN THE SIGNALPATH.H
-
-      std::cout << "path.propagation_time_: " << path.propagation_time_ << std::endl;
-//      std::cout << "path.average_refractive_index_: " << path.average_refractive_index_ << std::endl;
-//      std::cout << "path.emit_: " << path.emit_.getComponents() << std::endl;
-//      std::cout << "path.R_distance_: " << path.R_distance_ << std::endl;
-
+      std::cout << "XRONOS: " << path.propagation_time_ << std::endl;
+      std::cout << "XRONOS 2: " << (p10 - p0).getNorm() / constants::c << std::endl;
+      CHECK((path.propagation_time_ / 1_s) - (((p10 - p0).getNorm() / constants::c) / 1_s) == Approx(0));
+      CHECK(path.average_refractive_index_ == Approx(1));
+      CHECK(path.refractive_index_source_ == Approx(1));
+      CHECK(path.refractive_index_destination_ == Approx(1));
+      CHECK(path.emit_.getComponents() == v1.getComponents());
+      CHECK(path.receive_.getComponents() == v2.getComponents());
+      CHECK(path.R_distance_ == 10_m);
+      CHECK(std::equal(P1.begin(), P1.end(), Path(path.points_).begin(),[]
+            (Point a, Point b) { return (a - b).getNorm() / 1_m < 1e-5;}));
 
     }
 
-//    CHECK(paths_.size() == 1);
+    CHECK(paths_.size() == 1);
   }
 
   SECTION("Straight Propagator w/ Exponential Refractive Index") {

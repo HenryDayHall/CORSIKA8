@@ -53,10 +53,7 @@ namespace corsika {
 
       // get the global simulation time for that track. (best guess for now)
       auto startTime_{particle.getTime()}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
-      std::cout << "Particle time at start of track: " << startTime_ << std::endl;
       auto endTime_{particle.getTime() + track.getDuration()};
-      std::cout << "Particle time at end of track: " << endTime_ << std::endl;
-      std::cout << "Duration of track: " << track.getDuration() << std::endl;
 
       // TODO: this should be fixed with the continuous processes new design, so we can get the energy at start and end of track
       // gamma factor is calculated using beta
@@ -65,23 +62,13 @@ namespace corsika {
 
       // get start and end position of the track
       auto startPoint_{track.getPosition(0)};
-      std::cout << "STARTPOINT position: " << startPoint_ << std::endl;
       auto endPoint_{track.getPosition(1)};
-      std::cout << "ENDPOINT position: " << endPoint_ << std::endl;
+      // calculate the track length
+      auto tracklength_ {(endPoint_ - startPoint_).getNorm()};
 
-      // beta is velocity / speed of light. Start & end should be the same!
-      // auto beta_ {static_cast<double>((endPoint_.distance_to(startPoint_) / 1_m ) / (endTime_/ 1_s - startTime_/ 1_s) )};
-      // auto beta_ {((endPoint_.distance_to(startPoint_)) / (endTime_ - startTime_)).normalized()};
+      // beta is velocity / speed of light. Start & end should be the same in endpoints!
       auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
-      std::cout << "BETA v/c: " << beta_ << std::endl;
-
-      // ideally these variables should use the improved getEnergy() method once it's there
-//      auto preBeta_ {(track.getVelocity(0) / constants::c)};
-//      std::cout << "PreBeta: " << preBeta_ << std::endl;
-//      auto postBeta_ {(track.getVelocity(1) / constants::c)};
-//      std::cout << "PostBeta: " << postBeta_ << std::endl;
-//      auto velocityWeight_ {0.5 * (preBeta_ + postBeta_) / beta_};
-//      std::cout << "Velocity Weight: " << velocityWeight_ << std::endl;
+      // auto beta__ { tracklength_ / (constants::c * (endTime_ - startTime_)) }; (I think this is the correct one)
 
       // get particle charge
       auto const charge_{get_charge(particle.getPID())};
@@ -110,10 +97,6 @@ namespace corsika {
           // calculate preDoppler factor
           double preDoppler_{1. - paths1[i].refractive_index_source_ *
                        beta_.dot(paths1[i].emit_)}; // are you sure this is path.emit and not path.receive?
-          std::cout << "***** preDoppler: " << preDoppler_ << std::endl;
-          std::cout << "***** preEmmit_vector: " << paths1[i].emit_ << std::endl;
-          std::cout << "***** preRefractive_Index_Source: " << paths1[i].refractive_index_source_
-                    << std::endl;
 
           // check if preDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (preDoppler_ == 0) {
@@ -130,14 +113,10 @@ namespace corsika {
             preDoppler_ = doppler;
           }
 
-          // calculate postDoppler factor
+            // calculate postDoppler factor
           double postDoppler_{
               1. - paths2[i].refractive_index_source_ *
                        beta_.dot(paths2[i].emit_)}; // maybe this is path.receive_ (?)
-          std::cout << "***** postDoppler: " << postDoppler_ << std::endl;
-          std::cout << "***** postEmmit_vector: " << paths2[i].emit_ << std::endl;
-          std::cout << "***** postRefractive_Index_Source: "
-                    << paths2[i].refractive_index_source_ << std::endl;
 
           // check if postDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (postDoppler_ == 0) {
@@ -155,35 +134,28 @@ namespace corsika {
           }
 
           // calculate receive time for startpoint (aka time delay)
-          auto startPointReceiveTime_{paths1[i].propagation_time_ + startTime_};
-          std::cout << "STARTPOINT RECEIVE TIME BEFORE IFS: " << startPointReceiveTime_ << std::endl; // TODO: time 0 is when the imaginary primary hits the ground
+          auto startPointReceiveTime_{paths1[i].propagation_time_ + startTime_}; // TODO: time 0 is when the imaginary primary hits the ground
 
           // calculate receive time for endpoint
           auto endPointReceiveTime_{paths2[i].propagation_time_ + endTime_};
-          std::cout << "ENDPOINT RECEIVE TIME BEFORE IFS: " << endPointReceiveTime_ << std::endl;
 
           // get receive unit vector for startpoint
           auto ReceiveVectorStart_{paths1[i].receive_};
-          std::cout << "start receive unit vector before ifs: " << ReceiveVectorStart_ << std::endl;
 
           // get receive unit vector for endpoint
           auto ReceiveVectorEnd_{paths2[i].receive_};
-          std::cout << "end receive unit vector before ifs: " << ReceiveVectorEnd_ << std::endl;
-
-          ////////////////////////////////////////////////////////////////////////////////
 
           // perform ZHS-like calculation close to Cherenkov angle and for refractive index at antenna location greater than 1
           if ((paths1[i].refractive_index_destination_ > 1) &&
               (std::fabs(preDoppler_) <= approxThreshold_ || std::fabs(postDoppler_) <= approxThreshold_)) {
 
-            // clear the existing paths for this particle and track
+            // clear the existing paths for this particle and track, since we don't need them anymore
             paths1.clear();
             paths2.clear();
 
             // get global simulation time for the middle point of that track.
             TimeType midTime_{((startPoint_ - endPoint_).getNorm() / 2) /
                               track.getVelocity(0).getNorm()};
-            // auto midTime_{particle.getTime() - (track.getDuration() / 2)}; // this is not the geometrical calculation
 
             // get "mid" position of the track geometrically
             auto midVector_{(startPoint_ - endPoint_) / 2};
@@ -220,36 +192,34 @@ namespace corsika {
 
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
               ElectricFieldVector EVmid_ =
-                  path.receive_.cross(path.receive_.cross(beta_)).getComponents() /
+                  path.emit_.cross(path.emit_.cross(beta_)).getComponents() /
                   (path.R_distance_ * midDoppler_) * (antenna.sample_rate_ / (4 * M_PI)) *
                   ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
               ElectricFieldVector EV1_{EVmid_};
               ElectricFieldVector EV2_{-EVmid_};
 
-              auto deltaT_{(endPoint_ - startPoint_).getNorm() /
-                           (constants::c * beta_.getNorm() *
-                            std::fabs(midDoppler_))}; // TODO: Caution with this!
+              double deltaT_{(tracklength_ / (constants::c * tracklength_ / (constants::c * (endTime_ - startTime_))) *
+                            std::fabs(midDoppler_)) / 1_s};     // TODO: Caution with this!
 
-              if (startPointReceiveTime_ <
-                  endPointReceiveTime_) // EVstart_ arrives earlier
+              if (startPointReceiveTime_ < endPointReceiveTime_)  // EVstart_ arrives earlier
               {
-                startPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_;
-                endPointReceiveTime_ = midPointReceiveTime_ + 0.5 * deltaT_;
+                startPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_ * 1_s;
+                endPointReceiveTime_ = midPointReceiveTime_ + 0.5 * deltaT_ * 1_s;
               } else // EVend_ arrives earlier
               {
-                startPointReceiveTime_ = midPointReceiveTime_ + 0.5 * deltaT_;
-                endPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_;
+                startPointReceiveTime_ = midPointReceiveTime_ + 0.5 * deltaT_ * 1_s;
+                endPointReceiveTime_ = midPointReceiveTime_ - 0.5 * deltaT_ * 1_s;
               }
 
-              const long double gridResolution_{antenna.duration_ / 1_s};
-              deltaT_ = endPointReceiveTime_ - startPointReceiveTime_;
+              const long double gridResolution_{1 / antenna.sample_rate_ / 1_s};
+              deltaT_ = (endPointReceiveTime_ - startPointReceiveTime_) / 1_s;
 
               // redistribute contributions over time scale defined by the observation time resolution
-              if (std::fabs(deltaT_ / 1_s) < gridResolution_) {
+              if (std::fabs(deltaT_) < gridResolution_) {
 
-                EV1_ = EV1_ * std::fabs((deltaT_ / 1_s) / gridResolution_);
-                EV2_ = EV2_ * std::fabs((deltaT_ / 1_s) / gridResolution_);
+                EV1_ *= std::fabs((deltaT_) / gridResolution_);
+                EV2_ *= std::fabs((deltaT_) / gridResolution_);
 
                 const long startBin = static_cast<long>(
                     std::floor((startPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
@@ -266,32 +236,24 @@ namespace corsika {
                 if (startBin == endBin) {
 
                   // if startE arrives before endE
-                  if ((deltaT_ / 1_s) >= 0) {
+                  if ((deltaT_) >= 0) {
                     if ((startBinFraction >= 0.5) &&
                         (endBinFraction >= 0.5)) // both points left of bin center
                     {
-                      startPointReceiveTime_ =
-                          startPointReceiveTime_ -
-                          gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
+                      startPointReceiveTime_ -= gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
                     } else if ((startBinFraction < 0.5) &&
                                (endBinFraction < 0.5)) // both points right of bin center
                     {
-                      endPointReceiveTime_ =
-                          endPointReceiveTime_ +
-                          gridResolution_ * 1_s; // shift EV2_ to next gridpoint
+                      endPointReceiveTime_ += gridResolution_ * 1_s; // shift EV2_ to next gridpoint
                     } else                       // points on both sides of bin center
                     {
                       const double leftDist = 1.0 - startBinFraction;
                       const double rightDist = endBinFraction;
                       // check if asymmetry to right or left
                       if (rightDist >= leftDist) {
-                        endPointReceiveTime_ =
-                            endPointReceiveTime_ +
-                            gridResolution_ * 1_s; // shift EV2_ to next gridpoint
+                        endPointReceiveTime_ += gridResolution_ * 1_s; // shift EV2_ to next gridpoint
                       } else {
-                        startPointReceiveTime_ =
-                            startPointReceiveTime_ -
-                            gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
+                        startPointReceiveTime_ -= gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
                       }
                     }
                   } else // if endE arrives before startE
@@ -299,28 +261,20 @@ namespace corsika {
                     if ((startBinFraction >= 0.5) &&
                         (endBinFraction >= 0.5)) // both points left of bin center
                     {
-                      endPointReceiveTime_ =
-                          endPointReceiveTime_ -
-                          gridResolution_ * 1_s; // shift EV2_ to previous gridpoint
+                      endPointReceiveTime_ -= gridResolution_ * 1_s; // shift EV2_ to previous gridpoint
                     } else if ((startBinFraction < 0.5) &&
                                (endBinFraction < 0.5)) // both points right of bin center
                     {
-                      startPointReceiveTime_ =
-                          startPointReceiveTime_ +
-                          gridResolution_ * 1_s; // shift EV1_ to next gridpoint
+                      startPointReceiveTime_ += gridResolution_ * 1_s; // shift EV1_ to next gridpoint
                     } else                       // points on both sides of bin center
                     {
                       const double leftDist = 1.0 - endBinFraction;
                       const double rightDist = startBinFraction;
                       // check if asymmetry to right or left
                       if (rightDist >= leftDist) {
-                        startPointReceiveTime_ =
-                            startPointReceiveTime_ +
-                            gridResolution_ * 1_s; // shift EV1_ to next gridpoint
+                        startPointReceiveTime_ += gridResolution_ * 1_s; // shift EV1_ to next gridpoint
                       } else {
-                        endPointReceiveTime_ =
-                            endPointReceiveTime_ -
-                            gridResolution_ * 1_s; // shift EV2_ to previous gridpoint
+                        endPointReceiveTime_ -= gridResolution_ * 1_s; // shift EV2_ to previous gridpoint
                       }
                     }
                   } // End of else statement
@@ -328,13 +282,9 @@ namespace corsika {
               }     // End of if deltaT < gridresolution
 
               // TODO: Be very careful with this. Maybe the EVs should be fed after the for loop of paths3
-              std::cout << "---------- RECEIVE INCIDENT USING ZHS-like APPROXIMATION ----------" << std::endl;
-              std::cout << "Start Point Receive Time: " << startPointReceiveTime_ << std::endl;
-              std::cout << "End Point Receive Time: " << endPointReceiveTime_ << std::endl;
+              std::cout << "---------- ZHS-like APPROXIMATION ----------" << std::endl;
               antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
-              std::cout << "FIRST RECEIVE JUST PERFORMED ! ! !" << std::endl;
               antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
-              std::cout << "SECOND RECEIVE JUST PERFORMED ! ! !" << std::endl;
 
             } // End of looping over paths3
 
@@ -343,11 +293,11 @@ namespace corsika {
 
             // calculate electric field vector for startpoint
             ElectricFieldVector EV1_ =
-                paths1[i].receive_.cross(paths1[i].receive_.cross(beta_))
+                paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))
                     .getComponents() /
                 (paths1[i].R_distance_ * preDoppler_) *
-                (antenna.sample_rate_ / (4 * M_PI)) *  //TODO: divide by sample width not track.getDuration! (ask if this is now ok)
-                ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
+                        (antenna.sample_rate_ / (4 * M_PI)) *
+                        ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
 
             std::cout << "CHECK EV1 VALUE : " << EV1_ << std::endl;
 
@@ -363,101 +313,60 @@ namespace corsika {
 
             if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
-              std::cout << "--- Gets into if doppler factors are less than 1.e-9 ---" << std::endl;
+              std::cout << "--- Doppler factors are less than 1.e-9 ---" << std::endl;
 
-              auto gridResolution_{antenna.duration_}; //TODO: maybe this should be antenna.sample_rate? (check)
-              auto deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
+              const long gridResolution_{1 / antenna.sample_rate_ / 1_s};
+              double deltaT_ {(endPointReceiveTime_ - startPointReceiveTime_) / 1_s};
 
-              if (std::fabs(deltaT_ / 1_s) < gridResolution_ / 1_s) {
+              if (std::fabs(deltaT_) < gridResolution_) {
 
-                EV1_ = EV1_ * std::fabs(deltaT_ / gridResolution_);
-                EV2_ = EV2_ * std::fabs(deltaT_ / gridResolution_);
+                EV1_ *= std::fabs(deltaT_ / gridResolution_);
+                EV2_ *= std::fabs(deltaT_ / gridResolution_);
 
                 const long startBin = static_cast<long>(
-                    std::floor(startPointReceiveTime_ / gridResolution_ + 0.5l));
+                        std::floor((startPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
                 const long endBin = static_cast<long>(
-                    std::floor(endPointReceiveTime_ / gridResolution_ + 0.5l));
+                        std::floor((endPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
                 const double startBinFraction =
-                    (startPointReceiveTime_ / gridResolution_) -
-                    std::floor(startPointReceiveTime_ / gridResolution_);
+                        ((startPointReceiveTime_ / 1_s) / gridResolution_) -
+                        std::floor((startPointReceiveTime_ / 1_s) / gridResolution_);
                 const double endBinFraction =
-                    (endPointReceiveTime_ / gridResolution_) -
-                    std::floor(endPointReceiveTime_ / gridResolution_);
+                        ((endPointReceiveTime_ / 1_s) / gridResolution_) -
+                        std::floor((endPointReceiveTime_ / 1_s) / gridResolution_);
 
                 // only do timing modification if contributions would land in same bin
                 if (startBin == endBin) {
 
                   // if startE arrives before endE
-                  if (deltaT_ / 1_s >= 0) {
+                  if (deltaT_ >= 0) {
                     if ((startBinFraction >= 0.5) &&
                         (endBinFraction >= 0.5)) // both points left of bin center
                     {
-                      startPointReceiveTime_ =
-                          startPointReceiveTime_ -
-                          gridResolution_; // shift EV1_ to previous gridpoint
+                      startPointReceiveTime_ -= gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
                     } else if ((startBinFraction < 0.5) &&
                                (endBinFraction < 0.5)) // both points right of bin center
                     {
-                      endPointReceiveTime_ =
-                          endPointReceiveTime_ +
-                          gridResolution_; // shift EV2_ to next gridpoint
-                    } else                 // points on both sides of bin center
+                      endPointReceiveTime_ += gridResolution_ * 1_s; // shift EV2_ to next gridpoint
+                    } else    // points on both sides of bin center
                     {
                       const double leftDist = 1.0 - startBinFraction;
                       const double rightDist = endBinFraction;
                       // check if asymmetry to right or left
                       if (rightDist >= leftDist) {
-                        endPointReceiveTime_ =
-                            endPointReceiveTime_ +
-                            gridResolution_; // shift EV2_ to next gridpoint
+                        endPointReceiveTime_ += gridResolution_ * 1_s; // shift EV2_ to next gridpoint
                       } else {
-                        startPointReceiveTime_ =
-                            startPointReceiveTime_ -
-                            gridResolution_; // shift EV1_ to previous gridpoint
+                        startPointReceiveTime_ -= gridResolution_ * 1_s; // shift EV1_ to previous gridpoint
                       }
                     }
-                  } else // if endE arrives before startE
-                  {
-                    if ((startBinFraction >= 0.5) &&
-                        (endBinFraction >= 0.5)) // both points left of bin center
-                    {
-                      endPointReceiveTime_ =
-                          endPointReceiveTime_ -
-                          gridResolution_; // shift EV2_ to previous gridpoint
-                    } else if ((startBinFraction < 0.5) &&
-                               (endBinFraction < 0.5)) // both points right of bin center
-                    {
-                      startPointReceiveTime_ =
-                          startPointReceiveTime_ +
-                          gridResolution_; // shift EV1_ to next gridpoint
-                    } else                 // points on both sides of bin center
-                    {
-                      const double leftDist = 1.0 - endBinFraction;
-                      const double rightDist = startBinFraction;
-                      // check if asymmetry to right or left
-                      if (rightDist >= leftDist) {
-                        startPointReceiveTime_ =
-                            startPointReceiveTime_ +
-                            gridResolution_; // shift EV1_ to next gridpoint
-                      } else {
-                        endPointReceiveTime_ =
-                            endPointReceiveTime_ -
-                            gridResolution_; // shift EV2_ to previous gridpoint
-                      }
-                    }
-                  } // End of else statement
+                  } // End of if deltaT_ >=0
                 }   // End of if for startbin == endbin
               }     // End of if deltaT < gridresolution
             }       // End of if that checks small doppler factors
 
-            std::cout << "---------- RECEIVE INCIDENT WITH NO ZHS-like APPROXIMATION ----------" << std::endl;
-            std::cout << "Start Point Receive Time: " << startPointReceiveTime_ << std::endl;
-            std::cout << "End Point Receive Time: " << endPointReceiveTime_ << std::endl;
+            std::cout << "---------- NO ZHS-like APPROXIMATION ----------" << std::endl;
 
             antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
-            std::cout << "FIRST RECEIVE JUST PERFORMED ! ! !" << std::endl;
             antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
-            std::cout << "SECOND RECEIVE JUST PERFORMED ! ! !" << std::endl;
 
           } // End of else that does not perform ZHS-like approximation
 
