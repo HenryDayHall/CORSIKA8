@@ -23,7 +23,7 @@ namespace corsika {
   class CoREAS final : public RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator> {
 
     using Base = RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
-    using Base::detector_;
+    using Base::antennas_;
 
   public:
     using ElectricFieldVector =
@@ -36,8 +36,9 @@ namespace corsika {
      *
      */
     template <typename... TArgs>
-    CoREAS(TRadioDetector& detector, TArgs&&... args)
-        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(detector, args...) {}
+    CoREAS(std::string const& name,
+           TRadioDetector& detector, TArgs&&... args)
+        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(name, detector, args...) {}
 
     /**
      * Simulate the radio emission from a particle across a track.
@@ -77,7 +78,7 @@ namespace corsika {
       const double approxThreshold_{1.0e-3};
 
       // loop over each antenna in the antenna collection (detector)
-      for (auto& antenna : detector_.getAntennas()) {
+      for (auto& antenna : antennas_.getAntennas()) {
 
         // check with which antenna we work in this loop
         std::cout << "ANTENNA: " << antenna.getName() << std::endl;

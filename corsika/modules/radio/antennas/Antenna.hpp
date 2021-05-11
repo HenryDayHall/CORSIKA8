@@ -9,6 +9,9 @@
  */
 #pragma once
 
+#include <cnpy.hpp>
+#include <xtensor/xtensor.hpp>
+#include <boost/filesystem.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 
 namespace corsika {
@@ -20,23 +23,22 @@ namespace corsika {
    * type Antenna<T> where T is a concrete antenna implementation.
    *
    */
-  template <typename AntennaImpl>
+  template <typename TAntennaImpl>
   class Antenna {
 
-
+  protected:
+    /**
+     * Get a reference to the underlying radio implementation.
+     */
+    TAntennaImpl& implementation() { return static_cast<TAntennaImpl&>(*this); }
 
   public:
-    std::string const name_;         ///< The name/identifier of this antenna.
-    Point const location_;           ///< The location of this antenna.
+    std::string const name_;    ///< The name/identifier of this antenna.
+    Point const location_;      ///< The location of this antenna.
+    std::string filename_ = ""; ///< The filename for the output file for this antenna.
 
     // this stores the polarization vector of an electric field
-    using ElectricFieldVector =
-    QuantityVector<ElectricFieldType::dimension_type>;
-//    using MagneticFieldVector =
-//        QuantityVector<MagneticFieldType::dimension_type>;
-
-    // a dimensionless vector used for the incident direction
-//    using Vector = QuantityVector<dimensionless_d>;
+    using ElectricFieldVector = QuantityVector<ElectricFieldType::dimension_type>;
 
     /**
      * \brief Construct a base antenna instance.
@@ -48,11 +50,6 @@ namespace corsika {
     Antenna(std::string const& name, Point const& location)
         : name_(name)
         , location_(location){};
-
-    // copy constructor
-    Antenna(const Antenna& Ant)
-        : name_(Ant.name_)
-        , location_(Ant.location_){};
 
     /**
      * Receive a signal at this antenna.
@@ -80,6 +77,64 @@ namespace corsika {
      * Reset the antenna before starting a new simulation.
      */
     void reset();
+
+    /**
+     * Return a reference to the x-axis labels (i.e. time or frequency).
+     *
+     * This should be an xtensor-convertible type with
+     * a ->data() method that converts to a raw pointer.
+     */
+    xt::xtensor<double, 1> getAxis() const;
+
+    /**
+     * Return a reference to the underlying data.
+     *
+     * This is used when writing the antenna information to disk
+     * and will be converted to a 32-bit float before writing.
+     */
+    xt::xtensor<double, 2>& getData() const;
+
+    /**
+     * Prepare for the start of the library.
+     */
+    void startOfLibrary(boost::filesystem::path const& directory) {
+
+      // calculate and save our filename
+      filename_ = (directory / this->getName()).string() + ".npz";
+
+      // get the axis labels for this antenna and write the first row.
+      xt::xtensor<float, 1> axis = xt::cast<float>(this->implementation().getAxis());
+
+      // check for the axis name
+      std::string label = "Unknown";
+      if constexpr (TAntennaImpl::is_time_domain) {
+        label = "Time";
+      } else if constexpr (TAntennaImpl::is_freq_domain) {
+        label = "Frequency";
+      }
+
+      // explicitly convert the arrays to the needed type for cnpy
+      float const* raw_data = axis.data();
+      std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here
+
+      // write the labels to the first row of the NumPy file
+      cnpy::npz_save(filename_, label, raw_data, N, "w");
+    }
+
+    /**
+     * Flush the data from this shower to disk.
+     */
+    void endOfShower(int const event) {
+
+      // get the copy of the waveform data for this event
+      auto data{this->implementation().getData()};
+
+      // cnpy needs a vector for the shape
+      std::vector<size_t> shape = {data.shape()[0], data.shape()[1]};
+
+      // and write this event to the .npz archive
+      cnpy::npz_save(filename_, std::to_string(event), data.data(), shape, "a");
+    }
 
   }; // END: class Antenna final
 

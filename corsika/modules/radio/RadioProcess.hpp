@@ -10,13 +10,12 @@
 #include <istream>
 #include <fstream>
 #include <iostream>
-#include <xtensor/xcsv.hpp>
 #include <xtensor/xtensor.hpp>
 #include <string>
+#include <corsika/output/BaseOutput.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-
 
 namespace corsika {
 
@@ -24,20 +23,21 @@ namespace corsika {
    * The base interface for radio emission processes.
    *
    * TRadioImpl is the concrete implementation of the radio algorithm.
-   * TRadioDetector is the detector instance that stores antennas
+   * TAntennaCollection is the detector instance that stores antennas
    * and is responsible for managing the output writing.
    */
-  template <typename TRadioDetector, typename TRadioImpl, typename TPropagator>
+  template <typename TAntennaCollection, typename TRadioImpl, typename TPropagator>
   class RadioProcess : public ContinuousProcess<
-      RadioProcess<TRadioDetector, TRadioImpl, TPropagator>> {
+                           RadioProcess<TAntennaCollection, TRadioImpl, TPropagator>>,
+                       public BaseOutput {
 
-//    using ParticleType = corsika::setup::Stack::particle_type;
-//    using TrackType = corsika::LeapFrogTrajectory;
+    //    using ParticleType = corsika::setup::Stack::particle_type;
+    //    using TrackType = corsika::LeapFrogTrajectory;
 
     /**
      * A collection of filter objects for deciding on valid particles and tracks.
      */
-    //std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
+    // std::vector<std::function<bool(ParticleType&, TrackType const&)>> filters_;
 
     /**
      * Get a reference to the underlying radio implementation.
@@ -52,16 +52,19 @@ namespace corsika {
     }
 
   protected:
-    TRadioDetector& detector_; ///< The radio detector we store into.
-    TPropagator propagator_;   ///< The propagator implementation.
+    std::string const name_; ///< The name of this radio process.
+    TAntennaCollection& antennas_; ///< The radio antennas we store into.
+    TPropagator propagator_;       ///< The propagator implementation.
+    int event_{0}; ///< The current event ID.
 
   public:
     /**
      * Construct a new RadioProcess.
      */
     template <typename... TArgs>
-    RadioProcess(TRadioDetector& detector, TArgs&&... args)
-        : detector_(detector)
+    RadioProcess(std::string const& name, TAntennaCollection& antennas, TArgs&&... args)
+        : name_(name)
+        , antennas_(antennas)
         , propagator_(args...) {}
 
     /**
@@ -75,14 +78,14 @@ namespace corsika {
      */
     template <typename Particle, typename Track>
     ProcessReturn doContinuous(Particle& particle, Track const& track, bool const) {
-      //we want the following particles:
+      // we want the following particles:
       // Code::Electron & Code::Positron & Code::Gamma
 
       // we wrap Simulate() in doContinuous as the plan is to add particle level
       // filtering or thinning for calculation of the radio emission. This is
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
-      //if (valid(particle, track)) {
+      // if (valid(particle, track)) {
       if (particle.getPID() == Code::Electron || particle.getPID() == Code::Positron) {
         return this->implementation().simulate(particle, track);
       }
@@ -92,60 +95,129 @@ namespace corsika {
     /**
      * Decide whether this particle and track is valid for radio emission.
      */
-//    template <typename Particle, typename Track>
-//    auto valid(Particle& particle, Track const& track) const {
-//
-//      // loop over the filters in the our collection
-//      for (auto& filter : filters_) {
-//        // evaluate the filter. If the filter returns false,
-//        // then this track is not valid for radio emission.
-//        if (!filter(particle, track)) return false;
-//      }
-//    }
+    //    template <typename Particle, typename Track>
+    //    auto valid(Particle& particle, Track const& track) const {
+    //
+    //      // loop over the filters in the our collection
+    //      for (auto& filter : filters_) {
+    //        // evaluate the filter. If the filter returns false,
+    //        // then this track is not valid for radio emission.
+    //        if (!filter(particle, track)) return false;
+    //      }
+    //    }
 
-//    template <typename Particle, typename Track>
-//    void addFilter(const std::function<bool(Particle&, Track const&)> filter) {
-//      filters_.push_back(filter);
-//    }
+    //    template <typename Particle, typename Track>
+    //    void addFilter(const std::function<bool(Particle&, Track const&)> filter) {
+    //      filters_.push_back(filter);
+    //    }
 
-    /**
-       * TODO: This is placeholder so we can use text output while
-       * we wait for the true output formatting to be ready.
-       **/
-    bool writeOutput() const {
-      // this for loop still has some issues
-      int i = 1;
-      for (auto& antenna : detector_.getAntennas()) {
+    // /**
+    //  * TODO: This is placeholder so we can use text output while
+    //  * we wait for the true output formatting to be ready.
+    //  **/
+    // bool writeOutput() const {
+    //   // this for loop still has some issues
+    //   int i = 1;
+    //   for (auto& antenna : antennas_.getAntennas()) {
 
-        auto [t,E] = antenna.getWaveform();
-        auto c = xt::hstack(xt::xtuple(t,E));
-        std::ofstream out_file ("antenna" + to_string(i) + "_output.csv");
-        xt::dump_csv(out_file, c);
-        out_file.close();
-        ++i;
-
-      }
+    //     auto [t, E] = antenna.getWaveform();
+    //     auto c = xt::hstack(xt::xtuple(t, E));
+    //     std::ofstream out_file("antenna" + to_string(i) + "_output.csv");
+    //     xt::dump_csv(out_file, c);
+    //     out_file.close();
+    //     ++i;
+    //   }
       // how this method should work:
       // 1. Loop over the antennas in the collection
       // 2. Get their waveforms
       // 3. Create a text file for each antenna
       // 4. and write out two columns, time and field.
+    // }
+
+    /**
+     * Return the maximum step length for this particle and track.
+     *
+     * This must be provided by the TRadioImpl.
+     *
+     * @param particle    The current particle.
+     * @param track       The current track.
+     *
+     * @returns The maximum length of this track.
+     */
+    LengthType getMaxStepLength(setup::Stack::particle_type const& vParticle,
+                                setup::Trajectory const& vTrack) const {
+      return meter * std::numeric_limits<double>::infinity();
+    }
+
+    /**
+     * Called at the start of each library.
+     */
+    void startOfLibrary(boost::filesystem::path const& directory) final override {
+
+      // loop over every antenna and set the initial path
+      // this also writes the time-bins to disk.
+      for (auto& antenna : antennas_.getAntennas()) {
+        antenna.startOfLibrary(directory);
+      }
+    }
+
+    /**
+     * Called at the end of each shower.
+     */
+    void endOfShower() final override {
+
+      // loop over every antenna and instruct them to
+      // flush data to disk, and then reset the antenna
+      // before the next event
+      for (auto& antenna : antennas_.getAntennas()) {
+        antenna.endOfShower(event_);
+        antenna.reset();
+      }
+
+      // increment our event counter
+      event_++;
 
     }
 
     /**
-   * Return the maximum step length for this particle and track.
-   *
-   * This must be provided by the TRadioImpl.
-   *
-   * @param particle    The current particle.
-   * @param track       The current track.
-   *
-   * @returns The maximum length of this track.
-   */
-    LengthType getMaxStepLength(setup::Stack::particle_type const& vParticle,
-                                setup::Trajectory const& vTrack) const {
-      return meter * std::numeric_limits<double>::infinity();
+     * Called at the end of each library.
+     *
+     * This must also increment the run number since we override
+     * the default behaviour of BaseOutput.
+     */
+    void endOfLibrary() final override;
+
+    /**
+     * Get the configuration of this output.
+     */
+    YAML::Node getConfig() const final {
+
+      // top-level YAML node
+      YAML::Node config;
+
+      // fill in some basics
+      config["type"] = "RadioProcess";
+      config["units"]["time"] = "ns";
+      config["units"]["frequency"] = "GHz";
+      config["units"]["electric field"] = "V/m";
+      config["units"]["distance"] = "m";
+
+      for (auto& antenna : antennas_.getAntennas()) {
+        // get the name/location of this antenna
+        auto name = antenna.getName();
+        auto location = antenna.getLocation().getCoordinates();
+
+        // get the antennas config
+        config["antennas"][name] = antenna.getConfig();
+
+        // write the location of this antenna
+        config["antennas"][name]["location"].push_back(location.getX() / 1_m);
+        config["antennas"][name]["location"].push_back(location.getY() / 1_m);
+        config["antennas"][name]["location"].push_back(location.getZ() / 1_m);
+
+      }
+
+      return config;
     }
 
   }; // END: class RadioProcess

@@ -258,7 +258,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
-        coreas(detector, envCoREAS);
+        coreas("CoREAS", detector, envCoREAS);
 
     // check doContinuous and simulate methods
     coreas.doContinuous(particle1, base, true);
@@ -363,7 +363,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), ZHS<decltype(detector), decltype(StraightPropagator(envZHS))>, decltype(StraightPropagator(envZHS))>
-        zhs(detector, envZHS);
+        zhs("ZHS", detector, envZHS);
 
     // check doContinuous and simulate methods
     zhs.doContinuous(particle1, base, true);
@@ -895,7 +895,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-        coreas(detector, env);
+        coreas("CoREAS", detector, env);
 
     TimeType timeCounter {0._s};
 
@@ -925,7 +925,7 @@ TEST_CASE("Radio", "[processes]") {
     coreas.doContinuous(particle1,track,true);
 
     // get the output
-    coreas.writeOutput();
+    // coreas.writeOutput();
 
   }
 
@@ -1006,7 +1006,7 @@ const HEPEnergyType E0{11.4_MeV};
 
 // create a radio process instance using CoREAS
 RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-coreas(detector, env);
+coreas("CoREAS", detector, env);
 
 // loop over all the tracks except the last one
 int const n_points {100000};
@@ -1108,7 +1108,7 @@ const HEPEnergyType E0{11.4_MeV};
 
 // create a radio process instance using CoREAS or ZHS
 RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-coreas(detector, env);
+coreas("CoREAS", detector, env);
 
 // loop over all the tracks except the last one
 int const n_points {60000};
