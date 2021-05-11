@@ -21,6 +21,7 @@
 
 #include <epos.hpp>
 
+#include <string>
 #include <tuple>
 
 using namespace corsika;
@@ -28,81 +29,121 @@ using SetupParticle = setup::Stack::stack_iterator_type;
 
 namespace corsika::epos {
 
-  inline Interaction::Interaction() {
+  inline Interaction::Interaction(const std::string& dataPath)
+      : data_path_(dataPath) {
+    if (dataPath == "") {
+      if (std::getenv("CORSIKA_DATA")) {
+        data_path_ = std::string(std::getenv("CORSIKA_DATA")) + "/EPOS/";
+        CORSIKA_LOG_DEBUG("Searching for EPOSLHC data tables in {}", data_path_);
+      }
+    }
 
-    //       if(ilowegy.ne.1.or.MCleModel.eq.4)xsegymin=dble(0.5*egymin**2)
-    //       if(MCModel.eq.4)xsegymax=min(xsegymax,dble(0.5*egymax**2))
-    //       nrnody=nrnodyxs
-    //       do i=1,nrnody
-    //         nody(i)= nodyxs(i)
-    //       enddo
-    // #if !__CXCORSIKA__ && !__CORSIKA8__
+    // initialize Eposlhc
+    static bool initialized = false;
+    if (!initialized) {
+      initialize_eposlhc_c7();
+      initialized = true;
+    }
+  }
 
-    //       inicnt=inicnt+1
-    // c      isetcs=2  ! epos cross-section from tabulated calculation (h-A and AA)
-    ::epos::hadr6_.isetcs=3; //  epos cross-section from tabulated simulations
-                             //       (h-A and A-A)
-    ::epos::nucl6_.infragm=2; // --> model how projectiles fragment!
-    ::epos::hadr6_.isigma=0; //                  !do not print out the
-    //       cross section on screen ionudi=1
+  
+  inline void Interaction::initialize_eposlhc_c7() {
 
-    //       nfnii=nxsfnii             ! epos file name
-    //       fnii=xsfnii
-    //       nfnid=nxsfnid
-    //       fnid=xsfnid
-    //       nfnie=nxsfnie
-    //       fnie=xsfnie
-    //       nfnrj=nxsfnrj
-    //       fnrj=xsfnrj
-    //       nfncs=nxsfncs
-    //       fncs=xsfncs
-    //       nfnch=nxsfnch
-    //       fnch=xsfnch
+    // corsika7 ini
+    int iarg = 0;
+    ::epos::aaset_(iarg);
+    //::epos::atitle_();
 
-    // c air
-    /*    for (int i=1; i<=3; ++i) {
-      ::epos::nxsair_.airanxs[i]=aira[i];
-      ::epos::nxsair_.airznxs[i]=airz[i];
-      ::epos::nxsair_.airwnxs[i]=airw[i];
-	}
-    ::epos::nxsair_.airavanxs=airava;
-    ::epos::nxsair_.airavznxs=airavz;
-    */
+    //::epos::prnt1_.ish = 3; // debug level in epos
+    //::epos::prnt1_.ifch = 6; // output unit
+    //::epos::prnt1_.iecho = 1;
+	
+    // dummy set seeds for random number generator in epos. need to fool epos checks...
+    // we will use external generator
+    ::epos::cseed_.seedi = 1; 
+    ::epos::cseed_.seedj = 1;
+    ::epos::cseed_.seedc = 1;  
 
-    ::epos::appli_.iappl = iapplxs;
-    ::epos::events_.nevent = neventxs;
-    ::epos::othe2_.iframe = iframexs;
+    ::epos::enrgy_.egymin = 6.;
+    ::epos::enrgy_.egymax = 2.e6;
+    
+    ::epos::lhcparameters_();
+    
+    ::epos::hadr6_.isigma = 0;// do not show cross section
+    ::epos::hadr6_.isetcs = 3; /*  !option to obtain pomeron parameters
+      ! 0.....determine parameters but do not use Kfit
+      ! 1.....determine parameters and use Kfit
+      ! else..get from table
+      !         should be sufficiently detailed
+      !          say iclegy1=1,iclegy2=99
+      !         table is always done, more or less detailed!!!
+      !and option to use cross section tables
+      ! 2....tabulation
+      ! 3....simulation
+                               */
+    ::epos::cjinti_.ionudi =
+        1; // !include quasi elastic events but strict calculation of xs
+    ::epos::cjinti_.iorsce = 0;  // !color exchange turned on(1) or off(0)
+    ::epos::cjinti_.iorsdf = 3;  //  !droplet formation turned on(>0) or off(0)
+    ::epos::cjinti_.iorshh = 0;  //    !other hadron-hadron int. turned on(1) or off(0)
 
-    //       if(fnch(1:nfnch).ne.'none')
-    //      &  open(ifcx,file=fnch(1:nfnch),status='unknown')
+    ::epos::othe1_.istore = 0; // do not produce epos output file
+    ::epos::nucl6_.infragm = 0; // keep free nucleons in fragmentation
 
-    //       call iclass(idproj,iclpro)
-    //       call iclass(idtarg,icltar)
-    //       if(inicnt.eq.1)then
-    //         call ranfgt(seedp)      !not to change the seed ...
-    ::epos::hdecin_(false);
-    ::epos::hnbspd_(iospec);
-    //         ktnbod=0
-    ::epos::hnbpajini_();
-    //         if(iclegy2.gt.1)then
-    //           egyfac=(egymax*1.0001/egylow)**(1./float(iclegy2-1))
-    //         else
-    //           egyfac=1.
-    //         endif
-    //       endif
-    //       maproj=mamx               !to set difnuc up to the maximum mass
-    //       call conini
-    //       call psaini
-    //       call ranfst(seedp)        ! ... after this initialization
+    // set paths to tables in corsika data
+    ::epos::datadir BASE(data_path_);
+    strcpy(::epos::fname_.fnnx, BASE.data);
+    ::epos::nfname_.nfnnx = BASE.length;
+    
+    ::epos::datadir TL(data_path_ + "epos.initl");
+    strcpy(::epos::fname_.fnii, TL.data);
+    ::epos::nfname_.nfnii = TL.length;
+
+    ::epos::datadir EV(data_path_ + "epos.iniev");
+    strcpy(::epos::fname_.fnie, EV.data);
+    ::epos::nfname_.nfnie = EV.length;
+    
+    ::epos::datadir RJ(data_path_ + "epos.inirj"); // lhcparameters adds ".lhc"
+    strcpy(::epos::fname_.fnrj, RJ.data);
+    ::epos::nfname_.nfnrj = RJ.length;
+    
+    ::epos::datadir CS(data_path_ + "epos.inics"); // lhcparameters adds ".lhc"
+    strcpy(::epos::fname_.fncs, CS.data);
+    ::epos::nfname_.nfncs = CS.length;
+    
+    //::epos::fname_.fnid="/home/felix/ngcorsika/corsika/modules/data/EPOS/epos.inidi";
+    //     EPOPAR input ../epos/epos.param        !initialization input file for epos
+    //       EPOPAR fname inics ../epos/epos.inics  !initialization input file for epos
+    // EPOPAR fname iniev ../epos/epos.iniev  !initialization input file for epos
+    // EPOPAR fname initl ../epos/epos.initl  !initialization input file for epos
+    // EPOPAR fname inirj ../epos/epos.inirj  !initialization input file for epos
+    // EPOPAR fname inihy ../epos/epos.ini1b  !initialization input file for epos
+
+    // dummy event
+    ::epos::hadr25_.idprojin = 1120;
+    ::epos::hadr25_.idtargin = 1120;
+    //#if __CONEX__ && __EPOS__ && __HIGHMEM__
+    //    maproj = 250
+    //#else
+    ::epos::nucl1_.maproj = 56;
+    // #endif
+    ::epos::nucl1_.laproj = 28;
+    ::epos::nucl1_.matarg = 14;
+    ::epos::nucl1_.latarg = 1;
+    ::epos::hadr1_.pnll = 200.;
+    ::epos::lept1_.engy = -1.;
+    
+    ::epos::ainit_();
+
   }
 
   inline Interaction::~Interaction() {
     CORSIKA_LOG_DEBUG("Epos::Interaction n={} ", count_);
   }
 
-  inline corsika::CrossSectionType Interaction::getCrossSection(
-      const corsika::Code BeamId, const corsika::Code TargetId,
-      const corsika::HEPEnergyType CoMenergy) const {}
+  inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
+  Interaction::getCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
+                               const corsika::HEPEnergyType CoMenergy) const {}
 
   template <>
   inline corsika::GrammageType Interaction::getInteractionLength(
@@ -111,23 +152,18 @@ namespace corsika::epos {
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }
 
-  /**
-     In this function SIBYLL is called to produce one event. The
-     event is copied (and boosted) into the shower lab frame.
-   */
-
   template <typename TSecondaryView>
   inline void Interaction::doInteraction(TSecondaryView& view) {
 
     auto const projectile = view.getProjectile();
-    const auto corsikaBeamId = projectile.getPID();
+    auto const corsikaBeamId = projectile.getPID();
 
     if (corsika::is_nucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
-      throw std::runtime_error("Nuclear projectile are not handled by SIBYLL!");
+      throw std::runtime_error("Nuclear projectile are not handled by EPOSLHC!");
     }
 
-    // position and time of interaction, not used in Sibyll
+    // position and time of interaction, not used in Epos
     Point const pOrig = projectile.getPosition();
     TimeType const tOrig = projectile.getTime();
 
@@ -138,7 +174,7 @@ namespace corsika::epos {
 
     CORSIKA_LOG_DEBUG(
         "ProcessEPOS: "
-        "DoInteraction: pid {} interaction ",
+        "DoInteraction: {} interaction ",
         corsikaBeamId);
 
     // define target
@@ -207,7 +243,8 @@ namespace corsika::epos {
 
     for (size_t i = 0; i < compVec.size(); ++i) {
       auto const targetId = compVec[i];
-      auto const sigProd = getCrossSection(corsikaBeamId, targetId, Ecm);
+      [[maybe_unused]] auto const [sigProd, sigEla] =
+          getCrossSection(corsikaBeamId, targetId, Ecm);
       cross_section_of_components[i] = sigProd;
     }
 
@@ -215,8 +252,45 @@ namespace corsika::epos {
         mediumComposition.sampleTarget(cross_section_of_components, RNG_);
     CORSIKA_LOG_DEBUG("Interaction: target selected: {} ", targetCode);
 
-    //
+    // from corsika7 interface
+    // NEXLNK-part
+    
+    //projectile
+    // if(is_nucleus(corsikaBeamId)){
+    //   ::epos::hadr25_.idprojin =1120;
+    //   ::epos::nucl1_.laproj = projectile.get_nucleus_Z();   // Z
+    //   ::epos::nucl1_.maproj = projectile.get_nucleus_A();; // A
+    // } else {
+    ::epos::hadr25_.idprojin = 1120 ; // id "NEXUS code" 
+    ::epos::nucl1_.laproj = -1;   // Z (-1 for hadron)
+    ::epos::nucl1_.maproj = 1; // A
+    //}
+    // target
+    //if(is_nucleus(targetCode)){
+    ::epos::hadr25_.idtargin = 1120; // id "NEXUS code"
+    ::epos::nucl1_.latarg = 1;   // Z (-1 with id 1220 for neutron)
+    ::epos::nucl1_.matarg = 1; // A
 
+    // hadron-nucleon momentum
+    ::epos::hadr1_.pnll = float(200);
+
+    // C  SET ENGY NEGATIVE TO FORCE CALCULATION IN LAB FRAME
+    ::epos::lept1_.engy = -1.;
+    ::epos::enrgy_.ecms = -1.;
+    ::epos::enrgy_.elab = -1.;
+    ::epos::enrgy_.ekin = -1.;
+    
+    //C  INTIALIZE ENERGY AND PARTICLE DEPENDENT PORTION OF EPOS/NEXUS
+    //C  AT THE FIRST CALL: READ ALSO DATA SETS
+    ::epos::ainit_();
+
+    // create event
+    int iarg = 1;
+    ::epos::aepos_(iarg);
+
+    // NSTORE-part
+    std::cout << "npart: " << ::epos::cptl_.nptl << std::endl;
+    
     /*
       maproj=maprojxs
       laproj=laprojxs
