@@ -81,7 +81,38 @@ TEST_CASE("EposInterface", "[processes]") {
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
 
-  //  RNGManager::getInstance().registerRandomStream("epos");
+  RNGManager::getInstance().registerRandomStream("epos");
+
+  SECTION("InteractionInterface - random number"){
+    auto const rndm = ::epos::rangen_();
+    CHECK(rndm>0);
+    CHECK(rndm<1);
+  }
+  
+  SECTION("InteractionInterface - valid targets") {
+
+    Interaction model;
+    // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
+    CHECK_FALSE(model.isValidTarget(Code::Electron));
+    CHECK(model.isValidTarget(Code::Hydrogen));
+    CHECK_FALSE(model.isValidTarget(Code::Deuterium));
+    CHECK(model.isValidTarget(Code::Helium));
+    CHECK_FALSE(model.isValidTarget(Code::Helium3));
+    CHECK_FALSE(model.isValidTarget(Code::Iron));
+    CHECK(model.isValidTarget(Code::Oxygen));
+
+    //  hydrogen target == proton target == neutron target
+    auto const [xs_prod_pp, xs_ela_pp] =
+        model.getCrossSection(Code::Proton, Code::Proton, 100_GeV);
+    auto const [xs_prod_pn, xs_ela_pn] =
+        model.getCrossSection(Code::Proton, Code::Neutron, 100_GeV);
+    auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
+        model.getCrossSection(Code::Proton, Code::Hydrogen, 100_GeV);
+    CHECK(xs_prod_pp == xs_prod_pHydrogen);
+    CHECK(xs_prod_pp == xs_prod_pn);
+    CHECK(xs_ela_pp == xs_ela_pHydrogen);
+    CHECK(xs_ela_pn == xs_ela_pHydrogen);
+  }
 
   SECTION("InteractionInterface - low energy") {
 
@@ -96,6 +127,10 @@ TEST_CASE("EposInterface", "[processes]") {
 
     Interaction model;
     model.doInteraction(view);
+
+    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+    CHECK(length / 1_g * 1_cm * 1_cm == Approx(88.7).margin(0.1));
+
   }
 
 }

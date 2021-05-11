@@ -14,17 +14,17 @@
 /**
  * \file epos/Random.hpp
  *
- * This file is an integral part of the sibyll interface. It must be
- * linked to the executable linked to sibyll exactly once
+ * This file is an integral part of the epos interface. It must be
+ * linked to the executable linked to epos exactly once
  *
  */
 
 namespace epos {
 
-  double rndm_interface() {
+  float rndm_interface() {
     static corsika::default_prng_type& rng =
         corsika::RNGManager::getInstance().getRandomStream("epos");
-    std::uniform_real_distribution<double> dist;
+    std::uniform_real_distribution<float> dist;
     return dist(rng);
   }
 
