@@ -16,7 +16,7 @@ import corsika
 from .. import build_directory
 
 # the directory containing 'testSaveBoostHistogram'
-bindir = op.join(build_directory, "Framework", "Utilities")
+bindir = op.join(build_directory, "bin")
 
 
 def generate_hist() -> str:
@@ -32,14 +32,14 @@ def generate_hist() -> str:
     """
 
     # we construct the name of the bin
-    bin = op.join(bindir, "testSaveBoostHistogram")
+    bin = op.join(bindir, "testFramework")
 
     # check if a histogram already exists
     if op.exists(op.join(bin, "hist.npz")):
         return op.join(bin, "hist.npz"), False
     else:
         # run the program - this generates "hist.npz" in the CWD
-        subprocess.call(bin)
+        subprocess.call([bin, "saveHistogram"])
 
         return op.join(os.getcwd(), "hist.npz"), True
 
