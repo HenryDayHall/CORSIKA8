@@ -55,7 +55,7 @@
 #include <corsika/framework/core/PhysicalConstants.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 
-
+#include <corsika/output/OutputManager.hpp>
 
 using namespace corsika;
 
@@ -258,7 +258,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(envCoREAS))>, decltype(StraightPropagator(envCoREAS))>
-        coreas("CoREAS", detector, envCoREAS);
+        coreas( detector, envCoREAS);
 
     // check doContinuous and simulate methods
     coreas.doContinuous(particle1, base, true);
@@ -363,7 +363,7 @@ TEST_CASE("Radio", "[processes]") {
 
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), ZHS<decltype(detector), decltype(StraightPropagator(envZHS))>, decltype(StraightPropagator(envZHS))>
-        zhs("ZHS", detector, envZHS);
+        zhs( detector, envZHS);
 
     // check doContinuous and simulate methods
     zhs.doContinuous(particle1, base, true);
@@ -893,9 +893,17 @@ TEST_CASE("Radio", "[processes]") {
     // construct an energy // move in the for loop
     const HEPEnergyType E0{11.4_MeV};
 
+    // construct the output manager
+    OutputManager outputs("radio_synchrotron_example");
+
     // create a radio process instance using CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-        coreas("CoREAS", detector, env);
+        coreas( detector, env);
+    outputs.add("CoREAS", coreas); // register CoREAS with the output manager
+
+    // trigger the start of the library and the first event
+    outputs.startOfLibrary();
+    outputs.startOfShower();
 
     TimeType timeCounter {0._s};
 
@@ -924,8 +932,9 @@ TEST_CASE("Radio", "[processes]") {
     auto particle1{stack.addParticle(std::make_tuple(particle, plab, points_[399], t))};
     coreas.doContinuous(particle1,track,true);
 
-    // get the output
-    // coreas.writeOutput();
+    // trigger the manager to write the data to disk
+    outputs.endOfShower();
+    outputs.endOfLibrary();
 
   }
 
@@ -1006,7 +1015,7 @@ const HEPEnergyType E0{11.4_MeV};
 
 // create a radio process instance using CoREAS
 RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-coreas("CoREAS", detector, env);
+coreas( detector, env);
 
 // loop over all the tracks except the last one
 int const n_points {100000};
@@ -1108,7 +1117,7 @@ const HEPEnergyType E0{11.4_MeV};
 
 // create a radio process instance using CoREAS or ZHS
 RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-coreas("CoREAS", detector, env);
+coreas( detector, env);
 
 // loop over all the tracks except the last one
 int const n_points {60000};
