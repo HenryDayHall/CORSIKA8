@@ -14,6 +14,7 @@ from .bethe_bloch import BetheBlochPDG
 from .particle_cut import ParticleCut
 from .energy_loss import EnergyLoss
 from .output import Output
+from .radio_process import RadioProcess
 
 __all__ = [
     "Output",
@@ -23,4 +24,5 @@ __all__ = [
     "BetheBlochPDG",
     "ParticleCut",
     "EnergyLoss"
+    "RadioProcess",
 ]
