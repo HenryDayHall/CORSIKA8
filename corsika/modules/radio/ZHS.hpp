@@ -59,9 +59,8 @@ namespace corsika {
 
       // TODO: think if we reuse these variables for the case of not being in the
       // Fraunhoffer approx.
-      auto const startTime_{particle.getTime() -
-                            track.getDuration()}; // time at start point of track.
-      auto const endTime_{particle.getTime()};    // time at end point of track.
+      auto const startTime_{particle.getTime()}; // time at start point of track.
+      auto const endTime_{particle.getTime() + track.getDuration()};    // time at end point of track.
 
       auto const startPoint_{track.getPosition(0)};
       auto const endPoint_{track.getPosition(1)};
