@@ -127,7 +127,9 @@ namespace corsika {
     void endOfShower(int const event) {
 
       // get the copy of the waveform data for this event
-      auto data{this->implementation().getData()};
+      // we transpose it so that we can match dimensions with the
+      // time array that is already in the output file
+      xt::xtensor<float, 2> data = xt::transpose(xt::cast<float>(this->implementation().getData()));
 
       // cnpy needs a vector for the shape
       std::vector<size_t> shape = {data.shape()[0], data.shape()[1]};
@@ -135,6 +137,8 @@ namespace corsika {
       // and write this event to the .npz archive
       cnpy::npz_save(filename_, std::to_string(event), data.data(), shape, "a");
     }
+
+
 
   }; // END: class Antenna final
 

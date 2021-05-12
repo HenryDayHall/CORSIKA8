@@ -28,6 +28,10 @@ namespace corsika {
   public:
     using ElectricFieldVector =
     QuantityVector<ElectricFieldType::dimension_type>;
+
+    // an identifier for which algorithm was used
+    static constexpr auto algorithm = "CoREAS";
+
     /**
      * Construct a new CoREAS instance.
      *
@@ -36,9 +40,8 @@ namespace corsika {
      *
      */
     template <typename... TArgs>
-    CoREAS(std::string const& name,
-           TRadioDetector& detector, TArgs&&... args)
-        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(name, detector, args...) {}
+    CoREAS(TRadioDetector& detector, TArgs&&... args)
+        : RadioProcess<TRadioDetector, CoREAS, TPropagator>(detector, args...) {}
 
     /**
      * Simulate the radio emission from a particle across a track.

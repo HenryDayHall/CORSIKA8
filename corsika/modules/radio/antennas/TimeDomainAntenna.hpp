@@ -110,14 +110,20 @@ namespace corsika {
       // create a 1-D xtensor to store time values so we can print them later.
       xt::xtensor<double, 1> times(xt::zeros<double>({num_bins_}));
 
+      // calculate the sample_period
+      auto sample_period{1 / sample_rate_};
+
+      // fill in every time-value
+      // TODO: Vectorize this using xtensor
       for (int i = 0; i < num_bins_; i++) {
         // create the current time in nanoseconds
-        times.at(i) = static_cast<double>(start_time_ / 1_ns + i / (sample_rate_ * 1_ns));
+        times.at(i) = static_cast<double>((start_time_ + i*sample_period) / 1_ns);
       }
 
       return times;
     }
 
+    // TODO: This should get deleted or renamed to something more sensible
     auto getWaveform() const { return std::make_pair(getAxis(), waveformE_); }
 
     /**

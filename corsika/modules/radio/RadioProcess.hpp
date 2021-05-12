@@ -52,19 +52,17 @@ namespace corsika {
     }
 
   protected:
-    std::string const name_; ///< The name of this radio process.
     TAntennaCollection& antennas_; ///< The radio antennas we store into.
     TPropagator propagator_;       ///< The propagator implementation.
-    int event_{0}; ///< The current event ID.
+    int event_{0};                 ///< The current event ID.
 
   public:
     /**
      * Construct a new RadioProcess.
      */
     template <typename... TArgs>
-    RadioProcess(std::string const& name, TAntennaCollection& antennas, TArgs&&... args)
-        : name_(name)
-        , antennas_(antennas)
+    RadioProcess(TAntennaCollection& antennas, TArgs&&... args)
+        : antennas_(antennas)
         , propagator_(args...) {}
 
     /**
@@ -127,11 +125,11 @@ namespace corsika {
     //     out_file.close();
     //     ++i;
     //   }
-      // how this method should work:
-      // 1. Loop over the antennas in the collection
-      // 2. Get their waveforms
-      // 3. Create a text file for each antenna
-      // 4. and write out two columns, time and field.
+    // how this method should work:
+    // 1. Loop over the antennas in the collection
+    // 2. Get their waveforms
+    // 3. Create a text file for each antenna
+    // 4. and write out two columns, time and field.
     // }
 
     /**
@@ -156,9 +154,7 @@ namespace corsika {
 
       // loop over every antenna and set the initial path
       // this also writes the time-bins to disk.
-      for (auto& antenna : antennas_.getAntennas()) {
-        antenna.startOfLibrary(directory);
-      }
+      for (auto& antenna : antennas_.getAntennas()) { antenna.startOfLibrary(directory); }
     }
 
     /**
@@ -176,16 +172,13 @@ namespace corsika {
 
       // increment our event counter
       event_++;
-
     }
 
     /**
      * Called at the end of each library.
      *
-     * This must also increment the run number since we override
-     * the default behaviour of BaseOutput.
      */
-    void endOfLibrary() final override;
+    void endOfLibrary() final override {}
 
     /**
      * Get the configuration of this output.
@@ -197,6 +190,7 @@ namespace corsika {
 
       // fill in some basics
       config["type"] = "RadioProcess";
+      config["algorithm"] = this->implementation().algorithm;
       config["units"]["time"] = "ns";
       config["units"]["frequency"] = "GHz";
       config["units"]["electric field"] = "V/m";
@@ -214,7 +208,6 @@ namespace corsika {
         config["antennas"][name]["location"].push_back(location.getX() / 1_m);
         config["antennas"][name]["location"].push_back(location.getY() / 1_m);
         config["antennas"][name]["location"].push_back(location.getZ() / 1_m);
-
       }
 
       return config;

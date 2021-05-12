@@ -30,6 +30,10 @@ namespace corsika {
   public:
     //    using PotentialVector = QuantityVector<PotentialVectorType::dimension_type>;
     using ElectricFieldVector = QuantityVector<ElectricFieldType::dimension_type>;
+
+    // an identifier for which algorithm was used
+    static constexpr auto algorithm = "ZHS";
+
     /**
      * Construct a new ZHS instance.
      *
@@ -38,8 +42,8 @@ namespace corsika {
      *
      */
     template <typename... TArgs>
-    ZHS(std::string const& name, TRadioDetector& detector, TArgs&&... args)
-        : RadioProcess<TRadioDetector, ZHS, TPropagator>(name, detector, args...) {}
+    ZHS(TRadioDetector& detector, TArgs&&... args)
+        : RadioProcess<TRadioDetector, ZHS, TPropagator>(detector, args...) {}
 
     /**
      * Simulate the radio emission from a particle across a track.
