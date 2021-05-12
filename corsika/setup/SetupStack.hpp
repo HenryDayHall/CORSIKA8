@@ -57,7 +57,7 @@ namespace corsika::setup {
 #ifdef WITH_HISTORY
 
 #if defined(__clang__)
-  using StackView = SecondaryView<typename Stack::stack_implementation_type,
+  using StackView = SecondaryView<typename Stack::stack_data_type,
                                   // CHECK with CLANG: setup::Stack::MPIType>;
                                   detail::StackWithHistoryInterface, StackViewProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
@@ -67,7 +67,7 @@ namespace corsika::setup {
 #else // WITH_HISTORY
 
 #if defined(__clang__)
-  using StackView = SecondaryView<typename setup::Stack::stack_implementation_type,
+  using StackView = SecondaryView<typename setup::Stack::stack_data_type,
                                   // CHECK with CLANG:
                                   // setup::Stack::MPIType>;
                                   setup::detail::StackWithGeometryInterface>;

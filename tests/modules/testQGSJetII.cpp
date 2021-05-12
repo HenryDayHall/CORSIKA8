@@ -52,15 +52,16 @@ TEST_CASE("CORSIKA_DATA", "[processes]") {
 
   SECTION("check CORSIKA_DATA") {
 
-    const char* data = std::getenv("CORSIKA_DATA");
+    const char* CORSIKA_DATA = std::getenv("CORSIKA_DATA");
     // these CHECKS are needed:
-    CHECK(data != 0);
-    CHECK(boost::filesystem::is_directory(boost::filesystem::path(data) / "QGSJetII"));
+    CHECK(CORSIKA_DATA != 0);
+    CHECK(boost::filesystem::is_directory(boost::filesystem::path(CORSIKA_DATA) /
+                                          "QGSJetII"));
     CORSIKA_LOG_INFO(
         "data: {}"
         " isDir: {}"
         "/QGSJetII",
-        data, boost::filesystem::is_directory(data));
+        CORSIKA_DATA, boost::filesystem::is_directory(CORSIKA_DATA));
   }
 }
 

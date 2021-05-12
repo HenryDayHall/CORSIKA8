@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <type_traits>
 #include <cstdlib> // for size_t
 
 namespace corsika {
@@ -17,8 +18,8 @@ namespace corsika {
    particle stack. Every stack must implement this readout via the
    ParticleBase class.
 
-   The StackIterator template argument is derived from StackIteratorInterface, which is of
-   type <code> template <typename StackData, template <typename> typename
+   The TStackIterator template argument is derived from StackIteratorInterface, which is
+   of type <code> template <typename StackData, template <typename> typename
    ParticleInterface> class StackIteratorInterface : public
    ParticleInterface<StackIteratorInterface<StackData, ParticleInterface>>
    </code>
@@ -38,11 +39,11 @@ namespace corsika {
 
   */
 
-  template <typename StackIterator>
+  template <typename TStackIterator>
   class ParticleBase {
 
   public:
-    typedef StackIterator stack_iterator_type;
+    typedef TStackIterator stack_iterator_type;
 
     ParticleBase() = default;
 
@@ -75,14 +76,13 @@ namespace corsika {
      */
     template <typename... TArgs>
     stack_iterator_type addSecondary(const TArgs... args) {
-
       return this->getStack().addSecondary(this->getIterator(), args...);
     }
 
     // protected: // todo should [MAY]be proteced, but don't now how to 'friend Stack'
     // Function to provide CRTP access to inheriting class (type)
     /**
-     * return the corresponding StackIterator for this particle
+     * return the corresponding TStackIterator for this particle
      */
     stack_iterator_type& getIterator() {
       return static_cast<stack_iterator_type&>(*this);

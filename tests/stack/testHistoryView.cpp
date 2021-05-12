@@ -32,7 +32,7 @@ using StackWithHistoryInterface =
                               history::HistoryEventDataInterface, TStackIter>;
 
 using TestStack =
-    CombinedStack<typename nuclear_stack::ParticleDataStack::stack_implementation_type,
+    CombinedStack<typename nuclear_stack::ParticleDataStack::stack_data_type,
                   history::HistoryEventData, StackWithHistoryInterface>;
 
 /*
@@ -48,8 +48,8 @@ using TestStack =
   */
 #if defined(__clang__)
 using TheTestStackView =
-    SecondaryView<typename TestStack::stack_implementation_type,
-                  StackWithHistoryInterface, history::HistorySecondaryProducer>;
+    SecondaryView<typename TestStack::stack_data_type, StackWithHistoryInterface,
+                  history::HistorySecondaryProducer>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using TheTestStackView = MakeView<TestStack, history::HistorySecondaryProducer>::type;
 #endif

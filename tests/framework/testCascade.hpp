@@ -30,7 +30,7 @@ using StackWithGeometryInterface =
                                        SetupGeometryDataInterface, StackIter>;
 
 using TestCascadeStack = corsika::CombinedStack<
-    typename corsika::nuclear_stack::ParticleDataStack::stack_implementation_type,
+    typename corsika::nuclear_stack::ParticleDataStack::stack_data_type,
     corsika::node::GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
 
 /*
@@ -38,7 +38,7 @@ using TestCascadeStack = corsika::CombinedStack<
 */
 #if defined(__clang__)
 using TestCascadeStackView =
-    corsika::SecondaryView<typename TestCascadeStack::stack_implementation_type,
+    corsika::SecondaryView<typename TestCascadeStack::stack_data_type,
                            StackWithGeometryInterface>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using TestCascadeStackView = corsika::MakeView<TestCascadeStack>::type;

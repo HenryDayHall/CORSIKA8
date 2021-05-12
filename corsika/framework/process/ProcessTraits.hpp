@@ -96,33 +96,4 @@ namespace corsika {
     static unsigned int constexpr count = N;
   };
 
-  namespace detail {
-
-    /**
-       Helper traits class (partial) for static compile time checking.
-
-       Note, this is a poor replacement for C++20 concepts... they are
-       eagerly awaited!
-
-       It defines the default body of a generic test function returning
-       std::false_type.
-
-       In addition it defines the pattern for class-method matching with a
-       return type TReturn and function arguments TArgs... . Right now
-       both method signatures, "const" and "not const", are matched.
-     */
-    template <typename TReturn, typename... TArgs>
-    struct has_method_signature {
-
-      // the non-const version
-      template <class T>
-      static std::true_type testSignature(TReturn (T::*)(TArgs...));
-
-      // the const version
-      template <class T>
-      static std::true_type testSignature(TReturn (T::*)(TArgs...) const);
-    };
-
-  } // namespace detail
-
 } // namespace corsika

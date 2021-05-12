@@ -26,11 +26,11 @@ namespace corsika {
    * Example of a particle object on the stack.
    */
 
-  template <typename StackIteratorInterface>
-  class ParticleInterface : public ParticleBase<StackIteratorInterface> {
+  template <typename TStackIterator>
+  class ParticleInterface : public ParticleBase<TStackIterator> {
 
   private:
-    typedef ParticleBase<StackIteratorInterface> super_type;
+    typedef ParticleBase<TStackIterator> super_type;
 
   public:
     typedef std::tuple<Code, HEPEnergyType, DirectionVector, Point, TimeType>
@@ -59,7 +59,7 @@ namespace corsika {
      *  MomentumVector is only used to determine the DirectionVector, the normalization
      * is lost.
      */
-    void setParticleData(ParticleInterface<StackIteratorInterface> const& p,
+    void setParticleData(ParticleInterface<TStackIterator> const& p,
                          particle_data_type const& v);
 
     /**
@@ -77,7 +77,7 @@ namespace corsika {
      * @param v tuple containing: PID, kinetic Energy, Direction Vector, Position, Time
      *
      */
-    void setParticleData(ParticleInterface<StackIteratorInterface> const& p,
+    void setParticleData(ParticleInterface<TStackIterator> const& p,
                          particle_data_momentum_type const& v);
 
     ///! Set particle corsika::Code

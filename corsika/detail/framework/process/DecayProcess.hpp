@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/framework/process/ProcessTraits.hpp>
+#include <corsika/framework/utility/HasMethodSignature.hpp>
 
 namespace corsika {
 

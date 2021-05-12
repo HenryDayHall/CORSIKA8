@@ -291,8 +291,7 @@ namespace corsika::nuclear_stack {
 
   template <typename TInnerStack, template <typename> typename PI_>
   using NuclearStackExtension =
-      Stack<NuclearStackExtensionImpl<typename TInnerStack::stack_implementation_type>,
-            PI_>;
+      Stack<NuclearStackExtensionImpl<typename TInnerStack::stack_data_type>, PI_>;
 
   //
   template <typename TStackIter>

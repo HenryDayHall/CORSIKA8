@@ -10,6 +10,8 @@
 
 #include <corsika/framework/stack/ParticleBase.hpp>
 
+#include <boost/type_index.hpp>
+
 namespace corsika::history {
   template <typename T, template <typename> typename TParticleInterface>
   class HistorySecondaryProducer; // forward decl.
@@ -77,6 +79,9 @@ namespace corsika {
         corsika::StackIteratorInterface<TStackData, TParticleInterface, TStackType>>
         particle_interface_type;
 
+    typedef TStackType stack_type;
+    typedef TStackData stack_data_type;
+
     // it is not allowed to create a "dangling" stack iterator
     StackIteratorInterface() = delete; //! \todo check rule of five
 
@@ -100,7 +105,7 @@ namespace corsika {
           @param data reference to the stack [rw]
           @param index index on stack
        */
-    StackIteratorInterface(TStackType& data, unsigned int const index)
+    StackIteratorInterface(stack_type& data, unsigned int const index)
         : index_(index)
         , data_(&data) {}
 
@@ -112,10 +117,11 @@ namespace corsika {
        particle_interface_type::setParticleData(...) function
      */
     template <typename... TArgs>
-    StackIteratorInterface(TStackType& data, unsigned int const index,
+    StackIteratorInterface(stack_type& data, unsigned int const index,
                            const TArgs... args)
         : index_(index)
         , data_(&data) {
+
       (**this).setParticleData(args...);
     }
 
@@ -129,11 +135,12 @@ namespace corsika {
        consistent with the definition of the user-provided
        particle_interface_type::setParticleData(...) function
     */
-    template <typename... Args>
-    StackIteratorInterface(TStackType& data, unsigned int const index,
-                           StackIteratorInterface& parent, const Args... args)
+    template <typename... TArgs>
+    StackIteratorInterface(stack_type& data, unsigned int const index,
+                           StackIteratorInterface& parent, const TArgs... args)
         : index_(index)
         , data_(&data) {
+
       (**this).setParticleData(*parent, args...);
     }
 
@@ -168,10 +175,10 @@ namespace corsika {
       return index_ != rhs.index_;
     }
     bool operator==(
-        const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
+        const ConstStackIteratorInterface<TStackData, TParticleInterface, stack_type>&
             rhs) const; // implemented below
     bool operator!=(
-        const ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>&
+        const ConstStackIteratorInterface<TStackData, TParticleInterface, stack_type>&
             rhs) const; // implemented below
 
     /**
@@ -199,9 +206,9 @@ namespace corsika {
     /// Get current particle index
     unsigned int getIndex() const { return index_; }
     /// Get current particle Stack object
-    TStackType& getStack() { return *data_; }
+    stack_type& getStack() { return *data_; }
     /// Get current particle const Stack object
-    TStackType const& getStack() const { return *data_; }
+    stack_type const& getStack() const { return *data_; }
     /// Get current user particle TStackData object
     TStackData& getStackData() { return data_->getStackData(); }
     /// Get current const user particle TStackData object
@@ -227,13 +234,13 @@ namespace corsika {
     template <typename T, template <typename> typename TParticleInterface_>
     friend class corsika::history::HistorySecondaryProducer;
 
-    friend class ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>;
+    friend class ConstStackIteratorInterface<TStackData, TParticleInterface, stack_type>;
 
   protected:
     unsigned int index_ = 0;
 
   private:
-    TStackType* data_ = 0; // info: Particles and StackIterators become invalid when
+    stack_type* data_ = 0; // info: Particles and StackIterators become invalid when
                            // parent Stack is copied or deleted!
 
   }; // end class StackIterator
@@ -263,6 +270,9 @@ namespace corsika {
         ConstStackIteratorInterface<TStackData, TParticleInterface, TStackType>>
         particle_interface_type;
 
+    typedef TStackType stack_type;
+    typedef TStackData stack_data_type;
+
     // we don't want to allow dangling iterators to exist
     ConstStackIteratorInterface() = delete; //! \todo check rule of five
 
@@ -271,7 +281,7 @@ namespace corsika {
         : index_(std::move(rhs.index_))
         , data_(std::move(rhs.data_)) {}
 
-    ConstStackIteratorInterface(TStackType const& data, unsigned int const index)
+    ConstStackIteratorInterface(stack_type const& data, unsigned int const index)
         : index_(index)
         , data_(&data) {}
 
@@ -304,12 +314,12 @@ namespace corsika {
     bool operator!=(ConstStackIteratorInterface const& rhs) const {
       return index_ != rhs.index_;
     }
-    bool operator==(StackIteratorInterface<TStackData, TParticleInterface,
-                                           TStackType> const& rhs) const {
+    bool operator==(StackIteratorInterface<stack_data_type, TParticleInterface,
+                                           stack_type> const& rhs) const {
       return index_ == rhs.index_;
     }
-    bool operator!=(StackIteratorInterface<TStackData, TParticleInterface,
-                                           TStackType> const& rhs) const {
+    bool operator!=(StackIteratorInterface<stack_data_type, TParticleInterface,
+                                           stack_type> const& rhs) const {
       return index_ != rhs.index_;
     }
 
@@ -324,8 +334,8 @@ namespace corsika {
         @{
      */
     unsigned int getIndex() const { return index_; }
-    TStackType const& getStack() const { return *data_; }
-    TStackData const& getStackData() const { return data_->getStackData(); }
+    stack_type const& getStack() const { return *data_; }
+    stack_data_type const& getStackData() const { return data_->getStackData(); }
     /// Get data index as mapped in Stack class
     unsigned int getIndexFromIterator() const {
       return data_->getIndexFromIterator(index_);
@@ -333,18 +343,18 @@ namespace corsika {
     ///@}
 
     // friends are needed for access to protected methods
-    friend class Stack<TStackData,
+    friend class Stack<stack_data_type,
                        TParticleInterface>; // for access to GetIndex for Stack
-    friend class Stack<TStackData&, TParticleInterface>; // for access to GetIndex
+    friend class Stack<stack_data_type&, TParticleInterface>; // for access to GetIndex
 
     friend class ParticleBase<ConstStackIteratorInterface>; // for access to GetStackData
 
-    template <typename T1,                     // best fix to: TStackData,
+    template <typename T1,                     // best fix to: stack_data_type,
               template <typename> typename M1, // best fix to: TParticleInterface,
               template <class T2, template <class> class T3> class MSecondaryProducer>
     friend class SecondaryView; // access for SecondaryView
 
-    friend class StackIteratorInterface<TStackData, TParticleInterface, TStackType>;
+    friend class StackIteratorInterface<stack_data_type, TParticleInterface, stack_type>;
 
     template <typename T, template <typename> typename TParticleInterface_>
     friend class corsika::history::HistorySecondaryProducer;
@@ -353,7 +363,7 @@ namespace corsika {
     unsigned int index_ = 0;
 
   private:
-    TStackType const* data_ = 0; // info: Particles and StackIterators become invalid when
+    stack_type const* data_ = 0; // info: Particles and StackIterators become invalid when
                                  // parent Stack is copied or deleted!
 
   }; // end class ConstStackIterator

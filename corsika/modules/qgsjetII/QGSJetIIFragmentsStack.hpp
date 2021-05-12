@@ -50,16 +50,16 @@ namespace corsika::qgsjetII {
     }
   };
 
-  template <typename StackIteratorInterface>
-  class FragmentsInterface : public corsika::ParticleBase<StackIteratorInterface> {
+  template <typename TStackIterator>
+  class FragmentsInterface : public corsika::ParticleBase<TStackIterator> {
 
-    using corsika::ParticleBase<StackIteratorInterface>::getStackData;
-    using corsika::ParticleBase<StackIteratorInterface>::getIndex;
+    using corsika::ParticleBase<TStackIterator>::getStackData;
+    using corsika::ParticleBase<TStackIterator>::getIndex;
 
   public:
     void setParticleData(const int vSize) { setFragmentSize(vSize); }
 
-    void setParticleData(FragmentsInterface<StackIteratorInterface>& /*parent*/,
+    void setParticleData(FragmentsInterface<TStackIterator>& /*parent*/,
                          const int vSize) {
       setFragmentSize(vSize);
     }

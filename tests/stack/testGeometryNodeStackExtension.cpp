@@ -34,9 +34,8 @@ using StackWithGeometryInterface =
     CombinedParticleInterface<dummy_stack::DummyStack::pi_type,
                               DummyGeometryDataInterface, TStackIter>;
 
-using TestStack =
-    CombinedStack<typename dummy_stack::DummyStack::stack_implementation_type,
-                  node::GeometryData<DummyEnv>, StackWithGeometryInterface>;
+using TestStack = CombinedStack<typename dummy_stack::DummyStack::stack_data_type,
+                                node::GeometryData<DummyEnv>, StackWithGeometryInterface>;
 
 TEST_CASE("GeometryNodeStackExtension", "[stack]") {
 

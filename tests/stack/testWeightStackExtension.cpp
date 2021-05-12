@@ -28,9 +28,8 @@ using StackWithGeometryInterface =
     CombinedParticleInterface<dummy_stack::DummyStack::pi_type, DummyWeightDataInterface,
                               TStackIter>;
 
-using TestStack =
-    CombinedStack<typename dummy_stack::DummyStack::stack_implementation_type,
-                  weights::WeightData, StackWithGeometryInterface>;
+using TestStack = CombinedStack<typename dummy_stack::DummyStack::stack_data_type,
+                                weights::WeightData, StackWithGeometryInterface>;
 
 TEST_CASE("WeightStackExtension", "[stack]") {
 

@@ -235,16 +235,13 @@ TEST_CASE("Pythia8Interface", "modules") {
       [[maybe_unused]] auto const& env_dummy_Fe = env_Fe;
       [[maybe_unused]] auto const& node_dummy_Fe = nodePtr_Fe;
     }
-    
+
     // resonable projectile, but tool low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, 0, 0, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr_Fe,
         *csPtr_Fe);
     auto& view = *secViewPtr;
-    {
-      [[maybe_unused]] auto const& dummy_StackPtr = stackPtr;
-    }
-    
+    { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }
 
     corsika::pythia8::Interaction collision;
 

@@ -430,8 +430,8 @@ namespace corsika {
             class MSecondaryProducer = corsika::DefaultSecondaryProducer,
             template <typename> typename pi_type_ = TStack::template pi_type>
   struct MakeView {
-    using type = corsika::SecondaryView<typename TStack::stack_implementation_type,
-                                        pi_type_, MSecondaryProducer>;
+    using type = corsika::SecondaryView<typename TStack::stack_data_type, pi_type_,
+                                        MSecondaryProducer>;
   };
 #endif
 
