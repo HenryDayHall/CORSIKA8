@@ -263,15 +263,29 @@ namespace corsika::epos {
     //   ::epos::nucl1_.laproj = projectile.get_nucleus_Z();   // Z
     //   ::epos::nucl1_.maproj = projectile.get_nucleus_A();; // A
     // } else {
-    ::epos::hadr25_.idprojin = 1120 ; // id "NEXUS code" 
+    ::epos::hadr25_.idprojin = convertToEposRaw(corsikaBeamId); //1120 ; // id "NEXUS code" 
     ::epos::nucl1_.laproj = -1;   // Z (-1 for hadron)
     ::epos::nucl1_.maproj = 1; // A
     //}
+
     // target
-    //if(is_nucleus(targetCode)){
-    ::epos::hadr25_.idtargin = 1120; // id "NEXUS code"
-    ::epos::nucl1_.latarg = 1;   // Z (-1 with id 1220 for neutron)
-    ::epos::nucl1_.matarg = 1; // A
+    int targetMassNumber = 1;     // proton
+    if (is_nucleus(targetCode)) { // nucleus
+      targetMassNumber = get_nucleus_A(targetCode);
+      if (targetMassNumber > maxTargetMassNumber_)
+        throw std::runtime_error("Epos target mass outside range.");
+    } else {
+      if (targetCode != Proton::code || targetCode != Neutron::code)
+        throw std::runtime_error("Epos target not possible.");
+      // proton or neutron target
+      ::epos::hadr25_.idtargin = convertToEposRaw(targetCode);
+      if (targetCode == Proton::code)
+        ::epos::nucl1_.latarg = 1; // Z
+      else
+        ::epos::nucl1_.latarg = -1; // Z (-1 with id 1220 for neutron)
+      ::epos::nucl1_.matarg = 1;    // A
+    }
+    CORSIKA_LOG_DEBUG("Interaction: target epos code/A: {}", targetMassNumber);
 
     // hadron-nucleon momentum
     ::epos::hadr1_.pnll = float(200);

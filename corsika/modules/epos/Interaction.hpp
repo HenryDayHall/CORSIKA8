@@ -55,8 +55,8 @@ namespace corsika::epos {
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("epos");
     HEPEnergyType const minEnergyCoM_ = -10. * 1e9 * electronvolt;
     HEPEnergyType const maxEnergyCoM_ = -1.e6 * 1e9 * electronvolt;
-    int const maxTargetMassNumber_ = -1;
-    int const minNuclearTargetA_ = -10;
+    int const maxTargetMassNumber_ = 20;
+    int const minNuclearTargetA_ = 4;
   };
 
 } // namespace corsika::epos
