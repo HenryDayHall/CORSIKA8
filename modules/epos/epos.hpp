@@ -27,6 +27,16 @@ namespace epos {
    **/
   extern float rndm_interface();
 
+  /**
+   * \function epos::double_rndm_interface
+   *
+   * this is the random number hook to external packages.
+   *
+   * CORSIKA8, for example, has to provide an implementation of this.
+   **/
+
+  extern double double_rndm_interface();
+
   extern "C" {
 
   void aaset_(int&);
@@ -76,6 +86,7 @@ namespace epos {
   void ranfcv_(double&);
   // void ranfgt(int&);
   float rangen_();
+  double drangen_();
   // common blocks as
   // defined in epos.inc
 

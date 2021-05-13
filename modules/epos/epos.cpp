@@ -9,7 +9,8 @@ namespace epos {
   // this is needed as linker object, but it is not needed to do anything
   void ranfcv_(double&) {}
 
-  float rangen_() { return  ::epos::rndm_interface(); }
+  float rangen_() { return ::epos::rndm_interface(); }
+  double drangen_() { return ::epos::double_rndm_interface(); }
 
   datadir::datadir(const std::string& dir) {
     if (dir.length() > 500) {
