@@ -1,0 +1,72 @@
+# input file for particle conversion to/from EPOS
+# the format of this file is: "corsika-identifier" "epos-id" "can-interact-in-epos" "cross-section-type"
+
+# The unknown particle is to handle all particles that are not known to EPOS.
+# It is important that epos-id does not overlap with any existing epos particle!
+# Be careful
+Unknown                  0       0       CannotInteract
+
+# Here is the list of particles known to EPOS
+Electron                 12      0       CannotInteract
+Positron                 -12     0       CannotInteract
+Gamma                    10      0       CannotInteract
+MuPlus			 -14	 0	 CannotInteract
+MuMinus			 14	 0	 CannotInteract
+Pi0                      110     1       Pion
+PiPlus                   120     1       Pion
+PiMinus                 -120     1       Pion
+KPlus			 130     1       Kaon
+KMinus			-130     1       Kaon
+Neutron                1220      1       Baryon
+AntiNeutron            -1220     1       Baryon
+Proton                  1120     1       Baryon
+AntiProton             -1120     1       Baryon
+Eta		         220	 0	 CannotInteract
+Lambda0			2130	 0	 CannotInteract
+Lambda0Bar             -2130	 0	 CannotInteract
+
+SigmaPlus		1130	 0	 CannotInteract
+SigmaMinusBar	       -1130	 0	 CannotInteract
+Sigma0		        1230	 0	 CannotInteract
+Sigma0Bar	       -1230	 0	 CannotInteract
+SigmaMinus	        2230	 0	 CannotInteract
+SigmaPlusBar	       -2230	 0	 CannotInteract
+
+DeltaPlus		1121	 0	 CannotInteract
+DeltaMinusBar	       -1121	 0	 CannotInteract
+Delta0                  1221     0       CannotInteract
+Delta0Bar              -1221     0       CannotInteract
+DeltaMinus              2221     0       CannotInteract
+DeltaPlusBar           -2221     0       CannotInteract
+
+Xi0		       1330	 0	 CannotInteract
+Xi0Bar		      -1330	 0	 CannotInteract
+XiMinus		       2330 	 0	 CannotInteract
+XiPlusBar	      -2330 	 0	 CannotInteract
+
+OmegaMinus	       3331	 0	 CannotInteract
+OmegaPlusBar	      -3331	 0	 CannotInteract
+
+EtaPrime	        330	 0 	 CannotInteract
+Phi			331	 0	 CannotInteract
+Omega			221	 0	 CannotInteract
+Rho0			111	 0	 CannotInteract
+RhoPlus			121	 0	 CannotInteract
+RhoMinus		-121	 0	 CannotInteract
+
+DeltaPlusPlus		1111	 0	 CannotInteract
+DeltaMinusMinusBar     -1111	 0	 CannotInteract
+
+KStarPlus	         131	 0	 CannotInteract
+KStarMinus		-131	 0	 CannotInteract
+KStar0			 231     0 	 CannotInteract
+KStar0Bar		-231	 0	 CannotInteract
+
+NuE			11	 0	 CannotInteract
+NuEBar			-11	 0	 CannotInteract
+NuMu			14	 0	 CannotInteract
+NuMuBar			-14	 0	 CannotInteract
+NuTau			15	 0	 CannotInteract
+NuTauBar		-15	 0	 CannotInteract
+TauMinus		16	 0	 CannotInteract
+TauPlus			-16	 0	 CannotInteract

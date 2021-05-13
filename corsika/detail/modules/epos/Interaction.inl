@@ -90,6 +90,8 @@ namespace corsika::epos {
     ::epos::othe1_.istore = 0; // do not produce epos output file
     ::epos::nucl6_.infragm = 0; // keep free nucleons in fragmentation
 
+    ::epos::othe2_.iframe = 12; // lab frame, target at rest
+
     // set paths to tables in corsika data
     ::epos::datadir BASE(data_path_);
     strcpy(::epos::fname_.fnnx, BASE.data);
@@ -288,6 +290,7 @@ namespace corsika::epos {
     int iarg = 1;
     ::epos::aepos_(iarg);
 
+    ::epos::afinal_();
     // NSTORE-part
     std::cout << "npart: " << ::epos::cptl_.nptl << std::endl;
     

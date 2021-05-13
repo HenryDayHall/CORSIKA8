@@ -33,6 +33,7 @@ namespace epos {
   void atitle_();
   void ainit_();
   void aepos_(int&);
+  void afinal_();
   double lhcparameters_();
   void hdecin_(bool&);
   void hnbspd_(int&);
@@ -56,7 +57,19 @@ namespace epos {
 
   void emsfrag_(int&);
 
-  void cxidmass_(int&, int&);
+  // get particles hadron class: meson, baryon etc..???
+  void iclass_(int&, int&);
+  // get charge for id
+  void idchrg_(int&, int&);
+  // get isospin, spin, strangeness for id
+  void idspin_(int&, int&, int&, int&);
+  // get mass for id
+  void idmass_(int&, double&);
+  // convert id from one format to another
+    //int idtrafo_(char[3], char[3], int&);
+
+  // conex routine
+  //  void cxidmass_(int&, int&);
 
   // additional random number functions
   void ranfini_(double&, int&, int&);

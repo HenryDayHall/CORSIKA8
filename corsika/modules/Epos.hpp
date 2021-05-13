@@ -8,6 +8,6 @@
 
 #pragma once
 
-//#include <corsika/modules/epos/ParticleConversion.hpp>
+#include <corsika/modules/epos/ParticleConversion.hpp>
 #include <corsika/modules/epos/Interaction.hpp>
 //#include <corsika/modules/epos/Decay.hpp>

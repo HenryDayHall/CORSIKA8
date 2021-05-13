@@ -7,7 +7,6 @@
  */
 
 #include <corsika/modules/Epos.hpp>
-//#include <corsika/modules/epos/ParticleConversion.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -36,17 +35,39 @@ TEST_CASE("Epos", "[processes]") {
   logging::set_level(logging::level::trace);
 
   SECTION("Epos -> Corsika") {
+    CHECK(Code::Electron ==
+          corsika::epos::convertFromEpos(corsika::epos::EposCode::Electron));
+    CHECK(Code::Proton ==
+          corsika::epos::convertFromEpos(corsika::epos::EposCode::Proton));
   }
 
   SECTION("Corsika -> Epos") {
+    CHECK(corsika::epos::convertToEpos(Electron::code) ==
+          corsika::epos::EposCode::Electron);
+    // check if particle code is correct for common particles that interact (secret epos knowledge)
+    CHECK(corsika::epos::convertToEposRaw(Proton::code) == 1120);
+    CHECK(corsika::epos::convertToEposRaw(PiPlus::code) == 120);
+    CHECK(corsika::epos::convertToEposRaw(KPlus::code) == 130);
   }
 
   SECTION("canInteractInEpos") {
+    CHECK(corsika::epos::canInteract(Code::Proton));
+    CHECK_FALSE(corsika::epos::canInteract(Code::Electron));
+    CHECK_FALSE(corsika::epos::canInteract(Code::Nucleus));
+    CHECK_FALSE(corsika::epos::canInteract(Code::Helium));
   }
 
   SECTION("cross-section type") {
+    CHECK(corsika::epos::getEposXSCode(Code::Electron) == 0);
+    CHECK(corsika::epos::getEposXSCode(Code::K0Long) == 3);
+    CHECK(corsika::epos::getEposXSCode(Code::SigmaPlus) == 1);
+    CHECK(corsika::epos::getEposXSCode(Code::PiMinus) == 2);
   }
 
+  SECTION("epos mass") {
+
+    CHECK_FALSE(corsika::epos::getEposMass(Code::Electron) == 0_GeV);
+  }
 }
 
 #include <corsika/framework/geometry/Point.hpp>
