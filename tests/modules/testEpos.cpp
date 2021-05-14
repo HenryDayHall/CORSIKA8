@@ -122,7 +122,7 @@ TEST_CASE("EposInterface", "[processes]") {
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
-  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
 
@@ -173,6 +173,16 @@ TEST_CASE("EposInterface", "[processes]") {
     Interaction model;
     model.doInteraction(view);
 
+    auto const pSum = sumMomentum(view, cs);
+    
+    CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
+    CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-4));
+
+    CHECK((pSum - plab).getNorm() / 1_GeV ==
+          Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
+    CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
+    
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(88.7).margin(0.1));
 

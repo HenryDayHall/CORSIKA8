@@ -52,8 +52,8 @@ namespace corsika::epos {
     ::epos::aaset_(iarg);
     //::epos::atitle_();
 
-    //::epos::prnt1_.ish = 3; // debug level in epos
-    //::epos::prnt1_.ifch = 6; // output unit
+    ::epos::prnt1_.ish = 3; // debug level in epos
+    ::epos::files_.ifch = 6; // output unit
     //::epos::prnt1_.iecho = 1;
 
     // dummy set seeds for random number generator in epos. need to fool epos checks...
@@ -279,7 +279,7 @@ namespace corsika::epos {
         if (targetMassNumber > maxTargetMassNumber_)
           throw std::runtime_error("Epos target mass outside range.");
       } else {
-        if (targetCode != Proton::code || targetCode != Neutron::code)
+        if (targetCode != Proton::code && targetCode != Neutron::code)
           throw std::runtime_error("Epos target not possible.");
         // proton or neutron target
         ::epos::hadr25_.idtargin = convertToEposRaw(targetCode);
@@ -318,16 +318,26 @@ namespace corsika::epos {
       // secondaries
       EposStack es;
       CORSIKA_LOG_DEBUG("npart: {}", es.getSize());
+      int i=-1;
       for (auto& psec : es) {
-        if (psec.hasDecayed()) continue;
+	++i;
+        if (!psec.isFinal()) continue;
+
+        CORSIKA_LOG_DEBUG("EPOS: i, id, energy, mass, type, state: {} {} {} {} {}", i,
+                          ::epos::cptl_.idptl[i], ::epos::cptl_.pptl[3][i],
+                          ::epos::cptl_.pptl[4][i], ::epos::cptl_.ityptl[i],
+                          ::epos::cptl_.istptl[i]);
+        CORSIKA_LOG_DEBUG("id, energy: {} {}", psec.getPID(), psec.getEnergy());
+	int id = abs(static_cast<int>(psec.getPID()));
+        CORSIKA_LOG_DEBUG("epos id to pdg: {}",
+                          ::epos::idtrafo_("nxs", "pdg", id));
+
+	
         auto momentum = psec.getMomentum(zAxisFrame);
         auto const energy = psec.getEnergy();
 
         momentum.rebase(originalCS); // transform back into standard lab frame
-	CORSIKA_LOG_DEBUG("id, energy: {} {}", psec.getPID(), psec.getEnergy()/1_GeV);
-	int id = abs(static_cast<int>(psec.getPID()));
-        CORSIKA_LOG_DEBUG("epos id to pdg:",
-                          ::epos::idtrafo_("nxs", "pdg", id));
+	
 
         auto const pid = corsika::epos::convertFromEpos(psec.getPID());
         CORSIKA_LOG_DEBUG(
@@ -341,7 +351,7 @@ namespace corsika::epos {
       }
       CORSIKA_LOG_DEBUG(
           "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/
-          "Elab_final="
+          ", Elab_final={}"
           ", Plab_final={}",
           Elab_final / 1_GeV, (Plab_final / 1_GeV).getComponents());
     }

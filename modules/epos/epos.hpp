@@ -342,6 +342,19 @@ namespace epos {
     int ioidch;
   } othe1_;
 
+  //  integer      ifop,ifmt,ifch,ifcx,ifhi,ifdt,ifcp,ifdr
+  //  common/files/ifop,ifmt,ifch,ifcx,ifhi,ifdt,ifcp,ifdr
+  extern struct {
+    int ifop;
+    int ifmt;
+    int ifch;
+    int ifcx;
+    int ifhi;
+    int ifdt;
+    int ifcp;
+    int ifdr;
+  } files_;
+
   //  character*500  fnch,fnhi,fndt,fnii,fnid,fnie,fnrj,fnmt
   // * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
   //  common/fname/  fnch, fnhi, fndt, fnii, fnid, fnie, fnrj, fnmt

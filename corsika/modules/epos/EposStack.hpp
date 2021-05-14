@@ -31,38 +31,38 @@ namespace corsika::epos {
 
     void setId(const unsigned int i, const int v) { ::epos::cptl_.idptl[i] = v; }
     void setEnergy(const unsigned int i, const HEPEnergyType v) {
-      ::epos::cptl_.pptl[3][i] = v / 1_GeV;
+      ::epos::cptl_.pptl[i][3] = v / 1_GeV;
     }
     void setMass(const unsigned int i, const HEPMassType v) {
-      ::epos::cptl_.pptl[4][i] = v / 1_GeV;
+      ::epos::cptl_.pptl[i][4] = v / 1_GeV;
     }
     void setMomentum(const unsigned int i, const MomentumVector& v) {
       auto tmp = v.getComponents();
-      for (int idx = 0; idx < 3; ++idx) ::epos::cptl_.pptl[idx][i] = tmp[idx] / 1_GeV;
+      for (int idx = 0; idx < 3; ++idx) ::epos::cptl_.pptl[i][idx] = tmp[idx] / 1_GeV;
     }
     void setState(const unsigned int i, const int v) { ::epos::cptl_.istptl[i] = v; }
 
     int getId(const unsigned int i) const { return ::epos::cptl_.idptl[i]; }
     int getState(const unsigned int i) const { return ::epos::cptl_.istptl[i]; }
     HEPEnergyType getEnergy(const int i) const {
-      return ::epos::cptl_.pptl[3][i] * 1_GeV;
+      return ::epos::cptl_.pptl[i][3] * 1_GeV;
     }
     HEPEnergyType getMass(const unsigned int i) const {
-      return ::epos::cptl_.pptl[4][i] * 1_GeV;
+      return ::epos::cptl_.pptl[i][4] * 1_GeV;
     }
     MomentumVector getMomentum(const unsigned int i) const {
       CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
-      QuantityVector<hepmomentum_d> components = {::epos::cptl_.pptl[0][i] * 1_GeV,
-                                                  ::epos::cptl_.pptl[1][i] * 1_GeV,
-                                                  ::epos::cptl_.pptl[2][i] * 1_GeV};
+      QuantityVector<hepmomentum_d> components = {::epos::cptl_.pptl[i][0] * 1_GeV,
+                                                  ::epos::cptl_.pptl[i][1] * 1_GeV,
+                                                  ::epos::cptl_.pptl[i][2] * 1_GeV};
       return MomentumVector(rootCS, components);
     }
 
     MomentumVector getMomentum(const unsigned int i,
                                const CoordinateSystemPtr& CS) const {
-      QuantityVector<hepmomentum_d> components = {::epos::cptl_.pptl[0][i] * 1_GeV,
-                                                  ::epos::cptl_.pptl[1][i] * 1_GeV,
-                                                  ::epos::cptl_.pptl[2][i] * 1_GeV};
+      QuantityVector<hepmomentum_d> components = {::epos::cptl_.pptl[i][0] * 1_GeV,
+                                                  ::epos::cptl_.pptl[i][1] * 1_GeV,
+                                                  ::epos::cptl_.pptl[i][2] * 1_GeV};
       return MomentumVector(CS, components);
     }
 
@@ -73,14 +73,14 @@ namespace corsika::epos {
       ::epos::cptl_.istptl[i2] = ::epos::cptl_.istptl[i1];
       ::epos::cptl_.ityptl[i2] = ::epos::cptl_.ityptl[i1];
       for (unsigned int i = 0; i < 5; ++i)
-        ::epos::cptl_.pptl[i][i2] = ::epos::cptl_.pptl[i][i1];
+        ::epos::cptl_.pptl[i2][i] = ::epos::cptl_.pptl[i1][i];
       for (unsigned int i = 0; i < 2; ++i) {
-        ::epos::cptl_.tivptl[i][i2] = ::epos::cptl_.tivptl[i][i1];
-        ::epos::cptl_.ifrptl[i][i2] = ::epos::cptl_.ifrptl[i][i1];
+        ::epos::cptl_.tivptl[i2][i] = ::epos::cptl_.tivptl[i1][i];
+        ::epos::cptl_.ifrptl[i2][i] = ::epos::cptl_.ifrptl[i1][i];
       }
       for (unsigned int i = 0; i < 4; ++i) {
-        ::epos::cptl_.xorptl[i][i2] = ::epos::cptl_.xorptl[i][i1];
-        ::epos::cptl_.ibptl[i][i2] = ::epos::cptl_.ibptl[i][i1];
+        ::epos::cptl_.xorptl[i2][i] = ::epos::cptl_.xorptl[i1][i];
+        ::epos::cptl_.ibptl[i2][i] = ::epos::cptl_.ibptl[i1][i];
       }
     }
 
@@ -91,14 +91,14 @@ namespace corsika::epos {
       std::swap(::epos::cptl_.istptl[i2], ::epos::cptl_.istptl[i1]);
       std::swap(::epos::cptl_.ityptl[i2], ::epos::cptl_.ityptl[i1]);
       for (unsigned int i = 0; i < 5; ++i)
-        std::swap(::epos::cptl_.pptl[i][i2], ::epos::cptl_.pptl[i][i1]);
+        std::swap(::epos::cptl_.pptl[i2][i], ::epos::cptl_.pptl[i1][i]);
       for (unsigned int i = 0; i < 2; ++i) {
-        std::swap(::epos::cptl_.tivptl[i][i2], ::epos::cptl_.tivptl[i][i1]);
-        std::swap(::epos::cptl_.ifrptl[i][i2], ::epos::cptl_.ifrptl[i][i1]);
+        std::swap(::epos::cptl_.tivptl[i2][i], ::epos::cptl_.tivptl[i1][i]);
+        std::swap(::epos::cptl_.ifrptl[i2][i], ::epos::cptl_.ifrptl[i1][i]);
       }
       for (unsigned int i = 0; i < 4; ++i) {
-        std::swap(::epos::cptl_.xorptl[i][i2], ::epos::cptl_.xorptl[i][i1]);
-        std::swap(::epos::cptl_.ibptl[i][i2], ::epos::cptl_.ibptl[i][i1]);
+        std::swap(::epos::cptl_.xorptl[i2][i], ::epos::cptl_.xorptl[i1][i]);
+        std::swap(::epos::cptl_.ibptl[i2][i], ::epos::cptl_.ibptl[i1][i]);
       }
     }
 
@@ -140,7 +140,7 @@ namespace corsika::epos {
 
     HEPEnergyType getEnergy() const { return getStackData().getEnergy(getIndex()); }
 
-    bool hasDecayed() const { return getStackData().getState(getIndex()) == 0; }
+    bool isFinal() const { return getStackData().getState(getIndex()) == 0; }
 
     void setMass(const HEPMassType v) { getStackData().setMass(getIndex(), v); }
 
