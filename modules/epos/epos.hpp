@@ -44,6 +44,7 @@ namespace epos {
   void ainit_();
   void aepos_(int&);
   void afinal_();
+  void alistf_(char[7]);
   double lhcparameters_();
   void hdecin_(bool&);
   void hnbspd_(int&);

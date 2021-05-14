@@ -28,8 +28,8 @@ using SetupParticle = setup::Stack::stack_iterator_type;
 
 namespace corsika::epos {
 
-  inline Interaction::Interaction(const std::string& dataPath)
-      : data_path_(dataPath) {
+  inline Interaction::Interaction(const std::string& dataPath, const bool epos_printout_on)
+    : data_path_(dataPath), epos_listing_(epos_printout_on) {
     if (dataPath == "") {
       if (std::getenv("CORSIKA_DATA")) {
         data_path_ = std::string(std::getenv("CORSIKA_DATA")) + "/EPOS/";
@@ -52,7 +52,7 @@ namespace corsika::epos {
     ::epos::aaset_(iarg);
     //::epos::atitle_();
 
-    ::epos::prnt1_.ish = 3; // debug level in epos
+    ::epos::prnt1_.ish = 0; // debug level in epos
     ::epos::files_.ifch = 6; // output unit
     //::epos::prnt1_.iecho = 1;
 
@@ -309,7 +309,9 @@ namespace corsika::epos {
       ::epos::aepos_(iarg);
 
       ::epos::afinal_();
-      
+
+      if (epos_listing_) ::epos::alistf_("EPOSLHC&");
+
       // NSTORE-part
 
       MomentumVector Plab_final(originalCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
@@ -317,31 +319,29 @@ namespace corsika::epos {
 
       // secondaries
       EposStack es;
-      CORSIKA_LOG_DEBUG("npart: {}", es.getSize());
-      int i=-1;
+      CORSIKA_LOG_DEBUG("EPOSLHC number of particles: {}", es.getSize());
+      // int i=-1;
       for (auto& psec : es) {
-	++i;
+        //++i;
         if (!psec.isFinal()) continue;
 
-        CORSIKA_LOG_DEBUG("EPOS: i, id, energy, mass, type, state: {} {} {} {} {}", i,
-                          ::epos::cptl_.idptl[i], ::epos::cptl_.pptl[3][i],
-                          ::epos::cptl_.pptl[4][i], ::epos::cptl_.ityptl[i],
-                          ::epos::cptl_.istptl[i]);
-        CORSIKA_LOG_DEBUG("id, energy: {} {}", psec.getPID(), psec.getEnergy());
-	int id = abs(static_cast<int>(psec.getPID()));
-        CORSIKA_LOG_DEBUG("epos id to pdg: {}",
-                          ::epos::idtrafo_("nxs", "pdg", id));
+        // CORSIKA_LOG_DEBUG("EPOS: i, id, energy, mass, type, state: {} {} {} {} {}", i,
+        //                   ::epos::cptl_.idptl[i], ::epos::cptl_.pptl[3][i],
+        //                   ::epos::cptl_.pptl[4][i], ::epos::cptl_.ityptl[i],
+        //                   ::epos::cptl_.istptl[i]);
+        // CORSIKA_LOG_DEBUG("id, energy: {} {}", psec.getPID(), psec.getEnergy());
+        // int id = abs(static_cast<int>(psec.getPID()));
+        // CORSIKA_LOG_DEBUG("epos id to pdg: {}",
+        //                   ::epos::idtrafo_("nxs", "pdg", id));
 
-	
         auto momentum = psec.getMomentum(zAxisFrame);
         auto const energy = psec.getEnergy();
 
         momentum.rebase(originalCS); // transform back into standard lab frame
-	
 
         auto const pid = corsika::epos::convertFromEpos(psec.getPID());
         CORSIKA_LOG_DEBUG(
-            "secondary fragment> id= {}"
+            " id= {}"
             " p= {}",
             pid, momentum.getComponents() / 1_GeV);
         auto pnew =

@@ -19,9 +19,10 @@ namespace corsika::epos {
   class Interaction : public InteractionProcess<Interaction> {
     std::string data_path_;
     unsigned int count_ = 0;
+    bool epos_listing_;
     
   public:
-    Interaction(const std::string& dataPath = "");
+    Interaction(const std::string& dataPath = "", const bool epos_printout_on = false);
     ~Interaction();
 
     //! returns production and elastic cross section for hadrons in epos. Inputs are:
