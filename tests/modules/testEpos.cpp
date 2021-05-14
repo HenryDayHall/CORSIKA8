@@ -65,9 +65,33 @@ TEST_CASE("Epos", "[processes]") {
   }
 
   SECTION("epos mass") {
-
     CHECK_FALSE(corsika::epos::getEposMass(Code::Electron) == 0_GeV);
   }
+
+  /*
+
+    This part does belong to validation rather than the interface tests
+
+   */
+  SECTION("validation - pdg id") {
+    for (auto p : get_all_particles()) {
+      if (!is_nucleus(p)) {
+        int eid = corsika::epos::convertToEposRaw(p);
+        if (eid == 0 && p != Code::Unknown)
+          CHECK_FALSE(p == convert_from_PDG(static_cast<PDGCode>(
+                               ::epos::idtrafo_("nxs", "pdg", eid))));
+        else
+          CHECK(p == convert_from_PDG(
+                         static_cast<PDGCode>(::epos::idtrafo_("nxs", "pdg", eid))));
+      }
+    }
+  }
+
+  // SECTION("validation - mass") {
+  //   for (auto p : get_all_particles())
+  //     if (!is_nucleus(p))
+  //       CHECK(get_mass(p) / corsika::epos::getEposMass(p) == Approx(1).margin(0.5));
+  // }
 }
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -98,7 +122,7 @@ TEST_CASE("EposInterface", "[processes]") {
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
   logging::set_level(logging::level::trace);
 
-  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
 

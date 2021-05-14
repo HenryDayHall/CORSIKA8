@@ -7,11 +7,13 @@
 Unknown                  0       0       CannotInteract
 
 # Here is the list of particles known to EPOS
+Gamma                    10      0       CannotInteract
 Electron                 12      0       CannotInteract
 Positron                 -12     0       CannotInteract
-Gamma                    10      0       CannotInteract
-MuPlus			 -14	 0	 CannotInteract
 MuMinus			 14	 0	 CannotInteract
+MuPlus		         -14	 0	 CannotInteract
+TauMinus		 16	 0	 CannotInteract
+TauPlus			 -16	 0	 CannotInteract
 Pi0                      110     1       Pion
 PiPlus                   120     1       Pion
 PiMinus                 -120     1       Pion
@@ -64,9 +66,7 @@ KStar0Bar		-231	 0	 CannotInteract
 
 NuE			11	 0	 CannotInteract
 NuEBar			-11	 0	 CannotInteract
-NuMu			14	 0	 CannotInteract
-NuMuBar			-14	 0	 CannotInteract
+NuMu			13	 0	 CannotInteract
+NuMuBar			-13	 0	 CannotInteract
 NuTau			15	 0	 CannotInteract
 NuTauBar		-15	 0	 CannotInteract
-TauMinus		16	 0	 CannotInteract
-TauPlus			-16	 0	 CannotInteract
