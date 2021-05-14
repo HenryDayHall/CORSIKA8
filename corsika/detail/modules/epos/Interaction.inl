@@ -45,7 +45,7 @@ namespace corsika::epos {
     }
   }
 
-  inline void Interaction::initialize_eposlhc_c7() {
+  inline void Interaction::initialize_eposlhc_c7() const {
 
     // corsika7 ini
     int iarg = 0;
@@ -111,29 +111,132 @@ namespace corsika::epos {
     strcpy(::epos::fname_.fncs, CS.data);
     ::epos::nfname_.nfncs = CS.length;
 
-    //::epos::fname_.fnid="/home/felix/ngcorsika/corsika/modules/data/EPOS/epos.inidi";
-    //     EPOPAR input ../epos/epos.param        !initialization input file for epos
-    //       EPOPAR fname inics ../epos/epos.inics  !initialization input file for epos
-    // EPOPAR fname iniev ../epos/epos.iniev  !initialization input file for epos
-    // EPOPAR fname initl ../epos/epos.initl  !initialization input file for epos
-    // EPOPAR fname inirj ../epos/epos.inirj  !initialization input file for epos
-    // EPOPAR fname inihy ../epos/epos.ini1b  !initialization input file for epos
+    
 
     // dummy event
-    ::epos::hadr25_.idprojin = 1120;
-    ::epos::hadr25_.idtargin = 1120;
-    //#if __CONEX__ && __EPOS__ && __HIGHMEM__
-    //    maproj = 250
-    //#else
-    ::epos::nucl1_.maproj = 56;
-    // #endif
-    ::epos::nucl1_.laproj = 28;
-    ::epos::nucl1_.matarg = 14;
-    ::epos::nucl1_.latarg = 1;
-    ::epos::hadr1_.pnll = 200.;
-    ::epos::lept1_.engy = -1.;
+    // ::epos::hadr25_.idprojin = 1120;
+    // ::epos::hadr25_.idtargin = 1120;
+    // //#if __CONEX__ && __EPOS__ && __HIGHMEM__
+    // //    maproj = 250
+    // //#else
+    // ::epos::nucl1_.maproj = 56;
+    // // #endif
+    // ::epos::nucl1_.laproj = 28;
+    // ::epos::nucl1_.matarg = 14;
+    // ::epos::nucl1_.latarg = 1;
+    // ::epos::hadr1_.pnll = 200.;
+    // ::epos::lept1_.engy = -1.;
 
+    //::epos::ainit_();
+
+    // dummy event (prepare commons)
+    initialize_event_Lab(Code::Proton, Code::Argon, 100_GeV);
+  }
+
+  inline void Interaction::initialize_event_CoM(Code const idBeam, Code const idTarget,
+                                                HEPEnergyType const Ecm) const {
+    CORSIKA_LOG_TRACE(
+        "Epos:: initialize event in CoM frame!"
+        " Ecm={}",
+        Ecm);
+    ::epos::lept1_.engy = -1.;
+    ::epos::enrgy_.ecms = -1.;
+    ::epos::enrgy_.elab = -1.;
+    ::epos::enrgy_.ekin = -1.;
+    ::epos::hadr1_.pnll = -1.;
+
+    ::epos::enrgy_.ecms = Ecm / 1_GeV;
+    
+    CORSIKA_LOG_TRACE(
+        "Epos::initialize_event: inside EPOS: "
+        "Ecm={}, "
+        "Elab={}",
+        ::epos::enrgy_.ecms, ::epos::enrgy_.elab);
+
+    configure_particles(idBeam, idTarget);
     ::epos::ainit_();
+  }
+
+  inline void Interaction::initialize_event_Lab(Code const idBeam, Code const idTarget,
+                                                HEPEnergyType const Plab) const {
+    CORSIKA_LOG_TRACE(
+        "Epos:: initialize event in lab. frame!"
+        " Plab per nuc={} GeV",
+        Plab / 1_GeV);
+    ::epos::lept1_.engy = -1.;
+    ::epos::enrgy_.ecms = -1.;
+    ::epos::enrgy_.elab = -1.;
+    ::epos::enrgy_.ekin = -1.;
+    ::epos::hadr1_.pnll = -1.;
+    
+    // hadron-nucleon momentum
+    ::epos::hadr1_.pnll = float(Plab / 1_GeV);
+
+    CORSIKA_LOG_TRACE(
+        "Epos::initialize_event: inside EPOS: "
+        "Ecm={}, "
+        "Elab={}, "
+        "Pnll={}",
+        ::epos::enrgy_.ecms, ::epos::enrgy_.elab, ::epos::hadr1_.pnll);
+
+    configure_particles(idBeam, idTarget);
+    ::epos::ainit_();
+  }
+
+  inline void Interaction::configure_particles(Code const idBeam,
+                                               Code const idTarget) const {
+    CORSIKA_LOG_TRACE(
+        "configure_particles: setting "
+        "Beam={} "
+        "Target={}",
+        idBeam, idTarget);
+    
+    //   idprojin = idtrafo("pdg","nxs",idpro)
+    //   if (idpro.ne.2212) izpro = -1
+    //   laproj = izpro      !proj Z
+    //   maproj = iapro      !proj A
+    if(is_nucleus(idBeam)){
+      ::epos::hadr25_.idprojin = convertToEposRaw(Code::Proton);
+      ::epos::nucl1_.laproj = get_nucleus_Z(idBeam);
+      ::epos::nucl1_.maproj = get_nucleus_A(idBeam);
+    } else {
+      ::epos::hadr25_.idprojin = convertToEposRaw(idBeam);
+      // if(idBeam!=Code::Proton)
+      // 	::epos::nucl1_.laproj = -1;
+      // else
+      //   ::epos::nucl1_.laproj = 1;
+      ::epos::nucl1_.laproj = -1;
+      ::epos::nucl1_.maproj = 1;      
+    }
+    
+    //   idtargin = idtrafo("pdg","nxs",idtar)
+    //   latarg = iztar      !targ Z
+    //   matarg = iatar      !targ A
+    if (is_nucleus(idTarget)) {
+      ::epos::hadr25_.idtargin = convertToEposRaw(Code::Proton);
+      ::epos::nucl1_.matarg = get_nucleus_A(idTarget);
+      ::epos::nucl1_.latarg = get_nucleus_Z(idTarget);
+    } else if (idTarget == Code::Proton || idTarget == Code::Hydrogen) {
+      ::epos::hadr25_.idtargin = convertToEposRaw(Code::Proton);
+      ::epos::nucl1_.matarg = 1;
+      ::epos::nucl1_.latarg = -1;
+    } else if (idTarget == Code::Neutron) {
+      ::epos::hadr25_.idtargin = convertToEposRaw(Code::Neutron);
+      ::epos::nucl1_.matarg = 1;
+      ::epos::nucl1_.latarg = -1;
+    } else {
+      throw std::runtime_error("Epos: configure_particles: target outside range!");
+    }
+    CORSIKA_LOG_TRACE(
+        "configure_particles: inside EPOS: "
+        "Id beam={}, "
+        "Z beam={}, "
+        "A beam={}, "
+        "Id target={}, "
+        "Z target={}, "
+        "A target={}",
+        ::epos::hadr25_.idprojin, ::epos::nucl1_.laproj, ::epos::nucl1_.maproj,
+        ::epos::hadr25_.idtargin, ::epos::nucl1_.latarg, ::epos::nucl1_.matarg);
   }
 
   inline Interaction::~Interaction() {
@@ -142,11 +245,139 @@ namespace corsika::epos {
 
   inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
   Interaction::getCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
-                               const corsika::HEPEnergyType CoMenergy) const {}
+                               const corsika::HEPEnergyType EnergyCOM) const {
+    CORSIKA_LOG_DEBUG(
+        "getCrossSection: input:"
+        " beam={},"
+        " target={},"
+        " Ecm={:4.3f} GeV,",
+        BeamId, TargetId, EnergyCOM / 1_GeV);
+
+    const int iBeam = corsika::epos::getEposXSCode(
+        BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
+    if (!iBeam)
+      throw std::runtime_error(
+          "getCrossSection: interaction of beam hadron not defined in "
+          "Epos!");
+
+    // reset beam particle // (1: proton-like, 2: pion-like, 3:kaon-like)
+    if (iBeam == 1)
+      initialize_event_CoM(Code::Proton, TargetId, EnergyCOM);
+    else if (iBeam == 2)
+      initialize_event_CoM(Code::PiPlus, TargetId, EnergyCOM);
+    else
+      initialize_event_CoM(Code::KPlus, TargetId, EnergyCOM);
+
+    //::epos::xsigma_();
+
+    double sigProd, sigEla = 0;
+    float sigTot1, sigProd1, sigEla1, sigCut1 = 0;
+    if (is_nucleus(TargetId) || is_nucleus(BeamId)) {
+      ::epos::crseaaepos_(sigTot1, sigProd1, sigCut1, sigEla1);
+      //sigProd = ::epos::hadr5_.sigineaa;
+      //sigEla = ::epos::hadr5_.sigelaaa;
+      sigProd = sigProd1;
+      sigEla = sigEla1;      
+    } else {
+      sigProd = ::epos::hadr5_.sigine;
+      sigEla = ::epos::hadr5_.sigela;
+    }
+
+    // calculate cross section
+    //float sigTot, sigProd, sigEla, sigCut = 0;
+    //::epos::crseaaepos_(sigTot, sigProd, sigCut, sigEla);
+
+    CORSIKA_LOG_DEBUG(
+        "getCrossSection: output:"
+        " sigProd={} mb,"
+        " sigEla={} mb",
+        sigProd, sigEla);
+
+    return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
+
+    // read cross section from epos internal tables
+    
+    // int Abeam;
+    // int iBeamId;
+    // if(is_nucleus(BeamId)){
+    //   Abeam = get_nucleus_A(BeamId);
+    //   iBeamId = 1; //convertToEposRaw(BeamId);
+    // } else {
+    //   ::epos::hadr2_.idproj = convertToEposRaw(BeamId);
+    //   Abeam = 1;
+    // }
+    // int Atarget;
+    // if(is_nucleus(TargetId))
+    //   Atarget = get_nucleus_A(TargetId);      
+    // else
+      
+    // float Ekin = (EnergyLab-get_mass(BeamId)) / 1_GeV;
+    // float sigProdEpos = ::epos::eposcrse_(Ekin,iBeamId);
+    // float sigElaEpos = ::epos::eposelacrse_();
+    // return std::make_tuple(sigProdEpos * 1_mb, sigElaEpos * 1_mb);
+  }
 
   template <>
   inline corsika::GrammageType Interaction::getInteractionLength(
       SetupParticle const& projectile) const {
+
+    const corsika::Code corsikaBeamId = projectile.getPID();
+    const bool kInteraction = corsika::epos::canInteract(corsikaBeamId);
+    CORSIKA_LOG_DEBUG(
+        "Interaction: LambdaInt: \n"
+        " input energy: {} GeV "
+        " beam can interact: {} "
+        " beam pid: {}",
+        projectile.getEnergy() / 1_GeV, kInteraction, projectile.getPID());
+
+    if (kInteraction) {
+      // get target from environment
+      /*
+        the target should be defined by the Environment,
+        ideally as full particle object so that the four momenta
+        and the boosts can be defined..
+      */
+
+      MomentumVector const& pLab = projectile.getMomentum();
+      CoordinateSystemPtr const& labCS = pLab.getCoordinateSystem();
+
+      // assume target is at rest!!
+      MomentumVector pTarget(labCS, {0_GeV, 0_GeV, 0_GeV});
+      
+      // total momentum and energy
+      HEPEnergyType Elab = projectile.getEnergy() + constants::nucleonMass;
+      MomentumVector pTotLab(labCS, {0_GeV, 0_GeV, 0_GeV});
+      pTotLab += pLab;
+      pTotLab += pTarget;
+      auto const pTotLabNorm = pTotLab.getNorm();
+      // calculate cm. energy
+      const HEPEnergyType ECoM = sqrt(
+          (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
+
+      auto const* currentNode = projectile.getNode();
+      const auto& mediumComposition =
+          currentNode->getModelProperties().getNuclearComposition();
+
+      si::CrossSectionType weightedProdCrossSection = mediumComposition.getWeightedSum(
+          [=](corsika::Code targetID) -> si::CrossSectionType {
+            return std::get<0>(this->getCrossSection(corsikaBeamId, targetID, ECoM));
+          });
+
+      CORSIKA_LOG_DEBUG(
+          "Interaction: "
+          "IntLength: weighted CrossSection (mb): {} ",
+          weightedProdCrossSection / 1_mb);
+
+      // calculate interaction length in medium
+      GrammageType const int_length = mediumComposition.getAverageMassNumber() *
+                                      constants::u / weightedProdCrossSection;
+      CORSIKA_LOG_DEBUG(
+          "Interaction: "
+          "interaction length (g/cm2): {} ",
+          int_length / (0.001_kg) * 1_cm * 1_cm);
+
+      return int_length;
+    }
 
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }
@@ -249,7 +480,7 @@ namespace corsika::epos {
       for (size_t i = 0; i < compVec.size(); ++i) {
         auto const targetId = compVec[i];
         [[maybe_unused]] auto const [sigProd, sigEla] =
-            getCrossSection(corsikaBeamId, targetId, Ecm);
+			   getCrossSection(corsikaBeamId, targetId, Ecm);
         cross_section_of_components[i] = sigProd;
       }
 
@@ -257,52 +488,50 @@ namespace corsika::epos {
           mediumComposition.sampleTarget(cross_section_of_components, RNG_);
       CORSIKA_LOG_DEBUG("Interaction: target selected: {} ", targetCode);
 
-      // from corsika7 interface
-      // NEXLNK-part
+      initialize_event_Lab(corsikaBeamId, targetCode, projectileMomentumLabPerNucleon);
 
-      // projectile
-      // if(is_nucleus(corsikaBeamId)){
-      //   ::epos::hadr25_.idprojin =1120;
-      //   ::epos::nucl1_.laproj = projectile.get_nucleus_Z();   // Z
-      //   ::epos::nucl1_.maproj = projectile.get_nucleus_A();; // A
+      // // from corsika7 interface
+      // // NEXLNK-part
+
+      // // projectile
+      // ::epos::hadr25_.idprojin =
+      //     convertToEposRaw(corsikaBeamId); // 1120 ; // id "NEXUS code"
+      // ::epos::nucl1_.laproj = -1;          // Z (-1 for hadron)
+      // ::epos::nucl1_.maproj = 1;           // A
+
+      // // target
+      // int targetMassNumber = 1;     // proton
+      // if (is_nucleus(targetCode)) { // nucleus
+      //   targetMassNumber = get_nucleus_A(targetCode);
+      //   if (targetMassNumber > maxTargetMassNumber_)
+      //     throw std::runtime_error("Epos target mass outside range.");
+      // 	::epos::nucl1_.matarg = targetMassNumber;
+      // 	::epos::nucl1_.latarg = get_nucleus_Z(targetCode);
       // } else {
-      ::epos::hadr25_.idprojin =
-          convertToEposRaw(corsikaBeamId); // 1120 ; // id "NEXUS code"
-      ::epos::nucl1_.laproj = -1;          // Z (-1 for hadron)
-      ::epos::nucl1_.maproj = 1;           // A
-      //}
+      //   if (targetCode != Proton::code && targetCode != Neutron::code)
+      //     throw std::runtime_error("Epos target not possible.");
+      //   // proton or neutron target
+      //   ::epos::hadr25_.idtargin = convertToEposRaw(targetCode);
+      //   if (targetCode == Proton::code)
+      //     ::epos::nucl1_.latarg = 1; // Z
+      //   else
+      //     ::epos::nucl1_.latarg = -1; // Z (-1 with id 1220 for neutron)
+      //   ::epos::nucl1_.matarg = 1;    // A
+      // }
+      // CORSIKA_LOG_DEBUG("Interaction: target epos code/A: {}", targetMassNumber);
 
-      // target
-      int targetMassNumber = 1;     // proton
-      if (is_nucleus(targetCode)) { // nucleus
-        targetMassNumber = get_nucleus_A(targetCode);
-        if (targetMassNumber > maxTargetMassNumber_)
-          throw std::runtime_error("Epos target mass outside range.");
-      } else {
-        if (targetCode != Proton::code && targetCode != Neutron::code)
-          throw std::runtime_error("Epos target not possible.");
-        // proton or neutron target
-        ::epos::hadr25_.idtargin = convertToEposRaw(targetCode);
-        if (targetCode == Proton::code)
-          ::epos::nucl1_.latarg = 1; // Z
-        else
-          ::epos::nucl1_.latarg = -1; // Z (-1 with id 1220 for neutron)
-        ::epos::nucl1_.matarg = 1;    // A
-      }
-      CORSIKA_LOG_DEBUG("Interaction: target epos code/A: {}", targetMassNumber);
+      // // hadron-nucleon momentum
+      // ::epos::hadr1_.pnll = float(projectileMomentumLabPerNucleon / 1_GeV); // float(200);
 
-      // hadron-nucleon momentum
-      ::epos::hadr1_.pnll = float(projectileMomentumLabPerNucleon / 1_GeV); // float(200);
+      // // C  SET ENGY NEGATIVE TO FORCE CALCULATION IN LAB FRAME
+      // ::epos::lept1_.engy = -1.;
+      // ::epos::enrgy_.ecms = -1.;
+      // ::epos::enrgy_.elab = -1.;
+      // ::epos::enrgy_.ekin = -1.;
 
-      // C  SET ENGY NEGATIVE TO FORCE CALCULATION IN LAB FRAME
-      ::epos::lept1_.engy = -1.;
-      ::epos::enrgy_.ecms = -1.;
-      ::epos::enrgy_.elab = -1.;
-      ::epos::enrgy_.ekin = -1.;
-
-      // C  INTIALIZE ENERGY AND PARTICLE DEPENDENT PORTION OF EPOS/NEXUS
-      // C  AT THE FIRST CALL: READ ALSO DATA SETS
-      ::epos::ainit_();
+      // // C  INTIALIZE ENERGY AND PARTICLE DEPENDENT PORTION OF EPOS/NEXUS
+      // // C  AT THE FIRST CALL: READ ALSO DATA SETS
+      // ::epos::ainit_();
 
       // create event
       int iarg = 1;

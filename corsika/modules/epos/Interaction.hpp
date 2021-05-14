@@ -26,8 +26,8 @@ namespace corsika::epos {
     ~Interaction();
 
     //! returns production and elastic cross section for hadrons in epos. Inputs are:
-    //! CorsikaId of beam particle, CorsikaId of target particle and center-of-mass
-    //! energy. Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
+    //! CorsikaId of beam particle, CorsikaId of target particle, center-of-mass energy.
+    //!  Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
     std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
         Code const, Code const, HEPEnergyType const) const;
 
@@ -49,9 +49,12 @@ namespace corsika::epos {
     bool isValidTarget(Code const TargetId) const {
       return false;
     }
-
-    void initialize_eposlhc_c7();
-
+    
+    void initialize_eposlhc_c7() const;
+    void initialize_event_CoM(Code const, Code const, HEPEnergyType const) const;
+    void initialize_event_Lab(Code const, Code const, HEPEnergyType const) const;
+    void configure_particles(Code const, Code const) const;
+    
   private:
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("epos");
     HEPEnergyType const minEnergyCoM_ = -10. * 1e9 * electronvolt;

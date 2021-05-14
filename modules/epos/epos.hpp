@@ -57,8 +57,37 @@ namespace epos {
   void emsini_(double&, int&, int&);
   void paramini_(int&);
   void xsigma_();
+    
+  //
+  //  cross section from tables
+  //
+  // c------------------------------------------------------------------------------
+  //   function eposcrse(ek,mapro,matar,id)
+  // c------------------------------------------------------------------------------
+  // c inelastic cross section of epos
+  // c (id=0 corresponds to air)
+  // c ek     - kinetic energy for the interaction in the lab
+  // c maproj - projec mass number     (1<maproj<64)
+  // c matarg - target mass number     (1<matarg<64)
+  // c------------------------------------------------------------------------------
+  float eposcrse_(float&, int&, int&, int&);
+  float eposelacrse_(float&, int&, int&, int&);
 
-  double cxepocrse_(double&, int&, int&, int&);
+  // calculate cross section
+  // c------------------------------------------------------------------------------
+  //       subroutine crseaaEpos(sigt,sigi,sigc,sige)
+  // c------------------------------------------------------------------------------
+  // c nucleus-nucleus (hadron) cross section of epos from simplified (realistic)
+  // c simulations
+  // c (id=0 corresponds to air)
+  // c  sigt = sig tot
+  // c  sigi = sig inelastic (cut + projectile diffraction)
+  // c  sigc = sig cut
+  // c  sige = sig elastic (includes target diffraction)
+  // c------------------------------------------------------------------------------
+  void crseaaepos_(float&, float&, float&, float&);
+
+  // double cxepocrse_(double&, int&, int&, int&);
 
   void emsaaa_(int&);
   void gakfra_(int&, int&);
@@ -432,6 +461,26 @@ namespace epos {
     int ityptl[mxptl];
   } cptl_;
 
+  //  real         sigtot,sigcut,sigela,sloela,sigsd,sigine,sigdif
+  // *,sigineaa,sigtotaa,sigelaaa,sigcutaa,sigdd
+  //  common/hadr5/sigtot,sigcut,sigela,sloela,sigsd,sigine,sigdif
+  // *,sigineaa,sigtotaa,sigelaaa,sigcutaa,sigdd
+  extern struct {
+    float sigtot;
+    float sigcut;
+    float sigela;
+    float sloela;
+    float sigsd;
+    float sigine;
+    float sigdif;
+    float sigineaa;
+    float sigtotaa;
+    float sigelaaa;
+    float sigcutaa;
+    float sigdd;
+    } hadr5_;
+
+    
   /**
    Small helper class to provide a data-directory name in the format eposlhc expects
   */
