@@ -71,11 +71,13 @@ namespace corsika {
       auto tracklength_ {(endPoint_ - startPoint_).getNorm()};
 
       // beta is velocity / speed of light. Start & end should be the same in endpoints!
-      auto beta_ {((endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))).normalized()};
-      // auto beta__ { tracklength_ / (constants::c * (endTime_ - startTime_)) }; (I think this is the correct one)
+      auto beta_ {(endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))};
 
       // get particle charge
       auto const charge_{get_charge(particle.getPID())};
+
+      // constants for electric field vector calculation
+      auto constants_ {charge_/ (4 * M_PI)/ (constants::epsilonZero) / constants::c};
 
       // set threshold for application of ZHS-like approximation.
       const double approxThreshold_{1.0e-3};
@@ -83,8 +85,8 @@ namespace corsika {
       // loop over each antenna in the antenna collection (detector)
       for (auto& antenna : antennas_.getAntennas()) {
 
-        // check with which antenna we work in this loop
-        std::cout << "ANTENNA: " << antenna.getName() << std::endl;
+//        // check with which antenna we work in this loop
+//        std::cout << "ANTENNA: " << antenna.getName() << std::endl;
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
         auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Add the stepsize to .propagate() at some point
@@ -100,7 +102,7 @@ namespace corsika {
 
           // calculate preDoppler factor
           double preDoppler_{1. - paths1[i].refractive_index_source_ *
-                       beta_.dot(paths1[i].emit_)}; // are you sure this is path.emit and not path.receive?
+                       beta_.dot(paths1[i].emit_)};
 
           // check if preDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (preDoppler_ == 0) {
@@ -118,9 +120,8 @@ namespace corsika {
           }
 
             // calculate postDoppler factor
-          double postDoppler_{
-              1. - paths2[i].refractive_index_source_ *
-                       beta_.dot(paths2[i].emit_)}; // maybe this is path.receive_ (?)
+          double postDoppler_{1. - paths2[i].refractive_index_source_ *
+                       beta_.dot(paths2[i].emit_)};
 
           // check if postDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (postDoppler_ == 0) {
@@ -138,15 +139,15 @@ namespace corsika {
           }
 
           // calculate receive time for startpoint (aka time delay)
-          auto startPointReceiveTime_{paths1[i].propagation_time_ + startTime_}; // TODO: time 0 is when the imaginary primary hits the ground
+          auto startPointReceiveTime_{startTime_ + paths1[i].propagation_time_}; // TODO: time 0 is when the imaginary primary hits the ground
 
           // calculate receive time for endpoint
-          auto endPointReceiveTime_{paths2[i].propagation_time_ + endTime_};
+          auto endPointReceiveTime_{endTime_ + paths2[i].propagation_time_};
 
-          // get receive unit vector for startpoint
+          // get unit vector for startpoint at antenna location
           auto ReceiveVectorStart_{paths1[i].receive_};
 
-          // get receive unit vector for endpoint
+          // get unit vector for endpoint at antenna location
           auto ReceiveVectorEnd_{paths2[i].receive_};
 
           // perform ZHS-like calculation close to Cherenkov angle and for refractive index at antenna location greater than 1
@@ -172,7 +173,7 @@ namespace corsika {
             // now loop over the paths for endpoint that we got above
             for (auto const& path : paths3) {
 
-              auto const midPointReceiveTime_{path.propagation_time_ + midTime_};
+              auto const midPointReceiveTime_{midTime_ + path.propagation_time_};
               double midDoppler_{1. - path.refractive_index_source_ * beta_.dot(path.emit_)};
 
               // check if midDoppler has become zero because of numerical limitations
@@ -195,10 +196,8 @@ namespace corsika {
               ReceiveVectorEnd_ = path.receive_;
 
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
-              ElectricFieldVector EVmid_ =
-                  path.emit_.cross(path.emit_.cross(beta_)).getComponents() /
-                  (path.R_distance_ * midDoppler_) * (antenna.sample_rate_ / (4 * M_PI)) *
-                  ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
+              ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))).getComponents()
+                                           / midDoppler_ / path.R_distance_ * constants_ * antenna.sample_rate_;
 
               ElectricFieldVector EV1_{EVmid_};
               ElectricFieldVector EV2_{-EVmid_};
@@ -296,28 +295,20 @@ namespace corsika {
           else {
 
             // calculate electric field vector for startpoint
-            ElectricFieldVector EV1_ =
-                paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))
-                    .getComponents() /
-                (paths1[i].R_distance_ * preDoppler_) *
-                        (antenna.sample_rate_ / (4 * M_PI)) *
-                        ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
+            ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))).getComponents()
+                                       / preDoppler_ / paths1[i].R_distance_ * constants_ * antenna.sample_rate_;
 
-            std::cout << "CHECK EV1 VALUE : " << EV1_ << std::endl;
+//            std::cout << "Electric Field Vector START :" << EV1_ << std::endl;
 
             // calculate electric field vector for endpoint
-            ElectricFieldVector EV2_ =
-                paths2[i].receive_.cross(paths2[i].receive_.cross(beta_))
-                    .getComponents() /
-                (paths2[i].R_distance_ * postDoppler_) *
-                ((-antenna.sample_rate_) / (4 * M_PI)) *
-                ((1 / constants::epsilonZero) * (1 / constants::c)) * charge_;
+            ElectricFieldVector EV2_ = (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_))).getComponents()
+                                       / postDoppler_ / paths2[i].R_distance_ * constants_ * (-1.0) * antenna.sample_rate_;
 
-            std::cout << "CHECK EV2 VALUE : " << EV2_ << std::endl;
+//            std::cout << "Electric Field Vector END :" << EV2_ << std::endl;
 
             if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
-              std::cout << "--- Doppler factors are less than 1.e-9 ---" << std::endl;
+              std::cout << "----- Doppler factors are less than 1.e-9 -----" << std::endl;
 
               const long gridResolution_{1 / antenna.sample_rate_ / 1_s};
               double deltaT_ {(endPointReceiveTime_ - startPointReceiveTime_) / 1_s};
@@ -328,15 +319,15 @@ namespace corsika {
                 EV2_ *= std::fabs(deltaT_ / gridResolution_);
 
                 const long startBin = static_cast<long>(
-                        std::floor((startPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
+                    std::floor((startPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
                 const long endBin = static_cast<long>(
-                        std::floor((endPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
+                    std::floor((endPointReceiveTime_ / 1_s) / gridResolution_ + 0.5l));
                 const double startBinFraction =
-                        ((startPointReceiveTime_ / 1_s) / gridResolution_) -
-                        std::floor((startPointReceiveTime_ / 1_s) / gridResolution_);
+                    ((startPointReceiveTime_ / 1_s) / gridResolution_) -
+                    std::floor((startPointReceiveTime_ / 1_s) / gridResolution_);
                 const double endBinFraction =
-                        ((endPointReceiveTime_ / 1_s) / gridResolution_) -
-                        std::floor((endPointReceiveTime_ / 1_s) / gridResolution_);
+                    ((endPointReceiveTime_ / 1_s) / gridResolution_) -
+                    std::floor((endPointReceiveTime_ / 1_s) / gridResolution_);
 
                 // only do timing modification if contributions would land in same bin
                 if (startBin == endBin) {
@@ -367,7 +358,7 @@ namespace corsika {
               }     // End of if deltaT < gridresolution
             }       // End of if that checks small doppler factors
 
-            std::cout << "---------- NO ZHS-like APPROXIMATION ----------" << std::endl;
+            std::cout << "--------------  CoREAS  --------------" << std::endl;
 
             antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
             antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
@@ -377,7 +368,7 @@ namespace corsika {
         } // End of loop over both paths to get signal info
       } // End of try block
         catch (size_t i) {
-          std::cout << " --- Signal Paths do not have the same size! --- " << std::endl;
+          std::cout << " --- Signal Paths do not have the same size!!! --- " << std::endl;
         }
       } // End of looping over antennas
 
