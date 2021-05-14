@@ -76,7 +76,7 @@ namespace epos {
   // get mass for id
   void idmass_(int&, double&);
   // convert id from one format to another
-    //int idtrafo_(char[3], char[3], int&);
+  int idtrafo_(char[3], char[3], int&);
 
   // conex routine
   //  void cxidmass_(int&, int&);
@@ -126,7 +126,6 @@ namespace epos {
     int modelxs;
   } xsappli_;
 
-    
   extern struct {
     int nevent;
     int nfull;
@@ -139,15 +138,15 @@ namespace epos {
     int iframexs;
   } xsevent_;
 
-    //   common/metr1/iospec,iocova,iopair,iozero,ioflac,iomom
-    extern struct {
-      int iospec;
-      int iocova;
-      int iopair;
-      int iozero;
-      int ioflac;
-      int iomom;
-    } metr1_;
+  //   common/metr1/iospec,iocova,iopair,iozero,ioflac,iomom
+  extern struct {
+    int iospec;
+    int iocova;
+    int iopair;
+    int iozero;
+    int ioflac;
+    int iomom;
+  } metr1_;
 
   extern struct {
     int ifrade;
@@ -332,96 +331,105 @@ namespace epos {
 
   //     integer      istore,istmax,irescl,ntrymx,nclean,iopdg,ioidch
   // common/othe1/istore,istmax,gaumx,irescl,ntrymx,nclean,iopdg,ioidch
-    extern struct {
-      int istore;
-      int istmax;
-      int gaumx;
-      int irescl;
-      int ntrymx;
-      int nclean;
-      int iopdg;
-      int ioidch;
-    } othe1_;
+  extern struct {
+    int istore;
+    int istmax;
+    int gaumx;
+    int irescl;
+    int ntrymx;
+    int nclean;
+    int iopdg;
+    int ioidch;
+  } othe1_;
 
-    //  character*500  fnch,fnhi,fndt,fnii,fnid,fnie,fnrj,fnmt
-    // * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
-    //  common/fname/  fnch, fnhi, fndt, fnii, fnid, fnie, fnrj, fnmt
-    //      * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
-    extern struct {
-      char fnch[500];
-      char fnhi[500];
-      char fndt[500];
-      char fnii[500];
-      char fnid[500];
-      char fnie[500];
-      char fnrj[500];
-      char fnmt[500];
-      char fngrv[500];
-      char fncp[500];
-      char fnnx[500];
-      char fncs[500];
-      char fndr[500];
-      char fnhpf[500];
+  //  character*500  fnch,fnhi,fndt,fnii,fnid,fnie,fnrj,fnmt
+  // * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
+  //  common/fname/  fnch, fnhi, fndt, fnii, fnid, fnie, fnrj, fnmt
+  //      * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
+  extern struct {
+    char fnch[500];
+    char fnhi[500];
+    char fndt[500];
+    char fnii[500];
+    char fnid[500];
+    char fnie[500];
+    char fnrj[500];
+    char fnmt[500];
+    char fngrv[500];
+    char fncp[500];
+    char fnnx[500];
+    char fncs[500];
+    char fndr[500];
+    char fnhpf[500];
 
-    } fname_;
-    
-     //      integer       nfnch,nfnhi,nfndt,nfnii,nfnid,nfnie,nfnrj,nfnmt
-     // *,nfngrv,nfncp,nfnnx,nfncs,nfndr,nfnhpf
-     //  common/nfname/nfnch,nfnhi,nfndt,nfnii,nfnid,nfnie,nfnrj,nfnmt
-     // *,nfngrv,nfncp,nfnnx,nfncs,nfndr,nfnhpf
-    extern struct {
-      int nfnch;
-      int nfnhi;
-      int nfndt;
-      int nfnii;
-      int nfnid;
-      int nfnie;
-      int nfnrj;
-      int nfnmt;
-      int nfngrv;
-      int nfncp;
-      int nfnnx;
-      int nfncs;
-      int nfndr;
-      int nfnhpf;
-    } nfname_;
+  } fname_;
 
-    // integer      iprmpt,ish,ishsub,irandm,irewch,iecho,modsho,idensi
-    //   common/prnt1/iprmpt,ish,ishsub,irandm,irewch,iecho,modsho,idensi
-    extern struct {
-      int iprmpt;
-      int ish;
-      int ishsub;
-      int irandm;
-      int irewch;
-      int iecho;
-      int modsho;
-      int idensi;
-    } prnt1_;
-    unsigned int constexpr mmry = 1;
-    unsigned int constexpr mxptl = 200000 / mmry;
-    //      real        pptl,tivptl,xorptl
-    //   integer     nptl,iorptl,idptl,istptl,ifrptl,jorptl,ibptl,ityptl
-    //  common/cptl/nptl,pptl(5,mxptl),iorptl(mxptl),idptl(mxptl)
-    extern struct {
-      int nptl;
-      float pptl[mxptl][5];
-      int iorptl[mxptl];
-      int idptl[mxptl];
-    } cptl_;
-    
-    /**
-     Small helper class to provide a data-directory name in the format eposlhc expects
-    */
-    class datadir {
-    private:
-      datadir operator=(const std::string& dir);
-      datadir operator=(const datadir&);
+  //      integer       nfnch,nfnhi,nfndt,nfnii,nfnid,nfnie,nfnrj,nfnmt
+  // *,nfngrv,nfncp,nfnnx,nfncs,nfndr,nfnhpf
+  //  common/nfname/nfnch,nfnhi,nfndt,nfnii,nfnid,nfnie,nfnrj,nfnmt
+  // *,nfngrv,nfncp,nfnnx,nfncs,nfndr,nfnhpf
+  extern struct {
+    int nfnch;
+    int nfnhi;
+    int nfndt;
+    int nfnii;
+    int nfnid;
+    int nfnie;
+    int nfnrj;
+    int nfnmt;
+    int nfngrv;
+    int nfncp;
+    int nfnnx;
+    int nfncs;
+    int nfndr;
+    int nfnhpf;
+  } nfname_;
 
-    public:
-      datadir(const std::string& dir);
-      char data[500];
-      int length;
+  // integer      iprmpt,ish,ishsub,irandm,irewch,iecho,modsho,idensi
+  //   common/prnt1/iprmpt,ish,ishsub,irandm,irewch,iecho,modsho,idensi
+  extern struct {
+    int iprmpt;
+    int ish;
+    int ishsub;
+    int irandm;
+    int irewch;
+    int iecho;
+    int modsho;
+    int idensi;
+  } prnt1_;
+  unsigned int constexpr mmry = 1;
+  unsigned int constexpr mxptl = 200000 / mmry;
+  //      real        pptl,tivptl,xorptl
+  //   integer     nptl,iorptl,idptl,istptl,ifrptl,jorptl,ibptl,ityptl
+  //  common/cptl/nptl,pptl(5,mxptl),iorptl(mxptl),idptl(mxptl)
+  // *,istptl(mxptl),tivptl(2,mxptl),ifrptl(2,mxptl),jorptl(mxptl)
+  // *,xorptl(4,mxptl),ibptl(4,mxptl),ityptl(mxptl)
+  extern struct {
+    int nptl;
+    float pptl[mxptl][5];
+    int iorptl[mxptl];
+    int idptl[mxptl];
+    int istptl[mxptl];
+    float tivptl[mxptl][2];
+    int ifrptl[mxptl][2];
+    int jorptl[mxptl];
+    float xorptl[mxptl][4];
+    int ibptl[mxptl][4];
+    int ityptl[mxptl];
+  } cptl_;
+
+  /**
+   Small helper class to provide a data-directory name in the format eposlhc expects
+  */
+  class datadir {
+  private:
+    datadir operator=(const std::string& dir);
+    datadir operator=(const datadir&);
+
+  public:
+    datadir(const std::string& dir);
+    char data[500];
+    int length;
   };
   }
 } // namespace epos
