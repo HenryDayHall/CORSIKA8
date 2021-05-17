@@ -31,9 +31,6 @@ namespace corsika {
   inline void Cascade<TTracking, TProcessList, TOutput, TStack, TStackView>::run() {
     setNodes(); // put each particle on stack in correct environment volume
 
-    // start this event (i.e. this shower)
-    output_.startOfShower();
-
     while (!stack_.isEmpty()) {
       while (!stack_.isEmpty()) {
         CORSIKA_LOG_TRACE("Stack: {}", stack_.asString());
@@ -54,9 +51,6 @@ namespace corsika {
       // thus, the double loop
       // doCascadeEquations();
     }
-
-    // end this event (i.e. this shower)
-    output_.endOfShower();
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
