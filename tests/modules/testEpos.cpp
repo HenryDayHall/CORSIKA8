@@ -64,6 +64,8 @@ TEST_CASE("Epos", "[processes]") {
     CHECK(corsika::epos::getEposXSCode(Code::KMinus) == 3);
     CHECK(corsika::epos::getEposXSCode(Code::PiMinus) == 2);
     CHECK(corsika::epos::getEposXSCode(Code::Proton) == 1);
+    CHECK(corsika::epos::getEposXSCode(Code::Helium) == 4);
+    CHECK(corsika::epos::getEposXSCode(Code::Nucleus) == 4);
   }
 
   SECTION("epos mass") {
@@ -154,7 +156,7 @@ TEST_CASE("EposInterface", "[processes]") {
     auto const [xs_prod_pn, xs_ela_pn] =
         model.getCrossSection(Code::Proton, Code::Neutron, 100_GeV);
     auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
-      model.getCrossSection(Code::Proton, Code::Hydrogen, 100_GeV);
+        model.getCrossSection(Code::Proton, 1, 1, Code::Hydrogen, 1, 1, 100_GeV);
     CHECK(xs_prod_pp == xs_prod_pHydrogen);
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
@@ -217,7 +219,36 @@ TEST_CASE("EposInterface", "[processes]") {
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
     
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length / 1_g * 1_cm * 1_cm == Approx(93.2).margin(0.1));
+    CHECK(length / 1_g * 1_cm * 1_cm == Approx(93.3).margin(0.1));
+
+  }
+
+  SECTION("InteractionInterface - nuclear projectile") {
+
+    const HEPEnergyType P0 = 60_TeV;
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        Code::Nucleus, 56, 26, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+    MomentumVector plab =
+        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    setup::StackView& view = *viewPtr;
+
+    auto particle = stack->first();
+
+    Interaction model;
+    model.doInteraction(view);
+
+    auto const pSum = sumMomentum(view, cs);
+    
+    CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
+    CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-4));
+
+    CHECK((pSum - plab).getNorm() / 1_GeV ==
+          Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
+    CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
+    
+    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+    CHECK(length / 1_g * 1_cm * 1_cm == Approx(75.2).margin(0.1));
 
   }
 

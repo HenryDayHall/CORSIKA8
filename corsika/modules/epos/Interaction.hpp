@@ -29,6 +29,10 @@ namespace corsika::epos {
     //! CorsikaId of beam particle, CorsikaId of target particle, center-of-mass energy.
     //!  Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
     std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
+        Code const, int const, int const, Code const, int const, int const,
+        HEPEnergyType const) const;
+
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
         Code const, Code const, HEPEnergyType const) const;
 
     template <typename TParticle>
@@ -51,10 +55,14 @@ namespace corsika::epos {
     }
     
     void initialize_eposlhc_c7() const;
-    void initialize_event_CoM(Code const, Code const, HEPEnergyType const) const;
-    void initialize_event_Lab(Code const, Code const, HEPEnergyType const) const;
-    void configure_particles(Code const, Code const) const;
-    
+    void initialize_event_CoM(Code const, int const, int const, Code const, int const,
+			      int const, HEPEnergyType const) const;
+    void initialize_event_Lab(Code const, int const, int const, Code const, int const,
+			      int const, HEPEnergyType const) const;
+    void configure_particles(Code const, int const, int const, Code const, int const,
+                             int const) const;
+    void set_particles_stable() const;
+
   private:
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("epos");
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_epos_Interaction");

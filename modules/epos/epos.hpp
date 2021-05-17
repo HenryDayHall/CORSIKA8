@@ -480,19 +480,27 @@ namespace epos {
     float sigdd;
     } hadr5_;
 
-    
-  /**
-   Small helper class to provide a data-directory name in the format eposlhc expects
-  */
-  class datadir {
-  private:
-    datadir operator=(const std::string& dir);
-    datadir operator=(const datadir&);
+    // integer      mxnody,nrnody,nody
+    // parameter(mxnody=200)
+    // common/nodcy/nrnody,nody(mxnody)
+    unsigned int constexpr mxnody = 200;
+    extern struct {
+      int nrnody;
+      int nody[mxnody];
+    } nodcy_;
 
-  public:
-    datadir(const std::string& dir);
-    char data[500];
-    int length;
+    /**
+     Small helper class to provide a data-directory name in the format eposlhc expects
+    */
+    class datadir {
+    private:
+      datadir operator=(const std::string& dir);
+      datadir operator=(const datadir&);
+
+    public:
+      datadir(const std::string& dir);
+      char data[500];
+      int length;
   };
   }
 } // namespace epos
