@@ -62,6 +62,22 @@ namespace corsika::epos {
     }
   }
 
+  inline bool Interaction::isValidTarget(Code const TargetId) const {
+    if (is_nucleus(TargetId))
+      if (TargetId == Code::Nucleus) {
+        // nuclearExtension for projectiles only
+        CORSIKA_LOGGER_WARN(logger_,
+                            "Invalid target!"
+                            " Code::Nucleus only allowed for "
+                            "projectiles! "
+                            "This should not happen!");
+        return false;
+      } else {
+        return (get_nucleus_Z(TargetId) < maxTargetMassNumber_ ? true : false);
+      }
+    return false;
+  }
+
   inline void Interaction::initialize_eposlhc_c7() const {
 
     CORSIKA_LOGGER_DEBUG(logger_, "initializing...");
@@ -81,8 +97,8 @@ namespace corsika::epos {
     ::epos::cseed_.seedj = 1;
     ::epos::cseed_.seedc = 1;
 
-    ::epos::enrgy_.egymin = 6.;
-    ::epos::enrgy_.egymax = 2.e6;
+    ::epos::enrgy_.egymin = minEnergyCoM_ / 1_GeV; // 6.;
+    ::epos::enrgy_.egymax = maxEnergyCoM_ / 1_GeV; // 2.e6;
 
     ::epos::lhcparameters_();
 
@@ -211,9 +227,13 @@ namespace corsika::epos {
                                                int const iTargetZ) const {
     CORSIKA_LOGGER_TRACE(logger_,
                          "configure_particles: setting "
-                         "Beam={} "
-                         "Target={}",
-                         idBeam, idTarget);
+                         "Beam={}, "
+                         "BeamA={}, "
+                         "BeamZ={}, "
+                         "Target={}"
+                         "TargetA={}, "
+                         "TargetZ={} ",
+                         idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
 
     if (is_nucleus(idBeam)) {
       ::epos::hadr25_.idprojin = convertToEposRaw(Code::Proton);
@@ -272,10 +292,11 @@ namespace corsika::epos {
                                const corsika::HEPEnergyType EnergyCOM) const {
     CORSIKA_LOGGER_DEBUG(logger_,
                          "getCrossSection: input:"
-                         " beam={},"
-                         " target={},"
+                         " beamId={}, beamA={}, beamZ={}"
+                         " target={}, targetA={}, targetZ={}"
                          " Ecm={:4.3f} GeV,",
-                         BeamId, TargetId, EnergyCOM / 1_GeV);
+                         BeamId, BeamA, BeamZ, TargetId, TargetA, TargetZ,
+                         EnergyCOM / 1_GeV);
 
     const int iBeam = corsika::epos::getEposXSCode(
         BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
@@ -284,7 +305,11 @@ namespace corsika::epos {
           "getCrossSection: interaction of beam hadron not defined in "
           "Epos!");
 
-    // reset beam particle // (1: proton-like, 2: pion-like, 3:kaon-like)
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "projectile cross section type={} "
+                         "(0: cannot interact, 1:baryon, 2:pion, 3:kaon, 4:nucleus)",
+                         iBeam);
+    // reset beam particle // (1: proton-like, 2: pion-like, 3:kaon-like, 4:nucleus)
     if (iBeam == 1)
       initialize_event_CoM(Code::Proton, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                            EnergyCOM);
@@ -293,6 +318,9 @@ namespace corsika::epos {
                            EnergyCOM);
     else if (iBeam == 3)
       initialize_event_CoM(Code::KPlus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
+                           EnergyCOM);
+    else if (iBeam == 4)
+      initialize_event_CoM(Code::Nucleus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                            EnergyCOM);
     else
       throw std::runtime_error(

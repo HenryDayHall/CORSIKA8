@@ -28,6 +28,7 @@ namespace corsika::epos {
     Baryon = 1,
     Pion = 2,
     Kaon = 3,
+    Nucleus = 4
   };
   using EposXSClassIntType = std::underlying_type<EposXSClass>::type;
 

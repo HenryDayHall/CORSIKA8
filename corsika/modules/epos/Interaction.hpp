@@ -48,12 +48,10 @@ namespace corsika::epos {
     bool isValidCoMEnergy(HEPEnergyType const ecm) const {
       return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
-    //! eposlhc only accepts nuclei with 4<=A<=18 as targets, or protons aka Hydrogen or
+    //! eposlhc only accepts nuclei with X<=A<=Y as targets, or protons aka Hydrogen or
     //! neutrons (p,n == nucleon)
-    bool isValidTarget(Code const TargetId) const {
-      return false;
-    }
-    
+    bool isValidTarget(Code const) const;
+
     void initialize_eposlhc_c7() const;
     void initialize_event_CoM(Code const, int const, int const, Code const, int const,
 			      int const, HEPEnergyType const) const;
@@ -66,8 +64,8 @@ namespace corsika::epos {
   private:
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("epos");
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_epos_Interaction");
-    HEPEnergyType const minEnergyCoM_ = -10. * 1e9 * electronvolt;
-    HEPEnergyType const maxEnergyCoM_ = -1.e6 * 1e9 * electronvolt;
+    HEPEnergyType const minEnergyCoM_ = 6 * 1e9 * electronvolt;
+    HEPEnergyType const maxEnergyCoM_ = 2.e6 * 1e9 * electronvolt;
     int const maxTargetMassNumber_ = 20;
     int const minNuclearTargetA_ = 4;
   };

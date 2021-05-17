@@ -57,7 +57,7 @@ def set_default_epos_definition(particle_db):
         xsType = "CannotInteract"
         hadronType = "UndefinedType"
         if (pData['isNucleus']):
-            xsType = "Baryon"
+            xsType = "Nucleus"
             hadronType = "NucleusType"
             
             pData['epos_xsType'] = xsType
