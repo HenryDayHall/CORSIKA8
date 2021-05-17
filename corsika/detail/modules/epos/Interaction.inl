@@ -33,7 +33,8 @@ namespace corsika::epos {
     if (dataPath == "") {
       if (std::getenv("CORSIKA_DATA")) {
         data_path_ = std::string(std::getenv("CORSIKA_DATA")) + "/EPOS/";
-        CORSIKA_LOG_DEBUG("Searching for EPOSLHC data tables in {}", data_path_);
+        CORSIKA_LOGGER_DEBUG(logger_, "Searching for EPOSLHC data tables in {}",
+                             data_path_);
       }
     }
 
@@ -46,6 +47,8 @@ namespace corsika::epos {
   }
 
   inline void Interaction::initialize_eposlhc_c7() const {
+
+    CORSIKA_LOGGER_DEBUG(logger_, "initializing...");
 
     // corsika7 ini
     int iarg = 0;
@@ -135,10 +138,10 @@ namespace corsika::epos {
 
   inline void Interaction::initialize_event_CoM(Code const idBeam, Code const idTarget,
                                                 HEPEnergyType const Ecm) const {
-    CORSIKA_LOG_TRACE(
-        "Epos:: initialize event in CoM frame!"
-        " Ecm={}",
-        Ecm);
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "initialize event in CoM frame!"
+                         " Ecm={}",
+                         Ecm);
     ::epos::lept1_.engy = -1.;
     ::epos::enrgy_.ecms = -1.;
     ::epos::enrgy_.elab = -1.;
@@ -146,12 +149,12 @@ namespace corsika::epos {
     ::epos::hadr1_.pnll = -1.;
 
     ::epos::enrgy_.ecms = Ecm / 1_GeV;
-    
-    CORSIKA_LOG_TRACE(
-        "Epos::initialize_event: inside EPOS: "
-        "Ecm={}, "
-        "Elab={}",
-        ::epos::enrgy_.ecms, ::epos::enrgy_.elab);
+
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "initialize_event: inside EPOS: "
+                         "Ecm={}, "
+                         "Elab={}",
+                         ::epos::enrgy_.ecms, ::epos::enrgy_.elab);
 
     configure_particles(idBeam, idTarget);
     ::epos::ainit_();
@@ -159,10 +162,10 @@ namespace corsika::epos {
 
   inline void Interaction::initialize_event_Lab(Code const idBeam, Code const idTarget,
                                                 HEPEnergyType const Plab) const {
-    CORSIKA_LOG_TRACE(
-        "Epos:: initialize event in lab. frame!"
-        " Plab per nuc={} GeV",
-        Plab / 1_GeV);
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "initialize event in lab. frame!"
+                         " Plab per nuc={} GeV",
+                         Plab / 1_GeV);
     ::epos::lept1_.engy = -1.;
     ::epos::enrgy_.ecms = -1.;
     ::epos::enrgy_.elab = -1.;
@@ -172,12 +175,12 @@ namespace corsika::epos {
     // hadron-nucleon momentum
     ::epos::hadr1_.pnll = float(Plab / 1_GeV);
 
-    CORSIKA_LOG_TRACE(
-        "Epos::initialize_event: inside EPOS: "
-        "Ecm={}, "
-        "Elab={}, "
-        "Pnll={}",
-        ::epos::enrgy_.ecms, ::epos::enrgy_.elab, ::epos::hadr1_.pnll);
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "initialize_event: inside EPOS: "
+                         "Ecm={}, "
+                         "Elab={}, "
+                         "Pnll={}",
+                         ::epos::enrgy_.ecms, ::epos::enrgy_.elab, ::epos::hadr1_.pnll);
 
     configure_particles(idBeam, idTarget);
     ::epos::ainit_();
@@ -185,12 +188,12 @@ namespace corsika::epos {
 
   inline void Interaction::configure_particles(Code const idBeam,
                                                Code const idTarget) const {
-    CORSIKA_LOG_TRACE(
-        "configure_particles: setting "
-        "Beam={} "
-        "Target={}",
-        idBeam, idTarget);
-    
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "configure_particles: setting "
+                         "Beam={} "
+                         "Target={}",
+                         idBeam, idTarget);
+
     //   idprojin = idtrafo("pdg","nxs",idpro)
     //   if (idpro.ne.2212) izpro = -1
     //   laproj = izpro      !proj Z
@@ -227,31 +230,32 @@ namespace corsika::epos {
     } else {
       throw std::runtime_error("Epos: configure_particles: target outside range!");
     }
-    CORSIKA_LOG_TRACE(
-        "configure_particles: inside EPOS: "
-        "Id beam={}, "
-        "Z beam={}, "
-        "A beam={}, "
-        "Id target={}, "
-        "Z target={}, "
-        "A target={}",
-        ::epos::hadr25_.idprojin, ::epos::nucl1_.laproj, ::epos::nucl1_.maproj,
-        ::epos::hadr25_.idtargin, ::epos::nucl1_.latarg, ::epos::nucl1_.matarg);
+    CORSIKA_LOGGER_TRACE(logger_,
+                         "configure_particles: inside EPOS: "
+                         "Id beam={}, "
+                         "Z beam={}, "
+                         "A beam={}, "
+                         "Id target={}, "
+                         "Z target={}, "
+                         "A target={}",
+                         ::epos::hadr25_.idprojin, ::epos::nucl1_.laproj,
+                         ::epos::nucl1_.maproj, ::epos::hadr25_.idtargin,
+                         ::epos::nucl1_.latarg, ::epos::nucl1_.matarg);
   }
 
   inline Interaction::~Interaction() {
-    CORSIKA_LOG_DEBUG("Epos::Interaction n={} ", count_);
+    CORSIKA_LOGGER_DEBUG(logger_, "n={} ", count_);
   }
 
   inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
   Interaction::getCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
                                const corsika::HEPEnergyType EnergyCOM) const {
-    CORSIKA_LOG_DEBUG(
-        "getCrossSection: input:"
-        " beam={},"
-        " target={},"
-        " Ecm={:4.3f} GeV,",
-        BeamId, TargetId, EnergyCOM / 1_GeV);
+    CORSIKA_LOGGER_DEBUG(logger_,
+                         "getCrossSection: input:"
+                         " beam={},"
+                         " target={},"
+                         " Ecm={:4.3f} GeV,",
+                         BeamId, TargetId, EnergyCOM / 1_GeV);
 
     const int iBeam = corsika::epos::getEposXSCode(
         BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
@@ -287,11 +291,11 @@ namespace corsika::epos {
     //float sigTot, sigProd, sigEla, sigCut = 0;
     //::epos::crseaaepos_(sigTot, sigProd, sigCut, sigEla);
 
-    CORSIKA_LOG_DEBUG(
-        "getCrossSection: output:"
-        " sigProd={} mb,"
-        " sigEla={} mb",
-        sigProd, sigEla);
+    CORSIKA_LOGGER_DEBUG(logger_,
+                         "getCrossSection: output:"
+                         " sigProd={} mb,"
+                         " sigEla={} mb",
+                         sigProd, sigEla);
 
     return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
 
@@ -323,12 +327,13 @@ namespace corsika::epos {
 
     const corsika::Code corsikaBeamId = projectile.getPID();
     const bool kInteraction = corsika::epos::canInteract(corsikaBeamId);
-    CORSIKA_LOG_DEBUG(
-        "Interaction: LambdaInt: \n"
-        " input energy: {} GeV "
-        " beam can interact: {} "
-        " beam pid: {}",
-        projectile.getEnergy() / 1_GeV, kInteraction, projectile.getPID());
+    CORSIKA_LOGGER_DEBUG(logger_,
+                         "InteractionLength: input: \n"
+                         " energy: {} GeV "
+                         " beam can interact: {} "
+                         " beam pid: {}",
+                         projectile.getEnergy() / 1_GeV, kInteraction,
+                         projectile.getPID());
 
     if (kInteraction) {
       // get target from environment
@@ -363,18 +368,14 @@ namespace corsika::epos {
             return std::get<0>(this->getCrossSection(corsikaBeamId, targetID, ECoM));
           });
 
-      CORSIKA_LOG_DEBUG(
-          "Interaction: "
-          "IntLength: weighted CrossSection (mb): {} ",
-          weightedProdCrossSection / 1_mb);
+      CORSIKA_LOGGER_DEBUG(logger_, "InteractionLength: weighted CrossSection (mb): {} ",
+                           weightedProdCrossSection / 1_mb);
 
       // calculate interaction length in medium
       GrammageType const int_length = mediumComposition.getAverageMassNumber() *
                                       constants::u / weightedProdCrossSection;
-      CORSIKA_LOG_DEBUG(
-          "Interaction: "
-          "interaction length (g/cm2): {} ",
-          int_length / (0.001_kg) * 1_cm * 1_cm);
+      CORSIKA_LOGGER_DEBUG(logger_, "interaction length (g/cm2): {} ",
+                           int_length / (0.001_kg) * 1_cm * 1_cm);
 
       return int_length;
     }
@@ -408,10 +409,7 @@ namespace corsika::epos {
 
       HEPEnergyType const projectileMomentumLabPerNucleon = projectileMomentum / beamA;
 
-      CORSIKA_LOG_DEBUG(
-          "ProcessEPOS: "
-          "DoInteraction: {} interaction ",
-          corsikaBeamId);
+      CORSIKA_LOGGER_DEBUG(logger_, "DoInteraction: {} interaction ", corsikaBeamId);
 
       // define target
       // for Sibyll is always a single nucleon
@@ -420,11 +418,11 @@ namespace corsika::epos {
       const auto pTargetLab = MomentumVector(originalCS, 0_GeV, 0_GeV, 0_GeV);
       const FourVector PtargLab(eTargetLab, pTargetLab);
 
-      CORSIKA_LOG_DEBUG(
+      CORSIKA_LOGGER_DEBUG(logger_,
           "Interaction: ebeam lab: {} GeV"
           "Interaction: pbeam lab: {} GeV",
           eProjectileLab / 1_GeV, pProjectileLab.getComponents());
-      CORSIKA_LOG_DEBUG(
+      CORSIKA_LOGGER_DEBUG(logger_,
           "Interaction: etarget lab: {} GeV "
           "Interaction: ptarget lab: {} GeV",
           eTargetLab / 1_GeV, pTargetLab.getComponents() / 1_GeV);
@@ -444,20 +442,22 @@ namespace corsika::epos {
       // boost target
       [[maybe_unused]] auto const PtargCoM = boost.toCoM(PtargLab);
 
-      CORSIKA_LOG_DEBUG(
+      CORSIKA_LOGGER_DEBUG(
+          logger_,
           "Interaction: ebeam CoM: {} GeV "
           "Interaction: pbeam CoM: {} GeV ",
           PprojCoM.getTimeLikeComponent() / 1_GeV,
           PprojCoM.getSpaceLikeComponents().getComponents(csPrime) / 1_GeV);
-      CORSIKA_LOG_DEBUG(
+      CORSIKA_LOGGER_DEBUG(
+          logger_,
           "Interaction: etarget CoM: {} GeV "
           "Interaction: ptarget CoM: {} GeV ",
           PtargCoM.getTimeLikeComponent() / 1_GeV,
           PtargCoM.getSpaceLikeComponents().getComponents(csPrime) / 1_GeV);
 
-      CORSIKA_LOG_DEBUG("Interaction: position of interaction: {} ",
-                        pOrig.getCoordinates());
-      CORSIKA_LOG_DEBUG("Interaction: time: {} ", tOrig);
+      CORSIKA_LOGGER_DEBUG(logger_, "Interaction: position of interaction: {} ",
+                           pOrig.getCoordinates());
+      CORSIKA_LOGGER_DEBUG(logger_, "Interaction: time: {} ", tOrig);
 
       HEPEnergyType Etot = eProjectileLab + eTargetLab;
       MomentumVector Ptot = projectile.getMomentum();
@@ -486,7 +486,7 @@ namespace corsika::epos {
 
       const auto targetCode =
           mediumComposition.sampleTarget(cross_section_of_components, RNG_);
-      CORSIKA_LOG_DEBUG("Interaction: target selected: {} ", targetCode);
+      CORSIKA_LOGGER_DEBUG(logger_, "Interaction: target selected: {} ", targetCode);
 
       initialize_event_Lab(corsikaBeamId, targetCode, projectileMomentumLabPerNucleon);
 
@@ -548,7 +548,7 @@ namespace corsika::epos {
 
       // secondaries
       EposStack es;
-      CORSIKA_LOG_DEBUG("EPOSLHC number of particles: {}", es.getSize());
+      CORSIKA_LOGGER_DEBUG(logger_, "number of particles: {}", es.getSize());
       // int i=-1;
       for (auto& psec : es) {
         //++i;
@@ -569,16 +569,17 @@ namespace corsika::epos {
         momentum.rebase(originalCS); // transform back into standard lab frame
 
         auto const pid = corsika::epos::convertFromEpos(psec.getPID());
-        CORSIKA_LOG_DEBUG(
-            " id= {}"
-            " p= {}",
-            pid, momentum.getComponents() / 1_GeV);
+        CORSIKA_LOGGER_DEBUG(logger_,
+                             " id= {}"
+                             " p= {}",
+                             pid, momentum.getComponents() / 1_GeV);
         auto pnew =
             view.addSecondary(std::make_tuple(pid, energy, momentum, pOrig, tOrig));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }
-      CORSIKA_LOG_DEBUG(
+      CORSIKA_LOGGER_DEBUG(
+          logger_,
           "conservation (all GeV): Ecm_final= n/a" /* << Ecm_final / 1_GeV*/
           ", Elab_final={}"
           ", Plab_final={}",
