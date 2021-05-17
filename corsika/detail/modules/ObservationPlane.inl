@@ -8,11 +8,12 @@
 
 namespace corsika {
 
-  template <typename TTracking, typename TOutput>
-  ObservationPlane<TTracking, TOutput>::ObservationPlane(Plane const& obsPlane,
-                                                         DirectionVector const& x_axis,
-                                                         bool deleteOnHit)
+  template <typename TOutput>
+  ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
+                                              DirectionVector const& x_axis,
+                                              TOutput& output, bool deleteOnHit)
       : plane_(obsPlane)
+      , output_(output)
       , deleteOnHit_(deleteOnHit)
       , energy_ground_(0_GeV)
       , count_ground_(0)
@@ -49,9 +50,17 @@ namespace corsika {
     Point const pointOfIntersection = step.getPosition(1);
     Vector const displacement = pointOfIntersection - plane_.getCenter();
 
-    // add our particles to the output file stream
-    this->write(particle.getPID(), energy, displacement.dot(xAxis_),
-                displacement.dot(yAxis_), particle.getTime());
+    double const weight = 1.0;
+    Code const pid = particle.getPID();
+    if (pid == Code::Nucleus) {
+      // add our particles to the output file stream
+      output_.write(particle.getNuclearA(), particle.getNuclearZ(), energy,
+                    displacement.dot(xAxis_), displacement.dot(yAxis_), weight);
+    } else {
+      // add our particles to the output file stream
+      output_.write(particle.getPID(), energy, displacement.dot(xAxis_),
+                    displacement.dot(yAxis_), weight);
+    }
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
 
@@ -93,7 +102,7 @@ namespace corsika {
   template <typename TTracking, typename TOutput>
   inline void ObservationPlane<TTracking, TOutput>::showResults() const {
     CORSIKA_LOG_INFO(
-        " ******************************\n"
+        "\n ******************************\n"
         " ObservationPlane: \n"
         " energy an ground (GeV)     :  {}\n"
         " no. of particles at ground :  {}\n"

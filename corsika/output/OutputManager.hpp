@@ -10,15 +10,16 @@
 #include <chrono>
 #include <string>
 #include <boost/filesystem.hpp>
-#include <corsika/output/BaseOutput.hpp>
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/output/BaseOutput.hpp>
+#include <corsika/output/YAMLStreamer.hpp>
 
 namespace corsika {
 
   /*!
    * Manages CORSIKA 8 output streams.
    */
-  class OutputManager final {
+  class OutputManager : public YAMLStreamer {
 
     /**
      * Indicates the current state of this manager.
@@ -29,38 +30,6 @@ namespace corsika {
       ShowerInProgress,
       LibraryFinished,
     };
-
-    OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
-    std::string const name_;                 ///< The name of this simulation file.
-    boost::filesystem::path const root_;     ///< The top-level directory for the output.
-    int count_{0};                           ///< The current ID of this shower.
-    std::chrono::time_point<std::chrono::system_clock> const start_time{
-        std::chrono::system_clock::now()};           ///< The time the manager is created.
-    inline static auto logger{get_logger("output")}; ///< A custom logger.
-    /**
-     * The outputs that have been registered with us.
-     */
-    std::map<std::string, std::reference_wrapper<BaseOutput>> outputs_;
-
-    /**
-     * Write a YAML-node to a file.
-     */
-    void writeNode(YAML::Node const& node, boost::filesystem::path const& path) const;
-
-    /**
-     * Write the top-level config of this simulation.
-     */
-    void writeTopLevelConfig() const;
-
-    /**
-     * Initialize the "registered" output with a given name.
-     */
-    void initOutput(std::string const& name) const;
-
-    /**
-     * Write the top-level summary of this library.
-     */
-    void writeTopLevelSummary() const;
 
   public:
     /**
@@ -76,19 +45,47 @@ namespace corsika {
      */
     ~OutputManager();
 
-    /**
-     * Register an existing output to this manager.
-     *
-     * @param name   The unique name of this output.
-     * @param output The output module.
-     */
     template <typename TOutput>
     void add(std::string const& name, TOutput& output);
 
     /**
+     * Produces the summary YAML.
+     *
+     * @return YAML::Node
+     */
+    YAML::Node getSummary() const;
+
+    /**
+     * Produces the config YAML.
+     *
+     * @return YAML::Node
+     */
+    YAML::Node getConfig() const;
+
+  private:
+    /**
+     * Write the top-level config of this simulation.
+     */
+    void writeConfig() const;
+
+    /**
+     * Write the top-level summary of this library.
+     */
+    void writeSummary() const;
+
+    /**
      * Called at the start of each library.
      *
-     * This iteratively calls startOfLibrary on each registered output.
+     * This iteratively calls startOfLibrary on each registered output relative to the
+     * library direcotry.
+     *
+     * @param dir location of library
+     */
+    void startOfLibrary(boost::filesystem::path const& dir);
+
+  public:
+    /**
+     * Called at the start of each library.
      */
     void startOfLibrary();
 
@@ -109,6 +106,24 @@ namespace corsika {
      * This iteratively calls endOfLibrary on each registered output.
      */
     void endOfLibrary();
+
+    /**
+     * Return current event number.
+     */
+    int getEventId() const;
+
+  private:
+    boost::filesystem::path root_;           ///< The unique output directory.
+    OutputState state_{OutputState::NoInit}; ///< The current state of this manager.
+    std::string const name_;                 ///< The name of this simulation file.
+    int count_{0};                           ///< The current ID of this shower.
+    std::chrono::time_point<std::chrono::system_clock> const start_time{
+        std::chrono::system_clock::now()}; ///< The time the manager is created.
+    inline static auto logger_{get_logger("output")}; ///< A custom logger.
+    /**
+     * The outputs that have been registered here.
+     */
+    std::map<std::string, std::reference_wrapper<BaseOutput>> outputs_;
 
   }; // class OutputManager
 

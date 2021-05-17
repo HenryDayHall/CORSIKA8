@@ -12,15 +12,15 @@
 
 namespace corsika {
 
-  inline ParticleCut::ParticleCut(HEPEnergyType const eEleCut,
-                                  HEPEnergyType const ePhoCut,
-                                  HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
-                                  bool const inv)
-      : doCutEm_(false)
+  template <typename TOutput>
+  inline ParticleCut<TOutput>::ParticleCut(TOutput& output, HEPEnergyType const eEleCut,
+                                           HEPEnergyType const ePhoCut,
+                                           HEPEnergyType const eHadCut,
+                                           HEPEnergyType const eMuCut, bool const inv)
+      : output_(output)
       , doCutInv_(inv)
       , energy_cut_(0_GeV)
       , energy_timecut_(0_GeV)
-      , energy_emcut_(0_GeV)
       , energy_invcut_(0_GeV)
       , em_count_(0)
       , inv_count_(0)
@@ -43,55 +43,14 @@ namespace corsika {
         eEleCut / 1_GeV, ePhoCut / 1_GeV, eHadCut / 1_GeV, eMuCut / 1_GeV);
   }
 
-  inline ParticleCut::ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
-                                  bool const inv)
-      : doCutEm_(true)
-      , doCutInv_(inv)
-      , energy_cut_(0_GeV)
-      , energy_timecut_(0_GeV)
-      , energy_emcut_(0_GeV)
-      , energy_invcut_(0_GeV)
-      , em_count_(0)
-      , inv_count_(0)
-      , energy_count_(0) {
-
-    for (auto p : get_all_particles()) {
-      if (is_hadron(p))
-        set_kinetic_energy_threshold(p, eHadCut);
-      else if (is_muon(p))
-        set_kinetic_energy_threshold(p, eMuCut);
-    }
-    set_kinetic_energy_threshold(Code::Nucleus, eHadCut);
-    CORSIKA_LOG_DEBUG(
-        "setting thresholds: hadrons = {} GeV, "
-        "muons = {} GeV",
-        eHadCut / 1_GeV, eMuCut / 1_GeV);
-  }
-
-  inline ParticleCut::ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv)
-      : doCutEm_(em)
-      , doCutInv_(inv)
-      , energy_cut_(0_GeV)
-      , energy_timecut_(0_GeV)
-      , energy_emcut_(0_GeV)
-      , energy_invcut_(0_GeV)
-      , em_count_(0)
-      , inv_count_(0)
-      , energy_count_(0) {
-    for (auto p : get_all_particles()) set_kinetic_energy_threshold(p, eCut);
-    set_kinetic_energy_threshold(Code::Nucleus, eCut);
-    CORSIKA_LOG_DEBUG("setting kinetic energy threshold for all particles to {} GeV",
-                      eCut / 1_GeV);
-  }
-
-  inline ParticleCut::ParticleCut(
-      std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool const em,
+  template <typename TOutput>
+  inline ParticleCut<TOutput>::ParticleCut(
+      TOutput& output, std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
       bool const inv)
-      : doCutEm_(em)
+      : output_(output)
       , doCutInv_(inv)
       , energy_cut_(0_GeV)
       , energy_timecut_(0_GeV)
-      , energy_emcut_(0_GeV)
       , energy_invcut_(0_GeV)
       , em_count_(0)
       , inv_count_(0)
@@ -100,8 +59,9 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("setting threshold particles individually");
   }
 
+  template <typename TOutput>
   template <typename TParticle>
-  inline bool ParticleCut::isBelowEnergyCut(TParticle const& vP) const {
+  inline bool ParticleCut<TOutput>::isBelowEnergyCut(TParticle const& vP) const {
     auto const energyLab = vP.getKineticEnergy();
     auto const pid = vP.getPID();
     // nuclei
@@ -114,12 +74,14 @@ namespace corsika {
     }
   }
 
-  inline bool ParticleCut::isInvisible(Code const& vCode) const {
+  template <typename TOutput>
+  inline bool ParticleCut<TOutput>::isInvisible(Code const& vCode) const {
     return is_neutrino(vCode);
   }
 
+  template <typename TOutput>
   template <typename TParticle>
-  inline bool ParticleCut::checkCutParticle(TParticle const& particle) {
+  inline bool ParticleCut<TOutput>::checkCutParticle(TParticle const& particle) {
 
     Code const pid = particle.getPID();
     HEPEnergyType const kine_energy = particle.getKineticEnergy();
@@ -158,22 +120,29 @@ namespace corsika {
     return false; // this particle will not be removed/cut
   }
 
-  template <typename TStackView>
-  inline void ParticleCut::doSecondaries(TStackView& vS) {
+
+  template <typename TOutput>
+  inline void ParticleCut<TOutput>::doSecondaries(TStackView& vS) {
     energy_event_ = 0_GeV; // per event counting for printout
     auto particle = vS.begin();
     while (particle != vS.end()) {
-      if (checkCutParticle(particle)) { particle.erase(); }
+      if (checkCutParticle(particle)) {
+        output_.write(particle.getPosition(), particle.getPID(),
+                      particle.getKineticEnergy());
+        particle.erase();
+      }
       ++particle; // next entry in SecondaryView
     }
     CORSIKA_LOG_DEBUG("Event cut: {} GeV", energy_event_ / 1_GeV);
   }
 
   template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn ParticleCut::doContinuous(TParticle& particle, TTrajectory const&,
+  template <typename TOutput>
+  inline ProcessReturn ParticleCut<TOutput>::doContinuous(TParticle& particle, TTrajectory const&,
                                                  bool const) {
-    CORSIKA_LOG_TRACE("ParticleCut::DoContinuous");
     if (checkCutParticle(particle)) {
+      output_.write(particle.getPosition(), particle.getPID(),
+                    particle.getKineticEnergy());
       CORSIKA_LOG_TRACE("removing during continuous");
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;
@@ -181,15 +150,17 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  inline void ParticleCut::printThresholds() {
+  template <typename TOutput>
+  inline void ParticleCut<TOutput>::printThresholds() const {
     for (auto p : get_all_particles()) {
-      auto const Eth = calculate_kinetic_energy_threshold(p);
-      CORSIKA_LOG_INFO("kinetic energy threshold for particle {} is {} GeV", p,
-                       Eth / 1_GeV);
+      auto const Eth = get_kinetic_energy_threshold(p);
+      CORSIKA_LOG_DEBUG("kinetic energy threshold for particle {} is {} GeV", p,
+                        Eth / 1_GeV);
     }
   }
 
-  inline void ParticleCut::showResults() {
+  template <typename TOutput>
+  inline void ParticleCut<TOutput>::showResults() const {
     CORSIKA_LOG_INFO(
         "\n ******************************\n "
         " kinetic energy removed by cut of electromagnetic (GeV): {} (number: {})\n "
@@ -201,9 +172,8 @@ namespace corsika {
         energy_cut_ / 1_GeV, energy_count_, energy_timecut_ / 1_GeV);
   }
 
-  inline void ParticleCut::reset() {
-    energy_emcut_ = 0_GeV;
-    em_count_ = 0;
+  template <typename TOutput>
+  inline void ParticleCut<TOutput>::reset() {
     energy_invcut_ = 0_GeV;
     inv_count_ = 0;
     energy_cut_ = 0_GeV;

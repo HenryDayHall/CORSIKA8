@@ -17,8 +17,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/output/NoOutput.hpp>
-
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>

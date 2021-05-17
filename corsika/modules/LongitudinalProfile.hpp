@@ -12,6 +12,9 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
+#include <corsika/modules/writers/LongitudinalProfileWriterParquet.hpp>
+#include <corsika/modules/writers/LongitudinalProfileWriterOff.hpp>
+
 #include <array>
 #include <fstream>
 #include <limits>
@@ -33,11 +36,11 @@ namespace corsika {
    * boundaries.
    */
 
-  class LongitudinalProfile : public ContinuousProcess<LongitudinalProfile> {
+  template <typename TOutput>
+  class LongitudinalProfile : public ContinuousProcess<LongitudinalProfile<TOutput>> {
 
   public:
-    LongitudinalProfile(ShowerAxis const&,
-                        GrammageType dX = 10_g / square(1_cm)); // profile binning);
+    LongitudinalProfile(TOutput& output);
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(
@@ -49,22 +52,8 @@ namespace corsika {
       return meter * std::numeric_limits<double>::infinity();
     }
 
-    void save(std::string const&, int const width = 14, int const precision = 6);
-
   private:
-    GrammageType const dX_;
-    ShowerAxis const& shower_axis_;
-    using ProfileEntry = std::array<uint32_t, 7>;
-    enum ProfileIndex {
-      Photon = 0,
-      Positron = 1,
-      Electron = 2,
-      MuPlus = 3,
-      MuMinus = 4,
-      Hadron = 5,
-      Invisible = 6,
-    };
-    std::vector<ProfileEntry> profiles_; // longitudinal profile
+    TOutput& output_;
   };
 
 } // namespace corsika

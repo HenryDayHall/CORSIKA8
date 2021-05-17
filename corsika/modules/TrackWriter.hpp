@@ -9,16 +9,16 @@
 #pragma once
 
 #include <corsika/framework/process/ContinuousProcess.hpp>
+#include <corsika/modules/writers/TrackWriterOff.hpp>
 #include <corsika/modules/writers/TrackWriterParquet.hpp>
 
 namespace corsika {
 
-  template <typename TOutputWriter = TrackWriterParquet>
-  class TrackWriter : public ContinuousProcess<TrackWriter<TOutputWriter>>,
-                      public TOutputWriter {
+  template <typename TOutput = TrackWriterOff>
+  class TrackWriter : public ContinuousProcess<TrackWriter<TOutput>> {
 
   public:
-    TrackWriter();
+    TrackWriter(TOutput& output);
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(TParticle const&, TTrack const&, bool const limitFlag);
@@ -27,6 +27,9 @@ namespace corsika {
     LengthType getMaxStepLength(TParticle const&, TTrack const&);
 
     YAML::Node getConfig() const;
+
+  private:
+    TOutput& output_;
   };
 
 } // namespace corsika

@@ -52,7 +52,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   SECTION("cut on particle type: inv") {
 
     // particle cut with 20GeV threshold for all, also cut invisible
-    ParticleCut cut(20_GeV, false, true);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
     CHECK(cut.getHadronKineticECut() == 20_GeV);
 
     // add primary particle to stack
@@ -105,7 +105,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut low energy") {
-    ParticleCut cut(20_GeV, true, true);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
 
     // add primary particle to stack
     auto particle = stack.addParticle(std::make_tuple(
@@ -176,7 +176,7 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
   }
 
   SECTION("cut on time") {
-    ParticleCut cut(20_GeV, false, false);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, false);
     const TimeType too_late = 1_s;
 
     // add primary particle to stack
@@ -206,10 +206,9 @@ TEST_CASE("ParticleCut", "process,continuous,secondary") {
       Line{point0, VelocityVector{rootCS, {0_m / second, 0_m / second, -constants::c}}},
       12_m / constants::c);
 
-  SECTION("cut on DoContinous, just invisibles") {
+  SECTION("cut on doContinous, just invisibles") {
 
-    ParticleCut cut(20_GeV, false, true);
-    CHECK(cut.getHadronKineticECut() == 20_GeV);
+    ParticleCut cut(20_GeV, 20_GeV, 20_GeV, 20_GeV, true);
 
     // add particles, all with energies above the threshold
     // only cut is by species

@@ -22,10 +22,14 @@
 
 namespace corsika {
 
-  inline CONEXhybrid::CONEXhybrid(Point center, ShowerAxis const& showerAxis,
-                                  LengthType groundDist, LengthType injectionHeight,
-                                  HEPEnergyType primaryEnergy, PDGCode primaryPDG)
-      : center_{center}
+  template <typename TOutput, typename TProfileOutput>
+  inline CONEXhybrid<TOutput, TProfileOutput>::CONEXhybrid(
+      TOutput& output, TProfileOutput& profileOutput, Point const& center,
+      ShowerAxis const& showerAxis, LengthType groundDist, LengthType injectionHeight,
+      HEPEnergyType primaryEnergy, PDGCode primaryPDG)
+      : output_{output}
+      , profileOutput_(profileOutput)
+      , center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
       , injectionHeight_{injectionHeight}
@@ -133,7 +137,8 @@ namespace corsika {
   }
 
   template <typename TStackView>
-  inline void CONEXhybrid::doSecondaries(TStackView& vS) {
+  template <typename TOutput, typename TProfileOutput>
+  inline void CONEXhybrid<TOutput, TProfileOutput>::doSecondaries(TStackView& vS) {
     auto p = vS.begin();
     while (p != vS.end()) {
       Code const pid = p.getPID();
@@ -145,9 +150,10 @@ namespace corsika {
     }
   }
 
-  inline bool CONEXhybrid::addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
-                                       Point const& position,
-                                       DirectionVector const& direction, TimeType t) {
+  template <typename TOutput, typename TProfileOutput>
+  inline bool CONEXhybrid<TOutput, TProfileOutput>::addParticle(
+      Code pid, HEPEnergyType energy, HEPEnergyType mass, Point const& position,
+      DirectionVector const& direction, TimeType t) {
 
     auto const it = std::find_if(egs_em_codes_.cbegin(), egs_em_codes_.cend(),
                                  [=](auto const& p) { return pid == p.first; });
@@ -182,7 +188,8 @@ namespace corsika {
     double const v = direction.dot(x_sf_).magnitude();
     double const w = direction.dot(showerAxis_.getDirection()).magnitude();
 
-    double const weight = 1; // NEEDS TO BE CHANGED WHEN WE HAVE WEIGHTS!
+    double const weight =
+        1; // particle.getWeight(); // NEEDS TO BE CHANGED WHEN WE HAVE WEIGHTS!
 
     // generation, TO BE CHANGED WHEN WE HAVE THAT INFORMATION AVAILABLE
     int const latchin = 1;
@@ -233,7 +240,8 @@ namespace corsika {
   }
 
   template <typename TStack>
-  inline void CONEXhybrid::doCascadeEquations(TStack&) {
+  template <typename TOutput, typename TProfileOutput>
+  inline void CONEXhybrid<TOutput, TProfileOutput>::doCascadeEquations(TStack&) {
 
     ::conex::conexcascade_();
 
@@ -268,6 +276,18 @@ namespace corsika {
     ::conex::get_shower_electron_(icute, nX, Electrons[0]);
     ::conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 
+    // make sure CONEX binning is same to C8:
+    GrammageType dX = (X[1] - X[0]) * 1_g / square(1_cm);
+
+    for (int i = 0; i < nX; ++i) {
+      GrammageType curX = X[i] * 1_g / square(1_cm);
+      output_.write(curX, curX + dX, dEdX[i] * 1_GeV / 1_g * square(1_cm) * dX);
+      profileOutput_.write(curX, curX + dX, Code::Photon, Photon[i]);
+      profileOutput_.write(curX, curX + dX, Code::Proton /*hadron*/, Hadrons[i]);
+      profileOutput_.write(curX, curX + dX, Code::Electron, Electrons[i]);
+      profileOutput_.write(curX, curX + dX, Code::MuMinus, Mu[i]);
+    }
+
     std::ofstream file{"conex_output.txt"};
     file << fmt::format("#{:>10} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13}\n", "X",
                         "N", "dEdX", "Mu", "dMu", "Photon", "El", "Had");
@@ -293,8 +313,14 @@ namespace corsika {
     fitout << fitpars[13 - 1] << " # ???" << std::endl;
   }
 
-  inline HEPEnergyType CONEXhybrid::getEnergyEM() const { return energy_em_; }
+  template <typename TOutput, typename TProfileOutput>
+  inline HEPEnergyType CONEXhybrid<TOutput, TProfileOutput>::getEnergyEM() const {
+    return energy_em_;
+  }
 
-  inline void CONEXhybrid::reset() { energy_em_ = 0_GeV; }
+  template <typename TOutput, typename TProfileOutput>
+  inline void CONEXhybrid<TOutput, TProfileOutput>::reset() {
+    energy_em_ = 0_GeV;
+  }
 
 } // namespace corsika

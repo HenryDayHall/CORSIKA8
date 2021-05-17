@@ -60,12 +60,18 @@ namespace corsika {
                                 A * 10); // 10LZZZAAAI
   }
 
+  inline PDGCode constexpr get_PDG(unsigned int const A, unsigned int const Z) {
+    return PDGCode(1000000000 + Z * 10000 + A * 10);
+  }
+
   inline int16_t constexpr get_charge_number(Code const code) {
     if (is_nucleus(code)) return get_nucleus_Z(code);
     return particle::detail::electric_charges[static_cast<CodeIntType>(code)];
   }
 
   inline ElectricChargeType constexpr get_charge(Code const code) {
+    if (code == Code::Nucleus)
+      throw std::runtime_error("charge of particle::Nucleus undefined");
     return get_charge_number(code) * constants::e;
   }
 

@@ -21,8 +21,7 @@ struct TestWriterTrack : public TrackWriterParquet {
   YAML::Node getConfig() const { return YAML::Node(); }
 
   void checkWrite() {
-    TrackWriterParquet::write(Code::Unknown, 1_eV, {2_m, 3_m, 4_m}, 5_s, {6_m, 7_m, 8_m},
-                              9_s);
+    TrackWriterParquet::write(Code::Unknown, 1_eV, 1.0, {2_m, 3_m, 4_m}, {5_m, 6_m, 7_m});
   }
 };
 
@@ -40,9 +39,9 @@ TEST_CASE("TrackWriterParquet") {
 
     TestWriterTrack test;
     test.startOfLibrary("./output_dir_tracks");
-    test.startOfShower();
+    test.startOfShower(0);
     test.checkWrite();
-    test.endOfShower();
+    test.endOfShower(0);
     test.endOfLibrary();
 
     CHECK(boost::filesystem::exists("./output_dir_tracks/tracks.parquet"));

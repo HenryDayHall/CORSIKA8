@@ -22,23 +22,69 @@
 
 namespace corsika {
 
-  inline void OutputManager::writeNode(YAML::Node const& node,
-                                       boost::filesystem::path const& path) const {
+  inline OutputManager::OutputManager(
+      std::string const& name,
+      boost::filesystem::path const& dir = boost::filesystem::current_path())
+      : root_(dir / name)
+      , name_(name)
+      , count_(0) {
 
-    // construct a YAML emitter for this config file
-    YAML::Emitter out;
+    // check if this directory already exists
+    if (boost::filesystem::exists(root_)) {
+      CORSIKA_LOGGER_ERROR(logger_,
+                           "Output directory '{}' already exists! Do not overwrite!.",
+                           root_.string());
+      throw std::runtime_error("Output directory already exists.");
+    }
 
-    // and write the node to the output
-    out << node;
+    // construct the directory for this library
+    boost::filesystem::create_directories(root_);
 
-    // open the output file - this is <output name>.yaml
-    boost::filesystem::ofstream file(path);
-
-    // dump the YAML to the file
-    file << out.c_str() << std::endl;
+    CORSIKA_LOGGER_INFO(logger_, fmt::format("Output library: \"{}\"", root_.string()));
+    writeYAML(getConfig(), root_ / ("config.yaml"));
   }
 
-  inline void OutputManager::writeTopLevelConfig() const {
+  template <typename TOutput>
+  inline void OutputManager::add(std::string const& name, TOutput& output) {
+    // check if that name is already in the map
+    if (outputs_.count(name) > 0) {
+      CORSIKA_LOGGER_ERROR(
+          logger_, "'{}' is already registered. All outputs must have unique names.",
+          name);
+      throw std::runtime_error("Output already exists. Do not overwrite!");
+    }
+
+    // if we get here, the name is not already in the map
+    // so we create the output and register it into the map
+    outputs_.insert(std::make_pair(name, std::ref(output)));
+
+    // create the directory for this process.
+    boost::filesystem::create_directory(root_ / name);
+  }
+
+  inline OutputManager::~OutputManager() {
+
+    if (state_ == OutputState::ShowerInProgress) {
+      // if this the destructor is called before the shower has been explicitly
+      // ended, print a warning and end the shower before continuing.
+      CORSIKA_LOGGER_WARN(logger_,
+                          "OutputManager was destroyed before endOfShower() called."
+                          " The last shower in this libray may be incomplete.");
+      endOfShower();
+    }
+
+    // write the top level summary file (summary.yaml)
+    writeSummary();
+
+    // if we are being destructed but EndOfLibrary() has not been called,
+    // make sure that we gracefully close all the outputs. This is a supported
+    // method of operation so we don't issue a warning here
+    if (state_ == OutputState::LibraryReady) { endOfLibrary(); }
+  }
+
+  inline int OutputManager::getEventId() const { return count_; }
+
+  inline YAML::Node OutputManager::getConfig() const {
 
     YAML::Node config;
 
@@ -47,16 +93,15 @@ namespace corsika {
     config["creator"] = "CORSIKA8";       // a tag to identify C8 libraries
     config["version"] = "8.0.0-prealpha"; // the current version
 
-    // write the node to a file
-    writeNode(config, root_ / ("config.yaml"));
+    return config;
   }
 
-  inline void OutputManager::writeTopLevelSummary() const {
+  inline YAML::Node OutputManager::getSummary() const {
 
-    YAML::Node config;
+    YAML::Node summary;
 
     // the total number of showers contained in the library
-    config["showers"] = count_;
+    summary["showers"] = count_;
 
     // this next section handles writing some time and duration information
 
@@ -81,87 +126,17 @@ namespace corsika {
     auto runtime{end_time - start_time};
 
     // add the time and duration info
-    config["start time"] = timeToString(start_time);
-    config["end time"] = timeToString(end_time);
-    config["runtime"] = fmt::format("{:%H:%M:%S}", runtime);
+    summary["start time"] = timeToString(start_time);
+    summary["end time"] = timeToString(end_time);
+    summary["runtime"] = fmt::format("{:%H:%M:%S}", runtime);
+
+    return summary;
+  }
+
+  inline void OutputManager::writeSummary() const {
 
     // write the node to a file
-    writeNode(config, root_ / ("summary.yaml"));
-  }
-
-  inline void OutputManager::initOutput(std::string const& name) const {
-    // construct the path to this directory
-    auto const path{root_ / name};
-
-    // create the directory for this process.
-    boost::filesystem::create_directory(path);
-
-    // get the config for this output
-    auto config = outputs_.at(name).get().getConfig();
-
-    // and assign the name for this output
-    config["name"] = name;
-
-    // write the config for this output to the file
-    writeNode(config, path / "config.yaml");
-  }
-
-  inline OutputManager::OutputManager(
-      std::string const& name,
-      boost::filesystem::path const& dir = boost::filesystem::current_path())
-      : name_(name)
-      , root_(dir / name) {
-
-    // check if this directory already exists
-    if (boost::filesystem::exists(root_)) {
-      logger->error("Output directory '{}' already exists! Do not overwrite!.",
-                    root_.string());
-      throw std::runtime_error("Output directory already exists.");
-    }
-
-    // construct the directory for this library
-    boost::filesystem::create_directories(root_);
-
-    // write the top level config file
-    writeTopLevelConfig();
-  }
-
-  inline OutputManager::~OutputManager() {
-
-    if (state_ == OutputState::ShowerInProgress) {
-      // if this the destructor is called before the shower has been explicitly
-      // ended, print a warning and end the shower before continuing.
-      logger->warn(
-          "OutputManager was destroyed before endOfShower() called."
-          " The last shower in this libray may be incomplete.");
-      endOfShower();
-    }
-
-    // write the top level summary file (summary.yaml)
-    writeTopLevelSummary();
-
-    // if we are being destructed but EndOfLibrary() has not been called,
-    // make sure that we gracefully close all the outputs. This is a supported
-    // method of operation so we don't issue a warning here
-    if (state_ == OutputState::LibraryReady) { endOfLibrary(); }
-  }
-
-  template <typename TOutput>
-  inline void OutputManager::add(std::string const& name, TOutput& output) {
-
-    // check if that name is already in the map
-    if (outputs_.count(name) > 0) {
-      logger->error("'{}' is already registered. All outputs must have unique names.",
-                    name);
-      throw std::runtime_error("Output already exists. Do not overwrite!");
-    }
-
-    // if we get here, the name is not already in the map
-    // so we create the output and register it into the map
-    outputs_.insert(std::make_pair(name, std::ref(output)));
-
-    // and initialize this output
-    initOutput(name);
+    writeYAML(getSummary(), root_ / ("summary.yaml"));
   }
 
   inline void OutputManager::startOfLibrary() {
@@ -176,15 +151,13 @@ namespace corsika {
     // we now forward this signal to all of our outputs
     for (auto& [name, output] : outputs_) {
 
-      // construct the path to this output subdirectory
-      auto const path{root_ / name};
-
       // and start the library
-      output.get().startOfLibrary(path);
+      output.get().startOfLibrary(root_ / name);
     }
 
     // we have now started running
     state_ = OutputState::LibraryReady;
+    count_ = 0; // event counter
   }
 
   inline void OutputManager::startOfShower() {
@@ -194,15 +167,7 @@ namespace corsika {
     if (state_ == OutputState::NoInit) { startOfLibrary(); }
 
     // now start the event for all the outputs
-    for (auto& [name, output] : outputs_) {
-      {
-        [[maybe_unused]] auto const& dummy_name = name;
-      }
-      output.get().startOfShower();
-    }
-
-    // increment our shower count
-    ++count_;
+    for (auto& [name, output] : outputs_) { output.get().startOfShower(count_); }
 
     // and transition to the in progress state
     state_ = OutputState::ShowerInProgress;
@@ -210,15 +175,13 @@ namespace corsika {
 
   inline void OutputManager::endOfShower() {
 
-    for (auto& [name, output] : outputs_) {
-      {
-        [[maybe_unused]] auto const& dummy_name = name;
-      }
-      output.get().endOfShower();
-    }
+    for (auto& [name, output] : outputs_) { output.get().endOfShower(count_); }
 
     // switch back to the initialized state
     state_ = OutputState::LibraryReady;
+
+    // increment our shower count
+    ++count_;
   }
 
   inline void OutputManager::endOfLibrary() {
@@ -230,12 +193,11 @@ namespace corsika {
 
     // write the summary for each output and forward the endOfLibrary call()
     for (auto& [name, output] : outputs_) {
-
-      // we get the summary for each output as a YAML node
-      auto summary{outputs_.at(name).get().getSummary()};
-
-      // write the summary for this output to the file
-      writeNode(summary, root_ / name / "summary.yaml");
+      // save eventual YAML summary
+      YAML::Node const summary = output.get().getSummary();
+      if (!summary.IsNull()) {
+        writeYAML(output.get().getSummary(), root_ / name / ("summary.yaml"));
+      }
 
       // and forward the end of library call
       output.get().endOfLibrary();
@@ -243,6 +205,6 @@ namespace corsika {
 
     // and the library has finished
     state_ = OutputState::LibraryFinished;
-  }
+  } // namespace corsika
 
 } // namespace corsika

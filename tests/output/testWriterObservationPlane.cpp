@@ -10,20 +10,18 @@
 
 #include <boost/filesystem.hpp>
 
-#include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
+#include <corsika/modules/writers/ParticleWriterParquet.hpp>
 
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/geometry/QuantityVector.hpp>
 
 using namespace corsika;
 
-struct TestWriterPlane : public ObservationPlaneWriterParquet {
+struct TestWriterPlane : public ParticleWriterParquet {
 
   YAML::Node getConfig() const { return YAML::Node(); }
 
-  void checkWrite() {
-    ObservationPlaneWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m, 4_ns);
-  }
+  void checkWrite() { ParticleWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m, 1.0); }
 };
 
 TEST_CASE("ObservationPlaneWriterParquet") {
@@ -40,9 +38,9 @@ TEST_CASE("ObservationPlaneWriterParquet") {
 
     TestWriterPlane test;
     test.startOfLibrary("./output_dir");
-    test.startOfShower();
+    test.startOfShower(0);
     test.checkWrite();
-    test.endOfShower();
+    test.endOfShower(0);
     test.endOfLibrary();
 
     CHECK(boost::filesystem::exists("./output_dir/particles.parquet"));

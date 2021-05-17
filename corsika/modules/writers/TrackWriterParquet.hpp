@@ -32,9 +32,14 @@ namespace corsika {
     void startOfLibrary(boost::filesystem::path const& directory) final override;
 
     /**
+     * Called at the start of each shower.
+     */
+    void startOfShower(unsigned int const showerId) final override;
+
+    /**
      * Called at the end of each shower.
      */
-    void endOfShower() final override;
+    void endOfShower(unsigned int const showerId) final override;
 
     /**
      * Called at the end of each library.
@@ -54,6 +59,7 @@ namespace corsika {
 
   private:
     ParquetStreamer output_; ///< The primary output file.
+    unsigned int showerId_;  ///< event Id counter
 
   }; // class TrackWriterParquet
 

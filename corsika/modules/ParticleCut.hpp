@@ -24,30 +24,40 @@ namespace corsika {
   for each particle. Special constructors for cuts by the following groups are
   implemented: (electrons,positrons), photons, hadrons and muons.
    **/
-  class ParticleCut : public SecondariesProcess<ParticleCut>,
-                      public ContinuousProcess<ParticleCut> {
+  template <typename TOutput = EnergyLossWriterOff>
+  class ParticleCut : public SecondariesProcess<ParticleCut<TOutput>>,
+                      public ContinuousProcess<ParticleCut<TOutput>> {
 
   public:
     /**
      * particle cut with kinetic energy thresholds for electrons, photons,
      *    hadrons (including nuclei with energy per nucleon) and muons
      *    invisible particles (neutrinos) can be cut or not
-     **/
-    ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
+     */
+    ParticleCut(TOutput& output, HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
                 HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv);
 
-    //! simple cut. hadrons and muons are cut by threshold. EM particles are all
-    //! discarded.
-    ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const euCut, bool const inv);
+    /**
+     * Same, but with no output.
+     */
+    ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
+                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv)
+        : ParticleCut(*(new EnergyLossWriterOff()), eEleCut, ePhoCut, eHadCut, eMuCut,
+                      inv) {}
 
-    //! simplest cut. all particles have same threshold. EM particles can be set to be
-    //! discarded altogether.
-    ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv);
-
-    //! threshold for specific particles redefined. EM and invisible particles can be set
-    //! to be discarded altogether.
+    /**
+     * Threshold for specific particles redefined. EM and invisible particles can be set
+     * to be discarded altogether.
+     */
+    ParticleCut(TOutput& output,
+                std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
+                bool const inv);
+    /**
+     * Same, but with no output.
+     */
     ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
-                bool const em, bool const inv);
+                bool const inv)
+        : ParticleCut(*(new EnergyLossWriterOff()), eCuts, inv) {}
 
     template <typename TStackView>
     void doSecondaries(TStackView&);
@@ -62,8 +72,8 @@ namespace corsika {
       return meter * std::numeric_limits<double>::infinity();
     }
 
-    void printThresholds();
-    void showResults(); // LCOV_EXCL_LINE
+    void printThresholds() const;
+    void showResults() const; // LCOV_EXCL_LINE
     void reset();
 
     HEPEnergyType getElectronKineticECut() const {
@@ -84,11 +94,6 @@ namespace corsika {
     HEPEnergyType getTimeCutEnergy() const { return energy_timecut_; }
     //! returns total energy of particles that were removed by cut in kinetic energy
     HEPEnergyType getCutEnergy() const { return energy_cut_; }
-    //! returns total energy of particles that were removed by cut for electromagnetic
-    //! particles
-    HEPEnergyType getEmEnergy() const { return energy_emcut_; }
-    //! returns number of electromagnetic particles
-    unsigned int getNumberEmParticles() const { return em_count_; }
     //! returns number of invisible particles
     unsigned int getNumberInvParticles() const { return inv_count_; }
 
@@ -103,13 +108,11 @@ namespace corsika {
     bool isInvisible(Code const&) const;
 
   private:
-    bool doCutEm_;
+    TOutput& output_;
     bool doCutInv_;
     HEPEnergyType energy_cut_ = 0 * electronvolt;
     HEPEnergyType energy_timecut_ = 0 * electronvolt;
-    HEPEnergyType energy_emcut_ = 0 * electronvolt;
     HEPEnergyType energy_invcut_ = 0 * electronvolt;
-    unsigned int em_count_ = 0;
     unsigned int inv_count_ = 0;
     unsigned int energy_count_ = 0;
 

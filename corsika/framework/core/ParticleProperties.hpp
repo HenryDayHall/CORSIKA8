@@ -109,7 +109,7 @@ namespace corsika {
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
   PDGCode constexpr get_PDG(Code const);
-
+  PDGCode constexpr get_PDG(unsigned int const A, unsigned int const Z);
   std::string_view constexpr get_name(Code const); //!< name of the particle as string
   TimeType constexpr get_lifetime(Code const);     //!< lifetime
 
@@ -117,6 +117,7 @@ namespace corsika {
   bool constexpr is_em(Code const); //!< true if particle is electron, positron or photon
   bool constexpr is_muon(Code const);     //!< true if particle is mu+ or mu-
   bool constexpr is_neutrino(Code const); //!< true if particle is (anti-) neutrino
+  bool constexpr is_charged(Code const); //!< true if particle is charged
 
   /**
    * @brief Creates the Code for a nucleus of type 10LZZZAAAI.

@@ -107,7 +107,7 @@ TEST_CASE("Logging", "[Logging]") {
 
     // these print with the "loggerE" logger
     CORSIKA_LOGGER_INFO(logger, "(8) test macro style logging");
-    CORSIKA_LOGGER_WARN(logger, "(8) test macro style logging");
+    CORSIKA_LOGGER_WARN(logger, "(8) test macro {} logging", "style");
 
     // reset the logging pattern
     logging::reset_pattern(logger);

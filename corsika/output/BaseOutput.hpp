@@ -7,8 +7,8 @@
  */
 #pragma once
 
+#include <corsika/framework/core/Logging.hpp>
 #include <boost/filesystem.hpp>
-
 #include <yaml-cpp/yaml.h>
 
 namespace corsika {
@@ -20,7 +20,8 @@ namespace corsika {
   class BaseOutput {
 
   protected:
-    BaseOutput();
+    BaseOutput() = default;
+    virtual ~BaseOutput() = default;
 
   public:
     /**
@@ -30,13 +31,17 @@ namespace corsika {
 
     /**
      * Called at the start of each event/shower.
+     *
+     * @param showerId Shower counter.
      */
-    virtual void startOfShower() {}
+    virtual void startOfShower(unsigned int const /*showerId*/) {}
 
     /**
      * Called at the end of each event/shower.
+     *
+     * @param showerId Shower counter.
      */
-    virtual void endOfShower() = 0;
+    virtual void endOfShower(unsigned int const showerId) = 0;
 
     /**
      * Called at the end of each run.
@@ -44,19 +49,19 @@ namespace corsika {
     virtual void endOfLibrary() = 0;
 
     /**
-     * Get the configuration of this output.
-     */
-    virtual YAML::Node getConfig() const = 0;
-
-    /**
-     * Get any summary information for the entire library.
-     */
-    virtual YAML::Node getSummary() { return YAML::Node(); }
-
-    /**
      * Flag to indicate readiness.
      */
     bool isInit() const { return is_init_; }
+
+    /**
+     * The output logger.
+     */
+    static auto getLogger() { return logger_; }
+
+    /**
+     * Provide YAML Summary for this BaseOutput.
+     */
+    virtual YAML::Node getSummary() const { return YAML::Node(); }
 
   protected:
     /**
@@ -64,12 +69,9 @@ namespace corsika {
      */
     void setInit(bool const v) { is_init_ = v; }
 
-    int shower_{0}; ///< The current event number.
-
   private:
-    bool is_init_{false}; ///< flag to indicate readiness
+    bool is_init_{false};                             ///< flag to indicate readiness
+    inline static auto logger_{get_logger("output")}; ///< A custom logger.
   };
 
 } // namespace corsika
-
-#include <corsika/detail/output/BaseOutput.inl>

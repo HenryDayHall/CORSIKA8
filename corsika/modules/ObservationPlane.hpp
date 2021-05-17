@@ -36,7 +36,16 @@ namespace corsika {
         public TOutputWriter {
 
   public:
-    ObservationPlane(Plane const&, DirectionVector const&, bool = true);
+    ObservationPlane(Plane const&, DirectionVector const&, TOutput& output, bool = true);
+
+    ObservationPlane(Plane const& p, DirectionVector const& d, bool f = true)
+        : ObservationPlane(p, d, *(new ParticleWriterOff()), f) {
+      ownOutput_ = true;
+    }
+
+    ~ObservationPlane() {
+      if (ownOutput_) delete &output_;
+    }
 
     template <typename TParticle, typename TTrajectory>
     ProcessReturn doContinuous(TParticle& vParticle, TTrajectory& vTrajectory,
@@ -52,6 +61,8 @@ namespace corsika {
 
   private:
     Plane const plane_;
+    TOutput& output_;
+    bool ownOutput_ = false;
     bool const deleteOnHit_;
     HEPEnergyType energy_ground_;
     unsigned int count_ground_;

@@ -20,43 +20,35 @@ using namespace corsika;
 struct DummyNoOutput : public NoOutput {
   void check() {
     NoOutput::startOfLibrary("./");
-    NoOutput::startOfShower();
-    NoOutput::endOfShower();
+    NoOutput::startOfShower(0);
+    NoOutput::endOfShower(0);
     NoOutput::endOfLibrary();
-    NoOutput::getConfig();
-    NoOutput::getSummary();
   }
   void checkWrite() { NoOutput::write(Code::Unknown, 1_eV, 1_m, 1_m, 1_ns); }
 };
 
 struct DummyOutput : public BaseOutput {
 
-  mutable bool isConfig_ = false;
-  mutable bool isSummary_ = false;
   bool startLibrary_ = false;
   bool startShower_ = false;
   bool endLibrary_ = false;
   bool endShower_ = false;
 
-  void startOfLibrary(boost::filesystem::path const&) { startLibrary_ = true; }
+  void startOfLibrary(boost::filesystem::path const&) override { startLibrary_ = true; }
 
-  void startOfShower() {
-    BaseOutput::startOfShower();
+  void startOfShower(unsigned int const shower = 0) override {
+    BaseOutput::startOfShower(shower);
     startShower_ = true;
   }
 
-  void endOfShower() { endShower_ = true; }
+  void endOfShower(unsigned int const) override { endShower_ = true; }
 
-  void endOfLibrary() { endLibrary_ = true; }
+  void endOfLibrary() override { endLibrary_ = true; }
 
-  YAML::Node getConfig() const {
-    isConfig_ = true;
-    return YAML::Node();
-  }
-
-  YAML::Node getSummary() {
-    isSummary_ = true;
-    return BaseOutput::getSummary();
+  YAML::Node getSummary() const final override {
+    YAML::Node summary;
+    summary["test"] = "test";
+    return summary;
   }
 };
 
@@ -83,9 +75,6 @@ TEST_CASE("OutputManager") {
         "test",
         test)); // should emit warning which cannot be catched, but no action or failure
 
-    CHECK(test.isConfig_);
-    test.isConfig_ = false;
-
     output.startOfLibrary();
     CHECK(test.startLibrary_);
     test.startLibrary_ = false;
@@ -100,11 +89,7 @@ TEST_CASE("OutputManager") {
 
     output.endOfLibrary();
     CHECK(test.endLibrary_);
-    CHECK(test.isSummary_);
-    test.isSummary_ = false;
     test.endLibrary_ = false;
-
-    CHECK(boost::filesystem::exists("./out_test/check/test/summary.yaml"));
   }
 
   SECTION("auto-write") {
@@ -144,33 +129,21 @@ TEST_CASE("OutputManager") {
     OutputManager output("check", "./out_test");
     CHECK_THROWS(new OutputManager("check", "./out_test"));
 
-    // CHECK_THROWS(output.startOfShower());
-    // CHECK_THROWS(output.endOfShower());
     CHECK_THROWS(output.endOfLibrary());
 
     output.startOfLibrary();
 
     CHECK_THROWS(output.startOfLibrary());
-    // CHECK_THROWS(output.endOfShower());
-    // CHECK_THROWS(output.endOfLibrary());
 
     output.startOfShower();
 
     CHECK_THROWS(output.startOfLibrary());
-    // CHECK_THROWS(output.startOfShower());
-    // CHECK_THROWS(output.endOfLibrary());
 
     output.endOfShower();
 
     CHECK_THROWS(output.startOfLibrary());
-    // CHECK_THROWS(output.startOfShower());
-    // CHECK_THROWS(output.endOfShower());
 
     output.endOfLibrary();
-
-    // CHECK_THROWS(output.endOfShower());
-    // CHECK_THROWS(output.startOfShower());
-    // CHECK_THROWS(output.endOfLibrary());
   }
 
   SECTION("NoOutput") {
