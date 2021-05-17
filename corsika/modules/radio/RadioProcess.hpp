@@ -91,48 +91,6 @@ namespace corsika {
     }
 
     /**
-     * Decide whether this particle and track is valid for radio emission.
-     */
-    //    template <typename Particle, typename Track>
-    //    auto valid(Particle& particle, Track const& track) const {
-    //
-    //      // loop over the filters in the our collection
-    //      for (auto& filter : filters_) {
-    //        // evaluate the filter. If the filter returns false,
-    //        // then this track is not valid for radio emission.
-    //        if (!filter(particle, track)) return false;
-    //      }
-    //    }
-
-    //    template <typename Particle, typename Track>
-    //    void addFilter(const std::function<bool(Particle&, Track const&)> filter) {
-    //      filters_.push_back(filter);
-    //    }
-
-    // /**
-    //  * TODO: This is placeholder so we can use text output while
-    //  * we wait for the true output formatting to be ready.
-    //  **/
-    // bool writeOutput() const {
-    //   // this for loop still has some issues
-    //   int i = 1;
-    //   for (auto& antenna : antennas_.getAntennas()) {
-
-    //     auto [t, E] = antenna.getWaveform();
-    //     auto c = xt::hstack(xt::xtuple(t, E));
-    //     std::ofstream out_file("antenna" + to_string(i) + "_output.csv");
-    //     xt::dump_csv(out_file, c);
-    //     out_file.close();
-    //     ++i;
-    //   }
-    // how this method should work:
-    // 1. Loop over the antennas in the collection
-    // 2. Get their waveforms
-    // 3. Create a text file for each antenna
-    // 4. and write out two columns, time and field.
-    // }
-
-    /**
      * Return the maximum step length for this particle and track.
      *
      * This must be provided by the TRadioImpl.

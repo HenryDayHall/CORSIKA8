@@ -85,9 +85,6 @@ namespace corsika {
 //      auto const ri_source{1.000327};
       rindex.push_back(ri_source);
       points.push_back(source);
-//      std::cout << "***** SOURCE ri " << rindex.at(0) << "******** SOURCE point " << points.at(0) << std::endl;
-//      std::cout << "--- source + step = " << (source + step - destination).getNorm() << std::endl;
-//      std::cout << "STEPSIZE******" << stepsize << std::endl;
 
       // TODO: Re-think the efficiency of this for loop
       // loop from `source` to `destination` to store values before Simpson's rule.
@@ -95,7 +92,6 @@ namespace corsika {
 //      for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize;
 //           point = point + step) {
 //
-//          std::cout << "**** aaaaaaaaaaaaaaaa: " << point << std::endl;
 //         // get the environment node at this specific 'point'
 //         auto const* node{universe->getContainingNode(point)};
 //
@@ -106,7 +102,6 @@ namespace corsika {
 //
 //         // add this 'point' to our deque collection
 //         points.push_back(point);
-////         std::cout << "pontoi megethos: " << points.size() << std::endl;
 //      }
 
       //add the refractive index of last point 'destination' and store it
@@ -116,12 +111,8 @@ namespace corsika {
       rindex.push_back(ri_destination);
       points.push_back(destination);
 
-//      for (auto const& re : points) {
-//          std::cout << "Point: " << re << std::endl;
-//      }
       // Apply Simpson's rule
       auto N = rindex.size();
-//      std::cout << "rindex.size() is: " << N << std::endl;
       std::size_t index = 0;
       double sum = rindex.at(index);
       auto refra_ = rindex.at(index);
@@ -139,22 +130,15 @@ namespace corsika {
       refra_ += rindex.at(index);
 
       // compute the total time delay.
-//      auto factor {(destination - points.back()).getNorm()};
-//      std::cout << "FACTOR: " << factor << std::endl;
-//      TimeType time = sum * (h / (3 * constants::c)) + (rindex.back() * factor / constants::c);
-        TimeType time = (distance_ / constants::c);
-//      std::cout << "points.back(): " << points.back() << std::endl;
-//      std::cout << "Destination: " << destination << std::endl;
+//      TimeType time = sum * (h / (3 * constants::c));
+      TimeType time = (distance_ / constants::c);
 
       // compute the average refractivity.
       auto averageRefractiveIndex_ = refra_ / N;
-//        auto averageRefractiveIndex_ = 1.;
 
       // refractivity definition: (n - 1)
 
       // realize that emission and receive vector are 'direction' in this case.
-      //TODO: receive and emission vector should have opposite signs! -> done
-//      std::cout << "NNNN: " << index << std::endl;
       return { SignalPath(time, averageRefractiveIndex_, ri_source,  ri_destination,
                          direction , receive_, distance_,points) };
 

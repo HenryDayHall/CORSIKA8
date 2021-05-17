@@ -59,10 +59,10 @@ namespace corsika {
       auto startTime_{particle.getTime()}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
       auto endTime_{particle.getTime() + track.getDuration()};
 
-      // TODO: this should be fixed with the continuous processes new design, so we can get the energy at start and end of track
+      // TODO: this should be fixed with the continuous processes new design, so we can get the energy at start and end of track for corrections
       // gamma factor is calculated using beta
-      //       auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
-      //       auto endGamma_ {1. / sqrt(1. - (endBeta_ * endBeta_))};
+      // auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
+      // auto endGamma_ {1. / sqrt(1. - (endBeta_ * endBeta_))};
 
       // get start and end position of the track
       auto startPoint_{track.getPosition(0)};
@@ -84,9 +84,6 @@ namespace corsika {
 
       // loop over each antenna in the antenna collection (detector)
       for (auto& antenna : antennas_.getAntennas()) {
-
-//        // check with which antenna we work in this loop
-//        std::cout << "ANTENNA: " << antenna.getName() << std::endl;
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
         auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Add the stepsize to .propagate() at some point
@@ -298,13 +295,9 @@ namespace corsika {
             ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))).getComponents()
                                        / preDoppler_ / paths1[i].R_distance_ * constants_ * antenna.sample_rate_;
 
-//            std::cout << "Electric Field Vector START :" << EV1_ << std::endl;
-
             // calculate electric field vector for endpoint
             ElectricFieldVector EV2_ = (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_))).getComponents()
                                        / postDoppler_ / paths2[i].R_distance_ * constants_ * (-1.0) * antenna.sample_rate_;
-
-//            std::cout << "Electric Field Vector END :" << EV2_ << std::endl;
 
             if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
@@ -359,7 +352,6 @@ namespace corsika {
             }       // End of if that checks small doppler factors
 
             std::cout << "--------------  CoREAS  --------------" << std::endl;
-
             antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
             antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
 
@@ -368,7 +360,7 @@ namespace corsika {
         } // End of loop over both paths to get signal info
       } // End of try block
         catch (size_t i) {
-          std::cout << " --- Signal Paths do not have the same size!!! --- " << std::endl;
+          std::cerr << " --- Signal Paths do not have the same size!!! --- " << std::endl;
         }
       } // End of looping over antennas
 
