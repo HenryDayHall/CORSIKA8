@@ -170,7 +170,9 @@ int main(int argc, char** argv) {
   //  EAS.setNodes();
   //  EAS.forceInteraction();
 
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   cut.showResults();
   emContinuous.showResults();

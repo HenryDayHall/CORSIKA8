@@ -164,7 +164,9 @@ int main() {
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
 
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   CORSIKA_LOG_INFO("Result: E0={}GeV", E0 / 1_GeV);
   cut.showResults();

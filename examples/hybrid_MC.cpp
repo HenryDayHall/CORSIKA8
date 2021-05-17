@@ -250,7 +250,9 @@ int main(int argc, char** argv) {
   //  EAS.SetNodes();
   //  EAS.forceInteraction();
 
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   cut.showResults();
   eLoss.showResults();

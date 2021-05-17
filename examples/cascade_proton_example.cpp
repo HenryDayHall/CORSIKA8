@@ -146,7 +146,9 @@ int main() {
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.showResults();

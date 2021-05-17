@@ -295,7 +295,9 @@ int main(int argc, char** argv) {
   // define air shower object, run simulation
   setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   cut.showResults();
   // emContinuous.showResults();
