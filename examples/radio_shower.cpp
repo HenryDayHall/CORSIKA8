@@ -43,15 +43,16 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
+#include <corsika/media/UniformRefractiveIndex.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
 
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
-#include <corsika/modules/ObservationPlane.hpp>
+/* #include <corsika/modules/ObservationPlane.hpp> */
 #include <corsika/modules/OnShellCheck.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/TrackWriter.hpp>
+/* #include <corsika/modules/TrackWriter.hpp> */
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
@@ -59,6 +60,7 @@
 #include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/QGSJetII.hpp>
 
+/* #include <xtensor/xtensor.hpp> */
 #include <corsika/modules/radio/RadioProcess.hpp>
 #include <corsika/modules/radio/CoREAS.hpp>
 #include <corsika/modules/radio/antennas/Antenna.hpp>
@@ -293,9 +295,9 @@ int main(int argc, char** argv) {
 
   LongitudinalProfile longprof{showerAxis};
 
-  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
-                                    "particles.dat");
+  /* Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.})); */
+  /* ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}), */
+  /*                                   "particles.dat"); */
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
@@ -433,15 +435,15 @@ int main(int argc, char** argv) {
     BetheBlochPDG emContinuous(showerAxis);
 
     OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
-    TrackWriter trackWriter;
-    output.add("tracks", trackWriter); // register TrackWriter
+    /* TrackWriter trackWriter; */
+    /* output.add("tracks", trackWriter); */ // register TrackWriter
 
     LongitudinalProfile longprof{showerAxis};
 
-    Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-    ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
+    /* Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.})); */
+    /* ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.})); */
     // register the observation plane with the output
-    output.add("particles", observationLevel);
+    /* output.add("particles", observationLevel); */
 
     // initiate radio process
     RadioProcess<decltype(detector), CoREAS<decltype(detector),
@@ -449,12 +451,12 @@ int main(int argc, char** argv) {
                                             coreas(detector, env);
 
     // register CoREAS with the output manager
-    outputs.add("CoREAS", coreas);
+    output.add("CoREAS", coreas);
 
     auto sequence = make_sequence( // emCascadeCounted,
         stackInspect, hadronSequence, reset_particle_mass, decaySequence,
         // emContinuous,
-        BetheBlochPDG(showerAxis), cut, coreas, trackWriter, observationLevel, longprof);
+        BetheBlochPDG(showerAxis), cut, coreas, longprof);
 
     // define air shower object, run simulation
     setup::Tracking tracking;
@@ -467,13 +469,13 @@ int main(int argc, char** argv) {
 
     cut.showResults();
     // emContinuous.showResults();
-    observationLevel.showResults();
-    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                                 observationLevel.getEnergyGround();
-    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-    observationLevel.reset();
+    /* observationLevel.showResults(); */
+    /* const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() + */
+    /*                              cut.getEmEnergy() + // emContinuous.getEnergyLost() + */
+    /*                              observationLevel.getEnergyGround(); */
+    /* cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl */
+    /*      << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl; */
+    /* observationLevel.reset(); */
     cut.reset();
     // emContinuous.reset();
 
@@ -486,7 +488,5 @@ int main(int argc, char** argv) {
 
     output.endOfLibrary();
 
-    // reset the antenna collection
-    detector.reset();
   }
 }
