@@ -125,7 +125,8 @@ namespace corsika {
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
   }
 
-  inline void CONEXhybrid::doSecondaries(setup::StackView& vS) {
+  template <typename TStackView>
+  inline void CONEXhybrid::doSecondaries(TStackView& vS) {
     auto p = vS.begin();
     while (p != vS.end()) {
       Code const pid = p.getPID();
