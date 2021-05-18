@@ -30,7 +30,6 @@ using namespace std;
 int main() {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CORSIKA_LOG_INFO("stopping_power");
 
@@ -48,15 +47,16 @@ int main() {
       rootCS, 0_m, 0_m,
       112.8_km); // this is the CORSIKA 7 start of atmosphere/universe
 
-  ShowerAxis showerAxis{injectionPos, Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env};
+  ShowerAxis showerAxis{injectionPos, Vector<length_d>{rootCS, 0_m, 0_m, 1_m}, env, false,
+                        100};
   BetheBlochPDG eLoss{showerAxis};
 
   setup::Stack stack;
 
   std::ofstream file("dEdX.dat");
-  file << "# beta*gamma, dE/dX / eV/(g/cm²)" << std::endl;
+  file << "# beta*gamma, dE/dX / MeV/(g/cm²)" << std::endl;
 
-  for (HEPEnergyType E0 = 300_MeV; E0 < 1_PeV; E0 *= 1.05) {
+  for (HEPEnergyType E0 = 200_MeV; E0 < 1_PeV; E0 *= 1.05) {
     stack.clear();
     const Code beamCode = Code::MuPlus;
     const HEPMassType mass = get_mass(beamCode);
@@ -72,16 +72,14 @@ int main() {
                              -ptot * cos(theta));
     };
     auto const [px, py, pz] =
-        momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
+        momentumComponents(theta / 180. * constants::pi, phi / 180. * constants::pi, P0);
     auto plab = MomentumVector(rootCS, {px, py, pz});
-    cout << "input particle: " << beamCode << endl;
-    cout << "input angles: theta=" << theta << " phi=" << phi << endl;
-    cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
 
     stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
 
     auto const p = stack.getNextParticle();
     HEPEnergyType dE = eLoss.getTotalEnergyLoss(p, 1_g / square(1_cm));
-    file << P0 / mass << "\t" << -dE / 1_eV << std::endl;
+    file << P0 / mass << "\t" << -dE / 1_MeV << std::endl;
   }
+  CORSIKA_LOG_INFO("finished writing dEdX.dat");
 }

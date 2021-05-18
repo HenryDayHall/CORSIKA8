@@ -139,7 +139,8 @@ int main(int argc, char** argv) {
             << std::endl;
 
   OutputManager output("em_shower_outputs");
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
+                              false, 1000};
 
   // setup processes, decays and interactions
 
@@ -169,7 +170,9 @@ int main(int argc, char** argv) {
   //  EAS.setNodes();
   //  EAS.forceInteraction();
 
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   cut.showResults();
   emContinuous.showResults();

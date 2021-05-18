@@ -291,8 +291,8 @@ using CombinedTestInterfaceType2 =
     corsika::CombinedParticleInterface<StackTest::pi_type, TestParticleInterface3,
                                        TStackIter>;
 
-using StackTest2 = CombinedStack<typename StackTest::stack_implementation_type,
-                                 TestStackData3, CombinedTestInterfaceType2>;
+using StackTest2 = CombinedStack<typename StackTest::stack_data_type, TestStackData3,
+                                 CombinedTestInterfaceType2>;
 
 TEST_CASE("Combined Stack - multi", "[stack]") {
 
@@ -379,12 +379,12 @@ using CombinedTestInterfaceType2 =
     corsika::CombinedParticleInterface<StackTest::pi_type, TestParticleInterface3,
                                        TStackIter>;
 
-using StackTest2 = CombinedStack<typename StackTest::stack_implementation_type,
-                                 TestStackData3, CombinedTestInterfaceType2>;
+using StackTest2 = CombinedStack<typename StackTest::stack_data_type, TestStackData3,
+                                 CombinedTestInterfaceType2>;
 
 #if defined(__clang__)
-using StackTestView = SecondaryView<typename StackTest2::stack_implementation_type,
-                                    CombinedTestInterfaceType2>;
+using StackTestView =
+    SecondaryView<typename StackTest2::stack_data_type, CombinedTestInterfaceType2>;
 #elif defined(__GNUC__) || defined(__GNUG__)
 using StackTestView = corsika::MakeView<StackTest2>::type;
 #endif

@@ -43,12 +43,15 @@
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
+#include <corsika/modules/OnShellCheck.hpp>
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
+#include <corsika/modules/PROPOSAL.hpp>
+#include <corsika/modules/QGSJetII.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -68,6 +71,7 @@
  */
 #include <corsika/modules/sibyll/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/qgsjetII/Random.hpp>
 
 using namespace corsika;
 using namespace std;
@@ -76,6 +80,7 @@ using Particle = setup::Stack::particle_type;
 
 void registerRandomStreams(const int seed) {
   RNGManager::getInstance().registerRandomStream("cascade");
+  RNGManager::getInstance().registerRandomStream("qgsjet");
   RNGManager::getInstance().registerRandomStream("sibyll");
   RNGManager::getInstance().registerRandomStream("pythia");
   RNGManager::getInstance().registerRandomStream("urqmd");
@@ -98,10 +103,10 @@ int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
 
-  CORSIKA_LOG_INFO("vertical_EAS");
+  CORSIKA_LOG_INFO("corsika");
 
-  if (argc < 4) {
-    std::cerr << "usage: vertical_EAS <A> <Z> <energy/GeV> [seed] \n"
+  if (argc < 5) {
+    std::cerr << "usage: corsika <A> <Z> <energy/GeV> <Nevt> [seed] \n"
                  "       if A=0, Z is interpreted as PDG code \n"
                  "       if no seed is given, a random seed is chosen \n"
               << std::endl;
@@ -110,8 +115,9 @@ int main(int argc, char** argv) {
   feenableexcept(FE_INVALID);
 
   int seed = 0;
+  int number_showers = std::stoi(std::string(argv[4]));
 
-  if (argc > 4) { seed = std::stoi(std::string(argv[4])); }
+  if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
 
   // initialize random number sequence(s)
   registerRandomStreams(seed);
@@ -154,10 +160,10 @@ int main(int argc, char** argv) {
     mass = get_mass(beamCode);
   }
   HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 0.;
+  double theta = 20.;
   double phi = 180.;
-  auto const thetaRad = theta / 180. * constants::pi;
-  auto const phiRad = phi / 180. * constants::pi;
+  auto const thetaRad = theta / 180. * M_PI;
+  auto const phiRad = phi / 180. * M_PI;
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
     return sqrt((Elab - m) * (Elab + m));
@@ -191,17 +197,17 @@ int main(int argc, char** argv) {
 
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.5
+  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.2
             << std::endl;
 
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env, false,
-                              1000};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
 
   // create the output manager that we then register outputs with
-  OutputManager output("vertical_EAS_outputs");
+  OutputManager output("corsika_outputs");
 
   // setup processes, decays and interactions
 
+  // corsika::qgsjetII::Interaction qgsjet;
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
 
@@ -233,90 +239,103 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
+  ParticleCut cut{50_GeV, 50_GeV, 50_GeV, 50_GeV, false};
+  corsika::proposal::Interaction emCascade(env);
+  corsika::proposal::ContinuousProcess emContinuous(env);
+  InteractionCounter emCascadeCounted(emCascade);
+
+  LongitudinalProfile longprof{showerAxis};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
-  StackInspector<setup::Stack> stackInspect(50000, false, E0);
+  StackInspector<setup::Stack> stackInspect(5000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const Particle& p) { return (p.getEnergy() < cutE_); }
+    bool operator()(const Particle& p) { return (p.getKineticEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
+  auto hadronSequence = make_select(EnergySwitch(80_GeV), urqmdCounted,
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
-  // directory for outputs
-  string const labHist_file = "inthist_lab_verticalEAS.npz";
-  string const cMSHist_file = "inthist_cms_verticalEAS.npz";
-  string const longprof_file = "longprof_verticalEAS.txt";
-
-  // setup particle stack, and add primary particle
-  setup::Stack stack;
-  stack.clear();
-
-  if (A > 1) {
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
-
-  } else {
-    if (A == 1) {
-      if (Z == 1) {
-        stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
-      } else if (Z == 0) {
-        stack.addParticle(std::make_tuple(Code::Neutron, plab, injectionPos, 0_ns));
-      } else {
-        std::cerr << "illegal parameters" << std::endl;
-        return EXIT_FAILURE;
-      }
-    } else {
-      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
-    }
-  }
-
-  BetheBlochPDG emContinuous(showerAxis);
-
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
-
-  LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
   // register the observation plane with the output
   output.add("particles", observationLevel);
 
-  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
-                                cut, trackWriter, observationLevel, longprof);
+  auto sequence =
+      make_sequence(stackInspect, hadronSequence, decaySequence, emCascadeCounted,
+                    emContinuous, cut, trackWriter, observationLevel, longprof);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
+  setup::Stack stack;
   Cascade EAS(env, tracking, sequence, output, stack);
-  output.startOfShower();
-  EAS.run();
-  output.endOfShower();
 
-  cut.showResults();
-  // emContinuous.showResults();
-  observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                               observationLevel.getEnergyGround();
-  cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
-       << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
-  observationLevel.reset();
-  cut.reset();
-  // emContinuous.reset();
+  output.startOfLibrary();
 
-  auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
-                     urqmdCounted.getHistogram();
+  for (int i_shower = 1; i_shower < number_showers + 1; i_shower++) {
 
-  save_hist(hists.labHist(), labHist_file, true);
-  save_hist(hists.CMSHist(), cMSHist_file, true);
-  longprof.save(longprof_file);
+    output.startOfShower();
 
+    // directory for outputs
+    string const labHist_file = "inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
+    string const cMSHist_file = "inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
+    string const longprof_file = "longprof_verticalEAS_" + to_string(i_shower) + ".txt";
+
+    CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, number_showers);
+
+    // setup particle stack, and add primary particle
+    stack.clear();
+
+    if (A > 1) {
+      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
+
+    } else {
+      if (A == 1) {
+        if (Z == 1) {
+          stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
+        } else if (Z == 0) {
+          stack.addParticle(std::make_tuple(Code::Neutron, plab, injectionPos, 0_ns));
+        } else {
+          std::cerr << "illegal parameters" << std::endl;
+          return EXIT_FAILURE;
+        }
+      } else {
+        stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
+      }
+    }
+
+    // to fix the point of first interaction, uncomment the following two lines:
+    //  EAS.forceInteraction();
+
+    EAS.run();
+
+    cut.showResults();
+    // emContinuous.showResults();
+    observationLevel.showResults();
+    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
+                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
+                                 observationLevel.getEnergyGround();
+    cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
+         << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
+    observationLevel.reset();
+    cut.reset();
+    // emContinuous.reset();
+
+    auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
+                       urqmdCounted.getHistogram();
+
+    save_hist(hists.labHist(), labHist_file, true);
+    save_hist(hists.CMSHist(), cMSHist_file, true);
+    longprof.save(longprof_file);
+    output.endOfShower();
+  }
   output.endOfLibrary();
 }

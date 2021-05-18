@@ -41,7 +41,7 @@ using StackWithHistoryInterface =
                               TStackIter>;
 
 using TestStack =
-    CombinedStack<typename dummy_stack::DummyStack::stack_implementation_type,
+    CombinedStack<typename dummy_stack::DummyStack::stack_data_type,
                   history::HistoryData<DummyEvent>, StackWithHistoryInterface>;
 
 using EvtPtr = std::shared_ptr<DummyEvent>;

@@ -68,15 +68,14 @@ namespace corsika::sibyll {
     }
   };
 
-  template <typename StackIteratorInterface>
-  class ParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
+  template <typename TStackIterator>
+  class ParticleInterface : public corsika::ParticleBase<TStackIterator> {
 
-    using corsika::ParticleBase<StackIteratorInterface>::getStackData;
-    using corsika::ParticleBase<StackIteratorInterface>::getIndex;
+    using corsika::ParticleBase<TStackIterator>::getStackData;
+    using corsika::ParticleBase<TStackIterator>::getIndex;
 
   public:
-    void setParticleData(const int vID, // corsika::sibyll::SibyllCode vID,
-                         const HEPEnergyType vE, const MomentumVector& vP,
+    void setParticleData(const int vID, const HEPEnergyType vE, const MomentumVector& vP,
                          const HEPMassType vM) {
       setPID(vID);
       setEnergy(vE);
@@ -84,8 +83,7 @@ namespace corsika::sibyll {
       setMass(vM);
     }
 
-    void setParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
-                         const int vID, //  corsika::sibyll::SibyllCode vID,
+    void setParticleData(ParticleInterface<TStackIterator>& /*parent*/, const int vID,
                          const HEPEnergyType vE, const MomentumVector& vP,
                          const HEPMassType vM) {
       setPID(vID);

@@ -153,7 +153,9 @@ int main() {
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
 
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   eLoss.printProfile(); // print longitudinal profile
 

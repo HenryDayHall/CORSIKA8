@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/framework/process/ProcessTraits.hpp>
+#include <corsika/framework/utility/HasMethodSignature.hpp>
 
 namespace corsika {
 
@@ -45,7 +46,7 @@ namespace corsika {
     //! @}
   };
 
-  //! @file BoundaryCrossingProcess.hpp
+  //! @file InteractionProcess.hpp
   //! value traits type
   template <class TProcess, typename TReturn, typename... TArgs>
   bool constexpr has_method_doInteract_v =
@@ -85,7 +86,7 @@ namespace corsika {
     //! @}
   };
 
-  //! @file BoundaryCrossingProcess.hpp
+  //! @file InteractionProcess.hpp
   //! value traits type
 
   template <class TProcess, typename TReturn, typename... TArgs>

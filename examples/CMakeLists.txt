@@ -35,7 +35,7 @@ CORSIKA_REGISTER_EXAMPLE (cascade_proton_example)
 
 add_executable (vertical_EAS vertical_EAS.cpp)
 target_link_libraries (vertical_EAS CORSIKA8::CORSIKA8)
-CORSIKA_REGISTER_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000. 1)
+CORSIKA_REGISTER_EXAMPLE (vertical_EAS RUN_OPTIONS 4 2 10000.)
 
 add_executable (stopping_power stopping_power.cpp)
 target_link_libraries (stopping_power CORSIKA8::CORSIKA8)
@@ -56,3 +56,7 @@ CORSIKA_REGISTER_EXAMPLE (em_shower RUN_OPTIONS "100.")
 add_executable (hybrid_MC hybrid_MC.cpp)
 target_link_libraries (hybrid_MC  CORSIKA8::CORSIKA8)
 CORSIKA_REGISTER_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
+
+add_executable (corsika corsika.cpp)
+target_link_libraries (corsika CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (corsika RUN_OPTIONS 4 2 10000. 1)

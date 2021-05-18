@@ -59,7 +59,6 @@ using namespace std;
 int main() {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   std::cout << "cascade_proton_example" << std::endl;
 
@@ -147,7 +146,9 @@ int main() {
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);
+  output.startOfShower();
   EAS.run();
+  output.endOfShower();
 
   cout << "Result: E0=" << E0 / 1_GeV << endl;
   cut.showResults();

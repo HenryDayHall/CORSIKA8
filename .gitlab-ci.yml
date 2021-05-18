@@ -364,13 +364,16 @@ build_test_example-clang-8:
     - set -o pipefail
     - make -j2 install
   rules:
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: true
     - if: $CI_MERGE_REQUEST_ID
       when: manual
+      allow_failure: true
     - if: $CI_COMMIT_TAG
       when: manual
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_BRANCH
-      when: manual
+      allow_failure: true
   cache:
     paths:
       - ${CI_PROJECT_DIR}/build/
@@ -549,6 +552,7 @@ sanity:
     - corsika
   before_script:
     - apt-get update && apt-get install -y python3-pip
+    - pip3 install --upgrade cython
   script:
     - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
     - pip3 install --user -e '.[test]'  # install the package + test deps

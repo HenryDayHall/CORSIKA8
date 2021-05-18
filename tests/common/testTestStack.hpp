@@ -71,7 +71,7 @@ public:
   */
 
   // default version for particle-creation from input data
-  void setParticleData(const std::tuple<double> v) { setData(std::get<0>(v)); }
+  void setParticleData(std::tuple<double> v) { setData(std::get<0>(v)); }
   void setParticleData(TestParticleInterface<StackIteratorInterface>& /*parent*/,
                        std::tuple<double> v) {
     setData(std::get<0>(v));

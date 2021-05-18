@@ -44,17 +44,17 @@ namespace corsika::qgsjetII {
     void decrementSize();
   };
 
-  template <typename StackIteratorInterface>
-  class ParticleInterface : public corsika::ParticleBase<StackIteratorInterface> {
+  template <typename TStackIterator>
+  class ParticleInterface : public corsika::ParticleBase<TStackIterator> {
 
-    using corsika::ParticleBase<StackIteratorInterface>::getStackData;
-    using corsika::ParticleBase<StackIteratorInterface>::getIndex;
+    using corsika::ParticleBase<TStackIterator>::getStackData;
+    using corsika::ParticleBase<TStackIterator>::getIndex;
 
   public:
     void setParticleData(const int vID, const HEPEnergyType vE, const MomentumVector& vP,
                          const HEPMassType);
-    void setParticleData(ParticleInterface<StackIteratorInterface>& /*parent*/,
-                         const int vID, const HEPEnergyType vE, const MomentumVector& vP,
+    void setParticleData(ParticleInterface<TStackIterator>& /*parent*/, const int vID,
+                         const HEPEnergyType vE, const MomentumVector& vP,
                          const HEPMassType);
 
     void setEnergy(const HEPEnergyType v);

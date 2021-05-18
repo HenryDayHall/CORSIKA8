@@ -72,17 +72,17 @@ namespace corsika {
      loops, ranges, etc.
    */
 
-  template <typename StackData, template <typename> typename MParticleInterface>
+  template <typename TStackData, template <typename> typename MParticleInterface>
   class Stack {
 
-    typedef typename std::remove_reference<StackData>::type value_type;
+    typedef typename std::remove_reference<TStackData>::type value_type;
 
   public:
-    typedef StackData stack_implementation_type; ///< this is the type of the
-                                                 ///< user-provided data structure
+    typedef TStackData stack_data_type; ///< this is the type of the
+                                        ///< user-provided data structure
 
-    template <typename TSI>
-    using pi_type = MParticleInterface<TSI>;
+    template <typename TStackIterator>
+    using pi_type = MParticleInterface<TStackIterator>; // @todo pi_type -> pi_template
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
@@ -122,26 +122,26 @@ namespace corsika {
         delete; ///< since Stack can be very big, we don't want to copy it
 
     /**
-     * if StackData is a reference member we *HAVE* to initialize
+     * if TStackData is a reference member we *HAVE* to initialize
      * it in the constructor, this is typically needed for SecondaryView
      */
-    template <typename UType = StackData,
+    template <typename UType = TStackData,
               typename = typename std::enable_if<std::is_reference<UType>::value>::type>
-    Stack(StackData vD)
+    Stack(TStackData vD)
         : nDeleted_(0)
         , data_(vD)
         , deleted_(std::vector<bool>(data_.getSize(), false)) {}
 
     /**
      * This constructor takes any argument and passes it on to the
-     * StackData user class. If the user did not provide a suited
+     * TStackData user class. If the user did not provide a suited
      * constructor this will fail with an error message.
      *
      * Furthermore, this is disabled with enable_if for SecondaryView
      * stacks, where the inner data container is always a reference
      * and cannot be initialized here.
      */
-    template <typename... TArgs, typename UType = StackData,
+    template <typename... TArgs, typename UType = TStackData,
               typename = typename std::enable_if<std::is_reference<UType>::value>::type>
     Stack(TArgs... args)
         : nDeleted_(0)
@@ -149,7 +149,7 @@ namespace corsika {
         , deleted_(std::vector<bool>(data_.getSize(), false)) {}
 
     /**
-     * @name Most generic proxy methods for StackData data_
+     * @name Most generic proxy methods for TStackData data_
      * @{
      */
     unsigned int getCapacity() const { return data_.getCapacity(); }
@@ -197,7 +197,10 @@ namespace corsika {
     /**
      * increase stack size, create new particle at end of stack
      */
-    template <typename... TArgs>
+    template <typename... TArgs> //,
+    //        typename = std::enable_if_t<std::is_same_v<
+    //      void, std::invoke_result_t<decltype((**stack_iterator_type).setParticleData),
+    //                                 TArgs...>>>>
     stack_iterator_type addParticle(const TArgs... v);
 
     void swap(stack_iterator_type a, stack_iterator_type b);
@@ -277,12 +280,12 @@ namespace corsika {
     /**
      * Function to perform eventual transformation from
      * StackIterator::getIndex() to index in data stored in
-     * StackData data_. By default (and in almost all cases) this
+     * TStackData data_. By default (and in almost all cases) this
      * should just be identiy. See class SecondaryView for an alternative implementation.
      */
     unsigned int getIndexFromIterator(const unsigned int vI) const;
     /**
-     * @name Return reference to StackData object data_ for data access
+     * @name Return reference to TStackData object data_ for data access
      * @{
      */
 
@@ -306,7 +309,7 @@ namespace corsika {
     unsigned int nDeleted_ = 0;
 
   private:
-    StackData data_; ///< this in general holds all the data and can be quite big
+    TStackData data_; ///< this in general holds all the data and can be quite big
     std::vector<bool> deleted_; ///< bit field to flag deleted entries
   };
 
