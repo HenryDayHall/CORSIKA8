@@ -15,8 +15,6 @@
 #include <corsika/modules/qgsjetII/ParticleConversion.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIFragmentsStack.hpp>
 #include <corsika/modules/qgsjetII/QGSJetIIStack.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <sstream>
