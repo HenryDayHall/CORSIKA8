@@ -15,9 +15,6 @@
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 namespace corsika {
   /**
      simple ParticleCut process. Goes through the secondaries of an interaction and
@@ -52,13 +49,16 @@ namespace corsika {
     ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
                 bool const em, bool const inv);
 
-    void doSecondaries(corsika::setup::StackView&);
+    template <typename TStackView>
+    void doSecondaries(TStackView&);
+
+    template <typename TParticle, typename TTrajectory>
     ProcessReturn doContinuous(
-        corsika::setup::Stack::particle_type& vParticle,
-        corsika::setup::Trajectory const& vTrajectory,
+        TParticle& vParticle, TTrajectory const& vTrajectory,
         const bool limitFlag = false); // this is not used for ParticleCut
-    LengthType getMaxStepLength(corsika::setup::Stack::particle_type const&,
-                                corsika::setup::Trajectory const&) {
+
+    template <typename TParticle, typename TTrajectory>
+    LengthType getMaxStepLength(TParticle const&, TTrajectory const&) {
       return meter * std::numeric_limits<double>::infinity();
     }
 
