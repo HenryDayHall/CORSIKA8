@@ -62,6 +62,8 @@ namespace corsika::epos {
 
   HEPMassType getEposMass(corsika::Code const);
 
+  PDGCode getEposPDGId(corsika::Code const);
+
 } // namespace corsika::epos
 
 #include <corsika/detail/modules/epos/ParticleConversion.inl>

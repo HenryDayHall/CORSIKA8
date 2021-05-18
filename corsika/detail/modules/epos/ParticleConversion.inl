@@ -9,7 +9,6 @@
 #pragma once
 
 #include <corsika/framework/core/ParticleProperties.hpp>
-
 #include <epos.hpp>
 
 namespace corsika::epos {
@@ -24,6 +23,17 @@ namespace corsika::epos {
       double mass2;
       ::epos::idmass_(sCode,mass2);
       return sqrt(mass2) * 1_GeV;
+    }
+  }
+
+  inline PDGCode getEposPDGId(Code const p) {
+    if (!is_nucleus(p)) {
+      int eid = corsika::epos::convertToEposRaw(p);
+      char nxs[4] = "nxs";
+      char pdg[4] = "pdg";
+      return static_cast<PDGCode>(::epos::idtrafo_(nxs, pdg, eid));
+    } else {
+      throw std::runtime_error("Epos id conversion not implemented for nuclei!");
     }
   }
 } // namespace corsika::epos

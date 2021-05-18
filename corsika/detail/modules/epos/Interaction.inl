@@ -63,7 +63,7 @@ namespace corsika::epos {
   }
 
   inline bool Interaction::isValidTarget(Code const TargetId) const {
-    if (is_nucleus(TargetId))
+    if (is_nucleus(TargetId)) {
       if (TargetId == Code::Nucleus) {
         // nuclearExtension for projectiles only
         CORSIKA_LOGGER_WARN(logger_,
@@ -75,7 +75,9 @@ namespace corsika::epos {
       } else {
         return (get_nucleus_Z(TargetId) < maxTargetMassNumber_ ? true : false);
       }
-    return false;
+    } else {
+      return false;
+    }
   }
 
   inline void Interaction::initialize_eposlhc_c7() const {
@@ -532,7 +534,11 @@ namespace corsika::epos {
 
       ::epos::afinal_();
 
-      if (epos_listing_) ::epos::alistf_("EPOSLHC&");
+      if (epos_listing_) {
+        //std::string nam = "EPOSLHC&";
+        char nam[9] = "EPOSLHC&";
+        ::epos::alistf_(nam);
+      }
 
       // NSTORE-part
 

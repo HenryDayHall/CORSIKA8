@@ -82,11 +82,9 @@ TEST_CASE("Epos", "[processes]") {
       if (!is_nucleus(p)) {
         int eid = corsika::epos::convertToEposRaw(p);
         if (eid == 0 && p != Code::Unknown)
-          CHECK_FALSE(p == convert_from_PDG(static_cast<PDGCode>(
-                               ::epos::idtrafo_("nxs", "pdg", eid))));
+          CHECK_FALSE(p == convert_from_PDG(getEposPDGId(p)));
         else
-          CHECK(p == convert_from_PDG(
-                         static_cast<PDGCode>(::epos::idtrafo_("nxs", "pdg", eid))));
+          CHECK(p == convert_from_PDG(getEposPDGId(p)));
       }
     }
   }
