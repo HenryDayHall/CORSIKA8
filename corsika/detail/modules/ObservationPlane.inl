@@ -6,9 +6,6 @@
  * the license.
  */
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 namespace corsika {
 
   template <typename TOutput>
