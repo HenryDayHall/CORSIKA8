@@ -19,6 +19,7 @@
 #include <corsika/media/ExponentialRefractiveIndex.hpp>
 
 #include <SetupTestTrajectory.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <catch2/catch.hpp>
 

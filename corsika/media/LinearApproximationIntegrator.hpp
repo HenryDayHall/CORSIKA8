@@ -11,7 +11,7 @@
 #include <limits>
 
 #include <corsika/framework/geometry/Line.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 namespace corsika {
 
@@ -20,12 +20,12 @@ namespace corsika {
     auto const& getImplementation() const;
 
   public:
-    auto getIntegrateGrammage(setup::Trajectory const& line, LengthType length) const;
+    auto getIntegrateGrammage(BaseTrajectory const& line, LengthType length) const;
 
-    auto getArclengthFromGrammage(setup::Trajectory const& line,
+    auto getArclengthFromGrammage(BaseTrajectory const& line,
                                   GrammageType grammage) const;
 
-    auto getMaximumLength(setup::Trajectory const& line,
+    auto getMaximumLength(BaseTrajectory const& line,
                           [[maybe_unused]] double relError) const;
   };
 

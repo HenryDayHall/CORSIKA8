@@ -21,6 +21,7 @@
 #include <catch2/catch.hpp>
 
 #include <SetupTestTrajectory.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
 

@@ -12,8 +12,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 /**
  * a homogeneous medium
@@ -31,10 +30,10 @@ namespace corsika {
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    GrammageType getIntegratedGrammage(setup::Trajectory const&,
+    GrammageType getIntegratedGrammage(BaseTrajectory const&,
                                        LengthType to) const override;
 
-    LengthType getArclengthFromGrammage(setup::Trajectory const&,
+    LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                         GrammageType grammage) const override;
 
   private:

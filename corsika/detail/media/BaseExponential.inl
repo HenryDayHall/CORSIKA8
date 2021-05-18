@@ -21,7 +21,7 @@ namespace corsika {
 
   template <typename TDerived>
   inline GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
-      setup::Trajectory const& traj, LengthType vL, DirectionVector const& axis) const {
+      BaseTrajectory const& traj, LengthType vL, DirectionVector const& axis) const {
     if (vL == LengthType::zero()) { return GrammageType::zero(); }
 
     auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
@@ -36,7 +36,7 @@ namespace corsika {
 
   template <typename TDerived>
   inline LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
-      setup::Trajectory const& traj, GrammageType grammage,
+      BaseTrajectory const& traj, GrammageType grammage,
       DirectionVector const& axis) const {
     auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
     auto const rhoStart = getImplementation().getMassDensity(traj.getPosition(0));

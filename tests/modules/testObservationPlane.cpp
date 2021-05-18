@@ -22,6 +22,7 @@
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
 #include <SetupTestTrajectory.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 using namespace corsika;
 

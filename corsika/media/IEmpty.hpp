@@ -9,7 +9,7 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 namespace corsika {
 
@@ -25,7 +25,8 @@ namespace corsika {
 
   class IEmpty {
   public:
-    virtual LengthType getArclengthFromGrammage(setup::Trajectory const&,
+
+    virtual LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                                 GrammageType) const = 0;
 
     virtual ~IEmpty() {}
@@ -34,7 +35,8 @@ namespace corsika {
   template <typename TModel = IEmpty>
   class Empty : public TModel {
   public:
-    LengthType getArclengthFromGrammage(setup::Trajectory const&, GrammageType) const {
+
+    LengthType getArclengthFromGrammage(BaseTrajectory const&, GrammageType) const {
       return 0. * meter;
     }
   };

@@ -9,25 +9,14 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Line.hpp>
-#include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 namespace corsika {
 
   /**
    *
-   * A Trajectory is a description of a momvement of an object in
-   * three-dimensional space that describes the trajectory (connection
-   * between two Points in space), as well as the direction of motion
-   * at any given point.
-   *
-   * A Trajectory has a start `0` and an end `1`, where
-   * e.g. getPosition(0) returns the start point and getDirection(1)
-   * the direction of motion at the end. Values outside 0...1 are not
-   * defined.
-   *
-   * A Trajectory has a length in [m], getLength, a duration in [s], getDuration.
+   * This implements a straight trajectory between two points.
    *
    * Note: so far it is assumed that the speed (d|vec{r}|/dt) between
    * start and end does not change and is constant for the entire
@@ -35,7 +24,7 @@ namespace corsika {
    *
    **/
 
-  class StraightTrajectory {
+  class StraightTrajectory : public BaseTrajectory {
 
   public:
     StraightTrajectory() = delete;
