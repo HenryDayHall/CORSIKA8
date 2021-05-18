@@ -64,8 +64,8 @@ namespace corsika::proposal {
     }
   }
 
-  inline size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const
-      noexcept {
+  inline size_t ProposalProcessBase::hash::operator()(
+      const calc_key_t& p) const noexcept {
     return p.first ^ std::hash<Code>{}(p.second);
   }
 
