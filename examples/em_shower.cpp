@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
   LongitudinalProfile longprof{showerAxis};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+  ObservationPlane<setup::Tracking> observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
                                     "particles.dat");
   output.add("obsplane", observationLevel);
 

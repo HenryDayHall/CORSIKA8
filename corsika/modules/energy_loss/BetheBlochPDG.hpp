@@ -14,9 +14,6 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <map>
 
 namespace corsika {

@@ -8,8 +8,8 @@
 
 namespace corsika {
 
-  template <typename TOutput>
-  ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
+  template <typename TTracking, typename TOutput>
+  ObservationPlane<TTracking, TOutput>::ObservationPlane(Plane const& obsPlane,
                                               DirectionVector const& x_axis,
                                               bool deleteOnHit)
       : plane_(obsPlane)
@@ -19,9 +19,10 @@ namespace corsika {
       , xAxis_(x_axis.normalized())
       , yAxis_(obsPlane.getNormal().cross(xAxis_)) {}
 
-  template <typename TOutput>
-  inline ProcessReturn ObservationPlane<TOutput>::doContinuous(
-      corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory&,
+  template <typename TTracking, typename TOutput>
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn ObservationPlane<TTracking, TOutput>::doContinuous(
+      TParticle& particle, TTrajectory&,
       bool const stepLimit) {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
@@ -58,17 +59,17 @@ namespace corsika {
     }
   }
 
-  template <typename TOutput>
-  inline LengthType ObservationPlane<TOutput>::getMaxStepLength(
-      corsika::setup::Stack::particle_type const& particle,
-      corsika::setup::Trajectory const& trajectory) {
+  template <typename TTracking, typename TOutput>
+  template <typename TParticle, typename TTrajectory>
+  inline LengthType ObservationPlane<TTracking, TOutput>::getMaxStepLength(
+      TParticle const& particle,
+      TTrajectory const& trajectory) {
 
     CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
                       particle.getPosition(), particle.getDirection(), plane_.asString());
 
-    Intersections const intersection =
-        setup::Tracking::intersect<corsika::setup::Stack::particle_type>(particle,
-                                                                         plane_);
+    auto const intersection = TTracking::intersect(particle, plane_);
+
     TimeType const timeOfIntersection = intersection.getEntry();
     CORSIKA_LOG_TRACE("timeOfIntersection={}", timeOfIntersection);
     if (timeOfIntersection < TimeType::zero()) {
@@ -84,8 +85,8 @@ namespace corsika {
     return dist;
   }
 
-  template <typename TOutput>
-  inline void ObservationPlane<TOutput>::showResults() const {
+  template <typename TTracking, typename TOutput>
+  inline void ObservationPlane<TTracking, TOutput>::showResults() const {
     CORSIKA_LOG_INFO(
         " ******************************\n"
         " ObservationPlane: \n"
@@ -95,8 +96,8 @@ namespace corsika {
         energy_ground_ / 1_GeV, count_ground_);
   }
 
-  template <typename TOutput>
-  inline YAML::Node ObservationPlane<TOutput>::getConfig() const {
+  template <typename TTracking, typename TOutput>
+  inline YAML::Node ObservationPlane<TTracking, TOutput>::getConfig() const {
     using namespace units::si;
 
     // construct the top-level node
@@ -138,8 +139,8 @@ namespace corsika {
     return node;
   }
 
-  template <typename TOutput>
-  inline void ObservationPlane<TOutput>::reset() {
+  template <typename TTracking, typename TOutput>
+  inline void ObservationPlane<TTracking, TOutput>::reset() {
     energy_ground_ = 0_GeV;
     count_ground_ = 0;
   }
