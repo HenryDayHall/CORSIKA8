@@ -14,8 +14,6 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-
 #include <boost/filesystem/path.hpp>
 #include <boost/multi_array.hpp>
 
