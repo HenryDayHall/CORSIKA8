@@ -10,9 +10,6 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
@@ -32,7 +29,8 @@ namespace corsika {
       , shower_axis_(shower_axis)
       , profile_(int(shower_axis.getMaximumX() / dX_) + 1) {}
 
-  inline HEPEnergyType BetheBlochPDG::getBetheBloch(setup::Stack::particle_type const& p,
+  template <typename TParticle>
+  inline HEPEnergyType BetheBlochPDG::getBetheBloch(TParticle const& p,
                                                     GrammageType const dX) {
 
     // all these are material constants and have to come through Environment
@@ -126,21 +124,24 @@ namespace corsika {
   }
 
   // radiation losses according to PDG 2018, ch. 33 ref. [5]
+  template <typename TParticle>
   inline HEPEnergyType BetheBlochPDG::getRadiationLosses(
-      setup::Stack::particle_type const& vP, GrammageType const vDX) {
+      TParticle const& vP, GrammageType const vDX) {
     // simple-minded hard-coded value for b(E) inspired by data from
     // http://pdg.lbl.gov/2018/AtomicNuclearProperties/ for N and O.
     auto constexpr b = 3.0 * 1e-6 * square(1_cm) / 1_g;
     return -vP.getEnergy() * b * vDX;
   }
 
+  template <typename TParticle>
   inline HEPEnergyType BetheBlochPDG::getTotalEnergyLoss(
-      setup::Stack::particle_type const& vP, GrammageType const vDX) {
+      TParticle const& vP, GrammageType const vDX) {
     return getBetheBloch(vP, vDX) + getRadiationLosses(vP, vDX);
   }
 
-  inline ProcessReturn BetheBlochPDG::doContinuous(setup::Stack::particle_type& p,
-                                                   setup::Trajectory const& t,
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn BetheBlochPDG::doContinuous(TParticle& p,
+                                                   TTrajectory const& t,
                                                    bool const) {
 
     // if this step was limiting the CORSIKA stepping, the particle is lost
@@ -170,9 +171,10 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
+  template <typename TParticle, typename TTrajectory>
   inline LengthType BetheBlochPDG::getMaxStepLength(
-      setup::Stack::particle_type const& vParticle,
-      setup::Trajectory const& vTrack) const {
+      TParticle const& vParticle,
+      TTrajectory const& vTrack) const {
     if (vParticle.getChargeNumber() == 0) {
       return meter * std::numeric_limits<double>::infinity();
     }
@@ -195,14 +197,16 @@ namespace corsika {
         vTrack, maxGrammage);
   }
 
-  inline void BetheBlochPDG::updateMomentum(corsika::setup::Stack::particle_type& vP,
+  template <typename TParticle>
+  inline void BetheBlochPDG::updateMomentum(TParticle& vP,
                                             HEPEnergyType Enew) {
     HEPMomentumType Pnew = elab2plab(Enew, vP.getMass());
     auto pnew = vP.getMomentum();
     vP.setMomentum(pnew * Pnew / pnew.getNorm());
   }
 
-  inline void BetheBlochPDG::fillProfile(setup::Trajectory const& vTrack,
+  template <typename TTrajectory>
+  inline void BetheBlochPDG::fillProfile(TTrajectory const& vTrack,
                                          const HEPEnergyType dE) {
 
     GrammageType grammageStart = shower_axis_.getProjectedX(vTrack.getPosition(0));
