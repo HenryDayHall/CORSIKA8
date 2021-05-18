@@ -21,7 +21,6 @@
 
 #include <tuple>
 
-
 namespace corsika::sibyll {
 
   inline Interaction::Interaction(const bool sibyll_printout_on)

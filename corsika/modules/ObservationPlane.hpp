@@ -31,20 +31,19 @@ namespace corsika {
      another more specialized output class.
    */
   template <typename TTracking, typename TOutputWriter = ObservationPlaneWriterParquet>
-  class ObservationPlane : public ContinuousProcess<ObservationPlane<TTracking, TOutputWriter>>,
-                           public TOutputWriter {
+  class ObservationPlane
+      : public ContinuousProcess<ObservationPlane<TTracking, TOutputWriter>>,
+        public TOutputWriter {
 
   public:
     ObservationPlane(Plane const&, DirectionVector const&, bool = true);
 
     template <typename TParticle, typename TTrajectory>
-    ProcessReturn doContinuous(TParticle& vParticle,
-                               TTrajectory& vTrajectory,
+    ProcessReturn doContinuous(TParticle& vParticle, TTrajectory& vTrajectory,
                                bool const stepLimit);
 
     template <typename TParticle, typename TTrajectory>
-    LengthType getMaxStepLength(TParticle const&,
-                                TTrajectory const& vTrajectory);
+    LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);
 
     void showResults() const;
     void reset();

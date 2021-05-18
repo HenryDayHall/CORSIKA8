@@ -125,8 +125,8 @@ namespace corsika {
 
   // radiation losses according to PDG 2018, ch. 33 ref. [5]
   template <typename TParticle>
-  inline HEPEnergyType BetheBlochPDG::getRadiationLosses(
-      TParticle const& vP, GrammageType const vDX) {
+  inline HEPEnergyType BetheBlochPDG::getRadiationLosses(TParticle const& vP,
+                                                         GrammageType const vDX) {
     // simple-minded hard-coded value for b(E) inspired by data from
     // http://pdg.lbl.gov/2018/AtomicNuclearProperties/ for N and O.
     auto constexpr b = 3.0 * 1e-6 * square(1_cm) / 1_g;
@@ -134,14 +134,13 @@ namespace corsika {
   }
 
   template <typename TParticle>
-  inline HEPEnergyType BetheBlochPDG::getTotalEnergyLoss(
-      TParticle const& vP, GrammageType const vDX) {
+  inline HEPEnergyType BetheBlochPDG::getTotalEnergyLoss(TParticle const& vP,
+                                                         GrammageType const vDX) {
     return getBetheBloch(vP, vDX) + getRadiationLosses(vP, vDX);
   }
 
   template <typename TParticle, typename TTrajectory>
-  inline ProcessReturn BetheBlochPDG::doContinuous(TParticle& p,
-                                                   TTrajectory const& t,
+  inline ProcessReturn BetheBlochPDG::doContinuous(TParticle& p, TTrajectory const& t,
                                                    bool const) {
 
     // if this step was limiting the CORSIKA stepping, the particle is lost
@@ -172,9 +171,8 @@ namespace corsika {
   }
 
   template <typename TParticle, typename TTrajectory>
-  inline LengthType BetheBlochPDG::getMaxStepLength(
-      TParticle const& vParticle,
-      TTrajectory const& vTrack) const {
+  inline LengthType BetheBlochPDG::getMaxStepLength(TParticle const& vParticle,
+                                                    TTrajectory const& vTrack) const {
     if (vParticle.getChargeNumber() == 0) {
       return meter * std::numeric_limits<double>::infinity();
     }
@@ -198,8 +196,7 @@ namespace corsika {
   }
 
   template <typename TParticle>
-  inline void BetheBlochPDG::updateMomentum(TParticle& vP,
-                                            HEPEnergyType Enew) {
+  inline void BetheBlochPDG::updateMomentum(TParticle& vP, HEPEnergyType Enew) {
     HEPMomentumType Pnew = elab2plab(Enew, vP.getMass());
     auto pnew = vP.getMomentum();
     vP.setMomentum(pnew * Pnew / pnew.getNorm());

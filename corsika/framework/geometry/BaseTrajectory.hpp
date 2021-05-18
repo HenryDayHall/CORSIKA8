@@ -36,7 +36,6 @@ namespace corsika {
   class BaseTrajectory {
 
   public:
-
     virtual Point getPosition(double const u) const = 0;
 
     virtual VelocityVector getVelocity(double const u) const = 0;
@@ -50,8 +49,6 @@ namespace corsika {
     virtual void setLength(LengthType const limit) = 0;
 
     virtual void setDuration(TimeType const limit) = 0;
-
-
   };
 
 } // namespace corsika

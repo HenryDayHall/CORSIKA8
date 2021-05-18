@@ -36,7 +36,7 @@ namespace corsika::pythia8 {
     std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
         const Code BeamId, const Code TargetId, const HEPEnergyType CoMenergy);
 
-      template <typename TParticle>
+    template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&);
 
     /**

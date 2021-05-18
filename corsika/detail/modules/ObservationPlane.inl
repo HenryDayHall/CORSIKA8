@@ -10,8 +10,8 @@ namespace corsika {
 
   template <typename TTracking, typename TOutput>
   ObservationPlane<TTracking, TOutput>::ObservationPlane(Plane const& obsPlane,
-                                              DirectionVector const& x_axis,
-                                              bool deleteOnHit)
+                                                         DirectionVector const& x_axis,
+                                                         bool deleteOnHit)
       : plane_(obsPlane)
       , deleteOnHit_(deleteOnHit)
       , energy_ground_(0_GeV)
@@ -22,8 +22,7 @@ namespace corsika {
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
   inline ProcessReturn ObservationPlane<TTracking, TOutput>::doContinuous(
-      TParticle& particle, TTrajectory&,
-      bool const stepLimit) {
+      TParticle& particle, TTrajectory&, bool const stepLimit) {
     /*
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
@@ -62,8 +61,7 @@ namespace corsika {
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>
   inline LengthType ObservationPlane<TTracking, TOutput>::getMaxStepLength(
-      TParticle const& particle,
-      TTrajectory const& trajectory) {
+      TParticle const& particle, TTrajectory const& trajectory) {
 
     CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
                       particle.getPosition(), particle.getDirection(), plane_.asString());

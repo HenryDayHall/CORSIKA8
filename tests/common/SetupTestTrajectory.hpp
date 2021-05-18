@@ -43,5 +43,4 @@ namespace corsika::setup::testing {
         tEnd);
   }
 
-
 } // namespace corsika::setup::testing

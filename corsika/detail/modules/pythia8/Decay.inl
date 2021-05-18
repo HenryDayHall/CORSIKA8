@@ -12,7 +12,6 @@
 
 #include <corsika/framework/utility/COMBoost.hpp>
 
-
 namespace corsika::pythia8 {
 
   inline Decay::Decay(bool const print_listing)

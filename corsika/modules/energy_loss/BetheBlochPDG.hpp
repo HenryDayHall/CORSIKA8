@@ -50,8 +50,8 @@ namespace corsika {
      *        globally limiting factor (or not)
      clang-format-on **/
     template <typename TParticle, typename TTrajectory>
-    ProcessReturn doContinuous(TParticle& particle,
-                               TTrajectory const& track, bool const limitFlag);
+    ProcessReturn doContinuous(TParticle& particle, TTrajectory const& track,
+                               bool const limitFlag);
 
     template <typename TParticle, typename TTrajectory>
     LengthType getMaxStepLength(TParticle const&,
@@ -59,16 +59,13 @@ namespace corsika {
         const; //! limited by the energy threshold! By default the limit is the particle
                //! rest mass, i.e. kinetic energy is zero
     template <typename TParticle>
-    static HEPEnergyType getBetheBloch(TParticle const&,
-                                       const GrammageType);
+    static HEPEnergyType getBetheBloch(TParticle const&, const GrammageType);
 
     template <typename TParticle>
-    static HEPEnergyType getRadiationLosses(TParticle const&,
-                                            const GrammageType);
+    static HEPEnergyType getRadiationLosses(TParticle const&, const GrammageType);
 
     template <typename TParticle>
-    static HEPEnergyType getTotalEnergyLoss(TParticle const&,
-                                            const GrammageType);
+    static HEPEnergyType getTotalEnergyLoss(TParticle const&, const GrammageType);
 
     void showResults() const;
     void reset();
@@ -77,7 +74,6 @@ namespace corsika {
     HEPEnergyType getTotal() const;
 
   private:
-
     template <typename TParticle>
     void updateMomentum(TParticle&, HEPEnergyType Enew);
 

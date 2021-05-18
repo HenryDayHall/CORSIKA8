@@ -61,8 +61,7 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    LengthType getArclengthFromGrammage(BaseTrajectory const& line,
-                                        GrammageType grammage,
+    LengthType getArclengthFromGrammage(BaseTrajectory const& line, GrammageType grammage,
                                         DirectionVector const& axis) const;
 
   public:

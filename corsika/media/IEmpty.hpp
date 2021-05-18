@@ -25,7 +25,6 @@ namespace corsika {
 
   class IEmpty {
   public:
-
     virtual LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                                 GrammageType) const = 0;
 
@@ -35,7 +34,6 @@ namespace corsika {
   template <typename TModel = IEmpty>
   class Empty : public TModel {
   public:
-
     LengthType getArclengthFromGrammage(BaseTrajectory const&, GrammageType) const {
       return 0. * meter;
     }

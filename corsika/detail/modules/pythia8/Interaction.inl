@@ -154,8 +154,7 @@ namespace corsika::pythia8 {
   }
 
   template <typename TParticle>
-  inline GrammageType Interaction::getInteractionLength(
-      TParticle const& particle) {
+  inline GrammageType Interaction::getInteractionLength(TParticle const& particle) {
 
     // coordinate system, get global frame of reference
     MomentumVector const& pMomentum = particle.getMomentum();
