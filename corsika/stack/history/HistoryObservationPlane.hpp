@@ -10,8 +10,6 @@
 
 #include <corsika/geometry/Plane.h>
 #include <corsika/process/ContinuousProcess.h>
-#include <corsika/setup/SetupStack.h>
-#include <corsika/setup/SetupTrajectory.h>
 #include <corsika/units/PhysicalUnits.h>
 
 #include <boost/histogram.hpp>
@@ -24,22 +22,26 @@
 
 namespace corsika::history {
 
-  class HistoryObservationPlane : public ContinuousProcess<HistoryObservationPlane> {
+  template <typename TStack>
+  class HistoryObservationPlane
+      : public ContinuousProcess<HistoryObservationPlane<TStack>> {
   public:
-    HistoryObservationPlane(setup::Stack const&, Plane const&, bool = true);
+    HistoryObservationPlane(TStack const&, Plane const&, bool = true);
 
-    LengthType getMaxStepLength(setup::Stack::particle_type const&,
-                                setup::Trajectory const& vTrajectory);
+    template <typename TParticle, typename TTrajectory>
+    LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);
 
-    ProcessReturn doContinuous(setup::Stack::particle_type const& vParticle,
-                               setup::Trajectory const& vTrajectory);
+    template <typename TParticle, typename TTrajectory>
+    ProcessReturn doContinuous(TParticle const& vParticle,
+                               TTrajectory const& vTrajectory);
 
     auto const& histogram() const { return histogram_; }
 
   private:
-    void fillHistoryHistogram(setup::Stack::particle_type const&);
+    template <typename TParticle>
+    void fillHistoryHistogram(TParticle const&);
 
-    setup::Stack const& stack_;
+    TStack const& stack_;
     Plane const plane_;
     bool const deleteOnHit_;
 
