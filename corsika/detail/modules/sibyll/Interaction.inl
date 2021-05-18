@@ -15,18 +15,12 @@
 #include <corsika/framework/geometry/FourVector.hpp>
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
 #include <corsika/modules/sibyll/SibStack.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
 #include <sibyll2.3d.hpp>
 
 #include <tuple>
 
-using namespace corsika;
-using SetupParticle = setup::Stack::stack_iterator_type;
-using SetupView = setup::StackView;
-using Track = setup::Trajectory;
 
 namespace corsika::sibyll {
 
@@ -84,9 +78,9 @@ namespace corsika::sibyll {
     return std::make_tuple(sigProd * 1_mb, sigEla * 1_mb);
   }
 
-  template <>
+  template <typename TParticle>
   inline corsika::GrammageType Interaction::getInteractionLength(
-      SetupParticle const& projectile) const {
+      TParticle const& projectile) const {
 
     const corsika::Code corsikaBeamId = projectile.getPID();
 

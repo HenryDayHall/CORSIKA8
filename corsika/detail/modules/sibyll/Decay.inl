@@ -12,15 +12,8 @@
 #include <corsika/modules/sibyll/ParticleConversion.hpp>
 #include <corsika/modules/sibyll/SibStack.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <iostream>
 #include <vector>
-
-using SetupView = corsika::setup::StackView;
-using SetupProjectile = corsika::setup::StackView::particle_type;
-using SetupParticle = corsika::setup::Stack::particle_type;
 
 namespace corsika::sibyll {
 
