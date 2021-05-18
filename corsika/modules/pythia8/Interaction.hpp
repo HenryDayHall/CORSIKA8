@@ -14,8 +14,6 @@
 #include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/modules/pythia8/Pythia8.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-
 #include <tuple>
 
 namespace corsika::pythia8 {
@@ -38,7 +36,8 @@ namespace corsika::pythia8 {
     std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
         const Code BeamId, const Code TargetId, const HEPEnergyType CoMenergy);
 
-    GrammageType getInteractionLength(corsika::setup::Stack::particle_type const&);
+      template <typename TParticle>
+    GrammageType getInteractionLength(TParticle const&);
 
     /**
        In this function PYTHIA is called to produce one event. The

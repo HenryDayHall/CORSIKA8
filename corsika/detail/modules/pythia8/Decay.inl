@@ -12,8 +12,6 @@
 
 #include <corsika/framework/utility/COMBoost.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
 
 namespace corsika::pythia8 {
 

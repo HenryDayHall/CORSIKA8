@@ -15,8 +15,6 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-
 #include <tuple>
 
 namespace corsika::pythia8 {
@@ -155,8 +153,9 @@ namespace corsika::pythia8 {
     }
   }
 
+  template <typename TParticle>
   inline GrammageType Interaction::getInteractionLength(
-      corsika::setup::Stack::particle_type const& particle) {
+      TParticle const& particle) {
 
     // coordinate system, get global frame of reference
     MomentumVector const& pMomentum = particle.getMomentum();
