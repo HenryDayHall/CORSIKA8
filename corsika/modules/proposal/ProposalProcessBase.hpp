@@ -13,8 +13,6 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
-
 #include <array>
 
 namespace corsika::proposal {
@@ -83,7 +81,8 @@ namespace corsika::proposal {
     //! Store cut and  nuclear composition of the whole universe in media which are
     //! required for creating crosssections by proposal.
     //!
-    ProposalProcessBase(corsika::setup::Environment const& _env);
+    template <typename TEnvironment>
+    ProposalProcessBase(TEnvironment const& _env);
 
     //!
     //! Checks if a particle can be processed by proposal

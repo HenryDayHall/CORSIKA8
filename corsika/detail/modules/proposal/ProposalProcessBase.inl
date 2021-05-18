@@ -12,10 +12,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <cstdlib>
 #include <iostream>
 #include <limits>
@@ -30,7 +26,8 @@ namespace corsika::proposal {
     return false;
   }
 
-  inline ProposalProcessBase::ProposalProcessBase(setup::Environment const& _env)
+  template <typename TEnvironment>
+  inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env)
       : RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {

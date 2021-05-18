@@ -16,11 +16,7 @@
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 
-#include <corsika/media/Environment.hpp>
-
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
-
-#include <array>
 
 namespace corsika::proposal {
 

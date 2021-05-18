@@ -12,10 +12,6 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <limits>
 #include <memory>
 #include <random>
@@ -23,8 +19,8 @@
 
 namespace corsika::proposal {
 
-  template <>
-  inline Interaction::Interaction(setup::Environment const& _env)
+  template <typename TEnvironment>
+  inline Interaction::Interaction(TEnvironment const& _env)
       : ProposalProcessBase(_env) {}
 
   inline void Interaction::buildCalculator(Code code, NuclearComposition const& comp) {
@@ -52,8 +48,8 @@ namespace corsika::proposal {
         PROPOSAL::make_interaction(c, true));
   }
 
-  template <>
-  inline ProcessReturn Interaction::doInteraction(setup::StackView& view) {
+  template <typename TStackView>
+  inline ProcessReturn Interaction::doInteraction(TStackView& view) {
 
     auto const projectile = view.getProjectile();
 
@@ -106,9 +102,8 @@ namespace corsika::proposal {
     return ProcessReturn::Ok;
   }
 
-  template <>
-  inline GrammageType Interaction::getInteractionLength(
-      setup::Stack::particle_type const& projectile) {
+  template <typename TParticle>
+  inline GrammageType Interaction::getInteractionLength(TParticle const& projectile) {
 
     if (canInteract(projectile.getPID())) {
       auto c = getCalculator(projectile, calc);
