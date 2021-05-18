@@ -14,8 +14,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <chrono>
 #include <iomanip>
 #include <iostream>

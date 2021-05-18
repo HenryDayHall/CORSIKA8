@@ -16,6 +16,7 @@
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <../framework/testCascade.hpp> //! \todo fix this
 
