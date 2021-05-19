@@ -76,7 +76,8 @@ namespace corsika::proposal {
     auto deflection = (c->second).scatter->CalculateMultipleScattering(
         grammage / 1_g * square(1_cm), vP.getEnergy() / 1_MeV, E_f / 1_MeV, rnd);
 
-    [[maybe_unused]] auto [unused1, final_direction] = PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
+    [[maybe_unused]] auto [unused1, final_direction] =
+        PROPOSAL::multiple_scattering::ScatterInitialDirection(direction, deflection);
 
     // update particle direction after continuous loss caused by multiple
     // scattering
@@ -111,7 +112,8 @@ namespace corsika::proposal {
     // if the particle has a charge take multiple scattering into account
     if (vP.getChargeNumber() != 0) scatter(vP, dE, dX);
     vP.setEnergy(final_energy);
-    auto new_momentum = sqrt(vP.getEnergy() * vP.getEnergy() - vP.getMass() * vP.getMass());
+    auto new_momentum =
+        sqrt(vP.getEnergy() * vP.getEnergy() - vP.getMass() * vP.getMass());
     vP.setMomentum(vP.getMomentum() * new_momentum / vP.getMomentum().getNorm());
     return ProcessReturn::Ok;
   }
