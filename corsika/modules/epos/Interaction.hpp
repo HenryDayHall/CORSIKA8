@@ -27,13 +27,30 @@ namespace corsika::epos {
 
     //! returns production and elastic cross section for hadrons in epos. Inputs are:
     //! CorsikaId of beam particle, CorsikaId of target particle, center-of-mass energy.
-    //!  Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
-    std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
+    //!  Allowed targets are: nuclei or single nucleons (p,n,hydrogen). This routine
+    //!  calculates the cross sections from scratch. Very slow!
+    std::tuple<CrossSectionType, CrossSectionType> calcCrossSectionCoM(
         Code const, int const, int const, Code const, int const, int const,
         HEPEnergyType const) const;
 
-    std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
-        Code const, Code const, HEPEnergyType const) const;
+    //! returns production and elastic cross section for hadrons in epos by reading
+    //! pre-calculated tables from epos.
+    std::tuple<CrossSectionType, CrossSectionType> readCrossSectionTableLab(
+        Code const, int const, int const, Code const, HEPEnergyType const) const;
+
+    //! returns production and elastic cross section. Allowed configurations are
+    //! hadron-nucleon, hadron-nucleus and nucleus-nucleus. Inputs are particle id's mass
+    //! and charge numbers and total energy in the lab.
+    std::tuple<CrossSectionType, CrossSectionType> getCrossSectionLab(
+        Code const, int const, int const, Code const, int const, int const,
+        HEPEnergyType const) const;
+
+    // std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
+    //     Code const, int const, int const, Code const, int const, int const,
+    //     HEPEnergyType const) const;
+
+    // std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
+    //     Code const, Code const, HEPEnergyType const) const;
 
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&) const;

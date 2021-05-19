@@ -52,8 +52,8 @@ namespace epos {
   void conini_();
   void psaini_();
 
-  void idspin_(int&, int&, int&, int&);
-  void iclass_(int&, int&);
+    //void idspin_(int&, int&, int&, int&);
+    //  void iclass_(int&, int&);
   void emsini_(double&, int&, int&);
   void paramini_(int&);
   void xsigma_();
@@ -488,6 +488,15 @@ namespace epos {
       int nrnody;
       int nody[mxnody];
     } nodcy_;
+
+
+      // integer      iclpro,icltar,iclegy
+      // common/had10/iclpro,icltar,iclegy
+    extern struct {
+      int iclpro;
+      int icltar;
+      int iclegy;
+    } had10_;
 
     /**
      Small helper class to provide a data-directory name in the format eposlhc expects

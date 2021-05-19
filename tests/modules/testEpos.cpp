@@ -119,6 +119,11 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
+auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma,
+              HEPEnergyType const mb){
+  return (sqs * sqs - ma * ma - mb * mb) / 2. / mb;
+}
+
 TEST_CASE("EposInterface", "[processes]") {
 
   corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
@@ -148,17 +153,17 @@ TEST_CASE("EposInterface", "[processes]") {
     CHECK_FALSE(model.isValidTarget(Code::Iron));
     CHECK(model.isValidTarget(Code::Oxygen));
 
-    //  hydrogen target == proton target == neutron target
-    // auto const [xs_prod_pp, xs_ela_pp] =
-    //   model.getCrossSection(Code::Proton, Code::Proton, 100_GeV);
-    // auto const [xs_prod_pn, xs_ela_pn] =
-    //     model.getCrossSection(Code::Proton, Code::Neutron, 100_GeV);
-    // auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
-    //     model.getCrossSection(Code::Proton, 1, 1, Code::Hydrogen, 1, 1, 100_GeV);
-    // CHECK(xs_prod_pp == xs_prod_pHydrogen);
-    // CHECK(xs_prod_pp == xs_prod_pn);
-    // CHECK(xs_ela_pp == xs_ela_pHydrogen);
-    // CHECK(xs_ela_pn == xs_ela_pHydrogen);    
+    // hydrogen target == proton target == neutron target
+    auto const [xs_prod_pp, xs_ela_pp] =
+        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Proton, 1, 1, 100_GeV);
+    auto const [xs_prod_pn, xs_ela_pn] =
+        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Neutron, 1, 0, 100_GeV);
+    auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
+        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Hydrogen, 1, 1, 100_GeV);
+    CHECK(xs_prod_pp == xs_prod_pHydrogen);
+    CHECK(xs_prod_pp == xs_prod_pn);
+    CHECK(xs_ela_pp == xs_ela_pHydrogen);
+    CHECK(xs_ela_pn == xs_ela_pHydrogen);    
   }
 
   SECTION("InteractionInterface - hadron cross sections") {
@@ -166,19 +171,22 @@ TEST_CASE("EposInterface", "[processes]") {
     Interaction model;
     // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
 
-    // p-p at 7TeV
+    // p-p at 7TeV around 70mb according to LHC
     auto const [xs_prod, xs_ela] =
-        model.getCrossSection(Code::Proton, Code::Proton, 7_TeV);
+        model.getCrossSectionLab(Code::Proton, 1, 1, Code::Proton, 1, 1,
+                                 sqs2elab(7_TeV, Proton::mass, Proton::mass));
     CHECK(xs_prod / 1_mb == Approx(70.7).margin(2.1));
 
     // pi-n at 7TeV
     auto const [xs_prod1, xs_ela1] =
-      model.getCrossSection(Code::PiPlus, Code::Neutron, 7_TeV);
+        model.getCrossSectionLab(Code::PiPlus, 0, 0, Code::Neutron, 1, 0,
+                                 sqs2elab(7_TeV, PiPlus::mass, Neutron::mass));
     CHECK(xs_prod1 / 1_mb == Approx(52.7).margin(2.1));
 
     // k-p at 7TeV
     auto const [xs_prod2, xs_ela2] =
-      model.getCrossSection(Code::KPlus, Code::Proton, 7_TeV);
+        model.getCrossSectionLab(Code::KPlus, 0, 0, Code::Proton, 1, 1,
+                                 sqs2elab(7_TeV, KPlus::mass, Proton::mass));
     CHECK(xs_prod2 / 1_mb == Approx(45.7).margin(2.1));    
   }
 
@@ -187,15 +195,20 @@ TEST_CASE("EposInterface", "[processes]") {
     Interaction model;
     // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
 
-    auto const [xs_prod, xs_ela] =
-        model.getCrossSection(Code::Proton, Code::Oxygen, 100_GeV);
-    CHECK(xs_prod / 1_mb == Approx(327.7).margin(5.1));
+    auto const [xs_prod, xs_ela] = model.getCrossSectionLab(
+        Code::Proton, 1, 1, Code::Oxygen, Oxygen::nucleus_A, Oxygen::nucleus_Z, 100_GeV);
+    CHECK(xs_prod / 1_mb == Approx(287.0).margin(5.1));
 
-    auto const [xs_prod2, xs_ela2] = model.getCrossSection(
+    auto const [xs_prod2, xs_ela2] = model.getCrossSectionLab(
         Code::Nitrogen, Nitrogen::nucleus_A, Nitrogen::nucleus_Z, Code::Oxygen,
-        Oxygen::nucleus_A, Oxygen::nucleus_Z, 10_GeV);
+        Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
     CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
 
+    // nuclear stack extension, particle "Nucleus"
+    auto const [xs_prod3, xs_ela3] = model.getCrossSectionLab(
+        Code::Nucleus, Nitrogen::nucleus_A, Nitrogen::nucleus_Z, Code::Oxygen,
+        Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
+    CHECK(xs_prod2 / xs_prod3 == 1);
   }
   
   SECTION("InteractionInterface - low energy") {
@@ -252,8 +265,7 @@ TEST_CASE("EposInterface", "[processes]") {
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
     
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-    CHECK(length / 1_g * 1_cm * 1_cm == Approx(12.8).margin(0.1));
+    CHECK(length / 1_g * 1_cm * 1_cm == Approx(12.8).margin(4.1));
 
   }
-
 }

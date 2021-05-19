@@ -25,10 +25,10 @@ namespace corsika::epos {
    */
   enum class EposXSClass : int8_t {
     CannotInteract = 0,
-    Baryon = 1,
-    Pion = 2,
+    Baryon = 2,
+    Pion = 1,
     Kaon = 3,
-    Nucleus = 4
+    Charm = 4,
   };
   using EposXSClassIntType = std::underlying_type<EposXSClass>::type;
 
