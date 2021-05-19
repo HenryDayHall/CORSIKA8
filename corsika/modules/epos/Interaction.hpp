@@ -69,14 +69,14 @@ namespace corsika::epos {
     //! neutrons (p,n == nucleon)
     bool isValidTarget(Code const) const;
 
-    void initialize_eposlhc_c7() const;
-    void initialize_event_CoM(Code const, int const, int const, Code const, int const,
+    void initialize() const;
+    void initializeEventCoM(Code const, int const, int const, Code const, int const,
 			      int const, HEPEnergyType const) const;
-    void initialize_event_Lab(Code const, int const, int const, Code const, int const,
+    void initializeEventLab(Code const, int const, int const, Code const, int const,
 			      int const, HEPEnergyType const) const;
-    void configure_particles(Code const, int const, int const, Code const, int const,
+    void configureParticles(Code const, int const, int const, Code const, int const,
                              int const) const;
-    void set_particles_stable() const;
+    void setParticlesStable() const;
 
   private:
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("epos");

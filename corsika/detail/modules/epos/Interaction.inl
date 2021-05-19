@@ -43,13 +43,13 @@ namespace corsika::epos {
     // initialize Eposlhc
     static bool initialized = false;
     if (!initialized) {
-      initialize_eposlhc_c7();
+      initialize();
       initialized = true;
     }
-    set_particles_stable();
+    setParticlesStable();
   }
 
-  inline void Interaction::set_particles_stable() const {
+  inline void Interaction::setParticlesStable() const {
     CORSIKA_LOGGER_DEBUG(logger_,
                          "set all particles known to CORSIKA stable inside EPOS..");
     for (auto& p : get_all_particles()) {
@@ -80,7 +80,7 @@ namespace corsika::epos {
     }
   }
 
-  inline void Interaction::initialize_eposlhc_c7() const {
+  inline void Interaction::initialize() const {
 
     CORSIKA_LOGGER_DEBUG(logger_, "initializing...");
 
@@ -165,11 +165,11 @@ namespace corsika::epos {
     //::epos::ainit_();
 
     // dummy event (prepare commons)
-    initialize_event_Lab(Code::Iron, Iron::nucleus_A, Iron::nucleus_Z, Code::Argon,
+    initializeEventLab(Code::Iron, Iron::nucleus_A, Iron::nucleus_Z, Code::Argon,
                          Argon::nucleus_A, Argon::nucleus_Z, 100_GeV);
   }
 
-  inline void Interaction::initialize_event_CoM(Code const idBeam, int const iBeamA,
+  inline void Interaction::initializeEventCoM(Code const idBeam, int const iBeamA,
                                                 int const iBeamZ, Code const idTarget,
                                                 int const iTargetA, int const iTargetZ,
                                                 HEPEnergyType const Ecm) const {
@@ -186,16 +186,16 @@ namespace corsika::epos {
     ::epos::enrgy_.ecms = Ecm / 1_GeV;
 
     CORSIKA_LOGGER_TRACE(logger_,
-                         "initialize_event: inside EPOS: "
+                         "inside EPOS: "
                          "Ecm={}, "
                          "Elab={}",
                          ::epos::enrgy_.ecms, ::epos::enrgy_.elab);
 
-    configure_particles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
+    configureParticles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
     ::epos::ainit_();
   }
 
-  inline void Interaction::initialize_event_Lab(Code const idBeam, int const iBeamA,
+  inline void Interaction::initializeEventLab(Code const idBeam, int const iBeamA,
                                                 int const iBeamZ, Code const idTarget,
                                                 int const iTargetA, int const iTargetZ,
                                                 HEPEnergyType const Plab) const {
@@ -213,22 +213,22 @@ namespace corsika::epos {
     ::epos::hadr1_.pnll = float(Plab / 1_GeV);
 
     CORSIKA_LOGGER_TRACE(logger_,
-                         "initialize_event: inside EPOS: "
+                         "inside EPOS: "
                          "Ecm={}, "
                          "Elab={}, "
                          "Pnll={}",
                          ::epos::enrgy_.ecms, ::epos::enrgy_.elab, ::epos::hadr1_.pnll);
 
-    configure_particles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
+    configureParticles(idBeam, iBeamA, iBeamZ, idTarget, iTargetA, iTargetZ);
     ::epos::ainit_();
   }
 
-  inline void Interaction::configure_particles(Code const idBeam, int const iBeamA,
+  inline void Interaction::configureParticles(Code const idBeam, int const iBeamA,
                                                int const iBeamZ, Code const idTarget,
                                                int const iTargetA,
                                                int const iTargetZ) const {
     CORSIKA_LOGGER_TRACE(logger_,
-                         "configure_particles: setting "
+                         "setting "
                          "Beam={}, "
                          "BeamA={}, "
                          "BeamZ={}, "
@@ -265,10 +265,10 @@ namespace corsika::epos {
       ::epos::nucl1_.latarg = -1;
       ::epos::had10_.icltar = corsika::epos::getEposXSCode(Code::Proton);
     } else {
-      throw std::runtime_error("Epos: configure_particles: target outside range!");
+      throw std::runtime_error("Epos: target outside range!");
     }
     CORSIKA_LOGGER_TRACE(logger_,
-                         "configure_particles: inside EPOS: "
+                         "inside EPOS: "
                          "Id beam={}, "
                          "Z beam={}, "
                          "A beam={}, "
@@ -321,17 +321,14 @@ namespace corsika::epos {
                          iBeam);
     // reset beam particle // (1: pion-like, 2: proton-like, 3:kaon-like)
     if (iBeam == 1)
-      initialize_event_CoM(Code::PiPlus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
+      initializeEventCoM(Code::PiPlus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                            EnergyCOM);
     else if (iBeam == 2)
-      initialize_event_CoM(Code::Proton, BeamA, BeamZ, TargetId, TargetA, TargetZ,
+      initializeEventCoM(Code::Proton, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                            EnergyCOM);    
     else if (iBeam == 3)
-      initialize_event_CoM(Code::KPlus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
+      initializeEventCoM(Code::KPlus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
                            EnergyCOM);
-    // else if (iBeam == 4)
-    //   initialize_event_CoM(Code::Nucleus, BeamA, BeamZ, TargetId, TargetA, TargetZ,
-    //                        EnergyCOM);
     else
       throw std::runtime_error(
           "calcCrossSectionCoM: interaction of beam hadron not defined in "
@@ -588,7 +585,7 @@ namespace corsika::epos {
         targetA = get_nucleus_A(targetCode);
         targetZ = get_nucleus_Z(targetCode);
       }
-      initialize_event_Lab(corsikaBeamId, beamA, beamZ, targetCode, targetA, targetZ,
+      initializeEventLab(corsikaBeamId, beamA, beamZ, targetCode, targetA, targetZ,
                            projectileMomentumLabPerNucleon);
 
       // create event
