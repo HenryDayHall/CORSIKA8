@@ -7,6 +7,7 @@ zlib/1.2.11
 proposal/7.0.4
 yaml-cpp/0.6.3
 arrow/2.0.0
+cli11/1.9.1
 
 [build_requires]
 readline/8.0 # this is only needed to fix a missing dependency in "bison" which is pulled-in by arrow

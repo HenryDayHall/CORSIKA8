@@ -216,6 +216,7 @@ target_link_libraries (
   CONAN_PKG::boost
   CONAN_PKG::yaml-cpp
   CONAN_PKG::arrow
+  CONAN_PKG::cli11
   cnpy # for SaveBoostHistogram
   )
 

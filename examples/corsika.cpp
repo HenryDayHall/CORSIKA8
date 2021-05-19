@@ -56,6 +56,10 @@
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
 
+#include <CLI/App.hpp>
+#include <CLI/Formatter.hpp>
+#include <CLI/Config.hpp>
+
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -103,26 +107,74 @@ int main(int argc, char** argv) {
 
   logging::set_level(logging::level::info);
 
-  CORSIKA_LOG_INFO("corsika");
+  // the main command line description
+  CLI::App app{"Simulate standard (downgoing) showers with CORSIKA 8."};
 
-  if (argc < 5) {
-    std::cerr << "usage: corsika <A> <Z> <energy/GeV> <Nevt> [seed] \n"
-                 "       if A=0, Z is interpreted as PDG code \n"
-                 "       if no seed is given, a random seed is chosen \n"
-              << std::endl;
-    return 1;
+  // some options that we want to fill in
+  int A, Z, nevent = 0;
+
+  // the following section adds the options to the parser
+
+  // we start by definining a sub-group for the primary ID
+  auto opt_Z = app.add_option("-Z", Z, "Atomic number for primary")
+                   ->check(CLI::Range(0, 26))
+                   ->group("Primary");
+  auto opt_A = app.add_option("-A", A, "Atomic mass number for primary")
+                   ->needs(opt_Z)
+                   ->check(CLI::Range(1, 58))
+                   ->group("Primary");
+  app.add_option("-p,--pdg", "PDG code for primary.")
+      ->excludes(opt_A)
+      ->excludes(opt_Z)
+      ->group("Primary");
+  // the remainding options
+  app.add_option("-E,--energy", "Primary energy in GeV")
+      ->required()
+      ->check(CLI::PositiveNumber)
+      ->group("Primary");
+  app.add_option("-z,--zenith", "Primary zenith angle (deg)")
+      ->required()
+      ->default_val(0.)
+      ->check(CLI::Range(0, 90))
+      ->group("Primary");
+  app.add_option("-a,--azimuth", "Primary azimuth angle (deg)")
+      ->default_val(0.)
+      ->check(CLI::Range(0, 360))
+      ->group("Primary");
+  app.add_option("-N,--nevent", nevent, "The number of events/showers to run.")
+      ->required()
+      ->check(CLI::PositiveNumber)
+      ->group("Library/Output");
+  app.add_option("-f,--filename", "Filename for output library.")
+      ->required()
+      ->default_val("corsika_library")
+      ->check(CLI::NonexistentPath)
+      ->group("Library/Output");
+  app.add_option("-s,--seed", "The random number seed.")
+      ->default_val(12351739)
+      ->check(CLI::NonNegativeNumber)
+      ->group("Misc.");
+  app.add_flag("--force-interaction", "Force the location of the first interaction.")
+      ->group("Misc.");
+
+  // parse the command line options into the variables
+  CLI11_PARSE(app, argc, argv);
+
+  // check that we got either PDG or A/Z
+  // this can be done with option_groups but the ordering
+  // gets all messed up
+  if (app.count("--pdg") == 0) {
+    if ((app.count("-A") == 0) || (app.count("-Z") == 0)) {
+      std::cerr << "If --pdg is not provided, then both -A and -Z are required."
+                << std::endl;
+      return 1;
+    }
   }
-  feenableexcept(FE_INVALID);
-
-  int seed = 0;
-  int number_showers = std::stoi(std::string(argv[4]));
-
-  if (argc > 5) { seed = std::stoi(std::string(argv[5])); }
 
   // initialize random number sequence(s)
-  registerRandomStreams(seed);
+  registerRandomStreams(app["--seed"]->as<int>());
 
-  // setup environment, geometry
+  /* === START: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
   using EnvType = setup::Environment;
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
@@ -144,43 +196,43 @@ int main(int argc, char** argv) {
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
   builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
+  /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
-  // pre-setup particle stack
-  unsigned short const A = std::stoi(std::string(argv[1]));
+  /* === START: CONSTRUCT PRIMARY PARTICLE === */
+
+  // parse the primary ID as a PDG or A/Z code
   Code beamCode;
   HEPEnergyType mass;
-  unsigned short Z = 0;
-  if (A > 0) {
-    beamCode = Code::Nucleus;
-    Z = std::stoi(std::string(argv[2]));
-    mass = get_nucleus_mass(A, Z);
-  } else {
-    int pdg = std::stoi(std::string(argv[2]));
-    beamCode = convert_from_PDG(PDGCode(pdg));
+
+  // check if we want to use a PDG code instead
+  if (app.count("--pdg") > 0) {
+    beamCode = convert_from_PDG(PDGCode(app["--pdg"]->as<int>()));
     mass = get_mass(beamCode);
+  } else {
+    // check manually for proton and neutrons
+    if ((A == 0) && (Z == 1)) beamCode = Code::Proton;
+    if ((A == 1) && (Z == 1)) beamCode = Code::Neutron;
+    mass = get_nucleus_mass(A, Z);
   }
-  HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 20.;
-  double phi = 180.;
-  auto const thetaRad = theta / 180. * M_PI;
-  auto const phiRad = phi / 180. * M_PI;
 
-  auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
-    return sqrt((Elab - m) * (Elab + m));
-  };
-  HEPMomentumType P0 = elab2plab(E0, mass);
-  auto momentumComponents = [](double theta, double phi, HEPMomentumType ptot) {
-    return std::make_tuple(ptot * sin(theta) * cos(phi), ptot * sin(theta) * sin(phi),
-                           -ptot * cos(theta));
-  };
+  // particle energy
+  HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<float>();
 
-  auto const [px, py, pz] = momentumComponents(thetaRad, phiRad, P0);
+  // direction of the shower in (theta, phi) space
+  auto const thetaRad = app["--zenith"]->as<float>() / 180. * M_PI;
+  auto const phiRad = app["--azimuth"]->as<float>() / 180. * M_PI;
+
+  // convert Elab to Plab
+  HEPMomentumType P0 = sqrt((E0 - mass) * (E0 + mass));
+
+  // convert the momentum to the zenith and azimuth angle of the primary
+  auto const [px, py, pz] =
+      std::make_tuple(P0 * sin(thetaRad) * cos(phiRad), P0 * sin(thetaRad) * sin(phiRad),
+                      -P0 * cos(thetaRad));
   auto plab = MomentumVector(rootCS, {px, py, pz});
-  cout << "input particle: " << beamCode << endl;
-  cout << "input angles: theta=" << theta << ",phi=" << phi << endl;
-  cout << "input momentum: " << plab.getComponents() / 1_GeV
-       << ", norm = " << plab.getNorm() << endl;
+  /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
+  /* === START: CONSTRUCT GEOMETRY === */
   auto const observationHeight = 0_km + builder.getEarthRadius();
   auto const injectionHeight = 111.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
@@ -193,21 +245,15 @@ int main(int argc, char** argv) {
                                     -sin(thetaRad) * sin(phiRad), cos(thetaRad)}} *
                        t;
 
-  std::cout << "point of injection: " << injectionPos.getCoordinates() << std::endl;
-
   // we make the axis much longer than the inj-core distance since the
   // profile will go beyond the core, depending on zenith angle
-  std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.2
-            << std::endl;
-
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.2, env};
+  /* === END: CONSTRUCT GEOMETRY === */
 
   // create the output manager that we then register outputs with
-  OutputManager output("corsika_outputs");
+  OutputManager output(app["--filename"]->as<std::string>());
 
-  // setup processes, decays and interactions
-
-  // corsika::qgsjetII::Interaction qgsjet;
+  /* === START: SETUP PROCESS LIST === */
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
 
@@ -261,27 +307,46 @@ int main(int argc, char** argv) {
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
+  // track writer
   TrackWriter trackWriter;
   output.add("tracks", trackWriter); // register TrackWriter
 
+  // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-  // register the observation plane with the output
-  output.add("particles", observationLevel);
+  output.add("obslevel", observationLevel);
 
+  // assemble the final process sequence
   auto sequence =
       make_sequence(stackInspect, hadronSequence, decaySequence, emCascadeCounted,
                     emContinuous, cut, trackWriter, observationLevel, longprof);
+  /* === END: SETUP PROCESS LIST === */
 
-  // define air shower object, run simulation
+  // create the cascade object using the default stack and tracking implementation
   setup::Tracking tracking;
   setup::Stack stack;
   Cascade EAS(env, tracking, sequence, output, stack);
 
+  // print our primary parameters all in one place
+  if (app["--pdg"]->count() > 0) {
+    CORSIKA_LOG_INFO("Primary PDG ID: {}", app["--pdg"]->as<int>());
+  } else {
+    CORSIKA_LOG_INFO("Primary Z/A: {}/{}", Z, A);
+  }
+  CORSIKA_LOG_INFO("Primary Energy: {}", E0);
+  CORSIKA_LOG_INFO("Primary Momentum: {}", P0);
+  CORSIKA_LOG_INFO("Point of Injection: {}", injectionPos.getCoordinates());
+  CORSIKA_LOG_INFO("Shower Axis Length: {}", (showerCore - injectionPos).getNorm() * 1.2);
+
+  // trigger the output manager to open the library for writing
   output.startOfLibrary();
 
-  for (int i_shower = 1; i_shower < number_showers + 1; i_shower++) {
+  // loop over each shower
+  for (int i_shower = 1; i_shower < nevent + 1; i_shower++) {
 
+    CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, nevent);
+
+    // trigger the start of the outputs for this shower
     output.startOfShower();
 
     // directory for outputs
@@ -289,32 +354,20 @@ int main(int argc, char** argv) {
     string const cMSHist_file = "inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
     string const longprof_file = "longprof_verticalEAS_" + to_string(i_shower) + ".txt";
 
-    CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, number_showers);
-
     // setup particle stack, and add primary particle
     stack.clear();
 
+    // add the desired particle to the stack
     if (A > 1) {
       stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
-
     } else {
-      if (A == 1) {
-        if (Z == 1) {
-          stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
-        } else if (Z == 0) {
-          stack.addParticle(std::make_tuple(Code::Neutron, plab, injectionPos, 0_ns));
-        } else {
-          std::cerr << "illegal parameters" << std::endl;
-          return EXIT_FAILURE;
-        }
-      } else {
-        stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
-      }
+      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
     }
 
-    // to fix the point of first interaction, uncomment the following two lines:
-    //  EAS.forceInteraction();
+    // if we want to fix the first location of the shower
+    if (app["--force-interaction"]) EAS.forceInteraction();
 
+    // run the shower
     EAS.run();
 
     cut.showResults();
@@ -335,7 +388,11 @@ int main(int argc, char** argv) {
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
     longprof.save(longprof_file);
+
+    // trigger the output manager to save this shower to disk
     output.endOfShower();
   }
+
+  // and finalize the output on disk
   output.endOfLibrary();
 }
