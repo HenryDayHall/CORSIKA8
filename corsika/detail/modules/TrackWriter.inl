@@ -28,7 +28,7 @@ namespace corsika {
     auto const end = vT.getPosition(1).getCoordinates();
 
     // write the track to the file
-    this->write(vP.getPID(), vP.getEnergy(), vP.getWeight(), start, vP.getTime() - vT.getDuration(), end,
+    output_.write(vP.getPID(), vP.getEnergy(), vP.getWeight(), start, vP.getTime() - vT.getDuration(), end,
                 vP.getTime());
 
     return ProcessReturn::Ok;

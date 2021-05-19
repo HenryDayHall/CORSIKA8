@@ -193,6 +193,21 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output("vertical_EAS_outputs");
 
+  EnergyLossWriterParquet dEdX_output{showerAxis, 10_g / square(1_cm), 200};
+  // register energy losses as output
+  output.add("dEdX", dEdX_output);
+  // register profile output
+  LongitudinalProfileWriterParquet profile{showerAxis};
+  output.add("profile", profile);
+  // register ground particle output
+  ParticleWriterParquet particleOutput;
+  output.add("particles", particleOutput);
+  // register TrackWriter
+  TrackWriterParquet tracks_output;
+  output.add("tracks", tracks_output);
+
+  TrackWriter trackWriter{tracks_output};
+
   // setup processes, decays and interactions
 
   corsika::sibyll::Interaction sibyll;
@@ -226,7 +241,7 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
+  ParticleCut cut{dEdX_output, 60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
@@ -246,7 +261,6 @@ int main(int argc, char** argv) {
   // directory for outputs
   string const labHist_file = "inthist_lab_verticalEAS.npz";
   string const cMSHist_file = "inthist_cms_verticalEAS.npz";
-  string const longprof_file = "longprof_verticalEAS.txt";
 
   // setup particle stack, and add primary particle
   setup::Stack stack;
@@ -256,18 +270,13 @@ int main(int argc, char** argv) {
       beamCode, calculate_kinetic_energy(plab.getNorm(), get_mass(beamCode)),
       plab.normalized(), injectionPos, 0_ns));
 
-  BetheBlochPDG emContinuous(showerAxis);
-
-  TrackWriter trackWriter;
-  output.add("tracks", trackWriter); // register TrackWriter
-
-  LongitudinalProfile longprof{showerAxis};
+  LongitudinalProfile longprof{profile};
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking, NoOutput> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-  // register the observation plane with the output
-  output.add("particles", observationLevel);
+    ObservationPlane<setup::Tracking> observationLevel{obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+                                    particleOutput};
+
+  BetheBlochPDG emContinuous(dEdX_output);
 
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
                                 cut, trackWriter, observationLevel, longprof);
@@ -282,9 +291,7 @@ int main(int argc, char** argv) {
   cut.showResults();
   // emContinuous.showResults();
   observationLevel.showResults();
-  const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                               cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                               observationLevel.getEnergyGround();
+  HEPEnergyType const Efinal = dEdX_output.getTotal() + particleOutput.getEnergyGround();
   cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
        << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
   observationLevel.reset();
@@ -296,7 +303,6 @@ int main(int argc, char** argv) {
 
   save_hist(hists.labHist(), labHist_file, true);
   save_hist(hists.CMSHist(), cMSHist_file, true);
-  longprof.save(longprof_file);
 
   output.endOfLibrary();
 }

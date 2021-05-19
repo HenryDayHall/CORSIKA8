@@ -140,9 +140,23 @@ int main(int argc, char** argv) {
   std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
             << std::endl;
 
-  OutputManager output("em_shower_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
                               false, 1000};
+
+  OutputManager output("em_shower_outputs");
+
+  EnergyLossWriterParquet dEdX_output{showerAxis, 10_g / square(1_cm), 200};
+  // register energy losses as output
+  output.add("dEdX", dEdX_output);
+  // register profile output
+  LongitudinalProfileWriterParquet profile{showerAxis};
+  output.add("profile", profile);
+  // register ground particle output
+  ParticleWriterParquet particles;
+  output.add("particles", particles);
+  // register TrackWriter
+  TrackWriterParquet tracks;
+  output.add("tracks", tracks);
 
   // setup processes, decays and interactions
 
@@ -153,16 +167,14 @@ int main(int argc, char** argv) {
   //  NOT possible right now, due to interface differenc in PROPOSAL
   //  InteractionCounter emCascadeCounted(emCascade);
 
-  TrackWriter trackWriter;
-  output.add("tracks", trackWriter); // register TrackWriter
+  TrackWriter trackWriter{tracks};
 
   // long. profile; columns for photon, e+, e- still need to be added
   LongitudinalProfile longprof(showerAxis);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}), "particles.dat");
-  output.add("obsplane", observationLevel);
+  ObservationPlane<setup::Tracking> observationLevel{obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+                                    "particles.dat", particles};
 
   auto sequence = make_sequence(emCascade, emContinuous, longprof, cut, observationLevel,
                                 trackWriter);

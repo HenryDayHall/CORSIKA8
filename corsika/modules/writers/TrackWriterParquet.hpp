@@ -49,7 +49,6 @@ namespace corsika {
      */
     void endOfLibrary() final override;
 
-  protected:
     /**
      * Write a track to the file.
      */

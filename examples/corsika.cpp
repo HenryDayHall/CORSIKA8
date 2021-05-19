@@ -278,10 +278,18 @@ int main(int argc, char** argv) {
   // create the output manager that we then register outputs with
   OutputManager output(app["--filename"]->as<std::string>());
 
-  /* === START: SETUP PROCESS LIST === */
-  // corsika::epos::Interaction heModel;
-  // corsika::qgsjetII::Interaction heModel;
-  // InteractionCounter heModelCounted(heModel);
+  EnergyLossWriterParquet dEdX_output{showerAxis, 10_g / square(1_cm), 200};
+  // register energy losses as output
+  output.add("dEdX", dEdX_output);
+  // register profile output
+  LongitudinalProfileWriterParquet profile{showerAxis};
+  output.add("profile", profile);
+  // register ground particle output
+  ParticleWriterParquet particles;
+  output.add("particles", particles);
+  // register TrackWriter
+  TrackWriterParquet tracks;
+  output.add("tracks", tracks);
 
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
@@ -318,6 +326,7 @@ int main(int argc, char** argv) {
   HEPEnergyType const hadcut = 1_GeV;
   ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
 
+  ParticleCut cut{dEdX_output, 50_GeV, 50_GeV, 50_GeV, 50_GeV, false};
   corsika::proposal::Interaction emCascade(env);
   // NOT available for PROPOSAL due to interface trouble:
   //  InteractionCounter emCascadeCounted(emCascade);
@@ -326,7 +335,7 @@ int main(int argc, char** argv) {
 
   // cut.printThresholds();
 
-  LongitudinalProfile longprof(showerAxis);
+  LongitudinalProfile longprof{profile};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted(urqmd);
@@ -342,16 +351,12 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
-  // track writer
-  TrackWriter trackWriter;
-  output.add("tracks", trackWriter); // register TrackWriter
+  TrackWriter trackWriter{tracks};
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking> observationLevel(
-      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-  // register the observation plane with the output
-  output.add("particles", observationLevel);
+  ObservationPlane observationLevel{obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
+                                    particles};
 
   // assemble the final process sequence
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, cut,
@@ -412,9 +417,8 @@ int main(int argc, char** argv) {
     cut.showResults();
     // emContinuous.showResults();
     observationLevel.showResults();
-    const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() +
-                                 cut.getEmEnergy() + // emContinuous.getEnergyLost() +
-                                 observationLevel.getEnergyGround();
+    HEPEnergyType const Efinal =
+        dEdX_output.getTotal() + particleOutput.getEnergyGround();
     cout << "total cut energy (GeV): " << Efinal / 1_GeV << endl
          << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl;
     observationLevel.reset();
@@ -427,9 +431,6 @@ int main(int argc, char** argv) {
 
     save_hist(hists.labHist(), labHist_file, true);
     save_hist(hists.CMSHist(), cMSHist_file, true);
-    longprof.save(longprof_file);
-
-    // trigger the output manager to save this shower to disk
     output.endOfShower();
   }
 
