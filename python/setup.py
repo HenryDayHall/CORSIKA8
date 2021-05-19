@@ -1,5 +1,5 @@
 from os import path
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # the stereo version
 __version__ = "8.0.0-alpha"
@@ -30,7 +30,7 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     keywords=["cosmic ray", "physics", "air shower", "simulation"],
-    packages=["corsika"],
+    packages=find_packages(),
     python_requires=">=3.6*, <4",
     install_requires=["numpy", "pyyaml", "pyarrow", "boost_histogram"],
     extras_require={
