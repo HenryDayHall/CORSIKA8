@@ -52,12 +52,12 @@ namespace epos {
   void conini_();
   void psaini_();
 
-    //void idspin_(int&, int&, int&, int&);
-    //  void iclass_(int&, int&);
+  // void idspin_(int&, int&, int&, int&);
+  //  void iclass_(int&, int&);
   void emsini_(double&, int&, int&);
   void paramini_(int&);
   void xsigma_();
-    
+
   //
   //  cross section from tables
   //
@@ -478,38 +478,37 @@ namespace epos {
     float sigelaaa;
     float sigcutaa;
     float sigdd;
-    } hadr5_;
+  } hadr5_;
 
-    // integer      mxnody,nrnody,nody
-    // parameter(mxnody=200)
-    // common/nodcy/nrnody,nody(mxnody)
-    unsigned int constexpr mxnody = 200;
-    extern struct {
-      int nrnody;
-      int nody[mxnody];
-    } nodcy_;
+  // integer      mxnody,nrnody,nody
+  // parameter(mxnody=200)
+  // common/nodcy/nrnody,nody(mxnody)
+  unsigned int constexpr mxnody = 200;
+  extern struct {
+    int nrnody;
+    int nody[mxnody];
+  } nodcy_;
 
+  // integer      iclpro,icltar,iclegy
+  // common/had10/iclpro,icltar,iclegy
+  extern struct {
+    int iclpro;
+    int icltar;
+    int iclegy;
+  } had10_;
 
-      // integer      iclpro,icltar,iclegy
-      // common/had10/iclpro,icltar,iclegy
-    extern struct {
-      int iclpro;
-      int icltar;
-      int iclegy;
-    } had10_;
+  /**
+   Small helper class to provide a data-directory name in the format eposlhc expects
+  */
+  class datadir {
+  private:
+    datadir operator=(const std::string& dir);
+    datadir operator=(const datadir&);
 
-    /**
-     Small helper class to provide a data-directory name in the format eposlhc expects
-    */
-    class datadir {
-    private:
-      datadir operator=(const std::string& dir);
-      datadir operator=(const datadir&);
-
-    public:
-      datadir(const std::string& dir);
-      char data[500];
-      int length;
+  public:
+    datadir(const std::string& dir);
+    char data[500];
+    int length;
   };
   }
 } // namespace epos

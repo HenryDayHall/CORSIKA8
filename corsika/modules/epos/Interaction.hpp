@@ -20,7 +20,7 @@ namespace corsika::epos {
     std::string data_path_;
     unsigned int count_ = 0;
     bool epos_listing_;
-    
+
   public:
     Interaction(const std::string& dataPath = "", const bool epos_printout_on = false);
     ~Interaction();
@@ -71,11 +71,11 @@ namespace corsika::epos {
 
     void initialize() const;
     void initializeEventCoM(Code const, int const, int const, Code const, int const,
-			      int const, HEPEnergyType const) const;
+                            int const, HEPEnergyType const) const;
     void initializeEventLab(Code const, int const, int const, Code const, int const,
-			      int const, HEPEnergyType const) const;
+                            int const, HEPEnergyType const) const;
     void configureParticles(Code const, int const, int const, Code const, int const,
-                             int const) const;
+                            int const) const;
     void setParticlesStable() const;
 
   private:

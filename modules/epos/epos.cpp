@@ -23,5 +23,4 @@ namespace epos {
     data[i + 1] = '\0';
     length = dir.length();
   }
-}
-	
+} // namespace epos

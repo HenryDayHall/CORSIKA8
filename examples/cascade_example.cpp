@@ -41,8 +41,7 @@
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
  */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/Random.hpp>
 
 #include <iostream>
 #include <limits>

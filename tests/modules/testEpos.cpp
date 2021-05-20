@@ -44,7 +44,8 @@ TEST_CASE("Epos", "[processes]") {
   SECTION("Corsika -> Epos") {
     CHECK(corsika::epos::convertToEpos(Electron::code) ==
           corsika::epos::EposCode::Electron);
-    // check if particle code is correct for common particles that interact (secret epos knowledge)
+    // check if particle code is correct for common particles that interact (secret epos
+    // knowledge)
     CHECK(corsika::epos::convertToEposRaw(Proton::code) == 1120);
     CHECK(corsika::epos::convertToEposRaw(PiPlus::code) == 120);
     CHECK(corsika::epos::convertToEposRaw(KPlus::code) == 130);
@@ -119,8 +120,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma,
-              HEPEnergyType const mb){
+auto sqs2elab(HEPEnergyType const sqs, HEPEnergyType const ma, HEPEnergyType const mb) {
   return (sqs * sqs - ma * ma - mb * mb) / 2. / mb;
 }
 
@@ -135,20 +135,20 @@ TEST_CASE("EposInterface", "[processes]") {
 
   RNGManager::getInstance().registerRandomStream("epos");
 
-  SECTION("InteractionInterface - random number"){
+  SECTION("InteractionInterface - random number") {
     auto const rndm = ::epos::rangen_();
-    CHECK(rndm>0);
-    CHECK(rndm<1);
+    CHECK(rndm > 0);
+    CHECK(rndm < 1);
   }
-  
+
   SECTION("InteractionInterface - valid targets") {
 
     Interaction model;
     // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
     CHECK_FALSE(model.isValidTarget(Code::Electron));
     CHECK(model.isValidTarget(Code::Hydrogen));
-    //CHECK_FALSE(model.isValidTarget(Code::Deuterium));
-    //CHECK_FALSE(model.isValidTarget(Code::Helium3));
+    // CHECK_FALSE(model.isValidTarget(Code::Deuterium));
+    // CHECK_FALSE(model.isValidTarget(Code::Helium3));
     CHECK(model.isValidTarget(Code::Helium));
     CHECK_FALSE(model.isValidTarget(Code::Iron));
     CHECK(model.isValidTarget(Code::Oxygen));
@@ -163,7 +163,7 @@ TEST_CASE("EposInterface", "[processes]") {
     CHECK(xs_prod_pp == xs_prod_pHydrogen);
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
-    CHECK(xs_ela_pn == xs_ela_pHydrogen);    
+    CHECK(xs_ela_pn == xs_ela_pHydrogen);
   }
 
   SECTION("InteractionInterface - hadron cross sections") {
@@ -187,7 +187,7 @@ TEST_CASE("EposInterface", "[processes]") {
     auto const [xs_prod2, xs_ela2] =
         model.getCrossSectionLab(Code::KPlus, 0, 0, Code::Proton, 1, 1,
                                  sqs2elab(7_TeV, KPlus::mass, Proton::mass));
-    CHECK(xs_prod2 / 1_mb == Approx(45.7).margin(2.1));    
+    CHECK(xs_prod2 / 1_mb == Approx(45.7).margin(2.1));
   }
 
   SECTION("InteractionInterface - nuclear cross sections") {
@@ -210,7 +210,7 @@ TEST_CASE("EposInterface", "[processes]") {
         Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
     CHECK(xs_prod2 / xs_prod3 == 1);
   }
-  
+
   SECTION("InteractionInterface - low energy") {
 
     const HEPEnergyType P0 = 60_GeV;
@@ -226,7 +226,7 @@ TEST_CASE("EposInterface", "[processes]") {
     model.doInteraction(view);
 
     auto const pSum = sumMomentum(view, cs);
-    
+
     CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
     CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-4));
     CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-4));
@@ -234,10 +234,9 @@ TEST_CASE("EposInterface", "[processes]") {
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    
+
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(93.3).margin(0.1));
-
   }
 
   SECTION("InteractionInterface - nuclear projectile") {
@@ -255,7 +254,7 @@ TEST_CASE("EposInterface", "[processes]") {
     model.doInteraction(view);
 
     auto const pSum = sumMomentum(view, cs);
-    
+
     CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
     CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-4));
     CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-4));
@@ -263,9 +262,8 @@ TEST_CASE("EposInterface", "[processes]") {
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    
+
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(12.8).margin(4.1));
-
   }
 }
