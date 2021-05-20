@@ -52,8 +52,6 @@ namespace epos {
   void conini_();
   void psaini_();
 
-  // void idspin_(int&, int&, int&, int&);
-  //  void iclass_(int&, int&);
   void emsini_(double&, int&, int&);
   void paramini_(int&);
   void xsigma_();
@@ -87,8 +85,6 @@ namespace epos {
   // c------------------------------------------------------------------------------
   void crseaaepos_(float&, float&, float&, float&);
 
-  // double cxepocrse_(double&, int&, int&, int&);
-
   void emsaaa_(int&);
   void gakfra_(int&, int&);
   void utghost_(int&);
@@ -108,13 +104,10 @@ namespace epos {
   // convert id from one format to another
   int idtrafo_(char[3], char[3], int&);
 
-  // conex routine
-  //  void cxidmass_(int&, int&);
-
   // additional random number functions
   void ranfini_(double&, int&, int&);
   void ranfcv_(double&);
-  // void ranfgt(int&);
+
   float rangen_();
   double drangen_();
   // common blocks as
@@ -185,19 +178,13 @@ namespace epos {
     int jdecay;
     int iremn;
   } othe2_;
-  // integer      ifrade,iframe,idecay,jdecay,iremn
-  // common/othe2/ifrade,iframe,idecay,jdecay,iremn
 
   extern struct { int ktnbod; } metr7_;
-  // integer      ktnbod
-  // common/metr7/ktnbod
 
   extern struct {
     float egylow;
     float egyfac;
   } had12_;
-  //      real         egylow,egyfac
-  // common/had12/egylow,egyfac
 
   extern struct {
     int laproj;
@@ -207,9 +194,6 @@ namespace epos {
     float core;
     float fctrmx;
   } nucl1_;
-  // real         core,fctrmx
-  // integer       laproj,maproj,latarg,matarg
-  // common/nucl1/laproj,maproj,latarg,matarg,core,fctrmx
 
   extern struct {
     float amproj;
@@ -218,8 +202,6 @@ namespace epos {
     float yhaha;
     float pnullx;
   } chadron_;
-  // real           amproj,amtarg,ypjtl,yhaha,pnullx
-  // common/chadron/amproj,amtarg,ypjtl,yhaha,pnullx
 
   extern struct {
     int iomodl;
@@ -227,9 +209,6 @@ namespace epos {
     int idtarg;
     float wexcit;
   } hadr2_;
-  // integer      iomodl,idproj,idtarg
-  // real         wexcit
-  // common/hadr2/iomodl,idproj,idtarg,wexcit
 
   extern struct {
     int idprojin;
@@ -241,11 +220,6 @@ namespace epos {
     int isotarg;
   } hadr25_;
 
-  //       real          rexdifi,rexndii
-  // integer       idprojin,idtargin,irdmpr,isoproj,isotarg
-  // common/hadr25/idprojin,idtargin,rexdifi(4),rexndii(4),irdmpr,
-  // *              isoproj,isotarg
-
   extern struct {
     float engy;
     float elepti;
@@ -253,10 +227,6 @@ namespace epos {
     float angmue;
     int icinpu;
   } lept1_;
-  //  real engy, elepti, elepto, angmue integer icinpu
-  // common / lept1 / engy, elepti, elepto,
-  // angmue,
-  // icinpu
 
   extern struct {
     float egymin;
@@ -265,9 +235,6 @@ namespace epos {
     float ecms;
     float ekin;
   } enrgy_;
-  // real egymin, egymax, elab, ecms, ekin
-  // common / enrgy / egymin, egymax, elab, ecms,
-  // ekin
 
   extern struct {
     float pnll;
@@ -277,10 +244,6 @@ namespace epos {
     float wproj;
     float wtarg;
   } hadr1_;
-  // real pnll, ptq, exmass, cutmss, wproj, wtarg
-  // common / hadr1 / pnll, ptq, exmass, cutmss,
-  // wproj,
-  // wtarg
 
   unsigned int constexpr idxD0 = 0;
   unsigned int constexpr idxD1 = 2;
@@ -301,17 +264,6 @@ namespace epos {
     float bmxdif[nclha][nclha];
     float bkmxndif;
   } Dparam_;
-  //  real bmxdif,bkmxndif
-  // integer idxDmin
-  // common / Dparam / alpD(idxD0: idxD1, nclha, nclha),
-  //* alpDp(idxD0 : idxD1, nclha, nclha),
-  //*alpDpp(idxD0 : idxD1, nclha, nclha),
-  //*  betD(idxD0 : idxD1, nclha, nclha),
-  //* betDp(idxD0 : idxD1, nclha, nclha),
-  //*betDpp(idxD0 : idxD1, nclha, nclha),
-  //*  gamD(idxD0 : idxD1, nclha, nclha),
-  //*  delD(idxD0 : idxD1, nclha, nclha),
-  //*idxDmin, bmxdif(nclha, nclha),  bkmxndif
 
   extern struct {
     float phievt;
@@ -340,16 +292,7 @@ namespace epos {
     int maxfra;
     int kohevt;
   } cevt_;
-  //  real phievt, bimevt, pmxevt, egyevt , xbjevt, qsqevt, zppevt, zptevt
-  // integer nevt,
-  // kolevt, koievt, kohevt, npjevt , ntgevt, npnevt, nppevt, ntnevt, ntpevt, jpnevt,
-  // jppevt, jtnevt, jtpevt , nglevt, minfra, maxfra
-  // common / cevt / phievt, nevt,
-  //    bimevt, kolevt, koievt, pmxevt, egyevt, npjevt , ntgevt, npnevt, nppevt, ntnevt,
-  //    ntpevt, jpnevt, jppevt, jtnevt, jtpevt , xbjevt, qsqevt, nglevt, zppevt, zptevt,
-  //    minfra, maxfra, kohevt
 
-  //       common/cseed/seedi,seedj,seedj2,seedc,iseqini,iseqsim
   extern struct {
     double seedi;
     double seedj;
@@ -359,8 +302,6 @@ namespace epos {
     int iseqsim;
   } cseed_;
 
-  //     integer      istore,istmax,irescl,ntrymx,nclean,iopdg,ioidch
-  // common/othe1/istore,istmax,gaumx,irescl,ntrymx,nclean,iopdg,ioidch
   extern struct {
     int istore;
     int istmax;
@@ -372,8 +313,6 @@ namespace epos {
     int ioidch;
   } othe1_;
 
-  //  integer      ifop,ifmt,ifch,ifcx,ifhi,ifdt,ifcp,ifdr
-  //  common/files/ifop,ifmt,ifch,ifcx,ifhi,ifdt,ifcp,ifdr
   extern struct {
     int ifop;
     int ifmt;
@@ -385,10 +324,6 @@ namespace epos {
     int ifdr;
   } files_;
 
-  //  character*500  fnch,fnhi,fndt,fnii,fnid,fnie,fnrj,fnmt
-  // * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
-  //  common/fname/  fnch, fnhi, fndt, fnii, fnid, fnie, fnrj, fnmt
-  //      * ,fngrv,fncp,fnnx,fncs,fndr,fnhpf
   extern struct {
     char fnch[500];
     char fnhi[500];
@@ -407,10 +342,6 @@ namespace epos {
 
   } fname_;
 
-  //      integer       nfnch,nfnhi,nfndt,nfnii,nfnid,nfnie,nfnrj,nfnmt
-  // *,nfngrv,nfncp,nfnnx,nfncs,nfndr,nfnhpf
-  //  common/nfname/nfnch,nfnhi,nfndt,nfnii,nfnid,nfnie,nfnrj,nfnmt
-  // *,nfngrv,nfncp,nfnnx,nfncs,nfndr,nfnhpf
   extern struct {
     int nfnch;
     int nfnhi;
@@ -428,8 +359,6 @@ namespace epos {
     int nfnhpf;
   } nfname_;
 
-  // integer      iprmpt,ish,ishsub,irandm,irewch,iecho,modsho,idensi
-  //   common/prnt1/iprmpt,ish,ishsub,irandm,irewch,iecho,modsho,idensi
   extern struct {
     int iprmpt;
     int ish;
@@ -442,11 +371,6 @@ namespace epos {
   } prnt1_;
   unsigned int constexpr mmry = 1;
   unsigned int constexpr mxptl = 200000 / mmry;
-  //      real        pptl,tivptl,xorptl
-  //   integer     nptl,iorptl,idptl,istptl,ifrptl,jorptl,ibptl,ityptl
-  //  common/cptl/nptl,pptl(5,mxptl),iorptl(mxptl),idptl(mxptl)
-  // *,istptl(mxptl),tivptl(2,mxptl),ifrptl(2,mxptl),jorptl(mxptl)
-  // *,xorptl(4,mxptl),ibptl(4,mxptl),ityptl(mxptl)
   extern struct {
     int nptl;
     float pptl[mxptl][5];
@@ -461,10 +385,6 @@ namespace epos {
     int ityptl[mxptl];
   } cptl_;
 
-  //  real         sigtot,sigcut,sigela,sloela,sigsd,sigine,sigdif
-  // *,sigineaa,sigtotaa,sigelaaa,sigcutaa,sigdd
-  //  common/hadr5/sigtot,sigcut,sigela,sloela,sigsd,sigine,sigdif
-  // *,sigineaa,sigtotaa,sigelaaa,sigcutaa,sigdd
   extern struct {
     float sigtot;
     float sigcut;
@@ -480,17 +400,12 @@ namespace epos {
     float sigdd;
   } hadr5_;
 
-  // integer      mxnody,nrnody,nody
-  // parameter(mxnody=200)
-  // common/nodcy/nrnody,nody(mxnody)
   unsigned int constexpr mxnody = 200;
   extern struct {
     int nrnody;
     int nody[mxnody];
   } nodcy_;
 
-  // integer      iclpro,icltar,iclegy
-  // common/had10/iclpro,icltar,iclegy
   extern struct {
     int iclpro;
     int icltar;

@@ -89,12 +89,6 @@ TEST_CASE("Epos", "[processes]") {
       }
     }
   }
-
-  // SECTION("validation - mass") {
-  //   for (auto p : get_all_particles())
-  //     if (!is_nucleus(p))
-  //       CHECK(get_mass(p) / corsika::epos::getEposMass(p) == Approx(1).margin(0.5));
-  // }
 }
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -144,11 +138,8 @@ TEST_CASE("EposInterface", "[processes]") {
   SECTION("InteractionInterface - valid targets") {
 
     Interaction model;
-    // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
     CHECK_FALSE(model.isValidTarget(Code::Electron));
     CHECK(model.isValidTarget(Code::Hydrogen));
-    // CHECK_FALSE(model.isValidTarget(Code::Deuterium));
-    // CHECK_FALSE(model.isValidTarget(Code::Helium3));
     CHECK(model.isValidTarget(Code::Helium));
     CHECK_FALSE(model.isValidTarget(Code::Iron));
     CHECK(model.isValidTarget(Code::Oxygen));
@@ -169,7 +160,6 @@ TEST_CASE("EposInterface", "[processes]") {
   SECTION("InteractionInterface - hadron cross sections") {
 
     Interaction model;
-    // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
 
     // p-p at 7TeV around 70mb according to LHC
     auto const [xs_prod, xs_ela] =
@@ -193,7 +183,6 @@ TEST_CASE("EposInterface", "[processes]") {
   SECTION("InteractionInterface - nuclear cross sections") {
 
     Interaction model;
-    // eposlhc accepts protons or nuclei with 4<=A<=18 as targets
 
     auto const [xs_prod, xs_ela] = model.getCrossSectionLab(
         Code::Proton, 1, 1, Code::Oxygen, Oxygen::nucleus_A, Oxygen::nucleus_Z, 100_GeV);

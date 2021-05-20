@@ -45,19 +45,12 @@ namespace corsika::epos {
         Code const, int const, int const, Code const, int const, int const,
         HEPEnergyType const) const;
 
-    // std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
-    //     Code const, int const, int const, Code const, int const, int const,
-    //     HEPEnergyType const) const;
-
-    // std::tuple<CrossSectionType, CrossSectionType> getCrossSection(
-    //     Code const, Code const, HEPEnergyType const) const;
-
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&) const;
 
     /**
        In this function EPOSLHC is called to produce one event. The
-       event is copied (and boosted) into the shower lab frame.
+       event is copied into the shower lab frame.
      */
     template <typename TSecondaries>
     void doInteraction(TSecondaries&);
@@ -65,6 +58,7 @@ namespace corsika::epos {
     bool isValidCoMEnergy(HEPEnergyType const ecm) const {
       return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
+    
     //! eposlhc only accepts nuclei with X<=A<=Y as targets, or protons aka Hydrogen or
     //! neutrons (p,n == nucleon)
     bool isValidTarget(Code const) const;

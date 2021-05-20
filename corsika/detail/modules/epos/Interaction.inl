@@ -87,11 +87,9 @@ namespace corsika::epos {
     // corsika7 ini
     int iarg = 0;
     ::epos::aaset_(iarg);
-    //::epos::atitle_();
 
     ::epos::prnt1_.ish = 0;  // debug level in epos
     ::epos::files_.ifch = 6; // output unit
-    //::epos::prnt1_.iecho = 1;
 
     // dummy set seeds for random number generator in epos. need to fool epos checks...
     // we will use external generator
@@ -147,22 +145,6 @@ namespace corsika::epos {
     ::epos::datadir CS(data_path_ + "epos.inics"); // lhcparameters adds ".lhc"
     strcpy(::epos::fname_.fncs, CS.data);
     ::epos::nfname_.nfncs = CS.length;
-
-    // dummy event
-    // ::epos::hadr25_.idprojin = 1120;
-    // ::epos::hadr25_.idtargin = 1120;
-    // //#if __CONEX__ && __EPOS__ && __HIGHMEM__
-    // //    maproj = 250
-    // //#else
-    // ::epos::nucl1_.maproj = 56;
-    // // #endif
-    // ::epos::nucl1_.laproj = 28;
-    // ::epos::nucl1_.matarg = 14;
-    // ::epos::nucl1_.latarg = 1;
-    // ::epos::hadr1_.pnll = 200.;
-    // ::epos::lept1_.engy = -1.;
-
-    //::epos::ainit_();
 
     // dummy event (prepare commons)
     initializeEventLab(Code::Iron, Iron::nucleus_A, Iron::nucleus_Z, Code::Argon,
@@ -285,18 +267,6 @@ namespace corsika::epos {
 
   inline Interaction::~Interaction() { CORSIKA_LOGGER_DEBUG(logger_, "n={} ", count_); }
 
-  // inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
-  // Interaction::getCrossSection(corsika::Code const BeamId, corsika::Code const
-  // TargetId,
-  //                              const corsika::HEPEnergyType EnergyCOM) const {
-  //   if (!is_nucleus(BeamId))
-  //     return getCrossSection(BeamId, 1, 1, TargetId, get_nucleus_A(TargetId),
-  //                            get_nucleus_Z(TargetId), EnergyCOM);
-  //   else
-  //     throw("nuclear projecile, call getCrossSection with : BeamId, BeamA, BeamZ,
-  //     ...");
-  // }
-
   inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
   Interaction::calcCrossSectionCoM(corsika::Code const BeamId, int const BeamA,
                                    int const BeamZ, corsika::Code const TargetId,
@@ -336,8 +306,6 @@ namespace corsika::epos {
           "calcCrossSectionCoM: interaction of beam hadron not defined in "
           "Epos!");
 
-    //::epos::xsigma_();
-
     double sigProd, sigEla = 0;
     float sigTot1, sigProd1, sigEla1, sigCut1 = 0;
     if (!is_nucleus(TargetId) && !is_nucleus(BeamId)) {
@@ -345,16 +313,9 @@ namespace corsika::epos {
       sigEla = ::epos::hadr5_.sigela;
     } else {
       ::epos::crseaaepos_(sigTot1, sigProd1, sigCut1, sigEla1);
-      // sigProd = ::epos::hadr5_.sigineaa;
-      // sigEla = ::epos::hadr5_.sigelaaa;
       sigProd = sigProd1;
       sigEla = sigEla1;
     }
-
-    // calculate cross section
-    // float sigTot, sigProd, sigEla, sigCut = 0;
-    //::epos::crseaaepos_(sigTot, sigProd, sigCut, sigEla);
-
     CORSIKA_LOGGER_DEBUG(logger_,
                          "calcCrossSectionCoM: output:"
                          " sigProd={} mb,"
@@ -465,12 +426,6 @@ namespace corsika::epos {
       }
 
       // get target from environment
-      /*
-        the target should be defined by the Environment,
-        ideally as full particle object so that the four momenta
-        and the boosts can be defined..
-      */
-
       MomentumVector const& pLab = projectile.getMomentum();
       CoordinateSystemPtr const& labCS = pLab.getCoordinateSystem();
 
@@ -479,14 +434,6 @@ namespace corsika::epos {
 
       // total momentum and energy
       HEPEnergyType Elab = projectile.getEnergy() + constants::nucleonMass;
-      // MomentumVector pTotLab(labCS, {0_GeV, 0_GeV, 0_GeV});
-      // pTotLab += pLab;
-      // pTotLab += pTarget;
-      // auto const pTotLabNorm = pTotLab.getNorm();
-      // calculate cm. energy
-      // const HEPEnergyType ECoM = sqrt(
-      //     (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical
-      //     accuracy
 
       auto const* currentNode = projectile.getNode();
       const auto& mediumComposition =
@@ -548,11 +495,6 @@ namespace corsika::epos {
       HEPEnergyType const projectileMomentumLabPerNucleon = projectileMomentum / beamA;
 
       // define target
-      // auto const eTargetLab = 0_GeV + constants::nucleonMass;
-      //      HEPEnergyType const Etot = eProjectileLab + eTargetLab;
-      // invariant mass, i.e. cm. energy
-      // HEPEnergyType const Ecm =
-      //     sqrt((Etot + projectileMomentum) * (Etot - projectileMomentum));
 
       // sample target mass number
       auto const* currentNode = projectile.getNode();
@@ -581,7 +523,6 @@ namespace corsika::epos {
 
       // // from corsika7 interface
       // // NEXLNK-part
-
       int targetA = 1;
       int targetZ = 1;
       if (is_nucleus(targetCode)) {
