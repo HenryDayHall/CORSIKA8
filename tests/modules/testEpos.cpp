@@ -62,10 +62,10 @@ TEST_CASE("Epos", "[processes]") {
     CHECK(corsika::epos::getEposXSCode(Code::K0Long) == 0);
     CHECK(corsika::epos::getEposXSCode(Code::SigmaPlus) == 0);
     CHECK(corsika::epos::getEposXSCode(Code::KMinus) == 3);
-    CHECK(corsika::epos::getEposXSCode(Code::PiMinus) == 2);
-    CHECK(corsika::epos::getEposXSCode(Code::Proton) == 1);
-    CHECK(corsika::epos::getEposXSCode(Code::Helium) == 4);
-    CHECK(corsika::epos::getEposXSCode(Code::Nucleus) == 4);
+    CHECK(corsika::epos::getEposXSCode(Code::PiMinus) == 1);
+    CHECK(corsika::epos::getEposXSCode(Code::Proton) == 2);
+    CHECK(corsika::epos::getEposXSCode(Code::Helium) == 2);
+    CHECK(corsika::epos::getEposXSCode(Code::Nucleus) == 2);
   }
 
   SECTION("epos mass") {
