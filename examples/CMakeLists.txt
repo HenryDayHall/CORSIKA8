@@ -69,3 +69,7 @@ target_link_libraries (water CORSIKA8::CORSIKA8)
 
 add_executable (environment environment.cpp)
 target_link_libraries (environment CORSIKA8::CORSIKA8)
+
+add_executable (radio_em_shower radio_em_shower.cpp)
+target_link_libraries (radio_em_shower CORSIKA8::CORSIKA8)
+CORSIKA_REGISTER_EXAMPLE (radio_em_shower RUN_OPTIONS 4 2 10000.)
