@@ -56,91 +56,136 @@ namespace corsika {
        * so they are both called direction
        */
 
-      // these are used for the direction of emission and reception. TODO: They should be opposite (?)
+      // these are used for the direction of emission and reception of signal at the antenna
       auto direction{(destination - source).normalized()};
-      auto receive_{- direction};
+      auto receive_{ - direction};
 
       // the distance from the point of emission to an observer
       auto distance_ {(destination - source).getNorm()};
 
-      // the step is the direction vector with length `stepsize`
-      auto step{direction * stepsize};
+      try {
+        if (stepsize <= 0.5 * distance_) {
 
-      //calculate the number of points (roughly) for the numerical integration.
-      auto n_points {(destination - source).getNorm() / stepsize};
+          // "step" is the direction vector with length `stepsize`
+          auto step{direction * stepsize};
 
-      // get the universe for this environment
-      auto const* const universe{Base::env_.getUniverse().get()};
+          // calculate the number of points (roughly) for the numerical integration
+          auto n_points{(destination - source).getNorm() / stepsize};
 
-      // the points that we build along the way for the numerical integration
-      std::deque<Point> points;
+          // get the universe for this environment
+          auto const* const universe{Base::env_.getUniverse().get()};
 
-      // store value of the refractive index at points
-      std::vector<double> rindex;
-      rindex.reserve(n_points);
+          // the points that we build along the way for the numerical integration
+          std::deque<Point> points;
 
-      //get and store the refractive index of the first point 'source'
-      auto const* nodeSource{universe->getContainingNode(source)};
-      auto const ri_source{nodeSource->getModelProperties().getRefractiveIndex(source)};
-//      auto const ri_source{1.000327};
-      rindex.push_back(ri_source);
-      points.push_back(source);
+          // store value of the refractive index at points
+          std::vector<double> rindex;
+          rindex.reserve(n_points);
 
-      // TODO: Re-think the efficiency of this for loop
-      // loop from `source` to `destination` to store values before Simpson's rule.
-      // this loop skips the last point 'destination'
-//      for (auto point = source + step; (point - destination).getNorm() > 0.6 * stepsize;
-//           point = point + step) {
-//
-//         // get the environment node at this specific 'point'
-//         auto const* node{universe->getContainingNode(point)};
-//
-//         // get the associated refractivity at 'point'
-//         auto const refractive_index{node->getModelProperties().getRefractiveIndex(point)};
-////         auto const refractive_index{1.000327};
-//         rindex.push_back(refractive_index);
-//
-//         // add this 'point' to our deque collection
-//         points.push_back(point);
-//      }
+          // get and store the refractive index of the first point 'source'
+          auto const* nodeSource{universe->getContainingNode(source)};
+          auto const ri_source{
+              nodeSource->getModelProperties().getRefractiveIndex(source)};
+          rindex.push_back(ri_source);
+          points.push_back(source);
 
-      //add the refractive index of last point 'destination' and store it
-      auto const* node{universe->getContainingNode(destination)};
-      auto const ri_destination{node->getModelProperties().getRefractiveIndex(destination)};
-//      auto const ri_destination{1.000327};
-      rindex.push_back(ri_destination);
-      points.push_back(destination);
+          // loop from `source` to `destination` to store values before Simpson's rule.
+          // this loop skips the last point 'destination' and "misses" the extra point
+          for (auto point = source + step;
+               (point - destination).getNorm() > 0.6 * stepsize; point = point + step) {
 
-      // Apply Simpson's rule
-      auto N = rindex.size();
-      std::size_t index = 0;
-      double sum = rindex.at(index);
-      auto refra_ = rindex.at(index);
-      auto h = ((destination - source).getNorm()) / (N - 1);
-      for (std::size_t index = 1; index < (N - 1); index += 2) {
-        sum += 4 * rindex.at(index);
-        refra_ += rindex.at(index);
+            // get the environment node at this specific 'point'
+            auto const* node{universe->getContainingNode(point)};
+
+            // get the associated refractivity at 'point'
+            auto const refractive_index{
+                node->getModelProperties().getRefractiveIndex(point)};
+            //         auto const refractive_index{1.000327};
+            rindex.push_back(refractive_index);
+
+            // add this 'point' to our deque collection
+            points.push_back(point);
+          }
+
+          // Get the extra points that the for loop misses until the destination
+          auto const extrapoint_ {points.back() + step};
+
+          // add the refractive index of last point 'destination' and store it
+          auto const* node{universe->getContainingNode(destination)};
+          auto const ri_destination{node->getModelProperties().getRefractiveIndex(destination)};
+          //      auto const ri_destination{1.000327};
+          rindex.push_back(ri_destination);
+          points.push_back(destination);
+
+          auto N = rindex.size();
+          std::size_t index = 0;
+          double sum = rindex.at(index);
+          auto refra_ = rindex.at(index);
+          TimeType time {0_s};
+
+          if ((N-1) % 2 == 0) {
+            // Apply the standard Simpson's rule
+            auto h = ((destination - source).getNorm()) / (N - 1);
+
+            for (std::size_t index = 1; index < (N - 1); index += 2) {
+              sum += 4 * rindex.at(index);
+              refra_ += rindex.at(index);
+            }
+            for (std::size_t index = 2; index < (N - 1); index += 2) {
+              sum += 2 * rindex.at(index);
+              refra_ += rindex.at(index);
+            }
+            index = N - 1;
+            sum = sum + rindex.at(index);
+            refra_ += rindex.at(index);
+
+            // compute the total time delay.
+            time = sum * (h / (3 * constants::c));
+          } else {
+            // Apply Simpson's rule for one "extra" point and then subtract the difference
+            points.pop_back();
+            rindex.pop_back();
+            auto const* node{universe->getContainingNode(extrapoint_)};
+            auto const ri_extrapoint{node->getModelProperties().getRefractiveIndex(extrapoint_)};
+            rindex.push_back(ri_extrapoint);
+            points.push_back(extrapoint_);
+            auto const extrapoint2_ {extrapoint_ + step};
+            auto const* node2{universe->getContainingNode(extrapoint2_)};
+            auto const ri_extrapoint2{node2->getModelProperties().getRefractiveIndex(extrapoint2_)};
+            rindex.push_back(ri_extrapoint2);
+            points.push_back(extrapoint2_);
+            N = rindex.size();
+            auto h = ((extrapoint2_ - source).getNorm()) / (N - 1);
+            for (std::size_t index = 1; index < (N - 1); index += 2) {
+              sum += 4 * rindex.at(index);
+              refra_ += rindex.at(index);
+            }
+            for (std::size_t index = 2; index < (N - 1); index += 2) {
+              sum += 2 * rindex.at(index);
+              refra_ += rindex.at(index);
+            }
+            index = N - 1;
+            sum = sum + rindex.at(index);
+            refra_ += rindex.at(index);
+
+            // compute the total time delay including the correction
+            time = sum * (h / (3 * constants::c)) - (ri_extrapoint2 * ((extrapoint2_ - destination).getNorm()) / constants::c);
+          }
+
+          // uncomment the following if you want to skip the integration for fast tests
+          //TimeType time = ri_destination * (distance_ / constants::c);
+
+          // compute the average refractive index.
+          auto averageRefractiveIndex_ = refra_ / N;
+
+          return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination,
+                             direction, receive_, distance_, points)};
+        } else {
+          throw stepsize;
+        }
+      } catch (const LengthType& s) {
+        CORSIKA_LOG_ERROR("Please choose a smaller stepsize for the numerical integration");
       }
-      for (std::size_t index = 2; index < (N - 1); index += 2) {
-        sum += 2 * rindex.at(index);
-        refra_ += rindex.at(index);
-      }
-      index = N - 1;
-      sum = sum + rindex.at(index);
-      refra_ += rindex.at(index);
-
-      // compute the total time delay.
-//      TimeType time = sum * (h / (3 * constants::c));
-      TimeType time = (distance_ / constants::c);
-
-      // compute the average refractivity.
-      auto averageRefractiveIndex_ = refra_ / N;
-
-      // refractivity definition: (n - 1)
-
-      // realize that emission and receive vector are 'direction' in this case.
-      return { SignalPath(time, averageRefractiveIndex_, ri_source,  ri_destination,
-                         direction , receive_, distance_,points) };
 
     } // END: propagate()
 
