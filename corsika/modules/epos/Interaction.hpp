@@ -58,7 +58,7 @@ namespace corsika::epos {
     bool isValidCoMEnergy(HEPEnergyType const ecm) const {
       return (minEnergyCoM_ <= ecm) && (ecm <= maxEnergyCoM_);
     }
-    
+
     //! eposlhc only accepts nuclei with X<=A<=Y as targets, or protons aka Hydrogen or
     //! neutrons (p,n == nucleon)
     bool isValidTarget(Code const) const;
