@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
   std::cout << "shower axis length: " << (showerCore - injectionPos).getNorm() * 1.02
             << std::endl;
 
-  OutputManager output("em_shower_outputs");
+  OutputManager output("radio_em_shower_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
 
   // setup processes, decays and interactions
@@ -198,7 +198,7 @@ int main(int argc, char** argv) {
   LongitudinalProfile longprof{showerAxis};
 
 
-  // initiate radio process
+  // initiate CoREAS
   RadioProcess<decltype(detector), CoREAS<decltype(detector),
       decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
                                           coreas(detector, env);
@@ -206,13 +206,21 @@ int main(int argc, char** argv) {
   // register CoREAS with the output manager
   output.add("CoREAS", coreas);
 
+  // initiate ZHS
+  RadioProcess<decltype(detector), CoREAS<decltype(detector),
+      decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+                                          zhs(detector, env);
+
+  // register ZHS with the output manager
+  output.add("ZHS", zhs);
+
 
 //  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
 //  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}),
 //                                    "particles.dat");
 //  output.add("obsplane", observationLevel);
 
-  auto sequence = make_sequence(emCascadeCounted, emContinuous, longprof, cut, coreas);
+  auto sequence = make_sequence(emCascadeCounted, emContinuous, longprof, cut, coreas, zhs);
   // ,observationLevel, trackWriter);
   // define air shower object, run simulation
   setup::Tracking tracking;

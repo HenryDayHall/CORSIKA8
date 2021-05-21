@@ -446,7 +446,7 @@ int main(int argc, char** argv) {
     // register the observation plane with the output
     /* output.add("particles", observationLevel); */
 
-    // initiate radio process
+    // initiate CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector),
         decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
                                             coreas(detector, env);
@@ -454,10 +454,18 @@ int main(int argc, char** argv) {
     // register CoREAS with the output manager
     output.add("CoREAS", coreas);
 
+    // initiate ZHS
+    RadioProcess<decltype(detector), CoREAS<decltype(detector),
+        decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+                                            zhs(detector, env);
+
+    // register ZHS with the output manager
+    output.add("ZHS", zhs);
+
     auto sequence = make_sequence( // emCascadeCounted,
         stackInspect, hadronSequence, reset_particle_mass, decaySequence,
         // emContinuous,
-        BetheBlochPDG(showerAxis), cut, coreas, longprof);
+        BetheBlochPDG(showerAxis), cut, coreas, zhs, longprof);
 
     // define air shower object, run simulation
     setup::Tracking tracking;
