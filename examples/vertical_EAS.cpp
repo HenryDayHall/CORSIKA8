@@ -34,7 +34,7 @@
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/IMagneticFieldModel.hpp>
-#include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
+#include <corsika/media/USStandardAtmosphere.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
@@ -180,8 +180,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 0_km + builder.getPlanetRadius();
-  auto const injectionHeight = 111.75_km + builder.getPlanetRadius();
+  auto const observationHeight = 0_km + constants::EarthRadius::Mean;
+  auto const injectionHeight = 111.75_km + constants::EarthRadius::Mean;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
