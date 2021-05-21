@@ -7,7 +7,7 @@
 Unknown                  0       0       CannotInteract
 
 # Here is the list of particles known to EPOS
-Gamma                    10      0       CannotInteract
+Photon                    10      0       CannotInteract
 Electron                 12      0       CannotInteract
 Positron                 -12     0       CannotInteract
 MuMinus			 14	 0	 CannotInteract
