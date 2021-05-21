@@ -55,18 +55,13 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) {
 
-      // get the global simulation time for that track. (best guess for now)
+      // get the global simulation time for that track.
       auto startTime_{particle.getTime()}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
       auto endTime_{particle.getTime() + track.getDuration()};    // time at end point of track.
 
       if (startTime_ - endTime_ == 0_s) {
         return ProcessReturn::Ok;
       } else {
-
-      // TODO: this should be fixed with the continuous processes new design, so we can get the energy at start and end of track for corrections
-      // gamma factor is calculated using beta
-      // auto startGamma_ {1. / sqrt(1. - (startBeta_ * startBeta_))};
-      // auto endGamma_ {1. / sqrt(1. - (endBeta_ * endBeta_))};
 
       // get start and end position of the track
       auto startPoint_{track.getPosition(0)};
@@ -156,7 +151,7 @@ namespace corsika {
               if ((paths1[i].refractive_index_destination_ > 1) &&
                   (std::fabs(preDoppler_) <= approxThreshold_ || std::fabs(postDoppler_) <= approxThreshold_)) {
 
-                std::cout << "****************** ZHS-like approximation ******************" << "\n" << std::endl;
+                CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
 
                 // clear the existing paths for this particle and track, since we don't need them anymore
                 paths1.clear();
@@ -303,14 +298,10 @@ namespace corsika {
                   // TODO: Be very careful with this. Maybe the EVs should be fed after the for loop of paths3
                   antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
                   antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
-                  std::cout << "*****---------- signals received! ----------*****" << "\n" << std::endl;
-
                 } // End of looping over paths3
 
               } // end of ZHS-like approximation
               else {
-
-                std::cout << "****************** CoREAS ******************" << std::endl;
 
                 // calculate electric field vector for startpoint
                 ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))).getComponents() /
@@ -325,7 +316,7 @@ namespace corsika {
 
                 if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
-                  std::cout << "----- Doppler factors are less than 1.e-9 -----" << std::endl;
+                  CORSIKA_LOG_INFO("Doppler factors are less than 1.e-9 for this track");
 
                   const long gridResolution_{1 / antenna.sample_rate_ / 1_s};
                   double deltaT_{(endPointReceiveTime_ - startPointReceiveTime_) / 1_s};
@@ -379,21 +370,16 @@ namespace corsika {
                     }   // End of if for startbin == endbin
                   }     // End of if deltaT < gridresolution
                 }       // End of if that checks small doppler factors
-
                 antenna.receive(startPointReceiveTime_, ReceiveVectorStart_, EV1_);
                 antenna.receive(endPointReceiveTime_, ReceiveVectorEnd_, EV2_);
-                std::cout << "*****---------- signals received! ----------*****" << "\n" << std::endl;
-
               } // End of else that does not perform ZHS-like approximation
 
             } // End of loop over both paths to get signal info
           }   // End of try block
           catch (size_t i) {
-            std::cerr << " --- Signal Paths do not have the same size!!! --- "
-                      << std::endl;
+            CORSIKA_LOG_ERROR("Signal Paths do not have the same size!");
           }
         } // End of looping over antennas
-
         return ProcessReturn::Ok;
       }
     } // End of simulate method
