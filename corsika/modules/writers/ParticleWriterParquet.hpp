@@ -51,6 +51,7 @@ namespace corsika {
      */
     void write(Code const& pid, units::si::HEPEnergyType const& energy,
                units::si::LengthType const& x, units::si::LengthType const& y,
+               units::si::LengthType const& z,
                const double weight);
 
     /**
@@ -58,7 +59,7 @@ namespace corsika {
      */
     void write(unsigned int const A, unsigned int const Z,
                units::si::HEPEnergyType const& energy, units::si::LengthType const& x,
-               units::si::LengthType const& y, const double weight);
+               units::si::LengthType const& y, units::si::LengthType const& z, const double weight);
 
     /**
      * Return collected library-level summary for output.
@@ -68,7 +69,7 @@ namespace corsika {
     /**
      * If plane is absorbing particles: return the total energy absorbed.
      */
-    HEPEnergyType getEnergyGround() const { return energyGround_; }
+    HEPEnergyType getTotalEnergy() const { return totalEnergy_; }
 
   private:
     ParquetStreamer output_; ///< The primary output file.
@@ -79,7 +80,7 @@ namespace corsika {
     double countEM_ = 0;      ///< count EM particles hitting plane.
     double countOthers_ = 0;  ///< count othe types of particles hitting plane
 
-    HEPEnergyType energyGround_; ///< energy absorbed in ground.
+    HEPEnergyType totalEnergy_; ///< energy absorbed in ground.
 
   }; // class ParticleWriterParquet
 

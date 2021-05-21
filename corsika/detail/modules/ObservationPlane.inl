@@ -55,11 +55,11 @@ namespace corsika {
     if (pid == Code::Nucleus) {
       // add our particles to the output file stream
       output_.write(particle.getNuclearA(), particle.getNuclearZ(), energy,
-                    displacement.dot(xAxis_), displacement.dot(yAxis_), weight);
+                    displacement.dot(xAxis_), displacement.dot(yAxis_), 0_m, weight);
     } else {
       // add our particles to the output file stream
       output_.write(particle.getPID(), energy, displacement.dot(xAxis_),
-                    displacement.dot(yAxis_), weight);
+                    displacement.dot(yAxis_), 0_m, weight);
     }
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);

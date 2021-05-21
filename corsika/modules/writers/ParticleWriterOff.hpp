@@ -27,12 +27,12 @@ namespace corsika {
     void endOfLibrary() final override {}
 
     // for pdg particles
-    void write(Code const&, HEPEnergyType const&, LengthType const&, LengthType const&,
+    void write(Code const&, HEPEnergyType const&, LengthType const&, LengthType const&, LengthType const&,
                double const) {}
 
     // for nuclei
     void write(unsigned int const, unsigned int const, HEPEnergyType const&,
-               LengthType const&, LengthType const&, double const) {}
+               LengthType const&, LengthType const&, LengthType const&, double const) {}
 
   }; // class ParticleWriterOff
 

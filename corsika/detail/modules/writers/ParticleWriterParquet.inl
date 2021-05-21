@@ -15,7 +15,7 @@ namespace corsika {
   inline ParticleWriterParquet::ParticleWriterParquet()
       : output_()
       , showerId_(0)
-      , energyGround_(0_eV) {}
+      , totalEnergy_(0_eV) {}
 
   inline void ParticleWriterParquet::startOfLibrary(
       boost::filesystem::path const& directory) {
@@ -35,6 +35,10 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
+    output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
     output_.addField("weight", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
 
@@ -42,7 +46,7 @@ namespace corsika {
     output_.buildStreamer();
 
     showerId_ = 0;
-    energyGround_ = 0_eV;
+    totalEnergy_ = 0_eV;
     countHadrons_ = 0;
     countOthers_ = 0;
     countEM_ = 0;
@@ -59,15 +63,17 @@ namespace corsika {
 
   inline void ParticleWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
                                            LengthType const& x, LengthType const& y,
+                                           LengthType const& z,
                                            double const weight) {
 
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << showerId_ << static_cast<int>(get_PDG(pid))
                            << static_cast<float>(energy / 1_GeV)
                            << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
+                           << static_cast<float>(z / 1_m)
                            << static_cast<float>(weight) << parquet::EndRow;
 
-    energyGround_ += energy;
+    totalEnergy_ += energy;
 
     if (is_hadron(pid)) {
       ++countHadrons_;
@@ -83,13 +89,15 @@ namespace corsika {
   inline void ParticleWriterParquet::write(unsigned int const A, unsigned int const Z,
                                            HEPEnergyType const& energy,
                                            LengthType const& x, LengthType const& y,
+                                           LengthType const& z,
                                            double const weight) {
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << showerId_ << static_cast<int>(get_PDG(A, Z))
                            << static_cast<float>(energy / 1_GeV)
                            << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
+                           << static_cast<float>(z / 1_m)
                            << static_cast<float>(weight) << parquet::EndRow;
-    energyGround_ += energy;
+    totalEnergy_ += energy;
 
     ++countHadrons_;
   }
