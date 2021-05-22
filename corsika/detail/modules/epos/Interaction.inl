@@ -564,8 +564,7 @@ namespace corsika::epos {
                              " id= {}"
                              " p= {}",
                              pid, momentum.getComponents() / 1_GeV);
-        auto pnew =
-            view.addSecondary(std::make_tuple(pid, energy, momentum, pOrig, tOrig));
+        auto pnew = view.addSecondary(std::make_tuple(pid, momentum, pOrig, tOrig));
         Plab_final += pnew.getMomentum();
         Elab_final += pnew.getEnergy();
       }
