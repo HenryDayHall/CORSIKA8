@@ -44,34 +44,6 @@ namespace corsika::sibyll {
     CORSIKA_LOG_DEBUG("Sibyll::Interaction n={}, Nnuc={}", count_, nucCount_);
   }
 
-  inline void Interaction::setStable(std::vector<corsika::Code> const& vParticleList) {
-    for (auto p : vParticleList) Interaction::setStable(p);
-  }
-
-  inline void Interaction::setUnstable(std::vector<corsika::Code> const& vParticleList) {
-    for (auto p : vParticleList) Interaction::setUnstable(p);
-  }
-
-  inline void Interaction::setUnstable(const corsika::Code vCode) {
-    CORSIKA_LOG_DEBUG("Sibyll::Interaction: setting {} unstable..", vCode);
-    const int s_id = abs(corsika::sibyll::convertToSibyllRaw(vCode));
-    s_csydec_.idb[s_id - 1] = abs(s_csydec_.idb[s_id - 1]);
-  }
-
-  inline void Interaction::setStable(const corsika::Code vCode) {
-    CORSIKA_LOG_DEBUG("Sibyll::Interaction: setting {} stable..", vCode);
-    const int s_id = abs(corsika::sibyll::convertToSibyllRaw(vCode));
-    s_csydec_.idb[s_id - 1] = (-1) * abs(s_csydec_.idb[s_id - 1]);
-  }
-
-  inline void Interaction::setAllUnstable() {
-    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = abs(s_csydec_.idb[i]);
-  }
-
-  inline void Interaction::setAllStable() {
-    for (int i = 0; i < 99; ++i) s_csydec_.idb[i] = -1 * abs(s_csydec_.idb[i]);
-  }
-
   inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
   Interaction::getCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
                                const corsika::HEPEnergyType CoMenergy) const {

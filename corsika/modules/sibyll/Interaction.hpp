@@ -52,14 +52,6 @@ namespace corsika::sibyll {
     void doInteraction(TSecondaries&);
 
   private:
-    void setStable(std::vector<Code> const&);
-    void setUnstable(std::vector<Code> const&);
-
-    void setUnstable(Code const);
-    void setStable(Code const);
-    void setAllUnstable();
-    void setAllStable();
-
     int getMaxTargetMassNumber() const { return maxTargetMassNumber_; }
     HEPEnergyType getMinEnergyCoM() const { return minEnergyCoM_; }
     HEPEnergyType getMaxEnergyCoM() const { return maxEnergyCoM_; }
