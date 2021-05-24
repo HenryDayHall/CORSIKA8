@@ -1,5 +1,4 @@
 [requires]
-readline/8.0 # this is only needed to fix a missing dependency in "bison" which is pulled-in by arrow
 spdlog/1.8.5
 catch2/2.13.3
 eigen/3.3.8
@@ -8,6 +7,10 @@ zlib/1.2.11
 proposal/7.0.4
 yaml-cpp/0.6.3
 arrow/2.0.0
+
+[build_requires]
+readline/8.0 # this is only needed to fix a missing dependency in "bison" which is pulled-in by arrow
+bison/[>1.0] # needed for arrow, and we HAVE to compile it
 
 [generators]
 cmake
