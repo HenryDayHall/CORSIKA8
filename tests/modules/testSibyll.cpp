@@ -68,8 +68,11 @@ TEST_CASE("Sibyll", "[processes]") {
   }
 
   SECTION("sibyll mass") {
-
     CHECK_FALSE(corsika::sibyll::getSibyllMass(Code::Electron) == 0_GeV);
+    // Nucleus not a particle
+    CHECK_THROWS(corsika::sibyll::getSibyllMass(Code::Nucleus));
+    // Higgs not a particle in Sibyll
+    CHECK_THROWS(corsika::sibyll::getSibyllMass(Code::H0));
   }
 }
 
@@ -129,6 +132,16 @@ TEST_CASE("SibyllInterface", "[processes]") {
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
     CHECK(xs_ela_pn == xs_ela_pHydrogen);
+
+    // out of range
+    // beam particle
+    CHECK_THROWS(
+        std::get<0>(model.getCrossSection(Code::Electron, Code::Hydrogen, 100_GeV)));
+    // target particle
+    CHECK(std::get<0>(model.getCrossSection(Code::Proton, Code::Electron, 100_GeV)) ==
+          std::numeric_limits<double>::infinity() * 1_mb);
+    // energy out of range
+    CHECK_THROWS(std::get<0>(model.getCrossSection(Code::Proton, Code::Hydrogen, 5_GeV)));
   }
 
   SECTION("InteractionInterface - low energy") {
@@ -142,7 +155,9 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
     auto particle = stack->first();
 
-    Interaction model;
+    // also print particles after sibyll was called
+    Interaction model(true);
+
     model.doInteraction(view);
     auto const pSum = sumMomentum(view, cs);
 
@@ -209,11 +224,57 @@ TEST_CASE("SibyllInterface", "[processes]") {
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+    [[maybe_unused]] GrammageType const length = model.getInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm == Approx(88.7).margin(0.1));
     // CHECK(view.getEntries() == 9); //! \todo: this was 20 before refactory-2020: check
     //                                           "also sibyll not stable wrt. to compiler
     //                                           changes"
+  }
+
+  SECTION("InteractionInterface - energy too low") {
+
+    const HEPEnergyType P0 = 5_GeV;
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+    MomentumVector plab =
+        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    setup::StackView& view = *viewPtr;
+
+    auto particle = stack->first();
+
+    Interaction model;
+    CHECK_THROWS(model.doInteraction(view));
+
+    [[maybe_unused]] GrammageType const length = model.getInteractionLength(particle);
+    CHECK(model.getInteractionLength(particle) / 1_g * 1_cm * 1_cm ==
+          std::numeric_limits<double>::infinity());
+  }
+
+  SECTION("InteractionInterface - energy too high") {
+
+    const HEPEnergyType P0 = 1000_EeV;
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+    MomentumVector plab =
+        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    setup::StackView& view = *viewPtr;
+
+    Interaction model;
+    CHECK_THROWS(model.doInteraction(view));
+  }
+
+  SECTION("InteractionInterface - target nucleus out of range") {
+    auto [env1, csPtr1, nodePtr1] = setup::testing::setup_environment(Code::Argon);
+    auto const& cs1 = *csPtr1;
+    const HEPEnergyType P0 = 150_GeV;
+    auto [stack, viewPtr] = setup::testing::setup_stack(
+        Code::Electron, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr1, cs1);
+    MomentumVector plab = MomentumVector(
+        cs1, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    setup::StackView& view = *viewPtr;
+
+    Interaction model;
+    CHECK_THROWS(model.doInteraction(view));
   }
 
   SECTION("NuclearInteractionInterface") {
@@ -248,16 +309,32 @@ TEST_CASE("SibyllInterface", "[processes]") {
     Decay model;
     model.printDecayConfig();
     [[maybe_unused]] const TimeType time = model.getLifetime(particle);
-
+    auto const gamma = particle.getEnergy() / particle.getMass();
+    CHECK(time == get_lifetime(Code::Lambda0) * gamma);
     model.doDecay(view);
     // run checks
     // lambda decays into proton and pi- or neutron and pi+
     CHECK(stack.getEntries() == 3);
   }
 
+  SECTION("DecayInterface - decay not handled") {
+    // sibyll does not know the higgs for example
+    auto [stackPtr, viewPtr] = setup::testing::setup_stack(
+        Code::H0, 0, 0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+    setup::StackView& view = *viewPtr;
+    auto& stack = *stackPtr;
+    auto particle = stack.first();
+
+    Decay model;
+
+    CHECK(model.getLifetime(particle) == std::numeric_limits<double>::infinity() * 1_s);
+    CHECK_THROWS(model.doDecay(view));
+  }
+
   SECTION("DecayConfiguration") {
 
     Decay model({Code::PiPlus, Code::PiMinus});
+    model.printDecayConfig();
     CHECK(model.isDecayHandled(Code::PiPlus));
     CHECK(model.isDecayHandled(Code::PiMinus));
     CHECK_FALSE(model.isDecayHandled(Code::KPlus));
@@ -269,10 +346,13 @@ TEST_CASE("SibyllInterface", "[processes]") {
     model.setHandleDecay(particleTestList);
     for (auto& pCode : particleTestList) CHECK(model.isDecayHandled(pCode));
 
-    // individually
+    // set decay individually
     model.setHandleDecay(Code::KMinus);
+    // fail
+    CHECK_THROWS(model.setHandleDecay(Code::H0));
 
     // possible decays
+    CHECK_FALSE(model.canHandleDecay(Code::H0));
     CHECK_FALSE(model.canHandleDecay(Code::Proton));
     CHECK_FALSE(model.canHandleDecay(Code::Electron));
     CHECK(model.canHandleDecay(Code::PiPlus));
