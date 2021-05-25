@@ -34,6 +34,7 @@
 #include <corsika/modules/radio/antennas/TimeDomainAntenna.hpp>
 #include <corsika/modules/radio/detectors/RadioDetector.hpp>
 #include <corsika/modules/radio/propagators/StraightPropagator.hpp>
+#include <corsika/modules/radio/propagators/SimplePropagator.hpp>
 #include <corsika/modules/radio/propagators/SignalPath.hpp>
 #include <corsika/modules/radio/propagators/RadioPropagator.hpp>
 
