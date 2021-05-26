@@ -160,7 +160,7 @@ namespace corsika::pythia8 {
     MomentumVector const& pMomentum = particle.getMomentum();
     CoordinateSystemPtr const& labCS = pMomentum.getCoordinateSystem();
 
-    Code const corsikaBeamId = particle.getPID();
+    Code corsikaBeamId = particle.getPID();
 
     // beam particles for pythia : 1, 2, 3 for p, pi, k
     // read from cross section code table
