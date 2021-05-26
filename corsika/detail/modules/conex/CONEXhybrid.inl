@@ -260,14 +260,13 @@ namespace corsika {
     ::conex::get_shower_hadron_(icuth, nX, Hadrons[0]);
 
     std::ofstream file{"conex_output.txt"};
-    file << fmt::format("#{:>8} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13}\n", "X",
+    file << fmt::format("#{:>10} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13} {:>13}\n", "X",
                         "N", "dEdX", "Mu", "dMu", "Photon", "El", "Had");
     for (int i = 0; i < nX; ++i) {
       file << fmt::format(
-          " {:>8.2f} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3} {:>13.3}\n",
+          " {:>10.2f} {:.5e} {:.5e} {:.5e} {:.5e} {:.5e} {:.5e} {:.5e}\n",
           X[i], N[i], dEdX[i], Mu[i], dMu[i], Photon[i], Electrons[i], Hadrons[i]);
     }
-    file.close();
 
     std::ofstream fitout{"conex_fit.txt"};
     fitout << fitpars[1 - 1] << " # log10(eprima/eV)" << std::endl;
@@ -283,7 +282,6 @@ namespace corsika {
     fitout << fitpars[11 - 1] << " # phi" << std::endl;
     fitout << fitpars[12 - 1] << " # inelasticity 1st int." << std::endl;
     fitout << fitpars[13 - 1] << " # ???" << std::endl;
-    fitout.close();
   }
 
   inline HEPEnergyType CONEXhybrid::getEnergyEM() const { return energy_em_; }
