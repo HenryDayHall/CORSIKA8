@@ -128,8 +128,11 @@ namespace corsika {
    * initialization are forwarded to Stack1Impl (first).
    */
 
-  template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _PI>
-  using CombinedStack = Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI>;
+  template <typename Stack1Impl, typename Stack2Impl, template <typename> typename _PI,
+            template <typename T1, template <class> class T2> class _MSecondaryProducer =
+                DefaultSecondaryProducer>
+  using CombinedStack =
+      Stack<CombinedStackImpl<Stack1Impl, Stack2Impl>, _PI, _MSecondaryProducer>;
 
 } // namespace corsika
 

@@ -54,8 +54,8 @@ namespace corsika {
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline FourVector<TTimeType, TSpaceVecType>&
-  FourVector<TTimeType, TSpaceVecType>::operator+=(FourVector const& b) {
+  inline FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::
+  operator+=(FourVector const& b) {
     timeLike_ += b.timeLike_;
     spaceLike_ += b.spaceLike_;
 
@@ -63,39 +63,39 @@ namespace corsika {
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline FourVector<TTimeType, TSpaceVecType>&
-  FourVector<TTimeType, TSpaceVecType>::operator-=(FourVector const& b) {
+  inline FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::
+  operator-=(FourVector const& b) {
     timeLike_ -= b.timeLike_;
     spaceLike_ -= b.spaceLike_;
     return *this;
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline FourVector<TTimeType, TSpaceVecType>&
-  FourVector<TTimeType, TSpaceVecType>::operator*=(double const b) {
+  inline FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::
+  operator*=(double const b) {
     timeLike_ *= b;
     spaceLike_ *= b;
     return *this;
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline FourVector<TTimeType, TSpaceVecType>&
-  FourVector<TTimeType, TSpaceVecType>::operator/=(double const b) {
+  inline FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::
+  operator/=(double const b) {
     timeLike_ /= b;
     spaceLike_.getComponents() /= b;
     return *this;
   }
 
   template <typename TTimeType, typename TSpaceVecType>
-  inline FourVector<TTimeType, TSpaceVecType>&
-  FourVector<TTimeType, TSpaceVecType>::operator/(double const b) {
+  inline FourVector<TTimeType, TSpaceVecType>& FourVector<TTimeType, TSpaceVecType>::
+  operator/(double const b) {
     *this /= b;
     return *this;
   }
 
   template <typename TTimeType, typename TSpaceVecType>
   inline typename FourVector<TTimeType, TSpaceVecType>::norm_type
-  FourVector<TTimeType, TSpaceVecType>::operator*(FourVector const& b) {
+      FourVector<TTimeType, TSpaceVecType>::operator*(FourVector const& b) {
     if constexpr (std::is_same<time_type, decltype(std::declval<space_type>() / meter *
                                                    second)>::value)
       return timeLike_ * b.timeLike_ * constants::cSquared - spaceLike_.norm();

@@ -38,7 +38,8 @@ namespace corsika {
 
     using StackWithGeometry =
         CombinedStack<typename nuclear_stack::ParticleDataStack::stack_data_type,
-                      node::GeometryData<setup::Environment>, StackWithGeometryInterface>;
+                      node::GeometryData<setup::Environment>, StackWithGeometryInterface,
+                      DefaultSecondaryProducer>;
 
     // ------------------------------------------
     // Add [optional] history data to stack, too:
@@ -51,7 +52,8 @@ namespace corsika {
 
     using StackWithHistory =
         CombinedStack<typename StackWithGeometry::stack_data_type,
-                      history::HistoryEventData, StackWithHistoryInterface>;
+                      history::HistoryEventData, StackWithHistoryInterface,
+                      history::HistorySecondaryProducer>;
 
   } // namespace setup::detail
 

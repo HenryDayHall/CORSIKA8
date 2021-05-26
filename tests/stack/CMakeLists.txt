@@ -1,7 +1,7 @@
 set (test_stack_sources
   TestMain.cpp
   testHistoryStack.cpp
-  testHistoryView.cpp
+#  testHistoryView.cpp
   testGeometryNodeStackExtension.cpp
   testWeightStackExtension.cpp
   testDummyStack.cpp
