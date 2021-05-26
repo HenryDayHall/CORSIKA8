@@ -84,8 +84,13 @@ namespace corsika {
       // important for controlling the runtime of radio (by ignoring particles
       // that aren't going to contribute i.e. heavy hadrons)
       // if (valid(particle, track)) {
-      if (particle.getPID() == Code::Electron || particle.getPID() == Code::Positron) {
+      auto const particleID_ {particle.getPID()};
+      if ((particleID_ == Code::Electron) || (particleID_ == Code::Positron)) {
+        CORSIKA_LOG_DEBUG("Particle for radio calculation: {} ", particleID_);
         return this->implementation().simulate(particle, track);
+      } else {
+        CORSIKA_LOG_DEBUG("Particle {} is irrelevant for radio", particleID_);
+        return ProcessReturn::Ok;
       }
       //}
     }

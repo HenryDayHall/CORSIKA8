@@ -69,6 +69,8 @@ UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<TInterface>>>;
 
 TEST_CASE("Radio", "[processes]") {
 
+logging::set_level(logging::level::debug);
+
   SECTION("CoREAS process") {
 
     // This serves as a compiler test for any changes in the CoREAS algorithm
@@ -125,7 +127,8 @@ TEST_CASE("Radio", "[processes]") {
 
 
     // create a particle
-    auto const particle{Code::Electron};
+    const Code particle{Code::Electron};
+//    const Code particle{Code::Proton};
     const auto pmass{get_mass(particle)};
 
 
@@ -326,6 +329,7 @@ TEST_CASE("Radio", "[processes]") {
       stack.clear();
 
       const Code particle{Code::Electron};
+//      const Code particle{Code::Proton};
       const HEPMassType pmass{get_mass(particle)};
 
       // construct an energy // move in the for loop
@@ -335,7 +339,7 @@ TEST_CASE("Radio", "[processes]") {
       OutputManager outputs("radio_synchrotron_example");
 
       // create a radio process instance using CoREAS (to use ZHS simply change CoREAS with ZHS)
-      RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+      RadioProcess<decltype(detector), CoREAS<decltype(detector), decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
       coreas(detector, env);
       outputs.add("CoREAS", coreas); // register CoREAS with the output manager
 
@@ -350,19 +354,19 @@ TEST_CASE("Radio", "[processes]") {
 
       // loop over all the tracks twice (this produces 2 pulses)
       for (size_t i = 0; i <= (n_points) * 2; i++) {
-      Point const point_1(rootCS,{radius*cos(M_PI*2*i/n_points),radius*sin(M_PI*2*i/n_points), 0_m});
-      Point const point_2(rootCS,{radius*cos(M_PI*2*(i+1)/n_points),radius*sin(M_PI*2*(i+1)/n_points), 0_m});
-      TimeType t {(point_2 - point_1).getNorm() / (0.999 * constants::c)};
-      timeCounter = timeCounter + t;
-      VelocityVector v { (point_2 - point_1) / t };
-      auto  beta {v / constants::c};
-      auto gamma {E0/pmass};
-      auto plab {beta * pmass * gamma};
-      Line l {point_1,v};
-      StraightTrajectory track {l,t};
-      auto particle1{stack.addParticle(std::make_tuple(particle, plab, point_1, timeCounter))};
-      coreas.doContinuous(particle1,track,true);
-      stack.clear();
+        Point const point_1(rootCS,{radius*cos(M_PI*2*i/n_points),radius*sin(M_PI*2*i/n_points), 0_m});
+        Point const point_2(rootCS,{radius*cos(M_PI*2*(i+1)/n_points),radius*sin(M_PI*2*(i+1)/n_points), 0_m});
+        TimeType t {(point_2 - point_1).getNorm() / (0.999 * constants::c)};
+        timeCounter = timeCounter + t;
+        VelocityVector v { (point_2 - point_1) / t };
+        auto  beta {v / constants::c};
+        auto gamma {E0/pmass};
+        auto plab {beta * pmass * gamma};
+        Line l {point_1,v};
+        StraightTrajectory track {l,t};
+        auto particle1{stack.addParticle(std::make_tuple(particle, plab, point_1, timeCounter))};
+        coreas.doContinuous(particle1,track,true);
+        stack.clear();
       }
 
       // trigger the manager to write the data to disk

@@ -22,6 +22,9 @@ namespace corsika {
   template <typename TRadioDetector, typename TPropagator>
   class CoREAS final : public RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator> {
 
+    int tinycounter_ {0};
+    int trackcounter_ {0};
+
     using Base = RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
     using Base::antennas_;
 
@@ -55,11 +58,17 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) {
 
+      CORSIKA_LOG_DEBUG("CoREAS initiated");
+
       // get the global simulation time for that track.
       auto startTime_{particle.getTime()}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
       auto endTime_{particle.getTime() + track.getDuration()};    // time at end point of track.
+      trackcounter_ += 1;
+      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
 
       if (startTime_ - endTime_ == 0_s) {
+        tinycounter_ += 1;
+        CORSIKA_LOG_ERROR("Tiny track number: {} ", tinycounter_);
         return ProcessReturn::Ok;
       } else {
 
@@ -72,11 +81,11 @@ namespace corsika {
       // beta is velocity / speed of light. Start & end should be the same in endpoints!
       auto beta_ {(endPoint_ - startPoint_) / (constants::c * (endTime_ - startTime_))};
 
-        // get particle charge
-        auto const charge_{get_charge(particle.getPID())};
+      // get particle charge
+      auto const charge_{get_charge(particle.getPID())};
 
-        // constants for electric field vector calculation
-        auto constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) / constants::c};
+      // constants for electric field vector calculation
+      auto constants_{charge_ / (4 * M_PI) / (constants::epsilonZero) / constants::c};
 
       // set threshold for application of ZHS-like approximation.
       const double approxThreshold_{1.0e-3};
@@ -135,35 +144,35 @@ namespace corsika {
             postDoppler_ = doppler;
           }
 
-              // calculate receive time for startpoint (aka time delay)
-              auto startPointReceiveTime_{startTime_ + paths1[i].propagation_time_}; // TODO: time 0 is when the imaginary primary hits the ground
+          // calculate receive time for startpoint (aka time delay)
+          auto startPointReceiveTime_{startTime_ + paths1[i].propagation_time_}; // TODO: time 0 is when the imaginary primary hits the ground
 
-              // calculate receive time for endpoint
-              auto endPointReceiveTime_{endTime_ + paths2[i].propagation_time_};
+          // calculate receive time for endpoint
+          auto endPointReceiveTime_{endTime_ + paths2[i].propagation_time_};
 
-              // get unit vector for startpoint at antenna location
-              auto ReceiveVectorStart_{paths1[i].receive_};
+          // get unit vector for startpoint at antenna location
+          auto ReceiveVectorStart_{paths1[i].receive_};
 
-              // get unit vector for endpoint at antenna location
-              auto ReceiveVectorEnd_{paths2[i].receive_};
+          // get unit vector for endpoint at antenna location
+          auto ReceiveVectorEnd_{paths2[i].receive_};
 
-              // perform ZHS-like calculation close to Cherenkov angle and for refractive index at antenna location greater than 1
-              if ((paths1[i].refractive_index_destination_ > 1) &&
+          // perform ZHS-like calculation close to Cherenkov angle and for refractive index at antenna location greater than 1
+          if ((paths1[i].refractive_index_destination_ > 1) &&
                   (std::fabs(preDoppler_) <= approxThreshold_ || std::fabs(postDoppler_) <= approxThreshold_)) {
 
-                CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
+            CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
 
-                // clear the existing paths for this particle and track, since we don't need them anymore
-                paths1.clear();
-                paths2.clear();
+            // clear the existing paths for this particle and track, since we don't need them anymore
+            paths1.clear();
+            paths2.clear();
 
-                // get global simulation time for the middle point of that track.
-                TimeType midTime_{((startPoint_ - endPoint_).getNorm() / 2) /
+            // get global simulation time for the middle point of that track.
+            TimeType midTime_{((startPoint_ - endPoint_).getNorm() / 2) /
                                   track.getVelocity(0).getNorm()};
 
-                // get "mid" position of the track geometrically
-                auto midVector_{(startPoint_ - endPoint_) / 2};
-                auto midPoint_{Point(midVector_.getCoordinateSystem(),
+            // get "mid" position of the track geometrically
+            auto midVector_{(startPoint_ - endPoint_) / 2};
+            auto midPoint_{Point(midVector_.getCoordinateSystem(),
                                      midVector_.getComponents().getX(),
                                      midVector_.getComponents().getY(),
                                      midVector_.getComponents().getZ())};
@@ -171,8 +180,8 @@ namespace corsika {
             // get the SignalPathCollection (path3) from the middle "endpoint" to the antenna.
             auto paths3{this->propagator_.propagate(midPoint_, antenna.getLocation(), 1_m)};
 
-                // now loop over the paths for endpoint that we got above
-                for (auto const& path : paths3) {
+            // now loop over the paths for endpoint that we got above
+            for (auto const& path : paths3) {
 
               auto const midPointReceiveTime_{midTime_ + path.propagation_time_};
               double midDoppler_{1. - path.refractive_index_source_ * beta_.dot(path.emit_)};
@@ -380,6 +389,7 @@ namespace corsika {
             CORSIKA_LOG_ERROR("Signal Paths do not have the same size!");
           }
         } // End of looping over antennas
+        CORSIKA_LOG_DEBUG("CoREAS simulation performed");
         return ProcessReturn::Ok;
       }
     } // End of simulate method
