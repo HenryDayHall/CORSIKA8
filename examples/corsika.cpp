@@ -314,7 +314,8 @@ int main(int argc, char** argv) {
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
+  ObservationPlane<setup::Tracking, NoOutput> observationLevel(
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
   // register the observation plane with the output
   output.add("particles", observationLevel);
 
