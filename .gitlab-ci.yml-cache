@@ -105,16 +105,25 @@ check-clang-format:
     expire_in: 3 days
     paths:
       - ${CI_PROJECT_DIR}/build/CMakeFiles/CMakeOutput.log
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull-push    
 
 # config for gcc
 config-u-18_04:
   extends: .config
   image: corsika/devel:u-18.04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # config for clang
 config-clang-8:
   extends: .config
   image: corsika/devel:clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
 
 
 
@@ -129,9 +138,7 @@ config-clang-8:
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -141,22 +148,30 @@ config-clang-8:
     - if: $CI_COMMIT_BRANCH
       when: manual
   allow_failure: true
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull-push
 
 # build for gcc
 build-u-18_04:
   extends: .build
   image: corsika/devel:u-18.04
-  needs: 
-    - job: config-u-18_04
-      artifacts: false
+  dependencies:
+    - config-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # build for clang
 build-clang-8:
   extends: .build
   image: corsika/devel:clang-8
-  needs:
-    - job: config-clang-8
-      artifacts: false
+  dependencies:
+    - config-clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
+
 
 
 
@@ -170,9 +185,7 @@ build-clang-8:
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
     - ctest -j4 
   rules:
@@ -189,22 +202,29 @@ build-clang-8:
     reports:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull-push
 
 # test for gcc
 test-u-18_04:
   extends: .test
   image: corsika/devel:u-18.04
-  needs:
-    - job: build-u-18_04
-      artifacts: false
+  dependencies:
+    - build-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # test for clang
 test-clang-8:
   extends: .test
   image: corsika/devel:clang-8
-  needs:
-    - job: build-clang-8
-      artifacts: false
+  dependencies:
+    - build-clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
 
 
 
@@ -219,9 +239,7 @@ test-clang-8:
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 
@@ -239,22 +257,29 @@ test-clang-8:
     reports:
       junit:
         - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull-push
 
 # build_test for gcc
 build_test-u-18_04:
   extends: .build_test
   image: corsika/devel:u-18.04
-  needs:
-    - job: config-u-18_04
-      artifacts: false
+  dependencies:
+    - config-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # build_test for clang
 build_test-clang-8:
   extends: .build_test
   image: corsika/devel:clang-8
-  needs:
-    - job: config-clang-8
-      artifacts: false
+  dependencies:
+    - config-clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
 
 
 
@@ -270,16 +295,14 @@ build_test-clang-8:
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
     - make install
     - mkdir -p build_examples
     - cd build_examples
-    - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
+    - cmake ../install/share/corsika/examples
     - make -j4
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
@@ -300,23 +323,29 @@ build_test-clang-8:
     paths:
       - ${CI_PROJECT_DIR}/build/build_examples/examples.log.gz
       - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull
 
 # build_test_example for gcc
 build_test_example-u-18_04:
   extends: .build_test_example
   image: corsika/devel:u-18.04
-  needs:
-    - job: config-u-18_04
-      artifacts: false
-
+  dependencies:
+    - config-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # build_test_example for clang
 build_test_example-clang-8:
   extends: .build_test_example
   image: corsika/devel:clang-8
-  needs:
-    - job: config-clang-8
-      artifacts: false
+  dependencies:
+    - config-clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
 
 
 
@@ -331,9 +360,7 @@ build_test_example-clang-8:
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
     - make -j2 install
   rules:
@@ -347,22 +374,29 @@ build_test_example-clang-8:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull
 
 # install for gcc
 install-u-18_04:
   extends: .install
   image: corsika/devel:u-18.04
-  needs:
-    - job: build-u-18_04
-      artifacts: false
+  dependencies:
+    - build-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # install for clang
 install-clang-8:
   extends: .install
   image: corsika/devel:clang-8
-  needs:
-    - job: build-clang-8
-      artifacts: false
+  dependencies:
+    - build-clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
 
 
 
@@ -377,7 +411,6 @@ install-clang-8:
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
@@ -386,7 +419,7 @@ install-clang-8:
     - make install
     - mkdir -p build_examples
     - cd build_examples
-    - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
+    - cmake ../install/share/corsika/examples
     - make -j4
     - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
@@ -400,6 +433,11 @@ install-clang-8:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull
   artifacts:
     when: always
     expire_in: 3 days
@@ -414,17 +452,19 @@ install-clang-8:
 release-full-u-18_04:
   extends: .release
   image: corsika/devel:u-18.04
-  needs:
-    - job: config-u-18_04
-      artifacts: false
+  dependencies:
+    - config-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 # release for clang
 release-full-clang-8:
   extends: .release
   image: corsika/devel:clang-8
-  needs:
-    - job: config-clang-8
-      artifacts: false
+  dependencies:
+    - config-clang-8
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-clang"
 
 
 
@@ -434,14 +474,12 @@ release-full-clang-8:
 
 coverage:
   image: corsika/devel:u-18.04
-  needs:
-    - job: config-u-18_04
-      artifacts: false
+  dependencies:
+    - config-u-18_04
   stage: optional
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Coverage -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
@@ -463,6 +501,12 @@ coverage:
     expire_in: 1 year
     paths:
       - ${CI_PROJECT_DIR}/build/coverage-report.tar.gz
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 
 
@@ -473,17 +517,14 @@ coverage:
 ##########################################################
 sanity:
   image: corsika/devel:u-18.04
-  needs:
-    - job: config-u-18_04
-      artifacts: false
-
+  dependencies:
+    - config-u-18_04
   stage: optional
   tags:
     - corsika
   script:
-    - mkdir -p build
     - cd build
-    - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DWITH_CORSIKA_SANITIZERS_ENABLED=ON
     - cmake --build . -- -j4
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
@@ -496,6 +537,12 @@ sanity:
     - if: $CI_COMMIT_TAG
       when: manual
       allow_failure: true
+  cache:
+    paths:
+      - ${CI_PROJECT_DIR}/build/
+    untracked: true
+    policy: pull
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
 
 ##########################################################
 # template for all Python jobs
@@ -522,9 +569,10 @@ sanity:
 python-3.8:
   extends: .python
   image: corsika/devel:u-18.04
-  needs:
-    - job: build-u-18_04
-      artifacts: false
+  dependencies:
+    - build-u-18_04
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-gcc"
   artifacts:
     when: always
     expire_in: 1 year
