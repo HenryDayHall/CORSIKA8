@@ -302,9 +302,9 @@ build_test-clang-8:
     - make install
     - mkdir -p build_examples
     - cd build_examples
-    - cmake ../install/share/corsika/examples
+    - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
     - make -j4
-    - make run_examples | gzip -v -9 > examples.log.gz
+    - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
       when: manual
@@ -419,9 +419,9 @@ install-clang-8:
     - make install
     - mkdir -p build_examples
     - cd build_examples
-    - cmake ../install/share/corsika/examples
+    - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
     - make -j4
-    - make run_examples | gzip -v -9 > examples.log.gz
+    - make -j4 run_examples | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
