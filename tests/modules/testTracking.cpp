@@ -297,7 +297,7 @@ TEMPLATE_TEST_CASE("TrackingFail", "doesntwork", tracking_leapfrog_curved::Track
 TEMPLATE_TEST_CASE("TrackingPlane", "plane", tracking_leapfrog_curved::Tracking,
                    tracking_leapfrog_straight::Tracking, tracking_line::Tracking) {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   const HEPEnergyType P0 = 10_GeV;
 
