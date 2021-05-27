@@ -379,7 +379,7 @@ install-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Release -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
