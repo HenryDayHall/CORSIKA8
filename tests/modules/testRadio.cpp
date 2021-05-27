@@ -444,6 +444,29 @@ logging::set_level(logging::level::debug);
     auto [t222, E2] = ant2.getWaveform();
     CHECK(E2(5,0) -20 == 0);
 
+    // the following creates a star-shaped pattern of antennas in the ground
+    AntennaCollection<TimeDomainAntenna> detector__;
+    const auto point11{Point(env6.getCoordinateSystem(), 1000_m, 20_m, 30_m)};
+    const TimeType t2222{1e-6_s};
+    const InverseTimeType t3333{1e+9_Hz};
+
+    for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
+      for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+        auto phiRad_ = phi_ / 180. * M_PI;
+        auto const point_ {Point(env6.getCoordinateSystem(), radius_ * cos(phiRad_), radius_ * sin(phiRad_), 0_m)};
+        auto time__ {(point11 - point_).getNorm() / constants::c};
+        const int rr_ = static_cast<int>(radius_ / 1_m);
+        std::string var_ = "antenna_R=" + std::to_string(rr_) + "_m-Phi=" + std::to_string(phi_) + "degrees";
+        TimeDomainAntenna ant111(var_, point_, time__, t2222, t3333);
+        detector__.addAntenna(ant111);
+      }
+    }
+
+    // this prints out the antenna names and locations
+    for (auto const antenna : detector__.getAntennas()) {
+      std::cout << antenna.getName() << " --++-- " << antenna.getLocation() << std::endl;
+    }
+
   }
 
   SECTION("Simple Propagator w/ Uniform Refractive Index"){

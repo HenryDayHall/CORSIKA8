@@ -118,30 +118,6 @@ int main(int argc, char** argv) {
   builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
 
-  // the antenna locations
-  const auto point1{Point(rootCS, 100_m, 100_m, 0_m)};
-  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
-  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
-  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
-
-  // the antenna time variables
-  const TimeType t1{0_s};
-  const TimeType t2{1e-6_s};
-  const InverseTimeType t3{1e+9_Hz};
-
-  // the antennas
-  TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
-  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
-  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
-  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
-
-  // the detector (aka antenna collection)
-  AntennaCollection<TimeDomainAntenna> detector;
-  detector.addAntenna(ant1);
-  detector.addAntenna(ant2);
-  detector.addAntenna(ant3);
-  detector.addAntenna(ant4);
-
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
@@ -185,9 +161,33 @@ int main(int argc, char** argv) {
   OutputManager output("radio_em_shower_outputs");
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env};
 
+  // the antenna time variables
+  const TimeType duration_{1e-6_s};
+  const InverseTimeType sampleRate_{1e+11_Hz};
+
+  // the detector (aka antenna collection)
+  AntennaCollection<TimeDomainAntenna> detector;
+
+  auto const showerCoreX_ {showerCore.getCoordinates().getX()};
+  auto const showerCoreY_ {showerCore.getCoordinates().getY()};
+
+  // this creates a star-shaped pattern of points around the shower core
+  for (auto radius_ = 100_m; radius_ <= 10000_m; radius_ += 9900_m) {
+    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+      auto phiRad_ = phi_ / 180. * M_PI;
+      auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+      auto triggertime_ {(injectionPos - point_).getNorm() / constants::c};
+      const int rr_ = static_cast<int>(radius_ / 1_m);
+      std::string name_ = "antenna_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+      // create the corresponding antenna
+      TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+      detector.addAntenna(antenna_);
+    }
+  }
+
   // setup processes, decays and interactions
 
-  ParticleCut cut(10_GeV, 10_GeV, 100_PeV, 100_PeV, true);
+  ParticleCut cut(10_MeV, 10_MeV, 100_PeV, 100_PeV, true);
   corsika::proposal::Interaction emCascade(env);
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
 
   // initiate CoREAS
   RadioProcess<decltype(detector), CoREAS<decltype(detector),
-      decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+      decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
                                           coreas(detector, env);
 
   // register CoREAS with the output manager
@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
 
   // initiate ZHS
   RadioProcess<decltype(detector), CoREAS<decltype(detector),
-      decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+      decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
                                           zhs(detector, env);
 
   // register ZHS with the output manager

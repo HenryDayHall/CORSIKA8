@@ -17,7 +17,7 @@
 namespace corsika {
 
   /**
-   * A concrete implementation of the Enpoints formalism. TODO: are there any limitations for the track length?
+   * A concrete implementation of the Endpoints formalism. TODO: are there any limitations for the track length?
    */
   template <typename TRadioDetector, typename TPropagator>
   class CoREAS final : public RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator> {
@@ -73,8 +73,8 @@ namespace corsika {
       } else {
 
       // get start and end position of the track
-      auto startPoint_{track.getPosition(0)};
-      auto endPoint_{track.getPosition(1)};
+      Point const startPoint_{track.getPosition(0)};
+      Point const endPoint_{track.getPosition(1)};
       // calculate the track length
       auto tracklength_ {(endPoint_ - startPoint_).getNorm()};
 
@@ -92,6 +92,8 @@ namespace corsika {
 
       // loop over each antenna in the antenna collection (detector)
       for (auto& antenna : antennas_.getAntennas()) {
+
+        CORSIKA_LOG_INFO("Antenna: {} ", antenna.getName());
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
         auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Add the stepsize to .propagate() at some point
@@ -112,6 +114,7 @@ namespace corsika {
           // check if preDoppler has become zero in case of refractive index of unity because of numerical limitations
           // here you might need std::fabs(preDoppler) in the if statement - same with post & mid
           if (preDoppler_ == 0) {
+            CORSIKA_LOG_DEBUG("preDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths1[i].refractive_index_source_};
             long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -131,6 +134,7 @@ namespace corsika {
 
           // check if postDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (postDoppler_ == 0) {
+            CORSIKA_LOG_DEBUG("postDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths2[i].refractive_index_source_};
             long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -158,9 +162,9 @@ namespace corsika {
 
           // perform ZHS-like calculation close to Cherenkov angle and for refractive index at antenna location greater than 1
           if ((paths1[i].refractive_index_destination_ > 1) &&
-                  (std::fabs(preDoppler_) <= approxThreshold_ || std::fabs(postDoppler_) <= approxThreshold_)) {
+                  (std::fabs(preDoppler_) < approxThreshold_ || std::fabs(postDoppler_) < approxThreshold_)) {
 
-            CORSIKA_LOG_INFO("used ZHS-like approximation in CoREAS");
+            CORSIKA_LOG_WARN("used ZHS-like approximation in CoREAS");
 
             // clear the existing paths for this particle and track, since we don't need them anymore
             paths1.clear();
@@ -172,7 +176,7 @@ namespace corsika {
 
             // get "mid" position of the track geometrically
             auto midVector_{(startPoint_ - endPoint_) / 2};
-            auto midPoint_{Point(midVector_.getCoordinateSystem(),
+            Point const midPoint_{Point(midVector_.getCoordinateSystem(),
                                      midVector_.getComponents().getX(),
                                      midVector_.getComponents().getY(),
                                      midVector_.getComponents().getZ())};
@@ -311,6 +315,8 @@ namespace corsika {
 
               } // end of ZHS-like approximation
               else {
+
+                CORSIKA_LOG_INFO("Endpoints calculation --- CoREAS");
 
                 // calculate electric field vector for startpoint
                 ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))).getComponents() /

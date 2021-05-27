@@ -170,30 +170,6 @@ int main(int argc, char** argv) {
   builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
   builder.assemble(env);
 
-  // the antenna locations
-  const auto point1{Point(rootCS, 100_m, 100_m, 0_m)};
-  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
-  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
-  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
-
-  // the antenna time variables
-  const TimeType t1{0_s};
-  const TimeType t2{1e-6_s};
-  const InverseTimeType t3{1e+9_Hz};
-
-  // the antennas
-  TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
-  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
-  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
-  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
-
-  // the detector (aka antenna collection)
-  AntennaCollection<TimeDomainAntenna> detector;
-  detector.addAntenna(ant1);
-  detector.addAntenna(ant2);
-  detector.addAntenna(ant3);
-  detector.addAntenna(ant4);
-
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
   Code beamCode;
@@ -231,11 +207,15 @@ int main(int argc, char** argv) {
        << ", norm = " << plab.getNorm() << endl;
 
   auto const observationHeight = 0_km + builder.getEarthRadius();
+  std::cout << "Observation Height: " << observationHeight << std::endl;
   auto const injectionHeight = 111.75_km + builder.getEarthRadius();
+  std::cout << "Injection Height: " << injectionHeight << std::endl;
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
+  std::cout << "t is: " << t << std::endl;
   Point const showerCore{rootCS, 0_m, 0_m, observationHeight};
+  std::cout << "Shower Core is: " << showerCore << std::endl;
   Point const injectionPos =
       showerCore + DirectionVector{rootCS,
                                    {-sin(thetaRad) * cos(phiRad),
@@ -250,6 +230,30 @@ int main(int argc, char** argv) {
             << std::endl;
 
   ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.5, env};
+
+  // the antenna time variables
+  const TimeType duration_{1e-6_s};
+  const InverseTimeType sampleRate_{1e+11_Hz};
+
+  // the detector (aka antenna collection)
+  AntennaCollection<TimeDomainAntenna> detector;
+
+  auto const showerCoreX_ {showerCore.getCoordinates().getX()};
+  auto const showerCoreY_ {showerCore.getCoordinates().getY()};
+
+  // this creates a star-shaped pattern of points around the shower core
+  for (auto radius_ = 100_m; radius_ <= 10000_m; radius_ += 9900_m) {
+    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+      auto phiRad_ = phi_ / 180. * M_PI;
+      auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+      auto triggertime_ {(injectionPos - point_).getNorm() / constants::c};
+      const int rr_ = static_cast<int>(radius_ / 1_m);
+      std::string name_ = "antenna_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+      // create the corresponding antenna
+      TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+      detector.addAntenna(antenna_);
+    }
+  }
 
   // create the output manager that we then register outputs with
   OutputManager output("vertical_radio_shower_outputs");
@@ -430,11 +434,11 @@ int main(int argc, char** argv) {
 
     decaySibyll.printDecayConfig();
 
-    ParticleCut cut{60_GeV, true, true};
-    // corsika::proposal::Interaction emCascade(env);
-    // corsika::proposal::ContinuousProcess emContinuous(env);
-    // InteractionCounter emCascadeCounted(emCascade);
-    BetheBlochPDG emContinuous(showerAxis);
+    ParticleCut cut{60_GeV, false, true};
+    corsika::proposal::Interaction emCascade(env);
+    corsika::proposal::ContinuousProcess emContinuous(env);
+    InteractionCounter emCascadeCounted(emCascade);
+    // BetheBlochPDG emContinuous(showerAxis);
 
     OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
     /* TrackWriter trackWriter; */
@@ -449,24 +453,24 @@ int main(int argc, char** argv) {
 
     // initiate CoREAS
     RadioProcess<decltype(detector), CoREAS<decltype(detector),
-        decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-                                            coreas(detector, env);
+        decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
+                                          coreas(detector, env);
 
     // register CoREAS with the output manager
     output.add("CoREAS", coreas);
 
-    // initiate ZHS
-    RadioProcess<decltype(detector), CoREAS<decltype(detector),
-        decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-                                            zhs(detector, env);
+         // initiate ZHS
+     RadioProcess<decltype(detector), ZHS<decltype(detector),
+         decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
+                                             zhs(detector, env);
 
-    // register ZHS with the output manager
-    output.add("ZHS", zhs);
+     // register ZHS with the output manager
+     output.add("ZHS", zhs);
 
-    auto sequence = make_sequence( // emCascadeCounted,
-        stackInspect, hadronSequence, reset_particle_mass, decaySequence,
-        // emContinuous,
-        BetheBlochPDG(showerAxis), cut, coreas, zhs, longprof);
+    auto sequence = make_sequence( emCascadeCounted,
+                                   stackInspect, hadronSequence, reset_particle_mass, decaySequence,
+                                   emContinuous,
+                                   BetheBlochPDG(showerAxis), cut, coreas, zhs, longprof);
 
     // define air shower object, run simulation
     setup::Tracking tracking;
@@ -478,7 +482,7 @@ int main(int argc, char** argv) {
     EAS.run();
 
     cut.showResults();
-    // emContinuous.showResults();
+    emContinuous.showResults();
     /* observationLevel.showResults(); */
     /* const HEPEnergyType Efinal = cut.getCutEnergy() + cut.getInvEnergy() + */
     /*                              cut.getEmEnergy() + // emContinuous.getEnergyLost() + */
@@ -487,7 +491,7 @@ int main(int argc, char** argv) {
     /*      << "relative difference (%): " << (Efinal / E0 - 1) * 100 << endl; */
     /* observationLevel.reset(); */
     cut.reset();
-    // emContinuous.reset();
+    emContinuous.reset();
 
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();
