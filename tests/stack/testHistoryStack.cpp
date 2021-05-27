@@ -46,10 +46,9 @@ using TestStack =
 
 using EvtPtr = std::shared_ptr<DummyEvent>;
 
-TEST_CASE("HistoryStackExtension", "[stack]") {
+TEST_CASE("HistoryStackExtension", "stack") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   [[maybe_unused]] CoordinateSystemPtr const& dummyCS = get_root_CoordinateSystem();
 
@@ -63,5 +62,15 @@ TEST_CASE("HistoryStackExtension", "[stack]") {
 
     EvtPtr evt = p.getEvent();
     CHECK(evt == nullptr);
+  }
+
+  SECTION("add and remove particles") {
+
+    auto p = s.addParticle(std::tuple<dummy_stack::NoData>{noData});
+    CHECK(s.getEntries() == 2);
+    p.erase();
+    CHECK(s.getEntries() == 1);
+    s.purge();
+    CHECK(s.getEntries() == 1);
   }
 }

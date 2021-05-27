@@ -28,7 +28,7 @@ using namespace corsika;
 
 TEST_CASE("ObservationPlane", "interface") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
@@ -48,7 +48,7 @@ TEST_CASE("ObservationPlane", "interface") {
 
   // dummy track. Not used for calculation!
   Point const start(cs, {0_m, 1_m, 10_m});
-  VelocityVector vec(cs, 0_m / second, 0_m / second, -constants::c);
+  VelocityVector vec(cs, constants::c, 0_m / second, 0_m / second);
   Line line(start, vec);
   setup::Trajectory no_used_track =
       setup::testing::make_track<setup::Trajectory>(line, 12_m / constants::c);
@@ -75,7 +75,7 @@ TEST_CASE("ObservationPlane", "interface") {
 
     // particle past plane:
     {
-      particle.setPosition({cs, {0_m, 0_m, -1_m}});
+      particle.setPosition({cs, {11_m, 0_m, -1_m}});
       setup::Trajectory no_hit_track =
           setup::testing::make_track<setup::Trajectory>(line, 1_nm / constants::c);
       LengthType const no_hit = obs.getMaxStepLength(particle, no_hit_track);
@@ -90,9 +90,11 @@ TEST_CASE("ObservationPlane", "interface") {
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, false);
+    ProcessReturn const ret2 = obs.doContinuous(particle, no_used_track, true);
 
     CHECK(length / 1_m == Approx(1).margin(1e-4));
     CHECK(ret == ProcessReturn::Ok);
+    CHECK(ret2 == ProcessReturn::Ok);
   }
 
   SECTION("inclined plane, inclined particle") {

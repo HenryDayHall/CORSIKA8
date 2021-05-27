@@ -227,6 +227,15 @@ TEST_CASE("NuclearStackExtension", "stack") {
                                          nuclear_stack::ExtendedParticleInterfaceType>
         s;
 
+    // not valid, no A,Z:
+    // not valid, no A,Z:
+    CHECK_THROWS(s.addParticle(
+        std::make_tuple(Code::Nucleus, 100_GeV, DirectionVector(dummyCS, {1, 0, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s)));
+    CHECK_THROWS(s.addParticle(
+        std::make_tuple(Code::Nucleus, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s)));
+
     // not valid:
     CHECK_THROWS(s.addParticle(std::make_tuple(
         Code::Oxygen, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),

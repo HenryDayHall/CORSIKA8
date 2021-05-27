@@ -25,7 +25,7 @@ namespace corsika {
       , em_count_(0)
       , inv_count_(0) {
     for (auto p : get_all_particles())
-      if (is_hadron(p))
+      if (is_hadron(p)) // nuclei are also hadrons
         set_kinetic_energy_threshold(p, eHadCut);
       else if (is_muon(p))
         set_kinetic_energy_threshold(p, eMuCut);
@@ -33,9 +33,6 @@ namespace corsika {
         set_kinetic_energy_threshold(p, eEleCut);
       else if (p == Code::Photon)
         set_kinetic_energy_threshold(p, ePhoCut);
-      else if (p == Code::Nucleus)
-        // nuclei have same threshold as hadrons on the nucleon level.
-        set_kinetic_energy_threshold(p, eHadCut);
     CORSIKA_LOG_DEBUG(
         "setting kinetic energy thresholds: electrons = {} GeV, photons = {} GeV, "
         "hadrons = {} GeV, "
