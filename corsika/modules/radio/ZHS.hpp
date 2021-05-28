@@ -91,14 +91,13 @@ namespace corsika {
           // Maybe I can recalculate fraunhLimit without Midpaths to avoid calculating
           // this third path which is something really slow, and only use path1 and path2.
           double const betaTimesK{beta_.dot(midPaths[i].emit_) / beta_.getNorm()};
-          double const slitSize_{1. - betaTimesK * betaTimesK * trackLength_ *
-                                          trackLength_ / 1_m / 1_m};
+          double const sinTheta2_{1. - betaTimesK * betaTimesK};
           // Parameter that determines the limit for the Fraunhoffer limit (probably
           // related to antenna sampling rate
-          double const lambda{0.1};
-          double const fraunhLimit{slitSize_ / midPaths[i].R_distance_ / lambda * 1_m};
-          if (fraunhLimit >
-              1.) // Checks if we are in fraunhoffer domain (maybe it should be less?)
+          LengthType const lambda{constants::c/antenna.sample_rate_};
+          double const fraunhLimit{sinTheta2_ * trackLength_ * trackLength_/ midPaths[i].R_distance_ / lambda};
+          // Checks if we are in fraunhoffer domain (maybe it should be less?)
+          if (fraunhLimit > 0.1) 
           {
             /// code for dividing track and calculating field.
             std::cout << "This code hasnt been implemented!" << std::endl;
