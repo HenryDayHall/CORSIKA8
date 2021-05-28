@@ -264,7 +264,7 @@ build_test-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - cmake --install . -- -j4
+    - cmake --install .
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
@@ -323,7 +323,7 @@ build_test_example-clang-8:
     - cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
-    - cmake --install . -- -j4
+    - cmake --install .
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -362,7 +362,7 @@ install-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - cmake --install . -- -j4
+    - cmake --install .
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
