@@ -267,7 +267,7 @@ build_test-clang-8:
     - cmake --install .
     - mkdir -p build_examples
     - cd build_examples
-    - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
+    - cmake -DCMAKE_BUILD_TYPE=Debug ../install/share/corsika/examples
     - cmake --build . -- -j4
     - cmake --build . --target run_examples -- -j4 | gzip -v -9 > examples.log.gz
   rules:
@@ -365,7 +365,7 @@ install-clang-8:
     - cmake --install .
     - mkdir -p build_examples
     - cd build_examples
-    - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
+    - cmake -DCMAKE_BUILD_TYPE=Release ../install/share/corsika/examples
     - cmake --build . -- -j4
     - cmake --build . --target run_examples -- -j4 | gzip -v -9 > examples.log.gz
   rules:
