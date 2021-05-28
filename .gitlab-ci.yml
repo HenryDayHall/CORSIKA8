@@ -264,12 +264,12 @@ build_test-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - make -j4 install
+    - cmake --build . -- -j4
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
-    - make -j4
-    - make -j4 run_examples | gzip -v -9 > examples.log.gz
+    - cmake --build . -- -j4
+    - cmake --build --target run_examples . -- -j4 | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_ID && ($CI_MERGE_REQUEST_TITLE =~ /^Draft:/ || $CI_MERGE_REQUEST_TITLE =~ /^WIP:/)'
       when: manual
@@ -323,7 +323,7 @@ build_test_example-clang-8:
     - cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
-    - make -j2 install
+    - cmake --install . -- -j4
   rules:
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -362,12 +362,12 @@ install-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - make -j4 install
+    - cmake --install . -- -j4
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
-    - make -j4
-    - make -j4 run_examples | gzip -v -9 > examples.log.gz
+    - cmake --build . -- -j4
+    - cmake --build --target run_examples . -- -j4 | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
