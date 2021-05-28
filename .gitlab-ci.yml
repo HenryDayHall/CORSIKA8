@@ -264,7 +264,7 @@ build_test-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - cmake --build . -- -j4
+    - cmake --install . -- -j4
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
