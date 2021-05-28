@@ -131,7 +131,7 @@ config-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -166,7 +166,7 @@ build-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
     - ctest -j4 
   rules:
@@ -209,7 +209,7 @@ test-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 
