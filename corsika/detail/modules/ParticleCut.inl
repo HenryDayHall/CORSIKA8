@@ -38,7 +38,6 @@ namespace corsika {
         "hadrons = {} GeV, "
         "muons = {} GeV",
         eEleCut / 1_GeV, ePhoCut / 1_GeV, eHadCut / 1_GeV, eMuCut / 1_GeV);
-    printThresholds();
   }
 
   inline ParticleCut::ParticleCut(HEPEnergyType const eHadCut, HEPEnergyType const eMuCut,
@@ -61,7 +60,6 @@ namespace corsika {
         "setting thresholds: hadrons = {} GeV, "
         "muons = {} GeV",
         eHadCut / 1_GeV, eMuCut / 1_GeV);
-    printThresholds();
   }
 
   inline ParticleCut::ParticleCut(HEPEnergyType const eCut, bool const em, bool const inv)
@@ -76,7 +74,6 @@ namespace corsika {
     for (auto p : get_all_particles()) set_kinetic_energy_threshold(p, eCut);
     CORSIKA_LOG_DEBUG("setting kinetic energy threshold for all particles to {} GeV",
                       eCut / 1_GeV);
-    printThresholds();
   }
 
   inline ParticleCut::ParticleCut(
@@ -92,7 +89,6 @@ namespace corsika {
       , inv_count_(0) {
     set_kinetic_energy_thresholds(eCuts);
     CORSIKA_LOG_DEBUG("setting threshold particles individually");
-    printThresholds();
   }
 
   template <typename TParticle>
