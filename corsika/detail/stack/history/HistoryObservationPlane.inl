@@ -13,15 +13,18 @@
 
 namespace corsika::history {
 
-  inline HistoryObservationPlane::HistoryObservationPlane(setup::Stack const& stack,
-                                                          Plane const& obsPlane,
-                                                          bool deleteOnHit)
+  template <typename TStack>
+  inline HistoryObservationPlane<TStack> HistoryObservationPlane(TStack const& stack,
+                                                                 Plane const& obsPlane,
+                                                                 bool deleteOnHit)
       : stack_{stack}
       , plane_{obsPlane}
       , deleteOnHit_{deleteOnHit} {}
 
-  inline ProcessReturn HistoryObservationPlane::DoContinuous(
-      setup::Stack::ParticleType const& particle, setup::Trajectory const& trajectory) {
+  template <typename TStack>
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn HistoryObservationPlane<TStack> DoContinuous(
+      TParticle const& particle, TTrajectory const& trajectory) {
     TimeType const timeOfIntersection =
         (plane_.getCenter() - trajectory.getR0()).dot(plane_.getNormal()) /
         trajectory.getV0().dot(plane_.getNormal());
@@ -45,8 +48,10 @@ namespace corsika::history {
     }
   }
 
-  inline LengthType HistoryObservationPlane::MaxStepLength(
-      setup::Stack::ParticleType const&, setup::Trajectory const& trajectory) {
+  template <typename TStack>
+  template <typename TParticle, typename TTrajectory>
+  inline LengthType HistoryObservationPlane<TStack> MaxStepLength(
+      TParticle const&, TTrajectory const& trajectory) {
     TimeType const timeOfIntersection =
         (plane_.getCenter() - trajectory.getR0()).dot(plane_.getNormal()) /
         trajectory.getV0().dot(plane_.getNormal());
@@ -59,8 +64,10 @@ namespace corsika::history {
     return (trajectory.getR0() - pointOfIntersection).norm() * 1.0001;
   }
 
-  inline void HistoryObservationPlane::fillHistoryHistogram(
-      setup::Stack::ParticleType const& muon) {
+  template <typename TStack>
+  template <typename TParticle>
+  inline void HistoryObservationPlane<TStack> fillHistoryHistogram(
+      TParticle const& muon) {
     double const muon_energy = muon.getEnergy() / 1_GeV;
 
     int genctr{0};

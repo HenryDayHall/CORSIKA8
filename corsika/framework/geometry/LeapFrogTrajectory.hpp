@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 namespace corsika {
 
@@ -29,7 +30,7 @@ namespace corsika {
    *
    **/
 
-  class LeapFrogTrajectory {
+  class LeapFrogTrajectory : public BaseTrajectory {
 
   public:
     LeapFrogTrajectory() = delete;

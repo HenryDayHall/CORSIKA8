@@ -11,9 +11,6 @@
 
 #include <corsika/modules/LongitudinalProfile.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <cmath>
 #include <iomanip>
 #include <limits>

@@ -14,7 +14,6 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/media/ShowerAxis.hpp>
-#include <corsika/setup/SetupStack.hpp>
 
 #include <corsika/modules/conex/CONEX_f.hpp>
 
@@ -29,7 +28,9 @@ namespace corsika {
   public:
     CONEXhybrid(Point center, ShowerAxis const& showerAxis, LengthType groundDist,
                 LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode pdg);
-    void doSecondaries(setup::StackView&);
+
+    template <typename TStackView>
+    void doSecondaries(TStackView&);
 
     void solveCE();
 

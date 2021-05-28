@@ -16,6 +16,7 @@
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <../framework/testCascade.hpp> //! \todo fix this
 
@@ -37,10 +38,14 @@ TEST_CASE("StackInspector", "modules") {
   stack.addParticle(std::make_tuple(Code::Electron,
                                     MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
                                     Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
+  stack.addParticle(std::make_tuple(Code::Nucleus,
+                                    MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
+                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns, 16, 8));
 
   SECTION("interface") {
 
     StackInspector<TestCascadeStack> model(1, true, E0);
     model.doStack(stack);
+    // there are no actions, nothing to check...
   }
 }

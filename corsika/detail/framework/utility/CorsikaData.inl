@@ -16,7 +16,7 @@
 inline boost::filesystem::path corsika::corsika_data(boost::filesystem::path const& key) {
   if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
     return boost::filesystem::path(p) / key;
-  } else {
+  } else { // LCOV_EXCL_START, this cannot be easily tested system-independently
     throw std::runtime_error("CORSIKA_DATA not set");
-  }
+  } // LCOV_EXCL_STOP
 }

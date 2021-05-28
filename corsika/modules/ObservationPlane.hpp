@@ -11,8 +11,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
 #include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
 
 namespace corsika {
@@ -32,19 +30,20 @@ namespace corsika {
      small gap in between the two plane in such a scenario, or develop
      another more specialized output class.
    */
-  template <typename TOutputWriter = ObservationPlaneWriterParquet>
-  class ObservationPlane : public ContinuousProcess<ObservationPlane<TOutputWriter>>,
-                           public TOutputWriter {
+  template <typename TTracking, typename TOutputWriter = ObservationPlaneWriterParquet>
+  class ObservationPlane
+      : public ContinuousProcess<ObservationPlane<TTracking, TOutputWriter>>,
+        public TOutputWriter {
 
   public:
     ObservationPlane(Plane const&, DirectionVector const&, bool = true);
 
-    ProcessReturn doContinuous(corsika::setup::Stack::particle_type& vParticle,
-                               corsika::setup::Trajectory& vTrajectory,
+    template <typename TParticle, typename TTrajectory>
+    ProcessReturn doContinuous(TParticle& vParticle, TTrajectory& vTrajectory,
                                bool const stepLimit);
 
-    LengthType getMaxStepLength(corsika::setup::Stack::particle_type const&,
-                                corsika::setup::Trajectory const& vTrajectory);
+    template <typename TParticle, typename TTrajectory>
+    LengthType getMaxStepLength(TParticle const&, TTrajectory const& vTrajectory);
 
     void showResults() const;
     void reset();

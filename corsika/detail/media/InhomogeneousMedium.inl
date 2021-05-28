@@ -36,13 +36,13 @@ namespace corsika {
 
   template <typename T, typename TDensityFunction>
   inline GrammageType InhomogeneousMedium<T, TDensityFunction>::getIntegratedGrammage(
-      setup::Trajectory const& line, LengthType to) const {
+      BaseTrajectory const& line, LengthType to) const {
     return densityFunction_.getIntegrateGrammage(line, to);
   }
 
   template <typename T, typename TDensityFunction>
   inline LengthType InhomogeneousMedium<T, TDensityFunction>::getArclengthFromGrammage(
-      setup::Trajectory const& line, GrammageType grammage) const {
+      BaseTrajectory const& line, GrammageType grammage) const {
     return densityFunction_.getArclengthFromGrammage(line, grammage);
   }
 

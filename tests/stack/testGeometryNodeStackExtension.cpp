@@ -37,10 +37,9 @@ using StackWithGeometryInterface =
 using TestStack = CombinedStack<typename dummy_stack::DummyStack::stack_data_type,
                                 node::GeometryData<DummyEnv>, StackWithGeometryInterface>;
 
-TEST_CASE("GeometryNodeStackExtension", "[stack]") {
+TEST_CASE("GeometryNodeStackExtension", "stack") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   dummy_stack::NoData noData;
 

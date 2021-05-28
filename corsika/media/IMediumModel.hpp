@@ -11,7 +11,7 @@
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 namespace corsika {
 
@@ -23,10 +23,10 @@ namespace corsika {
 
     // todo: think about the mixin inheritance of the trajectory vs the BaseTrajectory
     // approach; for now, only lines are supported
-    virtual GrammageType getIntegratedGrammage(setup::Trajectory const&,
+    virtual GrammageType getIntegratedGrammage(BaseTrajectory const&,
                                                LengthType) const = 0;
 
-    virtual LengthType getArclengthFromGrammage(setup::Trajectory const&,
+    virtual LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                                 GrammageType) const = 0;
 
     virtual NuclearComposition const& getNuclearComposition() const = 0;

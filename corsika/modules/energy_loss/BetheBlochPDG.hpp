@@ -14,9 +14,6 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <map>
 
 namespace corsika {
@@ -52,18 +49,23 @@ namespace corsika {
      * \param limitFlag flag to identify, if BetheBlochPDG::getMaxStepLength is the
      *        globally limiting factor (or not)
      clang-format-on **/
-    ProcessReturn doContinuous(setup::Stack::particle_type& particle,
-                               setup::Trajectory const& track, bool const limitFlag);
-    LengthType getMaxStepLength(setup::Stack::particle_type const&,
-                                setup::Trajectory const&)
+    template <typename TParticle, typename TTrajectory>
+    ProcessReturn doContinuous(TParticle& particle, TTrajectory const& track,
+                               bool const limitFlag);
+
+    template <typename TParticle, typename TTrajectory>
+    LengthType getMaxStepLength(TParticle const&,
+                                TTrajectory const&)
         const; //! limited by the energy threshold! By default the limit is the particle
                //! rest mass, i.e. kinetic energy is zero
-    static HEPEnergyType getBetheBloch(setup::Stack::particle_type const&,
-                                       const GrammageType);
-    static HEPEnergyType getRadiationLosses(setup::Stack::particle_type const&,
-                                            const GrammageType);
-    static HEPEnergyType getTotalEnergyLoss(setup::Stack::particle_type const&,
-                                            const GrammageType);
+    template <typename TParticle>
+    static HEPEnergyType getBetheBloch(TParticle const&, const GrammageType);
+
+    template <typename TParticle>
+    static HEPEnergyType getRadiationLosses(TParticle const&, const GrammageType);
+
+    template <typename TParticle>
+    static HEPEnergyType getTotalEnergyLoss(TParticle const&, const GrammageType);
 
     void showResults() const;
     void reset();
@@ -72,8 +74,11 @@ namespace corsika {
     HEPEnergyType getTotal() const;
 
   private:
-    void updateMomentum(corsika::setup::Stack::particle_type&, HEPEnergyType Enew);
-    void fillProfile(setup::Trajectory const&, HEPEnergyType);
+    template <typename TParticle>
+    void updateMomentum(TParticle&, HEPEnergyType Enew);
+
+    template <typename TTrajectory>
+    void fillProfile(TTrajectory const&, HEPEnergyType);
 
     GrammageType const dX_ = 10_g / square(1_cm); // profile binning
     GrammageType const dX_threshold_ = 0.0001_g / square(1_cm);

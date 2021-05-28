@@ -12,7 +12,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 
 /**
  * A general inhomogeneous medium. The mass density distribution TDensityFunction must be
@@ -32,10 +32,10 @@ namespace corsika {
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    GrammageType getIntegratedGrammage(setup::Trajectory const& line,
+    GrammageType getIntegratedGrammage(BaseTrajectory const& line,
                                        LengthType to) const override;
 
-    LengthType getArclengthFromGrammage(setup::Trajectory const& pLine,
+    LengthType getArclengthFromGrammage(BaseTrajectory const& pLine,
                                         GrammageType grammage) const override;
 
   private:

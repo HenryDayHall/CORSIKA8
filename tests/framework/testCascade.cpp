@@ -27,6 +27,7 @@
 #include <corsika/output/DummyOutputManager.hpp>
 
 #include <SetupTestTrajectory.hpp>
+#include <corsika/setup/SetupTrajectory.hpp>
 
 #include <catch2/catch.hpp>
 

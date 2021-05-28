@@ -165,7 +165,7 @@ TEST_CASE("Pythia8Interface", "modules") {
         Code::Proton, 0, 0, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     auto& view = *secViewPtr;
-    auto particle = stackPtr->first();
+    auto const particle = stackPtr->getNextParticle();
 
     corsika::pythia8::Interaction collision;
 

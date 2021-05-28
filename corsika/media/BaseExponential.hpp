@@ -12,7 +12,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
+#include <corsika/framework/geometry/BaseTrajectory.hpp>
 #include <limits>
 
 namespace corsika {
@@ -40,7 +40,7 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    GrammageType getIntegratedGrammage(setup::Trajectory const& line, LengthType vL,
+    GrammageType getIntegratedGrammage(BaseTrajectory const& line, LengthType vL,
                                        DirectionVector const& axis) const;
 
     // clang-format off
@@ -61,8 +61,7 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    LengthType getArclengthFromGrammage(setup::Trajectory const& line,
-                                        GrammageType grammage,
+    LengthType getArclengthFromGrammage(BaseTrajectory const& line, GrammageType grammage,
                                         DirectionVector const& axis) const;
 
   public:

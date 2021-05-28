@@ -16,12 +16,6 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
-#include <iostream>
-
 namespace corsika::proposal {
 
   inline void ContinuousProcess::buildCalculator(Code code,
@@ -54,13 +48,12 @@ namespace corsika::proposal {
     calc[std::make_pair(comp.getHash(), code)] = std::move(calculator);
   }
 
-  template <>
-  inline ContinuousProcess::ContinuousProcess(setup::Environment const& _env)
+  template <typename TEnvironment>
+  inline ContinuousProcess::ContinuousProcess(TEnvironment const& _env)
       : ProposalProcessBase(_env) {}
 
-  template <>
-  inline void ContinuousProcess::scatter(setup::Stack::particle_type& vP,
-                                         HEPEnergyType const& loss,
+  template <typename TParticle>
+  inline void ContinuousProcess::scatter(TParticle& vP, HEPEnergyType const& loss,
                                          GrammageType const& grammage) {
 
     // get or build corresponding calculators
@@ -91,9 +84,9 @@ namespace corsika::proposal {
     vP.setMomentum(MomentumVector(vP_dir.getCoordinateSystem(), vec));
   }
 
-  template <>
-  inline ProcessReturn ContinuousProcess::doContinuous(setup::Stack::particle_type& vP,
-                                                       setup::Trajectory const& vT,
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn ContinuousProcess::doContinuous(TParticle& vP,
+                                                       TTrajectory const& vT,
                                                        bool const) {
 
     if (!canInteract(vP.getPID())) return ProcessReturn::Ok;
@@ -119,9 +112,9 @@ namespace corsika::proposal {
     return ProcessReturn::Ok;
   }
 
-  template <>
-  inline LengthType ContinuousProcess::getMaxStepLength(
-      setup::Stack::particle_type const& vP, setup::Trajectory const& vT) {
+  template <typename TParticle, typename TTrajectory>
+  inline LengthType ContinuousProcess::getMaxStepLength(TParticle const& vP,
+                                                        TTrajectory const& vT) {
     auto const code = vP.getPID();
     if (!canInteract(code)) return meter * std::numeric_limits<double>::infinity();
 

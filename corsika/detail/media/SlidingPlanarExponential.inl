@@ -39,7 +39,7 @@ namespace corsika {
 
   template <typename T>
   inline GrammageType SlidingPlanarExponential<T>::getIntegratedGrammage(
-      setup::Trajectory const& traj, LengthType l) const {
+      BaseTrajectory const& traj, LengthType l) const {
     auto const axis = (traj.getPosition(0) -
                        BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
                           .normalized();
@@ -49,7 +49,7 @@ namespace corsika {
 
   template <typename T>
   inline LengthType SlidingPlanarExponential<T>::getArclengthFromGrammage(
-      setup::Trajectory const& traj, GrammageType const grammage) const {
+      BaseTrajectory const& traj, GrammageType const grammage) const {
     auto const axis = (traj.getPosition(0) -
                        BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
                           .normalized();

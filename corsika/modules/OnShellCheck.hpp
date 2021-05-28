@@ -10,7 +10,6 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
-#include <corsika/setup/SetupStack.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 namespace corsika {

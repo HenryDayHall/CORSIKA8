@@ -158,8 +158,7 @@ namespace corsika::urqmd {
     }
   }
 
-  template <typename TParticle> // need template here, as this is called both with
-                                // SetupParticle as well as SetupProjectile
+  template <typename TParticle>
   inline CrossSectionType UrQMD::getCrossSection(TParticle const& projectile,
                                                  Code targetCode) const {
     auto const projectileCode = projectile.getPID();

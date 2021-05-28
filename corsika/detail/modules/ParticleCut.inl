@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <corsika/modules/ParticleCut.hpp>
+#include <corsika/framework/core/Logging.hpp>
 
 namespace corsika {
 
@@ -25,7 +25,7 @@ namespace corsika {
       , em_count_(0)
       , inv_count_(0) {
     for (auto p : get_all_particles())
-      if (is_hadron(p))
+      if (is_hadron(p)) // nuclei are also hadrons
         set_kinetic_energy_threshold(p, eHadCut);
       else if (is_muon(p))
         set_kinetic_energy_threshold(p, eMuCut);
@@ -33,9 +33,6 @@ namespace corsika {
         set_kinetic_energy_threshold(p, eEleCut);
       else if (p == Code::Photon)
         set_kinetic_energy_threshold(p, ePhoCut);
-      else if (p == Code::Nucleus)
-        // nuclei have same threshold as hadrons on the nucleon level.
-        set_kinetic_energy_threshold(p, eHadCut);
     CORSIKA_LOG_DEBUG(
         "setting kinetic energy thresholds: electrons = {} GeV, photons = {} GeV, "
         "hadrons = {} GeV, "
@@ -148,7 +145,8 @@ namespace corsika {
     return false; // this particle will not be removed/cut
   }
 
-  inline void ParticleCut::doSecondaries(corsika::setup::StackView& vS) {
+  template <typename TStackView>
+  inline void ParticleCut::doSecondaries(TStackView& vS) {
     auto particle = vS.begin();
     while (particle != vS.end()) {
       if (checkCutParticle(particle)) { particle.erase(); }
@@ -156,9 +154,9 @@ namespace corsika {
     }
   }
 
-  inline ProcessReturn ParticleCut::doContinuous(
-      corsika::setup::Stack::particle_type& particle, corsika::setup::Trajectory const&,
-      bool const) {
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn ParticleCut::doContinuous(TParticle& particle, TTrajectory const&,
+                                                 bool const) {
     CORSIKA_LOG_TRACE("ParticleCut::DoContinuous");
     if (checkCutParticle(particle)) {
       CORSIKA_LOG_TRACE("removing during continuous");

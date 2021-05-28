@@ -15,8 +15,6 @@
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-
 #include <tuple>
 
 namespace corsika::pythia8 {
@@ -155,14 +153,14 @@ namespace corsika::pythia8 {
     }
   }
 
-  inline GrammageType Interaction::getInteractionLength(
-      corsika::setup::Stack::particle_type const& particle) {
+  template <typename TParticle>
+  inline GrammageType Interaction::getInteractionLength(TParticle const& particle) {
 
     // coordinate system, get global frame of reference
     MomentumVector const& pMomentum = particle.getMomentum();
     CoordinateSystemPtr const& labCS = pMomentum.getCoordinateSystem();
 
-    Code const corsikaBeamId = particle.getPID();
+    Code corsikaBeamId = particle.getPID();
 
     // beam particles for pythia : 1, 2, 3 for p, pi, k
     // read from cross section code table

@@ -28,6 +28,7 @@
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
 
 #include <corsika/output/OutputManager.hpp>
+#include <corsika/output/NoOutput.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/FlatExponential.hpp>
@@ -313,8 +314,10 @@ int main(int argc, char** argv) {
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane observationLevel(obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
-  output.add("obslevel", observationLevel);
+  ObservationPlane<setup::Tracking, NoOutput> observationLevel(
+      obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
+  // register the observation plane with the output
+  output.add("particles", observationLevel);
 
   // assemble the final process sequence
   auto sequence =

@@ -16,8 +16,6 @@
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
 
-#include <corsika/setup/SetupStack.hpp>
-
 #include <iomanip>
 #include <iostream>
 
@@ -28,9 +26,9 @@ namespace corsika {
       : parX_(x)
       , parY_(y) {}
 
-  template <>
+  template <typename TParticle>
   inline GrammageType HadronicElasticInteraction::getInteractionLength(
-      SetupParticle const& p) {
+      TParticle const& p) {
     if (p.getPID() == Code::Proton) {
       auto const* currentNode = p.getNode();
       auto const& mediumComposition =

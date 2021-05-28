@@ -40,13 +40,13 @@ namespace corsika {
 
   template <typename T>
   inline GrammageType FlatExponential<T>::getIntegratedGrammage(
-      setup::Trajectory const& line, LengthType to) const {
+      BaseTrajectory const& line, LengthType to) const {
     return BaseExponential<FlatExponential<T>>::getIntegratedGrammage(line, to, axis_);
   }
 
   template <typename T>
   inline LengthType FlatExponential<T>::getArclengthFromGrammage(
-      setup::Trajectory const& line, GrammageType grammage) const {
+      BaseTrajectory const& line, GrammageType grammage) const {
     return BaseExponential<FlatExponential<T>>::getArclengthFromGrammage(line, grammage,
                                                                          axis_);
   }
