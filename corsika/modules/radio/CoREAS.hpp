@@ -214,7 +214,7 @@ namespace corsika {
                                            / midDoppler_ / path.R_distance_ * constants_ * antenna.sample_rate_;
 
                   ElectricFieldVector EV1_{EVmid_};
-                  ElectricFieldVector EV2_{-EVmid_};
+                  ElectricFieldVector EV2_{EVmid_ * (-1.0)};
 
               double deltaT_{(tracklength_ / (constants::c * tracklength_ / (constants::c * (endTime_ - startTime_))) *
                             std::fabs(midDoppler_)) / 1_s};     // TODO: Caution with this!
