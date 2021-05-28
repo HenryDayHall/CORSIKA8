@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
 
   // setup processes, decays and interactions
 
-  ParticleCut cut(10_GeV, 10_GeV, 100_PeV, 100_PeV, true);
+  ParticleCut cut(60_GeV, 60_GeV, 100_PeV, 100_PeV, true);
   corsika::proposal::Interaction emCascade(env);
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);

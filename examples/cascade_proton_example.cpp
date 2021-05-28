@@ -127,6 +127,7 @@ int main() {
   //  sibyll::Decay decay;
   corsika::pythia8::Decay decay;
   ParticleCut cut(60_GeV, true, true);
+  cut.printThresholds();
 
   // RNGManager::getInstance().registerRandomStream("HadronicElasticModel");
   // HadronicElasticModel::HadronicElasticInteraction
