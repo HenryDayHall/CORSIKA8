@@ -22,7 +22,7 @@ variables:
 #
 # multi-step pipeline for each commit
 #
-# Mote: "Draft:" merge request, non-Draft merge requests and "Ready for Code Review" MR are all
+# Mote: "Draft/WIP:" merge request, non-Draft/non-WIP merge requests and "Ready for Code Review" MR are all
 #       handled explicitly
 #
 stages:
@@ -131,7 +131,7 @@ config-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
   rules:
     - if: $CI_MERGE_REQUEST_ID
@@ -146,17 +146,11 @@ config-clang-8:
 build-u-18_04:
   extends: .build
   image: corsika/devel:u-18.04
-  needs: 
-    - job: config-u-18_04
-      artifacts: false
 
 # build for clang
 build-clang-8:
   extends: .build
   image: corsika/devel:clang-8
-  needs:
-    - job: config-clang-8
-      artifacts: false
 
 
 
@@ -172,7 +166,7 @@ build-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
     - ctest -j4 
   rules:
@@ -194,22 +188,16 @@ build-clang-8:
 test-u-18_04:
   extends: .test
   image: corsika/devel:u-18.04
-  needs:
-    - job: build-u-18_04
-      artifacts: false
 
 # test for clang
 test-clang-8:
   extends: .test
   image: corsika/devel:clang-8
-  needs:
-    - job: build-clang-8
-      artifacts: false
 
 
 
 
-####### BUILD-TEST (all builds <= Draft, default) ##############
+####### BUILD-TEST (all builds <= Draft/WIP, default) ##############
 
 ##########################################################
 # the generic build_test template job
@@ -221,12 +209,12 @@ test-clang-8:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4 
   rules:
-    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
+    - if: '$CI_MERGE_REQUEST_ID && ($CI_MERGE_REQUEST_TITLE =~ /^Draft:/ || $CI_MERGE_REQUEST_TITLE =~ /^WIP:/)'
       allow_failure: false
     - if: $CI_MERGE_REQUEST_ID
       when: manual
@@ -260,7 +248,7 @@ build_test-clang-8:
 
 
 
-####### BUILD-TEST-EXAMPLE (only non-Draft)  ##############
+####### BUILD-TEST-EXAMPLE (only non-Draft/non-WIP)  ##############
 
 ##########################################################
 # generic example template job
@@ -276,14 +264,14 @@ build_test-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - make install
+    - cmake --install .
     - mkdir -p build_examples
     - cd build_examples
-    - cmake -DCMAKE_BUILT_TYPE=Debug ../install/share/corsika/examples
-    - make -j4
-    - make -j4 run_examples | gzip -v -9 > examples.log.gz
+    - cmake -DCMAKE_BUILD_TYPE=Debug ../install/share/corsika/examples
+    - cmake --build . -- -j2
+    - cmake --build . --target run_examples -- -j2 | gzip -v -9 > examples.log.gz
   rules:
-    - if: '$CI_MERGE_REQUEST_ID && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/'
+    - if: '$CI_MERGE_REQUEST_ID && ($CI_MERGE_REQUEST_TITLE =~ /^Draft:/ || $CI_MERGE_REQUEST_TITLE =~ /^WIP:/)'
       when: manual
       allow_failure: true
     - if: $CI_COMMIT_BRANCH
@@ -321,7 +309,7 @@ build_test_example-clang-8:
 
 
 
-####### INSTALL  ##############
+####### INSTALL (only manual)  ##############
 
 ##########################################################
 # generic install template job
@@ -335,34 +323,25 @@ build_test_example-clang-8:
     - cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
     - set -o pipefail
-    - make -j2 install
+    - cmake --install .
   rules:
-    - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-      allow_failure: true
     - if: $CI_MERGE_REQUEST_ID
       when: manual
-      allow_failure: true
     - if: $CI_COMMIT_TAG
       when: manual
-      allow_failure: true
+    - if: $CI_COMMIT_BRANCH
+      when: manual
+  allow_failure: true
 
 # install for gcc
 install-u-18_04:
   extends: .install
   image: corsika/devel:u-18.04
-  needs:
-    - job: build-u-18_04
-      artifacts: false
 
 # install for clang
 install-clang-8:
   extends: .install
   image: corsika/devel:clang-8
-  needs:
-    - job: build-clang-8
-      artifacts: false
 
 
 
@@ -383,12 +362,12 @@ install-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - make install
+    - cmake --install .
     - mkdir -p build_examples
     - cd build_examples
-    - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
-    - make -j4
-    - make -j4 run_examples | gzip -v -9 > examples.log.gz
+    - cmake -DCMAKE_BUILD_TYPE=Release ../install/share/corsika/examples
+    - cmake --build . -- -j2
+    - cmake --build . --target run_examples -- -j2 | gzip -v -9 > examples.log.gz
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
