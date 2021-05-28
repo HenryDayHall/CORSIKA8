@@ -362,7 +362,7 @@ install-clang-8:
     - cmake --build . -- -j4
     - set -o pipefail
     - ctest -j4
-    - make install
+    - make -j4 install
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILT_TYPE=Release ../install/share/corsika/examples
