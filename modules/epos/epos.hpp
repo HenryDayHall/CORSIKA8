@@ -100,7 +100,7 @@ namespace epos {
   // get isospin, spin, strangeness for id
   void idspin_(int&, int&, int&, int&);
   // get mass for id
-  void idmass_(int&, double&);
+  void idmass_(int&, float&);
   // convert id from one format to another
   int idtrafo_(char[3], char[3], int&);
 

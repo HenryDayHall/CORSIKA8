@@ -20,7 +20,7 @@ namespace corsika::epos {
     if (sCode == 0)
       throw std::runtime_error("getEposMass: unknown particle!");
     else {
-      double mass2;
+      float mass2 = 0;
       ::epos::idmass_(sCode, mass2);
       return sqrt(mass2) * 1_GeV;
     }

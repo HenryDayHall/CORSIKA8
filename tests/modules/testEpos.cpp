@@ -70,7 +70,7 @@ TEST_CASE("Epos", "[processes]") {
   }
 
   SECTION("epos mass") {
-    CHECK_FALSE(corsika::epos::getEposMass(Code::Electron) == 0_GeV);
+    CHECK_FALSE(corsika::epos::getEposMass(Code::Electron) / 1_GeV == Approx(0));
   }
 
   /*
