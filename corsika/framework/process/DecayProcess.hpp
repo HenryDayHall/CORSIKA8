@@ -36,7 +36,7 @@ namespace corsika {
      @endcode
 
      Where, of course, SecondaryView and Particle are the valid
-     classes to access particles on the Stack. Those two methods do
+     classes to access particles on the Stack. In user code those two methods do
      not need to be templated, they could use the types
      e.g. corsika::setup::Stack::particle_type -- but by the cost of
      loosing all flexibility otherwise provided.

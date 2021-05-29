@@ -9,22 +9,16 @@
 #pragma once
 
 #include <corsika/framework/process/ProcessReturn.hpp>
-
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
-#include <corsika/media/Environment.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
-/*  see Issue 161, we need to include SetupStack only because we need
-    to globally define StackView. This is clearly not nice and should
-    be changed, when possible. It might be that StackView needs to be
-    templated in Cascade, but this would be even worse... so we don't
-    do that until it is really needed.
- */
-#include <corsika/setup/SetupStack.hpp>
+#include <corsika/media/Environment.hpp>
+
+#include <corsika/stack/history/HistoryStackExtension.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -47,29 +41,26 @@ namespace corsika {
    * TrackingInterface providing the functions:
    *
    * <code>
-   * auto getTrack(Particle const& p)</auto>,
+   * auto getTrack(particle_type const& p)</auto>,
    * with the return type <code>geometry::Trajectory<Line>
    * </code>
    *
    * <b>TProcessList</b> must be a ProcessSequence.   *
    * <b>Stack</b> is the storage object for particle data, i.e. with
-   * Particle class type <code>Stack::ParticleType</code>
-   *
+   * particle class type <code>Stack::particle_type</code>
    *
    */
-  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack,
-            /*
-             TStackView is needed as explicit template parameter because
-             of issue 161 and the
-             inability of clang to understand "stack::MakeView" so far.
-            */
-            typename TStackView = corsika::setup::StackView>
+  template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   class Cascade {
 
-    typedef typename TStack::particle_type Particle;
-    typedef std::remove_pointer_t<decltype(((Particle*)nullptr)->getNode())>
-        VolumeTreeNode;
-    typedef typename VolumeTreeNode::IModelProperties MediumInterface;
+    typedef typename TStack::stack_view_type stack_view_type;
+
+    typedef typename TStack::particle_type particle_type;
+
+    typedef std::remove_pointer_t<decltype(((particle_type*)nullptr)->getNode())>
+        volume_tree_node_type;
+
+    typedef typename volume_tree_node_type::IModelProperties medium_interface_type;
 
   public:
     /**
@@ -83,8 +74,8 @@ namespace corsika {
     Cascade(Cascade&&) = default;
     ~Cascade() = default;
     Cascade& operator=(Cascade const&) = default;
-    Cascade(Environment<MediumInterface> const& env, TTracking& tr, TProcessList& pl,
-            TOutput& out, TStack& stack)
+    Cascade(Environment<medium_interface_type> const& env, TTracking& tr,
+            TProcessList& pl, TOutput& out, TStack& stack)
         : environment_(env)
         , tracking_(tr)
         , sequence_(pl)
@@ -93,7 +84,7 @@ namespace corsika {
       CORSIKA_LOG_INFO(c8_ascii_);
       CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
                        TTracking::getVersion());
-      if constexpr (TStackView::has_event) {
+      if constexpr (stack_view_type::has_event) {
         CORSIKA_LOG_INFO("Stack - with full cascade HISTORY.");
       }
     }
@@ -129,15 +120,15 @@ namespace corsika {
      * New particles produced in one step are subject to further
      * processing, e.g. thinning, etc.
      */
-    void step(Particle& vParticle);
+    void step(particle_type& vParticle);
 
-    ProcessReturn decay(TStackView& view, InverseTimeType initial_inv_decay_time);
-    ProcessReturn interaction(TStackView& view,
+    ProcessReturn decay(stack_view_type& view, InverseTimeType initial_inv_decay_time);
+    ProcessReturn interaction(stack_view_type& view,
                               InverseGrammageType initial_inv_int_length);
-    void setEventType(TStackView& view, history::EventType);
+    void setEventType(stack_view_type& view, history::EventType);
 
     // data members
-    Environment<MediumInterface> const& environment_;
+    Environment<medium_interface_type> const& environment_;
     TTracking& tracking_;
     TProcessList& sequence_;
     TOutput& output_;

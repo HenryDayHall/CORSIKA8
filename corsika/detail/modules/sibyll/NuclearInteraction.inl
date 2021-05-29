@@ -18,10 +18,6 @@
 #include <corsika/framework/utility/COMBoost.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
-#include <corsika/setup/SetupEnvironment.hpp>
-#include <corsika/setup/SetupStack.hpp>
-#include <corsika/setup/SetupTrajectory.hpp>
-
 #include <nuclib.hpp>
 
 namespace corsika::sibyll {
@@ -579,17 +575,16 @@ namespace corsika::sibyll {
       auto pCode = Code::Proton;
       // temporarily add to stack, will be removed after interaction in DoInteraction
       CORSIKA_LOG_DEBUG("inelastic interaction no. {}", j);
-      setup::Stack nucleonStack;
+      typename TSecondaryView::inner_stack_value_type nucleonStack;
       auto inelasticNucleon = nucleonStack.addParticle(
           std::make_tuple(pCode, PprojNucLab.getSpaceLikeComponents(), pOrig, tOrig));
       inelasticNucleon.setNode(projectile.getNode());
       // create inelastic interaction for each nucleon
       CORSIKA_LOG_TRACE("calling HadronicInteraction...");
       // create new StackView for each of the nucleons
-      setup::StackView nucleon_secondaries(inelasticNucleon);
+      TSecondaryView nucleon_secondaries(inelasticNucleon);
       // all inner hadronic event generator
       hadronicInteraction_.doInteraction(nucleon_secondaries);
-      // inelasticNucleon.Delete(); // this is just a temporary object
       for (const auto& pSec : nucleon_secondaries) {
         projectile.addSecondary(std::make_tuple(pSec.getPID(), pSec.getMomentum(),
                                                 pSec.getPosition(), pSec.getTime()));

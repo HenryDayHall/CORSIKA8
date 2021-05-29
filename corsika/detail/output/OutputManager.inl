@@ -194,7 +194,12 @@ namespace corsika {
     if (state_ == OutputState::NoInit) { startOfLibrary(); }
 
     // now start the event for all the outputs
-    for (auto& [name, output] : outputs_) { output.get().startOfShower(); }
+    for (auto& [name, output] : outputs_) {
+      {
+        [[maybe_unused]] auto const& dummy_name = name;
+      }
+      output.get().startOfShower();
+    }
 
     // increment our shower count
     ++count_;
@@ -205,7 +210,12 @@ namespace corsika {
 
   inline void OutputManager::endOfShower() {
 
-    for (auto& [name, output] : outputs_) { output.get().endOfShower(); }
+    for (auto& [name, output] : outputs_) {
+      {
+        [[maybe_unused]] auto const& dummy_name = name;
+      }
+      output.get().endOfShower();
+    }
 
     // switch back to the initialized state
     state_ = OutputState::LibraryReady;

@@ -26,7 +26,7 @@ namespace corsika {
    * SecondaryView can only be constructed by giving a valid
    * Projectile particle, following calls to addSecondary will
    * populate the original Stack, but will be directly accessible via
-   * the SecondaryView, e.g.
+   * the SecondaryView, e.g.StackViewPr
 
      This allows to write code like
      \verbatim
@@ -61,54 +61,46 @@ namespace corsika {
   template <typename TStackDataType, template <typename> typename TParticleInterface,
             template <typename T1, template <class> class T2> class MSecondaryProducer =
                 DefaultSecondaryProducer>
-  class SecondaryView : public Stack<TStackDataType&, TParticleInterface>,
-                        public MSecondaryProducer<TStackDataType, TParticleInterface> {
+  class SecondaryView
+      : public Stack<TStackDataType&, TParticleInterface, MSecondaryProducer>,
+        public MSecondaryProducer<TStackDataType, TParticleInterface> {
 
-    // using ViewType = SecondaryView<TStackDataType, TParticleInterface,
-    // MSecondaryProducer>;
+  public:
     typedef SecondaryView<TStackDataType, TParticleInterface, MSecondaryProducer>
         view_type;
     /**
      * Helper type for inside this class
      */
-    // using InnerStackTypeRef = Stack<TStackDataType&, TParticleInterface>;
-    typedef Stack<TStackDataType&, TParticleInterface> inner_stack_reference_type;
+    typedef Stack<TStackDataType&, TParticleInterface, MSecondaryProducer>
+        inner_stack_reference_type;
 
     /**
      * @name We need this "value" types with non-reference TStackData for
      * the constructor of the SecondaryView class
      * @{
      */
-    // using InnerStackTypeValue = Stack<TStackDataType, TParticleInterface>;
-    typedef Stack<TStackDataType, TParticleInterface> inner_stack_value_type;
+    typedef Stack<TStackDataType, TParticleInterface, MSecondaryProducer>
+        inner_stack_value_type;
 
   public:
     typedef StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
-                                   TParticleInterface, inner_stack_value_type>
+                                   TParticleInterface, MSecondaryProducer,
+                                   inner_stack_value_type>
         stack_value_iterator;
-
-    //    using ConstStackIteratorValue =
-    //        ConstStackIteratorInterface<typename
-    //        std::remove_reference<TStackDataType>::type,
-    //                                    TParticleInterface, inner_stack_value_type>;
 
     typedef ConstStackIteratorInterface<
         typename std::remove_reference<TStackDataType>::type, TParticleInterface,
-        inner_stack_value_type>
+        MSecondaryProducer, inner_stack_value_type>
         const_stack_value_iterator;
     /// @}
 
-    //    using StackIterator =
-    //        StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
-    //                               TParticleInterface, view_type>;
-
     typedef StackIteratorInterface<typename std::remove_reference<TStackDataType>::type,
-                                   TParticleInterface, view_type>
+                                   TParticleInterface, MSecondaryProducer, view_type>
         stack_view_iterator;
 
     typedef ConstStackIteratorInterface<
         typename std::remove_reference<TStackDataType>::type, TParticleInterface,
-        view_type>
+        MSecondaryProducer, view_type>
         const_stack_view_iterator;
 
     /**
@@ -130,7 +122,8 @@ namespace corsika {
         stack_view_iterator to another Stack object (here: lvalue)
       **/
     SecondaryView(stack_value_iterator& particle)
-        : Stack<TStackDataType&, TParticleInterface>(particle.getStackData())
+        : Stack<TStackDataType&, TParticleInterface, MSecondaryProducer>(
+              particle.getStackData())
         , MSecondaryProducer<TStackDataType, TParticleInterface>{particle}
         , inner_stack_(particle.getStack())
         , projectile_index_(particle.getIndex()) {
@@ -141,7 +134,8 @@ namespace corsika {
        stack_view_iterator to another Stack object (here: rvalue)
      **/
     SecondaryView(stack_value_iterator&& particle)
-        : Stack<TStackDataType&, TParticleInterface>(particle.getStackData())
+        : Stack<TStackDataType&, TParticleInterface, MSecondaryProducer>(
+              particle.getStackData())
         , MSecondaryProducer<TStackDataType, TParticleInterface>{particle}
         , inner_stack_(particle.getStack())
         , projectile_index_(particle.getIndex()) {
@@ -154,7 +148,8 @@ namespace corsika {
      * terms of reference to the underlying data stack. It is not a "view to a view".
      */
     SecondaryView(view_type& view, stack_view_iterator& projectile)
-        : Stack<TStackDataType&, TParticleInterface>{view.getStackData()}
+        : Stack<TStackDataType&, TParticleInterface,
+                MSecondaryProducer>{view.getStackData()}
         , MSecondaryProducer<TStackDataType, TParticleInterface>{stack_value_iterator{
               view.inner_stack_, view.getIndexFromIterator(projectile.getIndex())}}
         , inner_stack_{view.inner_stack_}
@@ -333,11 +328,11 @@ namespace corsika {
   protected:
     friend class StackIteratorInterface<
         typename std::remove_reference<TStackDataType>::type, TParticleInterface,
-        view_type>;
+        MSecondaryProducer, view_type>;
 
     friend class ConstStackIteratorInterface<
         typename std::remove_reference<TStackDataType>::type, TParticleInterface,
-        view_type>;
+        MSecondaryProducer, view_type>;
 
     friend class ParticleBase<stack_view_iterator>;
 
@@ -376,44 +371,6 @@ namespace corsika {
     inner_stack_value_type& inner_stack_;
     unsigned int projectile_index_;
     std::vector<unsigned int> indices_;
-  };
-
-  /**
-   * Class to handle the generation of new secondaries. Used as default mix-in for
-   * SecondaryView.
-   */
-  template <class T1, template <class> class T2>
-  class DefaultSecondaryProducer {
-    using View = SecondaryView<T1, T2, DefaultSecondaryProducer>;
-
-  public:
-    static bool constexpr has_event{false};
-
-    /**
-     * Method is called after a new secondary has been created on the
-     * SecondaryView. Extra logic can be introduced here.
-     *
-     * The input Particle is the new secondary that was produced and
-     * is of course a reference into the SecondaryView itself.
-     */
-    template <typename Particle>
-    void new_secondary(Particle&&) const {
-      CORSIKA_LOG_TRACE("DefaultSecondaryProducer::new_secondary(Particle&&)");
-    }
-
-    /**
-     * Method is called when a new SecondaryView is being created
-     * created. Extra logic can be introduced here.
-     *
-     * The input Particle is a reference object into the original
-     * parent stack! It is not a reference into the SecondaryView
-     * itself.
-     */
-    template <typename Particle>
-    DefaultSecondaryProducer(Particle const&) {
-
-      CORSIKA_LOG_TRACE("DefaultSecondaryProducer::DefaultSecondaryProducer(Particle&)");
-    }
   };
 
   /*

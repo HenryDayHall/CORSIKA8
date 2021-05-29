@@ -167,9 +167,8 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   DummyTracking tracking;
   DummyOutputManager output;
-  Cascade<DummyTracking, decltype(sequence), DummyOutputManager, TestCascadeStack,
-          TestCascadeStackView>
-      EAS(env, tracking, sequence, output, stack);
+  Cascade<DummyTracking, decltype(sequence), DummyOutputManager, TestCascadeStack> EAS(
+      env, tracking, sequence, output, stack);
 
   SECTION("full cascade") {
     EAS.run();

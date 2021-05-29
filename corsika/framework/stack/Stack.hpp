@@ -10,6 +10,8 @@
 
 #include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/stack/StackIteratorInterface.hpp>
+#include <corsika/framework/stack/DefaultSecondaryProducer.hpp>
+#include <corsika/framework/stack/SecondaryView.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -44,17 +46,6 @@ corsika::stack
 namespace corsika {
 
   /**
-     This is just a forward declatation for the user-defined
-     ParticleInterface, which is one of the essential template
-     parameters for the Stack.
-
-     <b>Important:</b> ParticleInterface must inherit from ParticleBase !
-   */
-
-  template <typename>
-  class ParticleInterface;
-
-  /**
      The Stack class provides (and connects) the main particle data storage machinery.
 
      The StackDataType type is the user-provided bare data storage
@@ -67,12 +58,22 @@ namespace corsika {
      provide all functions to read single particle data from the
      StackDataType, given an 'unsigned int' index.
 
+     <b>Important:</b> ParticleInterface must inherit from ParticleBase.
+
      The Stack implements the
      std-type begin/end function to allow integration in normal for
      loops, ranges, etc.
-   */
 
-  template <typename TStackData, template <typename> typename MParticleInterface>
+
+    The template argument MSecondaryProducer is only needed because of gitlab Issue 161
+
+    Due to a limitation of clang the corsika::MakeView does not work. Thus,
+    MSecondaryProducer is needed here to fully define a SecondaryView class.
+**/
+
+  template <typename TStackData, template <typename> typename MParticleInterface,
+            template <typename T1, template <class> class T2> class MSecondaryProducer =
+                DefaultSecondaryProducer>
   class Stack {
 
     typedef typename std::remove_reference<TStackData>::type value_type;
@@ -81,8 +82,11 @@ namespace corsika {
     typedef TStackData stack_data_type; ///< this is the type of the
                                         ///< user-provided data structure
 
+    typedef SecondaryView<TStackData, MParticleInterface, MSecondaryProducer>
+        stack_view_type;
+
     template <typename TStackIterator>
-    using pi_type = MParticleInterface<TStackIterator>; // @todo pi_type -> pi_template
+    using pi_type = MParticleInterface<TStackIterator>;
 
     /**
      * Via the StackIteratorInterface and ConstStackIteratorInterface
@@ -91,10 +95,12 @@ namespace corsika {
      * object. Using CRTP, this also determines the type of
      * MParticleInterface template class simultaneously.
      */
-    typedef StackIteratorInterface<value_type, MParticleInterface, Stack>
+    typedef StackIteratorInterface<value_type, MParticleInterface, MSecondaryProducer,
+                                   Stack>
         stack_iterator_type;
 
-    typedef ConstStackIteratorInterface<value_type, MParticleInterface, Stack>
+    typedef ConstStackIteratorInterface<value_type, MParticleInterface,
+                                        MSecondaryProducer, Stack>
         const_stack_iterator_type;
 
     /**
@@ -197,10 +203,7 @@ namespace corsika {
     /**
      * increase stack size, create new particle at end of stack
      */
-    template <typename... TArgs> //,
-    //        typename = std::enable_if_t<std::is_same_v<
-    //      void, std::invoke_result_t<decltype((**stack_iterator_type).setParticleData),
-    //                                 TArgs...>>>>
+    template <typename... TArgs>
     stack_iterator_type addParticle(const TArgs... v);
 
     void swap(stack_iterator_type a, stack_iterator_type b);
@@ -293,15 +296,14 @@ namespace corsika {
 
     const value_type& getStackData() const;
 
-    friend class StackIteratorInterface<value_type, MParticleInterface, Stack>;
-    friend class ConstStackIteratorInterface<value_type, MParticleInterface, Stack>;
-    template <typename T1, //=StackData,
-              template <typename>
-              typename M1, //=MParticleInterface,
-                           //             template<typename>typename M2>
-              template <class T2, template <class> class T3> class MSecondaryProducer>
-    friend class SecondaryView; //<StackData,MParticleInterface,M>; // access for
-                                // SecondaryView
+    friend class StackIteratorInterface<value_type, MParticleInterface,
+                                        MSecondaryProducer, Stack>;
+    friend class ConstStackIteratorInterface<value_type, MParticleInterface,
+                                             MSecondaryProducer, Stack>;
+    template <typename T1,                     //=TStackData,
+              template <typename> typename M1, //=MParticleInterface,
+              template <class T2, template <class> class T3> class M2>
+    friend class SecondaryView;
 
     friend class ParticleBase<stack_iterator_type>;
 
@@ -311,7 +313,7 @@ namespace corsika {
   private:
     TStackData data_; ///< this in general holds all the data and can be quite big
     std::vector<bool> deleted_; ///< bit field to flag deleted entries
-  };
+  };                            // namespace corsika
 
 } // namespace corsika
 

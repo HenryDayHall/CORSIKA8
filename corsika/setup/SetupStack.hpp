@@ -25,8 +25,6 @@ namespace corsika::setup {
    * the version with history
    */
   using Stack = detail::StackWithHistory;
-  template <typename T1, template <typename> typename M2>
-  using StackViewProducer = history::HistorySecondaryProducer<T1, M2>;
 
 #else // WITH_HISTORY
 
@@ -34,47 +32,10 @@ namespace corsika::setup {
    * the version without history
    */
   using Stack = detail::StackWithGeometry;
-  template <typename T1, template <typename> typename M2>
-  using StackViewProducer = DefaultSecondaryProducer<T1, M2>;
 
 #endif
 
-  // ---------------------------------------
-  // this is the stackitertor (particle type) we use in C8 executables:
-
-  /*
-    See Issue 161
-
-    unfortunately clang does not support this in the same way (yet) as
-    gcc, so we have to distinguish here. If clang cataches up, we
-    could remove the clang branch here and also in
-    corsika::Cascade. The gcc code is much more generic and
-    universal. If we could do the gcc version, we won't had to define
-    StackView globally, we could do it with MakeView whereever it is
-    actually needed. Keep an eye on this!
-  */
-
-#ifdef WITH_HISTORY
-
-#if defined(__clang__)
-  using StackView = SecondaryView<typename Stack::stack_data_type,
-                                  // CHECK with CLANG: setup::Stack::MPIType>;
-                                  detail::StackWithHistoryInterface, StackViewProducer>;
-#elif defined(__GNUC__) || defined(__GNUG__)
-  using StackView = MakeView<setup::Stack, StackViewProducer>::type;
-#endif
-
-#else // WITH_HISTORY
-
-#if defined(__clang__)
-  using StackView = SecondaryView<typename setup::Stack::stack_data_type,
-                                  // CHECK with CLANG:
-                                  // setup::Stack::MPIType>;
-                                  setup::detail::StackWithGeometryInterface>;
-#elif defined(__GNUC__) || defined(__GNUG__)
-  using StackView = MakeView<setup::Stack>::type;
-#endif
-
-#endif // WITH_HISTORY
+  // the correct secondary stack view
+  using StackView = typename Stack::stack_view_type;
 
 } // namespace corsika::setup

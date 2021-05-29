@@ -255,6 +255,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
     const HEPEnergyType P0 = 1000_EeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
         Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+    { [[maybe_unused]] auto const& dummy1 = stack; }
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
@@ -265,10 +266,12 @@ TEST_CASE("SibyllInterface", "[processes]") {
 
   SECTION("InteractionInterface - target nucleus out of range") {
     auto [env1, csPtr1, nodePtr1] = setup::testing::setup_environment(Code::Argon);
+    { [[maybe_unused]] auto const& dummy1 = env1; }
     auto const& cs1 = *csPtr1;
     const HEPEnergyType P0 = 150_GeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
         Code::Electron, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr1, cs1);
+    { [[maybe_unused]] auto const& dummy1 = stack; }
     MomentumVector plab = MomentumVector(
         cs1, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;

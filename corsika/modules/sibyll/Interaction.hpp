@@ -57,7 +57,6 @@ namespace corsika::sibyll {
     HEPEnergyType getMaxEnergyCoM() const { return maxEnergyCoM_; }
 
     default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("sibyll");
-    const bool internalDecays_ = true;
     const HEPEnergyType minEnergyCoM_ = 10. * 1e9 * electronvolt;
     const HEPEnergyType maxEnergyCoM_ = 1.e6 * 1e9 * electronvolt;
     const int maxTargetMassNumber_ = 18;
