@@ -439,7 +439,7 @@ coverage:
       allow_failure: true
   artifacts:
     when: always
-    expire_in: 1 year
+    expire_in: 3 month
     paths:
       - ${CI_PROJECT_DIR}/build/coverage-report.tar.gz
 
@@ -485,9 +485,6 @@ sanity:
   stage: python
   tags:
     - corsika
-  before_script:
-    - apt-get update && apt-get install -y python3-pip
-    - pip3 install --upgrade cython
   script:
     - cd ${CI_PROJECT_DIR}/python  # change into the Python directory
     - pip3 install --user -e '.[test]'  # install the package + test deps
@@ -503,13 +500,13 @@ sanity:
 # the default Python version Ubuntu 18.04 is Python3.8
 python-3.8:
   extends: .python
-  image: corsika/devel:u-18.04
+  image: corsika/analysis:python-3.9.5
   needs:
     - job: build_test_example-u-18_04
       artifacts: true
   artifacts:
     when: always
-    expire_in: 1 year
+    expire_in: 3 month
     paths:
       - ${CI_PROJECT_DIR}/Python/python-test.log
   allow_failure: true
