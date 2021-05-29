@@ -45,7 +45,7 @@ namespace corsika {
     /**
      * Get the configuration of this output.
      */
-    YAML::Node getConfig() const { return YAML::Node(); };
+    YAML::Node getConfig() const override { return YAML::Node(); };
 
     /**
      * Get any summary information for the entire library.
