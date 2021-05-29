@@ -29,7 +29,7 @@ TEST_CASE("Stack", "[Stack]") {
   logging::set_level(logging::level::info);
 
   // helper function for sum over stack data
-  auto sum = [](const StackTest& stack) {
+  auto sum = [](StackTest const& stack) {
     double v = 0;
     for (const auto& p : stack) v += p.getData();
     return v;
@@ -66,6 +66,8 @@ TEST_CASE("Stack", "[Stack]") {
     stack.addParticle(std::tuple{9.9});
     const double v = sum(stack);
     CHECK(v == 9.9);
+    auto const particle_const = stack.begin();
+    CHECK(particle_const.getData() == 9.9);
   }
 
   SECTION("delete from stack") {
@@ -80,7 +82,9 @@ TEST_CASE("Stack", "[Stack]") {
     p.setData(9.9);
     CHECK(stack.getSize() == 1);
     CHECK(stack.getEntries() == 1);
+    CHECK(!p.isErased());
     stack.erase(p);
+    CHECK(p.isErased());
     CHECK(stack.getSize() == 1);
     CHECK(stack.getEntries() == 0);
   }
