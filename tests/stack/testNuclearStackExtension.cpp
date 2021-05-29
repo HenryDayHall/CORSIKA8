@@ -77,6 +77,11 @@ TEST_CASE("NuclearStackExtension", "stack") {
     CHECK(pout.getTime() == 100_s);
     CHECK(pout.getNuclearA() == 10);
     CHECK(pout.getNuclearZ() == 9);
+
+    // -> set to rest
+    auto pout_mod = s.begin();
+    pout_mod.setMomentum(MomentumVector{dummyCS, {0_GeV, 0_GeV, 0_GeV}});
+    CHECK(pout_mod.getKineticEnergy() / 1_GeV == Approx(0));
   }
 
   SECTION("read invalid nucleus") {
@@ -181,6 +186,9 @@ TEST_CASE("NuclearStackExtension", "stack") {
       CHECK(p79.getTime() == 100_s);
     }
 
+    // invalid copy
+    { CHECK_THROWS(s.begin(), s.end() + 1000); }
+
     // swap
     {
       s.swap(s.begin() + 11, s.begin() + 10);
@@ -228,7 +236,6 @@ TEST_CASE("NuclearStackExtension", "stack") {
         s;
 
     // not valid, no A,Z:
-    // not valid, no A,Z:
     CHECK_THROWS(s.addParticle(
         std::make_tuple(Code::Nucleus, 100_GeV, DirectionVector(dummyCS, {1, 0, 0}),
                         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s)));
@@ -246,10 +253,30 @@ TEST_CASE("NuclearStackExtension", "stack") {
         std::make_tuple(Code::Nucleus, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
                         Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 10, 9));
 
-    // not valid
+    // valid, non-Nucleus with explicit A=Z=0
+    s.addParticle(
+        std::make_tuple(Code::Proton, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0));
+
+    // valid, non-Nucleus with explicit A=Z=0 and Energy
+    s.addParticle(
+        std::make_tuple(Code::Proton, 100_GeV, DirectionVector(dummyCS, {0, 1, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 0, 0));
+
+    // not valid, Oxygen, but A and Z
     CHECK_THROWS(particle.addSecondary(std::make_tuple(
         Code::Oxygen, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
-        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 16, 8)));
+        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s, 20, 10)));
+
+    // not valid, Nucleus, no A, Z
+    CHECK_THROWS(particle.addSecondary(
+        std::make_tuple(Code::Nucleus, MomentumVector(dummyCS, {1_GeV, 1_GeV, 1_GeV}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s)));
+
+    // not valid, Nucleus, no A, Z, and Energy
+    CHECK_THROWS(particle.addSecondary(
+        std::make_tuple(Code::Nucleus, 100_GeV, DirectionVector(dummyCS, {1, 0, 0}),
+                        Point(dummyCS, {1 * meter, 1 * meter, 1 * meter}), 100_s)));
 
     // add a another nucleus, so there are two now
     s.addParticle(
