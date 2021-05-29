@@ -45,18 +45,6 @@ corsika::stack
 
 namespace corsika {
 
-  // forward-decl:
-  template <class T1, template <class> class T2>
-  class DefaultSecondaryProducer;
-
-  // This is just a forward declatation for the user-defined
-  // ParticleInterface, which is one of the essential template
-  // parameters for the Stack.
-  // <b>Important:</b> ParticleInterface must inherit from ParticleBase !
-
-  template <typename>
-  class ParticleInterface;
-
   /**
      The Stack class provides (and connects) the main particle data storage machinery.
 
@@ -69,6 +57,8 @@ namespace corsika {
      class type of the StackIteratorInterface class (CRTP) and must
      provide all functions to read single particle data from the
      StackDataType, given an 'unsigned int' index.
+
+     <b>Important:</b> ParticleInterface must inherit from ParticleBase.
 
      The Stack implements the
      std-type begin/end function to allow integration in normal for
