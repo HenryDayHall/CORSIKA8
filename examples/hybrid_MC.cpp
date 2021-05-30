@@ -90,11 +90,12 @@ public:
 
   template <typename TParticle, typename TTrack>
   ProcessReturn doContinuous(TParticle const& particle, TTrack const&, bool const) {
-    auto const delta = plane_.getCenter() - particle.getPosition();
+    auto const delta = particle.getPosition() - plane_.getCenter();
     auto const n = plane_.getNormal();
     auto const proj = n.dot(delta);
-    if (proj < -0_mm) {
-      CORSIKA_LOG_INFO("particle {} failes", particle.asString());
+    if (proj < -1_m) {
+      CORSIKA_LOG_INFO("particle {} failes: proj={}, delta={}, p={}", particle.asString(),
+                       proj, delta, particle.getPosition());
       throw std::runtime_error("particle below obs level");
     }
     return ProcessReturn::Ok;
@@ -115,7 +116,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::trace);
 
   CORSIKA_LOG_INFO("hybrid_MC");
 
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
   unsigned short Z = std::stoi(std::string(argv[2]));
   auto const mass = get_nucleus_mass(A, Z);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 0.;
+  double theta = 50.;
   auto const thetaRad = theta / 180. * M_PI;
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -268,8 +269,8 @@ int main(int argc, char** argv) {
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
   auto sequence =
-      make_sequence(TrackCheck(obsPlane), hadronSequence, reset_particle_mass,
-                    decaySequence, eLoss, cut, conex_model, longprof, observationLevel);
+      make_sequence(hadronSequence, reset_particle_mass, decaySequence, eLoss, cut,
+                    conex_model, longprof, observationLevel, TrackCheck(obsPlane));
 
   // define air shower object, run simulation
   setup::Tracking tracking;

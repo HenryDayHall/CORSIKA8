@@ -101,8 +101,8 @@ namespace corsika {
         return getLinearTrajectory(particle);
       }
 
-      LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(p_perp) *
-                                     constants::c / (abs(charge) * magnitudeB));
+      LengthType const gyroradius = convert_HEP_to_SI<MassType::dimension_type>(p_perp) *
+                                    constants::c / (abs(charge) * magnitudeB);
 
       double const maxRadians = 0.01; // maximal allowed deflection
       LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
@@ -150,6 +150,8 @@ namespace corsika {
       auto const projectedDirectionSqrNorm = projectedDirection.getSquaredNorm();
       bool const isParallel = (projectedDirectionSqrNorm == 0 * square(1_T));
 
+      CORSIKA_LOG_TRACE("projectedDirectionSqrNorm={} T^2",
+                        projectedDirectionSqrNorm / square(1_T));
       if ((charge == 0 * constants::e) || magneticfield.getNorm() == 0_T || isParallel) {
         return tracking_line::Tracking::intersect<TParticle>(particle, sphere);
       }
@@ -174,7 +176,10 @@ namespace corsika {
                        (deltaPosLength - sphere.getRadius()) * denom /
                        (1_m * 1_m * 1_m * 1_m);
       CORSIKA_LOG_TRACE("denom={}, b={}, c={}, d={}", denom, b, c, d);
-      std::vector<double> solutions = andre::solve_quartic_real(1, 0, b, c, d);
+      std::vector<double> solutions = solve_quartic_real(1, 0, b, c, d);
+      if (!solutions.size()) {
+        return tracking_line::Tracking::intersect<TParticle>(particle, sphere);
+      }
       LengthType d_enter, d_exit;
       int first = 0, first_entry = 0, first_exit = 0;
       for (auto solution : solutions) {

@@ -234,9 +234,20 @@ namespace corsika {
   inline std::vector<double> solve_cubic_real(long double a, long double b, long double c,
                                               long double d, double const epsilon) {
 
-    CORSIKA_LOG_TRACE("cubic_2: a={:f}, b={:f}, c={:f}, d={:f}, epsilon={} {} {}", a, b,
-                      c, d, epsilon, (std::abs(a - 1) < epsilon),
+    CORSIKA_LOG_TRACE("cubic_iterative: a={:f}, b={:f}, c={:f}, d={:f}, epsilon={} {} {}",
+                      a, b, c, d, epsilon, (std::abs(a - 1) < epsilon),
                       (std::abs(b) < epsilon));
+
+#ifdef DEBUG
+    {
+      auto test = andre::solve_cubic_real_analytic(a, b, c, d, epsilon);
+
+      for (long double test_v : test) {
+        CORSIKA_LOG_TRACE("test,andre x={} f(x)={}", test_v,
+                          cubic_function(test_v, a, b, c, d));
+      }
+    }
+#endif
 
     if (std::abs(a) < epsilon) { // this is just a quadratic
       return solve_quadratic_real(b, c, d, epsilon);
@@ -276,6 +287,10 @@ namespace corsika {
       } while ((++niter < maxiter) && (std::abs(f_x1) > epsilon));
 
       CORSIKA_LOG_TRACE("niter={}", niter);
+      if (niter >= maxiter) {
+        CORSIKA_LOG_TRACE("failure, no solution");
+        //        return std::vector<double>{};
+      }
     }
 
     CORSIKA_LOG_TRACE("x1={} f_x1={}", x1, f_x1);

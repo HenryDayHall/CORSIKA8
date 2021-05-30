@@ -35,6 +35,9 @@ namespace corsika {
       // y^3 − c*y^2 + (bd−4e)*y − b^2*e−d^2+4*c*e = 0
 
       std::vector<double> x3 = solve_cubic_real(1, a3, b3, c3, epsilon);
+      if (!x3.size()) {
+        return {}; // no solution, numeric problem
+      }
       long double y = x3[0]; // there is always at least one solution
       // The essence - choosing Y with maximal absolute value.
       if (x3.size() == 3) {
