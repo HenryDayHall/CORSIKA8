@@ -82,6 +82,34 @@ void registerRandomStreams(uint64_t const seed) {
   RNGManager<>::getInstance().setSeed(seed);
 }
 
+class TrackCheck : public ContinuousProcess<TrackCheck> {
+
+public:
+  TrackCheck(Plane const& plane)
+      : plane_(plane) {}
+
+  template <typename TParticle, typename TTrack>
+  ProcessReturn doContinuous(TParticle const& particle, TTrack const&, bool const) {
+    auto const delta = plane_.getCenter() - particle.getPosition();
+    auto const n = plane_.getNormal();
+    auto const proj = n.dot(delta);
+    if (proj < -0_mm) {
+      CORSIKA_LOG_INFO("particle {} failes", particle.asString());
+      throw std::runtime_error("particle below obs level");
+    }
+    return ProcessReturn::Ok;
+  }
+
+  template <typename TParticle, typename TTrack>
+  LengthType getMaxStepLength(TParticle const&, TTrack const&) const {
+    return std::numeric_limits<double>::infinity() * 1_m;
+  }
+
+private:
+  Plane plane_;
+};
+
+
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
@@ -151,7 +179,7 @@ int main(int argc, char** argv) {
        << ", norm = " << plab.getNorm() << endl;
 
   auto const observationHeight = 0_km + builder.getEarthRadius();
-  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+  auto const injectionHeight = 1_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
@@ -209,7 +237,7 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, false, true};
+  ParticleCut cut{3_GeV, false, true};
   BetheBlochPDG eLoss{showerAxis};
 
   CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
@@ -239,16 +267,16 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence = make_sequence(hadronSequence, reset_particle_mass, decaySequence, eLoss,
-                                cut, conex_model, longprof, observationLevel);
+  auto sequence =
+      make_sequence(TrackCheck(obsPlane), hadronSequence, reset_particle_mass,
+                    decaySequence, eLoss, cut, conex_model, longprof, observationLevel);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.SetNodes();
-  //  EAS.forceInteraction();
+  EAS.forceInteraction();
 
   output.startOfShower();
   EAS.run();
