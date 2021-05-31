@@ -44,9 +44,10 @@ namespace corsika {
                       fmt::ptr(&volumeNode), fmt::ptr(volumeNode.getParent()),
                       time_intersections_curr.hasIntersections());
     if (time_intersections_curr.hasIntersections()) {
-      CORSIKA_LOG_DEBUG("intersection times with currentLogicalVolumeNode: {} s and {} s",
-                        time_intersections_curr.getEntry() / 1_s,
-                        time_intersections_curr.getExit() / 1_s);
+      CORSIKA_LOG_DEBUG(
+          "intersection times with currentLogicalVolumeNode: entry={} s and exit={} s",
+          time_intersections_curr.getEntry() / 1_s,
+          time_intersections_curr.getExit() / 1_s);
       if (time_intersections_curr.getExit() <= minTime) {
         minTime =
             time_intersections_curr.getExit(); // we exit currentLogicalVolumeNode here
