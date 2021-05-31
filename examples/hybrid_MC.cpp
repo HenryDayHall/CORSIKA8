@@ -116,7 +116,7 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   CORSIKA_LOG_INFO("hybrid_MC");
 
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
   unsigned short Z = std::stoi(std::string(argv[2]));
   auto const mass = get_nucleus_mass(A, Z);
   const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
-  double theta = 50.;
+  double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
   auto elab2plab = [](HEPEnergyType Elab, HEPMassType m) {
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
        << ", norm = " << plab.getNorm() << endl;
 
   auto const observationHeight = 0_km + builder.getEarthRadius();
-  auto const injectionHeight = 1_km + builder.getEarthRadius();
+  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
@@ -202,8 +202,8 @@ int main(int argc, char** argv) {
             << std::endl;
 
   OutputManager output("hybrid_MC_outputs");
-  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env,
-                              false, 1000};
+  ShowerAxis const showerAxis{injectionPos, (showerCore - injectionPos) * 1.02, env, true,
+                              1000};
 
   // setup processes, decays and interactions
 
@@ -268,16 +268,16 @@ int main(int argc, char** argv) {
   auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
                                     make_sequence(sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
-  auto sequence =
-      make_sequence(hadronSequence, reset_particle_mass, decaySequence, eLoss, cut,
-                    conex_model, longprof, observationLevel, TrackCheck(obsPlane));
+  auto sequence = make_sequence(hadronSequence, reset_particle_mass, decaySequence, eLoss,
+                                cut, conex_model, longprof, observationLevel);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  EAS.forceInteraction();
+  //  EAS.SetNodes();
+  //  EAS.forceInteraction();
 
   output.startOfShower();
   EAS.run();
