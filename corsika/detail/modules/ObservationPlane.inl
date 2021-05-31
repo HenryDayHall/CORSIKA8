@@ -78,10 +78,10 @@ namespace corsika {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
     double const fractionOfIntersection = timeOfIntersection / trajectory.getDuration();
-    auto const pointOfIntersection = trajectory.getPosition(fractionOfIntersection);
-    auto dist = (trajectory.getPosition(0) - pointOfIntersection).getNorm();
-    CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength l={} m", dist / 1_m);
-    return dist;
+    CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength dist={} m, pos={}",
+                      trajectory.getLength(fractionOfIntersection) / 1_m,
+                      trajectory.getPosition(fractionOfIntersection));
+    return trajectory.getLength(fractionOfIntersection);
   }
 
   template <typename TTracking, typename TOutput>
