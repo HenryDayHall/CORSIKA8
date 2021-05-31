@@ -35,7 +35,9 @@ namespace corsika {
   }
 
   inline VelocityVector LeapFrogTrajectory::getVelocity(double const u) const {
-    return initialVelocity_ + initialVelocity_.cross(magneticfield_) * timeStep_ * u * k_;
+    return (initialDirection_ +
+            initialDirection_.cross(magneticfield_) * timeStep_ * u * k_) *
+           initialVelocity_.getNorm();
   }
 
   inline DirectionVector LeapFrogTrajectory::getDirection(double const u) const {
@@ -44,18 +46,23 @@ namespace corsika {
 
   inline TimeType LeapFrogTrajectory::getDuration(double const u) const {
     return u * timeStep_ *
-           (double(getVelocity(u).getNorm() / initialVelocity_.getNorm()) + 1.0) / 2;
+           (1. + fabs(0.5 * initialDirection_.cross(magneticfield_).getNorm() * u *
+                      timeStep_ * k_));
   }
 
   inline LengthType LeapFrogTrajectory::getLength(double const u) const {
-    return timeStep_ * initialVelocity_.getNorm() * u;
+    return getDuration(u) * initialVelocity_.getNorm();
   }
 
   inline void LeapFrogTrajectory::setLength(LengthType const limit) {
-    if (initialVelocity_.getNorm() == 0_m / 1_s) setDuration(0_s);
+    if (initialVelocity_.getNorm() == SpeedType::zero()) setDuration(0_s);
     setDuration(limit / initialVelocity_.getNorm());
   }
 
-  inline void LeapFrogTrajectory::setDuration(TimeType const limit) { timeStep_ = limit; }
+  inline void LeapFrogTrajectory::setDuration(TimeType const limit) {
+    double const correction =
+        (1. + fabs(0.5 * initialDirection_.cross(magneticfield_).getNorm() * limit * k_));
+    timeStep_ = limit / correction;
+  }
 
 } // namespace corsika

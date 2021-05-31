@@ -63,8 +63,9 @@ namespace corsika {
   inline LengthType ObservationPlane<TTracking, TOutput>::getMaxStepLength(
       TParticle const& particle, TTrajectory const& trajectory) {
 
-    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
-                      particle.getPosition(), particle.getDirection(), plane_.asString());
+    CORSIKA_LOG_TRACE("getMaxStepLength, particle={}, pos={}, dir={}, plane={}",
+                      particle.asString(), particle.getPosition(),
+                      particle.getDirection(), plane_.asString());
 
     auto const intersection = TTracking::intersect(particle, plane_);
 

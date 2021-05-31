@@ -73,7 +73,7 @@ namespace corsika {
     // Sternheimer parameterization, density corrections towards high energies
     // NOTE/TODO: when Cbar is 0 it needs to be approximated from parameterization ->
     // MISSING
-    CORSIKA_LOG_TRACE("BetheBloch p.getMomentum().getNorm()/m{}=",
+    CORSIKA_LOG_TRACE("BetheBloch p.getMomentum().getNorm()/m={}",
                       p.getMomentum().getNorm() / m);
     double const x = log10(p.getMomentum().getNorm() / m);
     double delta = 0;

@@ -288,8 +288,8 @@ namespace corsika {
 
       CORSIKA_LOG_TRACE("niter={}", niter);
       if (niter >= maxiter) {
-        CORSIKA_LOG_TRACE("failure, no solution");
-        //        return std::vector<double>{};
+        // CORSIKA_LOG_TRACE("failure, no solution");
+        // return std::vector<double>{};
       }
     }
 
