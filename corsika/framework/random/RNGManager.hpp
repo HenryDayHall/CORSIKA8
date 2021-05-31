@@ -15,27 +15,28 @@
 
 #include <corsika/framework/utility/Singleton.hpp>
 #include <corsika/framework/core/Logging.hpp>
-
+#include <corsika/detail/framework/random/random_iterator/Stream.hpp>
 /*!
  * With this class modules can register streams of random numbers.
  */
 
 namespace corsika {
 
-  class RNGManager : public corsika::Singleton<RNGManager> {
+template<typename CBPRNG=random_iterator::philox>
+  class RNGManager : public corsika::Singleton<RNGManager<CBPRNG>> {
 
-    friend class corsika::Singleton<RNGManager>;
+    friend class corsika::Singleton<RNGManager<CBPRNG>>;
 
   public:
-    typedef std::mt19937_64 prng_type;
+
+    typedef CBPRNG prng_type;
     typedef std::uint64_t seed_type;
     typedef std::string string_type;
     typedef std::map<std::string, prng_type> streams_type;
-    typedef std::map<std::string, std::seed_seq> seeds_type;
 
-    RNGManager(RNGManager const&) = delete; // since it is a singleton
+    RNGManager(RNGManager<CBPRNG> const&) = delete; // since it is a singleton
 
-    RNGManager& operator=(RNGManager const&) = delete;
+    RNGManager<CBPRNG>& operator=(RNGManager<CBPRNG> const&) = delete;
 
     /*!
      * This function is to be called by a module requiring a random-number
@@ -43,35 +44,25 @@ namespace corsika {
      *
      * \throws sth. when stream \a pModuleName is already registered
      */
-    void registerRandomStream(string_type const& streamName);
+    inline void registerRandomStream(string_type const& streamName);
 
     /*!
      * returns the pre-stored stream of given name \a pStreamName if
      * available
      */
-    prng_type& getRandomStream(string_type const& streamName);
+    inline prng_type& getRandomStream(string_type const& streamName);
 
     /*!
      * Check whether a stream has been registered.
      */
-    bool isRegistered(string_type const& streamName) const;
+    inline bool isRegistered(string_type const& streamName) const;
 
     /*!
      * dumps the names and states of all registered random-number streams
      * into a std::stringstream.
      */
-    std::stringstream dumpState() const;
+    inline std::stringstream dumpState() const;
 
-    /**
-     * Set explicit seeds for all currently registered streams. The actual seed values
-     * are incremented from \a vSeed.
-     */
-    void seedAll(seed_type seed);
-
-    /**
-     * Set seeds for all currently registered streams.
-     */
-    void seedAll(void); //!< seed all currently registered streams with "real" randomness
 
     /**
      * @fn const streams_type getRngs&()const
@@ -83,15 +74,6 @@ namespace corsika {
      */
     const streams_type& getRngs() const { return rngs_; }
 
-    /**
-     * @fn const seeds_type getSeeds&()const
-     * @brief Constant access to the seeds.
-     *
-     * @pre
-     * @post
-     * @return RNGManager::seeds_type
-     */
-    const seeds_type& getSeeds() const { return seeds_; }
 
     /**
      * @fn streams_type Rngs()
@@ -101,27 +83,29 @@ namespace corsika {
      * @post
      * @return RNGManager::streams_type&
      */
-    streams_type Rngs() { return rngs_; }
+    streams_type& Rngs() { return rngs_; }
 
-    /**
-     * @fn seeds_type Seeds&()
-     * @brief Non-constant access to seeds.
-     *
-     * @pre
-     * @post
-     * @return RNGManager::seeds_type&
-     */
-    seeds_type& getSeeds() { return seeds_; }
+	seed_type getSeed() const {
+		return seed_;
+	}
+
+	void setSeed(seed_type seed) {
+		seed_ = seed;
+        //update the rgn states
+		for (auto& [streamName, rng] : rngs_)  rng.setSeed(seed_) ;
+
+	}
 
   protected:
+
     RNGManager() = default;
 
   private:
     streams_type rngs_;
-    seeds_type seeds_;
+    seed_type  seed_;
   };
 
-  typedef typename RNGManager::prng_type default_prng_type;
+  typedef typename RNGManager<>::prng_type default_prng_type;
 
 } // namespace corsika
 

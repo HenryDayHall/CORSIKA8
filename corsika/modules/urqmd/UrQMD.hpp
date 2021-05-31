@@ -47,7 +47,7 @@ namespace corsika::urqmd {
     void readXSFile(boost::filesystem::path);
 
     // data members
-    default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("urqmd");
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("urqmd");
     std::uniform_int_distribution<int> booleanDist_{0, 1};
     boost::multi_array<CrossSectionType, 3> xs_interp_support_table_;
   };

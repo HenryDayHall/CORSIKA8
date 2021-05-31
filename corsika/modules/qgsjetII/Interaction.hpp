@@ -57,7 +57,7 @@ namespace corsika::qgsjetII {
         QgsjetIIHadronType::PiPlusType; // for pi0, rho0 projectiles
 
     corsika::default_prng_type& rng_ =
-        corsika::RNGManager::getInstance().getRandomStream("qgsjet");
+        corsika::RNGManager<>::getInstance().getRandomStream("qgsjet");
     const int maxMassNumber_ = 208;
   };
 

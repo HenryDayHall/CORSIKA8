@@ -47,7 +47,7 @@ namespace corsika::pythia8 {
     void doInteraction(TView&);
 
   private:
-    default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("pythia");
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("pythia");
     Pythia8::SigmaTotal sigma_;
     const bool internalDecays_ = true;
     int count_ = 0;

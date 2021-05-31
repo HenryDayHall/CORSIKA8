@@ -137,7 +137,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
 
-  RNGManager::getInstance().registerRandomStream("qgsjet");
+  RNGManager<>::getInstance().registerRandomStream("qgsjet");
 
   SECTION("InteractionInterface") {
 

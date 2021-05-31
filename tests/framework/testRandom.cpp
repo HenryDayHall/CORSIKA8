@@ -20,7 +20,7 @@ using namespace corsika;
 
 SCENARIO("random-number streams can be registered and retrieved") {
   GIVEN("a RNGManager") {
-    RNGManager& rngManager = RNGManager::getInstance();
+    RNGManager<>& rngManager = RNGManager<>::getInstance();
 
     WHEN("the sequence name is not registered") {
       CHECK(rngManager.isRegistered("stream_A") == false);

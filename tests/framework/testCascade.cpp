@@ -144,7 +144,7 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   HEPEnergyType E0 = 100_GeV;
 
-  RNGManager& rmng = RNGManager::getInstance();
+  auto& rmng = RNGManager<>::getInstance();
   rmng.registerRandomStream("cascade");
 
   auto env = make_dummy_env();

@@ -107,7 +107,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
 
-  RNGManager::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
 
   SECTION("InteractionInterface - valid targets") {
 

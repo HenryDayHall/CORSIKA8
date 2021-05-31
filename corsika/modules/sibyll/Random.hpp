@@ -23,7 +23,7 @@ namespace sibyll {
 
   double rndm_interface() {
     static corsika::default_prng_type& rng =
-        corsika::RNGManager::getInstance().getRandomStream("sibyll");
+        corsika::RNGManager<>::getInstance().getRandomStream("sibyll");
     std::uniform_real_distribution<double> dist;
     return dist(rng);
   }

@@ -133,7 +133,7 @@ namespace corsika {
     TProcessList& sequence_;
     TOutput& output_;
     TStack& stack_;
-    default_prng_type& rng_ = RNGManager::getInstance().getRandomStream("cascade");
+    default_prng_type& rng_ = RNGManager<>::getInstance().getRandomStream("cascade");
     unsigned int count_ = 0;
 
     // but this here temporarily. Should go into dedicated file later:
