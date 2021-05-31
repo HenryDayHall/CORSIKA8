@@ -120,8 +120,9 @@ namespace corsika::epos {
     ::epos::cjinti_.iorsdf = 3; //  !droplet formation turned on(>0) or off(0)
     ::epos::cjinti_.iorshh = 0; //    !other hadron-hadron int. turned on(1) or off(0)
 
-    ::epos::othe1_.istore = 0;  // do not produce epos output file
-    ::epos::nucl6_.infragm = 0; // keep free nucleons in fragmentation
+    ::epos::othe1_.istore = 0; // do not produce epos output file
+    ::epos::nucl6_.infragm =
+        2; // 0: keep free nucleons in fragmentation,1: one fragment, 2: fragmentation
 
     ::epos::othe2_.iframe = 12; // lab frame, target at rest
 
@@ -165,7 +166,7 @@ namespace corsika::epos {
     ::epos::enrgy_.ekin = -1.;
     ::epos::hadr1_.pnll = -1.;
 
-    ::epos::enrgy_.ecms = Ecm / 1_GeV;
+    ::epos::enrgy_.ecms = Ecm / 1_GeV; // -> c.m.s. frame
 
     CORSIKA_LOGGER_TRACE(logger_,
                          "inside EPOS: "
@@ -192,7 +193,7 @@ namespace corsika::epos {
     ::epos::hadr1_.pnll = -1.;
 
     // hadron-nucleon momentum
-    ::epos::hadr1_.pnll = float(Plab / 1_GeV);
+    ::epos::hadr1_.pnll = float(Plab / 1_GeV); // -> lab frame
 
     CORSIKA_LOGGER_TRACE(logger_,
                          "inside EPOS: "
@@ -221,31 +222,26 @@ namespace corsika::epos {
 
     if (is_nucleus(idBeam)) {
       ::epos::hadr25_.idprojin = convertToEposRaw(Code::Proton);
-      ::epos::nucl1_.laproj = iBeamZ; // get_nucleus_Z(idBeam);
-      ::epos::nucl1_.maproj = iBeamA; // get_nucleus_A(idBeam);
-      ::epos::had10_.iclpro = corsika::epos::getEposXSCode(Code::Proton);
+      ::epos::nucl1_.laproj = iBeamZ;
+      ::epos::nucl1_.maproj = iBeamA;
     } else {
       ::epos::hadr25_.idprojin = convertToEposRaw(idBeam);
-      ::epos::had10_.iclpro = corsika::epos::getEposXSCode(idBeam);
       ::epos::nucl1_.laproj = -1;
       ::epos::nucl1_.maproj = 1;
     }
 
     if (is_nucleus(idTarget)) {
       ::epos::hadr25_.idtargin = convertToEposRaw(Code::Proton);
-      ::epos::nucl1_.matarg = iTargetA; // get_nucleus_A(idTarget);
-      ::epos::nucl1_.latarg = iTargetZ; // get_nucleus_Z(idTarget);
-      ::epos::had10_.icltar = corsika::epos::getEposXSCode(Code::Proton);
+      ::epos::nucl1_.matarg = iTargetA;
+      ::epos::nucl1_.latarg = iTargetZ;
     } else if (idTarget == Code::Proton || idTarget == Code::Hydrogen) {
       ::epos::hadr25_.idtargin = convertToEposRaw(Code::Proton);
       ::epos::nucl1_.matarg = 1;
       ::epos::nucl1_.latarg = -1;
-      ::epos::had10_.icltar = corsika::epos::getEposXSCode(Code::Proton);
     } else if (idTarget == Code::Neutron) {
       ::epos::hadr25_.idtargin = convertToEposRaw(Code::Neutron);
       ::epos::nucl1_.matarg = 1;
       ::epos::nucl1_.latarg = -1;
-      ::epos::had10_.icltar = corsika::epos::getEposXSCode(Code::Proton);
     } else {
       throw std::runtime_error("Epos: target outside range!");
     }
@@ -267,11 +263,9 @@ namespace corsika::epos {
 
   inline Interaction::~Interaction() { CORSIKA_LOGGER_DEBUG(logger_, "n={} ", count_); }
 
-  inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
-  Interaction::calcCrossSectionCoM(corsika::Code const BeamId, int const BeamA,
-                                   int const BeamZ, corsika::Code const TargetId,
-                                   int const TargetA, int const TargetZ,
-                                   const corsika::HEPEnergyType EnergyCOM) const {
+  inline std::tuple<CrossSectionType, CrossSectionType> Interaction::calcCrossSectionCoM(
+      Code const BeamId, int const BeamA, int const BeamZ, Code const TargetId,
+      int const TargetA, int const TargetZ, const HEPEnergyType EnergyCOM) const {
     CORSIKA_LOGGER_DEBUG(logger_,
                          "calcCrossSection: input:"
                          " beamId={}, beamA={}, beamZ={}"
@@ -307,14 +301,16 @@ namespace corsika::epos {
           "Epos!");
 
     double sigProd, sigEla = 0;
-    float sigTot1, sigProd1, sigEla1, sigCut1 = 0;
+    float sigTot1, sigProd1, sigCut1 = 0;
     if (!is_nucleus(TargetId) && !is_nucleus(BeamId)) {
       sigProd = ::epos::hadr5_.sigine;
       sigEla = ::epos::hadr5_.sigela;
     } else {
-      ::epos::crseaaepos_(sigTot1, sigProd1, sigCut1, sigEla1);
+      // calculate from model, SLOW:
+      float sigQEla1 = 0; // target fragmentation/excitation
+      ::epos::crseaaepos_(sigTot1, sigProd1, sigCut1, sigQEla1);
       sigProd = sigProd1;
-      sigEla = sigEla1;
+      // sigEla not properly defined here
     }
     CORSIKA_LOGGER_DEBUG(logger_,
                          "calcCrossSectionCoM: output:"
@@ -380,7 +376,9 @@ namespace corsika::epos {
                          "beamId={}, beamXS={}",
                          ::epos::hadr2_.idproj, ::epos::had10_.iclpro);
 
+    // cross section from table, FAST
     float sigProdEpos = ::epos::eposcrse_(Ekin, Abeam, Atarget, iMode);
+    // sig-el from analytic calculation, no fast
     float sigElaEpos = ::epos::eposelacrse_(Ekin, Abeam, Atarget, iMode);
 
     return std::make_tuple(sigProdEpos * 1_mb, sigElaEpos * 1_mb);
@@ -555,18 +553,42 @@ namespace corsika::epos {
         if (!psec.isFinal()) continue;
 
         auto momentum = psec.getMomentum(zAxisFrame);
-        auto const energy = psec.getEnergy();
 
         momentum.rebase(originalCS); // transform back into standard lab frame
 
-        auto const pid = corsika::epos::convertFromEpos(psec.getPID());
+        EposCode const eposId = psec.getPID();
+        Code const pid = corsika::epos::convertFromEpos(eposId);
         CORSIKA_LOGGER_TRACE(logger_,
                              " id= {}"
                              " p= {}",
                              pid, momentum.getComponents() / 1_GeV);
-        auto pnew = view.addSecondary(std::make_tuple(pid, momentum, pOrig, tOrig));
-        Plab_final += pnew.getMomentum();
-        Elab_final += pnew.getEnergy();
+        if (!is_nucleus(pid)) {
+          auto pnew = view.addSecondary(std::make_tuple(pid, momentum, pOrig, tOrig));
+          Plab_final += pnew.getMomentum();
+          Elab_final += pnew.getEnergy();
+        } else {
+          unsigned int A = 0;
+          unsigned int Z = 0;
+          if (pid == Code::Deuterium) {
+            A = 2;
+            Z = 1;
+          } else if (pid == Code::Tritium) {
+            A = 3;
+            Z = 1;
+          } else if (pid == Code::Helium) {
+            A = 4;
+            Z = 2;
+          } else {
+            // 10AAAZZZ0
+            EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
+            Z = int(eposPdg / 10) % 1000;
+            A = int(eposPdg / 10000) % 1000;
+          }
+          auto pnew = view.addSecondary(
+              std::make_tuple(Code::Nucleus, momentum, pOrig, tOrig, A, Z));
+          Plab_final += pnew.getMomentum();
+          Elab_final += pnew.getEnergy();
+        }
       }
       CORSIKA_LOGGER_DEBUG(
           logger_,

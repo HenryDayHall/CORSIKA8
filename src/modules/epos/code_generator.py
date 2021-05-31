@@ -68,7 +68,7 @@ def generate_epos_enum(particle_db):
     '''
      generates the enum to access epos particles by readable names
     '''
-    output = "enum class EposCode : int16_t {\n"
+    output = "enum class EposCode : int32_t {\n"
     for identifier, pData in particle_db.items():
         if 'epos_code' in pData:
             output += "  {:s} = {:d},\n".format(identifier, pData['epos_code'])

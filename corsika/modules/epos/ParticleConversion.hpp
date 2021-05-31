@@ -17,7 +17,7 @@
 
 namespace corsika::epos {
 
-  enum class EposCode : int16_t;
+  enum class EposCode : int32_t;
   using EposCodeIntType = std::underlying_type<EposCode>::type;
 
   /**
@@ -34,14 +34,16 @@ namespace corsika::epos {
 
 #include <corsika/modules/epos/Generated.inc>
 
-  EposCode constexpr convertToEpos(corsika::Code pCode) {
-    return corsika2epos[static_cast<corsika::CodeIntType>(pCode)];
+  EposCode constexpr convertToEpos(Code pCode) {
+    return corsika2epos[static_cast<CodeIntType>(pCode)];
   }
 
-  corsika::Code constexpr convertFromEpos(EposCode pCode) {
-    auto const s = static_cast<EposCodeIntType>(pCode);
+  Code constexpr convertFromEpos(EposCode pCode) {
+    EposCodeIntType const s = static_cast<EposCodeIntType>(pCode);
+    // if nucleus (pdg-id)
+    if (s >= 1000000000) { return Code::Nucleus; }
     auto const corsikaCode = epos2corsika[s - minEpos];
-    if (corsikaCode == corsika::Code::Unknown) {
+    if (corsikaCode == Code::Unknown) {
       throw std::runtime_error(std::string("EPOS/CORSIKA conversion of ")
                                    .append(std::to_string(s))
                                    .append(" impossible"));
@@ -49,20 +51,20 @@ namespace corsika::epos {
     return corsikaCode;
   }
 
-  int constexpr convertToEposRaw(corsika::Code pCode) {
+  int constexpr convertToEposRaw(Code pCode) {
     return static_cast<int>(convertToEpos(pCode));
   }
 
-  int constexpr getEposXSCode(corsika::Code pCode) {
+  int constexpr getEposXSCode(Code pCode) {
     return static_cast<EposXSClassIntType>(
-        corsika2eposXStype[static_cast<corsika::CodeIntType>(pCode)]);
+        corsika2eposXStype[static_cast<CodeIntType>(pCode)]);
   }
 
-  bool constexpr canInteract(corsika::Code pCode) { return getEposXSCode(pCode) > 0; }
+  bool constexpr canInteract(Code pCode) { return getEposXSCode(pCode) > 0; }
 
-  HEPMassType getEposMass(corsika::Code const);
+  HEPMassType getEposMass(Code const);
 
-  PDGCode getEposPDGId(corsika::Code const);
+  PDGCode getEposPDGId(Code const);
 
 } // namespace corsika::epos
 

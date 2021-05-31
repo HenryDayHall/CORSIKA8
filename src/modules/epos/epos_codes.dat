@@ -70,3 +70,8 @@ NuMu			13	 0	 CannotInteract
 NuMuBar			-13	 0	 CannotInteract
 NuTau			15	 0	 CannotInteract
 NuTauBar		-15	 0	 CannotInteract
+
+# Nuclei
+Deuterium                17      0       CannotInteract      
+Tritium                  18      0       CannotInteract
+Helium                   19      0       CannotInteract

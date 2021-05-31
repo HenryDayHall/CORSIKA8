@@ -14,7 +14,7 @@ c-----------------------------------------------------------------------
       call utpri('utresc',ish,ishini,4)
 
       errlim=0.005 !max(0.001,1./engy)
-      if(iLHC.eq.1)errlim=max(0.00005,0.5/engy)
+      if(iLHC.eq.1)errlim=max(0.00005,0.005/engy)
 
       iret=0
       nptlpt=iabs(maproj)+iabs(matarg)
