@@ -112,8 +112,7 @@ namespace corsika {
     }
     CORSIKA_LOG_TRACE("check m={}", m);
     if (m == 0) { return {0}; }
-
-    CORSIKA_LOG_TRACE("check m={}", m);
+    if (m < 0) { return {}; } // this is a rare numerical instability
 
     long double const quad_term1 = p / 2 + m;
     long double const quad_term2 = std::sqrt(2 * m);
