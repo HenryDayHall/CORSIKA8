@@ -112,8 +112,29 @@ namespace corsika {
     }
     CORSIKA_LOG_TRACE("check m={}", m);
     if (m == 0) { return {0}; }
-    if (m < 0) { return {}; } // this is a rare numerical instability
+    if (m < 0) {
+      // this is a rare numerical instability
+      // first: try analytical solution, second: discard (curved->straight tracking)
+      std::vector<double> const resolve_cubic_analytic =
+          andre::solve_cubic_real_analytic(1, p, p2 / 4 - r, -q2 / 8, epsilon);
 
+      CORSIKA_LOG_TRACE("andre::resolve_cubic_analytic: N={}, m=[{}]",
+                        resolve_cubic_analytic.size(),
+                        fmt::join(resolve_cubic_analytic, ", "));
+
+      if (!resolve_cubic_analytic.size()) return {};
+
+      for (auto const& v : resolve_cubic_analytic) {
+        CORSIKA_LOG_TRACE("check pol3(v)={}", (static_pow<3>(v) + static_pow<2>(v) * p +
+                                               v * (p2 / 4 - r) - q2 / 8));
+        if (std::abs(v) > epsilon && std::abs(v) > m) { m = v; }
+      }
+      CORSIKA_LOG_TRACE("check m={}", m);
+      if (m == 0) { return {0}; }
+      if (m < 0) {
+        return {}; // now we are out of options, cannot solve: curved->straight tracking
+      }
+    }
     long double const quad_term1 = p / 2 + m;
     long double const quad_term2 = std::sqrt(2 * m);
     long double const quad_term3 = q / (2 * quad_term2);
