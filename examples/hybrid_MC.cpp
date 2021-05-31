@@ -67,7 +67,7 @@
 using namespace corsika;
 using namespace std;
 
-void registerRandomStreams(int seed) {
+void registerRandomStreams(uint64_t const seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -98,8 +98,8 @@ int main(int argc, char** argv) {
   }
   feenableexcept(FE_INVALID);
 
-  int seed = 0;
-  if (argc > 4) seed = std::stoi(std::string(argv[4]));
+  uint64_t seed = 0;
+  if (argc > 4) seed = std::stol(std::string(argv[4]));
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
