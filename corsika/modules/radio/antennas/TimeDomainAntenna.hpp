@@ -83,7 +83,7 @@ namespace corsika {
         // figure out the correct timebin to store the E-field value.
         // NOTE: static cast is implicitly flooring
         auto timebin_{static_cast<std::size_t>((time - start_time_) * sample_rate_)};
-        std::cout << "TIMEBIN IS: " << timebin_ << std::endl;
+        CORSIKA_LOG_INFO("Timebin: {}",timebin_);
 
         // store the x,y,z electric field components.
         waveformE_.at(timebin_, 0) += (efield.getX() / (1_V / 1_m));

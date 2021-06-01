@@ -24,6 +24,7 @@ namespace corsika {
 
     int tinycounter_ {0};
     int trackcounter_ {0};
+    int zhscounter_ {0};
 
     using Base = RadioProcess<TRadioDetector, CoREAS<TRadioDetector, TPropagator>, TPropagator>;
     using Base::antennas_;
@@ -114,7 +115,7 @@ namespace corsika {
           // check if preDoppler has become zero in case of refractive index of unity because of numerical limitations
           // here you might need std::fabs(preDoppler) in the if statement - same with post & mid
           if (preDoppler_ == 0) {
-            CORSIKA_LOG_DEBUG("preDoppler factor numerically zero!");
+            CORSIKA_LOG_ERROR("preDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths1[i].refractive_index_source_};
             long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -134,7 +135,7 @@ namespace corsika {
 
           // check if postDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (postDoppler_ == 0) {
-            CORSIKA_LOG_DEBUG("postDoppler factor numerically zero!");
+            CORSIKA_LOG_ERROR("postDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths2[i].refractive_index_source_};
             long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -165,6 +166,9 @@ namespace corsika {
                   (std::fabs(preDoppler_) < approxThreshold_ || std::fabs(postDoppler_) < approxThreshold_)) {
 
             CORSIKA_LOG_WARN("used ZHS-like approximation in CoREAS");
+            zhscounter_ += 1;
+            // this shouldn't be a log error but it helps to track it down easily. This will be changed soon.
+            CORSIKA_LOG_ERROR("Used ZHS approx: {} out of {} times", zhscounter_, trackcounter_);
 
             // clear the existing paths for this particle and track, since we don't need them anymore
             paths1.clear();
@@ -192,6 +196,7 @@ namespace corsika {
 
               // check if midDoppler has become zero because of numerical limitations
               if (midDoppler_ == 0) {
+                CORSIKA_LOG_ERROR("midDoppler factor numerically zero!");
                 // redo calculation with higher precision
                 long double indexL_ {path.refractive_index_source_};
                 long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -331,7 +336,7 @@ namespace corsika {
 
                 if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
-                  CORSIKA_LOG_INFO("Doppler factors are less than 1.e-9 for this track");
+                  CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9 for this track");
 
                   const long gridResolution_{1 / antenna.sample_rate_ / 1_s};
                   double deltaT_{(endPointReceiveTime_ - startPointReceiveTime_) / 1_s};

@@ -57,6 +57,7 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) const {
 
+      CORSIKA_LOG_INFO("Z  H  S");
       // TODO: think if we reuse these variables for the case of not being in the
       // Fraunhoffer approx.
       auto const startTime_{particle.getTime()}; // time at start point of track.
