@@ -165,24 +165,66 @@ int main(int argc, char** argv) {
   const TimeType duration_{1e-6_s};
   const InverseTimeType sampleRate_{1e+10_Hz};
 
-  // the detector (aka antenna collection)
-  AntennaCollection<TimeDomainAntenna> detector;
+  // the detector (aka antenna collection) for CoREAS and ZHS
+  AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+  AntennaCollection<TimeDomainAntenna> detectorZHS;
 
   auto const showerCoreX_ {showerCore.getCoordinates().getX()};
   auto const showerCoreY_ {showerCore.getCoordinates().getY()};
-  auto const triggerpoint_ {Point(rootCS, showerCoreX_, showerCoreY_, builder.getEarthRadius() + 11_km)};
+  auto const injectionPosX_ {injectionPos.getCoordinates().getX()};
+  auto const injectionPosY_ {injectionPos.getCoordinates().getY()};
+  auto const injectionPosZ_ {injectionPos.getCoordinates().getZ()};
+  auto const triggerpoint_ {Point(rootCS, injectionPosX_, injectionPosY_, injectionPosZ_)};
   std::cout << "Trigger Point is: " << triggerpoint_ << std::endl;
 
+//  // setup CoREAS antennas
+//  for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
+//    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+//      auto phiRad_ = phi_ / 180. * M_PI;
+//      auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+//      auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
+//      const int rr_ = static_cast<int>(radius_ / 1_m);
+//      std::string name_ = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+//      TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+//      detectorCoREAS.addAntenna(antenna_);
+//    }
+//  }
+//
+//  // setup ZHS antennas
+//  for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
+//    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
+//      auto phiRad_ = phi_ / 180. * M_PI;
+//      auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+//      auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
+//      const int rr_ = static_cast<int>(radius_ / 1_m);
+//      std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+//      TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+//      detectorZHS.addAntenna(antenna_);
+//    }
+//  }
+
+  // 2 dummy antennas for CoREAS
   for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
-    for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
-      auto phiRad_ = phi_ / 180. * M_PI;
-      auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
-      auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
-      const int rr_ = static_cast<int>(radius_ / 1_m);
-      std::string name_ = "antenna_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-      TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
-      detector.addAntenna(antenna_);
-    }
+    auto phi_ = 0;
+    auto phiRad_ = phi_ / 180. * M_PI;
+    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+    auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
+    const int rr_ = static_cast<int>(radius_ / 1_m);
+    std::string name_ = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+    TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+    detectorCoREAS.addAntenna(antenna_);
+  }
+
+  // 2 dummy antennas for ZHS
+  for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
+    auto phi_ = 0;
+    auto phiRad_ = phi_ / 180. * M_PI;
+    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+    auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
+    const int rr_ = static_cast<int>(radius_ / 1_m);
+    std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+    TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+    detectorZHS.addAntenna(antenna_);
   }
 
   // setup processes, decays and interactions
@@ -200,17 +242,17 @@ int main(int argc, char** argv) {
 
 
   // initiate CoREAS
-  RadioProcess<decltype(detector), CoREAS<decltype(detector),
+  RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS),
       decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                        coreas(detector, env);
+                                        coreas(detectorCoREAS, env);
 
   // register CoREAS with the output manager
   output.add("CoREAS", coreas);
 
   // initiate ZHS
-  RadioProcess<decltype(detector), CoREAS<decltype(detector),
+  RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
       decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                        zhs(detector, env);
+                                        zhs(detectorZHS, env);
 
   // register ZHS with the output manager
   output.add("ZHS", zhs);
