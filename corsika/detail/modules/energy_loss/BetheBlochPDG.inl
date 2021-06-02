@@ -24,8 +24,9 @@ namespace corsika {
   };
 
   template <typename TOutput>
-  inline BetheBlochPDG<TOutput>::BetheBlochPDG(TOutput& output)
-      : output_(output) {}
+  template <typename... TArgs>
+  inline BetheBlochPDG<TOutput>::BetheBlochPDG(TArgs&&... args)
+      : TOutput(std::forward<TArgs>(args)...) {}
 
   template <typename TParticle>
   template <typename TOutput>
@@ -168,7 +169,7 @@ namespace corsika {
                       Ekin / 1_GeV, EkinNew / 1_GeV);
     particle.setKineticEnergy(EkinNew);
     // also send to output
-    output_.write(track, particle.getPID(), -dE);
+    this->write(track, particle.getPID(), -dE);
     return ProcessReturn::Ok;
   }
 
@@ -207,6 +208,14 @@ namespace corsika {
   template <typename TOutput>
   inline void BetheBlochPDG<TOutput>::reset() {
     energy_lost_ = 0_GeV;
+  }
+
+  template <typename TOutput>
+  inline YAML::Node BetheBlochPDG<TOutput>::getConfig() const {
+
+    YAML::Node node;
+    node["type"] = "BetheBlochPDG";
+    return node;
   }
 
 } // namespace corsika

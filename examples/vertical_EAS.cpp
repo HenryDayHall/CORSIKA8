@@ -45,6 +45,7 @@
 // #include <corsika/modules/writers/EnergyLossWriter.hpp>
 // #include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 #include <corsika/modules/BetheBlochPDG.hpp>
+#include <corsika/modules/writers/BetheBlochPDGWriterParquet.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
 #include <corsika/modules/ObservationPlane.hpp>
 #include <corsika/modules/StackInspector.hpp>
@@ -201,6 +202,7 @@ int main(int argc, char** argv) {
   // output.add("dEdX", dEdX_output);
   // register profile output
 
+  // setup longitudinal profile
   LongitudinalProfile<LongitudinalProfileWriterParquet> profile{showerAxis};
   output.add("profile", profile);
 
@@ -278,7 +280,8 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
-  BetheBlochPDG emContinuous;
+  BetheBlochPDG<BetheBlochPDGWriterParquet> emContinuous;
+  output.add("bethebloch", emContinuous);
   // dEdX.add(emContinuous);
 
   // auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,

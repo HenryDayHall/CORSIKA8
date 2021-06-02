@@ -14,8 +14,7 @@
 #include <corsika/framework/process/ContinuousProcess.hpp>
 
 
-#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
-#include <corsika/modules/writers/EnergyLossWriterOff.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 
 #include <map>
 
@@ -36,16 +35,14 @@ namespace corsika {
    *
    */
 
-  template <typename TOutput = EnergyLossWriterOff>
-  class BetheBlochPDG : public ContinuousProcess<BetheBlochPDG<TOutput>> {
+  template <typename TOutput = WriterOff>
+  class BetheBlochPDG : public ContinuousProcess<BetheBlochPDG<TOutput>>, public TOutput {
 
     using MeVgcm2 = decltype(1e6 * electronvolt / gram * square(1e-2 * meter));
 
   public:
-    BetheBlochPDG(TOutput& output);
-
-    BetheBlochPDG()
-        : BetheBlochPDG(*(new EnergyLossWriterOff())) {}
+    template <typename... TArgs>
+    BetheBlochPDG(TArgs&&... args);
 
     /**
      * Interface function of ContinuousProcess.
@@ -73,6 +70,8 @@ namespace corsika {
     template <typename TParticle>
     static HEPEnergyType getTotalEnergyLoss(TParticle const&, const GrammageType);
 
+    YAML::Node getConfig() const override;
+
     void showResults() const;
     void reset();
     HEPEnergyType getEnergyLost() const { return energy_lost_; }
@@ -84,7 +83,6 @@ namespace corsika {
     template <typename TTrajectory>
     void fillProfile(TTrajectory const&, HEPEnergyType);
 
-    TOutput& output_;
     HEPEnergyType energy_lost_ = HEPEnergyType::zero();
   };
 

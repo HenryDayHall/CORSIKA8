@@ -10,6 +10,7 @@
 from .observation_plane import ObservationPlane
 from .track_writer import TrackWriter
 from .longitudinal_profile import LongitudinalProfile
+from .bethe_bloch import BetheBlochPDG
 from .output import Output
 
 __all__ = ["Output", "ObservationPlane", "TrackWriter", "LongitudinalProfile"]
