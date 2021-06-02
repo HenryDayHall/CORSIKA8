@@ -338,7 +338,7 @@ namespace corsika {
 
                   CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9 for this track");
 
-                  const long gridResolution_{1 / antenna.sample_rate_ / 1_s};
+                  const long double gridResolution_{1 / antenna.sample_rate_ / 1_s};
                   double deltaT_{(endPointReceiveTime_ - startPointReceiveTime_) / 1_s};
 
                   if (std::fabs(deltaT_) < gridResolution_) {
