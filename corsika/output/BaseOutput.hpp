@@ -63,6 +63,11 @@ namespace corsika {
      */
     virtual YAML::Node getSummary() const { return YAML::Node(); }
 
+    /**
+     * Provide YAML configuration for this BaseOutput.
+     */
+    virtual YAML::Node getConfig() const = 0;
+
   protected:
     /**
      * Set init flag.

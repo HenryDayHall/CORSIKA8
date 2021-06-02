@@ -153,6 +153,15 @@ namespace corsika {
 
       // and start the library
       output.get().startOfLibrary(root_ / name);
+
+      // get the config from this output
+      auto config = output.get().getConfig();
+
+      // add the name keyword
+      config["name"] = name;
+      
+      // write the output configuration to config.yaml in the output directory
+      writeYAML(config, root_ / name / ("config.yaml"));
     }
 
     // we have now started running

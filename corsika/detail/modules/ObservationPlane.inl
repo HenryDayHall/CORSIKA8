@@ -11,9 +11,8 @@ namespace corsika {
   template <typename TOutput>
   ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
                                               DirectionVector const& x_axis,
-                                              TOutput& output, bool deleteOnHit)
+                                              bool const deleteOnHit)
       : plane_(obsPlane)
-      , output_(output)
       , deleteOnHit_(deleteOnHit)
       , energy_ground_(0_GeV)
       , count_ground_(0)
@@ -54,11 +53,11 @@ namespace corsika {
     Code const pid = particle.getPID();
     if (pid == Code::Nucleus) {
       // add our particles to the output file stream
-      output_.write(particle.getNuclearA(), particle.getNuclearZ(), energy,
+      this->write(particle.getNuclearA(), particle.getNuclearZ(), energy,
                     displacement.dot(xAxis_), displacement.dot(yAxis_), 0_m, weight);
     } else {
       // add our particles to the output file stream
-      output_.write(particle.getPID(), energy, displacement.dot(xAxis_),
+      this->write(particle.getPID(), energy, displacement.dot(xAxis_),
                     displacement.dot(yAxis_), 0_m, weight);
     }
 
