@@ -15,9 +15,9 @@
 
 namespace corsika {
 
+
   template <typename TOutput>
-  inline TrackWriter<TOutput>::TrackWriter(TOutput& output)
-      : output_(output) {}
+  inline TrackWriter<TOutput>::TrackWriter() {}
 
   template <typename TOutput>
   template <typename TParticle, typename TTrack>
@@ -49,7 +49,8 @@ namespace corsika {
 
     // add default units for values
     node["type"] = "TrackWriter";
-    node["units"] = "GeV | m | s";
+    node["units"]["energy"] = "GeV";
+    node["units"]["length"] = "m";
 
     return node;
   }
