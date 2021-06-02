@@ -51,6 +51,7 @@
 #include <corsika/modules/StackInspector.hpp>
 #include <corsika/modules/TrackWriter.hpp>
 #include <corsika/modules/ParticleCut.hpp>
+#include <corsika/modules/writers/ParticleCutWriterParquet.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
@@ -245,7 +246,8 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
+  ParticleCut<ParticleCutWriterParquet> cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
+  output.add("cuts", cut);
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};

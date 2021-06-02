@@ -15,6 +15,8 @@
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
 
+#include <corsika/modules/writers/WriterOff.hpp>
+
 namespace corsika {
   /**
      simple ParticleCut process. Goes through the secondaries of an interaction and
@@ -24,9 +26,10 @@ namespace corsika {
   for each particle. Special constructors for cuts by the following groups are
   implemented: (electrons,positrons), photons, hadrons and muons.
    **/
-  template <typename TOutput = EnergyLossWriterOff>
+  template <typename TOutput = WriterOff>
   class ParticleCut : public SecondariesProcess<ParticleCut<TOutput>>,
-                      public ContinuousProcess<ParticleCut<TOutput>> {
+                      public ContinuousProcess<ParticleCut<TOutput>>,
+                      public TOutput {
 
   public:
     /**
@@ -34,30 +37,17 @@ namespace corsika {
      *    hadrons (including nuclei with energy per nucleon) and muons
      *    invisible particles (neutrinos) can be cut or not
      */
-    ParticleCut(TOutput& output, HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
-                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv);
-
-    /**
-     * Same, but with no output.
-     */
+    template <typename... TArgs>
     ParticleCut(HEPEnergyType const eEleCut, HEPEnergyType const ePhoCut,
-                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv)
-        : ParticleCut(*(new EnergyLossWriterOff()), eEleCut, ePhoCut, eHadCut, eMuCut,
-                      inv) {}
+                HEPEnergyType const eHadCut, HEPEnergyType const eMuCut, bool const inv,
+                TArgs&&... args);
 
     /**
      * Threshold for specific particles redefined. EM and invisible particles can be set
      * to be discarded altogether.
      */
-    ParticleCut(TOutput& output,
-                std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
-                bool const inv);
-    /**
-     * Same, but with no output.
-     */
     ParticleCut(std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
-                bool const inv)
-        : ParticleCut(*(new EnergyLossWriterOff()), eCuts, inv) {}
+                bool const inv);
 
     template <typename TStackView>
     void doSecondaries(TStackView&);
@@ -97,6 +87,9 @@ namespace corsika {
     //! returns number of invisible particles
     unsigned int getNumberInvParticles() const { return inv_count_; }
 
+    // get configuration of this node
+    YAML::Node getConfig() const override;
+
   private:
     template <typename TParticle>
     bool checkCutParticle(TParticle const& p);
@@ -108,7 +101,6 @@ namespace corsika {
     bool isInvisible(Code const&) const;
 
   private:
-    TOutput& output_;
     bool doCutInv_;
     HEPEnergyType energy_cut_ = 0 * electronvolt;
     HEPEnergyType energy_timecut_ = 0 * electronvolt;

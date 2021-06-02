@@ -13,11 +13,13 @@
 namespace corsika {
 
   template <typename TOutput>
-  inline ParticleCut<TOutput>::ParticleCut(TOutput& output, HEPEnergyType const eEleCut,
+  template <typename... TArgs>
+  inline ParticleCut<TOutput>::ParticleCut(HEPEnergyType const eEleCut,
                                            HEPEnergyType const ePhoCut,
                                            HEPEnergyType const eHadCut,
-                                           HEPEnergyType const eMuCut, bool const inv)
-      : output_(output)
+                                           HEPEnergyType const eMuCut, bool const inv,
+                                           TArgs&&... args)
+      : TOutput(std::forward<TArgs>(args)...)
       , doCutInv_(inv)
       , energy_cut_(0_GeV)
       , energy_timecut_(0_GeV)
@@ -45,10 +47,8 @@ namespace corsika {
 
   template <typename TOutput>
   inline ParticleCut<TOutput>::ParticleCut(
-      TOutput& output, std::unordered_map<Code const, HEPEnergyType const> const& eCuts,
-      bool const inv)
-      : output_(output)
-      , doCutInv_(inv)
+      std::unordered_map<Code const, HEPEnergyType const> const& eCuts, bool const inv)
+      : doCutInv_(inv)
       , energy_cut_(0_GeV)
       , energy_timecut_(0_GeV)
       , energy_invcut_(0_GeV)
@@ -127,8 +127,8 @@ namespace corsika {
     auto particle = vS.begin();
     while (particle != vS.end()) {
       if (checkCutParticle(particle)) {
-        output_.write(particle.getPosition(), particle.getPID(),
-                      particle.getKineticEnergy());
+        this->write(particle.getPosition(), particle.getPID(),
+                    particle.getKineticEnergy());
         particle.erase();
       }
       ++particle; // next entry in SecondaryView
@@ -141,8 +141,7 @@ namespace corsika {
   inline ProcessReturn ParticleCut<TOutput>::doContinuous(TParticle& particle, TTrajectory const&,
                                                  bool const) {
     if (checkCutParticle(particle)) {
-      output_.write(particle.getPosition(), particle.getPID(),
-                    particle.getKineticEnergy());
+      this->write(particle.getPosition(), particle.getPID(), particle.getKineticEnergy());
       CORSIKA_LOG_TRACE("removing during continuous");
       // signal to upstream code that this particle was deleted
       return ProcessReturn::ParticleAbsorbed;
@@ -179,6 +178,20 @@ namespace corsika {
     energy_cut_ = 0_GeV;
     energy_count_ = 0;
     energy_timecut_ = 0_GeV;
+  }
+
+  template <typename TOutput>
+  inline YAML::Node ParticleCut<TOutput>::getConfig() const {
+
+    YAML::Node node;
+    node["type"] = "ParticleCut";
+    node["units"]["energy"] = "GeV";
+    node["energy_invcut"] = energy_invcut_ / 1_GeV;
+    node["inv_count"] = inv_count_;
+    node["energy_cut"] = energy_cut_ / 1_GeV;
+    node["energy_timecut_"] = energy_timecut_ / 1_GeV;
+
+    return node;
   }
 
 } // namespace corsika
