@@ -51,15 +51,15 @@ namespace corsika {
      */
     void write(Code const& pid, units::si::HEPEnergyType const& energy,
                units::si::LengthType const& x, units::si::LengthType const& y,
-               units::si::LengthType const& z,
-               const double weight);
+               units::si::LengthType const& z, const double weight);
 
     /**
      * Write a Code::Nucleus particle to the file.
      */
     void write(unsigned int const A, unsigned int const Z,
                units::si::HEPEnergyType const& energy, units::si::LengthType const& x,
-               units::si::LengthType const& y, units::si::LengthType const& z, const double weight);
+               units::si::LengthType const& y, units::si::LengthType const& z,
+               const double weight);
 
     /**
      * Return collected library-level summary for output.

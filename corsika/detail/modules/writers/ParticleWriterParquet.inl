@@ -37,8 +37,6 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
-    output_.addField("z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
-                     parquet::ConvertedType::NONE);
     output_.addField("weight", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
 
