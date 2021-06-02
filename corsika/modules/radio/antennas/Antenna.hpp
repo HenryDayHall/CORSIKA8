@@ -103,7 +103,7 @@ namespace corsika {
       filename_ = (directory / this->getName()).string() + ".npz";
 
       // get the axis labels for this antenna and write the first row.
-      xt::xtensor<float, 1> axis = xt::cast<float>(this->implementation().getAxis());
+      xt::xtensor<double, 1> axis = xt::cast<double>(this->implementation().getAxis());
 
       // check for the axis name
       std::string label = "Unknown";
@@ -114,7 +114,7 @@ namespace corsika {
       }
 
       // explicitly convert the arrays to the needed type for cnpy
-      float const* raw_data = axis.data();
+      double const* raw_data = axis.data();
       std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here
 
       // write the labels to the first row of the NumPy file
@@ -129,7 +129,7 @@ namespace corsika {
       // get the copy of the waveform data for this event
       // we transpose it so that we can match dimensions with the
       // time array that is already in the output file
-      xt::xtensor<float, 2> data = xt::transpose(xt::cast<float>(this->implementation().getData()));
+      xt::xtensor<double, 2> data = xt::transpose(xt::cast<double>(this->implementation().getData()));
 
       // cnpy needs a vector for the shape
       std::vector<size_t> shape = {data.shape()[0], data.shape()[1]};
