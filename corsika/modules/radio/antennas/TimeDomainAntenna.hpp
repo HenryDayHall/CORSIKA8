@@ -117,7 +117,7 @@ namespace corsika {
       // TODO: Vectorize this using xtensor
       for (int i = 0; i < num_bins_; i++) {
         // create the current time in nanoseconds
-        times.at(i) = static_cast<long double>((start_time_ + i*sample_period) / 1_s);
+        times.at(i) = static_cast<long double>((start_time_ + i*sample_period) / 1_ns);
       }
 
       return times;
