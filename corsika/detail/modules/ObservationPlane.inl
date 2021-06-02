@@ -118,7 +118,7 @@ namespace corsika {
 
     // basic info
     node["type"] = "ObservationPlane";
-    node["units"] = "m"; // add default units for values
+    node["units"]["length"] = "m"; // add default units for values
 
     // the center of the plane
     auto const center{plane_.getCenter()};
