@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 
   // the antenna time variables
   const TimeType duration_{1e-6_s};
-  const InverseTimeType sampleRate_{1e+10_Hz};
+  const InverseTimeType sampleRate_{1e+11_Hz};
 
   // the detector (aka antenna collection) for CoREAS and ZHS
   AntennaCollection<TimeDomainAntenna> detectorCoREAS;
@@ -270,8 +270,8 @@ int main(int argc, char** argv) {
   Cascade EAS(env, tracking, sequence, output, stack);
 
   // to fix the point of first interaction, uncomment the following two lines:
-  //  EAS.setNodes();
-  //  EAS.forceInteraction();
+  EAS.setNodes();
+  EAS.forceInteraction();
 
   EAS.run();
 

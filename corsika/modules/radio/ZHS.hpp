@@ -77,10 +77,12 @@ namespace corsika {
       auto const charge_{get_charge(particle.getPID())};
 
       // get "mid" position of the track geometrically
-      auto const midVector_{(startPoint_ - endPoint_) / 2};
-      auto const midPoint_{
-          Point(midVector_.getCoordinateSystem(), midVector_.getComponents().getX(),
-                midVector_.getComponents().getY(), midVector_.getComponents().getZ())};
+//      auto const midVector_{(startPoint_ - endPoint_) / 2};
+//      auto const midPoint_{
+//          Point(midVector_.getCoordinateSystem(), midVector_.getComponents().getX(),
+//                midVector_.getComponents().getY(), midVector_.getComponents().getZ())};
+      auto halfVector_{(startPoint_ - endPoint_) / 2};
+      auto midPoint_ {endPoint_ + halfVector_};
       // changed if deltaT1_ > deltaT2_, so not const
       auto constants{charge_ / (4 * M_PI) / (constants::epsilonZero) / constants::c};
       // we loop over each antenna in the collection

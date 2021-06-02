@@ -234,15 +234,15 @@ namespace corsika {
 
                   const TimeType gridResolution_{1 / antenna.sample_rate_};
                   deltaT_ = endPointReceiveTime_ - startPointReceiveTime_;
-                  if (deltaT_ < 0_s) {
-                    CORSIKA_LOG_ERROR("DELTA_T IS NEGATIVE!!!!");
-                  }
+//                  if (deltaT_ < 0_s) {
+//                    CORSIKA_LOG_ERROR("DELTA_T IS NEGATIVE!!!!");
+//                  }
 
                   // redistribute contributions over time scale defined by the observation time resolution
-                  if (deltaT_ < gridResolution_) {
+                  if (std::fabs(deltaT_ / 1_s) < (gridResolution_ / 1_s)) {
 
-                    EV1_ *= (deltaT_ / gridResolution_);
-                    EV2_ *= (deltaT_ / gridResolution_);
+                    EV1_ *= std::fabs((deltaT_ / gridResolution_));
+                    EV2_ *= std::fabs((deltaT_ / gridResolution_));
 
                     // ToDO: be careful with times in C8!!! where is the zero (time). Is it close-by?
                     const long startBin = static_cast<long>(std::floor(
@@ -330,11 +330,11 @@ namespace corsika {
 
                   const TimeType gridResolution_{1 / antenna.sample_rate_};
                   TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
-                  if (deltaT_ < 0_s) {
-                    CORSIKA_LOG_ERROR("DELTA_T IS NEGATIVE!!!");
-                  }
+//                  if (deltaT_ < 0_s) {
+//                    CORSIKA_LOG_ERROR("DELTA_T IS NEGATIVE!!!");
+//                  }
 
-                  if (deltaT_ < gridResolution_) {
+                  if (std::fabs(deltaT_ / 1_s) < (gridResolution_ / 1_s)) {
 
                     EV1_ *= std::fabs(deltaT_ / gridResolution_); //Todo: rename EV1 and 2
                     EV2_ *= std::fabs(deltaT_ / gridResolution_);
