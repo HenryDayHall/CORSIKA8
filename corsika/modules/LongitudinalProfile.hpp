@@ -41,7 +41,7 @@ namespace corsika {
 
   public:
     template <typename... TArgs>
-    LongitudinalProfile(TArgs... args);
+    LongitudinalProfile(TArgs&&... args);
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(

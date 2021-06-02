@@ -14,13 +14,14 @@
 #include <cmath>
 #include <iomanip>
 #include <limits>
+#include <utility>
 
 namespace corsika {
 
   template <typename TOutput>
   template <typename... TArgs>
-  inline LongitudinalProfile<TOutput>::LongitudinalProfile(TArgs... args)
-      : TOutput(args...) {}
+  inline LongitudinalProfile<TOutput>::LongitudinalProfile(TArgs&&... args)
+      : TOutput(std::forward<TArgs>(args)...) {}
 
   template <typename TOutput>
   template <typename TParticle, typename TTrack>
