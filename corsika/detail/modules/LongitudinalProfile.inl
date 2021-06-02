@@ -18,8 +18,9 @@
 namespace corsika {
 
   template <typename TOutput>
-  inline LongitudinalProfile<TOutput>::LongitudinalProfile(TOutput& output)
-      : output_(output) {}
+  template <typename... TArgs>
+  inline LongitudinalProfile<TOutput>::LongitudinalProfile(TArgs... args)
+      : TOutput(args...) {}
 
   template <typename TOutput>
   template <typename TParticle, typename TTrack>
@@ -27,8 +28,13 @@ namespace corsika {
       TParticle const& particle, TTrack const& track, bool const) {
 
     auto const pid = particle.getPID();
-    output_.write(track, pid, 1.0); // weight hardcoded so far
+    this->write(track, pid, 1.0); // weight hardcoded so far
     return ProcessReturn::Ok;
   }
+
+  // template <typename TOutput>
+  // inline YAML::Node LongitudinalProfile<TOutput>::getConfig() const {
+  //   return YAML::Node;
+  // }
 
 } // namespace corsika

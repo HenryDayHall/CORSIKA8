@@ -21,7 +21,8 @@ namespace corsika {
 
   inline LongitudinalProfileWriterParquet::LongitudinalProfileWriterParquet(
       ShowerAxis const& showerAxis, GrammageType const dX, unsigned int const nBins)
-      : showerAxis_(showerAxis)
+      : output_()
+      , showerAxis_(showerAxis)
       , dX_(dX) // profile binning
       , nBins_(nBins) {}
 
@@ -185,6 +186,15 @@ namespace corsika {
       summary[name]["Nmax"] = Nmax;
     }
     return summary;
+  }
+
+  inline YAML::Node LongitudinalProfileWriterParquet::getConfig() const {
+    // determined Xmax and dEdXmax from quadratic interpolation
+
+    YAML::Node node;
+    node["type"] = "LongitudinalProfile";
+
+    return node;
   }
 
 } // namespace corsika

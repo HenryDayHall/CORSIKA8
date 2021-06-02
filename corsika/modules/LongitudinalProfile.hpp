@@ -13,7 +13,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 
 #include <corsika/modules/writers/LongitudinalProfileWriterParquet.hpp>
-#include <corsika/modules/writers/LongitudinalProfileWriterOff.hpp>
 
 #include <array>
 #include <fstream>
@@ -37,10 +36,12 @@ namespace corsika {
    */
 
   template <typename TOutput>
-  class LongitudinalProfile : public ContinuousProcess<LongitudinalProfile<TOutput>> {
+  class LongitudinalProfile : public ContinuousProcess<LongitudinalProfile<TOutput>>,
+                              public TOutput {
 
   public:
-    LongitudinalProfile(TOutput& output);
+    template <typename... TArgs>
+    LongitudinalProfile(TArgs... args);
 
     template <typename TParticle, typename TTrack>
     ProcessReturn doContinuous(
@@ -52,8 +53,7 @@ namespace corsika {
       return meter * std::numeric_limits<double>::infinity();
     }
 
-  private:
-    TOutput& output_;
+    // YAML::Node getConfig() const;
   };
 
 } // namespace corsika

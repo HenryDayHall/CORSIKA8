@@ -84,13 +84,16 @@ namespace corsika {
                double const weight);
 
     /**
-     * Returns library-wide summary.
+     * Returns a summary of this output.
      */
     YAML::Node getSummary() const;
 
-  public:
-    ParquetStreamer output_; ///< The primary output file.
+    YAML::Node getConfig() const;
 
+  private:
+    ParquetStreamer output_; ///< The parquet streamer for this process.
+
+  public:
     ShowerAxis const& showerAxis_;     ///< conversion between geometry and grammage
     GrammageType dX_;                  ///< binning of profile.
     unsigned int nBins_;               ///< number of profile bins.
