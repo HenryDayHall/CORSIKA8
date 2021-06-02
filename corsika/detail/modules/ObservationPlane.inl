@@ -9,15 +9,18 @@
 namespace corsika {
 
   template <typename TOutput>
+  template <typename... TArgs>
   ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
                                               DirectionVector const& x_axis,
-                                              bool const deleteOnHit)
+                                              bool const deleteOnHit,
+                                              TArgs&&... args)
       : plane_(obsPlane)
       , deleteOnHit_(deleteOnHit)
       , energy_ground_(0_GeV)
       , count_ground_(0)
       , xAxis_(x_axis.normalized())
-      , yAxis_(obsPlane.getNormal().cross(xAxis_)) {}
+      , yAxis_(obsPlane.getNormal().cross(xAxis_))
+      , TOutput(std::forward<TArgs>(args)...) {}
 
   template <typename TTracking, typename TOutput>
   template <typename TParticle, typename TTrajectory>

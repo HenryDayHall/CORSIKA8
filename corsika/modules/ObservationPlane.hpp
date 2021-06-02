@@ -36,7 +36,9 @@ namespace corsika {
         public TOutputWriter {
 
   public:
-    ObservationPlane(Plane const&, DirectionVector const&, bool const = true);
+    template <typename... TArgs>
+    ObservationPlane(Plane const&, DirectionVector const&, bool const = true,
+                     TArgs&&... args);
 
     ~ObservationPlane() {}
 
