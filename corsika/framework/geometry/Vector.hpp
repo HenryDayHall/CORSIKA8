@@ -142,6 +142,9 @@ namespace corsika {
     auto dot(Vector<TDimension2> const& pV) const;
   };
 
+  template <typename TDimension>
+  Vector<TDimension> operator*(double const n, Vector<TDimension> const& vec);
+
 } // namespace corsika
 
 #include <corsika/detail/framework/geometry/Vector.inl>

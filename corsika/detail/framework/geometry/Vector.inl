@@ -238,4 +238,12 @@ namespace corsika {
     return os;
   }
 
+  /*
+   * scalar * vector multiplication
+   */
+  template <typename TDimension>
+  inline Vector<TDimension> operator*(double const n, Vector<TDimension> const& vec) {
+    return vec * n;
+  }
+
 } // namespace corsika
