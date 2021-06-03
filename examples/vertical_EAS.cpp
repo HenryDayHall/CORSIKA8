@@ -41,9 +41,9 @@
 #include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/CORSIKA7Atmospheres.hpp>
 
-// #include <corsika/modules/writers/SubWriter.hpp>
-// #include <corsika/modules/writers/EnergyLossWriter.hpp>
-// #include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
+#include <corsika/modules/writers/SubWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriter.hpp>
+#include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
 #include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/writers/BetheBlochPDGWriterParquet.hpp>
 #include <corsika/modules/LongitudinalProfile.hpp>
@@ -203,13 +203,23 @@ int main(int argc, char** argv) {
   // output.add("dEdX", dEdX_output);
   // register profile output
 
+  // construct the overall energy loss writer and register it
+  EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis};
+  output.add("energyloss", dEdX);
+
+  // construct the continuous energy loss model
+  BetheBlochPDG<SubWriter<decltype(dEdX)>> emContinuous{dEdX};
+  // output.add("bethebloch", emContinuous);
+
+  // construct a particle cut
+  ParticleCut<SubWriter<decltype(dEdX)>> cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true, dEdX};
+  // output.add("cuts", cut);
+
   // setup longitudinal profile
-  LongitudinalProfile<LongitudinalProfileWriterParquet> profile{showerAxis};
+  LongitudinalProfile<corsika::LongitudinalProfileWriterParquet> profile{showerAxis};
   output.add("profile", profile);
 
-  // register ground particle output
-  // ParticleWriterParquet particleOutput;
-
+  // create a track writer and register it with the output manager
   TrackWriter<TrackWriterParquet> trackWriter;
   output.add("tracks", trackWriter);
 
@@ -246,9 +256,6 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut<ParticleCutWriterParquet> cut{60_GeV, 60_GeV, 60_GeV, 60_GeV, true};
-  output.add("cuts", cut);
-
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
   StackInspector<setup::Stack> stackInspect(50000, false, E0);
@@ -281,16 +288,11 @@ int main(int argc, char** argv) {
 										    obsPlane, DirectionVector(rootCS, {1., 0., 0.}), particleOutput};
   output.add("particles", observationLevel);
 
-  // EnergyLossWriter<EnergyLossWriterParquet> dEdX{showerAxis, 10_g / square(1_cm), 200};
-  BetheBlochPDG<BetheBlochPDGWriterParquet> emContinuous;
-  output.add("bethebloch", emContinuous);
-  // dEdX.add(emContinuous);
-
   // auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
   // emContinuous,
   //                               cut, trackWriter, observationLevel, longprof);
   auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence, emContinuous,
-                                cut, trackWriter, observationLevel);
+                                cut, trackWriter, observationLevel, profile);
 
   // define air shower object, run simulation
   setup::Tracking tracking;
