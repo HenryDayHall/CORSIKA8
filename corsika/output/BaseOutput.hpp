@@ -8,6 +8,7 @@
 #pragma once
 
 #include <corsika/framework/core/Logging.hpp>
+#include <corsika/output/Configurable.hpp>
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -17,7 +18,7 @@ namespace corsika {
    * This is the base class for all outputs so that they
    * can be stored in homogeneous containers.
    */
-  class BaseOutput {
+  class BaseOutput : public Configurable {
 
   protected:
     BaseOutput() = default;
@@ -62,11 +63,6 @@ namespace corsika {
      * Provide YAML Summary for this BaseOutput.
      */
     virtual YAML::Node getSummary() const { return YAML::Node(); }
-
-    /**
-     * Provide YAML configuration for this BaseOutput.
-     */
-    virtual YAML::Node getConfig() const = 0;
 
   protected:
     /**
