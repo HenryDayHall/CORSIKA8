@@ -33,9 +33,12 @@ namespace corsika {
     return ProcessReturn::Ok;
   }
 
-  // template <typename TOutput>
-  // inline YAML::Node LongitudinalProfile<TOutput>::getConfig() const {
-  //   return YAML::Node;
-  // }
+  template <typename TOutput>
+  inline YAML::Node LongitudinalProfile<TOutput>::getConfig() const {
+    YAML::Node node;
+    node["type"] = "LongitudinalProfile";
+
+    return node;
+  }
 
 } // namespace corsika

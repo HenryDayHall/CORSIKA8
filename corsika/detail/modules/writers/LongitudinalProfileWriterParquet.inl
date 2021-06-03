@@ -188,13 +188,4 @@ namespace corsika {
     return summary;
   }
 
-  inline YAML::Node LongitudinalProfileWriterParquet::getConfig() const {
-    // determined Xmax and dEdXmax from quadratic interpolation
-
-    YAML::Node node;
-    node["type"] = "LongitudinalProfile";
-
-    return node;
-  }
-
 } // namespace corsika

@@ -53,7 +53,7 @@ namespace corsika {
       return meter * std::numeric_limits<double>::infinity();
     }
 
-    // YAML::Node getConfig() const;
+    YAML::Node getConfig() const;
   };
 
 } // namespace corsika

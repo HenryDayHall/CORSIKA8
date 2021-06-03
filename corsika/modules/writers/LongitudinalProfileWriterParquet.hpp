@@ -88,8 +88,6 @@ namespace corsika {
      */
     YAML::Node getSummary() const;
 
-    YAML::Node getConfig() const;
-
   private:
     ParquetStreamer output_; ///< The parquet streamer for this process.
 
