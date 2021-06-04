@@ -178,7 +178,11 @@ namespace corsika {
             paths2.clear();
 
             // get "mid" position of the track geometrically
-            auto halfVector_{(startPoint_ - endPoint_) / 2};
+//              auto const midVector_{(startPoint_ - endPoint_) / 2};
+//              auto const midPoint_{
+//                      Point(midVector_.getCoordinateSystem(), midVector_.getComponents().getX(),
+//                            midVector_.getComponents().getY(), midVector_.getComponents().getZ())};
+            auto halfVector_{(startPoint_ - endPoint_) * 0.5};
             auto midPoint_ {endPoint_ + halfVector_};
 
             // get global simulation time for the middle point of that track.
@@ -214,8 +218,8 @@ namespace corsika {
                   ReceiveVectorEnd_ = path.receive_;
 
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
-              ElectricFieldVector EVmid_ = ((path.emit_.cross(path.emit_.cross(beta_))).getComponents()
-                                           / (midDoppler_ * path.R_distance_)) * constants_ * antenna.sample_rate_;
+              ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))).getComponents()
+                                           / midDoppler_ / path.R_distance_ * constants_ * antenna.sample_rate_;
 
                   ElectricFieldVector EV1_{EVmid_};
                   ElectricFieldVector EV2_{EVmid_ * (-1.0)};
@@ -234,12 +238,9 @@ namespace corsika {
 
                   const TimeType gridResolution_{1 / antenna.sample_rate_};
                   deltaT_ = endPointReceiveTime_ - startPointReceiveTime_;
-//                  if (deltaT_ < 0_s) {
-//                    CORSIKA_LOG_ERROR("DELTA_T IS NEGATIVE!!!!");
-//                  }
 
                   // redistribute contributions over time scale defined by the observation time resolution
-                  if (std::fabs(deltaT_ / 1_s) < (gridResolution_ / 1_s)) {
+                  if (abs(deltaT_) < (gridResolution_)) {
 
                     EV1_ *= std::fabs((deltaT_ / gridResolution_));
                     EV2_ *= std::fabs((deltaT_ / gridResolution_));
@@ -318,11 +319,11 @@ namespace corsika {
 
                 // calculate electric field vector for startpoint
                 ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))).getComponents() /
-                    (preDoppler_ * paths1[i].R_distance_) * constants_ * antenna.sample_rate_;
+                    preDoppler_ / paths1[i].R_distance_ * constants_ * antenna.sample_rate_;
 
                 // calculate electric field vector for endpoint
                 ElectricFieldVector EV2_ = (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_))).getComponents() /
-                    (postDoppler_ * paths2[i].R_distance_) * constants_ * (-1.0) * antenna.sample_rate_;
+                    postDoppler_ / paths2[i].R_distance_ * constants_ * (-1.0) * antenna.sample_rate_;
 
                 if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
@@ -330,11 +331,8 @@ namespace corsika {
 
                   const TimeType gridResolution_{1 / antenna.sample_rate_};
                   TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
-//                  if (deltaT_ < 0_s) {
-//                    CORSIKA_LOG_ERROR("DELTA_T IS NEGATIVE!!!");
-//                  }
 
-                  if (std::fabs(deltaT_ / 1_s) < (gridResolution_ / 1_s)) {
+                  if (abs(deltaT_) < (gridResolution_)) {
 
                     EV1_ *= std::fabs(deltaT_ / gridResolution_); //Todo: rename EV1 and 2
                     EV2_ *= std::fabs(deltaT_ / gridResolution_);
