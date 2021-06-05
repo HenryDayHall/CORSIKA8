@@ -361,9 +361,6 @@ namespace corsika {
         CORSIKA_LOG_TRACE("maxStepLength={} s", maxStepLength / 1_s);
 
         // with final length correction, |direction| becomes >1 during step
-        // double const correction =
-        // 1. + fabs(0.5 * direction_x_B.getNorm() * maxStepLength * charge /
-        // p_norm);
 
         return Intersections(maxStepLength / absVelocity); // unit: s
 
