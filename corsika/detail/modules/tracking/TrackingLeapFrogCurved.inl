@@ -29,10 +29,10 @@ namespace corsika {
   namespace tracking_leapfrog_curved {
 
     template <typename TParticle>
-    inline auto make_LeapFrogStep(TParticle const& particle, LengthType steplength) {
+    inline auto Tracking::makeStep(TParticle const& particle, LengthType steplength) {
       if (particle.getMomentum().getNorm() == 0_GeV) {
         return std::make_tuple(particle.getPosition(), particle.getMomentum() / 1_GeV,
-                               double(0));
+                               double(0) * 1_m);
       } // charge of the particle
       ElectricChargeType const charge = particle.getCharge();
       auto const* currentLogicalVolumeNode = particle.getNode();
@@ -40,9 +40,14 @@ namespace corsika {
           currentLogicalVolumeNode->getModelProperties().getMagneticField(
               particle.getPosition());
       VelocityVector velocity = particle.getVelocity();
-      decltype(meter / (second * volt)) k =
-          charge * constants::cSquared * 1_eV /
-          (velocity.getNorm() * particle.getEnergy() * 1_V);
+
+      auto const p_norm =
+          constants::c * convert_HEP_to_SI<MassType::dimension_type>(
+                             particle.getMomentum().getNorm()); // kg *m /s
+      // k = q/|p|
+      decltype(1 / (tesla * meter)) const k =
+          charge / p_norm; // * initialVelocity.getNorm();
+
       DirectionVector direction = velocity.normalized();
       auto position = particle.getPosition(); // First Movement
       // assuming magnetic field does not change during movement
@@ -133,22 +138,18 @@ namespace corsika {
           initialVelocity.getNorm(); // since we use steps in time and not length
       // units: C * s / m / kg * m/s = 1 / (T*m) * m/s = 1 / (T*s)
 
-      // correction factor to move from leap-frog length L to half-step deltaL/2
-      double const correction =
-          1. + fabs(0.5 * particle.getDirection().cross(magneticfield).getNorm() * k *
-                    minTime);
-
       return std::make_tuple(
           LeapFrogTrajectory(position, initialVelocity, magneticfield, k,
-                             minTime / correction), // --> trajectory
-          minNode);                                 // --> next volume node
+                             minTime), // --> trajectory
+          minNode);                    // --> next volume node
     }
 
     template <typename TParticle>
     inline Intersections Tracking::intersect(TParticle const& particle,
                                              Sphere const& sphere) {
 
-      if (sphere.getRadius() == 1_km * std::numeric_limits<double>::infinity()) {
+      LengthType const radius = sphere.getRadius();
+      if (radius == 1_km * std::numeric_limits<double>::infinity()) {
         return Intersections();
       }
 
@@ -174,6 +175,30 @@ namespace corsika {
       bool const numericallyInside = sphere.contains(particle.getPosition());
       CORSIKA_LOG_TRACE("numericallyInside={}", numericallyInside);
 
+      Vector<length_d> const deltaPos = position - sphere.getCenter();
+
+      { // check extreme cases we don't want to solve analytically explicit
+        HEPMomentumType const p_perp =
+            (particle.getMomentum() -
+             particle.getMomentum().getParallelProjectionOnto(magneticfield))
+                .getNorm();
+
+        LengthType const gyroradius =
+            (convert_HEP_to_SI<MassType::dimension_type>(p_perp) * constants::c /
+             (abs(charge) * magneticfield.getNorm()));
+
+        LengthType const trackDist = abs(deltaPos.getNorm() - radius);
+        if (trackDist > gyroradius) {
+          // there is never a solution
+          return Intersections();
+        }
+
+        if (gyroradius > 100 * trackDist) {
+          // the bending is negligible, use straight intersections instead
+          return tracking_line::Tracking::intersect(particle, sphere);
+        }
+      }
+
       SpeedType const absVelocity = velocity.getNorm();
       auto const p_norm =
           constants::c * convert_HEP_to_SI<MassType::dimension_type>(
@@ -183,12 +208,10 @@ namespace corsika {
 
       MagneticFieldVector const direction_x_B = directionBefore.cross(magneticfield);
       auto const denom = 4. / (direction_x_B.getSquaredNorm() * k * k);
-      Vector<length_d> const deltaPos = position - sphere.getCenter();
       double const b = (direction_x_B.dot(deltaPos) * k + 1) * denom / (1_m * 1_m);
       double const c = directionBefore.dot(deltaPos) * 2 * denom / (1_m * 1_m * 1_m);
       LengthType const deltaPosLength = deltaPos.getNorm();
-      double const d = (deltaPosLength + sphere.getRadius()) *
-                       (deltaPosLength - sphere.getRadius()) * denom /
+      double const d = (deltaPosLength + radius) * (deltaPosLength - radius) * denom /
                        (1_m * 1_m * 1_m * 1_m);
       CORSIKA_LOG_TRACE("denom={}, b={}, c={}, d={}", denom, b, c, d);
       // solutions of deltaL are obtained from quartic equation. Note, deltaL/2 is the
@@ -196,18 +219,14 @@ namespace corsika {
       // because of the non-conservation of norm/velocity.
       // The leap-frog length L is deltaL/2 * (1+|u_{n+1}|)
       std::vector<double> solutions = solve_quartic_real(1, 0, b, c, d);
-      if (!solutions.size()) {
-        return tracking_line::Tracking::intersect<TParticle>(particle, sphere);
-      }
+      if (!solutions.size()) { return Intersections(); }
       LengthType d_enter, d_exit;
       int first = 0, first_entry = 0, first_exit = 0;
       for (auto solution : solutions) {
         LengthType const dist = solution * 1_m;
         CORSIKA_LOG_TRACE(
-            "Solution (real) for current Volume: deltaL/2*2={} (deltaL/2*2/v={}, "
-            "corrected={}) ",
-            dist, dist / absVelocity,
-            dist / absVelocity * (1. + fabs(0.5 * direction_x_B.getNorm() * k * dist)));
+            "Solution (real) for current Volume: deltaL/2*2={} (deltaL/2*2/v={}) ", dist,
+            dist / absVelocity);
         if (numericallyInside) {
           // there must be an entry (negative) and exit (positive) solution
           if (dist < 0.0001_m) { // security margin to assure
@@ -265,12 +284,9 @@ namespace corsika {
             first_entry, first_exit);
         return Intersections();
       }
-      // return in units of time, correct to leap-frog length L
-      double const corr_enter = 1. + fabs(0.5 * direction_x_B.getNorm() * k * d_enter);
-      double const corr_exit = 1. + fabs(0.5 * direction_x_B.getNorm() * k * d_exit);
+      // return in units of time
 
-      return Intersections(d_enter * corr_enter / absVelocity,
-                           d_exit * corr_exit / absVelocity);
+      return Intersections(d_enter / absVelocity, d_exit / absVelocity);
     }
 
     template <typename TParticle>
@@ -345,11 +361,13 @@ namespace corsika {
         CORSIKA_LOG_TRACE("maxStepLength={} s", maxStepLength / 1_s);
 
         // with final length correction, |direction| becomes >1 during step
-        double const corr =
-            1. + fabs(0.5 * direction_x_B.getNorm() * maxStepLength * charge / p_norm);
+        // double const correction =
+        // 1. + fabs(0.5 * direction_x_B.getNorm() * maxStepLength * charge /
+        // p_norm);
 
-        return Intersections(maxStepLength * corr / absVelocity); // unit: s
-      }                                                           // no charge
+        return Intersections(maxStepLength / absVelocity); // unit: s
+
+      } // no charge
 
       CORSIKA_LOG_TRACE("(plane) straight tracking with  charge={}, B={}", charge,
                         particle.getNode()->getModelProperties().getMagneticField(

@@ -18,6 +18,8 @@ namespace corsika {
 
     //---------------------------------------------------------------------------
     // solve cubic equation A x^3 + B*x^2 + C*x + D = 0
+    //                        x^3 + a*x^2 + b*x + c = 0
+    // mainly along WolframAlpha formulas
     inline std::vector<double> solve_cubic_real_analytic(long double A, long double B,
                                                          long double C, long double D,
                                                          double const epsilon) {
@@ -29,8 +31,8 @@ namespace corsika {
       long double c = D / A;
 
       long double a2 = a * a;
-      long double q = (a2 - 3 * b) / 9;
-      long double r = (a * (2 * a2 - 9 * b) + 27 * c) / 54;
+      long double q = (3 * b - a2) / 9;
+      long double r = (a * (9 * b - 2 * a2) - 27 * c) / 54;
       long double q3 = q * q * q;
 
       // disc = q**3 + r**2
@@ -38,8 +40,8 @@ namespace corsika {
       long double w = r * r;
       long double e = std::fma(r, r, -w);
       // s:t =  q*q exactly
-      long double s = -q * q;
-      long double t = std::fma(-q, q, -s);
+      long double s = q * q;
+      long double t = std::fma(q, q, -s);
       // s:t * q + w:e = s*q + w + t*q +e = s*q+w + u:v + e = f + u:v + e
       long double f = std::fma(s, q, w);
       long double u = t * q;
@@ -51,30 +53,34 @@ namespace corsika {
       au = f - au;
       ab = u - ab;
       // sum all terms into final result
-      long double const disc = -(((e + uf) + au) + ab) + v;
+      long double const disc = (((e + uf) + au) + ab) + v;
 
-      if (disc >= 0) {
-        long double t = r / std::sqrt(q3);
+      CORSIKA_LOG_TRACE("disc={} {}", disc, q3 + r * r);
+
+      if (std::abs(disc) < epsilon) {
+
+        a /= 3;
+        long double const cbrtR = std::cbrt(r);
+        return {double(2 * cbrtR - a), double(-cbrtR - a)}; // 2nd solution is doublet
+
+      } else if (disc > 0) {
+
+        long double const S = std::cbrt(r + std::sqrt(disc));
+        long double const T = std::cbrt(r - std::sqrt(disc));
+        a /= 3;
+        return {double((S + T) - a)}; // plus two imaginary solution
+
+      } else { // disc < 0
+
+        long double t = r / std::sqrt(-q3);
         if (t < -1) t = -1;
         if (t > 1) t = 1;
         t = std::acos(t);
         a /= 3;
-        q = -2 * std::sqrt(q);
+        q = 2 * std::sqrt(-q);
         return {double(q * std::cos(t / 3) - a),
                 double(q * std::cos((t + 2 * M_PI) / 3) - a),
-                double(q * std::cos((t - 2 * M_PI) / 3) - a)};
-      } else {
-        long double term1 = -cbrt(std::fabs(r) + std::sqrt(-disc));
-        if (r < 0) term1 = -term1;
-        long double term2 = (0 == term1 ? 0 : q / term1);
-
-        a /= 3;
-        long double test = 0.5 * std::sqrt(3.) * (term1 - term2);
-        if (std::fabs(test) < epsilon) {
-          return {double((term1 + term2) - 1), double(-0.5 * (term1 + term2) - a)};
-        }
-
-        return {double((term1 + term2) - a)};
+                double(q * std::cos((t + 4 * M_PI) / 3) - a)};
       }
     }
   } // namespace andre
@@ -228,7 +234,8 @@ namespace corsika {
   }
 
   /**
-   * Iterative approach.
+   * Iterative approach. https://en.wikipedia.org/wiki/Halley%27s_method
+   *  Halley's method
    */
 
   inline std::vector<double> solve_cubic_real(long double a, long double b, long double c,
@@ -238,72 +245,80 @@ namespace corsika {
                       a, b, c, d, epsilon, (std::abs(a - 1) < epsilon),
                       (std::abs(b) < epsilon));
 
-#ifdef DEBUG
-    {
-      auto test = andre::solve_cubic_real_analytic(a, b, c, d, epsilon);
-
-      for (long double test_v : test) {
-        CORSIKA_LOG_TRACE("test,andre x={} f(x)={}", test_v,
-                          cubic_function(test_v, a, b, c, d));
-      }
-    }
-#endif
-
     if (std::abs(a) < epsilon) { // this is just a quadratic
       return solve_quadratic_real(b, c, d, epsilon);
     }
 
-    long double const dist = std::fma(b / a, b / a, -3 * c / a);
-    long double const xinfl = -b / (a * 3);
+    auto pre_opt = andre::solve_cubic_real_analytic(a, b, c, d, epsilon);
+    long double x1 = 0; // start value
 
-    long double x1 = xinfl;
-    long double f_x1 = cubic_function(xinfl, a, b, c, d);
-
-    if (std::abs(f_x1) > epsilon) {
-      if (std::abs(dist) < epsilon) {
-        x1 = xinfl - std::cbrt(f_x1);
-      } else if (dist > 0) {
-        if (f_x1 > 0)
-          x1 = xinfl - 2 / 3 * std::sqrt(dist);
-        else
-          x1 = xinfl + 2 / 3 * std::sqrt(dist);
+    if (pre_opt.size()) {
+      x1 = pre_opt[0]; //*std::max_element(pre_opt.begin(), pre_opt.end());
+#ifdef DEBUG
+      for (long double test_v : pre_opt) {
+        CORSIKA_LOG_TRACE("test,andre x={} f(x)={}", test_v,
+                          cubic_function(test_v, a, b, c, d));
       }
+#endif
+    } else {
+      long double const dist = std::fma(b / a, b / a, -3 * c / a);
+      long double const xinfl = -b / (a * 3);
 
-      int niter = 0;
-      const int maxiter = 100;
-      do {
-        long double const f_prime_x1 = cubic_function_dfdx(x1, a, b, c);
-        long double const f_prime2_x1 = cubic_function_d2fd2x(x1, a, b);
-        // if (potential) saddle point... avoid
-        if (std::abs(f_prime_x1) < epsilon) {
-          x1 -= std::cbrt(f_x1);
-        } else {
-          x1 -=
-              f_x1 * f_prime_x1 / (static_pow<2>(f_prime_x1) - 0.5 * f_x1 * f_prime2_x1);
+      x1 = xinfl;
+      long double f_test = cubic_function(xinfl, a, b, c, d);
+
+      if (std::abs(f_test) > epsilon) {
+        if (std::abs(dist) < epsilon) {
+          x1 = xinfl - std::cbrt(f_test);
+        } else if (dist > 0) {
+          if (f_test > 0)
+            x1 = xinfl - 2 / 3 * std::sqrt(dist);
+          else
+            x1 = xinfl + 2 / 3 * std::sqrt(dist);
         }
-        f_x1 = cubic_function(x1, a, b, c, d);
-        CORSIKA_LOG_TRACE("niter={} x1={} f_x1={} f_prime={} f_prime2={} eps={}", niter,
-                          x1, f_x1, f_prime_x1, f_prime2_x1, epsilon);
-      } while ((++niter < maxiter) && (std::abs(f_x1) > epsilon));
-
-      CORSIKA_LOG_TRACE("niter={}", niter);
-      if (niter >= maxiter) {
-        // CORSIKA_LOG_TRACE("failure, no solution");
-        // return std::vector<double>{};
       }
+    }
+
+    long double f_x1 = cubic_function(x1, a, b, c, d);
+    long double dx1 = 0;
+
+    int niter = 0;
+    const int maxiter = 100;
+    do {
+      long double const f_prime_x1 = cubic_function_dfdx(x1, a, b, c);
+      long double const f_prime2_x1 = cubic_function_d2fd2x(x1, a, b);
+      // if (potential) saddle point... avoid
+      if (std::abs(f_prime_x1) < epsilon) {
+        dx1 = std::cbrt(f_x1);
+      } else {
+        dx1 = f_x1 * f_prime_x1 * 2 / (f_prime_x1 * f_prime_x1 * 2 - f_x1 * f_prime2_x1);
+      }
+      x1 -= dx1;
+      f_x1 = cubic_function(x1, a, b, c, d);
+      CORSIKA_LOG_TRACE(
+          "niter={} x1={:.20f} f_x1={:.20f} f_prime={:.20f} f_prime2={:.20f} dx1={}",
+          niter, x1, f_x1, f_prime_x1, f_prime2_x1,
+          f_x1 * f_prime_x1 / (f_prime_x1 * f_prime_x1 - f_x1 * f_prime2_x1 * 0.5));
+    } while ((++niter < maxiter) && (std::abs(f_x1) > epsilon * 1000) &&
+             (std::abs(dx1) > epsilon));
+
+    CORSIKA_LOG_TRACE("niter={}", niter);
+    if (niter >= maxiter) {
+      CORSIKA_LOG_DEBUG("niter reached max iterations {}", niter);
+      return andre::solve_cubic_real_analytic(a, b, c, d, epsilon);
     }
 
     CORSIKA_LOG_TRACE("x1={} f_x1={}", x1, f_x1);
 
     double const b1 = x1 + b / a;
     double const b0 = b1 * x1 + c / a;
-    std::vector<double> quad_check = solve_quadratic_real(1, b1, b0, epsilon);
+    std::vector<double> quad_check = solve_quadratic_real(1, b1, b0, 1e-3);
     CORSIKA_LOG_TRACE("quad_check=[{}], f(z)={}", fmt::join(quad_check, ", "),
                       cubic_function(x1, a, b, c, d));
 
     quad_check.push_back(x1);
     CORSIKA_LOG_TRACE("cubic: solve_cubic_real returns={}", fmt::join(quad_check, ", "));
     return quad_check;
-  }
+  } // namespace corsika
 
 } // namespace corsika

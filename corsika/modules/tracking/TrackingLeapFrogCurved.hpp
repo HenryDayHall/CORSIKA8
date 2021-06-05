@@ -29,24 +29,16 @@ namespace corsika {
   namespace tracking_leapfrog_curved {
 
     /**
-     * \file TrackingLeapFrogCurved.hpp
-     *
-     * Performs one leap-frog step consistent of two halve-steps with steplength/2
-     * The step is caluculated analytically precisely to reach to the next volume
-     * boundary.
+     * \file TrackingLeapFrogCurved.hpp The leap-frog tracking.
      */
-    template <typename TParticle>
-    auto make_LeapFrogStep(TParticle const& particle, LengthType steplength);
 
     /**
-     *
      * The class tracking_leapfrog_curved::Tracking is based on the
      * Bachelor thesis of Andre Schmidt (KIT). It implements a
      * two-step leap-frog algorithm, but with analytically exact geometric
      * intersections between leap-frog steps and geometric volumes
      * (spheres, planes).
-     *
-     **/
+     */
 
     class Tracking : public Intersect<Tracking> {
 
@@ -58,6 +50,14 @@ namespace corsika {
 
       template <typename TParticle>
       auto getTrack(TParticle const& particle);
+
+      /**
+       * Performs one leap-frog step consistent of two halve-steps with steplength/2
+       * Due to the nature of the algorithm the second halve step is slightly longer than
+       * the first halve step.
+       */
+      template <typename TParticle>
+      static auto makeStep(TParticle const& particle, LengthType const steplength);
 
       /**
        *  find intersection of Sphere with Track
@@ -77,7 +77,6 @@ namespace corsika {
        *
        * The intersection time(s) of a particle, assuming a curved leap-frog
        * step, are calculated for any volume type.
-       *
        */
       template <typename TParticle, typename TBaseNodeType>
       static Intersections intersect(TParticle const& particle,

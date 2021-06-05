@@ -77,8 +77,8 @@ namespace corsika {
       // solving quadratic eqs.  x^2 + p1*x + q1 = 0
       //                         x^2 + p2*x + q2 = 0
 
-      std::vector<double> quad1 = solve_quadratic_real(1, p1, q1);
-      std::vector<double> quad2 = solve_quadratic_real(1, p2, q2);
+      std::vector<double> quad1 = solve_quadratic_real(1, p1, q1, 1e-5);
+      std::vector<double> quad2 = solve_quadratic_real(1, p2, q2, 1e-5);
       if (quad2.size() > 0) {
         for (auto val : quad2) quad1.push_back(val);
       }
@@ -140,9 +140,9 @@ namespace corsika {
     long double const quad_term3 = q / (2 * quad_term2);
 
     std::vector<double> z_quad1 =
-        solve_quadratic_real(1, quad_term2, quad_term1 - quad_term3, epsilon);
+        solve_quadratic_real(1, quad_term2, quad_term1 - quad_term3, 1e-5);
     std::vector<double> z_quad2 =
-        solve_quadratic_real(1, -quad_term2, quad_term1 + quad_term3, epsilon);
+        solve_quadratic_real(1, -quad_term2, quad_term1 + quad_term3, 1e-5);
     for (auto const& z : z_quad2) z_quad1.push_back(z);
     return z_quad1;
   }

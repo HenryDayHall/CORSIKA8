@@ -25,6 +25,15 @@
 namespace corsika::tracking_line {
 
   template <typename TParticle>
+  inline auto Tracking::makeStep(TParticle const& particle, LengthType steplength) {
+    if (particle.getMomentum().getNorm() == 0_GeV) {
+      return std::make_tuple(particle.getPosition(), particle.getMomentum() / 1_GeV);
+    } // charge of the particle
+    DirectionVector const dir = particle.getDirection();
+    return std::make_tuple(particle.getPosition() + dir * steplength, dir.normalized());
+  }
+
+  template <typename TParticle>
   inline auto Tracking::getTrack(TParticle const& particle) {
     VelocityVector const initialVelocity =
         particle.getMomentum() / particle.getEnergy() * constants::c;
@@ -92,9 +101,10 @@ namespace corsika::tracking_line {
     CORSIKA_LOG_TRACE("n_dot_v={}, delta={}, momentum={}", n_dot_v, delta,
                       particle.getMomentum());
 
-    return Intersections(n_dot_v.magnitude() == 0
-                             ? std::numeric_limits<TimeType::value_type>::infinity() * 1_s
-                             : n.dot(delta) / n_dot_v);
+    if (n_dot_v.magnitude() == 0)
+      return Intersections();
+    else
+      return Intersections(n.dot(delta) / n_dot_v);
   }
 
 } // namespace corsika::tracking_line

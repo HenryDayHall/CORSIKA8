@@ -35,19 +35,17 @@ namespace corsika {
   }
 
   inline VelocityVector LeapFrogTrajectory::getVelocity(double const u) const {
-    return (initialDirection_ +
-            initialDirection_.cross(magneticfield_) * timeStep_ * u * k_) *
-           initialVelocity_.getNorm();
+    return getDirection(u) * initialVelocity_.getNorm();
   }
 
   inline DirectionVector LeapFrogTrajectory::getDirection(double const u) const {
-    return getVelocity(u).normalized();
+    return (initialDirection_ +
+            initialDirection_.cross(magneticfield_) * timeStep_ * u * k_)
+        .normalized();
   }
 
   inline TimeType LeapFrogTrajectory::getDuration(double const u) const {
-    return u * timeStep_ *
-           (1. + fabs(0.5 * initialDirection_.cross(magneticfield_).getNorm() * u *
-                      timeStep_ * k_));
+    return u * timeStep_;
   }
 
   inline LengthType LeapFrogTrajectory::getLength(double const u) const {
@@ -60,9 +58,10 @@ namespace corsika {
   }
 
   inline void LeapFrogTrajectory::setDuration(TimeType const limit) {
-    double const correction =
-        (1. + fabs(0.5 * initialDirection_.cross(magneticfield_).getNorm() * limit * k_));
-    timeStep_ = limit / correction;
+    // double const correction =
+    //    (1. + fabs(0.5 * initialDirection_.cross(magneticfield_).getNorm() * limit *
+    //    k_));
+    timeStep_ = limit;
   }
 
 } // namespace corsika

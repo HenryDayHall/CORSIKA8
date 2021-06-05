@@ -168,7 +168,7 @@ TEST_CASE("Solver") {
               z1, z2, z3, a, b, c, d);
 
           vector<double> s1 = solve_cubic_real(a, b, c, d);
-          remove_duplicates(s1, epsilon_check);
+          remove_duplicates(s1, epsilon_check * 10);
 
           CORSIKA_LOG_INFO("N={}, s1=[{}]", s1.size(), fmt::join(s1, ", "));
 
@@ -193,7 +193,7 @@ TEST_CASE("Solver") {
 
   SECTION("quartic") {
 
-    epsilon_check = 1e-4; // for catch2 asserts
+    epsilon_check = 1e-2; // for catch2 asserts
 
     // **clang-format-off**
     // tests of type:
@@ -252,7 +252,7 @@ TEST_CASE("Solver") {
 
           vector<double> s1 = andre::solve_quartic_real(a, b, c, d, e);
           // vector<double> s1 = solve_quartic_real(a, b, c, d, e, epsilon);
-          remove_duplicates(s1, epsilon_check);
+          remove_duplicates(s1, epsilon_check * 10);
 
           CORSIKA_LOG_INFO("N={}, s1=[{}]", s1.size(), fmt::join(s1, ", "));
 

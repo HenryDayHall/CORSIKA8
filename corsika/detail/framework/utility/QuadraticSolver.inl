@@ -62,7 +62,7 @@ namespace corsika {
     long double f = std::fma(b, b, -w);
     long double radicant = f + e;
 
-    CORSIKA_LOG_TRACE(" radicant={} {} ", radicant, b * b - a * c * 4);
+    CORSIKA_LOG_TRACE("radicant={} {} ", radicant, b * b - a * c * 4);
 
     if (std::abs(radicant) < epsilon) { // just one real solution
       return {double(-b / (2 * a))};
