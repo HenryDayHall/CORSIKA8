@@ -58,7 +58,7 @@ namespace corsika {
         , start_time_(start_time)
         , duration_(duration)
         , sample_rate_(sample_rate)
-        , num_bins_(static_cast<int>(duration * sample_rate))
+        , num_bins_(static_cast<std::size_t>(duration * sample_rate + 1.5l))
         , waveformE_(xt::zeros<double>({num_bins_, 3})){};
 
     /**
@@ -77,13 +77,13 @@ namespace corsika {
     void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
                  ElectricFieldVector const& efield) {
 
-      if (time < start_time_ || time > start_time_ + duration_) {
+      if (time < start_time_ || time > (start_time_ + duration_)) {
         return;
       } else {
         // figure out the correct timebin to store the E-field value.
         // NOTE: static cast is implicitly flooring
-        auto timebin_{static_cast<std::size_t>((time - start_time_) * sample_rate_)};
-        CORSIKA_LOG_INFO("Timebin: {}",timebin_);
+        auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
+        CORSIKA_LOG_INFO("Timebin: {}", timebin_);
 
         // store the x,y,z electric field components.
         waveformE_.at(timebin_, 0) += (efield.getX() / (1_V / 1_m));
@@ -115,7 +115,7 @@ namespace corsika {
 
       // fill in every time-value
       // TODO: Vectorize this using xtensor
-      for (int i = 0; i < num_bins_; i++) {
+      for (std::size_t i = 0; i < num_bins_; i++) {
         // create the current time in nanoseconds
         times.at(i) = static_cast<long double>((start_time_ + i*sample_period) / 1_ns);
       }
