@@ -499,18 +499,17 @@ namespace corsika::sibyll {
     // in pf in common fragments, neglected
     fragm_(kATarget, kAProj, nIntProj, impactPar, nFragments, AFragments);
 
-    // this should not occur but well :)
+    // this should not occur but well :)  (LCOV_EXCL_START)
     if (nFragments > (int)getMaxNFragments())
       throw std::runtime_error("Number of nuclear fragments in NUCLIB exceeded!");
+    // (LCOV_EXCL_STOP)
 
     CORSIKA_LOG_DEBUG("number of fragments: " + std::to_string(nFragments));
-    for (int j = 0; j < nFragments; ++j)
-      CORSIKA_LOG_DEBUG("fragment {}: A={} px={} py={} pz={}", j, AFragments[j],
-                        fragments_.ppp[j][0], fragments_.ppp[j][1], fragments_.ppp[j][2]);
-
     CORSIKA_LOG_DEBUG("adding nuclear fragments to particle stack..");
     // put nuclear fragments on corsika stack
     for (int j = 0; j < nFragments; ++j) {
+      CORSIKA_LOG_DEBUG("fragment {}: A={} px={} py={} pz={}", j, AFragments[j],
+                        fragments_.ppp[j][0], fragments_.ppp[j][1], fragments_.ppp[j][2]);
       Code specCode;
       const auto nuclA = AFragments[j];
       // get Z from stability line

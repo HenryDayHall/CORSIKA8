@@ -283,7 +283,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("NuclearInteractionInterface") {
 
     auto [stack, viewPtr] =
-        setup::testing::setup_stack(Code::Nucleus, 4, 2, 500_GeV,
+        setup::testing::setup_stack(Code::Nucleus, 8, 4, 900_GeV,
                                     (setup::Environment::BaseNodeType* const)nodePtr, cs);
     setup::StackView& view = *viewPtr;
     auto particle = stack->first();
