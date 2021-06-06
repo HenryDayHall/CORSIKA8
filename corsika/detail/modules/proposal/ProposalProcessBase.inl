@@ -27,8 +27,7 @@ namespace corsika::proposal {
   }
 
   template <typename TEnvironment>
-  inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env)
-      : RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
+  inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env) {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {
         const auto& prop = vtn.getModelProperties();
@@ -64,8 +63,8 @@ namespace corsika::proposal {
     }
   }
 
-  inline size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const
-      noexcept {
+  inline size_t ProposalProcessBase::hash::operator()(
+      const calc_key_t& p) const noexcept {
     return p.first ^ std::hash<Code>{}(p.second);
   }
 
