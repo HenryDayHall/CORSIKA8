@@ -84,7 +84,7 @@ int main() {
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  RNGManager::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
   using EnvType = setup::Environment;

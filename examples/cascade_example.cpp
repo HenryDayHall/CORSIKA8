@@ -63,7 +63,7 @@ int main() {
 
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  RNGManager::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("cascade");
 
   // setup environment, geometry
   setup::Environment env;
@@ -133,8 +133,8 @@ int main() {
   setup::Tracking tracking;
   StackInspector<setup::Stack> stackInspect(1, true, E0);
 
-  RNGManager::getInstance().registerRandomStream("sibyll");
-  RNGManager::getInstance().registerRandomStream("pythia");
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("pythia");
   corsika::sibyll::Interaction sibyll;
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   corsika::sibyll::Decay decay;

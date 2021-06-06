@@ -68,18 +68,19 @@
 using namespace corsika;
 using namespace std;
 
-void registerRandomStreams(const int seed) {
-  RNGManager::getInstance().registerRandomStream("cascade");
-  RNGManager::getInstance().registerRandomStream("qgsjet");
-  RNGManager::getInstance().registerRandomStream("sibyll");
-  RNGManager::getInstance().registerRandomStream("pythia");
-  RNGManager::getInstance().registerRandomStream("urqmd");
-  RNGManager::getInstance().registerRandomStream("proposal");
-
-  if (seed == 0)
-    RNGManager::getInstance().seedAll();
-  else
-    RNGManager::getInstance().seedAll(seed);
+void registerRandomStreams(int seed) {
+  RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("qgsjet");
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("pythia");
+  RNGManager<>::getInstance().registerRandomStream("urqmd");
+  RNGManager<>::getInstance().registerRandomStream("proposal");
+  if (seed == 0) {
+    std::random_device rd;
+    seed = rd();
+    cout << "new random seed (auto) " << seed << endl;
+  }
+  RNGManager<>::getInstance().setSeed(seed);
 }
 
 template <typename T>
