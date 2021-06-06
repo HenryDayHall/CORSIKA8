@@ -57,9 +57,9 @@ using namespace corsika;
 using namespace std;
 
 void registerRandomStreams() {
-  RNGManager::getInstance().registerRandomStream("cascade");
-  RNGManager::getInstance().registerRandomStream("proposal");
-  RNGManager::getInstance().seedAll();
+  RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().seedAll();
 }
 
 template <typename T>
