@@ -22,13 +22,12 @@
 
 namespace corsika {
 
-template<typename CBPRNG=random_iterator::philox>
+  template <typename CBPRNG = random_iterator::philox>
   class RNGManager : public corsika::Singleton<RNGManager<CBPRNG>> {
 
     friend class corsika::Singleton<RNGManager<CBPRNG>>;
 
   public:
-
     typedef CBPRNG prng_type;
     typedef std::uint64_t seed_type;
     typedef std::string string_type;
@@ -63,7 +62,6 @@ template<typename CBPRNG=random_iterator::philox>
      */
     inline std::stringstream dumpState() const;
 
-
     /**
      * @fn const streams_type getRngs&()const
      * @brief Constant access to the streams.
@@ -73,7 +71,6 @@ template<typename CBPRNG=random_iterator::philox>
      * @return RNGManager::streams_type
      */
     const streams_type& getRngs() const { return rngs_; }
-
 
     /**
      * @fn streams_type Rngs()
@@ -85,24 +82,20 @@ template<typename CBPRNG=random_iterator::philox>
      */
     streams_type& Rngs() { return rngs_; }
 
-	seed_type getSeed() const {
-		return seed_;
-	}
+    seed_type getSeed() const { return seed_; }
 
-	void setSeed(seed_type seed) {
-		seed_ = seed;
-        //update the rgn states
-		for (auto& [streamName, rng] : rngs_)  rng.setSeed(seed_) ;
-
-	}
+    void setSeed(seed_type seed) {
+      seed_ = seed;
+      // update the rgn states
+      for (auto& [streamName, rng] : rngs_) rng.setSeed(seed_);
+    }
 
   protected:
-
     RNGManager() = default;
 
   private:
     streams_type rngs_;
-    seed_type  seed_;
+    seed_type seed_;
   };
 
   typedef typename RNGManager<>::prng_type default_prng_type;
