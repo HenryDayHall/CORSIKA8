@@ -1,11 +1,13 @@
-Full API
-========
+Reference Documentation
+=======================
 
-Consider using Doxygen directly for a full API reference.... 
+Find the latest full reference manual at `Doxygen`_, or the components on:
 
-..
- .. doxygenindex::
-   :project: CORSIKA8
-   :path: c8
-   :outline:
-   :no-link:
+* `Classes`_ 
+* `Functions`_
+* `Files`_ 
+
+.. _Doxygen: doxygen/html/index.html
+.. _Classes: doxygen/html/classes.html
+.. _Functions: doxygen/html/functions.html
+.. _Files: doxygen/html/files.html

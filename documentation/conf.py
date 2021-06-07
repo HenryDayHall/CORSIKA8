@@ -1,40 +1,35 @@
 import sys
 import subprocess, os
 
-def configureDoxyfile(input_dir, output_dir):
-    with open('Doxyfile.in', 'r') as file :
+def configureDoxyfile(template_file, output_file):
+    with open(template_file, 'r') as file :
         filedata = file.read()
 
     filedata = filedata.replace('@PROJECT_SOURCE_DIR@', input_dir)
     filedata = filedata.replace('@CMAKE_CURRENT_BINARY_DIR@', output_dir)
     filedata = filedata.replace('@CMAKE_BINARY_DIR@', output_dir)
 
-    with open('Doxyfile', 'w') as file:
+    with open(output_file, 'w') as file:
         file.write(filedata)
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-breathe_projects = {}
 
 if read_the_docs_build:
     
-    input_dir = '../'
-    output_dir = 'build'
-    configureDoxyfile(input_dir, output_dir)
+    configureDoxyfile(Doxyfile.in, Doxyfile)
+    # build doxygen documentation
+	subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
+	html_extra_path = ['_build/workdir/']
 
-    subprocess.call('mkdir -p build/corsika/framework/core; cd build/corsika/framework/core && ../../../../../src/framework/core/pdxml_reader.py ../../../../../src/framework/core/ParticleData.xml ../../../../../src/framework/core/NuclearData.xml ../../../../../src/framework/core/ParticleClassNames.xml', shell=True)
-
-    subprocess.call('mkdir -p build/corsika/media; cd build/corsika/media && ../../../../src/media/readProperties.py ../../../../src/media/properties8.dat', shell=True)
     
-    subprocess.call('doxygen', shell=True)
-    breathe_projects['CORSIKA8'] = output_dir + '/xml'
     
 
 # -- Project information -----------------------------------------------------
 
-project = u'CORSIKA8'
+project   = u'CORSIKA8'
 copyright = u'2021, CORSIKA 8 Collaboration'
-author = u'CORSIKA 8 Collaboration'
+author    = u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
 version = u'0.0.0'
@@ -43,7 +38,6 @@ release = u'prototype-0.1.0'
 
 extensions = [
     'sphinx.ext.todo',
-    'breathe',
     'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
@@ -52,11 +46,14 @@ extensions = [
     'recommonmark'
 ]
 
-breathe_default_project = "CORSIKA8"
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This pattern also affects html_static_path and html_extra_path.
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -74,11 +71,6 @@ master_doc = 'index'
 # Usually you set "language" from the command line for these cases.
 language = None
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = []
-
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
@@ -86,10 +78,26 @@ pygments_style = 'sphinx'
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = 'sphinx_rtd_theme'
-# html_theme_options = {}
 
-# html_static_path = []
-# html_sidebars = {}
+html_theme_options = {
+    'analytics_id': '',  #  Provided by Google in your dashboard
+    'analytics_anonymize_ip': False,
+    'logo_only': False,
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+    # Toc options
+    'collapse_navigation': True,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}
+
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ['_static']
 
 htmlhelp_basename = 'C8doc'
 
