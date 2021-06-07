@@ -63,7 +63,7 @@ TEST_CASE("Pythia8", "modules") {
 
     std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                          Code::KMinus, Code::K0Long,  Code::K0Short};
-    RNGManager::getInstance().registerRandomStream("pythia");
+    RNGManager<>::getInstance().registerRandomStream("pythia");
     corsika::pythia8::Decay decay(particleList);
   }
 }
@@ -114,7 +114,7 @@ TEST_CASE("Pythia8Interface", "modules") {
     std::set<Code> const particleList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                          Code::KMinus, Code::K0Long,  Code::K0Short};
 
-    RNGManager::getInstance().registerRandomStream("pythia");
+    RNGManager<>::getInstance().registerRandomStream("pythia");
 
     corsika::pythia8::Decay decay(particleList);
 

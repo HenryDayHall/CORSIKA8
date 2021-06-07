@@ -55,7 +55,7 @@ namespace corsika {
     // Froissart-Martin is not violated up for sqrt s < 10^32 eV with these values [DL].
 
     default_prng_type& RNG_ =
-        RNGManager::getInstance().getRandomStream("HadronicElasticModel");
+        RNGManager<>::getInstance().getRandomStream("HadronicElasticModel");
   };
 
 } // namespace corsika

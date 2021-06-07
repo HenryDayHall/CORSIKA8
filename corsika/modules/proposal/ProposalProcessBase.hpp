@@ -71,7 +71,7 @@ namespace corsika::proposal {
   //!
   class ProposalProcessBase {
   protected:
-    RNGManager::prng_type RNG_; //!< random number generator used by proposal
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("proposal");
 
     std::unordered_map<std::size_t, PROPOSAL::Medium>
         media; //!< maps nuclear composition from univers to media to produce

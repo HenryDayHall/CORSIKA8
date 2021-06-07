@@ -40,8 +40,8 @@ TEST_CASE("CONEXSourceCut") {
 
   logging::set_level(logging::level::info);
 
-  RNGManager::getInstance().registerRandomStream("cascade");
-  RNGManager::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
 
   feenableexcept(FE_INVALID);
 

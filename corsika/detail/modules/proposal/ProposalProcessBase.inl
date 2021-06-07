@@ -27,8 +27,7 @@ namespace corsika::proposal {
   }
 
   template <typename TEnvironment>
-  inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env)
-      : RNG_(RNGManager::getInstance().getRandomStream("proposal")) {
+  inline ProposalProcessBase::ProposalProcessBase(TEnvironment const& _env) {
     _env.getUniverse()->walk([&](auto& vtn) {
       if (vtn.hasModelProperties()) {
         const auto& prop = vtn.getModelProperties();

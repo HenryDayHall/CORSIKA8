@@ -18,7 +18,7 @@ namespace urqmd {
    */
   double rndm_interface() {
     static corsika::default_prng_type& rng =
-        corsika::RNGManager::getInstance().getRandomStream("urqmd");
+        corsika::RNGManager<>::getInstance().getRandomStream("urqmd");
     static std::uniform_real_distribution<double> dist;
     return dist(rng);
   }

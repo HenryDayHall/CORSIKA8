@@ -107,7 +107,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
 
-  RNGManager::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
 
   SECTION("InteractionInterface - valid targets") {
 
@@ -283,7 +283,7 @@ TEST_CASE("SibyllInterface", "[processes]") {
   SECTION("NuclearInteractionInterface") {
 
     auto [stack, viewPtr] =
-        setup::testing::setup_stack(Code::Nucleus, 4, 2, 500_GeV,
+        setup::testing::setup_stack(Code::Nucleus, 8, 4, 900_GeV,
                                     (setup::Environment::BaseNodeType* const)nodePtr, cs);
     setup::StackView& view = *viewPtr;
     auto particle = stack->first();
@@ -296,8 +296,10 @@ TEST_CASE("SibyllInterface", "[processes]") {
     // Felix, are those changes OK? Below are the checks before refactory-2020
     // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
     // CHECK(view.getSize() == 11);
-    CHECK(length / 1_g * 1_cm * 1_cm == Approx(42.8).margin(.1));
+    CHECK(length / 1_g * 1_cm * 1_cm ==
+          Approx(31).margin(5)); // this is not physics validation
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
+    CHECK(view.getSize() == Approx(100).margin(90)); // this is not physics validation
   }
 
   SECTION("DecayInterface") {

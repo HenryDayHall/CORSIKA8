@@ -56,10 +56,15 @@
 using namespace corsika;
 using namespace std;
 
-void registerRandomStreams() {
-  RNGManager::getInstance().registerRandomStream("cascade");
-  RNGManager::getInstance().registerRandomStream("proposal");
-  RNGManager::getInstance().seedAll();
+void registerRandomStreams(int seed) {
+  RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("proposal");
+  if (seed == 0) {
+    std::random_device rd;
+    seed = rd();
+    cout << "new random seed (auto) " << seed << endl;
+  }
+  RNGManager<>::getInstance().setSeed(seed);
 }
 
 template <typename T>
@@ -75,7 +80,8 @@ int main(int argc, char** argv) {
   }
   feenableexcept(FE_INVALID);
   // initialize random number sequence(s)
-  registerRandomStreams();
+  int seed = 44;
+  registerRandomStreams(seed);
 
   // setup environment, geometry
   using EnvType = setup::Environment;

@@ -68,7 +68,7 @@ TEST_CASE("UrQMD") {
   }
 
   feenableexcept(FE_INVALID);
-  RNGManager::getInstance().registerRandomStream("urqmd");
+  RNGManager<>::getInstance().registerRandomStream("urqmd");
   UrQMD urqmd;
 
   SECTION("interaction length") {

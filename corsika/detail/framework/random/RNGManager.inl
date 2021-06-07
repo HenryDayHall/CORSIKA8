@@ -11,21 +11,25 @@
 #include <iterator>
 #include <random>
 #include <sstream>
+#include <tuple>
+#include <utility>
 
 namespace corsika {
 
-  inline void RNGManager::registerRandomStream(string_type const& pStreamName) {
-    prng_type rng;
+  template <typename CBPRNG>
+  inline void RNGManager<CBPRNG>::registerRandomStream(string_type const& pStreamName) {
 
-    if (auto const& it = seeds_.find(pStreamName); it != seeds_.end()) {
-      rng.seed(it->second);
-    }
+    auto const& it = rngs_.find(pStreamName);
 
-    rngs_[pStreamName] = std::move(rng);
+    if (it == rngs_.end()) // key not in container, so create one and initialize the value
+      rngs_.emplace(std::piecewise_construct, std::forward_as_tuple(pStreamName.c_str()),
+                    std::forward_as_tuple(seed_, uint32_t(rngs_.size())));
   }
 
-  inline RNGManager::prng_type& RNGManager::getRandomStream(
+  template <typename CBPRNG>
+  inline typename RNGManager<CBPRNG>::prng_type& RNGManager<CBPRNG>::getRandomStream(
       string_type const& pStreamName) {
+
     if (isRegistered(pStreamName)) {
       return rngs_.at(pStreamName);
     } else { // this stream name is not in the map
@@ -33,36 +37,19 @@ namespace corsika {
     }
   }
 
-  inline bool RNGManager::isRegistered(string_type const& pStreamName) const {
+  template <typename CBPRNG>
+  inline bool RNGManager<CBPRNG>::isRegistered(string_type const& pStreamName) const {
     return rngs_.count(pStreamName) > 0;
   }
 
-  inline std::stringstream RNGManager::dumpState() const {
+  template <typename CBPRNG>
+  inline std::stringstream RNGManager<CBPRNG>::dumpState() const {
     std::stringstream buffer;
     for (auto const& [streamName, rng] : rngs_) {
       buffer << '"' << streamName << "\" = \"" << rng << '"' << std::endl;
     }
 
     return buffer;
-  }
-
-  inline void RNGManager::seedAll(seed_type vSeed) {
-    for (auto& entry : rngs_) { entry.second.seed(vSeed++); }
-  }
-
-  inline void RNGManager::seedAll(void) {
-    std::random_device rd;
-
-    for (auto& [streamName, rng] : rngs_) {
-      std::seed_seq sseq{rd(), rd(), rd(), rd(), rd(), rd()}; // 6 really random values
-
-      // for logging collect sseq input values in string
-      std::stringstream ss;
-      sseq.param(std::ostream_iterator<int>{ss, " "});
-      CORSIKA_LOG_DEBUG("Random seed stream {} seed {}", streamName, ss.str());
-
-      rng.seed(sseq);
-    }
   }
 
 } // namespace corsika

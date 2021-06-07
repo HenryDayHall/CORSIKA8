@@ -29,7 +29,9 @@ parser.add_argument("--docker", action="store_true",
 
 args = parser.parse_args()
 
-excludeDirs = [r"^(\./)?modules/", r"^(\./)?externals/", r"^(\./)?build", r"^(\./)?install", r"(\./)?\.git", r"^(\./)?corsika/framework/units",]
+excludeDirs = [r"^(\./)?modules/", r"^(\./)?externals/", r"^(\./)?build", r"^(\./)?install",
+               r"(\./)?\.git", r"^(\./)?corsika/framework/units",
+               r"^(\./)?Random123/"]
 
 filelist = []
 if args.all:
