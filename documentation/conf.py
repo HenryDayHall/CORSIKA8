@@ -16,11 +16,9 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 
 if read_the_docs_build:
-    
     configureDoxyfile("Doxyfile.in", "Doxyfile")
-    # build doxygen documentation
-	subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
-	html_extra_path = ['_build/workdir/']
+    subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
+    html_extra_path = ['_build/workdir/']
 
     
     
