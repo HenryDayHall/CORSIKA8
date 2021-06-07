@@ -53,8 +53,7 @@ TEST_CASE("ObservationPlane", "interface") {
   SECTION("horizontal plane") {
 
     Plane const obsPlane(Point(cs, {10_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane<setup::Tracking, NoOutput> obs(obsPlane,
-                                                    DirectionVector(cs, {0., 1., 0.}));
+    ObservationPlane<setup::Tracking> obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
@@ -82,8 +81,8 @@ TEST_CASE("ObservationPlane", "interface") {
 
   SECTION("transparent plane") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane<setup::Tracking, NoOutput> obs(
-        obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
+    ObservationPlane<setup::Tracking> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}),
+                                          false);
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, false);
@@ -103,8 +102,7 @@ TEST_CASE("ObservationPlane", "interface") {
 
     Plane const obsPlane(Point(cs, {10_m, 5_m, 5_m}),
                          DirectionVector(cs, {1, 0.1, -0.05}));
-    ObservationPlane<setup::Tracking, NoOutput> obs(obsPlane,
-                                                    DirectionVector(cs, {0., 1., 0.}));
+    ObservationPlane<setup::Tracking> obs(obsPlane, DirectionVector(cs, {0., 1., 0.}));
 
     LengthType const length = obs.getMaxStepLength(particle, no_used_track);
     ProcessReturn const ret = obs.doContinuous(particle, no_used_track, true);
@@ -115,8 +113,8 @@ TEST_CASE("ObservationPlane", "interface") {
 
   SECTION("output") {
     Plane const obsPlane(Point(cs, {1_m, 0_m, 0_m}), DirectionVector(cs, {1., 0., 0.}));
-    ObservationPlane<setup::Tracking, NoOutput> obs(
-        obsPlane, DirectionVector(cs, {0., 0., 1.}), false);
+    ObservationPlane<setup::Tracking> obs(obsPlane, DirectionVector(cs, {0., 0., 1.}),
+                                          false);
     auto const cfg = obs.getConfig();
     CHECK(cfg["type"]);
   }

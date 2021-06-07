@@ -122,6 +122,7 @@ namespace corsika {
 
 
   template <typename TOutput>
+  template <typename TStackView>
   inline void ParticleCut<TOutput>::doSecondaries(TStackView& vS) {
     energy_event_ = 0_GeV; // per event counting for printout
     auto particle = vS.begin();
@@ -136,10 +137,11 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("Event cut: {} GeV", energy_event_ / 1_GeV);
   }
 
-  template <typename TParticle, typename TTrajectory>
   template <typename TOutput>
-  inline ProcessReturn ParticleCut<TOutput>::doContinuous(TParticle& particle, TTrajectory const&,
-                                                 bool const) {
+  template <typename TParticle, typename TTrajectory>
+  inline ProcessReturn ParticleCut<TOutput>::doContinuous(TParticle& particle,
+                                                          TTrajectory const&,
+                                                          bool const) {
     if (checkCutParticle(particle)) {
       this->write(particle.getPosition(), particle.getPID(), particle.getKineticEnergy());
       CORSIKA_LOG_TRACE("removing during continuous");

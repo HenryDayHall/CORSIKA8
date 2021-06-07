@@ -10,8 +10,13 @@
 
 #include <corsika/output/BaseOutput.hpp>
 
-
 namespace corsika {
+
+  /**
+   * Generic class to switch off any output.
+   *
+   * The 'write' method is catch-all and does nothing.
+   */
 
   class WriterOff : public BaseOutput {
 
@@ -25,8 +30,10 @@ namespace corsika {
 
     void endOfLibrary() final override {}
 
+    //    YAML::Node getConfig() const final override { return YAML::Node(); }
+
     template <typename... TArgs>
-    void write(TArgs&&... args) {}
+    void write(TArgs&&...) {}
 
   }; // class WriterOff
 

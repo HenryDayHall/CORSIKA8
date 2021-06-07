@@ -24,6 +24,7 @@ struct DummyNoOutput : public NoOutput {
     NoOutput::endOfShower(0);
     NoOutput::endOfLibrary();
   }
+  YAML::Node getConfig() const final override { return YAML::Node(); }
   void checkWrite() { NoOutput::write(Code::Unknown, 1_eV, 1_m, 1_m, 1_ns); }
 };
 
@@ -44,6 +45,8 @@ struct DummyOutput : public BaseOutput {
   void endOfShower(unsigned int const) override { endShower_ = true; }
 
   void endOfLibrary() override { endLibrary_ = true; }
+
+  YAML::Node getConfig() const final override { return YAML::Node(); }
 
   YAML::Node getSummary() const final override {
     YAML::Node summary;

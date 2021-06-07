@@ -50,7 +50,7 @@ namespace corsika {
     /**
      * Get any summary information for the entire library.
      */
-    YAML::Node getSummary() final override { return YAML::Node(); };
+    YAML::Node getSummary() const final override { return YAML::Node(); };
 
   protected:
     void write(Code const&, units::si::HEPEnergyType const&, units::si::LengthType const&,

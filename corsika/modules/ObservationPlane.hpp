@@ -11,7 +11,8 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Plane.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
-#include <corsika/modules/writers/ObservationPlaneWriterParquet.hpp>
+#include <corsika/modules/writers/ParticleWriterParquet.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 
 namespace corsika {
 
@@ -30,10 +31,9 @@ namespace corsika {
      small gap in between the two plane in such a scenario, or develop
      another more specialized output class.
    */
-  template <typename TTracking, typename TOutputWriter = ObservationPlaneWriterParquet>
-  class ObservationPlane
-      : public ContinuousProcess<ObservationPlane<TTracking, TOutputWriter>>,
-        public TOutputWriter {
+  template <typename TTracking, typename TOutput = WriterOff>
+  class ObservationPlane : public ContinuousProcess<ObservationPlane<TTracking, TOutput>>,
+                           public TOutput {
 
   public:
     template <typename... TArgs>

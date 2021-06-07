@@ -17,10 +17,8 @@
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
-#include <corsika/modules/writers/EnergyLossWriterOff.hpp>
+#include <corsika/modules/writers/WriterOff.hpp>
 #include <corsika/modules/writers/EnergyLossWriterParquet.hpp>
-
-#include <corsika/modules/writers/LongitudinalProfileWriterOff.hpp>
 #include <corsika/modules/writers/LongitudinalProfileWriterParquet.hpp>
 
 #include <corsika/modules/conex/CONEX_f.hpp>
@@ -31,11 +29,9 @@ namespace corsika {
     LengthType constexpr earthRadius{6371315 * meter};
   } // namespace conex
 
-  template <typename TOutput = EnergyLossWriterOff,
-            typename TProfileOutput = LongitudinalProfileWriterOff>
+  template <typename TOutput = WriterOff, typename TProfileOutput = WriterOff>
   class CONEXhybrid : public CascadeEquationsProcess<CONEXhybrid<TOutput, TProfileOutput>>,
-		      public SecondariesProcess<CONEXhybrid<TOutput, TProfileOutput>> {
-
+                      public SecondariesProcess<CONEXhybrid<TOutput, TProfileOutput>> {
 
   public:
     /**
@@ -69,9 +65,8 @@ namespace corsika {
      */
     CONEXhybrid(Point const& center, ShowerAxis const& showerAxis, LengthType groundDist,
                 LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode pdg)
-        : CONEXhybrid(*(new EnergyLossWriterOff()), *(new LongitudinalProfileWriterOff()),
-                      center, showerAxis, groundDist, injectionHeight, primaryEnergy,
-                      pdg) {}
+        : CONEXhybrid(*(new WriterOff()), *(new WriterOff()), center, showerAxis,
+                      groundDist, injectionHeight, primaryEnergy, pdg) {}
 
     template <typename TStackView>
     void doSecondaries(TStackView&);

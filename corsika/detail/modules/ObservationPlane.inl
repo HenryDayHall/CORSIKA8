@@ -8,12 +8,12 @@
 
 namespace corsika {
 
-  template <typename TOutput>
+  template <typename TTracking, typename TOutput>
   template <typename... TArgs>
-  ObservationPlane<TOutput>::ObservationPlane(Plane const& obsPlane,
-                                              DirectionVector const& x_axis,
-                                              bool const deleteOnHit,
-                                              TArgs&&... args)
+  ObservationPlane<TTracking, TOutput>::ObservationPlane(Plane const& obsPlane,
+                                                         DirectionVector const& x_axis,
+                                                         bool const deleteOnHit,
+                                                         TArgs&&... args)
       : plane_(obsPlane)
       , deleteOnHit_(deleteOnHit)
       , energy_ground_(0_GeV)
@@ -57,11 +57,11 @@ namespace corsika {
     if (pid == Code::Nucleus) {
       // add our particles to the output file stream
       this->write(particle.getNuclearA(), particle.getNuclearZ(), energy,
-                    displacement.dot(xAxis_), displacement.dot(yAxis_), 0_m, weight);
+                  displacement.dot(xAxis_), displacement.dot(yAxis_), 0_m, weight);
     } else {
       // add our particles to the output file stream
       this->write(particle.getPID(), energy, displacement.dot(xAxis_),
-                    displacement.dot(yAxis_), 0_m, weight);
+                  displacement.dot(yAxis_), 0_m, weight);
     }
 
     CORSIKA_LOG_TRACE("Particle detected absorbed={}", deleteOnHit_);
