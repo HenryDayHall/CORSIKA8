@@ -261,6 +261,9 @@ namespace corsika {
       }
 #endif
     } else {
+      // this is only if the former solve_cubic_real_analytic would not result
+      // in any solution. We have no test case for this. This is excluded from tests:
+      // LCOV_EXCL_START
       long double const dist = std::fma(b / a, b / a, -3 * c / a);
       long double const xinfl = -b / (a * 3);
 
@@ -277,6 +280,7 @@ namespace corsika {
             x1 = xinfl + 2 / 3 * std::sqrt(dist);
         }
       }
+      // LCOV_EXCL_STOP
     }
 
     long double f_x1 = cubic_function(x1, a, b, c, d);

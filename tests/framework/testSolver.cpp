@@ -98,35 +98,64 @@ TEST_CASE("Solver") {
           long double b = -z1 - z2;
           long double c = z1 * z2;
 
-          std::vector<double> s1 = solve_quadratic_real(a, b, c);
-          remove_duplicates(s1, epsilon_check);
+          {
+            std::vector<double> s1 = solve_quadratic_real(a, b, c);
+            remove_duplicates(s1, epsilon_check);
 
-          CORSIKA_LOG_INFO("quadratic: z1={}, z2={}, N={}, s1=[{}]", z1, z2, s1.size(),
-                           fmt::join(s1, ", "));
+            CORSIKA_LOG_INFO("quadratic: z1={}, z2={}, N={}, s1=[{}]", z1, z2, s1.size(),
+                             fmt::join(s1, ", "));
 
-          CHECK(s1.size() == idegree + 1);
-          for (auto value : s1) {
-            if (std::abs(value) < epsilon_check) {
-              CHECK(((value == Approx(z1).margin(epsilon_check)) ||
-                     (value == Approx(z2).margin(epsilon_check))));
-            } else {
-              CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
-                     (value == Approx(z2).epsilon(epsilon_check))));
+            CHECK(s1.size() == idegree + 1);
+            for (auto value : s1) {
+              if (std::abs(value) < epsilon_check) {
+                CHECK(((value == Approx(z1).margin(epsilon_check)) ||
+                       (value == Approx(z2).margin(epsilon_check))));
+              } else {
+                CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
+                       (value == Approx(z2).epsilon(epsilon_check))));
+              }
             }
           }
-          /*
-          std::vector<complex<double>> s2 = solve_quadratic(a, b, c, epsilon);
-          CHECK(s2.size() == idegree + 1);
-          for (auto value : s2) {
-            if (std::abs(value) < epsilon) {
-              CHECK(((value == Approx(z1).margin(epsilon_check)) ||
-                     (value == Approx(z2).margin(epsilon_check))));
-            } else {
-              CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
-                     (value == Approx(z2).epsilon(epsilon_check))));
+
+          // cubic with x^3 * 0 should result in the same
+          {
+            std::vector<double> s1 = solve_cubic_real(0, a, b, c);
+            remove_duplicates(s1, epsilon_check);
+
+            CORSIKA_LOG_INFO("quadratic/cubic: z1={}, z2={}, N={}, s1=[{}]", z1, z2,
+                             s1.size(), fmt::join(s1, ", "));
+
+            CHECK(s1.size() == idegree + 1);
+            for (auto value : s1) {
+              if (std::abs(value) < epsilon_check) {
+                CHECK(((value == Approx(z1).margin(epsilon_check)) ||
+                       (value == Approx(z2).margin(epsilon_check))));
+              } else {
+                CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
+                       (value == Approx(z2).epsilon(epsilon_check))));
+              }
             }
           }
-          }*/
+
+          // quartic with x^4 * 0 + x^3 * 0 must be the same
+          {
+            std::vector<double> s1 = solve_quartic_real(0, 0, a, b, c);
+            remove_duplicates(s1, epsilon_check);
+
+            CORSIKA_LOG_INFO("quadratic/quartic: z1={}, z2={}, N={}, s1=[{}]", z1, z2,
+                             s1.size(), fmt::join(s1, ", "));
+
+            CHECK(s1.size() == idegree + 1);
+            for (auto value : s1) {
+              if (std::abs(value) < epsilon_check) {
+                CHECK(((value == Approx(z1).margin(epsilon_check)) ||
+                       (value == Approx(z2).margin(epsilon_check))));
+              } else {
+                CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
+                       (value == Approx(z2).epsilon(epsilon_check))));
+              }
+            }
+          }
         }
       }
     }
@@ -167,23 +196,48 @@ TEST_CASE("Solver") {
               "a={}, b={}, c={}, d={}",
               z1, z2, z3, a, b, c, d);
 
-          vector<double> s1 = solve_cubic_real(a, b, c, d);
-          remove_duplicates(s1, epsilon_check * 10);
+          {
+            vector<double> s1 = solve_cubic_real(a, b, c, d);
+            remove_duplicates(s1, epsilon_check * 10);
 
-          CORSIKA_LOG_INFO("N={}, s1=[{}]", s1.size(), fmt::join(s1, ", "));
+            CORSIKA_LOG_INFO("N={}, s1=[{}]", s1.size(), fmt::join(s1, ", "));
 
-          CHECK(s1.size() == idegree + 1);
-          for (double value : s1) {
-            CORSIKA_LOG_INFO("value={}, z1={} z2={} z3={} eps_check={}", value, z1, z2,
-                             z3, epsilon_check);
-            if (std::abs(value) < epsilon_check) {
-              CHECK(((value == Approx(z1).margin(epsilon_check)) ||
-                     (value == Approx(z2).margin(epsilon_check)) ||
-                     (value == Approx(z3).margin(epsilon_check))));
-            } else {
-              CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
-                     (value == Approx(z2).epsilon(epsilon_check)) ||
-                     (value == Approx(z3).epsilon(epsilon_check))));
+            CHECK(s1.size() == idegree + 1);
+            for (double value : s1) {
+              CORSIKA_LOG_INFO("value={}, z1={} z2={} z3={} eps_check={}", value, z1, z2,
+                               z3, epsilon_check);
+              if (std::abs(value) < epsilon_check) {
+                CHECK(((value == Approx(z1).margin(epsilon_check)) ||
+                       (value == Approx(z2).margin(epsilon_check)) ||
+                       (value == Approx(z3).margin(epsilon_check))));
+              } else {
+                CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
+                       (value == Approx(z2).epsilon(epsilon_check)) ||
+                       (value == Approx(z3).epsilon(epsilon_check))));
+              }
+            }
+          }
+
+          // quartic with x^4 *0  must be the same
+          {
+            vector<double> s1 = solve_quartic_real(0, a, b, c, d);
+            remove_duplicates(s1, epsilon_check * 10);
+
+            CORSIKA_LOG_INFO("(quartic) N={}, s1=[{}]", s1.size(), fmt::join(s1, ", "));
+
+            CHECK(s1.size() == idegree + 1);
+            for (double value : s1) {
+              CORSIKA_LOG_INFO("value={}, z1={} z2={} z3={} eps_check={}", value, z1, z2,
+                               z3, epsilon_check);
+              if (std::abs(value) < epsilon_check) {
+                CHECK(((value == Approx(z1).margin(epsilon_check)) ||
+                       (value == Approx(z2).margin(epsilon_check)) ||
+                       (value == Approx(z3).margin(epsilon_check))));
+              } else {
+                CHECK(((value == Approx(z1).epsilon(epsilon_check)) ||
+                       (value == Approx(z2).epsilon(epsilon_check)) ||
+                       (value == Approx(z3).epsilon(epsilon_check))));
+              }
             }
           }
         }
