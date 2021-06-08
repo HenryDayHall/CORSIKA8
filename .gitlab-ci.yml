@@ -39,14 +39,14 @@ stages:
   - optional
 
 
-check_system:
+check-system:
   stage: system
   tags:
     - corsika
   script:
     - uname -a
     - ldd --version
-
+    - cat /etc/*-release
 
 
 ####### CODE QUALITY CHECK ##############
