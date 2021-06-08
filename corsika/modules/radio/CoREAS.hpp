@@ -30,8 +30,7 @@ namespace corsika {
     using Base::antennas_;
 
   public:
-    using ElectricFieldVector =
-    QuantityVector<ElectricFieldType::dimension_type>;
+    using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
 
     // an identifier for which algorithm was used
     static constexpr auto algorithm = "CoREAS";
@@ -121,7 +120,7 @@ namespace corsika {
             CORSIKA_LOG_ERROR("preDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths1[i].refractive_index_source_};
-            long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
+            long double betaX_ {static_cast<double>(beta_.getComponents().getX())}; // ToDO: .getX(specificCS)
             long double betaY_ {static_cast<double>(beta_.getComponents().getY())};
             long double betaZ_ {static_cast<double>(beta_.getComponents().getZ())};
             long double startX_ {static_cast<double>(paths1[i].emit_.getComponents().getX())};
@@ -203,7 +202,7 @@ namespace corsika {
                 // redo calculation with higher precision
                 long double indexL_ {path.refractive_index_source_};
                 long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
-                long double betaY_ {static_cast<double>(beta_.getComponents().getY())};
+                long double betaY_ {static_cast<double>(beta_.getComponents().getY())}; // ToDO: check that beta and emit have the same CS!
                 long double betaZ_ {static_cast<double>(beta_.getComponents().getZ())};
                 long double midX_ {static_cast<double>(path.emit_.getComponents().getX())};
                 long double midY_ {static_cast<double>(path.emit_.getComponents().getY())};
@@ -218,7 +217,7 @@ namespace corsika {
                   ReceiveVectorEnd_ = path.receive_;
 
               // CoREAS calculation -> get ElectricFieldVector for "midPoint"
-              ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_))).getComponents()
+              ElectricFieldVector EVmid_ = (path.emit_.cross(path.emit_.cross(beta_)))
                                            / midDoppler_ / path.R_distance_ * constants_ * antenna.sample_rate_;
 
                   ElectricFieldVector EV1_{EVmid_};
@@ -318,12 +317,12 @@ namespace corsika {
                 CORSIKA_LOG_INFO("Endpoints calculation --- CoREAS");
 
                 // calculate electric field vector for startpoint
-                ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_))).getComponents() /
-                    preDoppler_ / paths1[i].R_distance_ * constants_ * antenna.sample_rate_;
+                ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_)))
+                   / preDoppler_ / paths1[i].R_distance_ * constants_ * antenna.sample_rate_;
 
                 // calculate electric field vector for endpoint
-                ElectricFieldVector EV2_ = (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_))).getComponents() /
-                    postDoppler_ / paths2[i].R_distance_ * constants_ * (-1.0) * antenna.sample_rate_;
+                ElectricFieldVector EV2_ = (paths2[i].emit_.cross(paths2[i].emit_.cross(beta_)))
+                   / postDoppler_ / paths2[i].R_distance_ * constants_ * (-1.0) * antenna.sample_rate_;
 
                 if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 

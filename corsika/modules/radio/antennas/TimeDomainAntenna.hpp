@@ -85,10 +85,12 @@ namespace corsika {
         auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
         CORSIKA_LOG_INFO("Timebin: {}", timebin_);
 
+        // ToDO: ask explicitly for a CS and use that specific on for writing the output
+
         // store the x,y,z electric field components.
-        waveformE_.at(timebin_, 0) += (efield.getX() / (1_V / 1_m));
-        waveformE_.at(timebin_, 1) += (efield.getY() / (1_V / 1_m));
-        waveformE_.at(timebin_, 2) += (efield.getZ() / (1_V / 1_m));
+        waveformE_.at(timebin_, 0) += (efield.getComponents().getX() / (1_V / 1_m));
+        waveformE_.at(timebin_, 1) += (efield.getComponents().getY() / (1_V / 1_m));
+        waveformE_.at(timebin_, 2) += (efield.getComponents().getZ() / (1_V / 1_m));
         // TODO: Check how they are stored in memory, row-wise or column-wise?
       }
     }

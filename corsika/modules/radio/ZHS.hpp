@@ -29,7 +29,7 @@ namespace corsika {
 
   public:
     //    using PotentialVector = QuantityVector<PotentialVectorType::dimension_type>;
-    using ElectricFieldVector = QuantityVector<ElectricFieldType::dimension_type>;
+    using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
 
     // an identifier for which algorithm was used
     static constexpr auto algorithm = "ZHS";
@@ -149,14 +149,14 @@ namespace corsika {
                 //                                    * f;
                 // but to make it compile until antenna is adapted it stays like that to
                 // test it.
-                ElectricFieldVector const Vp_ = betaPerp_.getComponents() / denominator /
+                ElectricFieldVector const Vp_ = betaPerp_ / denominator /
                                                 midPaths[i].R_distance_ * constants * f /
                                                 1_s;
                 antenna.receive(detectionTime2_, betaPerp_, Vp_);
               } else { // If emission in Cerenkov angle => approximation
                 double const f{(detectionTime2_ - detectionTime1_) *
                                antenna.sample_rate_};
-                ElectricFieldVector const Vp_ = betaPerp_.getComponents() /
+                ElectricFieldVector const Vp_ = betaPerp_ /
                                                 midPaths[i].R_distance_ * constants * f /
                                                 1_s;
                 antenna.receive(detectionTime2_, betaPerp_, Vp_);
@@ -167,12 +167,12 @@ namespace corsika {
               // TODO: should we check for Cerenkov angle?
               // first contribution
               double f{std::fabs(startBin + 1. - detectionTime1_ * antenna.sample_rate_)};
-              ElectricFieldVector Vp_ = betaPerp_.getComponents() * f * constants /
+              ElectricFieldVector Vp_ = betaPerp_ * f * constants /
                                         denominator / midPaths[i].R_distance_ / 1_s;
               antenna.receive(detectionTime1_, betaPerp_, Vp_);
               // intermidiate contributions
               for (int it{1}; it < numberOfBins; ++it) {
-                Vp_ = betaPerp_.getComponents() * constants / denominator /
+                Vp_ = betaPerp_ * constants / denominator /
                       midPaths[i].R_distance_ / 1_s;
                 antenna.receive(
                     detectionTime1_ + static_cast<double>(it) / antenna.sample_rate_,
@@ -180,7 +180,7 @@ namespace corsika {
               } // end loop over bins in which potential vector is not zero
               // final contribution
               f = std::fabs(detectionTime2_ * antenna.sample_rate_ - endBin);
-              Vp_ = betaPerp_.getComponents() * f * constants / denominator /
+              Vp_ = betaPerp_ * f * constants / denominator /
                     midPaths[i].R_distance_ / 1_s;
               antenna.receive(detectionTime2_, betaPerp_, Vp_);
             } // end if statement for track in multiple bins

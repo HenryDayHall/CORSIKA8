@@ -38,7 +38,7 @@ namespace corsika {
     std::string filename_ = ""; ///< The filename for the output file for this antenna.
 
     // this stores the polarization vector of an electric field
-    using ElectricFieldVector = QuantityVector<ElectricFieldType::dimension_type>;
+    using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
 
     /**
      * \brief Construct a base antenna instance.
