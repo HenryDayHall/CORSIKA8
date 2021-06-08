@@ -42,7 +42,7 @@ if read_the_docs_build:
 # -- Project information -----------------------------------------------------
 
 project   = u'CORSIKA8'
-copyright = doc_url #u'2021, CORSIKA 8 Collaboration'
+copyright = u'2021, CORSIKA 8 Collaboration'
 author    = u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
