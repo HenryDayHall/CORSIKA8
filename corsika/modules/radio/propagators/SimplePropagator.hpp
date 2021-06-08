@@ -56,8 +56,8 @@ namespace corsika {
        */
 
       // these are used for the direction of emission and reception of signal at the antenna
-      auto direction{(destination - source).normalized()};
-      auto receive_{ - direction};
+      auto emit_{(destination - source).normalized()};
+      auto receive_{ - emit_};
 
       // the geometrical distance from the point of emission to an observer
       auto distance_ {(destination - source).getNorm()};
@@ -92,7 +92,7 @@ namespace corsika {
 
 
       return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination,
-                             direction, receive_, distance_, points)};
+                         emit_, receive_, distance_, points)};
 
     } // END: propagate()
   }; // End: SimplePropagator

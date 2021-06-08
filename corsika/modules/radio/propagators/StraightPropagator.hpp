@@ -57,8 +57,8 @@ namespace corsika {
        */
 
       // these are used for the direction of emission and reception of signal at the antenna
-      auto direction{(destination - source).normalized()};
-      auto receive_{ - direction};
+      auto emit_{(destination - source).normalized()};
+      auto receive_{ - emit_};
 
       // the distance from the point of emission to an observer
       auto distance_ {(destination - source).getNorm()};
@@ -67,7 +67,7 @@ namespace corsika {
         if (stepsize <= 0.5 * distance_) {
 
           // "step" is the direction vector with length `stepsize`
-          auto step{direction * stepsize};
+          auto step{emit_ * stepsize};
 
           // calculate the number of points (roughly) for the numerical integration
           auto n_points{(destination - source).getNorm() / stepsize};
@@ -179,7 +179,7 @@ namespace corsika {
           auto averageRefractiveIndex_ = refra_ / N;
 
           return {SignalPath(time, averageRefractiveIndex_, ri_source, ri_destination,
-                             direction, receive_, distance_, points)};
+                             emit_, receive_, distance_, points)};
         } else {
           throw stepsize;
         }
