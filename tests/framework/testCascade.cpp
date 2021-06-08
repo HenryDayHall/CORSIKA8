@@ -130,8 +130,8 @@ public:
       }
       ++p; // next particle
     }
-    CORSIKA_LOG_INFO(fmt::format("ProcessCut::doSecondaries size={} count={}",
-                                 vS.getEntries(), count_));
+    CORSIKA_LOG_DEBUG("ProcessCut::doSecondaries size={} count={}", vS.getEntries(),
+                      count_);
   }
 
   int getCount() const { return count_; }
