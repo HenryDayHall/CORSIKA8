@@ -25,8 +25,7 @@ namespace corsika {
   template <class Axes, class Storage>
   inline void save_hist(boost::histogram::histogram<Axes, Storage> const& h,
                         std::string const& filename, bool overwrite) {
-    if (boost::filesystem::status(filename).type() !=
-        boost::filesystem::file_type::file_not_found) {
+    if (boost::filesystem::exists(filename)) {
       if (overwrite) {
         boost::filesystem::remove(filename);
       } else {

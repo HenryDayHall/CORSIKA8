@@ -80,7 +80,7 @@ int main() {
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
 
   world->setModelProperties<MyHomogeneousModel>(
-      Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_T),
+      Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 1_mT),
       1_kg / (1_m * 1_m * 1_m),
       NuclearComposition(std::vector<Code>{Code::Hydrogen},
                          std::vector<float>{(float)1.}));
@@ -92,7 +92,7 @@ int main() {
   stack.clear();
   const Code beamCode = Code::Proton;
   const HEPMassType mass = Proton::mass;
-  const HEPEnergyType E0 = 1000_GeV;
+  const HEPEnergyType E0 = 200_GeV;
   double theta = 0.;
   double phi = 0.;
 

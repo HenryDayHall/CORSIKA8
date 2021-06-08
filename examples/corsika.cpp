@@ -88,13 +88,11 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
-
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
     cout << "new random seed (auto) " << seed << endl;
   }
-
   RNGManager<>::getInstance().setSeed(seed);
 }
 
