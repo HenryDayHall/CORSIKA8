@@ -12,19 +12,30 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
     with open(output_file, 'w') as file:
         file.write(filedata)
 
+def getDocumentationUrl(base_name, repo_dir):
+
+    with open(repo_dir + "/.git/HEAD", 'r') as file :
+        lines = file.read().splitlines()
+
+    branchname=''
+    name=''
+
+    for line in lines:
+        if line[0:4] == "ref:":
+            branchname=line.partition("refs/heads/")[2]
+    
+    if branch=='master': name='latest'
+    else: name=branchname
+    
+    return base_name + '/' + name 
+
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-from pygit2 import Repository
-
-repo = Repository('../')
-
-# option 1
-head = repo.head
+doc_url = ''
 
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
-    s = subprocess.check_output(['git', 'rev-parse' , '--abbrev-ref' , 'HEAD']).decode()
-    print("@@@@@@@@>>>>>>>>>>>> s = " + s)
+    doc_url = getDocumentationUrl('https://corsika-8.readthedocs.io/en', '../')
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
 
@@ -34,7 +45,7 @@ if read_the_docs_build:
 # -- Project information -----------------------------------------------------
 
 project   = head #u'CORSIKA8'
-copyright = head #u'2021, CORSIKA 8 Collaboration'
+copyright = doc_url #u'2021, CORSIKA 8 Collaboration'
 author    = head #u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
