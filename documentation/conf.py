@@ -18,8 +18,8 @@ def getDocumentationUrl(base_name, repo_dir):
         lines = file.read().splitlines()
 
     for line in lines:
-        if "ref:" in line:
-            branchname=line.partition("refs/heads/")[1]
+        #if "ref:" in line: 
+        branchname=line.partition("refs/heads/")[1]
     
     if branchname=='master': name='latest'
     else: name=branchname
