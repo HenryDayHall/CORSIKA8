@@ -298,7 +298,7 @@ TEST_CASE("Geometry Trajectories") {
     CHECK(base.getDuration() / 1_s == Approx(10));
 
     StraightTrajectory base2(line,
-                             std::numeric_limits<TimeType::value_type>::infinity() * 1_);
+                             std::numeric_limits<TimeType::value_type>::infinity() * 1_s);
     base2.setDuration(10_s);
     CHECK(base2.getDuration() / 1_s == Approx(10));
   }

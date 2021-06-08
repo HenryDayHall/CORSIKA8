@@ -127,7 +127,7 @@ TEST_CASE("EposInterface", "[processes]") {
   auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
 
-  RNGManager::getInstance().registerRandomStream("epos");
+  RNGManager<>::getInstance().registerRandomStream("epos");
 
   SECTION("InteractionInterface - random number") {
     auto const rndm = ::epos::rangen_();
@@ -166,18 +166,21 @@ TEST_CASE("EposInterface", "[processes]") {
         model.getCrossSectionLab(Code::Proton, 1, 1, Code::Proton, 1, 1,
                                  sqs2elab(7_TeV, Proton::mass, Proton::mass));
     CHECK(xs_prod / 1_mb == Approx(70.7).margin(2.1));
+    { [[maybe_unused]] auto const& dum_xs = xs_ela; }
 
     // pi-n at 7TeV
     auto const [xs_prod1, xs_ela1] =
         model.getCrossSectionLab(Code::PiPlus, 0, 0, Code::Neutron, 1, 0,
                                  sqs2elab(7_TeV, PiPlus::mass, Neutron::mass));
     CHECK(xs_prod1 / 1_mb == Approx(52.7).margin(2.1));
+    { [[maybe_unused]] auto const& dum_xs = xs_ela1; }
 
     // k-p at 7TeV
     auto const [xs_prod2, xs_ela2] =
         model.getCrossSectionLab(Code::KPlus, 0, 0, Code::Proton, 1, 1,
                                  sqs2elab(7_TeV, KPlus::mass, Proton::mass));
     CHECK(xs_prod2 / 1_mb == Approx(45.7).margin(2.1));
+    { [[maybe_unused]] auto const& dum_xs = xs_ela2; }
   }
 
   SECTION("InteractionInterface - nuclear cross sections") {
@@ -187,17 +190,20 @@ TEST_CASE("EposInterface", "[processes]") {
     auto const [xs_prod, xs_ela] = model.getCrossSectionLab(
         Code::Proton, 1, 1, Code::Oxygen, Oxygen::nucleus_A, Oxygen::nucleus_Z, 100_GeV);
     CHECK(xs_prod / 1_mb == Approx(287.0).margin(5.1));
+    { [[maybe_unused]] auto const& dum_xs = xs_ela; }
 
     auto const [xs_prod2, xs_ela2] = model.getCrossSectionLab(
         Code::Nitrogen, Nitrogen::nucleus_A, Nitrogen::nucleus_Z, Code::Oxygen,
         Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
     CHECK(xs_prod2 / 1_mb == Approx(1076.7).margin(3.1));
+    { [[maybe_unused]] auto const& dum_xs = xs_ela2; }
 
     // nuclear stack extension, particle "Nucleus"
     auto const [xs_prod3, xs_ela3] = model.getCrossSectionLab(
         Code::Nucleus, Nitrogen::nucleus_A, Nitrogen::nucleus_Z, Code::Oxygen,
         Oxygen::nucleus_A, Oxygen::nucleus_Z, 400_GeV);
     CHECK(xs_prod2 / xs_prod3 == 1);
+    { [[maybe_unused]] auto const& dum_xs = xs_ela3; }
   }
 
   SECTION("InteractionInterface - low energy") {

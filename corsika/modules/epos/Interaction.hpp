@@ -73,7 +73,7 @@ namespace corsika::epos {
     void setParticlesStable() const;
 
   private:
-    default_prng_type& RNG_ = RNGManager::getInstance().getRandomStream("epos");
+    default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("epos");
     std::shared_ptr<spdlog::logger> logger_ = get_logger("corsika_epos_Interaction");
     HEPEnergyType const minEnergyCoM_ = 6 * 1e9 * electronvolt;
     HEPEnergyType const maxEnergyCoM_ = 2.e6 * 1e9 * electronvolt;
