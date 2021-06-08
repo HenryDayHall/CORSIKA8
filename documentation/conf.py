@@ -44,9 +44,9 @@ if read_the_docs_build:
 
 # -- Project information -----------------------------------------------------
 
-project   = head #u'CORSIKA8'
+project   = u'CORSIKA8'
 copyright = doc_url #u'2021, CORSIKA 8 Collaboration'
-author    = head #u'CORSIKA 8 Collaboration'
+author    = u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
 version = u'0.0.0'
