@@ -12,9 +12,9 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
     with open(output_file, 'w') as file:
         file.write(filedata)
 
-def getDocumentationUrl(base_name, repo_dir):
+def getDocumentationUrl(base_name):
 
-    with open(repo_dir + '/.git/HEAD', 'r') as file :
+    with open('../.git/HEAD', 'r') as file :
         lines = file.read().splitlines()
 
     branchname =''
@@ -22,7 +22,7 @@ def getDocumentationUrl(base_name, repo_dir):
         if "ref:" in line : branchname=line.partition("refs/heads/")[1]
     
     if branchname=='master': name='latest'
-    else: name="tes"
+    else: name=branchname
     
     return base_name + '/' + name 
 
@@ -32,7 +32,7 @@ doc_url = ''
 
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
-    doc_url = getDocumentationUrl('https://corsika-8.readthedocs.io/en', '../')
+    doc_url = getDocumentationUrl('https://corsika-8.readthedocs.io/en')
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
 
