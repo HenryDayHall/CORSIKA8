@@ -17,8 +17,8 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 s = ''
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
-    s = subprocess.check_output(['git', 'rev-parse' , '--abbrev-ref' , 'HEAD'])
-    print("@@@@@@@@>>>>>>>>>>>> s = " + s.decode())
+    s = subprocess.check_output(['git', 'rev-parse' , '--abbrev-ref' , 'HEAD']).decode()
+    print("@@@@@@@@>>>>>>>>>>>> s = " + s)
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
 
@@ -27,9 +27,9 @@ if read_the_docs_build:
 
 # -- Project information -----------------------------------------------------
 
-project   = u'CORSIKA8'
-copyright = u'2021, CORSIKA 8 Collaboration'
-author    =  s.decode()#u'CORSIKA 8 Collaboration'
+project   = s #u'CORSIKA8'
+copyright = s #u'2021, CORSIKA 8 Collaboration'
+author    =  s #u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
 version = u'0.0.0'
