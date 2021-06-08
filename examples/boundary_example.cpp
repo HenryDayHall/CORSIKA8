@@ -151,7 +151,7 @@ int main() {
     auto const [px, py, pz] =
         momentumComponents(theta / 180. * M_PI, phi / 180. * M_PI, P0);
     auto plab = MomentumVector(rootCS, {px, py, pz});
-    CORSIKA_LOG_INFO(
+    CORSIKA_LOG_DEBUG(
         "input particle: {} "
         "input angles: theta={} phi={}"
         "input momentum: {} GeV",
