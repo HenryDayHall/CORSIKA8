@@ -150,7 +150,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto env = make_dummy_env();
   auto const& rootCS = env.getCoordinateSystem();
 
-  StackInspector<TestCascadeStack> stackInspect(1, true, E0);
+  StackInspector<TestCascadeStack> stackInspect(100, true, E0);
   NullModel nullModel;
 
   const HEPEnergyType Ecrit = 85_MeV;
