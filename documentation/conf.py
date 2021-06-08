@@ -14,7 +14,13 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-s = ''
+from pygit2 import Repository
+
+repo = Repository('../')
+
+# option 1
+head = repo.head
+
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
     s = subprocess.check_output(['git', 'rev-parse' , '--abbrev-ref' , 'HEAD']).decode()
@@ -27,9 +33,9 @@ if read_the_docs_build:
 
 # -- Project information -----------------------------------------------------
 
-project   = s #u'CORSIKA8'
-copyright = s #u'2021, CORSIKA 8 Collaboration'
-author    =  s #u'CORSIKA 8 Collaboration'
+project   = head #u'CORSIKA8'
+copyright = head #u'2021, CORSIKA 8 Collaboration'
+author    = head #u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
 version = u'0.0.0'
