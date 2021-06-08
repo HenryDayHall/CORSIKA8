@@ -26,6 +26,7 @@ variables:
 #       handled explicitly
 #
 stages:
+  - system
   - quality
   - config
   - build
@@ -37,6 +38,14 @@ stages:
   - install
   - optional
 
+
+check_system:
+  stage: system
+  tags:
+    - corsika
+  script:
+    - uname -a
+    - ldd --version
 
 
 
