@@ -140,7 +140,7 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   HEPEnergyType E0 = 100_GeV;
 

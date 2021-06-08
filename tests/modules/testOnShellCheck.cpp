@@ -24,7 +24,7 @@ using namespace corsika;
 
 TEST_CASE("OnShellCheck", "[processes]") {
 
-  logging::set_level(logging::level::debug);
+  logging::set_level(logging::level::info);
 
   feenableexcept(FE_INVALID);
   using EnvType = setup::Environment;

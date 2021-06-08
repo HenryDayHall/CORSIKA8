@@ -131,7 +131,7 @@ int main() {
 
   // setup processes, decays and interactions
   setup::Tracking tracking;
-  StackInspector<setup::Stack> stackInspect(1, true, E0);
+  StackInspector<setup::Stack> stackInspect(100, true, E0);
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("pythia");

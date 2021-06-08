@@ -40,7 +40,7 @@ void remove_duplicates(vector<double>& v, double const eps) {
 
 TEST_CASE("Solver") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   double epsilon_check = 1e-3; // for catch2 asserts
 

@@ -121,10 +121,7 @@ int main() {
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
   RNGManager<>::getInstance().registerRandomStream("pythia");
-  // corsika::sibyll::Interaction sibyll;
   corsika::pythia8::Interaction pythia;
-  // sibyll::NuclearInteraction sibyllNuc(sibyll, env);
-  //  sibyll::Decay decay;
   corsika::pythia8::Decay decay;
   ParticleCut cut(60_GeV, true, true);
   cut.printThresholds();
@@ -140,9 +137,6 @@ int main() {
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  // auto sequence = make_sequence(sibyll, sibyllNuc, decay, eLoss, cut, trackWriter,
-  // stackInspect); auto sequence = make_sequence(sibyll, decay, eLoss, cut, trackWriter,
-  // stackInspect);
   auto sequence = make_sequence(pythia, decay, eLoss, cut, trackWriter, stackInspect);
 
   // define air shower object, run simulation

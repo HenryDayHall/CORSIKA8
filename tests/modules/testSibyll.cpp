@@ -32,7 +32,7 @@ using namespace corsika::sibyll;
 
 TEST_CASE("Sibyll", "[processes]") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   SECTION("Sibyll -> Corsika") {
     CHECK(Code::Electron ==
@@ -101,7 +101,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 
 TEST_CASE("SibyllInterface", "[processes]") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;

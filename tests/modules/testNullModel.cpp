@@ -14,7 +14,7 @@ using namespace corsika;
 
 TEST_CASE("NullModel", "[processes]") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   SECTION("interface") {
     [[maybe_unused]] NullModel model; // nothing to test...
