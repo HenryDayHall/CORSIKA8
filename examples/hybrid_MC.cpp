@@ -67,7 +67,7 @@
 using namespace corsika;
 using namespace std;
 
-void registerRandomStreams(uint64_t const seed) {
+void registerRandomStreams(uint64_t seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
