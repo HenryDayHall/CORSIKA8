@@ -14,7 +14,7 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
-
+s = ''
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
     s = subprocess.check_output(['git', 'rev-parse' , '--abbrev-ref' , 'HEAD'])
@@ -29,7 +29,7 @@ if read_the_docs_build:
 
 project   = u'CORSIKA8'
 copyright = u'2021, CORSIKA 8 Collaboration'
-author    = u'CORSIKA 8 Collaboration'
+author    =  s.decode()#u'CORSIKA 8 Collaboration'
 
 # The short X.Y version
 version = u'0.0.0'
