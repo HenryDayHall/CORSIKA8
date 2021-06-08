@@ -14,15 +14,15 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
 
 def getDocumentationUrl(base_name, repo_dir):
 
-    with open(repo_dir + ".git/HEAD", 'r') as file :
+    with open(repo_dir + '/.git/HEAD', 'r') as file :
         lines = file.read().splitlines()
 
     branchname=''
     name=''
 
     for line in lines:
-        if line[0:4] == "ref:":
-            branchname=line.partition("refs/heads/")[2]
+        if "ref:" in line:
+            branchname=line.partition("refs/heads/")[1]
     
     if branchname=='master': name='latest'
     else: name=branchname
