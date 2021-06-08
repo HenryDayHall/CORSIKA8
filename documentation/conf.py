@@ -24,7 +24,7 @@ def getDocumentationUrl(base_name, repo_dir):
         if line[0:4] == "ref:":
             branchname=line.partition("refs/heads/")[2]
     
-    if branch=='master': name='latest'
+    if branchname=='master': name='latest'
     else: name=branchname
     
     return base_name + '/' + name 
