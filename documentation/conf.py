@@ -17,9 +17,6 @@ def getDocumentationUrl(base_name, repo_dir):
     with open(repo_dir + '/.git/HEAD', 'r') as file :
         lines = file.read().splitlines()
 
-    branchname=''
-    name=''
-
     for line in lines:
         if "ref:" in line:
             branchname=line.partition("refs/heads/")[1]
