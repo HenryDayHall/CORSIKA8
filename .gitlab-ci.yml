@@ -26,7 +26,6 @@ variables:
 #       handled explicitly
 #
 stages:
-  - system
   - quality
   - config
   - build
@@ -38,16 +37,6 @@ stages:
   - install
   - optional
 
-
-##########################################################
-check-system:
-  stage: system
-  tags:
-    - corsika
-  script:
-    - uname -a
-    - ldd --version
-    - cat /etc/*-release
 
 
 ####### CODE QUALITY CHECK ##############
