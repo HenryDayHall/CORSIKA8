@@ -12,6 +12,17 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
     with open(output_file, 'w') as file:
         file.write(filedata)
 
+def configureDoxyLayout(template_file, output_file, page_url, page_tile):
+    with open(template_file, 'r') as file :
+        filedata = file.read()
+
+    filedata = filedata.replace('@CORSIKA_WEBPAGE_URL@', page_url)
+    filedata = filedata.replace('@CORSIKA_WEBPAGE_TITLE', page_tile)
+
+    with open(output_file, 'w') as file:
+        file.write(filedata)
+
+
 
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
@@ -21,6 +32,7 @@ doc_url = 'https://corsika-8.readthedocs.io/en/'+build_version
 
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
+    configureDoxyLayout("DoxyLayout.in", "DoxyLayout.xml", doc_url , "CORSIKA 8 Webpage")
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
 
