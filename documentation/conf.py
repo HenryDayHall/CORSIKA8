@@ -14,7 +14,7 @@ def configureDoxyfile(template_file, output_file, input_dir, output_dir):
 
 def getDocumentationUrl(base_name, repo_dir):
 
-    with open(repo_dir + "/.git/HEAD", 'r') as file :
+    with open(repo_dir + ".git/HEAD", 'r') as file :
         lines = file.read().splitlines()
 
     branchname=''
