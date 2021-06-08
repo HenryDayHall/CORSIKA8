@@ -17,7 +17,7 @@ def configureDoxyLayout(template_file, output_file, page_url, page_tile):
         filedata = file.read()
 
     filedata = filedata.replace('@CORSIKA_WEBPAGE_URL@', page_url)
-    filedata = filedata.replace('@CORSIKA_WEBPAGE_TITLE', page_tile)
+    filedata = filedata.replace('@CORSIKA_WEBPAGE_TITLE@', page_tile)
 
     with open(output_file, 'w') as file:
         file.write(filedata)
