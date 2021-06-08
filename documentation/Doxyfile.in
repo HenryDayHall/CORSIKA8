@@ -11,6 +11,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/corsika @PROJECT_SOURCE_DIR@/src @
 EXCLUDE_PATTERNS       = *.inl
 FULL_PATH_NAMES        = YES
 STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
+LAYOUT_FILE            = DoxyLayout.xml
 
 FILE_PATTERNS          = *.cpp *.hpp *.dox *.md *.inc
 EXTENSION_MAPPING      = inc=C++
