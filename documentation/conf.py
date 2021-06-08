@@ -1,7 +1,7 @@
 import sys
 import subprocess, os
 
-def configureDoxyfile(template_file, output_file):
+def configureDoxyfile(template_file, output_file, input_dir, output_dir):
     with open(template_file, 'r') as file :
         filedata = file.read()
 
@@ -16,7 +16,7 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 
 if read_the_docs_build:
-    configureDoxyfile("Doxyfile.in", "Doxyfile")
+    configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
 
