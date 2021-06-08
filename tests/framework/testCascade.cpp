@@ -130,8 +130,8 @@ public:
       }
       ++p; // next particle
     }
-    CORSIKA_LOG_INFO(fmt::format("ProcessCut::doSecondaries size={} count={}",
-                                 vS.getEntries(), count_));
+    CORSIKA_LOG_DEBUG("ProcessCut::doSecondaries size={} count={}", vS.getEntries(),
+                      count_);
   }
 
   int getCount() const { return count_; }
@@ -140,7 +140,7 @@ public:
 
 TEST_CASE("Cascade", "[Cascade]") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   HEPEnergyType E0 = 100_GeV;
 
@@ -150,7 +150,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   auto env = make_dummy_env();
   auto const& rootCS = env.getCoordinateSystem();
 
-  StackInspector<TestCascadeStack> stackInspect(1, true, E0);
+  StackInspector<TestCascadeStack> stackInspect(100, true, E0);
   NullModel nullModel;
 
   const HEPEnergyType Ecrit = 85_MeV;
