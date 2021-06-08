@@ -17,7 +17,7 @@ read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
-    s = subprocess.check_output(["git", "rev-parse --abbrev-ref HEAD"])
+    s = subprocess.check_output(["git", "branch –show-current "])
     print("s = " + s)
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
