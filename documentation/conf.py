@@ -61,7 +61,7 @@ extensions = [
     'recommonmark'
 ]
 
-breathe_default_project = "CORSIKA 8"
+breathe_default_project = "CORSIKA8"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
