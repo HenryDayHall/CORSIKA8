@@ -117,7 +117,7 @@ namespace corsika {
 
       // loop over every antenna and set the initial path
       // this also writes the time-bins to disk.
-      for (auto& antenna : antennas_.getAntennas()) { antenna.startOfLibrary(directory); }
+      for (auto& antenna : antennas_.getAntennas()) { antenna.startOfLibrary(directory,this->implementation().algorithm);}
     }
 
     /**
@@ -129,7 +129,7 @@ namespace corsika {
       // flush data to disk, and then reset the antenna
       // before the next event
       for (auto& antenna : antennas_.getAntennas()) {
-        antenna.endOfShower(event_);
+        antenna.endOfShower(event_, this->implementation().algorithm, antenna.sample_rate_*1_s);
         antenna.reset();
       }
 
