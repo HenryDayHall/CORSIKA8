@@ -432,10 +432,10 @@ logging::set_level(logging::level::debug);
 
     // get a unit vector
     Vector<dimensionless_d> v1(rootCS6, {0, 0, 1});
-    QuantityVector<ElectricFieldType::dimension_type> v11{10_V / 1_m, 10_V / 1_m, 10_V / 1_m};
+    Vector<ElectricFieldType::dimension_type> v11(rootCS6, {10_V / 1_m, 10_V / 1_m, 10_V / 1_m});
 
     Vector<dimensionless_d> v2(rootCS6, {0, 1, 0});
-    QuantityVector<ElectricFieldType::dimension_type> v22{20_V / 1_m, 20_V / 1_m, 20_V / 1_m};
+    Vector<ElectricFieldType::dimension_type> v22(rootCS6, {20_V / 1_m, 20_V / 1_m, 20_V / 1_m});
 
     // use receive methods
     ant1.receive(15_s, v1, v11);
