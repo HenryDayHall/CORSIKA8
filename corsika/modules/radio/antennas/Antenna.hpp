@@ -11,8 +11,11 @@
 
 #include <cnpy.hpp>
 #include <xtensor/xtensor.hpp>
+#include <xtensor/xview.hpp>
 #include <boost/filesystem.hpp>
 #include <corsika/framework/geometry/Point.hpp>
+
+using namespace xt::placeholders;
 
 namespace corsika {
 
@@ -98,7 +101,7 @@ namespace corsika {
     /**
      * Prepare for the start of the library.
      */
-    void startOfLibrary(boost::filesystem::path const& directory) {
+    void startOfLibrary(boost::filesystem::path const& directory, std::string const radioImplementation) {
 
       // calculate and save our filename
       filename_ = (directory / this->getName()).string() + ".npz";
@@ -114,29 +117,53 @@ namespace corsika {
         label = "Frequency";
       }
 
-      // explicitly convert the arrays to the needed type for cnpy
-      double const* raw_data = axis.data();
-      std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here
-
-      // write the labels to the first row of the NumPy file
-      cnpy::npz_save(filename_, label, raw_data, N, "w");
+      if (radioImplementation == "ZHS" && TAntennaImpl::is_time_domain) {
+        for (size_t i=0; i<axis.size()-1;i++)
+        {
+            axis.at(i) = (axis.at(i+1)+axis.at(i))/2.;
+        }
+        // explicitly convert the arrays to the needed type for cnpy
+        double const* raw_data = xt::view(axis,xt::range(_, -1)).data();
+        std::vector<size_t> N = {axis.size()-1}; // cnpy needs a vector here
+        // write the labels to the first row of the NumPy file
+        cnpy::npz_save(filename_, label, raw_data, N, "w");
+      } else {
+        // explicitly convert the arrays to the needed type for cnpy
+        double const* raw_data = axis.data();
+        std::vector<size_t> N = {axis.size()}; // cnpy needs a vector here
+        // write the labels to the first row of the NumPy file
+        cnpy::npz_save(filename_, label, raw_data, N, "w");
+      }
     }
 
     /**
      * Flush the data from this shower to disk.
      */
-    void endOfShower(int const event) {
+    void endOfShower(int const event, std::string const radioImplementation, double const sampleRate) {
 
       // get the copy of the waveform data for this event
       // we transpose it so that we can match dimensions with the
       // time array that is already in the output file
       xt::xtensor<double, 2> data = xt::transpose(xt::cast<double>(this->implementation().getData()));
 
-      // cnpy needs a vector for the shape
-      std::vector<size_t> shape = {data.shape()[0], data.shape()[1]};
-
-      // and write this event to the .npz archive
-      cnpy::npz_save(filename_, std::to_string(event), data.data(), shape, "a");
+      //std::cout << data << std::endl;
+      if (radioImplementation == "ZHS") {
+          xt::xtensor<double,2> electricField {xt::zeros<double>({data.shape()[0], data.shape()[1]-1})};
+          for (size_t i = 0; i < electricField.shape()[1]; i++)
+          {
+              electricField.at(0, i) = -(data.at(0,i+1)-data.at(0,i))*sampleRate;
+              electricField.at(1, i) = -(data.at(1,i+1)-data.at(1,i))*sampleRate;
+              electricField.at(2, i) = -(data.at(2,i+1)-data.at(2,i))*sampleRate;
+          }
+          // cnpy needs a vector for the shape
+          std::vector<size_t> shape = {electricField.shape()[0], electricField.shape()[1]};
+          cnpy::npz_save(filename_, std::to_string(event), electricField.data(), shape, "a");
+      } else {
+          // cnpy needs a vector for the shape
+          std::vector<size_t> shape = {data.shape()[0], data.shape()[1]};
+          // and write this event to the .npz archive
+          cnpy::npz_save(filename_, std::to_string(event), data.data(), shape, "a");
+      }
     }
 
 
