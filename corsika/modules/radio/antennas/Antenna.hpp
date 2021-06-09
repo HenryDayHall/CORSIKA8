@@ -39,6 +39,7 @@ namespace corsika {
 
     // this stores the polarization vector of an electric field
     using ElectricFieldVector = Vector<ElectricFieldType::dimension_type>;
+    using VectorPotential = Vector<VectorPotentialType::dimension_type>;
 
     /**
      * \brief Construct a base antenna instance.

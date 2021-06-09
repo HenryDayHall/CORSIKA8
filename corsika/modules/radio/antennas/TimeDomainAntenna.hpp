@@ -95,6 +95,27 @@ namespace corsika {
       }
     }
 
+      void receive(TimeType const time, Vector<dimensionless_d> const& receive_vector,
+                   VectorPotential const& vectorP) {
+
+          if (time < start_time_ || time > (start_time_ + duration_)) {
+              return;
+          } else {
+              // figure out the correct timebin to store the E-field value.
+              // NOTE: static cast is implicitly flooring
+              auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
+              CORSIKA_LOG_INFO("Timebin: {}", timebin_);
+
+              // ToDO: ask explicitly for a CS and use that specific on for writing the output
+
+              // store the x,y,z electric field components.
+              waveformE_.at(timebin_, 0) += (vectorP.getComponents().getX() / (1_V * 1_s / 1_m));
+              waveformE_.at(timebin_, 1) += (vectorP.getComponents().getY() / (1_V * 1_s / 1_m));
+              waveformE_.at(timebin_, 2) += (vectorP.getComponents().getZ() / (1_V * 1_s / 1_m));
+              // TODO: Check how they are stored in memory, row-wise or column-wise?
+          }
+      }
+
     /**
      * Return the time-units of each waveform.
      *
