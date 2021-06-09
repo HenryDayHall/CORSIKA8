@@ -7,21 +7,24 @@
  */
 
 #include <corsika/framework/core/Cascade.hpp>
-#include <corsika/framework/process/ProcessSequence.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
-
+#include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
+#include <corsika/output/OutputManager.hpp>
+
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/IMagneticFieldModel.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-#include <corsika/media/ShowerAxis.hpp>
 #include <corsika/media/MediumPropertyModel.hpp>
 #include <corsika/media/UniformMagneticField.hpp>
 #include <corsika/media/UniformRefractiveIndex.hpp>
+#include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/setup/SetupEnvironment.hpp>
 #include <corsika/setup/SetupStack.hpp>
@@ -38,14 +41,10 @@
 #include <corsika/modules/radio/propagators/SignalPath.hpp>
 #include <corsika/modules/radio/propagators/RadioPropagator.hpp>
 
-#include <corsika/modules/BetheBlochPDG.hpp>
 #include <corsika/modules/StackInspector.hpp>
-#include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/TimeCut.hpp>
-#include <corsika/modules/TrackWriter.hpp>
-#include <corsika/modules/HadronicElasticModel.hpp>
-#include <corsika/modules/Pythia8.hpp>
+//#include <corsika/modules/TrackWriter.hpp>
 
 /*
   NOTE, WARNING, ATTENTION
@@ -58,8 +57,10 @@
 #include <corsika/modules/sibyll/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
 
+#include <iomanip>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <typeinfo>
 
 using namespace corsika;
@@ -70,119 +71,96 @@ using namespace std;
 //
 int main() {
 
-  logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
+    logging::set_level(logging::level::info);
+    corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
-  std::cout << "Synchrotron radiation" << std::endl;
+    CORSIKA_LOG_INFO("Synchrotron radiation");
 
-  feenableexcept(FE_INVALID);
-  // initialize random number sequence(s)
-  RNGManager::getInstance().registerRandomStream("cascade");
+    feenableexcept(FE_INVALID);
+    // initialize random number sequence(s)
+    RNGManager::getInstance().registerRandomStream("cascade");
 
-  // This environment may need a hardcoded refractive index in the propagator at the moment although it shouldn't
-  // set up the environment
-  using EnvType = setup::Environment;
-  EnvType env;
-  auto& universe = *(env.getUniverse());
-  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
+    OutputManager output("synchrotron_radiation_output");
 
-  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
+    // set up the environment
+    using EnvType = setup::Environment;
+    EnvType env;
+    auto& universe = *(env.getUniverse());
+    CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
 
-  using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
-      UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
+    auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
 
-  auto const Bmag {0.3809_T};
-  MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
+    using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
+            UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
 
-  world->setModelProperties<MyHomogeneousModel>(1,
-                                                Medium::AirDry1Atm, B,
-                                                1_kg / (1_m * 1_m * 1_m),
-                                                NuclearComposition(std::vector<Code>{Code::Nitrogen},
-                                                                   std::vector<float>{(float)1.}));
+    auto const Bmag {0.3809_T};
+    MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
 
-  universe.addChild(std::move(world));
+    world->setModelProperties<MyHomogeneousModel>(1, Medium::AirDry1Atm, B,
+                                                  1_kg / (1_m * 1_m * 1_m),
+                                                  NuclearComposition(std::vector<Code>{Code::Nitrogen},
+                                                                     std::vector<float>{(float)1.}));
 
-//  // The following environment is the same as the one above qualitatively but it doesn't compile with Cascade.
-//  //  I leave it here for now, as I am curious to understand why at some point.
-//  using IModelInterface = IRefractiveIndexModel<IMediumPropertyModel<IMagneticFieldModel<IMediumModel>>>;
-//  using AtmModel = UniformRefractiveIndex<MediumPropertyModel<UniformMagneticField<HomogeneousMedium
-//      <IModelInterface>>>>;
-//  using EnvType = Environment<AtmModel>;
-//  EnvType env;
-//  auto& universe = *(env.getUniverse());
-//  CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
-//
-//  auto world = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 150_km);
-//
-//  world->setModelProperties<AtmModel>(1,
-//                                                Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0.3809_T),
-//                                                1_kg / (1_m * 1_m * 1_m),
-//                                                NuclearComposition(std::vector<Code>{Code::Nitrogen},
-//                                                                   std::vector<float>{(float)1.}));
-//
-//  universe.addChild(std::move(world));
+    universe.addChild(std::move(world));
 
-  // the antenna locations
-  const auto point1{Point(rootCS, 5000_m, 0_m, 0_m)};
+    // the antenna locations
+    const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
 //  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
 //  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
 //  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
 
-  // the antenna time variables
-  const TimeType t1{15e-6_s};
-  const TimeType t2{4e-6_s};
-  const InverseTimeType t3{1e+9_Hz};
+    // the antenna time variables
+    const TimeType t1{0.994e-4_s};
+    const TimeType t2{1.07e-4_s - 0.994e-4_s};
+    const InverseTimeType t3{5e+11_Hz};
 
-  // the antennas
-  TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
-//  TimeDomainAntenna ant2("antenna 2", point2, t1, t2, t3);
-//  TimeDomainAntenna ant3("antenna 3", point3, t1, t2, t3);
-//  TimeDomainAntenna ant4("antenna 4", point4, t1, t2, t3);
+    // the antennas
+    TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
 
-  // the detector
-  AntennaCollection<TimeDomainAntenna> detector;
-  detector.addAntenna(ant1);
-//  detector.addAntenna(ant2);
-//  detector.addAntenna(ant3);
-//  detector.addAntenna(ant4);
 
-  // setup particle stack, and add primary particle
-  setup::Stack stack;
-  stack.clear();
-  const Code beamCode = Code::Electron;
-  auto const gyroradius = 100_m;
-  // ToDO: include gamma factor
-  auto const pLabMag = convert_SI_to_HEP(get_charge(beamCode) * Bmag * gyroradius);
-  auto const omega_inv = convert_HEP_to_SI<MassType::dimension_type>(get_mass(beamCode)) / ((-1)*get_charge(beamCode) * Bmag);
-  MomentumVector const plab{rootCS, pLabMag, 0_MeV, 0_MeV};
-  auto const Elab = sqrt(plab.getSquaredNorm() + static_pow<2>(get_mass(beamCode)));
-  TimeType const period = 2 * M_PI * omega_inv;
+    // the detector
+    AntennaCollection<TimeDomainAntenna> detector;
+    detector.addAntenna(ant1);
 
-  std::cout << "|p| = " << plab.getNorm() << "; E = " << Elab << std::endl;
-  std::cout << "period: " << period << std::endl;
 
-  Point injectionPos(rootCS, 0_m, 0_m, 0_m);
-  stack.addParticle(std::make_tuple(beamCode, Elab, plab, injectionPos, 0_ns));
+    // setup particle stack, and add primary particle
+    setup::Stack stack;
+    stack.clear();
+    const Code beamCode = Code::Electron;
+    auto const gyroradius = 100_m;
+    auto const pLabMag = convert_SI_to_HEP(get_charge(beamCode) * Bmag * gyroradius);
+    auto const omega_inv = convert_HEP_to_SI<MassType::dimension_type>(get_mass(beamCode)) / ((-1)*get_charge(beamCode) * Bmag);
+    MomentumVector const plab{rootCS, pLabMag, 0_MeV, 0_MeV};
+    auto const Elab = sqrt(plab.getSquaredNorm() + static_pow<2>(get_mass(beamCode)));
+    auto gamma = Elab / get_mass(beamCode);
+    TimeType const period = 2 * M_PI * omega_inv * gamma;
 
-  // setup relevant processes
-  setup::Tracking tracking;
+    Point injectionPos(rootCS, 0_m, 100_m, 0_m);
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
 
-  // put radio process here
-  RadioProcess<decltype(detector), CoREAS<decltype(detector),
-      decltype(StraightPropagator(env))>, decltype(StraightPropagator(env))>
-      coreas(detector, env);
+    // setup relevant processes
+    setup::Tracking tracking;
 
-  TimeCut cut(period);
+    // put radio process here
+    RadioProcess<decltype(detector), CoREAS<decltype(detector),
+            decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
+                                              coreas(detector, env);
+    output.add("CoREAS", coreas);
 
-  TrackWriter trackWriter("synchrotron_tracks.dat");
+    TimeCut cut(period);
 
-  // assemble all processes into an ordered process list
-  auto sequence = make_sequence(coreas, cut, trackWriter);
+    // assemble all processes into an ordered process list
+    auto sequence = make_sequence(coreas, cut);
 
-  // define air shower object, run simulation
-  Cascade EAS(env, tracking, sequence, stack);
-  EAS.run();
+    // define air shower object, run simulation
+    Cascade EAS(env, tracking, sequence, output, stack);
+    output.startOfShower();
+    EAS.run();
+    output.endOfShower();
 
-  // get radio output
-  coreas.writeOutput();
+    CORSIKA_LOG_INFO("|p| = {} and E = {}",plab.getNorm(), Elab);
+    CORSIKA_LOG_INFO("period: {}",period);
+    CORSIKA_LOG_INFO("gamma: {}", gamma);
+
+    output.endOfLibrary();
 }
