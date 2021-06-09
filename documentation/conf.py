@@ -52,6 +52,7 @@ release = u'prototype-0.1.0'
 
 extensions = [
     'sphinx.ext.todo',
+    'breathe',
     'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.extlinks',
@@ -60,6 +61,7 @@ extensions = [
     'recommonmark'
 ]
 
+breathe_default_project = "CORSIKA 8"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

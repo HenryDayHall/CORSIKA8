@@ -4,7 +4,7 @@ PROJECT_BRIEF          = "The framework to simulate particle cascades for astrop
 
 GENERATE_HTML          = YES
 GENERATE_LATEX         = YES
-GENERATE_XML           = NO
+GENERATE_XML           = YES
 
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/
 INPUT                  = @PROJECT_SOURCE_DIR@/corsika @PROJECT_SOURCE_DIR@/src @CMAKE_BINARY_DIR@/corsika
