@@ -231,7 +231,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(4).margin(2)); // this is not physics validation
+      CHECK(view.getSize() == Approx(10).margin(8)); // this is not physics validation
     }
     { // rho0 is internally converted into pi-/pi+
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -241,7 +241,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(10).margin(8)); // this is not physics validation
+      CHECK(view.getSize() == Approx(25).margin(20)); // this is not physics validation
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -251,7 +251,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(11).margin(10)); // this is not physics validation
+      CHECK(view.getSize() == Approx(25).margin(20)); // this is not physics validation
     }
     { // AntiLambda is internally converted into anti neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
@@ -261,7 +261,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
       model.doInteraction(view);
-      CHECK(view.getSize() == Approx(70).margin(20)); // this is not physics validation
+      CHECK(view.getSize() == Approx(70).margin(67)); // this is not physics validation
     }
   }
 }
