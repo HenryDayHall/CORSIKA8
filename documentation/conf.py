@@ -35,6 +35,7 @@ if read_the_docs_build:
     configureDoxyLayout("DoxyLayout.in", "DoxyLayout.xml", doc_url , "CORSIKA 8 Webpage")
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
     html_extra_path = ['_build/workdir/']
+    breathe_projects['CORSIKA8'] = '_build/workdir/doxygen/xml'
 
     
     
