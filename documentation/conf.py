@@ -27,6 +27,7 @@ def configureDoxyLayout(template_file, output_file, page_url, page_tile):
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 build_version = os.environ.get('READTHEDOCS_VERSION', None)
+breathe_projects = {}
 
 doc_url = 'https://corsika-8.readthedocs.io/en/'+build_version
 
