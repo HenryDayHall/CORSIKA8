@@ -107,6 +107,9 @@ logging::set_level(logging::level::debug);
     const auto point3{Point(envCoREAS.getCoordinateSystem(), 7_m, 8_m, 9_m)};
     const auto point4{Point(envCoREAS.getCoordinateSystem(), 5_m, 5_m, 10_m)};
 
+//    auto css = point1.getCoordinateSystem();
+//    std::cout << "CSS = " << css << "ENV = " << envCoREAS.getCoordinateSystem() << std::endl;
+
 
     // create times for the antenna
     const TimeType t1{0_s};
@@ -263,7 +266,7 @@ logging::set_level(logging::level::debug);
 
     auto const charge_ {get_charge(particle1.getPID())};
 
-    // create a radio process instance using CoREAS
+    // create a radio process instance using ZHS
     RadioProcess<decltype(detector), ZHS<decltype(detector), decltype(StraightPropagator(envZHS))>, decltype(StraightPropagator(envZHS))>
         zhs( detector, envZHS);
 
