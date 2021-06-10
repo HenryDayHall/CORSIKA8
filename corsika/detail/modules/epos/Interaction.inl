@@ -88,8 +88,9 @@ namespace corsika::epos {
     int iarg = 0;
     ::epos::aaset_(iarg);
 
-    ::epos::prnt1_.ish = 0;  // debug level in epos
-    ::epos::files_.ifch = 6; // output unit
+    // debug output settings
+    ::epos::prnt1_.ish = 0;  // debug level in epos, 0: off, 6: medium output
+    ::epos::files_.ifch = 6; // output unit, 6: screen
 
     // dummy set seeds for random number generator in epos. need to fool epos checks...
     // we will use external generator
