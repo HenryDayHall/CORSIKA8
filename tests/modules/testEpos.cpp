@@ -246,22 +246,22 @@ TEST_CASE("EposInterface", "modules") {
 
     Interaction model;
 
-    /*
-    #ifndef __clang__
-        // This is very obscure since it fails for -O2, but for both clang and gcc ???
-        model.doInteraction(view);
+#ifndef __clang__
+    // This is very obscure since it fails for -O2, but for both clang and gcc ???
+    model.doInteraction(view);
 
-        auto const pSum = sumMomentum(view, cs);
+    auto const pSum = sumMomentum(view, cs);
 
-        CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
-        CHECK(pSum.getComponents(cs).getY() / 1_GeV == Approx(0).margin(1e-4));
-        CHECK(pSum.getComponents(cs).getZ() / 1_GeV == Approx(0).margin(1e-4));
+    CHECK(pSum.getComponents(cs).getX() / P0 == Approx(1).margin(0.05));
+    CHECK(pSum.getComponents(cs).getY() / 1_GeV ==
+          Approx(0).margin(0.5)); // this is not physics validation
+    CHECK(pSum.getComponents(cs).getZ() / 1_GeV ==
+          Approx(0).margin(0.5)); // this is not physics validation
 
-        CHECK((pSum - plab).getNorm() / 1_GeV ==
-              Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
-        CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    #endif
-    */
+    CHECK((pSum - plab).getNorm() / 1_GeV ==
+          Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
+    CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
+#endif
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
     CHECK(length / 1_g * 1_cm * 1_cm ==
           Approx(30).margin(20)); // this is no physics validation
