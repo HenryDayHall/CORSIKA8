@@ -93,7 +93,7 @@ int main() {
     using MyHomogeneousModel = UniformRefractiveIndex<MediumPropertyModel<
             UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>>;
 
-    auto const Bmag {0.3809_T};
+    auto const Bmag {0.0003809_T};
     MagneticFieldVector B{rootCS, 0_T, 0_T, Bmag};
 
     world->setModelProperties<MyHomogeneousModel>(1, Medium::AirDry1Atm, B,
@@ -105,9 +105,6 @@ int main() {
 
     // the antenna locations
     const auto point1{Point(rootCS, 30000_m, 0_m, 0_m)};
-//  const auto point2{Point(rootCS, 100_m, -100_m, 0_m)};
-//  const auto point3{Point(rootCS, -100_m, -100_m, 0_m)};
-//  const auto point4{Point(rootCS, -100_m, 100_m, 0_m)};
 
     // the antenna time variables
     const TimeType t1{0.994e-4_s};
@@ -115,24 +112,28 @@ int main() {
     const InverseTimeType t3{5e+11_Hz};
 
     // the antennas
-    TimeDomainAntenna ant1("antenna 1", point1, t1, t2, t3);
+    TimeDomainAntenna ant1("antenna CoREAS", point1, t1, t2, t3);
+    TimeDomainAntenna ant2("antenna ZHS", point1, t1, t2, t3);
 
-
-    // the detector
-    AntennaCollection<TimeDomainAntenna> detector;
-    detector.addAntenna(ant1);
+    // the detectors
+    AntennaCollection<TimeDomainAntenna> detectorCoREAS;
+    AntennaCollection<TimeDomainAntenna> detectorZHS;
+    detectorCoREAS.addAntenna(ant1);
+    detectorZHS.addAntenna(ant2);
 
 
     // setup particle stack, and add primary particle
     setup::Stack stack;
     stack.clear();
     const Code beamCode = Code::Electron;
+    auto const charge = get_charge(beamCode);
+    auto const mass = get_mass(beamCode);
     auto const gyroradius = 100_m;
-    auto const pLabMag = convert_SI_to_HEP(get_charge(beamCode) * Bmag * gyroradius);
-    auto const omega_inv = convert_HEP_to_SI<MassType::dimension_type>(get_mass(beamCode)) / ((-1)*get_charge(beamCode) * Bmag);
+    auto const pLabMag = convert_SI_to_HEP(charge * Bmag * gyroradius);
+    auto const omega_inv = convert_HEP_to_SI<MassType::dimension_type>(mass) / (abs(charge) * Bmag);
     MomentumVector const plab{rootCS, pLabMag, 0_MeV, 0_MeV};
-    auto const Elab = sqrt(plab.getSquaredNorm() + static_pow<2>(get_mass(beamCode)));
-    auto gamma = Elab / get_mass(beamCode);
+    auto const Elab = sqrt(plab.getSquaredNorm() + static_pow<2>(mass));
+    auto gamma = Elab / mass;
     TimeType const period = 2 * M_PI * omega_inv * gamma;
 
     Point injectionPos(rootCS, 0_m, 100_m, 0_m);
@@ -141,16 +142,21 @@ int main() {
     // setup relevant processes
     setup::Tracking tracking;
 
-    // put radio process here
-    RadioProcess<decltype(detector), CoREAS<decltype(detector),
+    // put radio processes here
+    RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS),
             decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                              coreas(detector, env);
+                                              coreas(detectorCoREAS, env);
     output.add("CoREAS", coreas);
+
+    RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
+            decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
+                                              zhs(detectorZHS, env);
+    output.add("ZHS", zhs);
 
     TimeCut cut(period);
 
     // assemble all processes into an ordered process list
-    auto sequence = make_sequence(coreas, cut);
+    auto sequence = make_sequence(coreas, zhs, cut);
 
     // define air shower object, run simulation
     Cascade EAS(env, tracking, sequence, output, stack);
@@ -159,7 +165,7 @@ int main() {
     output.endOfShower();
 
     CORSIKA_LOG_INFO("|p| = {} and E = {}",plab.getNorm(), Elab);
-    CORSIKA_LOG_INFO("period: {}",period);
+    CORSIKA_LOG_INFO("period: {}", period);
     CORSIKA_LOG_INFO("gamma: {}", gamma);
 
     output.endOfLibrary();
