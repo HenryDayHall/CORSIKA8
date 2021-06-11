@@ -74,14 +74,14 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
   auto isParallel = GENERATE(as<bool>{}, true, false);
   // for algorithms that know magnetic deflections choose: +-50uT, 0uT
   // otherwise just 0uT
-  auto Bfield = GENERATE(filter(
-      []([[maybe_unused]] MagneticFluxType v) {
+  auto Bfield = GENERATE_COPY(filter(
+      [isParallel]([[maybe_unused]] MagneticFluxType v) {
         if constexpr (std::is_same_v<TestType, tracking_line::Tracking>)
           return v == 0_uT;
         else
           return true;
       },
-      values<MagneticFluxType>({50_uT, 0_uT, (isParallel ? 0 : -50_uT)})));
+      values<MagneticFluxType>({50_uT, 0_uT, (isParallel ? 0_uT : -50_uT)})));
   // particle --> (world) --> | --> (target)
   // true: start inside "world" volume
   // false: start inside "target" volume
