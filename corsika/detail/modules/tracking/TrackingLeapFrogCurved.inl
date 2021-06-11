@@ -193,7 +193,7 @@ namespace corsika {
           return Intersections();
         }
 
-        if (gyroradius > 100 * trackDist) {
+        if (gyroradius > 1000 * trackDist) {
           // the bending is negligible, use straight intersections instead
           return tracking_line::Tracking::intersect(particle, sphere);
         }
