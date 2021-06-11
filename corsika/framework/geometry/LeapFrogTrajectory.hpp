@@ -19,7 +19,7 @@ namespace corsika {
   /**
    * The LeapFrogTrajectory stores information on one leap-frog step.
    *
-   * The leap-frog algorithm uses a half-step and is used in magnetic
+   * The leap-frog algorithm uses two half-steps and is used in magnetic
    * field tracking. The LeapFrogTrajectory will solve the leap-frog
    * algorithm equation for a given constant $k$ that has to be
    * specified during construction (essentially fixing the magnetic
@@ -28,6 +28,17 @@ namespace corsika {
    * direction as calculated by the algorithm for any steplength, or
    * intermediate position.
    *
+   * One complete leap-frog step is
+   * $
+   * \vec{x}(t_{i+0.5}) = \vec{x}(t_{i}) + \vec{v(t_{i})} * \Delta t / 2 \\
+   * \vec{v}(t_{i+1}) = \vec{v}(t_{i}) + \vec{v}(t_{i})\cross\vec{B}(x_{i}, t_{i}) *
+   *\Delta t \\
+   * \vec{x}(t_{i+1}) = \vec{x}(t_{i+0.5}) + \vec{v}(t_{i+1}) * \Delta t /2 \\
+   * $
+   *
+   * The volocity update has the characteristics $|\vec{v}(t_{i+1})|>1$, thus final
+   * velocities are renormalised. The full leap-frog steplength is thus
+   * $L = |\vec{v}(t_{i+1})| * \Delta t / 2  + |\vec{v}(t_{i+1})| *\Delta t / 2$
    **/
 
   class LeapFrogTrajectory : public BaseTrajectory {
