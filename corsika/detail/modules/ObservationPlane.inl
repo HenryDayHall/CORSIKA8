@@ -27,16 +27,20 @@ namespace corsika {
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
     if (!stepLimit) {
-#ifdef DEBUG
+      // @todo this is actually needed to fix small instabilities of the leap-frog
+      // tracking: Note, this is NOT a general solution and should be clearly revised with
+      // a more robust tracking. #ifdef DEBUG
       if (deleteOnHit_) {
         LengthType const check =
             (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
         if (check < 0_m) {
-          CORSIKA_LOG_DEBUG("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
-        }
-      }
-#endif
-      return ProcessReturn::Ok;
+          CORSIKA_LOG_WARN("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
+          CORSIKA_LOG_WARN("Temporary fix: write and remove particle.");
+        } else
+          return ProcessReturn::Ok;
+      } else
+        // #endif
+        return ProcessReturn::Ok;
     }
 
     HEPEnergyType const energy = particle.getEnergy();
