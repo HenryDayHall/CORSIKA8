@@ -38,6 +38,11 @@ namespace corsika {
      * two-step leap-frog algorithm, but with analytically exact geometric
      * intersections between leap-frog steps and geometric volumes
      * (spheres, planes).
+     *
+     * Note that leap-frog times and length always reflect the actual properties of
+     * the final step. The internal steplength is slightly shorter, because the second
+     * halve steps of the algorithm is slightly longer than the first one (in principle
+     * violating |v|=const).
      */
 
     class Tracking : public Intersect<Tracking> {
