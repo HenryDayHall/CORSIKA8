@@ -30,7 +30,7 @@
 using namespace corsika;
 using namespace corsika::sibyll;
 
-TEST_CASE("Sibyll", "[processes]") {
+TEST_CASE("Sibyll", "modules") {
 
   logging::set_level(logging::level::info);
 
@@ -99,13 +99,13 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("SibyllInterface", "[processes]") {
+TEST_CASE("SibyllInterface", "modules") {
 
   logging::set_level(logging::level::info);
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
-  [[maybe_unused]] auto const& env_dummy = env;
+  { [[maybe_unused]] auto const& env_dummy = env; }
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
 
@@ -132,6 +132,8 @@ TEST_CASE("SibyllInterface", "[processes]") {
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
     CHECK(xs_ela_pn == xs_ela_pHydrogen);
+
+    CHECK_THROWS(convertFromSibyll(corsika::sibyll::SibyllCode::Unknown));
 
     // out of range
     // beam particle

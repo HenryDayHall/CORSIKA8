@@ -104,7 +104,7 @@ namespace corsika {
       LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(p_perp) *
                                      constants::c / (abs(charge) * magnitudeB));
 
-      double const maxRadians = 0.01;
+      double const maxRadians = 0.01; // maximal allowed deflection
       LengthType const steplimit = 2 * cos(maxRadians) * sin(maxRadians) * gyroradius;
       TimeType const steplimit_time = steplimit / initialVelocity.getNorm();
       CORSIKA_LOG_DEBUG("gyroradius {}, steplimit: {} = {}", gyroradius, steplimit,

@@ -11,6 +11,7 @@ set (test_modules_sources
   # testOnShellCheck.cpp
   testParticleCut.cpp
   testSibyll.cpp
+  testEpos.cpp
   )
 
 CORSIKA_ADD_TEST (testModules SOURCES ${test_modules_sources})

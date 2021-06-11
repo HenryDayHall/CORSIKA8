@@ -32,11 +32,13 @@
 /*
   NOTE, WARNING, ATTENTION
 
-  The .../Random.hpp implement the hooks of external modules to the C8 random
+  The file Random.hpp implements the hooks of external modules to the C8 random
   number generator. It has to occur excatly ONCE per linked
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
  */
+#include <corsika/modules/Random.hpp>
+
 #include <iostream>
 #include <limits>
 #include <typeinfo>

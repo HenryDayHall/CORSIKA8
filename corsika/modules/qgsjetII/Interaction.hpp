@@ -18,7 +18,6 @@
 #include <boost/filesystem/path.hpp>
 
 #include <qgsjet-II-04.hpp>
-
 #include <string>
 
 namespace corsika::qgsjetII {

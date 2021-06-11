@@ -287,6 +287,20 @@ TEST_CASE("Geometry Trajectories") {
     CHECK((base.getDirection(0).getComponents(rootCS) -
            QuantityVector<dimensionless_d>{1, 0, 0})
               .getNorm() == Approx(0).margin(absMargin));
+
+    base.setDuration(0_s);
+
+    CHECK(base.getDuration() / 1_s == Approx(0));
+    CHECK(base.getLength() / 1_m == Approx(0));
+
+    base.setDuration(10_s);
+
+    CHECK(base.getDuration() / 1_s == Approx(10));
+
+    StraightTrajectory base2(line,
+                             std::numeric_limits<TimeType::value_type>::infinity() * 1_s);
+    base2.setDuration(10_s);
+    CHECK(base2.getDuration() / 1_s == Approx(10));
   }
 
   SECTION("Helix") {

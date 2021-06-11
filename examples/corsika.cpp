@@ -72,9 +72,7 @@
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
  */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
-#include <corsika/modules/qgsjetII/Random.hpp>
+#include <corsika/modules/Random.hpp>
 
 using namespace corsika;
 using namespace std;

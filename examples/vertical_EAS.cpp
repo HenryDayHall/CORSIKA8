@@ -50,6 +50,7 @@
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
 #include <corsika/modules/UrQMD.hpp>
+#include <corsika/modules/Epos.hpp>
 
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
@@ -67,8 +68,7 @@
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
  */
-#include <corsika/modules/sibyll/Random.hpp>
-#include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/Random.hpp>
 
 using namespace corsika;
 using namespace std;

@@ -174,7 +174,7 @@ namespace corsika::pythia8 {
     auto const t0 = projectile.getTime();
 
     auto const& labMomentum = projectile.getMomentum();
-    CoordinateSystemPtr const& labCS = labMomentum.getCoordinateSystem();
+    [[maybe_unused]] CoordinateSystemPtr const& labCS = labMomentum.getCoordinateSystem();
 
     // define target kinematics in lab frame
     // define boost to and from CoM frame
