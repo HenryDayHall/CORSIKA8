@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
 
     // the detector (aka antenna collection) for CoREAS and ZHS
     AntennaCollection<TimeDomainAntenna> detectorCoREAS;
-    // AntennaCollection<TimeDomainAntenna> detectorZHS;
+    AntennaCollection<TimeDomainAntenna> detectorZHS;
 
     auto const showerCoreX_ {showerCore.getCoordinates().getX()};
     auto const showerCoreY_ {showerCore.getCoordinates().getY()};
@@ -203,33 +203,39 @@ int main(int argc, char** argv) {
 //    }
 //  }
 
-    // 2 dummy antennas for CoREAS
+    // 4 dummy antennas for CoREAS
     for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
-        auto phi_ = 0;
-        auto phiRad_ = phi_ / 180. * M_PI;
-        auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
-        auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
-        const int rr_ = static_cast<int>(radius_ / 1_m);
-        std::string name_ = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-        TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
-        detectorCoREAS.addAntenna(antenna_);
-      }
+        for (auto phi_ = 0; phi_ <= 270; phi_ += 90) {
+            auto phiRad_ = phi_ / 180. * M_PI;
+            auto const point_{
+                    Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_),
+                          builder.getEarthRadius())};
+            auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
+            const int rr_ = static_cast<int>(radius_ / 1_m);
+            std::string name_ = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+            TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+            detectorCoREAS.addAntenna(antenna_);
+        }
+    }
 
-      // 2 dummy antennas for ZHS
-      for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
-        auto phi_ = 0;
-        auto phiRad_ = phi_ / 180. * M_PI;
-        auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
-        auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
-        const int rr_ = static_cast<int>(radius_ / 1_m);
-        std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
-        TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
-        detectorZHS.addAntenna(antenna_);
-      }
+    // 4 dummy antennas for ZHS
+    for (auto radius_ = 100_m; radius_ <= 200_m; radius_ += 100_m) {
+        for (auto phi_ = 0; phi_ <= 270; phi_ += 90) {
+            auto phiRad_ = phi_ / 180. * M_PI;
+            auto const point_{
+                    Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_),
+                          builder.getEarthRadius())};
+            auto triggertime_{(triggerpoint_ - point_).getNorm() / constants::c};
+            const int rr_ = static_cast<int>(radius_ / 1_m);
+            std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
+            TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
+            detectorZHS.addAntenna(antenna_);
+        }
+    }
 
     // setup processes, decays and interactions
 
-    ParticleCut cut(5_MeV, 5_MeV, 100_PeV, 100_PeV, true);
+    ParticleCut cut(5_MeV, 5_MeV, 100_GeV, 100_GeV, true);
     corsika::proposal::Interaction emCascade(env);
     corsika::proposal::ContinuousProcess emContinuous(env);
     InteractionCounter emCascadeCounted(emCascade);
@@ -249,13 +255,13 @@ int main(int argc, char** argv) {
     // register CoREAS with the output manager
     output.add("CoREAS", coreas);
 
-     // initiate ZHS
-     RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
-         decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                           zhs(detectorZHS, env);
+    // initiate ZHS
+    RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
+            decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
+                                              zhs(detectorZHS, env);
 
-     // register ZHS with the output manager
-     output.add("ZHS", zhs);
+    // register ZHS with the output manager
+    output.add("ZHS", zhs);
 
 
 //  Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
@@ -263,7 +269,7 @@ int main(int argc, char** argv) {
 //                                    "particles.dat");
 //  output.add("obsplane", observationLevel);
 
-    auto sequence = make_sequence(emCascadeCounted, emContinuous, longprof, cut, coreas, zhs);
+    auto sequence = make_sequence(emCascadeCounted, emContinuous, cut, longprof, coreas, zhs);
     // ,observationLevel, trackWriter);
     // define air shower object, run simulation
     setup::Tracking tracking;
