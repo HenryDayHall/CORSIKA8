@@ -118,10 +118,12 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     corsika::pythia8::Decay decay(particleList);
 
+    CORSIKA_LOG_INFO("stack: {} {}", stack.asString(), particle.asString());
     [[maybe_unused]] const TimeType time = decay.getLifetime(particle);
     double const gamma = particle.getEnergy() / get_mass(Code::PiPlus);
     CHECK(time == get_lifetime(Code::PiPlus) * gamma);
     decay.doDecay(*secViewPtr);
+    CORSIKA_LOG_INFO("piplus->{}", stack.asString());
     CHECK(stack.getEntries() == 3); // piplus, muplu, numu
     auto const pSum = sumMomentum(view, cs);
     CHECK((pSum - plab).getNorm() / 1_GeV == Approx(0).margin(1e-4));
