@@ -36,7 +36,7 @@ namespace corsika {
 
       std::vector<double> x3 = solve_cubic_real(1, a3, b3, c3, epsilon);
       if (!x3.size()) {
-        return {}; // no solution, numeric problem
+        return {}; // no solution, numeric problem (LCOV_EXCL_LINE)
       }
       long double y = x3[0]; // there is always at least one solution
       // The essence - choosing Y with maximal absolute value.

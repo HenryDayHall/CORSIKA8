@@ -32,7 +32,7 @@ namespace corsika {
    * $
    * \vec{x}(t_{i+0.5}) = \vec{x}(t_{i}) + \vec{v(t_{i})} * \Delta t / 2 \\
    * \vec{v}(t_{i+1}) = \vec{v}(t_{i}) + \vec{v}(t_{i})\cross\vec{B}(x_{i}, t_{i}) *
-   *\Delta t \\
+   * \Delta t \\
    * \vec{x}(t_{i+1}) = \vec{x}(t_{i+0.5}) + \vec{v}(t_{i+1}) * \Delta t /2 \\
    * $
    *

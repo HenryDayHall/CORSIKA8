@@ -31,6 +31,7 @@ namespace corsika {
       // tracking: Note, this is NOT a general solution and should be clearly revised with
       // a more robust tracking. #ifdef DEBUG
       if (deleteOnHit_) {
+        // since this is basically a bug, it cannot be tested LCOV_EXCL_START
         LengthType const check =
             (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
         if (check < 0_m) {
@@ -38,6 +39,7 @@ namespace corsika {
           CORSIKA_LOG_WARN("Temporary fix: write and remove particle.");
         } else
           return ProcessReturn::Ok;
+        // LCOV_EXCL_STOP
       } else
         // #endif
         return ProcessReturn::Ok;

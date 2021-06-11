@@ -110,7 +110,6 @@ private:
   Plane plane_;
 };
 
-
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 

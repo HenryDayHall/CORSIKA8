@@ -305,10 +305,12 @@ TEST_CASE("Solver") {
                            pol4(z4, a, b, c, d, e));
 
           vector<double> s1 = andre::solve_quartic_real(a, b, c, d, e);
-          // vector<double> s1 = solve_quartic_real(a, b, c, d, e, epsilon);
           remove_duplicates(s1, epsilon_check * 10);
+          vector<double> s2 = solve_quartic_real(a, b, c, d, e);
+          remove_duplicates(s2, epsilon_check * 5);
 
           CORSIKA_LOG_INFO("N={}, s1=[{}]", s1.size(), fmt::join(s1, ", "));
+          CORSIKA_LOG_INFO("N={}, s2=[{}]", s2.size(), fmt::join(s2, ", "));
 
           CHECK(s1.size() == idegree + 1);
           for (double value : s1) {
@@ -326,8 +328,27 @@ TEST_CASE("Solver") {
                      (value == Approx(z4).epsilon(epsilon_check))));
             }
           }
+
+          // this is a bit less precise
+          CHECK(s2.size() == idegree + 1);
+          for (double value : s2) {
+            CORSIKA_LOG_INFO("value={}, z1={} z2={} z3={} z4={} eps_check={}", value, z1,
+                             z2, z3, z4, epsilon_check);
+            if (std::abs(value) < epsilon_check) {
+              CHECK(((value == Approx(z1).margin(epsilon_check * 5)) ||
+                     (value == Approx(z2).margin(epsilon_check * 5)) ||
+                     (value == Approx(z3).margin(epsilon_check * 5)) ||
+                     (value == Approx(z4).margin(epsilon_check * 5))));
+            } else {
+              CHECK(((value == Approx(z1).epsilon(epsilon_check * 5)) ||
+                     (value == Approx(z2).epsilon(epsilon_check * 5)) ||
+                     (value == Approx(z3).epsilon(epsilon_check * 5)) ||
+                     (value == Approx(z4).epsilon(epsilon_check * 5))));
+            }
+          }
         }
       }
     }
+
   } // quartic
 }
