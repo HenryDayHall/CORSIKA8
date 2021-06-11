@@ -48,6 +48,7 @@ namespace corsika {
   inline TimeType LeapFrogTrajectory::getDuration(double const u) const {
     TimeType const step = timeStep_ * u;
     double const correction = 1;
+    // the eventual (delta-L to L) correction factor is:
     //    (initialDirection_ + initialDirection_.cross(magneticfield_) * step *
     //    k_).getNorm();
     return step / 2 * (correction + 1);
@@ -66,7 +67,7 @@ namespace corsika {
     /*
     initial attempt to calculate delta-L from assumed full-leap-frog-length L:
 
-  Note: often return 0. Not good enough yet.
+    Note: often return 0. Not good enough yet.
 
     LengthType const L = initialVelocity_.getNorm() * limit; // distance
     double const a = (initialVelocity_.cross(magneticfield_) * k_).getSquaredNorm() / 4 /
