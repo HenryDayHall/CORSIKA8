@@ -70,34 +70,37 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
   const HEPEnergyType P0 = 10_GeV;
 
   auto PID = GENERATE(as<Code>{}, Code::MuPlus, Code::MuPlus, Code::Photon);
+  // test also special case: movement parallel to field (along x)
+  auto isParallel = GENERATE(as<bool>{}, true, false);
   // for algorithms that know magnetic deflections choose: +-50uT, 0uT
   // otherwise just 0uT
-  auto Bfield = GENERATE(filter(
-      []([[maybe_unused]] MagneticFluxType v) {
+  auto Bfield = GENERATE_COPY(filter(
+      [isParallel]([[maybe_unused]] MagneticFluxType v) {
         if constexpr (std::is_same_v<TestType, tracking_line::Tracking>)
           return v == 0_uT;
         else
           return true;
       },
-      values<MagneticFluxType>({50_uT, 0_uT, -50_uT})));
+      values<MagneticFluxType>({50_uT, 0_uT, (isParallel ? 0_uT : -50_uT)})));
   // particle --> (world) --> | --> (target)
   // true: start inside "world" volume
   // false: start inside "target" volume
   auto outer = GENERATE(as<bool>{}, true, false);
 
-  SECTION(fmt::format("Tracking PID={}, Bfield={} uT, from outside={}", PID,
-                      Bfield / 1_uT, outer)) {
+  SECTION(fmt::format("Tracking PID={}, Bfield={} uT, isParallel={}, from outside={}",
+                      PID, Bfield / 1_uT, isParallel, outer)) {
 
     CORSIKA_LOG_DEBUG(
         "********************\n                          TEST algo={} section PID={}, "
         "Bfield={} "
-        "uT, start_outside={}",
-        boost::typeindex::type_id<TestType>().pretty_name(), PID, Bfield / 1_uT, outer);
+        "uT, field is parallel={}, start_outside={}",
+        boost::typeindex::type_id<TestType>().pretty_name(), PID, Bfield / 1_uT,
+        isParallel, outer);
 
     const int chargeNumber = get_charge_number(PID);
     LengthType radius = 10_m;
     int deflect = 0;
-    if (chargeNumber != 0 and Bfield != 0_T) {
+    if (chargeNumber != 0 && Bfield != 0_T && !isParallel) {
       deflect = -sgn(chargeNumber) * sgn(Bfield / 1_T); // direction of deflection
       LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(P0) *
                                      constants::c / (abs(get_charge(PID)) * abs(Bfield)));
@@ -113,12 +116,24 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     TestType tracking;
     Point const center(cs, {0_m, 0_m, 0_m});
     auto target = setup::Environment::createNode<Sphere>(center, radius);
+
     // every particle should hit target_2
+    // it is very close to injection and not so small
     auto target_2 = setup::Environment::createNode<Sphere>(
         Point(cs, {-radius * 3 / 4, 0_m, 0_m}), radius * 0.2);
+
     // only neutral particles hit_target_neutral
+    // this is far from injection and really small
     auto target_neutral = setup::Environment::createNode<Sphere>(
         Point(cs, {radius / 2, 0_m, 0_m}), radius * 0.1);
+
+    // target to be overlapped entirely by target_2
+    auto target_2_behind = setup::Environment::createNode<Sphere>(
+        Point(cs, {-radius * 3 / 4, 0_m, 0_m}), radius * 0.1);
+
+    // target to be overlapped partly by target_2
+    auto target_2_partly_behind = setup::Environment::createNode<Sphere>(
+        Point(cs, {-radius * 3 / 4 + radius * 0.1, 0_m, 0_m}), radius * 0.2);
 
     using MyHomogeneousModel = MediumPropertyModel<
         UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
@@ -133,12 +148,24 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     target_2->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
         NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<float>{1.}));
+    target_2_behind->setModelProperties<MyHomogeneousModel>(
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<float>{1.}));
+    target_2_partly_behind->setModelProperties<MyHomogeneousModel>(
+        Medium::AirDry1Atm, magneticfield, 1_g / (1_m * 1_m * 1_m),
+        NuclearComposition(std::vector<Code>{Code::Oxygen}, std::vector<float>{1.}));
     auto* targetPtr = target.get();
     auto* targetPtr_2 = target_2.get();
     auto* targetPtr_neutral = target_neutral.get();
+    auto* targetPtr_2_behind = target_2_behind.get();
+    auto* targetPtr_2_partly_behind = target_2_partly_behind.get();
+    target_2_behind->excludeOverlapWith(target_2);
+    target_2_partly_behind->excludeOverlapWith(target_2);
     worldPtr->addChild(std::move(target));
     targetPtr->addChild(std::move(target_2));
     targetPtr->addChild(std::move(target_neutral));
+    targetPtr->addChild(std::move(target_2_behind));
+    targetPtr->addChild(std::move(target_2_partly_behind));
 
     auto [stack, viewPtr] = setup::testing::setup_stack(PID, 0, 0, P0, targetPtr, cs);
     { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
@@ -167,9 +194,13 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     // move forward, until we leave target volume
     bool hit_neutral = false;
     bool hit_2nd = false;
+    bool hit_2nd_behind = false;
+    [[maybe_unused]] bool hit_2nd_partly_behind = false;
     while (nextVol != worldPtr) {
       if (nextVol == targetPtr_neutral) hit_neutral = true;
       if (nextVol == targetPtr_2) hit_2nd = true;
+      if (nextVol == targetPtr_2_behind) hit_2nd_behind = true;
+      if (nextVol == targetPtr_2_partly_behind) hit_2nd_partly_behind = true;
       const auto [traj2, nextVol2] = tracking.getTrack(particle);
       nextVol = nextVol2;
       particle.setNode(nextVol);
@@ -181,6 +212,10 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
                         particle.getVelocity().getNorm(), traj2.getLength(1),
                         traj2.getLength(1) / particle.getVelocity().getNorm());
     }
+    CHECK_FALSE(hit_2nd_behind); // this can never happen
+    // the next line is maybe an actual BUG: this should be investigated and eventually
+    // fixed:
+    // CHECK(hit_2nd == hit_2nd_partly_behind); // if one is hit, the other also must be
     CHECK(nextVol == worldPtr);
     CHECK(hit_2nd == true);
     CHECK(hit_neutral == (deflect == 0 ? true : false));

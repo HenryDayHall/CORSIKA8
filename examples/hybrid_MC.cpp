@@ -67,7 +67,7 @@
 using namespace corsika;
 using namespace std;
 
-void registerRandomStreams(int seed) {
+void registerRandomStreams(uint64_t seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -81,6 +81,34 @@ void registerRandomStreams(int seed) {
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
+
+class TrackCheck : public ContinuousProcess<TrackCheck> {
+
+public:
+  TrackCheck(Plane const& plane)
+      : plane_(plane) {}
+
+  template <typename TParticle, typename TTrack>
+  ProcessReturn doContinuous(TParticle const& particle, TTrack const&, bool const) {
+    auto const delta = particle.getPosition() - plane_.getCenter();
+    auto const n = plane_.getNormal();
+    auto const proj = n.dot(delta);
+    if (proj < -1_m) {
+      CORSIKA_LOG_INFO("particle {} failes: proj={}, delta={}, p={}", particle.asString(),
+                       proj, delta, particle.getPosition());
+      throw std::runtime_error("particle below obs level");
+    }
+    return ProcessReturn::Ok;
+  }
+
+  template <typename TParticle, typename TTrack>
+  LengthType getMaxStepLength(TParticle const&, TTrack const&) const {
+    return std::numeric_limits<double>::infinity() * 1_m;
+  }
+
+private:
+  Plane plane_;
+};
 
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
@@ -98,8 +126,8 @@ int main(int argc, char** argv) {
   }
   feenableexcept(FE_INVALID);
 
-  int seed = 0;
-  if (argc > 4) seed = std::stoi(std::string(argv[4]));
+  uint64_t seed = 0;
+  if (argc > 4) seed = std::stol(std::string(argv[4]));
   // initialize random number sequence(s)
   registerRandomStreams(seed);
 
@@ -209,7 +237,7 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{60_GeV, false, true};
+  ParticleCut cut{3_GeV, false, true};
   BetheBlochPDG eLoss{showerAxis};
 
   CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,

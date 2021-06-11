@@ -63,7 +63,7 @@ namespace corsika {
       // check, where the first halve-step direction has geometric intersections
       auto const [initialTrack, initialTrackNextVolume] =
           tracking_line::Tracking::getTrack(particle);
-      { [[maybe_unused]] auto& initialTrackNextVolume_dum = initialTrackNextVolume; }
+      //{ [[maybe_unused]] auto& initialTrackNextVolume_dum = initialTrackNextVolume; }
       auto const initialTrackLength = initialTrack.getLength(1);
 
       CORSIKA_LOG_DEBUG("initialTrack(0)={}, initialTrack(1)={}, initialTrackLength={}",
@@ -82,8 +82,8 @@ namespace corsika {
               .getNorm();
 
       if (p_perp == 0_GeV) {
-        // particle travel along, parallel to magnetic field. Rg is
-        // "0", but for purpose of step limit we return infinity here.
+        // particle travels along, parallel to magnetic field. Rg is
+        // "0", return straight track here.
         CORSIKA_LOG_TRACE("p_perp is 0_GeV --> parallel");
         return std::make_tuple(initialTrack, initialTrackNextVolume);
       }
@@ -105,8 +105,9 @@ namespace corsika {
       DirectionVector const direction = initialVelocity.normalized();
 
       // avoid any intersections within first halve steplength
+      // aim for intersection in second halve step
       LengthType const firstHalveSteplength =
-          std::min(steplimit, initialTrackLength * firstFraction_);
+          std::min(steplimit / 2, initialTrackLength * firstFraction_);
 
       CORSIKA_LOG_DEBUG("first halve step length {}, steplimit={}, initialTrackLength={}",
                         firstHalveSteplength, steplimit, initialTrackLength);

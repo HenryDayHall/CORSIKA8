@@ -43,10 +43,20 @@ namespace corsika {
     bool hasIntersections() const { return has_intersections_; }
 
     ///! where did the trajectory currently enter the volume
-    TimeType getEntry() const { return intersections_.first; }
+    TimeType getEntry() const {
+      if (has_intersections_)
+        return intersections_.first;
+      else
+        return std::numeric_limits<TimeType::value_type>::infinity() * second;
+    }
 
     ///! where did the trajectory currently exit the volume
-    TimeType getExit() const { return intersections_.second; }
+    TimeType getExit() const {
+      if (has_intersections_)
+        return intersections_.second;
+      else
+        return std::numeric_limits<TimeType::value_type>::infinity() * second;
+    }
 
   private:
     bool has_intersections_;

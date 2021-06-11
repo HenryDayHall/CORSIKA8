@@ -12,6 +12,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/PhysicalGeometry.hpp>
+#include <corsika/framework/utility/QuarticSolver.hpp>
 
 namespace corsika {
 
@@ -35,27 +36,49 @@ namespace corsika {
   }
 
   inline VelocityVector LeapFrogTrajectory::getVelocity(double const u) const {
-    return initialVelocity_ + initialVelocity_.cross(magneticfield_) * timeStep_ * u * k_;
+    return getDirection(u) * initialVelocity_.getNorm();
   }
 
   inline DirectionVector LeapFrogTrajectory::getDirection(double const u) const {
-    return getVelocity(u).normalized();
+    return (initialDirection_ +
+            initialDirection_.cross(magneticfield_) * timeStep_ * u * k_)
+        .normalized();
   }
 
   inline TimeType LeapFrogTrajectory::getDuration(double const u) const {
-    return u * timeStep_ *
-           (double(getVelocity(u).getNorm() / initialVelocity_.getNorm()) + 1.0) / 2;
+    TimeType const step = timeStep_ * u;
+    double const correction = 1;
+    // the eventual (delta-L to L) correction factor is:
+    //    (initialDirection_ + initialDirection_.cross(magneticfield_) * step *
+    //    k_).getNorm();
+    return step / 2 * (correction + 1);
   }
 
   inline LengthType LeapFrogTrajectory::getLength(double const u) const {
-    return timeStep_ * initialVelocity_.getNorm() * u;
+    return getDuration(u) * initialVelocity_.getNorm();
   }
 
   inline void LeapFrogTrajectory::setLength(LengthType const limit) {
-    if (initialVelocity_.getNorm() == 0_m / 1_s) setDuration(0_s);
+    if (initialVelocity_.getNorm() == SpeedType::zero()) setDuration(0_s);
     setDuration(limit / initialVelocity_.getNorm());
   }
 
-  inline void LeapFrogTrajectory::setDuration(TimeType const limit) { timeStep_ = limit; }
+  inline void LeapFrogTrajectory::setDuration(TimeType const limit) {
+    /*
+    initial attempt to calculate delta-L from assumed full-leap-frog-length L:
+
+    Note: often return 0. Not good enough yet.
+
+    LengthType const L = initialVelocity_.getNorm() * limit; // distance
+    double const a = (initialVelocity_.cross(magneticfield_) * k_).getSquaredNorm() / 4 /
+                     square(1_m) * static_pow<4>(1_s);
+    double const d = L * initialVelocity_.getNorm() / square(1_m) * 1_s;
+    double const e = -square(L) / square(1_m);
+    std::vector<double> solutions = solve_quartic_real(a, 0, 0, d, e);
+    CORSIKA_LOG_DEBUG("setDuration limit={} L={} solution={}", limit, L,
+                      fmt::join(solutions, ", "));
+    */
+    timeStep_ = limit;
+  }
 
 } // namespace corsika

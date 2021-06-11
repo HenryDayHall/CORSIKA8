@@ -369,7 +369,6 @@ private:
 TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   SECTION("BaseProcess") {
 
@@ -889,7 +888,6 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 TEST_CASE("ProcessSequence Indexing", "ProcessSequence") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$]: %v");
 
   SECTION("Indexing") {
 

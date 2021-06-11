@@ -35,6 +35,9 @@ namespace corsika {
       // y^3 − c*y^2 + (bd−4e)*y − b^2*e−d^2+4*c*e = 0
 
       std::vector<double> x3 = solve_cubic_real(1, a3, b3, c3, epsilon);
+      if (!x3.size()) {
+        return {}; // no solution, numeric problem (LCOV_EXCL_LINE)
+      }
       long double y = x3[0]; // there is always at least one solution
       // The essence - choosing Y with maximal absolute value.
       if (x3.size() == 3) {
@@ -74,8 +77,8 @@ namespace corsika {
       // solving quadratic eqs.  x^2 + p1*x + q1 = 0
       //                         x^2 + p2*x + q2 = 0
 
-      std::vector<double> quad1 = solve_quadratic_real(1, p1, q1);
-      std::vector<double> quad2 = solve_quadratic_real(1, p2, q2);
+      std::vector<double> quad1 = solve_quadratic_real(1, p1, q1, 1e-5);
+      std::vector<double> quad2 = solve_quadratic_real(1, p2, q2, 1e-5);
       if (quad2.size() > 0) {
         for (auto val : quad2) quad1.push_back(val);
       }
@@ -109,17 +112,37 @@ namespace corsika {
     }
     CORSIKA_LOG_TRACE("check m={}", m);
     if (m == 0) { return {0}; }
+    if (m < 0) {
+      // this is a rare numerical instability
+      // first: try analytical solution, second: discard (curved->straight tracking)
+      std::vector<double> const resolve_cubic_analytic =
+          andre::solve_cubic_real_analytic(1, p, p2 / 4 - r, -q2 / 8, epsilon);
 
-    CORSIKA_LOG_TRACE("check m={}", m);
+      CORSIKA_LOG_TRACE("andre::resolve_cubic_analytic: N={}, m=[{}]",
+                        resolve_cubic_analytic.size(),
+                        fmt::join(resolve_cubic_analytic, ", "));
 
+      if (!resolve_cubic_analytic.size()) return {};
+
+      for (auto const& v : resolve_cubic_analytic) {
+        CORSIKA_LOG_TRACE("check pol3(v)={}", (static_pow<3>(v) + static_pow<2>(v) * p +
+                                               v * (p2 / 4 - r) - q2 / 8));
+        if (std::abs(v) > epsilon && std::abs(v) > m) { m = v; }
+      }
+      CORSIKA_LOG_TRACE("check m={}", m);
+      if (m == 0) { return {0}; }
+      if (m < 0) {
+        return {}; // now we are out of options, cannot solve: curved->straight tracking
+      }
+    }
     long double const quad_term1 = p / 2 + m;
     long double const quad_term2 = std::sqrt(2 * m);
     long double const quad_term3 = q / (2 * quad_term2);
 
     std::vector<double> z_quad1 =
-        solve_quadratic_real(1, quad_term2, quad_term1 - quad_term3, epsilon);
+        solve_quadratic_real(1, quad_term2, quad_term1 - quad_term3, 1e-5);
     std::vector<double> z_quad2 =
-        solve_quadratic_real(1, -quad_term2, quad_term1 + quad_term3, epsilon);
+        solve_quadratic_real(1, -quad_term2, quad_term1 + quad_term3, 1e-5);
     for (auto const& z : z_quad2) z_quad1.push_back(z);
     return z_quad1;
   }

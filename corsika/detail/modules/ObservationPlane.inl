@@ -27,16 +27,22 @@ namespace corsika {
        The current step did not yet reach the ObservationPlane, do nothing now and wait:
      */
     if (!stepLimit) {
-#ifdef DEBUG
+      // @todo this is actually needed to fix small instabilities of the leap-frog
+      // tracking: Note, this is NOT a general solution and should be clearly revised with
+      // a more robust tracking. #ifdef DEBUG
       if (deleteOnHit_) {
+        // since this is basically a bug, it cannot be tested LCOV_EXCL_START
         LengthType const check =
             (particle.getPosition() - plane_.getCenter()).dot(plane_.getNormal());
         if (check < 0_m) {
-          CORSIKA_LOG_DEBUG("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
-        }
-      }
-#endif
-      return ProcessReturn::Ok;
+          CORSIKA_LOG_WARN("PARTICLE AVOIDED OBSERVATIONPLANE {}", check);
+          CORSIKA_LOG_WARN("Temporary fix: write and remove particle.");
+        } else
+          return ProcessReturn::Ok;
+        // LCOV_EXCL_STOP
+      } else
+        // #endif
+        return ProcessReturn::Ok;
     }
 
     HEPEnergyType const energy = particle.getEnergy();
@@ -63,8 +69,9 @@ namespace corsika {
   inline LengthType ObservationPlane<TTracking, TOutput>::getMaxStepLength(
       TParticle const& particle, TTrajectory const& trajectory) {
 
-    CORSIKA_LOG_TRACE("particle={}, pos={}, dir={}, plane={}", particle.asString(),
-                      particle.getPosition(), particle.getDirection(), plane_.asString());
+    CORSIKA_LOG_TRACE("getMaxStepLength, particle={}, pos={}, dir={}, plane={}",
+                      particle.asString(), particle.getPosition(),
+                      particle.getDirection(), plane_.asString());
 
     auto const intersection = TTracking::intersect(particle, plane_);
 
@@ -77,10 +84,10 @@ namespace corsika {
       return std::numeric_limits<double>::infinity() * 1_m;
     }
     double const fractionOfIntersection = timeOfIntersection / trajectory.getDuration();
-    auto const pointOfIntersection = trajectory.getPosition(fractionOfIntersection);
-    auto dist = (trajectory.getPosition(0) - pointOfIntersection).getNorm();
-    CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength l={} m", dist / 1_m);
-    return dist;
+    CORSIKA_LOG_TRACE("ObservationPlane: getMaxStepLength dist={} m, pos={}",
+                      trajectory.getLength(fractionOfIntersection) / 1_m,
+                      trajectory.getPosition(fractionOfIntersection));
+    return trajectory.getLength(fractionOfIntersection);
   }
 
   template <typename TTracking, typename TOutput>

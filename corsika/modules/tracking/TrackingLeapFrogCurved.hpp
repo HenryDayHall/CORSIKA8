@@ -29,24 +29,21 @@ namespace corsika {
   namespace tracking_leapfrog_curved {
 
     /**
-     * \file TrackingLeapFrogCurved.hpp
-     *
-     * Performs one leap-frog step consistent of two halve-steps with steplength/2
-     * The step is caluculated analytically precisely to reach to the next volume
-     *boundary.
-     **/
-    template <typename TParticle>
-    auto make_LeapFrogStep(TParticle const& particle, LengthType steplength);
+     * \file TrackingLeapFrogCurved.hpp The leap-frog tracking.
+     */
 
     /**
-     *
      * The class tracking_leapfrog_curved::Tracking is based on the
      * Bachelor thesis of Andre Schmidt (KIT). It implements a
      * two-step leap-frog algorithm, but with analytically exact geometric
      * intersections between leap-frog steps and geometric volumes
      * (spheres, planes).
      *
-     **/
+     * Note that leap-frog times and length always reflect the actual properties of
+     * the final step. The internal steplength is slightly shorter, because the second
+     * halve steps of the algorithm is slightly longer than the first one (in principle
+     * violating |v|=const).
+     */
 
     class Tracking : public Intersect<Tracking> {
 
@@ -59,16 +56,49 @@ namespace corsika {
       template <typename TParticle>
       auto getTrack(TParticle const& particle);
 
-      //! find intersection of Sphere with Track
+      /**
+       * Performs one leap-frog step consistent of two halve-steps with steplength/2
+       * Due to the nature of the algorithm the second halve step is slightly longer than
+       * the first halve step.
+       */
+      template <typename TParticle>
+      static auto makeStep(TParticle const& particle, LengthType const steplength);
+
+      /**
+       *  find intersection of Sphere with Track
+       *
+       * Returns intersection of particle assuming a curved leap-frog step, with a sphere.
+       * Entry and exit times are calculated, where the velocity is constant and the
+       * steplength is the geometric steplength of the leap-frog.
+       *
+       * @param particle Current particle state
+       * @param sphere Sphere object
+       */
       template <typename TParticle>
       static Intersections intersect(TParticle const& particle, Sphere const& sphere);
 
-      //! find intersection of Volume node with Track of particle
+      /**
+       *  find intersection of any Volume node with particle
+       *
+       * The intersection time(s) of a particle, assuming a curved leap-frog
+       * step, are calculated for any volume type.
+       */
       template <typename TParticle, typename TBaseNodeType>
       static Intersections intersect(TParticle const& particle,
                                      TBaseNodeType const& node);
 
-      //! find intersection of Plane with Track
+      /**
+       *  find intersection of Plane with Track
+       *
+       * Intersection times of particle are caculated with a plane, assuming a curved leap
+       * frog trajectory. The intersection time is assuming constant velocity (no change)
+       * along the geometric leap-frog step.
+       *
+       * @tparam TParticle Type of particle object on stack.
+       * @param particle Particle initial state.
+       * @param plane Plane.
+       * @return Intersections in time units.
+       */
       template <typename TParticle>
       static Intersections intersect(TParticle const& particle, Plane const& plane);
 
@@ -80,7 +110,6 @@ namespace corsika {
        * Use internally stored class tracking_line::Tracking to
        * perform a straight line tracking, if no magnetic bendig was
        * detected.
-       *
        */
       template <typename TParticle>
       auto getLinearTrajectory(TParticle& particle);
