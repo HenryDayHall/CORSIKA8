@@ -70,6 +70,8 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
   const HEPEnergyType P0 = 10_GeV;
 
   auto PID = GENERATE(as<Code>{}, Code::MuPlus, Code::MuPlus, Code::Photon);
+  // test also special case: movement parallel to field (along x)
+  auto isParallel = GENERATE(as<bool>{}, true, false);
   // for algorithms that know magnetic deflections choose: +-50uT, 0uT
   // otherwise just 0uT
   auto Bfield = GENERATE(filter(
@@ -79,25 +81,26 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
         else
           return true;
       },
-      values<MagneticFluxType>({50_uT, 0_uT, -50_uT})));
+      values<MagneticFluxType>({50_uT, 0_uT, (isParallel ? 0 : -50_uT)})));
   // particle --> (world) --> | --> (target)
   // true: start inside "world" volume
   // false: start inside "target" volume
   auto outer = GENERATE(as<bool>{}, true, false);
 
-  SECTION(fmt::format("Tracking PID={}, Bfield={} uT, from outside={}", PID,
-                      Bfield / 1_uT, outer)) {
+  SECTION(fmt::format("Tracking PID={}, Bfield={} uT, isParallel={}, from outside={}",
+                      PID, Bfield / 1_uT, isParallel, outer)) {
 
     CORSIKA_LOG_DEBUG(
         "********************\n                          TEST algo={} section PID={}, "
         "Bfield={} "
-        "uT, start_outside={}",
-        boost::typeindex::type_id<TestType>().pretty_name(), PID, Bfield / 1_uT, outer);
+        "uT, field is parallel={}, start_outside={}",
+        boost::typeindex::type_id<TestType>().pretty_name(), PID, Bfield / 1_uT,
+        isParallel, outer);
 
     const int chargeNumber = get_charge_number(PID);
     LengthType radius = 10_m;
     int deflect = 0;
-    if (chargeNumber != 0 and Bfield != 0_T) {
+    if (chargeNumber != 0 && Bfield != 0_T && !isParallel) {
       deflect = -sgn(chargeNumber) * sgn(Bfield / 1_T); // direction of deflection
       LengthType const gyroradius = (convert_HEP_to_SI<MassType::dimension_type>(P0) *
                                      constants::c / (abs(get_charge(PID)) * abs(Bfield)));

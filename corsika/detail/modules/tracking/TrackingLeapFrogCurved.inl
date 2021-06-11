@@ -112,11 +112,13 @@ namespace corsika {
                                     constants::c / (abs(charge) * magnitudeB);
 
       if (gyroradius > 1e9_m) {
+        // this cannot be really unit-tested. It is hidden. LCOV_EXCL_START
         CORSIKA_LOG_WARN(
             "CurvedLeapFrog is not very stable for extremely high gyroradius steps. "
             "Rg={} -> straight tracking.",
             gyroradius);
         return getLinearTrajectory(particle);
+        // LCOV_EXCL_STOP
       }
 
       double const maxRadians = 0.01; // maximally allowed deflection
@@ -168,7 +170,8 @@ namespace corsika {
 
       CORSIKA_LOG_TRACE("projectedDirectionSqrNorm={} T^2",
                         projectedDirectionSqrNorm / square(1_T));
-      if ((charge == 0 * constants::e) || magneticfield.getNorm() == 0_T || isParallel) {
+      if (isParallel) {
+        // particle moves parallel to field -> no deflection
         return tracking_line::Tracking::intersect<TParticle>(particle, sphere);
       }
 
