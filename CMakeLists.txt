@@ -109,8 +109,7 @@ message (STATUS "Installing dependencies from Conan (this may take some time)...
 conan_cmake_run (CONANFILE conanfile.txt
                  BASIC_SETUP CMAKE_TARGETS
                  BUILD missing
-                 BUILD_TYPE "Release"
-                 SETTINGS compiler.libcxx=libstdc++11)
+                 BUILD_TYPE "Release")
 #
 # add cnpy temporarily. As long as SaveBoostHistogram does not save to parquet directly
 #
