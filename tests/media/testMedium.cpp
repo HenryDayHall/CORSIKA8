@@ -92,18 +92,21 @@ TEST_CASE("MediumPropertyModel w/ Homogeneous") {
   CHECK(density == medium.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
   medium.getNuclearComposition();
 
+  SpeedType const speed = 1_m / second;
+
   // create a line of length 1 m
-  Line const line(gOrigin,
-                  VelocityVector(gCS, {1_m / second, 0_m / second, 0_m / second}));
+  Line const line(gOrigin, VelocityVector(gCS, {speed, 0_m / second, 0_m / second}));
 
   // the end time of our line
   auto const tEnd = 1_s;
+
+  LengthType const length = tEnd * speed;
 
   // and the associated trajectory
   setup::Trajectory const trajectory =
       corsika::setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
-  CHECK((medium.getIntegratedGrammage(trajectory, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.getIntegratedGrammage(trajectory) / (density * length)) == Approx(1));
   CHECK((medium.getArclengthFromGrammage(trajectory, density * 5_m) / 5_m) == Approx(1));
 }

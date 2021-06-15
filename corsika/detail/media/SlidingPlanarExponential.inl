@@ -16,19 +16,17 @@ namespace corsika {
   inline SlidingPlanarExponential<T>::SlidingPlanarExponential(
       Point const& p0, MassDensityType rho0, LengthType lambda,
       NuclearComposition const& nuclComp, LengthType referenceHeight)
-      : BaseExponential<SlidingPlanarExponential<T>>(p0, rho0, lambda)
+      : BaseExponential<SlidingPlanarExponential<T>>(p0, referenceHeight, rho0, lambda)
       , nuclComp_(nuclComp)
       , referenceHeight_(referenceHeight) {}
 
   template <typename T>
   inline MassDensityType SlidingPlanarExponential<T>::getMassDensity(
       Point const& point) const {
-    auto const height =
+    auto const heightFull =
         (point - BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
-            .getNorm() -
-        referenceHeight_;
-    return BaseExponential<SlidingPlanarExponential<T>>::getRho0() *
-           exp(BaseExponential<SlidingPlanarExponential<T>>::getInvLambda() * height);
+            .getNorm();
+    return BaseExponential<SlidingPlanarExponential<T>>::getMassDensity(heightFull);
   }
 
   template <typename T>
@@ -39,11 +37,11 @@ namespace corsika {
 
   template <typename T>
   inline GrammageType SlidingPlanarExponential<T>::getIntegratedGrammage(
-      BaseTrajectory const& traj, LengthType l) const {
+      BaseTrajectory const& traj) const {
     auto const axis = (traj.getPosition(0) -
                        BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
                           .normalized();
-    return BaseExponential<SlidingPlanarExponential<T>>::getIntegratedGrammage(traj, l,
+    return BaseExponential<SlidingPlanarExponential<T>>::getIntegratedGrammage(traj,
                                                                                axis);
   }
 

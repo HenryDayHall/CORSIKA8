@@ -36,8 +36,8 @@ namespace corsika {
 
   template <typename T, typename TDensityFunction>
   inline GrammageType InhomogeneousMedium<T, TDensityFunction>::getIntegratedGrammage(
-      BaseTrajectory const& line, LengthType to) const {
-    return densityFunction_.getIntegrateGrammage(line, to);
+      BaseTrajectory const& line) const {
+    return densityFunction_.getIntegrateGrammage(line);
   }
 
   template <typename T, typename TDensityFunction>

@@ -78,6 +78,10 @@ namespace corsika {
     void addExponentialLayer(GrammageType b, LengthType c, LengthType upperBoundary);
     void addLinearLayer(LengthType c, LengthType upperBoundary);
 
+    void addTabularLayer(GrammageType b,
+                         std::function<MassDensityType(LengthType)> const& funcRho,
+                         LengthType upperBoundary);
+
     int getSize() const { return layers_.size(); }
 
     void assemble(Environment<TMediumInterface>& env);

@@ -13,6 +13,7 @@
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
+//#include <corsika/media/SlidingPlanarTabular.hpp>
 
 namespace corsika {
 
@@ -100,6 +101,40 @@ namespace corsika {
           rho0, *composition_);
     }
 
+    layers_.push(std::move(node));
+  }
+
+  template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
+            typename... TModelArgs>
+  inline void
+  LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra, TModelArgs...>::
+      addTabularLayer(GrammageType b,
+                      std::function<MassDensityType(LengthType)> const& funcRho,
+                      LengthType upperBoundary) {
+
+    auto const radius = earthRadius_ + upperBoundary;
+    checkRadius(radius);
+    previousRadius_ = radius;
+
+    auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
+        std::make_unique<Sphere>(center_, radius));
+    /*
+        if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
+          // helper lambda in which the last 5 arguments to make_shared<...> are bound
+          auto lastBound = [&](auto... argPack) {
+            return std::make_shared<
+                TMediumModelExtra<SlidingPlanarTabular<TMediumInterface>>>(
+                argPack..., center_, rho0, -c, *composition_, earthRadius_);
+          };
+
+          // now unpack the additional arguments
+          auto model = std::apply(lastBound, additionalModelArgs_);
+          node->setModelProperties(std::move(model));
+        } else {
+          node->template setModelProperties<SlidingPlanarTabular<TMediumInterface>>(
+              center_, rho0, -c, *composition_, earthRadius_);
+        }
+    */
     layers_.push(std::move(node));
   }
 

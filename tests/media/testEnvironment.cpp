@@ -97,33 +97,35 @@ TEST_CASE("FlatExponential") {
   auto const rho0 = 1_g / static_pow<3>(1_cm);
   FlatExponential<IMediumModel> const medium(gOrigin, axis, rho0, lambda,
                                              protonComposition);
-  auto const tEnd = 5_s;
+  SpeedType const speed = 20_m / second;
+  LengthType const length = 2_m;
+  TimeType const tEnd = length / speed;
 
   SECTION("horizontal") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {20_cm / second, 0_m / second, 0_m / second}));
+                                 gCS, {speed, 0_m / second, 0_m / second}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
-    CHECK((medium.getIntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
-    CHECK((medium.getArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
+    CHECK((medium.getIntegratedGrammage(trajectory) / (rho0 * length)) == Approx(1));
+    CHECK((medium.getArclengthFromGrammage(trajectory, rho0 * length) / length) ==
+          Approx(1));
   }
 
   SECTION("vertical") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {0_m / second, 0_m / second, 5_m / second}));
+                                 gCS, {0_m / second, 0_m / second, speed}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
-    LengthType const length = 2 * lambda;
     GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
 
-    CHECK((medium.getIntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    CHECK((medium.getIntegratedGrammage(trajectory) / exact) == Approx(1));
     CHECK((medium.getArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 
   SECTION("escape grammage") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {0_m / second, 0_m / second, -5_m / second}));
+                                 gCS, {SpeedType::zero(), SpeedType::zero(), -speed}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
     GrammageType const escapeGrammage = rho0 * lambda;
@@ -134,15 +136,15 @@ TEST_CASE("FlatExponential") {
   }
 
   SECTION("inclined") {
-    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {0_m / second, 5_m / second, 5_m / second}));
+    Line const line(gOrigin,
+                    Vector<SpeedType::dimension_type>(
+                        gCS, {0_m / second, speed / sqrt(2.), speed / sqrt(2.)}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
     double const cosTheta = M_SQRT1_2;
-    LengthType const length = 2 * lambda;
     GrammageType const exact =
         rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
-    CHECK((medium.getIntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    CHECK((medium.getIntegratedGrammage(trajectory) / exact) == Approx(1));
     CHECK((medium.getArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 }
@@ -179,16 +181,16 @@ TEST_CASE("SlidingPlanarExponential") {
 
     CHECK(medium.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
           flat.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
-    CHECK(medium.getIntegratedGrammage(trajectory, 2_m).magnitude() ==
-          flat.getIntegratedGrammage(trajectory, 2_m).magnitude());
+    CHECK(medium.getIntegratedGrammage(trajectory).magnitude() ==
+          flat.getIntegratedGrammage(trajectory).magnitude());
     CHECK(medium.getArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude() ==
           flat.getArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude());
   }
 }
 
-auto constexpr rho0 = 1_kg / 1_m / 1_m / 1_m;
+MassDensityType constexpr rho0 = 1_kg / 1_m / 1_m / 1_m;
 
-struct Exponential {
+struct ExponentialTest {
   auto operator()(Point const& p) const {
     return exp(p.getCoordinates()[0] / 1_m) * rho0;
   }
@@ -213,41 +215,50 @@ TEST_CASE("InhomogeneousMedium") {
 
   Vector direction(gCS, QuantityVector<dimensionless_d>(1, 0, 0));
 
+  SpeedType const speed = 20_m / second;
   Line line(gOrigin, Vector<SpeedType::dimension_type>(
-                         gCS, {20_m / second, 0_m / second, 0_m / second}));
+                         gCS, {speed, SpeedType::zero(), SpeedType::zero()}));
 
-  auto const tEnd = 5_s;
+  // the tested LinearApproximationIntegrator really does a single step only. It is very
+  // poor for exponentials with a bit larger step-width.
+  TimeType const tEnd = 0.001_s;
   setup::Trajectory const trajectory =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
-  Exponential const e;
-  DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);
+  ExponentialTest const expTest;
+  DensityFunction<ExponentialTest, LinearApproximationIntegrator> const rho(expTest);
 
   SECTION("DensityFunction") {
-    CHECK(e.getDerivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
+    CHECK(expTest.getDerivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
           Approx(1));
-    CHECK(rho.evaluateAt(gOrigin) == e(gOrigin));
+    CHECK(rho.evaluateAt(gOrigin) == expTest(gOrigin));
   }
 
   auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };
   auto const exactLength = [](auto X) { return 1_m * log(1 + X / (rho0 * 1_m)); };
 
-  auto constexpr l = 15_cm;
+  LengthType constexpr length = tEnd * speed;
 
   NuclearComposition const composition{{Code::Proton}, {1.f}};
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
 
+  CORSIKA_LOG_INFO("test={} l={} {} {}", rho.getIntegrateGrammage(trajectory), length,
+                   exactGrammage(length), 1_m * rho0 * (exp(length / 1_m) - 1));
+
   SECTION("Integration") {
-    CHECK(rho.getIntegrateGrammage(trajectory, l) / exactGrammage(l) ==
+    CORSIKA_LOG_INFO("test={} {} {}", rho.getIntegrateGrammage(trajectory),
+                     exactGrammage(length),
+                     rho.getIntegrateGrammage(trajectory) / exactGrammage(length));
+    CHECK(rho.getIntegrateGrammage(trajectory) / exactGrammage(length) ==
           Approx(1).epsilon(1e-2));
-    CHECK(rho.getArclengthFromGrammage(trajectory, exactGrammage(l)) /
-              exactLength(exactGrammage(l)) ==
+    CHECK(rho.getArclengthFromGrammage(trajectory, exactGrammage(length)) /
+              exactLength(exactGrammage(length)) ==
           Approx(1).epsilon(1e-2));
     CHECK(rho.getMaximumLength(trajectory, 1e-2) >
-          l); // todo: write reasonable test when implementation is working
+          length); // todo: write reasonable test when implementation is working
 
-    CHECK(rho.getIntegrateGrammage(trajectory, l) ==
-          inhMedium.getIntegratedGrammage(trajectory, l));
+    CHECK(rho.getIntegrateGrammage(trajectory) ==
+          inhMedium.getIntegratedGrammage(trajectory));
     CHECK(rho.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
           inhMedium.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
     CHECK(inhMedium.getNuclearComposition() == composition);

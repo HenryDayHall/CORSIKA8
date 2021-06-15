@@ -20,7 +20,7 @@ namespace corsika {
     auto const& getImplementation() const;
 
   public:
-    auto getIntegrateGrammage(BaseTrajectory const& line, LengthType length) const;
+    auto getIntegrateGrammage(BaseTrajectory const& line) const;
 
     auto getArclengthFromGrammage(BaseTrajectory const& line,
                                   GrammageType grammage) const;

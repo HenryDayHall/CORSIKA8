@@ -23,8 +23,19 @@ namespace corsika {
    */
   template <typename TDerived>
   class BaseExponential {
+
+  public:
+    BaseExponential(Point const& point, LengthType const referenceHeight,
+                    MassDensityType rho0, LengthType lambda);
+
+    Point const& getAnchorPoint() const { return point_; }
+    MassDensityType getRho0() const { return rho0_; }
+    InverseLengthType getInvLambda() const { return invLambda_; }
+
   protected:
     auto const& getImplementation() const;
+
+    MassDensityType getMassDensity(LengthType const height) const;
 
     // clang-format off
     /**
@@ -40,7 +51,7 @@ namespace corsika {
      * \f]
      */
     // clang-format on
-    GrammageType getIntegratedGrammage(BaseTrajectory const& line, LengthType vL,
+    GrammageType getIntegratedGrammage(BaseTrajectory const& line,
                                        DirectionVector const& axis) const;
 
     // clang-format off
@@ -64,18 +75,12 @@ namespace corsika {
     LengthType getArclengthFromGrammage(BaseTrajectory const& line, GrammageType grammage,
                                         DirectionVector const& axis) const;
 
-  public:
-    BaseExponential(Point const& point, MassDensityType rho0, LengthType lambda);
-
-    Point const& getAnchorPoint() const { return point_; }
-    MassDensityType getRho0() const { return rho0_; }
-    InverseLengthType getInvLambda() const { return invLambda_; }
-
   private:
     MassDensityType const rho0_;
     LengthType const lambda_;
     InverseLengthType const invLambda_;
     Point const point_;
+    LengthType const referenceHeight_;
 
   }; // class BaseExponential
 

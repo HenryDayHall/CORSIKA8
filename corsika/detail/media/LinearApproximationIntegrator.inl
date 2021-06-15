@@ -19,10 +19,14 @@ namespace corsika {
 
   template <typename TDerived>
   inline auto LinearApproximationIntegrator<TDerived>::getIntegrateGrammage(
-      BaseTrajectory const& line, LengthType length) const {
+      BaseTrajectory const& line) const {
+    LengthType const length = line.getLength();
     auto const c0 = getImplementation().evaluateAt(line.getPosition(0));
     auto const c1 = getImplementation().rho_.getFirstDerivative(line.getPosition(0),
                                                                 line.getDirection(0));
+    CORSIKA_LOG_INFO("length={} c0={} c1={} pos={} dir={} return={}", length, c0, c1,
+                     line.getPosition(0), line.getDirection(0),
+                     (c0 + 0.5 * c1 * length) * length);
     return (c0 + 0.5 * c1 * length) * length;
   }
 
