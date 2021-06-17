@@ -55,13 +55,13 @@ namespace corsika {
         template <typename Particle, typename Track>
         ProcessReturn simulate(Particle& particle, Track const& track) const {
 
-            CORSIKA_LOG_INFO("Z  H  S");
+//            CORSIKA_LOG_INFO("Z  H  S");
 
             auto const startTime{particle.getTime()};
             auto const endTime{particle.getTime() + track.getDuration()};
 
             if (startTime - endTime == 0_s) {
-              CORSIKA_LOG_ERROR("Tiny track!");
+//              CORSIKA_LOG_ERROR("Tiny track!");
               return ProcessReturn::Ok;
             } else {
 

@@ -83,7 +83,7 @@ namespace corsika {
         // figure out the correct timebin to store the E-field value.
         // NOTE: static cast is implicitly flooring
         auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-        CORSIKA_LOG_INFO("Timebin: {}", timebin_);
+//        CORSIKA_LOG_INFO("Timebin: {}", timebin_);
 
         // ToDO: ask explicitly for a CS and use that specific on for writing the output
 
@@ -104,7 +104,7 @@ namespace corsika {
               // figure out the correct timebin to store the E-field value.
               // NOTE: static cast is implicitly flooring
               auto timebin_{static_cast<std::size_t>(std::floor((time - start_time_) * sample_rate_ + 0.5l))};
-              CORSIKA_LOG_INFO("Timebin: {}", timebin_);
+//              CORSIKA_LOG_INFO("Timebin: {}", timebin_);
 
               // ToDO: ask explicitly for a CS and use that specific on for writing the output
 

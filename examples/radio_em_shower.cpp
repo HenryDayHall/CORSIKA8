@@ -267,9 +267,12 @@ int main(int argc, char** argv) {
   emContinuous.reset();
 
   auto const hists = emCascadeCounted.getHistogram();
-  save_hist(hists.labHist(), "inthist_lab_emShower.npz", true);
-  save_hist(hists.CMSHist(), "inthist_cms_emShower.npz", true);
-  longprof.save("longprof_emShower.txt");
+  std::string lab_ = "inthist_lab_radioemShower" + std::to_string(rr_) + ".npz";
+  std::string cms_ = "inthist_cms_radioemShower" + std::to_string(rr_) + ".npz";
+  save_hist(hists.labHist(), lab_, true);
+  save_hist(hists.CMSHist(), cms_, true);
+  std::string longname_ = "longprof_radio_em_shower" + std::to_string(rr_) + ".txt";
+  longprof.save(longname_);
 
   output.endOfLibrary();
 }

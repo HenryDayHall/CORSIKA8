@@ -58,17 +58,17 @@ namespace corsika {
     template <typename Particle, typename Track>
     ProcessReturn simulate(Particle& particle, Track const& track) {
 
-      CORSIKA_LOG_DEBUG("CoREAS initiated");
+//      CORSIKA_LOG_DEBUG("CoREAS initiated");
 
       // get the global simulation time for that track.
       auto startTime_{particle.getTime()}; // time at the start point of the track hopefully. I should use something similar to fCoreHitTime (?)
       auto endTime_{particle.getTime() + track.getDuration()};    // time at end point of track.
       trackcounter_ += 1;
-      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
+//      CORSIKA_LOG_DEBUG("Number of total tracks for radio: {} ", trackcounter_);
 
       if (startTime_ - endTime_ == 0_s) {
         tinycounter_ += 1;
-        CORSIKA_LOG_ERROR("Tiny track number: {} ", tinycounter_);
+//        CORSIKA_LOG_ERROR("Tiny track number: {} ", tinycounter_);
         return ProcessReturn::Ok;
       } else {
 
@@ -96,7 +96,7 @@ namespace corsika {
       // loop over each antenna in the antenna collection (detector)
       for (auto& antenna : antennas_.getAntennas()) {
 
-        CORSIKA_LOG_INFO("Antenna: {} ", antenna.getName());
+//        CORSIKA_LOG_INFO("Antenna: {} ", antenna.getName());
 
         // get the SignalPathCollection (path1) from the start "endpoint" to the antenna.
         auto paths1{this->propagator_.propagate(startPoint_, antenna.getLocation(), 1_m)}; // TODO: Add the stepsize to .propagate() at some point
@@ -117,7 +117,7 @@ namespace corsika {
           // check if preDoppler has become zero in case of refractive index of unity because of numerical limitations
           // here you might need std::fabs(preDoppler) in the if statement - same with post & mid
           if (preDoppler_ == 0) {
-            CORSIKA_LOG_ERROR("preDoppler factor numerically zero!");
+//            CORSIKA_LOG_ERROR("preDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths1[i].refractive_index_source_};
             long double betaX_ {static_cast<double>(beta_.getComponents().getX())}; // ToDO: .getX(specificCS)
@@ -137,7 +137,7 @@ namespace corsika {
 
           // check if postDoppler has become zero in case of refractive index of unity because of numerical limitations
           if (postDoppler_ == 0) {
-            CORSIKA_LOG_ERROR("postDoppler factor numerically zero!");
+//            CORSIKA_LOG_ERROR("postDoppler factor numerically zero!");
             // redo calculation with higher precision
             long double indexL_ {paths2[i].refractive_index_source_};
             long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -167,10 +167,10 @@ namespace corsika {
           if ( (paths1[i].refractive_index_destination_ > 1) &&
                   ((std::fabs(preDoppler_) < approxThreshold_) || (std::fabs(postDoppler_) < approxThreshold_)) ) {
 
-            CORSIKA_LOG_WARN("used ZHS-like approximation in CoREAS");
+//            CORSIKA_LOG_WARN("used ZHS-like approximation in CoREAS");
             zhscounter_ += 1;
             // this shouldn't be a log error but it helps to track it down easily. This will be changed soon.
-            CORSIKA_LOG_ERROR("Used ZHS approx: {} out of {} times", zhscounter_, trackcounter_);
+//            CORSIKA_LOG_ERROR("Used ZHS approx: {} out of {} times", zhscounter_, trackcounter_);
 
             // clear the existing paths for this particle and track, since we don't need them anymore
             paths1.clear();
@@ -198,7 +198,7 @@ namespace corsika {
 
               // check if midDoppler has become zero because of numerical limitations
               if (midDoppler_ == 0) {
-                CORSIKA_LOG_ERROR("midDoppler factor numerically zero!");
+//                CORSIKA_LOG_ERROR("midDoppler factor numerically zero!");
                 // redo calculation with higher precision
                 long double indexL_ {path.refractive_index_source_};
                 long double betaX_ {static_cast<double>(beta_.getComponents().getX())};
@@ -314,7 +314,7 @@ namespace corsika {
               } // end of ZHS-like approximation
               else {
 
-                CORSIKA_LOG_INFO("Endpoints calculation --- CoREAS");
+//                CORSIKA_LOG_INFO("Endpoints calculation --- CoREAS");
 
                 // calculate electric field vector for startpoint
                 ElectricFieldVector EV1_ = (paths1[i].emit_.cross(paths1[i].emit_.cross(beta_)))
@@ -326,7 +326,7 @@ namespace corsika {
 
                 if ((preDoppler_ < 1.e-9) || (postDoppler_ < 1.e-9)) {
 
-                  CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9 for this track");
+//                  CORSIKA_LOG_ERROR("Doppler factors are less than 1.e-9 for this track");
 
                   const TimeType gridResolution_{1 / antenna.sample_rate_};
                   TimeType deltaT_{endPointReceiveTime_ - startPointReceiveTime_};
@@ -377,10 +377,10 @@ namespace corsika {
             } // End of loop over both paths to get signal info
           }   // End of try block
           catch (size_t i) {
-            CORSIKA_LOG_ERROR("Signal Paths do not have the same size!");
+//            CORSIKA_LOG_ERROR("Signal Paths do not have the same size!");
           }
         } // End of looping over antennas
-        CORSIKA_LOG_DEBUG("CoREAS simulation performed");
+//        CORSIKA_LOG_DEBUG("CoREAS simulation performed");
         return ProcessReturn::Ok;
       }
     } // End of simulate method
