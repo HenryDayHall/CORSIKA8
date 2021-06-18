@@ -158,24 +158,29 @@ int main(int argc, char** argv) {
       ->default_str("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
       ->group("Misc.");
+  app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
+      ->default_val("info")
+      ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
+      ->group("Misc.");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
 
-  string const loglevel =
-      (app.count("--verbosity") ? app["--verbosity"]->as<string>() : "info");
-  if (loglevel == "warn") {
-    logging::set_level(logging::level::warn);
-  } else if (loglevel == "info") {
-    logging::set_level(logging::level::info);
-  } else if (loglevel == "debug") {
-    logging::set_level(logging::level::debug);
-  } else if (loglevel == "trace") {
+  if (app.count("--verbosity")) {
+    string const loglevel = app["verbosity"]->as<string>();
+    if (loglevel == "warn") {
+      logging::set_level(logging::level::warn);
+    } else if (loglevel == "info") {
+      logging::set_level(logging::level::info);
+    } else if (loglevel == "debug") {
+      logging::set_level(logging::level::debug);
+    } else if (loglevel == "trace") {
 #ifndef DEBUG
-    CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
-    return 1;
+      CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
+      return 1;
 #endif
-    logging::set_level(logging::level::trace);
+      logging::set_level(logging::level::trace);
+    }
   }
 
   // check that we got either PDG or A/Z
@@ -217,7 +222,7 @@ int main(int argc, char** argv) {
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
   ofstream atmout("earth.dat");
-  for (LengthType h = 0_m; h < 110_km; h += 10_m) {
+  for (LengthType h = 0_m; h < 110_km; h += 100_m) {
     Point const ptest{rootCS, 0_m, 0_m, builder.getPlanetRadius() + h};
     auto rho =
         env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
@@ -225,6 +230,8 @@ int main(int argc, char** argv) {
     atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
   }
   atmout.close();
+
+  /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT PRIMARY PARTICLE === */
 

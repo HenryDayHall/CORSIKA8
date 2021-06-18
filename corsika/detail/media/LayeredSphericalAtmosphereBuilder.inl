@@ -167,7 +167,7 @@ namespace corsika {
   template <typename TMediumInterface, template <typename> typename MExtraEnvirnoment>
   struct make_layered_spherical_atmosphere_builder {
     template <typename... TArgs>
-    static auto create(Point const& center, LengthType const earthRadius, TArgs... args) {
+    static auto create(Point const& center, LengthType const planetRadius, TArgs... args) {
       return LayeredSphericalAtmosphereBuilder<TMediumInterface, MExtraEnvirnoment,
                                                TArgs...>{std::forward<TArgs>(args)...,
                                                          center, planetRadius};
