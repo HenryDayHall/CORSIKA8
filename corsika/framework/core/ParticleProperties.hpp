@@ -88,6 +88,8 @@ namespace corsika {
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
   PDGCode constexpr get_PDG(Code const);
+  PDGCode constexpr get_PDG(unsigned int A, unsigned int Z);
+  
   std::string_view constexpr get_name(Code const); //!< name of the particle as string
   TimeType constexpr get_lifetime(Code const);     //!< lifetime
 
