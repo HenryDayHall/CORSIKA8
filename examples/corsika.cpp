@@ -97,10 +97,6 @@ void registerRandomStreams(int seed) {
 template <typename T>
 using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
-// argv : 1.number of nucleons, 2.number of protons,
-//        3.total energy in GeV, 4.number of showers,
-//        5.seed (0 by default to generate random values for all)
-
 int main(int argc, char** argv) {
 
   // the main command line description
@@ -160,21 +156,19 @@ int main(int argc, char** argv) {
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
 
-  if (app.count("--verbosity")) {
-    string const loglevel = app["verbosity"]->as<string>();
-    if (loglevel == "warn") {
-      logging::set_level(logging::level::warn);
-    } else if (loglevel == "info") {
-      logging::set_level(logging::level::info);
-    } else if (loglevel == "debug") {
-      logging::set_level(logging::level::debug);
-    } else if (loglevel == "trace") {
+  string const loglevel = app["verbosity"]->as<string>();
+  if (loglevel == "warn") {
+    logging::set_level(logging::level::warn);
+  } else if (loglevel == "info") {
+    logging::set_level(logging::level::info);
+  } else if (loglevel == "debug") {
+    logging::set_level(logging::level::debug);
+  } else if (loglevel == "trace") {
 #ifndef DEBUG
-      CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
-      return 1;
+    CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
+    return 1;
 #endif
-      logging::set_level(logging::level::trace);
-    }
+    logging::set_level(logging::level::trace);
   }
 
   // check that we got either PDG or A/Z
@@ -216,7 +210,7 @@ int main(int argc, char** argv) {
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
   ofstream atmout("earth.dat");
-  for (LengthType h = 0_m; h < 110_km; h += 100_m) {
+  for (LengthType h = 0_m; h < 110_km; h += 10_m) {
     Point const ptest{rootCS, 0_m, 0_m, builder.getPlanetRadius() + h};
     auto rho =
         env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
@@ -342,7 +336,7 @@ int main(int argc, char** argv) {
 
   // observation plane
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
-  ObservationPlane<setup::Tracking, NoOutput> observationLevel(
+  ObservationPlane<setup::Tracking> observationLevel(
       obsPlane, DirectionVector(rootCS, {1., 0., 0.}));
   // register the observation plane with the output
   output.add("particles", observationLevel);
@@ -381,9 +375,10 @@ int main(int argc, char** argv) {
     output.startOfShower();
 
     // directory for outputs
-    string const labHist_file = "inthist_lab_verticalEAS_" + to_string(i_shower) + ".npz";
-    string const cMSHist_file = "inthist_cms_verticalEAS_" + to_string(i_shower) + ".npz";
-    string const longprof_file = "longprof_verticalEAS_" + to_string(i_shower) + ".txt";
+    string const outdir(app["--filename"]->as<std::string>());
+    string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
+    string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
+    string const longprof_file = outdir + "/longprof_" + to_string(i_shower) + ".txt";
 
     // setup particle stack, and add primary particle
     stack.clear();

@@ -489,7 +489,7 @@ TEST_CASE("InhomogeneousMedium") {
   auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };
   auto const exactLength = [](auto X) { return 1_m * log(1 + X / (rho0 * 1_m)); };
 
-  LengthType constexpr length = tEnd * speed;
+  LengthType const length = tEnd * speed;
 
   NuclearComposition const composition{{Code::Proton}, {1.f}};
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
