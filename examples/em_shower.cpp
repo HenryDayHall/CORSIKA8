@@ -128,8 +128,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 1.4_km + builder.getEarthRadius();
-  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+  auto const observationHeight = 1.4_km + builder.getPlanetRadius();
+  auto const injectionHeight = 112.75_km + builder.getPlanetRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));

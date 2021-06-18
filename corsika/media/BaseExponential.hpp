@@ -29,8 +29,6 @@ namespace corsika {
                     MassDensityType rho0, LengthType lambda);
 
     Point const& getAnchorPoint() const { return point_; }
-    MassDensityType getRho0() const { return rho0_; }
-    InverseLengthType getInvLambda() const { return invLambda_; }
 
   protected:
     auto const& getImplementation() const;

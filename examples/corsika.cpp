@@ -103,8 +103,6 @@ using MyExtraEnv = MediumPropertyModel<UniformMagneticField<T>>;
 
 int main(int argc, char** argv) {
 
-  logging::set_level(logging::level::info);
-
   // the main command line description
   CLI::App app{"Simulate standard (downgoing) showers with CORSIKA 8."};
 
@@ -154,9 +152,30 @@ int main(int argc, char** argv) {
       ->group("Misc.");
   app.add_flag("--force-interaction", "Force the location of the first interaction.")
       ->group("Misc.");
+  app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
+      ->default_val("info")
+      ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
+      ->group("Misc.");
 
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
+
+  if (app.count("--verbosity")) {
+    string const loglevel = app["verbosity"]->as<string>();
+    if (loglevel == "warn") {
+      logging::set_level(logging::level::warn);
+    } else if (loglevel == "info") {
+      logging::set_level(logging::level::info);
+    } else if (loglevel == "debug") {
+      logging::set_level(logging::level::debug);
+    } else if (loglevel == "trace") {
+#ifndef DEBUG
+      CORSIKA_LOG_ERROR("trace log level requires a Debug build.");
+      return 1;
+#endif
+      logging::set_level(logging::level::trace);
+    }
+  }
 
   // check that we got either PDG or A/Z
   // this can be done with option_groups but the ordering
@@ -185,16 +204,28 @@ int main(int argc, char** argv) {
                                                                            50_uT, 0_T});
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
-       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
+       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
 
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km + constants::EarthRadius::Mean);
+  builder.addLinearLayer(1e9_cm, 112.8_km);
   builder.assemble(env);
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
+
+  ofstream atmout("earth.dat");
+  for (LengthType h = 0_m; h < 110_km; h += 100_m) {
+    Point const ptest{rootCS, 0_m, 0_m, builder.getPlanetRadius() + h};
+    auto rho =
+        env.getUniverse()->getContainingNode(ptest)->getModelProperties().getMassDensity(
+            ptest);
+    atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
+  }
+  atmout.close();
+
+  /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
@@ -231,8 +262,8 @@ int main(int argc, char** argv) {
   /* === END: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT GEOMETRY === */
-  auto const observationHeight = 0_km + builder.getEarthRadius();
-  auto const injectionHeight = 111.75_km + builder.getEarthRadius();
+  auto const observationHeight = 0_km + builder.getPlanetRadius();
+  auto const injectionHeight = 111.75_km + builder.getPlanetRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
@@ -281,9 +312,9 @@ int main(int argc, char** argv) {
       Code::KStar0_1430_MinusBar,
   }};
 
-  decaySibyll.printDecayConfig();
+  // decaySibyll.printDecayConfig();
 
-  ParticleCut cut{50_GeV, 50_GeV, 50_GeV, 50_GeV, false};
+  ParticleCut cut{1_GeV, 1_GeV, 1_GeV, 1_GeV, false};
   corsika::proposal::Interaction emCascade(env);
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);

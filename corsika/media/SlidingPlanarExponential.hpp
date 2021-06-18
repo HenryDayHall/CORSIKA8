@@ -13,7 +13,6 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
 
@@ -53,7 +52,6 @@ namespace corsika {
 
   private:
     NuclearComposition const nuclComp_;
-    LengthType const referenceHeight_;
   };
 
 } // namespace corsika

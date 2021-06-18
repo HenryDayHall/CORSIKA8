@@ -8,50 +8,51 @@
 
 #pragma once
 
-#include <corsika/media/SlidingPlanarExponential.hpp>
-
 namespace corsika {
 
-  template <typename T>
-  inline SlidingPlanarExponential<T>::SlidingPlanarExponential(
+  template <typename TDerived>
+  inline SlidingPlanarExponential<TDerived>::SlidingPlanarExponential(
       Point const& p0, MassDensityType rho0, LengthType lambda,
       NuclearComposition const& nuclComp, LengthType referenceHeight)
-      : BaseExponential<SlidingPlanarExponential<T>>(p0, referenceHeight, rho0, lambda)
-      , nuclComp_(nuclComp)
-      , referenceHeight_(referenceHeight) {}
+      : BaseExponential<SlidingPlanarExponential<TDerived>>(p0, referenceHeight, rho0,
+                                                            lambda)
+      , nuclComp_(nuclComp) {}
 
-  template <typename T>
-  inline MassDensityType SlidingPlanarExponential<T>::getMassDensity(
+  template <typename TDerived>
+  inline MassDensityType SlidingPlanarExponential<TDerived>::getMassDensity(
       Point const& point) const {
     auto const heightFull =
-        (point - BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
+        (point - BaseExponential<SlidingPlanarExponential<TDerived>>::getAnchorPoint())
             .getNorm();
-    return BaseExponential<SlidingPlanarExponential<T>>::getMassDensity(heightFull);
+    return BaseExponential<SlidingPlanarExponential<TDerived>>::getMassDensity(
+        heightFull);
   }
 
-  template <typename T>
-  inline NuclearComposition const& SlidingPlanarExponential<T>::getNuclearComposition()
-      const {
+  template <typename TDerived>
+  inline NuclearComposition const&
+  SlidingPlanarExponential<TDerived>::getNuclearComposition() const {
     return nuclComp_;
   }
 
-  template <typename T>
-  inline GrammageType SlidingPlanarExponential<T>::getIntegratedGrammage(
+  template <typename TDerived>
+  inline GrammageType SlidingPlanarExponential<TDerived>::getIntegratedGrammage(
       BaseTrajectory const& traj) const {
-    auto const axis = (traj.getPosition(0) -
-                       BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
-                          .normalized();
-    return BaseExponential<SlidingPlanarExponential<T>>::getIntegratedGrammage(traj,
-                                                                               axis);
+    auto const axis =
+        (traj.getPosition(0) -
+         BaseExponential<SlidingPlanarExponential<TDerived>>::getAnchorPoint())
+            .normalized();
+    return BaseExponential<SlidingPlanarExponential<TDerived>>::getIntegratedGrammage(
+        traj, axis);
   }
 
-  template <typename T>
-  inline LengthType SlidingPlanarExponential<T>::getArclengthFromGrammage(
+  template <typename TDerived>
+  inline LengthType SlidingPlanarExponential<TDerived>::getArclengthFromGrammage(
       BaseTrajectory const& traj, GrammageType const grammage) const {
-    auto const axis = (traj.getPosition(0) -
-                       BaseExponential<SlidingPlanarExponential<T>>::getAnchorPoint())
-                          .normalized();
-    return BaseExponential<SlidingPlanarExponential<T>>::getArclengthFromGrammage(
+    auto const axis =
+        (traj.getPosition(0) -
+         BaseExponential<SlidingPlanarExponential<TDerived>>::getAnchorPoint())
+            .normalized();
+    return BaseExponential<SlidingPlanarExponential<TDerived>>::getArclengthFromGrammage(
         traj, grammage, axis);
   }
 
