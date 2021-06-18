@@ -184,7 +184,8 @@ int main(int argc, char** argv) {
   // parse the command line options into the variables
   CLI11_PARSE(app, argc, argv);
 
-  string const loglevel = app["verbosity"]->as<string>();
+  string const loglevel =
+      (app.count("--verbosity") ? app["verbosity"]->as<string>() : "info");
   if (loglevel == "warn") {
     logging::set_level(logging::level::warn);
   } else if (loglevel == "info") {
