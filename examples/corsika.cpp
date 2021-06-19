@@ -148,8 +148,8 @@ int main(int argc, char** argv) {
       ->group("Misc.");
   app.add_flag("--force-interaction", "Force the location of the first interaction.")
       ->group("Misc.");
-  app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
-      ->default_val("info")
+  app.add_option("-v,--verbosity", "Verbosity level")
+      ->default_str("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
       ->group("Misc.");
 
@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
   CLI11_PARSE(app, argc, argv);
 
   string const loglevel =
-      (app.count("--verbosity") ? app["verbosity"]->as<string>() : "info");
+      (app.count("--verbosity") ? app["--verbosity"]->as<string>() : "info");
   if (loglevel == "warn") {
     logging::set_level(logging::level::warn);
   } else if (loglevel == "info") {

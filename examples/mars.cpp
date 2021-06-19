@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
 
-  LongitudinalProfile longprof{showerAxis};
+  LongitudinalProfile longprof{showerAxis, 1_g / square(1_cm)};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
