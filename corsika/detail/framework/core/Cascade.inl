@@ -204,17 +204,20 @@ namespace corsika {
 
       CORSIKA_LOG_DEBUG("step limit reached (e.g. deflection). nothing further happens.");
 
-      [[maybe_unused]] auto const assertion = [&] {
+      {
         auto const* numericalNodeAfterStep =
             environment_.getUniverse()->getContainingNode(vParticle.getPosition());
         CORSIKA_LOG_TRACE(
             "Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
             fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
-        return numericalNodeAfterStep == currentLogicalNode;
-      };
-
-      assert(assertion()); // numerical and logical nodes should match, since
-                           // we did not cross any volume boundary
+        if (numericalNodeAfterStep != currentLogicalNode) {
+          CORSIKA_LOG_ERROR(
+              "expect to be in node currentLogicalNode={} but are in "
+              "numericalNodeAfterStep={}. Continue, but without guarantee.",
+              fmt::ptr(currentLogicalNode), fmt::ptr(numericalNodeAfterStep));
+        }
+      }
+      // we did not cross any volume boundary
 
       // step length limit
       return;
@@ -253,7 +256,7 @@ namespace corsika {
 
     sequence_.doSecondaries(secondaries);
     vParticle.erase();
-  }
+  } // namespace corsika
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline ProcessReturn Cascade<TTracking, TProcessList, TOutput, TStack>::decay(
