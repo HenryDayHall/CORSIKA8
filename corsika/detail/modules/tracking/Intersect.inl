@@ -60,15 +60,11 @@ namespace corsika {
     for (auto const& node : volumeNode.getChildNodes()) {
 
       Intersections const time_intersections = TDerived::intersect(particle, *node);
-      CORSIKA_LOG_TRACE("intersection times with child volume {}", fmt::ptr(node));
+      CORSIKA_LOG_DEBUG("intersection times with child volume {}", fmt::ptr(node));
       if (!time_intersections.hasIntersections()) { continue; }
-      CORSIKA_LOG_TRACE("                                        : enter {} s, exit {} s",
-                        time_intersections.getEntry() / 1_s,
-                        time_intersections.getExit() / 1_s);
-
       auto const t_entry = time_intersections.getEntry();
       auto const t_exit = time_intersections.getExit();
-      CORSIKA_LOG_TRACE("children t-entry: {}, t-exit: {}, smaller? {} ", t_entry, t_exit,
+      CORSIKA_LOG_DEBUG("children t-entry: {}, t-exit: {}, smaller? {} ", t_entry, t_exit,
                         t_entry <= minTime);
       // note, theoretically t can even be smaller than 0 since we
       // KNOW we can't yet be in this volume yet, so we HAVE TO
@@ -96,7 +92,7 @@ namespace corsika {
           time_intersections.getExit() / 1_s);
       auto const t_entry = time_intersections.getEntry();
       auto const t_exit = time_intersections.getExit();
-      CORSIKA_LOG_TRACE("children t-entry: {}, t-exit: {}, smaller? {} ", t_entry, t_exit,
+      CORSIKA_LOG_DEBUG("children t-entry: {}, t-exit: {}, smaller? {} ", t_entry, t_exit,
                         t_entry <= minTime);
       // note, theoretically t can even be smaller than 0 since we
       // KNOW we can't yet be in this volume yet, so we HAVE TO
@@ -106,7 +102,18 @@ namespace corsika {
         minNode = node;
       }
     }
-    CORSIKA_LOG_TRACE("t-intersect: {}, node {} ", minTime, fmt::ptr(minNode));
+    CORSIKA_LOG_DEBUG("next time-intersect: {}, node {} ", minTime, fmt::ptr(minNode));
+    // this branch cannot be unit-testes. This is malfunction: LCOV_EXCL_START
+    if (minTime < 0_s) {
+      if (minTime < 1e-8_s) {
+        CORSIKA_LOG_ERROR(
+            "There is a very negative time step detected: {}. This is not physical and "
+            "may "
+            "easily crash subsequent modules. Set to 0_s, but CHECK AND FIX.",
+            minTime);
+      }
+      minTime = 0_s; // LCOV_EXCL_STOP
+    }
     return std::make_tuple(minTime, minNode);
   }
 
