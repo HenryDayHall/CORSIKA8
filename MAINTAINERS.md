@@ -6,7 +6,6 @@ discussions.
 General and infrastructure:
 - Ralf Ulrich <ralf.ulrich@kit.edu>, KIT
 - Maximilian Reininghaus <maximilian.reininghaus@kit.edu>, KIT
-- Hans Dembinski <hdembins@mpi-hd.mpg.de>, Dortmund
 - Antonio Augusto Alves Junior <antonio.junior@kit.edu>, KIT
 
 High performance, GPU: 

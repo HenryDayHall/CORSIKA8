@@ -186,6 +186,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     particle.setNode(nextVol);
     particle.setPosition(traj.getPosition(1));
     particle.setMomentum(traj.getDirection(1) * particle.getMomentum().getNorm());
+    SpeedType const speed_0 = particle.getVelocity().getNorm();
     if (outer) {
       // now we know we are in target volume, depending on "outer"
       CHECK(traj.getLength(1) / 1_m == Approx(0).margin(1e-3));
@@ -211,6 +212,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
                         particle.getMomentum().getNorm(),
                         particle.getVelocity().getNorm(), traj2.getLength(1),
                         traj2.getLength(1) / particle.getVelocity().getNorm());
+      CHECK(speed_0 / traj2.getVelocity(1).getNorm() == Approx(1));
     }
     CHECK_FALSE(hit_2nd_behind); // this can never happen
     // the next line is maybe an actual BUG: this should be investigated and eventually
