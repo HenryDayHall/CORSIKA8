@@ -22,6 +22,7 @@
 #include <stack>
 #include <tuple>
 #include <type_traits>
+#include <functional>
 
 namespace corsika {
 
@@ -68,9 +69,9 @@ namespace corsika {
 
   protected:
     LayeredSphericalAtmosphereBuilder(TModelArgs... args, Point const& center,
-                                      LengthType earthRadius)
+                                      LengthType planetRadius)
         : center_(center)
-        , earthRadius_(earthRadius)
+        , planetRadius_(planetRadius)
         , additionalModelArgs_{args...} {}
 
   public:
@@ -78,15 +79,19 @@ namespace corsika {
     void addExponentialLayer(GrammageType b, LengthType c, LengthType upperBoundary);
     void addLinearLayer(LengthType c, LengthType upperBoundary);
 
+    void addTabularLayer(std::function<MassDensityType(LengthType)> const& funcRho,
+                         unsigned int const nBins, LengthType const deltaHeight,
+                         LengthType const upperBoundary);
+
     int getSize() const { return layers_.size(); }
 
     void assemble(Environment<TMediumInterface>& env);
     Environment<TMediumInterface> assemble();
 
     /**
-     * Get the current Earth radius.
+     * Get the current planet radius.
      */
-    LengthType getEarthRadius() const { return earthRadius_; }
+    LengthType getPlanetRadius() const { return planetRadius_; }
 
   private:
     void checkRadius(LengthType r) const;
@@ -94,7 +99,7 @@ namespace corsika {
     std::unique_ptr<NuclearComposition> composition_;
     Point center_;
     LengthType previousRadius_{LengthType::zero()};
-    LengthType earthRadius_;
+    LengthType planetRadius_;
     std::tuple<TModelArgs...> const additionalModelArgs_;
 
     std::stack<typename VolumeTreeNode<TMediumInterface>::VTNUPtr>

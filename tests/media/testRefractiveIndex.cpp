@@ -76,19 +76,22 @@ TEST_CASE("UniformRefractiveIndex w/ Homogeneous") {
   CHECK(density == medium.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
   medium.getNuclearComposition();
 
+  SpeedType const speed = 1_m / second;
+
   // create a line of length 1 m
-  Line const line(gOrigin,
-                  VelocityVector(gCS, {1_m / second, 0_m / second, 0_m / second}));
+  Line const line(gOrigin, VelocityVector(gCS, {speed, 0_m / second, 0_m / second}));
 
   // the end time of our line
   auto const tEnd = 1_s;
+
+  LengthType const length = tEnd * speed;
 
   // and the associated trajectory
   setup::Trajectory const track =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
   // and check the integrated grammage
-  CHECK((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  CHECK((medium.getIntegratedGrammage(track) / (density * length)) == Approx(1));
   CHECK((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }
 
@@ -148,24 +151,26 @@ TEST_CASE("ExponentialRefractiveIndex w/ Homogeneous medium") {
   REQUIRE(density == medium__.getMassDensity(Point(gCS, 0_m, 0_m, 0_m)));
   medium__.getNuclearComposition();
 
-  // create a line of length 1 m
-  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                               gCS, {1_m / second, 0_m / second, 0_m / second}));
+  SpeedType const velocity = 1_m / second;
 
   // the end time of our line
-  auto const tEnd = 1_s;
+  TimeType const tEnd = 1_s;
+
+  LengthType const length = tEnd * velocity;
+
+  // create a line of length 1 m
+  Line const line(gOrigin, Vector<SpeedType::dimension_type>(
+                               gCS, {velocity, 0_m / second, 0_m / second}));
 
   // and the associated trajectory
   setup::Trajectory const track =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
-  //  // and the associated trajectory
-  //  Trajectory<Line> const trajectory(line, tEnd);
 
   // and check the integrated grammage
-  REQUIRE((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium.getIntegratedGrammage(track) / (density * length)) == Approx(1));
   REQUIRE((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
-  REQUIRE((medium_.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium_.getIntegratedGrammage(track) / (density * length)) == Approx(1));
   REQUIRE((medium_.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
-  REQUIRE((medium__.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
+  REQUIRE((medium__.getIntegratedGrammage(track) / (density * length)) == Approx(1));
   REQUIRE((medium__.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }

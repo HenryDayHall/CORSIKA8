@@ -18,19 +18,17 @@ namespace corsika {
 
   template <typename T>
   inline FlatExponential<T>::FlatExponential(Point const& point,
-                                             Vector<dimensionless_d> const& axis,
+                                             DirectionVector const& axis,
                                              MassDensityType rho, LengthType lambda,
                                              NuclearComposition const& nuclComp)
-      : BaseExponential<FlatExponential<T>>(point, rho, lambda)
+      : BaseExponential<FlatExponential<T>>(point, 0_m, rho, lambda)
       , axis_(axis)
       , nuclComp_(nuclComp) {}
 
   template <typename T>
   inline MassDensityType FlatExponential<T>::getMassDensity(Point const& point) const {
-    return BaseExponential<FlatExponential<T>>::getRho0() *
-           exp(BaseExponential<FlatExponential<T>>::getInvLambda() *
-               (point - BaseExponential<FlatExponential<T>>::getAnchorPoint())
-                   .dot(axis_));
+    return BaseExponential<FlatExponential<T>>::getMassDensity(
+        (point - BaseExponential<FlatExponential<T>>::getAnchorPoint()).getNorm());
   }
 
   template <typename T>
@@ -40,8 +38,8 @@ namespace corsika {
 
   template <typename T>
   inline GrammageType FlatExponential<T>::getIntegratedGrammage(
-      BaseTrajectory const& line, LengthType to) const {
-    return BaseExponential<FlatExponential<T>>::getIntegratedGrammage(line, to, axis_);
+      BaseTrajectory const& line) const {
+    return BaseExponential<FlatExponential<T>>::getIntegratedGrammage(line, axis_);
   }
 
   template <typename T>

@@ -25,7 +25,6 @@ using namespace corsika;
 TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   CoordinateSystemPtr const& gCS = get_root_CoordinateSystem();
   Point const gOrigin(gCS, {0_m, 0_m, 0_m});
@@ -85,8 +84,4 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   // and the associated trajectory
   setup::Trajectory const track =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
-
-  // and check the integrated grammage
-  CHECK((medium.getIntegratedGrammage(track, 3_m) / (density * 3_m)) == Approx(1));
-  CHECK((medium.getArclengthFromGrammage(track, density * 5_m) / 5_m) == Approx(1));
 }

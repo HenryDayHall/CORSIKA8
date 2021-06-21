@@ -67,7 +67,7 @@
 /*
   NOTE, WARNING, ATTENTION
 
-  The .../Random.hpppp implement the hooks of external modules to the C8 random
+  The .../Random.hpp implement the hooks of external modules to the C8 random
   number generator. It has to occur excatly ONCE per linked
   executable. If you include the header below multiple times and
   link this togehter, it will fail.
@@ -78,6 +78,34 @@ using namespace corsika;
 using namespace std;
 
 using Particle = setup::Stack::particle_type;
+
+typedef decltype(1 * pascal) PressureType;
+typedef decltype(1 * degree_celsius) TemperatureType;
+
+class MarsAtmModel {
+public:
+  MarsAtmModel() = delete;
+  MarsAtmModel(PressureType a, InverseLengthType b, TemperatureType c,
+               decltype(1 * degree_celsius / 1_m) d)
+      : a_(a)
+      , b_(b)
+      , c_(c)
+      , d_(d) {}
+
+  MassDensityType operator()(LengthType height) const {
+    PressureType const pressure = a_ * exp(-b_ * height);
+    TemperatureType const temperature = -c_ - d_ * height + 273.1_K; // in K
+    constexpr decltype(square(1_m) / (square(1_s) * 1_K)) constant =
+        1000 * 0.1921 * square(1_m) / (square(1_s) * 1_K);
+    return pressure / (constant * temperature);
+  }
+
+private:
+  PressureType a_;
+  InverseLengthType b_;
+  TemperatureType c_;
+  decltype(1_K / 1_m) d_;
+};
 
 void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
@@ -148,8 +176,8 @@ int main(int argc, char** argv) {
       ->group("Misc.");
   app.add_flag("--force-interaction", "Force the location of the first interaction.")
       ->group("Misc.");
-  app.add_option("-v,--verbosity", "Verbosity level")
-      ->default_str("info")
+  app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
+      ->default_val("info")
       ->check(CLI::IsMember({"warn", "info", "debug", "trace"}))
       ->group("Misc.");
 
@@ -157,7 +185,7 @@ int main(int argc, char** argv) {
   CLI11_PARSE(app, argc, argv);
 
   string const loglevel =
-      (app.count("--verbosity") ? app["--verbosity"]->as<string>() : "info");
+      (app.count("--verbosity") ? app["verbosity"]->as<string>() : "info");
   if (loglevel == "warn") {
     logging::set_level(logging::level::warn);
   } else if (loglevel == "info") {
@@ -191,26 +219,33 @@ int main(int argc, char** argv) {
   EnvType env;
   CoordinateSystemPtr const& rootCS = env.getCoordinateSystem();
   Point const center{rootCS, 0_m, 0_m, 0_m};
-  auto builder = make_layered_spherical_atmosphere_builder<
-      setup::EnvironmentInterface, MyExtraEnv>::create(center,
-                                                       constants::EarthRadius::Mean,
-                                                       Medium::AirDry1Atm,
-                                                       MagneticFieldVector{rootCS, 0_T,
-                                                                           50_uT, 0_T});
-  builder.setNuclearComposition(
-      {{Code::Nitrogen, Code::Oxygen},
-       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
+  LengthType const radiusMars = 3389.5_km;
+  auto builder =
+      make_layered_spherical_atmosphere_builder<setup::EnvironmentInterface, MyExtraEnv>::
+          create(center,
+                 radiusMars,                                   // Mars
+                 Medium::AirDry1Atm,                           // Mars, close enough
+                 MagneticFieldVector{rootCS, 0_T, 0_uT, 0_T}); // Mars
 
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
-  builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
-  builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
-  builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
-  builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
+  builder.setNuclearComposition(                             // Mars
+      {{Code::Nitrogen, Code::Oxygen}, {1. / 3., 2. / 3.}}); // simplified
+  //{{Code::Carbon, Code::Oxygen, // 95.97 CO2
+  //          Code::Nitrogen},            // 1.89 N2 + 1.93 Argon + 0.146 O2
+  //       {0.9597 / 3, 0.9597 * 2 / 3,
+  //      1 - 0.9597}}); // values taken from AIRES manual, Ar removed for now
+
+  MarsAtmModel layer1(0.699e3 * pascal, 0.00009 / 1_m, 31.0 * degree_celsius,
+                      0.000998 * 1 * degree_celsius / 1_m);
+  MarsAtmModel layer2(0.699e3 * pascal, 0.00009 / 1_m, 23.4 * degree_celsius,
+                      0.00222 * 1 * degree_celsius / 1_m);
+
+  builder.addTabularLayer(layer1, 100, 100_m, 7_km);
+  builder.addTabularLayer(layer2, 300, 500_m, 100_km);
   builder.addLinearLayer(1e9_cm, 112.8_km);
   builder.assemble(env);
   /* === END: SETUP ENVIRONMENT AND ROOT COORDINATE SYSTEM === */
 
-  ofstream atmout("earth.dat");
+  ofstream atmout("mars.dat");
   for (LengthType h = 0_m; h < 110_km; h += 10_m) {
     Point const ptest{rootCS, 0_m, 0_m, builder.getPlanetRadius() + h};
     auto rho =
@@ -219,8 +254,6 @@ int main(int argc, char** argv) {
     atmout << h / 1_m << " " << rho / 1_kg * cube(1_m) << "\n";
   }
   atmout.close();
-
-  /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
   /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
@@ -314,7 +347,7 @@ int main(int argc, char** argv) {
   corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
 
-  LongitudinalProfile longprof{showerAxis};
+  LongitudinalProfile longprof{showerAxis, 1_g / square(1_cm)};
 
   corsika::urqmd::UrQMD urqmd;
   InteractionCounter urqmdCounted{urqmd};
@@ -369,7 +402,6 @@ int main(int argc, char** argv) {
 
   // loop over each shower
   for (int i_shower = 1; i_shower < nevent + 1; i_shower++) {
-
     CORSIKA_LOG_INFO("Shower {} / {} ", i_shower, nevent);
 
     // trigger the start of the outputs for this shower
@@ -379,7 +411,7 @@ int main(int argc, char** argv) {
     string const outdir(app["--filename"]->as<std::string>());
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
-    string const longprof_file = outdir + "/longprof_" + to_string(i_shower) + ".txt";
+    string const longprof_file = outdir + "/longprof" + to_string(i_shower) + ".txt";
 
     // setup particle stack, and add primary particle
     stack.clear();

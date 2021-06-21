@@ -97,8 +97,7 @@ namespace corsika::proposal {
     if (vT.getLength() == 0_m) return ProcessReturn::Ok;
 
     // calculate passed grammage
-    auto dX =
-        vP.getNode()->getModelProperties().getIntegratedGrammage(vT, vT.getLength());
+    auto dX = vP.getNode()->getModelProperties().getIntegratedGrammage(vT);
 
     // get or build corresponding track integral calculator and solve the
     // integral

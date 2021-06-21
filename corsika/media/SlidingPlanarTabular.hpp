@@ -12,34 +12,36 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
-#include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/BaseTabular.hpp>
 
 namespace corsika {
 
   // clang-format off
   /**
-   * The SlidingPlanarExponential models mass density as
+   * The SlidingPlanarTabular models mass density as
    * \f[
-   *   \varrho(r) = \varrho_0 \exp\left( \frac{|p_0 - r|}{\lambda} \right).
+   *   \varrho(r) = \varrho_0 \rho\left( |p_0 - r| \right).
    * \f]
    * For grammage/length conversion, the density distribution is approximated as
-   * locally flat at the starting point \f$ r_0 \f$ of the trajectory with the axis pointing
-   * from \f$ p_0 \f$ to \f$ r_0 \f$.
+   * locally flat at the starting point \f$ r_0 \f$ of the trajectory with the 
+   * axis pointing rom \f$ p_0 \f$ to \f$ r_0 \f$ defining the local height.
    */
   // clang-format on
 
-  template <typename T>
-  class SlidingPlanarExponential : public BaseExponential<SlidingPlanarExponential<T>>,
-                                   public T {
+  template <typename TDerived>
+  class SlidingPlanarTabular : public BaseTabular<SlidingPlanarTabular<TDerived>>,
+                               public TDerived {
 
-    using Base = BaseExponential<SlidingPlanarExponential<T>>;
+    using Base = BaseTabular<SlidingPlanarTabular<TDerived>>;
 
   public:
-    SlidingPlanarExponential(Point const& p0, MassDensityType rho0, LengthType lambda,
-                             NuclearComposition const& nuclComp,
-                             LengthType referenceHeight = LengthType::zero());
+    SlidingPlanarTabular(Point const& p0,
+                         std::function<MassDensityType(LengthType)> const& rho,
+                         unsigned int const nBins, LengthType const deltaHeight,
+                         NuclearComposition const& nuclComp,
+                         LengthType referenceHeight = LengthType::zero());
 
     MassDensityType getMassDensity(Point const& point) const override;
 
@@ -56,4 +58,4 @@ namespace corsika {
 
 } // namespace corsika
 
-#include <corsika/detail/media/SlidingPlanarExponential.inl>
+#include <corsika/detail/media/SlidingPlanarTabular.inl>

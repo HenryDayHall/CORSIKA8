@@ -60,4 +60,6 @@ CORSIKA_REGISTER_EXAMPLE (hybrid_MC RUN_OPTIONS 4 2 10000.)
 add_executable (corsika corsika.cpp)
 target_link_libraries (corsika CORSIKA8::CORSIKA8)
 
+add_executable (mars mars.cpp)
+target_link_libraries (mars CORSIKA8::CORSIKA8)
 

@@ -88,7 +88,8 @@ namespace corsika::urqmd {
         break;
       default: { // LCOV_EXCL_START since this can never happen due to canInteract
         CORSIKA_LOG_WARN("UrQMD cross-section not tabulated for {}", projectileCode);
-        return CrossSectionType::zero(); // LCOV_EXCL_STOP
+        return CrossSectionType::zero();
+        // LCOV_EXCL_STOP
       }
     }
 
@@ -395,9 +396,9 @@ namespace corsika::urqmd {
     boost::filesystem::ifstream file(filename, std::ios::in);
 
     if (!file.is_open()) {
-      throw std::runtime_error(
-          filename.native() +
-          " could not be opened."); // LCOV_EXCL_LINE since this is pointless to test
+      // LCOV_EXCL_START since this is pointless to test
+      throw std::runtime_error(filename.native() + " could not be opened.");
+      // LCOV_EXCL_STOP
     }
 
     std::string line;

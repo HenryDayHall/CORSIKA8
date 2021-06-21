@@ -38,6 +38,7 @@ TEST_CASE("epos", "modules") {
           corsika::epos::convertFromEpos(corsika::epos::EposCode::Electron));
     CHECK(Code::Proton ==
           corsika::epos::convertFromEpos(corsika::epos::EposCode::Proton));
+    CHECK_THROWS(corsika::epos::convertFromEpos(corsika::epos::EposCode::Unknown));
   }
 
   SECTION("corsika -> epos") {

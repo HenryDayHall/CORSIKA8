@@ -21,11 +21,25 @@ namespace corsika {
 
     virtual MassDensityType getMassDensity(Point const&) const = 0;
 
-    // todo: think about the mixin inheritance of the trajectory vs the BaseTrajectory
-    // approach; for now, only lines are supported
-    virtual GrammageType getIntegratedGrammage(BaseTrajectory const&,
-                                               LengthType) const = 0;
+    /**
+     * Integrate the matter density along trajectory.
+     *
+     * @return GrammageType as integrated matter density along the BaseTrajectory
+     *
+     * @todo think about the mixin inheritance of the trajectory vs the BaseTrajectory
+     *       approach; for now, only lines are supported (?).
+     */
+    virtual GrammageType getIntegratedGrammage(BaseTrajectory const&) const = 0;
 
+    /**
+     * Calculates the length along the trajectory.
+     *
+     * The length along the trajectory is determined at which the integrated matter
+     * density is reached. If the specified matter density cannot be reached (is too
+     * large) the result becomes meaningless and could be "infinity" (discuss this).
+     *
+     * @return LengthType the length corresponding to grammage.
+     */
     virtual LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                                 GrammageType) const = 0;
 

@@ -71,6 +71,8 @@ namespace corsika::dummy_stack {
      */
     void copy(const int /*i1*/, const int /*i2*/) {}
 
+    void swap(const int, const int) {}
+
     void incrementSize() { entries_++; }
     void decrementSize() { entries_--; }
 

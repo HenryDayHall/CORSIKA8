@@ -86,4 +86,30 @@ TEST_CASE("GeometryNodeStackExtension", "stack") {
     CHECK(v == 99 * data);
     CHECK(s.getEntries() == 0);
   }
+
+  SECTION("copy and swap") {
+
+    const int data1 = 16;
+    const int data2 = 17;
+
+    TestStack s;
+    // add 99 particles, each 10th particle is a nucleus with A=i and Z=A/2!
+    for (int i = 0; i < 4; ++i) {
+      auto p = s.addParticle(std::tuple<dummy_stack::NoData>{noData});
+      p.setNode(i % 2 == 0 ? &data1 : &data2);
+    }
+
+    CHECK(*((s.first() + 0)).getNode() == 16);
+    CHECK(*((s.first() + 1)).getNode() == 17);
+    CHECK(*((s.first() + 2)).getNode() == 16);
+    CHECK(*((s.first() + 3)).getNode() == 17);
+
+    s.copy(s.first() + 0, s.first() + 1);
+    CHECK(*((s.first() + 0)).getNode() == 16);
+    CHECK(*((s.first() + 1)).getNode() == 16);
+
+    s.swap(s.first() + 3, s.first() + 1);
+    CHECK(*((s.first() + 1)).getNode() == 17);
+    CHECK(*((s.first() + 3)).getNode() == 16);
+  }
 }

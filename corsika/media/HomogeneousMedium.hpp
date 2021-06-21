@@ -30,8 +30,7 @@ namespace corsika {
 
     NuclearComposition const& getNuclearComposition() const override;
 
-    GrammageType getIntegratedGrammage(BaseTrajectory const&,
-                                       LengthType to) const override;
+    GrammageType getIntegratedGrammage(BaseTrajectory const&) const override;
 
     LengthType getArclengthFromGrammage(BaseTrajectory const&,
                                         GrammageType grammage) const override;

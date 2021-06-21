@@ -11,6 +11,7 @@
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+
 #include <corsika/media/DensityFunction.hpp>
 #include <corsika/media/FlatExponential.hpp>
 #include <corsika/media/HomogeneousMedium.hpp>
@@ -26,6 +27,7 @@
 #include <corsika/media/LinearApproximationIntegrator.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/SlidingPlanarExponential.hpp>
+#include <corsika/media/SlidingPlanarTabular.hpp>
 #include <corsika/media/VolumeTreeNode.hpp>
 
 #include <SetupTestTrajectory.hpp>
@@ -81,6 +83,9 @@ TEST_CASE("HomogeneousMedium") {
                                              std::vector<float>{1.f});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 
+  CHECK(protonComposition.getFractions() == std::vector<float>{1.});
+  CHECK(protonComposition.getComponents() == std::vector<Code>{Code::Proton});
+
   CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
   CHECK_THROWS(NuclearComposition({Code::Proton}, {0.99}));
 }
@@ -94,36 +99,42 @@ TEST_CASE("FlatExponential") {
 
   Vector const axis(gCS, QuantityVector<dimensionless_d>(0, 0, 1));
   LengthType const lambda = 3_m;
-  auto const rho0 = 1_g / static_pow<3>(1_cm);
+  auto const rho0 = 1_g / cube(1_cm);
   FlatExponential<IMediumModel> const medium(gOrigin, axis, rho0, lambda,
                                              protonComposition);
-  auto const tEnd = 5_s;
+  SpeedType const speed = 20_m / second;
+  LengthType const length = 2_m;
+  TimeType const tEnd = length / speed;
+
+  CHECK(medium.getNuclearComposition().getFractions() == std::vector<float>{1.});
+  CHECK(medium.getNuclearComposition().getComponents() ==
+        std::vector<Code>{Code::Proton});
 
   SECTION("horizontal") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {20_cm / second, 0_m / second, 0_m / second}));
+                                 gCS, {speed, 0_m / second, 0_m / second}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
-    CHECK((medium.getIntegratedGrammage(trajectory, 2_m) / (rho0 * 2_m)) == Approx(1));
-    CHECK((medium.getArclengthFromGrammage(trajectory, rho0 * 5_m) / 5_m) == Approx(1));
+    CHECK((medium.getIntegratedGrammage(trajectory) / (rho0 * length)) == Approx(1));
+    CHECK((medium.getArclengthFromGrammage(trajectory, rho0 * length) / length) ==
+          Approx(1));
   }
 
   SECTION("vertical") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {0_m / second, 0_m / second, 5_m / second}));
+                                 gCS, {0_m / second, 0_m / second, speed}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
-    LengthType const length = 2 * lambda;
     GrammageType const exact = rho0 * lambda * (exp(length / lambda) - 1);
 
-    CHECK((medium.getIntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    CHECK((medium.getIntegratedGrammage(trajectory) / exact) == Approx(1));
     CHECK((medium.getArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 
   SECTION("escape grammage") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {0_m / second, 0_m / second, -5_m / second}));
+                                 gCS, {SpeedType::zero(), SpeedType::zero(), -speed}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
     GrammageType const escapeGrammage = rho0 * lambda;
@@ -134,15 +145,15 @@ TEST_CASE("FlatExponential") {
   }
 
   SECTION("inclined") {
-    Line const line(gOrigin, Vector<SpeedType::dimension_type>(
-                                 gCS, {0_m / second, 5_m / second, 5_m / second}));
+    Line const line(gOrigin,
+                    Vector<SpeedType::dimension_type>(
+                        gCS, {0_m / second, speed / sqrt(2.), speed / sqrt(2.)}));
     setup::Trajectory const trajectory =
         setup::testing::make_track<setup::Trajectory>(line, tEnd);
     double const cosTheta = M_SQRT1_2;
-    LengthType const length = 2 * lambda;
     GrammageType const exact =
         rho0 * lambda * (exp(cosTheta * length / lambda) - 1) / cosTheta;
-    CHECK((medium.getIntegratedGrammage(trajectory, length) / exact) == Approx(1));
+    CHECK((medium.getIntegratedGrammage(trajectory) / exact) == Approx(1));
     CHECK((medium.getArclengthFromGrammage(trajectory, exact) / length) == Approx(1));
   }
 }
@@ -179,16 +190,286 @@ TEST_CASE("SlidingPlanarExponential") {
 
     CHECK(medium.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude() ==
           flat.getMassDensity({gCS, {0_mm, 0_m, 3_m}}).magnitude());
-    CHECK(medium.getIntegratedGrammage(trajectory, 2_m).magnitude() ==
-          flat.getIntegratedGrammage(trajectory, 2_m).magnitude());
+    CHECK(medium.getIntegratedGrammage(trajectory).magnitude() ==
+          flat.getIntegratedGrammage(trajectory).magnitude());
     CHECK(medium.getArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude() ==
           flat.getArclengthFromGrammage(trajectory, rho0 * 5_m).magnitude());
   }
 }
 
-auto constexpr rho0 = 1_kg / 1_m / 1_m / 1_m;
+struct RhoFuncConst {
+  MassDensityType operator()(LengthType) const { return 1_g / cube(1_cm); }
+  static GrammageType integrate(LengthType dL) { return dL * 1_g / cube(1_cm); }
+};
 
-struct Exponential {
+struct RhoFuncExp {
+  MassDensityType operator()(LengthType height) const {
+    return 1_g / cube(1_cm) * exp(-height / 1000_m);
+  }
+  static GrammageType integrate(BaseTrajectory const& traj, Point const& origin,
+                                LengthType const& refH) {
+    LengthType height1 = (traj.getPosition(0) - origin).getNorm() - refH;
+    LengthType height2 = (traj.getPosition(1) - origin).getNorm() - refH;
+    if (height1 > height2) { std::swap(height1, height2); }
+
+    DirectionVector const axis(
+        (traj.getPosition(0) - origin).normalized()); // to gravity center
+    double const cosTheta = axis.dot(traj.getDirection(0));
+
+    CORSIKA_LOG_INFO("h1={} h2={} cT={} rho1={}, rho2={}", height1, height2, cosTheta,
+                     1_g / cube(1_cm) * exp(-height1 / 1000_m),
+                     1_g / cube(1_cm) * exp(-height2 / 1000_m));
+    return (1_km * 1_g / cube(1_cm) * exp(-height1 / 1000_m) -
+            1_km * 1_g / cube(1_cm) * exp(-height2 / 1000_m)) /
+           cosTheta;
+  }
+  static GrammageType integrate(BaseTrajectory const& traj, LengthType const& length,
+                                Point const& origin, LengthType const& refH) {
+    LengthType height1 = (traj.getPosition(0) - origin).getNorm() - refH;
+    LengthType height2 =
+        (traj.getPosition(0) + traj.getDirection(0) * length - origin).getNorm() - refH;
+    if (height1 > height2) { std::swap(height1, height2); }
+
+    DirectionVector const axis(
+        (traj.getPosition(0) - origin).normalized()); // to gravity center
+    double const cosTheta = axis.dot(traj.getDirection(0));
+
+    CORSIKA_LOG_INFO("h1={} h2={} cT={}", height1, height2, cosTheta);
+    return (1_km * 1_g / cube(1_cm) * exp(-height1 / 1000_m) -
+            1_km * 1_g / cube(1_cm) * exp(-height2 / 1000_m)) /
+           cosTheta;
+  }
+};
+
+TEST_CASE("SlidingPlanarTabular") {
+
+  logging::set_level(logging::level::info);
+
+  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
+                                             std::vector<float>{1.f});
+
+  RhoFuncConst rhoFunc;
+  SlidingPlanarTabular<IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
+                                                  protonComposition);
+
+  SECTION("not possible") {
+    CHECK_THROWS(medium.getMassDensity({gCS, {0_m, 1e10_m, 0_m}}));
+
+    SpeedType const speed = 5_m / second;
+    TimeType const tEnd = 1e10_s;
+    Line const line(
+        {gCS, {0_m, 0_m, 1_m}},
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, speed}));
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
+    CHECK_THROWS(medium.getIntegratedGrammage(trajectory));
+
+    Line const line2(
+        {gCS, {0_m, 0_m, 1e9_m}},
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, speed}));
+    setup::Trajectory const trajectory2 =
+        setup::testing::make_track<setup::Trajectory>(line2, tEnd);
+    CHECK_THROWS(medium.getArclengthFromGrammage(trajectory2, 1e3_g / square(1_cm)));
+  }
+
+  SECTION("density") {
+    CHECK(medium.getMassDensity({gCS, {0_m, 0_m, 3_m}}) /
+              medium.getMassDensity({gCS, {0_m, 3_m, 0_m}}) ==
+          Approx(1));
+    CHECK(medium.getMassDensity({gCS, {0_mm, 0_m, 3_m}}) == 1_g / cube(1_cm));
+    CHECK(medium.getMassDensity({gCS, {0_mm, 0_m, 300_m}}) == 1_g / cube(1_cm));
+  }
+
+  SECTION("vertical") {
+    SpeedType const speed = 5_m / second;
+    TimeType const tEnd1 = 1_s;
+    LengthType const length1 = speed * tEnd1;
+    TimeType const tEnd2 = 300_s;
+    LengthType const length2 = speed * tEnd2;
+    Line const line(
+        {gCS, {0_m, 0_m, 1_m}},
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, speed}));
+    setup::Trajectory const trajectory1 =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd1);
+    Line const line1Reverse(
+        trajectory1.getPosition(1),
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, -speed}));
+    setup::Trajectory const trajectory1Reverse =
+        setup::testing::make_track<setup::Trajectory>(line1Reverse, tEnd1);
+
+    setup::Trajectory const trajectory2 =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd2);
+    Line const line2Reverse(
+        trajectory2.getPosition(0),
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, -speed}));
+    setup::Trajectory const trajectory2Reverse =
+        setup::testing::make_track<setup::Trajectory>(line2Reverse, tEnd2);
+
+    // failures
+    CHECK_THROWS(medium.getArclengthFromGrammage(trajectory1, -1_kg / square(1_cm)));
+
+    MassDensityType const rho0 = 1_g / cube(1_cm);
+
+    // short track
+    CHECK(medium.getIntegratedGrammage(trajectory1) == length1 * rho0);
+    LengthType const testD1 = length1 / 200; // within bin
+    CHECK(medium.getArclengthFromGrammage(trajectory1, rho0 * testD1) / testD1 ==
+          Approx(1));
+    // short track, reverse
+    CHECK(medium.getIntegratedGrammage(trajectory1Reverse) == length1 * rho0);
+    CHECK(medium.getArclengthFromGrammage(trajectory1Reverse, rho0 * testD1) / testD1 ==
+          Approx(1));
+
+    // long track
+    CHECK(medium.getIntegratedGrammage(trajectory2) == length2 * 1_g / cube(1_cm));
+    LengthType const testD2 = length2 / 25; // multi bin
+    CHECK(medium.getArclengthFromGrammage(trajectory2, rho0 * testD2) == testD2);
+  }
+
+  SECTION("inclined") {
+    SpeedType const speed = 5_m / second;
+    TimeType const tEnd1 = 1_s;
+    LengthType const length1 = speed * tEnd1;
+    TimeType const tEnd2 = 300_s;
+    LengthType const length2 = speed * tEnd2;
+    Line const line({gCS, {0_m, 0_m, 1_m}},
+                    Vector<SpeedType::dimension_type>(
+                        gCS, {speed / sqrt(2.), 0_m / second, speed / sqrt(2.)}));
+    setup::Trajectory const trajectory1 =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd1);
+    Line const line1Reverse(
+        trajectory1.getPosition(1),
+        Vector<SpeedType::dimension_type>(
+            gCS, {-speed / sqrt(2.), 0_m / second, -speed / sqrt(2.)}));
+    setup::Trajectory const trajectory1Reverse =
+        setup::testing::make_track<setup::Trajectory>(line1Reverse, tEnd1);
+
+    setup::Trajectory const trajectory2 =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd2);
+    Line const line2Reverse(
+        trajectory2.getPosition(1),
+        Vector<SpeedType::dimension_type>(
+            gCS, {-speed / sqrt(2.), 0_m / second, -speed / sqrt(2.)}));
+    setup::Trajectory const trajectory2Reverse =
+        setup::testing::make_track<setup::Trajectory>(line2Reverse, tEnd2);
+
+    MassDensityType const rho0 = 1_g / cube(1_cm);
+
+    // short track
+    CHECK(medium.getIntegratedGrammage(trajectory1) / (length1 * rho0) == Approx(1));
+    LengthType const testD1 = length1 / 200; // within bin
+    CHECK(medium.getArclengthFromGrammage(trajectory1, RhoFuncConst::integrate(testD1)) /
+              testD1 ==
+          Approx(1));
+    // short track, reverse
+    CHECK(medium.getIntegratedGrammage(trajectory1Reverse) / (length1 * rho0) ==
+          Approx(1));
+    CHECK(medium.getArclengthFromGrammage(trajectory1Reverse, rho0 * testD1) / testD1 ==
+          Approx(1));
+
+    // long track
+    CHECK(medium.getIntegratedGrammage(trajectory2) / (length2 * rho0) ==
+          Approx(1).epsilon(0.01));
+    LengthType const testD2 = length2 / 25; // multi bin
+    CHECK(medium.getArclengthFromGrammage(trajectory2, rho0 * testD2) / testD2 ==
+          Approx(1).epsilon(0.01));
+    // long track reverse
+    CORSIKA_LOG_INFO("length2={}", length2);
+    CHECK(medium.getIntegratedGrammage(trajectory2Reverse) / (length2 * rho0) ==
+          Approx(1).epsilon(0.01));
+    CHECK(medium.getArclengthFromGrammage(trajectory2Reverse, rho0 * testD2) / testD2 ==
+          Approx(1).epsilon(0.01));
+  }
+
+  /*The exponential test is taken over phase-space where the exponential is not so steep
+   * and is samples in sufficient substeps. An reference-height offset of 1000_km is used.
+   * Thus, density is given from 1000 to 1010 km. And curvature effects are small.
+   */
+
+  RhoFuncExp rhoFuncExp;
+  SlidingPlanarTabular<IMediumModel> const mediumExp(gOrigin, rhoFuncExp, 1000, 10_m,
+                                                     protonComposition, 1000_km);
+
+  SECTION("exponential") {
+
+    SpeedType const speed = 5_m / second;
+    TimeType const tEnd1 = 1_s;
+    LengthType const length1 = speed * tEnd1;
+    TimeType const tEnd2 = 300_s;
+    LengthType const length2 = speed * tEnd2;
+    Line const line({gCS, {0_m, 0_m, 1000.005_km}},
+                    Vector<SpeedType::dimension_type>(
+                        gCS, {speed / sqrt(2.), 0_m / second, speed / sqrt(2.)}));
+    setup::Trajectory const trajectory1 =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd1);
+    Line const line1Reverse(
+        trajectory1.getPosition(1),
+        Vector<SpeedType::dimension_type>(
+            gCS, {-speed / sqrt(2.), 0_m / second, -speed / sqrt(2.)}));
+    setup::Trajectory const trajectory1Reverse =
+        setup::testing::make_track<setup::Trajectory>(line1Reverse, tEnd1);
+
+    setup::Trajectory const trajectory2 =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd2);
+
+    CORSIKA_LOG_INFO("{} {}", RhoFuncExp::integrate(trajectory1, gOrigin, 1000_km),
+                     length1);
+
+    // short track
+    GrammageType const testShortX = RhoFuncExp::integrate(trajectory1, gOrigin, 1000_km);
+    CHECK(mediumExp.getIntegratedGrammage(trajectory1) / testShortX ==
+          Approx(1).epsilon(0.01));
+    LengthType const testD1 = length1 / 200; // within bin
+    GrammageType const testD1X =
+        RhoFuncExp::integrate(trajectory1, testD1, gOrigin, 1000_km);
+    CHECK(mediumExp.getArclengthFromGrammage(trajectory1, testD1X) / testD1 ==
+          Approx(1).epsilon(0.01));
+    // short track, reverse
+    CHECK(mediumExp.getIntegratedGrammage(trajectory1Reverse) / testShortX ==
+          Approx(1).epsilon(0.01));
+    CHECK(mediumExp.getArclengthFromGrammage(trajectory1Reverse, testD1X) / testD1 ==
+          Approx(1).epsilon(0.01));
+
+    // long track
+    GrammageType const testLongX = RhoFuncExp::integrate(trajectory2, gOrigin, 1000_km);
+    CORSIKA_LOG_INFO("testLongX={}", testLongX);
+    CHECK(mediumExp.getIntegratedGrammage(trajectory2) / testLongX ==
+          Approx(1).epsilon(0.01));
+    LengthType const testD2 = length2 / 25; // multi bin
+    GrammageType const testD2X =
+        RhoFuncExp::integrate(trajectory2, testD2, gOrigin, 1000_km);
+    CHECK(mediumExp.getArclengthFromGrammage(trajectory2, testD2X) / testD2 ==
+          Approx(1).epsilon(0.01));
+    // long track, reverse
+
+    // first full trajectory2 reverse
+    Line line2Reverse(trajectory2.getPosition(1),
+                      Vector<SpeedType::dimension_type>(
+                          gCS, {-speed / sqrt(2.), 0_m / second, -speed / sqrt(2.)}));
+    setup::Trajectory trajectory2Reverse =
+        setup::testing::make_track<setup::Trajectory>(line2Reverse, tEnd2);
+
+    CHECK(mediumExp.getIntegratedGrammage(trajectory2Reverse) / testLongX ==
+          Approx(1).epsilon(0.01));
+
+    // but now shorter trajectory2 reversed to correspond 100% to testD2
+
+    line2Reverse = Line(trajectory2.getPosition(0) + trajectory2.getDirection(0) * testD2,
+                        Vector<SpeedType::dimension_type>(
+                            gCS, {-speed / sqrt(2.), 0_m / second, -speed / sqrt(2.)}));
+    auto const trajectory2ReverseShort =
+        setup::testing::make_track<setup::Trajectory>(line2Reverse, testD2 / speed);
+
+    CORSIKA_LOG_INFO("here {} {} {}", trajectory2ReverseShort.getLength(), testD2,
+                     testD2X / 1_g * square(1_cm));
+    CHECK(mediumExp.getArclengthFromGrammage(trajectory2ReverseShort, testD2X) / testD2 ==
+          Approx(1).epsilon(0.01));
+  }
+}
+
+MassDensityType constexpr rho0 = 1_kg / 1_m / 1_m / 1_m;
+
+struct ExponentialTest {
   auto operator()(Point const& p) const {
     return exp(p.getCoordinates()[0] / 1_m) * rho0;
   }
@@ -213,41 +494,50 @@ TEST_CASE("InhomogeneousMedium") {
 
   Vector direction(gCS, QuantityVector<dimensionless_d>(1, 0, 0));
 
+  SpeedType const speed = 20_m / second;
   Line line(gOrigin, Vector<SpeedType::dimension_type>(
-                         gCS, {20_m / second, 0_m / second, 0_m / second}));
+                         gCS, {speed, SpeedType::zero(), SpeedType::zero()}));
 
-  auto const tEnd = 5_s;
+  // the tested LinearApproximationIntegrator really does a single step only. It is very
+  // poor for exponentials with a bit larger step-width.
+  TimeType const tEnd = 0.001_s;
   setup::Trajectory const trajectory =
       setup::testing::make_track<setup::Trajectory>(line, tEnd);
 
-  Exponential const e;
-  DensityFunction<decltype(e), LinearApproximationIntegrator> const rho(e);
+  ExponentialTest const expTest;
+  DensityFunction<ExponentialTest, LinearApproximationIntegrator> const rho(expTest);
 
   SECTION("DensityFunction") {
-    CHECK(e.getDerivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
+    CHECK(expTest.getDerivative<1>(gOrigin, direction) / (1_kg / 1_m / 1_m / 1_m / 1_m) ==
           Approx(1));
-    CHECK(rho.evaluateAt(gOrigin) == e(gOrigin));
+    CHECK(rho.evaluateAt(gOrigin) == expTest(gOrigin));
   }
 
   auto const exactGrammage = [](auto l) { return 1_m * rho0 * (exp(l / 1_m) - 1); };
   auto const exactLength = [](auto X) { return 1_m * log(1 + X / (rho0 * 1_m)); };
 
-  auto constexpr l = 15_cm;
+  LengthType const length = tEnd * speed;
 
   NuclearComposition const composition{{Code::Proton}, {1.f}};
   InhomogeneousMedium<IMediumModel, decltype(rho)> const inhMedium(composition, rho);
 
+  CORSIKA_LOG_INFO("test={} l={} {} {}", rho.getIntegrateGrammage(trajectory), length,
+                   exactGrammage(length), 1_m * rho0 * (exp(length / 1_m) - 1));
+
   SECTION("Integration") {
-    CHECK(rho.getIntegrateGrammage(trajectory, l) / exactGrammage(l) ==
+    CORSIKA_LOG_INFO("test={} {} {}", rho.getIntegrateGrammage(trajectory),
+                     exactGrammage(length),
+                     rho.getIntegrateGrammage(trajectory) / exactGrammage(length));
+    CHECK(rho.getIntegrateGrammage(trajectory) / exactGrammage(length) ==
           Approx(1).epsilon(1e-2));
-    CHECK(rho.getArclengthFromGrammage(trajectory, exactGrammage(l)) /
-              exactLength(exactGrammage(l)) ==
+    CHECK(rho.getArclengthFromGrammage(trajectory, exactGrammage(length)) /
+              exactLength(exactGrammage(length)) ==
           Approx(1).epsilon(1e-2));
     CHECK(rho.getMaximumLength(trajectory, 1e-2) >
-          l); // todo: write reasonable test when implementation is working
+          length); // todo: write reasonable test when implementation is working
 
-    CHECK(rho.getIntegrateGrammage(trajectory, l) ==
-          inhMedium.getIntegratedGrammage(trajectory, l));
+    CHECK(rho.getIntegrateGrammage(trajectory) ==
+          inhMedium.getIntegratedGrammage(trajectory));
     CHECK(rho.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)) ==
           inhMedium.getArclengthFromGrammage(trajectory, 20_g / (1_cm * 1_cm)));
     CHECK(inhMedium.getNuclearComposition() == composition);
@@ -278,7 +568,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   CHECK(builder.getSize() == 0);
 
-  auto const R = builder.getEarthRadius();
+  auto const R = builder.getPlanetRadius();
 
   CHECK(univ->getChildNodes().size() == 1);
 
@@ -323,7 +613,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
 
   CHECK(builder.getSize() == 0);
   CHECK(univ->getChildNodes().size() == 1);
-  auto const R = builder.getEarthRadius();
+  auto const R = builder.getPlanetRadius();
 
   // check magnetic field at several locations
   const Point pTest(gCS, -10_m, 4_m, R + 35_m);

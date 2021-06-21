@@ -15,22 +15,42 @@
 namespace corsika {
 
   template <typename TDerived>
+  inline BaseExponential<TDerived>::BaseExponential(Point const& point,
+                                                    LengthType const referenceHeight,
+                                                    MassDensityType rho0,
+                                                    LengthType lambda)
+      : rho0_(rho0)
+      , lambda_(lambda)
+      , invLambda_(1 / lambda)
+      , point_(point)
+      , referenceHeight_(referenceHeight) {}
+
+  template <typename TDerived>
   inline auto const& BaseExponential<TDerived>::getImplementation() const {
     return *static_cast<TDerived const*>(this);
   }
 
   template <typename TDerived>
-  inline GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
-      BaseTrajectory const& traj, LengthType vL, DirectionVector const& axis) const {
-    if (vL == LengthType::zero()) { return GrammageType::zero(); }
+  inline MassDensityType BaseExponential<TDerived>::getMassDensity(
+      LengthType const height) const {
+    return rho0_ * exp(invLambda_ * (height - referenceHeight_));
+  }
 
-    auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(traj.getPosition(0));
+  template <typename TDerived>
+  inline GrammageType BaseExponential<TDerived>::getIntegratedGrammage(
+      BaseTrajectory const& traj, DirectionVector const& axis) const {
+    LengthType const length = traj.getLength();
+    if (length == LengthType::zero()) { return GrammageType::zero(); }
+
+    // this corresponds to height:
+    double const uDotA = traj.getDirection(0).dot(axis).magnitude();
+    MassDensityType const rhoStart =
+        getImplementation().getMassDensity(traj.getPosition(0));
 
     if (uDotA == 0) {
-      return vL * rhoStart;
+      return length * rhoStart;
     } else {
-      return rhoStart * (lambda_ / uDotA) * (exp(uDotA * vL * invLambda_) - 1);
+      return rhoStart * (lambda_ / uDotA) * (exp(uDotA * length * invLambda_) - 1);
     }
   }
 
@@ -38,8 +58,10 @@ namespace corsika {
   inline LengthType BaseExponential<TDerived>::getArclengthFromGrammage(
       BaseTrajectory const& traj, GrammageType grammage,
       DirectionVector const& axis) const {
-    auto const uDotA = traj.getDirection(0).dot(axis).magnitude();
-    auto const rhoStart = getImplementation().getMassDensity(traj.getPosition(0));
+    // this corresponds to height:
+    double const uDotA = traj.getDirection(0).dot(axis).magnitude();
+    MassDensityType const rhoStart =
+        getImplementation().getMassDensity(traj.getPosition(0));
 
     if (uDotA == 0) {
       return grammage / rhoStart;
@@ -53,14 +75,5 @@ namespace corsika {
       }
     }
   }
-
-  template <typename TDerived>
-  inline BaseExponential<TDerived>::BaseExponential(Point const& point,
-                                                    MassDensityType rho0,
-                                                    LengthType lambda)
-      : rho0_(rho0)
-      , lambda_(lambda)
-      , invLambda_(1 / lambda)
-      , point_(point) {}
 
 } // namespace corsika

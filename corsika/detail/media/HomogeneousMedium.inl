@@ -32,9 +32,9 @@ namespace corsika {
   }
 
   template <typename T>
-  inline GrammageType HomogeneousMedium<T>::getIntegratedGrammage(BaseTrajectory const&,
-                                                                  LengthType to) const {
-    return to * density_;
+  inline GrammageType HomogeneousMedium<T>::getIntegratedGrammage(
+      BaseTrajectory const& track) const {
+    return track.getLength() * density_;
   }
 
   template <typename T>

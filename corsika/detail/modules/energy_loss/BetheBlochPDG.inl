@@ -154,8 +154,7 @@ namespace corsika {
 
     if (p.getChargeNumber() == 0) return ProcessReturn::Ok;
 
-    GrammageType const dX =
-        p.getNode()->getModelProperties().getIntegratedGrammage(t, t.getLength());
+    GrammageType const dX = p.getNode()->getModelProperties().getIntegratedGrammage(t);
     CORSIKA_LOG_TRACE("EnergyLoss pid={}, z={}, dX={} g/cm2", p.getPID(),
                       p.getChargeNumber(), dX / 1_g * square(1_cm));
     HEPEnergyType dE = getTotalEnergyLoss(p, dX);
