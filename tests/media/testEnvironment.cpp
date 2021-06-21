@@ -83,6 +83,9 @@ TEST_CASE("HomogeneousMedium") {
                                              std::vector<float>{1.f});
   HomogeneousMedium<IMediumModel> const medium(19.2_g / cube(1_cm), protonComposition);
 
+  CHECK(protonComposition.getFractions() == std::vector<float>{1.});
+  CHECK(protonComposition.getComponents() == std::vector<Code>{Code::Proton});
+
   CHECK_THROWS(NuclearComposition({Code::Proton}, {1.1}));
   CHECK_THROWS(NuclearComposition({Code::Proton}, {0.99}));
 }
@@ -102,6 +105,10 @@ TEST_CASE("FlatExponential") {
   SpeedType const speed = 20_m / second;
   LengthType const length = 2_m;
   TimeType const tEnd = length / speed;
+
+  CHECK(medium.getNuclearComposition().getFractions() == std::vector<float>{1.});
+  CHECK(medium.getNuclearComposition().getComponents() ==
+        std::vector<Code>{Code::Proton});
 
   SECTION("horizontal") {
     Line const line(gOrigin, Vector<SpeedType::dimension_type>(
@@ -244,6 +251,26 @@ TEST_CASE("SlidingPlanarTabular") {
   RhoFuncConst rhoFunc;
   SlidingPlanarTabular<IMediumModel> const medium(gOrigin, rhoFunc, 1000, 10_m,
                                                   protonComposition);
+
+  SECTION("not possible") {
+    CHECK_THROWS(medium.getMassDensity({gCS, {0_m, 1e10_m, 0_m}}));
+
+    SpeedType const speed = 5_m / second;
+    TimeType const tEnd = 1e10_s;
+    Line const line(
+        {gCS, {0_m, 0_m, 1_m}},
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, speed}));
+    setup::Trajectory const trajectory =
+        setup::testing::make_track<setup::Trajectory>(line, tEnd);
+    CHECK_THROWS(medium.getIntegratedGrammage(trajectory));
+
+    Line const line2(
+        {gCS, {0_m, 0_m, 1e9_m}},
+        Vector<SpeedType::dimension_type>(gCS, {0_m / second, 0_m / second, speed}));
+    setup::Trajectory const trajectory2 =
+        setup::testing::make_track<setup::Trajectory>(line2, tEnd);
+    CHECK_THROWS(medium.getArclengthFromGrammage(trajectory2, 1e3_g / square(1_cm)));
+  }
 
   SECTION("density") {
     CHECK(medium.getMassDensity({gCS, {0_m, 0_m, 3_m}}) /

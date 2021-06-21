@@ -21,7 +21,7 @@ namespace corsika {
 
   /**
    * This class provides the grammage/length conversion functionality for
-   * (locally) flat exponential atmospheres.
+   * (locally) flat tabulated atmospheres.
    */
   template <typename TDerived>
   class BaseTabular {
@@ -38,40 +38,8 @@ namespace corsika {
 
     MassDensityType getMassDensity(LengthType const height) const;
 
-    // clang-format off
-    /**
-     * For a (normalized) axis \f$ \vec{a} \f$, the grammage along a non-orthogonal line with (normalized)
-     * direction \f$ \vec{u} \f$ is given by
-     * \f[
-     *   X = \frac{\varrho_0 \lambda}{\vec{u} \cdot \vec{a}} \left( \exp\left( \vec{u} \cdot \vec{a} \frac{l}{\lambda} \right) - 1 \right)
-     * \f], where \f$ \varrho_0 \f$ is the density at the starting point.
-     *
-     * If \f$ \vec{u} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
-     * \f[
-     *   X = \varrho_0 l;
-     * \f]
-     */
-    // clang-format on
     GrammageType getIntegratedGrammage(BaseTrajectory const& line) const;
 
-    // clang-format off
-    /**
-     * For a (normalized) axis \f$ \vec{a} \f$, the length of a non-orthogonal line with (normalized)
-     * direction \f$ \vec{u} \f$ corresponding to grammage \f$ X \f$ is given by
-     * \f[
-     *   l = \begin{cases}
-     *   \frac{\lambda}{\vec{u} \cdot \vec{a}} \log\left(Y \right), & \text{if} Y :=  0 > 1 +
-     *     \vec{u} \cdot \vec{a} \frac{X}{\rho_0 \lambda}
-     *   \infty & \text{else,}
-     *   \end{cases}
-     * \f] where \f$ \varrho_0 \f$ is the density at the starting point.
-     *
-     * If \f$ \vec{u} \cdot \vec{a} = 0 \f$, the calculation is just like with a homogeneous density:
-     * \f[
-     *   l =  \frac{X}{\varrho_0}
-     * \f]
-     */
-    // clang-format on
     LengthType getArclengthFromGrammage(BaseTrajectory const& line,
                                         GrammageType const grammage) const;
 

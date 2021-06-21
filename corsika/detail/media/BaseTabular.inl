@@ -140,7 +140,6 @@ namespace corsika {
       CORSIKA_LOG_ERROR("cannot integrate negative grammage");
       throw std::runtime_error("negative grammage error");
     }
-
     LengthType const height = (traj.getPosition(0) - point_).getNorm() - referenceHeight_;
 
     double const fbin = height / deltaHeight_;

@@ -12,7 +12,6 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Line.hpp>
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/BaseTrajectory.hpp>
 #include <corsika/media/NuclearComposition.hpp>
 #include <corsika/media/BaseTabular.hpp>
@@ -23,11 +22,11 @@ namespace corsika {
   /**
    * The SlidingPlanarTabular models mass density as
    * \f[
-   *   \varrho(r) = \varrho_0 \exp\left( \frac{|p_0 - r|}{\lambda} \right).
+   *   \varrho(r) = \varrho_0 \rho\left( |p_0 - r| \right).
    * \f]
    * For grammage/length conversion, the density distribution is approximated as
-   * locally flat at the starting point \f$ r_0 \f$ of the trajectory with the axis pointing
-   * from \f$ p_0 \f$ to \f$ r_0 \f$.
+   * locally flat at the starting point \f$ r_0 \f$ of the trajectory with the 
+   * axis pointing rom \f$ p_0 \f$ to \f$ r_0 \f$ defining the local height.
    */
   // clang-format on
 
