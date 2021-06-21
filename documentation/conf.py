@@ -25,13 +25,12 @@ def configureDoxyLayout(template_file, output_file, page_url, page_tile):
 
 
 
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-build_version = os.environ.get('READTHEDOCS_VERSION', None)
+read_the_docs_build = os.environ.get('READTHEDOCS', None) != None
 breathe_projects = {}
 
-doc_url = 'https://corsika-8.readthedocs.io/en/'+build_version
-
 if read_the_docs_build:
+    build_version = os.environ.get('READTHEDOCS_VERSION', None)
+    doc_url = 'https://corsika-8.readthedocs.io/en/'+build_version
     configureDoxyfile("Doxyfile.in", "Doxyfile", "../", "_build/workdir/doxygen")
     configureDoxyLayout("DoxyLayout.in", "DoxyLayout.xml", doc_url , "CORSIKA 8 Webpage")
     subprocess.call('mkdir -p _build/workdir/doxygen; doxygen Doxyfile', shell=True)
