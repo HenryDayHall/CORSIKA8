@@ -101,6 +101,10 @@ TEST_CASE("Geometry CoordinateSystems") {
     // vector norm invariant under rotation
     CHECK(v1.getComponents(rotatedCS).getNorm().magnitude() ==
           Approx(v1.getComponents(rootCS).getNorm().magnitude()));
+
+    // this is not possible
+    QuantityVector<length_d> const axis_invalid{0_m, 0_m, 0_km};
+    CHECK_THROWS(make_rotation(rootCS, axis_invalid, angle));
   }
 
   SECTION("multiple rotations") {
@@ -201,6 +205,10 @@ TEST_CASE("Geometry CoordinateSystem-hirarchy") {
   CoordinateSystemPtr root = get_root_CoordinateSystem();
   Point const p1(root, {0_m, 0_m, 0_m}); // the origin of the root CS
 
+  CHECK(p1.getX(root) == 0_m);
+  CHECK(p1.getY(root) == 0_m);
+  CHECK(p1.getZ(root) == 0_m);
+
   // root -> cs2
   CoordinateSystemPtr cs2 = make_translation(root, {0_m, 0_m, 1_m});
   Point const p2(cs2, {0_m, 0_m, -1_m});
@@ -280,6 +288,8 @@ TEST_CASE("Geometry Trajectories") {
               .getNorm()
               .magnitude() == Approx(0).margin(absMargin));
 
+    CHECK((line.getTimeFromArclength(10_m) / (10_m / v0.getNorm()) == Approx(1)));
+
     auto const t = 1_s;
     StraightTrajectory base(line, t);
     CHECK(line.getPosition(t).getCoordinates() == base.getPosition(1.).getCoordinates());
@@ -347,8 +357,6 @@ TEST_CASE("Distance between points") {
   CHECK(distance(p3, p4) / 1_m == Approx(4));
   CHECK(distance(p5, p6) / 1_m == Approx(1));
 }
-
-TEST_CASE("Geometry Tree") {}
 
 TEST_CASE("Path") {
   // define a known CS
