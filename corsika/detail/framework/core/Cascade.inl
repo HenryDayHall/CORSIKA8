@@ -266,7 +266,10 @@ namespace corsika {
       CORSIKA_LOG_WARN(
           "Decay time decreased during step! This leads to un-physical step length. "
           "delta_inverse_decay_time={}",
-          1 / initial_inv_decay_time - 1 / actual_decay_time);
+          (actual_decay_time != InverseTimeType::zero() &&
+                   initial_inv_decay_time != InverseTimeType::zero()
+               ? 1 / initial_inv_decay_time - 1 / actual_decay_time
+               : TimeType::zero()));
     }
 #endif
 
