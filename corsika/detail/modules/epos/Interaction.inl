@@ -28,8 +28,8 @@ using SetupParticle = setup::Stack::stack_iterator_type;
 
 namespace corsika::epos {
 
-  inline Interaction::Interaction(const std::string& dataPath,
-                                  const bool epos_printout_on)
+  inline Interaction::Interaction(std::string const& dataPath,
+                                  bool const epos_printout_on)
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
     if (dataPath == "") {
@@ -89,8 +89,9 @@ namespace corsika::epos {
     ::epos::aaset_(iarg);
 
     // debug output settings
-    ::epos::prnt1_.ish = 0;  // debug level in epos, 0: off, 6: medium output
-    ::epos::files_.ifch = 6; // output unit, 6: screen
+    ::epos::prnt1_.ish = 0;    // debug level in epos, 0: off, 6: medium output
+    ::epos::prnt3_.iwseed = 0; // 1: printout seeds, 0: off
+    ::epos::files_.ifch = 6;   // output unit, 6: screen
 
     // dummy set seeds for random number generator in epos. need to fool epos checks...
     // we will use external generator
@@ -336,7 +337,7 @@ namespace corsika::epos {
                          BeamId, BeamA, BeamZ, TargetId, EnergyLab / 1_GeV);
 
     // read cross section from epos internal tables
-    int Abeam;
+    int Abeam = 0;
     float Ekin = -1;
 
     if (is_nucleus(BeamId)) {
@@ -364,11 +365,8 @@ namespace corsika::epos {
       throw std::runtime_error("Epos cross section failed! Negative kinetic energy!");
     }
 
-    int Atarget;
-    if (is_nucleus(TargetId))
-      Atarget = get_nucleus_A(TargetId);
-    else
-      Atarget = 1;
+    int Atarget = 1;
+    if (is_nucleus(TargetId)) { Atarget = get_nucleus_A(TargetId); }
 
     int iMode = 3; // 0: air, >0 not air
 
@@ -466,7 +464,8 @@ namespace corsika::epos {
     auto const projectile = view.getProjectile();
     auto const corsikaBeamId = projectile.getPID();
 
-    CORSIKA_LOGGER_DEBUG(logger_, "DoInteraction: {} interaction ", corsikaBeamId);
+    CORSIKA_LOGGER_DEBUG(logger_, "doInteraction: {} interaction, Elab={} ",
+                         corsikaBeamId, projectile.getEnergy());
 
     if (corsika::epos::canInteract(corsikaBeamId)) {
       count_ = count_ + 1;
@@ -539,7 +538,7 @@ namespace corsika::epos {
 
       if (epos_listing_) {
         char nam[9] = "EPOSLHC&";
-        ::epos::alistf_(nam);
+        ::epos::alistf_(nam, 9);
       }
 
       // NSTORE-part
@@ -580,10 +579,10 @@ namespace corsika::epos {
             A = 4;
             Z = 2;
           } else {
-            // 10AAAZZZ0
+            // 100ZZZAAA0 -> std. pdg code
             EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
-            Z = int(eposPdg / 10) % 1000;
-            A = int(eposPdg / 10000) % 1000;
+            Z = int(abs(eposPdg) / 10000) % 1000;
+            A = int(abs(eposPdg) / 10) % 1000;
           }
           auto pnew = view.addSecondary(
               std::make_tuple(Code::Nucleus, momentum, pOrig, tOrig, A, Z));

@@ -39,20 +39,31 @@ namespace epos {
 
   extern "C" {
 
+  // random number and seed functions
+  void ranfst_(int& seed);
+  void ranfgt_(int& seed);
+  void rmmard_(double rvec[], int& lenv, int& /*iseq*/);
+  void rmmaqd_(int seed[3], int&, char*, int);
+
+  // additional random number functions
+  void ranfini_(double&, int&, int&);
+  void ranfcv_(double&);
+
+  float rangen_();
+  double drangen_();
+
   void aaset_(int&);
   void atitle_();
   void ainit_();
   void aepos_(int&);
   void afinal_();
-  void alistf_(char[7]);
+  void alistf_(char* str, int str_length); // hidden str length
   double lhcparameters_();
-  void hdecin_(bool&);
   void hnbspd_(int&);
   void hnbpajini_();
   void conini_();
   void psaini_();
 
-  void emsini_(double&, int&, int&);
   void paramini_(int&);
   void xsigma_();
 
@@ -74,7 +85,7 @@ namespace epos {
   // calculate cross section
   // c------------------------------------------------------------------------------
   //       subroutine crseaaEpos(sigt,sigi,sigc,sige)
-  // c------------------------------------------------------------------------------
+  // c----------------------------------eposela--------------------------------------------
   // c nucleus-nucleus (hadron) cross section of epos from simplified (realistic)
   // c simulations
   // c (id=0 corresponds to air)
@@ -104,12 +115,6 @@ namespace epos {
   // convert id from one format to another
   int idtrafo_(char[3], char[3], int&);
 
-  // additional random number functions
-  void ranfini_(double&, int&, int&);
-  void ranfcv_(double&);
-
-  float rangen_();
-  double drangen_();
   // common blocks as
   // defined in epos.inc
 
@@ -369,6 +374,15 @@ namespace epos {
     int modsho;
     int idensi;
   } prnt1_;
+
+  extern struct {
+    int ishevt;
+    int ixtau;
+    int iwseed; //! 1: printout seed
+    int jwseed;
+    int ixgeometry;
+  } prnt3_;
+    
   unsigned int constexpr mmry = 1;
   unsigned int constexpr mxptl = 200000 / mmry;
   extern struct {

@@ -65,20 +65,26 @@ namespace corsika {
     double const progress = dE / E0_;
 
     double const eta_seconds = elapsed_seconds.count() / progress;
+    std::time_t const start_time = std::chrono::system_clock::to_time_t(StartTime_);
     std::time_t const eta_time = std::chrono::system_clock::to_time_t(
         StartTime_ + std::chrono::seconds((int)eta_seconds));
+
+    int const yday0 = std::localtime(&start_time)->tm_yday;
+    int const yday1 = std::localtime(&eta_time)->tm_yday;
+    int const dyday = yday1 - yday0;
 
     CORSIKA_LOG_INFO(
         "StackInspector: "
         " time={}"
         ", running={} seconds"
-        " ( {}%)"
+        " ( {:.1f}%)"
         ", nStep={}"
         ", stackSize={}"
         ", Estack={} GeV"
-        ", ETA={}",
+        ", ETA={}{}",
         std::put_time(std::localtime(&now_time), "%T"), elapsed_seconds.count(),
-        int(progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
+        (progress * 100), getStep(), vS.getSize(), Etot / 1_GeV,
+        (dyday == 0 ? "" : fmt::format("+{}d ", dyday)),
         std::put_time(std::localtime(&eta_time), "%T"));
   }
 

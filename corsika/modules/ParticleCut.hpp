@@ -111,6 +111,9 @@ namespace corsika {
     HEPEnergyType energy_invcut_ = 0 * electronvolt;
     unsigned int em_count_ = 0;
     unsigned int inv_count_ = 0;
+    unsigned int energy_count_ = 0;
+
+    HEPEnergyType energy_event_; // per event sum
   };
 
 } // namespace corsika

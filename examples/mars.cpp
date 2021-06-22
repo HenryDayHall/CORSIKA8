@@ -117,7 +117,9 @@ void registerRandomStreams(int seed) {
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    cout << "new random seed (auto) " << seed << endl;
+    CORSIKA_LOG_INFO("random seed (auto) {} ", seed);
+  } else {
+    CORSIKA_LOG_INFO("random seed {} ", seed);
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
@@ -171,10 +173,8 @@ int main(int argc, char** argv) {
       ->check(CLI::NonexistentPath)
       ->group("Library/Output");
   app.add_option("-s,--seed", "The random number seed.")
-      ->default_val(12351739)
+      ->default_val(0)
       ->check(CLI::NonNegativeNumber)
-      ->group("Misc.");
-  app.add_flag("--force-interaction", "Force the location of the first interaction.")
       ->group("Misc.");
   app.add_option("-v,--verbosity", "Verbosity level: warn, info, debug, trace.")
       ->default_val("info")
@@ -313,9 +313,9 @@ int main(int argc, char** argv) {
   /* === START: SETUP PROCESS LIST === */
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
-
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   InteractionCounter sibyllNucCounted(sibyllNuc);
+  auto heModelCounted = make_sequence(sibyllNucCounted, sibyllCounted);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -342,10 +342,13 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  ParticleCut cut{1_GeV, 1_GeV, 1_GeV, 1_GeV, false};
+  HEPEnergyType const emcut = 1_GeV;
+  HEPEnergyType const hadcut = 1_GeV;
+  ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
   corsika::proposal::Interaction emCascade(env);
-  corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
+  // corsika::proposal::ContinuousProcess emContinuous(env);
+  BetheBlochPDG emContinuous(showerAxis);
 
   LongitudinalProfile longprof{showerAxis, 1_g / square(1_cm)};
 
@@ -360,8 +363,7 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(const Particle& p) { return (p.getKineticEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(80_GeV), urqmdCounted,
-                                    make_sequence(sibyllNucCounted, sibyllCounted));
+  auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // track writer
@@ -411,7 +413,7 @@ int main(int argc, char** argv) {
     string const outdir(app["--filename"]->as<std::string>());
     string const labHist_file = outdir + "/inthist_lab_" + to_string(i_shower) + ".npz";
     string const cMSHist_file = outdir + "/inthist_cms_" + to_string(i_shower) + ".npz";
-    string const longprof_file = outdir + "/longprof" + to_string(i_shower) + ".txt";
+    string const longprof_file = outdir + "/longprof_" + to_string(i_shower) + ".txt";
 
     // setup particle stack, and add primary particle
     stack.clear();
@@ -422,9 +424,6 @@ int main(int argc, char** argv) {
     } else {
       stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
     }
-
-    // if we want to fix the first location of the shower
-    if (app["--force-interaction"]) EAS.forceInteraction();
 
     // run the shower
     EAS.run();

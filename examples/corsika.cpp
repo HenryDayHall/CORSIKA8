@@ -48,6 +48,7 @@
 #include <corsika/modules/ParticleCut.hpp>
 #include <corsika/modules/Pythia8.hpp>
 #include <corsika/modules/Sibyll.hpp>
+#include <corsika/modules/Epos.hpp>
 #include <corsika/modules/UrQMD.hpp>
 #include <corsika/modules/PROPOSAL.hpp>
 #include <corsika/modules/QGSJetII.hpp>
@@ -83,13 +84,16 @@ void registerRandomStreams(int seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
-    cout << "new random seed (auto) " << seed << endl;
+    CORSIKA_LOG_INFO("random seed (auto) {} ", seed);
+  } else {
+    CORSIKA_LOG_INFO("random seed {} ", seed);
   }
   RNGManager<>::getInstance().setSeed(seed);
 }
@@ -143,10 +147,12 @@ int main(int argc, char** argv) {
       ->check(CLI::NonexistentPath)
       ->group("Library/Output");
   app.add_option("-s,--seed", "The random number seed.")
-      ->default_val(12351739)
+      ->default_val(0)
       ->check(CLI::NonNegativeNumber)
       ->group("Misc.");
-  app.add_flag("--force-interaction", "Force the location of the first interaction.")
+  bool force_interaction = false;
+  app.add_flag("--force-interaction", force_interaction,
+               "Force the location of the first interaction.")
       ->group("Misc.");
   app.add_option("-v,--verbosity", "Verbosity level")
       ->default_str("info")
@@ -222,8 +228,6 @@ int main(int argc, char** argv) {
 
   /* === START: CONSTRUCT PRIMARY PARTICLE === */
 
-  /* === START: CONSTRUCT PRIMARY PARTICLE === */
-
   // parse the primary ID as a PDG or A/Z code
   Code beamCode;
   HEPEnergyType mass;
@@ -278,11 +282,15 @@ int main(int argc, char** argv) {
   OutputManager output(app["--filename"]->as<std::string>());
 
   /* === START: SETUP PROCESS LIST === */
+  // corsika::epos::Interaction heModel;
+  // corsika::qgsjetII::Interaction heModel;
+  // InteractionCounter heModelCounted(heModel);
+
   corsika::sibyll::Interaction sibyll;
   InteractionCounter sibyllCounted(sibyll);
-
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   InteractionCounter sibyllNucCounted(sibyllNuc);
+  auto heModelCounted = make_sequence(sibyllNucCounted, sibyllCounted);
 
   corsika::pythia8::Decay decayPythia;
 
@@ -309,16 +317,21 @@ int main(int argc, char** argv) {
 
   // decaySibyll.printDecayConfig();
 
-  ParticleCut cut{1_GeV, 1_GeV, 1_GeV, 1_GeV, false};
+  HEPEnergyType const emcut = 1_GeV;
+  HEPEnergyType const hadcut = 1_GeV;
+  ParticleCut cut(emcut, emcut, hadcut, hadcut, true);
   corsika::proposal::Interaction emCascade(env);
-  corsika::proposal::ContinuousProcess emContinuous(env);
   InteractionCounter emCascadeCounted(emCascade);
+  // corsika::proposal::ContinuousProcess emContinuous(env);
+  BetheBlochPDG emContinuous(showerAxis);
 
-  LongitudinalProfile longprof{showerAxis};
+  // cut.printThresholds();
+
+  LongitudinalProfile longprof(showerAxis);
 
   corsika::urqmd::UrQMD urqmd;
-  InteractionCounter urqmdCounted{urqmd};
-  StackInspector<setup::Stack> stackInspect(5000, false, E0);
+  InteractionCounter urqmdCounted(urqmd);
+  StackInspector<setup::Stack> stackInspect(50000, false, E0);
 
   // assemble all processes into an ordered process list
   struct EnergySwitch {
@@ -327,8 +340,7 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(const Particle& p) { return (p.getKineticEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(80_GeV), urqmdCounted,
-                                    make_sequence(sibyllNucCounted, sibyllCounted));
+  auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // track writer
@@ -343,9 +355,9 @@ int main(int argc, char** argv) {
   output.add("particles", observationLevel);
 
   // assemble the final process sequence
-  auto sequence =
-      make_sequence(stackInspect, hadronSequence, decaySequence, emCascadeCounted,
-                    emContinuous, cut, trackWriter, observationLevel, longprof);
+  auto sequence = make_sequence(stackInspect, hadronSequence, decaySequence,
+                                emCascadeCounted, cut, emContinuous, // trackWriter,
+                                observationLevel, longprof);
   /* === END: SETUP PROCESS LIST === */
 
   // create the cascade object using the default stack and tracking implementation
@@ -392,7 +404,10 @@ int main(int argc, char** argv) {
     }
 
     // if we want to fix the first location of the shower
-    if (app["--force-interaction"]) EAS.forceInteraction();
+    if (force_interaction) {
+      CORSIKA_LOG_INFO("Fixing first interaction at injection point.");
+      EAS.forceInteraction();
+    }
 
     // run the shower
     EAS.run();
@@ -409,6 +424,7 @@ int main(int argc, char** argv) {
     cut.reset();
     // emContinuous.reset();
 
+    // auto const hists = heModelCounted.getHistogram() + urqmdCounted.getHistogram();
     auto const hists = sibyllCounted.getHistogram() + sibyllNucCounted.getHistogram() +
                        urqmdCounted.getHistogram();
 

@@ -33,7 +33,7 @@ namespace corsika {
   }
 
   inline PDGCode constexpr get_PDG(unsigned int A, unsigned int Z) {
-    return static_cast<PDGCode>(1000000000 + Z * 10000 + A + 10); // 10LZZZAAAI
+    return static_cast<PDGCode>(1000000000 + Z * 10000 + A * 10); // 10LZZZAAAI
   }
 
   inline int16_t constexpr get_charge_number(Code const code) {
