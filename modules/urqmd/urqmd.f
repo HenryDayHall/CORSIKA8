@@ -348,10 +348,10 @@ c~              stop
              print *, 'target charge=', Zt
              write(*,*) ' iterations =', noc
 c RU Mi 23. Jun 08:53:43 CEST 2021
-c do not quit: just assume this is very rate and resembles an elastic FS
-c             call exit(333) ! think of a better way to hand over the error
+c MAYBE do not quit: just assume this is very rate and resembles an elastic FS
+             call exit(333) ! think of a better way to hand over the error
                              ! to C++
-             return          ! RU !!!!!  back to C8
+c             return          ! RU !!!!!  back to C8
 c RU Mi 23. Jun 08:54:25 CEST 2021             
            endif
            goto 1
