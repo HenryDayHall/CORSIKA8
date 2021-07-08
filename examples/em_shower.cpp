@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
   output.add("tracks", trackWriter); // register TrackWriter
 
   // long. profile; columns for photon, e+, e- still need to be added
-  LongitudinalProfile longprof{showerAxis};
+  LongitudinalProfile longprof(showerAxis);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking> observationLevel(

@@ -55,14 +55,15 @@ namespace corsika {
   private:
     GrammageType const dX_;
     ShowerAxis const& shower_axis_;
-    using ProfileEntry = std::array<uint32_t, 6>;
+    using ProfileEntry = std::array<uint32_t, 7>;
     enum ProfileIndex {
       Photon = 0,
       Positron = 1,
       Electron = 2,
       MuPlus = 3,
       MuMinus = 4,
-      Hadron = 5
+      Hadron = 5,
+      Invisible = 6,
     };
     std::vector<ProfileEntry> profiles_; // longitudinal profile
   };

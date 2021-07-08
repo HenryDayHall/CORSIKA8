@@ -334,18 +334,32 @@ c           print *,"noc",noc,bdist,ctag,bimp
 cdh        write(*,*)'(W) No collision in event ',event
            noc=noc+1
            if(noc.ge.1000 .and. mod(noc,1000) .eq. 0)then
-             print *,'no collision problem in UrQMD'
+c RU Mi 23. Jun 08:47:32 CEST 2021
+c switch off printout of number of collision counter warning:
+c     print *,'no collision problem in UrQMD'
 c~              stop
            endif
            if (noc.ge.50000) then
-             print *,'UrQMD terminating...'
+             print *,'UrQMD terminating without collision !? ...'
+             print *,' ebeam=', ebeam
+             print *,' projectile mass=', Ap 
+             print *,' projectile charge=', Zp 
+             print *,' target mass=', At
+             print *, 'target charge=', Zt
+             write(*,*) ' iterations =', noc
+c RU Mi 23. Jun 08:53:43 CEST 2021
+c MAYBE do not quit: just assume this is very rate and resembles an elastic FS
              call exit(333) ! think of a better way to hand over the error
-                            ! to C++
+                             ! to C++
+c             return          ! RU !!!!!  back to C8
+c RU Mi 23. Jun 08:54:25 CEST 2021             
            endif
            goto 1
          endif
-         
-         write(*,*) 'iterations =', noc
+
+c RU Mi 23. Jun 08:37:22 CEST 2021
+c switch off printout of number of collision counter:         
+c         write(*,*) 'iterations =', noc
 
 c     end of event loop
 cdh 10   continue

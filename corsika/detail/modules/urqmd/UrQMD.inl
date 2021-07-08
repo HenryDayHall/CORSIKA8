@@ -29,7 +29,8 @@
 
 namespace corsika::urqmd {
 
-  inline UrQMD::UrQMD(boost::filesystem::path xs_file) {
+  inline UrQMD::UrQMD(boost::filesystem::path xs_file, int const retryFlag)
+      : iflb_(retryFlag) {
     readXSFile(xs_file);
     ::urqmd::iniurqmdc8_();
   }
@@ -292,7 +293,8 @@ namespace corsika::urqmd {
       ::urqmd::inputs_.spiso3[1] = iso3;
     }
 
-    int iflb = 0; // flag for retrying interaction in case of empty event, 0 means retry
+    int iflb =
+        iflb_; // flag for retrying interaction in case of empty event, 0 means retry
     ::urqmd::urqmd_(iflb);
 
     // now retrieve secondaries from UrQMD
@@ -406,7 +408,7 @@ namespace corsika::urqmd {
     std::getline(file, line);
     std::stringstream ss(line);
 
-    char dummy;
+    char dummy; // this is '#'
     int nTargets, nProjectiles, nSupports;
     ss >> dummy >> nTargets >> nProjectiles >> nSupports;
 

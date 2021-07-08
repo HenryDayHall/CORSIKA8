@@ -20,3 +20,4 @@
 #include <corsika/modules/epos/Random.hpp>
 #include <corsika/modules/urqmd/Random.hpp>
 #include <corsika/modules/qgsjetII/Random.hpp>
+#include <corsika/modules/conex/Random.hpp>

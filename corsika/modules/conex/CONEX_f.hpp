@@ -18,6 +18,32 @@
 #include <array>
 
 namespace conex {
+
+  // the CORSIKA 8 random number interface
+
+  /**
+   * \function epos::rndm_interface
+   *
+   * this is the random number hook to external packages.
+   *
+   * CORSIKA8, for example, has to provide an implementation of this.
+   **/
+  extern float rndm_interface();
+
+  /**
+   * \function epos::double_rndm_interface
+   *
+   * this is the random number hook to external packages.
+   *
+   * CORSIKA8, for example, has to provide an implementation of this.
+   **/
+
+  extern double double_rndm_interface();
+
+  extern "C" {}
+
+  // the CONEX fortran interface
+
   extern "C" {
   extern struct { std::array<double, 16> dptl; } cxoptl_;
 

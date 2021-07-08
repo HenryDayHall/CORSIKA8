@@ -71,9 +71,11 @@ void registerRandomStreams(uint64_t seed) {
   RNGManager<>::getInstance().registerRandomStream("cascade");
   RNGManager<>::getInstance().registerRandomStream("qgsjet");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("epos");
   RNGManager<>::getInstance().registerRandomStream("pythia");
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   RNGManager<>::getInstance().registerRandomStream("proposal");
+  RNGManager<>::getInstance().registerRandomStream("conex");
   if (seed == 0) {
     std::random_device rd;
     seed = rd();
@@ -237,15 +239,15 @@ int main(int argc, char** argv) {
 
   decaySibyll.printDecayConfig();
 
-  ParticleCut cut{3_GeV, false, true};
-  BetheBlochPDG eLoss{showerAxis};
+  ParticleCut cut(3_GeV, false, true);
+  BetheBlochPDG eLoss(showerAxis);
 
   CONEXhybrid conex_model(center, showerAxis, t, injectionHeight, E0,
                           get_PDG(Code::Proton));
 
   OnShellCheck reset_particle_mass(1.e-3, 1.e-1, false);
 
-  LongitudinalProfile longprof{showerAxis};
+  LongitudinalProfile longprof(showerAxis);
 
   Plane const obsPlane(showerCore, DirectionVector(rootCS, {0., 0., 1.}));
   ObservationPlane<setup::Tracking> observationLevel(

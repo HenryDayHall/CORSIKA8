@@ -25,7 +25,13 @@ namespace corsika::urqmd {
 
   class UrQMD : public InteractionProcess<UrQMD> {
   public:
-    UrQMD(boost::filesystem::path const path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"));
+    /**
+     * @param path Location of UrQMD XS data file
+     * @param retryFlag Internal UrQMD flag for retrying interaction in case of empty
+     * event, 0 means retry
+     */
+    UrQMD(boost::filesystem::path const path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"),
+          int const retryFlag = 0);
 
     template <typename TParticle>
     GrammageType getInteractionLength(TParticle const&) const;
@@ -42,13 +48,15 @@ namespace corsika::urqmd {
 
     void blob(int) {}
 
-  private:
     static CrossSectionType getCrossSection(Code, Code, HEPEnergyType, int);
+
+  private:
     void readXSFile(boost::filesystem::path);
 
     // data members
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("urqmd");
     std::uniform_int_distribution<int> booleanDist_{0, 1};
+    int iflb_; //! // flag for retrying interaction in case of empty event, 0 means retry
     boost::multi_array<CrossSectionType, 3> xs_interp_support_table_;
   };
 

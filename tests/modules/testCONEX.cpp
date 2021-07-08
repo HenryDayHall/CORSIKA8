@@ -29,6 +29,16 @@
 
 #include <catch2/catch.hpp>
 
+/*
+  NOTE, WARNING, ATTENTION
+
+  The epos/Random.hpp implements the hook of epos to the C8 random
+  number generator. It has to occur excatly ONCE per linked
+  executable. If you include the header below in multiple "tests" and
+  link them togehter, it will fail.
+ */
+#include <corsika/modules/conex/Random.hpp>
+
 using namespace corsika;
 
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
@@ -40,8 +50,9 @@ TEST_CASE("CONEXSourceCut") {
 
   logging::set_level(logging::level::info);
 
-  RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("conex");
   RNGManager<>::getInstance().registerRandomStream("sibyll");
+  RNGManager<>::getInstance().registerRandomStream("epos");
 
   feenableexcept(FE_INVALID);
 

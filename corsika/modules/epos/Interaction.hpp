@@ -22,7 +22,7 @@ namespace corsika::epos {
     bool epos_listing_;
 
   public:
-    Interaction(const std::string& dataPath = "", const bool epos_printout_on = false);
+    Interaction(std::string const& dataPath = "", bool const epos_printout_on = false);
     ~Interaction();
 
     //! returns production and elastic cross section for hadrons in epos. Inputs are:

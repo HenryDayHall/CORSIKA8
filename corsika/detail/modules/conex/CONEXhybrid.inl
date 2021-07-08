@@ -112,7 +112,7 @@ namespace corsika {
         theta, phi);
 
     int ipart = static_cast<int>(primaryPDG);
-    auto rng = RNGManager<>::getInstance().getRandomStream("cascade");
+    auto rng = RNGManager<>::getInstance().getRandomStream("conex");
 
     double dimpact = 0.; // valid only if shower core is fixed on the observation plane;
                          // for skimming showers an offset is needed like in CONEX
