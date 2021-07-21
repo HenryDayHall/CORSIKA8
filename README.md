@@ -178,7 +178,7 @@ sudo apt-get install doxygen graphviz
 ```
 Switch to the corsika build directory and do
 ```shell
-make doxygen
+make docs
 make install
 ```
 open with firefox:

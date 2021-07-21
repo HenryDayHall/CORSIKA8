@@ -192,7 +192,7 @@ Otherwise, e.g. on Ubuntu 18.04, do:
 Switch to the corsika build directory and do
 ::
    
-  make doxygen
+  make docs
   make install
   
 open with firefox:
