@@ -72,10 +72,15 @@
 using namespace corsika;
 using namespace std;
 
-void registerRandomStreams(const int seed) {
-  RNGManager::getInstance().registerRandomStream("cascade");
-  RNGManager::getInstance().registerRandomStream("proposal");
-  RNGManager::getInstance().seedAll(seed);
+void registerRandomStreams(int seed) {
+  RNGManager<>::getInstance().registerRandomStream("cascade");
+  RNGManager<>::getInstance().registerRandomStream("proposal");
+  if (seed == 0) {
+    std::random_device rd;
+    seed = rd();
+    cout << "new random seed (auto) " << seed << endl;
+  }
+  RNGManager<>::getInstance().setSeed(seed);
 }
 
 template <typename TInterface>
@@ -87,7 +92,7 @@ int main(int argc, char** argv) {
   logging::set_level(logging::level::info);
 
   if (argc != 4) {
-    std::cerr << "usage: radio_em_shower <energy/GeV> <concentric ring number> <seed>" << std::endl;
+    std::cerr << "usage: radio_em_shower <energy/GeV> <concentric ring number> <seed> - put seed=0 to use random seed" << std::endl;
     return 1;
   }
 
@@ -145,8 +150,8 @@ int main(int argc, char** argv) {
   cout << "input momentum: " << plab.getComponents() / 1_GeV
        << ", norm = " << plab.getNorm() << endl;
 
-  auto const observationHeight = 1.4_km + builder.getEarthRadius();
-  auto const injectionHeight = 112.75_km + builder.getEarthRadius();
+  auto const observationHeight = 1.4_km + builder.getPlanetRadius();
+  auto const injectionHeight = 112.75_km + builder.getPlanetRadius();
   auto const t = -observationHeight * cos(thetaRad) +
                  sqrt(-static_pow<2>(sin(thetaRad) * observationHeight) +
                       static_pow<2>(injectionHeight));
@@ -189,7 +194,7 @@ int main(int argc, char** argv) {
   // setup CoREAS antennas
   for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
     auto phiRad_ = phi_ / 180. * M_PI;
-    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getPlanetRadius())};
     auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
     std::string name_ = "CoREAS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
     TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
@@ -199,7 +204,7 @@ int main(int argc, char** argv) {
   // setup ZHS antennas
   for (auto phi_ = 0; phi_ <= 315; phi_ += 45) {
     auto phiRad_ = phi_ / 180. * M_PI;
-    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getEarthRadius())};
+    auto const point_ {Point(rootCS, showerCoreX_ + radius_ * cos(phiRad_), showerCoreY_ + radius_ * sin(phiRad_), builder.getPlanetRadius())};
     auto triggertime_ {(triggerpoint_ - point_).getNorm() / constants::c};
     std::string name_ = "ZHS_R=" + std::to_string(rr_) + "_m--Phi=" + std::to_string(phi_) + "degrees";
     TimeDomainAntenna antenna_(name_, point_, triggertime_, duration_, sampleRate_);
@@ -223,7 +228,7 @@ int main(int argc, char** argv) {
   // initiate CoREAS
   RadioProcess<decltype(detectorCoREAS), CoREAS<decltype(detectorCoREAS),
       decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                        coreas(detectorCoREAS, env);
+      coreas(detectorCoREAS, env);
 
   // register CoREAS with the output manager
   output.add("CoREAS", coreas);
@@ -231,7 +236,7 @@ int main(int argc, char** argv) {
   // initiate ZHS
   RadioProcess<decltype(detectorZHS), ZHS<decltype(detectorZHS),
       decltype(SimplePropagator(env))>, decltype(SimplePropagator(env))>
-                                        zhs(detectorZHS, env);
+      zhs(detectorZHS, env);
 
   // register ZHS with the output manager
   output.add("ZHS", zhs);
