@@ -77,8 +77,10 @@ int main() {
     CORSIKA_LOG_INFO("Synchrotron radiation");
 
     feenableexcept(FE_INVALID);
-    // initialize random number sequence(s)
-    RNGManager::getInstance().registerRandomStream("cascade");
+    RNGManager<>::getInstance().registerRandomStream("cascade");
+    std::random_device rd;
+    auto seed = rd();
+    RNGManager<>::getInstance().setSeed(seed);
 
     OutputManager output("synchrotron_radiation_output");
 
