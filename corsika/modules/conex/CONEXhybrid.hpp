@@ -29,11 +29,29 @@ namespace corsika {
     CONEXhybrid(Point center, ShowerAxis const& showerAxis, LengthType groundDist,
                 LengthType injectionHeight, HEPEnergyType primaryEnergy, PDGCode pdg);
 
+    /**
+     * Main entry point to pass new particle data towards CONEX. If a
+     * particles is selected for CONEX, it is removed from the CORSIKA
+     * 8 stack.
+     */
     template <typename TStackView>
     void doSecondaries(TStackView&);
 
+    /**
+     * init currently needs to be called to initializa a new
+     * event. All tables are cleared, etc.
+     */
+    void init();
+
+    /**
+     * Cascade equations are solved basoned on the data in the tables
+     */
     void solveCE();
 
+    /**
+     * Internal function to fill particle data inside CONEX
+     * tables. Only e.m. particles are selected right now.
+     */
     bool addParticle(Code pid, HEPEnergyType energy, HEPEnergyType mass,
                      Point const& position, Vector<dimensionless_d> const& direction,
                      TimeType t);
@@ -51,8 +69,11 @@ namespace corsika {
 
     Point const center_; //!< center of CONEX Earth
     ShowerAxis const& showerAxis_;
-    LengthType groundDist_;  //!< length from injection point to shower core
-    Point const showerCore_; //!< shower core
+    LengthType groundDist_;       //!< length from injection point to shower core
+    LengthType injectionHeight_;  //!< starting height of primary particle
+    HEPEnergyType primaryEnergy_; //!< primary particle energy
+    PDGCode primaryPDG_;          //!< primary particle PDG
+    Point const showerCore_;      //!< shower core
     CoordinateSystemPtr const conexObservationCS_; //!< CONEX observation frame
     DirectionVector const x_sf_,
         y_sf_; //!< unit vectors of CONEX shower frame, z_sf is shower axis direction

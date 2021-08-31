@@ -28,6 +28,9 @@ namespace corsika {
       : center_{center}
       , showerAxis_{showerAxis}
       , groundDist_{groundDist}
+      , injectionHeight_{injectionHeight}
+      , primaryEnergy_{primaryEnergy}
+      , primaryPDG_{primaryPDG}
       , showerCore_{showerAxis_.getStart() + showerAxis_.getDirection() * groundDist_}
       , conexObservationCS_{std::invoke([&]() {
         auto const& c8cs = center.getCoordinateSystem();
@@ -92,8 +95,11 @@ namespace corsika {
                         particleListMode,
 #endif
                         configPath.c_str(), configPath.size());
+  }
 
-    double eprima = primaryEnergy / 1_GeV;
+  inline void CONEXhybrid::init() {
+
+    double eprima = primaryEnergy_ / 1_GeV;
 
     // set phi, theta
     Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, -1_m}};
@@ -111,7 +117,7 @@ namespace corsika {
         "; phi (deg) = {}",
         theta, phi);
 
-    int ipart = static_cast<int>(primaryPDG);
+    int ipart = static_cast<int>(primaryPDG_);
     auto rng = RNGManager<>::getInstance().getRandomStream("conex");
 
     double dimpact = 0.; // valid only if shower core is fixed on the observation plane;
@@ -120,7 +126,7 @@ namespace corsika {
     std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
                               static_cast<int>(rng())};
 
-    double xminp = injectionHeight / 1_m;
+    double xminp = injectionHeight_ / 1_m;
 
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
   }
