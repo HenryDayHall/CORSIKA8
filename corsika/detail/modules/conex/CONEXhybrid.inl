@@ -80,7 +80,9 @@ namespace corsika {
     CORSIKA_LOG_DEBUG("showerCore (C8): {}",
                       showerCore_.getCoordinates(center.getCoordinateSystem()));
 
-    int randomSeeds[3] = {1234, 0, 0}; // will be overwritten later??
+    int randomSeeds[3] = {1234, 0,
+                          0}; // SEEDS ARE NOT USED. All random numbers are obtained from
+                              // the CORSIKA 8 stream "conex" and "epos"!
     int heModel = eSibyll23;
 
     int nShower = 1; // large to avoid final stats.
@@ -118,13 +120,13 @@ namespace corsika {
         theta, phi);
 
     int ipart = static_cast<int>(primaryPDG_);
-    auto rng = RNGManager<>::getInstance().getRandomStream("conex");
 
     double dimpact = 0.; // valid only if shower core is fixed on the observation plane;
                          // for skimming showers an offset is needed like in CONEX
 
-    std::array<int, 3> ioseed{static_cast<int>(rng()), static_cast<int>(rng()),
-                              static_cast<int>(rng())};
+    // SEEDS ARE NOT USED. All random numbers are obtained from
+    // the CORSIKA 8 stream "conex" and "epos"!
+    std::array<int, 3> ioseed{1,1,1};
 
     double xminp = injectionHeight_ / 1_m;
 
