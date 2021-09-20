@@ -30,11 +30,15 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("start_z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
+    output_.addField("start_t", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
     output_.addField("end_x", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
     output_.addField("end_y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
     output_.addField("end_z", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
+    output_.addField("end_t", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
 
     // and build the streamer
@@ -46,8 +50,8 @@ namespace corsika {
   inline void TrackWriterParquet::endOfLibrary() { output_.closeStreamer(); }
 
   inline void TrackWriterParquet::write(Code const& pid, HEPEnergyType const& energy,
-                                        QuantityVector<length_d> const& start,
-                                        QuantityVector<length_d> const& end) {
+                                        QuantityVector<length_d> const& start, TimeType const& t_start,
+                                        QuantityVector<length_d> const& end, TimeType const& t_end) {
 
     // write the next row - we must write `shower_` first.
     // clang-format off
@@ -58,9 +62,11 @@ namespace corsika {
         << static_cast<float>(start[0] / 1_m)
         << static_cast<float>(start[1] / 1_m)
         << static_cast<float>(start[2] / 1_m)
+        << static_cast<float>(t_start / 1_s)
         << static_cast<float>(end[0] / 1_m)
         << static_cast<float>(end[1] / 1_m)
         << static_cast<float>(end[2] / 1_m)
+        << static_cast<float>(t_end / 1_s)
         << parquet::EndRow;
     // clang-format on
   }
