@@ -252,6 +252,7 @@ int main(int argc, char** argv) {
   // define air shower object, run simulation
   setup::Tracking tracking;
   Cascade EAS(env, tracking, sequence, output, stack);
+  output.startOfShower();
 
   // to fix the point of first interaction, uncomment the following two lines:
   //  EAS.setNodes();
