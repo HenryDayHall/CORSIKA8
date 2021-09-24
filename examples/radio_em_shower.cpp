@@ -259,6 +259,7 @@ int main(int argc, char** argv) {
   //  EAS.forceInteraction();
 
   EAS.run();
+  output.endOfShower();
 
   cut.showResults();
   emContinuous.showResults();
