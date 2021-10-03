@@ -38,22 +38,23 @@ namespace corsika::sibyll {
   }
 
   inline std::tuple<corsika::CrossSectionType, corsika::CrossSectionType>
-  Interaction::getCrossSection(const corsika::Code BeamId, const corsika::Code TargetId,
-                               const corsika::HEPEnergyType CoMenergy) const {
+  Interaction::getCrossSection(corsika::Code const BeamId, corsika::Code const TargetId,
+                               corsika::HEPEnergyType const CoMenergy) const {
     double sigProd, sigEla, dummy, dum1, dum3, dum4;
     double dumdif[3];
-    const int iBeam = corsika::sibyll::getSibyllXSCode(
+    int const iBeam = corsika::sibyll::getSibyllXSCode(
         BeamId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
-    if (!iBeam)
+    if (!iBeam) {
       throw std::runtime_error(
           fmt::format("Interaction of beam {} not defined in "
                       "Sibyll!",
                       BeamId));
+    }
     if (!isValidCoMEnergy(CoMenergy)) {
       throw std::runtime_error(
           "Interaction: getCrossSection: CoM energy outside range for Sibyll!");
     }
-    const double dEcm = CoMenergy / 1_GeV;
+    double const dEcm = CoMenergy / 1_GeV;
     // single nucleon target (p,n, hydrogen) or 4<=A<=18
     if (isValidTarget(TargetId)) {
       // single nucleon target
@@ -62,7 +63,7 @@ namespace corsika::sibyll {
         sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
       } else {
         // nuclear target
-        const int iTarget = corsika::get_nucleus_A(TargetId);
+        int const iTarget = corsika::get_nucleus_A(TargetId);
         sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
       }
     } else {
@@ -81,11 +82,11 @@ namespace corsika::sibyll {
   inline corsika::GrammageType Interaction::getInteractionLength(
       TParticle const& projectile) const {
 
-    const corsika::Code corsikaBeamId = projectile.getPID();
+    corsika::Code const corsikaBeamId = projectile.getPID();
 
     // beam corsika for sibyll : 1, 2, 3 for p, pi, k
     // read from cross section code table
-    const bool kInteraction = corsika::sibyll::canInteract(corsikaBeamId);
+    bool const kInteraction = corsika::sibyll::canInteract(corsikaBeamId);
 
     MomentumVector const& pLab = projectile.getMomentum();
     CoordinateSystemPtr const& labCS = pLab.getCoordinateSystem();
@@ -100,7 +101,7 @@ namespace corsika::sibyll {
     pTotLab += pTarget;
     auto const pTotLabNorm = pTotLab.getNorm();
     // calculate cm. energy
-    const HEPEnergyType ECoM = sqrt(
+    HEPEnergyType const ECoM = sqrt(
         (Elab + pTotLabNorm) * (Elab - pTotLabNorm)); // binomial for numerical accuracy
 
     CORSIKA_LOG_DEBUG(
@@ -122,7 +123,7 @@ namespace corsika::sibyll {
       */
 
       auto const* currentNode = projectile.getNode();
-      const auto& mediumComposition =
+      auto const& mediumComposition =
           currentNode->getModelProperties().getNuclearComposition();
 
       si::CrossSectionType weightedProdCrossSection = mediumComposition.getWeightedSum(
@@ -152,16 +153,16 @@ namespace corsika::sibyll {
     return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
   }
 
-  /**
-     In this function SIBYLL is called to produce one event. The
-     event is copied (and boosted) into the shower lab frame.
+  /*
+   * In this function SIBYLL is called to produce one event. The
+   * event is copied (and boosted) into the shower lab frame.
    */
 
   template <typename TSecondaryView>
   inline void Interaction::doInteraction(TSecondaryView& view) {
 
     auto const projectile = view.getProjectile();
-    const auto corsikaBeamId = projectile.getPID();
+    auto const corsikaBeamId = projectile.getPID();
 
     if (corsika::is_nucleus(corsikaBeamId)) {
       // nuclei handled by different process, this should not happen
@@ -185,9 +186,9 @@ namespace corsika::sibyll {
     // define target
     // for Sibyll is always a single nucleon
     // FOR NOW: target is always at rest
-    const auto eTargetLab = 0_GeV + constants::nucleonMass;
-    const auto pTargetLab = MomentumVector(originalCS, 0_GeV, 0_GeV, 0_GeV);
-    const FourVector PtargLab(eTargetLab, pTargetLab);
+    auto const eTargetLab = 0_GeV + constants::nucleonMass;
+    auto const pTargetLab = MomentumVector(originalCS, 0_GeV, 0_GeV, 0_GeV);
+    FourVector const PtargLab(eTargetLab, pTargetLab);
 
     CORSIKA_LOG_DEBUG(
         "Interaction: ebeam lab: {} GeV"
@@ -198,7 +199,7 @@ namespace corsika::sibyll {
         "Interaction: ptarget lab: {} GeV",
         eTargetLab / 1_GeV, pTargetLab.getComponents() / 1_GeV);
 
-    const FourVector PprojLab(eProjectileLab, pProjectileLab);
+    FourVector const PprojLab(eProjectileLab, pProjectileLab);
 
     // define target kinematics in lab frame
     // define boost to and from CoM frame
@@ -252,7 +253,7 @@ namespace corsika::sibyll {
       cross_section_of_components[i] = sigProd;
     }
 
-    const auto targetCode =
+    auto const targetCode =
         mediumComposition.sampleTarget(cross_section_of_components, RNG_);
     CORSIKA_LOG_DEBUG("Interaction: target selected: {} ", targetCode);
     /*
@@ -270,7 +271,7 @@ namespace corsika::sibyll {
           "allowed.");
 
     // beam id for sibyll
-    const int kBeam = corsika::sibyll::convertToSibyllRaw(corsikaBeamId);
+    int const kBeam = corsika::sibyll::convertToSibyllRaw(corsikaBeamId);
 
     CORSIKA_LOG_DEBUG(
         "Interaction: "
@@ -320,6 +321,8 @@ namespace corsika::sibyll {
         auto const Plab = boost.fromCoM(FourVector(eCoM, pCoM));
         auto const p3lab = Plab.getSpaceLikeComponents();
         assert(p3lab.getCoordinateSystem() == originalCS); // just to be sure!
+
+        class KinematicParticle {};
 
         // add to corsika stack
         auto pnew = view.addSecondary(std::make_tuple(

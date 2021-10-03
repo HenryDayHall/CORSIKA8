@@ -32,9 +32,10 @@ namespace corsika::sibyll {
 
     // check compatibility of energy ranges, someone could try to use low-energy model..
     if (!hadronicInteraction_.isValidCoMEnergy(getMinEnergyPerNucleonCoM()) ||
-        !hadronicInteraction_.isValidCoMEnergy(getMaxEnergyPerNucleonCoM()))
+        !hadronicInteraction_.isValidCoMEnergy(getMaxEnergyPerNucleonCoM())) {
       throw std::runtime_error(
           "NuclearInteraction: hadronic interaction model incompatible!");
+    }
 
     // initialize nuclib
     // TODO: make sure this does not overlap with sibyll
