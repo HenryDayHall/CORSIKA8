@@ -240,11 +240,11 @@ int main(int argc, char** argv) {
   HEPEnergyType mass = get_mass(beamCode);
 
   // particle energy
-  HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<float>();
+  HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<double>();
 
   // direction of the shower in (theta, phi) space
-  auto const thetaRad = app["--zenith"]->as<float>() / 180. * M_PI;
-  auto const phiRad = app["--azimuth"]->as<float>() / 180. * M_PI;
+  auto const thetaRad = app["--zenith"]->as<double>() / 180. * M_PI;
+  auto const phiRad = app["--azimuth"]->as<double>() / 180. * M_PI;
 
   // convert Elab to Plab
   HEPMomentumType P0 = sqrt((E0 - mass) * (E0 + mass));

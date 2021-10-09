@@ -103,7 +103,7 @@ int main() {
 
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, Vector(rootCS, 0_T, 0_T, 0_T), 1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(std::vector<Code>{Code::Proton}, std::vector<float>{1.f}));
+      NuclearComposition({Code::Proton}, {1.}));
 
   // add a "target" sphere with 5km readius at 0,0,0
   auto target = EnvType::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5_km);

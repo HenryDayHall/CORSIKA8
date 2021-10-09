@@ -78,12 +78,11 @@ int main() {
       UniformMagneticField<HomogeneousMedium<setup::EnvironmentInterface>>>;
 
   // fraction of oxygen
-  float const fox = 0.20946;
+  double const fox = 0.20946;
   auto const props = world->setModelProperties<MyHomogeneousModel>(
       Medium::AirDry1Atm, MagneticFieldVector(rootCS, 0_T, 0_T, 0_T),
       1_kg / (1_m * 1_m * 1_m),
-      NuclearComposition(std::vector<Code>{Code::Nitrogen, Code::Oxygen},
-                         std::vector<float>{1.f - fox, fox}));
+      NuclearComposition({Code::Nitrogen, Code::Oxygen}, {1. - fox, fox}));
 
   auto innerMedium =
       setup::Environment::createNode<Sphere>(Point{rootCS, 0_m, 0_m, 0_m}, 5000_m);
