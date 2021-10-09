@@ -51,14 +51,14 @@ namespace corsika::sibyll {
       targA = get_nucleus_A(targetId);
     }
 
-    if ((is_nucleus(targetId) &&
-         (targA < minNuclearTargetA_ || targA >= maxTargetMassNumber_)) &&
-        targetId != Code::Proton && targetId != Code::Hydrogen &&
-        targetId != Code::Neutron) {
+    if (is_nucleus(targetId)) {
+      if (targA != 1 && (targA < minNuclearTargetA_ || targA >= maxTargetMassNumber_)) {
+        throw std::runtime_error("Target outside of allowed range for SIBYLL");
+      }
+    } else if (targetId != Code::Proton && targetId != Code::Neutron) {
       throw std::runtime_error("Target cannot be handled by SIBYLL");
     }
-
-    if (is_nucleus(projectileId) && !corsika::sibyll::canInteract(projectileId)) {
+    if (is_nucleus(projectileId) || !corsika::sibyll::canInteract(projectileId)) {
       throw std::runtime_error("Projectile cannot be handled by SIBYLL");
     }
   }
@@ -73,7 +73,8 @@ namespace corsika::sibyll {
 
     double dummy, dum1, dum3, dum4, dumdif[3]; // dummies needed for fortran call
     int const iBeam = corsika::sibyll::getSibyllXSCode(
-        projectileId); // 0 (can not interact, 1: proton-like, 2: pion-like, 3:kaon-like)
+        projectileId); // 0 (can not interact, 1: proton-like, 2: pion-like,
+                       // 3:kaon-like)
 
     double const dEcm = sqrtSnn / 1_GeV;
     // single nucleon target (p,n, hydrogen) or 4<=A<=18

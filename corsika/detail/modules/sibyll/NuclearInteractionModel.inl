@@ -49,7 +49,7 @@ namespace corsika::sibyll {
     hadronicInteraction_.isValid(Code::Proton, targetId, sqrtSnn, 1, targetA); // throws
 
     // projectile limits:
-    if (is_nucleus(projectileId)) {
+    if (!is_nucleus(projectileId)) {
       throw std::runtime_error("can only handle nuclear projectile");
     }
     if (projectileA >= getMaxNucleusAProjectile() || projectileA < 2) {

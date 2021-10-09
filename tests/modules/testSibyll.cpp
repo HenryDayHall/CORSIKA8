@@ -146,8 +146,8 @@ TEST_CASE("SibyllInterface", "modules") {
     CHECK_THROWS(model.isValid(Code::Proton, Code::Iron, 100_GeV, 1, 56));
     CHECK_NOTHROW(model.isValid(Code::Proton, Code::Oxygen, 100_GeV, 1, 16));
     // beam particles
-    CHECK_NOTHROW(model.isValid(Code::Electron, Code::Oxygen, 100_GeV, 1, 1));
-    CHECK_NOTHROW(model.isValid(Code::Nucleus, Code::Oxygen, 100_GeV, 1, 20));
+    CHECK_THROWS(model.isValid(Code::Electron, Code::Oxygen, 100_GeV, 1, 1));
+    CHECK_THROWS(model.isValid(Code::Nucleus, Code::Oxygen, 100_GeV, 1, 20));
     // energy too low
     CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 9_GeV, 1, 1));
     CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 11_GeV, 1, 1));
