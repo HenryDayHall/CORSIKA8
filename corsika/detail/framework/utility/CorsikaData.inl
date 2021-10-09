@@ -7,16 +7,25 @@
  */
 #pragma once
 
+#include <corsika/framework/core/Logging.hpp>
+
 #include <boost/filesystem/path.hpp>
 
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
 
-inline boost::filesystem::path corsika::corsika_data(boost::filesystem::path const& key) {
-  if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
-    return boost::filesystem::path(p) / key;
-  } else { // LCOV_EXCL_START, this cannot be easily tested system-independently
-    throw std::runtime_error("CORSIKA_DATA not set");
-  } // LCOV_EXCL_STOP
-}
+namespace corsika {
+
+  inline boost::filesystem::path corsika_data(boost::filesystem::path const& key) {
+    std::string const corsika_Data_Dir = std::string(CORSIKA_DATA_DIR); // from cmake
+    boost::filesystem::path fname = boost::filesystem::path(corsika_Data_Dir) / key;
+    // LCOV_EXCL_START, this cannot be easily tested system-independently
+    if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
+      fname = boost::filesystem::path(p) / key;
+    }
+    // LCOV_EXCL_STOP
+    CORSIKA_LOG_INFO("opening data file={}", fname);
+    return fname;
+  }
+} // namespace corsika

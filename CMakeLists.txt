@@ -69,6 +69,14 @@ include (corsikaUtilities) # extra cmake functions
 include (corsikaDefines)
 
 #+++++++++++++++++++++++++++++
+# the location of the CORSIKA_DATA_DIR is of fundamental importance
+# this should not be done in corsikaDefines.cmake since we may want 
+# to change behaviour at config/build/install time. 
+# And: Only the compile_definition of the CORSIKA8 target matters.
+#
+set (CORSIKA_DATA_DIR ${CMAKE_SOURCE_DIR}/modules/data)
+
+#+++++++++++++++++++++++++++++
 # check if compiler is C++17 compliant
 #
 include (CheckCXXCompilerFlag)
@@ -221,6 +229,12 @@ target_link_libraries (
   CONAN_PKG::cli11
   cnpy # for SaveBoostHistogram
   )
+target_compile_definitions (
+  CORSIKA8
+  INTERFACE
+  CORSIKA_DATA_DIR="${CORSIKA_DATA_DIR}"
+)
+
 
 # "src" is needed, since some headers (namely GeneratedParticleProperties.inc ec.) are produced by python script from e.g. ParticleData.xml
 add_subdirectory (src)

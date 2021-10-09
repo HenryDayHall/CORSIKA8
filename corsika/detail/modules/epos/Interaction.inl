@@ -9,14 +9,16 @@
 #pragma once
 
 #include <corsika/modules/epos/Interaction.hpp>
+#include <corsika/modules/epos/EposStack.hpp>
 
 #include <corsika/media/Environment.hpp>
 #include <corsika/media/NuclearComposition.hpp>
-#include <corsika/framework/geometry/FourVector.hpp>
-#include <corsika/modules/epos/EposStack.hpp>
+
+#include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
+
 #include <corsika/setup/SetupStack.hpp>
 #include <corsika/setup/SetupTrajectory.hpp>
-#include <corsika/framework/utility/COMBoost.hpp>
 
 #include <epos.hpp>
 
@@ -33,13 +35,8 @@ namespace corsika::epos {
       : data_path_(dataPath)
       , epos_listing_(epos_printout_on) {
     if (dataPath == "") {
-      if (std::getenv("CORSIKA_DATA")) {
-        data_path_ = std::string(std::getenv("CORSIKA_DATA")) + "/EPOS/";
-        CORSIKA_LOGGER_DEBUG(logger_, "Searching for EPOSLHC data tables in {}",
-                             data_path_);
-      }
+      data_path_ = (std::string(corsika_data("EPOS").c_str()) + "/").c_str();
     }
-
     // initialize Eposlhc
     static bool initialized = false;
     if (!initialized) {

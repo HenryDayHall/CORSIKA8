@@ -129,13 +129,6 @@ Follow these steps to download and install CORSIKA 8, master development version
 Runing Unit Tests
 -----------------
 
-Note, before you run *any* executbale you must also define the
-:code:`CORSIKA_DATA` environment variable to point to the location where you
-cloned corsika :code:`modules/data`, thus typically 
-::
-   
-  export CORSIKA_DATA=$PWD/../corsika/modules/data
-
 To run the Unit Tests, just type :code:`ctest` in your build area.
 
 
@@ -155,7 +148,7 @@ Next, you need to define the environment variable :code:`corsika_DIR` to point t
 your build, or your install area. Thus, e.g. 
 ::
    
-  export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you buld it">
+  export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you build it>
 
 Then compile your example/application with
 ::

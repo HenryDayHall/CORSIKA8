@@ -46,25 +46,6 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("CORSIKA_DATA", "[processes]") {
-
-  logging::set_level(logging::level::info);
-
-  SECTION("check CORSIKA_DATA") {
-
-    const char* CORSIKA_DATA = std::getenv("CORSIKA_DATA");
-    // these CHECKS are needed:
-    CHECK(CORSIKA_DATA != 0);
-    CHECK(boost::filesystem::is_directory(boost::filesystem::path(CORSIKA_DATA) /
-                                          "QGSJetII"));
-    CORSIKA_LOG_INFO(
-        "data: {}"
-        " isDir: {}"
-        "/QGSJetII",
-        CORSIKA_DATA, boost::filesystem::is_directory(CORSIKA_DATA));
-  }
-}
-
 TEST_CASE("QgsjetII", "[processes]") {
 
   logging::set_level(logging::level::info);
