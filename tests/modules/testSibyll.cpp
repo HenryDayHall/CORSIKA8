@@ -13,6 +13,7 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/utility/COMBoost.hpp>
 
 #include <catch2/catch.hpp>
 #include <tuple>
@@ -100,68 +101,89 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("SibyllInteractionInterface", "modules") {
+/*
+calculate COM boost object assuming fixed target collision with projectile
+*/
+COMBoost getCOMboost(HEPEnergyType const& eProjectileLab,
+                     MomentumVector const& pProjectileLab,
+                     CoordinateSystemPtr const& cs) {
+  // define target
+  // for Sibyll is always a single nucleon
+  // FOR NOW: target is always at rest
+  auto const pTargetLab = MomentumVector(cs, 0_GeV, 0_GeV, 0_GeV);
+  FourVector const P4projLab(eProjectileLab, pProjectileLab);
+  // define target kinematics in lab frame
+  // define boost to and from CoM frame
+  // CoM frame definition in Sibyll projectile: +z
+  COMBoost const boost(P4projLab, constants::nucleonMass);
+  return boost;
+}
+
+TEST_CASE("SibyllInterface", "modules") {
 
   logging::set_level(logging::level::info);
 
+  // the environment and stack should eventually disappear from here
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
   auto const& cs = *csPtr;
   { [[maybe_unused]] auto const& env_dummy = env; }
+
+  auto [stack, viewPtr] = setup::testing::setup_stack(
+      Code::Proton, 0, 0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+  setup::StackView& view = *viewPtr;
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
 
   SECTION("InteractionInterface - valid targets") {
 
-    Interaction model;
+    corsika::sibyll::InteractionModel model;
     // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
-    CHECK_FALSE(model.isValidTarget(Code::Electron));
-    CHECK(model.isValidTarget(Code::Hydrogen));
-    CHECK_FALSE(model.isValidTarget(Code::Deuterium));
-    CHECK(model.isValidTarget(Code::Helium));
-    CHECK_FALSE(model.isValidTarget(Code::Helium3));
-    CHECK_FALSE(model.isValidTarget(Code::Iron));
-    CHECK(model.isValidTarget(Code::Oxygen));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Electron, 100_GeV, 1, 1));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV, 1, 1));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Deuterium, 100_GeV, 1, 2));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Helium, 100_GeV, 1, 4));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Helium3, 100_GeV, 1, 3));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Iron, 100_GeV, 1, 56));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Oxygen, 100_GeV, 1, 16));
+    // beam particles
+    CHECK_NOTHROW(model.isValid(Code::Electron, Code::Oxygen, 100_GeV, 1, 1));
+    CHECK_NOTHROW(model.isValid(Code::Nucleus, Code::Oxygen, 100_GeV, 1, 20));
+    // energy too low
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 9_GeV, 1, 1));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 11_GeV, 1, 1));
+    // energy too high
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 1000001_GeV, 1, 1));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 999999_GeV, 1, 1));
 
     //  hydrogen target == proton target == neutron target
     auto const [xs_prod_pp, xs_ela_pp] =
-        model.getCrossSection(Code::Proton, Code::Proton, 100_GeV);
+        model.getCrossSectionInelEla(Code::Proton, Code::Proton, 100_GeV);
     auto const [xs_prod_pn, xs_ela_pn] =
-        model.getCrossSection(Code::Proton, Code::Neutron, 100_GeV);
+        model.getCrossSectionInelEla(Code::Proton, Code::Neutron, 100_GeV);
     auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
-        model.getCrossSection(Code::Proton, Code::Hydrogen, 100_GeV);
+        model.getCrossSectionInelEla(Code::Proton, Code::Hydrogen, 100_GeV);
     CHECK(xs_prod_pp == xs_prod_pHydrogen);
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
     CHECK(xs_ela_pn == xs_ela_pHydrogen);
 
     CHECK_THROWS(convertFromSibyll(corsika::sibyll::SibyllCode::Unknown));
-
-    // out of range
-    // beam particle
-    CHECK_THROWS(
-        std::get<0>(model.getCrossSection(Code::Electron, Code::Hydrogen, 100_GeV)));
-    // target particle
-    CHECK(std::get<0>(model.getCrossSection(Code::Proton, Code::Electron, 100_GeV)) ==
-          std::numeric_limits<double>::infinity() * 1_mb);
-    // energy out of range
-    CHECK_THROWS(std::get<0>(model.getCrossSection(Code::Proton, Code::Hydrogen, 5_GeV)));
   }
 
   SECTION("InteractionInterface - low energy") {
 
     const HEPEnergyType P0 = 60_GeV;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
-    setup::StackView& view = *viewPtr;
-
-    auto particle = stack->first();
-
     // also print particles after sibyll was called
-    Interaction model(true);
-
-    model.doInteraction(view);
+    corsika::sibyll::InteractionModel model;
+    model.setVerbose(true);
+    HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass));
+    HEPEnergyType const sqrtSnn = sqrt(2 * Elab * constants::nucleonMass);
+    view.clear();
+    COMBoost boost = getCOMboost(Elab, plab, cs);
+    model.doInteraction(view, boost, Code::Proton, Code::Oxygen, sqrtSnn, 0,
+                        get_nucleus_A(Code::Oxygen));
     auto const pSum = sumMomentum(view, cs);
 
     /*
@@ -227,82 +249,34 @@ TEST_CASE("SibyllInteractionInterface", "modules") {
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    [[maybe_unused]] GrammageType const length = model.getInteractionLength(particle);
-    CHECK(length / 1_g * 1_cm * 1_cm == Approx(88.7).margin(0.1));
+    [[maybe_unused]] CrossSectionType const cx = model.getCrossSection(
+        Code::Proton, Code::Oxygen, sqrtSnn, 0, get_nucleus_A(Code::Oxygen));
+    CHECK(cx / 1_mb == Approx(300).margin(1));
     // CHECK(view.getEntries() == 9); //! \todo: this was 20 before refactory-2020: check
     //                                           "also sibyll not stable wrt. to compiler
     //                                           changes"
   }
 
-  SECTION("InteractionInterface - energy too low") {
-
-    const HEPEnergyType P0 = 5_GeV;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-    MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
-    setup::StackView& view = *viewPtr;
-
-    auto particle = stack->first();
-
-    Interaction model;
-    CHECK_THROWS(model.doInteraction(view));
-
-    [[maybe_unused]] GrammageType const length = model.getInteractionLength(particle);
-    CHECK(model.getInteractionLength(particle) / 1_g * 1_cm * 1_cm ==
-          std::numeric_limits<double>::infinity());
-  }
-
-  SECTION("InteractionInterface - energy too high") {
-
-    const HEPEnergyType P0 = 1000_EeV;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
-    { [[maybe_unused]] auto const& dummy1 = stack; }
-    MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
-    setup::StackView& view = *viewPtr;
-
-    Interaction model;
-    CHECK_THROWS(model.doInteraction(view));
-  }
-
-  SECTION("InteractionInterface - target nucleus out of range") {
-    auto [env1, csPtr1, nodePtr1] = setup::testing::setup_environment(Code::Argon);
-    { [[maybe_unused]] auto const& dummy1 = env1; }
-    auto const& cs1 = *csPtr1;
-    const HEPEnergyType P0 = 150_GeV;
-    auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Electron, P0, (setup::Environment::BaseNodeType* const)nodePtr1, cs1);
-    { [[maybe_unused]] auto const& dummy1 = stack; }
-    MomentumVector plab = MomentumVector(
-        cs1, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
-    setup::StackView& view = *viewPtr;
-
-    Interaction model;
-    CHECK_THROWS(model.doInteraction(view));
-  }
-
   SECTION("NuclearInteractionInterface") {
 
-    auto [stack, viewPtr] =
-        setup::testing::setup_stack(get_nucleus_code(8, 4), 900_GeV,
-                                    (setup::Environment::BaseNodeType* const)nodePtr, cs);
-    setup::StackView& view = *viewPtr;
-    auto particle = stack->first();
-
-    Interaction hmodel;
-    NuclearInteraction model(hmodel, *env);
-
-    model.doInteraction(view);
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
+    HEPMomentumType const P0 = 2500_GeV;                        // per nucleon
+    MomentumVector plab = MomentumVector(cs, {P0, 0_eV, 0_eV}); // per nucleon
+    corsika::sibyll::InteractionModel hmodel;
+    NuclearInteractionModel model(hmodel, *env);
+    HEPEnergyType const ElabNuc =
+        sqrt(static_pow<2>(P0 * 8) + static_pow<2>(get_nucleus_mass(8, 4))) / 8;
+    HEPEnergyType const sqrtSnn = sqrt((ElabNuc + constants::nucleonMass + P0) *
+                                       (ElabNuc + constants::nucleonMass - P0));
+    model.doInteraction(view, getCOMboost(ElabNuc, plab, cs), Code::Nucleus, Code::Oxygen,
+                        sqrtSnn, 8, get_nucleus_A(Code::Oxygen));
+    CrossSectionType const cx = model.getCrossSection(
+        Code::Nucleus, Code::Oxygen, sqrtSnn, 8, get_nucleus_A(Code::Oxygen));
     // Felix, are those changes OK? Below are the checks before refactory-2020
     // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
     // CHECK(view.getSize() == 11);
-    CHECK(length / 1_g * 1_cm * 1_cm ==
-          Approx(31).margin(5)); // this is not physics validation
+    CHECK(cx / 1_mb == Approx(870).margin(60)); // this is not physics validation
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
-    CHECK(view.getSize() == Approx(100).margin(90)); // this is not physics validation
+    CHECK(view.getSize() == Approx(90).margin(90)); // this is not physics validation
   }
 }
 
@@ -341,7 +315,7 @@ TEST_CASE("SibyllDecayInterface", "modules") {
 
     Decay model;
     model.printDecayConfig();
-    [[maybe_unused]] const TimeType time = model.getLifetime(particle);
+    [[maybe_unused]] TimeType const time = model.getLifetime(particle);
     auto const gamma = particle.getEnergy() / particle.getMass();
     CHECK(time == get_lifetime(Code::Lambda0) * gamma);
     model.doDecay(view);
@@ -372,7 +346,7 @@ TEST_CASE("SibyllDecayInterface", "modules") {
     CHECK(model.isDecayHandled(Code::PiMinus));
     CHECK_FALSE(model.isDecayHandled(Code::KPlus));
 
-    const std::vector<Code> particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
+    std::vector<Code> const particleTestList = {Code::PiPlus, Code::PiMinus, Code::KPlus,
                                                 Code::Lambda0Bar, Code::D0Bar};
 
     // setup decays

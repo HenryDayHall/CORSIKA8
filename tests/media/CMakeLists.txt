@@ -1,5 +1,6 @@
 set (test_media_sources
   TestMain.cpp
+  testNuclearComposition.cpp
   testEnvironment.cpp
   testShowerAxis.cpp
   testMedium.cpp

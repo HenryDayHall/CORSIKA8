@@ -17,6 +17,8 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
+#include <corsika/framework/utility/COMBoost.hpp>
+
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
@@ -55,8 +57,8 @@ auto make_dummy_env() {
       Point{env.getCoordinateSystem(), 0_m, 0_m, 0_m},
       1_km * std::numeric_limits<double>::infinity());
 
-  using MyEmptyModel = Empty<IEmpty>;
-  world->setModelProperties<MyEmptyModel>();
+  NuclearComposition const composition({Code::Proton}, {1.});
+  world->setModelProperties<TestEnvironmentInterface>(19.2_g / cube(1_cm), composition);
 
   universe.addChild(std::move(world));
   return env;
@@ -86,16 +88,15 @@ public:
 
 class ProcessSplit : public InteractionProcess<ProcessSplit> {
 
-  int calls_ = 0;
-
 public:
-  template <typename Particle>
-  GrammageType getInteractionLength(Particle const&) const {
-    return 0_g / square(1_cm);
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
+                                   unsigned int const, unsigned int const) const {
+    return 1_mb;
   }
 
   template <typename TView>
-  void doInteraction(TView& view) {
+  void doInteraction(TView& view, COMBoost const&, Code, Code, HEPEnergyType,
+                     unsigned int, unsigned int) {
     ++calls_;
     auto vP = view.getProjectile();
     const HEPEnergyType Ekin = vP.getKineticEnergy();
@@ -106,13 +107,12 @@ public:
   }
 
   int getCalls() const { return calls_; }
+
+private:
+  int calls_ = 0;
 };
 
 class ProcessCut : public SecondariesProcess<ProcessCut> {
-
-  int count_ = 0;
-  int calls_ = 0;
-  HEPEnergyType fEcrit;
 
 public:
   ProcessCut(HEPEnergyType e)
@@ -136,6 +136,11 @@ public:
 
   int getCount() const { return count_; }
   int getCalls() const { return calls_; }
+
+private:
+  int count_ = 0;
+  int calls_ = 0;
+  HEPEnergyType fEcrit;
 };
 
 TEST_CASE("Cascade", "[Cascade]") {
@@ -153,7 +158,7 @@ TEST_CASE("Cascade", "[Cascade]") {
   StackInspector<TestCascadeStack> stackInspect(100, true, E0);
   NullModel nullModel;
 
-  const HEPEnergyType Ecrit = 85_MeV;
+  HEPEnergyType const Ecrit = 85_MeV;
   ProcessSplit split;
   ProcessCut cut(Ecrit);
   auto sequence = make_sequence(nullModel, stackInspect, split, cut);
@@ -172,7 +177,6 @@ TEST_CASE("Cascade", "[Cascade]") {
 
   SECTION("full cascade") {
     EAS.run();
-
     CHECK(cut.getCount() == 2048);
     CHECK(cut.getCalls() == 2047); // final particle is still on stack and not yet deleted
     CHECK(split.getCalls() == 2047);

@@ -9,9 +9,14 @@
 
 #include <corsika/framework/process/ProcessSequence.hpp>
 #include <corsika/framework/process/SwitchProcessSequence.hpp>
-#include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/process/ProcessTraits.hpp>
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
+
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
+#include <corsika/framework/utility/COMBoost.hpp>
+
+#include <corsika/media/NuclearComposition.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -30,6 +35,12 @@
 using namespace corsika;
 using namespace std;
 
+struct DummyRNG {
+  int max() const { return 10; }
+  int min() const { return 0; }
+  double operator()() const { return 0.5; }
+};
+
 static int const nData = 10;
 
 // DummyNode is only needed for BoundaryCrossingProcess
@@ -46,6 +57,10 @@ struct DummyStack {};
 struct DummyData {
   double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   typedef DummyNode node_type; // for BoundaryCrossingProcess
+  Code getPID() const { return Code::Proton; }
+  // MomentumVector getMomentum() const {}
+  HEPEnergyType getEnergy() const { return 10_GeV; }
+  unsigned int getNuclearA() const { return 1; }
 };
 
 // there is no real trajectory/track
@@ -193,14 +208,15 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& v) const {
+  void doInteraction(TView& v, COMBoost const&, Code const, Code const,
+                     HEPEnergyType const, unsigned int const, unsigned int const) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
   }
 
-  template <typename TParticle>
-  GrammageType getInteractionLength(TParticle&) const {
-    return 10_g / square(1_cm);
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
+                                   unsigned int const, unsigned int const) const {
+    return 10_mb;
   }
 
 private:
@@ -219,15 +235,17 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& v) const {
+  void doInteraction(TView& v, COMBoost const&, Code const, Code const,
+                     HEPEnergyType const, unsigned int const, unsigned int const) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     CORSIKA_LOG_DEBUG("Process2::doInteraction");
   }
-  template <typename Particle>
-  GrammageType getInteractionLength(Particle&) const {
-    CORSIKA_LOG_DEBUG("Process2::GetInteractionLength");
-    return 20_g / (1_cm * 1_cm);
+
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
+                                   unsigned int const, unsigned int const) const {
+    CORSIKA_LOG_DEBUG("Process2::getCrossSection");
+    return 20_mb;
   }
 
 private:
@@ -246,15 +264,17 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& v) const {
+  void doInteraction(TView& v, COMBoost const&, Code const, Code const,
+                     HEPEnergyType const, unsigned int const, unsigned int const) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     CORSIKA_LOG_DEBUG("Process3::doInteraction");
   }
-  template <typename Particle>
-  GrammageType getInteractionLength(Particle&) const {
-    CORSIKA_LOG_DEBUG("Process3::GetInteractionLength");
-    return 30_g / (1_cm * 1_cm);
+
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
+                                   unsigned int const, unsigned int const) const {
+    CORSIKA_LOG_DEBUG("Process3::getCrossSection");
+    return 30_mb;
   }
 
 private:
@@ -280,7 +300,8 @@ public:
     return ProcessReturn::Ok;
   }
   template <typename TView>
-  void doInteraction(TView&) const {
+  void doInteraction(TView&, COMBoost const&, Code const, Code const, HEPEnergyType const,
+                     unsigned int const, unsigned int const) const {
     checkInteract |= 8;
   }
 
@@ -439,7 +460,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
     DummyData particle;
 
     auto sequence2 = make_sequence(cp1, m2, m3);
-    GrammageType const tot = sequence2.getInteractionLength(particle);
+    /*GrammageType const tot = sequence2.getInteractionLength(particle);
     InverseGrammageType const tot_inv = sequence2.getInverseInteractionLength(particle);
     CORSIKA_LOG_DEBUG(
         "lambda_tot={}"
@@ -447,7 +468,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
         tot, tot_inv);
 
     CHECK(tot / 1_g * square(1_cm) == 12);
-    CHECK(tot_inv * 1_g / square(1_cm) == 1. / 12);
+    CHECK(tot_inv * 1_g / square(1_cm) == 1. / 12);*/
     globalCount = 0;
   }
 
@@ -595,7 +616,9 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
 TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
-  logging::set_level(logging::level::info);
+  logging::set_level(logging::level::trace);
+
+  CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
   /**
    * In this example switching is done only by "data_[0]>0", where
@@ -686,24 +709,28 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CHECK(checkCont == 0b101);
     CHECK(checkSec == 0);
 
-    // 1/(30g/cm2) is Process3
-    InverseGrammageType lambda_select = .9 / 30. * square(1_cm) / 1_g;
-    InverseTimeType time_select = 0.1 / second;
+    // 30_mb is Process3
+    CrossSectionType cx_select = .9 * 30_mb;
+    InverseTimeType time_select = 0.1 / second; // for decay
 
     checkDecay = 0;
     checkInteract = 0;
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = 100; // data positive   --> sequence1
-    sequence3.selectInteraction(view, lambda_select);
+
+    DummyRNG rng;
+    COMBoost const noBoost({10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}}, 0_GeV);
+    NuclearComposition const noComposition({Code::Nitrogen}, {1});
+    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b100); // this is Process3
     CHECK(checkDecay == 0b001);    // this is Decay1
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
-    lambda_select = 1.01 / 30. * square(1_cm) / 1_g;
+    cx_select = 1.01 * 30_mb;
     checkInteract = 0;
-    sequence3.selectInteraction(view, lambda_select);
+    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
     CHECK(checkInteract == 0b001); // this is Process1
 
     checkDecay = 0;
@@ -711,7 +738,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative   --> sequence2
-    sequence3.selectInteraction(view, lambda_select);
+    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b010); // this is Process2
     CHECK(checkDecay == 0b010);    // this is Decay2
@@ -739,7 +766,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative --> sequence1
-    sequence4.selectInteraction(view, lambda_select);
+    sequence4.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
     sequence4.doSecondaries(view);
     sequence4.selectDecay(view, time_select);
     sequence4.doSecondaries(view);
@@ -749,11 +776,11 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CHECK(checkSec == 0);
 
     // check that large "select" value will correctly ignore the call
-    lambda_select = 1e5 * square(1_cm) / 1_g;
+    cx_select = 1e5_mb;
     time_select = 1e5 / second;
     checkDecay = 0;
     checkInteract = 0;
-    sequence3.selectInteraction(view, lambda_select);
+    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);

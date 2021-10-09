@@ -49,7 +49,7 @@ namespace corsika::setup::testing {
 
     world->setModelProperties<MyHomogeneousModel>(
         Medium::AirDry1Atm, Vector(cs, 0_T, 0_T, BfieldZ), 1_kg / (1_m * 1_m * 1_m),
-        NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<float>{1.}));
+        NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<double>{1.}));
 
     setup::Environment::BaseNodeType* nodePtr = world.get();
     universe.addChild(std::move(world));

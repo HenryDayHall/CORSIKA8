@@ -39,7 +39,6 @@ namespace corsika {
     auto const coshEta = sqrt(1 + pProjNormSquared / s);
 
     setBoost(coshEta, sinhEta);
-
     CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta,
                       coshEta, boost_.determinant() - 1);
   }
@@ -52,6 +51,8 @@ namespace corsika {
     auto const sinhEta = -norm / mass;
     auto const coshEta = sqrt(1 + squaredNorm / (mass * mass));
     setBoost(coshEta, sinhEta);
+    CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta,
+                      coshEta, boost_.determinant() - 1);
   }
 
   template <typename FourVector>
@@ -92,15 +93,13 @@ namespace corsika {
     Vector<typename decltype(pCM)::dimension_type> pLab{rotatedCS_, pCM};
     pLab.rebase(originalCS_);
 
-    FourVector f(E_lab, pLab);
-
     CORSIKA_LOG_TRACE("COMBoost::fromCoM --> Elab={} GeV",
                       " plab={} GeV (norm={} GeV) "
                       " GeV), invariant mass = {}",
-                      E_lab / 1_GeV, f.getNorm() / 1_GeV, pLab.getComponents(),
-                      pLab.getNorm() / 1_GeV);
+                      E_lab / 1_GeV, FourVector{E_lab, pLab}.getNorm() / 1_GeV,
+                      pLab.getComponents(), pLab.getNorm() / 1_GeV);
 
-    return f;
+    return FourVector{E_lab, pLab};
   }
 
   inline void COMBoost::setBoost(double coshEta, double sinhEta) {
@@ -109,5 +108,7 @@ namespace corsika {
   }
 
   inline CoordinateSystemPtr COMBoost::getRotatedCS() const { return rotatedCS_; }
+
+  inline CoordinateSystemPtr COMBoost::getOriginalCS() const { return originalCS_; }
 
 } // namespace corsika

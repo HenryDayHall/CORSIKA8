@@ -33,6 +33,8 @@
 
 namespace corsika {
 
+  class COMBoost; // fwd-decl
+
   /**
    *
    * The Cascade class is constructed from template arguments making
@@ -127,8 +129,10 @@ namespace corsika {
     void step(particle_type& vParticle);
 
     ProcessReturn decay(stack_view_type& view, InverseTimeType initial_inv_decay_time);
-    ProcessReturn interaction(stack_view_type& view,
-                              InverseGrammageType initial_inv_int_length);
+    ProcessReturn interaction(stack_view_type& view, COMBoost const& boost,
+                              HEPEnergyType const sqrtSnn,
+                              NuclearComposition const& composition,
+                              CrossSectionType const initial_cross_section);
     void setEventType(stack_view_type& view, history::EventType);
 
     // data members

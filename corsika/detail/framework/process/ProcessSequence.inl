@@ -9,6 +9,7 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+
 #include <corsika/framework/process/BaseProcess.hpp>
 #include <corsika/framework/process/BoundaryCrossingProcess.hpp>
 #include <corsika/framework/process/ContinuousProcess.hpp>
@@ -259,7 +260,8 @@ namespace corsika {
   template <typename TParticle, typename TTrack>
   inline ContinuousProcessStepLength
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                  IndexProcess2>::getMaxStepLength(TParticle& particle, TTrack& vTrack) {
+                  IndexProcess2>::getMaxStepLength(TParticle&& particle,
+                                                   TTrack&& vTrack) {
     // if no other process in the sequence implements it
     ContinuousProcessStepLength max_length(std::numeric_limits<double>::infinity() *
                                            meter);
@@ -309,24 +311,34 @@ namespace corsika {
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
   template <typename TParticle>
-  inline InverseGrammageType
+  inline CrossSectionType
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                  IndexProcess2>::getInverseInteractionLength(TParticle&& particle) {
+                  IndexProcess2>::getCrossSection(TParticle&& projectile,
+                                                  Code const targetId,
+                                                  HEPEnergyType const sqrtSnn) const {
 
-    InverseGrammageType tot = 0 * meter * meter / gram; // default value
+    CrossSectionType tot = CrossSectionType::zero();
 
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
-      if constexpr (is_interaction_process_v<process1_type> ||
-                    process1_type::is_process_sequence) {
-        tot += A_.getInverseInteractionLength(particle);
+      if constexpr (is_interaction_process_v<process1_type>) {
+        Code const projectileId = projectile.getPID();
+        tot += A_.getCrossSection(projectileId, targetId, sqrtSnn,
+                                  is_nucleus(projectileId) ? projectile.getNuclearA() : 1,
+                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+      } else if constexpr (process1_type::is_process_sequence) {
+        tot += A_.getCrossSection(projectile, targetId, sqrtSnn);
       }
     }
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
-      if constexpr (is_interaction_process_v<process2_type> ||
-                    process2_type::is_process_sequence) {
-        tot += B_.getInverseInteractionLength(particle);
+      if constexpr (is_interaction_process_v<process2_type>) {
+        Code const projectileId = projectile.getPID();
+        tot += B_.getCrossSection(projectileId, targetId, sqrtSnn,
+                                  is_nucleus(projectileId) ? projectile.getNuclearA() : 1,
+                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+      } else if constexpr (process2_type::is_process_sequence) {
+        tot += B_.getCrossSection(projectile, targetId, sqrtSnn);
       }
     }
     return tot;
@@ -410,62 +422,138 @@ namespace corsika {
   template <typename TSecondaryView>
   inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
-      selectInteraction(TSecondaryView& view,
-                        [[maybe_unused]] InverseGrammageType lambda_inv_select,
-                        [[maybe_unused]] InverseGrammageType lambda_inv_sum) {
+      selectInteraction(TSecondaryView&& view, COMBoost const& boost,
+                        [[maybe_unused]] HEPEnergyType const sqrtSnn,
+                        [[maybe_unused]] NuclearComposition const& composition,
+                        [[maybe_unused]] TRNG&& rng,
+                        [[maybe_unused]] CrossSectionType const cx_select,
+                        [[maybe_unused]] CrossSectionType cx_sum) {
 
-    // TODO: add check for lambda_inv_select > lambda_inv_tot
+    // TODO: add check for cx_select > cx_tot
 
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
       if constexpr (process1_type::is_process_sequence) {
         // if A is a process sequence --> check inside
-        ProcessReturn const ret =
-            A_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
+        ProcessReturn const ret = A_.selectInteraction(view, boost, sqrtSnn, composition,
+                                                       rng, cx_select, cx_sum);
         // if A_ did succeed, stop routine. Not checking other static branch B_.
         if (ret != ProcessReturn::Ok) { return ret; }
       } else if constexpr (is_interaction_process_v<process1_type>) {
-        // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_sum += A_.getInverseInteractionLength(view.parent());
+
+        auto const& projectile = view.parent();
+        Code const projectileId = projectile.getPID();
+        unsigned int const projectileA =
+            is_nucleus(projectileId) ? projectile.getNuclearA() : 1;
+
+        // get cross section vector for all material components
+        static_assert(
+            has_method_getCrossSection_v<TProcess1,        // process object
+                                         CrossSectionType, // return type
+                                         Code,             // parameters
+                                         Code, HEPEnergyType, unsigned int, unsigned int>,
+            "TProcess1 has no method with correct signature \"CrossSectionType "
+            "getCrossSection(Code, Code, HEPEnergyType, unsigned int, unsigned int"
+            ")\" required by InteractionProcess<TProcess1>. ");
+
+        std::vector<CrossSectionType> const weightedCrossSections =
+            composition.getWeighted([=](Code const targetId) -> CrossSectionType {
+              return A_.getCrossSection(
+                  projectileId, targetId, sqrtSnn, projectileA,
+                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+            });
+
+        cx_sum += std::accumulate(weightedCrossSections.cbegin(),
+                                  weightedCrossSections.cend(), CrossSectionType::zero());
+
         // check if we should execute THIS process and then EXIT
-        if (lambda_inv_select <= lambda_inv_sum) {
+        if (cx_select <= cx_sum) {
+
+          // now also sample targetId from weighted cross sections
+          Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
 
           // interface checking on TProcess1
-          static_assert(has_method_doInteract_v<TProcess1, void, TSecondaryView&>,
-                        "TDerived has no method with correct signature \"void "
-                        "doInteraction(TSecondaryView&)\" required for "
-                        "InteractionProcess<TDerived>. ");
+          static_assert(
+              has_method_doInteract_v<TProcess1,       // process object
+                                      void,            // return type
+                                      TSecondaryView,  // template argument
+                                      TSecondaryView&, // method parameters
+                                      COMBoost const&, Code, Code, HEPEnergyType,
+                                      unsigned int, unsigned int>,
+              "TProcess1 has no method with correct signature \"void "
+              "doInteraction<TSecondaryView>(TSecondaryView&, COMBoost&, Code, "
+              "Code, HEPEnergyType, unsigned int, unsigned int)\" required for "
+              "InteractionProcess<TProcess1>. ");
 
-          A_.template doInteraction(view);
+          A_.template doInteraction(view, boost, projectileId, targetId, sqrtSnn,
+                                    projectileA,
+                                    is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+
           return ProcessReturn::Interacted;
         }
-      } // end branch A
-    }
+      }
+    } // end branch A
 
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
 
       if constexpr (process2_type::is_process_sequence) {
         // if B_ is a process sequence --> check inside
-        return B_.selectInteraction(view, lambda_inv_select, lambda_inv_sum);
+        return B_.selectInteraction(view, boost, sqrtSnn, composition, rng, cx_select,
+                                    cx_sum);
       } else if constexpr (is_interaction_process_v<process2_type>) {
-        // if this is not a ContinuousProcess --> evaluate probability
-        lambda_inv_sum += B_.getInverseInteractionLength(view.parent());
-        // soon as SecondaryView::parent() is migrated!
+
+        auto const& projectile = view.parent();
+        Code const projectileId = projectile.getPID();
+        unsigned int const projectileA =
+            is_nucleus(projectileId) ? projectile.getNuclearA() : 1;
+
+        // get cross section vector for all material components
+        static_assert(
+            has_method_getCrossSection_v<TProcess2,        // process object
+                                         CrossSectionType, // return type
+                                         Code,             // parameters
+                                         Code, HEPEnergyType, unsigned int, unsigned int>,
+            "TProcess2 has no method with correct signature \"CrossSectionType "
+            "getCrossSection(Code, Code, HEPEnergyType, unsigned int, unsigned int"
+            ")\" required by InteractionProcess<TProcess1>. ");
+
+        std::vector<CrossSectionType> const weightedCrossSections =
+            composition.getWeighted([=](Code const targetId) -> CrossSectionType {
+              return B_.getCrossSection(
+                  projectileId, targetId, sqrtSnn, projectileA,
+                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+            });
+
+        cx_sum += std::accumulate(weightedCrossSections.begin(),
+                                  weightedCrossSections.end(), CrossSectionType::zero());
+
         // check if we should execute THIS process and then EXIT
-        if (lambda_inv_select <= lambda_inv_sum) {
+        if (cx_select <= cx_sum) {
 
-          // interface checking on TProcess1
-          static_assert(has_method_doInteract_v<TProcess2, void, TSecondaryView&>,
-                        "TDerived has no method with correct signature \"void "
-                        "doInteraction(TSecondaryView&)\" required for "
-                        "InteractionProcess<TDerived>. ");
+          // now also sample targetId from weighted cross sections
+          Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
 
-          B_.doInteraction(view);
+          // interface checking on TProcess2
+          static_assert(
+              has_method_doInteract_v<TProcess2,       // process object
+                                      void,            // return type
+                                      TSecondaryView,  // template argument
+                                      TSecondaryView&, // method parameters
+                                      COMBoost const&, Code, Code, HEPEnergyType,
+                                      unsigned int, unsigned int>,
+              "TProcess1 has no method with correct signature \"void "
+              "doInteraction<TSecondaryView>(TSecondaryView&, COMBoost&, Code, "
+              "Code, HEPEnergyType, unsigned int, unsigned int)\" required for "
+              "InteractionProcess<TProcess2>. ");
+
+          B_.doInteraction(view, boost, projectileId, targetId, sqrtSnn, projectileA,
+                           is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+
           return ProcessReturn::Interacted;
         }
-      } // end branch B_
-    }
+      }
+    } // end branch B_
     return ProcessReturn::Ok;
   }
 
@@ -501,7 +589,7 @@ namespace corsika {
   template <typename TSecondaryView>
   inline ProcessReturn ProcessSequence<
       TProcess1, TProcess2, IndexStart, IndexProcess1,
-      IndexProcess2>::selectDecay(TSecondaryView& view,
+      IndexProcess2>::selectDecay(TSecondaryView&& view,
                                   [[maybe_unused]] InverseTimeType decay_inv_select,
                                   [[maybe_unused]] InverseTimeType decay_inv_sum) {
 

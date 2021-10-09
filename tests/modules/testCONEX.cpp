@@ -100,7 +100,7 @@ TEST_CASE("CONEXSourceCut") {
 
   // need to initialize Sibyll, done in constructor:
   corsika::sibyll::Interaction sibyll;
-  [[maybe_unused]] corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
+  [[maybe_unused]] corsika::sibyll::NuclearInteractionModel sibyllNuc(sibyll, env);
 
   CONEXhybrid conex(center, showerAxis, t, injectionHeight, E0, get_PDG(Code::Proton));
   conex.initCascadeEquations();

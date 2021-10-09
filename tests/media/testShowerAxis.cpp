@@ -36,8 +36,7 @@ auto setupEnvironment(Code vTargetCode) {
 
   using MyHomogeneousModel = HomogeneousMedium<IMediumModel>;
   theMedium->setModelProperties<MyHomogeneousModel>(
-      density,
-      NuclearComposition(std::vector<Code>{vTargetCode}, std::vector<float>{1.}));
+      density, NuclearComposition({vTargetCode}, {1.}));
 
   auto const* nodePtr = theMedium.get();
   universe.addChild(std::move(theMedium));

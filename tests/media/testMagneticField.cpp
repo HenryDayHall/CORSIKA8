@@ -34,8 +34,7 @@ TEST_CASE("UniformMagneticField w/ Homogeneous Medium") {
   using AtmModel = UniformMagneticField<HomogeneousMedium<IModelInterface>>;
 
   // the composition we use for the homogenous medium
-  NuclearComposition const protonComposition(std::vector<Code>{Code::Proton},
-                                             std::vector<float>{1.f});
+  NuclearComposition const protonComposition({Code::Proton}, {1.});
 
   // create a magnetic field vector
   Vector B0(gCS, 0_T, 0_T, 0_T);

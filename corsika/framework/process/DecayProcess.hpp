@@ -50,7 +50,7 @@ namespace corsika {
   template <typename TDerived>
   struct DecayProcess : BaseProcess<TDerived> {
   public:
-    using BaseProcess<TDerived>::ref;
+    using BaseProcess<TDerived>::getRef;
 
     template <typename TParticle>
     InverseTimeType getInverseLifetime(TParticle const& particle) {
@@ -61,7 +61,7 @@ namespace corsika {
                     "getInteractionLength(TParticle const&)\" required for "
                     "InteractionProcess<TDerived>. ");
 
-      return 1. / ref().getLifetime(particle);
+      return 1. / getRef().getLifetime(particle);
     }
   };
 

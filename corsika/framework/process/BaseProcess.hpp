@@ -41,8 +41,8 @@ namespace corsika {
     /** @name getRef Return reference to underlying type
         @{
      */
-    TDerived& ref() { return static_cast<TDerived&>(*this); }
-    const TDerived& ref() const { return static_cast<const TDerived&>(*this); }
+    TDerived& getRef() { return static_cast<TDerived&>(*this); }
+    const TDerived& getRef() const { return static_cast<const TDerived&>(*this); }
     //! @}
 
   public:

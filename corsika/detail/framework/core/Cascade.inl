@@ -9,14 +9,21 @@
 #pragma once
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
+
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/ContinuousProcessStepLength.hpp>
 #include <corsika/framework/process/ContinuousProcessIndex.hpp>
+
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
+
 #include <corsika/framework/stack/SecondaryView.hpp>
+
+#include <corsika/framework/utility/COMBoost.hpp>
+
 #include <corsika/media/Environment.hpp>
+#include <corsika/media/NuclearComposition.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -59,32 +66,42 @@ namespace corsika {
   inline void Cascade<TTracking, TProcessList, TOutput, TStack>::forceInteraction() {
     CORSIKA_LOG_TRACE("forced interaction!");
     setNodes();
-    auto vParticle = stack_.getNextParticle();
-    stack_view_type secondaries(vParticle);
-    interaction(secondaries, sequence_.getInverseInteractionLength(vParticle));
+    auto particle = stack_.getNextParticle();
+    stack_view_type secondaries(particle);
+
+    auto const* currentLogicalNode = particle.getNode();
+    // assert that particle stays outside void Universe if it has no
+    // model properties set
+    assert((currentLogicalNode != &*environment_.getUniverse() ||
+            environment_.getUniverse()->hasModelProperties()) &&
+           "FATAL: The environment model has no valid properties set!");
+    NuclearComposition const& composition =
+        currentLogicalNode->getModelProperties().getNuclearComposition();
+
+    // determine sqrtS per nucleon pair, sqrtS_NN
+    Code const projectileId = particle.getPID();
+    unsigned int const projectileA =
+        (is_nucleus(projectileId) ? particle.getNuclearA() : 1);
+    HEPEnergyType const ElabNN = particle.getEnergy() / projectileA;
+    HEPEnergyType const sqrtSnn = sqrt(2 * ElabNN * constants::nucleonMass);
+
+    COMBoost const boost{{ElabNN, particle.getMomentum() / projectileA},
+                         constants::nucleonMass};
+    CrossSectionType const sigma =
+        composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
+          return sequence_.getCrossSection(particle, targetId, sqrtSnn);
+        });
+    interaction(secondaries, boost, sqrtSnn, composition, sigma);
     sequence_.doSecondaries(secondaries);
-    vParticle.erase(); // primary particle is done
+    particle.erase(); // primary particle is done
   }
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline void Cascade<TTracking, TProcessList, TOutput, TStack>::step(
-      particle_type& vParticle) {
+      particle_type& particle) {
 
-    // determine combined total interaction length (inverse)
-    InverseGrammageType const total_inv_lambda =
-        sequence_.getInverseInteractionLength(vParticle);
-
-    // sample random exponential step length in grammage
-    ExponentialDistribution expDist(1 / total_inv_lambda);
-    GrammageType const next_interact = expDist(rng_);
-
-    CORSIKA_LOG_DEBUG(
-        "total_lambda={} g/cm2, "
-        ", next_interact={} g/cm2",
-        double((1. / total_inv_lambda) / 1_g * 1_cm * 1_cm),
-        double(next_interact / 1_g * 1_cm * 1_cm));
-
-    auto const* currentLogicalNode = vParticle.getNode();
+    // determine the volume where the particle is (last) known to be
+    auto const* currentLogicalNode = particle.getNode();
 
     // assert that particle stays outside void Universe if it has no
     // model properties set
@@ -92,8 +109,39 @@ namespace corsika {
             environment_.getUniverse()->hasModelProperties()) &&
            "FATAL: The environment model has no valid properties set!");
 
+    NuclearComposition const& composition =
+        currentLogicalNode->getModelProperties().getNuclearComposition();
+
+    // determine sqrtS per nucleon pair, sqrtS_NN
+    Code const projectileId = particle.getPID();
+    unsigned int const projectileA =
+        (is_nucleus(projectileId) ? particle.getNuclearA() : 1);
+    HEPEnergyType const ElabNN = particle.getEnergy() / projectileA;
+    HEPEnergyType const sqrtSnn = sqrt(2 * ElabNN * constants::nucleonMass);
+
+    // determine combined full inelastic cross section of the particles in the material
+
+    CrossSectionType const total_cx =
+        composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
+          return sequence_.getCrossSection(particle, targetId, sqrtSnn);
+        });
+
+    // calculate interaction length in medium
+    GrammageType const total_lambda =
+        (composition.getAverageMassNumber() * constants::u) / total_cx;
+
+    // sample random exponential step length in grammage
+    ExponentialDistribution expDist(total_lambda);
+    GrammageType const next_interact = expDist(rng_);
+
+    CORSIKA_LOG_DEBUG(
+        "total_lambda={} g/cm2, "
+        ", next_interact={} g/cm2",
+        double(total_lambda / 1_g * 1_cm * 1_cm),
+        double(next_interact / 1_g * 1_cm * 1_cm));
+
     // determine combined total inverse decay time
-    InverseTimeType const total_inv_lifetime = sequence_.getInverseLifetime(vParticle);
+    InverseTimeType const total_inv_lifetime = sequence_.getInverseLifetime(particle);
 
     // sample random exponential decay time
     ExponentialDistribution expDistDecay(1 / total_inv_lifetime);
@@ -105,11 +153,11 @@ namespace corsika {
         (1 / total_inv_lifetime) / 1_s, next_decay / 1_s);
 
     // convert next_decay from time to length [m]
-    LengthType const distance_decay = next_decay * vParticle.getMomentum().getNorm() /
-                                      vParticle.getEnergy() * constants::c;
+    LengthType const distance_decay = next_decay * particle.getMomentum().getNorm() /
+                                      particle.getEnergy() * constants::c;
 
     // determine geometric tracking
-    auto [step, nextVol] = tracking_.getTrack(vParticle);
+    auto [step, nextVol] = tracking_.getTrack(particle);
     auto geomMaxLength = step.getLength(1);
 
     // convert next_step from grammage to length
@@ -119,7 +167,7 @@ namespace corsika {
 
     // determine the maximum geometric step length
     ContinuousProcessStepLength const continuousMaxStep =
-        sequence_.getMaxStepLength(vParticle, step);
+        sequence_.getMaxStepLength(particle, step);
     LengthType const continuous_max_dist = continuousMaxStep;
 
     // take minimum of geometry, interaction, decay for next step
@@ -150,22 +198,22 @@ namespace corsika {
     // move particle along the trajectory to new position
     // also update momentum/direction/time
     step.setLength(min_distance);
-    vParticle.setPosition(step.getPosition(1));
+    particle.setPosition(step.getPosition(1));
     // assumption: tracking does not change absolute momentum (continuous physics can and
     // will):
-    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
+    particle.setMomentum(step.getDirection(1) * particle.getMomentum().getNorm());
 
     // apply all continuous processes on particle + track
-    if (sequence_.doContinuous(vParticle, step, limitingId) ==
+    if (sequence_.doContinuous(particle, step, limitingId) ==
         ProcessReturn::ParticleAbsorbed) {
       CORSIKA_LOG_DEBUG("Cascade: delete absorbed particle PID={} E={} GeV",
-                        vParticle.getPID(), vParticle.getEnergy() / 1_GeV);
-      if (vParticle.isErased()) {
+                        particle.getPID(), particle.getEnergy() / 1_GeV);
+      if (particle.isErased()) {
         CORSIKA_LOG_WARN(
             "Particle marked as Absorbed in doContinuous, but prematurely erased. This "
             "may be bug. Check.");
       } else {
-        vParticle.erase();
+        particle.erase();
       }
       return;
     }
@@ -188,28 +236,29 @@ namespace corsika {
         if (nextVol == environment_.getUniverse().get()) {
           CORSIKA_LOG_DEBUG(
               "particle left physics world, is now in unknown space -> delete");
-          vParticle.erase();
+          particle.erase();
         }
-        vParticle.setNode(nextVol);
+        particle.setNode(nextVol);
         /*
           doBoundary may delete the particle (or not)
 
-          caveat: any changes to vParticle, or even the production
+          caveat: any changes to particle, or even the production
           of new secondaries is currently not passed to ParticleCut,
           thus, particles outside the desired phase space may be produced.
 
           \todo: this must be fixed.
         */
 
-        sequence_.doBoundaryCrossing(vParticle, *currentLogicalNode, *nextVol);
+        sequence_.doBoundaryCrossing(particle, *currentLogicalNode, *nextVol);
         return; // step finished
       }
 
       CORSIKA_LOG_DEBUG("step limit reached (e.g. deflection). nothing further happens.");
 
+      // final sanity check, no actions
       {
         auto const* numericalNodeAfterStep =
-            environment_.getUniverse()->getContainingNode(vParticle.getPosition());
+            environment_.getUniverse()->getContainingNode(particle.getPosition());
         CORSIKA_LOG_TRACE(
             "Geometry check: numericalNodeAfterStep={} currentLogicalNode={}",
             fmt::ptr(numericalNodeAfterStep), fmt::ptr(currentLogicalNode));
@@ -231,23 +280,25 @@ namespace corsika {
     // secondaries, b) the projectile particle deleted (or
     // changed)
 
-    stack_view_type secondaries(vParticle);
+    stack_view_type secondaries(particle);
 
     /*
       Create SecondaryView object on Stack. The data container
       remains untouched and identical, and 'projectile' is identical
-      to 'vParticle' above this line. However,
-      projectile.AddSecondaries populate the SecondaryView, which can
+      to 'particle' above this line. However,
+      projectile.addSecondaries populate the SecondaryView, which can
       then be used afterwards for further processing. Thus: it is
-      important to use projectile/view (and not vParticle) for Interaction,
+      important to use projectile/view (and not particle) for Interaction,
       and Decay!
     */
-
-    [[maybe_unused]] auto projectile = secondaries.getProjectile();
-
     if (distance_interact < distance_decay) {
-      interaction(secondaries, total_inv_lambda);
+      // define boost of NUCLEON-NUCLEON frame
+      COMBoost const boost({ElabNN, particle.getMomentum() / projectileA},
+                           constants::nucleonMass);
+      interaction(secondaries, boost, sqrtSnn, composition, total_cx);
     } else {
+      [[maybe_unused]] auto projectile = secondaries.getProjectile();
+
       if (decay(secondaries, total_inv_lifetime) == ProcessReturn::Decayed) {
         if (secondaries.getSize() == 1 &&
             projectile.getPID() == secondaries.getNextParticle().getPID()) {
@@ -258,26 +309,13 @@ namespace corsika {
     }
 
     sequence_.doSecondaries(secondaries);
-    vParticle.erase();
+    particle.erase();
   } // namespace corsika
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline ProcessReturn Cascade<TTracking, TProcessList, TOutput, TStack>::decay(
       stack_view_type& view, InverseTimeType initial_inv_decay_time) {
     CORSIKA_LOG_DEBUG("decay");
-
-#ifdef DEBUG
-    InverseTimeType const actual_decay_time = sequence_.getInverseLifetime(view.parent());
-    if (actual_decay_time * 0.99 > initial_inv_decay_time) {
-      CORSIKA_LOG_WARN(
-          "Decay time decreased during step! This leads to un-physical step length. "
-          "delta_inverse_decay_time={}",
-          (actual_decay_time != InverseTimeType::zero() &&
-                   initial_inv_decay_time != InverseTimeType::zero()
-               ? 1 / initial_inv_decay_time - 1 / actual_decay_time
-               : TimeType::zero()));
-    }
-#endif
 
     // one option is that decay_time is now larger (less
     // probability for decay) than it was before the step, thus,
@@ -296,28 +334,20 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline ProcessReturn Cascade<TTracking, TProcessList, TOutput, TStack>::interaction(
-      stack_view_type& view, InverseGrammageType initial_inv_int_length) {
+      stack_view_type& view, COMBoost const& boost, HEPEnergyType const sqrtSnn,
+      NuclearComposition const& composition,
+      CrossSectionType const initial_cross_section) {
+
     CORSIKA_LOG_DEBUG("collide");
 
-#ifdef DEBUG
-    InverseGrammageType const actual_inv_length = sequence_.getInverseInteractionLength(
-        view.parent()); // 1/lambda_int after step, -dE/dX etc.
-
-    if (actual_inv_length * 0.99 > initial_inv_int_length) {
-      CORSIKA_LOG_WARN(
-          "Interaction length decreased during step! This leads to un-physical step "
-          "length. delta_inverse_interaction_length={}",
-          1 / initial_inv_int_length - 1 / actual_inv_length);
-    }
-#endif
-
-    // one option is that interaction_length is now larger (less
+    // one option is that cross section is now smaller (less
     // probability for collision) than it was before the step, thus,
     // no interaction might actually occur and is allowed
 
-    UniformRealDistribution<InverseGrammageType> uniDist(initial_inv_int_length);
-    const auto sample_process = uniDist(rng_);
-    auto const returnCode = sequence_.selectInteraction(view, sample_process);
+    UniformRealDistribution<CrossSectionType> uniDist(initial_cross_section);
+    CrossSectionType const sample_process_by_cx = uniDist(rng_);
+    auto const returnCode = sequence_.selectInteraction(view, boost, sqrtSnn, composition,
+                                                        rng_, sample_process_by_cx);
     if (returnCode != ProcessReturn::Interacted) {
       CORSIKA_LOG_DEBUG("Particle did not interact!");
     }

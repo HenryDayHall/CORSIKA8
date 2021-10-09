@@ -20,48 +20,69 @@
 
 namespace corsika {
 
-  /** Describes the composition of matter
-   *  Allowes and handles the creation of custom matter compositions
-   **/
+  /**
+   * Describes the composition of matter
+   * Allowes and handles the creation of custom matter compositions.
+   */
+
   class NuclearComposition {
   public:
-    /** Constructor
+    /**
+     * Constructor
      *  The constructore takes a list of elements and a list which describe the relative
      *  amount. Booth lists need to have the same length and the sum all of fractions
-     *  should be 1. Otherwise an exception is thrown
-     *  @param pComponents List of particle types
+     *  should be 1. Otherwise an exception is thrown.
+     *
+     *  @param pComponents List of particle types.
      *  @param pFractions List of fractions how much each particle contributes. The sum
-     *         needs to add up to 1
-     **/
+     *         needs to add up to 1.
+     */
     NuclearComposition(std::vector<Code> const& pComponents,
-                       std::vector<float> const& pFractions);
+                       std::vector<double> const& pFractions);
 
-    /** Sum all all relative composition weighted by func(element)
-     *  This function sums all relative compositions given during this classes
-     *construction. Each entry is weighted by the user defined function func given to this
-     *function.
+    /**
+     * Returns a vector of the same length as elements in the material with the weighted
+     * return of "func". The typical default application is for cross section weighted
+     * with fraction in the material.
+     *
      *  @tparam TFunction Type of functions for the weights. The type should be
-     *          Code -> float
-     *  @param func Functions for reweighting specific elements
-     *  @retval returns the weighted sum with the type defined by the return type of func
-     **/
+     *          Code -> CrossSectionType.
+     *  @param func Functions for reweighting specific elements.
+     *  @retval returns the vector with weighted return types of func.
+     */
     template <typename TFunction>
-    auto getWeightedSum(TFunction const& func) const;
+    auto getWeighted(TFunction const& func) const;
 
-    /** Number of elements in the composition array
-     *  @retval returns the number of elements in the composition array
-     **/
+    /**
+     * Sum all all relative composition weighted by func(element)
+     *  This function sums all relative compositions given during this classes
+     * construction. Each entry is weighted by the user defined function func given to
+     * this function.
+     *
+     *  @tparam TFunction Type of functions for the weights. The type should be
+     *          Code -> double.
+     *  @param func Functions for reweighting specific elements.
+     *  @retval returns the weighted sum with the type defined by the return type of func.
+     */
+    template <typename TFunction>
+    auto getWeightedSum(TFunction const& func) const
+        -> decltype(func(std::declval<Code>()));
+
+    /**
+     * Number of elements in the composition array
+     *  @retval returns the number of elements in the composition array.
+     */
     size_t getSize() const;
 
     //! Returns a const reference to the fraction
-    std::vector<float> const& getFractions() const;
+    std::vector<double> const& getFractions() const;
     //! Returns a const reference to the fraction
     std::vector<Code> const& getComponents() const;
     double const getAverageMassNumber() const;
 
     template <class TRNG>
     Code sampleTarget(std::vector<CrossSectionType> const& sigma,
-                      TRNG& randomStream) const;
+                      TRNG&& randomStream) const;
 
     // Note: when this class ever modifies its internal data, the hash
     // must be updated, too!
@@ -73,8 +94,8 @@ namespace corsika {
   private:
     void updateHash();
 
-    std::vector<float> const numberFractions_; //!< relative fractions of number density
-    std::vector<Code> const components_;       //!< particle codes of consitutents
+    std::vector<double> const numberFractions_; //!< relative fractions of number density
+    std::vector<Code> const components_;        //!< particle codes of consitutents
 
     double const avgMassNumber_;
 

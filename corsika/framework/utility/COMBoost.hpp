@@ -66,6 +66,9 @@ namespace corsika {
     //! returns the rotated coordinate system
     CoordinateSystemPtr getRotatedCS() const;
 
+    //! returns the original coordinate system
+    CoordinateSystemPtr getOriginalCS() const;
+
   protected:
     //! internal method
     void setBoost(double coshEta, double sinhEta);
