@@ -11,11 +11,17 @@ add_custom_command (
   DEPENDS ${input_dir}/code_generator.py
           ${input_dir}/sibyll_codes.dat
           ${PROJECT_BINARY_DIR}/corsika/framework/core/particle_db.pkl
+          GenParticlesHeaders
   WORKING_DIRECTORY
           ${output_dir}/
   COMMENT "Generate conversion tables for particle codes SIBYLL <-> CORSIKA"
   VERBATIM
   )
+
+set_source_files_properties (
+  ${output_dir}/Generated.inc
+  PROPERTIES GENERATED TRUE
+)
 
 add_custom_target (SourceDirLinkSib DEPENDS ${output_dir}/Generated.inc)
 add_dependencies (CORSIKA8 SourceDirLinkSib)
