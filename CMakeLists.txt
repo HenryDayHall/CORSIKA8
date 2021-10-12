@@ -320,7 +320,6 @@ configure_package_config_file (
 # overwrite with install location (if it was build as part of corsika)
 set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL})
 set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
-set (CORSIKA_CMAKE_DATA_DIR ${CMAKE_INSTALL_FULL_DATADIR}/corsika/data)
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
