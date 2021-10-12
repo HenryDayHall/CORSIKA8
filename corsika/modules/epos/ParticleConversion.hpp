@@ -37,12 +37,12 @@ namespace corsika::epos {
   unsigned int constexpr get_nucleus_A(EposCode const eposId) {
     // 100ZZZAAA0 -> std. pdg code
     EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
-    return int(abs(eposPdg) / 10) % 1000;
+    return int(eposPdg / 10) % 1000;
   }
   unsigned int constexpr get_nucleus_Z(EposCode const eposId) {
     // 100ZZZAAA0 -> std. pdg code
     EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
-    return int(abs(eposPdg) / 10000) % 1000;
+    return int(eposPdg / 10000) % 1000;
   }
 
   EposCode constexpr convertToEpos(Code const code) {
