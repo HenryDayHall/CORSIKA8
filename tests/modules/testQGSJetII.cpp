@@ -181,7 +181,7 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
     corsika::qgsjetII::Interaction model;
     model.doInteraction(view); // this also should produce some fragments
-    CHECK(view.getSize() == Approx(300).margin(100)); // this is not physics validation
+    CHECK(view.getSize() == Approx(300).margin(150)); // this is not physics validation
     int countFragments = 0;
     for (auto const& sec : view) { countFragments += (is_nucleus(sec.getPID())); }
     CHECK(countFragments == Approx(4).margin(2)); // this is not physics validation
