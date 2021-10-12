@@ -251,8 +251,10 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(const Particle& p) { return (p.getEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
-                                    make_sequence(sibyllNucCounted, sibyllCounted));
+  auto hadronSequence =
+      make_select(EnergySwitch(55_GeV), urqmdCounted,
+                  make_select([](auto const& p) { return is_nucleus(p.getPID()); },
+                              sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // directory for outputs

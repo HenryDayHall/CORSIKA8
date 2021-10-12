@@ -8,6 +8,7 @@
 
 #include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
@@ -146,8 +147,11 @@ int main() {
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  auto sequence =
-      make_sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
+  auto sequence = make_sequence(
+      stackInspect,
+      make_select([](auto const& particle) { return is_nucleus(particle.getPID()); },
+                  sibyllNuc, sibyll),
+      decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);

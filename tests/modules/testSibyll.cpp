@@ -60,7 +60,8 @@ TEST_CASE("Sibyll", "modules") {
   }
 
   SECTION("cross-section type") {
-
+    CHECK(corsika::sibyll::getSibyllXSCode(Code::Helium) == 0);
+    CHECK(corsika::sibyll::getSibyllXSCode(Code::Proton) == 1);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::Electron) == 0);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::K0Long) == 3);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::SigmaPlus) == 1);

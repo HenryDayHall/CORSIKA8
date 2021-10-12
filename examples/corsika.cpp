@@ -292,7 +292,8 @@ int main(int argc, char** argv) {
   InteractionCounter sibyllCounted(sibyll);
   corsika::sibyll::NuclearInteraction sibyllNuc(sibyll, env);
   InteractionCounter sibyllNucCounted(sibyllNuc);
-  auto heModelCounted = make_sequence(sibyllNucCounted, sibyllCounted);
+  auto heModelCounted = make_select([](auto const& p) { return is_nucleus(p.getPID()); },
+                                    sibyllNucCounted, sibyllCounted);
 
   corsika::pythia8::Decay decayPythia;
 

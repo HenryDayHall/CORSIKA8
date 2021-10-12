@@ -158,10 +158,10 @@ int main(int argc, char** argv) {
   setup::Stack stack;
   stack.clear();
   unsigned short const A = std::stoi(std::string(argv[1]));
-  unsigned short Z = std::stoi(std::string(argv[2]));
-  const Code beamCode = get_nucleus_code(A, Z);
+  unsigned short const Z = std::stoi(std::string(argv[2]));
+  Code const beamCode = get_nucleus_code(A, Z);
   auto const mass = get_mass(beamCode);
-  const HEPEnergyType E0 = 1_GeV * std::stof(std::string(argv[3]));
+  HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
   auto const thetaRad = theta / 180. * M_PI;
 
