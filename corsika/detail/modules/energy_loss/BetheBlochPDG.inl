@@ -104,7 +104,7 @@ namespace corsika {
     // Barkas correction O(Z3) higher-order Born approximation
     // see Appl. Phys. 85 (1999) 1249
     // double A = 1;
-    // if (p.getPID() == Code::Nucleus) A = p.getNuclearA();
+    // if (is_nucleus(p.getPID()) A = get_nucleus_A(p.getPID());
     // double const Erel = (p.getEnergy()-p.getMass()) / A / 1_keV;
     // double const Llow = 0.01 * Erel;
     // double const Lhigh = 1.5/pow(Erel, 0.4) + 45000./Zmat * pow(Erel, 1.6);

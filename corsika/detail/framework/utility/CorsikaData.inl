@@ -18,8 +18,9 @@
 namespace corsika {
 
   inline boost::filesystem::path corsika_data(boost::filesystem::path const& key) {
-    std::string const corsika_Data_Dir = std::string(CORSIKA_DATA_DIR); // from cmake
-    boost::filesystem::path fname = boost::filesystem::path(corsika_Data_Dir) / key;
+    std::string const corsika_CMAKE_Data_Dir =
+        std::string(CORSIKA_CMAKE_DATA_DIR); // from cmake
+    boost::filesystem::path fname = boost::filesystem::path(corsika_CMAKE_Data_Dir) / key;
     // LCOV_EXCL_START, this cannot be easily tested system-independently
     if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
       fname = boost::filesystem::path(p) / key;

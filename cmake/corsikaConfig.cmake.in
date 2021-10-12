@@ -62,10 +62,10 @@ check_required_components (corsika)
 #+++++++++++++++++++++++++++++++
 # add further definitions / options
 #
-target_compile_definitions (CORSIKA8::CORSIKA8
-  INTERFACE
-  CORSIKA_DATA_DIR=\"@CORSIKA_DATA_DIR@\"
-)
+#target_compile_definitions (CORSIKA8::CORSIKA8
+#  INTERFACE
+#  CORSIKA_DATA_DIR=\"@CORSIKA_DATA_DIR@\"
+#)
 if (WITH_HISTORY)
   set_property (
     TARGET CORSIKA8::CORSIKA8

@@ -11,6 +11,11 @@
 cmake_minimum_required (VERSION 3.9)
 
 #+++++++++++++++++++++++++++++
+# for pre-defined standard path
+#
+include (GNUInstallDirs)
+
+#+++++++++++++++++++++++++++++
 # project name
 #
 set (c8_version 8.0.0)
@@ -69,12 +74,12 @@ include (corsikaUtilities) # extra cmake functions
 include (corsikaDefines)
 
 #+++++++++++++++++++++++++++++
-# the location of the CORSIKA_DATA_DIR is of fundamental importance
+# the location of the "corsika-data" is of fundamental importance
 # this should not be done in corsikaDefines.cmake since we may want 
 # to change behaviour at config/build/install time. 
 # And: Only the compile_definition of the CORSIKA8 target matters.
 #
-set (CORSIKA_DATA_DIR ${CMAKE_SOURCE_DIR}/modules/data)
+set (CORSIKA_CMAKE_DATA_DIR ${CMAKE_SOURCE_DIR}/modules/data)
 
 #+++++++++++++++++++++++++++++
 # check if compiler is C++17 compliant
@@ -232,7 +237,8 @@ target_link_libraries (
 target_compile_definitions (
   CORSIKA8
   INTERFACE
-  CORSIKA_DATA_DIR="${CORSIKA_DATA_DIR}"
+  $<BUILD_INTERFACE:CORSIKA_CMAKE_DATA_DIR="${CORSIKA_CMAKE_DATA_DIR}">
+  $<INSTALL_INTERFACE:CORSIKA_CMAKE_DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/corsika/data">
 )
 
 
@@ -300,7 +306,7 @@ install (
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/corsikaConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+  INSTALL_DESTINATION ${PROJECT_BINARY_DIR}/do_not_need_this
   )
 
 # corsikaDefines for build tree
@@ -314,17 +320,18 @@ configure_package_config_file (
 # overwrite with install location (if it was build as part of corsika)
 set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL})
 set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
+set (CORSIKA_CMAKE_DATA_DIR ${CMAKE_INSTALL_FULL_DATADIR}/corsika/data)
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
-  INSTALL_DESTINATION ${PROJECT_BINARY_DIR}/do_not_need_this
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 
 install (
   FILES
   ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
   ${CMAKE_BINARY_DIR}/conaninfo.txt
-  ${CMAKE_BINARY_DIR}/corsikaConfig.cmake
+  ${CMAKE_BINARY_DIR}/cmake/corsikaConfig.cmake
   ${CMAKE_BINARY_DIR}/corsikaDefines.cmake
   ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
   DESTINATION lib/cmake/corsika
@@ -333,7 +340,12 @@ install (
 #
 # examples
 #
-install (DIRECTORY examples DESTINATION share/corsika)
+install (DIRECTORY examples DESTINATION ${CMAKE_INSTALL_DATADIR}/corsika)
+
+#
+# data
+#
+install (DIRECTORY modules/data DESTINATION ${CMAKE_INSTALL_DATADIR}/corsika)
 
 #
 # tools
