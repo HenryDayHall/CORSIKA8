@@ -259,18 +259,16 @@ int main(int argc, char** argv) {
 
   // parse the primary ID as a PDG or A/Z code
   Code beamCode;
-  HEPEnergyType mass;
 
   // check if we want to use a PDG code instead
   if (app.count("--pdg") > 0) {
     beamCode = convert_from_PDG(PDGCode(app["--pdg"]->as<int>()));
-    mass = get_mass(beamCode);
   } else {
     // check manually for proton and neutrons
     if ((A == 0) && (Z == 1)) beamCode = Code::Proton;
     if ((A == 1) && (Z == 1)) beamCode = Code::Neutron;
-    mass = get_nucleus_mass(A, Z);
   }
+  HEPEnergyType const mass = get_mass(beamCode);
 
   // particle energy
   HEPEnergyType const E0 = 1_GeV * app["--energy"]->as<float>();
@@ -419,11 +417,7 @@ int main(int argc, char** argv) {
     stack.clear();
 
     // add the desired particle to the stack
-    if (A > 1) {
-      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
-    } else {
-      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
-    }
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
 
     // run the shower
     EAS.run();

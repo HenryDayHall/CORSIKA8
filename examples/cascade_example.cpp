@@ -94,10 +94,10 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
-  const Code beamCode = Code::Nucleus;
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = get_nucleus_mass(nuclA, nuclZ);
+  const Code beamCode = get_nucleus_code(nuclA, nuclZ);
+  const HEPMassType mass = get_nucleus_mass(beamCode);
   const HEPEnergyType E0 = nuclA * 1_TeV;
   double theta = 0.;
   double phi = 0.;
@@ -125,7 +125,7 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, nuclA, nuclZ));
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
   }
 
   // setup processes, decays and interactions
