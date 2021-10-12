@@ -8,7 +8,8 @@ add_custom_command (
   COMMAND ${input_dir}/code_generator.py 
           ${PROJECT_BINARY_DIR}/corsika/framework/core/particle_db.pkl
           ${input_dir}/qgsjet-II-04-codes.dat
-  DEPENDS ${input_dir}/code_generator.py
+  DEPENDS GenParticlesHeaders
+          ${input_dir}/code_generator.py
           ${input_dir}/qgsjet-II-04-codes.dat
           ${PROJECT_BINARY_DIR}/corsika/framework/core/particle_db.pkl
   WORKING_DIRECTORY
@@ -16,6 +17,11 @@ add_custom_command (
   COMMENT "Generate conversion tables for particle codes QGSJetII <-> CORSIKA"
   VERBATIM
   )
+
+set_source_files_properties (
+  ${output_dir}/Generated.inc
+  PROPERTIES GENERATED TRUE
+)
 
 add_custom_target (SourceDirLinkQgs DEPENDS ${output_dir}/Generated.inc)
 add_dependencies (CORSIKA8 SourceDirLinkQgs)

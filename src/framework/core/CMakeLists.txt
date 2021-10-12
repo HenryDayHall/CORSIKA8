@@ -20,6 +20,13 @@ add_custom_command (
   VERBATIM
   )
 
+set_source_files_properties (
+  ${output_dir}/GeneratedParticleProperties.inc
+  ${output_dir}/GeneratedParticleClasses.inc
+  ${output_dir}/particle_db.pkl
+  PROPERTIES GENERATED TRUE
+  )
+
 add_custom_target (GenParticlesHeaders
   DEPENDS ${output_dir}/GeneratedParticleProperties.inc
           ${output_dir}/GeneratedParticleClasses.inc
