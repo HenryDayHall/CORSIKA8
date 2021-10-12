@@ -21,7 +21,7 @@ namespace corsika::epos {
   using EposCodeIntType = std::underlying_type<EposCode>::type;
 
   /**
-     These are the possible projectile for which Epos knows the cross section
+   * These are the possible projectile for which Epos knows the cross section.
    */
   enum class EposXSClass : int8_t {
     CannotInteract = 0,
@@ -34,14 +34,27 @@ namespace corsika::epos {
 
 #include <corsika/modules/epos/Generated.inc>
 
-  EposCode constexpr convertToEpos(Code pCode) {
-    return corsika2epos[static_cast<CodeIntType>(pCode)];
+  unsigned int constexpr get_nucleus_A(EposCode const eposId) {
+    // 100ZZZAAA0 -> std. pdg code
+    EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
+    return int(abs(eposPdg) / 10) % 1000;
+  }
+  unsigned int constexpr get_nucleus_Z(EposCode const eposId) {
+    // 100ZZZAAA0 -> std. pdg code
+    EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
+    return int(abs(eposPdg) / 10000) % 1000;
   }
 
-  Code constexpr convertFromEpos(EposCode pCode) {
-    EposCodeIntType const s = static_cast<EposCodeIntType>(pCode);
+  EposCode constexpr convertToEpos(Code const code) {
+    return corsika2epos[static_cast<CodeIntType>(code)];
+  }
+
+  Code constexpr convertFromEpos(EposCode const eposId) {
+    EposCodeIntType const s = static_cast<EposCodeIntType>(eposId);
     // if nucleus (pdg-id)
-    if (s >= 1000000000) { return Code::Nucleus; }
+    if (s >= 1000000000) {
+      return get_nucleus_code(get_nucleus_A(eposId), get_nucleus_Z(eposId));
+    }
     auto const corsikaCode = epos2corsika[s - minEpos];
     if (corsikaCode == Code::Unknown) {
       throw std::runtime_error(std::string("EPOS/CORSIKA conversion of ")
@@ -51,16 +64,19 @@ namespace corsika::epos {
     return corsikaCode;
   }
 
-  int constexpr convertToEposRaw(Code pCode) {
-    return static_cast<int>(convertToEpos(pCode));
+  int constexpr convertToEposRaw(Code const code) {
+    return static_cast<int>(convertToEpos(code));
   }
 
-  int constexpr getEposXSCode(Code pCode) {
+  int constexpr getEposXSCode(Code const code) {
+    if (is_nucleus(code)) { return static_cast<EposXSClassIntType>(EposXSClass::Baryon); }
     return static_cast<EposXSClassIntType>(
-        corsika2eposXStype[static_cast<CodeIntType>(pCode)]);
+        corsika2eposXStype[static_cast<CodeIntType>(code)]);
   }
 
-  bool constexpr canInteract(Code pCode) { return getEposXSCode(pCode) > 0; }
+  bool constexpr canInteract(Code const code) {
+    return is_nucleus(code) || getEposXSCode(code) > 0;
+  }
 
   HEPMassType getEposMass(Code const);
 

@@ -397,11 +397,7 @@ int main(int argc, char** argv) {
     stack.clear();
 
     // add the desired particle to the stack
-    if (A > 1) {
-      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
-    } else {
-      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
-    }
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
 
     // if we want to fix the first location of the shower
     if (force_interaction) {

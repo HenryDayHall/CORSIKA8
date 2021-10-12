@@ -57,11 +57,11 @@ namespace corsika {
        @param projectile_id corsika::Code of particle
        @param lab_energy Energy in lab. frame
        @param mass_target Mass of target particle
-       @param A if projectile_id is corsika::Nucleus : Mass of nucleus
-       @param Z if projectile_id is corsika::Nucleus : Charge of nucleus
+       @param A if projectile_id is Nucleus : Mass of nucleus
+       @param Z if projectile_id is Nucleus : Charge of nucleus
     */
-    void fill(Code projectile_id, HEPEnergyType lab_energy, HEPEnergyType mass_target,
-              int A = 0, int Z = 0);
+    void fill(Code const projectile_id, HEPEnergyType const lab_energy,
+              HEPEnergyType const mass_target);
 
     //! return histogram in c.m.s. frame
     hist_type const& CMSHist() const { return inthist_cms_; }

@@ -150,7 +150,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
     const HEPEnergyType P0 = 60_GeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
@@ -237,7 +237,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
     const HEPEnergyType P0 = 5_GeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
@@ -256,7 +256,7 @@ TEST_CASE("SibyllInterface", "modules") {
 
     const HEPEnergyType P0 = 1000_EeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     { [[maybe_unused]] auto const& dummy1 = stack; }
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
@@ -272,7 +272,7 @@ TEST_CASE("SibyllInterface", "modules") {
     auto const& cs1 = *csPtr1;
     const HEPEnergyType P0 = 150_GeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Electron, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr1, cs1);
+        Code::Electron, P0, (setup::Environment::BaseNodeType* const)nodePtr1, cs1);
     { [[maybe_unused]] auto const& dummy1 = stack; }
     MomentumVector plab = MomentumVector(
         cs1, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
@@ -285,7 +285,7 @@ TEST_CASE("SibyllInterface", "modules") {
   SECTION("NuclearInteractionInterface") {
 
     auto [stack, viewPtr] =
-        setup::testing::setup_stack(Code::Nucleus, 8, 4, 900_GeV,
+        setup::testing::setup_stack(get_nucleus_code(8, 4), 900_GeV,
                                     (setup::Environment::BaseNodeType* const)nodePtr, cs);
     setup::StackView& view = *viewPtr;
     auto particle = stack->first();
@@ -306,9 +306,8 @@ TEST_CASE("SibyllInterface", "modules") {
 
   SECTION("DecayInterface") {
 
-    auto [stackPtr, viewPtr] =
-        setup::testing::setup_stack(Code::Lambda0, 0, 0, 10_GeV,
-                                    (setup::Environment::BaseNodeType* const)nodePtr, cs);
+    auto [stackPtr, viewPtr] = setup::testing::setup_stack(
+        Code::Lambda0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     setup::StackView& view = *viewPtr;
     auto& stack = *stackPtr;
     auto particle = stack.first();
@@ -327,7 +326,7 @@ TEST_CASE("SibyllInterface", "modules") {
   SECTION("DecayInterface - decay not handled") {
     // sibyll does not know the higgs for example
     auto [stackPtr, viewPtr] = setup::testing::setup_stack(
-        Code::H0, 0, 0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        Code::H0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     setup::StackView& view = *viewPtr;
     auto& stack = *stackPtr;
     auto particle = stack.first();

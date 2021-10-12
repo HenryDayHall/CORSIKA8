@@ -129,7 +129,7 @@ namespace corsika::urqmd {
                                                  int vAProjectile = 1) {
 
     // the following is a translation of ptsigtot() into C++
-    if (vProjectileCode != Code::Nucleus &&
+    if (!is_nucleus(vProjectileCode) &&
         !is_nucleus(vTargetCode)) { // both particles are "special"
       auto const mProj = get_mass(vProjectileCode);
       auto const mTar = get_mass(vTargetCode);
@@ -165,7 +165,7 @@ namespace corsika::urqmd {
                                                  Code targetCode) const {
     auto const projectileCode = projectile.getPID();
 
-    if (projectileCode == Code::Nucleus) {
+    if (is_nucleus(projectileCode)) {
       /*
        * unfortunately unavoidable at the moment until we have tools to get the actual
        * inealstic cross-section from UrQMD
@@ -215,7 +215,7 @@ namespace corsika::urqmd {
 
     auto projectile = view.getProjectile();
 
-    auto projectileCode = projectile.getPID();
+    Code projectileCode = projectile.getPID();
     auto const projectileEnergyLab = projectile.getEnergy();
     auto const& projectileMomentumLab = projectile.getMomentum();
     auto const& projectilePosition = projectile.getPosition();
@@ -246,14 +246,14 @@ namespace corsika::urqmd {
     ::urqmd::sys_.nsteps = 1;
 
     // initialization regarding projectile
-    if (Code::Nucleus == projectileCode) {
+    if (is_nucleus(projectileCode)) {
       // is this everything?
       ::urqmd::inputs_.prspflg = 0;
 
-      ::urqmd::sys_.Ap = projectile.getNuclearA();
-      ::urqmd::sys_.Zp = projectile.getNuclearZ();
-      ::urqmd::rsys_.ebeam = (projectileEnergyLab - projectile.getMass()) * (1 / 1_GeV) /
-                             projectile.getNuclearA();
+      ::urqmd::sys_.Ap = get_nucleus_A(projectileCode);
+      ::urqmd::sys_.Zp = get_nucleus_Z(projectileCode);
+      ::urqmd::rsys_.ebeam =
+          (projectileEnergyLab - projectile.getMass()) * (1 / 1_GeV) / ::urqmd::sys_.Ap;
 
       ::urqmd::rsys_.bdist = ::urqmd::nucrad_(targetA) +
                              ::urqmd::nucrad_(::urqmd::sys_.Ap) +

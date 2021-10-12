@@ -25,7 +25,7 @@ namespace corsika {
       , em_count_(0)
       , inv_count_(0)
       , energy_count_() {
-    for (auto p : get_all_particles())
+    for (auto p : get_all_particles()) {
       if (is_hadron(p)) // nuclei are also hadrons
         set_kinetic_energy_threshold(p, eHadCut);
       else if (is_muon(p))
@@ -34,6 +34,8 @@ namespace corsika {
         set_kinetic_energy_threshold(p, eEleCut);
       else if (p == Code::Photon)
         set_kinetic_energy_threshold(p, ePhoCut);
+    }
+    set_kinetic_energy_threshold(Code::Nucleus, eHadCut);
     CORSIKA_LOG_DEBUG(
         "setting kinetic energy thresholds: electrons = {} GeV, photons = {} GeV, "
         "hadrons = {} GeV, "
@@ -53,11 +55,13 @@ namespace corsika {
       , inv_count_(0)
       , energy_count_(0) {
 
-    for (auto p : get_all_particles())
+    for (auto p : get_all_particles()) {
       if (is_hadron(p))
         set_kinetic_energy_threshold(p, eHadCut);
       else if (is_muon(p))
         set_kinetic_energy_threshold(p, eMuCut);
+    }
+    set_kinetic_energy_threshold(Code::Nucleus, eHadCut);
     CORSIKA_LOG_DEBUG(
         "setting thresholds: hadrons = {} GeV, "
         "muons = {} GeV",
@@ -75,6 +79,7 @@ namespace corsika {
       , inv_count_(0)
       , energy_count_(0) {
     for (auto p : get_all_particles()) set_kinetic_energy_threshold(p, eCut);
+    set_kinetic_energy_threshold(Code::Nucleus, eCut);
     CORSIKA_LOG_DEBUG("setting kinetic energy threshold for all particles to {} GeV",
                       eCut / 1_GeV);
   }
@@ -100,9 +105,9 @@ namespace corsika {
     auto const energyLab = vP.getKineticEnergy();
     auto const pid = vP.getPID();
     // nuclei
-    if (pid == Code::Nucleus) {
+    if (is_nucleus(pid)) {
       // calculate energy per nucleon
-      auto const ElabNuc = energyLab / vP.getNuclearA();
+      auto const ElabNuc = energyLab / get_nucleus_A(pid);
       return (ElabNuc < get_kinetic_energy_threshold(pid));
     } else {
       return (energyLab < get_kinetic_energy_threshold(pid));

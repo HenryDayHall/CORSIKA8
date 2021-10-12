@@ -126,7 +126,7 @@ namespace corsika::nuclear_stack {
     setNuclearZ(Z);
     HEPMassType m = 0_GeV;
     if (PID == Code::Nucleus) {
-      m = get_nucleus_mass(A, Z);
+      m = get_nucleus_mass(get_nucleus_code(A, Z));
     } else {
       m = get_mass(PID);
     }
@@ -172,7 +172,7 @@ namespace corsika::nuclear_stack {
     setNuclearZ(Z);
     HEPMassType m = 0_GeV;
     if (PID == Code::Nucleus) {
-      m = get_nucleus_mass(A, Z);
+      m = get_nucleus_mass(get_nucleus_code(A, Z));
     } else {
       m = get_mass(PID);
     }
@@ -240,7 +240,7 @@ namespace corsika::nuclear_stack {
   inline HEPMassType NuclearParticleInterface<InnerParticleInterface,
                                               StackIteratorInterface>::getMass() const {
     if (super_type::getPID() == Code::Nucleus)
-      return get_nucleus_mass(getNuclearA(), getNuclearZ());
+      return get_nucleus_mass(get_nucleus_code(getNuclearA(), getNuclearZ()));
     return super_type::getMass();
   }
 

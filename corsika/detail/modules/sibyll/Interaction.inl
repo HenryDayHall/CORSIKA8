@@ -262,7 +262,7 @@ namespace corsika::sibyll {
     if (is_nucleus(targetCode)) targetSibCode = get_nucleus_A(targetCode);
     if (targetCode == Proton::code) targetSibCode = 1;
     CORSIKA_LOG_DEBUG("Interaction: sibyll code: {}", targetSibCode);
-    if (targetSibCode > maxTargetMassNumber_ || targetSibCode < 1)
+    if (targetSibCode > int(maxTargetMassNumber_) || targetSibCode < 1)
       throw std::runtime_error(
           "Sibyll target outside range. Only nuclei with A<18 or protons are "
           "allowed.");

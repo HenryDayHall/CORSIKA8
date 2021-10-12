@@ -39,7 +39,7 @@ def read_epos_codes(filename, particle_db):
                 particle_db[identifier]["epos_code"] = int(epos_code)
                 particle_db[identifier]["epos_xsType"] = xsType
             except KeyError as e:
-                raise Exception("Identifier '{:s}' not found in particle_db".format(identifier))
+                raise Exception("Identifier '{:s}' not found in CORSIKA8 particle_db".format(identifier))
 
             
 def set_default_epos_definition(particle_db):
@@ -49,7 +49,7 @@ def set_default_epos_definition(particle_db):
 
     This is achieved here.
 
-    The function return nothing, but modified the input particle_db by adding the 
+    The function returns nothing, but modified the input particle_db by adding the 
     fields 'xsType' and 'hadronType'
     '''
     for identifier, pData in particle_db.items():
@@ -83,6 +83,7 @@ def generate_corsika2epos(particle_db):
     '''
     string = "std::array<EposCode, {:d}> constexpr corsika2epos = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         if 'epos_code' in pData:
             string += "  EposCode::{:s}, \n".format(identifier)
         else:
@@ -98,6 +99,7 @@ def generate_corsika2epos_xsType(particle_db):
     '''
     string = "std::array<EposXSClass, {:d}> constexpr corsika2eposXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         if 'epos_xsType' in pData:
             string += "  EposXSClass::{:s}, // {:s}\n".format(pData['epos_xsType'], identifier)
         else:
@@ -116,7 +118,6 @@ def generate_epos2corsika(particle_db) :
     for identifier, pData in particle_db.items() :
         if 'epos_code' in pData:
             minID = min(minID, pData['epos_code'])
-
     string += "EposCodeIntType constexpr minEpos = {:d};\n\n".format(minID)
 
     pDict = {}

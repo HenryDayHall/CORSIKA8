@@ -14,8 +14,7 @@
 namespace corsika::epos {
 
   inline HEPMassType getEposMass(Code const pCode) {
-    if (pCode == Code::Nucleus)
-      throw std::runtime_error("Cannot getMass() of particle::Nucleus -> unspecified");
+    if (is_nucleus(pCode)) throw std::runtime_error("Not suited for Nuclei.");
     auto sCode = convertToEposRaw(pCode);
     if (sCode == 0)
       throw std::runtime_error("getEposMass: unknown particle!");

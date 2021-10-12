@@ -15,8 +15,7 @@
 namespace corsika::sibyll {
 
   inline HEPMassType getSibyllMass(Code const pCode) {
-    if (pCode == corsika::Code::Nucleus)
-      throw std::runtime_error("Cannot getMass() of particle::Nucleus -> unspecified");
+    if (is_nucleus(pCode)) throw std::runtime_error("Not defined for nuclei.");
     auto sCode = convertToSibyllRaw(pCode);
     if (sCode == 0)
       throw std::runtime_error("getSibyllMass: unknown particle!");

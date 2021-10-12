@@ -52,15 +52,15 @@ namespace corsika::sibyll {
     void doInteraction(TSecondaries&);
 
   private:
-    int getMaxTargetMassNumber() const { return maxTargetMassNumber_; }
+    unsigned int constexpr getMaxTargetMassNumber() const { return maxTargetMassNumber_; }
     HEPEnergyType getMinEnergyCoM() const { return minEnergyCoM_; }
     HEPEnergyType getMaxEnergyCoM() const { return maxEnergyCoM_; }
 
     default_prng_type& RNG_ = RNGManager<>::getInstance().getRandomStream("sibyll");
     const HEPEnergyType minEnergyCoM_ = 10. * 1e9 * electronvolt;
     const HEPEnergyType maxEnergyCoM_ = 1.e6 * 1e9 * electronvolt;
-    const int maxTargetMassNumber_ = 18;
-    const int minNuclearTargetA_ = 4;
+    static unsigned int constexpr maxTargetMassNumber_ = 18;
+    static unsigned int constexpr minNuclearTargetA_ = 4;
 
     // data members
     int count_ = 0;

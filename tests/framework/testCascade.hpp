@@ -14,7 +14,7 @@
 #include <corsika/framework/stack/CombinedStack.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
 #include <corsika/stack/GeometryNodeStackExtension.hpp>
-#include <corsika/stack/NuclearStackExtension.hpp>
+#include <corsika/stack/VectorStack.hpp>
 
 using TestEnvironmentInterface = corsika::IEmpty;
 using TestEnvironmentType = corsika::Environment<TestEnvironmentInterface>;
@@ -26,12 +26,13 @@ using SetupGeometryDataInterface =
 // combine particle data stack with geometry information for tracking
 template <typename StackIter>
 using StackWithGeometryInterface =
-    corsika::CombinedParticleInterface<corsika::nuclear_stack::ParticleDataStack::pi_type,
+    corsika::CombinedParticleInterface<corsika::VectorStack::pi_type,
                                        SetupGeometryDataInterface, StackIter>;
 
-using TestCascadeStack = corsika::CombinedStack<
-    typename corsika::nuclear_stack::ParticleDataStack::stack_data_type,
-    corsika::node::GeometryData<TestEnvironmentType>, StackWithGeometryInterface>;
+using TestCascadeStack =
+    corsika::CombinedStack<typename corsika::VectorStack::stack_data_type,
+                           corsika::node::GeometryData<TestEnvironmentType>,
+                           StackWithGeometryInterface>;
 
 /*
   See also Issue 161

@@ -1,8 +1,5 @@
 <chapter name="Nuclear Data">
 
-<particle id="1000000000" name="nucleus" A="0" Z="0" >
-</particle> 
-
 <particle id="1000010010" name="hydrogen" A="1" Z="1" >
 </particle> 
 
@@ -60,10 +57,22 @@
 <particle id="1000541280" name="xenon" A="128" Z="54" >
 </particle> 
 
+<particle id="1000741840" name="tungsten" A="184" Z="74" >
+</particle> 
+
+<particle id="1000791970" name="gold" A="197" Z="79" >
+</particle> 
+
 <particle id="1000822080" name="lead" A="208" Z="82" >
 </particle> 
 
 <particle id="1000862220" name="radon" A="222" Z="86" >
+</particle> 
+
+<particle id="1000922380" name="uranium" A="238" Z="92" >
+</particle> 
+
+<particle id="1001243080" name="ralfium" A="308" Z="124" >
 </particle> 
 
 </chapter>

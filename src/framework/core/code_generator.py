@@ -19,6 +19,11 @@ mproton = 0.9382720813  # GeV
 
 namespace = "corsika"
 
+# IDs of Nuclei are 10LZZZAAAI
+nucleusIdStr = "10{L:01d}{Z:03d}{A:03d}{I:01d}" # used with .format(L=,Z=,A=,I=)
+nucleusIdOffset = int(nucleusIdStr.format(L=0,A=0,Z=0,I=0))
+
+
 ##############################################################
 #
 # reading xml input data, return line by line particle data
@@ -238,7 +243,7 @@ def read_nuclei_db(filename, particle_db, classnames):
             "mass": mass,  # in GeV
             "electric_charge": electric_charge,  # in e/3
             "lifetime": lifetime,
-            "ngc_code": next(counter),
+            "ngc_code": int(nucleusIdStr.format(L=0,A=A,Z=Z,I=0)),
             "A": A,
             "Z": Z,
             "isNucleus": True,
@@ -297,22 +302,37 @@ def gen_conversion_PDG_ngc(particle_db):
 #
 # return string with enum of all internal particle codes
 #
-def gen_internal_enum(particle_db):
+def gen_internal_enum(particle_db, nuclei_db):
     string = ("//! @cond EXCLUDE_DOXY\n"
               "enum class Code : CodeIntType {\n"
               "  FirstParticle = 1, // if you want to loop over particles, you want to start with \"1\"  \n")  # identifier for eventual loops...
 
-    for k in filter(lambda k: "ngc_code" in particle_db[k], particle_db):
+    # non-nuclei loop
+    for k in filter(lambda k: "ngc_code" in particle_db[k] and not particle_db[k]["isNucleus"], 
+                    particle_db):
         last_ngc_id = particle_db[k]['ngc_code']
         string += "  {key:s} = {code:d},\n".format(key=k, code=last_ngc_id)
 
-    string += ("  LastParticle = {:d},\n"  # identifier for eventual loops...
-               "}}; //! @endcond").format(last_ngc_id + 1)
+    string += "  LastParticle = {:d},\n".format(last_ngc_id + 1)  # identifier for eventual loops...
 
-    if last_ngc_id > 0x7fff:  # does not fit into int16_t
+    if last_ngc_id > 0x7fffffff:  # does not fit into int32_t, this will never happen....
         raise Exception(
             "Integer overflow in internal particle code definition prevented!")
 
+    if last_ngc_id + 1 >= nucleusIdOffset: 
+        raise Exception(
+            "Too many particles. Fix conflict with Code::Nuclear == {:d} (just increase id...) !").format(nucleusIdOffset)
+
+    # marker to mark the beginning of generic nuclear IDs: 1aaazzz
+    string += "  Nucleus = {:d},\n".format(nucleusIdOffset)  # identifier for Nuclei
+    
+    # nuclei loop
+    for k in filter(lambda k: "ngc_code" in nuclei_db[k] and nuclei_db[k]["isNucleus"], 
+                    nuclei_db):
+        last_ngc_id = nuclei_db[k]['ngc_code']
+        string += "  {key:s} = {code:d},\n".format(key=k, code=last_ngc_id)
+
+    string += "}; //! @endcond"
     return string
 
 
@@ -322,7 +342,7 @@ def gen_internal_enum(particle_db):
 #
 def gen_pdg_enum(particle_db):
     string = ("//! @cond EXCLUDE_DOXY\n"
-              "enum class PDGCode : PDGCodeType {\n")
+              "enum class PDGCode : PDGCodeIntType {\n")
 
     for cId in particle_db:
         pdgCode = particle_db[cId]['pdg']
@@ -363,6 +383,7 @@ def gen_properties(particle_db):
     for k in particle_db:
         string += " 0 * corsika::units::si::electronvolt, // {name:s}\n".format( name = k)
     string += "};\n\n"
+    string += "static corsika::units::si::HEPEnergyType threshold_nuclei = 0_eV;\n"
 
     # PDG code table
     string += "static constexpr std::array<PDGCode, size> pdg_codes = {\n"
@@ -377,7 +398,7 @@ def gen_properties(particle_db):
     string += "};\n"
 
     # electric charges table
-    string += "static constexpr std::array<int16_t, size> electric_charges = {\n"
+    string += "static constexpr std::array<int32_t, size> electric_charges = {\n"
     for p in particle_db.values():
         string += "  {charge:d},\n".format(charge=p['electric_charge'] // 3)
     string += "};\n"
@@ -409,22 +430,6 @@ def gen_properties(particle_db):
         string += "  {val},\n".format(val=value)
     string += "};\n"
 
-    ### nuclear data ###
-
-    # nucleus mass number A
-    string += "static constexpr std::array<int16_t, size> nucleusA = {\n"
-    for p in particle_db.values():
-        A = p.get('A', 0)
-        string += "  {val},\n".format(val=A)
-    string += "};\n"
-
-    # nucleus charge number Z
-    string += "static constexpr std::array<int16_t, size> nucleusZ = {\n"
-    for p in particle_db.values():
-        Z = p.get('Z', 0)
-        string += "  {val},\n".format(val=Z)
-    string += "};\n"
-
     return string
 
 
@@ -432,35 +437,36 @@ def gen_properties(particle_db):
 #
 # return string with a list of classes for all particles
 #
-def gen_classes(particle_db):
+def gen_classes(particle_db, nuclei_db):
 
     string = ("// list of C++ classes to access particle properties\n"
               "/** @defgroup ParticleClasses \n"
               "    @{ */\n")
 
-    for cname in particle_db:
+    common_db = OrderedDict(list(particle_db.items()) + list(nuclei_db.items()))
+    for cname in common_db:
         if cname == "Nucleus":
             string += "// skipping Nucleus"
             continue
 
         antiP = 'Unknown'
-        for cname_anti in particle_db:
-            if (particle_db[cname_anti]['name'] == particle_db[cname]['antiName']):
+        for cname_anti in common_db:
+            if (common_db[cname_anti]['name'] == common_db[cname]['antiName']):
                 antiP = cname_anti
                 break
 
         string += "\n"
         string += "/** @class " + cname + "\n\n"
         string += " * Particle properties are taken from the PYTHIA8 ParticleData.xml file:<br>\n"
-        string += " *  - pdg=" + str(particle_db[cname]['pdg']) + "\n"
-        string += " *  - mass=" + str(particle_db[cname]['mass']) + " GeV \n"
+        string += " *  - pdg=" + str(common_db[cname]['pdg']) + "\n"
+        string += " *  - mass=" + str(common_db[cname]['mass']) + " GeV \n"
         string += " *  - charge= " + \
-            str(particle_db[cname]['electric_charge'] // 3) + " \n"
+            str(common_db[cname]['electric_charge'] // 3) + " \n"
         string += " *  - name=" + str(cname) + "\n"
         string += " *  - anti=" + str(antiP) + "\n"
-        if (particle_db[cname]['isNucleus']):
-            string += " *  - nuclear A=" + str(particle_db[cname]['A']) + "\n"
-            string += " *  - nuclear Z=" + str(particle_db[cname]['Z']) + "\n"
+        if (common_db[cname]['isNucleus']):
+            string += " *  - nuclear A=" + str(common_db[cname]['A']) + "\n"
+            string += " *  - nuclear Z=" + str(common_db[cname]['Z']) + "\n"
         string += "*/\n\n"
         string += "class " + cname + " {\n"
         string += "   /** @cond EXCLUDE_DOXY */ \n"
@@ -473,7 +479,7 @@ def gen_classes(particle_db):
         string += "   static constexpr int charge_number{corsika::get_charge_number(code)};\n"
         string += "   static constexpr std::string_view name{corsika::get_name(code)};\n"
         string += "   static constexpr bool is_nucleus{corsika::is_nucleus(code)};\n"
-        if particle_db[cname]['isNucleus']:
+        if common_db[cname]['isNucleus']:
             string += "   static constexpr int nucleus_A{corsika::get_nucleus_A(code)};\n"
             string += "   static constexpr int nucleus_Z{corsika::get_nucleus_Z(code)};\n"
         string += " private:\n"
@@ -490,7 +496,7 @@ def gen_classes(particle_db):
 #
 #
 def inc_start():
-    string = ('// generated by pdxml_reader.py\n'
+    string = ('// generated by framework/core/code_generator.py\n'
               '// MANUAL EDITS ON OWN RISK. THEY WILL BE OVERWRITTEN. \n'
               '\n'
               'namespace corsika {\n'
@@ -531,8 +537,9 @@ def inc_end():
 #
 # Serialize particle_db into file
 #
-def serialize_particle_db(particle_db, file):
-    pickle.dump(particle_db, file)
+def serialize_particle_db(particle_db, nuclei_db, file):
+    common_db = OrderedDict(list(particle_db.items()) + list(nuclei_db.items()))
+    pickle.dump(common_db, file)
 
 
 ###################################################################
@@ -546,16 +553,17 @@ if __name__ == "__main__":
             sys.argv[0]), file=sys.stderr)
         sys.exit(1)
 
-    print("\n       pdxml_reader.py: automatically produce particle properties from input files\n")
+    print("\n       code_generator.py: automatically produce particle properties from input files\n")
 
-    names = read_class_names(sys.argv[3])
-    particle_db = OrderedDict()
-    read_pythia_db(sys.argv[1], particle_db, names)
-    read_nuclei_db(sys.argv[2], particle_db, names)
+    names = read_class_names(sys.argv[3]) # re-names and conventions
+    particle_db = OrderedDict() # the DB for pythia8 pdg particles
+    read_pythia_db(sys.argv[1], particle_db, names) # pythia8 pdg DB
+    nuclei_db = OrderedDict() # the DB for specific nuclei
+    read_nuclei_db(sys.argv[2], nuclei_db, names) # list of nuclei
 
     with open("GeneratedParticleProperties.inc", "w") as f:
         print(inc_start(), file=f)
-        print(gen_internal_enum(particle_db), file=f)
+        print(gen_internal_enum(particle_db, nuclei_db), file=f)
         print(gen_pdg_enum(particle_db), file=f)
         print(detail_start(), file=f)
         print(gen_properties(particle_db), file=f)
@@ -565,8 +573,8 @@ if __name__ == "__main__":
 
     with open("GeneratedParticleClasses.inc", "w") as f:
         print(inc_start(), file=f)
-        print(gen_classes(particle_db), file=f)
+        print(gen_classes(particle_db, nuclei_db), file=f)
         print(inc_end(), file=f)
 
     with open("particle_db.pkl", "wb") as f:
-        serialize_particle_db(particle_db, f)
+        serialize_particle_db(particle_db, nuclei_db, f)

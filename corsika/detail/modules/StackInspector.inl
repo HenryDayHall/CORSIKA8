@@ -51,9 +51,6 @@ namespace corsika {
             " pos= {}"
             " node = {}",
             (i++), iterP.getPID(), (E / 1_GeV), pos, fmt::ptr(iterP.getNode()));
-
-        if (iterP.getPID() == Code::Nucleus)
-          CORSIKA_LOG_INFO("nuc_ref= {}", iterP.getNucleusRef());
       }
     }
 

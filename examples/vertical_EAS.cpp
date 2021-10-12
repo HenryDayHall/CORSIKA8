@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
                                                                            50_uT, 0_T});
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
-       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
+       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
 
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
