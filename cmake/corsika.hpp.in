@@ -1,4 +1,14 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
 #pragma once
+
+#include <string>
 
 namespace corsika {
 
@@ -24,8 +34,6 @@ namespace corsika {
    *
    * For more information about the project, see @ref md_README.
    */
-
-  // clang-format-off
 
   /*! Usage:
    *  to get the version R.X.Y.Z,
@@ -75,7 +83,5 @@ namespace corsika {
    */
 
   static std::string const CORSIKA_DATA_DIR = "@CORSIKA_CMAKE_DATA_DIR@";
-
-  // clang-format-on
 
 } // namespace corsika
