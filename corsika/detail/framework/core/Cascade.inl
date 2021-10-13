@@ -31,10 +31,12 @@ namespace corsika {
     setNodes(); // put each particle on stack in correct environment volume
 
     while (!stack_.isEmpty()) {
+
+      sequence_.initCascadeEquations();
+
       while (!stack_.isEmpty()) {
         CORSIKA_LOG_TRACE("Stack: {}", stack_.asString());
         count_++;
-
         auto pNext = stack_.getNextParticle();
 
         CORSIKA_LOG_TRACE(
@@ -46,6 +48,7 @@ namespace corsika {
         step(pNext);
         sequence_.doStack(stack_);
       }
+
       // do cascade equations, which can put new particles on Stack,
       // thus, the double loop
       sequence_.doCascadeEquations(stack_);

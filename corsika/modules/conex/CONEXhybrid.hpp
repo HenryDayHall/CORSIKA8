@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <corsika/framework/process/SecondariesProcess.hpp>
+#include <corsika/framework/process/CascadeEquationsProcess.hpp>
+
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
-#include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/media/ShowerAxis.hpp>
 
 #include <corsika/modules/conex/CONEX_f.hpp>
@@ -23,7 +25,8 @@ namespace corsika {
     LengthType constexpr earthRadius{6371315 * meter};
   } // namespace conex
 
-  class CONEXhybrid : public SecondariesProcess<CONEXhybrid> {
+  class CONEXhybrid : public CascadeEquationsProcess<CONEXhybrid>,
+                      public SecondariesProcess<CONEXhybrid> {
 
   public:
     CONEXhybrid(Point center, ShowerAxis const& showerAxis, LengthType groundDist,
@@ -41,7 +44,7 @@ namespace corsika {
      * init currently needs to be called to initializa a new
      * event. All tables are cleared, etc.
      */
-    void init();
+    void initCascadeEquations();
 
     /**
      * Cascade equations are solved basoned on the data in the tables

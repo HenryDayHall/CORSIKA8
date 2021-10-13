@@ -99,7 +99,7 @@ namespace corsika {
                         configPath.c_str(), configPath.size());
   }
 
-  inline void CONEXhybrid::init() {
+  inline void CONEXhybrid::initCascadeEquations() {
 
     double eprima = primaryEnergy_ / 1_GeV;
 
@@ -234,7 +234,7 @@ namespace corsika {
   }
 
   template <typename TStack>
-  inline void CONEXhybrid::doCascadeEquations(TStack& stack) {
+  inline void CONEXhybrid::doCascadeEquations(TStack&) {
 
     ::conex::conexcascade_();
 

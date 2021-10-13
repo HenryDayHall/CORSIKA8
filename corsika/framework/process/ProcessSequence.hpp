@@ -211,10 +211,15 @@ namespace corsika {
     void doStack(TStack& stack);
 
     /**
-       Execute the CascadeEquationsProcess-es in the ProcessSequence
+     * Execute the CascadeEquationsProcess-es in the ProcessSequence.
      */
     template <typename TStack>
     void doCascadeEquations(TStack& stack);
+
+    /**
+     * Init the CascadeEquationsProcess-es in the ProcessSequence.
+     */
+    void initCascadeEquations();
 
     /**
      * Calculate the maximum allowed length of the next tracking step, based on all

@@ -383,6 +383,30 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
+  void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                       IndexProcess2>::initCascadeEquations() {
+
+    if constexpr (is_process_v<process1_type>) { // to protect from further compiler
+                                                 // errors if process1_type is invalid
+      if constexpr ((process1_type::is_process_sequence &&
+                     !process1_type::is_switch_process_sequence) ||
+                    is_cascade_equations_process_v<process1_type>) {
+        A_.initCascadeEquations();
+      }
+    }
+
+    if constexpr (is_process_v<process2_type>) { // to protect from further compiler
+                                                 // errors if process2_type is invalid
+      if constexpr ((process2_type::is_process_sequence &&
+                     !process2_type::is_switch_process_sequence) ||
+                    is_cascade_equations_process_v<process2_type>) {
+        B_.initCascadeEquations();
+      }
+    }
+  } // namespace corsika
+
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TSecondaryView>
   inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
