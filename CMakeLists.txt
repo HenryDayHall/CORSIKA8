@@ -17,8 +17,12 @@ include (GNUInstallDirs)
 
 #+++++++++++++++++++++++++++++
 # project name
+# version is:  "8.major.minor.patch"
+#   major: API changes
+#   minor: no API changes
+#   patch: bug fix and small improvements 
 #
-set (c8_version 8.0.0)
+set (c8_version 8.0.0.0) 
 project (
   corsika
   VERSION ${c8_version}
@@ -317,22 +321,22 @@ configure_package_config_file (
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 #
-# generate "corsika/config.hpp" file with cmake-level details and paths
+# generate "corsika/corsika.hpp" file with cmake-level details and paths
 # first for build-tree
 #
 # the location of the "corsika-data" is of fundamental importance
 set (CORSIKA_CMAKE_DATA_DIR ${CMAKE_SOURCE_DIR}/modules/data)
 configure_file (
-  cmake/config.hpp.in
-  ${PROJECT_BINARY_DIR}/corsika/config.hpp
+  cmake/corsika.hpp.in
+  ${PROJECT_BINARY_DIR}/corsika/corsika.hpp
 )
 #
 # second also for install-tree
 #
 set (CORSIKA_CMAKE_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/corsika/data")
 configure_file (
-  cmake/config.hpp.in
-  ${PROJECT_BINARY_DIR}/config.hpp-install
+  cmake/corsika.hpp.in
+  ${PROJECT_BINARY_DIR}/corsika.hpp-install
 )
 #
 # installation of cmake and config files
@@ -358,8 +362,8 @@ install (
 # also install-level config.hpp
 # 
 install (FILES 
-  ${PROJECT_BINARY_DIR}/config.hpp-install
-  RENAME config.hpp
+  ${PROJECT_BINARY_DIR}/corsika.hpp-install
+  RENAME corsika.hpp
   DESTINATION include/corsika
   )
 #

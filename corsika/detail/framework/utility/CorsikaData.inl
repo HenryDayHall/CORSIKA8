@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <corsika/config.hpp>
+#include <corsika/corsika.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
 #include <boost/filesystem/path.hpp>
@@ -19,7 +19,8 @@
 namespace corsika {
 
   inline boost::filesystem::path corsika_data(boost::filesystem::path const& key) {
-    boost::filesystem::path fname = boost::filesystem::path(CORSIKA_DATA_DIR) / key;
+    boost::filesystem::path fname =
+        boost::filesystem::path(corsika::CORSIKA_DATA_DIR) / key;
     // LCOV_EXCL_START, this cannot be easily tested system-independently
     if (auto const* p = std::getenv("CORSIKA_DATA"); p != nullptr) {
       fname = boost::filesystem::path(p) / key;

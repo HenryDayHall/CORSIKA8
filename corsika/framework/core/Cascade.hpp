@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <corsika/corsika.hpp>
+
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
@@ -82,6 +84,8 @@ namespace corsika {
         , output_(out)
         , stack_(stack) {
       CORSIKA_LOG_INFO(c8_ascii_);
+      CORSIKA_LOG_INFO("This is CORSIKA {}.{}.{}.{}", CORSIKA_RELEASE_NUMBER,
+                       CORSIKA_MAJOR_NUMBER, CORSIKA_MINOR_NUMBER, CORSIKA_PATCH_NUMBER);
       CORSIKA_LOG_INFO("Tracking algorithm: {} (version {})", TTracking::getName(),
                        TTracking::getVersion());
       if constexpr (stack_view_type::has_event) {
