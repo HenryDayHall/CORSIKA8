@@ -236,9 +236,9 @@ int main(int argc, char** argv) {
     beamCode = convert_from_PDG(PDGCode(app["--pdg"]->as<int>()));
   } else {
     // check manually for proton and neutrons
-    if ((A == 0) && (Z == 1))
+    if ((A == 1) && (Z == 1))
       beamCode = Code::Proton;
-    else if ((A == 1) && (Z == 1))
+    else if ((A == 1) && (Z == 0))
       beamCode = Code::Neutron;
     else
       beamCode = get_nucleus_code(A, Z);
