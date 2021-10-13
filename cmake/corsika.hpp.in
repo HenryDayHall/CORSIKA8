@@ -65,7 +65,7 @@ namespace corsika {
    *  The value of \p CORSIKA_PATCH_NUMBER encodes the
    *  patch number of the CORSIKA library.
    */
-  static std::string const CORSIKA_PATCH_NUMBER = @PROJECT_VERSION_TWEAK@;
+  static unsigned int const CORSIKA_PATCH_NUMBER = @PROJECT_VERSION_TWEAK@;
 
   /**
    *
