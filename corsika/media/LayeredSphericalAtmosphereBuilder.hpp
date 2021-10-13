@@ -75,8 +75,12 @@ namespace corsika {
         , additionalModelArgs_{args...} {}
 
   public:
+    typedef typename VolumeTreeNode<TMediumInterface>::VTN_type volume_tree_node;
+    typedef typename VolumeTreeNode<TMediumInterface>::VTNUPtr volume_tree_node_uptr;
+
     void setNuclearComposition(NuclearComposition const& composition);
-    void addExponentialLayer(GrammageType b, LengthType c, LengthType upperBoundary);
+    volume_tree_node* addExponentialLayer(GrammageType b, LengthType c,
+                                          LengthType upperBoundary);
     void addLinearLayer(LengthType c, LengthType upperBoundary);
 
     void addTabularLayer(std::function<MassDensityType(LengthType)> const& funcRho,
@@ -102,8 +106,7 @@ namespace corsika {
     LengthType planetRadius_;
     std::tuple<TModelArgs...> const additionalModelArgs_;
 
-    std::stack<typename VolumeTreeNode<TMediumInterface>::VTNUPtr>
-        layers_; // innermost layer first
+    std::stack<volume_tree_node_uptr> layers_; // innermost layer first
 
   }; // end class LayeredSphericalAtmosphereBuilder
 

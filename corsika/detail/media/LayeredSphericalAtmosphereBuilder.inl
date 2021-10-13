@@ -37,10 +37,10 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  inline void LayeredSphericalAtmosphereBuilder<
-      TMediumInterface, TMediumModelExtra,
-      TModelArgs...>::addExponentialLayer(GrammageType b, LengthType c,
-                                          LengthType upperBoundary) {
+  inline typename LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
+                                                    TModelArgs...>::volume_tree_node*
+  LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra, TModelArgs...>::
+      addExponentialLayer(GrammageType b, LengthType c, LengthType upperBoundary) {
 
     auto const radius = planetRadius_ + upperBoundary;
     checkRadius(radius);
@@ -68,6 +68,7 @@ namespace corsika {
     }
 
     layers_.push(std::move(node));
+    return layers_.top().get();
   }
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
