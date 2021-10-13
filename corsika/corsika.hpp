@@ -9,26 +9,27 @@
 #pragma once
 
 /**
-  @file corsika.hpp
-
-  The CORSIKA 8 air shower simulation framework.
-
-  @mainpage Technical documentation of the CORSIKA 8 software framework
-
-  Software documentatin and reference guide for the CORSIKA 8
-  software framework for air shower simulations. CORSIKA 8 is developed
-  at <a href="https://gitlab.ikp.kit.edu/AirShowerPhysics">https://gitlab.ikp.kit.edu</a>.
-  If you got the code from somewhere else, consider to switch to the official development
-  repository. If you want to report bugs, or want to suggest features or future
-  development, please submit an "issue" on this gitlab server. We only accept Issues and
-  discussion via our central development server https://gitlab.ikp.kit.edu.
-
-  Write to corsika-devel@lists.kit.edu, or even register yourself at
-  https://www.lists.kit.edu/sympa/info/corsika-devel to get in contact
-  with other developers.
-
-  For more information about the project, see @ref md_README.
-  **/
+ * @file corsika.hpp
+ *
+ * The CORSIKA 8 air shower simulation framework.
+ *
+ * @mainpage Technical documentation of the CORSIKA 8 software framework.
+ *
+ * Software documentatin and reference guide for the CORSIKA 8
+ * software framework for air shower simulations. CORSIKA 8 is developed
+ * at <a
+ * href="https://gitlab.ikp.kit.edu/AirShowerPhysics">https://gitlab.ikp.kit.edu</a>. If
+ * you got the code from somewhere else, consider to switch to the official development
+ * repository. If you want to report bugs, or want to suggest features or future
+ * development, please submit an "issue" on this gitlab server. We only accept Issues and
+ * discussion via our central development server https://gitlab.ikp.kit.edu.
+ *
+ * Write to corsika-devel@lists.kit.edu, or even register yourself at
+ * https://www.lists.kit.edu/sympa/info/corsika-devel to get in contact
+ * with other developers.
+ *
+ * For more information about the project, see @ref md_README.
+ */
 
 /*! Usage:
  *  to get the version X.YY.Z,
