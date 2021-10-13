@@ -126,7 +126,7 @@ namespace corsika {
 
     // SEEDS ARE NOT USED. All random numbers are obtained from
     // the CORSIKA 8 stream "conex" and "epos"!
-    std::array<int, 3> ioseed{1,1,1};
+    std::array<int, 3> ioseed{1, 1, 1};
 
     double xminp = injectionHeight_ / 1_m;
 
@@ -233,7 +233,8 @@ namespace corsika {
     return true;
   }
 
-  inline void CONEXhybrid::solveCE() {
+  template <typename TStack>
+  inline void CONEXhybrid::doCascadeEquations(TStack& stack) {
 
     ::conex::conexcascade_();
 

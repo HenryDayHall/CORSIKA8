@@ -46,7 +46,8 @@ namespace corsika {
     /**
      * Cascade equations are solved basoned on the data in the tables
      */
-    void solveCE();
+    template <typename TStack>
+    void doCascadeEquations(TStack& stack);
 
     /**
      * Internal function to fill particle data inside CONEX

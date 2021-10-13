@@ -16,32 +16,32 @@
 namespace corsika {
 
   /**
-     @ingroup Processes
-     @{
-
-     Process to act on the entire particle stack
-
-     Create a new StackProcess, e.g. for XYModel, via
-     @code{.cpp}
-     class XYModel : public StackProcess<XYModel> {};
-     @endcode
-
-     and provide the necessary interface method
-     @code{.cpp}
-     template <typename TStack>
-     void XYModel::doStack(TStack&);
-     @endcode
-
-     Where, of course, Stack is the valid
-     class to access particles on the Stack. This methods does
-     not need to be templated, they could use the types
-     e.g. corsika::setup::Stack directly -- but by the cost of
-     loosing all flexibility otherwise provided.
-
-     A StackProcess has only one constructor `StackProcess::StackProcess(unsigned int
-     const nStep)` where nStep is the number of steps of the cascade stepping after which
-     the stack process should be run. Good values are on the order of 1000, which will not
-     compromise run time in the end, but provide all the benefits of the StackProcess.
+   * @ingroup Processes
+   * @{
+   *
+   * Process to act on the entire particle stack.
+   *
+   * Create a new StackProcess, e.g. for XYModel, via:
+   * @code{.cpp}
+   * class XYModel : public StackProcess<XYModel> {};
+   * @endcode
+   *
+   * and provide the necessary interface method:
+   * @code{.cpp}
+   * template <typename TStack>
+   * void XYModel::doStack(TStack&);
+   * @endcode
+   *
+   * Where, of course, Stack is the valid
+   * class to access particles on the Stack. This methods does
+   * not need to be templated, they could use the types
+   * e.g. corsika::setup::Stack directly -- but by the cost of
+   * loosing all flexibility otherwise provided.
+   *
+   * A StackProcess has only one constructor `StackProcess::StackProcess(unsigned int
+   * const nStep)` where nStep is the number of steps of the cascade stepping after which
+   * the stack process should be run. Good values are on the order of 1000, which will not
+   * compromise run time in the end, but provide all the benefits of the StackProcess.
    */
 
   template <typename TDerived>
@@ -64,10 +64,10 @@ namespace corsika {
 
   private:
     /**
-       @name The number of "steps" during the cascade processing after
-       which this StackProcess is going to be executed. The logic is
-       "iStep_ modulo nStep_"
-       @{
+     * @name The number of "steps" during the cascade processing after
+     * which this StackProcess is going to be executed. The logic is
+     * "iStep_ modulo nStep_"
+     * @{
      */
     unsigned int nStep_ = 0;
     unsigned long int iStep_ = 0;
@@ -75,8 +75,8 @@ namespace corsika {
   };
 
   /**
-   * ProcessTraits specialization to flag StackProcess objects
-   **/
+   * ProcessTraits specialization to flag StackProcess objects.
+   */
   template <typename TProcess>
   struct is_stack_process<
       TProcess,

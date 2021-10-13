@@ -14,8 +14,8 @@
 namespace corsika {
 
   /**
-     traits test for SecondariesProcess::doSecondaries method
-  */
+   * traits test for SecondariesProcess::doSecondaries method.
+   */
   template <class TProcess, typename TReturn, typename... TArg>
   struct has_method_doSecondaries
       : public detail::has_method_signature<TReturn, TArg...> {
@@ -38,16 +38,19 @@ namespace corsika {
 
   public:
     /**
-        @name traits results
-        @{
-    */
+     *  @name traits results
+     *  @{
+     */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
   };
 
-  //! @file DecayProcess.hpp
-  //! value traits type
+  /**
+   * @file SecondariesProcess.hpp
+   *
+   * @brief value traits type.
+   */
   template <class TProcess, typename TReturn, typename... TArg>
   bool constexpr has_method_doSecondaries_v =
       has_method_doSecondaries<TProcess, TReturn, TArg...>::value;

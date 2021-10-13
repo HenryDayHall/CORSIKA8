@@ -46,6 +46,8 @@ const std::string refDataDir = std::string(REFDATADIR); // from cmake
 template <typename T>
 using MExtraEnvirnoment = MediumPropertyModel<UniformMagneticField<T>>;
 
+struct DummyStack {};
+
 TEST_CASE("CONEXSourceCut") {
 
   logging::set_level(logging::level::info);
@@ -70,7 +72,7 @@ TEST_CASE("CONEXSourceCut") {
 
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
-       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
+       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
 
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
@@ -102,7 +104,7 @@ TEST_CASE("CONEXSourceCut") {
 
   CONEXhybrid conex(center, showerAxis, t, injectionHeight, E0, get_PDG(Code::Proton));
   conex.init();
-  
+
   HEPEnergyType const Eem{1_PeV};
   auto const momentum = showerAxis.getDirection() * Eem;
 
@@ -123,7 +125,8 @@ TEST_CASE("CONEXSourceCut") {
   auto const momentumPhoton = showerAxis.getDirection() * 1_TeV;
   conex.addParticle(Code::Photon, 1_TeV, 0_eV, emPosition, momentumPhoton.normalized(),
                     0_s);
-  conex.solveCE();
+  DummyStack stack;
+  conex.doCascadeEquations(stack);
 }
 
 #include <algorithm>

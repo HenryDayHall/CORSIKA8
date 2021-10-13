@@ -48,7 +48,7 @@ namespace corsika {
       }
       // do cascade equations, which can put new particles on Stack,
       // thus, the double loop
-      // doCascadeEquations();
+      sequence_.doCascadeEquations(stack_);
     }
   }
 

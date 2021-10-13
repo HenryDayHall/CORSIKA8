@@ -19,6 +19,7 @@
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/process/SecondariesProcess.hpp>
 #include <corsika/framework/process/StackProcess.hpp>
+#include <corsika/framework/process/CascadeEquationsProcess.hpp>
 
 #include <cmath>
 #include <limits>
@@ -333,6 +334,55 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
+  template <typename TStack>
+  void ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
+                       IndexProcess2>::doCascadeEquations(TStack& stack) {
+
+    if constexpr (is_process_v<process1_type>) { // to protect from further compiler
+                                                 // errors if process1_type is invalid
+      if constexpr (process1_type::is_process_sequence &&
+                    !process1_type::is_switch_process_sequence) {
+
+        A_.doCascadeEquations(stack);
+
+      } else if constexpr (is_cascade_equations_process_v<process1_type>) {
+
+        // interface checking on TProcess1
+        static_assert(has_method_doCascadeEquations_v<TProcess1,
+                                                      void,     // return type
+                                                      TStack&>, // parameter
+                      "TDerived has no method with correct signature \"void "
+                      "doCascadeEquations(TStack&)\" required for "
+                      "CascadeEquationsProcess<TDerived>. ");
+
+        A_.doCascadeEquations(stack);
+      }
+    }
+
+    if constexpr (is_process_v<process2_type>) { // to protect from further compiler
+                                                 // errors if process2_type is invalid
+      if constexpr (process2_type::is_process_sequence &&
+                    !process2_type::is_switch_process_sequence) {
+
+        B_.doCascadeEquations(stack);
+
+      } else if constexpr (is_cascade_equations_process_v<process2_type>) {
+
+        // interface checking on TProcess2
+        static_assert(has_method_doCascadeEquations_v<TProcess2,
+                                                      void,     // return type
+                                                      TStack&>, // parameter
+                      "TDerived has no method with correct signature \"void "
+                      "doCascadeEquations(TStack&)\" required for "
+                      "CascadeEquationsProcess<TDerived>. ");
+
+        B_.doCascadeEquations(stack);
+      }
+    }
+  }
+
+  template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
+            int IndexProcess2>
   template <typename TSecondaryView>
   inline ProcessReturn
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
@@ -485,8 +535,8 @@ namespace corsika {
   }
 
   /**
-   * traits marker to identify objects containing any StackProcesses
-   **/
+   * traits marker to identify objects containing any StackProcesses.
+   */
   namespace detail {
     // need helper alias to achieve this:
     template <
