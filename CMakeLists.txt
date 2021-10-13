@@ -295,7 +295,7 @@ install (
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/corsikaConfig.cmake
-  INSTALL_DESTINATION ${PROJECT_BINARY_DIR}/do_not_need_this
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 #
 # corsikaDefines 
@@ -313,7 +313,7 @@ set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL})
 set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake-install
+  ${PROJECT_BINARY_DIR}/corsikaConfig.cmake-install
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
 #
@@ -341,9 +341,17 @@ install (
   FILES
   ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
   ${CMAKE_BINARY_DIR}/conaninfo.txt
-  ${CMAKE_BINARY_DIR}/cmake/corsikaConfig.cmake
   ${CMAKE_BINARY_DIR}/corsikaDefines.cmake
   ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
+  DESTINATION lib/cmake/corsika
+  )
+#
+# install and rename install-level corsikaConfig.cmake
+#
+install (
+  FILES
+  ${CMAKE_BINARY_DIR}/corsikaConfig.cmake-install
+  RENAME corsikaConfig.cmake
   DESTINATION lib/cmake/corsika
   )
 #
