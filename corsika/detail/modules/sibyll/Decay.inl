@@ -173,46 +173,49 @@ namespace corsika::sibyll {
       throw std::runtime_error("STOP! Sibyll not configured to execute this decay!");
 
     count_++;
-    SibStack ss;
-    ss.clear();
-    // copy particle to sibyll stack
-    ss.addParticle(sibyll::convertToSibyllRaw(pCode), projectile.getEnergy(),
-                   projectile.getMomentum(),
-                   // setting particle mass with Corsika values, may be inconsistent
-                   // with sibyll internal values
-                   get_mass(pCode));
     // remember position
     Point const decayPoint = projectile.getPosition();
     TimeType const t0 = projectile.getTime();
-    // remember if particles is unstable
-    // auto const priorIsUnstable = isUnstable(pCode);
     // switch on decay for this particle
     setUnstable(pCode);
     printDecayConfig(pCode);
 
     // call sibyll decay
     CORSIKA_LOG_DEBUG("Decay: calling Sibyll decay routine..");
-    decsib_();
 
-    if (sibyll_listing_) {
-      // print output
-      int print_unit = 6;
-      sib_list_(print_unit);
-    }
+    // particle to pass to sibyll decay
+    int inputSibPID = sibyll::convertToSibyllRaw(pCode);
+    // particle momentum format: px, py, pz, e, mass. units: GeV
+    double inputMomentum[5];
+    QuantityVector<hepmomentum_d> input_components = projectile.getMomentum().getComponents();
+    for (int idx = 0; idx < 3; ++idx) inputMomentum[idx] = input_components[idx] / 1_GeV;
+    inputMomentum[3] = projectile.getEnergy() / 1_GeV;
+    inputMomentum[4] = get_mass(pCode) / 1_GeV;
+    int nFinalParticles;
+    double* outputMomentum = new double [10*5];
+    int outputSibPID[10];
+    // run decay routine
+    decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID, outputMomentum);
+
+    CORSIKA_LOG_TRACE("Sibyll::Decay: number of final state particles: {}",
+                      nFinalParticles);
 
     // reset to stable
     setStable(pCode);
 
-    // copy particles from sibyll stack to corsika
-    for (auto const& psib : ss) {
-      // FOR NOW: skip particles that have decayed in Sibyll, move to iterator?
-      if (psib.hasDecayed()) continue;
-      // add to corsika stack
-      projectile.addSecondary(std::make_tuple(sibyll::convertFromSibyll(psib.getPID()),
-                                              psib.getMomentum(), decayPoint, t0));
+    CoordinateSystemPtr const& rootCS = get_root_CoordinateSystem();
+
+    // copy particles from sibyll ministack to corsika
+    for (int i = 0; i < nFinalParticles; ++i) {
+      QuantityVector<hepmomentum_d> components = {outputMomentum[10 * 0 + i] * 1_GeV,
+                                                  outputMomentum[10 * 1 + i] * 1_GeV,
+                                                  outputMomentum[10 * 2 + i] * 1_GeV};
+      auto const pid = sibyll::convertFromSibyll(
+          static_cast<corsika::sibyll::SibyllCode>(outputSibPID[i]));
+      CORSIKA_LOG_TRACE("Sibyll::Decay: i={} id={} p={} GeV", i, pid, components / 1_GeV);
+      projectile.addSecondary(
+          std::make_tuple(pid, MomentumVector(rootCS, components), decayPoint, t0));
     }
-    // empty sibyll stack
-    ss.clear();
   }
 
 } // namespace corsika::sibyll
