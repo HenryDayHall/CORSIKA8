@@ -177,7 +177,7 @@ namespace corsika {
   };
 
   /**
-   * Memory implementation of the most simple (stupid) particle stack object.
+   * Memory implementation of the most simple particle stack object.
    *
    * @note if we ever want to have off-shell particles, we need to
    *       add momentum as HEPMomentumType, and a lot of care.
@@ -222,14 +222,14 @@ namespace corsika {
     TimeType getTime(size_t i) const { return time_[i]; }
 
     /**
-     *   Function to copy particle at location i2 in stack to i1
+     *   Function to copy particle at location i2 in stack to i1.
      */
-    void copy(size_t i1, size_t i2);
+    void copy(size_t const i1, size_t const i2);
 
     /**
-     *   Function to copy particle at location i2 in stack to i1
+     *   Function to copy particle at location i2 in stack to i1.
      */
-    void swap(size_t i1, size_t i2);
+    void swap(size_t const i1, size_t const i2);
 
     void incrementSize();
     void decrementSize();
