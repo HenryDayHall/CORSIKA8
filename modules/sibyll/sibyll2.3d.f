@@ -6616,6 +6616,10 @@ C...Choose decay channel
 
       KD =6*(IDC-1)+1
       ND = KDEC(KD)
+      IF(ND.GT.10) THEN
+         WRITE(LUN,*) 'DECPAR: too many final state particles in decay!'
+         STOP
+      ENDIF
       MAT= KDEC(KD+1)
       MBST=0
       IF (MAT .GT.0 .AND. P0(4) .GT. 20.D0*P0(5)) MBST=1
