@@ -192,10 +192,11 @@ namespace corsika::sibyll {
     inputMomentum[3] = projectile.getEnergy() / 1_GeV;
     inputMomentum[4] = get_mass(pCode) / 1_GeV;
     int nFinalParticles;
-    double* outputMomentum = new double [10*5];
+    //double* outputMomentum = new double [10*5];
+    double outputMomentum[5*10];
     int outputSibPID[10];
     // run decay routine
-    decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID, outputMomentum);
+    decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID, &outputMomentum[0]);
 
     CORSIKA_LOG_TRACE("Sibyll::Decay: number of final state particles: {}",
                       nFinalParticles);
