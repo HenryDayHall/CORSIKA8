@@ -91,7 +91,13 @@ namespace corsika {
     time_.clear();
   }
 
-  inline void VectorStackImpl::copy(size_t i1, size_t i2) {
+  inline void VectorStackImpl::copy(size_t const i1, size_t const i2) {
+    // index range check
+    if (i1 >= getSize() || i2 >= getSize()) {
+      std::ostringstream err;
+      err << "VectorStackImpl: trying to access data beyond size of stack !";
+      throw std::runtime_error(err.str());
+    }
     dataPID_[i2] = dataPID_[i1];
     dataEkin_[i2] = dataEkin_[i1];
     direction_[i2] = direction_[i1];
@@ -99,7 +105,13 @@ namespace corsika {
     time_[i2] = time_[i1];
   }
 
-  inline void VectorStackImpl::swap(size_t i1, size_t i2) {
+  inline void VectorStackImpl::swap(size_t const i1, size_t const i2) {
+    // index range check
+    if (i1 >= getSize() || i2 >= getSize()) {
+      std::ostringstream err;
+      err << "VectorStackImpl: trying to access data beyond size of stack !";
+      throw std::runtime_error(err.str());
+    }
     std::swap(dataPID_[i2], dataPID_[i1]);
     std::swap(dataEkin_[i2], dataEkin_[i1]);
     std::swap(direction_[i2], direction_[i1]);

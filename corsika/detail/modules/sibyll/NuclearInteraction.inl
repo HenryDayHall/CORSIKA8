@@ -160,11 +160,12 @@ namespace corsika::sibyll {
   std::tuple<CrossSectionType, CrossSectionType> inline NuclearInteraction<
       TEnvironment>::getCrossSection(TParticle const& projectile, Code const TargetId) {
 
-    if (projectile.getPID() != Code::Nucleus)
+    if (!is_nucleus(projectile.getPID())) {
       throw std::runtime_error(
           "NuclearInteraction: getCrossSection: particle not a nucleus!");
+    }
 
-    unsigned int const iBeamA = projectile.getNuclearA();
+    unsigned int const iBeamA = get_nucleus_A(projectile.getPID());
     HEPEnergyType LabEnergyPerNuc = projectile.getEnergy() / iBeamA;
     CORSIKA_LOG_DEBUG(
         "NuclearInteraction: getCrossSection: called with: beamNuclA={} "
@@ -205,16 +206,9 @@ namespace corsika::sibyll {
 
     const Code corsikaBeamId = projectile.getPID();
 
-    if (corsikaBeamId != Code::Nucleus) {
-      // check if target-style nucleus (enum), these are not allowed as projectile
-      if (is_nucleus(corsikaBeamId)) {
-        throw std::runtime_error(
-            "NuclearInteraction: getInteractionLength: Wrong nucleus type. Nuclear "
-            "projectiles should use NuclearStackExtension!");
-      } else {
-        // no nuclear interaction
-        return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
-      }
+    if (!is_nucleus(corsikaBeamId)) {
+      // no nuclear interaction
+      return std::numeric_limits<double>::infinity() * 1_g / (1_cm * 1_cm);
     }
 
     // read from cross section code table
@@ -227,7 +221,7 @@ namespace corsika::sibyll {
 
     // total momentum and energy
     HEPEnergyType Elab = projectile.getEnergy() + constants::nucleonMass;
-    int const nuclA = projectile.getNuclearA();
+    int const nuclA = get_nucleus_A(corsikaBeamId);
     auto const ElabNuc = projectile.getEnergy() / nuclA;
 
     MomentumVector pTotLab(labCS, {0.0_GeV, 0.0_GeV, 0.0_GeV});
@@ -320,14 +314,13 @@ namespace corsika::sibyll {
                       get_name(ProjId));
 
     // check if target-style nucleus (enum)
-    if (ProjId != Code::Nucleus)
+    if (!is_nucleus(ProjId)) {
       throw std::runtime_error(
           "NuclearInteraction: DoInteraction: Wrong nucleus type. Nuclear projectiles "
           "should use NuclearStackExtension!");
+    }
 
-    auto const ProjMass =
-        projectile.getNuclearZ() * Proton::mass +
-        (projectile.getNuclearA() - projectile.getNuclearZ()) * Neutron::mass;
+    auto const ProjMass = get_mass(ProjId);
     CORSIKA_LOG_DEBUG("NuclearInteraction: projectile mass: {} ", ProjMass / 1_GeV);
 
     count_++;
@@ -340,7 +333,7 @@ namespace corsika::sibyll {
     CORSIKA_LOG_DEBUG("Interaction: time: {} ", tOrig / 1_s);
 
     // projectile nucleon number
-    const unsigned int kAProj = projectile.getNuclearA();
+    const unsigned int kAProj = get_nucleus_A(ProjId);
     if (kAProj > getMaxNucleusAProjectile())
       throw std::runtime_error("Projectile nucleus too large for NUCLIB!");
 
@@ -510,19 +503,14 @@ namespace corsika::sibyll {
     for (int j = 0; j < nFragments; ++j) {
       CORSIKA_LOG_DEBUG("fragment {}: A={} px={} py={} pz={}", j, AFragments[j],
                         fragments_.ppp[j][0], fragments_.ppp[j][1], fragments_.ppp[j][2]);
-      Code specCode;
       const auto nuclA = AFragments[j];
       // get Z from stability line
       const auto nuclZ = int(nuclA / 2.15 + 0.7);
 
       // TODO: do we need to catch single nucleons??
-      if (nuclA == 1)
-        // TODO: sample neutron or proton
-        specCode = Code::Proton;
-      else
-        specCode = Code::Nucleus;
-
-      const HEPMassType mass = get_nucleus_mass(nuclA, nuclZ);
+      Code specCode = Code::Neutron; //  sample neutron or proton ?
+      if (nuclA > 1) specCode = get_nucleus_code(nuclA, nuclZ);
+      HEPMassType const mass = get_mass(specCode);
 
       CORSIKA_LOG_DEBUG("NuclearInteraction: adding fragment: {}", get_name(specCode));
       CORSIKA_LOG_DEBUG("NuclearInteraction: A,Z: {}, {}", nuclA, nuclZ);
@@ -539,14 +527,8 @@ namespace corsika::sibyll {
       CORSIKA_LOG_DEBUG("NuclearInteraction: fragment momentum: {}",
                         Plab.getSpaceLikeComponents().getComponents() / 1_GeV);
 
-      if (nuclA == 1)
-        // add nucleon
-        projectile.addSecondary(
-            std::make_tuple(specCode, Plab.getSpaceLikeComponents(), pOrig, tOrig));
-      else
-        // add nucleus
-        projectile.addSecondary(std::make_tuple(specCode, Plab.getSpaceLikeComponents(),
-                                                pOrig, tOrig, nuclA, nuclZ));
+      projectile.addSecondary(
+          std::make_tuple(specCode, Plab.getSpaceLikeComponents(), pOrig, tOrig));
     }
 
     // add elastic nucleons to corsika stack

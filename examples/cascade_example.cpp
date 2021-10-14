@@ -8,6 +8,7 @@
 
 #include <corsika/framework/core/Cascade.hpp>
 #include <corsika/framework/process/ProcessSequence.hpp>
+#include <corsika/framework/process/SwitchProcessSequence.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/geometry/Sphere.hpp>
@@ -94,10 +95,10 @@ int main() {
   // setup particle stack, and add primary particle
   setup::Stack stack;
   stack.clear();
-  const Code beamCode = Code::Nucleus;
   const int nuclA = 4;
   const int nuclZ = int(nuclA / 2.15 + 0.7);
-  const HEPMassType mass = get_nucleus_mass(nuclA, nuclZ);
+  const Code beamCode = get_nucleus_code(nuclA, nuclZ);
+  const HEPMassType mass = get_nucleus_mass(beamCode);
   const HEPEnergyType E0 = nuclA * 1_TeV;
   double theta = 0.;
   double phi = 0.;
@@ -125,7 +126,7 @@ int main() {
     cout << "input particle: " << beamCode << endl;
     cout << "input angles: theta=" << theta << " phi=" << phi << endl;
     cout << "input momentum: " << plab.getComponents() / 1_GeV << endl;
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, nuclA, nuclZ));
+    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
   }
 
   // setup processes, decays and interactions
@@ -146,8 +147,11 @@ int main() {
   BetheBlochPDG eLoss{showerAxis};
 
   // assemble all processes into an ordered process list
-  auto sequence =
-      make_sequence(stackInspect, sibyll, sibyllNuc, decay, eLoss, cut, trackWriter);
+  auto sequence = make_sequence(
+      stackInspect,
+      make_select([](auto const& particle) { return is_nucleus(particle.getPID()); },
+                  sibyllNuc, sibyll),
+      decay, eLoss, cut, trackWriter);
 
   // define air shower object, run simulation
   Cascade EAS(env, tracking, sequence, output, stack);

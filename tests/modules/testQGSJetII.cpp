@@ -129,7 +129,7 @@ TEST_CASE("QgsjetII", "[processes]") {
 #include <SetupTestEnvironment.hpp>
 #include <SetupTestStack.hpp>
 
-TEST_CASE("QgsjetIIInterface", "[processes]") {
+TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
   logging::set_level(logging::level::info);
 
@@ -142,8 +142,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   SECTION("InteractionInterface") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, 110_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::Proton, 110_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
     auto projectile = secViewPtr->getProjectile();
@@ -155,16 +154,16 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
     CHECK(length / (1_g / square(1_cm)) == Approx(93.04).margin(0.1));
 
-    /***********************************
-     It as turned out already two times (#291 and #307) that the detailed output of
-    QGSJetII event generation depends on the gfortran version used. This is not reliable
-    and cannot be tested in a unit test here. One related problem was already found (#291)
-    and is realted to undefined behaviour in the evaluation of functions in logical
-    expressions. It is not clear if #307 is the same issue.
+    /* **********************************
+     As it turned out already two times (#291 and #307) that the detailed output of
+     QGSJetII event generation depends on the gfortran version used. This is not reliable
+     and cannot be tested in a unit test here. One related problem was already found
+    (#291) and is realted to undefined behaviour in the evaluation of functions in logical
+     expressions. It is not clear if #307 is the same issue.
 
      CHECK(view.getSize() == 14);
      CHECK(sumCharge(view) == 2);
-    ************************************/
+    *********************************** */
     auto const secMomSum = sumMomentum(view, projectileMomentum.getCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
           Approx(0).margin(1e-2));
@@ -173,7 +172,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   SECTION("InteractionInterface Nuclei") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, 60, 30, 20100_GeV,
+        get_nucleus_code(60, 30), 20100_GeV,
         (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
@@ -182,9 +181,9 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
 
     corsika::qgsjetII::Interaction model;
     model.doInteraction(view); // this also should produce some fragments
-    CHECK(view.getSize() == Approx(350).margin(100)); // this is not physics validation
+    CHECK(view.getSize() == Approx(300).margin(150)); // this is not physics validation
     int countFragments = 0;
-    for (auto const& sec : view) { countFragments += (sec.getPID() == Code::Nucleus); }
+    for (auto const& sec : view) { countFragments += (is_nucleus(sec.getPID())); }
     CHECK(countFragments == Approx(4).margin(2)); // this is not physics validation
     [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
 
@@ -195,7 +194,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   SECTION("Heavy nuclei") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, 1000, 1000, 1100_GeV,
+        get_nucleus_code(1000, 1000), 1100_GeV,
         (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
     auto particle = stackPtr->first();
@@ -215,7 +214,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
   SECTION("Allowed Particles") {
     { // electron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Electron, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          Code::Electron, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
           *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       auto particle = stackPtr->first();
@@ -225,8 +224,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     }
     { // pi0 is internally converted into pi+/pi-
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Pi0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-          *csPtr);
+          Code::Pi0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
@@ -235,8 +233,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     }
     { // rho0 is internally converted into pi-/pi+
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Rho0, 0, 0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-          *csPtr);
+          Code::Rho0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;
@@ -245,7 +242,7 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     }
     { // Lambda is internally converted into neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Lambda0, 0, 0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          Code::Lambda0, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
           *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
@@ -255,8 +252,8 @@ TEST_CASE("QgsjetIIInterface", "[processes]") {
     }
     { // AntiLambda is internally converted into anti neutron
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Lambda0Bar, 0, 0, 1000_GeV,
-          (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+          Code::Lambda0Bar, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+          *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
       corsika::qgsjetII::Interaction model;

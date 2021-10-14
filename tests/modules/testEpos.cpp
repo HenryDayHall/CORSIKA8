@@ -29,7 +29,7 @@
 using namespace corsika;
 using namespace corsika::epos;
 
-TEST_CASE("epos", "modules") {
+TEST_CASE("epos", "module,process") {
 
   logging::set_level(logging::level::trace);
 
@@ -209,7 +209,7 @@ TEST_CASE("EposInterface", "modules") {
 
     const HEPEnergyType P0 = 60_GeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        Code::Proton, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;
@@ -238,7 +238,7 @@ TEST_CASE("EposInterface", "modules") {
 
     const HEPEnergyType P0 = 10_TeV;
     auto [stack, viewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, 8, 4, P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+        get_nucleus_code(8, 4), P0, (setup::Environment::BaseNodeType* const)nodePtr, cs);
     MomentumVector plab =
         MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
     setup::StackView& view = *viewPtr;

@@ -167,7 +167,7 @@ TEMPLATE_TEST_CASE("Tracking", "tracking", tracking_leapfrog_curved::Tracking,
     targetPtr->addChild(std::move(target_2_behind));
     targetPtr->addChild(std::move(target_2_partly_behind));
 
-    auto [stack, viewPtr] = setup::testing::setup_stack(PID, 0, 0, P0, targetPtr, cs);
+    auto [stack, viewPtr] = setup::testing::setup_stack(PID, P0, targetPtr, cs);
     { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
     auto particle = stack->first();
     // Note: momentum in X-direction
@@ -257,7 +257,7 @@ TEST_CASE("TrackingLeapFrogCurved") {
     tracking_leapfrog_curved::Tracking tracking;
     Point const center(cs, {0_m, 0_m, 0_m});
 
-    auto [stack, viewPtr] = setup::testing::setup_stack(PID, 0, 0, P0, worldPtr, cs);
+    auto [stack, viewPtr] = setup::testing::setup_stack(PID, P0, worldPtr, cs);
     { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
     auto particle = stack->first();
     // Note: momentum in X-direction
@@ -291,7 +291,7 @@ TEST_CASE("TrackingLeapFrogCurved") {
     auto* targetPtr = target.get();
     worldPtr->addChild(std::move(target));
 
-    auto [stack, viewPtr] = setup::testing::setup_stack(PID, 0, 0, P0, targetPtr, cs);
+    auto [stack, viewPtr] = setup::testing::setup_stack(PID, P0, targetPtr, cs);
     { [[maybe_unused]] auto& viewPtr_dum = viewPtr; } // prevent warning
     auto particle = stack->first();
     // Note: momentum in X-direction
@@ -323,8 +323,7 @@ TEMPLATE_TEST_CASE("TrackingFail", "doesntwork", tracking_leapfrog_curved::Track
   TestType tracking;
   Point const center(cs, {0_m, 0_m, 0_m});
 
-  auto [stack, viewPtr] =
-      setup::testing::setup_stack(Code::Proton, 0, 0, P0, worldPtr, cs);
+  auto [stack, viewPtr] = setup::testing::setup_stack(Code::Proton, P0, worldPtr, cs);
   { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
   auto particle = stack->first();
   NonExistingDummyObject const dummy;
@@ -376,7 +375,7 @@ TEMPLATE_TEST_CASE("TrackingPlane", "plane", tracking_leapfrog_curved::Tracking,
     TestType tracking;
     Point const center(cs, {0_m, 0_m, 0_m});
 
-    auto [stack, viewPtr] = setup::testing::setup_stack(PID, 0, 0, P0, worldPtr, cs);
+    auto [stack, viewPtr] = setup::testing::setup_stack(PID, P0, worldPtr, cs);
     { [[maybe_unused]] auto& viewPtr_dum = viewPtr; }
     auto particle = stack->first();
     // Note: momentum in X-direction

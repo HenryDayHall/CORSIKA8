@@ -62,37 +62,37 @@ namespace corsika::qgsjetII {
     return corsika2qgsjetII[static_cast<CodeIntType>(pCode)];
   }
 
-  Code constexpr convertFromQgsjetII(QgsjetIICode pCode) {
-    auto const pCodeInt = static_cast<QgsjetIICodeIntType>(pCode);
-    auto const corsikaCode = qgsjetII2corsika[pCodeInt - minQgsjetII];
+  Code constexpr convertFromQgsjetII(QgsjetIICode const code) {
+    auto const codeInt = static_cast<QgsjetIICodeIntType>(code);
+    auto const corsikaCode = qgsjetII2corsika[codeInt - minQgsjetII];
     if (corsikaCode == Code::Unknown) {
       throw std::runtime_error(std::string("QGSJETII/CORSIKA conversion of pCodeInt=")
-                                   .append(std::to_string(pCodeInt))
+                                   .append(std::to_string(codeInt))
                                    .append(" impossible"));
     }
     return corsikaCode;
   }
 
-  QgsjetIICodeIntType constexpr convertToQgsjetIIRaw(Code pCode) {
-    return static_cast<QgsjetIICodeIntType>(convertToQgsjetII(pCode));
+  QgsjetIICodeIntType constexpr convertToQgsjetIIRaw(Code const code) {
+    return static_cast<QgsjetIICodeIntType>(convertToQgsjetII(code));
   }
 
-  QgsjetIIXSClass constexpr getQgsjetIIXSCode(Code pCode) {
-    // if (pCode == corsika::particles::Code::Nucleus)
-    // static_cast(QgsjetIIXSClassIntType>();
-    return corsika2qgsjetIIXStype[static_cast<CodeIntType>(pCode)];
+  QgsjetIIXSClass constexpr getQgsjetIIXSCode(Code const code) {
+    return corsika2qgsjetIIXStype[static_cast<CodeIntType>(code)];
   }
 
-  QgsjetIIXSClassIntType constexpr getQgsjetIIXSCodeRaw(Code pCode) {
-    return static_cast<QgsjetIIXSClassIntType>(getQgsjetIIXSCode(pCode));
+  QgsjetIIXSClassIntType constexpr getQgsjetIIXSCodeRaw(Code const code) {
+    return static_cast<QgsjetIIXSClassIntType>(getQgsjetIIXSCode(code));
   }
 
-  bool constexpr canInteract(Code pCode) {
-    return getQgsjetIIXSCode(pCode) != QgsjetIIXSClass::CannotInteract;
+  bool constexpr canInteract(Code const code) {
+    if (is_nucleus(code)) return true;
+    return getQgsjetIIXSCode(code) != QgsjetIIXSClass::CannotInteract;
   }
 
-  QgsjetIIHadronType constexpr getQgsjetIIHadronType(Code pCode) {
-    return corsika2qgsjetIIHadronType[static_cast<CodeIntType>(pCode)];
+  QgsjetIIHadronType constexpr getQgsjetIIHadronType(Code const code) {
+    if (is_nucleus(code)) return QgsjetIIHadronType::NucleusType;
+    return corsika2qgsjetIIHadronType[static_cast<CodeIntType>(code)];
   }
 
 } // namespace corsika::qgsjetII

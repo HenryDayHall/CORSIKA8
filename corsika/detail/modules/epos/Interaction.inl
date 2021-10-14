@@ -63,21 +63,7 @@ namespace corsika::epos {
   }
 
   inline bool Interaction::isValidTarget(Code const TargetId) const {
-    if (is_nucleus(TargetId)) {
-      if (TargetId == Code::Nucleus) {
-        // nuclearExtension for projectiles only
-        CORSIKA_LOGGER_WARN(logger_,
-                            "Invalid target!"
-                            " Code::Nucleus only allowed for "
-                            "projectiles! "
-                            "This should not happen!");
-        return false;
-      } else {
-        return (get_nucleus_Z(TargetId) < maxTargetMassNumber_ ? true : false);
-      }
-    } else {
-      return false;
-    }
+    return is_nucleus(TargetId) && (get_nucleus_A(TargetId) < maxTargetMassNumber_);
   }
 
   inline void Interaction::initialize() const {
@@ -418,8 +404,8 @@ namespace corsika::epos {
       int beamA = 1;
       int beamZ = 1;
       if (is_nucleus(corsikaBeamId)) {
-        beamA = projectile.getNuclearA();
-        beamZ = projectile.getNuclearZ();
+        beamA = get_nucleus_A(corsikaBeamId);
+        beamZ = get_nucleus_Z(corsikaBeamId);
       }
 
       // get target from environment
@@ -485,8 +471,8 @@ namespace corsika::epos {
       int beamA = 1;
       int beamZ = 1;
       if (is_nucleus(corsikaBeamId)) {
-        beamA = projectile.getNuclearA();
-        beamZ = projectile.getNuclearZ();
+        beamA = get_nucleus_A(corsikaBeamId);
+        beamZ = get_nucleus_Z(corsikaBeamId);
         CORSIKA_LOGGER_DEBUG(logger_, "A={}, Z={} ", beamA, beamZ);
       }
 
@@ -579,13 +565,11 @@ namespace corsika::epos {
             A = 4;
             Z = 2;
           } else {
-            // 100ZZZAAA0 -> std. pdg code
-            EposCodeIntType const eposPdg = static_cast<EposCodeIntType>(eposId);
-            Z = int(abs(eposPdg) / 10000) % 1000;
-            A = int(abs(eposPdg) / 10) % 1000;
+            Z = get_nucleus_Z(eposId);
+            A = get_nucleus_Z(eposId);
           }
           auto pnew = view.addSecondary(
-              std::make_tuple(Code::Nucleus, momentum, pOrig, tOrig, A, Z));
+              std::make_tuple(get_nucleus_code(A, Z), momentum, pOrig, tOrig));
           Plab_final += pnew.getMomentum();
           Elab_final += pnew.getEnergy();
         }

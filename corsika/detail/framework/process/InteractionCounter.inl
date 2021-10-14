@@ -25,14 +25,7 @@ namespace corsika {
                                 .getNuclearComposition()
                                 .getAverageMassNumber();
     auto const massTarget = massNumber * constants::nucleonMass;
-
-    if (auto const projectile_id = projectile.getPID(); projectile_id == Code::Nucleus) {
-      auto const A = projectile.getNuclearA();
-      auto const Z = projectile.getNuclearZ();
-      histogram_.fill(projectile_id, projectile.getEnergy(), massTarget, A, Z);
-    } else {
-      histogram_.fill(projectile_id, projectile.getEnergy(), massTarget);
-    }
+    histogram_.fill(projectile.getPID(), projectile.getEnergy(), massTarget);
     process_.doInteraction(view);
   }
 

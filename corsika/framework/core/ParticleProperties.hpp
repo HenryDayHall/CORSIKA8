@@ -27,45 +27,49 @@
 namespace corsika {
 
   /**
-     @defgroup Particles Particle Properties
-
-     The properties of all particles are saved in static and flat
-     arrays. There is a enum corsika::Code to identify each
-     particles, and each individual particles has its own static class,
-     which can be used to retrieve its physical properties.
-
-     The properties of all elementary particles are accessible here. The data
-     are taken from the Pythia ParticleData.xml file.
-
-     Particle data can be accessed via global function in namespace corsika, or via
-     static classes for each particle type. These classes all have the interface (example
-     for the class corsika::Electron):
-
-     @code{.cpp}
-       static constexpr Code code{Code::Electron};
-       static constexpr Code anti_code{Code::Positron};
-       static constexpr HEPMassType mass{corsika::get_mass(code)};
-       static constexpr ElectricChargeType charge{corsika::get_charge(code)};
-       static constexpr int charge_number{corsika::get_charge_number(code)};
-       static constexpr std::string_view name{corsika::get_name(code)};
-       static constexpr bool is_nucleus{corsika::is_nucleus(code)};
-     @endcode
-
-     The names, relations and properties of all particles known to CORSIKA 8 are listed
-     below.
-
-     @addtogroup Particles
-     @{
+   * @defgroup Particles Particle Properties
+   *
+   * The properties of all particles are saved in static and flat
+   * arrays. There is a enum corsika::Code to identify each
+   * particles, and each individual particles has its own static class,
+   * which can be used to retrieve its physical properties.
+   *
+   * The properties of all elementary particles are accessible here. The data
+   * are taken from the Pythia ParticleData.xml file.
+   *
+   * Particle data can be accessed via global function in namespace corsika, or via
+   * static classes for each particle type. These classes all have the interface (example
+   * for the class corsika::Electron):
+   *
+   * @code{.cpp}
+   *   static constexpr Code code{Code::Electron};
+   *   static constexpr Code anti_code{Code::Positron};
+   *   static constexpr HEPMassType mass{corsika::get_mass(code)};
+   *   static constexpr ElectricChargeType charge{corsika::get_charge(code)};
+   *   static constexpr int charge_number{corsika::get_charge_number(code)};
+   *   static constexpr std::string_view name{corsika::get_name(code)};
+   *   static constexpr bool is_nucleus{corsika::is_nucleus(code)};
+   * @endcode
+   *
+   * The names, relations and properties of all particles known to CORSIKA 8 are listed
+   * below.
+   *
+   * @addtogroup Particles
+   * @{
    */
 
-  /** The Code enum is the actual place to define CORSIKA 8 particle codes. */
-  enum class Code : int16_t;
+  /**
+   * @brief  The Code enum is the actual place to define CORSIKA 8 particle codes.
+   */
+  enum class Code : int32_t;
 
-  /** Specifically for PDG ids */
+  /**
+   * @brief Specifically for PDG ids.
+   */
   enum class PDGCode : int32_t;
 
   using CodeIntType = std::underlying_type<Code>::type;
-  using PDGCodeType = std::underlying_type<PDGCode>::type;
+  using PDGCodeIntType = std::underlying_type<PDGCode>::type;
 
   // forward declarations to be used in GeneratedParticleProperties
   int16_t constexpr get_charge_number(Code const);     //!< electric charge in units of e
@@ -88,31 +92,81 @@ namespace corsika {
 
   //! Particle code according to PDG, "Monte Carlo Particle Numbering Scheme"
   PDGCode constexpr get_PDG(Code const);
-  PDGCode constexpr get_PDG(unsigned int A, unsigned int Z);
 
   std::string_view constexpr get_name(Code const); //!< name of the particle as string
   TimeType constexpr get_lifetime(Code const);     //!< lifetime
 
-  //! true iff the particle is a hard-coded nucleus or Code::Nucleus
-  bool constexpr is_nucleus(Code const);
   bool constexpr is_hadron(Code const); //!< true iff particle is hadron
   bool constexpr is_em(Code const); //!< true iff particle is electron, positron or photon
   bool constexpr is_muon(Code const);     //!< true iff particle is mu+ or mu-
   bool constexpr is_neutrino(Code const); //!< true iff particle is (anti-) neutrino
-  int constexpr get_nucleus_A(
+
+  /**
+   * @brief Creates the Code for a nucleus of type 10LZZZAAAI.
+   *
+   * @return internal nucleus Code
+   */
+  Code constexpr get_nucleus_code(unsigned int const A, unsigned int const Z);
+  /**
+   * @brief Checks if Code corresponds to a nucleus.
+   *
+   * @return true if nucleus.
+   * @return false  if not nucleus.
+   */
+  bool constexpr is_nucleus(Code const);
+
+  /**
+   * @brief Get the mass number A for nucleus.
+   *
+   * @return int size of nucleus.
+   */
+  unsigned int constexpr get_nucleus_A(
       Code const); //!< returns A for hard-coded nucleus, otherwise 0
-  int constexpr get_nucleus_Z(
+
+  /**
+   * @brief Get the charge number Z for nucleus.
+   *
+   * @return int charge of nucleus.
+   */
+  unsigned int constexpr get_nucleus_Z(
       Code const); //!< returns Z for hard-coded nucleus, otherwise 0
 
-  //! returns mass of (A,Z) nucleus, disregarding binding energy
-  HEPMassType get_nucleus_mass(unsigned int const, unsigned int const);
+  /**
+   * @brief Calculates the mass of nucleus.
+   *
+   * @return HEPMassType the mass of (A,Z) nucleus, disregarding binding energy.
+   */
+  HEPMassType constexpr get_nucleus_mass(Code const code);
 
-  //! convert PDG code to CORSIKA 8 internal code
+  /**
+   * @brief Get the nucleus name.
+   *
+   * @param code
+   * @return std::string
+   */
+  inline std::string_view get_nucleus_name(Code const code);
+
+  /**
+   * @brief convert PDG code to CORSIKA 8 internal code.
+   *
+   * @return Code internal code.
+   */
   Code convert_from_PDG(PDGCode const);
 
+  /**
+   * @brief Returns list of all non-nuclei particles.
+   *
+   * @return std::initializer_list<Code> constexpr
+   */
   std::initializer_list<Code> constexpr get_all_particles();
 
-  //! the output stream operator for human-readable particle codes
+  /**
+   * @brief Code output operator.
+   *
+   * The output stream operator for human-readable particle codes.
+   *
+   * @return std::ostream&
+   */
   std::ostream& operator<<(std::ostream&, corsika::Code);
 
   /** @}*/

@@ -29,7 +29,7 @@ namespace corsika::qgsjetII {
     ~Interaction();
 
     bool wasInitialized() { return initialized_; }
-    int getMaxTargetMassNumber() const { return maxMassNumber_; }
+    unsigned int getMaxTargetMassNumber() const { return maxMassNumber_; }
     bool isValidTarget(corsika::Code TargetId) const {
       return is_nucleus(TargetId) && (get_nucleus_A(TargetId) < maxMassNumber_);
     }
@@ -57,7 +57,7 @@ namespace corsika::qgsjetII {
 
     corsika::default_prng_type& rng_ =
         corsika::RNGManager<>::getInstance().getRandomStream("qgsjet");
-    const int maxMassNumber_ = 208;
+    static unsigned int constexpr maxMassNumber_ = 208;
   };
 
 } // namespace corsika::qgsjetII

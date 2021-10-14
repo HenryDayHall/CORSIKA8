@@ -24,7 +24,7 @@
 
 using namespace corsika;
 
-TEST_CASE("ParticleCut", "processes") {
+TEST_CASE("ParticleCut", "process,continuous,secondary") {
 
   logging::set_level(logging::level::info);
 
@@ -123,12 +123,12 @@ TEST_CASE("ParticleCut", "processes") {
           proType, Ebelow, DirectionVector(rootCS, {1, 0, 0}), point0, 0_ns));
     unsigned short A = 18;
     unsigned short Z = 8;
-    projectile.addSecondary(std::make_tuple(Code::Nucleus, Eabove * A,
+    projectile.addSecondary(std::make_tuple(get_nucleus_code(A, Z), Eabove * A,
                                             DirectionVector(rootCS, {1, 0, 0}), point0,
-                                            0_ns, A, Z));
-    projectile.addSecondary(std::make_tuple(Code::Nucleus, Ebelow * A,
+                                            0_ns));
+    projectile.addSecondary(std::make_tuple(get_nucleus_code(A, Z), Ebelow * A,
                                             DirectionVector(rootCS, {1, 0, 0}), point0,
-                                            0_ns, A, Z));
+                                            0_ns));
 
     cut.doSecondaries(view);
 
@@ -160,12 +160,12 @@ TEST_CASE("ParticleCut", "processes") {
 
     unsigned short A = 18;
     unsigned short Z = 8;
-    projectile.addSecondary(std::make_tuple(Code::Nucleus, 4_GeV * A,
+    projectile.addSecondary(std::make_tuple(get_nucleus_code(A, Z), 4_GeV * A,
                                             DirectionVector(rootCS, {1, 0, 0}), point0,
-                                            0_ns, A, Z));
-    projectile.addSecondary(std::make_tuple(Code::Nucleus, 6_GeV * A,
+                                            0_ns));
+    projectile.addSecondary(std::make_tuple(get_nucleus_code(A, Z), 6_GeV * A,
                                             DirectionVector(rootCS, {1, 0, 0}), point0,
-                                            0_ns, A, Z));
+                                            0_ns));
 
     cut.doSecondaries(view);
 

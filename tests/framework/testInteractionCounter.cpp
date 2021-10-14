@@ -33,12 +33,11 @@ const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 struct DummyProcess {
   template <typename TParticle>
-  GrammageType getInteractionLength([[maybe_unused]] TParticle const& particle) {
+  GrammageType getInteractionLength(TParticle const&) {
     return 100_g / 1_cm / 1_cm;
   }
-
   template <typename TParticle>
-  void doInteraction([[maybe_unused]] TParticle& projectile) {}
+  void doInteraction(TParticle&) {}
 };
 
 TEST_CASE("InteractionCounter", "[process]") {
@@ -58,7 +57,7 @@ TEST_CASE("InteractionCounter", "[process]") {
   SECTION("DoInteraction nucleus") {
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, A, Z, 105_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        get_nucleus_code(A, Z), 105_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
@@ -103,7 +102,7 @@ TEST_CASE("InteractionCounter", "[process]") {
   SECTION("DoInteraction Lambda") {
     auto constexpr code = Code::Lambda0;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        code, 0, 0, 105_TeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        code, 105_TeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
 

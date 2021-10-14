@@ -82,7 +82,7 @@ TEST_CASE("UrQMD") {
                                    Code::K0Bar,      Code::K0Long};
 
     for (auto code : validProjectileCodes) {
-      auto [stack, view] = setup::testing::setup_stack(code, 0, 0, 100_GeV, nodePtr, cs);
+      auto [stack, view] = setup::testing::setup_stack(code, 100_GeV, nodePtr, cs);
       CHECK(stack->getEntries() == 1);
       CHECK(view->getEntries() == 0);
 
@@ -96,8 +96,7 @@ TEST_CASE("UrQMD") {
     auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Argon);
     auto const& cs = *csPtr;
     { [[maybe_unused]] auto const& env_dummy = env; }
-    auto [stack, view] =
-        setup::testing::setup_stack(Code::Proton, 0, 0, 100_GeV, nodePtr, cs);
+    auto [stack, view] = setup::testing::setup_stack(Code::Proton, 100_GeV, nodePtr, cs);
     [[maybe_unused]] setup::StackView& viewRef = *(view.get());
     CHECK(urqmd.getInteractionLength(stack->getNextParticle()) / 1_g * square(1_cm) ==
           Approx(105).margin(5));
@@ -107,8 +106,7 @@ TEST_CASE("UrQMD") {
     auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Omega);
     auto const& cs = *csPtr;
     { [[maybe_unused]] auto const& env_dummy = env; }
-    auto [stack, view] =
-        setup::testing::setup_stack(Code::Neutron, 0, 0, 100_GeV, nodePtr, cs);
+    auto [stack, view] = setup::testing::setup_stack(Code::Neutron, 100_GeV, nodePtr, cs);
     [[maybe_unused]] setup::StackView& viewRef = *(view.get());
     CHECK_THROWS(urqmd.getInteractionLength(stack->getNextParticle()));
   }
@@ -120,7 +118,7 @@ TEST_CASE("UrQMD") {
 
     unsigned short constexpr A = 14, Z = 7;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Nucleus, A, Z, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
+        get_nucleus_code(A, Z), 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
         *csPtr);
     [[maybe_unused]] setup::StackView& viewRef = *(secViewPtr.get());
     CHECK(stackPtr->getEntries() == 1);
@@ -145,8 +143,7 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
 
@@ -172,8 +169,7 @@ TEST_CASE("UrQMD") {
       [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::PiPlus, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-          *csPtr);
+          Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] auto particle = stackPtr->first();
       CHECK_THROWS(urqmd.doInteraction(*secViewPtr)); // Code::Proton not a valid target
     }
@@ -184,8 +180,7 @@ TEST_CASE("UrQMD") {
       [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::PiPlus, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-          *csPtr);
+          Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       CHECK(stackPtr->getEntries() == 1);
       CHECK(secViewPtr->getEntries() == 0);
 
@@ -211,8 +206,7 @@ TEST_CASE("UrQMD") {
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::K0Long, 0, 0, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::K0Long, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     CHECK(stackPtr->getEntries() == 1);
     CHECK(secViewPtr->getEntries() == 0);
 

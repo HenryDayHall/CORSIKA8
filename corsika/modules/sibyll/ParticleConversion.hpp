@@ -48,13 +48,13 @@ namespace corsika::sibyll {
     return corsikaCode;
   }
 
-  int constexpr convertToSibyllRaw(corsika::Code pCode) {
-    return static_cast<int>(convertToSibyll(pCode));
+  int constexpr convertToSibyllRaw(Code const code) {
+    return static_cast<int>(convertToSibyll(code));
   }
 
-  int constexpr getSibyllXSCode(corsika::Code pCode) {
+  int constexpr getSibyllXSCode(Code const code) {
     return static_cast<SibyllXSClassIntType>(
-        corsika2sibyllXStype[static_cast<corsika::CodeIntType>(pCode)]);
+        corsika2sibyllXStype[static_cast<corsika::CodeIntType>(code)]);
   }
 
   bool constexpr canInteract(corsika::Code pCode) { return getSibyllXSCode(pCode) > 0; }

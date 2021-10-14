@@ -104,7 +104,7 @@ TEST_CASE("Pythia8Interface", "modules") {
   SECTION("pythia decay") {
     HEPEnergyType const P0 = 10_GeV;
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::PiPlus, 0, 0, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        Code::PiPlus, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& stack = *stackPtr;
     auto& view = *secViewPtr;
 
@@ -164,8 +164,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // this will be a p-p collision at sqrts=3.5TeV -> no problem for pythia
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::Proton, 7_TeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
     auto const particle = stackPtr->getNextParticle();
 
@@ -198,8 +197,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // this is a projectile nucleus with very little energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Oxygen, 0, 0, 17_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::Oxygen, 17_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
 
@@ -215,8 +213,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // this is a projectile neutron with very little energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Neutron, 0, 0, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
+        Code::Neutron, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     auto& view = *secViewPtr;
     auto particle = stackPtr->first();
 
@@ -240,7 +237,7 @@ TEST_CASE("Pythia8Interface", "modules") {
 
     // resonable projectile, but tool low energy
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        Code::Proton, 0, 0, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr_Fe,
+        Code::Proton, 1_GeV, (setup::Environment::BaseNodeType* const)nodePtr_Fe,
         *csPtr_Fe);
     auto& view = *secViewPtr;
     { [[maybe_unused]] auto const& dummy_StackPtr = stackPtr; }

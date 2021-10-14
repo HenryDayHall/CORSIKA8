@@ -35,11 +35,12 @@ namespace corsika::sibyll {
 
   inline bool Decay::canHandleDecay(const Code vParticleCode) {
     // if known to sibyll and not proton or neutrino it can decay
-    if (vParticleCode == Code::Proton || vParticleCode == Code::AntiProton ||
-        vParticleCode == Code::NuE || vParticleCode == Code::NuMu ||
-        vParticleCode == Code::NuTau || vParticleCode == Code::NuEBar ||
-        vParticleCode == Code::NuMuBar || vParticleCode == Code::NuTauBar ||
-        vParticleCode == Code::Electron || vParticleCode == Code::Positron)
+    if (is_nucleus(vParticleCode) || vParticleCode == Code::Proton ||
+        vParticleCode == Code::AntiProton || vParticleCode == Code::NuE ||
+        vParticleCode == Code::NuMu || vParticleCode == Code::NuTau ||
+        vParticleCode == Code::NuEBar || vParticleCode == Code::NuMuBar ||
+        vParticleCode == Code::NuTauBar || vParticleCode == Code::Electron ||
+        vParticleCode == Code::Positron)
       return false;
     else if (corsika::sibyll::convertToSibyllRaw(
                  vParticleCode)) // non-zero for particles known to sibyll

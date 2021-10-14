@@ -47,7 +47,7 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(Electron::name == "e-");
     CHECK(get_name(Code::Electron) == "e-");
     CHECK(PiMinus::name == "pi-");
-    CHECK(Iron::name == "iron");
+    CHECK(Iron::name == "nucleus");
     CHECK(Photon::name == "photon");
   }
 
@@ -112,7 +112,6 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(is_hadron(Code::Proton));
     CHECK(is_hadron(Code::PiPlus));
     CHECK(is_hadron(Code::Oxygen));
-    CHECK(is_hadron(Code::Nucleus));
   }
 
   SECTION("Particle groups: muons") {
@@ -155,10 +154,24 @@ TEST_CASE("ParticleProperties", "[Particles]") {
     CHECK(Hydrogen::nucleus_Z == 1);
     CHECK(Tritium::nucleus_A == 3);
 
-    // Nucleus is a generic object, it has no specific properties
-    CHECK_THROWS(get_nucleus_Z(Code::Nucleus));
-    CHECK_THROWS(get_nucleus_A(Code::Nucleus));
-    CHECK_THROWS(get_mass(Code::Nucleus));
-    CHECK_THROWS(get_charge(Code::Nucleus));
+    CHECK(is_nucleus(get_nucleus_code(1, 1)));
+    CHECK(is_nucleus(get_nucleus_code(100, 100)));
+    CHECK(get_nucleus_code(208, 82) == Code::Lead);
+    CHECK_FALSE(is_nucleus(Code::Electron));
+    CHECK(is_nucleus(Code::Lead));
+    CHECK(get_nucleus_Z(Code::Lead) == 82);
+    CHECK(get_nucleus_A(Code::Lead) == 208);
+
+    // impossible nucleus
+    CHECK_THROWS(get_nucleus_code(20, 40));
+
+    // getters
+    auto const testId = get_nucleus_code(40, 20);
+    CHECK(get_nucleus_A(testId) == 40);
+    CHECK(get_nucleus_Z(testId) == 20);
+    CHECK(is_nucleus(testId));
+    CHECK(get_nucleus_mass(testId) == 20 * Proton::mass + 20 * Neutron::mass);
+    CHECK(get_name(testId) == "nucleus");
+    CHECK(get_charge(testId) == 20 * constants::e);
   }
 }

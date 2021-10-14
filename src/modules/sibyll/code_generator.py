@@ -63,6 +63,7 @@ def generate_corsika2sibyll(particle_db):
     '''
     string = "std::array<SibyllCode, {:d}> constexpr corsika2sibyll = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         if 'sibyll_code' in pData:
             string += "  SibyllCode::{:s}, \n".format(identifier)
         else:
@@ -78,6 +79,7 @@ def generate_corsika2sibyll_xsType(particle_db):
     '''
     string = "std::array<SibyllXSClass, {:d}> constexpr corsika2sibyllXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         if 'sibyll_xsType' in pData:
             string += "  SibyllXSClass::{:s}, // {:s}\n".format(pData['sibyll_xsType'], identifier)
         else:

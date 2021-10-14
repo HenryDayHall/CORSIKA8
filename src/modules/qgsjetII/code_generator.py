@@ -120,6 +120,7 @@ def generate_corsika2qgsjetII(particle_db):
     '''
     string = "std::array<QgsjetIICode, {:d}> constexpr corsika2qgsjetII = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         if 'qgsjetII_code' in pData:
             string += "  QgsjetIICode::{:s}, \n".format(identifier)
         else:
@@ -134,6 +135,7 @@ def generate_corsika2qgsjetII_xsType(particle_db):
     '''
     string = "std::array<QgsjetIIXSClass, {:d}> constexpr corsika2qgsjetIIXStype = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         modelCodeXS = pData.get("qgsjetII_xsType", "CannotInteract")
         string += "  QgsjetIIXSClass::{:s}, // {:s}\n".format(modelCodeXS, identifier if modelCodeXS else identifier + " (not implemented in QGSJETII)")
     string += "};\n"
@@ -146,6 +148,7 @@ def generate_corsika2qgsjetII_hadronType(particle_db):
     '''
     string = "std::array<QgsjetIIHadronType, {:d}> constexpr corsika2qgsjetIIHadronType = {{\n".format(len(particle_db))
     for identifier, pData in particle_db.items():
+        if pData['isNucleus']: continue
         modelCode = pData.get("qgsjetII_hadronType", "UndefinedType")
         string += "  QgsjetIIHadronType::{:s}, // {:s}\n".format(modelCode, identifier if modelCode else identifier + " (not implemented in QGSJETII)")
     string += "};\n"

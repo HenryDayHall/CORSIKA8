@@ -35,7 +35,7 @@ namespace corsika::setup::testing {
    **/
 
   inline std::tuple<std::unique_ptr<setup::Stack>, std::unique_ptr<setup::StackView>>
-  setup_stack(Code vProjectileType, int vA, int vZ, HEPEnergyType vMomentum,
+  setup_stack(Code vProjectileType, HEPEnergyType vMomentum,
               setup::Environment::BaseNodeType* const vNodePtr,
               CoordinateSystemPtr const& cs) {
 
@@ -44,19 +44,11 @@ namespace corsika::setup::testing {
     Point const origin(cs, {0_m, 0_m, 0_m});
     MomentumVector const pLab(cs, {vMomentum, 0_GeV, 0_GeV});
 
-    if (vProjectileType == Code::Nucleus) {
-      auto particle =
-          stack->addParticle(std::make_tuple(Code::Nucleus, pLab, origin, 0_ns, vA, vZ));
-      particle.setNode(vNodePtr);
-      return std::make_tuple(std::move(stack),
-                             std::make_unique<setup::StackView>(particle));
-    } else { // not a nucleus
-      auto particle =
-          stack->addParticle(std::make_tuple(vProjectileType, pLab, origin, 0_ns));
-      particle.setNode(vNodePtr);
-      return std::make_tuple(std::move(stack),
-                             std::make_unique<setup::StackView>(particle));
-    }
+    auto particle =
+        stack->addParticle(std::make_tuple(vProjectileType, pLab, origin, 0_ns));
+    particle.setNode(vNodePtr);
+    return std::make_tuple(std::move(stack),
+                           std::make_unique<setup::StackView>(particle));
   }
 
 } // namespace corsika::setup::testing

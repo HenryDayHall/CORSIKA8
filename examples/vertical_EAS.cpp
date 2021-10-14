@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
                                                                            50_uT, 0_T});
   builder.setNuclearComposition(
       {{Code::Nitrogen, Code::Oxygen},
-       {0.7847f, 1.f - 0.7847f}}); // values taken from AIRES manual, Ar removed for now
+       {0.7847, 1. - 0.7847}}); // values taken from AIRES manual, Ar removed for now
 
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 2_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 4_km);
@@ -144,17 +144,20 @@ int main(int argc, char** argv) {
   // pre-setup particle stack
   unsigned short const A = std::stoi(std::string(argv[1]));
   Code beamCode;
-  HEPEnergyType mass;
   unsigned short Z = 0;
   if (A > 0) {
-    beamCode = Code::Nucleus;
     Z = std::stoi(std::string(argv[2]));
-    mass = get_nucleus_mass(A, Z);
+    if (A == 1 && Z == 0)
+      beamCode = Code::Neutron;
+    else if (A == 1 && Z == 1)
+      beamCode = Code::Proton;
+    else
+      beamCode = get_nucleus_code(A, Z);
   } else {
     int pdg = std::stoi(std::string(argv[2]));
     beamCode = convert_from_PDG(PDGCode(pdg));
-    mass = get_mass(beamCode);
   }
+  HEPEnergyType mass = get_mass(beamCode);
   HEPEnergyType const E0 = 1_GeV * std::stof(std::string(argv[3]));
   double theta = 0.;
   double phi = 180.;
@@ -248,8 +251,10 @@ int main(int argc, char** argv) {
         : cutE_(cutE) {}
     bool operator()(const Particle& p) { return (p.getEnergy() < cutE_); }
   };
-  auto hadronSequence = make_select(EnergySwitch(55_GeV), urqmdCounted,
-                                    make_sequence(sibyllNucCounted, sibyllCounted));
+  auto hadronSequence =
+      make_select(EnergySwitch(55_GeV), urqmdCounted,
+                  make_select([](auto const& p) { return is_nucleus(p.getPID()); },
+                              sibyllNucCounted, sibyllCounted));
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
 
   // directory for outputs
@@ -261,23 +266,7 @@ int main(int argc, char** argv) {
   setup::Stack stack;
   stack.clear();
 
-  if (A > 1) {
-    stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns, A, Z));
-
-  } else {
-    if (A == 1) {
-      if (Z == 1) {
-        stack.addParticle(std::make_tuple(Code::Proton, plab, injectionPos, 0_ns));
-      } else if (Z == 0) {
-        stack.addParticle(std::make_tuple(Code::Neutron, plab, injectionPos, 0_ns));
-      } else {
-        std::cerr << "illegal parameters" << std::endl;
-        return EXIT_FAILURE;
-      }
-    } else {
-      stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
-    }
-  }
+  stack.addParticle(std::make_tuple(beamCode, plab, injectionPos, 0_ns));
 
   BetheBlochPDG emContinuous(showerAxis);
 

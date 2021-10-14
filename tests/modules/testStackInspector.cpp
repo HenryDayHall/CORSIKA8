@@ -38,9 +38,9 @@ TEST_CASE("StackInspector", "modules") {
   stack.addParticle(std::make_tuple(Code::Electron,
                                     MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
                                     Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
-  stack.addParticle(std::make_tuple(Code::Nucleus,
+  stack.addParticle(std::make_tuple(get_nucleus_code(16, 8),
                                     MomentumVector(rootCS, {0_GeV, 0_GeV, -1_GeV}),
-                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns, 16, 8));
+                                    Point(rootCS, {0_m, 0_m, 10_km}), 0_ns));
 
   SECTION("interface") {
 
