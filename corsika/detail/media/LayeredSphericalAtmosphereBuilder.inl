@@ -40,8 +40,9 @@ namespace corsika {
   inline typename LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
                                                     TModelArgs...>::volume_tree_node*
   LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra, TModelArgs...>::
-      addExponentialLayer(GrammageType b, LengthType c, LengthType upperBoundary) {
+      addExponentialLayer(GrammageType const b, LengthType const scaleHeight, LengthType const upperBoundary) {
 
+    // outer radius
     auto const radius = planetRadius_ + upperBoundary;
     checkRadius(radius);
     previousRadius_ = radius;
@@ -49,14 +50,14 @@ namespace corsika {
     auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
         std::make_unique<Sphere>(center_, radius));
 
-    auto const rho0 = b / c;
+    auto const rho0 = b / scaleHeight;
 
     if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
       // helper lambda in which the last 5 arguments to make_shared<...> are bound
       auto lastBound = [&](auto... argPack) {
         return std::make_shared<
             TMediumModelExtra<SlidingPlanarExponential<TMediumInterface>>>(
-            argPack..., center_, rho0, -c, *composition_, planetRadius_);
+            argPack..., center_, rho0, -scaleHeight, *composition_, planetRadius_);
       };
 
       // now unpack the additional arguments
@@ -64,7 +65,7 @@ namespace corsika {
       node->setModelProperties(std::move(model));
     } else {
       node->template setModelProperties<SlidingPlanarExponential<TMediumInterface>>(
-          center_, rho0, -c, *composition_, planetRadius_);
+          center_, rho0, -scaleHeight, *composition_, planetRadius_);
     }
 
     layers_.push(std::move(node));
@@ -75,7 +76,9 @@ namespace corsika {
             typename... TModelArgs>
   inline void LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra,
-      TModelArgs...>::addLinearLayer(LengthType c, LengthType upperBoundary) {
+      TModelArgs...>::addLinearLayer(LengthType const scaleHeight,
+                                     LengthType const upperBoundary) {
+    // outer radius
     auto const radius = planetRadius_ + upperBoundary;
     checkRadius(radius);
     previousRadius_ = radius;
@@ -83,8 +86,8 @@ namespace corsika {
     auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
         std::make_unique<Sphere>(center_, radius));
 
-    units::si::GrammageType constexpr b = 1_g / (1_cm * 1_cm);
-    auto const rho0 = b / c;
+    GrammageType constexpr b = 1_g / (1_cm * 1_cm);
+    auto const rho0 = b / scaleHeight;
 
     if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {
       // helper lambda in which the last 2 arguments to make_shared<...> are bound
