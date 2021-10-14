@@ -327,15 +327,15 @@ configure_package_config_file (
 # the location of the "corsika-data" is of fundamental importance
 set (CORSIKA_CMAKE_DATA_DIR ${CMAKE_SOURCE_DIR}/modules/data)
 configure_file (
-  cmake/corsika.hpp.in
+  src/corsika.hpp.in
   ${PROJECT_BINARY_DIR}/corsika/corsika.hpp
 )
 #
 # second also for install-tree
-#
+# 
 set (CORSIKA_CMAKE_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/corsika/data")
 configure_file (
-  cmake/corsika.hpp.in
+  src/corsika.hpp.in
   ${PROJECT_BINARY_DIR}/corsika.hpp-install
 )
 #
