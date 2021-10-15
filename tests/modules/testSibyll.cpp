@@ -263,23 +263,25 @@ TEST_CASE("SibyllInterface", "modules") {
 
   SECTION("NuclearInteractionInterface") {
 
-    HEPMomentumType const P0 = 2500_GeV;                        // per nucleon
-    MomentumVector plab = MomentumVector(cs, {P0, 0_eV, 0_eV}); // per nucleon
+    HEPMomentumType const P0 = 50_TeV;
+    MomentumVector plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     corsika::sibyll::InteractionModel hmodel;
     NuclearInteractionModel model(hmodel, *env);
-    HEPEnergyType const ElabNuc =
-        sqrt(static_pow<2>(P0 * 8) + static_pow<2>(get_nucleus_mass(8, 4))) / 8;
-    HEPEnergyType const sqrtSnn = sqrt((ElabNuc + constants::nucleonMass + P0) *
-                                       (ElabNuc + constants::nucleonMass - P0));
-    model.doInteraction(view, getCOMboost(ElabNuc, plab, cs), Code::Iron, Code::Oxygen,
+    Code const pid = Code::Oxygen;
+    size_t const A = get_nucleus_A(pid);
+    HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
+    HEPEnergyType const sqrtSnn = sqrt((Elab / A + constants::nucleonMass + P0 / A) *
+                                       (Elab / A + constants::nucleonMass - P0 / A));
+    model.doInteraction(view, getCOMboost(Elab, plab, cs), Code::Oxygen, Code::Oxygen,
                         sqrtSnn);
-    CrossSectionType const cx = model.getCrossSection(Code::Iron, Code::Oxygen, sqrtSnn);
+    CrossSectionType const cx =
+        model.getCrossSection(Code::Oxygen, Code::Oxygen, sqrtSnn);
     // Felix, are those changes OK? Below are the checks before refactory-2020
     // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
     // CHECK(view.getSize() == 11);
-    CHECK(cx / 1_mb == Approx(1900).margin(100)); // this is not physics validation
+    CHECK(cx / 1_mb == Approx(1300).margin(300)); // this is not physics validation
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
-    CHECK(view.getSize() == Approx(300).margin(90)); // this is not physics validation
+    CHECK(view.getSize() == Approx(100).margin(90)); // this is not physics validation
   }
 }
 
