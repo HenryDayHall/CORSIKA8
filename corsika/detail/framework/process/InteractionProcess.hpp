@@ -54,8 +54,8 @@ namespace corsika {
       has_method_doInteract<TProcess, TReturn, TTemplate, TArgs...>::value;
 
   /**
-     traits test for InteractionProcess::getInteractionLength method
-  */
+   * traits test for InteractionProcess::getInteractionLength method.
+   */
 
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getInteractionLength
@@ -79,9 +79,9 @@ namespace corsika {
 
   public:
     /**
-        @name traits results
-        @{
-    */
+     *  @name traits results
+     * @{
+     */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}
@@ -93,8 +93,8 @@ namespace corsika {
       has_method_getInteractionLength<TProcess, TReturn, TArgs...>::value;
 
   /**
-     traits test for InteractionProcess::getCrossSection method
-  */
+   *  traits test for InteractionProcess::getCrossSection method.
+   */
 
   template <class TProcess, typename TReturn, typename... TArgs>
   struct has_method_getCrossSection
@@ -118,9 +118,9 @@ namespace corsika {
 
   public:
     /**
-        @name traits results
-        @{
-    */
+     *  @name traits results
+     * @{
+     */
     using type = decltype(test<std::decay_t<TProcess>>(nullptr));
     static const bool value = type::value;
     //! @}

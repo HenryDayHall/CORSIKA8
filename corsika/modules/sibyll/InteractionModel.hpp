@@ -45,8 +45,7 @@ namespace corsika::sibyll {
      * neutrons (p,n == nucleon).
      */
     void constexpr isValid(Code const projectileId, Code const targetId,
-                           HEPEnergyType const sqrtSnn, unsigned int const projectileA,
-                           unsigned int const targetA) const;
+                           HEPEnergyType const sqrtSnn) const;
 
     /**
      * @brief returns inelastic AND elastic cross sections.
@@ -65,8 +64,7 @@ namespace corsika::sibyll {
      * @return a tuple of: inelastic cross section, elastic cross section
      */
     std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
-        Code const projectile, Code const target, HEPEnergyType const sqrtSnn,
-        unsigned int const Aprojectile = 1, unsigned int const Atarget = 1) const;
+        Code const projectile, Code const target, HEPEnergyType const sqrtSnn) const;
 
     /**
      * @brief returns inelastic (production) cross section.
@@ -84,11 +82,8 @@ namespace corsika::sibyll {
      * elastic cross section
      */
     CrossSectionType getCrossSection(Code const projectile, Code const target,
-                                     HEPEnergyType const sqrtSnn,
-                                     unsigned int const Aprojectile = 1,
-                                     unsigned int const Atarget = 1) const {
-      return std::get<0>(
-          getCrossSectionInelEla(projectile, target, sqrtSnn, Aprojectile, Atarget));
+                                     HEPEnergyType const sqrtSnn) const {
+      return std::get<0>(getCrossSectionInelEla(projectile, target, sqrtSnn));
     }
 
     /**
@@ -98,9 +93,7 @@ namespace corsika::sibyll {
 
     template <typename TSecondaries>
     void doInteraction(TSecondaries&, COMBoost const& boost, Code const projectile,
-                       Code const target, HEPEnergyType const sqrtSnn,
-                       unsigned int const Aprojectile = 1,
-                       unsigned int const Atarget = 1);
+                       Code const target, HEPEnergyType const sqrtSnn);
 
   private:
     HEPEnergyType constexpr getMinEnergyCoM() const { return minEnergyCoM_; }

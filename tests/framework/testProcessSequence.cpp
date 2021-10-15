@@ -209,13 +209,12 @@ public:
 
   template <typename TView>
   void doInteraction(TView& v, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const, unsigned int const, unsigned int const) const {
+                     HEPEnergyType const) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
   }
 
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
-                                   unsigned int const, unsigned int const) const {
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
     return 10_mb;
   }
 
@@ -236,14 +235,13 @@ public:
 
   template <typename TView>
   void doInteraction(TView& v, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const, unsigned int const, unsigned int const) const {
+                     HEPEnergyType const) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     CORSIKA_LOG_DEBUG("Process2::doInteraction");
   }
 
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
-                                   unsigned int const, unsigned int const) const {
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
     CORSIKA_LOG_DEBUG("Process2::getCrossSection");
     return 20_mb;
   }
@@ -265,14 +263,13 @@ public:
 
   template <typename TView>
   void doInteraction(TView& v, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const, unsigned int const, unsigned int const) const {
+                     HEPEnergyType const) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     CORSIKA_LOG_DEBUG("Process3::doInteraction");
   }
 
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
-                                   unsigned int const, unsigned int const) const {
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
     CORSIKA_LOG_DEBUG("Process3::getCrossSection");
     return 30_mb;
   }
@@ -300,8 +297,8 @@ public:
     return ProcessReturn::Ok;
   }
   template <typename TView>
-  void doInteraction(TView&, COMBoost const&, Code const, Code const, HEPEnergyType const,
-                     unsigned int const, unsigned int const) const {
+  void doInteraction(TView&, COMBoost const&, Code const, Code const,
+                     HEPEnergyType const) const {
     checkInteract |= 8;
   }
 

@@ -241,8 +241,7 @@ namespace corsika {
     template <typename TParticle, typename TTrack>
     ContinuousProcessStepLength getMaxStepLength(TParticle&& particle, TTrack&& vTrack);
 
-    template <typename TParticle>
-    CrossSectionType getCrossSection(TParticle&& projectile, Code const targetId,
+    CrossSectionType getCrossSection(Code const projectileId, Code const targetId,
                                      HEPEnergyType const sqrtSnn) const;
 
     template <typename TParticle>

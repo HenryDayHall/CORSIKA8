@@ -139,6 +139,13 @@ namespace corsika {
   HEPMassType constexpr get_nucleus_mass(Code const code);
 
   /**
+   * @brief Calculates the mass of nucleus.
+   *
+   * @return HEPMassType the mass of (A,Z) nucleus, disregarding binding energy.
+   */
+  HEPMassType constexpr get_nucleus_mass(unsigned int const A, unsigned int const Z);
+
+  /**
    * @brief Get the nucleus name.
    *
    * @param code

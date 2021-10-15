@@ -310,10 +310,9 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
-  template <typename TParticle>
   inline CrossSectionType
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                  IndexProcess2>::getCrossSection(TParticle&& projectile,
+                  IndexProcess2>::getCrossSection(Code const projectileId,
                                                   Code const targetId,
                                                   HEPEnergyType const sqrtSnn) const {
 
@@ -321,24 +320,16 @@ namespace corsika {
 
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
-      if constexpr (is_interaction_process_v<process1_type>) {
-        Code const projectileId = projectile.getPID();
-        tot += A_.getCrossSection(projectileId, targetId, sqrtSnn,
-                                  is_nucleus(projectileId) ? projectile.getNuclearA() : 1,
-                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
-      } else if constexpr (process1_type::is_process_sequence) {
-        tot += A_.getCrossSection(projectile, targetId, sqrtSnn);
+      if constexpr (is_interaction_process_v<process1_type> ||
+                    process1_type::is_process_sequence) {
+        tot += A_.getCrossSection(projectileId, targetId, sqrtSnn);
       }
     }
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
-      if constexpr (is_interaction_process_v<process2_type>) {
-        Code const projectileId = projectile.getPID();
-        tot += B_.getCrossSection(projectileId, targetId, sqrtSnn,
-                                  is_nucleus(projectileId) ? projectile.getNuclearA() : 1,
-                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
-      } else if constexpr (process2_type::is_process_sequence) {
-        tot += B_.getCrossSection(projectile, targetId, sqrtSnn);
+      if constexpr (is_interaction_process_v<process2_type> ||
+                    process2_type::is_process_sequence) {
+        tot += B_.getCrossSection(projectileId, targetId, sqrtSnn);
       }
     }
     return tot;
@@ -443,24 +434,19 @@ namespace corsika {
 
         auto const& projectile = view.parent();
         Code const projectileId = projectile.getPID();
-        unsigned int const projectileA =
-            is_nucleus(projectileId) ? projectile.getNuclearA() : 1;
 
         // get cross section vector for all material components
-        static_assert(
-            has_method_getCrossSection_v<TProcess1,        // process object
-                                         CrossSectionType, // return type
-                                         Code,             // parameters
-                                         Code, HEPEnergyType, unsigned int, unsigned int>,
-            "TProcess1 has no method with correct signature \"CrossSectionType "
-            "getCrossSection(Code, Code, HEPEnergyType, unsigned int, unsigned int"
-            ")\" required by InteractionProcess<TProcess1>. ");
+        static_assert(has_method_getCrossSection_v<TProcess1,        // process object
+                                                   CrossSectionType, // return type
+                                                   Code,             // parameters
+                                                   Code, HEPEnergyType>,
+                      "TProcess1 has no method with correct signature \"CrossSectionType "
+                      "getCrossSection(Code, Code, HEPEnergyType)\" required by "
+                      "InteractionProcess<TProcess1>. ");
 
         std::vector<CrossSectionType> const weightedCrossSections =
             composition.getWeighted([=](Code const targetId) -> CrossSectionType {
-              return A_.getCrossSection(
-                  projectileId, targetId, sqrtSnn, projectileA,
-                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+              return A_.getCrossSection(projectileId, targetId, sqrtSnn);
             });
 
         cx_sum += std::accumulate(weightedCrossSections.cbegin(),
@@ -478,16 +464,13 @@ namespace corsika {
                                       void,            // return type
                                       TSecondaryView,  // template argument
                                       TSecondaryView&, // method parameters
-                                      COMBoost const&, Code, Code, HEPEnergyType,
-                                      unsigned int, unsigned int>,
+                                      COMBoost const&, Code, Code, HEPEnergyType>,
               "TProcess1 has no method with correct signature \"void "
               "doInteraction<TSecondaryView>(TSecondaryView&, COMBoost&, Code, "
-              "Code, HEPEnergyType, unsigned int, unsigned int)\" required for "
+              "Code, HEPEnergyType)\" required for "
               "InteractionProcess<TProcess1>. ");
 
-          A_.template doInteraction(view, boost, projectileId, targetId, sqrtSnn,
-                                    projectileA,
-                                    is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+          A_.template doInteraction(view, boost, projectileId, targetId, sqrtSnn);
 
           return ProcessReturn::Interacted;
         }
@@ -505,24 +488,19 @@ namespace corsika {
 
         auto const& projectile = view.parent();
         Code const projectileId = projectile.getPID();
-        unsigned int const projectileA =
-            is_nucleus(projectileId) ? projectile.getNuclearA() : 1;
 
         // get cross section vector for all material components
-        static_assert(
-            has_method_getCrossSection_v<TProcess2,        // process object
-                                         CrossSectionType, // return type
-                                         Code,             // parameters
-                                         Code, HEPEnergyType, unsigned int, unsigned int>,
-            "TProcess2 has no method with correct signature \"CrossSectionType "
-            "getCrossSection(Code, Code, HEPEnergyType, unsigned int, unsigned int"
-            ")\" required by InteractionProcess<TProcess1>. ");
+        static_assert(has_method_getCrossSection_v<TProcess2,        // process object
+                                                   CrossSectionType, // return type
+                                                   Code,             // parameters
+                                                   Code, HEPEnergyType>,
+                      "TProcess2 has no method with correct signature \"CrossSectionType "
+                      "getCrossSection(Code, Code, HEPEnergyType)\" required by "
+                      "InteractionProcess<TProcess1>. ");
 
         std::vector<CrossSectionType> const weightedCrossSections =
             composition.getWeighted([=](Code const targetId) -> CrossSectionType {
-              return B_.getCrossSection(
-                  projectileId, targetId, sqrtSnn, projectileA,
-                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+              return B_.getCrossSection(projectileId, targetId, sqrtSnn);
             });
 
         cx_sum += std::accumulate(weightedCrossSections.begin(),
@@ -540,15 +518,13 @@ namespace corsika {
                                       void,            // return type
                                       TSecondaryView,  // template argument
                                       TSecondaryView&, // method parameters
-                                      COMBoost const&, Code, Code, HEPEnergyType,
-                                      unsigned int, unsigned int>,
+                                      COMBoost const&, Code, Code, HEPEnergyType>,
               "TProcess1 has no method with correct signature \"void "
               "doInteraction<TSecondaryView>(TSecondaryView&, COMBoost&, Code, "
-              "Code, HEPEnergyType, unsigned int, unsigned int)\" required for "
+              "Code, HEPEnergyType)\" required for "
               "InteractionProcess<TProcess2>. ");
 
-          B_.doInteraction(view, boost, projectileId, targetId, sqrtSnn, projectileA,
-                           is_nucleus(targetId) ? get_nucleus_A(targetId) : 1);
+          B_.doInteraction(view, boost, projectileId, targetId, sqrtSnn);
 
           return ProcessReturn::Interacted;
         }

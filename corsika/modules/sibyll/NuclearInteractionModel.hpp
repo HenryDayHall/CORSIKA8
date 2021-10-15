@@ -30,8 +30,7 @@ namespace corsika::sibyll {
     ~NuclearInteractionModel();
 
     void constexpr isValid(Code const projectileId, Code const targetId,
-                           HEPEnergyType const sqrtSnn, unsigned int const projectileA,
-                           unsigned int const targetA) const;
+                           HEPEnergyType const sqrtSnn) const;
 
     void initializeNuclearCrossSections();
     void printCrossSectionTable(Code) const;
@@ -45,14 +44,11 @@ namespace corsika::sibyll {
     unsigned int constexpr getMaxNFragments() const { return gMaxNFragments_; }
     unsigned int constexpr getNEnergyBins() const { return gNEnBins_; }
 
-    CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
-                                     unsigned int const projectileA = 1,
-                                     unsigned int const targetA = 1) const;
+    CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const;
 
     template <typename TSecondaryView>
     void doInteraction(TSecondaryView&, COMBoost const& boost, Code const, Code const,
-                       HEPEnergyType const, unsigned int const projectileA = 1,
-                       unsigned int const targetA = 1);
+                       HEPEnergyType const);
 
   private:
     int count_ = 0;

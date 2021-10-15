@@ -20,14 +20,14 @@ namespace corsika {
    * @ingroup Processes
    * @{
    *
-   * Process describing the interaction of particles
+   * Process describing the interaction of particles.
    *
-   * Create a new InteractionProcess, e.g. for XYModel, via
+   * Create a new InteractionProcess, e.g. for XYModel, via:
    * @code
    * class XYModel : public InteractionProcess<XYModel> {};
    * @endcode
    *
-   * and provide the two necessary interface methods
+   * and provide the two necessary interface methods:
    * @code
    * template <typename TSecondaryView>
    * void XYModel::doInteraction(TSecondaryView&);

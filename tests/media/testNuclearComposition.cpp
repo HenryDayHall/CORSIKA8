@@ -46,7 +46,8 @@ TEST_CASE("NuclearComposition") {
   CHECK(testComposition.getComponents() ==
         std::vector<Code>{Code::Oxygen, Code::Carbon, Code::Nitrogen});
 
-  CHECK(testComposition.getHash() == 18183071370253166150U);
+  CHECK(testComposition.getHash() ==
+        18183071370474897160U); // we need a stable hasing algorithm
   CHECK(testComposition.getAverageMassNumber() == 14.3);
 
   CHECK(testComposition.getWeighted([](Code) -> double { return 1; }) ==

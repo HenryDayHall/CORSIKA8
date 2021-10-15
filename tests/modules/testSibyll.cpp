@@ -28,6 +28,11 @@
  */
 #include <corsika/modules/sibyll/Random.hpp>
 
+// TODODODODODODODODOODOD THIS MUST BE REMOVED
+#include <corsika/modules/urqmd/Random.hpp>
+#include <corsika/modules/epos/Random.hpp>
+// TODODODODODODODODOODOD THIS MUST BE REMOVED
+
 using namespace corsika;
 using namespace corsika::sibyll;
 
@@ -56,23 +61,23 @@ TEST_CASE("Sibyll", "modules") {
     CHECK_FALSE(corsika::sibyll::canInteract(Code::Electron));
     CHECK_FALSE(corsika::sibyll::canInteract(Code::SigmaC0));
 
-    CHECK_FALSE(corsika::sibyll::canInteract(Code::Nucleus));
+    CHECK_FALSE(corsika::sibyll::canInteract(Code::Iron));
     CHECK_FALSE(corsika::sibyll::canInteract(Code::Helium));
   }
 
   SECTION("cross-section type") {
-    CHECK(corsika::sibyll::getSibyllXSCode(Code::Helium) == 0);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::Proton) == 1);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::Electron) == 0);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::K0Long) == 3);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::SigmaPlus) == 1);
     CHECK(corsika::sibyll::getSibyllXSCode(Code::PiMinus) == 2);
+    CHECK(corsika::sibyll::getSibyllXSCode(Code::Helium) == 0);
   }
 
   SECTION("sibyll mass") {
     CHECK_FALSE(corsika::sibyll::getSibyllMass(Code::Electron) == 0_GeV);
     // Nucleus not a particle
-    CHECK_THROWS(corsika::sibyll::getSibyllMass(Code::Nucleus));
+    CHECK_THROWS(corsika::sibyll::getSibyllMass(Code::Iron));
     // Higgs not a particle in Sibyll
     CHECK_THROWS(corsika::sibyll::getSibyllMass(Code::H0));
   }
@@ -129,7 +134,7 @@ TEST_CASE("SibyllInterface", "modules") {
   { [[maybe_unused]] auto const& env_dummy = env; }
 
   auto [stack, viewPtr] = setup::testing::setup_stack(
-      Code::Proton, 0, 0, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
+      Code::Proton, 10_GeV, (setup::Environment::BaseNodeType* const)nodePtr, cs);
   setup::StackView& view = *viewPtr;
 
   RNGManager<>::getInstance().registerRandomStream("sibyll");
@@ -138,22 +143,22 @@ TEST_CASE("SibyllInterface", "modules") {
 
     corsika::sibyll::InteractionModel model;
     // sibyll only accepts protons or nuclei with 4<=A<=18 as targets
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Electron, 100_GeV, 1, 1));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV, 1, 1));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Deuterium, 100_GeV, 1, 2));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Helium, 100_GeV, 1, 4));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Helium3, 100_GeV, 1, 3));
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Iron, 100_GeV, 1, 56));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Oxygen, 100_GeV, 1, 16));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Electron, 100_GeV));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Hydrogen, 100_GeV));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Deuterium, 100_GeV));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Helium, 100_GeV));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Helium3, 100_GeV));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Iron, 100_GeV));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Oxygen, 100_GeV));
     // beam particles
-    CHECK_THROWS(model.isValid(Code::Electron, Code::Oxygen, 100_GeV, 1, 1));
-    CHECK_THROWS(model.isValid(Code::Nucleus, Code::Oxygen, 100_GeV, 1, 20));
+    CHECK_THROWS(model.isValid(Code::Electron, Code::Oxygen, 100_GeV));
+    CHECK_THROWS(model.isValid(Code::Iron, Code::Oxygen, 100_GeV));
     // energy too low
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 9_GeV, 1, 1));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 11_GeV, 1, 1));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 9_GeV));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 11_GeV));
     // energy too high
-    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 1000001_GeV, 1, 1));
-    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 999999_GeV, 1, 1));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Proton, 1000001_GeV));
+    CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 999999_GeV));
 
     //  hydrogen target == proton target == neutron target
     auto const [xs_prod_pp, xs_ela_pp] =
@@ -182,8 +187,7 @@ TEST_CASE("SibyllInterface", "modules") {
     HEPEnergyType const sqrtSnn = sqrt(2 * Elab * constants::nucleonMass);
     view.clear();
     COMBoost boost = getCOMboost(Elab, plab, cs);
-    model.doInteraction(view, boost, Code::Proton, Code::Oxygen, sqrtSnn, 0,
-                        get_nucleus_A(Code::Oxygen));
+    model.doInteraction(view, boost, Code::Proton, Code::Oxygen, sqrtSnn);
     auto const pSum = sumMomentum(view, cs);
 
     /*
@@ -249,8 +253,8 @@ TEST_CASE("SibyllInterface", "modules") {
     CHECK((pSum - plab).getNorm() / 1_GeV ==
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
-    [[maybe_unused]] CrossSectionType const cx = model.getCrossSection(
-        Code::Proton, Code::Oxygen, sqrtSnn, 0, get_nucleus_A(Code::Oxygen));
+    [[maybe_unused]] CrossSectionType const cx =
+        model.getCrossSection(Code::Proton, Code::Oxygen, sqrtSnn);
     CHECK(cx / 1_mb == Approx(300).margin(1));
     // CHECK(view.getEntries() == 9); //! \todo: this was 20 before refactory-2020: check
     //                                           "also sibyll not stable wrt. to compiler
@@ -267,16 +271,15 @@ TEST_CASE("SibyllInterface", "modules") {
         sqrt(static_pow<2>(P0 * 8) + static_pow<2>(get_nucleus_mass(8, 4))) / 8;
     HEPEnergyType const sqrtSnn = sqrt((ElabNuc + constants::nucleonMass + P0) *
                                        (ElabNuc + constants::nucleonMass - P0));
-    model.doInteraction(view, getCOMboost(ElabNuc, plab, cs), Code::Nucleus, Code::Oxygen,
-                        sqrtSnn, 8, get_nucleus_A(Code::Oxygen));
-    CrossSectionType const cx = model.getCrossSection(
-        Code::Nucleus, Code::Oxygen, sqrtSnn, 8, get_nucleus_A(Code::Oxygen));
+    model.doInteraction(view, getCOMboost(ElabNuc, plab, cs), Code::Iron, Code::Oxygen,
+                        sqrtSnn);
+    CrossSectionType const cx = model.getCrossSection(Code::Iron, Code::Oxygen, sqrtSnn);
     // Felix, are those changes OK? Below are the checks before refactory-2020
     // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
     // CHECK(view.getSize() == 11);
-    CHECK(cx / 1_mb == Approx(870).margin(60)); // this is not physics validation
+    CHECK(cx / 1_mb == Approx(1900).margin(100)); // this is not physics validation
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
-    CHECK(view.getSize() == Approx(90).margin(90)); // this is not physics validation
+    CHECK(view.getSize() == Approx(300).margin(90)); // this is not physics validation
   }
 }
 

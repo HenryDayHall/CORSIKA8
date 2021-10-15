@@ -81,7 +81,7 @@ namespace corsika {
     // determine sqrtS per nucleon pair, sqrtS_NN
     Code const projectileId = particle.getPID();
     unsigned int const projectileA =
-        (is_nucleus(projectileId) ? particle.getNuclearA() : 1);
+        (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1);
     HEPEnergyType const ElabNN = particle.getEnergy() / projectileA;
     HEPEnergyType const sqrtSnn = sqrt(2 * ElabNN * constants::nucleonMass);
 
@@ -89,7 +89,7 @@ namespace corsika {
                          constants::nucleonMass};
     CrossSectionType const sigma =
         composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          return sequence_.getCrossSection(particle, targetId, sqrtSnn);
+          return sequence_.getCrossSection(projectileId, targetId, sqrtSnn);
         });
     interaction(secondaries, boost, sqrtSnn, composition, sigma);
     sequence_.doSecondaries(secondaries);
@@ -115,7 +115,7 @@ namespace corsika {
     // determine sqrtS per nucleon pair, sqrtS_NN
     Code const projectileId = particle.getPID();
     unsigned int const projectileA =
-        (is_nucleus(projectileId) ? particle.getNuclearA() : 1);
+        (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1);
     HEPEnergyType const ElabNN = particle.getEnergy() / projectileA;
     HEPEnergyType const sqrtSnn = sqrt(2 * ElabNN * constants::nucleonMass);
 
@@ -123,7 +123,7 @@ namespace corsika {
 
     CrossSectionType const total_cx =
         composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          return sequence_.getCrossSection(particle, targetId, sqrtSnn);
+          return sequence_.getCrossSection(projectileId, targetId, sqrtSnn);
         });
 
     // calculate interaction length in medium

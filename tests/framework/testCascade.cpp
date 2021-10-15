@@ -89,14 +89,12 @@ public:
 class ProcessSplit : public InteractionProcess<ProcessSplit> {
 
 public:
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const,
-                                   unsigned int const, unsigned int const) const {
+  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
     return 1_mb;
   }
 
   template <typename TView>
-  void doInteraction(TView& view, COMBoost const&, Code, Code, HEPEnergyType,
-                     unsigned int, unsigned int) {
+  void doInteraction(TView& view, COMBoost const&, Code, Code, HEPEnergyType) {
     ++calls_;
     auto vP = view.getProjectile();
     const HEPEnergyType Ekin = vP.getKineticEnergy();

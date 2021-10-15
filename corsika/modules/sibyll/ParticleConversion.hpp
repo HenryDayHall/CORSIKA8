@@ -33,14 +33,14 @@ namespace corsika::sibyll {
 
 #include <corsika/modules/sibyll/Generated.inc>
 
-  SibyllCode constexpr convertToSibyll(corsika::Code pCode) {
-    return corsika2sibyll[static_cast<corsika::CodeIntType>(pCode)];
+  SibyllCode constexpr convertToSibyll(Code const pCode) {
+    return corsika2sibyll[static_cast<CodeIntType>(pCode)];
   }
 
-  corsika::Code constexpr convertFromSibyll(SibyllCode pCode) {
+  Code constexpr convertFromSibyll(SibyllCode const pCode) {
     auto const s = static_cast<SibyllCodeIntType>(pCode);
     auto const corsikaCode = sibyll2corsika[s - minSibyll];
-    if (corsikaCode == corsika::Code::Unknown) {
+    if (corsikaCode == Code::Unknown) {
       throw std::runtime_error(std::string("SIBYLL/CORSIKA conversion of ")
                                    .append(std::to_string(s))
                                    .append(" impossible"));
@@ -53,13 +53,15 @@ namespace corsika::sibyll {
   }
 
   int constexpr getSibyllXSCode(Code const code) {
+    if (is_nucleus(code))
+      return static_cast<SibyllXSClassIntType>(SibyllXSClass::CannotInteract);
     return static_cast<SibyllXSClassIntType>(
-        corsika2sibyllXStype[static_cast<corsika::CodeIntType>(code)]);
+        corsika2sibyllXStype[static_cast<CodeIntType>(code)]);
   }
 
-  bool constexpr canInteract(corsika::Code pCode) { return getSibyllXSCode(pCode) > 0; }
+  bool constexpr canInteract(Code const pCode) { return getSibyllXSCode(pCode) > 0; }
 
-  HEPMassType getSibyllMass(corsika::Code const);
+  HEPMassType getSibyllMass(Code const);
 
 } // namespace corsika::sibyll
 

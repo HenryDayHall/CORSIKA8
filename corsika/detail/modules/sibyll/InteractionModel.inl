@@ -38,24 +38,19 @@ namespace corsika::sibyll {
 
   inline void constexpr InteractionModel::isValid(Code const projectileId,
                                                   Code const targetId,
-                                                  HEPEnergyType const sqrtSnn,
-                                                  unsigned int const,
-                                                  unsigned int const targetA) const {
+                                                  HEPEnergyType const sqrtSnn) const {
     if ((minEnergyCoM_ > sqrtSnn) || (sqrtSnn > maxEnergyCoM_)) {
       // i.e. nuclei handled by different process, this should not happen
       throw std::runtime_error("CoM energy out of bounds for SIBYLL");
     }
 
-    unsigned int targA = targetA;
-    if (is_nucleus(targetId) && targetId != Code::Nucleus) {
-      targA = get_nucleus_A(targetId);
-    }
-
     if (is_nucleus(targetId)) {
+      unsigned int const targA = get_nucleus_A(targetId);
       if (targA != 1 && (targA < minNuclearTargetA_ || targA >= maxTargetMassNumber_)) {
         throw std::runtime_error("Target outside of allowed range for SIBYLL");
       }
-    } else if (targetId != Code::Proton && targetId != Code::Neutron) {
+    } else if (targetId != Code::Proton && targetId != Code::Neutron &&
+               targetId != Code::Hydrogen) {
       throw std::runtime_error("Target cannot be handled by SIBYLL");
     }
     if (is_nucleus(projectileId) || !corsika::sibyll::canInteract(projectileId)) {
@@ -65,11 +60,9 @@ namespace corsika::sibyll {
 
   inline std::tuple<CrossSectionType, CrossSectionType>
   InteractionModel::getCrossSectionInelEla(Code const projectileId, Code const targetId,
-                                           HEPEnergyType const sqrtSnn,
-                                           unsigned int const projectileA,
-                                           unsigned int const targetA) const {
+                                           HEPEnergyType const sqrtSnn) const {
 
-    isValid(projectileId, targetId, sqrtSnn, projectileA, targetA); // throws
+    isValid(projectileId, targetId, sqrtSnn); // throws
 
     double dummy, dum1, dum3, dum4, dumdif[3]; // dummies needed for fortran call
     int const iBeam = corsika::sibyll::getSibyllXSCode(
@@ -80,13 +73,13 @@ namespace corsika::sibyll {
     // single nucleon target (p,n, hydrogen) or 4<=A<=18
     double sigProd = 0;
     double sigEla = 0;
-    // single nucleon target
     if (targetId == Code::Proton || targetId == Code::Hydrogen ||
         targetId == Code::Neutron) {
+      // single nucleon target
       sib_sigma_hp_(iBeam, dEcm, dum1, sigEla, sigProd, dumdif, dum3, dum4);
     } else {
       // nuclear target
-      int const iTarget = targetA;
+      int const iTarget = get_nucleus_A(targetId);
       sib_sigma_hnuc_(iBeam, iTarget, dEcm, sigProd, dummy, sigEla);
     }
     return {sigProd * 1_mb, sigEla * 1_mb};
@@ -98,18 +91,23 @@ namespace corsika::sibyll {
    */
 
   template <typename TSecondaryView>
-  inline void InteractionModel::doInteraction(
-      TSecondaryView& secondaries, COMBoost const& boost, Code const projectileId,
-      Code const targetId, HEPEnergyType const sqrtSnn, unsigned int const projectileA,
-      unsigned int const targetA) {
+  inline void InteractionModel::doInteraction(TSecondaryView& secondaries,
+                                              COMBoost const& boost,
+                                              Code const projectileId,
+                                              Code const targetId,
+                                              HEPEnergyType const sqrtSnn) {
 
-    isValid(projectileId, targetId, sqrtSnn, projectileA, targetA); // throws
+    isValid(projectileId, targetId, sqrtSnn); // throws
 
     CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnn={}GeV", projectileId, targetId, sqrtSnn);
 
     int targetSibCode = -1;
-    if (is_nucleus(targetId)) { targetSibCode = targetA; }
-    if (targetId == Proton::code) targetSibCode = 1;
+    if (is_nucleus(targetId)) {
+      targetSibCode = get_nucleus_A(targetId);
+    } else {
+      // nucleon target: p or n
+      targetSibCode = 1;
+    }
     CORSIKA_LOG_DEBUG("sibyll code: {}", targetSibCode);
 
     // beam id for sibyll
