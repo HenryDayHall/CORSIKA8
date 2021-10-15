@@ -187,16 +187,18 @@ namespace corsika::sibyll {
     int inputSibPID = sibyll::convertToSibyllRaw(pCode);
     // particle momentum format: px, py, pz, e, mass. units: GeV
     double inputMomentum[5];
-    QuantityVector<hepmomentum_d> input_components = projectile.getMomentum().getComponents();
+    QuantityVector<hepmomentum_d> input_components =
+        projectile.getMomentum().getComponents();
     for (int idx = 0; idx < 3; ++idx) inputMomentum[idx] = input_components[idx] / 1_GeV;
     inputMomentum[3] = projectile.getEnergy() / 1_GeV;
     inputMomentum[4] = get_mass(pCode) / 1_GeV;
     int nFinalParticles;
-    //double* outputMomentum = new double [10*5];
-    double outputMomentum[5*10];
+    // double* outputMomentum = new double [10*5];
+    double outputMomentum[5 * 10];
     int outputSibPID[10];
     // run decay routine
-    decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID, &outputMomentum[0]);
+    decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID,
+            &outputMomentum[0]);
 
     CORSIKA_LOG_TRACE("Sibyll::Decay: number of final state particles: {}",
                       nFinalParticles);
