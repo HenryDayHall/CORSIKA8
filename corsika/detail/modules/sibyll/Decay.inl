@@ -221,7 +221,7 @@ namespace corsika::sibyll {
           static_cast<corsika::sibyll::SibyllCode>(outputSibPID[i]));
 
       CORSIKA_LOG_TRACE("Sibyll::Decay: i={} id={} p={} GeV", i, pid, components / 1_GeV);
-      
+
       projectile.addSecondary(
           std::make_tuple(pid, MomentumVector(rootCS, components), decayPoint, t0));
     }
