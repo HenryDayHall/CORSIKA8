@@ -185,17 +185,20 @@ namespace corsika::sibyll {
 
     // particle to pass to sibyll decay
     int inputSibPID = sibyll::convertToSibyllRaw(pCode);
+
     // particle momentum format: px, py, pz, e, mass. units: GeV
     double inputMomentum[5];
     QuantityVector<hepmomentum_d> input_components =
         projectile.getMomentum().getComponents();
     for (int idx = 0; idx < 3; ++idx) inputMomentum[idx] = input_components[idx] / 1_GeV;
+
     inputMomentum[3] = projectile.getEnergy() / 1_GeV;
     inputMomentum[4] = get_mass(pCode) / 1_GeV;
     int nFinalParticles;
-    // double* outputMomentum = new double [10*5];
+
     double outputMomentum[5 * 10];
     int outputSibPID[10];
+
     // run decay routine
     decpar_(inputSibPID, inputMomentum, nFinalParticles, outputSibPID,
             &outputMomentum[0]);
@@ -213,9 +216,12 @@ namespace corsika::sibyll {
       QuantityVector<hepmomentum_d> components = {outputMomentum[10 * 0 + i] * 1_GeV,
                                                   outputMomentum[10 * 1 + i] * 1_GeV,
                                                   outputMomentum[10 * 2 + i] * 1_GeV};
+
       auto const pid = sibyll::convertFromSibyll(
           static_cast<corsika::sibyll::SibyllCode>(outputSibPID[i]));
+
       CORSIKA_LOG_TRACE("Sibyll::Decay: i={} id={} p={} GeV", i, pid, components / 1_GeV);
+      
       projectile.addSecondary(
           std::make_tuple(pid, MomentumVector(rootCS, components), decayPoint, t0));
     }
