@@ -60,9 +60,13 @@ namespace corsika::sibyll {
 
   inline std::tuple<CrossSectionType, CrossSectionType>
   InteractionModel::getCrossSectionInelEla(Code const projectileId, Code const targetId,
-                                           HEPEnergyType const sqrtSnn) const {
+                                           FourMomentum const& projectileP4,
+                                           FourMomentum const& targetP4) const {
 
-    isValid(projectileId, targetId, sqrtSnn); // throws
+    int targetSibCode = 1; // nucleon or particle count
+    if (is_nucleus(targetId)) { targetSibCode = get_nucleus_A(targetId); }
+    // sqrtS per target nucleon
+    HEPEnergyType const sqrtSnn = (projectileP4 + targetP4 / targetSibCode).getNorm();
 
     double dummy, dum1, dum3, dum4, dumdif[3]; // dummies needed for fortran call
     int const iBeam = corsika::sibyll::getSibyllXSCode(
@@ -92,23 +96,22 @@ namespace corsika::sibyll {
 
   template <typename TSecondaryView>
   inline void InteractionModel::doInteraction(TSecondaryView& secondaries,
-                                              COMBoost const& boost,
                                               Code const projectileId,
                                               Code const targetId,
-                                              HEPEnergyType const sqrtSnn) {
+                                              FourMomentum const& projectileP4,
+                                              FourMomentum const& targetP4) {
+
+    int targetSibCode = 1; // nucleon or particle count
+    if (is_nucleus(targetId)) { targetSibCode = get_nucleus_A(targetId); }
+    CORSIKA_LOG_DEBUG("sibyll code: {} (nucleon/particle count)", targetSibCode);
+
+    // sqrtS per target nucleon
+    HEPEnergyType const sqrtSnn = (projectileP4 + targetP4 / targetSibCode).getNorm();
+    COMBoost const boost(projectileP4, targetP4 / targetSibCode);
 
     isValid(projectileId, targetId, sqrtSnn); // throws
 
     CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnn={}GeV", projectileId, targetId, sqrtSnn);
-
-    int targetSibCode = -1;
-    if (is_nucleus(targetId)) {
-      targetSibCode = get_nucleus_A(targetId);
-    } else {
-      // nucleon target: p or n
-      targetSibCode = 1;
-    }
-    CORSIKA_LOG_DEBUG("sibyll code: {}", targetSibCode);
 
     // beam id for sibyll
     int const projectileSibyllCode = corsika::sibyll::convertToSibyllRaw(projectileId);
@@ -177,6 +180,6 @@ namespace corsika::sibyll {
         Elab_final / 1_GeV, (Elab_final - Elab_initial) / Elab_initial * 100,
         constants::nucleonMass * get_nwounded() / 1_GeV,
         (Plab_final / 1_GeV).getComponents());
-  }
+  } // namespace corsika::sibyll
 
 } // namespace corsika::sibyll

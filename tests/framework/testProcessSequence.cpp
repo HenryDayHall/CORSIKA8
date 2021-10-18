@@ -58,7 +58,10 @@ struct DummyData {
   double data_[nData] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   typedef DummyNode node_type; // for BoundaryCrossingProcess
   Code getPID() const { return Code::Proton; }
-  // MomentumVector getMomentum() const {}
+  MomentumVector getMomentum() const {
+    // only need the coordinate system
+    return MomentumVector{get_root_CoordinateSystem(), 0_eV, 0_eV, 0_eV};
+  }
   HEPEnergyType getEnergy() const { return 10_GeV; }
   unsigned int getNuclearA() const { return 1; }
 };
@@ -208,13 +211,14 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& v, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const) const {
+  void doInteraction(TView& v, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) const {
     checkInteract |= 1;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] += 1 + i;
   }
 
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
     return 10_mb;
   }
 
@@ -234,14 +238,15 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& v, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const) const {
+  void doInteraction(TView& v, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) const {
     checkInteract |= 2;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] /= 1.1;
     CORSIKA_LOG_DEBUG("Process2::doInteraction");
   }
 
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
     CORSIKA_LOG_DEBUG("Process2::getCrossSection");
     return 20_mb;
   }
@@ -262,14 +267,15 @@ public:
   }
 
   template <typename TView>
-  void doInteraction(TView& v, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const) const {
+  void doInteraction(TView& v, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) const {
     checkInteract |= 4;
     for (int i = 0; i < nData; ++i) v.parent().data_[i] *= 1.01;
     CORSIKA_LOG_DEBUG("Process3::doInteraction");
   }
 
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
     CORSIKA_LOG_DEBUG("Process3::getCrossSection");
     return 30_mb;
   }
@@ -297,8 +303,8 @@ public:
     return ProcessReturn::Ok;
   }
   template <typename TView>
-  void doInteraction(TView&, COMBoost const&, Code const, Code const,
-                     HEPEnergyType const) const {
+  void doInteraction(TView&, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) const {
     checkInteract |= 8;
   }
 
@@ -613,7 +619,7 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
 
 TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
 
-  logging::set_level(logging::level::trace);
+  logging::set_level(logging::level::info);
 
   CoordinateSystemPtr rootCS = get_root_CoordinateSystem();
 
@@ -717,9 +723,9 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     particle.data_[0] = 100; // data positive   --> sequence1
 
     DummyRNG rng;
-    COMBoost const noBoost({10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}}, 0_GeV);
+    FourMomentum const projectileP4{10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}};
     NuclearComposition const noComposition({Code::Nitrogen}, {1});
-    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
+    sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b100); // this is Process3
     CHECK(checkDecay == 0b001);    // this is Decay1
@@ -727,7 +733,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CHECK(checkSec == 0);
     cx_select = 1.01 * 30_mb;
     checkInteract = 0;
-    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
+    sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
     CHECK(checkInteract == 0b001); // this is Process1
 
     checkDecay = 0;
@@ -735,7 +741,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative   --> sequence2
-    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
+    sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0b010); // this is Process2
     CHECK(checkDecay == 0b010);    // this is Decay2
@@ -763,7 +769,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     checkSec = 0;
     checkCont = 0;
     particle.data_[0] = -100; // data negative --> sequence1
-    sequence4.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
+    sequence4.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
     sequence4.doSecondaries(view);
     sequence4.selectDecay(view, time_select);
     sequence4.doSecondaries(view);
@@ -777,7 +783,7 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     time_select = 1e5 / second;
     checkDecay = 0;
     checkInteract = 0;
-    sequence3.selectInteraction(view, noBoost, 10_GeV, noComposition, rng, cx_select);
+    sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
     sequence3.selectDecay(view, time_select);
     CHECK(checkInteract == 0);
     CHECK(checkDecay == 0);

@@ -161,12 +161,14 @@ TEST_CASE("SibyllInterface", "modules") {
     CHECK_NOTHROW(model.isValid(Code::Proton, Code::Proton, 999999_GeV));
 
     //  hydrogen target == proton target == neutron target
+    FourMomentum const aP4(100_GeV, {cs, 99_GeV, 0_GeV, 0_GeV});
+    FourMomentum const bP4(1_GeV, {cs, 0_GeV, 0_GeV, 0_GeV});
     auto const [xs_prod_pp, xs_ela_pp] =
-        model.getCrossSectionInelEla(Code::Proton, Code::Proton, 100_GeV);
+        model.getCrossSectionInelEla(Code::Proton, Code::Proton, aP4, bP4);
     auto const [xs_prod_pn, xs_ela_pn] =
-        model.getCrossSectionInelEla(Code::Proton, Code::Neutron, 100_GeV);
+        model.getCrossSectionInelEla(Code::Proton, Code::Neutron, aP4, bP4);
     auto const [xs_prod_pHydrogen, xs_ela_pHydrogen] =
-        model.getCrossSectionInelEla(Code::Proton, Code::Hydrogen, 100_GeV);
+        model.getCrossSectionInelEla(Code::Proton, Code::Hydrogen, aP4, bP4);
     CHECK(xs_prod_pp == xs_prod_pHydrogen);
     CHECK(xs_prod_pp == xs_prod_pn);
     CHECK(xs_ela_pp == xs_ela_pHydrogen);
@@ -178,16 +180,15 @@ TEST_CASE("SibyllInterface", "modules") {
   SECTION("InteractionInterface - low energy") {
 
     const HEPEnergyType P0 = 60_GeV;
-    MomentumVector plab =
-        MomentumVector(cs, {P0, 0_eV, 0_eV}); // this is secret knowledge about setupStack
+    MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     // also print particles after sibyll was called
     corsika::sibyll::InteractionModel model;
     model.setVerbose(true);
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass));
-    HEPEnergyType const sqrtSnn = sqrt(2 * Elab * constants::nucleonMass);
+    FourMomentum const projectileP4(Elab, plab);
+    FourMomentum const nucleonP4(Oxygen::mass, MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
     view.clear();
-    COMBoost boost = getCOMboost(Elab, plab, cs);
-    model.doInteraction(view, boost, Code::Proton, Code::Oxygen, sqrtSnn);
+    model.doInteraction(view, Code::Proton, Code::Oxygen, projectileP4, nucleonP4);
     auto const pSum = sumMomentum(view, cs);
 
     /*
@@ -254,7 +255,7 @@ TEST_CASE("SibyllInterface", "modules") {
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] CrossSectionType const cx =
-        model.getCrossSection(Code::Proton, Code::Oxygen, sqrtSnn);
+        model.getCrossSection(Code::Proton, Code::Oxygen, projectileP4, nucleonP4);
     CHECK(cx / 1_mb == Approx(300).margin(1));
     // CHECK(view.getEntries() == 9); //! \todo: this was 20 before refactory-2020: check
     //                                           "also sibyll not stable wrt. to compiler
@@ -264,24 +265,22 @@ TEST_CASE("SibyllInterface", "modules") {
   SECTION("NuclearInteractionInterface") {
 
     HEPMomentumType const P0 = 50_TeV;
-    MomentumVector plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
+    MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
     corsika::sibyll::InteractionModel hmodel;
     NuclearInteractionModel model(hmodel, *env);
     Code const pid = Code::Oxygen;
-    size_t const A = get_nucleus_A(pid);
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
-    HEPEnergyType const sqrtSnn = sqrt((Elab / A + constants::nucleonMass + P0 / A) *
-                                       (Elab / A + constants::nucleonMass - P0 / A));
-    model.doInteraction(view, getCOMboost(Elab, plab, cs), Code::Oxygen, Code::Oxygen,
-                        sqrtSnn);
-    CrossSectionType const cx =
-        model.getCrossSection(Code::Oxygen, Code::Oxygen, sqrtSnn);
+    FourMomentum const P4(Elab, plab);
+    FourMomentum const targetP4(get_mass(Code::Oxygen),
+                                MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
+    model.doInteraction(view, pid, Code::Oxygen, P4, targetP4);
+    CrossSectionType const cx = model.getCrossSection(pid, Code::Oxygen, P4, targetP4);
     // Felix, are those changes OK? Below are the checks before refactory-2020
     // CHECK(length / 1_g * 1_cm * 1_cm == Approx(44.2).margin(.1));
     // CHECK(view.getSize() == 11);
-    CHECK(cx / 1_mb == Approx(1300).margin(300)); // this is not physics validation
+    CHECK(cx / 1_mb == Approx(1100).margin(100)); // this is not physics validation
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
-    CHECK(view.getSize() == Approx(100).margin(90)); // this is not physics validation
+    CHECK(view.getSize() == Approx(200).margin(90)); // this is not physics validation
   }
 }
 

@@ -80,18 +80,18 @@ namespace corsika {
 
     // determine sqrtS per nucleon pair, sqrtS_NN
     Code const projectileId = particle.getPID();
-    unsigned int const projectileA =
-        (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1);
-    HEPEnergyType const ElabNN = particle.getEnergy() / projectileA;
-    HEPEnergyType const sqrtSnn = sqrt(2 * ElabNN * constants::nucleonMass);
-
-    COMBoost const boost{{ElabNN, particle.getMomentum() / projectileA},
-                         constants::nucleonMass};
+    HEPEnergyType const Elab = particle.getEnergy();
+    FourMomentum const projectileP4{Elab, particle.getMomentum()};
     CrossSectionType const sigma =
         composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          return sequence_.getCrossSection(projectileId, targetId, sqrtSnn);
+          FourMomentum const targetP4(
+              get_mass(targetId),
+              MomentumVector(particle.getMomentum().getCoordinateSystem(),
+                             {0_GeV, 0_GeV, 0_GeV}));
+          return sequence_.getCrossSection(projectileId, targetId, projectileP4,
+                                           targetP4);
         });
-    interaction(secondaries, boost, sqrtSnn, composition, sigma);
+    interaction(secondaries, projectileP4, composition, sigma);
     sequence_.doSecondaries(secondaries);
     particle.erase(); // primary particle is done
   }
@@ -114,16 +114,19 @@ namespace corsika {
 
     // determine sqrtS per nucleon pair, sqrtS_NN
     Code const projectileId = particle.getPID();
-    unsigned int const projectileA =
-        (is_nucleus(projectileId) ? get_nucleus_A(projectileId) : 1);
-    HEPEnergyType const ElabNN = particle.getEnergy() / projectileA;
-    HEPEnergyType const sqrtSnn = sqrt(2 * ElabNN * constants::nucleonMass);
+    HEPEnergyType const Elab = particle.getEnergy();
+    FourMomentum const projectileP4{Elab, particle.getMomentum()};
 
     // determine combined full inelastic cross section of the particles in the material
 
     CrossSectionType const total_cx =
         composition.getWeightedSum([=](Code const targetId) -> CrossSectionType {
-          return sequence_.getCrossSection(projectileId, targetId, sqrtSnn);
+          FourMomentum const targetP4(
+              get_mass(targetId),
+              MomentumVector(particle.getMomentum().getCoordinateSystem(),
+                             {0_GeV, 0_GeV, 0_GeV}));
+          return sequence_.getCrossSection(projectileId, targetId, projectileP4,
+                                           targetP4);
         });
 
     // calculate interaction length in medium
@@ -293,9 +296,7 @@ namespace corsika {
     */
     if (distance_interact < distance_decay) {
       // define boost of NUCLEON-NUCLEON frame
-      COMBoost const boost({ElabNN, particle.getMomentum() / projectileA},
-                           constants::nucleonMass);
-      interaction(secondaries, boost, sqrtSnn, composition, total_cx);
+      interaction(secondaries, projectileP4, composition, total_cx);
     } else {
       [[maybe_unused]] auto projectile = secondaries.getProjectile();
 
@@ -334,7 +335,7 @@ namespace corsika {
 
   template <typename TTracking, typename TProcessList, typename TOutput, typename TStack>
   inline ProcessReturn Cascade<TTracking, TProcessList, TOutput, TStack>::interaction(
-      stack_view_type& view, COMBoost const& boost, HEPEnergyType const sqrtSnn,
+      stack_view_type& view, FourMomentum const& projectileP4,
       NuclearComposition const& composition,
       CrossSectionType const initial_cross_section) {
 
@@ -346,7 +347,7 @@ namespace corsika {
 
     UniformRealDistribution<CrossSectionType> uniDist(initial_cross_section);
     CrossSectionType const sample_process_by_cx = uniDist(rng_);
-    auto const returnCode = sequence_.selectInteraction(view, boost, sqrtSnn, composition,
+    auto const returnCode = sequence_.selectInteraction(view, projectileP4, composition,
                                                         rng_, sample_process_by_cx);
     if (returnCode != ProcessReturn::Interacted) {
       CORSIKA_LOG_DEBUG("Particle did not interact!");

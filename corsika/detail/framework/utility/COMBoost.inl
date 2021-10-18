@@ -19,17 +19,17 @@
 
 namespace corsika {
 
-  inline COMBoost::COMBoost(FourVector<HEPEnergyType, MomentumVector> const& Pprojectile,
+  inline COMBoost::COMBoost(FourMomentum const& P4projectile,
                             HEPMassType const massTarget)
-      : originalCS_{Pprojectile.getSpaceLikeComponents().getCoordinateSystem()}
+      : originalCS_{P4projectile.getSpaceLikeComponents().getCoordinateSystem()}
       , rotatedCS_{
-            make_rotationToZ(Pprojectile.getSpaceLikeComponents().getCoordinateSystem(),
-                             Pprojectile.getSpaceLikeComponents())} {
-    auto const pProjectile = Pprojectile.getSpaceLikeComponents();
+            make_rotationToZ(P4projectile.getSpaceLikeComponents().getCoordinateSystem(),
+                             P4projectile.getSpaceLikeComponents())} {
+    auto const pProjectile = P4projectile.getSpaceLikeComponents();
     auto const pProjNormSquared = pProjectile.getSquaredNorm();
     auto const pProjNorm = sqrt(pProjNormSquared);
 
-    auto const eProjectile = Pprojectile.getTimeLikeComponent();
+    auto const eProjectile = P4projectile.getTimeLikeComponent();
     auto const massProjectileSquared = eProjectile * eProjectile - pProjNormSquared;
     auto const s =
         massTarget * massTarget + massProjectileSquared + 2 * eProjectile * massTarget;
@@ -43,7 +43,29 @@ namespace corsika {
                       coshEta, boost_.determinant() - 1);
   }
 
-  inline COMBoost::COMBoost(MomentumVector const& momentum, HEPEnergyType mass)
+  inline COMBoost::COMBoost(FourMomentum const& P4projectile,
+                            FourMomentum const& P4target)
+      : originalCS_{P4projectile.getSpaceLikeComponents().getCoordinateSystem()}
+      , rotatedCS_{make_rotationToZ(
+            P4projectile.getSpaceLikeComponents().getCoordinateSystem(),
+            P4projectile.getSpaceLikeComponents() + P4target.getSpaceLikeComponents())} {
+    // this is the center-of-momentum CM frame
+    auto const pCM =
+        P4projectile.getSpaceLikeComponents() + P4target.getSpaceLikeComponents();
+    auto const pCM2 = pCM.getSquaredNorm();
+    auto const pCMnorm = sqrt(pCM2);
+
+    auto const s = (P4projectile + P4target).getNormSqr();
+    auto const sqrtS = sqrt(s);
+    auto const sinhEta = -pCMnorm / sqrtS;
+    auto const coshEta = sqrt(1 + pCM2 / s);
+
+    setBoost(coshEta, sinhEta);
+    CORSIKA_LOG_TRACE("COMBoost (1-beta)={}, gamma={}, det={}", 1 - sinhEta / coshEta,
+                      coshEta, boost_.determinant() - 1);
+  }
+
+  inline COMBoost::COMBoost(MomentumVector const& momentum, HEPEnergyType const mass)
       : originalCS_{momentum.getCoordinateSystem()}
       , rotatedCS_{make_rotationToZ(momentum.getCoordinateSystem(), momentum)} {
     auto const squaredNorm = momentum.getSquaredNorm();
@@ -56,12 +78,12 @@ namespace corsika {
   }
 
   template <typename FourVector>
-  inline FourVector COMBoost::toCoM(FourVector const& p) const {
-    auto pComponents = p.getSpaceLikeComponents().getComponents(rotatedCS_);
+  inline FourVector COMBoost::toCoM(FourVector const& p4) const {
+    auto pComponents = p4.getSpaceLikeComponents().getComponents(rotatedCS_);
     Eigen::Vector3d eVecRotated = pComponents.getEigenVector();
     Eigen::Vector2d lab;
 
-    lab << (p.getTimeLikeComponent() * (1 / 1_GeV)),
+    lab << (p4.getTimeLikeComponent() * (1 / 1_GeV)),
         (eVecRotated(2) * (1 / 1_GeV).magnitude());
 
     auto const boostedZ = boost_ * lab;
@@ -73,9 +95,9 @@ namespace corsika {
   }
 
   template <typename FourVector>
-  inline FourVector COMBoost::fromCoM(FourVector const& p) const {
-    auto pCM = p.getSpaceLikeComponents().getComponents(rotatedCS_);
-    auto const Ecm = p.getTimeLikeComponent();
+  inline FourVector COMBoost::fromCoM(FourVector const& p4) const {
+    auto pCM = p4.getSpaceLikeComponents().getComponents(rotatedCS_);
+    auto const Ecm = p4.getTimeLikeComponent();
 
     Eigen::Vector2d com;
     com << (Ecm * (1 / 1_GeV)), (pCM.getEigenVector()(2) * (1 / 1_GeV).magnitude());
@@ -83,7 +105,7 @@ namespace corsika {
     CORSIKA_LOG_TRACE(
         "COMBoost::fromCoM Ecm={} GeV"
         " pcm={} GeV (norm = {} GeV), invariant mass={} GeV",
-        Ecm / 1_GeV, pCM / 1_GeV, pCM.getNorm() / 1_GeV, p.getNorm() / 1_GeV);
+        Ecm / 1_GeV, pCM / 1_GeV, pCM.getNorm() / 1_GeV, p4.getNorm() / 1_GeV);
 
     auto const boostedZ = inverseBoost_ * com;
     auto const E_lab = boostedZ(0) * 1_GeV;
@@ -102,7 +124,7 @@ namespace corsika {
     return FourVector{E_lab, pLab};
   }
 
-  inline void COMBoost::setBoost(double coshEta, double sinhEta) {
+  inline void COMBoost::setBoost(double const coshEta, double const sinhEta) {
     boost_ << coshEta, sinhEta, sinhEta, coshEta;
     inverseBoost_ << coshEta, -sinhEta, -sinhEta, coshEta;
   }

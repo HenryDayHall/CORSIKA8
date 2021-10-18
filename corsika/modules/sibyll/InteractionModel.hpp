@@ -64,7 +64,8 @@ namespace corsika::sibyll {
      * @return a tuple of: inelastic cross section, elastic cross section
      */
     std::tuple<CrossSectionType, CrossSectionType> getCrossSectionInelEla(
-        Code const projectile, Code const target, HEPEnergyType const sqrtSnn) const;
+        Code const projectile, Code const target, FourMomentum const& projectileP4,
+        FourMomentum const& targetP4) const;
 
     /**
      * @brief returns inelastic (production) cross section.
@@ -82,8 +83,10 @@ namespace corsika::sibyll {
      * elastic cross section
      */
     CrossSectionType getCrossSection(Code const projectile, Code const target,
-                                     HEPEnergyType const sqrtSnn) const {
-      return std::get<0>(getCrossSectionInelEla(projectile, target, sqrtSnn));
+                                     FourMomentum const& projectileP4,
+                                     FourMomentum const& targetP4) const {
+      return std::get<0>(
+          getCrossSectionInelEla(projectile, target, projectileP4, targetP4));
     }
 
     /**
@@ -92,8 +95,8 @@ namespace corsika::sibyll {
      */
 
     template <typename TSecondaries>
-    void doInteraction(TSecondaries&, COMBoost const& boost, Code const projectile,
-                       Code const target, HEPEnergyType const sqrtSnn);
+    void doInteraction(TSecondaries&, Code const projectile, Code const target,
+                       FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
     HEPEnergyType constexpr getMinEnergyCoM() const { return minEnergyCoM_; }

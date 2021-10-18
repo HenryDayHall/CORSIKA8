@@ -243,8 +243,8 @@ namespace corsika {
   template <typename TSecondaryView, typename TRNG>
   inline ProcessReturn SwitchProcessSequence<
       TCondition, TSequence, USequence, IndexStart, IndexProcess1,
-      IndexProcess2>::selectInteraction(TSecondaryView& view, COMBoost const& boost,
-                                        HEPEnergyType const sqrtSnn,
+      IndexProcess2>::selectInteraction(TSecondaryView& view,
+                                        FourMomentum const& projectileP4,
                                         NuclearComposition const& composition, TRNG& rng,
                                         [[maybe_unused]] CrossSectionType const cx_select,
                                         [[maybe_unused]] CrossSectionType cx_sum) {
@@ -252,7 +252,7 @@ namespace corsika {
     if (select_(view.parent())) {
       if constexpr (process1_type::is_process_sequence) {
         // if A_ is a process sequence --> check inside
-        return A_.selectInteraction(view, boost, sqrtSnn, composition, rng, cx_select,
+        return A_.selectInteraction(view, projectileP4, composition, rng, cx_select,
                                     cx_sum);
       } else if constexpr (is_interaction_process_v<process1_type>) {
 
@@ -265,16 +265,18 @@ namespace corsika {
             has_method_getCrossSection_v<TSequence,        // process object
                                          CrossSectionType, // return type
                                          Code,             // parameters
-                                         Code, HEPEnergyType, unsigned int, unsigned int>,
+                                         Code, FourMomentum const&, FourMomentum const&>,
             "TSequence has no method with correct signature \"CrossSectionType "
-            "getCrossSection(Code, Code, HEPEnergyType, unsigned int, unsigned int"
-            ")\" required by InteractionProcess<TSequence>. ");
+            "getCrossSection(Code, Code, FourMomentum const&, FourMomntum const&)\" "
+            "required by InteractionProcess<TSequence>. ");
 
         std::vector<CrossSectionType> const weightedCrossSections =
             composition.getWeighted([=](Code const targetId) -> CrossSectionType {
-              return A_.getCrossSection(
-                  projectileId, targetId, sqrtSnn, projectileA,
-                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+              FourMomentum const targetP4(
+                  get_mass(targetId),
+                  MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                                 {0_GeV, 0_GeV, 0_GeV}));
+              return A_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
             });
 
         cx_sum += std::accumulate(weightedCrossSections.cbegin(),
@@ -283,23 +285,24 @@ namespace corsika {
 
           // now also sample targetId from weighted cross sections
           Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
+          FourMomentum const targetP4(
+              get_mass(targetId),
+              MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                             {0_GeV, 0_GeV, 0_GeV}));
 
           // interface checking on TProcess1
-          static_assert(
-              has_method_doInteract_v<TSequence,       // process object
-                                      void,            // return type
-                                      TSecondaryView,  // template argument
-                                      TSecondaryView&, // method parameters
-                                      COMBoost const&, Code, Code, HEPEnergyType,
-                                      unsigned int, unsigned int>,
-              "USequence has no method with correct signature \"void "
-              "doInteraction<TSecondaryView>(TSecondaryView&, COMBoost&, Code, "
-              "Code, HEPEnergyType, unsigned int, unsigned int)\" required for "
-              "InteractionProcess<USequence>. ");
+          static_assert(has_method_doInteract_v<TSequence,       // process object
+                                                void,            // return type
+                                                TSecondaryView,  // template argument
+                                                TSecondaryView&, // method parameters
+                                                Code, Code, FourMomentum const&,
+                                                FourMomentum const&>,
+                        "USequence has no method with correct signature \"void "
+                        "doInteraction<TSecondaryView>(TSecondaryView&, Code, "
+                        "Code, FourMomentum const&, FourMomntum const&)\" required for "
+                        "InteractionProcess<USequence>. ");
 
-          A_.template doInteraction(view, boost, projectileId, targetId, sqrtSnn,
-                                    projectileA,
-                                    is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+          A_.template doInteraction(view, projectileId, targetId, projectileP4, targetP4);
 
           return ProcessReturn::Interacted;
 
@@ -310,7 +313,7 @@ namespace corsika {
 
       if constexpr (process2_type::is_process_sequence) {
         // if B_ is a process sequence --> check inside
-        return B_.selectInteraction(view, boost, sqrtSnn, composition, rng, cx_select,
+        return B_.selectInteraction(view, projectileP4, composition, rng, cx_select,
                                     cx_sum);
       } else if constexpr (is_interaction_process_v<process2_type>) {
 
@@ -323,16 +326,18 @@ namespace corsika {
             has_method_getCrossSection_v<USequence,        // process object
                                          CrossSectionType, // return type
                                          Code,             // parameters
-                                         Code, HEPEnergyType, unsigned int, unsigned int>,
+                                         Code, FourMomentum const&, FourMomentum const&>,
             "USequence has no method with correct signature \"CrossSectionType "
-            "getCrossSection(Code, Code, HEPEnergyType, unsigned int, unsigned int"
-            ")\" required by InteractionProcess<USequence>. ");
+            "getCrossSection(Code, Code, FourMomentum const&, FourMomentum const&)\" "
+            "required by InteractionProcess<USequence>. ");
 
         std::vector<CrossSectionType> const weightedCrossSections =
             composition.getWeighted([=](Code const targetId) -> CrossSectionType {
-              return B_.getCrossSection(
-                  projectileId, targetId, sqrtSnn, projectileA,
-                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+              FourMomentum const targetP4(
+                  get_mass(targetId),
+                  MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                                 {0_GeV, 0_GeV, 0_GeV}));
+              return B_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
             });
 
         cx_sum += std::accumulate(weightedCrossSections.cbegin(),
@@ -342,23 +347,24 @@ namespace corsika {
 
           // now also sample targetId from weighted cross sections
           Code const targetId = composition.sampleTarget(weightedCrossSections, rng);
+          FourMomentum const targetP4(
+              get_mass(targetId),
+              MomentumVector(projectile.getMomentum().getCoordinateSystem(),
+                             {0_GeV, 0_GeV, 0_GeV}));
 
           // interface checking on TProcess1
-          static_assert(
-              has_method_doInteract_v<USequence,       // process object
-                                      void,            // return type
-                                      TSecondaryView,  // template argument
-                                      TSecondaryView&, // method parameters
-                                      COMBoost const&, Code, Code, HEPEnergyType,
-                                      unsigned int, unsigned int>,
-              "USequence has no method with correct signature \"void "
-              "doInteraction<TSecondaryView>(TSecondaryView&, COMBoost&, Code, "
-              "Code, HEPEnergyType, unsigned int, unsigned int)\" required for "
-              "InteractionProcess<USequence>. ");
+          static_assert(has_method_doInteract_v<USequence,       // process object
+                                                void,            // return type
+                                                TSecondaryView,  // template argument
+                                                TSecondaryView&, // method parameters
+                                                Code, Code, FourMomentum const&,
+                                                FourMomentum const&>,
+                        "USequence has no method with correct signature \"void "
+                        "doInteraction<TSecondaryView>(TSecondaryView&, Code, "
+                        "Code, FourMomentum const&, FourMomentum const&)\" required for "
+                        "InteractionProcess<USequence>. ");
 
-          B_.template doInteraction(view, boost, projectileId, targetId, sqrtSnn,
-                                    projectileA,
-                                    is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+          B_.template doInteraction(view, projectileId, targetId, projectileP4, targetP4);
 
           return ProcessReturn::Interacted;
         } // end collision in branch B

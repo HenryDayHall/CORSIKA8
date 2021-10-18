@@ -29,6 +29,8 @@
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/core/ParticleProperties.hpp>
 
+#include <corsika/framework/geometry/FourVector.hpp>
+
 namespace corsika {
 
   class COMBoost;           // fwd-decl
@@ -242,16 +244,43 @@ namespace corsika {
     ContinuousProcessStepLength getMaxStepLength(TParticle&& particle, TTrack&& vTrack);
 
     CrossSectionType getCrossSection(Code const projectileId, Code const targetId,
-                                     HEPEnergyType const sqrtSnn) const;
+                                     FourMomentum const& projectilP4,
+                                     FourMomentum const& targetP4) const;
 
     template <typename TParticle>
     TimeType getLifetime(TParticle&& particle) {
       return 1. / getInverseLifetime(particle);
     }
 
+    /**
+     * @brief Selects one concrete InteractionProcess and samples a target nucleus from
+     * the material.
+     *
+     * The selectInteraction method statically loops over all active InteractionProcess
+     * and calculates the material-weighted cross section for all of them. In an iterative
+     * way those cross sections are summed up. The random number cx_select, uniformely
+     * drawn from the cross section before energy losses, is used to discriminate the
+     * selected sub-process here. If the cross section after the step smaller than it was
+     * before, there is a non-zero probability that the particle survives and no
+     * interaction takes place. This method becomes imprecise when cross section rise with
+     * falling energies.
+     *
+     * If a sub-process was selected, the target nucleus is selected from the material
+     * (weighted with cross section). The interaction is then executed.
+     *
+     * @tparam TSecondaryView Object type as storage for new secondary particles.
+     * @tparam TRNG Object type to produce random numbers.
+     * @param view Object to store new secondary particles.
+     * @param projectileP4 The four momentum of the projectile.
+     * @param composition The environment/material composition.
+     * @param rng Random number object.
+     * @param cx_select Drawn random numer, uniform between [0, cx_initial]
+     * @param cx_sum For interal use, to sum up cross section contributions.
+     * @return ProcessReturn
+     */
     template <typename TSecondaryView, typename TRNG>
     inline ProcessReturn selectInteraction(
-        TSecondaryView&& view, COMBoost const& boost, HEPEnergyType const sqrtSnn,
+        TSecondaryView&& view, FourMomentum const& projectileP4,
         NuclearComposition const& composition, TRNG&& rng,
         CrossSectionType const cx_select,
         CrossSectionType cx_sum = CrossSectionType::zero());

@@ -44,11 +44,13 @@ namespace corsika::sibyll {
     unsigned int constexpr getMaxNFragments() const { return gMaxNFragments_; }
     unsigned int constexpr getNEnergyBins() const { return gNEnBins_; }
 
-    CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const;
+    CrossSectionType getCrossSection(Code const, Code const,
+                                     FourMomentum const& projectileP4,
+                                     FourMomentum const& targetP4) const;
 
     template <typename TSecondaryView>
-    void doInteraction(TSecondaryView&, COMBoost const& boost, Code const, Code const,
-                       HEPEnergyType const);
+    void doInteraction(TSecondaryView&, Code const, Code const,
+                       FourMomentum const& projectileP4, FourMomentum const& targetP4);
 
   private:
     int count_ = 0;

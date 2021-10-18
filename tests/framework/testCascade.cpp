@@ -17,11 +17,10 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/Logging.hpp>
 
-#include <corsika/framework/utility/COMBoost.hpp>
-
 #include <corsika/framework/geometry/Point.hpp>
-#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 
 #include <corsika/media/HomogeneousMedium.hpp>
 #include <corsika/media/NuclearComposition.hpp>
@@ -89,12 +88,13 @@ public:
 class ProcessSplit : public InteractionProcess<ProcessSplit> {
 
 public:
-  CrossSectionType getCrossSection(Code const, Code const, HEPEnergyType const) const {
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) const {
     return 1_mb;
   }
 
   template <typename TView>
-  void doInteraction(TView& view, COMBoost const&, Code, Code, HEPEnergyType) {
+  void doInteraction(TView& view, Code, Code, FourMomentum const&, FourMomentum const&) {
     ++calls_;
     auto vP = view.getProjectile();
     const HEPEnergyType Ekin = vP.getKineticEnergy();

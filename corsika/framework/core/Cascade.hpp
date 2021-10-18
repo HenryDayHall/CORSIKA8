@@ -12,11 +12,12 @@
 
 #include <corsika/framework/process/ProcessReturn.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/core/Logging.hpp>
 #include <corsika/framework/random/ExponentialDistribution.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/random/UniformRealDistribution.hpp>
 #include <corsika/framework/stack/SecondaryView.hpp>
-#include <corsika/framework/core/Logging.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 
 #include <corsika/media/Environment.hpp>
 
@@ -32,8 +33,6 @@
  */
 
 namespace corsika {
-
-  class COMBoost; // fwd-decl
 
   /**
    *
@@ -98,7 +97,7 @@ namespace corsika {
 
     /**
      * set the nodes for all particles on the stack according to their numerical
-     * position
+     * position.
      */
     void setNodes();
 
@@ -129,8 +128,7 @@ namespace corsika {
     void step(particle_type& vParticle);
 
     ProcessReturn decay(stack_view_type& view, InverseTimeType initial_inv_decay_time);
-    ProcessReturn interaction(stack_view_type& view, COMBoost const& boost,
-                              HEPEnergyType const sqrtSnn,
+    ProcessReturn interaction(stack_view_type& view, FourMomentum const& projectileP4,
                               NuclearComposition const& composition,
                               CrossSectionType const initial_cross_section);
     void setEventType(stack_view_type& view, history::EventType);

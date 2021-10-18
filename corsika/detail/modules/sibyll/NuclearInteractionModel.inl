@@ -116,8 +116,7 @@ namespace corsika::sibyll {
       if (ptarg == Code::Argon) continue; // NEED TO IGNORE Argon ....
       ++k;
       CORSIKA_LOG_DEBUG("init target component: {}", ptarg);
-      int const ib =
-          get_nucleus_A(ptarg); // this assumes the universe is only made out of "Nuclei"
+      int const ib = get_nucleus_A(ptarg);
       hadronicInteraction_.isValid(Code::Proton, ptarg, 100_GeV); // throws
       targetComponentsIndex_.insert(std::pair<Code, int>(ptarg, k));
       // loop over energies, fNEnBins log. energy bins
@@ -125,10 +124,15 @@ namespace corsika::sibyll {
         // hard coded energy grid, has to be aligned to definition in signuc2!!, no
         // comment..
         HEPEnergyType const Ecm = pow(10., 1. + 1. * i) * 1_GeV;
+        CoordinateSystemPtr cs = get_root_CoordinateSystem();
+        HEPMomentumType const pcm = sqrt(Ecm * Ecm - Proton::mass * Proton::mass);
+        FourMomentum projectileP4(Ecm,
+                                  {cs, pcm, 0_eV, 0_eV}); // this is ONLY needd for sqrtS
+        FourMomentum targetP4(0_eV, {cs, 0_eV, 0_eV, 0_eV});
         // get p-p cross sections
         auto const protonId = Code::Proton;
-        auto const [siginel, sigela] =
-            hadronicInteraction_.getCrossSectionInelEla(protonId, protonId, Ecm);
+        auto const [siginel, sigela] = hadronicInteraction_.getCrossSectionInelEla(
+            protonId, protonId, projectileP4, targetP4);
         const double dsig = siginel / 1_mb;
         const double dsigela = sigela / 1_mb;
         // loop over projectiles, mass numbers from 2 to fMaxNucleusAProjectile
@@ -170,8 +174,10 @@ namespace corsika::sibyll {
   CrossSectionType inline NuclearInteractionModel<
       TEnvironment, TNucleonModel>::getCrossSection(Code const projectileId,
                                                     Code const targetId,
-                                                    HEPEnergyType const sqrtSnn) const {
+                                                    FourMomentum const& projectileP4,
+                                                    FourMomentum const& targetP4) const {
 
+    HEPEnergyType const sqrtSnn = (projectileP4 + targetP4).getNorm();
     isValid(projectileId, targetId, sqrtSnn); // throws
     HEPEnergyType const LabEnergyPerNuc =
         static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
@@ -184,26 +190,29 @@ namespace corsika::sibyll {
   template <typename TEnvironment, typename TNucleonModel>
   template <typename TSecondaryView>
   inline void NuclearInteractionModel<TEnvironment, TNucleonModel>::doInteraction(
-      TSecondaryView& view, COMBoost const& boost, Code const projectileId,
-      Code const targetId, HEPEnergyType const sqrtSnn) {
+      TSecondaryView& view, Code const projectileId, Code const targetId,
+      FourMomentum const& projectileP4, FourMomentum const& targetP4) {
 
-    isValid(projectileId, targetId, sqrtSnn); // throws
+    // model is only designed for projectile nuclei. Collisions are broken down into
+    // "nucleon-target" collisions.
+    size_t const projectileA = get_nucleus_A(projectileId);
+
+    // this is center-of-mass for projectile_nucleon - target
+    FourMomentum const nucleonP4 = projectileP4 / projectileA;
+    HEPEnergyType const sqrtSnucleon = (nucleonP4 + targetP4).getNorm();
+    isValid(projectileId, targetId, sqrtSnucleon); // throws
     // projectile is always nucleus!
-    unsigned int const projectileA = get_nucleus_A(projectileId);
+    // Elab corresponding to sqrtSnucleon -> fixed target projectile
+    COMBoost const boost(nucleonP4, targetP4);
 
-    CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnn={}GeV Aproj={}", projectileId, targetId,
-                      sqrtSnn / 1_GeV, projectileA);
+    CORSIKA_LOG_DEBUG("pId={} tId={} sqrtSnucleon={}GeV Aproj={}", projectileId, targetId,
+                      sqrtSnucleon / 1_GeV, projectileA);
     count_++;
 
-    HEPEnergyType const ProjMass = get_mass(projectileId);
-
-    // lab. Energy per projectile nucleon
-    HEPEnergyType const eProjectileLab =
-        static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
-    HEPMomentumType const pProjectileLab =
-        sqrt(static_pow<2>(eProjectileLab) - static_pow<2>(constants::nucleonMass));
-    MomentumVector const p3ProjectileLab(boost.getRotatedCS(),
-                                         {0_GeV, 0_GeV, pProjectileLab});
+    // lab. momentum per projectile nucleon
+    HEPMomentumType const pNucleonLab = nucleonP4.getSpaceLikeComponents().getNorm();
+    // nucleon momentum in direction of CM motion (lab system)
+    MomentumVector const p3NucleonLab(boost.getRotatedCS(), {0_GeV, 0_GeV, pNucleonLab});
 
     /*
       FOR NOW: allow nuclei with A<18 or protons/nucleon only.
@@ -211,8 +220,10 @@ namespace corsika::sibyll {
       allowed air in atmosphere also contains some Argon.
     */
     int kATarget = -1;
+    size_t targetA = 1;
     if (is_nucleus(targetId)) {
       kATarget = get_nucleus_A(targetId);
+      targetA = kATarget;
     } else if (targetId == Code::Proton || targetId == Code::Neutron ||
                targetId == Code::Hydrogen) {
       kATarget = 1;
@@ -227,7 +238,9 @@ namespace corsika::sibyll {
     // (needed to determine number of nucleon-nucleon scatterings)
     auto const protonId = Code::Proton;
     auto const [prodCrossSection, elaCrossSection] =
-        hadronicInteraction_.getCrossSectionInelEla(protonId, protonId, sqrtSnn);
+        hadronicInteraction_.getCrossSectionInelEla(
+            protonId, protonId, nucleonP4,
+            targetP4 / targetA); // todo check, wrong RU
     double const sigProd = prodCrossSection / 1_mb;
     double const sigEla = elaCrossSection / 1_mb;
     // sample number of interactions (only input variables, output in common cnucms)
@@ -270,8 +283,10 @@ namespace corsika::sibyll {
     // (LCOV_EXCL_STOP)
 
     // position and time of interaction, not used in NUCLIB
-    Point pOrig{boost.getOriginalCS(), {0_m, 0_m, 0_m}};
-    TimeType delay = 0_s; // there is no time in sibyll
+    auto const& projectile = view.parent();
+    // position and time of interaction, not used in NUCLI
+    Point const& pOrig = projectile.getPosition();
+    TimeType const delay = projectile.getTime();
 
     CORSIKA_LOG_DEBUG("Interaction: position of interaction: {} {}",
                       pOrig.getCoordinates(), delay / 1_s);
@@ -298,12 +313,8 @@ namespace corsika::sibyll {
 
       // CORSIKA 7 way
       // spectators inherit momentum from original projectile
-      double const mass_ratio = mass / ProjMass;
-      auto const p3lab = p3ProjectileLab * mass_ratio;
-
-      CORSIKA_LOG_DEBUG("mass ratio {}, fragment momentum {}", mass_ratio,
-                        p3lab.getComponents() / 1_GeV);
-
+      auto const p3lab = p3NucleonLab * nuclA;
+      CORSIKA_LOG_DEBUG("fragment momentum {}", p3lab.getComponents() / 1_GeV);
       view.addSecondary(std::make_tuple(specCode, p3lab, pOrig, delay));
     }
 
@@ -318,8 +329,7 @@ namespace corsika::sibyll {
       // CORSIKA 7 way
       // elastic nucleons inherit momentum from original projectile
       // neglecting momentum transfer in interaction
-      double const mass_ratio = get_mass(elaNucCode) / ProjMass;
-      auto const p3lab = p3ProjectileLab * mass_ratio;
+      auto const p3lab = p3NucleonLab;
       view.addSecondary(std::make_tuple(elaNucCode, p3lab, pOrig, delay));
     }
 
@@ -327,20 +337,20 @@ namespace corsika::sibyll {
     CORSIKA_LOG_DEBUG("calculate inelastic nucleon-nucleon interactions..");
     for (int j = 0; j < nInelNucleons; ++j) {
       // TODO: sample neutron or proton
-      auto pCode = Code::Proton;
+      auto const pCode = Code::Proton;
       // temporarily add to stack, will be removed after interaction in DoInteraction
       CORSIKA_LOG_DEBUG("inelastic interaction no. {}", j);
       typename TSecondaryView::inner_stack_value_type nucleonStack;
       auto inelasticNucleon =
-          nucleonStack.addParticle(std::make_tuple(pCode, p3ProjectileLab, pOrig, delay));
+          nucleonStack.addParticle(std::make_tuple(pCode, p3NucleonLab, pOrig, delay));
       inelasticNucleon.setNode(view.getProjectile().getNode());
       // create inelastic interaction for each nucleon
       CORSIKA_LOG_TRACE("calling HadronicInteraction...");
       // create new StackView for each of the nucleons
       TSecondaryView nucleon_secondaries(inelasticNucleon);
       // all inner hadronic event generator
-      hadronicInteraction_.doInteraction(nucleon_secondaries, boost, pCode, targetId,
-                                         sqrtSnn);
+      hadronicInteraction_.doInteraction(nucleon_secondaries, pCode, targetId, nucleonP4,
+                                         targetP4);
       for (const auto& pSec : nucleon_secondaries) {
         view.addSecondary(std::make_tuple(pSec.getPID(), pSec.getMomentum(),
                                           pSec.getPosition(), pSec.getTime()));
