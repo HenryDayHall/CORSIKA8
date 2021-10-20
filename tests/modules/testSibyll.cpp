@@ -100,7 +100,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
   return sum;
 }
 
-TEST_CASE("SibyllInterface", "modules") {
+TEST_CASE("SibyllInteractionInterface", "modules") {
 
   logging::set_level(logging::level::info);
 
@@ -304,6 +304,32 @@ TEST_CASE("SibyllInterface", "modules") {
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
     CHECK(view.getSize() == Approx(100).margin(90)); // this is not physics validation
   }
+}
+
+#include <corsika/framework/geometry/Point.hpp>
+#include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Vector.hpp>
+
+#include <corsika/framework/core/PhysicalUnits.hpp>
+
+#include <corsika/framework/core/ParticleProperties.hpp>
+
+#include <SetupTestEnvironment.hpp>
+#include <SetupTestStack.hpp>
+
+#include <corsika/media/Environment.hpp>
+#include <corsika/media/HomogeneousMedium.hpp>
+#include <corsika/media/NuclearComposition.hpp>
+#include <corsika/media/UniformMagneticField.hpp>
+
+TEST_CASE("SibyllDecayInterface", "modules") {
+  logging::set_level(logging::level::info);
+
+  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
+  auto const& cs = *csPtr;
+  { [[maybe_unused]] auto const& env_dummy = env; }
+
+  RNGManager<>::getInstance().registerRandomStream("sibyll");
 
   SECTION("DecayInterface") {
 

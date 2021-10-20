@@ -7,7 +7,7 @@ C         SSSSSS    IIIIIII  BBBBB       YY       LLLLLLL  LLLLLLL
 C=======================================================================
 C  Code for SIBYLL:  hadronic interaction Monte Carlo event generator
 C=======================================================================
-C   Version 2.3d (Jun-01-2017, modified May-20-2020)
+C   Version 2.3d01 (Jun-01-2017, modified Oct-15-2021)
 C
 C     with CHARM production
 C
@@ -32,7 +32,10 @@ C                gaisser@bartol.udel.edu
 C                paolo.lipari@roma1.infn.it
 C                friehn@lip.pt
 C                stanev@bartol.udel.edu
-C     
+C
+C     last changes relative to Sibyll 2.3d:
+C     * stop decays with more than 10 particles
+C      
 C     last changes relative to Sibyll 2.3c:
 C     * no pi0 suppression in minijets
 C     * added cross section tables for hadron-nitrogen and hadron-oxygen
@@ -471,8 +474,8 @@ C-----------------------------------------------------------------------
      *     /,' ','|                                                  |',
      *     /,' ','| Publication to be cited when using this program: |',
      *     /,' ','| Eun-Joo AHN et al., Phys.Rev. D80 (2009) 094003  |',
-     *     /,' ','| F. RIEHN et al., hep-ph: 1912.03300              |',
-     *     /,' ','| last modifications: F. Riehn (05/20/2020)        |',
+     *     /,' ','| F. RIEHN et al., Phys.Rev.D 102 (2020) 6, 063002 |',
+     *     /,' ','| last modifications: F. Riehn (08/15/2021)        |',
      *     /,' ','====================================================',
      *     /)
 
@@ -6616,6 +6619,10 @@ C...Choose decay channel
 
       KD =6*(IDC-1)+1
       ND = KDEC(KD)
+      IF(ND.GT.10) THEN
+         WRITE(LUN,*) 'DECPAR: too many final state particles in decay!'
+         STOP
+      ENDIF
       MAT= KDEC(KD+1)
       MBST=0
       IF (MAT .GT.0 .AND. P0(4) .GT. 20.D0*P0(5)) MBST=1

@@ -55,12 +55,12 @@ extern struct {
 // number of wounded nucleons, number of hard and soft scatterings etc.
 extern struct { int nnsof[20], nnjet[20], jdif[20], nwd, njet, nsof; } s_chist_;
 
-extern struct {
-  double cbr[223 + 16 + 12 + 8];
-  int kdec[1338 + 6 * (16 + 12 + 8)];
-  int lbarp[99];
-  int idb[99];
-} s_csydec_;
+ extern struct {
+   double cbr[223 + 16 + 12 + 8];
+   int kdec[1338 + 6 * (16 + 12 + 8)];
+   int lbarp[99];
+   int idb[99];
+ } s_csydec_;
 
 // additional particle stack for the mother particles of unstable particles
 // stable particles have entry zero
@@ -100,17 +100,11 @@ void sibyll_(const int&, const int&, const double&);
 // subroutine to initiate sibyll
 void sibyll_ini_();
 
-// subroutine to SET DECAYS
-void dec_ini_();
-
-// subroutine to initiate random number generator
-// void rnd_ini_();
-
 // print event
 void sib_list_(int&);
 
-// decay routine
-void decsib_();
+// decay routine (LA,P0,ND,LL,P)
+void decpar_(const int&, const double*, int&, int*, double*);
 
 // interaction length
 // double fpni_(double&, int&);
