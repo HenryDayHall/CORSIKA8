@@ -31,6 +31,8 @@ namespace corsika {
                      parquet::ConvertedType::NONE);
     output_.addField("y", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
                      parquet::ConvertedType::NONE);
+    output_.addField("t", parquet::Repetition::REQUIRED, parquet::Type::FLOAT,
+                     parquet::ConvertedType::NONE);
 
     // and build the streamer
     output_.buildStreamer();
@@ -43,12 +45,13 @@ namespace corsika {
   inline void ObservationPlaneWriterParquet::write(Code const& pid,
                                                    HEPEnergyType const& energy,
                                                    LengthType const& x,
-                                                   LengthType const& y) {
+                                                   LengthType const& y,
+                                                   TimeType const& t) {
     // write the next row - we must write `shower_` first.
     *(output_.getWriter()) << shower_ << static_cast<int>(get_PDG(pid))
                            << static_cast<float>(energy / 1_GeV)
                            << static_cast<float>(x / 1_m) << static_cast<float>(y / 1_m)
-                           << parquet::EndRow;
+                           << static_cast<float>(t / 1_ns) << parquet::EndRow;
   }
 
 } // namespace corsika
