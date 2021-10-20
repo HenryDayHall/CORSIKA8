@@ -22,7 +22,7 @@ struct TestWriterPlane : public ObservationPlaneWriterParquet {
   YAML::Node getConfig() const { return YAML::Node(); }
 
   void checkWrite() {
-    ObservationPlaneWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m);
+    ObservationPlaneWriterParquet::write(Code::Unknown, 1_eV, 2_m, 3_m, 4_ns);
   }
 };
 
