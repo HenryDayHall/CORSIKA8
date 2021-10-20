@@ -29,7 +29,7 @@ namespace corsika {
     auto const sqrtS = sqrt(projectile_mass * projectile_mass +
                             mass_target * mass_target + 2 * lab_energy * mass_target);
 
-    CORSIKA_LOG_INFO("pM={}, tM={}, pid={}, Elab={}, sqrtS={}, pdg={} a={} z={}",
+    CORSIKA_LOG_DEBUG("pM={}, tM={}, pid={}, Elab={}, sqrtS={}, pdg={} a={} z={}",
                      projectile_mass / 1_GeV, mass_target / 1_GeV, projectile_id,
                      lab_energy / 1_GeV, sqrtS / 1_GeV, get_PDG(projectile_id),
                      get_nucleus_A(projectile_id), get_nucleus_Z(projectile_id));
