@@ -555,11 +555,11 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder") {
 
   builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
 
-  builder.addLinearLayer(1_km, 10_km);
-  builder.addLinearLayer(2_km, 20_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 1_km, 10_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 2_km, 20_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 30_km);
 
-  CHECK_THROWS(builder.addLinearLayer(0.5_km, 5_km));
+  CHECK_THROWS(builder.addLinearLayer(1_g / (1_cm * 1_cm), 0.5_km, 5_km));
 
   CHECK(builder.getSize() == 3);
 
@@ -603,7 +603,7 @@ TEST_CASE("LayeredSphericalAtmosphereBuilder w/ magnetic field") {
                                                     B0);
 
   builder.setNuclearComposition({{{Code::Nitrogen, Code::Oxygen}}, {{.6, .4}}});
-  builder.addLinearLayer(1_km, 10_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 1_km, 10_km);
   builder.addExponentialLayer(1222.6562_g / (1_cm * 1_cm), 994186.38_cm, 20_km);
 
   CHECK(builder.getSize() == 2);
@@ -644,7 +644,7 @@ TEST_CASE("media", "LayeredSphericalAtmosphereBuilder USStd") {
   builder.addExponentialLayer(1144.9069_g / (1_cm * 1_cm), 878153.55_cm, 10_km);
   builder.addExponentialLayer(1305.5948_g / (1_cm * 1_cm), 636143.04_cm, 40_km);
   builder.addExponentialLayer(540.1778_g / (1_cm * 1_cm), 772170.16_cm, 100_km);
-  builder.addLinearLayer(1e9_cm, 112.8_km);
+  builder.addLinearLayer(1_g / (1_cm * 1_cm), 1e9_cm, 112.8_km);
 
   Environment<IMediumModel> env;
   builder.assemble(env);

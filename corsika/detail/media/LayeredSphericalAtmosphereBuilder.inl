@@ -1,4 +1,4 @@
-/*
+w/*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
@@ -19,8 +19,8 @@ namespace corsika {
 
   template <typename TMediumInterface, template <typename> typename TMediumModelExtra,
             typename... TModelArgs>
-  inline void LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
-                                                TModelArgs...>::checkRadius(LengthType r)
+  inline void LayeredSphericalAtmosphereBuilder<
+      TMediumInterface, TMediumModelExtra, TModelArgs...>::checkRadius(LengthType const r)
       const {
     if (r <= previousRadius_) {
       throw std::runtime_error("radius must be greater than previous");
@@ -40,7 +40,8 @@ namespace corsika {
   inline typename LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra,
                                                     TModelArgs...>::volume_tree_node*
   LayeredSphericalAtmosphereBuilder<TMediumInterface, TMediumModelExtra, TModelArgs...>::
-      addExponentialLayer(GrammageType const b, LengthType const scaleHeight, LengthType const upperBoundary) {
+      addExponentialLayer(GrammageType const b, LengthType const scaleHeight,
+                          LengthType const upperBoundary) {
 
     // outer radius
     auto const radius = planetRadius_ + upperBoundary;
@@ -76,7 +77,7 @@ namespace corsika {
             typename... TModelArgs>
   inline void LayeredSphericalAtmosphereBuilder<
       TMediumInterface, TMediumModelExtra,
-      TModelArgs...>::addLinearLayer(LengthType const scaleHeight,
+      TModelArgs...>::addLinearLayer(GrammageType const b, LengthType const scaleHeight,
                                      LengthType const upperBoundary) {
     // outer radius
     auto const radius = planetRadius_ + upperBoundary;
@@ -86,7 +87,6 @@ namespace corsika {
     auto node = std::make_unique<VolumeTreeNode<TMediumInterface>>(
         std::make_unique<Sphere>(center_, radius));
 
-    GrammageType constexpr b = 1_g / (1_cm * 1_cm);
     auto const rho0 = b / scaleHeight;
 
     if constexpr (detail::has_extra_models<TMediumModelExtra>::value) {

@@ -37,7 +37,7 @@ namespace corsika {
     };
 
     template <template <typename> typename Mixin, typename T>
-    typedef implements_mixin<Mixin, T>::value implements_mixin_v;
+    bool constexpr implements_mixin_v = implements_mixin<Mixin, T>::value;
 
   } // namespace detail
 } // namespace corsika
