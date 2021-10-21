@@ -26,7 +26,7 @@ struct DummyNoOutput : public NoOutput {
     NoOutput::getConfig();
     NoOutput::getSummary();
   }
-  void checkWrite() { NoOutput::write(Code::Unknown, 1_eV, 1_m, 1_m); }
+  void checkWrite() { NoOutput::write(Code::Unknown, 1_eV, 1_m, 1_m, 1_ns); }
 };
 
 struct DummyOutput : public BaseOutput {
