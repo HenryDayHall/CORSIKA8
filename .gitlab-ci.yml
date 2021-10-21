@@ -28,13 +28,9 @@ variables:
 stages:
   - quality
   - config
-  - build
-  - test
   - build_test
-  - example
   - build_test_example
   - python
-  - install
   - optional
 
 
@@ -117,85 +113,6 @@ config-clang-8:
 
 
 
-
-####### BUILD (only manual) ##############
-
-##########################################################
-# the generic build template job
-# normal pipeline for each commit
-.build:
-  stage: build
-  tags:
-    - corsika
-  script:
-    - mkdir -p build
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
-    - cmake --build . -- -j4
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
-    - if: $CI_COMMIT_BRANCH
-      when: manual
-  allow_failure: true
-
-# build for gcc
-build-u-18_04:
-  extends: .build
-  image: corsika/devel:u-18.04
-
-# build for clang
-build-clang-8:
-  extends: .build
-  image: corsika/devel:clang-8
-
-
-
-####### TEST (only manual)  ##############
-
-##########################################################
-# generic test template job
-# normal pipeline for each commit
-.test:
-  stage: test
-  tags:
-    - corsika
-  script:
-    - mkdir -p build
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
-    - set -o pipefail
-    - ctest -j4 
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
-    - if: $CI_COMMIT_BRANCH
-      when: manual
-  allow_failure: true
-  artifacts:
-    when: always
-    expire_in: 3 days
-    reports:
-      junit:
-        - ${CI_PROJECT_DIR}/build/test_outputs/junit*.xml
-
-# test for gcc
-test-u-18_04:
-  extends: .test
-  image: corsika/devel:u-18.04
-
-# test for clang
-test-clang-8:
-  extends: .test
-  image: corsika/devel:clang-8
-
-
-
-
 ####### BUILD-TEST (all builds <= Draft/WIP, default) ##############
 
 ##########################################################
@@ -245,8 +162,6 @@ build_test-clang-8:
 
 
 
-
-
 ####### BUILD-TEST-EXAMPLE (only non-Draft/non-WIP)  ##############
 
 ##########################################################
@@ -261,7 +176,7 @@ build_test-clang-8:
     - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
-    - cmake --build . -- -j4
+    - cmake --build . -- VERBOSE=1 -j4
     - set -o pipefail
     - ctest -j4
     - cmake --install .
@@ -309,42 +224,6 @@ build_test_example-clang-8:
 
 
 
-####### INSTALL (only manual)  ##############
-
-##########################################################
-# generic install template job
-# make install
-.install:
-  stage: install
-  tags:
-    - corsika
-  script:
-    - mkdir -p build
-    - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
-    - set -o pipefail
-    - cmake --install .
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
-    - if: $CI_COMMIT_BRANCH
-      when: manual
-  allow_failure: true
-
-# install for gcc
-install-u-18_04:
-  extends: .install
-  image: corsika/devel:u-18.04
-
-# install for clang
-install-clang-8:
-  extends: .install
-  image: corsika/devel:clang-8
-
-
-
 
 ####### OPTIONAL ##############
 
@@ -366,7 +245,7 @@ install-clang-8:
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILD_TYPE=Release ../install/share/corsika/examples
-    - cmake --build . -- -j2
+    - cmake --build . -- VERBOSE=1 -j2
     - cmake --build . --target run_examples -- -j2 
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
