@@ -126,7 +126,7 @@ namespace corsika {
 
     // inform ContinuousProcesses (if applicable) that it is responsible for step-limit
     // this would become simpler if we follow the idea of Max to enumerate ALL types of
-    // processes. Then non-contunuous are included and no further logic is needed to
+    // processes. Then non-continuous are included and no further logic is needed to
     // distinguish between continuous and non-continuous limit.
     ContinuousProcessIndex limitingId;
     bool const isContinuous = continuous_max_dist < min_non_continuous;
@@ -147,11 +147,6 @@ namespace corsika {
     // move particle along the trajectory to new position
     // also update momentum/direction/time
     step.setLength(min_distance);
-    vParticle.setPosition(step.getPosition(1));
-    // assumption: tracking does not change absolute momentum (continuous physics can and
-    // will):
-    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
-    vParticle.setTime(vParticle.getTime() + step.getDuration());
 
     // apply all continuous processes on particle + track
     if (sequence_.doContinuous(vParticle, step, limitingId) ==
@@ -167,6 +162,11 @@ namespace corsika {
       }
       return;
     }
+    vParticle.setPosition(step.getPosition(1));
+    // assumption: tracking does not change absolute momentum (continuous physics can and
+    // will):
+    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
+    vParticle.setTime(vParticle.getTime() + step.getDuration());
     if (isContinuous) {
       return; // there is nothing further, step is finished
     }
@@ -232,11 +232,11 @@ namespace corsika {
 
     /*
       Create SecondaryView object on Stack. The data container
-      remains untouched and identical, and 'projectil' is identical
+      remains untouched and identical, and 'projectile' is identical
       to 'vParticle' above this line. However,
-      projectil.AddSecondaries populate the SecondaryView, which can
+      projectile.AddSecondaries populate the SecondaryView, which can
       then be used afterwards for further processing. Thus: it is
-      important to use projectle/view (and not vParticle) for Interaction,
+      important to use projectile/view (and not vParticle) for Interaction,
       and Decay!
     */
 
@@ -303,7 +303,7 @@ namespace corsika {
     if (actual_inv_length * 0.99 > initial_inv_int_length) {
       CORSIKA_LOG_WARN(
           "Interaction length decreased during step! This leads to un-physical step "
-          "length. delta_innverse_interaction_length={}",
+          "length. delta_inverse_interaction_length={}",
           1 / initial_inv_int_length - 1 / actual_inv_length);
     }
 #endif
