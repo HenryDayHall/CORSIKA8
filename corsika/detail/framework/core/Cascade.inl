@@ -147,6 +147,10 @@ namespace corsika {
     // move particle along the trajectory to new position
     // also update momentum/direction/time
     step.setLength(min_distance);
+    vParticle.setPosition(step.getPosition(1));
+    // assumption: tracking does not change absolute momentum (continuous physics can and
+    // will):
+    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
 
     // apply all continuous processes on particle + track
     if (sequence_.doContinuous(vParticle, step, limitingId) ==
@@ -162,10 +166,6 @@ namespace corsika {
       }
       return;
     }
-    vParticle.setPosition(step.getPosition(1));
-    // assumption: tracking does not change absolute momentum (continuous physics can and
-    // will):
-    vParticle.setMomentum(step.getDirection(1) * vParticle.getMomentum().getNorm());
     vParticle.setTime(vParticle.getTime() + step.getDuration());
     if (isContinuous) {
       return; // there is nothing further, step is finished
