@@ -120,13 +120,6 @@ make install
 
 ## Runing Unit Tests
 
-Note, before you run *any* executbale you must also define the
-`CORSIKA_DATA` environment variable to point to the location where you
-cloned corsika `modules/data`, thus typically 
-```shell
-export CORSIKA_DATA=$PWD/../corsika/modules/data
-```
-
 To run the Unit Tests, just type `ctest` in your build area.
 
 
@@ -144,7 +137,7 @@ e.g. `corsika-install/share/corsika/examples/` to your working place
 Next, you need to define the environment variable `corsika_DIR` to point to, either, 
 your build, or your install area. Thus, e.g. 
 ```shell
-export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you buld it">
+export corsika_DIR=<dir where you installed CORSIKA 8 to, or where you build it>
 ```
 
 Then compile your example/application with

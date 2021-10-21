@@ -11,9 +11,18 @@
 cmake_minimum_required (VERSION 3.9)
 
 #+++++++++++++++++++++++++++++
-# project name
+# for pre-defined standard path
 #
-set (c8_version 8.0.0)
+include (GNUInstallDirs)
+
+#+++++++++++++++++++++++++++++
+# project name
+# version is:  "8.major.minor.patch"
+#   major: API changes
+#   minor: no API changes
+#   patch: bug fix and small improvements 
+#
+set (c8_version 8.0.0.0) 
 project (
   corsika
   VERSION ${c8_version}
@@ -255,72 +264,116 @@ install (
   EXPORT CORSIKA8PublicTargets
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
-
 #
-# header only part
+# header only part, just copy entire directory tree
 #
 install (DIRECTORY corsika DESTINATION include)
-
+#
+# generate cmake config package version (for find_package)
+#
 write_basic_package_version_file (
   ${PROJECT_BINARY_DIR}/corsikaConfigVersion.cmake
   VERSION ${c8_version}
   COMPATIBILITY SameMajorVersion
   )
-
-# export targets in build tree
+#
+# export targets in build tree (for find_package)
+#
 export (
   EXPORT CORSIKA8PublicTargets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/corsikaTargets.cmake"
   NAMESPACE CORSIKA8::
   )
-
-# export targets in install tree
+#
+# export targets in install tree (for find_package)
+#
 install (
   EXPORT CORSIKA8PublicTargets
   FILE corsikaTargets.cmake
   NAMESPACE CORSIKA8::
   DESTINATION lib/cmake/corsika
   )
-
-# config for build tree
+#
+# config for build tree (for find_package)
+#
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
   ${PROJECT_BINARY_DIR}/corsikaConfig.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
-
-# corsikaDefines for build tree
+#
+# corsikaDefines 
+#
 configure_package_config_file (
   cmake/corsikaDefines.cmake
   ${PROJECT_BINARY_DIR}/corsikaDefines.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
-
-# config for install tree
-# overwrite with install location (if it was build as part of corsika)
+#
+# config for install tree  (for find_package)
+# overwrite with install locations (if it was build as part of corsika)
+#
 set (Pythia8_INCDIR ${Pythia8_INCDIR_INSTALL})
 set (Pythia8_LIBDIR ${Pythia8_LIBDIR_INSTALL})
 configure_package_config_file (
   cmake/corsikaConfig.cmake.in
-  ${PROJECT_BINARY_DIR}/cmake/corsikaConfig.cmake
-  INSTALL_DESTINATION ${PROJECT_BINARY_DIR}/do_not_need_this
+  ${PROJECT_BINARY_DIR}/corsikaConfig.cmake-install
+  INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
   )
-
+#
+# generate "corsika/corsika.hpp" file with cmake-level details and paths
+# first for build-tree
+#
+# the location of the "corsika-data" is of fundamental importance
+set (CORSIKA_CMAKE_DATA_DIR ${CMAKE_SOURCE_DIR}/modules/data)
+configure_file (
+  src/corsika.hpp.in
+  ${PROJECT_BINARY_DIR}/corsika/corsika.hpp
+)
+#
+# second also for install-tree
+# 
+set (CORSIKA_CMAKE_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/corsika/data")
+configure_file (
+  src/corsika.hpp.in
+  ${PROJECT_BINARY_DIR}/corsika.hpp-install
+)
+#
+# installation of cmake and config files
+#
 install (
   FILES
   ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
   ${CMAKE_BINARY_DIR}/conaninfo.txt
-  ${CMAKE_BINARY_DIR}/corsikaConfig.cmake
   ${CMAKE_BINARY_DIR}/corsikaDefines.cmake
   ${CMAKE_BINARY_DIR}/corsikaConfigVersion.cmake
   DESTINATION lib/cmake/corsika
   )
-
+#
+# install and rename install-level corsikaConfig.cmake
+#
+install (
+  FILES
+  ${CMAKE_BINARY_DIR}/corsikaConfig.cmake-install
+  RENAME corsikaConfig.cmake
+  DESTINATION lib/cmake/corsika
+  )
+#
+# also install-level config.hpp
+# 
+install (FILES 
+  ${PROJECT_BINARY_DIR}/corsika.hpp-install
+  RENAME corsika.hpp
+  DESTINATION include/corsika
+  )
 #
 # examples
 #
-install (DIRECTORY examples DESTINATION share/corsika)
-
+install (DIRECTORY examples DESTINATION ${CMAKE_INSTALL_DATADIR}/corsika)
+#
+# data
+#
+install (DIRECTORY modules/data DESTINATION ${CMAKE_INSTALL_DATADIR}/corsika)
 #
 # tools
 #

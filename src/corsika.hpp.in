@@ -1,0 +1,87 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <string>
+
+namespace corsika {
+
+  /**
+   * @file corsika.hpp
+   *
+   * The CORSIKA 8 air shower simulation framework.
+   *
+   * @mainpage Technical documentation of the CORSIKA 8 software framework.
+   *
+   * Software documentatin and reference guide for the CORSIKA 8
+   * software framework for air shower simulations. CORSIKA 8 is developed
+   * at <a
+   * href="https://gitlab.ikp.kit.edu/AirShowerPhysics">https://gitlab.ikp.kit.edu</a>. If
+   * you got the code from somewhere else, consider to switch to the official development
+   * repository. If you want to report bugs, or want to suggest features or future
+   * development, please submit an "issue" on this gitlab server. We only accept Issues
+   * and discussion via our central development server https://gitlab.ikp.kit.edu.
+   *
+   * Write to corsika-devel@lists.kit.edu, or even register yourself at
+   * https://www.lists.kit.edu/sympa/info/corsika-devel to get in contact
+   * with other developers.
+   *
+   * For more information about the project, see @ref md_README.
+   */
+
+  /*! Usage:
+   *  to get the version R.X.Y.Z,
+   *  x: major version
+   *  y: minor version
+   *  z: patch number
+   */
+  static std::string const CORSIKA_VERSION = "@PROJECT_VERSION@";
+
+  /*!
+   *  The value of \p CORSIKA_RELEASE_VERSION encodes the
+   *  main release version number of CORSIKA. It is "8" right now.
+   */
+  static unsigned int const CORSIKA_RELEASE_NUMBER = @PROJECT_VERSION_MAJOR@;
+
+  /*!
+   * The value of \p CORSIKA_MAJOR_VERSION encodes the
+   * major release version number of CORSIKA.
+   */
+  static unsigned int const CORSIKA_MAJOR_NUMBER = @PROJECT_VERSION_MINOR@;
+
+  /*!
+   *  The value of \p CORSIKA_MINOR_NUMBER encodes the
+   *  minor release number of the CORSIKA library.
+   */
+  static unsigned int const CORSIKA_MINOR_NUMBER = @PROJECT_VERSION_PATCH@;
+
+  /*!
+   *  The value of \p CORSIKA_PATCH_NUMBER encodes the
+   *  patch number of the CORSIKA library.
+   */
+  static unsigned int const CORSIKA_PATCH_NUMBER = @PROJECT_VERSION_TWEAK@;
+
+  /**
+   *
+   *  CORSIKA_DATA_DIR is a cmake-time marker for the location of corsika-data.
+   *
+   * the location of the "corsika-data" is of fundamental importance
+   * this should not be done in corsikaDefines.cmake since we may want
+   * to change behaviour at config/build/install time.
+   *
+   * There is a build-time default location of corsika-data at: "modules/data",
+   * but there is also an install-time default location of corsika-data at
+   * "share/corsika/data".
+   * The search for corsika-data can always be overwritten by the
+   * user with the `CORSIKA_DATA` envrionment variable.
+   */
+
+  static std::string const CORSIKA_DATA_DIR = "@CORSIKA_CMAKE_DATA_DIR@";
+
+} // namespace corsika

@@ -11,6 +11,7 @@
 #include <corsika/modules/proposal/ProposalProcessBase.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
 #include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -53,14 +54,7 @@ namespace corsika::proposal {
     //! If corsika data exist store interpolation tables to the corresponding
     //! path, otherwise interpolation tables would only stored in main memory if
     //! no explicit intrpolation def is specified.
-    if (auto data_path = std::getenv("CORSIKA_DATA")) {
-      PROPOSAL::InterpolationSettings::TABLES_PATH = std::string(data_path) + "/PROPOSAL";
-    } else {
-      throw std::runtime_error(
-          "It is not recommended to run PROPOSAL without its tables in "
-          "$CORSIKA_DATA/PROPOSAL. This would be extremely slow. Please provide the "
-          "table directory. ");
-    }
+    PROPOSAL::InterpolationSettings::TABLES_PATH = corsika_data("PROPOSAL").c_str();
   }
 
   inline size_t ProposalProcessBase::hash::operator()(const calc_key_t& p) const
