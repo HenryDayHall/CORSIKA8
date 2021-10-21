@@ -28,13 +28,9 @@ variables:
 stages:
   - quality
   - config
-  - build
-  - test
   - build_test
-  - example
   - build_test_example
   - python
-  - install
   - optional
 
 
@@ -180,7 +176,7 @@ build_test-clang-8:
     - mkdir -p build
     - cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install -DCMAKE_BUILD_TYPE=Debug -DUSE_Pythia8_C8=C8
-    - cmake --build . -- -j4
+    - cmake --build . -- VERBOSE=1 -j4
     - set -o pipefail
     - ctest -j4
     - cmake --install .
@@ -249,7 +245,7 @@ build_test_example-clang-8:
     - mkdir -p build_examples
     - cd build_examples
     - cmake -DCMAKE_BUILD_TYPE=Release ../install/share/corsika/examples
-    - cmake --build . -- -j2
+    - cmake --build . -- VERBOSE=1 -j2
     - cmake --build . --target run_examples -- -j2 
   rules:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /Ready for code review/' # run on merge requests, if label 'Ready for code review' is set
