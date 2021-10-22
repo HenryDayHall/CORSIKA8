@@ -101,8 +101,6 @@ namespace corsika {
 
   inline void CONEXhybrid::initCascadeEquations() {
 
-    double eprima = primaryEnergy_ / 1_GeV;
-
     // set phi, theta
     Vector<length_d> ez{conexObservationCS_, {0._m, 0._m, -1_m}};
     auto const c = showerAxis_.getDirection().dot(ez) / 1_m;
@@ -128,6 +126,7 @@ namespace corsika {
     // the CORSIKA 8 stream "conex" and "epos"!
     std::array<int, 3> ioseed{1, 1, 1};
 
+    double eprima = primaryEnergy_ / 1_GeV;
     double xminp = injectionHeight_ / 1_m;
 
     ::conex::conexrun_(ipart, eprima, theta, phi, xminp, dimpact, ioseed.data());
