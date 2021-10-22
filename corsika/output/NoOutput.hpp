@@ -54,7 +54,7 @@ namespace corsika {
 
   protected:
     void write(Code const&, units::si::HEPEnergyType const&, units::si::LengthType const&,
-               units::si::LengthType const&) {}
+               units::si::LengthType const&, units::si::TimeType const&) {}
   };
 
 } // namespace corsika
