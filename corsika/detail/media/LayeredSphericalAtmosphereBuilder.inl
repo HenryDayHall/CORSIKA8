@@ -1,4 +1,4 @@
-w/*
+/*
  * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
  *
  * This software is distributed under the terms of the GNU General Public
@@ -170,7 +170,8 @@ namespace corsika {
   template <typename TMediumInterface, template <typename> typename MExtraEnvirnoment>
   struct make_layered_spherical_atmosphere_builder {
     template <typename... TArgs>
-    static auto create(Point const& center, LengthType const planetRadius, TArgs... args) {
+    static auto create(Point const& center, LengthType const planetRadius,
+                       TArgs... args) {
       return LayeredSphericalAtmosphereBuilder<TMediumInterface, MExtraEnvirnoment,
                                                TArgs...>{std::forward<TArgs>(args)...,
                                                          center, planetRadius};
