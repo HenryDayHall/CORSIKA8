@@ -12,8 +12,8 @@ namespace corsika {
 
   template <typename TDerived>
   inline SlidingPlanarExponential<TDerived>::SlidingPlanarExponential(
-      Point const& p0, MassDensityType rho0, LengthType lambda,
-      NuclearComposition const& nuclComp, LengthType referenceHeight)
+      Point const& p0, MassDensityType const rho0, LengthType const lambda,
+      NuclearComposition const& nuclComp, LengthType const referenceHeight)
       : BaseExponential<SlidingPlanarExponential<TDerived>>(p0, referenceHeight, rho0,
                                                             lambda)
       , nuclComp_(nuclComp) {}

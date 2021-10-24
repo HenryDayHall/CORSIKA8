@@ -19,7 +19,8 @@ namespace corsika {
   template <typename T>
   inline FlatExponential<T>::FlatExponential(Point const& point,
                                              DirectionVector const& axis,
-                                             MassDensityType rho, LengthType lambda,
+                                             MassDensityType const rho,
+                                             LengthType const lambda,
                                              NuclearComposition const& nuclComp)
       : BaseExponential<FlatExponential<T>>(point, 0_m, rho, lambda)
       , axis_(axis)
@@ -44,7 +45,7 @@ namespace corsika {
 
   template <typename T>
   inline LengthType FlatExponential<T>::getArclengthFromGrammage(
-      BaseTrajectory const& line, GrammageType grammage) const {
+      BaseTrajectory const& line, GrammageType const grammage) const {
     return BaseExponential<FlatExponential<T>>::getArclengthFromGrammage(line, grammage,
                                                                          axis_);
   }

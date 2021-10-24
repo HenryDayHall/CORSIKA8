@@ -12,6 +12,9 @@
 #include <corsika/media/LayeredSphericalAtmosphereBuilder.hpp>
 #include <corsika/framework/utility/ImplementsMixin.hpp>
 
+// for detail namespace, NoExtraModelInner, NoExtraModel and traits
+#include <corsika/detail/media/LayeredSphericalAtmosphereBuilder.hpp>
+
 namespace corsika {
 
   /**
@@ -46,15 +49,36 @@ namespace corsika {
     LastAtmosphere
   };
 
-  namespace detail {
+  namespace {
+    /**
+     * Struct to hold parameters of one layer of a CORSIKA7 atmosphere.
+     *
+     * The definition of each layer is according to a BaseExponential:
+     * @f[
+     *   \varrho = offset/scaleHeight \cdot
+     * \exp\left(-(height-altitude)/scaleHeight\right)
+     * @f],
+     * where @f$ altitude @f$ is the height where the atmosphere layer starts, @f$
+     * offset/scaleHeight
+     * @f$ is the density at this height.
+     */
     struct AtmosphereLayerParameters {
       LengthType altitude;
       GrammageType offset;
       LengthType scaleHeight;
     };
 
+    /**
+     * All the 5 layers of a CORSIKA7 atmosphere.
+     */
     typedef std::array<AtmosphereLayerParameters, 5> AtmosphereParameters;
 
+    /**
+     * Local, internal helper function to provide "Grammage" type.
+     *
+     * @param v
+     * @return value v with g/cm2 units
+     */
     auto constexpr grammage(double const v) { return v * 1_g / (1_cm * 1_cm); }
 
     std::array<AtmosphereParameters,
@@ -160,39 +184,26 @@ namespace corsika {
            {37_km, grammage(1322.9748), 629568.93_cm},
            {100_km, grammage(655.67307), 737521.77_cm},
            {112.8_km, grammage(1), 1e9_cm}}}}};
-  } // namespace detail
+  } // namespace
 
-  template <typename TEnvironmentInterface, template <typename> typename TExtraEnv,
+  /**
+   * Function to create a CORSIKA 7 5-layer atmosphere.
+   *
+   * @tparam TEnvironmentInterface
+   * @tparam TExtraEnv
+   * @tparam TEnvironment
+   * @tparam TArgs
+   * @param env
+   * @param atmId
+   * @param center
+   * @param args
+   */
+  template <typename TEnvironmentInterface,
+            template <typename> typename TExtraEnv = detail::NoExtraModel,
             typename TEnvironment, typename... TArgs>
-  auto create_5layer_atmosphere(TEnvironment& env, AtmosphereId const atmId,
-                                Point const& center, TArgs... args) {
-
-    // construct the atmosphere builder
-    auto builder = make_layered_spherical_atmosphere_builder<
-        TEnvironmentInterface, TExtraEnv>::create(center, constants::EarthRadius::Mean,
-                                                  std::forward<TArgs>(args)...);
-
-    // as per the vertical_EAS reference, we do not include Ar for now.
-    // TODO: This is not a US standard atmosphere
-    builder.setNuclearComposition(
-        {{Code::Nitrogen, Code::Oxygen}, {0.7847, 1. - 0.7847}});
-
-    // add the standard atmosphere layers
-    auto const params = detail::atmosphereParameterList[static_cast<uint8_t>(atmId)];
-    for (int i = 0; i < 4; ++i) {
-      builder.addExponentialLayer(params[i].offset, params[i].scaleHeight,
-                                  params[i].altitude);
-    }
-    builder.addLinearLayer(params[4].offset, params[4].scaleHeight, params[4].altitude);
-
-    // check if we want to also add the US standard refractivity
-    if constexpr (detail::implements_mixin_v<IRefractiveIndexModel,
-                                             TEnvironmentInterface>) {
-      // TODO: Add US Standard refractivity
-    }
-
-    // and assemble the environment
-    builder.assemble(env);
-  };
+  void create_5layer_atmosphere(TEnvironment& env, AtmosphereId const atmId,
+                                Point const& center, TArgs... args);
 
 } // namespace corsika
+
+#include <corsika/detail/media/CORSIKA7Atmospheres.inl>

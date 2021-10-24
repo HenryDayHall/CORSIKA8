@@ -1,5 +1,5 @@
-PROJECT_NAME           = CORSIKA 8
-PROJECT_NUMBER         = 0.0.0
+PROJECT_NAME           = CORSIKA
+PROJECT_NUMBER         = @c8_version@
 PROJECT_BRIEF          = "The framework to simulate particle cascades for astroparticle physics"
 
 GENERATE_HTML          = YES

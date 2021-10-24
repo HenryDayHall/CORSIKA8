@@ -20,9 +20,11 @@
 
 namespace corsika {
 
-  /** Base Evnironment class
-   *  Describes the Environment in which the shower is propagated
-   **/
+  /**
+   * Base Environment class.
+   *
+   * Describes the Environment in which the shower is propagated.
+   */
   template <typename IEnvironmentModel>
   class Environment {
   public:
@@ -30,30 +32,34 @@ namespace corsika {
 
     Environment();
 
-    /** Getters for the universe stored in the Environment
+    /**
+     * Getters for the universe stored in the Environment.
      *
-     * @retval Retuns reference to a Universe object with infinite size
-     **/
+     * @retval Retuns reference to a Universe object with infinite size.
+     */
     ///@{
-    //* Get non const universe */
+    //! Get non const universe
     typename BaseNodeType::VTNUPtr& getUniverse();
-    //* Get const universe */
+    //! Get const universe
     typename BaseNodeType::VTNUPtr const& getUniverse() const;
     ///@}
 
-    /** Getter for the CoordinateSystem used in the Environment
+    /**
+     * Getter for the CoordinateSystem used in the Environment.
      *
-     * @retval Retuns a const reference to the CoordinateSystem used
-     **/
+     * @retval Retuns a const reference to the CoordinateSystem used.
+     */
     CoordinateSystemPtr const& getCoordinateSystem() const;
 
-    /** Factory method for creation of VolumeTreeNodes
+    /**
+     * Factory method for creation of VolumeTreeNodes.
+     *
      * @tparam TVolumeType Type of volume to be created
      * @tparam TVolumeArgs Types to forward to the constructor
      * @param args Parameter forwarded to the constructor of TVolumeType
-     * @retval Retuns unique pointer to a VolumeTreeNode with the same EnvitonmentModel as
-     *this class
-     **/
+     * @retval Returns unique pointer to a VolumeTreeNode with the same EnvitonmentModel
+     * as this class.
+     */
     template <class TVolumeType, typename... TVolumeArgs>
     static std::unique_ptr<BaseNodeType> createNode(TVolumeArgs&&... args);
 

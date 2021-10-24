@@ -24,10 +24,14 @@
 #include <type_traits>
 #include <functional>
 
+/**
+ * @file LayeredSphericalAtmosphereBuilder.hpp
+ */
+
 namespace corsika {
 
   /**
-   * \class make_layered_spherical_atmosphere_builder
+   * make_layered_spherical_atmosphere_builder.
    *
    * Helper class to create LayeredSphericalAtmosphereBuilder, the
    * extra environment models have to be passed as template-template
