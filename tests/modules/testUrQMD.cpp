@@ -11,8 +11,8 @@
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalConstants.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
+#include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaFenv.hpp>
@@ -71,73 +71,46 @@ TEST_CASE("UrQMD") {
   RNGManager<>::getInstance().registerRandomStream("urqmd");
   UrQMD urqmd;
 
-  SECTION("interaction length") {
-    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Nitrogen);
-    auto const& cs = *csPtr;
-    { [[maybe_unused]] auto const& env_dummy = env; }
+  auto const rootCS = get_root_CoordinateSystem();
 
-    Code validProjectileCodes[] = {Code::PiPlus,     Code::PiMinus,     Code::Proton,
-                                   Code::AntiProton, Code::AntiNeutron, Code::Neutron,
-                                   Code::KPlus,      Code::KMinus,      Code::K0,
-                                   Code::K0Bar,      Code::K0Long};
+  SECTION("valid") {
+    // this is how it is currently done
+    CHECK_THROWS(urqmd.isValid(Code::K0, Code::Proton));
+    CHECK_THROWS(urqmd.isValid(Code::DPlus, Code::Proton));
+    CHECK_THROWS(urqmd.isValid(Code::Electron, Code::Proton));
+    CHECK_THROWS(urqmd.isValid(Code::Proton, Code::Electron));
+    CHECK_THROWS(urqmd.isValid(Code::Oxygen, Code::Oxygen));
+    CHECK_THROWS(urqmd.isValid(Code::PiPlus, Code::Omega));
+    CHECK_THROWS(
+        urqmd.isValid(Code::PiPlus, Code::Proton)); // Proton is not a valid target....
 
+    CHECK_NOTHROW(urqmd.isValid(Code::Proton, Code::Oxygen));
+    CHECK_NOTHROW(urqmd.isValid(Code::PiPlus, Code::Argon));
+  }
+
+  SECTION("cross sections") {
+    FourMomentum const targetP4{Nitrogen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}};
+
+    HEPMomentumType const P0 = 100_GeV;
+    Code const validProjectileCodes[] = {
+        Code::PiPlus,  Code::PiMinus, Code::Proton, Code::AntiProton, Code::AntiNeutron,
+        Code::Neutron, Code::KPlus,   Code::KMinus, Code::K0Long};
+    // Code::K0, Code::K0Bar  are not valid projectiles (no mass eigenstates)
+    CrossSectionType const checkCX[] = {219_mb, 222_mb, 303_mb, 324_mb, 324_mb,
+                                        303_mb, 189_mb, 198_mb, 172_mb};
+
+    int i = 0;
     for (auto code : validProjectileCodes) {
-      auto [stack, view] = setup::testing::setup_stack(code, 100_GeV, nodePtr, cs);
-      CHECK(stack->getEntries() == 1);
-      CHECK(view->getEntries() == 0);
-
-      // simple check whether the cross-section is non-vanishing
-      // only nuclei with available tabluated data so far
-      CHECK(urqmd.getInteractionLength(stack->getNextParticle()) > 1_g / square(1_cm));
+      FourMomentum const projectileP4{
+          sqrt(static_pow<2>(get_mass(code)) + static_pow<2>(P0)),
+          {rootCS, {0_GeV, 0_GeV, P0}}};
+      auto const cx = urqmd.getCrossSection(code, Code::Nitrogen, projectileP4, targetP4);
+      CORSIKA_LOG_INFO("UrQMD cross seciton for {} is {} mb", code, cx / 1_mb);
+      CHECK(cx / 1_mb == Approx(checkCX[i++] / 1_mb).margin(1));
     }
   }
 
-  SECTION("targets options") {
-    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Argon);
-    auto const& cs = *csPtr;
-    { [[maybe_unused]] auto const& env_dummy = env; }
-    auto [stack, view] = setup::testing::setup_stack(Code::Proton, 100_GeV, nodePtr, cs);
-    [[maybe_unused]] setup::StackView& viewRef = *(view.get());
-    CHECK(urqmd.getInteractionLength(stack->getNextParticle()) / 1_g * square(1_cm) ==
-          Approx(105).margin(5));
-  }
-
-  SECTION("invalid targets options") {
-    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Omega);
-    auto const& cs = *csPtr;
-    { [[maybe_unused]] auto const& env_dummy = env; }
-    auto [stack, view] = setup::testing::setup_stack(Code::Neutron, 100_GeV, nodePtr, cs);
-    [[maybe_unused]] setup::StackView& viewRef = *(view.get());
-    CHECK_THROWS(urqmd.getInteractionLength(stack->getNextParticle()));
-  }
-
-  SECTION("nucleus projectile") {
-    auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
-    [[maybe_unused]] auto const& env_dummy = env;      // against warnings
-    [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
-
-    unsigned short constexpr A = 14, Z = 7;
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        get_nucleus_code(A, Z), 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
-    [[maybe_unused]] setup::StackView& viewRef = *(secViewPtr.get());
-    CHECK(stackPtr->getEntries() == 1);
-    CHECK(secViewPtr->getEntries() == 0);
-
-    // must be assigned to variable, cannot be used as rvalue?!
-    auto projectile = secViewPtr->getProjectile();
-    auto const projectileMomentum = projectile.getMomentum();
-    urqmd.doInteraction(*secViewPtr);
-
-    CHECK(sumCharge(*secViewPtr) == Z + get_charge_number(Code::Oxygen));
-
-    auto const secMomSum =
-        sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
-    CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
-          Approx(0).margin(1e-2));
-  }
-
-  SECTION("\"special\" projectile") {
+  SECTION("pion+ projectile") {
     auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
     [[maybe_unused]] auto const& env_dummy = env;      // against warnings
     [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
@@ -151,7 +124,11 @@ TEST_CASE("UrQMD") {
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    urqmd.doInteraction(*secViewPtr);
+    FourMomentum const projectileP4{
+        sqrt(static_pow<2>(PiPlus::mass) + static_pow<2>(40_GeV)),
+        {rootCS, {40_GeV, 0_GeV, 0_GeV}}};
+    FourMomentum const targetP4{Oxygen::mass, {rootCS, {0_GeV, 0_GeV, 0_GeV}}};
+    urqmd.doInteraction(*secViewPtr, Code::PiPlus, Code::Oxygen, projectileP4, targetP4);
 
     CHECK(sumCharge(*secViewPtr) ==
           get_charge_number(Code::PiPlus) + get_charge_number(Code::Oxygen));
@@ -160,44 +137,6 @@ TEST_CASE("UrQMD") {
         sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
     CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
           Approx(0).margin(1e-2));
-  }
-
-  SECTION("\"special\" projectile and target") {
-    {
-      auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Proton);
-      [[maybe_unused]] auto const& env_dummy = env;      // against warnings
-      [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
-
-      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-      [[maybe_unused]] auto particle = stackPtr->first();
-      CHECK_THROWS(urqmd.doInteraction(*secViewPtr)); // Code::Proton not a valid target
-    }
-
-    {
-      auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
-      [[maybe_unused]] auto const& env_dummy = env;      // against warnings
-      [[maybe_unused]] auto const& node_dummy = nodePtr; // against warnings
-
-      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::PiPlus, 40_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-      CHECK(stackPtr->getEntries() == 1);
-      CHECK(secViewPtr->getEntries() == 0);
-
-      // must be assigned to variable, cannot be used as rvalue?!
-      auto projectile = secViewPtr->getProjectile();
-      auto const projectileMomentum = projectile.getMomentum();
-
-      urqmd.doInteraction(*secViewPtr);
-
-      CHECK(sumCharge(*secViewPtr) ==
-            get_charge_number(Code::PiPlus) + get_charge_number(Code::Oxygen));
-
-      auto const secMomSum =
-          sumMomentum(*secViewPtr, projectileMomentum.getCoordinateSystem());
-      CHECK((secMomSum - projectileMomentum).getNorm() / projectileMomentum.getNorm() ==
-            Approx(0).margin(1e-2));
-    }
   }
 
   SECTION("K0Long projectile") {
@@ -214,7 +153,11 @@ TEST_CASE("UrQMD") {
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    urqmd.doInteraction(*secViewPtr);
+    FourMomentum const projectileP4{
+        sqrt(static_pow<2>(K0Long::mass) + static_pow<2>(40_GeV)),
+        {rootCS, {40_GeV, 0_GeV, 0_GeV}}};
+    FourMomentum const targetP4{Oxygen::mass, {rootCS, {0_GeV, 0_GeV, 0_GeV}}};
+    urqmd.doInteraction(*secViewPtr, Code::K0Long, Code::Oxygen, projectileP4, targetP4);
 
     CHECK(sumCharge(*secViewPtr) ==
           get_charge_number(Code::K0Long) + get_charge_number(Code::Oxygen));

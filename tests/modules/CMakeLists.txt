@@ -6,7 +6,7 @@ set (test_modules_sources
   testObservationPlane.cpp
   testQGSJetII.cpp
   #testPythia8.cpp
-  #testUrQMD.cpp
+  testUrQMD.cpp
   #testCONEX.cpp
   ## testOnShellCheck.cpp
   testParticleCut.cpp

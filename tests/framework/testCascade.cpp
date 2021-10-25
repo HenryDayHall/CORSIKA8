@@ -113,8 +113,8 @@ private:
 class ProcessCut : public SecondariesProcess<ProcessCut> {
 
 public:
-  ProcessCut(HEPEnergyType e)
-      : fEcrit(e) {}
+  ProcessCut(HEPEnergyType const e)
+      : Ecrit_(e) {}
 
   template <typename TStack>
   void doSecondaries(TStack& vS) {
@@ -122,7 +122,7 @@ public:
     auto p = vS.begin();
     while (p != vS.end()) {
       HEPEnergyType E = p.getEnergy();
-      if (E < fEcrit) {
+      if (E < Ecrit_) {
         p.erase();
         count_++;
       }
@@ -138,7 +138,7 @@ public:
 private:
   int count_ = 0;
   int calls_ = 0;
-  HEPEnergyType fEcrit;
+  HEPEnergyType Ecrit_;
 };
 
 TEST_CASE("Cascade", "[Cascade]") {

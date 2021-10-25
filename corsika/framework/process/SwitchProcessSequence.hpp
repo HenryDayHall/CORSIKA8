@@ -147,7 +147,7 @@ namespace corsika {
 
     template <typename TParticle>
     CrossSectionType getCrossSection(TParticle const& projectile, Code const targetId,
-                                     HEPEnergyType const sqrtSnn) const;
+                                     FourMomentum const& targetP4) const;
 
     template <typename TSecondaryView, typename TRNG>
     ProcessReturn selectInteraction(TSecondaryView& view,

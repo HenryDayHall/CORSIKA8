@@ -29,7 +29,6 @@
 #include <corsika/modules/sibyll/Random.hpp>
 
 // TODODODODODODODODOODOD THIS MUST BE REMOVED
-#include <corsika/modules/urqmd/Random.hpp>
 #include <corsika/modules/epos/Random.hpp>
 // TODODODODODODODODOODOD THIS MUST BE REMOVED
 
@@ -279,7 +278,7 @@ TEST_CASE("SibyllInterface", "modules") {
     // CHECK(view.getSize() == 11);
     CHECK(cx / 1_mb == Approx(1100).margin(100)); // this is not physics validation
     // CHECK(view.getSize() == 20); // also sibyll not stable wrt. to compiler changes
-    CHECK(view.getSize() == Approx(200).margin(90)); // this is not physics validation
+    CHECK(view.getSize() == Approx(90).margin(10)); // this is not physics validation
   }
 }
 

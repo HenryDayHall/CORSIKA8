@@ -213,26 +213,24 @@ namespace corsika {
   CrossSectionType SwitchProcessSequence<
       TCondition, TSequence, USequence, IndexStart, IndexProcess1,
       IndexProcess2>::getCrossSection(TParticle const& projectile, Code const targetId,
-                                      HEPEnergyType const sqrtSnn) const {
+                                      FourMomentum const& targetP4) const {
 
-    if (select_(projectile.parent())) {
+    if (select_(projectile)) {
       if constexpr (is_interaction_process_v<process1_type>) {
-        return A_.getCrossSection(projectile.getPID(), targetId, sqrtSnn,
-                                  projectile.getNuclearA(),
-                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+        return A_.getCrossSection(projectile.getPID(), targetId,
+                                  {projectile.getEnergy(), projectile.getMomentum()},
+                                  targetP4);
       } else if (process1_type::is_process_sequence) {
-        return A_.getCrossSection(projectile, targetId, sqrtSnn,
-                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+        return A_.getCrossSection(projectile, targetId, targetP4);
       }
 
     } else {
       if constexpr (is_interaction_process_v<process2_type>) {
-        return B_.getCrossSection(projectile.getPID(), targetId, sqrtSnn,
-                                  projectile.getNuclearA(),
-                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+        return B_.getCrossSection(projectile.getPID(), targetId,
+                                  {projectile.getEnergy(), projectile.getMomentum()},
+                                  targetP4);
       } else if (process2_type::is_process_sequence) {
-        return B_.getCrossSection(projectile, targetId, sqrtSnn,
-                                  is_nucleus(targetId) ? get_nucleus_A(targetId) : 0);
+        return B_.getCrossSection(projectile, targetId, targetP4);
       }
     }
     return CrossSectionType::zero(); // default value

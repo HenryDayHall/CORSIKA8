@@ -79,7 +79,6 @@ namespace corsika {
         currentLogicalNode->getModelProperties().getNuclearComposition();
 
     // determine sqrtS per nucleon pair, sqrtS_NN
-    Code const projectileId = particle.getPID();
     HEPEnergyType const Elab = particle.getEnergy();
     FourMomentum const projectileP4{Elab, particle.getMomentum()};
     CrossSectionType const sigma =
@@ -88,8 +87,7 @@ namespace corsika {
               get_mass(targetId),
               MomentumVector(particle.getMomentum().getCoordinateSystem(),
                              {0_GeV, 0_GeV, 0_GeV}));
-          return sequence_.getCrossSection(projectileId, targetId, projectileP4,
-                                           targetP4);
+          return sequence_.getCrossSection(particle, targetId, targetP4);
         });
     interaction(secondaries, projectileP4, composition, sigma);
     sequence_.doSecondaries(secondaries);
@@ -113,7 +111,6 @@ namespace corsika {
         currentLogicalNode->getModelProperties().getNuclearComposition();
 
     // determine sqrtS per nucleon pair, sqrtS_NN
-    Code const projectileId = particle.getPID();
     HEPEnergyType const Elab = particle.getEnergy();
     FourMomentum const projectileP4{Elab, particle.getMomentum()};
 
@@ -125,8 +122,7 @@ namespace corsika {
               get_mass(targetId),
               MomentumVector(particle.getMomentum().getCoordinateSystem(),
                              {0_GeV, 0_GeV, 0_GeV}));
-          return sequence_.getCrossSection(projectileId, targetId, projectileP4,
-                                           targetP4);
+          return sequence_.getCrossSection(particle, targetId, targetP4);
         });
 
     // calculate interaction length in medium

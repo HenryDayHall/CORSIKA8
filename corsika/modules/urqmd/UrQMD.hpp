@@ -10,9 +10,9 @@
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-#include <corsika/framework/process/InteractionProcess.hpp>
 #include <corsika/framework/random/RNGManager.hpp>
 #include <corsika/framework/utility/CorsikaData.hpp>
+#include <corsika/framework/geometry/FourVector.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/multi_array.hpp>
@@ -23,32 +23,30 @@
 
 namespace corsika::urqmd {
 
-  class UrQMD : public InteractionProcess<UrQMD> {
+  class UrQMD {
   public:
     /**
-     * @param path Location of UrQMD XS data file
+     * The UrQMD interaction model.
+     *
+     * @param path Location of UrQMD XS data file.
      * @param retryFlag Internal UrQMD flag for retrying interaction in case of empty
-     * event, 0 means retry
+     * event, 0 means retry.
      */
     UrQMD(boost::filesystem::path const path = corsika_data("UrQMD/UrQMD-1.3.1-xs.dat"),
           int const retryFlag = 0);
 
-    template <typename TParticle>
-    GrammageType getInteractionLength(TParticle const&) const;
+    void isValid(Code const projectileId, Code const targetId) const;
 
-    CrossSectionType getTabulatedCrossSection(Code, Code, HEPEnergyType) const;
+    CrossSectionType getTabulatedCrossSection(Code const, Code const,
+                                              HEPEnergyType const) const;
 
-    template <typename TParticle>
-    CrossSectionType getCrossSection(TParticle const&, Code) const;
+    CrossSectionType getCrossSection(Code const projectileId, Code const targetId,
+                                     FourMomentum const& projP4,
+                                     FourMomentum const& targP4) const;
 
     template <typename TView>
-    void doInteraction(TView&);
-
-    bool canInteract(Code) const;
-
-    void blob(int) {}
-
-    static CrossSectionType getCrossSection(Code, Code, HEPEnergyType, int);
+    void doInteraction(TView&, Code const projectile, Code const targetId,
+                       FourMomentum const& projP4, FourMomentum const& targP4);
 
   private:
     void readXSFile(boost::filesystem::path);
@@ -59,14 +57,6 @@ namespace corsika::urqmd {
     int iflb_; //! // flag for retrying interaction in case of empty event, 0 means retry
     boost::multi_array<CrossSectionType, 3> xs_interp_support_table_;
   };
-
-  /**
-   * convert CORSIKA code to UrQMD code tuple
-   *
-   * In the current implementation a detour via the PDG code is made.
-   */
-  std::pair<int, int> convertToUrQMD(Code);
-  Code convertFromUrQMD(int vItyp, int vIso3);
 
 } // namespace corsika::urqmd
 

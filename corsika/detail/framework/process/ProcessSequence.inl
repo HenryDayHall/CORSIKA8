@@ -310,30 +310,36 @@ namespace corsika {
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
             int IndexProcess2>
+  template <typename TParticle>
   inline CrossSectionType
   ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                  IndexProcess2>::getCrossSection(Code const projectileId,
+                  IndexProcess2>::getCrossSection(TParticle const& projectile,
                                                   Code const targetId,
-                                                  FourMomentum const& projectileP4,
                                                   FourMomentum const& targetP4) const {
 
     CrossSectionType tot = CrossSectionType::zero();
 
     if constexpr (is_process_v<process1_type>) { // to protect from further compiler
                                                  // errors if process1_type is invalid
-      if constexpr (is_interaction_process_v<process1_type> ||
-                    process1_type::is_process_sequence) {
-        tot += A_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
+      if constexpr (is_interaction_process_v<process1_type>) {
+        tot += A_.getCrossSection(projectile.getPID(), targetId,
+                                  {projectile.getEnergy(), projectile.getMomentum()},
+                                  targetP4);
+      } else if constexpr (process1_type::is_process_sequence) {
+        tot += A_.getCrossSection(projectile, targetId, targetP4);
       }
     }
     if constexpr (is_process_v<process2_type>) { // to protect from further compiler
                                                  // errors if process2_type is invalid
-      if constexpr (is_interaction_process_v<process2_type> ||
-                    process2_type::is_process_sequence) {
-        tot += B_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
+      if constexpr (is_interaction_process_v<process2_type>) {
+        tot += B_.getCrossSection(projectile.getPID(), targetId,
+                                  {projectile.getEnergy(), projectile.getMomentum()},
+                                  targetP4);
+      } else if constexpr (process2_type::is_process_sequence) {
+        tot += B_.getCrossSection(projectile, targetId, targetP4);
       }
+      return tot;
     }
-    return tot;
   }
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,
@@ -436,6 +442,7 @@ namespace corsika {
         Code const projectileId = projectile.getPID();
 
         // get cross section vector for all material components
+        // for selected process A
         static_assert(
             has_method_getCrossSection_v<TProcess1,        // process object
                                          CrossSectionType, // return type
@@ -500,7 +507,7 @@ namespace corsika {
         auto const& projectile = view.parent();
         Code const projectileId = projectile.getPID();
 
-        // get cross section vector for all material components
+        // get cross section vector for all material components, for selected process B
         static_assert(has_method_getCrossSection_v<TProcess2,        // process object
                                                    CrossSectionType, // return type
                                                    Code, Code, FourMomentum const&,
