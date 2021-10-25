@@ -43,7 +43,7 @@ namespace corsika::sibyll {
         public InteractionProcess<NuclearInteraction<TEnvironment, TNucleonModel>> {
   public:
     NuclearInteraction(TNucleonModel& model, TEnvironment const& env)
-        : NuclearInteractionModel<TNucleonModel, TEnvironment>(model, env) {}
+        : NuclearInteractionModel<TEnvironment, TNucleonModel>(model, env) {}
   };
 
 } // namespace corsika::sibyll
