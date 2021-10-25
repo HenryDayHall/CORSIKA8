@@ -312,10 +312,10 @@ namespace corsika {
             int IndexProcess2>
   template <typename TParticle>
   inline CrossSectionType
-  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1,
-                  IndexProcess2>::getCrossSection(TParticle const& projectile,
-                                                  Code const targetId,
-                                                  FourMomentum const& targetP4) const {
+  ProcessSequence<TProcess1, TProcess2, IndexStart, IndexProcess1, IndexProcess2>::
+      getCrossSection([[maybe_unused]] TParticle const& projectile,
+                      [[maybe_unused]] Code const targetId,
+                      [[maybe_unused]] FourMomentum const& targetP4) const {
 
     CrossSectionType tot = CrossSectionType::zero();
 
@@ -338,8 +338,8 @@ namespace corsika {
       } else if constexpr (process2_type::is_process_sequence) {
         tot += B_.getCrossSection(projectile, targetId, targetP4);
       }
-      return tot;
     }
+    return tot;
   }
 
   template <typename TProcess1, typename TProcess2, int IndexStart, int IndexProcess1,

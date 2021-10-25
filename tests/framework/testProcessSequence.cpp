@@ -63,7 +63,6 @@ struct DummyData {
     return MomentumVector{get_root_CoordinateSystem(), 0_eV, 0_eV, 0_eV};
   }
   HEPEnergyType getEnergy() const { return 10_GeV; }
-  unsigned int getNuclearA() const { return 1; }
 };
 
 // there is no real trajectory/track
@@ -454,27 +453,6 @@ TEST_CASE("ProcessSequence General", "ProcessSequence") {
               sequence2_rv.getProcess2().getProcess2())>); // Process3
   }
 
-  SECTION("interaction length") {
-    globalCount = 0;
-    ContinuousProcess1 cp1(0, 1_m);
-    Process2 m2(1);
-    Process3 m3(2);
-
-    DummyData particle;
-
-    auto sequence2 = make_sequence(cp1, m2, m3);
-    /*GrammageType const tot = sequence2.getInteractionLength(particle);
-    InverseGrammageType const tot_inv = sequence2.getInverseInteractionLength(particle);
-    CORSIKA_LOG_DEBUG(
-        "lambda_tot={}"
-        "; lambda_tot_inv={}",
-        tot, tot_inv);
-
-    CHECK(tot / 1_g * square(1_cm) == 12);
-    CHECK(tot_inv * 1_g / square(1_cm) == 1. / 12);*/
-    globalCount = 0;
-  }
-
   SECTION("lifetime") {
     globalCount = 0;
     ContinuousProcess1 cp1(0, 1_m);
@@ -640,11 +618,19 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
   auto sec1 = Secondaries1();
   auto sec2 = Secondaries2();
 
-  auto sequence1 = make_sequence(Process1(0), cp2, Decay1(0), sec1, Boundary1(1.0));
-  auto sequence2 = make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0), sec2);
+  auto sequence1 =
+      make_sequence(Process1(0), cp2, Decay1(0), sec1, Boundary1(1.0)); // 10 mb
+  auto sequence2 =
+      make_sequence(cp3, Process2(0), Boundary1(-1.0), Decay2(0), sec2); // 20 mb
 
-  auto sequence3 = make_sequence(cp1, Process3(0),
+  auto sequence3 = make_sequence(cp1, Process3(0), // 30 mb
                                  SwitchProcessSequence(select1, sequence1, sequence2));
+
+  // it is even more typical to have just one sub-process inside the branches of
+  // SwitchProcessSequence
+  auto sequence3_short =
+      make_sequence(cp1, Process3(0), // 30 mb
+                    SwitchProcessSequence(select1, Process1(0), Process2(0)));
 
   auto sequence4 =
       make_sequence(cp1, Boundary1(2.0), Process3(0),
@@ -778,15 +764,96 @@ TEST_CASE("SwitchProcessSequence", "ProcessSequence") {
     CHECK(checkCont == 0);
     CHECK(checkSec == 0);
 
-    // check that large "select" value will correctly ignore the call
-    cx_select = 1e5_mb;
-    time_select = 1e5 / second;
-    checkDecay = 0;
-    checkInteract = 0;
-    sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
-    sequence3.selectDecay(view, time_select);
-    CHECK(checkInteract == 0);
-    CHECK(checkDecay == 0);
+    // now check sequence3, which contains a SwitchProcessSequence that contains two
+    // longer sequences in each branch.
+    {
+      // check that large "select" value will correctly ignore the call
+      cx_select = 1e5_mb;
+      time_select = 1e5 / second;
+      checkDecay = 0;
+      checkInteract = 0;
+      sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
+      sequence3.selectDecay(view, time_select);
+      CHECK(checkInteract == 0);
+      CHECK(checkDecay == 0);
+
+      // for a small cx_select selection must be sucessful
+      cx_select = 28_mb; // -> Process3
+      checkInteract = 0;
+      particle.data_[0] = -100; // data negative --> sequence2
+      CHECK(sequence3.getCrossSection(particle, Code::Oxygen,
+                                      {Oxygen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
+                1_mb ==
+            Approx(50.));
+      sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
+      CHECK(checkInteract == 4); // 2^3
+
+      particle.data_[0] = 100; // data positive --> sequence1
+      checkInteract = 0;
+      CHECK(sequence3.getCrossSection(particle, Code::Oxygen,
+                                      {Oxygen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
+                1_mb ==
+            Approx(40.));
+      sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
+      CHECK(checkInteract == 4); // 2^3
+
+      cx_select = 32_mb; // -> Process2 or Process1
+      checkInteract = 0;
+      particle.data_[0] = -100; // data negative --> Process2
+      sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
+      CHECK(checkInteract == 2); // 2^2
+
+      particle.data_[0] = 100; // data positive --> Process1
+      checkInteract = 0;
+      sequence3.selectInteraction(view, projectileP4, noComposition, rng, cx_select);
+      CHECK(checkInteract == 1); // 2^1
+    }
+
+    // now check sequence3, which contains a SwitchProcessSequence that contains just two
+    // bare InteractionProcess-es in each branch.
+    {
+      // check that large "select" value will correctly ignore the call
+      cx_select = 1e5_mb;
+      checkInteract = 0;
+      sequence3_short.selectInteraction(view, projectileP4, noComposition, rng,
+                                        cx_select);
+      CHECK(checkInteract == 0);
+
+      // for a small cx_select selection must be sucessful
+      cx_select = 28_mb; // -> Process3
+      checkInteract = 0;
+      particle.data_[0] = -100; // data negative --> sequence2
+      CHECK(sequence3_short.getCrossSection(
+                particle, Code::Oxygen, {Oxygen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
+                1_mb ==
+            Approx(50.));
+      sequence3_short.selectInteraction(view, projectileP4, noComposition, rng,
+                                        cx_select);
+      CHECK(checkInteract == 4); // 2^3
+
+      particle.data_[0] = 100; // data positive --> sequence1
+      checkInteract = 0;
+      CHECK(sequence3_short.getCrossSection(
+                particle, Code::Oxygen, {Oxygen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}}) /
+                1_mb ==
+            Approx(40.));
+      sequence3_short.selectInteraction(view, projectileP4, noComposition, rng,
+                                        cx_select);
+      CHECK(checkInteract == 4); // 2^3
+
+      cx_select = 32_mb; // -> Process2 or Process1
+      checkInteract = 0;
+      particle.data_[0] = -100; // data negative --> Process2
+      sequence3_short.selectInteraction(view, projectileP4, noComposition, rng,
+                                        cx_select);
+      CHECK(checkInteract == 2); // 2^2
+
+      particle.data_[0] = 100; // data positive --> Process1
+      checkInteract = 0;
+      sequence3_short.selectInteraction(view, projectileP4, noComposition, rng,
+                                        cx_select);
+      CHECK(checkInteract == 1); // 2^1
+    }
   }
 
   SECTION("Check SecondariesProcesses in SwitchProcessSequence") {

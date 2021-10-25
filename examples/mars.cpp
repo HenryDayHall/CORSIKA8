@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
     HEPEnergyType cutE_;
     EnergySwitch(HEPEnergyType cutE)
         : cutE_(cutE) {}
-    bool operator()(const Particle& p) { return (p.getKineticEnergy() < cutE_); }
+    bool operator()(Particle const& p) const { return (p.getKineticEnergy() < cutE_); }
   };
   auto hadronSequence = make_select(EnergySwitch(63.1_GeV), urqmdCounted, heModelCounted);
   auto decaySequence = make_sequence(decayPythia, decaySibyll);
