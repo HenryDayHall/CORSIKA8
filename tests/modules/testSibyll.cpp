@@ -88,7 +88,6 @@ TEST_CASE("Sibyll", "modules") {
 #include <corsika/framework/geometry/Vector.hpp>
 
 #include <corsika/framework/core/PhysicalUnits.hpp>
-
 #include <corsika/framework/core/ParticleProperties.hpp>
 
 #include <SetupTestEnvironment.hpp>
@@ -186,9 +185,9 @@ TEST_CASE("SibyllInterface", "modules") {
     model.setVerbose(true);
     HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(Proton::mass));
     FourMomentum const projectileP4(Elab, plab);
-    FourMomentum const nucleonP4(Oxygen::mass, MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
+    FourMomentum const nucleusP4(Oxygen::mass, MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
     view.clear();
-    model.doInteraction(view, Code::Proton, Code::Oxygen, projectileP4, nucleonP4);
+    model.doInteraction(view, Code::Proton, Code::Oxygen, projectileP4, nucleusP4);
     auto const pSum = sumMomentum(view, cs);
 
     /*
@@ -255,7 +254,7 @@ TEST_CASE("SibyllInterface", "modules") {
           Approx(0).margin(plab.getNorm() * 0.05 / 1_GeV));
     CHECK(pSum.getNorm() / P0 == Approx(1).margin(0.05));
     [[maybe_unused]] CrossSectionType const cx =
-        model.getCrossSection(Code::Proton, Code::Oxygen, projectileP4, nucleonP4);
+        model.getCrossSection(Code::Proton, Code::Oxygen, projectileP4, nucleusP4);
     CHECK(cx / 1_mb == Approx(300).margin(1));
     // CHECK(view.getEntries() == 9); //! \todo: this was 20 before refactory-2020: check
     //                                           "also sibyll not stable wrt. to compiler

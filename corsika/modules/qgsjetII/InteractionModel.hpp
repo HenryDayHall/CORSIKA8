@@ -1,0 +1,77 @@
+/*
+ * (c) Copyright 2020 CORSIKA Project, corsika-project@lists.kit.edu
+ *
+ * This software is distributed under the terms of the GNU General Public
+ * Licence version 3 (GPL Version 3). See file LICENSE for a full version of
+ * the license.
+ */
+
+#pragma once
+
+#include <corsika/modules/qgsjetII/ParticleConversion.hpp>
+#include <qgsjet-II-04.hpp>
+
+#include <corsika/framework/core/ParticleProperties.hpp>
+#include <corsika/framework/core/PhysicalUnits.hpp>
+#include <corsika/framework/random/RNGManager.hpp>
+#include <corsika/framework/utility/COMBoost.hpp>
+#include <corsika/framework/utility/CorsikaData.hpp>
+
+#include <boost/filesystem/path.hpp>
+
+namespace corsika::qgsjetII {
+
+  class InteractionModel {
+
+  public:
+    InteractionModel(boost::filesystem::path dataPath = corsika_data("QGSJetII"));
+    ~InteractionModel();
+
+    /**
+     * Throws exception if invalid system is passed.
+     *
+     * @param beamId
+     * @param targetId
+     */
+    void isValid(Code const beamId, Code const targetId) const;
+
+    /**
+     * Return the QGSJETII inelastic/production cross section.
+     *
+     * This cross section must correspond to the process described in doInteraction.
+     * Allowed targets are: nuclei or single nucleons (p,n,hydrogen).
+     *
+     * @param projectile is the Code of the projectile
+     * @param target is the Code of the target
+     * @param sqrtSnn is the center-of-mass energy (per nucleon pair)
+     * @param Aprojectile is the mass number of the projectils, if it is a nucleus
+     * @param Atarget is the mass number of the target, if it is a nucleus
+     *
+     * @return inelastic cross section.
+     */
+    CrossSectionType getCrossSection(Code const projectile, Code const target,
+                                     FourMomentum const& projectileP4,
+                                     FourMomentum const& targetP4) const;
+
+    /**
+     * In this function QGSJETII is called to produce one event.
+     *
+     * The event is copied (and boosted) into the shower lab frame.
+     */
+    template <typename TSecondaries>
+    void doInteraction(TSecondaries&, Code const projectile, Code const target,
+                       FourMomentum const& projectileP4, FourMomentum const& targetP4);
+
+  private:
+    int count_ = 0;
+    QgsjetIIHadronType alternate_ =
+        QgsjetIIHadronType::PiPlusType; // for pi0, rho0 projectiles
+
+    corsika::default_prng_type& rng_ =
+        corsika::RNGManager<>::getInstance().getRandomStream("qgsjet");
+    static size_t constexpr maxMassNumber_ = 208;
+  };
+
+} // namespace corsika::qgsjetII
+
+#include <corsika/detail/modules/qgsjetII/InteractionModel.inl>

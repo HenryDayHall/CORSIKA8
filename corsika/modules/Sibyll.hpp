@@ -18,7 +18,7 @@
 /**
  * @file Sibyll.hpp
  *
- * Includes all the parts of the Sibyll model. Defines the InteractoinProcess<TModel>
+ * Includes all the parts of the Sibyll model. Defines the InteractionProcess<TModel>
  * classes needed for the ProcessSequence.
  */
 
@@ -26,7 +26,7 @@ namespace corsika::sibyll {
   /**
    * @brief sibyll::Interaction is the process for ProcessSequence.
    *
-   * The sibyll::Model is wrapped as an InteractionProcess here in order
+   * The sibyll::InteractionModel is wrapped as an InteractionProcess here in order
    * to provide all the functions for ProcessSequence.
    */
   class Interaction : public InteractionModel, public InteractionProcess<Interaction> {};

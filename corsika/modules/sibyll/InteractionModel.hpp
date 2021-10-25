@@ -48,7 +48,7 @@ namespace corsika::sibyll {
                            HEPEnergyType const sqrtSnn) const;
 
     /**
-     * @brief returns inelastic AND elastic cross sections.
+     * Returns inelastic AND elastic cross sections.
      *
      * These cross sections must correspond to the process described in doInteraction
      * AND elastic scattering (sigma_tot = sigma_inel + sigma_el). Allowed targets are:
@@ -68,7 +68,7 @@ namespace corsika::sibyll {
         FourMomentum const& targetP4) const;
 
     /**
-     * @brief returns inelastic (production) cross section.
+     * Returns inelastic (production) cross section.
      *
      * This cross section must correspond to the process described in doInteraction.
      * Allowed targets are: nuclei or single nucleons (p,n,hydrogen).

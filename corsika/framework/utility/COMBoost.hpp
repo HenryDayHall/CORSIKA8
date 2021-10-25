@@ -25,11 +25,11 @@ namespace corsika {
    */
 
   /**
-   *  @class COMBoost
+   * @class COMBoost
    * @ingroup Utilities
    *
-   * This utility class handles Lorentz boost between different
-   * referenence frames, using FourVector.
+   * This utility class handles Lorentz boost (in one spatial direction)
+   * between different referenence frames, using FourVector.
    *
    * The class is initialized with projectile and optionally target
    * energy/momentum data. During initialization, a rotation matrix is
@@ -47,15 +47,25 @@ namespace corsika {
   class COMBoost {
 
   public:
-    //! construct a COMBoost given four-vector of projectile and mass of target (target at
-    //! rest)
+    /**
+     * Construct a COMBoost given four-vector of projectile and mass of target (target at
+     * rest).
+     *
+     * The FourMomentum and mass define the lab system.
+     */
     COMBoost(FourMomentum const& P4projectile, HEPEnergyType const massTarget);
 
-    //! construct a COMBoost given two four-vectors of projectile target
-    COMBoost(FourMomentum const& P4projectile, FourMomentum const& P4target);
-
-    //! construct a COMBoost to boost into the rest frame given a 3-momentum and mass
+    /**
+     * Construct a COMBoost to boost into the rest frame given a 3-momentum and mass.
+     */
     COMBoost(MomentumVector const& momentum, HEPEnergyType const mass);
+
+    /**
+     * Construct a COMBoost given two four-vectors of projectile target.
+     *
+     * The tow FourMomentum can define an arbitrary system.
+     */
+    COMBoost(FourMomentum const& P4projectile, FourMomentum const& P4target);
 
     //! transforms a 4-momentum from lab frame to the center-of-mass frame
     template <typename FourVector>
@@ -65,10 +75,10 @@ namespace corsika {
     template <typename FourVector>
     FourVector fromCoM(FourVector const& p4) const;
 
-    //! returns the rotated coordinate system
+    //! returns the rotated coordinate system: +z is projectile direction
     CoordinateSystemPtr getRotatedCS() const;
 
-    //! returns the original coordinate system
+    //! returns the original coordinate system of the projectile (lab)
     CoordinateSystemPtr getOriginalCS() const;
 
   protected:

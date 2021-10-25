@@ -6,8 +6,7 @@
  * the license.
  */
 
-#include <corsika/modules/qgsjetII/Interaction.hpp>
-#include <corsika/modules/qgsjetII/ParticleConversion.hpp>
+#include <corsika/modules/QGSJetII.hpp>
 
 #include <corsika/framework/core/ParticleProperties.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
@@ -49,6 +48,7 @@ auto sumMomentum(TStackView const& view, CoordinateSystemPtr const& vCS) {
 TEST_CASE("QgsjetII", "[processes]") {
 
   logging::set_level(logging::level::info);
+  RNGManager<>::getInstance().registerRandomStream("qgsjet");
 
   SECTION("Corsika -> QgsjetII") {
     CHECK(corsika::qgsjetII::convertToQgsjetII(PiMinus::code) ==
@@ -91,6 +91,14 @@ TEST_CASE("QgsjetII", "[processes]") {
     CHECK(corsika::qgsjetII::getQgsjetIIXSCode(Code::PiMinus) ==
           corsika::qgsjetII::QgsjetIIXSClass::LightMesons);
   }
+
+  SECTION("valid") {
+
+    corsika::qgsjetII::InteractionModel model;
+
+    CHECK_THROWS(model.isValid(Code::Electron, Code::Proton));
+    CHECK_THROWS(model.isValid(Code::Proton, Code::Electron));
+  }
 }
 
 #include <corsika/framework/geometry/Point.hpp>
@@ -115,25 +123,23 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
   logging::set_level(logging::level::info);
 
   auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
+  auto const& cs = *csPtr;
   [[maybe_unused]] auto const& env_dummy = env;
   [[maybe_unused]] auto const& node_dummy = nodePtr;
-
-  RNGManager<>::getInstance().registerRandomStream("qgsjet");
 
   SECTION("InteractionInterface") {
 
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
         Code::Proton, 110_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
-    auto particle = stackPtr->first();
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    corsika::qgsjetII::Interaction model;
-    model.doInteraction(view);
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-
-    CHECK(length / (1_g / square(1_cm)) == Approx(93.04).margin(0.1));
+    corsika::qgsjetII::InteractionModel model;
+    model.doInteraction(view, Code::Proton, Code::Oxygen,
+                        {sqrt(static_pow<2>(110_GeV) + static_pow<2>(Proton::mass)),
+                         MomentumVector{cs, 110_GeV, 0_GeV, 0_GeV}},
+                        {Oxygen::mass, MomentumVector{cs, {0_eV, 0_eV, 0_eV}}});
 
     /* **********************************
      As it turned out already two times (#291 and #307) that the detailed output of
@@ -152,24 +158,25 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
 
   SECTION("InteractionInterface Nuclei") {
 
+    HEPEnergyType const P0 = 20100_GeV;
+    MomentumVector const plab = MomentumVector(cs, {P0, 0_eV, 0_eV});
+    Code const pid = get_nucleus_code(60, 30);
     auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        get_nucleus_code(60, 30), 20100_GeV,
-        (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
+        pid, P0, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
-    auto particle = stackPtr->first();
-    auto projectile = secViewPtr->getProjectile();
-    auto const projectileMomentum = projectile.getMomentum();
 
-    corsika::qgsjetII::Interaction model;
-    model.doInteraction(view); // this also should produce some fragments
+    HEPEnergyType const Elab = sqrt(static_pow<2>(P0) + static_pow<2>(get_mass(pid)));
+    FourMomentum const projectileP4(Elab, plab);
+    FourMomentum const targetP4(Oxygen::mass, MomentumVector(cs, {0_eV, 0_eV, 0_eV}));
+    view.clear();
+
+    corsika::qgsjetII::InteractionModel model;
+    model.doInteraction(view, pid, Code::Oxygen, projectileP4,
+                        targetP4); // this also should produce some fragments
     CHECK(view.getSize() == Approx(300).margin(150)); // this is not physics validation
     int countFragments = 0;
     for (auto const& sec : view) { countFragments += (is_nucleus(sec.getPID())); }
     CHECK(countFragments == Approx(4).margin(2)); // this is not physics validation
-    [[maybe_unused]] const GrammageType length = model.getInteractionLength(particle);
-
-    CHECK(length / (1_g / square(1_cm)) ==
-          Approx(12).margin(2)); // this is not physics validation
   }
 
   SECTION("Heavy nuclei") {
@@ -178,38 +185,33 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
         get_nucleus_code(1000, 1000), 1100_GeV,
         (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
     setup::StackView& view = *(secViewPtr.get());
-    auto particle = stackPtr->first();
     auto projectile = secViewPtr->getProjectile();
     auto const projectileMomentum = projectile.getMomentum();
 
-    corsika::qgsjetII::Interaction model;
+    corsika::qgsjetII::InteractionModel model;
 
+    FourMomentum const aP4(100_GeV, {cs, 99_GeV, 0_GeV, 0_GeV});
+    FourMomentum const bP4(1_TeV, {cs, 0.9_TeV, 0_GeV, 0_GeV});
+
+    CHECK_THROWS(model.getCrossSection(get_nucleus_code(10, 5),
+                                       get_nucleus_code(1000, 500), aP4, bP4));
+    CHECK_THROWS(model.getCrossSection(Code::Nucleus, Code::Nucleus, aP4, bP4));
     CHECK_THROWS(
-        model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 10., 1000.));
-    CHECK_THROWS(
-        model.getCrossSection(Code::Nucleus, Code::Nucleus, 100_GeV, 1000., 10.));
-    CHECK_THROWS(model.doInteraction(view));
-    CHECK_THROWS(model.getInteractionLength(particle));
+        model.doInteraction(view, get_nucleus_code(1000, 500), Code::Oxygen, aP4, bP4));
   }
 
   SECTION("Allowed Particles") {
-    { // electron
-      auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-          Code::Electron, 100_GeV, (setup::Environment::BaseNodeType* const)nodePtr,
-          *csPtr);
-      [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
-      auto particle = stackPtr->first();
-      corsika::qgsjetII::Interaction model;
-      GrammageType const length = model.getInteractionLength(particle);
-      CHECK(length / (1_g / square(1_cm)) == std::numeric_limits<double>::infinity());
-    }
+
     { // pi0 is internally converted into pi+/pi-
       auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
           Code::Pi0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::Interaction model;
-      model.doInteraction(view);
+      corsika::qgsjetII::InteractionModel model;
+      model.doInteraction(view, Code::Pi0, Code::Oxygen,
+                          {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Pi0::mass)),
+                           MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
+                          {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
       CHECK(view.getSize() == Approx(10).margin(8)); // this is not physics validation
     }
     { // rho0 is internally converted into pi-/pi+
@@ -217,8 +219,11 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
           Code::Rho0, 1000_GeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::Interaction model;
-      model.doInteraction(view);
+      corsika::qgsjetII::InteractionModel model;
+      model.doInteraction(view, Code::Rho0, Code::Oxygen,
+                          {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Rho0::mass)),
+                           MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
+                          {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
       CHECK(view.getSize() == Approx(25).margin(20)); // this is not physics validation
     }
     { // Lambda is internally converted into neutron
@@ -227,8 +232,11 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
           *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::Interaction model;
-      model.doInteraction(view);
+      corsika::qgsjetII::InteractionModel model;
+      model.doInteraction(view, Code::Lambda0, Code::Oxygen,
+                          {sqrt(static_pow<2>(100_GeV) + static_pow<2>(Lambda0::mass)),
+                           MomentumVector{cs, 100_GeV, 0_GeV, 0_GeV}},
+                          {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
       CHECK(view.getSize() == Approx(25).margin(20)); // this is not physics validation
     }
     { // AntiLambda is internally converted into anti neutron
@@ -237,8 +245,11 @@ TEST_CASE("QgsjetIIInterface", "interaction,processes") {
           *csPtr);
       [[maybe_unused]] setup::StackView& view = *(secViewPtr.get());
       [[maybe_unused]] auto particle = stackPtr->first();
-      corsika::qgsjetII::Interaction model;
-      model.doInteraction(view);
+      corsika::qgsjetII::InteractionModel model;
+      model.doInteraction(view, Code::Lambda0Bar, Code::Oxygen,
+                          {sqrt(static_pow<2>(1_TeV) + static_pow<2>(Lambda0Bar::mass)),
+                           MomentumVector{cs, 1_TeV, 0_GeV, 0_GeV}},
+                          {Oxygen::mass, MomentumVector{cs, 0_eV, 0_eV, 0_eV}});
       CHECK(view.getSize() == Approx(70).margin(67)); // this is not physics validation
     }
   }

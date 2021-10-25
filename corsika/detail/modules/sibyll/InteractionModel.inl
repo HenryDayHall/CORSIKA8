@@ -156,8 +156,8 @@ namespace corsika::sibyll {
       auto const tmp = psib.getMomentum().getComponents();
       auto const pCoM = MomentumVector(csPrime, tmp);
       HEPEnergyType const eCoM = psib.getEnergy();
-      auto const Plab = boost.fromCoM(FourVector{eCoM, pCoM});
-      auto const p3lab = Plab.getSpaceLikeComponents();
+      auto const P4lab = boost.fromCoM(FourVector{eCoM, pCoM});
+      auto const p3lab = P4lab.getSpaceLikeComponents();
 
       // add to corsika stack
       auto pnew = secondaries.addSecondary(std::make_tuple(
@@ -167,19 +167,20 @@ namespace corsika::sibyll {
       Elab_final += pnew.getEnergy();
       Ecm_final += psib.getEnergy();
     }
-    HEPEnergyType const Elab_initial =
-        static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
-    CORSIKA_LOG_DEBUG(
-        "conservation (all GeV): "
-        "sqrtSnn={}, sqrtSnn_final={}, "
-        "Elab_initial={}, Elab_final={}, "
-        "diff(%)={}, "
-        "E in nucleons={}, "
-        "Plab_final={} ",
-        sqrtSnn / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV, Elab_initial,
-        Elab_final / 1_GeV, (Elab_final - Elab_initial) / Elab_initial * 100,
-        constants::nucleonMass * get_nwounded() / 1_GeV,
-        (Plab_final / 1_GeV).getComponents());
-  } // namespace corsika::sibyll
-
+    { // just output
+      HEPEnergyType const Elab_initial =
+          static_pow<2>(sqrtSnn) / (2 * constants::nucleonMass);
+      CORSIKA_LOG_DEBUG(
+          "conservation (all GeV): "
+          "sqrtSnn={}, sqrtSnn_final={}, "
+          "Elab_initial={}, Elab_final={}, "
+          "diff(%)={}, "
+          "E in nucleons={}, "
+          "Plab_final={} ",
+          sqrtSnn / 1_GeV, Ecm_final * 2. / (get_nwounded() + 1) / 1_GeV, Elab_initial,
+          Elab_final / 1_GeV, (Elab_final - Elab_initial) / Elab_initial * 100,
+          constants::nucleonMass * get_nwounded() / 1_GeV,
+          (Plab_final / 1_GeV).getComponents());
+    }
+  }
 } // namespace corsika::sibyll
