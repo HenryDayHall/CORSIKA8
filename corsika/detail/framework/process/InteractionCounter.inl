@@ -18,22 +18,20 @@ namespace corsika {
 
   template <class TCountedProcess>
   template <typename TSecondaryView>
-  inline void InteractionCounter<TCountedProcess>::doInteraction(TSecondaryView& view) {
-    auto const projectile = view.getProjectile();
-    auto const massNumber = projectile.getNode()
-                                ->getModelProperties()
-                                .getNuclearComposition()
-                                .getAverageMassNumber();
+  inline void InteractionCounter<TCountedProcess>::doInteraction(
+      TSecondaryView& view, Code const projectileId, Code const targetId,
+      FourMomentum const& projectileP4, FourMomentum const& targetP4) {
+    size_t const massNumber = is_nucleus(targetId) ? get_nucleus_A(targetId) : 1;
     auto const massTarget = massNumber * constants::nucleonMass;
-    histogram_.fill(projectile.getPID(), projectile.getEnergy(), massTarget);
-    process_.doInteraction(view);
+    histogram_.fill(projectileId, projectileP4.getTimeLikeComponent(), massTarget);
+    process_.doInteraction(view, projectileId, targetId, projectileP4, targetP4);
   }
 
   template <class TCountedProcess>
-  template <typename TParticle>
-  inline GrammageType InteractionCounter<TCountedProcess>::getInteractionLength(
-      TParticle const& particle) const {
-    return process_.getInteractionLength(particle);
+  inline CrossSectionType InteractionCounter<TCountedProcess>::getCrossSection(
+      Code const projectileId, Code const targetId, FourMomentum const& projectileP4,
+      FourMomentum const& targetP4) const {
+    return process_.getCrossSection(projectileId, targetId, projectileP4, targetP4);
   }
 
   template <class TCountedProcess>

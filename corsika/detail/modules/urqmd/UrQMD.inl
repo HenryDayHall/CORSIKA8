@@ -43,7 +43,7 @@ namespace corsika::urqmd {
       throw std::runtime_error("UrQMD projectile is not a compatible hadron.");
     }
     if (!is_nucleus(targetId)) {
-      throw std::runtime_error("UrQMD target is not a nucleus.");
+      throw std::runtime_error("UrQMD target is not a nucleus .");
     }
   }
 

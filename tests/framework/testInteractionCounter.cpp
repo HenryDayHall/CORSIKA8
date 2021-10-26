@@ -7,16 +7,10 @@
  */
 
 #include <corsika/framework/process/InteractionCounter.hpp>
-#include <corsika/media/Environment.hpp>
-#include <corsika/media/HomogeneousMedium.hpp>
-#include <corsika/media/NuclearComposition.hpp>
 #include <corsika/framework/geometry/Point.hpp>
 #include <corsika/framework/geometry/RootCoordinateSystem.hpp>
 #include <corsika/framework/geometry/Vector.hpp>
 #include <corsika/framework/core/PhysicalUnits.hpp>
-
-#include <SetupTestStack.hpp>
-#include <SetupTestEnvironment.hpp>
 
 #include <catch2/catch.hpp>
 
@@ -32,37 +26,46 @@ using namespace corsika;
 const std::string refDataDir = std::string(REFDATADIR); // from cmake
 
 struct DummyProcess {
-  template <typename TParticle>
-  GrammageType getInteractionLength(TParticle const&) {
-    return 100_g / 1_cm / 1_cm;
+
+  CrossSectionType getCrossSection(Code const, Code const, FourMomentum const&,
+                                   FourMomentum const&) {
+    return 100_mb;
   }
+
   template <typename TParticle>
-  void doInteraction(TParticle&) {}
+  void doInteraction(TParticle&, Code const, Code const, FourMomentum const&,
+                     FourMomentum const&) {}
 };
 
-TEST_CASE("InteractionCounter", "[process]") {
+struct DummyOutput {
+  /* can do nothing */
+};
+
+TEST_CASE("InteractionCounter", "process") {
 
   logging::set_level(logging::level::info);
 
   DummyProcess d;
   InteractionCounter countedProcess(d);
 
-  SECTION("getInteractionLength") {
-    CHECK(countedProcess.getInteractionLength(nullptr) == 100_g / 1_cm / 1_cm);
+  auto const rootCS = get_root_CoordinateSystem();
+  DummyOutput output;
+
+  SECTION("cross section pass-through") {
+    CHECK(countedProcess.getCrossSection(
+              Code::Oxygen, Code::Proton, {10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}},
+              {10_GeV, {rootCS, {0_eV, 0_eV, 0_eV}}}) == 100_mb);
   }
 
-  auto [env, csPtr, nodePtr] = setup::testing::setup_environment(Code::Oxygen);
-  [[maybe_unused]] auto& env_dummy = env;
-
-  SECTION("DoInteraction nucleus") {
+  SECTION("doInteraction nucleus") {
     unsigned short constexpr A = 14, Z = 7;
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        get_nucleus_code(A, Z), 105_TeV, (setup::Environment::BaseNodeType* const)nodePtr,
-        *csPtr);
-    CHECK(stackPtr->getEntries() == 1);
-    CHECK(secViewPtr->getEntries() == 0);
+    Code const pid = get_nucleus_code(A, Z);
 
-    countedProcess.doInteraction(*secViewPtr);
+    countedProcess.doInteraction(
+        output, pid, Code::Oxygen,
+        {sqrt(static_pow<2>(105_TeV) + static_pow<2>(get_mass(pid))),
+         {rootCS, {105_TeV, 0_GeV, 0_GeV}}},
+        {Oxygen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
 
     auto const& h = countedProcess.getHistogram().labHist();
     CHECK(h.at(h.axis(0).index(1'000'070'140), h.axis(1).index(1.05e14)) == 1);
@@ -99,14 +102,14 @@ TEST_CASE("InteractionCounter", "[process]") {
     }
   }
 
-  SECTION("DoInteraction Lambda") {
-    auto constexpr code = Code::Lambda0;
-    auto [stackPtr, secViewPtr] = setup::testing::setup_stack(
-        code, 105_TeV, (setup::Environment::BaseNodeType* const)nodePtr, *csPtr);
-    CHECK(stackPtr->getEntries() == 1);
-    CHECK(secViewPtr->getEntries() == 0);
+  SECTION("doInteraction Lambda") {
+    auto constexpr pid = Code::Lambda0;
 
-    countedProcess.doInteraction(*secViewPtr);
+    countedProcess.doInteraction(
+        output, pid, Code::Oxygen,
+        {sqrt(static_pow<2>(105_TeV) + static_pow<2>(get_mass(pid))),
+         {rootCS, {105_TeV, 0_GeV, 0_GeV}}},
+        {Oxygen::mass, {rootCS, {0_eV, 0_eV, 0_eV}}});
 
     auto const& h = countedProcess.getHistogram().labHist();
     CHECK(h.at(h.axis(0).index(3122), h.axis(1).index(1.05e14)) == 1);

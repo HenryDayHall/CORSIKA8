@@ -105,7 +105,6 @@ void modular() {
 int main() {
 
   logging::set_level(logging::level::info);
-  corsika_logger->set_pattern("[%n:%^%-8l%$] custom pattern: %v");
 
   std::cout << "staticsequence_example" << std::endl;
 
